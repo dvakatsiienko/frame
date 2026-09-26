@@ -6,7 +6,7 @@ argument-hint: "[draft|update|read] <app dir>"
 
 # product-docs
 
-An app's product docs are two files with two owners. The **map** is ours: one line per feature,
+An app's product docs are three files with two owners. The **map** is ours: one line per feature,
 each line a check the app must pass. It answers «what does X do» in one read and supplies the
 exit lines a verifier checks.
 
@@ -15,6 +15,8 @@ exit lines a verifier checks.
 - `PRODUCT.md` — impeccable's: character, users, purpose, principles. Hand edits are allowed. Never
   put features here: every impeccable session loads the whole file.
 - `product/MAP.md` — ours, never read by impeccable. The feature ledger.
+- `CONTEXT.md` — ours, the app's glossary: every domain word the map uses, defined once. Written
+  with matt's `domain-modeling` skill; the map, the ui labels and the code use its words.
 
 `DESIGN.md` stays impeccable's own (`document` writes it after a build, and its sidecar json
 regenerates with it).
@@ -24,7 +26,7 @@ regenerates with it).
 The map opens with a 3-line legend, then groups features under `## <route> — <view>` headings:
 
 ```md
-- 🧭 asked, not built yet (a new ask, an experiment) · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
+- 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
 - given/when/then lines are the verifier's exit lines
 - decision: lines record a choice and its reason
 
@@ -68,11 +70,14 @@ losing variant's line is deleted.
 2. Count the features first, one line each, no given/when/then yet. Tell dima the count:
    - ≤ 15 → walk them with him through `x:step-by-step`
    - more → one wall-of-text review, dima verdicts inline
-3. Write the given/when/then lines for what he kept. Mark each line ✅ only when its check passes
-   in the app's verify recipe; otherwise 🧭.
-4. Commit `product/MAP.md` and the app's `AGENTS.md` pointer line:
-   `- product/MAP.md — every feature and its check. Read your section before changing what the app does.`
-5. Report the cost: minutes and a rough token count for the draft. The pilot measures this.
+3. Write the given/when/then lines for what he kept. Run each check in the app's verify recipe:
+   ✅ passes, 🐞 fails, ⬜ not run yet (a destructive path waiting for a scratch server).
+4. Pull the domain words the lines use into `CONTEXT.md` through `domain-modeling`, and align the
+   lines to its words. A new app runs this order the other way: the glossary first, then the map.
+5. Commit `product/MAP.md`, `CONTEXT.md` and the app's `AGENTS.md` pointer line — the bridge every
+   session in the app has resident:
+   `- product/MAP.md + CONTEXT.md — every feature with its check, and the words they use. A change to what the app does updates its map line, and any new word its CONTEXT.md entry, in the same commit.`
+6. Report the cost: minutes and a rough token count for the draft. The pilot measures this.
 
 ## update — every change to what the app does
 
@@ -82,6 +87,8 @@ losing variant's line is deleted.
 - a changed behaviour → edit its given/when/then lines in the same commit.
 - a removed feature → delete its line in the same commit.
 - a choice dima made about a feature → a `decision:` line under it.
+- a new domain word, or a word whose meaning moved → its `CONTEXT.md` entry in the same commit.
+- a verifier checks the map line, its status, and that every domain word the line uses is defined.
 
 ## exit lines
 
@@ -94,4 +101,5 @@ No map → hand-written exit lines, and the app's `AGENTS.md` carries `map: none
 ## completion criterion
 
 Every feature the change touched has a line whose status matches the verify recipe, and no
-code change in the diff lacks its map line.
+code change in the diff lacks its map line, and every domain word the touched lines use has its
+`CONTEXT.md` entry.
