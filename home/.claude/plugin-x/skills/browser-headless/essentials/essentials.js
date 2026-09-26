@@ -41,6 +41,45 @@
         return Math.max(outline, spread);
     };
 
+    // a ring paints above static neighbours; only a positioned layer (a scrollbar, sticky chrome, an
+    // overlay) between the hit and the shared ancestor can cover it
+    const layered = (hit, el) => {
+        for (let q = hit; q && q !== document.body; q = q.parentElement) {
+            if (q.contains(el)) return false;
+            if (getComputedStyle(q).position !== 'static') return true;
+        }
+        return false;
+    };
+
+    // something painted over a ring (a scrollbar, an overlay): at each side's midpoint just outside
+    // the element, the element on top must be the element itself or one of its ancestors
+    const ringCovers = (el, ring) => {
+        const a = el.getBoundingClientRect();
+        const d = ring / 2;
+        const points = {
+            bottom: [a.left + a.width / 2, a.bottom + d],
+            left: [a.left - d, a.top + a.height / 2],
+            right: [a.right + d, a.top + a.height / 2],
+            top: [a.left + a.width / 2, a.top - d],
+        };
+        const out = [];
+        for (const [side, [x, y]] of Object.entries(points)) {
+            if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue;
+            const hit = document.elementFromPoint(x, y);
+            if (
+                hit &&
+                hit !== el &&
+                !hit.contains(el) &&
+                !el.contains(hit) &&
+                layered(hit, el)
+            )
+                out.push(
+                    `${label(el)} ring ${side} painted over by ${label(hit)}`,
+                );
+        }
+        return out;
+    };
+
     const checks = {};
 
     checks.axe = async () => {
@@ -122,8 +161,40 @@
                         `${label(el)} ${side} ${v.toFixed(1)} in ${p.getAttribute('data-slot') || p.tagName.toLowerCase()}`,
                     );
             }
+            for (const cover of ringCovers(el, ring)) cuts.push(cover);
         }
         return cuts;
+    };
+
+    // the whole visible part of every control: the element on top at its centre is the control
+    // or inside it; a covered or pushed-under control renders but cannot be used
+    checks.covered = () => {
+        const modal = document.querySelector(
+            '[role=dialog][aria-modal=true], dialog[open]',
+        );
+        const hidden = [];
+        for (const el of document.querySelectorAll(
+            `${INTERACTIVE}, ${THUMB}`,
+        )) {
+            if (!isOn(el) || (modal && !modal.contains(el))) continue;
+            const r = el.getBoundingClientRect();
+            if (r.width < 4 || r.height < 4) continue;
+            const x = r.left + r.width / 2;
+            const y = r.top + r.height / 2;
+            if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue;
+            const hit = document.elementFromPoint(x, y);
+            if (!hit || el.contains(hit) || hit.contains(el)) continue;
+            // content scrolled under its scroll box's own sticky chrome (a footer, a header) is normal
+            const box = clippers(el).find((p) =>
+                /auto|scroll/.test(
+                    getComputedStyle(p).overflowY +
+                        getComputedStyle(p).overflowX,
+                ),
+            );
+            if (box && !box.contains(hit)) continue;
+            hidden.push(`${label(el)} covered by ${label(hit)}`);
+        }
+        return hidden;
     };
 
     checks.truncation = () =>
@@ -174,7 +245,25 @@
                     );
             }
         };
-        judge(INTERACTIVE, ['pointer']);
+        // a clickable fails only with no cursor feedback: every cursor in guide-ui-ux's set
+        // (zoom-in on a zoomable image, copy, help, crosshair …) says what the click does
+        const CLICK_CURSORS = [
+            'pointer',
+            'zoom-in',
+            'zoom-out',
+            'copy',
+            'help',
+            'crosshair',
+            'grab',
+            'grabbing',
+            'col-resize',
+            'row-resize',
+            'text',
+            'not-allowed',
+            'progress',
+            'wait',
+        ];
+        judge(INTERACTIVE, CLICK_CURSORS);
         judge(TRACK, ['pointer']);
         judge(THUMB, ['grab', 'grabbing']);
         return wrong;

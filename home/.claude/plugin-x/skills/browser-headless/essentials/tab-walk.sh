@@ -40,6 +40,31 @@ read -r -d '' probe <<'JS' || true
     ring: el.matches(':focus-visible') && (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0 || cs.boxShadow !== 'none'),
     group: composite ? composite.dataset.tabWalkGroup : null,
     denied: DENY ? el.matches(DENY) : false,
+    cut: (() => {
+      // the ring at this stop: clipped by a box that hides overflow, or painted over by a neighbour
+      const outlineW = cs.outlineStyle === 'none' ? 0 : (parseFloat(cs.outlineWidth) || 0) + (parseFloat(cs.outlineOffset) || 0);
+      const spreadW = [...cs.boxShadow.matchAll(/(-?[\d.]+)px\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+(-?[\d.]+)px(?!\s*inset)/g)].reduce((m, x) => Math.max(m, parseFloat(x[4])), 0);
+      const ringW = Math.max(outlineW, spreadW);
+      if (!ringW) return [];
+      const out = [];
+      for (let p = el.parentElement; p; p = p.parentElement) {
+        const s = getComputedStyle(p);
+        if (s.overflowX === 'visible' && s.overflowY === 'visible') continue;
+        const b = p.getBoundingClientRect();
+        const gap = { top: r.top - ringW - b.top, bottom: b.bottom - r.bottom - ringW, left: r.left - ringW - b.left, right: b.right - r.right - ringW };
+        for (const [side, v] of Object.entries(gap)) if (v < 0 && v >= -ringW) out.push(`${side} clipped ${v.toFixed(1)}`);
+      }
+      const d = ringW / 2;
+      const pts = { top: [r.left + r.width / 2, r.top - d], bottom: [r.left + r.width / 2, r.bottom + d], left: [r.left - d, r.top + r.height / 2], right: [r.right + d, r.top + r.height / 2] };
+      for (const [side, [x, y]] of Object.entries(pts)) {
+        if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue;
+        const hit = document.elementFromPoint(x, y);
+        // a ring paints above static neighbours; only a positioned layer (a scrollbar, sticky chrome, an overlay) can cover it
+        const layered = (n) => { for (let q = n; q && q !== document.body; q = q.parentElement) { if (q.contains(el)) return false; if (getComputedStyle(q).position !== 'static') return true; } return false; };
+        if (hit && hit !== el && !hit.contains(el) && !el.contains(hit) && layered(hit)) out.push(`${side} painted over by ${hit.tagName.toLowerCase()}${hit.getAttribute('data-slot') ? `[${hit.getAttribute('data-slot')}]` : ''}`);
+      }
+      return out;
+    })(),
   });
 })()
 JS
@@ -70,6 +95,7 @@ printf '%s\n' "${stops[@]}" | jq -s --argjson list "$list" --argjson max "$max" 
         ($t[] | select(.hidden) | "\(.n) \(.name): invisible or inside aria-hidden/inert"),
         ($t[] | select(.ring | not) | "\(.n) \(.name): no visible focus ring"),
         ($t[] | select(.denied) | "\(.n) \(.name): matches the app'"'"'s deny list"),
+        ($t[] | select((.cut // []) | length > 0) | "\(.n) \(.name): ring \(.cut | join(", "))"),
         ($t | group_by(.id)[] | select(length > 1) | "\(.[0].name): repeats at stops \(map(.n) | join(", "))"),
         ($t[] | select(.prev != null and .y < .prev.y - 40 and .x < .prev.x - 40) | "\(.n) \(.name): jumps back up and left from \(.prev.name)"),
         ($t | map(select(.group != null)) | group_by(.group)[] | select(length > 1) | "\(.[0].name) and \(length - 1) more: \(length) stops inside one group, wants 1")
