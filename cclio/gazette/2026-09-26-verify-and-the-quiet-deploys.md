@@ -2,7 +2,7 @@
 date: 2026-09-26
 slug: verify-and-the-quiet-deploys
 tickets: [FRM-244, BYT-106, BYT-98, BYT-105, FRM-26, FRM-264]
-posted: {health: no}
+posted: {health: yes}
 ---
 
 # 🗞️ cclio's gazette · verify and the quiet deploys
