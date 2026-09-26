@@ -29,8 +29,31 @@ posted: {health: no}
 - open asks: none beyond the pilot; [FRM-264](https://linear.app/x-com/issue/FRM-264) (zsh `=word` hook) in triage
 - halt batch: commit the atelier verify recipe, slay frame + bytes
 
+⸻ upd 21:39
+
+## shipped
+
+- `x:product-docs` v1 and the atelier map pilot — the map, its glossary (`CONTEXT.md`, 23 words) and the verify recipe on main; the pilot verdict and a monday designer A/B in [FRM-244](https://linear.app/x-com/issue/FRM-244)
+- the gremlins pr: [BYT-105](https://linear.app/x-com/issue/BYT-105) → bytes #102 (24 commits, 16 items: a11y, motion stops, bake progress, a boundary per section, the rail), 4 verifier rounds, merged `2ac18e34`, all 6 apps Ready
+- the web ui essentials in `x:browser-headless`: one eval + a tab walk every web verify runs — axe with target-size, overflow, clipped and painted-over rings, covered controls, cursors; plus the guide rules they prove (the cursor set, one tab stop per widget, boundaries wrapped from the parent)
+- jotai: 3 in x-com-chat broke its prod build (jotai-devtools has no stable v3), rolled back to 2.20.3 everywhere, a reminder holds the lift
+- the memory lane (🦉 cclio memory): a prompt audit + memory-nurture reshape over 78 files — 10 cross-file conflicts resolved, 13 dead pointers fixed, links https-only, fleet-hazards split by repo, dispatch out of live text; resident load −7.3 % per cclio boot (54.9k → 50.9k), −10.4 % per session
+
+## tricks gained
+
+- hit-testing is not a paint test: an outline paints above static neighbours, so only a positioned layer counts as covering a ring
+- a boundary never catches its own component's hooks — it wraps the section from the parent
+- a merge that adds a dependency needs `pnpm install` plus a live-server restart; vite keeps a failed import until it restarts
+- a peer range is a claim: jotai-devtools says `>=2.20.0` and imports a jotai 3-removed internal
+
+## state
+
+- next: monday — the designer A/B (map vs no map); then chords' map
+- open: BYT-105 follow-ups (drawn logo, loop encode, two clipped rings) · the model bench
+- frame 9607e5f4 + bytes ba47eaa3, slay at this halt · no coders
+
 ## trail
 
-- shipped: product docs shape settled (FRM-244) · ci sweep scoped (BYT-106) · vercel skipped records fixed on all 6 · /verify explored, atelier recipe written · lan apps, jotai 3, jev ⚠ tag
-- open: x:product-docs thin v1 → atelier map pilot · gremlins coder tries /run · FRM-264 zsh hook · the verify recipe commit
-- state: frame 8c489347, bytes d0fcc285, unpushed (slay at halt), no coders, checkpoint written
+- shipped: x:product-docs v1 + atelier map pilot (FRM-244) · #102 gremlins merged, 6 apps Ready (BYT-105) · web ui essentials + guide rules · jotai rollback · memory lane reshape −7.3 % boot
+- open: monday designer A/B (map vs no map) · chords map · BYT-105 follow-ups (logo, loop encode, 2 rings) · model bench
+- state: frame 9607e5f4, bytes ba47eaa3, slayed at halt, no coders, x 0.11.129 · cclio 0.3.73
