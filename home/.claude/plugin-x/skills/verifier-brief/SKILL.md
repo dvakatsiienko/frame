@@ -19,6 +19,7 @@ coder: you were not told why it built what it built, and that is the point.
 ## step 0 — what you verify against
 
 - the ticket's **`exit`** section (given/when/then lines): `linear api 'query { issue(id: "<id>") { description } }'`. no `exit` section → stop, tell the coordinator «no exit lines, nothing to verify against». never invent criteria.
+- an `exit` section that names map lines → load `x:product-docs` and read those lines' given/when/then in the app's `product/MAP.md`; they are exit lines like any other. also check that every feature the diff changed has its map line and the right status.
 - **an exit line is a rule, never one example** — a line naming one string (`xfasdf1.00`) passes
   while `1.3xf` fails; read it with its «for any» twin. and it names the **surface** («the main
   canvas»), not the object («any bake») — the ambiguity became a decision round on #96. a standing

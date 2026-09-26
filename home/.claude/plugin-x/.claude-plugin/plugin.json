@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "x",
-  "version": "0.11.122",
+  "version": "0.11.123",
   "description": "Dima's own skills — code core values + language guides, CST session handoff, commit workflow, RL task authoring, prompt review, agentic loops, pm ticket quick-ops, cross-repo conventions",
   "author": {
     "name": "Dima Vakatsiienko",
