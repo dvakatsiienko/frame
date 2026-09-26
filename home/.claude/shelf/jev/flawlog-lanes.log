@@ -14,3 +14,6 @@
 2026-09-25T17:52:35.998Z	ok	2026-09-25: 27 of 31 lanes matched the flush (rule → skills, memory → craft-spawning, ticket → BYT-105 / FRM-261)
 2026-09-26T14:15:44.669Z	ok	09-26 flush: 4 of 5 lanes matched (ticket, rule ×2, memory)
 2026-09-26T14:15:45.859Z	miss	lane=drop a capability find (gated built-in skills unseen) laned drop 36; it went to the refresh-spawn-mechanics recipe — a good-find line with a standing check is a recipe line, not a drop
+2026-09-26T18:39:18.463Z	miss	lane=memory cursor-check method lesson laned drop because its instance was fixed — memory criterion sharpened (RUNS=3: memory 76)
+2026-09-26T18:39:18.611Z	miss	lane=drop makes: line named the craft-spawning rule it repeats, laned memory 30 — fixed by the already-held clause (drop 47)
+2026-09-26T18:39:18.763Z	miss	lane=drop zsh glob line laned rule; its lesson is already in method-silent-failures but the line did not name it — now memory 43, the uncertain band

@@ -14,3 +14,4 @@
 2026-09-26T12:17:47.931Z	miss	lane=cclio:halt «slay at session halt» names the halt as a moment, it does not open one
 2026-09-26T14:22:40.498Z	miss	lane=cclio:init offered a disable-model-invocation skill mid-session; fixed: skill-route.ts drops user-only skills
 2026-09-26T14:22:48.493Z	miss	lane=x:art-kit ingest of diorama-checkpoint-1 routed to art-kit 0.88 — the run name carried «diorama», task was a handoff ingest
+2026-09-26T18:39:18.912Z	ok	afternoon picks fit: x:cmt ⚠ on commit asks, x:guide-ui-ux on ui asks, x:product-docs on map asks; misses were recorded live

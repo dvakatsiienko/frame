@@ -11,7 +11,7 @@
         "skill-router": {
             "since": "2026-09-26",
             "state": "vetting",
-            "verdicts": 16,
+            "verdicts": 17,
             "misses": 10,
             "what": "the UserPromptSubmit hook names the skills a prompt should load",
             "lanes": {
@@ -56,8 +56,8 @@
         "flawlog-lanes": {
             "since": "2026-09-26",
             "state": "vetting",
-            "verdicts": 16,
-            "misses": 12,
+            "verdicts": 19,
+            "misses": 15,
             "what": "every flawlog line laned memory · rule · story · ticket · drop before the halt flush (the coder retro is a separate, future flow)",
             "lanes": {
                 "ticket": {
@@ -74,7 +74,11 @@
                 },
                 "drop": {
                     "hit": 0,
-                    "total": 2
+                    "total": 4
+                },
+                "memory": {
+                    "hit": 0,
+                    "total": 1
                 }
             }
         }
