@@ -24,24 +24,34 @@ regenerates with it).
 The map opens with a 3-line legend, then groups features under `## <route> — <view>` headings:
 
 ```md
-- 🧭 planned · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
+- 🧭 asked, not built yet (a new ask, an experiment) · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
 - given/when/then lines are the verifier's exit lines
 - decision: lines record a choice and its reason
 
-## / — stage
+## /projects — project list
 
-- 🧭 bake shows progress
-  - given a scene is open
-  - when dima presses bake
-  - then a step list fills live until the take lands in the rail
+- ✅ search filters the list
+  - given the list holds more than one project
+  - when the user types in the search field
+  - then only projects whose name contains the text stay visible
   - decision: <the choice> — <why dima made it>
+- 🧭 export shows progress
+  - given a project is open
+  - when the user presses export
+  - then a step list fills live until the file downloads
 ```
+
+An experiment keeps each variant as its own 🧭 line; the pick becomes a `decision:` line and the
+losing variant's line is deleted.
 
 - one line per feature, a noun phrase, what the user gets. Small features get a line too (a
   sidebar toggle is one line with no given/when/then).
 - given/when/then lines describe what someone sees at the running app, never internals.
 - group by what a designer takes in one piece (a view, a flow). The grouping is open: pick what
   fits the app, and regroup when it stops fitting.
+- name a thing by the label the ui shows. A region with no visible label takes its code name,
+  and the missing label is reported to dima as a finding.
+- commands with no ui (scripts, a cli) go under a last `## scripts` heading; a designer skips it.
 - over ~150 lines → split into an index plus `product/<route>.md` leaves.
 
 ## who reads what
@@ -76,7 +86,7 @@ The map opens with a 3-line legend, then groups features under `## <route> — <
 ## exit lines
 
 A spawn ask for an app with a map takes its exit lines from the map: «build MAP lines under
-`## / — stage`: bake shows progress». The ask may add steering lines on top.
+`## /projects — project list`: export shows progress». The ask may add steering lines on top.
 
 No map → hand-written exit lines, and the app's `AGENTS.md` carries `map: none — <reason>`
 (not drafted yet, or none by choice).
