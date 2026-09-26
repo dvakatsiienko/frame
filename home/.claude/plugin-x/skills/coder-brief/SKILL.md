@@ -129,11 +129,10 @@ still hold for hygiene (commit shape, identity, no stray files), not for ceremon
   because the squash commit takes the PR title and body verbatim; body `- ticket: <id>` (`Closes
   <id>` only when the ticket ends). Paste the url in your chat and in your ping. Dima sees the job
   start on github; then he squash-merges.
-- **commit as you go, push once per verifier round** on your `coder/*` branch (`/cmt y+` stands).
-  every push still costs a vercel record per bytes app — a cancelled «not affected» build that
-  counts toward the daily cap of 100, `deploymentEnabled: false` notwithstanding (measured
-  2026-09-25: ~30 coder pushes across three prs, 98 cancelled records, the cap hit by evening). the
-  cause is still open; until it is found, a push is a batch, never a single commit. A merge to main costs 6 prod deploys — that one is
+- **commit as you go, and push the first real commit the same turn**, then every step
+  (`/cmt y+` stands). the verifier works from the pushed head only — 8 commits held local once left it
+  idle on an empty pr (#102). a push writes no vercel record since the «skip unaffected projects»
+  records were switched off on all 6 projects (bytes `d0fcc285`). A merge to main costs 6 prod deploys — that one is
   Dima's click, never yours.
 - **«final» is a handshake, and it comes after your own review — run it, then two local passes,
   then the ci reviewer, in this order.** When the last step is done:

@@ -43,13 +43,15 @@ so a crash takes one section and the rest keeps working.
 - **the fallback is designed**, never a raw message: it stays inside the section's own box so the
   layout holds, names what failed in plain words («the preview stopped drawing»), offers a retry
   (`resetErrorBoundary`), and keeps the error detail behind a disclosure in dev
+- **the boundary wraps the section from its parent**, never from inside it: a boundary catches
+  only what it wraps, so one placed inside `<Viewport>` misses a throw in `Viewport`'s own hooks
 - **`resetKeys`** carry the section's input identity (the route, the selected item), so moving on
   clears the error by itself
 - **errors a boundary cannot see** — event handlers, promises, timers — are routed with
   `showBoundary(error)` from `useErrorBoundary()`; `error` is `unknown` in v6, narrow it
 - the root wires `createRoot`'s `onCaughtError` / `onUncaughtError` for reporting; they never
   replace a section's fallback
-- the proof is a dev-only `?crash=<section>` that throws in that section: the others still
+- the proof is a dev-only `?crash=<section>` that throws in the section's own top-level hook (a throw in a child passes even when the boundary sits wrong): the others still
   render and answer a click (the essentials in `x:browser-headless` name the check)
 
 ## Imports
