@@ -18,6 +18,13 @@ their own trigger: **`dogfood`** before any exploratory QA pass (systematic expl
 evidence per finding), **`electron`** for a desktop app. The `--help` header points at them, but
 nobody reads `--help` twice: check the list once per session before improvising a workflow.
 
+## the essentials — run on every web ui change
+
+A coder before its ping and a verifier in every round run `essentials/essentials.js` (one eval)
+and `essentials/tab-walk.sh` from this skill's base dir on every view the change touched, at
+1280 and 390 wide. **Run them; reading `essentials/essentials.md` is only needed when a check
+fails or misfires.** The report carries `essentials: <n> pass · <m> fail`.
+
 ## the split — which browser when
 
 - **`agent-browser`** — every loop, hover sweep, measurement, console/network tail, multi-viewport

@@ -22,7 +22,8 @@ mechanics, that file answers order, gates and who runs what. no impeccable named
 `x:guide-typescript`, `.tsx` → plus `x:guide-react`, anything a human looks at → `x:guide-ui-ux`,
 a route/url/layout → `x:guide-conventions`, any ui check → `x:browser-headless` (headless, not the
 browser-takeover the root rule guards against). `x:cmt` before every commit, `x:github-contrib`
-before any `gh` call. The app has a `product/MAP.md` → `x:product-docs` before the first code
+before any `gh` call. A web ui change runs the `x:browser-headless` essentials on every touched view
+before the ping, and the ping says `essentials: <n> pass · <m> fail`. The app has a `product/MAP.md` → `x:product-docs` before the first code
 change, and its map lines move in the same commits as the code. A complete brief suppresses the skill router, so nobody reminds you: load
 per file type as you reach it, never the whole set up front (a config-only ticket needs four of
 eight). The `skills (jev router): x:pm 0.82` line that arrives with a prompt is jev's pick, a candidate:

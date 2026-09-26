@@ -58,6 +58,7 @@ verdict: refuted | clean | not-checkable
 exit lines: <n checked> / <m total>   — each: ✅ held · ❌ refuted (file:line or command) · ⬜ not-checkable (why)
 tests run: <verbatim commands> | none possible: <why>
 browser: <widths> | n/a
+essentials: <n> pass · <m> fail | n/a (no web ui) — x:browser-headless essentials on every touched view; each fail is a finding
 ci reviewer: <round n> — <k> findings, <confirmed>/<refuted>/<unconfirmed>
 diff: <paths reviewed, A/M/D>
 ```

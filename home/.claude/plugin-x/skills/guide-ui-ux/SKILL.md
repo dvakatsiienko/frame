@@ -14,7 +14,25 @@ guides (`guide-react`) sit on top of this one.
   contrast for text, ≥3:1 for icons, chart marks, axis lines, focus rings
 - **`user-select: none` only on chrome** — buttons, icons, chart marks, drag handles. Values,
   ids, code, errors stay selectable. Dark theme sets `::selection` explicitly (opaque bg)
-- **every clickable is `<button>`/`<a>` with `cursor: pointer` and a visible hover state** — the
+- **the cursor says what the pointer will do** — tailwind 4 resets buttons to `default`, so every
+  app restores it in `@layer base`, then each control picks its kind:
+  - `pointer` — buttons, links, tabs, menu items, options, switches, checkboxes, selects, a
+    slider's track (a click sets the value), anything that opens on click
+  - `grab` → `grabbing` while held — slider thumbs, drag handles, a canvas that pans. base-ui lays
+    a transparent `input` over each thumb: the rule reaches `[data-slot=slider-thumb] input` too
+  - `col-resize` / `row-resize` — splitters (react-resizable-panels sets them itself)
+  - `text` — inputs and editable text · `not-allowed` — disabled controls · `zoom-in` /
+    `zoom-out` — an image that zooms on click · `progress` — the app works in the background and
+    stays usable · `wait` — only when input is truly blocked · `copy` — a drag that copies ·
+    `help` — an element whose hover explains it · `crosshair` — a picker
+  - plain text and non-interactive cards keep `default`
+- **one tab stop per widget** — a group (toggle group, radio group, tabs, toolbar, listbox) is one
+  stop and arrows move inside it: build it from the base-ui composite, never hand-rolled
+  `tabIndex`; positive `tabIndex` is banned. a splitter is a stop by default (arrows resize); an
+  app opts out only with a reason in its verify recipe's `--deny` list
+- **a scroll box never clips a focus ring** — a ring on an element inside an overflow container
+  is `ring-inset` / a negative `outline-offset`, or the container carries padding for it
+- **every clickable is `<button>`/`<a>` with its cursor and a visible hover state** — the
   surface, border or underline shifts under the pointer; an image that opens a zoom is a
   clickable too. A `div` with onClick is a keyboard hole. Hit target ≥24×24 (44 touch); a dense
   chart gets a transparent padded hit rect per cell, empty cells included
