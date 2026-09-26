@@ -49,6 +49,9 @@ resolve `==DIVIDER==` as a command path, fails, and everything after the `&&` ne
 same class: an unquoted `*` inside an option value — `grep --include=*.md` — is a glob, and with
 nothing to match zsh aborts the whole chain (`no matches found`); the next command then read a
 file the aborted one never wrote (2026-09-18). **quote it: `--include='*.md'`.**
+the inverse trap: **zsh does not word-split an unquoted `$VAR`** — `for f in $FILES` runs once with
+the whole string as one word, and a snapshot loop copied nothing (2026-09-26). split with
+`${=FILES}` or feed a `while read -r f`.
 
 ## ❗ a truncated read recorded as a truncated source
 

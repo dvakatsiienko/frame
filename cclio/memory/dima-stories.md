@@ -10,9 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «sounds like cheating from VC side» · 2026-09-09
-He dropped it in the inbox with no evidence, only the feel: «can't believe in deploy quota burning so fast… when a deploy was truly skipped and compute was not spent, the count should not be affected. i feel something is off here.» A researcher opened vercel's own doc and found the sentence: canceled builds started by the ignored build step count toward the deployment limit. The six `turbo-ignore` lines had been removed two days earlier without anyone knowing that was the reason. The felt sense named the bug before the doc did; the fix had landed by accident. → the vercel research, `cclio:evergreen`'s gate rules
-
 ## the token panel and the eye · 2026-09-10
 A coder built the admin's token panel the way the brief asked: a comparison row, a «which one is live» row, a note on the fallback, a button to undo it. Five reviewers over three rounds and 61 tests found one defect between them and said nothing about the shape. He looked at it once and said «i can't read this, make this for user», then «after vc cut, is this field still needed?», then «field + btn up, text below». Three rounds, each one deleting interface, none of them from a tool. The panel ended at four things. His felt sense was the reading order of a screen; the coder's own lesson was «when the ui grows faster than the behaviour, stop and ask» — now in the brief. → `x:coder-brief`, the run-it-first step
 
@@ -82,3 +79,5 @@ twelve renders of a pixel coder, and after each one he said the same thing: «st
 ## «why is foxglove so much better?» · 2026-09-25
 three days of readme art, and he said the versions «were much weaker and unpolished, at least as a basis», next to an opus-made paper diorama from a test repo. his first guesses were the target (svg in a readme) and his own «mvp» framing. the answer came from reading the reference itself: no library at all, one small recipe — a seeded `trace()` that cuts every edge, two shadows a layer, a grain tile — and a one-scene prompt that named the layers, the palette and the technique. his brief had eleven asks across three repos and no technique; mine never flagged the overload. the felt sense — «this is not the level it should be» — arrived days before the reason. → `x:art-kit` illustration branch, atelier
 
+## «dpatch retired a long ago» · 2026-09-26
+A reshape fork called the `dpatch` handoff token retired. I «corrected» it: `ListAgents` showed a live `✈️ dispatch` peer, so the token stayed in my plan. He read the line and said «wait, dpatch retired a long ago. where is the tail still present?» — and he was right; the capabilities doc itself said dispatch left the fleet on 09-04. My probe measured presence, not membership: an idle account-level peer is not a fleet member. The felt sense knew the fleet's roster; the tool only knew who was online. → the dispatch purge, `method-report-verify`

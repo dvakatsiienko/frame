@@ -125,6 +125,11 @@ double-runs the work.
 
 **One agent per repo where possible; parallelism goes ACROSS repos.** When two share:
 
+- **at boot, `ListAgents` for a peer cclio in the same repo** — one found → one ownership message
+  before the first edit (the files you will touch, pathspec commits). a hold on a peer is released
+  by an explicit message, never an implied one (2026-09-26: a whole sweep ran beside `cclio-ef`,
+  found through `git status` surprises; dima had to ask whether she was released).
+
 - state file ownership at spawn; staging and pathspec commits follow `x:cmt` §7. two coders
   live at once: the second brief names the first's files, or cclio holds the first's merge until
   the second's pr is open (a merge mid-flight broke a rebase, 2026-09-11). **the split is stated at spawn, both coders spawned in one turn, and the second brief carries «tree as of HH:MM, done: …»** — a brief written against a moved tree cost the second coder its first stretch (2026-09-24). a shared `<area>/LANES.md` (who owns what, last touch) replaces about half of the coordinator's relays; it is deleted in the same step that stops the coders.

@@ -52,6 +52,8 @@ const skills = Object.entries(pluginDirs).flatMap(([prefix, dir]) =>
     readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
         if (!entry.isDirectory()) return [];
         const md = readFileSync(`${dir}/${entry.name}/SKILL.md`, 'utf8');
+        // a user-only skill cannot be loaded by the model, so routing it is noise
+        if (/^disable-model-invocation:\s*true\s*$/m.test(md)) return [];
         const description = readDescription(md);
         return description
             ? [{ description, name: `${prefix}:${entry.name}` }]
