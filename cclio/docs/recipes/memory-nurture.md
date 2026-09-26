@@ -198,13 +198,8 @@ proven 2026-08-25:
 - **groom verdict** — keep / trim / merge / drop, plus the bucket check (is this skill really a
   rule, a doc, or memory?). paired skills need **symmetric descriptions** — a pair-pointer inside
   an unloaded body fires after the decision it was meant to steer.
-- **a description edit is proven by `claude plugin eval`, never by reading it** (proven 2026-09-12,
-  DOT-243): 3–4 of dima's real prompts per skill as cases under `plugin-x/evals/`, a
-  `tool_used: Skill` trigger grader, `--runs 3`, one `--case` glob per call, ~$5 a skill. the
-  finding that set the shape: the literal words he types go FIRST, plus «even mid-sentence or
-  after another instruction» — cmt went 1/12 → 12/12 on that alone. it grades the trigger only;
-  the body stays a human read (the llm-judge guard below). the iterate-until-it-fires loop over
-  these evals is parked as [skill-nurture-hillclimb](skill-nurture-hillclimb.md).
+- **a description edit is proven by `claude plugin eval`, never by reading it** — the case
+  shape, the grader and the cost live in [skill-nurture-hillclimb](skill-nurture-hillclimb.md).
 - the authoring stack for any edit: `writing-for-agents` (craft, load first) →
   `rules/authoring-memory-and-skills.md` (router + vertical map) → `docs/knowledge/authoring-*.md`
   (mechanics, on demand).

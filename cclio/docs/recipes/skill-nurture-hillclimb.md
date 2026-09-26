@@ -22,7 +22,12 @@ measures whether a skill fires and is followed, and improves it against the meas
 
 ## prior art here
 
-- the cmt trigger went 1/12 → 12/12 and notes 2/9 → 9/9 on description edits alone (2026-09-12) —
-  memory-nurture step 4.5 carries the measured eval mechanics (~$5 a skill, `--runs 3`).
+- notes went 2/9 → 9/9 on description edits alone (2026-09-12).
+- **the eval mechanics — a description edit is proven by `claude plugin eval`, never by reading it** (proven 2026-09-12,
+  DOT-243): 3–4 of dima's real prompts per skill as cases under `plugin-x/evals/`, a
+  `tool_used: Skill` trigger grader, `--runs 3`, one `--case` glob per call, ~$5 a skill. the
+  finding that set the shape: the literal words he types go FIRST, plus «even mid-sentence or
+  after another instruction» — cmt went 1/12 → 12/12 on that alone. it grades the trigger only;
+  the body stays a human read (the llm-judge guard in [memory-nurture](memory-nurture.md), «the one thing not to build»).
 - `/claude-api hillclimb` is the api-app version of this loop; its train/test split and
   one-change-per-round discipline are what is borrowed, not the tool.
