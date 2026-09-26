@@ -12,3 +12,5 @@
 2026-09-26T12:15:08.242Z	miss	lane=x:cmt «push the 7 commits at session end» is a scheduled push, no commit asked — a push word is not a commit trigger
 2026-09-26T12:17:46.805Z	miss	lane=x:cmt «just slay at session halt» sets a push for later — no commit now
 2026-09-26T12:17:47.931Z	miss	lane=cclio:halt «slay at session halt» names the halt as a moment, it does not open one
+2026-09-26T14:22:40.498Z	miss	lane=cclio:init offered a disable-model-invocation skill mid-session; fixed: skill-route.ts drops user-only skills
+2026-09-26T14:22:48.493Z	miss	lane=x:art-kit ingest of diorama-checkpoint-1 routed to art-kit 0.88 — the run name carried «diorama», task was a handoff ingest

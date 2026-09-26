@@ -127,6 +127,11 @@ same message («hold #61») subtract from the round.
 - **the round ends with a loot in every repo it merged into** (`git pull --ff-only`, or a
   proposed rebase when the tree is ahead too) — patches automerge without anyone saying so, and
   the boot prefetch's ahead/behind line is the tell: behind-only = loot as a freebie at boot.
+- **before a merge that moves a shared dependency's major in one app only**, check the repo's one-version
+  rule (bytes: the `package-json-shape` hook) — renovate commits skip our hooks, so #95 put jotai 3 in
+  atelier beside 2.20.3 in x-com-chat and the next human commit tripped on it. a bump in a deployed app
+  is proven by that app's local `pnpm --filter <app> build`, never its typecheck — jotai-devtools broke
+  x-com-chat's prod build behind a green typecheck (2026-09-26).
 - **merge** → `gh pr merge <n> -R dvakatsiienko/<repo> --squash --delete-branch` — the title
   already wears `🌲 evergreen:`. one back-to-back round per day: each bytes merge costs 6 prod
   deploys, so never one per PR across the day.

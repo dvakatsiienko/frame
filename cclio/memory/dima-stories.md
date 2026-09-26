@@ -10,9 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## the token panel and the eye · 2026-09-10
-A coder built the admin's token panel the way the brief asked: a comparison row, a «which one is live» row, a note on the fallback, a button to undo it. Five reviewers over three rounds and 61 tests found one defect between them and said nothing about the shape. He looked at it once and said «i can't read this, make this for user», then «after vc cut, is this field still needed?», then «field + btn up, text below». Three rounds, each one deleting interface, none of them from a tool. The panel ended at four things. His felt sense was the reading order of a screen; the coder's own lesson was «when the ui grows faster than the behaviour, stop and ask» — now in the brief. → `x:coder-brief`, the run-it-first step
-
 ## the gate rethink · 2026-09-12
 He looked at a measured, working 1,300-line review gate — 20 fixture cases, every path proven red
 and green on real prs — and said «somewhere from yesterday i lost track of how pr merge protection
@@ -81,3 +78,6 @@ three days of readme art, and he said the versions «were much weaker and unpoli
 
 ## «dpatch retired a long ago» · 2026-09-26
 A reshape fork called the `dpatch` handoff token retired. I «corrected» it: `ListAgents` showed a live `✈️ dispatch` peer, so the token stayed in my plan. He read the line and said «wait, dpatch retired a long ago. where is the tail still present?» — and he was right; the capabilities doc itself said dispatch left the fleet on 09-04. My probe measured presence, not membership: an idle account-level peer is not a fleet member. The felt sense knew the fleet's roster; the tool only knew who was online. → the dispatch purge, `method-report-verify`
+
+## «what is this section named then?» · 2026-09-26
+The atelier map had just been drafted and 28 of its lines had passed a scripted drive. He opened the studio and sent screenshots with arrows: the top half of the rail had no title while TAKES did, the selected take's ring was cut at the top, the sliders kept the plain arrow cursor, Tab stopped on the panel dividers. None of our checks looked at any of it; the map's lines were about behaviour, and all four were about how a screen reads. Every screenshot became a check or a rule the same day — the essentials scripts, the cursor set, one tab stop per widget — and the checks then found six more of the same kind on their first run. His eye was the spec the tools did not have yet. → `x:browser-headless` essentials, `habit-guide-fold`

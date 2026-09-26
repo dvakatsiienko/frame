@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "cclio",
-  "version": "0.3.72",
+  "version": "0.3.73",
   "description": "cclio's coordinator rituals — boot, status board, flawlog habit, halt. typed deliberately, never self-triggered.",
   "author": {
     "name": "Dima Vakatsiienko",

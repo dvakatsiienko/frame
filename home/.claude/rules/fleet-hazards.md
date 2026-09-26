@@ -79,6 +79,9 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   commit
 - **`CI=1 pnpm install` is frozen-lockfile** (pnpm's own CI detection) — a dep add or removal takes `--no-frozen-lockfile` beside it, or the lockfile never moves and the commit ships half; and pnpm 12 reads `overrides` from `pnpm-workspace.yaml` only, the `package.json#pnpm` field is ignored with a warning (2026-09-21)
 - **a delete names the file the grep proved, never its dir** — «TriangleSvg has no users» was true, `trash src/elements/icons` took the live `ExternalLinkSvg.tsx` with it (2026-09-21); the unit of a delete is the path the evidence named
+- **`${var}` before any non-ascii character** — bash reads `«$var»` as a variable named `var»` and dies
+  on «unbound variable» under `set -u` (twice in one session, 2026-09-26); brace every variable that
+  touches a guillemet, an emoji or a dash glyph
 - an `sd` replacement never carries a `$` — inside a double-quoted argument the shell expands
   `$dir` / `$line` to nothing and the line ships hollow (three sightings, 2026-09-17/18). that
   edit goes through the Edit tool or a python literal

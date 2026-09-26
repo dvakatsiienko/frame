@@ -11,8 +11,8 @@
         "skill-router": {
             "since": "2026-09-26",
             "state": "vetting",
-            "verdicts": 14,
-            "misses": 8,
+            "verdicts": 16,
+            "misses": 10,
             "what": "the UserPromptSubmit hook names the skills a prompt should load",
             "lanes": {
                 "x:guide-code": {
@@ -42,6 +42,14 @@
                 "x:cmt": {
                     "hit": 0,
                     "total": 2
+                },
+                "cclio:init": {
+                    "hit": 0,
+                    "total": 1
+                },
+                "x:art-kit": {
+                    "hit": 0,
+                    "total": 1
                 }
             }
         },

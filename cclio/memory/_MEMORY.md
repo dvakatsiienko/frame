@@ -40,5 +40,6 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 📐 recipes (repeatable flows: a maintenance run with research vectors, or a plain execution script) live in `docs/recipes/` here — `_spec.md` is the contract: want = dima's, research vectors = his wording, artifacts pointed-at never housed. read it before creating or running one. (plain pointer, not an import)
 
 ## habits
+- 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
 - 🎯 @habit-ray-hoist.md — a repeated ask lands on DOT-252 the same turn as an x-ray candidate; guesses never do
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit
