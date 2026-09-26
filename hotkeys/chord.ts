@@ -153,6 +153,20 @@ export const canonicalQuery = (text: string) => {
     return [canonicalMods(mods.join('+')), ...rest].filter(Boolean).join('+');
 };
 
+// The chord a press stream update is about. One 2s tick can move a real chord and the bare
+// modifier released after it (`ctrl+shift+cmd+4`, then `ctrl`); the real chord wins, or a rebind
+// hears only the modifier and drops the press.
+export const pressedChord = (
+    previous: Record<string, number>,
+    counts: Record<string, number>,
+) => {
+    const moved = Object.keys(counts).filter(
+        (chord) => (counts[chord] ?? 0) > (previous[chord] ?? 0),
+    );
+
+    return moved.find((chord) => chord.includes('+')) ?? moved[0];
+};
+
 // Takes the two fields it reads rather than a whole Hotkey, so the map can spell a free key's
 // chord — a key with no binding has no row to hand over.
 export const chordOf = (hotkey: Pick<Hotkey, 'key' | 'mods'>) => {

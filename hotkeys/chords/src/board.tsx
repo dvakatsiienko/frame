@@ -4,7 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Feedback, defaultPreset } from '@dnd-kit/dom';
 import { DragDropProvider } from '@dnd-kit/react';
 /* Instruments */
-import { canonicalQuery, chordOf, modOrder } from '@hotkeys/chord.ts';
+import {
+    canonicalQuery,
+    chordOf,
+    modOrder,
+    pressedChord,
+} from '@hotkeys/chord.ts';
 import type { Hotkey } from '@hotkeys/manual.ts';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -118,11 +123,7 @@ export const BoardPage = (props: BoardPageProps) => {
                 // The stream carries totals, so the chord just pressed is the one whose count
                 // moved. That is what press-to-pick listens for.
                 setPresses((previous) => {
-                    const pressed = Object.keys(payload.counts).find(
-                        (chord) =>
-                            (payload.counts[chord] ?? 0) >
-                            (previous[chord] ?? 0),
-                    );
+                    const pressed = pressedChord(previous, payload.counts);
 
                     if (pressed)
                         setLastPress({ at: Date.now(), chord: pressed });

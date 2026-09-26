@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import { canonicalQuery } from './chord.ts';
+import { canonicalQuery, pressedChord } from './chord.ts';
+
+describe('pressedChord', () => {
+    it('picks the chord over the bare modifier released in the same tick', () => {
+        const previous = { ctrl: 40, 'ctrl+shift+cmd+4': 2 };
+        const counts = { ctrl: 41, 'ctrl+shift+cmd+4': 3 };
+
+        expect(pressedChord(previous, counts)).toBe('ctrl+shift+cmd+4');
+    });
+
+    it('still reports a bare modifier pressed alone', () => {
+        expect(pressedChord({ cmd: 1 }, { cmd: 2 })).toBe('cmd');
+    });
+});
 
 describe('canonicalQuery', () => {
     it('sorts typed modifiers into the order chordOf spells them in', () => {
