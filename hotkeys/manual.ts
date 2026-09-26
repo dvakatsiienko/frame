@@ -232,6 +232,7 @@ export const manualHotkeys = [
         key: '`',
         mods: 'cmd+shift',
         since: '2026-09-19',
+        until: '2026-09-26',
     },
     {
         action: 'Capture Text (OCR)',
@@ -333,6 +334,13 @@ export const manualHotkeys = [
     },
     { action: 'Autofill', app: '1password', key: '\\', mods: 'cmd' },
     { action: 'Lock 1Password', app: '1password', key: 'l', mods: 'cmd+shift' },
+    {
+        action: 'Self-Timer',
+        app: 'cleanshot',
+        key: '4',
+        mods: 'ctrl+shift+cmd',
+        since: '2026-09-26',
+    },
 ] satisfies readonly Hotkey[];
 
 /* Types */
