@@ -30,6 +30,9 @@ Keeps the spawn evidence base true against the current claude code build. Recipe
 - did any spawn incident this period reveal a gap the evidence base has no row for — a flag
   nobody measured, a failure shape nobody named?
 - is the doc still ~claim-tagged throughout, or have untagged assertions crept in?
+- which bundled skills does this cc build ship, gated ones included? a skill with model invocation
+  gated off never appears in the session's list (`/verify` sat unseen until 2026-09-26) — list them
+  from the build's bundled-skills dir or the binary, and name any new one to dima.
 
 ## artifacts (pointed at, never housed)
 

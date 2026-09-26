@@ -101,7 +101,7 @@ archaeology. Subscribe, never poll. Budget three round trips — more means the 
 
 **Every «please test» carries the exact port link, and a screenshot's url is read before its report is relayed** — two rounds of #96 went to dima's reports from `:5180` (main, v1) while the pr lived on `:5190` (2026-09-25).
 **A verifier's cap stop ends like `clean` for the handoff** — the coordinator adds dima as reviewer the same turn; on #94 the cap path skipped it and dima had no approve button.
-**A research pick is checked against the spec's own rules before it enters a ticket** — leva was a research lane's default r3f panel and broke «every control is a kit component»; the coder caught it, dima's A/B killed it.
+**A research pick is checked against the spec's own rules and dima's past verdicts before it enters a ticket or a reply** — leva was a research lane's default r3f panel and broke «every control is a kit component»; the coder caught it, dima's A/B killed it. a research brief carries `decided against: …` lines for what he already rejected (2026-09-26: a ci lane re-proposed builds on github actions, rejected two weeks earlier, and it reached him as a recommendation).
 **A taste reference dima names goes into the ticket as a link the same day** — the rzpp demo he liked was missing, so the spec's «plain scroll pans» fought it for a decision round.
 **The spawn ask's exit lines state rules, name surfaces, and cover every list item** — one example string, «any bake», and a standing list with no lines each cost a round (BYT-103/104/105).
 **A visual spec names the artifact to match, never the recipe** — «22 % corner mask» cost three probe rounds; «match `handoffs.png`» would have been right and cheaper (2026-09-22).

@@ -12,3 +12,5 @@
 2026-09-25T17:52:35.714Z	miss	lane=ticket the tsconfig format-hook line was a one-off already fixed → drop
 2026-09-25T17:52:35.857Z	miss	lane=drop headless ⌘A ignored → a browser-headless hazard rule, not drop
 2026-09-25T17:52:35.998Z	ok	2026-09-25: 27 of 31 lanes matched the flush (rule → skills, memory → craft-spawning, ticket → BYT-105 / FRM-261)
+2026-09-26T14:15:44.669Z	ok	09-26 flush: 4 of 5 lanes matched (ticket, rule ×2, memory)
+2026-09-26T14:15:45.859Z	miss	lane=drop a capability find (gated built-in skills unseen) laned drop 36; it went to the refresh-spawn-mechanics recipe — a good-find line with a standing check is a recipe line, not a drop
