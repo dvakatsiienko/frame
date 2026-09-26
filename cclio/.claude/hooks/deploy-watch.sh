@@ -28,7 +28,11 @@ while :; do
 done
 
 apps=$(git diff-tree --no-commit-id --name-only -r "$sha" | sed -n 's#^apps/\([^/]*\)/.*#\1#p' | sort -u)
-[ -z "$apps" ] && { echo "no app touched by $short — nothing deploys"; exit 0; }
+# a shared package reaches every app, so a head touching packages/ deploys them all
+git diff-tree --no-commit-id --name-only -r "$sha" | grep -q '^packages/' && apps=$(ls -d apps/*/ | sed 's#apps/\(.*\)/#\1#')
+# an app with no vercel.json has no vercel project (atelier runs local only) — nothing to wait for
+apps=$(for app in $apps; do [ -f "apps/$app/vercel.json" ] && echo "$app"; done)
+[ -z "$apps" ] && { echo "no deployed app touched by $short — nothing deploys"; exit 0; }
 
 for app in $apps; do
   n=0
