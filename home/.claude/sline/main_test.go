@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"os"
@@ -758,5 +759,32 @@ func TestRefreshDueIgnoresEmptyPin(t *testing.T) {
 		At: time.Now().Add(-statusFetchTTL - time.Second).Unix()}}
 	if !refreshDue(old, "DOT-1") {
 		t.Error("past the TTL is due")
+	}
+}
+
+func TestSaveUsageMirrorsTheWeeklyWindow(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "usage.json")
+	limits := &struct {
+		SevenDay *RateLimitWindow `json:"seven_day"`
+	}{SevenDay: &RateLimitWindow{UsedPercentage: 90, ResetsAt: 1790600000}}
+
+	if err := saveUsage(path, limits, time.Unix(1790500000, 0)); err != nil {
+		t.Fatalf("saveUsage: %v", err)
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("no usage file written: %v", err)
+	}
+	var got struct {
+		WrittenAt  int64 `json:"written_at"`
+		RateLimits struct {
+			SevenDay RateLimitWindow `json:"seven_day"`
+		} `json:"rate_limits"`
+	}
+	if err := json.Unmarshal(raw, &got); err != nil {
+		t.Fatalf("usage file is not json: %v\n%s", err, raw)
+	}
+	if got.RateLimits.SevenDay.UsedPercentage != 90 || got.WrittenAt != 1790500000 {
+		t.Errorf("want seven_day 90 %% written at 1790500000, got %s", raw)
 	}
 }

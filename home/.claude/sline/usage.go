@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -216,4 +218,29 @@ func usageSegments(context *ClaudeContext) []string {
 	}
 
 	return segments
+}
+
+// saveUsage mirrors the quota windows to a file, because only the statusline
+// receives them and the boot digest and a night shift pace on the weekly %.
+// every session renders, so the write goes through a temp file and a rename:
+// a reader never sees half a file.
+func saveUsage(path string, limits any, now time.Time) error {
+	data, err := json.Marshal(struct {
+		WrittenAt  int64 `json:"written_at"`
+		RateLimits any   `json:"rate_limits"`
+	}{now.Unix(), limits})
+	if err != nil {
+		return err
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(path), ".usage-*.json")
+	if err != nil {
+		return err
+	}
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		os.Remove(tmp.Name())
+		return err
+	}
+	tmp.Close()
+	return os.Rename(tmp.Name(), path)
 }
