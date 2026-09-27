@@ -61,13 +61,14 @@ default.
 - 🚫 never fix it by adding bytes tickets — it needs sessions, not backlog
 - the honest test of the whole fleet effort: does bytes get touched more
 
-## 🛠️ harness — the home-baked orchestration layer
+## 🛠️ harness — our own coding app
 
 **Wanted, no deadline — planned, not scheduled.** *«i would still prefer a harness that satisfies
-my style 😎 and it's interesting.»* The order (dima, 2026-08-30): investigate first, eval the
-effort, THEN decide build-or-not; eval a simplified version to try before any real build.
-Research: MVP is ~12 lines of bash around `claude -p --resume`. Hold the tension out loud: it is
-the most seductive meta-work on the board.
+my style 😎 and it's interesting.»* The harness is **our own agent app**, in the class of
+conductor, t3 code or pi (a bare terminal harness) — never the build flow, which is the shift
+(FRM-266). The order (dima, 2026-08-30): investigate first, eval the effort, THEN decide
+build-or-not; eval a simplified version to try before any real build. It lives in FRM-43, next to
+the cli project. Hold the tension out loud: it is the most seductive meta-work on the board.
 
 ## 👁️ visibility — seeing what the agents do
 
