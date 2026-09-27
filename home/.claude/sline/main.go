@@ -37,11 +37,6 @@ type ClaudeContext struct {
 	RateLimits *struct {
 		FiveHour *RateLimitWindow `json:"five_hour"`
 		SevenDay *RateLimitWindow `json:"seven_day"`
-		// Per-model weekly windows. Some plans report the weekly quota split by
-		// model instead of as one figure, leaving seven_day absent — without
-		// these the week bar silently vanishes on those plans.
-		SevenDayOpus   *RateLimitWindow `json:"seven_day_opus"`
-		SevenDaySonnet *RateLimitWindow `json:"seven_day_sonnet"`
 	} `json:"rate_limits"`
 	ContextWindow *ContextWindowInfo `json:"context_window"`
 	// Reasoning effort as CC currently has it. Authoritative over settings.json,

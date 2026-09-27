@@ -369,10 +369,10 @@ func TestFormatWindowRollover(t *testing.T) {
 func TestNormalizeRemoteURL(t *testing.T) {
 	cases := map[string]string{
 		"git@github.com:dvakatsiienko/frame.git": "https://github.com/dvakatsiienko/frame",
-		"https://github.com/user/repo.git":          "https://github.com/user/repo",
-		"https://github.com/user/repo":              "https://github.com/user/repo",
-		"ssh://weird/path":                          "",
-		"":                                          "",
+		"https://github.com/user/repo.git":       "https://github.com/user/repo",
+		"https://github.com/user/repo":           "https://github.com/user/repo",
+		"ssh://weird/path":                       "",
+		"":                                       "",
 	}
 	for in, want := range cases {
 		if got := normalizeRemoteURL(in); got != want {
@@ -419,43 +419,6 @@ func TestRepoDirFollowsTheSessionNotTheShell(t *testing.T) {
 	// here as a zero-value context rather than a nil pointer.
 	if got := repoDir(&ClaudeContext{}); got != "" {
 		t.Errorf("repoDir on an empty context = %q, want empty", got)
-	}
-}
-
-func TestWeeklyWindowPrefersGenericThenModel(t *testing.T) {
-	withLimits := func(modelID string, seven, opus, sonnet *RateLimitWindow) *ClaudeContext {
-		context := &ClaudeContext{}
-		context.Model.ID = modelID
-		context.RateLimits = &struct {
-			FiveHour *RateLimitWindow `json:"five_hour"`
-			SevenDay *RateLimitWindow `json:"seven_day"`
-			// Per-model weekly windows. Some plans report the weekly quota split by
-			// model instead of as one figure, leaving seven_day absent — without
-			// these the week bar silently vanishes on those plans.
-			SevenDayOpus   *RateLimitWindow `json:"seven_day_opus"`
-			SevenDaySonnet *RateLimitWindow `json:"seven_day_sonnet"`
-		}{SevenDay: seven, SevenDayOpus: opus, SevenDaySonnet: sonnet}
-		return context
-	}
-
-	generic := &RateLimitWindow{UsedPercentage: 10}
-	opus := &RateLimitWindow{UsedPercentage: 20}
-	sonnet := &RateLimitWindow{UsedPercentage: 30}
-
-	if got := weeklyWindow(withLimits("claude-opus-5", generic, opus, sonnet)); got != generic {
-		t.Errorf("seven_day present: want the generic window, got %+v", got)
-	}
-	if got := weeklyWindow(withLimits("claude-opus-5", nil, opus, sonnet)); got != opus {
-		t.Errorf("opus session without seven_day: want the opus window, got %+v", got)
-	}
-	if got := weeklyWindow(withLimits("claude-sonnet-5", nil, opus, sonnet)); got != sonnet {
-		t.Errorf("sonnet session without seven_day: want the sonnet window, got %+v", got)
-	}
-	if got := weeklyWindow(withLimits("claude-haiku-4-5", nil, opus, sonnet)); got != nil {
-		t.Errorf("unmatched model: want no window, got %+v", got)
-	}
-	if got := weeklyWindow(&ClaudeContext{}); got != nil {
-		t.Errorf("no rate_limits at all: want no window, got %+v", got)
 	}
 }
 

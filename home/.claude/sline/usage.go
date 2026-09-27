@@ -152,31 +152,6 @@ func contextTokens(w *ContextWindowInfo, pct float64) string {
 	return fmt.Sprintf("~%dk", int(math.Round(float64(tokens)/1000)))
 }
 
-// weeklyWindow picks the seven-day quota to draw. Plans that split the weekly
-// allowance per model leave seven_day empty and fill the model-specific field
-// instead — falling back to the window matching this session's model shows the
-// bar those plans would otherwise lose entirely. One bar either way; the label
-// stays "week" because it is still the week's quota, just scoped to the model.
-func weeklyWindow(context *ClaudeContext) *RateLimitWindow {
-	limits := context.RateLimits
-	if limits == nil {
-		return nil
-	}
-	if limits.SevenDay != nil {
-		return limits.SevenDay
-	}
-
-	modelID := strings.ToLower(context.Model.ID)
-	switch {
-	case strings.Contains(modelID, "opus"):
-		return limits.SevenDayOpus
-	case strings.Contains(modelID, "sonnet"):
-		return limits.SevenDaySonnet
-	}
-
-	return nil
-}
-
 // usageSegments renders subscription quota and context window usage. Every field is
 // server-provided; when none are present nothing is emitted rather than
 // falling back to a client-side estimate.
@@ -194,7 +169,7 @@ func usageSegments(context *ClaudeContext) []string {
 		if segment := formatWindow("5h", limits.FiveHour); segment != "" {
 			segments = append(segments, segment)
 		}
-		if segment := formatWindow("week", weeklyWindow(context)); segment != "" {
+		if segment := formatWindow("week", limits.SevenDay); segment != "" {
 			segments = append(segments, segment)
 		}
 	}
