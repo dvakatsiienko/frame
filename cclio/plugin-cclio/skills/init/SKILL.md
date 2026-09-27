@@ -49,8 +49,8 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
   skill's): never ingest a CST addressed to another agent — report whose it is and leave it.
 - active run id from the last CST META → continue it, never mint one mid-story. a CST marked
   FROZEN is not the active one.
-- the digest lists live sessions and open `coder/*` prs; a coder alive with one → arm the merge monitor: a persistent
-  `Monitor` polling `gh pr list --state merged --search 'head:coder/'` every 60 s and running
+- the digest lists live sessions and open `coder/*` prs; a coder alive with one → arm the merge monitor: a
+  `Monitor` (`timeout_ms` at the 30-min max, re-armed on every expiry notice — `persistent` is gone since 2.1.271) polling `gh pr list --state merged --search 'head:coder/'` every 60 s and running
   `gprune -d` on each new merge — **only while the owning coder is idle** (`claude agents --json`
   status; busy → wait a tick, retry): a merge that races the coder's tail push had its worktree
   removed under a live push twice on 2026-09-08. dima merges, cclio cleans; the monitor dies
