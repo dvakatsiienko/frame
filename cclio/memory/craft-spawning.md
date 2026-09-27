@@ -68,6 +68,7 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 
 - **`--effort` is honoured** on `claude --bg` — pass it every time, it is a flag, never inherited.
   a `Workflow` `agent()` call honours its per-call `effort` too (2.1.258).
+- ✅ **a user-only skill runs when the spawn prompt starts with it** — `claude --bg '/run-skill-generator <app> …'` generated 9 run skills with no hands (2026-09-27, cc 2.1.283). the same door as `/x:crew-coder`: a skill a model cannot load is typed by the spawn instead; a `SendMessage` carrying the slash text still does not expand.
 - ✅ **`claude --bg '<prompt>'` RUNS the prompt** (re-verified 2.1.258; it came up idle on 2.1.239).
   `SendMessage` is still how you brief it later, and the only way to attach `notify_when_idle`.
 - ⚠️ **a peer answering in plain prose reaches nobody** — only a message call travels; say so
