@@ -1,6 +1,6 @@
 {
   "name": "x-cw",
-  "version": "0.2.39",
+  "version": "0.2.40",
   "description": "the x skill set curated for cw (claude desktop) — symlinks into plugin-x, plus cw-only skills as real dirs",
   "author": {
     "name": "Dima Vakatsiienko",
