@@ -39,6 +39,7 @@
       "!home/.claude/themes",
       "!**/.claude/*.json",
       "!**/.claude-plugin",
+      "!**/skills-lock.json", // the `skills` cli's lockfile, same class
 
       // Same class, different author: the shelf holds what the AGENTS produce
       // — transcript metadata, flaw logs. Written by tools, read by tools, and

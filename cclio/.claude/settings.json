@@ -1,15 +1,4 @@
 {
-  "extraKnownMarketplaces": {
-    "cclio": {
-      "source": {
-        "source": "directory",
-        "path": "/Users/dima/frame/cclio/plugin-cclio"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "cclio@cclio": true
-  },
   "hooks": {
     "SessionStart": [
       {
@@ -21,5 +10,24 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "cclio@cclio": true,
+    "neuroarxiv@neuroarxiv": true
+  },
+  "extraKnownMarketplaces": {
+    "cclio": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/dima/frame/cclio/plugin-cclio"
+      }
+    },
+    "neuroarxiv": {
+      "source": {
+        "source": "github",
+        "repo": "UditAkhourii/neuroarxiv"
+      },
+      "autoUpdate": true
+    }
   }
 }
