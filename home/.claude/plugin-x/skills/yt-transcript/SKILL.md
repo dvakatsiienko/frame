@@ -126,7 +126,7 @@ jq -n --slurpfile m "$WORK/meta.json" --arg url "$URL" --arg lang '<the one code
     upload_date: $m[0].upload_date, source: "captions", caption_lang: $lang, fetched_at: $at, mode: $mode}' \
   > metadata.json
 
-rm -rf "$WORK"
+trash "$WORK"
 ```
 
 📌 **Pass the third argument** — it repairs mangled identifiers (`Claude MD`, `cloud.md` →
@@ -145,10 +145,11 @@ backticks.
 Fetch through step 6, then:
 
 ```bash
-cd "$SHELF" && rm -rf "$DIR"
+trash "$DIR"
 ls "$SHELF"
 ```
 
+📌 `trash`, never `rm -rf` on a variable path: claude code's safety check refuses `rm -rf "$DIR"` outright (2026-09-27), and trash keeps the delete recoverable.
 Delete only AFTER the transcript is in the conversation; the `ls` is the receipt — confirm the
 dir is gone. A dir whose `metadata.json` says `mode: transit` is a transit that died
 before this step — delete it on sight and say so; `mode: fetch` dirs are kept on purpose. 🚫 Never delete anything but this video's dir. 🚫 `transit` never applies in recall.
