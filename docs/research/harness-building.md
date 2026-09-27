@@ -2,8 +2,8 @@
 researched: 2026-08-21
 sources-current-as-of: 2026-08-21
 refresh-when: claude code minor version bump, or 60 days
-ticket: DOT-189
-dies-when: the harness ships and the useful parts are distilled into its docs
+ticket: FRM-43
+dies-when: FRM-43's build-or-not verdict lands; the parts that fit the night shift are distilled into cclio:shift at m1 first
 ---
 
 # Building a custom agent orchestration harness on Claude Code / Agent SDK

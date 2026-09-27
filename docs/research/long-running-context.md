@@ -1,7 +1,7 @@
 ---
 dies-when: distilled into the cclio:shift skill and the crew briefs, then delete
 ---
-Ticket: none
+Ticket: FRM-266
 
 # long-running context — keeping precision across compaction
 
