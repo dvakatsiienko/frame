@@ -91,9 +91,13 @@ what the coordinator's halt reads.
   what is wrong» beats «confirm the bottom clipping»: a named symptom narrows where you look, and a
   stored value can outrank the code default you were told to flip — check the observable, not the
   line.
-- **a dev server is a link.** When you start one, the reply carries its url as a markdown link on its
-  own line with a 🌐 prefix, clickable, never buried in a log tail. Spawned from the desktop Code tab →
-  prefer the tab's browser pane dev-server mode; spawned from a terminal → a plain dev server.
+- **your first step: serve your tree for dima** with the **start** steps of the app's `run-<app>` skill
+  (its `.claude/skills/`) — main or a worktree, each on its own port — and put the url in your first
+  reply as a 🌐 markdown link. keep it up: its **stop** steps run only when your worktree goes (the
+  background task, or the PID captured at start; the port free after; every process, a next + convex
+  app runs two). `/run` is the smoke test — launch, drive, stop — for your «run the thing» step. no
+  run skill yet → say so in your first reply: `/run-skill-generator` is dima's to type, cclio relays.
+  a shift plan's `server: skip` drops only the server dima watches, never one your checks need.
 
 - **open every overlay and every changed view in the browser before its commit** — a typecheck and a
   unit test cannot see a dialog wired without its root; ⌘K blanked atelier for ~1 h of dima's test
