@@ -7,7 +7,7 @@
  * ?   package-json-shape .          # the same, said out loud (lefthook uses this)
  * ?   package-json-shape ~/projects/bytes
  * ?
- * ? The rules live one import away in `script/lib/package-json-shape.ts`, beside
+ * ? The rules live one import away in `../lib/package-json-shape.ts` — inside the plugin, so the cached copy on a session's PATH finds them too, beside
  * ? the tests that hold them; this file is argv, printing and the exit code. The
  * ? convention it enforces is
  * ? `plugin-x/skills/guide-conventions/conventions/package-json.md` — the check
@@ -28,7 +28,7 @@ import {
     checkVersionAgreement,
     findManifestPaths,
     readManifest,
-} from '../../../../script/lib/package-json-shape.ts';
+} from '../lib/package-json-shape.ts';
 
 const root = resolve(process.argv[2] ?? '.');
 // ? Extra args narrow the check to those manifests — a pre-commit hook passes

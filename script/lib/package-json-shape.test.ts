@@ -12,7 +12,7 @@ import {
     readWorkspaceGlobs,
     scriptSection,
     sortScriptNames,
-} from './package-json-shape.ts';
+} from '../../home/.claude/plugin-x/lib/package-json-shape.ts';
 
 describe('the rules', () => {
     it('reads the scripts block as the engineering loop, not the alphabet', () => {
