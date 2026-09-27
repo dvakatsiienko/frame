@@ -65,6 +65,27 @@ against a [verified] row.
 
 ## last run
 
+**run #3 — 2026-09-27, cc 2.1.283** (previous: 2.1.258). dima approved the vectors as written
+(the two added for the night shift, FRM-266: compaction hooks, the stale-spare AGENTS.md skip).
+probes: 1 `--bg` opus session (+1 workflow agent inside it), 1 haiku `-p` session; subagent rows
+read off the run's own agent.
+
+- **no [verified] row flipped.** re-verified on 2.1.283: `--bg` runs its prompt · `--model` +
+  `--effort` on every record (`claude-opus-5-5`) · registry, `respawnFlags`, daemon + spare
+  anatomy · bg stack from launch cwd · subagent cwd = parent's shell cwd · subagent inherits
+  the cclio stack (second build in a row, still [volatile]) · `ListAgents`/`Workflow` absent in a
+  subagent · effort inherited by an opus subagent · workflow per-call effort · `claude stop`.
+- ✅ **compaction hooks verified end to end** (new §11b): `SessionStart` matcher `compact` fires
+  and its stdout lands in the compacted context; `PostCompact` carries `trigger` +
+  `compact_summary`; `PreCompact` carries `trigger` + `custom_instructions`.
+- **the stale spare**: not reproducible cheaply — the daemon is transient, so no day-old spare
+  existed. §11 row records it; the preflight stays.
+- **changelog rows added**: `--bg` trust check (exits non-interactive in an untrusted dir) ·
+  `Monitor` 30-min deadline cap · `omitClaudeMd` · `CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS` ·
+  AGENTS.md as a first-class file · delivery notices for held messages.
+- stale line fixed: «the settings default is fable» → `opus[1m]`.
+- not re-run: worktree isolation, the `kill <pid>` route.
+
 **run #2 — 2026-09-02, cc 2.1.258** (previous: 2.1.251). all five groomed vectors executed: 2 bg
 probes, 3 subagents, 2 one-agent workflows, both stop routes.
 
