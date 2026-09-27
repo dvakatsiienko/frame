@@ -78,7 +78,8 @@ echo "-- stuck reminders (raise every one in the opening board) --"
 grep '^⏰📌' "$HOME/frame/cclio/memory/_reminders.md" 2>/dev/null || echo "none"
 
 echo "-- fleet: live sessions · worktrees · coder prs --"
-live=$(jq -r '.cwd // empty' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort | uniq -c | sed 's/^ *//')
+# the name is what SendMessage and the board use; a cwd count alone hid a peer editing frame (2026-09-27)
+live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
 [ -n "$live" ] && echo "$live" || echo "no live sessions registered"
 wt=$(git -C "$HOME/projects/bytes" worktree list 2>/dev/null | grep -v '^/Users/dima/projects/bytes ' )
 [ -n "$wt" ] && echo "$wt" || echo "no bytes worktrees"
