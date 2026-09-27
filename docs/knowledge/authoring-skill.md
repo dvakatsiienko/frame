@@ -11,6 +11,8 @@ conventions for the skills in `home/.claude/plugin-x/skills/`. `cw` reads the sa
 `home/.claude/plugin-x-cw/` symlinks into them and ships as the `x-cw` plugin, so a
 skill is written once and every surface gets the edit.
 
+📌 **a plugin runs from its cache copy, so everything its `bin/` and skills import lives inside the plugin dir.** `package-json-shape` imported `../../../../script/lib/…`, which resolves only in the frame checkout; from the desktop app's PATH (the cache) it died with `ERR_MODULE_NOT_FOUND` and blocked every `package.json` commit in bytes. the rules moved to `plugin-x/lib/` (`eb47811f`, 2026-09-27).
+
 ⚠️ **this file is the local half.** the writing craft — pointers, information hierarchy,
 completion criteria, leading words, pruning — is `writing-for-agents`, and it is good. do not
 restate it here. **read the skill, then use this file for what it does not know: our budget, our

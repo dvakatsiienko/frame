@@ -1,0 +1,6 @@
+# flawlog · 2026-09-27 · run `cc·20260927·shift` · flow review + cleanup day
+
+- fixed: boot peer check skipped: the digest printed a live session in ~/frame by cwd count only, i edited frame without naming it on the board · cost: an unowned package.json + import/vorssaint/ surfaced mid-install · lesson: the digest prints each live session registry name beside its cwd, so the board names the peer (needs code in boot-prefetch.sh)
+- fixed: unquoted $P as a pathspec list in zsh — one word, commit refused; the method-silent-failures line names this exact shape (2nd sighting in 2 days) · cost: one retry + a trashed msg file · lesson: a guard hook like the zsh-equals one (a $VAR followed by a space-separated use in git add/commit) — needs code
+- fixed: `git commit … >/dev/null 2>&1` hid a hook failure (biome on the new skills-lock.json) · cost: one blind retry · lesson: x:cmt says a commit is never silenced — its hook output is the only error channel (skill line, needs the x bump)
+- the deploy filter counts apps/<app>/.claude/** as an app change: a skills-only push (bytes c826bc47) deployed 6 apps to prod; my «likely nothing deploys» was an inference sold as a forecast · cost: 6 prod deploys of markdown · lesson: BYT-106 step 2 — the filter skips .claude/** and doc-only paths; until then a docs/skills-only bytes commit waits to ride a code push

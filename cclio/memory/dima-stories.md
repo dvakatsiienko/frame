@@ -10,14 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## the gate rethink · 2026-09-12
-He looked at a measured, working 1,300-line review gate — 20 fixture cases, every path proven red
-and green on real prs — and said «somewhere from yesterday i lost track of how pr merge protection
-is driven… overcomplicated». The rethink's native replacement (github approvals + thread
-resolution) died on one probe: an app's approval is recorded and counts for nothing. The same
-rethink found the 887 lines to delete — the answer lane, 5 of the 12 defects. The felt sense was
-right about the size and wrong about the door; the fix was a probe, not a rewrite. → BYT-94
-
 ## «is shortcuts as useless as Reminders?» · 2026-09-14
 Three research rounds had produced a ranked list of apple shortcuts for his profile. He read it and said all of them looked useless — the top pick would append to an inbox he keeps structured by hand — and asked a different question: is the feature itself Reminders-grade, present but not good? The fourth round, on what power users actually conclude, said keep-minimal: policy ceiling, yearly reliability bugs, worth it only for the phone's action button. The felt sense was about the category, not the list. Same day, smaller: «you will forget to disable impeccable» — right about who owns a toggle before the rule was written. → DOT-237 apple-shortcuts vector, `craft-spawning`
 
@@ -81,3 +73,6 @@ A reshape fork called the `dpatch` handoff token retired. I «corrected» it: `L
 
 ## «what is this section named then?» · 2026-09-26
 The atelier map had just been drafted and 28 of its lines had passed a scripted drive. He opened the studio and sent screenshots with arrows: the top half of the rail had no title while TAKES did, the selected take's ring was cut at the top, the sliders kept the plain arrow cursor, Tab stopped on the panel dividers. None of our checks looked at any of it; the map's lines were about behaviour, and all four were about how a screen reads. Every screenshot became a check or a rule the same day — the essentials scripts, the cursor set, one tab stop per widget — and the checks then found six more of the same kind on their first run. His eye was the spec the tools did not have yet. → `x:browser-headless` essentials, `habit-guide-fold`
+
+## «a run skill would pick up run-atelier and hang» · 2026-09-27
+The built-in `run` and the generated `run-<app>` skills had just been adopted, and `run-atelier` said «leave the server running» so dima could watch a coder's tree. He asked: «if a built-in run skill is designed to only do a sanity check … then a skill like run-atelier would interfere with it … or am I getting something wrong?» He was right: `run` defers to any project skill whose description says it launches the app, so every sanity pass would have left a server behind — the same shape as the orphan vite a coder had left on `:5173` the day before. The fix split the two jobs: `run-<app>` stays neutral (start, drive, stop) and the keep-alive moved into the coder's contract. His felt sense read the two skills as one system before either of us had run them together. → `crew-coder`, `run-atelier`, `run-chords`
