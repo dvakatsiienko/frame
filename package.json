@@ -9,6 +9,8 @@
         "badges:sync": "node ./script/badges-sync.ts",
         "frame:link": "node ./script/frame-link.ts",
         "toolchain:sync": "node script/toolchain-sync.ts",
+        "vorssaint:export": "defaults export com.vorssaint.utils - | plutil -convert xml1 -o import/vorssaint/com.vorssaint.utils.plist -",
+        "vorssaint:import": "osascript -e 'quit app \"Vorssaint\"' && defaults import com.vorssaint.utils import/vorssaint/com.vorssaint.utils.plist && open -a Vorssaint",
         "github:agent-token": "node ./script/github-agent-token.ts",
         "autoclean-screenshots:build": "mkdir -p ./schedule/jobs/x-autoclean-screenshots/bin && swiftc -O ./schedule/jobs/x-autoclean-screenshots/main.swift -o ./schedule/jobs/x-autoclean-screenshots/bin/x-autoclean-screenshots && codesign --force --sign - --identifier com.dima.x-autoclean-screenshots ./schedule/jobs/x-autoclean-screenshots/bin/x-autoclean-screenshots",
         "monitor-hotkey:keycodes": "node ./script/monitor-hotkey-keycodes.ts",
