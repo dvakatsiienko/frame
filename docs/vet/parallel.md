@@ -82,3 +82,20 @@ lanes: ws = built-in WebSearch · fast = `--mode fast` · agentic = `--mode agen
 - 2026-09-26 · research core · cursor pointer + error boundaries (q2) · 3/5 (added the thumb → grab nuance opus missed; no versions, a playwright snippet despite «decided against») vs opus 4/5 (tailwind 4.3.3 guide + restore snippet, react-error-boundary 6.1.6 d.ts, react 19 root options) · ~3 min · 10.4k chars · ¢ unsettled
 - 2026-09-27 · research core · cc auto-compact + long-running harness state (vectors 1–2 of long-running-context) · 4/5 (vector 1 near-complete: 967k, hook fields, 5k skill cap, env vars, the task list persists; added the openai codex 25 h case; wrong that the docs define no «Compact Instructions» `CLAUDE.md` section; missed context anxiety, manus, all papers, every fleet fact) vs my own lane 5/5 (docs read raw via `.md` urls, a local `compact_boundary` tally, 5 papers) · 274 s · 9.9k chars · ~4¢ (upper bound)
 - 2026-09-27 · research core · BYT-61 monorepo in the ai era for dima's setup · hit, 4/5 (sourced + dated, the right verdict and the one change; missed the fleet's own FRM-261 evidence, which cclio added) · 183 s · 9.8k chars · ¢ not read
+
+## monitor round — 2026-09-27 (dima: «let's test at full scale and measure the costs»)
+
+the question: do monitors catch the changes we care about — a github issue's state, a comment, a label, a commit message — or only headline news? 10 monitors on top of the 4 live watches; graded on 2026-10-01 against ground truth. balance before: 462¢; creating the ten: 3¢ pending.
+
+- `N1-npm-cc` · 1d · `monitor_4c4fac3b600c48f09211dbbda335d804` · truth: a claude code release lands most days → should fire within 1–2 d
+- `N2-next-release` · 1d · `monitor_2039edea86544b4db53f045da7a4edc2` · truth: next.js ships canaries near-daily → should fire
+- `N3-anthropic-news` · 1d · `monitor_25a13688af674c1280cf49aa12ba6b8d` · truth: a news post most weeks → likely fires by 10-01
+- `T1-issue-closed` · 6h · `monitor_d814884021fb479eb9bc70dfa0f540f0` · truth: frame#48 closes 09-28 → must fire; latency measured at 6h
+- `T2-issue-comment` · 6h · `monitor_9bc8030386ed4fa8893986efc688a8c7` · truth: a comment on frame#48 on 09-28 → must fire
+- `T3-issue-label` · 6h · `monitor_4ced6e48cd954abaab0325261ab5e511` · truth: a label added to frame#48 on 09-28 → must fire (the subtle one)
+- `T4-commit-msg` · 1d · `monitor_1381a44796ca40f79e00275885ec0d72` · truth: the first frame commit on 09-28 carries canary-monitor-ping → must fire
+- `T5-renovate-pr` · 1d · `monitor_882342a5e21645c8a18372ce525e40a7` · truth: bytes gets its monday minors pr 09-28 09–12 kyiv if minors are pending → check gh for truth
+- `T6-semver` · 1d · `monitor_c0a2d27fc68343b7bd3689555380db03` · truth: true only if pnpm ≥ 12.4.0 ships; `npm view pnpm time` is the truth
+- `T7-negative` · 1d · `monitor_001f089b8fbb4ada989f0a1062b99b80` · truth: never happens → any event is a false positive
+
+grading: per monitor — fired (y/n), latency from the real event, false positives, and the balance delta over the window. a monitor that never fires on a real event is a miss, never «quiet».

@@ -39,6 +39,8 @@ Store contract: the `remind` skill. Both tiers die only when Dima drops them.
 
 
 
+⏰📌 🔬 **monitor canary day 2026-09-28, at boot** — on [frame#48](https://github.com/dvakatsiienko/frame/issues/48): post one comment, add the `question` label, close it; put `canary-monitor-ping` in the first frame commit body. then on 2026-10-01 grade the 10 monitors in `docs/vet/parallel.md` (monitor round): fired · latency · false positives · the balance (462¢ before). dies when graded — set 2026-09-27
+
 ⏰ 🔬 parallel vet, one week to 2026-10-01 — every «research X» runs `parallel-cli research run --processor core` (via `script/op-run.sh`) FIRST, an opus agent second, both graded; every lookup that WebSearch misses gets a `parallel-cli search --mode advanced` retry; the next list-shaped ask tries `findall`, the next url-that-returns-a-shell tries `extract`, one github-issue reminder tries `monitor`. every round appends one line to `docs/vet/parallel.md` (its vet log): date · tool · ask · hit · seconds · chars in ctx · ¢ (balance before/after, settled later). on 10-01: adopt as a door, or drop. dima 2026-09-24: «decide based on data not guesses» — set 2026-09-24
 
 
