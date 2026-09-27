@@ -15,3 +15,6 @@
 2026-09-26T14:22:40.498Z	miss	lane=cclio:init offered a disable-model-invocation skill mid-session; fixed: skill-route.ts drops user-only skills
 2026-09-26T14:22:48.493Z	miss	lane=x:art-kit ingest of diorama-checkpoint-1 routed to art-kit 0.88 — the run name carried «diorama», task was a handoff ingest
 2026-09-26T18:39:18.912Z	ok	afternoon picks fit: x:cmt ⚠ on commit asks, x:guide-ui-ux on ui asks, x:product-docs on map asks; misses were recorded live
+2026-09-27T18:14:12.002Z	miss	lane=x:humanize picked twice for questions about INSTALLING humanize, not rewriting text
+2026-09-27T18:14:12.387Z	miss	lane=x:handoff-ingest picked for a question to a peer session, not a handoff
+2026-09-27T18:14:12.523Z	ok	x:pm, x:guide-code, x:cmt, x:notes, cclio:halt picks were right today

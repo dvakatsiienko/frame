@@ -9,10 +9,10 @@
             "what": "the boot digest lanes every inbox item (ticket · fold · flowlog · answer · drop) before cclio parses it"
         },
         "skill-router": {
-            "since": "2026-09-26",
+            "since": "2026-09-27",
             "state": "vetting",
-            "verdicts": 17,
-            "misses": 10,
+            "verdicts": 20,
+            "misses": 12,
             "what": "the UserPromptSubmit hook names the skills a prompt should load",
             "lanes": {
                 "x:guide-code": {
@@ -50,31 +50,39 @@
                 "x:art-kit": {
                     "hit": 0,
                     "total": 1
+                },
+                "x:humanize": {
+                    "hit": 0,
+                    "total": 1
+                },
+                "x:handoff-ingest": {
+                    "hit": 0,
+                    "total": 1
                 }
             }
         },
         "flawlog-lanes": {
-            "since": "2026-09-26",
+            "since": "2026-09-27",
             "state": "vetting",
-            "verdicts": 19,
-            "misses": 15,
+            "verdicts": 23,
+            "misses": 17,
             "what": "every flawlog line laned memory · rule · story · ticket · drop before the halt flush (the coder retro is a separate, future flow)",
             "lanes": {
                 "ticket": {
                     "hit": 0,
-                    "total": 2
+                    "total": 4
                 },
                 "rule": {
-                    "hit": 1,
-                    "total": 4
+                    "hit": 2,
+                    "total": 5
                 },
                 "story": {
                     "hit": 0,
                     "total": 2
                 },
                 "drop": {
-                    "hit": 0,
-                    "total": 4
+                    "hit": 1,
+                    "total": 5
                 },
                 "memory": {
                     "hit": 0,
