@@ -1,7 +1,8 @@
 #!/bin/bash
 # cclio boot digest — every check the boot ritual needs, one run, one status line per check.
 # fires as the SessionStart hook AND by hand from /cclio:init when the last digest is stale.
-# list-only: never ingests, never deletes. a check that cannot run prints FAIL, never silence —
+# list-only, with one write: a clean main that is only behind origin gets an ff-only pull + install.
+# never ingests, never deletes. a check that cannot run prints FAIL, never silence —
 # an agent reading a digest cannot tell a skipped check from a passed one.
 # BOOT_STRICT=1 → exit 1 on any FAIL (the by-hand mode); the hook mode always exits 0.
 
@@ -98,11 +99,35 @@ jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
   | "apps lane: \(length) apps · last marked \($m) · " + (if $m < $monday then "DUE (a monday passed) — pnpm skill:evergreen-apps" else "next monday" end)' \
   "$HOME/frame/cclio/evergreen/sources.json" || fail "apps lane index unreadable"
 
-echo "-- repos vs origin (behind-only → loot as a freebie; ahead+behind → propose the rebase) --"
+echo "-- repos vs origin (behind-only on a clean main → pulled here; anything else → the reason it was not) --"
 for repo in "$HOME/frame" "$HOME/projects/bytes"; do
-  git -C "$repo" fetch -q 2>/dev/null || fail "fetch failed in $(basename "$repo")"
+  name=$(basename "$repo")
+  git -C "$repo" fetch -q 2>/dev/null || { fail "fetch failed in $name"; continue; }
   counts=$(git -C "$repo" rev-list --left-right --count HEAD...@{upstream} 2>/dev/null)
-  echo "$(basename "$repo"): ahead ${counts%%	*} · behind ${counts##*	}"
+  ahead=${counts%%	*}; behind=${counts##*	}
+  if [ "$behind" = 0 ]; then
+    [ "$ahead" = 0 ] && echo "$name: in sync" || echo "$name: ahead $ahead, push pending"
+    continue
+  fi
+  branch=$(git -C "$repo" branch --show-current)
+  if [ "$branch" != main ] || [ "$ahead" != 0 ] || [ -n "$(git -C "$repo" status --porcelain --untracked-files=no)" ]; then
+    echo "$name: behind $behind, NOT pulled — branch $branch · ahead $ahead · tracked changes: $(git -C "$repo" status --porcelain --untracked-files=no | wc -l | tr -d ' ')"
+    continue
+  fi
+  old=$(git -C "$repo" rev-parse HEAD)
+  git -C "$repo" pull -q --ff-only 2>/dev/null || { fail "ff-only pull refused in $name"; continue; }
+  echo "$name: pulled +$behind"
+  git -C "$repo" log --format='  - %s' "$old..HEAD"
+  git -C "$repo" diff --quiet "$old" HEAD -- pnpm-lock.yaml && continue
+  (cd "$repo" && pnpm install --frozen-lockfile --silent >/dev/null 2>&1) || { fail "pnpm install failed in $name after the pull"; continue; }
+  echo "  installed (lockfile moved)"
+  # a vite dev server keeps a failed import until it restarts (bytes #102), so every job served from this repo restarts
+  for plist in "$HOME"/Library/LaunchAgents/com.dima.*.plist; do
+    wd=$(plutil -extract WorkingDirectory raw "$plist" 2>/dev/null) || continue
+    [[ "$wd" == "$repo"/* ]] || continue
+    label=$(basename "$plist" .plist)
+    launchctl kickstart -k "gui/$(id -u)/$label" && echo "  restarted $label" || fail "kickstart $label failed"
+  done
 done
 
 echo "-- ci + vercel reds, 48 h (ci-watch.sh --boot; --watch is the in-session monitor) --"
