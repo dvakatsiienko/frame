@@ -55,6 +55,7 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   checkout and a restart of every live dev server it feeds** (`launchctl kickstart -k gui/$(id -u)/<label>`) —
   a pull alone left atelier's `:5180` on a vite «failed to resolve import» overlay for half an hour
   (bytes #102, 2026-09-26); vite keeps a failed resolution until it restarts
+  then `/run` on every app the merge touched — the sanity pass that would have caught #102's dead import in a minute.
 - **the pr body is the squash-merge commit message** — it describes what landed, never the plan,
   and carries no session-url trailer (the commit contract bans it; the harness's pr-body ask would
   smuggle it in through the squash)

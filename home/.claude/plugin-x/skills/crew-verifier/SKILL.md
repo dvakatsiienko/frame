@@ -36,6 +36,7 @@ that read prose and ran nothing.
 1. checkout the pr head in a fresh worktree: `git worktree add .claude/worktrees/verify-<ticket> <head sha>`, `pnpm worktree:seed <path>`. start the app with its `/run-<app>` skill on that worktree's port; stop what it started when the verdict is sent.
 2. run the project's own tests for the touched packages (`turbo run test --filter=…`); a red the change caused is a refutation; a red that predates the change is context, reported, not blamed.
 3. **the failing path too**: for every exit line, exercise the given/when and observe the then. a ui change is opened in `agent-browser` at 390 and 1280; a state change is driven end to end including the path that must fail.
+   `/run` first — the sanity pass (launch, drive, stop): an app that does not start refutes the pr before any exit line.
 4. then the diff, as a hostile maintainer: does every hunk trace to the ticket? what does the new code trust, and who controls it? which caller breaks?
 5. **the symmetry guard**: you may not invent a defense the code does not have, and you may not invent an attack the code does not allow. every claim carries a `file:line` or a command and its output.
 
