@@ -10,6 +10,8 @@ description: >
 
 # writing-for-humans
 
+The front door to humanize (dima, 2026-09-27: «writing-for-humans is an alias for humanize»): every run loads `humanize:ai-check` AND `humanize:humanize`, no condition, any length.
+
 The output is a message a real person reads without smelling a robot. Dima is the validator of
 record; detectors are directional signals only.
 
@@ -25,10 +27,10 @@ record; detectors are directional signals only.
    [references/dima-voice.md](references/dima-voice.md) first — few-shot samples and the tell
    list. Rewriting an AI-shaped draft never fully escapes the footprint; drafting in-voice from
    the start is the lever this skill exists for.
-4. **Audit with the tool, every draft, any length.** Load `humanize:ai-check` with the Skill tool
-   and score the draft against its rubric — a rubric run in your head is not an audit. Any flag →
-   load `humanize:humanize` and repair the flagged spots with its levers, targeted, not wholesale.
-   One audit → repair round; a second only when the first found heavy tells.
+4. **Check, then humanize — both, every draft, any length.** Load `humanize:ai-check` with the
+   Skill tool and score the draft. Then load `humanize:humanize` and run its pass: repair every
+   spot the check scored 1 or higher, targeted, not wholesale; nothing scored → the pass still
+   runs and says «no changes». Re-score once after the repair.
 5. **Verify when the message matters** — job mail and anything with an audience. two lanes: `humanize:ai-check`'s forensic score first, then the manual
    gold gate — [pangram.com](https://www.pangram.com) (2,000 words/day free, the accuracy leader),
    run by Dima's hand, never automated. print lane 1, hand the draft to Dima; disagreement between
@@ -37,9 +39,8 @@ record; detectors are directional signals only.
    himself; the lane earns its keep after a few real runs, or goes.) This step alone may be
    skipped for a two-line chat reply; step 4 never is.
 6. **Hand over fenced.** The final draft ships in a copy fence with a destination ribbon.
-   Done when the reply's skills line names `humanize:ai-check` (plus `humanize:humanize` when it
-   flagged anything) — a missing name means the audit did not run — and the draft reads like the
-   samples.
+   Done when the reply's skills line names both `humanize:ai-check` and `humanize:humanize` — a
+   missing name means the pipeline did not run — and the draft reads like the samples.
 
 ## Register notes
 
