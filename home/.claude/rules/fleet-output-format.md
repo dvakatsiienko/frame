@@ -159,9 +159,10 @@ file he names.
 ## questions, options, and the ➡️ cta
 
 - **two options max** per question. give the context needed to choose fast, and no more.
-- **a questionnaire dima fills in holds one item per line**: the item, the ➡️ recommendation, and
-  the line's end free for his `←`. a filled row of `a · b · c` reads badly to him while he answers,
-  and to you when his answers come back as a prompt (dima, 2026-09-27).
+- **a questionnaire dima fills in holds one item per line**, numbered `1.` `2.` (never `1 ·`): the
+  item, the ➡️ recommendation, and the line's end free for his `←`. a filled row of `a · b · c`
+  reads badly to him while he answers, and to you when his answers come back as a prompt (dima,
+  2026-09-27).
 - every question round ends with a ➡️ recommendation.
 - **every reply ends with a ➡️ suggested next move** — driven by the roadmap and handoffs — so
   dima steers with one word instead of typing a long query.
