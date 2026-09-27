@@ -214,6 +214,7 @@ body's ticket-id-pattern hits are counted and each one is intended. Say the hash
 - Sanity check before every commit: leftover debug/test code, commented-out code, stray
   debuggers → pause, report, resume when resolved.
 - Pre-commit hook failure → never self-fix; summarize and stop.
+- a commit's output reaches you whole — the hooks print the only error channel there is. `>/dev/null` on a commit turned a biome refusal into a bare «exit 1» (2026-09-27).
 - in a shared tree, push the sha you counted — `git push origin <sha>:<branch>` — never the moving
   `HEAD`: a peer's commit landed 18 s before a push and went out unchecked (2026-09-26).
 - stage the paths the plan names, never `git add -A`, and commit with a pathspec
