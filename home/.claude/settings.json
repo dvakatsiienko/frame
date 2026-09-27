@@ -153,7 +153,8 @@
     "x@x": true,
     "linear-cli@linear-cli": false,
     "impeccable@impeccable": false,
-    "typesafe@typesafe-ai": true
+    "typesafe@typesafe-ai": true,
+    "humanize@humanize": true
   },
   "extraKnownMarketplaces": {
     "claude-code-warp": {
@@ -193,6 +194,13 @@
         "source": "github",
         "repo": "typesafe-ai/skills"
       }
+    },
+    "humanize": {
+      "source": {
+        "source": "github",
+        "repo": "harshaneel/humanize"
+      },
+      "autoUpdate": true
     }
   },
   "outputStyle": "output-fun",

@@ -158,10 +158,6 @@ same message («hold #61») subtract from the round.
   on vet). the digest line per scope is
   the lockfile diff (`git diff -- '**/skills-lock.json'` in bytes, a byte-compare for global);
   a moved hash names the skill.
-  **the humanize pair rides this lane**: `plugin-x/skills/humanize` + `humanize-audit` are 1:1 copies of
-  `harshaneel/humanize` at the commit their SKILL.md names. `gh api repos/harshaneel/humanize/commits/main
-  --jq .sha` differs → diff upstream against the copies, take what changed, bump the commit line; one
-  digest line either way.
 - **plugins lane, same weekly slot** — a marketplace refreshes itself only where
   `known_marketplaces.json` says `autoUpdate: true` (`x`, warp today); the rest, and a disabled
   plugin, sit still (measured 2026-09-16: impeccable cached 4.2.1, upstream 4.3.1, disabled).

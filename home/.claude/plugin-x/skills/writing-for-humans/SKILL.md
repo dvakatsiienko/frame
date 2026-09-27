@@ -25,12 +25,16 @@ record; detectors are directional signals only.
    [references/dima-voice.md](references/dima-voice.md) first — few-shot samples and the tell
    list. Rewriting an AI-shaped draft never fully escapes the footprint; drafting in-voice from
    the start is the lever this skill exists for.
-4. **Audit, then repair.** Run the `humanize-audit` skill's rubric against the draft; then fix
-   the flagged spots with the `humanize` skill's levers — targeted, not wholesale. One
+4. **Audit, then repair.** Run the `humanize:ai-check` skill's rubric against the draft; then fix
+   the flagged spots with the `humanize:humanize` skill's levers — targeted, not wholesale. One
    audit→rewrite round; a second only when the first found heavy tells.
-5. **Verify when the message matters.** The multi-lane check lives in `humanize-audit`
-   (its own section) — run it for job mail and anything with an audience, skip it for a
-   two-line chat reply.
+5. **Verify when the message matters** — job mail and anything with an audience; skip it for a
+   two-line chat reply. two lanes: `humanize:ai-check`'s forensic score first, then the manual
+   gold gate — [pangram.com](https://www.pangram.com) (2,000 words/day free, the accuracy leader),
+   run by Dima's hand, never automated. print lane 1, hand the draft to Dima; disagreement between
+   the two is itself signal. detector scores are directional, never pass/fail: light editing swings
+   every tool 15–30 points. Dima is the validator of record. (🧪 on vet: he compares the lanes
+   himself; the lane earns its keep after a few real runs, or goes.)
 6. **Hand over fenced.** The final draft ships in a copy fence with a destination ribbon.
    Done when the draft passed the audit and reads like the samples — not when it merely
    answers the prompt.

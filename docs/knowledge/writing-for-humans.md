@@ -39,6 +39,7 @@ seeded 2026-08-27 from two parallel researcher runs (researcher-sourced, links c
 
 ## how the skill landed (2026-08-27)
 
-shipped as `x:writing-for-humans` + borrowed `x:humanize` / `x:humanize-audit` (multi-lane
-verify inside the audit). the differentiator vs all existing art: the dima-voice corpus —
+shipped as `x:writing-for-humans` + borrowed `x:humanize` / `x:humanize-audit`; since 2026-09-27
+the pair comes from the upstream marketplace (`humanize:humanize` / `humanize:ai-check`,
+auto-updated) and the multi-lane verify lives in `x:writing-for-humans` step 5. the differentiator vs all existing art: the dima-voice corpus —
 drafting in-voice from the start instead of de-robotting afterward.

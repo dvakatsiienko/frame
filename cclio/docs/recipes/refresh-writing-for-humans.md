@@ -42,9 +42,9 @@ skills, the detector lanes. First instance of the recipe entity ([spec](_spec.md
 4. eval + print findings to Dima: anything new to try out? skill refresh needed? upstream
    humanize moved?
 5. resolve with Dima by outcome — typical moves, only as the findings warrant:
-   - re-fetch `humanize` + `ai-check` from https://github.com/harshaneel/humanize, re-apply
-     the provenance headers, the `humanize-audit` rename, the multi-lane section, and the
-     routing description lines (copies by decision — one update mechanism, no repo zoo)
+   - the pair auto-updates from the `harshaneel/humanize` marketplace (since 2026-09-27): read
+     what moved, and check that `x:writing-for-humans` still names the plugin's skills
+     (`humanize:humanize`, `humanize:ai-check`) and keeps the multi-lane step
    - fold new techniques into `x:writing-for-humans` and its `dima-voice.md` tells list
    - bump plugin-x, update marketplace, report
 
