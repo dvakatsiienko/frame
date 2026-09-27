@@ -6,7 +6,7 @@ description: Load BEFORE any `gh pr` / `gh issue` command, before writing a PR t
 # github contributions
 
 conventions for pull requests and issues — the `gh` mechanics under the lanes in `x:cmt` and
-`x:coder-brief` (a coder's assignment lands as a PR by default; dima's own lane is `main`).
+`x:crew-coder` (a coder's assignment lands as a PR by default; dima's own lane is `main`).
 
 ## pull requests
 

@@ -6,7 +6,7 @@
 **dies when:** step 5 closes — we land on gh stacks and dima approves it. at that moment this
 doc is **deleted**, not archived. what survives it moves first:
 
-- the coder guardrails (see [where the coder will struggle](#where-the-coder-will-struggle)) fold into `x:coder-brief`
+- the coder guardrails (see [where the coder will struggle](#where-the-coder-will-struggle)) fold into `x:crew-coder`
 - the stack hazards fold into `rules/fleet-hazards.md` as a new section
 - the open probes that got answers fold into the gazette's «tricks gained»
 - the probes that never got answers get raised once, then dropped
@@ -197,13 +197,13 @@ ready»*.
 **moves**
 
 - [x] `brew install coderabbit` (cask, 0.7.6, in the Brewfile), authenticated 2026-09-09
-- [x] the fall-through + chain written into `x:coder-brief` 0.11.46
+- [x] the fall-through + chain written into `x:crew-coder` 0.11.46
 - wire it into the coder's done-sequence with `--agent` (structured findings for agents; 0.7.6 —
   `--prompt-only` no longer exists) and `-c CLAUDE.md` so house rules reach the review.
   📌 probe on the first real run: `coderabbit review --show-prompts` — does the yaml or
   `CLAUDE.md` get read without `-c`?
 - keep `claude /code-review` as the second local pass — **it has no quota to exhaust**
-- write the fall-through contract into `x:coder-brief`:
+- write the fall-through contract into `x:crew-coder`:
   **a review tool that rate-limits is skipped, named in the report, and never waited on**
 
 **the chain, in order**
@@ -392,7 +392,7 @@ three options. **c is locked (dima, 2026-09-09: labels are friction; one workflo
 - coder opens a draft, pushes freely (claude skips drafts by design), last act is `gh pr ready`
 - the `ready_for_review` event fires the review
 - ➕ fully native, zero extra config
-- ➖ 🚨 **collides with a standing rule** — `x:coder-brief` says *«real PR at first push, never a
+- ➖ 🚨 **collides with a standing rule** — `x:crew-coder` says *«real PR at first push, never a
   draft — dima's word»*. and dima's own read: *«i don't like them»*.
 - **not chosen. recorded so nobody re-proposes it as new.**
 
@@ -508,7 +508,7 @@ and the [public preview thread](https://github.com/orgs/community/discussions/20
 
 ## where the coder will struggle
 
-these are **assumptions**, not measurements. each one is a guardrail candidate for `x:coder-brief`,
+these are **assumptions**, not measurements. each one is a guardrail candidate for `x:crew-coder`,
 and each should be **tested during the window** — a guardrail that never fired is a guardrail to
 delete, not to keep.
 

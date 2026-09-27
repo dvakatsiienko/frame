@@ -47,5 +47,5 @@ lanes: opus (impeccable 4.3.1 source read + web), neuroarxiv (20 arXiv papers), 
 
 - `PRODUCT.md` — impeccable's, character + durable truth, hand edits allowed
 - `product/MAP.md` — never read by impeccable: a 3-line legend, `## <route> — <view>`, `- 🧭|✅|🔎 <feature>`, indented `given/when/then` lines (= exit lines, = the verify skill's checks), indented `decision:` lines. split at ~150 lines into an index + `product/<route>.md` leaves
-- per-app AGENTS.md line + one line each in `x:coder-brief` / `x:verifier-brief`; a skill only when a third app adopts it
+- per-app AGENTS.md line + one line each in `x:crew-coder` / `x:crew-verifier`; a skill only when a third app adopts it
 - pilot: atelier map (live, take, compare, rail, bench; first 🧭 = «bake shows progress»); chords ledger moved out of PRODUCT.md. lives if: zero hand-written exit lines, «what does bake do» answered in one read, zero unmapped changes at the end. dies if the map lags or costs more than it saves

@@ -1,5 +1,5 @@
 ---
-dies-when: both measurement prs are scored and the two decisions (local order; greptile cli / ci / both) are written into `x:coder-brief`'s «final» chain — then the sheets fold into gh-stack-adoption's decision log and this file is deleted
+dies-when: both measurement prs are scored and the two decisions (local order; greptile cli / ci / both) are written into `x:crew-coder`'s «final» chain — then the sheets fold into gh-stack-adoption's decision log and this file is deleted
 ---
 
 # review stack — the measurement run
@@ -40,7 +40,7 @@ only nits):**
 - also read on pr 1: did the automatic first review on the empty-commit pr open run and cost a
   credit (filters: `renovate/*` excluded, auto-review-on-commits off)? yes → a `review-ready`
   label rule is the fix, dima's word first («no labels spam yet»).
-- after pr 2: `x:coder-brief` switches to the fallback chain with the winner first; this
+- after pr 2: `x:crew-coder` switches to the fallback chain with the winner first; this
   section folds into the decision log.
 
 **measurement 0 — the overnight pre-run (dima, 2026-09-10, `bytes-b1`):** greptile vs coderabbit on
@@ -108,6 +108,6 @@ per pr while the github app is on trial (to ~09-16): greptile cli (greploop) and
 ## pr 7 — bytes #79 / BYT-92 (the verdict gate) + pr 8 — #82 / #83 (2026-09-12), coder's tally, cclio verified the rounds
 - unique findings across both: ci `@claude` **6** (the three sharpest: phantom round, the answer path re-opening #76, pr-controlled gate scripts) · matt's standards **5** · matt's spec **4** · greptile ci **3** · coderabbit **0** (~40 min per review, one review on a stale head)
 - rounds on #79 were all red on the gate's own bootstrap (unjudgeable, uncounted); the contract measured end to end on #82: findings → red + counted (run 9), clean → green + counted (run 11); owner approval → green on #83's own lane
-- **decision: coderabbit is cut from the coder chain** (the brief's own rule: two real prs, zero unique) — `x:coder-brief` 0.11.66. the local order is now matt's code-review → greploop → push → label
+- **decision: coderabbit is cut from the coder chain** (the brief's own rule: two real prs, zero unique) — `x:crew-coder` 0.11.66. the local order is now matt's code-review → greploop → push → label
 - open: greptile ci vs cli, decided with the trial (~09-16) → BYT-94 revisits the gate with one reviewer
 - 2026-09-25 · #94 + #96 (atelier): the ci reviewer (opus medium, diff only) and the verifier (opus high, runs the app) caught **disjoint** defects two prs in a row — the reviewer 5 on #94 incl. 2 the verifier missed, the verifier 7 that needed running; on #96 the reviewer 1 P2 the verifier missed, the verifier 1 the reviewer missed. greptile is dropped (free plan: no cli); the local chain is matt's code-review → coderabbit

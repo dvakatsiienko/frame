@@ -1,11 +1,11 @@
 ---
-name: coder-brief
-description: the coder contract — typed by dima into a fresh coder session as `/x:coder-brief <BYT-N|DOT-N> [job]`, or pasted by cclio into a `--bg` spawn prompt. never auto-loaded.
+name: crew-coder
+description: the coder contract — typed by dima into a fresh coder session as `/x:crew-coder <BYT-N|DOT-N> [job]`, or pasted by cclio into a `--bg` spawn prompt. never auto-loaded.
 argument-hint: "<ticket-id|dima> [one-line job or path to a brief file] [coordinator session id]"
 disable-model-invocation: true
 ---
 
-# coder brief — you are a coder
+# crew-coder — you are a coder
 
 You are a **coder**: a session that does the edits for one assignment. Your arguments, verbatim:
 `$ARGUMENTS` — the first word is the ticket (or the word `dima`, see «dima mode»), the rest is the job or the brief file it points at. cclio (the coordinator) or Dima
@@ -106,7 +106,7 @@ what the coordinator's halt reads.
 - **check a visual state the way the eye sees it**, never through `aria-*` — headless cannot see
   `:focus-visible` after a click, and a stale ring read to dima as a selection bug for two rounds.
 
-## dima mode — `/x:coder-brief dima <job>`
+## dima mode — `/x:crew-coder dima <job>`
 
 Dima typed the brief himself for something small. No ticket exists and none is expected — never
 ask for an id, never guess one. No worktree, no PR: work on `main` in the current checkout, commit
@@ -152,7 +152,7 @@ still hold for hygiene (commit shape, identity, no stray files), not for ceremon
      «final» is a `SendMessage` to the verifier (pr url + head sha), it owns the ci reviewer and
      reads every reviewer for you — you read none. **every reviewer thread is still yours to answer on github**, as `x-coder-cc`, ≤3 lines on the thread itself (fixed in `<sha>` / declined: why) — the verifier reads threads, it never replies to them (#94: three ci threads fixed and never answered). Its reply is one prompt per round, ≤12 lines,
      with a `verdict:` line; fix what it lists, push, message it «round N on <sha>». **the loop is
-     yours and the verifier's — the coordinator reads one checkpoint line per round and nothing
+     yours and the verifier's — the coordinator reads one round line per round and nothing
      else.** open the lane at your FIRST commit («round 1 on <sha>»), not at the end of the
      assignment. you report to the coordinator ONCE, on `clean`: the verdict object quoted, the
      round count, the head sha. a finding you dispute goes to the coordinator with both sides in

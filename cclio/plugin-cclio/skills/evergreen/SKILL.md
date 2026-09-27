@@ -139,7 +139,7 @@ same message («hold #61») subtract from the round.
   `<!-- rebase-check -->` box in the PR body via `gh pr edit --body-file`; renovate rebases
   within its next scan (~hourly); report it as pending, never rebase by hand.
 - **coder** → a red or held-for-migration PR gets a coder on its branch through
-  `x:coder-brief` («make this bump green; migrate what the release notes say changed»).
+  `x:crew-coder` («make this bump green; migrate what the release notes say changed»).
   renovate stops rebasing once a human commit lands, which is right.
 - **hold** → a peer-range hold gets `gh pr close --comment` with the range named; renovate
   reopens it on the next release of the package. any other hold: nothing, the age prefix

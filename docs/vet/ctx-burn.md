@@ -1,5 +1,5 @@
 ---
-dies-when: the pattern is understood and its answer lives in x:coder-brief or craft-spawning; until then one dated entry per case
+dies-when: the pattern is understood and its answer lives in x:crew-coder or craft-spawning; until then one dated entry per case
 ---
 
 # ctx-burn — coder context growth and window burn, one case per entry
@@ -28,7 +28,7 @@ bucketed by 15 min.
   reviewers, both opus-verbose; greptile short); the coder's own novel-length bodies feed the
   reviewers' novel-length answers
 - **not the cause**: the eval runs (dima's first guess) — separate sandboxes, ~$30
-- **candidates, not applied**: pr body + reviewer replies capped in `x:coder-brief`; the ci
+- **candidates, not applied**: pr body + reviewer replies capped in `x:crew-coder`; the ci
   reviewer's prompt in `claude.yml` asked for terse findings; diagnostics run in a subagent so
   the spiral dies with it; review payloads read filtered (`jq` fields), never raw; one ci
   adversary at a time (the greptile-ci decision, 09-16)

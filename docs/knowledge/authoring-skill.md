@@ -257,5 +257,5 @@ avoids.
 
 ## argument placeholders — measured, not documented
 
-- **[measured 2026-09-07, cc 2.1.263]** `$1` in a skill body renders the **second** word of the arguments (`/x:coder-brief AAA BBB CCC` → `The ticket is \`BBB\``). whether `$0` is the first is unmeasured. `$ARGUMENTS` carries the whole string; prefer it and say in prose which word means what.
+- **[measured 2026-09-07, cc 2.1.263]** `$1` in a skill body renders the **second** word of the arguments (`/x:crew-coder AAA BBB CCC` → `The ticket is \`BBB\``). whether `$0` is the first is unmeasured. `$ARGUMENTS` carries the whole string; prefer it and say in prose which word means what.
 - a slash command expands (the body replaces the line, placeholders substituted) in a typed turn and in the `claude --bg '<prompt>'` / `claude -p '<prompt>'` argument; it does **not** expand inside a `SendMessage` — that arrives as raw text, and the invocation flag is not the cause: an unflagged skill (`/x:queue …`) arrived raw too (measured 2026-09-07, haiku probe, zero `command-message` blocks).

@@ -1,6 +1,6 @@
 # fleet flow — who talks to whom
 **scope:** the comms model between fleet members. the per-member contracts stay in their briefs
-(`x:coder-brief`, `x:verifier-brief`, `craft-spawning`); this file is the map they hang on.
+(`x:crew-coder`, `x:crew-verifier`, `craft-spawning`); this file is the map they hang on.
 
 ## the loop
 
@@ -12,7 +12,7 @@ channel — dima may step into it and steer there, and the member answers him th
 
 - **cclio** — talks to dima and every member · hears from all · the board in dima's tab
 - **coder** — talks to cclio (one ping per assignment) and to its verifier · hears from cclio, the verifier, and dima when he drops in · a linear comment + the ping
-- **verifier** — talks to the coder, one checkpoint line per round to cclio · hears from the coder · a dispute or a round-3 stop goes to cclio
+- **verifier** — talks to the coder, one round line per round to cclio · hears from the coder · a dispute or a round-3 stop goes to cclio
 - **cw** — a peer: either side opens the exchange, the shared store carries the handoffs
 
 ## silence

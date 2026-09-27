@@ -50,7 +50,7 @@ Jargon (slay, freebie, propose, pause) lives in `fleet-vibe.md`, not here.
 - **`cc, ccli or cute`** — Claude, the local CLI on the mac.
 - **`cclio`** — **the** coordinator. A `cc` session booted in `~/frame/cclio` with its own
   `AGENTS.md`, memory barrel and boot ritual. It orchestrates; it rarely writes product code.
-- **`coder`** — a background session doing the edits. `x:coder-brief` owns that contract;
+- **`coder`** — a background session doing the edits. `x:crew-coder` owns that contract;
   cclio's `craft-spawning` owns the spawn side.
 - **`classifier`** — jev (typesafe.ai): typed judgments over a state, no tools, no memory.
   ~20–200× faster and 40–550× cheaper than a model call — any classification runs through a jev
