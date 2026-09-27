@@ -7,8 +7,10 @@
 // fetch works, so the seed scripts are gone; a note can be written to a file; and presses
 // arrive as server-sent events, so the page holds no timer at all.
 //
-// 📌 Bound to 127.0.0.1, and that is a smaller guarantee than it looks. It keeps other machines
-// out; it does nothing about the browser already running on this one, which can POST to any
+// 📌 Bound to every interface since daecf880, so a phone on the wi-fi opens the map — and so any
+// machine on that network reaches these routes too. The checks below stop a browser, not a crafted
+// request (curl sends any Origin); a loopback-only guard on the writing routes is open (FRM-255).
+// They do nothing either about the browser already running on this one, which can POST to any
 // localhost port from any page dima happens to have open. Since this server writes manual.ts and
 // notes.json with no auth of any kind, every mutating route demands `application/json` — a
 // content type a cross-origin page cannot send without a preflight this server never answers —

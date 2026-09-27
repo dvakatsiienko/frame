@@ -25,7 +25,7 @@ nothing else needs touching: the live job sees its mtime move, reruns the scan, 
 
 ## the server
 
-📌 **port 7373, bound to 127.0.0.1.** the daemon holds it because the daemon is already watching
+📌 **port 7373, bound to every interface** (`daecf880`: a phone on the wi-fi opens it — ⚠️ the writing routes are reachable from the network until the loopback guard in FRM-255 lands). the daemon holds it because the daemon is already watching
 the press log and the config sources; a second process would duplicate both watchers to answer
 the same questions. `pnpm chords:dev` runs vite on 7374 and proxies `/api` straight back to it,
 so there is one api in dev and in the build.
