@@ -112,6 +112,10 @@ those specifically.
 offers left undecided, and verifications only he can run. print them as a short list in the
 halt report — he misses a few every session, and this is where they get caught.
 
+**stale research:** run `~/frame/cclio/.claude/hooks/research-stale.sh` — it prints every
+`docs/research/` doc whose tickets are all closed, or that names none. each hit joins the flush
+proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict is dima's.
+
 ## phase 3a — flawlog flush, the one stop
 `pnpm jev:flawlog` first: jev lanes every line (memory / rule / story / ticket / drop) and the
 proposal starts from its lanes, not from a blank read. then cluster, ONE batched proposal, ONE

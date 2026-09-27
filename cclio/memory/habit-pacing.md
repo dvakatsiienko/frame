@@ -10,7 +10,7 @@ an emergency. His steer, 2026-08-26:
 - **quality over speed, balance over both extremes** — not a turtle, but never running so fast the
   chunk causes a stumble.
 
-The working shape that fits: labeled sub-batches with a checkpoint message after each.
+The working shape that fits: labeled sub-batches with a **pit stop** after each — dima looks at what is done, asks, steers, then the next batch runs. (a `checkpoint` is the context reset, `cclio:checkpoint` — a different thing.)
 
 **The inbox is a plan source, never a work order.** Parse it into a flowlog checklist first —
 every item a line with status and lane — then resolve paced, after his word on the order. Data
