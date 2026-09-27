@@ -17,6 +17,20 @@ Shared files are Dima's living space; leftovers cost him attention and blur what
   8-line backlog).
 - `protected.md` — his own drop file, read-only, never ours to edit.
 
+## the stash hierarchy — dima's, 2026-09-27
+
+Keep-in-mind stashes, all with one job: nothing he wants solved lands on a long shelf and gets
+forgotten. Linear is the long shelf — a ticket parked there is invisible at the next boot; a stash
+line is in front of cclio every boot. The stashes stay even after the shift flow is proven.
+
+- **queue** (`.claude/x-queue.md`) — soon: «after X and Y, do Z». ideally empty.
+- **reminders** (`memory/_reminders.md`) — a date or a condition: «in 2 days», «before we halt»,
+  «when cc ships X, test it with me».
+- **flowlog** (`_hq/flowlog.md`) — the main carry-over across sessions.
+- **Linear** — the folding place for work with a shape.
+
+❗ no data loss, the flowlog above all: a stash line moves or dies only on his word.
+
 ## cleanup runs the same turn
 
 Working artifacts die the turn their job is done: processed flowlog buckets, scratchpad files,
