@@ -356,9 +356,6 @@ export const BoardPage = (props: BoardPageProps) => {
             );
         });
 
-    // Two home layouts live side by side while dima compares them (09-28): `?layout=b` is the
-    // inspector column, anything else the stacked strip.
-    const variant = props.params.get('layout') === 'b' ? 'b' : 'a';
     // Ranked by chord, not by binding: a chord bound twice (hyper+k is Calendar twice) is one
     // row, or it fills two of the three.
     const topOnLayer = [
@@ -627,29 +624,16 @@ export const BoardPage = (props: BoardPageProps) => {
                 </Notice>
             ) : null}
 
-            {variant === 'b' ? (
-                <div className='grid grid-cols-[minmax(0,1fr)] items-start gap-[22px] min-[1100px]:grid-cols-[minmax(0,1fr)_340px]'>
-                    <div className='grid grid-cols-[minmax(0,1fr)] gap-[22px]'>
-                        {tabsJSX}
-                        {boardJSX}
-                    </div>
-                    <aside className='grid gap-[18px] min-[1100px]:h-[470px] min-[1100px]:grid-rows-[196px_auto_minmax(0,1fr)] min-[1100px]:overflow-hidden'>
-                        {selectedJSX}
-                        {noteJSX}
-                        {notesJSX}
-                    </aside>
-                </div>
-            ) : (
-                <>
-                    {tabsJSX}
-                    {boardJSX}
-                    <div className='grid gap-[22px] min-[761px]:h-[200px] min-[761px]:grid-cols-3'>
-                        {selectedJSX}
-                        {noteJSX}
-                        {notesJSX}
-                    </div>
-                </>
-            )}
+            {tabsJSX}
+            {boardJSX}
+            {/* One fixed strip under the board, so the working view ends above the fold at
+                1280×800 and only the footer sits below it (dima picked this over a side
+                column that clipped the caps, 09-28). */}
+            <div className='grid gap-[22px] min-[761px]:h-[200px] min-[761px]:grid-cols-3'>
+                {selectedJSX}
+                {noteJSX}
+                {notesJSX}
+            </div>
         </div>
     );
 };

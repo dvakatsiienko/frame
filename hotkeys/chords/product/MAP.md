@@ -72,14 +72,11 @@
 - ✅ a `?layer=&key=` link opens the board on that key selected
   - when the user opens `/?layer=cmd&key=c`
   - then the `cmd` tab is selected and the selected key reads `cmd+c`
-- ✅ the home page is one view at 1280×800, in two layouts to compare
+- ✅ the home page's working view sits above the fold at 1280×800
   - given the board at 1280×800
-  - when the page loads with `?layout=a` (the default)
   - then the board keeps its full width and a fixed strip under it holds at a glance, the note and the notes list — only the footer sits below the fold
-  - when the page loads with `?layout=b`
-  - then a 340px column beside the board holds the same three blocks, the page does not scroll, and the board's caps clip their labels
-  - and selecting a key moves nothing on either layout
-  - decision: both ship behind the switch so dima compares them live; he leans A (09-28)
+  - and selecting a key moves nothing, at 1280 or at 390
+  - decision: this stacked layout over a side column that fit with no scroll but clipped the caps' labels — dima 09-28
 - ✅ selected key: clicking a cap shows its chord and its bindings
   - when the user clicks a bound cap
   - then the selected key shows its chord as keycaps and each binding with its app
