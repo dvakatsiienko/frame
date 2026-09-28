@@ -100,3 +100,7 @@ _Avoid_: side lights, leds
 **Selected key**:
 The one cap the page is showing details for, with its chord, its bindings and its note.
 _Avoid_: focused key, active key, current key
+
+**At a glance**:
+What the selected-key block shows while no key is selected: the layer's most-pressed chords, its never-pressed count and its free-key count.
+_Avoid_: overview, summary, empty state

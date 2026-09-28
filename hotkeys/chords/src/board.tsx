@@ -17,7 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Aurora } from '@/components/Aurora.tsx';
 import { Board } from '@/components/Board.tsx';
 import { Chord } from '@/components/Kbd.tsx';
-import { List, ListEmpty, ListRow } from '@/components/List.tsx';
+import { List, ListRow } from '@/components/List.tsx';
 import { NoteEditor } from '@/components/NoteEditor.tsx';
 import { Notice, apiTrouble } from '@/components/Notice.tsx';
 
@@ -354,6 +354,135 @@ export const BoardPage = (props: BoardPageProps) => {
             );
         });
 
+    // Two home layouts live side by side while dima compares them (09-28): `?layout=b` is the
+    // inspector column, anything else the stacked strip.
+    const variant = props.params.get('layout') === 'b' ? 'b' : 'a';
+    const topOnLayer = binds
+        .map((hotkey) => ({ hotkey, n: presses[chordOf(hotkey)] ?? 0 }))
+        .sort((x, y) => y.n - x.n)
+        .slice(0, 3);
+    const coldOnLayer = binds.filter(
+        (hotkey) => !presses[chordOf(hotkey)],
+    ).length;
+
+    const selectedJSX = (
+        <section className='grid min-h-0 content-start gap-2.5'>
+            <div className='flex min-h-[28px] flex-wrap items-center gap-3'>
+                <h2 className={H2}>
+                    {selectedChord
+                        ? 'selected key'
+                        : `${layerName(layer)} at a glance`}
+                </h2>
+                {selectedChord ? (
+                    <Chord chord={selectedChord} size='lg' />
+                ) : null}
+            </div>
+            {selectedChord ? (
+                <div className='grid content-start gap-2.5'>
+                    {selectedBinds.length > 0 && (
+                        <List>
+                            {selectedBinds.map((hotkey, at) =>
+                                bindRow(hotkey, at, false),
+                            )}
+                        </List>
+                    )}
+                    {movable ? (
+                        <div className='flex flex-wrap items-center gap-2 text-[12px] text-ink-2'>
+                            {pending ? (
+                                <span>rebinding…</span>
+                            ) : listening ? (
+                                <span className='text-ink'>
+                                    press the new chord on the keyboard — esc
+                                    stops
+                                </span>
+                            ) : (
+                                <span>
+                                    drag the key to a free cap to rebind, or
+                                </span>
+                            )}
+                            {!pending && (
+                                <button
+                                    aria-pressed={listening}
+                                    className={`${GHOST} px-2 py-0.5 text-[12px] aria-pressed:border-accent aria-pressed:text-ink`}
+                                    onClick={() => {
+                                        setListening((on) => !on);
+                                        setMoveError(null);
+                                    }}
+                                    type='button'>
+                                    {listening ? 'cancel' : 'press to rebind'}
+                                </button>
+                            )}
+                            {moveError ? (
+                                <span className='basis-full text-ink'>
+                                    {moveError}
+                                </span>
+                            ) : null}
+                        </div>
+                    ) : null}
+                </div>
+            ) : (
+                <>
+                    <List>
+                        {topOnLayer.map((row) => {
+                            return (
+                                <ListRow
+                                    chord={chordOf(row.hotkey)}
+                                    color={colorOf(row.hotkey.app)}
+                                    key={
+                                        chordOf(row.hotkey) + row.hotkey.action
+                                    }
+                                    who={`${row.n.toLocaleString()} presses`}>
+                                    {row.hotkey.action}
+                                </ListRow>
+                            );
+                        })}
+                    </List>
+                    <p className='m-0 text-[12px] text-ink-2'>
+                        {coldOnLayer} never pressed · {free.length} free keys ·
+                        click a cap for its bindings and note
+                    </p>
+                </>
+            )}
+        </section>
+    );
+
+    const noteJSX = (
+        <section className='grid content-start gap-2.5'>
+            <h2 className={H2}>note</h2>
+            <NoteEditor
+                chord={selectedChord}
+                notesMarkdown={notesMarkdown}
+                onSave={saveNote}
+                text={selectedNote?.text ?? ''}
+            />
+        </section>
+    );
+
+    const notesJSX = (
+        <section className='grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-2.5'>
+            <h2 className={H2}>notes · {Object.keys(notes).length}</h2>
+            <input
+                aria-label='filter notes'
+                className='w-full rounded-md border border-line bg-cap px-2.5 py-1.5 font-sans text-[13px] text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
+                onChange={(event) => setNoteFilter(event.target.value)}
+                placeholder='filter by chord or text'
+                type='search'
+                value={noteFilter}
+            />
+            <div className='min-h-0 overflow-y-auto'>
+                {noteRowJSX.length ? (
+                    <List>{noteRowJSX}</List>
+                ) : (
+                    <p className='m-0 text-[13px] text-ink-2'>
+                        {Object.keys(notes).length === 0
+                            ? 'no notes yet — select a key and write one'
+                            : `no note matches ${noteFilter.trim()}`}
+                    </p>
+                )}
+            </div>
+        </section>
+    );
+
     return (
         <div className='grid grid-cols-[minmax(0,1fr)] gap-[22px]'>
             <div className='flex flex-wrap items-baseline gap-x-[18px] gap-y-2'>
@@ -392,207 +521,219 @@ export const BoardPage = (props: BoardPageProps) => {
                 </Notice>
             ) : null}
 
-            <div
-                aria-label='modifier layer'
-                className='flex flex-wrap gap-1.5'
-                role='tablist'>
-                {layers.map((each) => {
-                    return (
-                        <button
-                            aria-controls='board-panel'
-                            aria-selected={each === layer}
-                            className={`${TAB} ${each === layer ? 'border-accent bg-sel text-ink' : 'border-line bg-transparent text-ink-2'}`}
-                            key={each || 'none'}
-                            onClick={() => {
-                                setLayer(each);
-                                setSelected(null);
-                            }}
-                            role='tab'
-                            type='button'>
-                            <b className='font-semibold text-ink'>
-                                {layerName(each)}
-                            </b>
-                            <span className='text-[12px] tabular-nums text-ink-2'>
-                                {
-                                    hotkeys.filter(
-                                        (hotkey) => hotkey.mods === each,
-                                    ).length
-                                }
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            {/* The region the layer tabs switch. A tablist that controls nothing is a promise
-                to a screen reader that the page does not keep. */}
-            <div id='board-panel' role='tabpanel'>
-                <DragDropProvider
-                    onDragEnd={(event) => {
-                        const from = dragging;
-                        const target = event.operation.target;
-
-                        setDragging(null);
-                        if (event.canceled || !(from && target)) return;
-
-                        const to = target.data as { key: string };
-
-                        void rebind(from, { key: to.key, layer });
-                    }}
-                    onDragStart={(event) => {
-                        const data = event.operation.source?.data as
-                            | { hotkey?: Hotkey }
-                            | undefined;
-
-                        setDragging(data?.hotkey ?? null);
-                        setMoveError(null);
-                    }}
-                    // No slide back to the origin: the board has already drawn the cap on its
-                    // new key by the time the pointer lets go.
-                    plugins={[
-                        ...defaultPreset.plugins.filter(
-                            (plugin) => plugin !== Feedback,
-                        ),
-                        Feedback.configure({ dropAnimation: null }),
-                    ]}>
-                    <Board
-                        binds={binds}
-                        dragging={dragging}
-                        landedAt={landedAt}
-                        layer={layer}
-                        layers={layers}
-                        noted={noted}
-                        onLayer={(next) => {
-                            setLayer(next);
-                            setSelected(null);
-                        }}
-                        onSelect={setSelected}
-                        pending={
-                            pending && pending.layer === layer
-                                ? [pending.from.key, pending.key]
-                                : []
-                        }
-                        pressed={lastPress}
-                        presses={presses}
-                        selected={selected}
-                        strip={
-                            <Aurora
-                                seed={Math.max(0, layers.indexOf(layer))}
-                                wake={wake}
-                            />
-                        }
-                    />
-                </DragDropProvider>
-            </div>
-
-            <div className='grid grid-cols-1 gap-[22px] min-[761px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'>
-                <section className='grid content-start gap-2.5'>
-                    <div className='flex min-h-[28px] flex-wrap items-center gap-3'>
-                        <h2 className={H2}>selected key</h2>
-                        {selectedChord ? (
-                            <Chord chord={selectedChord} size='lg' />
-                        ) : (
-                            <span className='text-[13px] text-ink-2'>none</span>
-                        )}
-                    </div>
-                    {/* A fixed slot for the row and the rebind hint, so the note field below
-                        never moves when a free key or no key is selected — measured: 32.5 +
-                        33.5 + the 10px gap between them. */}
-                    <div className='grid min-h-[76px] content-start gap-2.5'>
-                        {selectedBinds.length > 0 && (
-                            <List>
-                                {selectedBinds.map((hotkey, at) =>
-                                    bindRow(hotkey, at, false),
-                                )}
-                            </List>
-                        )}
-                        {movable ? (
-                            <div className='flex flex-wrap items-center gap-2 text-[12px] text-ink-2'>
-                                {pending ? (
-                                    <span>rebinding…</span>
-                                ) : listening ? (
-                                    <span className='text-ink'>
-                                        press the new chord on the keyboard —
-                                        esc stops
-                                    </span>
-                                ) : (
-                                    <span>
-                                        drag the key to a free cap to rebind, or
-                                    </span>
-                                )}
-                                {!pending && (
+            {variant === 'b' ? (
+                <div className='grid grid-cols-[minmax(0,1fr)] items-start gap-[22px] min-[1100px]:grid-cols-[minmax(0,1fr)_340px]'>
+                    <div className='grid grid-cols-[minmax(0,1fr)] gap-[22px]'>
+                        <div
+                            aria-label='modifier layer'
+                            className='flex flex-wrap gap-1.5'
+                            role='tablist'>
+                            {layers.map((each) => {
+                                return (
                                     <button
-                                        aria-pressed={listening}
-                                        className={`${GHOST} px-2 py-0.5 text-[12px] aria-pressed:border-accent aria-pressed:text-ink`}
+                                        aria-controls='board-panel'
+                                        aria-selected={each === layer}
+                                        className={`${TAB} ${each === layer ? 'border-accent bg-sel text-ink' : 'border-line bg-transparent text-ink-2'}`}
+                                        key={each || 'none'}
                                         onClick={() => {
-                                            setListening((on) => !on);
-                                            setMoveError(null);
+                                            setLayer(each);
+                                            setSelected(null);
                                         }}
+                                        role='tab'
                                         type='button'>
-                                        {listening
-                                            ? 'cancel'
-                                            : 'press to rebind'}
+                                        <b className='font-semibold text-ink'>
+                                            {layerName(each)}
+                                        </b>
+                                        <span className='text-[12px] tabular-nums text-ink-2'>
+                                            {
+                                                hotkeys.filter(
+                                                    (hotkey) =>
+                                                        hotkey.mods === each,
+                                                ).length
+                                            }
+                                        </span>
                                     </button>
-                                )}
-                                {moveError ? (
-                                    <span className='basis-full text-ink'>
-                                        {moveError}
-                                    </span>
-                                ) : null}
-                            </div>
-                        ) : null}
+                                );
+                            })}
+                        </div>
+
+                        {/* The region the layer tabs switch. A tablist that controls nothing is a promise
+                to a screen reader that the page does not keep. */}
+                        <div id='board-panel' role='tabpanel'>
+                            <DragDropProvider
+                                onDragEnd={(event) => {
+                                    const from = dragging;
+                                    const target = event.operation.target;
+
+                                    setDragging(null);
+                                    if (event.canceled || !(from && target))
+                                        return;
+
+                                    const to = target.data as { key: string };
+
+                                    void rebind(from, { key: to.key, layer });
+                                }}
+                                onDragStart={(event) => {
+                                    const data = event.operation.source?.data as
+                                        | { hotkey?: Hotkey }
+                                        | undefined;
+
+                                    setDragging(data?.hotkey ?? null);
+                                    setMoveError(null);
+                                }}
+                                // No slide back to the origin: the board has already drawn the cap on its
+                                // new key by the time the pointer lets go.
+                                plugins={[
+                                    ...defaultPreset.plugins.filter(
+                                        (plugin) => plugin !== Feedback,
+                                    ),
+                                    Feedback.configure({ dropAnimation: null }),
+                                ]}>
+                                <Board
+                                    binds={binds}
+                                    dragging={dragging}
+                                    landedAt={landedAt}
+                                    layer={layer}
+                                    layers={layers}
+                                    noted={noted}
+                                    onLayer={(next) => {
+                                        setLayer(next);
+                                        setSelected(null);
+                                    }}
+                                    onSelect={setSelected}
+                                    pending={
+                                        pending && pending.layer === layer
+                                            ? [pending.from.key, pending.key]
+                                            : []
+                                    }
+                                    pressed={lastPress}
+                                    presses={presses}
+                                    selected={selected}
+                                    strip={
+                                        <Aurora
+                                            seed={Math.max(
+                                                0,
+                                                layers.indexOf(layer),
+                                            )}
+                                            wake={wake}
+                                        />
+                                    }
+                                />
+                            </DragDropProvider>
+                        </div>
                     </div>
-                    <NoteEditor
-                        chord={selectedChord}
-                        notesMarkdown={notesMarkdown}
-                        onSave={saveNote}
-                        text={selectedNote?.text ?? ''}
-                    />
-                    <h2 className={H2}>free keys on this layer</h2>
-                    <div className='font-mono text-[13px]/[1.9] text-ink-2'>
-                        {free.map((label) => {
+                    <aside className='grid gap-[18px] min-[1100px]:h-[470px] min-[1100px]:grid-rows-[196px_auto_minmax(0,1fr)] min-[1100px]:overflow-hidden'>
+                        {selectedJSX}
+                        {noteJSX}
+                        {notesJSX}
+                    </aside>
+                </div>
+            ) : (
+                <>
+                    <div
+                        aria-label='modifier layer'
+                        className='flex flex-wrap gap-1.5'
+                        role='tablist'>
+                        {layers.map((each) => {
                             return (
-                                <kbd
-                                    className='mr-[3px] mb-[3px] inline-block rounded border border-line bg-cap px-1.5 font-[inherit] text-ink'
-                                    key={label}>
-                                    {label}
-                                </kbd>
+                                <button
+                                    aria-controls='board-panel'
+                                    aria-selected={each === layer}
+                                    className={`${TAB} ${each === layer ? 'border-accent bg-sel text-ink' : 'border-line bg-transparent text-ink-2'}`}
+                                    key={each || 'none'}
+                                    onClick={() => {
+                                        setLayer(each);
+                                        setSelected(null);
+                                    }}
+                                    role='tab'
+                                    type='button'>
+                                    <b className='font-semibold text-ink'>
+                                        {layerName(each)}
+                                    </b>
+                                    <span className='text-[12px] tabular-nums text-ink-2'>
+                                        {
+                                            hotkeys.filter(
+                                                (hotkey) =>
+                                                    hotkey.mods === each,
+                                            ).length
+                                        }
+                                    </span>
+                                </button>
                             );
                         })}
                     </div>
-                </section>
 
-                <section className='grid content-start gap-2.5'>
-                    <h2 className={H2}>notes</h2>
-                    <input
-                        aria-label='filter notes'
-                        className='w-full rounded-md border border-line bg-cap px-2.5 py-1.5 font-sans text-[13px] text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
-                        onChange={(event) => setNoteFilter(event.target.value)}
-                        placeholder='filter by chord or text'
-                        type='search'
-                        value={noteFilter}
-                    />
-                    <List>
-                        {noteRowJSX.length ? (
-                            noteRowJSX
-                        ) : (
-                            <ListEmpty>
-                                {Object.keys(notes).length === 0
-                                    ? 'no notes yet'
-                                    : `no note matches ${noteFilter.trim()}`}
-                            </ListEmpty>
-                        )}
-                    </List>
-                    <h2 className={H2}>all bindings on this layer</h2>
-                    <List>
-                        {binds.length ? (
-                            binds.map((hotkey, at) => bindRow(hotkey, at))
-                        ) : (
-                            <ListEmpty>nothing on this layer</ListEmpty>
-                        )}
-                    </List>
-                </section>
-            </div>
+                    {/* The region the layer tabs switch. A tablist that controls nothing is a promise
+                to a screen reader that the page does not keep. */}
+                    <div id='board-panel' role='tabpanel'>
+                        <DragDropProvider
+                            onDragEnd={(event) => {
+                                const from = dragging;
+                                const target = event.operation.target;
+
+                                setDragging(null);
+                                if (event.canceled || !(from && target)) return;
+
+                                const to = target.data as { key: string };
+
+                                void rebind(from, { key: to.key, layer });
+                            }}
+                            onDragStart={(event) => {
+                                const data = event.operation.source?.data as
+                                    | { hotkey?: Hotkey }
+                                    | undefined;
+
+                                setDragging(data?.hotkey ?? null);
+                                setMoveError(null);
+                            }}
+                            // No slide back to the origin: the board has already drawn the cap on its
+                            // new key by the time the pointer lets go.
+                            plugins={[
+                                ...defaultPreset.plugins.filter(
+                                    (plugin) => plugin !== Feedback,
+                                ),
+                                Feedback.configure({ dropAnimation: null }),
+                            ]}>
+                            <Board
+                                binds={binds}
+                                dragging={dragging}
+                                landedAt={landedAt}
+                                layer={layer}
+                                layers={layers}
+                                noted={noted}
+                                onLayer={(next) => {
+                                    setLayer(next);
+                                    setSelected(null);
+                                }}
+                                onSelect={setSelected}
+                                pending={
+                                    pending && pending.layer === layer
+                                        ? [pending.from.key, pending.key]
+                                        : []
+                                }
+                                pressed={lastPress}
+                                presses={presses}
+                                selected={selected}
+                                strip={
+                                    <Aurora
+                                        seed={Math.max(
+                                            0,
+                                            layers.indexOf(layer),
+                                        )}
+                                        wake={wake}
+                                    />
+                                }
+                            />
+                        </DragDropProvider>
+                    </div>
+
+                    <div className='grid gap-[22px] min-[761px]:h-[200px] min-[761px]:grid-cols-3 min-[761px]:overflow-hidden'>
+                        {selectedJSX}
+                        {noteJSX}
+                        {notesJSX}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

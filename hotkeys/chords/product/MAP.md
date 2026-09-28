@@ -72,11 +72,21 @@
 - ✅ a `?layer=&key=` link opens the board on that key selected
   - when the user opens `/?layer=cmd&key=c`
   - then the `cmd` tab is selected and the selected key reads `cmd+c`
+- ✅ the home page is one view at 1280×800, in two layouts to compare
+  - given the board at 1280×800
+  - when the page loads with `?layout=a` (the default)
+  - then the board keeps its full width and a fixed strip under it holds at a glance, the note and the notes list — only the footer sits below the fold
+  - when the page loads with `?layout=b`
+  - then a 340px column beside the board holds the same three blocks, the page does not scroll, and the board's caps clip their labels
+  - and selecting a key moves nothing on either layout
+  - decision: both ship behind the switch so dima compares them live; he leans A (09-28)
 - ✅ selected key: clicking a cap shows its chord and its bindings
   - when the user clicks a bound cap
   - then the selected key shows its chord as keycaps and each binding with its app
   - when the user clicks a free key
   - then the selected key shows the chord and no binding
+  - given no key is selected
+  - then the same block shows `<layer> at a glance`: its top 3 chords by presses, how many are never pressed, how many keys are free
 - ✅ rebind by drag: a hand-kept binding dragged onto a free key
   - makes: the binding's row in `hotkeys/manual.ts` moved to the new key
   - given a key whose binding lives in `manual.ts`
@@ -105,8 +115,6 @@
   - when the user presses clear
   - then the note, the dot and the list row are gone
   - with no key selected, save and clear are disabled
-- ✅ free keys on this layer
-  - then every non-modifier key with no binding on the layer is listed
 - ✅ no-data notice with try again when the scan cannot be read
   - given the daemon is down
   - when the board loads
