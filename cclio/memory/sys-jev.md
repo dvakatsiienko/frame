@@ -22,6 +22,17 @@ we pull, it judges, we write back. two lanes live, both from 2026-09-19:
 - prove a wording with `RUNS=3`: ±3 points across repeats is the measured wobble; a threshold
   tuned on one run is a guess.
 
+**the docs' shape for our router** (read 2026-09-28, docs.typesafe.ai + the day's research):
+- one condition per noul, combined in code — the gates `_ack` / `_later` in `skill-route.ts` came
+  from this (fixtures 17–18 → 20 of 23, RUNS=3)
+- the target shape is the «skill suggestion» cookbook: one Choice over the roster with a `none`
+  option + a «needs a skill at all» noul, then the top 3 re-checked against fuller text (their
+  182-skill test: wrong loads 16.8 % → 7.3 %, needless 9.8 % → 4.0 %). our router is still
+  per-skill nouls — the next sharpening, not a tweak
+- a jev criterion wants capability + boundaries (what it is NOT for); our descriptions are keyword
+  triggers written for cc's router — one text serving two readers is why `x:notes` fires on «vault»
+- 23 fixtures is small; the docs suggest 50–100 labelled prompts before trusting a threshold
+
 **the vet — a flow earns trust** (dima's model, 2026-09-20)
 - every flow sits in `shelf/jev/vet.json`: `vetting` until 14 clean days, then `green`; a miss
   restarts the window from that day, and a green flow that misses drops back. verdicts are

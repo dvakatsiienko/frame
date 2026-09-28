@@ -6,7 +6,7 @@ dies-when: every candidate use below has a verdict, written into `x:crew-cloud` 
 
 Ticket: none
 
-**what:** Claude Code sessions on Anthropic VMs, launched with `claude --cloud` (through `script` from a tool call). the contract is `x:crew-cloud`; the day-0 research is `cclio/shifts/2026-09-28-research/cc-cloud-credits.md` + `cc-cloud-sessions.md`.
+**what:** Claude Code sessions on Anthropic VMs, launched with `claude --cloud` (through `script` from a tool call). the contract is `x:crew-cloud`; the day-0 research is `docs/research/cc-cloud.md`.
 **window:** 2026-09-28 → 2026-11-04. the $250 cloud credit expires 2026-11-05 09:59 GMT+2; the vet spends it on purpose.
 **the meter:** dima's usage page, before and after each job (no field reads the credit).
 
@@ -31,6 +31,7 @@ Ticket: none
 
 <!-- date · use # · job · credit before → after · worked? · note -->
 
+- 2026-09-28 · #1 prep ✅ · probe 4 (session_016CWYTc4eJGxGX33Rhch3G6): a cloud prompt opening with `/x:crew-coder dima …` arrived with the contract expanded — no Read, Bash or Skill call; the brief shrinks to the contract + cloud deltas · credit not read
 - 2026-09-28 · #8 ✅ · probe 3b (session_01P2tbibq4RHKhUQ2gkqqQ46) after the setup script landed in «cloud base»: 19 `x:*` skills in the session's list, `gh` 2.45, node 24, pnpm 12.3.4 · first session after a script edit ran minutes longer (cache rebuild) · credit not read
 - 2026-09-28 · #8 · probe 2 on bytes (session_01Vh92jhsWo8LiocQzhKGtb7): private `frame` IS reachable from the VM (`git ls-remote` ok), a sparse clone of `home/.claude/plugin-x` ok, `claude plugin marketplace add <dir>` + `install x@x` ok (0.11.139 — the pushed version) · the x:* skills load only in the NEXT session · 🚫 `gh` is NOT installed (the research said preinstalled) · credit not read
 - 2026-09-28 · probe · read-only environment report on bytes (session_014QV6GViG5BzJYugdtrZuzw) · credit not read · worked: launched through `script`, read back with `--teleport` · details in `docs/vet/browserbase.md` round 1

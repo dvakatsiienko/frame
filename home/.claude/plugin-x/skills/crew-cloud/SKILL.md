@@ -11,7 +11,7 @@ user `CLAUDE.md`, no rules, no plugin `x`, no memory, no 1password, no launchd. 
 repo's own `AGENTS.md` / `CLAUDE.md`. So the brief carries the rest, and the PR carries the report.
 
 Sources: `docs/vet/browserbase.md` round 1 (the probe, 2026-09-28), the day's research in
-`cclio/shifts/2026-09-28-research/cc-cloud-*.md`, code.claude.com `claude-code-on-the-web` and
+`docs/research/cc-cloud.md`, code.claude.com `claude-code-on-the-web` and
 `cloud-environments`.
 
 ## when the cloud, when `--bg`
@@ -45,9 +45,23 @@ The log ends with `Created cloud session: <title>`, `View: <url>` and `Resume wi
 --teleport <session_id>`. Keep all three. The title is generated from the brief (? no flag names
 it); the session also shows in `ListAgents` as `cloud`.
 
-## step 3 — the brief (the whole payload, self-contained)
+## step 3 — the brief
 
-Fill every `<…>`; the fence body is the prompt.
+**In an environment that boots plugin `x` (see the setup script below), the prompt starts with
+the coder contract** — probe 4 (2026-09-28): a cloud prompt opening with `/x:crew-coder` arrives
+expanded, zero tool calls, the same door as a `--bg` spawn. Then only the cloud deltas follow:
+
+```
+/x:crew-coder <BYT-N> <one-line job>
+cloud mode — you run on an anthropic vm, not the mac:
+- you cannot message anyone: skip every ping and SendMessage step; the pr body is your report, the exit lines graded ✅/❌ in it.
+- nobody answers questions: an open decision goes in the pr body as `? <question>`, and you take the safer option.
+- no worktree: you are already on a fresh clone; branch `coder/<BYT-N>-<slug>`, `CI=1 pnpm install`, push, open ONE pr with gh.
+- run everything in the foreground; the vm is reclaimed when idle.
+```
+
+**Without plugin `x` in the environment**, the self-contained brief below carries the core
+rules inline. Fill every `<…>`; the fence body is the prompt.
 
 ```
 you are a cloud coder for ticket <BYT-N>: <one-line job>.
@@ -119,8 +133,8 @@ claude plugin install x@x
 - ✅ proven by probe 3b (2026-09-28, environment «cloud base», network Custom: default list +
   `*.browserbase.com`): a fresh session listed 19 `x:*` skills, `gh` 2.45 came from ubuntu's
   archive (`apt-get install -y gh`), node 24 + pnpm 12.3.4 from dima's fnm block
-- user-invoked skills (`crew-coder`, `crew-verifier`) never show in the model's list; a prompt
-  that starts with `/x:crew-coder` should expand them as it does for `--bg` (? unprobed in the cloud)
+- user-invoked skills (`crew-coder`, `crew-verifier`) never show in the model's list, and a prompt
+  that starts with `/x:crew-coder` still expands (probe 4) — step 3's short form
 
 ## keys and browsers
 

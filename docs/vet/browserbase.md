@@ -8,7 +8,7 @@ Ticket: none
 
 **what:** managed headless chrome (sessions over CDP) + contexts, live view, replay, functions, search/fetch, managed agents. free plan, key `op://dev/browserbase-golden/credential` → `BROWSERBASE_API_KEY` in `op.env`, run through `script/op-run.sh`.
 **doors:** `bb` 0.5.7 (`@browserbasehq/cli`: sessions, contexts, functions, fetch, search, extensions, `bb browse` passthrough) · `agent-browser -p browserbase` (our headless tool, same verbs) · `browse` 0.11 (the newer unified cli from the stagehand repo — not installed). 🚫 the hosted mcp: cli over mcp.
-**window:** 2026-09-28 → 2026-10-05. the day-0 research: `cclio/shifts/2026-09-28-research/browserbase-deep.md` (parallel core, 09-28).
+**window:** 2026-09-28 → 2026-10-05. the day-0 research: `docs/research/browserbase.md` (parallel core, 09-28).
 
 ## the free plan — the budget every round spends
 

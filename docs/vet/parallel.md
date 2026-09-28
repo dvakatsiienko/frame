@@ -66,6 +66,19 @@ lanes: ws = built-in WebSearch · fast = `--mode fast` · agentic = `--mode agen
 - is fast slower only because it ran first (a cold start)? re-run the order reversed
 - core vs `core-fast` / `pro-fast` (the default) on the same two questions
 
+## day-0 re-read — 2026-09-28 (`habit-vet`: the untried features before the verdict)
+
+source: `docs/research/parallel.md`. tried so far: search fast/advanced, research core, extract, monitor (pull). untried, one real ask each before 10-01:
+- search `basic` (longer excerpts) and `turbo` (~200 ms) — the beta `agentic` we used maps to `advanced`
+- the **Responses API** — the synchronous door for a question someone waits on (effort low/medium/high, $0.01–0.25)
+- research `lite` / `base` on a simple lookup — core is 2.5–5× the price
+- a follow-up with `--previous-interaction-id` instead of a fresh run
+- **FindAll** on the next list-shaped ask
+- monitor **webhooks** — ours are pull-only; a webhook is the wake-up the boot digest lacks
+- source policy (`include_domains`, `after_date`) on a docs-only question
+- the official `parallel-agent-skills` plugin vs our raw cli
+- 📌 an independent coding-agent benchmark (docs-implementation tickets) put Exa Deep at 83 % vs Parallel advanced 77 % — a rival to name at the verdict
+
 ## vet log — one line per round, to 2026-10-01
 
 - 2026-09-24 · search fast+advanced · 10 fleet lookups · 6/10 + 9/10 hits (websearch 9/10) · 4.4 s / 2.0 s · 3–60k chars per call · ~6¢ settled for 22 calls
