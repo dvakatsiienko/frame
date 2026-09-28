@@ -50,6 +50,9 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 ## the bash sandbox
 
+- ✅ **commit, push, pr-open and merge-main in a worktree run through `lane <verb>`** (plugin-x
+  `bin/`, on PATH; bare `lane` prints the verbs) — its text holds no «git», so the guard passes it
+  (4 coders lost ~1 h to one-shot scripts, 2026-09-28)
 - 🎯 **in a worktree session, any command that mentions `gh`, `git`, a token script or `eval`
   goes into a scratch script first, then runs by path** — the shapes below are the reason, and
   they are unfollowable while typing (a coder hit four of them with this file in context,

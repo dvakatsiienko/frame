@@ -119,6 +119,9 @@ still hold for hygiene (commit shape, identity, no stray files), not for ceremon
 
 ## the git lane
 
+- **`lane` is THE way to commit, push, open a pr and merge main in a worktree** — `lane commit
+  <msg-file> -- <paths>`, `lane push`, `lane pr-open <title> <body-file>`, `lane merge-main`; the
+  guard refuses any command text holding «git», and `lane` holds none.
 - **remote state comes from `git ls-remote`, never `@{u}`** — a worktree that cannot push asserted
   «pushed» twice from a stale upstream ref.
 - **PR by default in `bytes`.** First act on any pr-lane job: `git fetch && git log --oneline origin/main..main` — local main ahead of origin means your branch would carry the coordinator's unpushed commits into the pr diff (46 files instead of 7 on dotfiles #42); ask the coordinator to push before you branch. A `--bg` job briefed into a shared checkout (no worktree) has `Edit`/`Write` blocked by the isolation guard — edit through `~/frame/home/.claude/plugin-x/bin/edit-anchored <file> <anchor-file> <replacement-file>`: it writes only when the anchor matches exactly once, reads the bytes back, and prints `<file>:<line>`. The anchor and the replacement are files, so the shell never reaches them. Then: `git worktree add .claude/worktrees/<ticket>-<slug>
