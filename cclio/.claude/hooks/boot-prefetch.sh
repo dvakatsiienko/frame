@@ -100,7 +100,7 @@ jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
   | "apps lane: \(length) apps · last marked \($m) · " + (if $m < $monday then "DUE (a monday passed) — pnpm skill:evergreen-apps" else "next monday" end)' \
   "$HOME/frame/cclio/evergreen/sources.json" || fail "apps lane index unreadable"
 
-echo "-- usage (sline mirrors the statusline's rate_limits to shelf/usage.json on every render) --"
+echo "-- usage (sline mirrors the statusline's rate_limits to shelf/cc-usage-window.json on every render) --"
 jq -r --argjson now "$(date +%s)" '
   def left(t): ((t - $now) / 3600 | floor | tostring) + " h";
   # dima paces a week at ~15 % a day (100 / 7): the window started 7 days before its reset
@@ -108,8 +108,8 @@ jq -r --argjson now "$(date +%s)" '
   | (if $r then (($now - ($r - 604800)) / 86400 * 100 / 7 | floor) else null end) as $pace
   | "weekly \(.rate_limits.seven_day.used_percentage // "?") % · pace \($pace // "?") % · resets in \(left($r // $now))"
   + " · 5h \(.rate_limits.five_hour.used_percentage // "?") %"
-  + " · read \((($now - .written_at) / 60 | floor)) min ago"' "$HOME/.claude/shelf/usage.json" 2>/dev/null \
-  || fail "no usage file — sline has not rendered rate_limits yet (shelf/usage.json)"
+  + " · read \((($now - .written_at) / 60 | floor)) min ago"' "$HOME/.claude/shelf/cc-usage-window.json" 2>/dev/null \
+  || fail "no usage file — sline has not rendered rate_limits yet (shelf/cc-usage-window.json)"
 
 echo "-- repos vs origin (behind-only on a clean main → pulled here; anything else → the reason it was not) --"
 for repo in "$HOME/frame" "$HOME/projects/bytes"; do

@@ -34,7 +34,7 @@ func sessionsDir() string { return claudeHome("sessions") }
 func focusPath(sessionID string) string { return claudeHome("focus", sessionID+".json") }
 
 // usagePath mirrors the server's quota windows for readers that are not a statusline.
-func usagePath() string { return claudeHome("shelf", "usage.json") }
+func usagePath() string { return claudeHome("shelf", "cc-usage-window.json") }
 
 // handoffsDir is the CST store every handoff frontend shares.
 func handoffsDir() string { return claudeHome("shelf", "handoffs") }

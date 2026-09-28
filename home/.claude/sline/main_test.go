@@ -726,7 +726,7 @@ func TestRefreshDueIgnoresEmptyPin(t *testing.T) {
 }
 
 func TestSaveUsageMirrorsTheWeeklyWindow(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "usage.json")
+	path := filepath.Join(t.TempDir(), "cc-usage-window.json")
 	limits := &struct {
 		SevenDay *RateLimitWindow `json:"seven_day"`
 	}{SevenDay: &RateLimitWindow{UsedPercentage: 90, ResetsAt: 1790600000}}

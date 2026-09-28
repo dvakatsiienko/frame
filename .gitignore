@@ -20,7 +20,7 @@ schedule/jobs/x-autoclean-screenshots/bin
 home/.claude/shelf/handoffs/
 home/.claude/shelf/boot-digest.stamp
 # sline rewrites it on every render
-home/.claude/shelf/usage.json
+home/.claude/shelf/cc-usage-window.json
 
 # yt-transcripts are the shelf's second exception, for the same reason as handoffs:
 # they are bulky downloads (a 50-min talk is ~550 KB of raw .vtt), they re-download

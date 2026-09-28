@@ -15,7 +15,7 @@ Ticket: none
 - **only real open asks** — naming, a design fork, a fuzzy bug with no known cause. never a lookup.
 - **a baseline beside it:** the same ask, answered once by plain opus in the same session, before the adhd run.
 - **blind pick:** dima gets both as A/B (order random), picks one, grades 0–10.
-- **measure:** wall seconds · 5h window % before/after (`~/.claude/shelf/usage.json`) · ideas surfaced · traps named · whether the pick shipped.
+- **measure:** wall seconds · 5h window % before/after (`~/.claude/shelf/cc-usage-window.json`) · ideas surfaced · traps named · whether the pick shipped.
 - **auto-fire watch:** any adhd load dima did not type is a miss, logged here.
 
 ## the lock — proven 2026-09-28
@@ -38,4 +38,4 @@ Ticket: none
 
 <!-- date · ask · a/b winner · grade · wall s · 5h % delta · shipped? · note -->
 
-- **r1 · 2026-09-28 · name `~/.claude/shelf/usage.json`** — the skill procedure run by hand (the deny blocks cclio's Skill call; dima's typed run put the body in context). calibration «name this»: 3 frames × 4 ideas (game design · 3am on-call · 10-year-old), fresh `general-purpose` agents, deepen skipped for a name. **cost: ~94k tokens per branch, 6–8 s each, 282k total — 5h +1 %, week +1 %**; the output was ~150 tokens per branch, the rest is substrate (claude.md + rules reloaded per branch). baseline: `rate-limits.json` (cclio), `cc-usage.json` / `cc-fuel.json` (dima). adhd shortlist: ★ `allowance-jar` · `sline-limits`; traps: `pace-ghost` (the file holds limits, not pace), `nap-clock`, `headroom-5h-7d` (bakes the window set into the name), `*-bar` (a bar is the render, not the data). a/b winner: pending dima · shipped: pending · note: `sline-limits` is the angle the baseline missed (name the writer, so a frozen file points at sline); `allowance` is the word the baseline missed (a budget that refills on a set day)
+- **r1 · 2026-09-28 · name `~/.claude/shelf/usage.json`** — the skill procedure run by hand (the deny blocks cclio's Skill call; dima's typed run put the body in context). calibration «name this»: 3 frames × 4 ideas (game design · 3am on-call · 10-year-old), fresh `general-purpose` agents, deepen skipped for a name. **cost: ~94k tokens per branch, 6–8 s each, 282k total — 5h +1 %, week +1 %**; the output was ~150 tokens per branch, the rest is substrate (claude.md + rules reloaded per branch). baseline: `rate-limits.json` (cclio), `cc-usage.json` / `cc-fuel.json` (dima). adhd shortlist: ★ `allowance-jar` · `sline-limits`; traps: `pace-ghost` (the file holds limits, not pace), `nap-clock`, `headroom-5h-7d` (bakes the window set into the name), `*-bar` (a bar is the render, not the data). a/b winner: pending dima · shipped: dima picked his own `cc-usage-window.json` (neither baseline nor adhd) · note: `sline-limits` is the angle the baseline missed (name the writer, so a frozen file points at sline); `allowance` is the word the baseline missed (a budget that refills on a set day)
