@@ -2,10 +2,11 @@
 # deploy-watch — after a push: the ci runs for one head, then the newest prod deploy of every
 # app that head touched, as lines. emits only terminal states plus a heartbeat every 2 min, so a
 # Monitor on it is quiet until something has actually finished — and a quiet wait is visible.
-#   deploy-watch.sh [sha]        run inside the repo; sha defaults to HEAD
+#   deploy-watch.sh [sha] [repo dir]   sha defaults to HEAD, repo dir to the cwd
 # a vercel project is named after its app dir (apps/<name>); a head that touched no app ends
 # after the ci runs. vercel webhooks are pro-only, so polling is the only door on this plan.
 set -u
+cd "${2:-.}" || exit 1
 sha=$(git rev-parse "${1:-HEAD}")
 short=${sha:0:8}
 tick=15
@@ -22,6 +23,10 @@ while :; do
     break
   fi
   n=$((n + 1))
+  # zero runs for a head reads exactly like «pending» — after 3 min it is a finding, never a wait
+  if [ $n -eq 12 ] && [ "$(gh run list --commit "$sha" --json status --jq length 2>/dev/null)" = "0" ]; then
+    echo "ci: NO run exists for $short in $(basename "$PWD") after 3 min — wrong repo, or no run was created"; exit 1
+  fi
   [ $((n % beat)) -eq 0 ] && echo "… ci still running for $short ($((n * tick)) s)"
   [ $n -ge 120 ] && { echo "ci: no terminal state after 30 min for $short"; exit 1; }
   sleep $tick
