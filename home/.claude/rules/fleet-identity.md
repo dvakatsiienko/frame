@@ -77,6 +77,9 @@ Jargon (slay, freebie, propose, pause) lives in `fleet-vibe.md`, not here.
   it starts ordered.
 - **run id** — the thread of one continuous piece of work, continued across sessions, never minted
   mid-story.
+- **lane / shift** — a lane is our usual day: dima present, he steers, his asks fold in place. a
+  shift is a lane built to run without him: the plan takes the gates, cclio watches, logs, fixes in
+  place and reports; its members are named `🛰️ <shift> · <role>` and ping only when done.
 
 ## House rules
 
