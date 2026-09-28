@@ -153,9 +153,9 @@ export const canonicalQuery = (text: string) => {
     return [canonicalMods(mods.join('+')), ...rest].filter(Boolean).join('+');
 };
 
-// The chord a press stream update is about. One 2s tick can move a real chord and the bare
-// modifier released after it (`ctrl+shift+cmd+4`, then `ctrl`); the real chord wins, or a rebind
-// hears only the modifier and drops the press.
+// The chord a press stream update is about. One 2s tick can move a real chord and a bare
+// modifier pressed on its own right after; the real chord wins, or a rebind hears only the
+// modifier and drops the press. (The daemon no longer logs a chord's own release as bare.)
 export const pressedChord = (
     previous: Record<string, number>,
     counts: Record<string, number>,
