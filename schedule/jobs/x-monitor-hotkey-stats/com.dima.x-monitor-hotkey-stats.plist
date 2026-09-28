@@ -5,7 +5,7 @@
 
   - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 30s
   - records — one line per chord press: timestamp, chord (say "hyper+a"), frontmost bundle id
-  - never records — plain typing; a KEY event without cmd, ctrl or opt is dropped inside the tap
+  - never records — plain typing; a KEY event without cmd, ctrl or opt is dropped inside the tap, except esc and F1–F12
   - also records — a modifier pressed and released alone (bare right cmd, bare ctrl), because some bindings are exactly that and they produce no key event
   - privacy — letters, numbers, shift+letter and password fields die before any text is formed
   - the tap — listen-only, alters nothing that passes through it

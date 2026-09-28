@@ -1,18 +1,14 @@
 // x-monitor-hotkey-stats — counts which chords actually get pressed, per app.
 //
-// 📌 NEXT REBUILD: add `CGPreflightListenEventAccess()` before the tap and log the refusal. A
-// listen-only tap without Input Monitoring is created fine and then receives nothing, silently.
-// Not done yet only because building costs a re-grant, so it rides the next planned one.
-//
 // 📌 NEXT REBUILD: a modifier HELD past ~300 ms with key events arriving while it is down should
 // count once on release. That is wispr's push-to-talk on rcmd — it types the transcript while the
 // key is still held, and the current down-then-up-with-no-key-between rule cancels the press.
-// Same planned re-grant as the line above.
 //
-// Privacy by construction: a KEY event reaches disk only when cmd, ctrl or opt is held.
-// Plain typing, shift+letter and every password field are dropped inside the callback,
-// before anything is formatted. App switches carry a bundle id and nothing else — no
-// window title, no document name. Nothing but {ts, kind, chord?, app} is ever written.
+// Privacy by construction: a KEY event reaches disk only when cmd, ctrl or opt is held, or when
+// it is esc or F1–F12 (`bareKeys` in chord.swift). Plain typing, shift+letter and every password
+// field are dropped inside the callback, before anything is formatted. App switches carry a
+// bundle id and nothing else — no window title, no document name. Nothing but
+// {ts, kind, chord?, app} is ever written.
 //
 // Tap placement is .cgSessionEventTap, measured on 2026-09-14: raycast's hyper key swallows
 // the physical press at the HID layer and re-posts a synthetic ⌃⌥⇧⌘ event into the session.
@@ -20,36 +16,9 @@
 
 import Cocoa
 
-// `keyCap` sits in keycodes.swift, generated from hotkeys/chord.ts by
-// `pnpm monitor-hotkey:keycodes` and compiled into this binary. The two were hand-kept twins
-// and drifted anyway — 95 codes here against 66 there — so this daemon logged `pageup` while
-// the config readers called the same key `key116`, and a press on it joined to nothing.
-
-// Canonical modifier order, identical to `modOrder` in hotkeys/chord.ts:
-// hyper, ctrl, opt, shift, cmd. All four together collapse to `hyper`.
-// `fn` and caps lock are deliberately absent — fn rides every arrow and function key, and
-// caps lock is a lock state, so either one would fork one chord into two spellings.
-func chordFor(_ flags: CGEventFlags, _ keyCode: Int64) -> String? {
-    let ctrl = flags.contains(.maskControl)
-    let opt = flags.contains(.maskAlternate)
-    let shift = flags.contains(.maskShift)
-    let cmd = flags.contains(.maskCommand)
-
-    // Shift alone is typing, never a hotkey. This is the privacy gate.
-    guard ctrl || opt || cmd else { return nil }
-
-    var parts: [String] = []
-    if ctrl && opt && shift && cmd {
-        parts.append("hyper")
-    } else {
-        if ctrl { parts.append("ctrl") }
-        if opt { parts.append("opt") }
-        if shift { parts.append("shift") }
-        if cmd { parts.append("cmd") }
-    }
-    parts.append(keyCap[keyCode] ?? "key\(keyCode)")
-    return parts.joined(separator: "+")
-}
+// `chordFor` and the bare-modifier state machine sit in chord.swift, pure so chord.test.swift
+// can replay event sequences through them. `keyCap` sits in keycodes.swift, generated from
+// hotkeys/chord.ts by `pnpm monitor-hotkey:keycodes`.
 
 final class Log {
     private var handle: FileHandle?
@@ -101,21 +70,7 @@ final class Log {
 let log = Log()
 var tapPort: CFMachPort?
 
-// A modifier pressed alone can be a binding in its own right — wispr flow's push-to-talk is
-// bare right cmd, and its previous one was bare ctrl. Those never produce a keyDown, so the
-// chord has to be read from the flagsChanged stream instead: which physical key moved, and
-// did it come back up with no key pressed in between. That last part is what keeps the cmd of
-// cmd+c from counting twice.
-//
-// The keycode is the only thing that tells left from right. CGEventFlags cannot: maskCommand
-// is identical for both cmd keys, which is why this is keyed on the code and not the flags.
-let modifierName: [Int64: String] = [
-    54: "rcmd", 55: "cmd", 56: "shift", 58: "opt",
-    59: "ctrl", 60: "rshift", 61: "ropt", 62: "rctrl",
-]
-
-var bareModifierPending: String?
-var keyPressedSinceModifierDown = false
+var bare = BareModifier()
 
 func frontApp() -> String {
     NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "unknown"
@@ -131,27 +86,13 @@ let handler: CGEventTapCallBack = { _, type, event, _ in
     let flags = event.flags
 
     if type == .flagsChanged {
-        let held = [CGEventFlags.maskControl, .maskAlternate, .maskShift, .maskCommand]
-            .filter { flags.contains($0) }
-        let code = event.getIntegerValueField(.keyboardEventKeycode)
-
-        if held.count == 1, let name = modifierName[code] {
-            bareModifierPending = name
-            keyPressedSinceModifierDown = false
-        } else if held.isEmpty {
-            if let pending = bareModifierPending, !keyPressedSinceModifierDown {
-                log.append(kind: "chord", chord: pending, app: frontApp())
-            }
-            bareModifierPending = nil
-        } else {
-            // A second modifier joined the first: this is the start of a real chord, not a
-            // binding on the modifier itself.
-            bareModifierPending = nil
+        if let name = bare.flagsChanged(flags, event.getIntegerValueField(.keyboardEventKeycode)) {
+            log.append(kind: "chord", chord: name, app: frontApp())
         }
         return Unmanaged.passUnretained(event)
     }
 
-    keyPressedSinceModifierDown = true
+    bare.keyDown()
 
     // Holding a chord fires keyDown repeatedly; one press must count once.
     guard event.getIntegerValueField(.keyboardEventAutorepeat) == 0 else {
@@ -166,6 +107,15 @@ let handler: CGEventTapCallBack = { _, type, event, _ in
 
 let mask = CGEventMask(
     (1 << CGEventType.keyDown.rawValue) | (1 << CGEventType.flagsChanged.rawValue))
+
+// A listen-only tap without Input Monitoring is created fine and then receives nothing, so the
+// grant is checked up front. After a rebuild the grant no longer matches the new cdhash, and
+// this is the line that says so; KeepAlive retries every 30s until the re-grant lands.
+guard CGPreflightListenEventAccess() else {
+    FileHandle.standardError.write(Data(
+        "x-monitor-hotkey-stats: no Input Monitoring for this binary — re-grant it\n".utf8))
+    exit(1)
+}
 
 guard let tap = CGEvent.tapCreate(
     tap: .cgSessionEventTap,
