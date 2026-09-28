@@ -67,9 +67,11 @@ pnpm macos:setup   # brew bundle, macos defaults, duti, vim-plug
 
 ## 🔗 link it
 
-on a fresh machine, clone the repo and run the seed — or hand it to an agent («seed this mac from frame»):
+on a fresh machine, install the command line tools first — the clone itself needs git, and macos ships only a shim that opens the install dialog. then clone to `~/frame` and run the seed, or hand it to an agent («seed this mac from frame»):
 
 ```bash
+xcode-select --install      # stop 0: the dialog, ~2 min
+git clone https://github.com/dvakatsiienko/frame ~/frame && cd ~/frame
 script/seed.sh              # command line tools → brew → fnm, pnpm, node → pnpm i → macos:setup → frame:link apply
 script/seed.sh --claude     # the same, with ~/.claude linked
 script/seed.sh --dry-run    # what it would do, nothing changed
