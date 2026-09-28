@@ -1,0 +1,168 @@
+<title>Evergreen 09-28</title>
+<link href="https://fonts.googleapis.com" rel="preconnect" >
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect" >
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" >
+<style>
+:root{
+  --bg:#F3F6F4; --surface:#FFFFFF; --ink:#15201B; --muted:#5A6A62; --line:#DCE4DF;
+  --pine:#2B7353; --pine-soft:#E2F0E8; --gold:#9A6A12; --gold-soft:#F6ECD6;
+  --done:#2B7353; --wait:#8A5A00; --wait-soft:#FBF0DA; --next:#3D5A99; --next-soft:#E3E9F6;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1412; --surface:#16201C; --ink:#E3ECE7; --muted:#93A69C; --line:#26332D;
+  --pine:#62C493; --pine-soft:#1B3328; --gold:#E2B44F; --gold-soft:#342A14;
+  --done:#62C493; --wait:#E8B75A; --wait-soft:#33290F; --next:#93AEEA; --next-soft:#1D2740;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1412; --surface:#16201C; --ink:#E3ECE7; --muted:#93A69C; --line:#26332D;
+  --pine:#62C493; --pine-soft:#1B3328; --gold:#E2B44F; --gold-soft:#342A14;
+  --done:#62C493; --wait:#E8B75A; --wait-soft:#33290F; --next:#93AEEA; --next-soft:#1D2740;
+  color-scheme:dark;
+}
+body{padding-block:40px 64px;padding-inline:16px;font:15px/1.55 var(--body);color:var(--ink);background:var(--bg);}
+.wrap{display:flex;flex-direction:column;gap:40px;max-width:880px;margin:0 auto;}
+h1,h2,h3{margin:0;font-family:var(--display);text-wrap:balance;}
+h1{font-size:clamp(30px,5vw,44px);font-weight:700;letter-spacing:-.01em;}
+h2{font-size:22px;font-weight:700;}
+h3{font-size:19px;font-weight:700;}
+.eyebrow{font:500 12px/1 var(--mono);color:var(--pine);text-transform:uppercase;letter-spacing:.08em;}
+header{display:flex;flex-direction:column;gap:12px;}
+.lede{max-width:62ch;margin:0;color:var(--muted);}
+.counts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.count{padding:8px 10px;font:500 13px/1 var(--mono);font-variant-numeric:tabular-nums;background:var(--surface);border:1px solid var(--line);border-radius:6px;}
+.count b{font-weight:500;color:var(--pine);}
+section{display:flex;flex-direction:column;gap:16px;}
+.sec-head{display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--line);}
+.sec-head p{margin:0;font-size:13px;color:var(--muted);}
+.stars{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:16px;}
+.card{display:flex;flex-direction:column;gap:12px;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:10px;}
+.card-top{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between;}
+.ver{font:400 13px/1.3 var(--mono);font-variant-numeric:tabular-nums;color:var(--muted);}
+.ver .to{font-weight:500;color:var(--gold);}
+ul.facts{display:flex;flex-direction:column;gap:6px;padding-left:18px;margin:0;}
+ul.facts li::marker{color:var(--pine);}
+.borrow{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;font-size:14px;background:var(--pine-soft);border-radius:8px;}
+.borrow .k{font:600 11px/1.6 var(--mono);color:var(--pine);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+.chip{display:inline-block;padding:5px 7px;font:500 11px/1 var(--mono);letter-spacing:.03em;white-space:nowrap;border-radius:999px;}
+.chip.done{color:var(--done);background:var(--pine-soft);}
+.chip.wait{color:var(--wait);background:var(--wait-soft);}
+.chip.next{color:var(--next);background:var(--next-soft);}
+.warn{padding:10px 12px;font-size:14px;color:var(--ink);background:var(--gold-soft);border-radius:8px;}
+.warn b{color:var(--gold);}
+.rows{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:10px;}
+.row{display:grid;grid-template-columns:minmax(150px,210px) 1fr;gap:16px;padding:14px 18px;border-top:1px solid var(--line);}
+.row:first-child{border-top:0;}
+.row .name{font-weight:600;}
+.row .name .ver{display:block;margin-top:2px;}
+.row p{margin:0;}
+.row .b{margin-top:6px;font-size:14px;color:var(--pine);}
+.quiet{margin:0;font-size:14px;color:var(--muted);}
+.ledger{display:flex;flex-direction:column;gap:8px;}
+.ledger li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline;}
+.ledger ul{display:flex;flex-direction:column;gap:10px;padding:0;margin:0;list-style:none;}
+code{padding:1px 5px;font:13px var(--mono);background:var(--pine-soft);border-radius:4px;}
+a{color:var(--pine);text-underline-offset:2px;}
+a:focus-visible{outline:2px solid var(--pine);outline-offset:2px;border-radius:2px;}
+footer{padding-top:16px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);}
+@media (max-width:560px){.row{grid-template-columns:1fr;gap:6px;}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">🧬 evergreen · mon 28-09-2026</span>
+  <h1>What updated, and what we can take from it</h1>
+  <p class="lede">Every entry below had its release notes read over the whole range. Printed only when it brings a feature for Dima or the fleet; fixes and library internals are read for borrows and left out.</p>
+  <div class="counts">
+    <span class="count"><b>0</b> renovate PRs</span>
+    <span class="count"><b>31</b> brew bumps, all upgraded</span>
+    <span class="count"><b>15</b> apps read</span>
+    <span class="count"><b>8</b> borrows approved</span>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head"><h2>🌟 The five worth reading</h2><p>each with its borrow and where it stands</p></div>
+  <div class="stars">
+    <article class="card">
+      <div class="card-top"><h3>Claude Code</h3><span class="ver">2.1.278 → <span class="to">2.1.283</span></span></div>
+      <ul class="facts">
+        <li>Opus 5.5 is the default Opus: 1M context, $4 / $20 per Mtok. Old saved effort levels don't carry over.</li>
+        <li><code>/doctor prompt-audit</code> finds prompting patterns written for older models in CLAUDE.md, skills and commands.</li>
+        <li>Send-now (ctrl+enter) moves running tools to the background instead of cancelling the turn.</li>
+        <li>New settings: <code>attribution: false</code>, <code>maxProseWidth</code>. <code>anthropic-skills:</code> and <code>claude-ai:</code> namespaces are reserved.</li>
+      </ul>
+      <div class="borrow"><span class="k">borrow</span><span>prompt-audit becomes a lane of the nurture sweep (<a href="https://linear.app/x-com/issue/FRM-267">FRM-267</a>). <span class="chip next">queued</span></span></div>
+    </article>
+    <article class="card">
+      <div class="card-top"><h3>Linear</h3><span class="ver">changelog <span class="to">09-24</span></span></div>
+      <ul class="facts">
+        <li>Projects and initiatives have durable IDs that survive renames: trophy-sys is <code>P-BYT-19</code>, cli is <code>P-FRM-18</code>.</li>
+        <li>The coding agent routes simple tasks to a faster model and can run GLM open-weight models.</li>
+        <li>Loops can trigger on team create, join or leave, and team assignment.</li>
+      </ul>
+      <div class="borrow"><span class="k">borrow</span><span>the roadmap initiative names projects by durable ID. <span class="chip wait">probe first: does linear auto-link it</span></span></div>
+    </article>
+    <article class="card">
+      <div class="card-top"><h3>pnpm</h3><span class="ver">12.5.1 → <span class="to">12.6.0</span></span></div>
+      <ul class="facts">
+        <li><code>autoDedupe</code> merges compatible duplicate versions on every install.</li>
+        <li><code>node_modules</code> can move with its project; the bin shims keep working.</li>
+        <li><code>add --save-types</code> pulls matching <code>@types/*</code>. Upstream 12.8 warns when a <code>.env</code> would be published.</li>
+      </ul>
+      <div class="borrow"><span class="k">borrow</span><span>autoDedupe on in both repos: frame had nothing to merge, bytes merged 9 duplicates and all 7 app builds pass. Time Machine exclusion via env. <span class="chip done">frame shipped</span> <span class="chip wait">bytes waits for push</span></span></div>
+    </article>
+    <article class="card">
+      <div class="card-top"><h3>vorssaint</h3><span class="ver">3.3.5 → <span class="to">3.4.0</span></span></div>
+      <ul class="facts">
+        <li>A Dynamic Island: music with synced lyrics, timers, and a panel for local AI agent activity with plan limits and task-done alerts.</li>
+        <li>Quarter and third window layouts; audio switches to the best connected output on its own.</li>
+      </ul>
+      <div class="borrow"><span class="k">borrow</span><span>the agent panel as a free test for the visibility branch. <span class="chip done">island already on</span> <span class="chip done">upgraded</span></span></div>
+    </article>
+    <article class="card">
+      <div class="card-top"><h3>Claude Desktop</h3><span class="ver">2.110 → <span class="to">2.9939</span></span></div>
+      <ul class="facts">
+        <li>09-16: Cowork is merged into every chat; Design, Slides and Docs artifacts reach every plan.</li>
+        <li>09-22: Opus 5.5 launched, 40% cheaper than Opus 5.</li>
+        <li>09-25: a plugin developer portal with directory submission and usage analytics.</li>
+      </ul>
+      <div class="borrow"><span class="k">borrow</span><span>check that cw still works after the merge. <span class="chip done">Dima tested, good</span></span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>🍺 Brew, with a feature to use</h2><p>31 upgraded · none pinned</p></div>
+  <div class="warn"><b>vercel 60 shipped with no written notes.</b> The major rides a jump of every bundled builder by 3 majors. <code>vercel ls --prod</code> and <code>vercel inspect</code> were smoked on 60.1.3 and read Ready.</div>
+  <div class="rows">
+    <div class="row"><div class="name">vercel<span class="ver">59.25.2 → <span class="to">60.1.3</span></span></div><div><p>New: schedule <code>executions</code>, <code>traces search</code>, <code>cache purge --type</code>; team <code>members</code> can invite and remove.</p></div></div>
+    <div class="row"><div class="name">raycast<span class="ver">2.4.1 → <span class="to">2.5.3</span></span></div><div><p>Extensions supply their own AI models (Ollama, LM Studio, Groq); apps found by alternate names; File Search respects <code>.metadata_never_index</code>.</p><p class="b">borrow: the new Secure Input warning is the first place to look when a chord goes deaf</p></div></div>
+    <div class="row"><div class="name">bartender<span class="ver">7.0.1 → <span class="to">7.0.4</span></span></div><div><p>Ends the menu bar getting stuck on macOS 27; the clipboard helper pastes into Electron apps.</p></div></div>
+    <div class="row"><div class="name">mole<span class="ver">1.55 → <span class="to">1.56.1</span></span></div><div><p><code>optimize</code> no longer drops VPN tunnels; <code>mo clean --dry-run</code> lists old brew versions it would remove.</p></div></div>
+    <div class="row"><div class="name">node<span class="ver">26.9 → <span class="to">26.10</span></span></div><div><p>Built-in <code>util.throttle</code> and <code>util.debounce</code>; <code>sqlite</code> binds <code>undefined</code> as NULL.</p><p class="b">borrow: our scripts can drop hand-rolled debounce helpers</p></div></div>
+    <div class="row"><div class="name">coderabbit<span class="ver">0.8.0 → <span class="to">0.8.1</span></span></div><div><p><code>cr code handoff</code> moves a local session to a cloud task; <code>cr handoff</code> output format changed.</p></div></div>
+    <div class="row"><div class="name">railway<span class="ver">5.58 → <span class="to">5.62</span></span></div><div><p><code>railway trace</code>, MySQL point-in-time recovery, an experimental cloud-agents integration.</p></div></div>
+  </div>
+  <p class="quiet">+ 24 more read, nothing to borrow — the libraries (gnupg, ggml, llama.cpp, libuv, nss, utf8proc, simdutf), fix-only casks, and five with no notes published.</p>
+</section>
+
+<section>
+  <div class="sec-head"><h2>📲 Apps lane</h2><p>markers advanced 28-09</p></div>
+  <p class="quiet">Claude Code, Linear and Claude Desktop are the cards above. Raycast is in brew. Chrome 154 posted only a commit log. Nothing new since the last mark for Wispr Flow, Obsidian, Notion, Things, CleanShot X, 1Password or Newton. Cursor's 09-23 bots are Teams/Enterprise only.</p>
+</section>
+
+<section>
+  <div class="sec-head"><h2>What changed in how we read</h2></div>
+  <ul class="facts">
+    <li>Every updated entry in all three lanes has its notes read over the whole range, in a fresh agent: about 215k tokens and 7 minutes this week.</li>
+    <li>A line prints when it brings a feature for Dima or the fleet, with its borrow. Fixes and library internals stay out.</li>
+    <li>The rules live in <code>cclio:evergreen</code> 0.3.80.</li>
+  </ul>
+</section>
+
+<footer>Sources: each project's release page or changelog, read 28-09-2026 through <code>parallel-cli extract</code>, <code>gh api</code> and npm. vercel 60's content comes from a diff of the two npm tarballs.</footer>
+</div>

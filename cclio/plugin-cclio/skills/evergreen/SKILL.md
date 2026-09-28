@@ -132,8 +132,13 @@ between. a release post on the project's blog beats the github release body when
   the name; the number is the reminder.
 - **pick, never paste.** the facts are the few a reader would want from the whole range; the
   release page is one click for the rest.
-- a big week (≥5 cards, or a 🌟 with a real story) → the same cards as an **artifact** with a
-  chart where a perf claim has numbers; the chat keeps the ⏳ fence only.
+- **every digest is also the artifact** (dima 2026-09-28: «let's have it as a habit part») —
+  one standing page, [Evergreen](https://claude.ai/artifact/RTG9tfdMKvL7sCiuxVpLi4), republished
+  by `url` each run with that run's date in its header: 🌟 cards with a borrow line and a status
+  chip per borrow (shipped · waiting · queued), the brew lines worth reading, the count line,
+  and a chart where a perf claim has numbers. its source lives at
+  `cclio/evergreen/page.html` — read it, swap the content, keep the design. the chat carries
+  the link, one verdict line, and the ⏳ fence.
 - his knob: «too much» / «missed X» → tighten or widen in `memory/craft-evergreen.md` (create on
   first steer, one line per rule).
 
