@@ -33,8 +33,7 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 - **fable-5 / 5.1** — spawned only on his word, and then **always `low`** (dima, 2026-09-06: five medium tasks burned ~40–50% of a 5h window; the knob follows complexity, never volume, and the pick is his — bump only when he says so); Dima spends that budget
   on his own turns. Anything Dima reads → fable flavour: *«opus picks pragmatically, fable =
   flavour»*.
-- **sonnet-5** — routine well-specified work under quota pressure; never hard multi-step (−16 vs
-  opus on SWE-bench Pro).
+- **sonnet-5** — routine well-specified work under quota pressure; never hard multi-step (SWE-bench Pro 63.2 %, −26 vs opus-5.5's 89.9 %; $2/$10 is now permanent).
 - **haiku-4.5** — retrieval, classification, extraction, bulk transforms. 📌 its benchmarks
   compare against 4.x, never the 5s.
 - Full cards and prices: `docs/knowledge/models.md`, on demand.

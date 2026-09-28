@@ -52,5 +52,8 @@ stale. No timer.
 
 ## last run
 
+2026-09-28 — opus-5.5 + fable-5.1 cards added, opus-5 / fable-5 kept as history with their [dima] reads, sonnet-5's permanent $2/$10, spawn defaults re-synced with craft-spawning (opus-5.5 `medium`, verifier `high`). sources: the bundled `claude-api` skill + one `parallel-cli` core lane. dima's ask: «refresh models.md specifically with information about fable 5.1 and opus 5.5».
+
+
 2026-08-27 — recipe created from the standing docs (models.md already pristine;
 `claude-model-strengths.md` research doc retired into it). No fresh research spawned.
