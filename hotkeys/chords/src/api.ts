@@ -53,11 +53,18 @@ export const postManualEdit = (edit: ManualEdit) =>
 // so switching board ↔ stats neither drops a press nor reconnects.
 const listeners = new Set<LiveHandlers>();
 let source: EventSource | undefined;
+// The daemon replays its counts only when a stream opens, and this one opens once per tab — so
+// a page mounted later (the board, back from stats) would draw every count as — until the next
+// press. The stream hands the last payload to each newcomer instead.
+let lastPresses: PressPayload | undefined;
 
 const openSource = () => {
     const next = new EventSource('/api/presses');
     next.addEventListener('presses', (event) => {
-        const presses = JSON.parse((event as MessageEvent<string>).data);
+        const presses: PressPayload = JSON.parse(
+            (event as MessageEvent<string>).data,
+        );
+        lastPresses = presses;
         for (const l of listeners) l.onPresses(presses);
     });
     next.addEventListener('bindings', () => {
@@ -69,6 +76,7 @@ const openSource = () => {
 export const subscribeLive = (handlers: LiveHandlers) => {
     source ??= openSource();
     listeners.add(handlers);
+    if (lastPresses) handlers.onPresses(lastPresses);
     return () => {
         listeners.delete(handlers);
     };

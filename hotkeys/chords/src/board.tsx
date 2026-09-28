@@ -117,13 +117,18 @@ export const BoardPage = (props: BoardPageProps) => {
                 staleStats();
             },
             onPresses: (payload) => {
-                if (replayed) staleStats();
+                const isNews = replayed;
+
+                if (isNews) staleStats();
                 replayed = true;
 
                 // The stream carries totals, so the chord just pressed is the one whose count
-                // moved. That is what press-to-pick listens for.
+                // moved. That is what press-to-pick listens for. A replay moves every count
+                // from nothing, which is not a press.
                 setPresses((previous) => {
-                    const pressed = pressedChord(previous, payload.counts);
+                    const pressed = isNews
+                        ? pressedChord(previous, payload.counts)
+                        : undefined;
 
                     if (pressed)
                         setLastPress({ at: Date.now(), chord: pressed });
