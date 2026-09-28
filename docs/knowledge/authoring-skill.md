@@ -159,9 +159,11 @@ three fields, and two of them are easy to confuse:
   it hides the skill from the `/` menu, keeps claude's access, and keeps the description resident.
 - **`disable-model-invocation: true` also stops** the skill being preloaded into subagents, and
   (v2.1.196+) stops it running when a scheduled task fires with it as the prompt.
-- 📌 `"user-invocable-only"` in `skillOverrides` reaches skills **we do not own** — third-party
-  plugin skills that would otherwise sit resident forever. for our own files prefer the frontmatter
-  field, because it travels with the file.
+- 📌 `"user-invocable-only"` in `skillOverrides` reaches skills we do not own but that sit as
+  loose files (a project repo's `.claude/skills`). 🚫 **it never reaches a plugin skill** — the
+  settings reference: «Overrides don't apply to plugin skills, which you manage through `/plugin`»
+  (code.claude.com/docs/en/settings-reference#skilloverrides, read 2026-09-28). a third-party plugin
+  skill is either kept whole or vendored into a skills dir with `disable-model-invocation: true`.
 
 ### the habit
 

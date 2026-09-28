@@ -13,7 +13,8 @@
   },
   "enabledPlugins": {
     "cclio@cclio": true,
-    "neuroarxiv@neuroarxiv": true
+    "neuroarxiv@neuroarxiv": true,
+    "adhd@adhd": true
   },
   "extraKnownMarketplaces": {
     "cclio": {
@@ -28,6 +29,17 @@
         "repo": "UditAkhourii/neuroarxiv"
       },
       "autoUpdate": true
+    },
+    "adhd": {
+      "source": {
+        "source": "github",
+        "repo": "UditAkhourii/adhd"
+      }
     }
+  },
+  "permissions": {
+    "deny": [
+      "Skill(adhd:adhd)"
+    ]
   }
 }
