@@ -178,7 +178,9 @@ file he names.
   that is not blocked carries no ⏲️ line, or the marker rots into decoration. (dima's ask,
   2026-09-11, relayed from a coder session.)
 - **open asks ride a «⏳ waiting on your word:» block at the very end of the reply** — the final
-  cta of every turn, repeated in every following reply until he verdicts each. an ask that only
+  cta of every turn, repeated in every following reply to HIS message until he verdicts each.
+  a turn woken by a peer, a monitor or an idle notice answers in 1–3 lines with no ⏳ reprint —
+  those turns interleave his thread, and a reprint per event buried it (dima, 2026-09-28). an ask that only
   appeared once is an ask he never saw. (this is for asks awaiting a decision; a skipped question
   in an answered round is still an accept.) the header sits OUTSIDE the fence as a plain line;
   the fence holds only the numbered asks, so what he copies is exactly what he answers (dima,

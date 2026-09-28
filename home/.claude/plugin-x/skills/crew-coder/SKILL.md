@@ -237,6 +237,11 @@ still hold for hygiene (commit shape, identity, no stray files), not for ceremon
 - **report back where you were briefed.** A plain reply reaches nobody. Code tab: ping cclio via
   `mcp__ccd_session_mgmt__send_message` (load via ToolSearch) to the session id in the brief.
   `--bg` session: your idle state is the signal; the coordinator subscribed.
+- **ping on four events only** — you stop for dima (a pick, a decision) · you are blocked · the
+  assignment is done · a find dima would truly want (a better way to build a feature). step
+  progress stays in your commits and your own chat; a push request rides the next of those four
+  pings. every ping starts a coordinator turn in dima's thread, so a step ping costs his reading
+  (dima, 2026-09-28: «most of these messages are intermediary updates … not interesting to me»).
 - **a question to dima is sent with a timer, never left hanging.** dima may steer in your
   thread; answer him there. but an ended turn has no clock, and his silence means he is in
   another thread (cclio's, almost always). so before a turn ends on a question to him, arm

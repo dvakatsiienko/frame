@@ -161,8 +161,9 @@ claude plugin install x@x
 ## the meter
 
 No field reads the $250 credit — not the statusline, not a cli (docs + research, 2026-09-28).
-Before and after a cloud job, dima's usage page is the reading; the job's line in the vet log
-carries both numbers.
+Before and after a cloud job the coordinator reads claude.ai → Settings → Usage through
+`claude-in-chrome`, one page-text call each (dima's yes, 2026-09-28); the job's line in the vet
+log carries both numbers.
 
 **Done** = the pr exists with its exit lines graded, cclio has read it, and the session is archived
 or told to stop.
