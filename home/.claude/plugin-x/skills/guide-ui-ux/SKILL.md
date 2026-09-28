@@ -44,6 +44,9 @@ guides (`guide-react`) sit on top of this one.
 - **leaving a view stops what it started** — autoplay, animation loops, audio, polling: a route
   change or a closed panel halts them, and coming back resumes from a still frame, never mid-play
   (dima, 2026-09-26)
+- **a detail panel fills its reserved space with a useful default** — nothing selected shows the
+  overview (top items, the last event, what is free), so the height never jumps and never sits
+  blank (dima, 2026-09-28: chords' selected-key block)
 - **`tabular-nums` on every numeric column**; truncated text carries the full value in a
   tooltip; tooltips are hoverable and Esc-dismissible
 - **dark surface ≈ `#121212`, never `#000`** — elevation by lighter surface, accents

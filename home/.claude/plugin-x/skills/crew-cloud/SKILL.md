@@ -38,12 +38,15 @@ file the brief points at committed and pushed. A brief that names an unpushed fi
 `--cloud` refuses a non-tty (measured). From a Bash tool call, wrap it in `script`:
 
 ```bash
-cd <repo> && script -q <scratch>/cloud-<ticket>.log claude --cloud "<the brief>" </dev/null >/dev/null
+cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '☁️ cloud: <ticket> <what>' --cloud "<the brief>" </dev/null >/dev/null
 ```
 
-The log ends with `Created cloud session: <title>`, `View: <url>` and `Resume with: claude
---teleport <session_id>`. Keep all three. The title is generated from the brief (? no flag names
-it); the session also shows in `ListAgents` as `cloud`.
+- **`-n` comes before `--cloud`** — `--cloud` takes the brief as its own value; `--cloud -n …` dies
+  on «--cloud requires a description» (measured 2026-09-28, «☁️ cloud: name probe» landed as the
+  title). the name is type-first like every spawn (`craft-spawning`); an unnamed session titles
+  itself from the brief and is unfindable in the sidebar.
+- the log ends with `Created cloud session: <title>`, `View: <url>` and `Resume with: claude
+  --teleport <session_id>`. Keep all three; the session shows in `ListAgents` as `cloud`.
 
 ## step 3 — the brief
 
@@ -107,8 +110,12 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 
 ## step 5 — close
 
-- no cli stops a cloud session (`claude stop` is local only). the pr merged or closed → the web
-  ui's archive, or a «stop and summarize» message.
+- archive and delete are web-ui only (claude.ai/code sidebar or the session menu; docs
+  `claude-code-on-the-web#archive-sessions`, read 2026-09-28) — no cli verb, no api. an idle
+  session costs nothing, its VM is reclaimed; the archive is sidebar hygiene. the pr merged or
+  closed → the session is archived by the coordinator, never left for dima (his call, 2026-09-28:
+  «if another army appears — you clean»): `claude-in-chrome` on claude.ai/code, after asking him
+  to have that tab open; one line per archived name in the reply.
 - the verifier, the ci reviewer (`review.yml`, subscription oauth) and the done-comment in linear
   are the local flow's, unchanged: cclio reads the pr and writes the comment.
 
