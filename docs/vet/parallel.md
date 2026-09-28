@@ -82,6 +82,8 @@ lanes: ws = built-in WebSearch · fast = `--mode fast` · agentic = `--mode agen
 - 2026-09-26 · research core · cursor pointer + error boundaries (q2) · 3/5 (added the thumb → grab nuance opus missed; no versions, a playwright snippet despite «decided against») vs opus 4/5 (tailwind 4.3.3 guide + restore snippet, react-error-boundary 6.1.6 d.ts, react 19 root options) · ~3 min · 10.4k chars · ¢ unsettled
 - 2026-09-27 · research core · cc auto-compact + long-running harness state (vectors 1–2 of long-running-context) · 4/5 (vector 1 near-complete: 967k, hook fields, 5k skill cap, env vars, the task list persists; added the openai codex 25 h case; wrong that the docs define no «Compact Instructions» `CLAUDE.md` section; missed context anxiety, manus, all papers, every fleet fact) vs my own lane 5/5 (docs read raw via `.md` urls, a local `compact_boundary` tally, 5 papers) · 274 s · 9.9k chars · ~4¢ (upper bound)
 - 2026-09-27 · research core · BYT-61 monorepo in the ai era for dima's setup · hit, 4/5 (sourced + dated, the right verdict and the one change; missed the fleet's own FRM-261 evidence, which cclio added) · 183 s · 9.8k chars · ¢ not read
+- 2026-09-28 · research core ×2 · crew-designer prior research (designer-skill practices + designer tools) · landed, ungraded — grade at the 09-28 boot beside an opus lane · ~3–4 min each · 9.8k + 7.9k chars · ¢ not read
+- 2026-09-28 · extract · browserbase.com/pricing (a js marketing page) · hit: all four plans with limits · 2 s · excerpt truncated at ~300 chars by default, `--full-content --json` gave the whole page · ¢ not read
 
 ## monitor round — 2026-09-27 (dima: «let's test at full scale and measure the costs»)
 
