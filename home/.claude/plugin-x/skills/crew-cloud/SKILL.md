@@ -109,7 +109,7 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
   pr body (`gh pr list --state all --search '<BYT-N> in:body'`), never on the head branch: a cloud
   session is pinned to its own `claude/<slug>` branch and ignores the brief's `coder/…` name
   (BYT-97, 2026-09-28: the head-keyed watch saw nothing while #105 sat open).
-- **send** a steer: `SendMessage` to its `ListAgents` name, or `claude -p "<msg>" --cloud <id>`.
+- **send** a steer with `claude -p "<msg>" --cloud <id>`, which lands as a task. a `SendMessage` reaches a cloud session only as information, never a task (2026-09-28).
 - 🚫 **it cannot answer by message** — ListAgents' own doc: a cloud session «cannot message any
   session back yet». never brief it to ping; never wait for one.
 - **read** its transcript in a scratch clone of the same repo, never the main checkout:
