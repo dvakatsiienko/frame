@@ -1,7 +1,7 @@
 #!/bin/sh
 # seed a fresh mac with frame. run it from the clone: script/seed.sh [--claude] [--dry-run]
-# agent-first: one status line per step, safe to re-run. exit 2 = a human stop — the last line
-# says what his hands must do, and the next run picks up from there. plain sh: no node yet.
+# agent-first: one status line per step, safe to re-run. exit 2 = a human stop — the waiting
+# lines say what his hands must do, and the next run picks up from there. plain sh: no node yet.
 set -eu
 
 claude=0
@@ -28,6 +28,12 @@ hands() {
     line "$1" waiting "needs your hands: $2"
     exit 2
 }
+# a sign-in stop at the end: every one is named in the same run, then exit 2
+stops=0
+later() {
+    line "$1" waiting "needs your hands: $2"
+    stops=$((stops + 1))
+}
 # a step that changes the machine: printed under --dry-run, run otherwise
 act() {
     step="$1"
@@ -35,7 +41,7 @@ act() {
     if [ "$dry" = 1 ]; then
         line "$step" dry-run "$*"
     else
-        "$@"
+        "$@" || return
         line "$step" ran "$*"
     fi
 }
@@ -84,7 +90,12 @@ fi
 act deps pnpm install --frozen-lockfile
 
 # 5 · the Brewfile, macos defaults, duti — the repo's existing script, unchanged
-act macos pnpm macos:setup apply
+# App Store apps wait on a sign-in no script can give (mas hangs on it) — brew skips them, step 9 names them
+mas_ids="$(sed -n 's/^mas .*id: *\([0-9][0-9]*\).*/\1/p' Brewfile | tr '\n' ' ')"
+export HOMEBREW_BUNDLE_MAS_SKIP="$mas_ids"
+if ! act macos pnpm macos:setup apply; then
+    hands macos 'the Brewfile or a macos default failed — read the lines above, fix the cause, then re-run'
+fi
 
 # 6 · the mirror — ~/.claude stays out unless --claude
 link_flag=--without-claude
@@ -132,13 +143,33 @@ fi
 # 8 · git-crypt — one file (gmail/blocklist.json); the seed never unlocks it
 line git-crypt skipped 'gmail/blocklist.json stays locked — unlock by hand when a gmail filter job needs it'
 
-# 9 · 1password — installed by the Brewfile; SSH signing waits on his sign-in
+# 9 · App Store apps from the Brewfile — step 5 skipped them; mas installs once he is signed in
+if [ -n "$mas_ids" ] && [ "$dry" = 1 ]; then
+    line appstore dry-run "check that mas list holds $mas_ids"
+elif [ -n "$mas_ids" ]; then
+    installed="$(mas list 2>/dev/null)"
+    missing=""
+    for id in $mas_ids; do
+        printf '%s\n' "$installed" | grep -qw "$id" || missing="$missing $id"
+    done
+    if [ -n "$missing" ]; then
+        later appstore "sign in to the App Store app, then run  mas install$missing"
+    else
+        line appstore "done" "$mas_ids"
+    fi
+fi
+
+# 10 · 1password — installed by the Brewfile; SSH signing waits on his sign-in
 if [ "$dry" = 1 ]; then
     line 1password dry-run 'check that the 1Password cli sees a signed-in account'
 elif command -v op >/dev/null 2>&1 && [ "$(op account list --format=json 2>/dev/null)" != "[]" ] && [ -n "$(op account list 2>/dev/null)" ]; then
     line 1password "done" 'an account is signed in'
 else
-    hands 1password 'open 1Password, sign in, turn on Settings → Developer → SSH agent and CLI integration, then re-run'
+    later 1password 'open 1Password, sign in, turn on Settings → Developer → SSH agent and CLI integration'
 fi
 
+if [ "$stops" -gt 0 ]; then
+    line seed waiting "the machine is set up — do the $stops sign-ins above, then re-run"
+    exit 2
+fi
 line seed "done" 'frame is seeded'
