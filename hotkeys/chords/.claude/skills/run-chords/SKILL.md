@@ -150,8 +150,8 @@ for p in 7374 7383 7384; do lsof -nP -iTCP:$p -sTCP:LISTEN -t >/dev/null && echo
 - **the daemon binds `0.0.0.0`**, ipv4 only, on purpose since `daecf880` (a phone on the wi-fi
   opens it) — `[::1]:7383` does not connect. writes answer 403 unless they come from loopback, so
   a write probe goes to `127.0.0.1` or `localhost`, never the mac's wi-fi address.
-- **`pnpm hotkeys:scan` prints `skipped magnet` / `skipped bartender` with plutil noise** and
-  exits 0 — those apps' prefs are gone or moved. not a failure.
+- **`pnpm hotkeys:scan` prints nothing on stderr when every source reads.** a `skipped <source>`
+  line is a real change on this mac — an app gone or its config moved — never noise.
 - **a hand-made worktree cannot `git-crypt unlock`** with the recipe in frame's `AGENTS.md`: the
   unlock runs `git status`, which dies on the clean filter. the unlock that worked:
 

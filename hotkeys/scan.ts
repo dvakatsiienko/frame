@@ -1,28 +1,17 @@
-// prints every hotkey the machine will tell us about, as json: wispr flow, magnet, bartender,
-// cursor, macos, plus the hand-kept list in manual.ts.
+// prints every hotkey the machine will tell us about, as json: wispr flow, cursor, macos, plus
+// the hand-kept list in manual.ts.
 //   node ./hotkeys/scan.ts
 //
 // stdout is an api — top.ts parses it — so it stays json. the same payload is also dropped
 // beside this file as hotkeys.json, which is what the daemon hands the chords app over
-// /api/hotkeys; the scan is five plutil calls and the page must not wait on them.
+// /api/hotkeys; the scan shells out to plutil and the page must not wait on it.
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { canonical, keyCap } from './chord.ts';
 import { type Hotkey, manualHotkeys } from './manual.ts';
-import {
-    bartenderPreference,
-    cursorKeybindings,
-    macosPreference,
-    magnetPreference,
-    wisprConfig,
-} from './sources.ts';
-
-const plistJson = (path: string, key: string) =>
-    execFileSync('plutil', ['-extract', key, 'raw', '-o', '-', path], {
-        encoding: 'utf8',
-    });
+import { cursorKeybindings, macosPreference, wisprConfig } from './sources.ts';
 
 const modifierCodes = new Set([55, 56, 58, 59, 63]);
 const modsOf = (mask: number, bits: [number, string][]) =>
@@ -30,13 +19,6 @@ const modsOf = (mask: number, bits: [number, string][]) =>
         .filter(([bit]) => mask & bit)
         .map(([, name]) => name)
         .join('+');
-const carbonMods = (mask: number) =>
-    modsOf(mask, [
-        [4096, 'ctrl'],
-        [2048, 'opt'],
-        [512, 'shift'],
-        [256, 'cmd'],
-    ]);
 // NX event flags, what symbolichotkeys stores
 const nxMods = (mask: number) =>
     modsOf(mask, [
@@ -89,49 +71,6 @@ const wispr = (): Hotkey[] => {
         });
 };
 
-const magnet = (): Hotkey[] => {
-    const raw = Buffer.from(
-        plistJson(magnetPreference, 'horizontalCommands'),
-        'base64',
-    ).toString();
-    const commands: {
-        name: string;
-        keyboardShortcut: {
-            enabled: boolean;
-            shortcut?: { carbonModifiers: number; carbonKeyCode: number };
-        };
-    }[] = JSON.parse(raw);
-    return commands
-        .filter(
-            (c) => c.keyboardShortcut.enabled && c.keyboardShortcut.shortcut,
-        )
-        .map((c) => {
-            const { carbonModifiers, carbonKeyCode } = c.keyboardShortcut
-                .shortcut as { carbonModifiers: number; carbonKeyCode: number };
-            return {
-                action: c.name.replace('command:default.name.', ''),
-                app: 'magnet',
-                key: keyCap[carbonKeyCode] ?? String(carbonKeyCode),
-                mods: carbonMods(carbonModifiers),
-            };
-        });
-};
-
-const bartender = (): Hotkey[] => {
-    const { carbonKeyCode, carbonModifiers } = JSON.parse(
-        plistJson(bartenderPreference, 'KeyboardShortcuts_showAllItems'),
-    );
-    const mods = carbonMods(carbonModifiers);
-    return [
-        {
-            action: 'show all items',
-            app: 'bartender',
-            key: keyCap[carbonKeyCode] ?? String(carbonKeyCode),
-            mods: mods === 'ctrl+opt+shift+cmd' ? 'hyper' : mods,
-        },
-    ];
-};
-
 const cursor = (): Hotkey[] => {
     const text = readFileSync(cursorKeybindings, 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -181,7 +120,7 @@ const macos = (): Hotkey[] => {
     });
 };
 
-const scanned = [wispr, magnet, bartender, cursor, macos].flatMap((scan) => {
+const scanned = [wispr, cursor, macos].flatMap((scan) => {
     try {
         return scan();
     } catch (error) {

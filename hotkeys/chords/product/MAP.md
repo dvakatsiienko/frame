@@ -133,3 +133,11 @@
   - when the daemon goes down after the numbers loaded
   - then the numbers stay and a notice says they stopped refreshing
   - ⬜ half run: the failed refresh keeps the numbers and says so; the live half waits for a real press
+
+## scripts
+
+- ✅ `pnpm hotkeys:scan` reads wispr flow, cursor, macos and `manual.ts`, and says nothing when all read
+  - makes: `hotkeys/hotkeys.json`, the snapshot the board draws
+  - when every source reads, then stderr is empty and the exit is 0
+  - when a source cannot be read, then a `skipped <source>` line names it
+  - decision: magnet (uninstalled 09-19) and bartender (v7 keeps no shortcut; `hyper+b` is a raycast row) are no longer read

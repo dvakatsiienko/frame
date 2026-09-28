@@ -13,7 +13,7 @@ nothing else needs touching: the live job sees its mtime move, reruns the scan, 
 
 ## the pieces
 
-- `scan.ts` — reads the six sources named in `sources.ts`; stdout is json, and `top.ts` parses it,
+- `scan.ts` — reads the four sources named in `sources.ts`; stdout is json, and `top.ts` parses it,
   and the same payload lands beside it as `hotkeys.json` for the app
 - `live.ts` — the always-on watcher and the app's server: counts presses, reruns the scan on a
   config change, pushes both to the page. installed as `x-monitor-hotkey-live`

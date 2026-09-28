@@ -74,7 +74,7 @@ const sourceSignature = () =>
         )
         .join('|');
 
-// Run out of process: the scan opens five app config files through plutil, and a throw from
+// Run out of process: the scan opens the app config files, one through plutil, and a throw from
 // any of them must not take the watcher down with it. scan.ts rewrites hotkeys.json as it runs.
 const rescan = () => {
     try {

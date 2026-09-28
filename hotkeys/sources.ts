@@ -12,8 +12,6 @@ export const wisprConfig = join(
     home,
     'Library/Application Support/Wispr Flow/config.json',
 );
-export const magnetPreference = preference('com.crowdcafe.windowmagnet');
-export const bartenderPreference = preference('com.surteesstudios.Bartender');
 export const cursorKeybindings = join(
     home,
     'Library/Application Support/Cursor/User/keybindings.json',
@@ -26,8 +24,6 @@ export const manualList = join(import.meta.dirname, 'manual.ts');
 
 export const sourceList = [
     wisprConfig,
-    magnetPreference,
-    bartenderPreference,
     cursorKeybindings,
     macosPreference,
     manualList,
