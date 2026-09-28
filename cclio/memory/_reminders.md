@@ -38,7 +38,7 @@ Store contract: the `remind` skill. Both tiers die only when Dima drops them.
 
 
 
-⏰📌 🔬 **monitor canary day 2026-09-28, at boot** — on [frame#48](https://github.com/dvakatsiienko/frame/issues/48): post one comment, add the `question` label, close it; put `canary-monitor-ping` in the first frame commit body. then on 2026-10-01 grade the 10 monitors in `docs/vet/parallel.md` (monitor round): fired · latency · false positives · the balance (462¢ before). dies when graded — set 2026-09-27
+⏰ 🔬 **monitor canary, grade on 2026-10-01** — the canary ran 09-28 14:51 on [frame#48](https://github.com/dvakatsiienko/frame/issues/48) (one comment, the `question` label, closed; `canary-monitor-ping` in `5ca073cc`). on 10-01 grade the 10 monitors in `docs/vet/parallel.md` (monitor round): fired · latency · false positives · the balance (462¢ before). dies when graded — set 2026-09-27
 
 ⏰ 🔬 parallel vet, one week to 2026-10-01 — every «research X» runs `parallel-cli research run --processor core` (via `script/op-run.sh`) FIRST, an opus agent second, both graded; every lookup that WebSearch misses gets a `parallel-cli search --mode advanced` retry; the next list-shaped ask tries `findall`, the next url-that-returns-a-shell tries `extract`, one github-issue reminder tries `monitor`. every round appends one line to `docs/vet/parallel.md` (its vet log): date · tool · ask · hit · seconds · chars in ctx · ¢ (balance before/after, settled later). on 10-01: adopt as a door, or drop. dima 2026-09-24: «decide based on data not guesses» — set 2026-09-24
 
@@ -49,7 +49,6 @@ Store contract: the `remind` skill. Both tiers die only when Dima drops them.
 
 ⏰ 🔬 cc-cloud vet, to 2026-11-04 (the $250 credit expires 11-05) — cloud sessions are fleet members on vet; walk `docs/vet/cc-cloud.md`, one real job per candidate use, dima's usage-page screenshot before and after each. on 11-04: which uses stay, written into `x:crew-cloud`. dima 2026-09-28: «announce cloud sessions as official members of our fleet, under vet, and we have to find a good use for cloud agents» — set 2026-09-28
 
-⏰📌 **exa-golden fields, at the 2026-09-28 boot** — the key is in (36 chars, a live search answered 200 at 09-28 ~02:40 UTC), the rest of the item is blank. fill it by agent (`op item edit exa-golden --vault dev`): website https://dashboard.exa.ai/api-keys · username dima's signup email (ask) · tags fleet, cc · notes «exa search api key — read by frame op.env as EXA_API_KEY; rival lane in the parallel vet» · expires if exa sets one. dies when the fields are set. dima 09-28: «remind me tomorrow to ask you to go update a field with good shapes … I currently print from a mobile device» — set 2026-09-28
 
 ⏰ 🦉🔬 NPSSO lifetime — dima pasted a fresh local NPSSO on 2026-09-27 ~20:55 (trophy-sys `/console`, main checkout); the old one died on «day 15» while trophy-sys's AGENTS.md says 10. measure: start the app with `run-trophy-sys` and read `curl -s -o /dev/null -w '%{http_code}' localhost:5177/api/profile` on 2026-10-07 (day 10), then daily from 10-10 until the first 500 `NPSSO_INVALID`; that day is the lifetime → BYT-85's body + trophy-sys AGENTS.md — set 2026-09-27
 
