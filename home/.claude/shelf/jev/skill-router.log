@@ -18,3 +18,7 @@
 2026-09-27T18:14:12.002Z	miss	lane=x:humanize picked twice for questions about INSTALLING humanize, not rewriting text
 2026-09-27T18:14:12.387Z	miss	lane=x:handoff-ingest picked for a question to a peer session, not a handoff
 2026-09-27T18:14:12.523Z	ok	x:pm, x:guide-code, x:cmt, x:notes, cclio:halt picks were right today
+2026-09-28T01:25:58.100Z	miss	lane=x:notes «create a 1p entry in dev vault» routed x:notes 0.81 — 1password is not a vault note; the vault word matched
+2026-09-28T01:55:46.414Z	miss	lane=x:guide-code «print a line into frame's agents.md» routed x:guide-code 0.65 — an AGENTS.md line is agent docs (writing-for-agents), not code
+2026-09-28T01:56:45.402Z	miss	lane=x:writing-for-humans «announce cloud sessions as official members of our fleet» routed x:writing-for-humans 0.80 — «announce» meant the fleet rules, not a message to a person
+2026-09-28T02:08:23.799Z	miss	lane=x:guide-code «📋 copy → cloud base setup script ✓» routed x:guide-code 0.84 — a pasted-done ack, nothing to code
