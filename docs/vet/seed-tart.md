@@ -39,4 +39,25 @@ Ticket: [FRM-147](https://linear.app/x-com/issue/FRM-147)
   - two end stops fired one per run, so the human needed two rounds. fixed: `appstore` and `1password` are collected and named together, then one `exit 2`.
 - 2026-09-28 17:48 — **`pushInsteadOf` graded** (main `cfa2365f`): `~/.gitconfig` linked, 1Password signed out. `brew update --force` exit 0 in 3 s; a fresh `brew tap cirruslabs/cli` clones over https in 2 s. the same state hung forever in runs 3 and 4.
 - 2026-09-28 17:49 — run 8: every step `done`/`ran`, `Everything mirrored`, both sign-ins named in one run, exit 2. `pnpm frame:link` exits 1 on `.claude/ missing` — by design, the seed defaults to `--without-claude`; `pnpm frame:link --without-claude` → «Everything mirrored», exit 0.
+- 2026-09-28 17:51 → 18:04 — **the clean run**: VM `seed-2`, a fresh local clone of the cached image, the branch head (`514f0bc5`) from a bundle over a clean https clone of main (`-c credential.helper=`: no «failed to store», no keychain item).
+  - stop 0: CLT, 1 m 40 s. stop 1 (`brew waiting`): the installer, 20 s.
+  - one seed run, **7 m 41 s**: fnm, pnpm, node 24 via fnm, `pnpm install`, the whole Brewfile, `Linked 8`, three stubs written, then `appstore` + `1password` named together, exit 2. no stall, no hand on the keyboard. (brew 7 stages every cask first, then moves them silently for ~6 min at ~50 % cpu in a child `brew.rb` — a 3-min silence watcher fires falsely there.)
+  - ✅ `pnpm frame:link --without-claude` → «Everything mirrored», exit 0. a new `zsh -li` in a bare env finds brew, node v24.21.0 and pnpm through the stubs. a re-run: 3 s, the same two stops.
+  - not done by the agent: the two sign-ins need dima's Apple ID and 1Password account.
 - 📌 after a reboot with the extra disk attached, the boot disk renumbered from `disk0` to `disk1`. a disk op in a VM picks its target by size, never by number.
+
+## verdict, round 1
+
+**the seed runs start to end on a fresh mac.** CLT, then brew, then one agent-driven run of ~8 min, ending at the two sign-ins that need dima's accounts. green by `pnpm frame:link --without-claude`.
+
+still open, not the seed's to fix:
+- **stop 0 sits before the seed**: a fresh mac cannot `git clone` without CLT. the entry doc says `xcode-select --install` first.
+- the `clt` stop inside the seed only fires for a clone made some other way (a zip, a bundle).
+- plain `pnpm frame:link` stays red on a default seed (`.claude/` missing). the green check is `--without-claude`, or seed with `--claude`.
+
+## round 2 — claude inside the VM (not started)
+
+- a claude login: dima signs in to Claude Code in the VM window (an OAuth browser round), or a scoped API key from 1password, never his main one.
+- `--claude`: the seed links `~/.claude`; `settings.json` then installs the plugins on the first launch, which needs network to the marketplaces and the `plugin-x` path at `~/frame`.
+- the git-crypt key, if round 2 touches `gmail/`; nothing else needs it.
+- the bed as built here: the extra disk, the brew `tmp` symlink, `HOMEBREW_CASK_OPTS` in `/etc/zshenv`. or a 120 GB base image, built once with packer, so the recovery-partition wall never comes up.

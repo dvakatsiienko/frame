@@ -46,11 +46,20 @@ act() {
     fi
 }
 
+# 0 · the clone lives at ~/frame — the zsh stubs, macos-setup and every config point there
+if [ "$(pwd -P)" != "$(cd "$HOME/frame" 2>/dev/null && pwd -P)" ]; then
+    if [ "$dry" = 1 ]; then
+        line clone dry-run "would stop: this clone is $(pwd -P), not ~/frame"
+    else
+        hands clone "move this clone to ~/frame, then run ~/frame/script/seed.sh"
+    fi
+fi
+
 # 1 · the command line tools — git and the compilers every later step needs
 if xcode-select -p >/dev/null 2>&1; then
     line clt "done" "$(xcode-select -p)"
 else
-    act clt xcode-select --install
+    act clt xcode-select --install || true
     hands clt 'click Install in the Command Line Tools dialog, then re-run'
 fi
 
@@ -103,13 +112,13 @@ link_flag=--without-claude
 if [ "$dry" = 1 ]; then
     line link dry-run "node script/frame-link.ts apply $link_flag"
 elif ! node script/frame-link.ts apply $link_flag; then
-    hands link 'the files «in the way» above are real files where a link belongs — keep (mv into home/) or drop each, then re-run'
+    hands link 'frame-link failed — a file «in the way» above is kept (mv into home/) or dropped; any other error is a bug to report; then re-run'
 fi
 
 # the zsh files are sourced by a stub, never linked (manifest.ts noLink) — the seed writes the stubs
 for f in .zshenv .zprofile .zshrc; do
     src="source \"\$HOME/frame/home/$f\""
-    if grep -qF "$src" "$HOME/$f" 2>/dev/null; then
+    if grep -qxF "$src" "$HOME/$f" 2>/dev/null; then
         line zsh "done" "~/$f sources frame"
     elif [ -e "$HOME/$f" ]; then
         hands zsh "~/$f exists — add the line $src to it (or drop the file), then re-run"
