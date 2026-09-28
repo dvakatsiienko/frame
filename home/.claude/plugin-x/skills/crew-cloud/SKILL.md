@@ -122,7 +122,9 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
   session costs nothing, its VM is reclaimed; the archive is sidebar hygiene. the pr merged or
   closed → the session is archived by the coordinator, never left for dima (his call, 2026-09-28:
   «if another army appears — you clean»): `claude-in-chrome` on claude.ai/code, after asking him
-  to have that tab open; one line per archived name in the reply.
+  to have that tab open; one line per archived name in the reply. (? unproven: on 2026-09-28 the
+  web app answered «session couldn't be found» for a cli-made cloud session — until a probe lands,
+  dima archives in the desktop sidebar, hover → archive)
 - the verifier, the ci reviewer (`review.yml`, subscription oauth) and the done-comment in linear
   are the local flow's, unchanged: cclio reads the pr and writes the comment.
 
