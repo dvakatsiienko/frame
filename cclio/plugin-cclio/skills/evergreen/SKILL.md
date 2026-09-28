@@ -38,10 +38,18 @@ entry; a `⚠️ marker not found` line means the page changed shape — re-seed
 tier from the branch (`renovate/<pkg>-<major>.x` = major; grouped titles say `patch` / `minor`),
 age from `createdAt`, ci from `statusCheckRollup`.
 
-## 2. read the release, not the PR body
+## 2. read the release — every lane, every updated entry
 
-the PR body embeds release notes but github truncates it. for every major (and any minor that
-gets a card):
+the judge reads notes, never titles. **every updated entry in all three lanes — renovate, brew,
+apps — gets its notes read over the whole range** before step 3 decides anything; a line that
+says «notes unread» is a step skipped (dima 2026-09-28: «how this line is useful for me without
+knowing whats interesting new in a major?»). the read is heavy (31 entries = ~215k tokens,
+~7 min, 2026-09-28), so it runs in a fresh general-purpose agent, never the digest fork, with
+`parallel-cli extract --full-content` as the first door. no notes anywhere → name the urls
+tried; for a major, diff the old and new npm tarballs (commands, flags) and label that inference.
+
+the PR body embeds release notes but github truncates it. for every renovate major (and any minor
+that gets a card):
 
 ```
 gh api repos/<owner>/<repo>/releases --jq '.[] | select(.tag_name | test("^v?<from>|^v?<to>")) | "\(.tag_name)\n\(.body)"'
@@ -71,12 +79,18 @@ between. a release post on the project's blog beats the github release body when
   shipped with a new default. one line; a card with nothing to borrow prints no borrow line.
   **claude code and linear get the thought on every notable entry**, not only majors — they are
   the tools we run all day (dima, 2026-09-20).
-- **silent means absent** — a silent item is never printed, not even as a name (dima 2026-09-21: «if
-  formulas didn't update, do not print them»); a section with nothing notable is its header line
-  alone (`🍺 brew — 22 outdated, nothing notable`). silent: patches, minors without a notable api, brew patch bumps, libs nobody drives by
-  hand. minors fold into one monday line: `k minors, notable: …`. **the apps lane obeys the
-  same silence**: a fix-only release prints nothing, a feature change or a new feature is a
-  🟠 line, a rewrite or a capability we would use is a 🌟 card with the borrow line.
+- **a feature he or we can use** — the bar for a printed line is a new capability for dima or for
+  the fleet, with the borrow it opens; «nothing to act on» never makes an entry silent, and «under
+  the hood» never makes it loud. every entry is still read in full — the borrow hunt runs over
+  everything — but a library (gnupg, ggml, libuv) prints only when it hands us a feature. fixes,
+  minors and patches without a feature stay out, their details too (dima 2026-09-28: «fixes are
+  not interesting 95 % of cases»); a fix prints only when it ends a bug we hit. every printed
+  entry carries its 1–4 facts as nested bullets — a name with a version and no facts is an empty
+  line.
+- **the rest is one count line per section** — `+ 14 more read, nothing to borrow`. an entry that did not update is never printed (dima
+  2026-09-21: «if formulas didn't update, do not print them»). the apps lane obeys the same rule:
+  a feature change is a 🟠 line with its facts, a rewrite or a capability we would use is a 🌟
+  card with the borrow line.
 
 ## 4. the report — cards, plain reply, never a fence
 
@@ -95,14 +109,18 @@ between. a release post on the project's blog beats the github release body when
 - **breaks** — …
 - ➡️ merge
 
-🍺 brew — <n> formulae + <m> casks outdated, <pinned or none pinned>, <k> worth a look
-- 🟠 <formula> a → b — one line why (a major, or a tool he drives by hand with a notable change) [notes](url)
-- 🟡 <formula> a → b — same, for a notable minor
+🍺 brew — <n> formulae + <m> casks outdated, <pinned or none pinned>, <k> with news
+- 🟠 <formula> a → b — [notes](url)
+  - 1–4 facts: what is new, numbers, what broke
+  - 💡 **borrow** — …
+- + <k> more read, nothing to borrow
 
 📲 apps — <n> apps read, <k> with something to say
-- 🌟 <app> <entry> — one line what changed [notes](url)
+- 🌟 <app> <entry> — [notes](url)
+  - 1–4 facts
   - 💡 **borrow** — …
-- 🟠 <app> <entry> — one line why he cares [notes](url)
+- 🟠 <app> <entry> — [notes](url)
+  - 1–4 facts
 
 📋 copy → terminal 📋   ```brew upgrade```   ✂️ end ✂️   ← kept for the day he wants his own hands on it
 
@@ -112,7 +130,8 @@ between. a release post on the project's blog beats the github release body when
 - the four labels are fixed words in a fixed order so his eye lands on the same spot per card.
 - a red ci on any tier → ⚠️ on the card and ➡️ coder. age ≥ 7 days unmerged → `⏳ 9d` before
   the name; the number is the reminder.
-- **never restate the changelog.** the release page is one click; the card says why he cares.
+- **pick, never paste.** the facts are the few a reader would want from the whole range; the
+  release page is one click for the rest.
 - a big week (≥5 cards, or a 🌟 with a real story) → the same cards as an **artifact** with a
   chart where a perf claim has numbers; the chat keeps the ⏳ fence only.
 - his knob: «too much» / «missed X» → tighten or widen in `memory/craft-evergreen.md` (create on
