@@ -61,7 +61,7 @@ done
 if command -v brew >/dev/null 2>&1; then
     line brew "done" "$(brew --prefix)"
 else
-    hands brew 'install Homebrew with the one-line installer on https://brew.sh, skip its «next steps» (the linked ~/.zprofile does that), then re-run'
+    hands brew 'install Homebrew with the one-line installer on https://brew.sh, skip its «next steps» (the seed writes a ~/.zprofile stub that does it), then re-run'
 fi
 
 # 3 · fnm + pnpm through brew, node through fnm (the version is .node-version's major)
