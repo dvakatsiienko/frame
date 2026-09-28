@@ -66,6 +66,7 @@ cloud mode — you run on an anthropic vm, not the mac:
 - nobody answers questions: an open decision goes in the pr body as `? <question>`, and you take the safer option.
 - no worktree: you are already on a fresh clone; branch `coder/<BYT-N>-<slug>`, `CI=1 pnpm install`, push, open ONE pr with gh.
 - run everything in the foreground; the vm is reclaimed when idle.
+- your last act, pr or no pr: push your final report as REPORT.md to a branch `cloud/<short-slug>` — cclio's pr-watch sees that branch; nothing else tells it you finished.
 ```
 
 **Without plugin `x` in the environment**, the self-contained brief below carries the core

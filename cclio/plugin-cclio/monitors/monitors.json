@@ -3,5 +3,10 @@
         "command": "/Users/dima/frame/cclio/.claude/hooks/ci-watch.sh --watch",
         "description": "📡 persistent monitor — new ci/vercel reds, one line per unseen failure, silent otherwise; runs for the whole session by design",
         "name": "📡 ci-watch · persistent"
+    },
+    {
+        "command": "/Users/dima/frame/cclio/.claude/hooks/pr-watch.sh --watch",
+        "description": "📡 persistent monitor — open coder prs in frame + bytes (a new commit, or every check green = ready to merge) and cloud/* report branches; silent otherwise; runs for the whole session by design",
+        "name": "📡 pr-watch · persistent"
     }
 ]
