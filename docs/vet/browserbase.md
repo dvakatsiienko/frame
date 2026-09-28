@@ -37,4 +37,5 @@ Ticket: none
 
 **the meter:** `script/op-run.sh bb projects usage b9372196-f2f5-404f-9adf-ec8f57bd8b86` → `browserMinutes`, `proxyBytes` (0 / 0 at 2026-09-28 04:40).
 
+- 2026-09-28 · #2 key · probe 3a (session_01TDmUoRP4fksNjcUggEG48Y): the key in environment «cloud base»'s api credentials (host `api.browserbase.com`, header `X-BB-API-Key`) → a bare `curl …/v1/projects` from the VM answered **200** · 0 min · ? `printenv | grep -ic browserbase` = 1 — which variable is unknown (docs: the key never enters the env); probe 3b prints the name only
 - 2026-09-28 · #2 half · a `claude --cloud` probe on bytes (session_014QV6GViG5BzJYugdtrZuzw), read back with `claude -p … --teleport <id>` in a scratch clone · 0 min · cloud VM: node 24.21, pnpm 12.3.4, **no browser**; `api.browserbase.com` → 401 (reachable on the default network, no key), no browserbase env · the other half is BLOCKED on dima: the key into the cloud environment's credential proxy for `api.browserbase.com`
