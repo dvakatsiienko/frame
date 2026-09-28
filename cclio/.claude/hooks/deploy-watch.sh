@@ -32,9 +32,12 @@ while :; do
   sleep $tick
 done
 
-apps=$(git diff-tree --no-commit-id --name-only -r "$sha" | sed -n 's#^apps/\([^/]*\)/.*#\1#p' | sort -u)
+# the whole pushed range, not the head alone — a push of two commits hid the first one's app
+base=$(git rev-parse -q --verify "origin/main@{1}" 2>/dev/null)
+changed() { if [ -n "$base" ]; then git diff --name-only "$base" "$sha"; else git diff-tree --no-commit-id --name-only -r "$sha"; fi; }
+apps=$(changed | sed -n 's#^apps/\([^/]*\)/.*#\1#p' | sort -u)
 # a shared package reaches every app, so a head touching packages/ deploys them all
-git diff-tree --no-commit-id --name-only -r "$sha" | grep -q '^packages/' && apps=$(ls -d apps/*/ | sed 's#apps/\(.*\)/#\1#')
+changed | grep -q '^packages/' && apps=$(ls -d apps/*/ | sed 's#apps/\(.*\)/#\1#')
 # an app with no vercel.json has no vercel project (atelier runs local only) — nothing to wait for
 apps=$(for app in $apps; do [ -f "apps/$app/vercel.json" ] && echo "$app"; done)
 [ -z "$apps" ] && { echo "no deployed app touched by $short — nothing deploys"; exit 0; }
