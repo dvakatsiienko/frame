@@ -11,17 +11,17 @@
         "skill-router": {
             "since": "2026-09-28",
             "state": "vetting",
-            "verdicts": 24,
-            "misses": 16,
+            "verdicts": 26,
+            "misses": 18,
             "what": "the UserPromptSubmit hook names the skills a prompt should load",
             "lanes": {
                 "x:guide-code": {
                     "hit": 1,
-                    "total": 3
+                    "total": 4
                 },
                 "x:notes": {
                     "hit": 0,
-                    "total": 2
+                    "total": 3
                 },
                 "x:github-contrib": {
                     "hit": 0,

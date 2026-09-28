@@ -22,3 +22,5 @@
 2026-09-28T01:55:46.414Z	miss	lane=x:guide-code «print a line into frame's agents.md» routed x:guide-code 0.65 — an AGENTS.md line is agent docs (writing-for-agents), not code
 2026-09-28T01:56:45.402Z	miss	lane=x:writing-for-humans «announce cloud sessions as official members of our fleet» routed x:writing-for-humans 0.80 — «announce» meant the fleet rules, not a message to a person
 2026-09-28T02:08:23.799Z	miss	lane=x:guide-code «📋 copy → cloud base setup script ✓» routed x:guide-code 0.84 — a pasted-done ack, nothing to code
+2026-09-28T03:09:55.015Z	miss	lane=x:notes «refresh models.md» routed x:notes 0.65 — a repo doc under docs/knowledge, not a vault note
+2026-09-28T03:42:55.796Z	miss	lane=x:guide-code «an operation-cost table … inside the shift file» routed x:guide-code 0.63 — a doc edit, no code
