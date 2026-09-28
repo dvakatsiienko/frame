@@ -80,6 +80,8 @@ let handler: CGEventTapCallBack = { _, type, event, _ in
     // macOS disables a tap that ever stalls; without this the daemon goes quietly deaf.
     if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
         if let port = tapPort { CGEvent.tapEnable(tap: port, enable: true) }
+        // A modifier released while the tap was off never reports its up event.
+        bare = BareModifier()
         return nil
     }
 
@@ -110,8 +112,10 @@ let mask = CGEventMask(
 
 // A listen-only tap without Input Monitoring is created fine and then receives nothing, so the
 // grant is checked up front. After a rebuild the grant no longer matches the new cdhash, and
-// this is the line that says so; KeepAlive retries every 30s until the re-grant lands.
+// this is the line that says so; KeepAlive retries every 30s until the re-grant lands. The
+// request call is what puts a fresh binary's row into the Input Monitoring list to be ticked.
 guard CGPreflightListenEventAccess() else {
+    CGRequestListenEventAccess()
     FileHandle.standardError.write(Data(
         "x-monitor-hotkey-stats: no Input Monitoring for this binary — re-grant it\n".utf8))
     exit(1)
