@@ -33,6 +33,9 @@
   - 🐞 measured 09-28: wheel up turns back one; wheel down scrolls the page and the dial never gets the event
 - 🐞 caps show the action, the press count and the owning app's colour
   - then a bound cap shows its legend, its press count, its first action, and a top edge in its app's colour
+  - given a binding on `home`, `end`, `pageup` or `pagedown`
+  - then it shows on that cap — every cap is named the way the daemon names its key
+  - 📌 `del` has no cap on the Air75 (the daemon sees it, likely from fn+backspace) — a binding on `del` shows on no cap; dima's call
   - when the user opens stats and comes back to the board
   - then the counts are still there
   - 🐞 measured 09-28: every count reads `—` until the next press — the page keeps one stream open and the daemon replays counts only when a stream opens

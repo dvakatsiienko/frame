@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { keyCap } from './chord.ts';
+import { layout } from './chords/src/keyboard.ts';
 
 // The two tables were hand-kept twins on opposite sides of a language line and drifted to 95
 // codes against 66 — the daemon logged `pageup` while the readers called the same key
@@ -29,5 +30,16 @@ const swiftKeyCap = () => {
 describe('the carbon keycode table', () => {
     it('reads the same in swift as it does in typescript', () => {
         expect(swiftKeyCap()).toEqual(keyCap);
+    });
+});
+
+// The board drew `pgup` while every source said `pageup`, so a binding there showed on no cap
+// (e83137c). `caps` is hyper and `snip` fires a chord of its own; neither is ever a chord's key.
+describe('the board', () => {
+    it('names every cap the way the daemon names its key', () => {
+        const named = new Set([...Object.values(keyCap), 'caps', 'snip']);
+        const caps = layout.flat().flatMap(([label]) => (label ? [label] : []));
+
+        expect(caps.filter((label) => !named.has(label))).toEqual([]);
     });
 });
