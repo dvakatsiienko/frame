@@ -16,3 +16,5 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - biome-config-polished
   - three@0.186.1
+
+autoDedupe: true

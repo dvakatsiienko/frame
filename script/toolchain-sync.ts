@@ -6,14 +6,17 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const repos = [join(homedir(), 'frame'), join(homedir(), 'projects/bytes')];
 const check = process.argv.includes('--check');
 
 const nodeMajor = process.version.slice(1).split('.')[0];
+// inside a repo pnpm switches itself to that repo's `packageManager` pin, so the
+// installed version is only visible from a directory no manifest governs
 const pnpmVersion = execFileSync('pnpm', ['--version'], {
+    cwd: tmpdir(),
     encoding: 'utf8',
 }).trim();
 const want = {
@@ -26,7 +29,9 @@ let drift = 0;
 for (const repo of repos) {
     const nodeFile = join(repo, '.node-version');
     const manifestFile = join(repo, 'package.json');
-    const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
+    const manifestText = readFileSync(manifestFile, 'utf8');
+    const manifest = JSON.parse(manifestText);
+    const indent = manifestText.match(/\n( +)"/)?.[1] ?? '  ';
     const diffs: string[] = [];
 
     const nodeNow = readFileSync(nodeFile, 'utf8');
@@ -61,6 +66,6 @@ for (const repo of repos) {
         ...(devEngines ? { devEngines } : {}),
         packageManager: want.packageManager,
     };
-    writeFileSync(manifestFile, `${JSON.stringify(sorted, null, 2)}\n`);
+    writeFileSync(manifestFile, `${JSON.stringify(sorted, null, indent)}\n`);
 }
 process.exit(check && drift > 0 ? 1 : 0);

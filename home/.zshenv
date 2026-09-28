@@ -40,6 +40,10 @@ export _ZO_DATA_DIR=$HOME/.cache
 export _ZO_ECHO=1
 export _ZO_RESOLVE_SYMLINKS=1
 
+# pnpm - keep new node_modules and the store out of Time Machine (≥12.6)
+export PNPM_CONFIG_MACOS_BACKUP_EXCLUDE_MODULES_DIR=true
+export PNPM_CONFIG_MACOS_BACKUP_EXCLUDE_STORE_DIR=true
+
 # =============================================================================
 # Terminal Configuration
 # =============================================================================

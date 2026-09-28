@@ -71,7 +71,7 @@
     },
     "engines": {
         "node": ">=24",
-        "pnpm": ">=12.3.4"
+        "pnpm": ">=12.6.0"
     },
     "devEngines": {
         "runtime": {
@@ -80,5 +80,5 @@
             "onFail": "error"
         }
     },
-    "packageManager": "pnpm@12.3.4"
+    "packageManager": "pnpm@12.6.0"
 }
