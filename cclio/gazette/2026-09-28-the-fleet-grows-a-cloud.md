@@ -1,7 +1,7 @@
 ---
 date: 2026-09-28
 slug: the-fleet-grows-a-cloud
-tickets: [BYT-85, BYT-95, BYT-96, BYT-100]
+tickets: [BYT-85, BYT-95, BYT-96, BYT-100, FRM-255, BYT-97, FRM-147, FRM-251, BYT-109, BYT-110]
 posted: {health: yes}
 ---
 
@@ -32,8 +32,32 @@ posted: {health: yes}
 - the chords day shift (m1 of FRM-266) still opens at its step 0
 - flawlog `2026-09-28-adhd-cloud-and-vets.md` owes its flush (stop-lane halt)
 
+⸻ upd 17:50 — the checkpoint
+
+## shipped
+
+- chords day shift, m1 of [FRM-266](https://linear.app/x-com/issue/FRM-266): the first product doc (`FTR.md`, 31 lines, 26 ✅) + `CONTEXT.md`, 6 bindings + the F4 rebind, loopback-only writes, the aurora error, layout A — merged as frame#50 after 2 verifier rounds, live on :7373: [FRM-255](https://linear.app/x-com/issue/FRM-255)
+- the stats daemon stops logging a chord's own release as a bare modifier (1,059 phantom `cmd`) and counts bare F-keys + esc; rebuilt, re-granted, proven live
+- first real cloud job: knip on bytes, 73 findings with verdicts, then the cleanup and a ci knip step: [BYT-97](https://linear.app/x-com/issue/BYT-97)
+- every app has `<app>-run` + `<app>-verify` (entity-first, proven with the built-in /run and /verify); `x:product-docs` → `x:ftr`, `MAP.md` → `FTR.md`
+- evergreen reads every changelog and republishes one standing artifact; brew 31/31, pnpm 12.6 + autoDedupe (9 duplicates gone in bytes)
+- the worktree seed really seeds (pnpm `-s` and the git-crypt re-smudge were both silent); a background command needs a deadline (a new guard hook); deploy-watch names its repo and reads the pushed range
+- `.gitconfig` fetches github over https, pushes over ssh — the seed run found fetches hanging a fresh mac: [FRM-147](https://linear.app/x-com/issue/FRM-147)
+- quicksilver vendored for a two-week vet; the lanet autopay nag filtered; cdaf folded into [FRM-251](https://linear.app/x-com/issue/FRM-251)
+
+## tricks gained
+
+- desktop auto-archive archives and stops only desktop-made local sessions at their merge; `--bg` and `--cloud` stay (4 probes)
+- a cloud session names by `-n` before `--cloud`, pins its own `claude/<slug>` branch, and treats a SendMessage as information, not a task
+- the verifier runs on medium: high buys +3.5 to +6.7 points for ~35 % more cost
+
+## state
+
+- tart run 5 (the full Brewfile) in progress; chords → bytes [BYT-109](https://linear.app/x-com/issue/BYT-109) and the sidebar → kit [BYT-110](https://linear.app/x-com/issue/BYT-110) in Triage
+- next: the shift debrief → atelier docs → crew-designer research → the designer run, a browserbase round beside it
+
 ## trail
 
-- shipped: cc cloud joins the fleet (crew-cloud, plugin x in the VM, 5 probes) · browserbase + adhd on vet · jev router gates 17–18 → 20/23 · BYT-85 reshape · usage → cc-usage-window.json · habit-vet
-- open: push 18 commits at boot · BYT-97 first cloud job · chords shift step 0 · flawlog flush owed · the router's skill-suggestion reshape
-- state: frame a0d2c4f0 + this post unpushed, bytes 08d9fce1 (2 docs commits), no coders, 5 idle cloud probes, x 0.11.144 · cclio 0.3.79
+- shipped: chords shift #50 (FTR + CONTEXT, 7 bindings, loopback writes) · daemon bare keys · knip on bytes via cloud · <app>-run/-verify everywhere · x:ftr · worktree seed + deadline guard · pushInsteadOf · quicksilver on vet
+- open: tart run 5 (FRM-147) · shift debrief · atelier docs · crew-designer research · designer run · browserbase round · BYT-109/110 in Triage
+- state: frame + bytes pushed and green, one coder (tart), x 0.11.152 · cclio 0.3.81, week 8 %
