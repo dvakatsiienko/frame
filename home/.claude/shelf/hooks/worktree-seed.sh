@@ -12,13 +12,22 @@ if [ -z "$wt" ] || [ ! -d "$wt" ]; then exit 0; fi
 # Unlocking with the main key file decrypts the tree in place (measured 2026-09-24).
 key="$(git -C "$wt" rev-parse --git-common-dir 2>/dev/null)/git-crypt/keys/default"
 if [ -f "$key" ] && [ ! -d "$(git -C "$wt" rev-parse --git-dir)/git-crypt" ]; then
-  (cd "$wt" && git-crypt unlock "$key") >/dev/null 2>&1 \
+  # unlock runs `git status`, which dies on the clean filter the tree has no key for yet —
+  # so the filter is switched off for that one call (frame AGENTS.md, the git-crypt hazard).
+  (cd "$wt" && GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=filter.git-crypt.clean GIT_CONFIG_VALUE_0=cat \
+    GIT_CONFIG_KEY_1=filter.git-crypt.required GIT_CONFIG_VALUE_1=false git-crypt unlock "$key") >/dev/null 2>&1 \
     || echo "git-crypt unlock failed in $wt — commits will die on the clean filter"
+  # the unlock installs the key but git sees the ciphertext files as unchanged and never
+  # re-smudges them — a remove + checkout per encrypted path decrypts them for real
+  (cd "$wt" && git ls-files | git check-attr --stdin filter | awk -F': ' '$3=="git-crypt"{print $1}' \
+    | while read -r f; do rm -f "$f" && git checkout -- "$f"; done) >/dev/null 2>&1
 fi
 [ -f "$wt/package.json" ] || exit 0
 if jq -e '.scripts["worktree:seed"]' "$wt/package.json" >/dev/null 2>&1; then
-  CI=1 pnpm --dir "$wt" -s worktree:seed "$wt" >/dev/null 2>&1 || true
+  # no `-s`: pnpm 12 dropped it, and the error hid behind the redirect for a month
+  CI=1 pnpm --dir "$wt" worktree:seed "$wt" >/dev/null 2>&1 \
+    || echo "worktree:seed failed in $wt — run \`pnpm worktree:seed $wt\` by hand to see why"
 elif [ -f "$wt/pnpm-lock.yaml" ]; then
-  CI=1 pnpm install --dir "$wt" >/dev/null 2>&1 || true
+  CI=1 pnpm install --dir "$wt" >/dev/null 2>&1 || echo "pnpm install failed in $wt"
   echo "worktree seeded with a plain install — this repo has no \`worktree:seed\` script; add one if a tree needs env files or its own dev ports (bytes has the reference)"
 fi
