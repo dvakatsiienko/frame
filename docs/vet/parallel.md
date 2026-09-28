@@ -79,6 +79,15 @@ source: `docs/research/parallel.md`. tried so far: search fast/advanced, researc
 - the official `parallel-agent-skills` plugin vs our raw cli
 - 📌 an independent coding-agent benchmark (docs-implementation tickets) put Exa Deep at 83 % vs Parallel advanced 77 % — a rival to name at the verdict
 
+## the exa rival lane — dima's yes, 2026-09-28
+
+source: `docs/research/exa.md`. key `op://dev/exa-golden/credential` → `EXA_API_KEY` in `op.env` (empty at 09-28 02:35 UTC — dima pastes it; a reminder holds it). free tier: $10 a month + a one-time $10 onboarding bonus; search $0.007, deep $0.012, answer $0.005.
+- 🚫 no official exa cli; exa's claude route is a plugin over its mcp server — cli over mcp, so the door is the REST api through `op-run`:
+  `script/op-run.sh sh -c 'curl -s https://api.exa.ai/search -H "x-api-key: $EXA_API_KEY" -H "Content-Type: application/json" -d "{\"query\":\"<q>\",\"type\":\"auto\",\"contents\":{\"highlights\":true}}"'`
+- the round: the same 5 real lookups through exa (`auto` + highlights, then `deep` on a miss), parallel (`advanced` search / `extract`) and context7, before 10-01. log per lookup: hit (the page needed in the top 3) · seconds · chars in ctx · ¢
+- the benchmark to beat, read in full: exa deep 83 % vs parallel advanced 77 % on search+fetch for docs tickets, but exa was slower (37 s vs 33 s) and dearer ($0.127 vs $0.096 per task); search-only, perplexity led and exa fast was 66 %. context7 was not in it
+- exa `/context` (code snippets from repos and docs) is the one feature parallel has no answer to — one of the 5 lookups goes there
+
 ## vet log — one line per round, to 2026-10-01
 
 - 2026-09-24 · search fast+advanced · 10 fleet lookups · 6/10 + 9/10 hits (websearch 9/10) · 4.4 s / 2.0 s · 3–60k chars per call · ~6¢ settled for 22 calls
