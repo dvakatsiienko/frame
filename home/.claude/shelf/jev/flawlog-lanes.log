@@ -21,3 +21,4 @@
 2026-09-27T18:14:11.611Z	miss	lane=ticket a fixed: line (the zsh $P guard) laned ticket; same rewording
 2026-09-27T18:14:11.744Z	ok	lane=drop the silenced-commit line, right
 2026-09-27T18:14:11.872Z	ok	lane=rule the deploy-filter line became a bytes hazard line
+2026-09-28T19:49:49.362Z	ok	09-28: 83 lines; the disagreements were lines whose fix landed later in the session without a «fixed:» prefix — my marking habit, not the criterion
