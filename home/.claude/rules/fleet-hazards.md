@@ -50,22 +50,16 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 ## the bash sandbox
 
-- ✅ **commit, push, pr-open and merge-main in a worktree run through `lane <verb>`** (plugin-x
-  `bin/`, on PATH; bare `lane` prints the verbs) — its text holds no «git», so the guard passes it
-  (4 coders lost ~1 h to one-shot scripts, 2026-09-28)
-- 🎯 **in a worktree session, any command that mentions `gh`, `git`, a token script or `eval`
-  goes into a scratch script first, then runs by path** — the shapes below are the reason, and
-  they are unfollowable while typing (a coder hit four of them with this file in context,
-  2026-09-11)
-- three shapes get rewritten or refused by the sandbox guard and cost a coder ~15 min of retries
-  on 2026-09-08: a `jq` filter whose text contains `git`, a heredoc piped into `gh`, and a
-  `HOME=` override in front of a command. write the filter or body to a scratch file first and
-  pass the path (`jq -f`, `gh --body-file`); never override `HOME`
-- two more shapes (2026-09-10, ~10 min each): **any command or heredoc whose TEXT contains the
-  substring `git`** — `github.repository` inside a yaml body, a jq path `.git.deploymentEnabled`
-  (8 refusals across two jobs, 2026-09-11) —
-  — `pnpm github:agent-token` included — and `eval` outright (an agent-browser verb). both go
-  into a scratch script and run from there
+- **the cause (read in a coder transcript, 2026-09-28): claude code's worktree isolation.** a
+  `--bg` session in a worktree may run git only in a form cc can prove targets its own tree —
+  literal arguments, run from the tree. `eval`, a variable, `cd x && git`, a pipe, or any command
+  whose text names git is refused: «a worktree-isolated session's git operations must target its
+  own worktree»
+- ✅ **commit, push, pr-open and merge-main run through `lane <verb>`** (plugin-x `bin/`, on PATH;
+  bare `lane` prints the verbs) — the git runs inside the script, so the command text passes
+  (4 coders lost ~1 h before it existed, 2026-09-28)
+- anything else whose text names git or `eval` (a jq path like `.git.x`, `gh --jq`, an
+  agent-browser `eval`) goes into a scratch script and runs by path; never override `HOME`
 
 ## node
 
