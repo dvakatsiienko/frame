@@ -46,6 +46,15 @@
             "command": "python3 ~/.claude/shelf/hooks/bg-deadline-guard.py"
           }
         ]
+      },
+      {
+        "matcher": "Read|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/shelf/hooks/agents-travel.py"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
