@@ -160,6 +160,7 @@ claude plugin install x@x
   the proxy attaches it per host; the session never sees it.
 - the VM has no browser (measured). a browser check goes through Browserbase: credential on host
   `api.browserbase.com`, custom header `X-BB-API-Key`, no prefix (proven locally: 200; `Bearer` → 401).
+- in the VM, node's built-in `fetch` skips `HTTPS_PROXY`, so the key never attaches (401): run node with `NODE_USE_ENV_PROXY=1`. a Browserbase session defaults to 300 s (ask for more at create), and the VM cannot reach `*.vercel.app` directly — read the app inside the remote browser (round 2, 2026-09-28).
 
 ## the meter
 

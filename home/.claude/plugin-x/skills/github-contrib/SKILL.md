@@ -24,6 +24,7 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   against the source; fix real ones, dismiss false positives with a written reason; fix CI
   failures, distinguishing real breaks from infra flakes. nothing new → stay quiet. stop when
   the bots are green on the latest commit.
+- **the ci reviewer reads the diff and runs nothing** — no `node`, no tests (2026-09-28: it passed a surviving mutation and a cross-view rounding gap the verifier caught). it finds reading bugs the verifier misses; the verifier stays the runtime check.
 - **reading a reviewer, measured 2026-09-11**: the ci reviewer posts to a different endpoint per
   round — poll all three (`issues/N/comments`, `pulls/N/reviews`, `pulls/N/comments`), never
   the workflow run (an `issue_comment` workflow runs on the default branch; `gh run list

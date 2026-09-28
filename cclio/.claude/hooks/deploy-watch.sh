@@ -7,6 +7,7 @@
 # after the ci runs. vercel webhooks are pro-only, so polling is the only door on this plan.
 set -u
 cd "${2:-.}" || exit 1
+git fetch -q origin 2>/dev/null  # a squash-merge sha exists only on the remote until fetched
 sha=$(git rev-parse "${1:-HEAD}")
 short=${sha:0:8}
 tick=15

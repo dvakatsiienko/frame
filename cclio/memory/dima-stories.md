@@ -10,13 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## the square · 2026-09-15
-A blank square appeared in the menu bar after the macos 27 upgrade. Two api listings and two
-inferences from me — raycast notes' toggle, then raycast's own icon — and both settings changed
-nothing. He pressed `hyper+B`, watched the hidden items slide past the square, and said
-«it's a bartender part». Bartender 6 on macos 27, fixed by 7 the same evening. The felt sense had
-a tool and used it; the inference had an api listing and trusted it twice. → `method-report-verify`
-
 ## the subtle flicker · 2026-09-16
 He switched the AW3225QF from fixed 120 Hz to variable and said: «sometimes observe a strange effect. it is
 very hard to notice … the parts that have a lot of solid color in the background a bit flicker … hard to
@@ -76,3 +69,7 @@ The built-in `run` and the generated `run-<app>` skills had just been adopted, a
 
 ## «you closed the pr, not merged it» · 2026-09-28
 The auto-archive probe had closed its pr and watched the card stay; my verdict went out as «auto-archive does nothing for our sessions». He read it and said the close was a different event from a merge — it might archive on merge alone. The merge round kept the verdict for our `--bg` and `--cloud` sessions, and then his own two desktop-made probes showed the real line: a desktop-made local session is archived and stopped at its merge. His question split one event I had treated as two into the two it was, and the second probe he set up found the case my first one could not reach. → `craft-spawning`, the auto-archive line
+
+## «you were still asking me confirmation questions» · 2026-09-28
+He wrote the trophy-sys plan with me, said «start shift» and went to cook. I kept sending him ⏳ blocks between his steps at the stove, and he answered them. After dinner he named it: «you have memories that instruct you to use a turn-based approach … when paired with a shift, the boundary is blurry, so you try to do both.» No rule was broken; every habit was right for a lane and wrong for a shift. His felt sense saw two modes where I ran one with exceptions, and the first night shift needed exactly that line. → `cclio:shift`, the ⏳ exception in `fleet-output-format`
+

@@ -67,6 +67,7 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 ## the bash tool
 
+- **biome's format-on-save deletes an import that is not used yet** — two Edits that add an import, then its use, ship a runtime ReferenceError; add the use first, then the import (2026-09-28)
 - a trailing `&` inside a Bash tool call is safe only when something after it keeps the shell
   alive (`wait`, a `sleep`) — the wrapper exits and kills the child, exit 0, empty log, and it
   reads as «feature broken» (twice in one day, 2026-09-14). in a `run_in_background` call the

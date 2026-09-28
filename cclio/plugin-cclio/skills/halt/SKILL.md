@@ -104,6 +104,9 @@ the same pass prunes `flowlog.md` first: every ✅ line goes, then any section l
 inbox clears — before the CST is written, every halt, both lanes (the 09-20 halt skipped the prune
 and dima found six ✅ lines at the next boot).
 
+## phase 1.7 — github notifications, cleared unasked
+mark done every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr: `gh api notifications`, then `PATCH /notifications/threads/<id>`. what stays is an open pr's review ask. dima's yes, 2026-09-28.
+
 ## phase 2 — missed sweep
 re-read the flowlog, `.claude/x-queue.md`, and this thread for dropped asks and unanswered
 questions. queued items FIRE now. mid-turn messages from dima are the usual casualty — check

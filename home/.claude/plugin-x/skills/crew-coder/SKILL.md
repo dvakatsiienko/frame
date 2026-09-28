@@ -52,6 +52,8 @@ what the coordinator's halt reads.
     about the reversed thing — two review findings on #76 were docs from the old thesis.
   - before replacing an assertion, say what the old one protected.
 - **fetch main before asking a question a commit could answer.**
+- **`pnpm knip` runs before every push in bytes** — an unused export turned ci red once (2026-09-28).
+- **when a figure changes, grep the formula (`* 100`), not the field** — the journal rounded while the library floored the same percent (#114).
 - **trust and constraints**:
   - after touching a trust boundary, write what the NEW code trusts and who controls it,
     before the push — three of twelve defects on #79 were holes opened while closing another

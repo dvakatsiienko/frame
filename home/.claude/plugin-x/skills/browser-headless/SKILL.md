@@ -28,6 +28,7 @@ fails or misfires.** The report carries `essentials: <n> pass · <m> fail`.
 caps), so a drag-and-drop view needs its own checks for those. the pass repeats in every app's
 `<app>-verify` (both widths + the tab walk); one wrapper script for it is a candidate, not built yet
 (2026-09-28, nine apps did it by hand).
+📌 the tab walk scrolls the page: a screenshot taken after it can lie (a sticky header hid a row, 2026-09-28) — scroll back to the top, or shoot before the walk.
 
 ## the split — which browser when
 
