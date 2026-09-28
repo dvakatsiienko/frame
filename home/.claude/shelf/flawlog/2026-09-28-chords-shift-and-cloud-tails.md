@@ -103,3 +103,4 @@
 - cclio's brief assumed #112 on main (FTR files, the checker) — one fetch of main before a brief
 - when a figure changes, grep the formula (`* 100`), not the field
 - trophy-sys DESIGN.md is an unfilled template — «the house look is DESIGN.md» pointed at nothing (BYT-86 owns it)
+- noted, 2nd sighting (after the halt): bytes CI `clean install · financial` red on `next/font/google` (Can't resolve '@vercel/turbopack-next/internal/font/google/font') on e20ca90f, an AGENTS-only push; a failed-job re-run went green → a flake, twice in one day. a 3rd sighting makes it a ticket
