@@ -171,7 +171,7 @@ file he names.
 - **⏲️ blocked on something external → the LAST line says so.** after the ➡️ and the ⏳ block,
   only while a review bot, ci, a background job or another agent genuinely holds the session:
   what is being waited on plus how the answer arrives — `⏲️ waiting on the two pr bots — the
-  pr watcher wakes me when either posts`. **the waited thing is a link when it has a page** — a
+  pr watcher wakes me when either posts`. **the waited thing is a link when it has a page, with an emoji and a short word as its label, and several waited things go one per line** (dima, 2026-09-28) — a
   pr, a ci run, a deploy: `⏲️ waiting on the bots on [#70](https://github.com/…/pull/70)`; a
   coder or an agent needs no link, dima sees it in his tab. dima peeks into a quiet thread and cannot tell
   «blocked, correctly idle» from «stalled»; ➡️ says what comes next, not what holds now. a reply
