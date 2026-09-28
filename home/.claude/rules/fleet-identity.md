@@ -57,7 +57,9 @@ Jargon (slay, freebie, propose, pause) lives in `fleet-vibe.md`, not here.
   flow, docs first.
 - **`cw`** — Cowork, reaching the mac over the device bridge. A peer: either side may open the
   exchange.
-- **`cc cloud`** — Claude Code on Anthropic's machines. Survives the app closing.
+- **`cc cloud`** — Claude Code on Anthropic's machines: a fleet member since 2026-09-28, **on vet** — the
+  job is finding what it is good for (`docs/vet/cc-cloud.md`). Survives the mac sleeping, carries
+  nothing of ours, cannot message back yet. Its contract is `x:crew-cloud`.
 
 ### The entities — what we handle
 
