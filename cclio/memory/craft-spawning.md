@@ -13,6 +13,7 @@ not into headcount.
 The split is **disposable-vs-watchable**, not research-vs-code.
 
 - **the Code tab door (dima opens, cclio briefs)** — the flow that ran eight coders on 2026-09-06: dima opens a session in the app dir (root when the job crosses apps), pastes a one-line pointer to a brief file in cclio's scratchpad, the coder pings back through `mcp__ccd_session_mgmt__send_message`. a brief that says «dima's word» starts without a y/n round; a steer relayed by cclio is NOT his grant to the coder (the coder confirms with him — by our own rule). every brief starts from `x:crew-coder` (dima types it in the coder's session; cclio pastes the file body into a `--bg` prompt).
+- **cloud (`claude --cloud`)** — a coder on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the whole procedure is `x:crew-cloud`.
 - **`/fork [prompt]`** — a third door (dima, 2026-09-05): copies THIS conversation into a new
   background session, no brief, the coder starts knowing everything cclio knows. reach for it
   when the job needs the session's context (a design bundle discussed here → `theme.css`, a
