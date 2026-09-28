@@ -165,7 +165,7 @@
     "mattpocock-skills@claude-plugins-official": true,
     "x@x": true,
     "linear-cli@linear-cli": false,
-    "impeccable@impeccable": false,
+    "impeccable@impeccable": true,
     "typesafe@typesafe-ai": true,
     "humanize@humanize": true
   },

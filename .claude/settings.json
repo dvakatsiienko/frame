@@ -23,5 +23,8 @@
   },
   "enabledPlugins": {
     "impeccable@impeccable": false
+  },
+  "worktree": {
+    "baseRef": "head"
   }
 }
