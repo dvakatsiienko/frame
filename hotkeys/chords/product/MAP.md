@@ -58,6 +58,11 @@
   - then the aurora strip wakes and the led rails sweep once
   - and the aurora strip also wakes on a layer turn and at the start of a drag
   - ⬜ half run: the rails sweep after a drag rebind; the aurora wake is not checkable headless
+- ✅ the aurora strip reads calm in both themes, and the page logs no error
+  - given the board in dark mode
+  - then the strip is a faint deep sheen, not a grey rainbow, with no seam where the light rests
+  - and a load plus two layer turns log no `VGPUError`
+  - measured 09-28: dark strip luma 91 → 48 (same saturation), worst column jump 3.4 → 1.0; errors per load 1 → 0
 - ✅ the board reloads by itself when a config source changes
   - when a config source's file changes on disk (`manual.ts` included)
   - then the board redraws from the new scan with no reload

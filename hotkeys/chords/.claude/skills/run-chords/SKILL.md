@@ -141,10 +141,11 @@ for p in 7374 7383 7384; do lsof -nP -iTCP:$p -sTCP:LISTEN -t >/dev/null && echo
   that first launched it — not the current shell's cwd. a `board.png` appeared in `~/frame`'s
   root. always pass an absolute path.
 - **`agent-browser errors` prints bare `✗` lines** with no text. `--json` shows the message.
-- **every load throws `VGPUError: Nested frame(gpu) is invalid`** from
-  `src/components/Aurora.tsx` — `view.onResize` calls `frame()` inside a running frame. dev and
-  the built page both; the page still renders. a known bug, not your change — diff the error
-  count before and after.
+- **`agent-browser errors --clear` clears nothing** — it prints the buffer, which keeps every
+  error since the session began, stale code included. an error count per load comes from a fresh
+  `AGENT_BROWSER_SESSION` name, closed after.
+- **the page loads with zero console errors.** any `VGPUError` is new: vgpu fires `onResize`
+  callbacks from inside its own frame, so a draw there must wait for the next animation frame.
 - **vite binds `[::1]` only** — `localhost:7374` answers, `127.0.0.1:7374` does not.
 - **the daemon binds `0.0.0.0`**, ipv4 only, on purpose since `daecf880` (a phone on the wi-fi
   opens it) — `[::1]:7383` does not connect. writes answer 403 unless they come from loopback, so

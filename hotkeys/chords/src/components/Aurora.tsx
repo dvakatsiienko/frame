@@ -13,7 +13,7 @@ import { effect, frame, init, surface } from 'vgpu';
 // clears with `target.clearColor`, which is OPAQUE BLACK by default, and this canvas has to
 // stay transparent; and the uv handed to the fragment runs the other way up (see the shader).
 const SHADER = /* wgsl */ `
-struct Uniforms { time: f32, seed: f32, width: f32, height: f32, px: f32, py: f32, hover: f32, pad: f32 };
+struct Uniforms { time: f32, seed: f32, width: f32, height: f32, px: f32, py: f32, hover: f32, dark: f32 };
 @group(0) @binding(0) var<uniform> u: Uniforms;
 
 fn hash(p: vec2f) -> f32 {
@@ -66,7 +66,10 @@ fn etched(p: vec2f) -> f32 {
   // Diffraction: hue walks with the angle between the light and the groove direction, so it
   // fans out around the pointer instead of banding left to right.
   let groove = normalize(vec2f(1.0, 0.35 + 0.25 * sin(p.y * 6.0 + flow)));
-  let angle = dot(normalize(toLight + vec2f(0.0001, 0.0)), groove);
+  // The strip is ~45 times wider than tall, so toLight is almost horizontal and its direction
+  // flips across the light's column — a hard seam. Fading the angle out near the light, where
+  // the pool whitens anyway, keeps the hue continuous.
+  let angle = dot(normalize(toLight + vec2f(0.0001, 0.0)), groove) * smoothstep(0.0, 1.5, dist);
   let phase = angle * 0.6 + p.x * 0.22 + flow * 0.35 + u.seed * 0.21;
   var color = pearl(phase);
 
@@ -79,8 +82,11 @@ fn etched(p: vec2f) -> f32 {
   let strength = lum * (0.55 + 0.35 * u.hover) + pool * 0.3;
   // Fade at the top edge so the strip melts into the desk rather than cutting across it.
   let edge = smoothstep(0.0, 0.45, uv.y);
-  let a = clamp(strength, 0.0, 1.0) * edge;
-  return vec4f(color * a, a);
+  // On the dark deck a pastel at half alpha mixes to mud. Dark keeps the hue deeper and the
+  // band thinner, so it reads as a faint sheen rather than a grey rainbow.
+  let deep = mix(color, 0.5 + 0.5 * (color - 0.74) / 0.26 * 0.6, u.dark);
+  let a = clamp(strength, 0.0, 1.0) * edge * mix(1.0, 0.45, u.dark);
+  return vec4f(deep * a, a);
 }
 `;
 
@@ -123,9 +129,13 @@ export const Aurora = (props: AuroraProps) => {
 
                 band.set({
                     u: {
+                        // Computed, so the media query and a forced data-theme both count.
+                        dark:
+                            getComputedStyle(element).colorScheme === 'dark'
+                                ? 1
+                                : 0,
                         height: view.size[1],
                         hover: pointer.current.hover,
-                        pad: 0,
                         px: pointer.current.x,
                         py: pointer.current.y,
                         seed: props.seed,
@@ -135,14 +145,25 @@ export const Aurora = (props: AuroraProps) => {
                 });
                 frame(gpu, (pass) => pass.pass(view, band));
             };
-            drawRef.current(0);
 
-            // The surface watches its own box, so this replaces the window resize listener.
-            const stopResize = view.onResize(() =>
-                drawRef.current?.(lastTime.current),
-            );
+            // The surface watches its own box, so this replaces the window resize listener. It
+            // fires once on subscribe — the first draw — and then from inside vgpu's own frame,
+            // where a second frame() throws «Nested frame», so the redraw waits for the next one.
+            let queued = 0;
+            const redraw = () => {
+                cancelAnimationFrame(queued);
+                queued = requestAnimationFrame(() =>
+                    drawRef.current?.(lastTime.current),
+                );
+            };
+            const stopResize = view.onResize(redraw);
+            const scheme = matchMedia('(prefers-color-scheme: dark)');
+
+            scheme.addEventListener('change', redraw);
 
             dispose = () => {
+                cancelAnimationFrame(queued);
+                scheme.removeEventListener('change', redraw);
                 stopResize();
                 view.dispose();
                 gpu.dispose();
