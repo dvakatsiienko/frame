@@ -4,6 +4,7 @@
  * ?
  * ?   pnpm frame:link                        # status: what's linked, what conflicts
  * ?   pnpm frame:link apply                  # link everything that isn't linked yet
+ * ?   pnpm frame:link apply --without-claude # the same, ~/.claude left alone (the seed's default)
  * ?   pnpm frame:link untrack ~/.gitconfig   # hand a file back to ~, drop it from the repo
  * ?   pnpm frame:link register ~/.foo        # move a file into the mirror and link it back
  * ?
@@ -13,6 +14,7 @@
  */
 
 /* Core */
+import { homedir } from 'node:os';
 import * as zx from 'zx';
 
 import type { Entry } from './lib/manifest.ts';
@@ -69,6 +71,13 @@ const REPORT: Record<State, (name: string, entry: Entry) => void> = {
 
 const [verb = 'status', argument] = zx.argv._;
 
+// ? `--without-claude` leaves ~/.claude out of status and apply — the seed links a fresh mac
+// ? without the agent system unless it is asked for (`script/seed.sh --claude`).
+const claudeHome = zx.path.join(homedir(), '.claude');
+const isSkipped = (target: string) =>
+    Boolean(zx.argv['without-claude']) &&
+    (target === claudeHome || target.startsWith(`${claudeHome}/`));
+
 if (verb === 'status') await reconcile({ dryRun: true });
 else if (verb === 'apply') await reconcile({ dryRun: false });
 else if (verb === 'untrack') await untrack(argument);
@@ -77,7 +86,7 @@ else {
     zx.echo(rb(`Unknown verb: ${verb}`));
     zx.echo(
         bb(
-            'Usage: pnpm frame:link [status|apply|untrack <path>|register <path>]',
+            'Usage: pnpm frame:link [status|apply|untrack <path>|register <path>] [--without-claude]',
         ),
     );
     process.exit(1);
@@ -277,6 +286,7 @@ async function inspect() {
     const rows: Row[] = [];
 
     for (const entry of manifest) {
+        if (isSkipped(entry.target)) continue;
         const stats = await lstatOrNull(entry.target);
         let state: State = STATE.MISSING;
 

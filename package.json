@@ -8,6 +8,7 @@
         "chords:build": "pnpm --filter chords build",
         "badges:sync": "node ./script/badges-sync.ts",
         "frame:link": "node ./script/frame-link.ts",
+        "frame:seed": "sh ./script/seed.sh",
         "toolchain:sync": "node script/toolchain-sync.ts",
         "vorssaint:export": "defaults export com.vorssaint.utils - | plutil -convert xml1 -o import/vorssaint/com.vorssaint.utils.plist -",
         "vorssaint:import": "osascript -e 'quit app \"Vorssaint\"' && defaults import com.vorssaint.utils import/vorssaint/com.vorssaint.utils.plist && open -a Vorssaint",

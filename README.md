@@ -67,14 +67,12 @@ pnpm macos:setup   # brew bundle, macos defaults, duti, vim-plug
 
 ## 🔗 link it
 
-on a fresh machine, by hand:
-1. [brew](https://brew.sh/)
-2. `fnm` and `pnpm` through `brew`
-3. then `node 24` through `fnm`
-4. then:
+on a fresh machine, clone the repo and run the seed — or hand it to an agent («seed this mac from frame»):
 
 ```bash
-pnpm i
-pnpm macos:setup
-pnpm frame:link apply
+script/seed.sh              # command line tools → brew → fnm, pnpm, node → pnpm i → macos:setup → frame:link apply
+script/seed.sh --claude     # the same, with ~/.claude linked
+script/seed.sh --dry-run    # what it would do, nothing changed
 ```
+
+one status line per step, safe to re-run. it stops with `needs your hands: …` (exit 2) where only a human can act — the command line tools dialog, the homebrew password, files in the way of a link, the 1password sign-in — and the next run picks up from there.
