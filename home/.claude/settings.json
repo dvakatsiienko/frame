@@ -40,6 +40,10 @@
           {
             "type": "command",
             "command": "python3 ~/.claude/shelf/hooks/zsh-equals-guard.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/shelf/hooks/bg-deadline-guard.py"
           }
         ]
       }
