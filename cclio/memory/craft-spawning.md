@@ -47,7 +47,7 @@ The split is **disposable-vs-watchable**, not research-vs-code.
    booted a coder WITHOUT the repo's root `AGENTS.md` (2026-09-22, ccbee7b0). check
    `ps -o pid,lstart,command -ax | grep '[b]g-spare'`; older than a day → `claude daemon stop
    --keep-workers`, then spawn. the brief's «name your loaded AGENTS.md paths» line is the belt.
-0.7. **run skill** — the target app has `.claude/skills/run-<app>`? none → it is generated before the spawn: `/run-skill-generator` is user-invoked only, so dima types it in the app, or cclio spawns a one-shot session whose prompt IS the command (the chords probe, 2026-09-27). every app gets one up front (dima, 2026-09-27: chords → trophy-sys → x-com-chat → the rest).
+0.7. **run skill** — the target app has `.claude/skills/<app>-run`? none → it is generated before the spawn: `/run-skill-generator` is user-invoked only, so dima types it in the app, or cclio spawns a one-shot session whose prompt IS the command (the chords probe, 2026-09-27). every app gets one up front (dima, 2026-09-27: chords → trophy-sys → x-com-chat → the rest).
 1. **tier** — code, repo, real filesystem ⇒ a real session, never a thinking-only one.
 2. **name + argv** — the template, literal, prompt BEFORE `--remote-control` (measured 2026-09-07: the flag ate a 1.5 kB brief as its rc label → 400, idle child):
    `cd <repo> && claude --bg -n '🔧 code: BYT-N <what>' --model opus --effort medium '/x:crew-coder BYT-N <job> coordinator: <cclio registry name>' --remote-control`

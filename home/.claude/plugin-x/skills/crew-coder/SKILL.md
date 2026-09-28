@@ -91,7 +91,7 @@ what the coordinator's halt reads.
   what is wrong» beats «confirm the bottom clipping»: a named symptom narrows where you look, and a
   stored value can outrank the code default you were told to flip — check the observable, not the
   line.
-- **your first step: serve your tree for dima** with the **start** steps of the app's `run-<app>` skill
+- **your first step: serve your tree for dima** with the **start** steps of the app's `<app>-run` skill
   (its `.claude/skills/`) — main or a worktree, each on its own port — and put the url in your first
   reply as a 🌐 markdown link. keep it up: its **stop** steps run only when your worktree goes (the
   background task, or the PID captured at start; the port free after; every process, a next + convex

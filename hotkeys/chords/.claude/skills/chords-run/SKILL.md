@@ -1,9 +1,9 @@
 ---
-name: run-chords
+name: chords-run
 description: Load BEFORE you run, start, build, screenshot or click through chords, the hotkey map — «run chords», «chords:dev», «check the board», «screenshot the map», «does the stats page render», a change under `hotkeys/chords/` or `hotkeys/serve.ts` that needs proof in the real page.
 ---
 
-# run-chords
+# chords-run
 
 chords is a vite + react page served by the always-on launchd daemon `x-monitor-hotkey-live`
 (`hotkeys/live.ts --watch`) on **:7373**; the same daemon owns the api and the sse stream
@@ -68,7 +68,7 @@ own session, absolute screenshot paths (see gotchas). `$CLAUDE_JOB_DIR` is set o
 background job; elsewhere use any absolute scratch dir outside the repo:
 
 ```bash
-export AGENT_BROWSER_SESSION=run-chords
+export AGENT_BROWSER_SESSION=chords-run
 agent-browser set viewport 1280 900
 agent-browser open http://localhost:7374/
 agent-browser wait 1500
