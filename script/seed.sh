@@ -1,14 +1,16 @@
 #!/bin/sh
-# seed a fresh mac with frame. run it from the clone: script/seed.sh [--claude] [--dry-run]
+# seed a fresh mac with frame. run it from the clone: script/seed.sh [--claude] [--without-appstore] [--dry-run]
 # agent-first: one status line per step, safe to re-run. exit 2 = a human stop — the waiting
 # lines say what his hands must do, and the next run picks up from there. plain sh: no node yet.
 set -eu
 
 claude=0
+appstore=1
 dry=0
 for arg in "$@"; do
     case "$arg" in
     --claude) claude=1 ;;
+    --without-appstore) appstore=0 ;;
     --dry-run) dry=1 ;;
     -h | --help)
         sed -n '2,4p' "$0"
@@ -106,6 +108,17 @@ if ! act macos pnpm macos:setup apply; then
     hands macos 'the Brewfile or a macos default failed — read the lines above, fix the cause, then re-run'
 fi
 
+# 5b · sline — the statusline binary is gitignored, so every clone builds it (go comes from the Brewfile)
+act sline pnpm sline:build
+
+# 5c · the Claude Code CLI — the official installer puts it in ~/.local/bin (cask "claude" is the desktop app)
+export PATH="$HOME/.local/bin:$PATH"
+if command -v claude >/dev/null 2>&1; then
+    line claude-cli "done" "$(command -v claude)"
+elif ! act claude-cli sh -c 'f="$(mktemp)" && curl -fsSL https://claude.ai/install.sh -o "$f" && bash "$f"'; then
+    hands claude-cli 'the Claude Code installer failed — read the lines above, then re-run'
+fi
+
 # 6 · the mirror — ~/.claude stays out unless --claude
 link_flag=--without-claude
 [ "$claude" = 1 ] && link_flag=
@@ -140,20 +153,18 @@ else
     line claude skipped 'the agent system stays out — re-run with --claude to link ~/.claude'
 fi
 
-# 7 · claude parts need the app launched once; skip, never fail, when it is absent
+# 7 · claude parts install on the first launch of the CLI from step 5c
 if [ "$claude" = 1 ]; then
-    if [ -d /Applications/Claude.app ] || command -v claude >/dev/null 2>&1; then
-        line claude "done" 'plugins install from the linked settings.json on the next claude launch'
-    else
-        line claude skipped 'Claude is not installed yet — install it, launch it once, re-run with --claude'
-    fi
+    line claude "done" 'plugins install from the linked settings.json on the next claude launch'
 fi
 
 # 8 · git-crypt — one file (gmail/blocklist.json); the seed never unlocks it
 line git-crypt skipped 'gmail/blocklist.json stays locked — unlock by hand when a gmail filter job needs it'
 
 # 9 · App Store apps from the Brewfile — step 5 skipped them; mas installs once he is signed in
-if [ -n "$mas_ids" ] && [ "$dry" = 1 ]; then
+if [ "$appstore" = 0 ]; then
+    line appstore skipped "--without-appstore — these stay out: $mas_ids"
+elif [ -n "$mas_ids" ] && [ "$dry" = 1 ]; then
     line appstore dry-run "check that mas list holds $mas_ids"
 elif [ -n "$mas_ids" ]; then
     installed="$(mas list 2>/dev/null)"
@@ -168,17 +179,19 @@ elif [ -n "$mas_ids" ]; then
     fi
 fi
 
-# 10 · 1password — installed by the Brewfile; SSH signing waits on his sign-in
+# 10 · 1password — installed by the Brewfile; SSH signing waits on the APP: its SSH agent socket
+# (home/.ssh/config IdentityAgent) exists only once the app is signed in with the agent turned on
+op_sock="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 if [ "$dry" = 1 ]; then
-    line 1password dry-run 'check that the 1Password cli sees a signed-in account'
-elif command -v op >/dev/null 2>&1 && [ "$(op account list --format=json 2>/dev/null)" != "[]" ] && [ -n "$(op account list 2>/dev/null)" ]; then
-    line 1password "done" 'an account is signed in'
+    line 1password dry-run 'check that the 1Password cli sees an account and the app serves its SSH agent socket'
+elif command -v op >/dev/null 2>&1 && [ "$(op account list --format=json 2>/dev/null)" != "[]" ] && [ -n "$(op account list 2>/dev/null)" ] && [ -S "$op_sock" ]; then
+    line 1password "done" 'an account is signed in, the SSH agent is up'
 else
     later 1password 'open 1Password, sign in, turn on Settings → Developer → SSH agent and CLI integration'
 fi
 
 if [ "$stops" -gt 0 ]; then
-    line seed waiting "the machine is set up — do the $stops sign-ins above, then re-run"
+    line seed waiting "the machine is set up — do the $stops sign-ins above, then open a new terminal and re-run"
     exit 2
 fi
-line seed "done" 'frame is seeded'
+line seed "done" 'frame is seeded — open a new terminal to pick up the zsh stubs'

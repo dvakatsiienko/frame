@@ -72,9 +72,10 @@ on a fresh machine, install the command line tools first — the clone itself ne
 ```bash
 xcode-select --install      # stop 0: the dialog, ~2 min
 git clone https://github.com/dvakatsiienko/frame ~/frame && cd ~/frame
-script/seed.sh              # command line tools → brew → fnm, pnpm, node → pnpm i → macos:setup → frame:link apply
-script/seed.sh --claude     # the same, with ~/.claude linked
-script/seed.sh --dry-run    # what it would do, nothing changed
+script/seed.sh                     # command line tools → brew → fnm, pnpm, node → pnpm i → macos:setup → sline → claude cli → frame:link apply
+script/seed.sh --claude            # the same, with ~/.claude linked
+script/seed.sh --without-appstore  # skip the app store apps and their sign-in
+script/seed.sh --dry-run           # what it would do, nothing changed
 ```
 
-one status line per step, safe to re-run. it stops with `needs your hands: …` (exit 2) where only a human can act — the command line tools dialog, the homebrew password, files in the way of a link, the 1password sign-in — and the next run picks up from there.
+one status line per step, safe to re-run. it stops with `needs your hands: …` (exit 2) where only a human can act — the command line tools dialog, the homebrew password, files in the way of a link, the app store and 1password sign-ins — and the next run picks up from there. when it ends, open a new terminal: a shell opened before the seed never sources the zsh stubs it wrote.
