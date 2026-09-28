@@ -44,6 +44,10 @@ Ticket: [FRM-147](https://linear.app/x-com/issue/FRM-147)
   - one seed run, **7 m 41 s**: fnm, pnpm, node 24 via fnm, `pnpm install`, the whole Brewfile, `Linked 8`, three stubs written, then `appstore` + `1password` named together, exit 2. no stall, no hand on the keyboard. (brew 7 stages every cask first, then moves them silently for ~6 min at ~50 % cpu in a child `brew.rb` — a 3-min silence watcher fires falsely there.)
   - ✅ `pnpm frame:link --without-claude` → «Everything mirrored», exit 0. a new `zsh -li` in a bare env finds brew, node v24.21.0 and pnpm through the stubs. a re-run: 3 s, the same two stops.
   - not done by the agent: the two sign-ins need dima's Apple ID and 1Password account.
+- 2026-09-28 18:05 → 18:09 — review (a hand standards pass; `mattpocock-skills:code-review` cannot run inside a fork, it spawns its own agents) + `coderabbit` (1 finding). fixed: a clone outside `~/frame` is a named stop (step 0); the stub check is an exact-line match; a failing `xcode-select --install` no longer kills the seed before its stop; the `link` stop names a crash too. each proven both ways on `seed-2`:
+  - old code, clone at `/tmp/elsewhere`: the seed re-pointed all 8 `~` links at `/tmp`. new code: `clone waiting`, exit 2, `~` untouched.
+  - old code, a commented-out `source` in `~/.zshrc`: `done`. new code: `zsh waiting`, then `done` once restored.
+- 📌 a harness trap worth keeping: filtering ssh noise with `grep -v Password` also drops every line with «1Password» in it — the `1password` stop looked missing for three runs.
 - 📌 after a reboot with the extra disk attached, the boot disk renumbered from `disk0` to `disk1`. a disk op in a VM picks its target by size, never by number.
 
 ## verdict, round 1
