@@ -28,9 +28,9 @@ because the daemon is already watching the press log and the config sources. the
 - `POST /api/manual` — a rebind, written surgically into `manual.ts`. `409` when it cannot place
   the edit exactly, `400` when a field is missing or carries a control character
 
-📌 **both writing routes demand `application/json` and refuse an unknown `Origin`.** they stop a browser, not a crafted request: since the
-every-interface bind (`daecf880`) a machine on the same network can fake the `Origin` with curl —
-the loopback guard on writes is FRM-255. the full reasoning is in `serve.ts`'s own header.
+📌 **both writing routes take a write from a loopback peer only, demand `application/json` and
+refuse an unknown `Origin`.** the phone on the wi-fi reads and never writes; the last two checks
+stop a browser page on this mac. the full reasoning is in `serve.ts`'s own header.
 
 ## the scripts
 

@@ -11,6 +11,12 @@
   - given the board is open
   - when the user clicks stats, then the browser's back button
   - then the url reads `/stats`, then `/` again, and the board is back
+- ✅ the phone on the wi-fi reads the map; only this mac writes
+  - given a machine on the wi-fi
+  - when it opens the map or reads `/api/hotkeys` / `/api/notes`, then 200
+  - when it writes to `/api/notes` or `/api/manual`, then 403 «writes are taken from this mac only»
+  - and a write from this mac answers 200
+  - decision: writes accepted from loopback only, reads stay open for the phone — dima 2026-09-27
 - ✅ footer names where the bindings and the notes come from
   - then the footer names `pnpm hotkeys:scan`, `hotkeys/manual.ts` and `hotkeys/notes.json`
 
