@@ -1,0 +1,152 @@
+# chords — the map
+
+- 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
+- given/when/then lines are the verifier's exit lines
+- makes: lines name what a feature leaves behind — a file, a take, a clipboard item
+- decision: lines record a choice and its reason
+
+## every page — the frame
+
+- ✅ board / stats tabs switch the page, back button included
+  - given the board is open
+  - when the user clicks stats, then the browser's back button
+  - then the url reads `/stats`, then `/` again, and the board is back
+- ✅ the phone on the wi-fi reads the map; only this mac writes
+  - given a machine on the wi-fi
+  - when it opens the map or reads `/api/hotkeys` / `/api/notes`, then 200
+  - when it writes to `/api/notes` or `/api/manual`, then 403 «writes are taken from this mac only»
+  - and a write from this mac answers 200
+  - decision: writes accepted from loopback only, reads stay open for the phone — dima 2026-09-27
+- ✅ footer names where the bindings and the notes come from
+  - then the footer names `pnpm hotkeys:scan`, `hotkeys/manual.ts` and `hotkeys/notes.json`
+
+## / — board
+
+- ✅ summary line: bindings count, scan time, never-pressed count, last press time
+  - given the daemon has scanned and the press log has lines
+  - then the line reads `NuPhy Air75 · <n> bindings · scanned <date time> · <n> never pressed · last press <time>`
+- ✅ app legend: one coloured dot per app bound on the layer
+  - when the user picks a layer
+  - then one dot + app name shows for each app with a binding on that layer
+- ✅ layer tabs, each with its binding count
+  - then the tab counts add up to the summary's bindings count
+  - and the board opens on `hyper`
+- ✅ layer dial: a click steps to the next layer, the wheel turns either way
+  - when the user clicks the dial
+  - then the next layer tab is selected
+  - when the user turns the wheel down, then up, over the dial
+  - then the layer moves forward one, then back one, and the page does not scroll
+- ✅ caps show the action, the press count and the owning app's colour
+  - then a bound cap shows its legend, its press count, its first action, and a top edge in its app's colour
+  - given a binding on `home`, `end`, `pageup` or `pagedown`
+  - then it shows on that cap — every cap is named the way the daemon names its key
+  - and a cursor binding spelled the vscode way (`escape`, `enter`) shows on `esc`, `return`
+  - given a binding moved with a dated row (read-aloud: `opt+esc` until 09-28, `f4` since 09-28)
+  - then the new cap shows it and the old chord shows no binding
+  - 📌 `del` has no cap on the Air75 (the daemon sees it, likely from fn+backspace) — a binding on `del` shows on no cap; dima's call
+  - when the user opens stats and comes back to the board
+  - then the counts are still there
+- ✅ a bound key never pressed carries a ring
+  - given a binding on the layer with no press in the log
+  - then its cap shows `—` for the count and an inset ring
+  - 📌 the daemon logs a chord only when ctrl, opt or cmd is held (`main.swift`), so a bare-key binding — homerow's `f1`–`f3`, read-aloud on `f4`, wispr's `esc` — stays ringed and counts as never pressed; the daemon-rebuild question, dima's
+- ⬜ a press on the real keyboard sinks its cap and moves its count, live
+  - given the board is open on the layer of a chord
+  - when dima presses that chord on the keyboard
+  - then its cap sinks for a moment and its count goes up by one, with no reload
+  - ⬜ not run: no press reached the stream in a 20 s window — needs a real press
+- ⬜ the board reacts when a rebind lands
+  - when a rebind's rescan arrives
+  - then the aurora strip wakes and the led rails sweep once
+  - and the aurora strip also wakes on a layer turn and at the start of a drag
+  - ⬜ half run: the rails sweep after a drag rebind; the aurora wake is not checkable headless
+- ✅ the aurora strip reads calm in both themes, and the page logs no error
+  - given the board in dark mode
+  - then the strip is a faint deep sheen, not a grey rainbow, with no seam where the light rests
+  - and a load plus two layer turns log no `VGPUError`
+  - measured 09-28: dark strip luma 91 → 62, saturation 90 → 131, worst column jump 3.4 → 1.0; errors per load 1 → 0
+  - decision: this look holds until a design-skill pass on chords — dima 09-28, after «too dim» on the 48-luma round
+- ✅ the board reloads by itself when a config source changes
+  - when a config source's file changes on disk (`manual.ts` included)
+  - then the board redraws from the new scan with no reload
+- ✅ a `?layer=&key=` link opens the board on that key selected
+  - when the user opens `/?layer=cmd&key=c`
+  - then the `cmd` tab is selected and the selected key reads `cmd+c`
+- ✅ the home page's working view sits above the fold at 1280×800
+  - given the board at 1280×800
+  - then the board keeps its full width and a fixed strip under it holds at a glance, the note and the notes list — only the footer sits below the fold
+  - and selecting a key moves nothing, at 1280 or at 390
+  - decision: this stacked layout over a side column that fit with no scroll but clipped the caps' labels — dima 09-28
+- ✅ selected key: clicking a cap shows its chord and its bindings
+  - when the user clicks a bound cap
+  - then the selected key shows its chord as keycaps and each binding with its app
+  - when the user clicks a free key
+  - then the selected key shows the chord and no binding
+  - given no key is selected
+  - then the same block shows `<layer> at a glance`: its top 3 chords by presses, how many are never pressed, how many keys are free
+- ✅ rebind by drag: a hand-kept binding dragged onto a free key
+  - makes: the binding's row in `hotkeys/manual.ts` moved to the new key
+  - given a key whose binding lives in `manual.ts`
+  - when the user drags its cap onto a free key on the same layer
+  - then the binding shows on the new cap at once, the old cap empties, and the rescan keeps it there
+  - when the write fails, then the binding returns to its old cap and the selected key says `not moved — <reason>`
+- ⬜ press to rebind: the next chord pressed on the keyboard is the new one, a taken chord is refused with its owner
+  - makes: the binding's row in `hotkeys/manual.ts` moved to the new chord
+  - given a hand-kept binding is selected
+  - when the user presses «press to rebind», then a free chord on the keyboard
+  - then the binding moves to that chord, on whatever layer it is
+  - when the chord pressed is taken
+  - then the page names its owner and nothing moves; esc stops listening
+  - ⬜ not run: needs dima's keyboard
+- ✅ a rebind carries the key's note to the new chord
+  - makes: the note moved in `hotkeys/notes.json`
+  - given the key being rebound has a note
+  - when the rebind lands
+  - then the note sits on the new chord and the old chord has none
+- ✅ notes on keys: save / clear / cmd+enter, a dot on the cap, copy as markdown, a filtered list
+  - makes: the note in `hotkeys/notes.json`; copy puts every note on the clipboard as markdown
+  - given a key is selected
+  - when the user types a note and presses save note (or cmd+enter)
+  - then the page says saved, the cap carries a dot and the notes list shows the note
+  - when the user types a chord or a word into the notes filter
+  - then only notes whose chord or text match stay
+  - when the user presses clear
+  - then the note, the dot and the list row are gone
+  - with no key selected, save and clear are disabled
+- ✅ no-data notice with try again when the scan cannot be read
+  - given the daemon is down
+  - when the board loads
+  - then a notice says there is no hotkey data and offers try again
+
+## /stats — stats
+
+- ✅ window tabs all / month / week, with the span the log really covers
+  - when the user picks a window
+  - then the numbers change to that window and a label says the span the log covers
+- ✅ tiles: presses, chords, switches, never pressed of bound
+  - then four tiles show presses, chords, switches and `<n> of <bound>` never pressed
+- ✅ chords, ranked; a row opens the board on that key
+  - when the user clicks a chord row
+  - then the board opens on that chord's layer with its key selected
+- ✅ chords per app, ranked
+- ✅ switches per app, ranked
+- ✅ never pressed, lifetime; a chord opens the board on that key
+  - when the user switches the window
+  - then the never-pressed list does not change
+- ✅ long tables fold at 20 rows, show all is remembered per table
+  - given a table longer than 20 rows
+  - when the user presses show all and reloads
+  - then that table stays open and the others stay folded
+- ⬜ numbers refresh live; a failed refresh keeps them and says so
+  - when presses arrive, then the tiles move within a few seconds, with no reload
+  - when the daemon goes down after the numbers loaded
+  - then the numbers stay and a notice says they stopped refreshing
+  - ⬜ half run: the failed refresh keeps the numbers and says so; the live half waits for a real press
+
+## scripts
+
+- ✅ `pnpm hotkeys:scan` reads wispr flow, cursor, macos and `manual.ts`, and says nothing when all read
+  - makes: `hotkeys/hotkeys.json`, the snapshot the board draws
+  - when every source reads, then stderr is empty and the exit is 0
+  - when a source cannot be read, then a `skipped <source>` line names it
+  - decision: magnet (uninstalled 09-19) and bartender (v7 keeps no shortcut; `hyper+b` is a raycast row) are no longer read

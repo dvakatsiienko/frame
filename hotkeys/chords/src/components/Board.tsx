@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react';
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import {
+    type CSSProperties,
+    useEffect,
+    useEffectEvent,
+    useRef,
+    useState,
+} from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/react';
 import { chordOf } from '@hotkeys/chord.ts';
 import type { Hotkey } from '@hotkeys/manual.ts';
@@ -328,6 +334,23 @@ const Knob = (props: KnobProps) => {
         if (next !== undefined) props.onLayer(next);
     };
 
+    // React attaches onWheel as a passive listener, so its preventDefault is ignored and the page
+    // scrolls under the dial. A native listener with passive: false makes the browser wait for it.
+    const knob = useRef<HTMLButtonElement | null>(null);
+    const onWheel = useEffectEvent((event: WheelEvent) => {
+        event.preventDefault();
+        step(event.deltaY > 0 ? 1 : -1);
+    });
+
+    useEffect(() => {
+        const element = knob.current;
+
+        if (!element) return;
+
+        element.addEventListener('wheel', onWheel, { passive: false });
+        return () => element.removeEventListener('wheel', onWheel);
+    }, []);
+
     return (
         <span
             className='flex items-center justify-center'
@@ -336,10 +359,7 @@ const Knob = (props: KnobProps) => {
                 aria-label={`layer dial — ${props.layer || 'no modifier'}`}
                 className='knob relative size-[38px] cursor-pointer rounded-full border-0 p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
                 onClick={() => step(1)}
-                onWheel={(event) => {
-                    event.preventDefault();
-                    step(event.deltaY > 0 ? 1 : -1);
-                }}
+                ref={knob}
                 style={{ transform: `rotate(${angle}deg)` }}
                 title='turn: next layer · wheel: either way'
                 type='button'>

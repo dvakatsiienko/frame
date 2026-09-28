@@ -8,14 +8,14 @@
 // arrive as server-sent events, so the page holds no timer at all.
 //
 // 📌 Bound to every interface since daecf880, so a phone on the wi-fi opens the map — and so any
-// machine on that network reaches these routes too. The checks below stop a browser, not a crafted
-// request (curl sends any Origin); a loopback-only guard on the writing routes is open (FRM-255).
-// They do nothing either about the browser already running on this one, which can POST to any
-// localhost port from any page dima happens to have open. Since this server writes manual.ts and
-// notes.json with no auth of any kind, every mutating route demands `application/json` — a
-// content type a cross-origin page cannot send without a preflight this server never answers —
-// and refuses any Origin it does not serve. Anything running AS dima on this mac still has full
-// access by design; that is the boundary, not the port number.
+// machine on that network reaches these routes too. Reads stay open for the phone; every mutating
+// route takes a write only from a loopback peer, which a machine on the network cannot fake the
+// way it fakes an Origin. That still leaves the browser already running on this mac, which can
+// POST to any localhost port from any page dima happens to have open. Since this server writes
+// manual.ts and notes.json with no auth of any kind, every mutating route also demands
+// `application/json` — a content type a cross-origin page cannot send without a preflight this
+// server never answers — and refuses any Origin it does not serve. Anything running AS dima on
+// this mac still has full access by design; that is the boundary.
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, relative, resolve } from 'node:path';
@@ -48,6 +48,8 @@ const ALLOWED_ORIGINS = new Set(
         `http://127.0.0.1:${port}`,
     ]),
 );
+
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 
 const MIME: Record<string, string> = {
     '.css': 'text/css; charset=utf-8',
@@ -141,7 +143,13 @@ const readJson = async (request: IncomingMessage): Promise<unknown> => {
 
 // The lock the header describes. A refusal names its reason, because a bare 403 is exactly the
 // thing that costs an hour when the dev proxy's Origin turns out not to be the one you expected.
-const refuseMutation = (request: IncomingMessage) => {
+export const refuseMutation = (request: MutationRequest) => {
+    // The peer address comes from the kernel, not from a header, so a machine on the wi-fi cannot
+    // fake it the way it fakes an Origin. Reads stay open to the phone; writes are this mac's.
+    if (!LOOPBACK.has(request.socket.remoteAddress ?? '')) {
+        return 'writes are taken from this mac only';
+    }
+
     // The media type alone. A real header carries `; charset=utf-8` after it, so the comparison
     // cannot be an equality against the whole string — but `startsWith` is the other mistake:
     // it accepts `application/jsonp` and anything else that opens with those sixteen characters.
@@ -413,6 +421,9 @@ export interface PressPayload {
     counts: Record<string, number>;
     updatedAt: string | null;
 }
+type MutationRequest = Pick<IncomingMessage, 'headers'> & {
+    socket: Pick<IncomingMessage['socket'], 'remoteAddress'>;
+};
 interface LiveState {
     dataDir: string;
     presses: () => PressPayload;

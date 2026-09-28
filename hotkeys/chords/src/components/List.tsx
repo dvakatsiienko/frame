@@ -28,14 +28,6 @@ export const ListRow = (props: ListRowProps) => (
     </li>
 );
 
-export const ListEmpty = (props: { children: ReactNode }) => (
-    <li className='grid grid-cols-[9px_128px_1fr] items-baseline gap-2.5 py-[3px] text-[12px] text-ink-2'>
-        <span />
-        <span />
-        <span>{props.children}</span>
-    </li>
-);
-
 /* Types */
 interface ListRowProps {
     // A trailing control, present only where the row can do something. A row read from another

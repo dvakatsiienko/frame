@@ -287,13 +287,51 @@ export const manualHotkeys = [
         key: '0',
         mods: 'cmd+shift',
     },
-    // system settings → accessibility → read & speak → speak selection (siri voice 4); hotkey buried in its ⓘ sheet
+    // system settings → accessibility → read & speak → speak selection (siri voice 4); hotkey buried in its ⓘ sheet. moved to F4 2026-09-28
     {
         action: 'Speak selection (read aloud)',
         app: 'macos',
         key: 'esc',
         mods: 'opt',
+        until: '2026-09-28',
     },
+    {
+        action: 'Speak selection (read aloud)',
+        app: 'macos',
+        key: 'f4',
+        mods: '',
+        since: '2026-09-28',
+    },
+    // homerow — its prefs (com.superultra.Homerow) name these three; hand-kept until a reader earns its place
+    ...(
+        [
+            ['f1', 'click'],
+            ['f2', 'scroll'],
+            ['f3', 'search'],
+        ] as const
+    ).map(
+        ([key, action]): Hotkey => ({
+            action,
+            app: 'homerow',
+            key,
+            mods: '',
+        }),
+    ),
+    // vorssaint utils keeps its shortcut keys out of its prefs, so these are typed from dima's word (2026-09-28)
+    ...(
+        [
+            ['space', 'radial menu'],
+            ['s', 'switch audio output'],
+            ['m', 'mic mute toggle'],
+        ] as const
+    ).map(
+        ([key, action]): Hotkey => ({
+            action,
+            app: 'vorssaint',
+            key,
+            mods: 'ctrl+opt+cmd',
+        }),
+    ),
     // system chords — obvious, but a labelled row beats a bare one in the stats tables
     ...(
         [

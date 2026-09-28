@@ -17,7 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Aurora } from '@/components/Aurora.tsx';
 import { Board } from '@/components/Board.tsx';
 import { Chord } from '@/components/Kbd.tsx';
-import { List, ListEmpty, ListRow } from '@/components/List.tsx';
+import { List, ListRow } from '@/components/List.tsx';
 import { NoteEditor } from '@/components/NoteEditor.tsx';
 import { Notice, apiTrouble } from '@/components/Notice.tsx';
 
@@ -117,13 +117,18 @@ export const BoardPage = (props: BoardPageProps) => {
                 staleStats();
             },
             onPresses: (payload) => {
-                if (replayed) staleStats();
+                const isNews = replayed;
+
+                if (isNews) staleStats();
                 replayed = true;
 
                 // The stream carries totals, so the chord just pressed is the one whose count
-                // moved. That is what press-to-pick listens for.
+                // moved. That is what press-to-pick listens for. A replay moves every count
+                // from nothing, which is not a press.
                 setPresses((previous) => {
-                    const pressed = pressedChord(previous, payload.counts);
+                    const pressed = isNews
+                        ? pressedChord(previous, payload.counts)
+                        : undefined;
 
                     if (pressed)
                         setLastPress({ at: Date.now(), chord: pressed });
@@ -237,7 +242,9 @@ export const BoardPage = (props: BoardPageProps) => {
                 // takes — and loadScan is what clears `pending`.
             } catch (error) {
                 setPending(null);
-                setMoveError((error as Error).message);
+                setMoveError(
+                    `not moved — ${apiTrouble((error as Error).message)}`,
+                );
             }
         },
         [notes, queryClient],
@@ -349,76 +356,177 @@ export const BoardPage = (props: BoardPageProps) => {
             );
         });
 
-    return (
-        <div className='grid grid-cols-[minmax(0,1fr)] gap-[22px]'>
-            <div className='flex flex-wrap items-baseline gap-x-[18px] gap-y-2'>
-                <span className='text-[13px] text-ink-2'>
-                    NuPhy Air75 · {hotkeys.length} bindings · scanned{' '}
-                    <span className='font-mono'>
-                        {scan
-                            ? scan.scannedAt.slice(0, 16).replace('T', ' ')
-                            : 'never'}
-                    </span>{' '}
-                    ·{' '}
-                    {pressedAt
-                        ? `${coldCount} never pressed · last press ${new Date(pressedAt).toLocaleTimeString()}`
-                        : 'no press data — run pnpm hotkeys:live'}
-                </span>
-                {apps.map((app) => {
-                    return (
-                        <span
-                            className='flex items-center gap-1.5 text-[12px] text-ink-2'
-                            key={app}>
-                            <span
-                                className='size-[9px] rounded-full'
-                                style={{ background: colorOf(app) }}
-                            />
-                            {app}
+    // Ranked by chord, not by binding: a chord bound twice (hyper+k is Calendar twice) is one
+    // row, or it fills two of the three.
+    const topOnLayer = [
+        ...new Map(binds.map((hotkey) => [chordOf(hotkey), hotkey])),
+    ]
+        .map(([chord, first]) => ({ chord, first, n: presses[chord] ?? 0 }))
+        .sort((x, y) => y.n - x.n)
+        .slice(0, 3);
+    const coldOnLayer = binds.filter(
+        (hotkey) => !presses[chordOf(hotkey)],
+    ).length;
+
+    // One fixed height for the glance and every selection, scrolling inside past it: nothing
+    // below this block moves when a key is picked, at any width.
+    const selectedJSX = (
+        <section
+            aria-label='selected key'
+            className='-m-1 grid h-[204px] content-start gap-2.5 overflow-y-auto p-1 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent'
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: it scrolls on a narrow screen, and a scroll box the keyboard cannot reach cannot be read without a pointer
+            tabIndex={0}>
+            <div className='flex min-h-[28px] flex-wrap items-center gap-3'>
+                <h2 className={H2}>
+                    {selectedChord
+                        ? 'selected key'
+                        : `${layerName(layer)} at a glance`}
+                </h2>
+                {selectedChord ? (
+                    <Chord chord={selectedChord} size='lg' />
+                ) : null}
+            </div>
+            {selectedChord ? (
+                <div className='grid content-start gap-2.5'>
+                    {selectedBinds.length > 0 && (
+                        <List>
+                            {selectedBinds.map((hotkey, at) =>
+                                bindRow(hotkey, at, false),
+                            )}
+                        </List>
+                    )}
+                    {movable ? (
+                        <div className='flex flex-wrap items-center gap-2 text-[12px] text-ink-2'>
+                            {pending ? (
+                                <span>rebinding…</span>
+                            ) : listening ? (
+                                <span className='text-ink'>
+                                    press the new chord on the keyboard — esc
+                                    stops
+                                </span>
+                            ) : (
+                                <span>
+                                    drag the key to a free cap to rebind, or
+                                </span>
+                            )}
+                            {!pending && (
+                                <button
+                                    aria-pressed={listening}
+                                    className={`${GHOST} px-2 py-0.5 text-[12px] aria-pressed:border-accent aria-pressed:text-ink`}
+                                    onClick={() => {
+                                        setListening((on) => !on);
+                                        setMoveError(null);
+                                    }}
+                                    type='button'>
+                                    {listening ? 'cancel' : 'press to rebind'}
+                                </button>
+                            )}
+                        </div>
+                    ) : null}
+                    {/* Outside the movable branch: a failed drag selects the destination,
+                        which holds no movable binding once the move reverts. */}
+                    {moveError ? (
+                        <span className='text-[12px] text-ink'>
+                            {moveError}
                         </span>
-                    );
-                })}
+                    ) : null}
+                </div>
+            ) : (
+                <>
+                    <List>
+                        {topOnLayer.map((row) => {
+                            return (
+                                <ListRow
+                                    chord={row.chord}
+                                    color={colorOf(row.first.app)}
+                                    key={row.chord}
+                                    who={`${row.n.toLocaleString()} presses`}>
+                                    {row.first.action}
+                                </ListRow>
+                            );
+                        })}
+                    </List>
+                    <p className='m-0 text-[12px] text-ink-2'>
+                        {coldOnLayer} never pressed · {free.length} free keys ·
+                        click a cap for its bindings and note
+                    </p>
+                </>
+            )}
+        </section>
+    );
+
+    const noteJSX = (
+        <section className='-m-1 grid min-h-0 content-start gap-2.5 overflow-y-auto p-1'>
+            <h2 className={H2}>note</h2>
+            <NoteEditor
+                chord={selectedChord}
+                notesMarkdown={notesMarkdown}
+                onSave={saveNote}
+                text={selectedNote?.text ?? ''}
+            />
+        </section>
+    );
+
+    const notesJSX = (
+        <section className='grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-2.5'>
+            <h2 className={H2}>notes · {Object.keys(notes).length}</h2>
+            <input
+                aria-label='filter notes'
+                className='w-full rounded-md border border-line bg-cap px-2.5 py-1.5 font-sans text-[13px] text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
+                onChange={(event) => setNoteFilter(event.target.value)}
+                placeholder='filter by chord or text'
+                type='search'
+                value={noteFilter}
+            />
+            <div className='min-h-0 overflow-y-auto'>
+                {noteRowJSX.length ? (
+                    <List>{noteRowJSX}</List>
+                ) : (
+                    <p className='m-0 text-[13px] text-ink-2'>
+                        {Object.keys(notes).length === 0
+                            ? 'no notes yet — select a key and write one'
+                            : `no note matches ${noteFilter.trim()}`}
+                    </p>
+                )}
             </div>
+        </section>
+    );
 
-            {scanError ? (
-                <Notice onRetry={loadScan}>
-                    no hotkey data — {apiTrouble(scanError)}. the scan behind it
-                    is <span className='font-mono'>pnpm hotkeys:scan</span>, run
-                    in frame.
-                </Notice>
-            ) : null}
+    const tabsJSX = (
+        <div
+            aria-label='modifier layer'
+            className='flex flex-wrap gap-1.5'
+            role='tablist'>
+            {layers.map((each) => {
+                return (
+                    <button
+                        aria-controls='board-panel'
+                        aria-selected={each === layer}
+                        className={`${TAB} ${each === layer ? 'border-accent bg-sel text-ink' : 'border-line bg-transparent text-ink-2'}`}
+                        key={each || 'none'}
+                        onClick={() => {
+                            setLayer(each);
+                            setSelected(null);
+                        }}
+                        role='tab'
+                        type='button'>
+                        <b className='font-semibold text-ink'>
+                            {layerName(each)}
+                        </b>
+                        <span className='text-[12px] tabular-nums text-ink-2'>
+                            {
+                                hotkeys.filter((hotkey) => hotkey.mods === each)
+                                    .length
+                            }
+                        </span>
+                    </button>
+                );
+            })}
+        </div>
+    );
 
-            <div
-                aria-label='modifier layer'
-                className='flex flex-wrap gap-1.5'
-                role='tablist'>
-                {layers.map((each) => {
-                    return (
-                        <button
-                            aria-controls='board-panel'
-                            aria-selected={each === layer}
-                            className={`${TAB} ${each === layer ? 'border-accent bg-sel text-ink' : 'border-line bg-transparent text-ink-2'}`}
-                            key={each || 'none'}
-                            onClick={() => {
-                                setLayer(each);
-                                setSelected(null);
-                            }}
-                            role='tab'
-                            type='button'>
-                            <b className='font-semibold text-ink'>
-                                {layerName(each)}
-                            </b>
-                            <span className='text-[12px] tabular-nums text-ink-2'>
-                                {
-                                    hotkeys.filter(
-                                        (hotkey) => hotkey.mods === each,
-                                    ).length
-                                }
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-
+    const boardJSX = (
+        <>
             {/* The region the layer tabs switch. A tablist that controls nothing is a promise
                 to a screen reader that the page does not keep. */}
             <div id='board-panel' role='tabpanel'>
@@ -479,114 +587,56 @@ export const BoardPage = (props: BoardPageProps) => {
                     />
                 </DragDropProvider>
             </div>
+        </>
+    );
 
-            <div className='grid grid-cols-1 gap-[22px] min-[761px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'>
-                <section className='grid content-start gap-2.5'>
-                    <div className='flex min-h-[28px] flex-wrap items-center gap-3'>
-                        <h2 className={H2}>selected key</h2>
-                        {selectedChord ? (
-                            <Chord chord={selectedChord} size='lg' />
-                        ) : (
-                            <span className='text-[13px] text-ink-2'>none</span>
-                        )}
-                    </div>
-                    {/* A fixed slot for the row and the rebind hint, so the note field below
-                        never moves when a free key or no key is selected — measured: 32.5 +
-                        33.5 + the 10px gap between them. */}
-                    <div className='grid min-h-[76px] content-start gap-2.5'>
-                        {selectedBinds.length > 0 && (
-                            <List>
-                                {selectedBinds.map((hotkey, at) =>
-                                    bindRow(hotkey, at, false),
-                                )}
-                            </List>
-                        )}
-                        {movable ? (
-                            <div className='flex flex-wrap items-center gap-2 text-[12px] text-ink-2'>
-                                {pending ? (
-                                    <span>rebinding…</span>
-                                ) : listening ? (
-                                    <span className='text-ink'>
-                                        press the new chord on the keyboard —
-                                        esc stops
-                                    </span>
-                                ) : (
-                                    <span>
-                                        drag the key to a free cap to rebind, or
-                                    </span>
-                                )}
-                                {!pending && (
-                                    <button
-                                        aria-pressed={listening}
-                                        className={`${GHOST} px-2 py-0.5 text-[12px] aria-pressed:border-accent aria-pressed:text-ink`}
-                                        onClick={() => {
-                                            setListening((on) => !on);
-                                            setMoveError(null);
-                                        }}
-                                        type='button'>
-                                        {listening
-                                            ? 'cancel'
-                                            : 'press to rebind'}
-                                    </button>
-                                )}
-                                {moveError ? (
-                                    <span className='basis-full text-ink'>
-                                        {moveError}
-                                    </span>
-                                ) : null}
-                            </div>
-                        ) : null}
-                    </div>
-                    <NoteEditor
-                        chord={selectedChord}
-                        notesMarkdown={notesMarkdown}
-                        onSave={saveNote}
-                        text={selectedNote?.text ?? ''}
-                    />
-                    <h2 className={H2}>free keys on this layer</h2>
-                    <div className='font-mono text-[13px]/[1.9] text-ink-2'>
-                        {free.map((label) => {
-                            return (
-                                <kbd
-                                    className='mr-[3px] mb-[3px] inline-block rounded border border-line bg-cap px-1.5 font-[inherit] text-ink'
-                                    key={label}>
-                                    {label}
-                                </kbd>
-                            );
-                        })}
-                    </div>
-                </section>
+    return (
+        <div className='grid grid-cols-[minmax(0,1fr)] gap-[22px]'>
+            <div className='flex flex-wrap items-baseline gap-x-[18px] gap-y-2'>
+                <span className='text-[13px] text-ink-2'>
+                    NuPhy Air75 · {hotkeys.length} bindings · scanned{' '}
+                    <span className='font-mono'>
+                        {scan
+                            ? scan.scannedAt.slice(0, 16).replace('T', ' ')
+                            : 'never'}
+                    </span>{' '}
+                    ·{' '}
+                    {pressedAt
+                        ? `${coldCount} never pressed · last press ${new Date(pressedAt).toLocaleTimeString()}`
+                        : 'no press data — run pnpm hotkeys:live'}
+                </span>
+                {apps.map((app) => {
+                    return (
+                        <span
+                            className='flex items-center gap-1.5 text-[12px] text-ink-2'
+                            key={app}>
+                            <span
+                                className='size-[9px] rounded-full'
+                                style={{ background: colorOf(app) }}
+                            />
+                            {app}
+                        </span>
+                    );
+                })}
+            </div>
 
-                <section className='grid content-start gap-2.5'>
-                    <h2 className={H2}>notes</h2>
-                    <input
-                        aria-label='filter notes'
-                        className='w-full rounded-md border border-line bg-cap px-2.5 py-1.5 font-sans text-[13px] text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
-                        onChange={(event) => setNoteFilter(event.target.value)}
-                        placeholder='filter by chord or text'
-                        type='search'
-                        value={noteFilter}
-                    />
-                    <List>
-                        {noteRowJSX.length ? (
-                            noteRowJSX
-                        ) : (
-                            <ListEmpty>
-                                {Object.keys(notes).length === 0
-                                    ? 'no notes yet'
-                                    : `no note matches ${noteFilter.trim()}`}
-                            </ListEmpty>
-                        )}
-                    </List>
-                    <h2 className={H2}>all bindings on this layer</h2>
-                    <List>
-                        {binds.length ? (
-                            binds.map((hotkey, at) => bindRow(hotkey, at))
-                        ) : (
-                            <ListEmpty>nothing on this layer</ListEmpty>
-                        )}
-                    </List>
-                </section>
+            {scanError ? (
+                <Notice onRetry={loadScan}>
+                    no hotkey data — {apiTrouble(scanError)}. the scan behind it
+                    is <span className='font-mono'>pnpm hotkeys:scan</span>, run
+                    in frame.
+                </Notice>
+            ) : null}
+
+            {tabsJSX}
+            {boardJSX}
+            {/* One fixed strip under the board, so the working view ends above the fold at
+                1280×800 and only the footer sits below it (dima picked this over a side
+                column that clipped the caps, 09-28). */}
+            <div className='grid gap-[22px] min-[761px]:h-[200px] min-[761px]:grid-cols-3'>
+                {selectedJSX}
+                {noteJSX}
+                {notesJSX}
             </div>
         </div>
     );

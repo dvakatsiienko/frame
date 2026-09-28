@@ -13,7 +13,7 @@ nothing else needs touching: the live job sees its mtime move, reruns the scan, 
 
 ## the pieces
 
-- `scan.ts` — reads the six sources named in `sources.ts`; stdout is json, and `top.ts` parses it,
+- `scan.ts` — reads the four sources named in `sources.ts`; stdout is json, and `top.ts` parses it,
   and the same payload lands beside it as `hotkeys.json` for the app
 - `live.ts` — the always-on watcher and the app's server: counts presses, reruns the scan on a
   config change, pushes both to the page. installed as `x-monitor-hotkey-live`
@@ -25,7 +25,7 @@ nothing else needs touching: the live job sees its mtime move, reruns the scan, 
 
 ## the server
 
-📌 **port 7373, bound to every interface** (`daecf880`: a phone on the wi-fi opens it — ⚠️ the writing routes are reachable from the network until the loopback guard in FRM-255 lands). the daemon holds it because the daemon is already watching
+📌 **port 7373, bound to every interface** (`daecf880`: a phone on the wi-fi opens it; the writing routes take a write from loopback only). the daemon holds it because the daemon is already watching
 the press log and the config sources; a second process would duplicate both watchers to answer
 the same questions. `pnpm chords:dev` runs vite on 7374 and proxies `/api` straight back to it,
 so there is one api in dev and in the build.
