@@ -36,7 +36,7 @@ skip phases 0, 2, 3a, 3b and 7 entirely. do this, in order, **without asking**:
    needs a decision → it does not qualify. do not start anything.
 3. **push if commits are clean and hooks pass.** hooks fail → force NOTHING. leave the commits
    local and say so.
-4. **inbox cleared** (phase 1.5, same rule, no ask).
+4. **inbox reset from `inbox-template.md`** (phase 1.5, same rule, no ask).
 4b. **park notes where the work lives** — ticket comment, flowlog line, `/queue`. not in chat.
    one line each: what state it is in, and the single next action. **this is the part that must
    not be skipped**, because it is the part that pays for itself tomorrow.
@@ -96,8 +96,9 @@ not in the report. a park that only exists in a chat message is a strand.
 
 ## phase 1.5 — the inbox, cleared unasked 📬
 every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item has a home
-(a flowlog line, a ticket, an answer given, a fold), then clear the content — his section
-headers stay. an item without a home is not deleted: it gets its flowlog line first, then
+(a flowlog line, a ticket, an answer given, a fold), then reset it by copying his template over
+it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear (dima, 2026-09-28). the template
+is his: read-only, never edited. an item without a home is not deleted: it gets its flowlog line first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
 the same pass prunes `flowlog.md` first: every ✅ line goes, then any section left empty, then the
 inbox clears — before the CST is written, every halt, both lanes (the 09-20 halt skipped the prune
