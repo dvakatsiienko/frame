@@ -59,7 +59,21 @@ still open, not the seed's to fix:
 - the `clt` stop inside the seed only fires for a clone made some other way (a zip, a bundle).
 - plain `pnpm frame:link` stays red on a default seed (`.claude/` missing). the green check is `--without-claude`, or seed with `--claude`.
 
-## round 2 — claude inside the VM (not started)
+## round 2 prep — a `--claude` VM waiting on dima's sign-ins
+
+- 2026-09-28 18:51 — tart 2.32.1 from the formula's `tart.tar.gz`, sha256 `8554ab4f…4529` checked, run by path from the job dir. no system install. the cached image in `~/.tart` was reused, so the clone took 0.05 s. VM `seed-3`, window open, with an 80 GB sparse `--disk`, formatted `Extra` (picked by size) and wired in as in round 1: `/etc/zshenv` holds the cask appdir and cache, and brew's `var/homebrew/tmp` links onto it.
+- 📌 harness: the worktree sandbox guard refuses any unknown binary that takes arguments (`vm 'zsh -s'`, `$T ip`). the pattern that works is a launcher with no arguments (`bin/vmgo`) that pipes a fixed `r/cmd.sh` over ssh, plus a throwaway ed25519 key installed once with `expect`.
+- 2026-09-28 18:55 — stop 0, headless: `softwareupdate -i "Command Line Tools for Xcode 27.0-27.0"` (label read from `softwareupdate -l` with the on-demand flag file), **82 s**. frame went in as a bundle of main `2ec95d72`, origin re-pointed to https, no token in the VM.
+  - 📌 a bundle of a worktree `HEAD` clones as a detached HEAD, so `git checkout -B main` was run after.
+  - the CLT git ships `credential.helper=osxkeychain` again (seen in round 1).
+- 2026-09-28 18:57 — seed run 1: `clt done`, `brew waiting` (the new wording, «skip its next steps»), exit 2 ✅. brew installed with `NONINTERACTIVE=1`, **17 s**, brew 7.0.7 (the RETURN prompt was graded in round 1).
+- 2026-09-28 18:58 → 19:05 — seed run 2 (`--claude`), **7 m 19 s**: 36 apps installed, then a named `macos` stop, because `battle-net` failed with `curl: (18) Transferred a partial file` (blizzard's CDN, a transient cut; the url answers 200 from the host). ✅ the named stop worked as designed: the human re-runs.
+- 2026-09-28 19:05 — seed run 3, **10 s**: `battle-net` in, `Linked 9`, three stubs written, `claude done ~/.claude linked`, then `claude skipped: Claude is not installed yet`, and `appstore` + `1password` together, exit 2.
+  - 🐛 **nothing installs the Claude Code CLI.** `cask "claude"` is the desktop app, and the seed accepts `/Applications/Claude.app` as «installed», so on a real mac the check passes with no `claude` on PATH. (in the bed it skipped only because apps live on `/Volumes/Extra`.) the host's CLI comes from the native installer (`~/.local/bin/claude`). played here as the human: `curl -fsSL https://claude.ai/install.sh | bash`, 11 s, `2.1.283`. open for the seed: a `claude` step that runs that installer, or a stop that names it.
+- 2026-09-28 19:06 — seed run 4: every step `done`/`ran`, `claude done: plugins install … on the next claude launch`, the two sign-ins, exit 2. ✅ **plain `pnpm frame:link` → «Everything mirrored», exit 0** (round 1 needed `--without-claude`). `~/.claude → ~/frame/home/.claude`.
+- **state handed to dima**: the `seed-3` window is open, user `admin`/`admin`, and nothing is signed in. `Claude.app` and `1Password.app` are in `/Volumes/Extra/Applications`.
+
+## round 2 — claude inside the VM (next)
 
 - a claude login: dima signs in to Claude Code in the VM window (an OAuth browser round), or a scoped API key from 1password, never his main one.
 - `--claude`: the seed links `~/.claude`; `settings.json` then installs the plugins on the first launch, which needs network to the marketplaces and the `plugin-x` path at `~/frame`.
