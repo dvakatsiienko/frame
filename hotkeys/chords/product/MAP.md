@@ -31,12 +31,11 @@
 - ✅ layer tabs, each with its binding count
   - then the tab counts add up to the summary's bindings count
   - and the board opens on `hyper`
-- 🐞 layer dial: a click steps to the next layer, the wheel turns either way
+- ✅ layer dial: a click steps to the next layer, the wheel turns either way
   - when the user clicks the dial
   - then the next layer tab is selected
   - when the user turns the wheel down, then up, over the dial
   - then the layer moves forward one, then back one, and the page does not scroll
-  - 🐞 measured 09-28: wheel up turns back one; wheel down scrolls the page and the dial never gets the event
 - ✅ caps show the action, the press count and the owning app's colour
   - then a bound cap shows its legend, its press count, its first action, and a top edge in its app's colour
   - given a binding on `home`, `end`, `pageup` or `pagedown`
