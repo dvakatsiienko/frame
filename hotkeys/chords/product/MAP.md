@@ -40,7 +40,7 @@
   - then a bound cap shows its legend, its press count, its first action, and a top edge in its app's colour
   - given a binding on `home`, `end`, `pageup` or `pagedown`
   - then it shows on that cap — every cap is named the way the daemon names its key
-  - and a cursor binding spelled the vscode way (`escape`, `enter`, `delete`) shows on `esc`, `return`, `del`
+  - and a cursor binding spelled the vscode way (`escape`, `enter`) shows on `esc`, `return`
   - given a binding moved with a dated row (read-aloud: `opt+esc` until 09-28, `f4` since 09-28)
   - then the new cap shows it and the old chord shows no binding
   - 📌 `del` has no cap on the Air75 (the daemon sees it, likely from fn+backspace) — a binding on `del` shows on no cap; dima's call

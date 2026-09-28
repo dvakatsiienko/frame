@@ -371,7 +371,11 @@ export const BoardPage = (props: BoardPageProps) => {
     // One fixed height for the glance and every selection, scrolling inside past it: nothing
     // below this block moves when a key is picked, at any width.
     const selectedJSX = (
-        <section className='grid h-[196px] content-start gap-2.5 overflow-y-auto'>
+        <section
+            aria-label='selected key'
+            className='-m-1 grid h-[204px] content-start gap-2.5 overflow-y-auto p-1 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent'
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: it scrolls on a narrow screen, and a scroll box the keyboard cannot reach cannot be read without a pointer
+            tabIndex={0}>
             <div className='flex min-h-[28px] flex-wrap items-center gap-3'>
                 <h2 className={H2}>
                     {selectedChord
@@ -452,7 +456,7 @@ export const BoardPage = (props: BoardPageProps) => {
     );
 
     const noteJSX = (
-        <section className='grid min-h-0 content-start gap-2.5 overflow-y-auto'>
+        <section className='-m-1 grid min-h-0 content-start gap-2.5 overflow-y-auto p-1'>
             <h2 className={H2}>note</h2>
             <NoteEditor
                 chord={selectedChord}
