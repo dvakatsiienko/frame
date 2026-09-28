@@ -4,6 +4,8 @@ the hotkey map, as a served app. vite + react + tailwind, one page today, built 
 served by the always-on `x-monitor-hotkey-live` daemon. it is not deployed anywhere and there is
 nothing to deploy it to — it draws this mac's bindings and this mac's press log.
 
+**`product/MAP.md` + `CONTEXT.md`** — read your section before changing what the app does.
+
 **`PRODUCT.md` is the product authority and `DESIGN.md` is the look authority.** read the first
 before changing what the app does, the second before changing how anything renders. `DESIGN.md`
 binds on top of the house ui guides, and its named rules — Zero Blur, Owner Edge, Earned Accent,
