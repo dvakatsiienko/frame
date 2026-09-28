@@ -38,8 +38,13 @@ file the brief points at committed and pushed. A brief that names an unpushed fi
 `--cloud` refuses a non-tty (measured). From a Bash tool call, wrap it in `script`:
 
 ```bash
-cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '☁️ cloud: <ticket> <what>' --cloud "<the brief>" </dev/null >/dev/null
+cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '☁️ cloud: <ticket> <what>' --effort medium --cloud "<the brief>" </dev/null >/dev/null
 ```
+
+- **effort is medium by default**, like every coder and verifier (dima 2026-09-28); high only for
+  a big sweep or migration. BYT-97 ran without the flag and came up on high. (? unproven that
+  `--effort` reaches the VM — the first job with it asks the session its effort through
+  `--teleport`, then this line loses its `?`)
 
 - **`-n` comes before `--cloud`** — `--cloud` takes the brief as its own value; `--cloud -n …` dies
   on «--cloud requires a description» (measured 2026-09-28, «☁️ cloud: name probe» landed as the
@@ -99,8 +104,10 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 
 ## step 4 — watch and read
 
-- **the pr is the signal.** arm the pr watch from `craft-spawning` (a `Monitor` on
-  `gh pr list --search 'head:coder/<BYT-N>'`), so the verifier spawns within a minute of the pr.
+- **the pr is the signal.** arm the pr watch from `craft-spawning`, keyed on the ticket id in the
+  pr body (`gh pr list --state all --search '<BYT-N> in:body'`), never on the head branch: a cloud
+  session is pinned to its own `claude/<slug>` branch and ignores the brief's `coder/…` name
+  (BYT-97, 2026-09-28: the head-keyed watch saw nothing while #105 sat open).
 - **send** a steer: `SendMessage` to its `ListAgents` name, or `claude -p "<msg>" --cloud <id>`.
 - 🚫 **it cannot answer by message** — ListAgents' own doc: a cloud session «cannot message any
   session back yet». never brief it to ping; never wait for one.
