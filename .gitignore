@@ -91,6 +91,41 @@ gmail/token.json
 **/.impeccable/live/*.png
 # impeccable-ignore-end
 
+# Claude Code's own runtime writes. On a fresh mac `~/.claude` is linked wholesale to home/.claude,
+# so cc writes these into the tree — session keys included. The list is what cc wrote on this mac.
+home/.claude/backups/
+home/.claude/cache/
+home/.claude/chrome/
+home/.claude/daemon
+home/.claude/daemon.*
+home/.claude/debug/
+home/.claude/file-history/
+home/.claude/focus
+home/.claude/gh-pr-status-cache.json
+home/.claude/history.jsonl
+home/.claude/hook-trace.log
+home/.claude/ide/
+home/.claude/jobs/
+home/.claude/mcp-needs-auth-cache.json
+home/.claude/paste-cache/
+home/.claude/plugins/
+home/.claude/projects/
+home/.claude/session-env/
+home/.claude/sessions/
+home/.claude/settings.json.*.lock
+home/.claude/shell-snapshots/
+home/.claude/state/
+home/.claude/stats-cache.json
+home/.claude/statsig/
+home/.claude/tasks/
+home/.claude/todos/
+home/.claude/uploads/
+home/.claude/usage-data/
+home/.claude/worktrees/
+home/.claude/.last-cleanup
+home/.claude/.last-update-result.json
+home/.claude/.update.lock
+
 # coder worktrees (embedded checkouts), the same location cc uses
 .claude/worktrees/
 import/raycast/backups/*.rayconfig
