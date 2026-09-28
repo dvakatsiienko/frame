@@ -72,7 +72,7 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 - branch `coder/<BYT-N>-<slug>` from the base. step commits.
 - commit subject `<emoji> <scope>: <lowercase imperative>`; emoji: 🔧 feature/config · 🐞 fix · ✨ refactor · 🗑️ delete · 📜 docs · 🎨 visual · 📦 deps. body: hyphen bullets, a line `- ticket: <BYT-N>`, last line `Agent: crew-cloud · <model>`.
 - never write a linear keyword (closes, fixes, resolves, refs …) next to a ticket id, anywhere. never write a skip-ci marker.
-- push the branch and open ONE pr (not a draft) as soon as the first commit exists. pr body ≤ 25 lines: what shipped, what is left, the exit lines with ✅/❌, one line per known defect.
+- push the branch as soon as the first commit exists; if `gh` exists, open ONE pr (not a draft), else say «no gh» in your last message and cclio opens it. pr body ≤ 25 lines: what shipped, what is left, the exit lines with ✅/❌, one line per known defect.
 
 ## you are alone
 - nobody answers questions: a decision you cannot make goes in the pr body as `? <question>` and you continue with the safer option.
@@ -89,7 +89,7 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
   session back yet». never brief it to ping; never wait for one.
 - **read** its transcript in a scratch clone of the same repo, never the main checkout:
   `claude -p "<question>" --teleport <session_id>` (measured: answers from the cloud history).
-- `notify_when_idle` is same-machine only; a quiet cloud session is read, not waited on.
+- `notify_when_idle` is same-machine only. the done signal is the session's `ListAgents` status turning `idle` — never a fixed sleep before a read (a 150 s timer read probe 2 three minutes late).
 
 ## step 5 — close
 
@@ -97,6 +97,29 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
   ui's archive, or a «stop and summarize» message.
 - the verifier, the ci reviewer (`review.yml`, subscription oauth) and the done-comment in linear
   are the local flow's, unchanged: cclio reads the pr and writes the comment.
+
+## the environment's setup script — plugin `x` in every cloud session
+
+Probe 2 (2026-09-28) proved the VM reaches private `frame` and installs plugin `x` from a sparse
+clone, the same directory-marketplace way the mac does. Installed in a running session, the skills
+load only in the next one — so it belongs in the environment's **setup script** (claude.ai/code →
+the environment → settings icon → Setup script), which runs before claude starts and is cached:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+git clone --depth 1 --filter=blob:none --sparse https://github.com/dvakatsiienko/frame /opt/frame
+git -C /opt/frame sparse-checkout set home/.claude/plugin-x
+claude plugin marketplace add /opt/frame/home/.claude/plugin-x
+claude plugin install x@x
+```
+
+- the VM gets the **pushed** plugin version, frozen until the environment cache rebuilds (~7 days
+  or a script edit) — a skill edit reaches the cloud after a push and a rebuild
+- ? unproven until the first session in that environment lists `x:*` skills: whether `claude` is
+  on the path during setup, and whether setup's `~/.claude` is the session's
+- 🚫 **`gh` is not in the VM** (probe 2), whatever the docs list — until setup installs it, the
+  pr is opened by cclio from the pushed branch, or through the web ui's pr button
 
 ## keys and browsers
 

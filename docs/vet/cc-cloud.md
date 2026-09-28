@@ -25,10 +25,11 @@ Ticket: none
 5. **the verifier** — `x:crew-verifier` on a pr, with browserbase for the exit lines (needs the key in the environment's api credentials)
 6. **post-deploy check** — a routine after a vercel deploy (`/schedule`, api trigger), checked through browserbase
 7. **a frame job** — proves the git-crypt read: a fresh clone commits normally around `gmail/blocklist.json`
-8. **plugin `x` in the VM** — a `git-subdir` marketplace from frame, so the cloud coder loads our guides (private repo: unproven)
+8. **plugin `x` in the VM** — the environment's setup script sparse-clones frame and installs `x` (probe 2: reachable + installs; the next-session load is unproven)
 
 ## rounds
 
 <!-- date · use # · job · credit before → after · worked? · note -->
 
+- 2026-09-28 · #8 · probe 2 on bytes (session_01Vh92jhsWo8LiocQzhKGtb7): private `frame` IS reachable from the VM (`git ls-remote` ok), a sparse clone of `home/.claude/plugin-x` ok, `claude plugin marketplace add <dir>` + `install x@x` ok (0.11.139 — the pushed version) · the x:* skills load only in the NEXT session · 🚫 `gh` is NOT installed (the research said preinstalled) · credit not read
 - 2026-09-28 · probe · read-only environment report on bytes (session_014QV6GViG5BzJYugdtrZuzw) · credit not read · worked: launched through `script`, read back with `--teleport` · details in `docs/vet/browserbase.md` round 1
