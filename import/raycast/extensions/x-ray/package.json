@@ -136,7 +136,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "@raycast/api": "2.4.1",
+        "@raycast/api": "2.5.1",
         "@raycast/utils": "2.3.1",
         "node-emoji": "2.2.0"
     }
