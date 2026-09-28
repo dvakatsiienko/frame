@@ -71,6 +71,15 @@ const wispr = (): Hotkey[] => {
         });
 };
 
+// Cursor spells keys the vscode way; the daemon and the board spell them the way keyCap does, and
+// a binding that spells its key differently never joins a press.
+const CURSOR_NAMES: Record<string, string> = {
+    alt: 'opt',
+    delete: 'del',
+    enter: 'return',
+    escape: 'esc',
+};
+
 const cursor = (): Hotkey[] => {
     const text = readFileSync(cursorKeybindings, 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -79,9 +88,7 @@ const cursor = (): Hotkey[] => {
     return binds
         .filter((b) => !b.command.startsWith('-'))
         .map((b) => {
-            const parts = b.key
-                .split('+')
-                .map((p) => (p === 'alt' ? 'opt' : p));
+            const parts = b.key.split('+').map((p) => CURSOR_NAMES[p] ?? p);
             return {
                 action: b.command,
                 app: 'cursor',
