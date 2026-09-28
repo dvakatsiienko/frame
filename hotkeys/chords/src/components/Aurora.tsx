@@ -84,8 +84,8 @@ fn etched(p: vec2f) -> f32 {
   let edge = smoothstep(0.0, 0.45, uv.y);
   // On the dark deck a pastel at half alpha mixes to mud. Dark keeps the hue deeper and the
   // band thinner, so it reads as a faint sheen rather than a grey rainbow.
-  let deep = mix(color, 0.5 + 0.5 * (color - 0.74) / 0.26 * 0.6, u.dark);
-  let a = clamp(strength, 0.0, 1.0) * edge * mix(1.0, 0.45, u.dark);
+  let deep = mix(color, 0.58 + 0.42 * (color - 0.74) / 0.26, u.dark);
+  let a = clamp(strength, 0.0, 1.0) * edge * mix(1.0, 0.7, u.dark);
   return vec4f(deep * a, a);
 }
 `;

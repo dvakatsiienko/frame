@@ -64,7 +64,8 @@
   - given the board in dark mode
   - then the strip is a faint deep sheen, not a grey rainbow, with no seam where the light rests
   - and a load plus two layer turns log no `VGPUError`
-  - measured 09-28: dark strip luma 91 → 48 (same saturation), worst column jump 3.4 → 1.0; errors per load 1 → 0
+  - measured 09-28: dark strip luma 91 → 62, saturation 90 → 131, worst column jump 3.4 → 1.0; errors per load 1 → 0
+  - decision: this look holds until a design-skill pass on chords — dima 09-28, after «too dim» on the 48-luma round
 - ✅ the board reloads by itself when a config source changes
   - when a config source's file changes on disk (`manual.ts` included)
   - then the board redraws from the new scan with no reload
