@@ -21,8 +21,8 @@ shown=
 while :; do
   # the first sight of the runs prints their pages, so the waiting reply can link them (dima, 2026-09-28)
   if [ -z "$shown" ]; then
-    links=$(gh run list --commit "$sha" --json name,url --jq '.[] | "ci \(.name) · \(.url)"' 2>/dev/null)
-    [ -n "$links" ] && { echo "watching:"; echo "$links"; shown=1; }
+    links=$(gh run list --commit "$sha" --json name,url --jq '.[] | "🧪 [\(.name)](\(.url))"' 2>/dev/null)
+    [ -n "$links" ] && { echo "👀 watching $short:"; echo "$links"; shown=1; }
   fi
   if [ "$(runs_done)" = "true" ]; then
     gh run list --commit "$sha" --json name,conclusion --jq '.[] | "ci \(.name) → \(.conclusion // "-")"'
@@ -53,7 +53,7 @@ for app in $apps; do
   seen=
   while :; do
     url=$(vercel ls "$app" --prod 2>/dev/null | head -1)
-    [ -z "$seen" ] && [ -n "$url" ] && { echo "deploy $app · https://${url#https://}"; seen=1; }
+    [ -z "$seen" ] && [ -n "$url" ] && { echo "🚀 [$app deploy](https://${url#https://})"; seen=1; }
     st=$(vercel inspect "$url" 2>&1 | grep -E '^\s*status' | awk '{print $NF}')
     case "$st" in
       Ready) echo "deploy $app → Ready $url"; break ;;
