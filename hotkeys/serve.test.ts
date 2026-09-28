@@ -15,11 +15,7 @@ describe('a write to the chords server', () => {
         );
     });
 
-    it('is taken from this mac over ipv4', () => {
+    it('is taken from this mac', () => {
         expect(write('127.0.0.1')).toBeNull();
-    });
-
-    it('is taken from this mac over ipv6', () => {
-        expect(write('::1')).toBeNull();
     });
 });

@@ -92,6 +92,7 @@
   - given a key whose binding lives in `manual.ts`
   - when the user drags its cap onto a free key on the same layer
   - then the binding shows on the new cap at once, the old cap empties, and the rescan keeps it there
+  - when the write fails, then the binding returns to its old cap and the selected key says `not moved — <reason>`
 - ⬜ press to rebind: the next chord pressed on the keyboard is the new one, a taken chord is refused with its owner
   - makes: the binding's row in `hotkeys/manual.ts` moved to the new chord
   - given a hand-kept binding is selected
