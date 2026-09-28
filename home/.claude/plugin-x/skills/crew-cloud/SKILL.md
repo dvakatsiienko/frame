@@ -72,7 +72,7 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 - branch `coder/<BYT-N>-<slug>` from the base. step commits.
 - commit subject `<emoji> <scope>: <lowercase imperative>`; emoji: 🔧 feature/config · 🐞 fix · ✨ refactor · 🗑️ delete · 📜 docs · 🎨 visual · 📦 deps. body: hyphen bullets, a line `- ticket: <BYT-N>`, last line `Agent: crew-cloud · <model>`.
 - never write a linear keyword (closes, fixes, resolves, refs …) next to a ticket id, anywhere. never write a skip-ci marker.
-- push the branch as soon as the first commit exists; if `gh` exists, open ONE pr (not a draft), else say «no gh» in your last message and cclio opens it. pr body ≤ 25 lines: what shipped, what is left, the exit lines with ✅/❌, one line per known defect.
+- push the branch and open ONE pr (not a draft) with `gh` as soon as the first commit exists. pr body ≤ 25 lines: what shipped, what is left, the exit lines with ✅/❌, one line per known defect.
 
 ## you are alone
 - nobody answers questions: a decision you cannot make goes in the pr body as `? <question>` and you continue with the safer option.
@@ -116,10 +116,11 @@ claude plugin install x@x
 
 - the VM gets the **pushed** plugin version, frozen until the environment cache rebuilds (~7 days
   or a script edit) — a skill edit reaches the cloud after a push and a rebuild
-- ? unproven until the first session in that environment lists `x:*` skills: whether `claude` is
-  on the path during setup, and whether setup's `~/.claude` is the session's
-- 🚫 **`gh` is not in the VM** (probe 2), whatever the docs list — until setup installs it, the
-  pr is opened by cclio from the pushed branch, or through the web ui's pr button
+- ✅ proven by probe 3b (2026-09-28, environment «cloud base», network Custom: default list +
+  `*.browserbase.com`): a fresh session listed 19 `x:*` skills, `gh` 2.45 came from ubuntu's
+  archive (`apt-get install -y gh`), node 24 + pnpm 12.3.4 from dima's fnm block
+- user-invoked skills (`crew-coder`, `crew-verifier`) never show in the model's list; a prompt
+  that starts with `/x:crew-coder` should expand them as it does for `--bg` (? unprobed in the cloud)
 
 ## keys and browsers
 
