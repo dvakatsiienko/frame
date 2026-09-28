@@ -41,6 +41,8 @@
   - then a bound cap shows its legend, its press count, its first action, and a top edge in its app's colour
   - given a binding on `home`, `end`, `pageup` or `pagedown`
   - then it shows on that cap — every cap is named the way the daemon names its key
+  - given a binding moved with a dated row (read-aloud: `opt+esc` until 09-28, `f4` since 09-28)
+  - then the new cap shows it and the old chord shows no binding
   - 📌 `del` has no cap on the Air75 (the daemon sees it, likely from fn+backspace) — a binding on `del` shows on no cap; dima's call
   - when the user opens stats and comes back to the board
   - then the counts are still there
@@ -48,6 +50,7 @@
 - ✅ a bound key never pressed carries a ring
   - given a binding on the layer with no press in the log
   - then its cap shows `—` for the count and an inset ring
+  - 📌 the daemon logs a chord only when ctrl, opt or cmd is held (`main.swift`), so a bare-key binding — homerow's `f1`–`f3`, read-aloud on `f4`, wispr's `esc` — stays ringed and counts as never pressed; the daemon-rebuild question, dima's
 - ⬜ a press on the real keyboard sinks its cap and moves its count, live
   - given the board is open on the layer of a chord
   - when dima presses that chord on the keyboard

@@ -36,7 +36,7 @@ An app's own settings file that the scan reads bindings out of.
 _Avoid_: provider, integration
 
 **Hand-kept binding**:
-A binding typed into `manual.ts` because its app seals its shortcut list (raycast, cleanshot, 1password); the only kind the page can move.
+A binding typed into `manual.ts` because the scan cannot read its app's shortcuts; the only kind the page can move.
 _Avoid_: manual hotkey, custom binding
 
 **Scan**:
