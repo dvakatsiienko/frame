@@ -61,19 +61,60 @@ const skills = Object.entries(pluginDirs).flatMap(([prefix, dir]) =>
     }),
 );
 
-const questions = Object.fromEntries(
-    skills.map((s) => [
-        s.name,
-        {
-            criteria: {
-                false: 'The prompt asks for none of that.',
-                true: s.description,
-            },
-            instructions: `Should the skill \`${s.name}\` be loaded before acting on \`prompt\`?`,
-            type: 'noul',
+// the docs' rule (docs.typesafe.ai/primitives/noul): one condition per noul, combined in code.
+// «should this skill load» hid two — does the prompt want work now, and is it this skill's work —
+// so a shared word tipped it (09-28: 6 of 23 fixtures were false loads on acks, later-plans and
+// words used in another sense). the two gates answer the first half once per request.
+const gates = {
+    _ack: {
+        criteria: {
+            false: 'The prompt asks for new work, asks a question, or gives a steer. A verdict on something proposed — «➡️ yes», «approve», «go», «do it», a numbered list of answers — is NOT an acknowledgement: it asks for that work to happen.',
+            true: 'The prompt only acknowledges, confirms or reports something already done — a ✓, «ok», «done», «connected», «stopped» — and asks for nothing new.',
         },
-    ]),
-) as Record<string, Question>;
+        instructions: '`prompt` only acknowledges or reports, with no new ask.',
+        type: 'noul',
+    },
+    _later: {
+        criteria: {
+            false: 'At least one thing in the prompt is asked to happen now, in this turn.',
+            true: 'Every action the prompt names is placed at a later moment — next session, session end, the halt, tomorrow — and nothing is asked to happen now.',
+        },
+        instructions:
+            'Everything `prompt` asks for is set for a later moment, none of it for now.',
+        type: 'noul',
+    },
+} satisfies Record<string, Question>;
+const gateIds: ReadonlySet<string> = new Set(Object.keys(gates));
+
+const questions = {
+    ...gates,
+    ...Object.fromEntries(
+        skills.map((s) => [
+            s.name,
+            {
+                criteria: {
+                    false: 'Carrying out the prompt needs none of that procedure. A prompt that only shares a word or a topic with the description while its actual task is something else is a no, and so is a question about the tool itself.',
+                    true: s.description,
+                },
+                instructions: `Carrying out \`prompt\` needs the procedure of the skill \`${s.name}\`.`,
+                type: 'noul',
+            },
+        ]),
+    ),
+} as Record<string, Question>;
+
+// an ack or a later-only prompt loads nothing, whatever a skill scored
+function rank(res: Awaited<ReturnType<typeof judge>>) {
+    const p = (id: string) => {
+        const a = res.answers[id];
+        return a && 'noul' in a ? a.noul : 0;
+    };
+    const gated = [...gateIds].some((id) => p(id) >= routeThreshold);
+    return Object.keys(res.answers)
+        .filter((id) => !gateIds.has(id))
+        .map((name) => [name, gated ? 0 : p(name)] as const)
+        .sort((a, b) => b[1] - a[1]);
+}
 
 const probes = [
     ['commit this and slay', 'x:cmt'],
@@ -85,6 +126,36 @@ const probes = [
     ['1. flawlog flush, four lines ➡️ yes', 'cclio:flawlog'],
     ['park the rule for the week, then checkpoint', 'cclio:checkpoint'],
     ['sup, where are we', 'cclio:report'],
+    // the verdicted misses, 09-24 → 09-28: a surface word matched while the task was elsewhere
+    [
+        'create a 1p entry in dev vault (look for the shape in other entires)',
+        '—',
+    ],
+    ["Maybe print a line into frame's agents.md?", '—'],
+    [
+        'announce Cloud sessions, as official members of our fleet, are under vet',
+        '—',
+    ],
+    ['📋 copy → «cloud base» setup script 📋 ✓', '—'],
+    ['push the 7 commits at session end', '—'],
+    ['just slay at session halt', '—'],
+    [
+        'app logo - ... Plan to draw a cool logo for atelier, maybe next session',
+        '—',
+    ],
+    ['and thats it for now from my side.', '—'],
+    ['how do I install humanize from its upstream marketplace?', '—'],
+    ['ask the coder session whether it already pushed', '—'],
+    ['grab the handoff diorama-checkpoint-1', 'x:handoff-ingest'],
+    ['draw a paper diorama hero for the bytes readme', 'x:art-kit'],
+    [
+        'refactor usageSave in sline to take the path as an argument',
+        'x:guide-code',
+    ],
+    [
+        'write the recruiter a short reply declining the call',
+        'x:writing-for-humans',
+    ],
 ] as const;
 
 const isFromLog = process.argv[2] === '--from-log';
@@ -94,9 +165,7 @@ if (live) {
     const started = performance.now();
     const res = await judge({ prompt: live }, questions);
     const ms = Math.round(performance.now() - started);
-    const ranked = Object.entries(res.answers)
-        .map(([name, a]) => [name, 'noul' in a ? a.noul : 0] as const)
-        .sort((a, b) => b[1] - a[1]);
+    const ranked = rank(res);
     const loads = ranked.filter(([, p]) => p >= routeThreshold);
     const top = ranked[0];
     appendFileSync(
@@ -135,9 +204,7 @@ const rows: string[][] = [];
 const hints: string[] = [];
 for (const [prompt, expected] of replay) {
     const res = await judge({ prompt }, questions);
-    const ranked = Object.entries(res.answers)
-        .map(([name, a]) => [name, 'noul' in a ? a.noul : 0] as const)
-        .sort((a, b) => b[1] - a[1]);
+    const ranked = rank(res);
     const hit =
         ranked[0]?.[0] === expected ||
         (expected === '—' && (ranked[0]?.[1] ?? 0) < 0.5);

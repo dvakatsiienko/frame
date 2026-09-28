@@ -1,6 +1,6 @@
 ---
 name: notes
-description: Load BEFORE any read or edit of an obsidian vault note or a notion page — «inbox», «flowlog», «the vault», «obsidian», «notion», «all notes», «edit the note», «append to inbox», «rename the note», «update the notion page», a vault path, a notion url.
+description: Load BEFORE any read or edit of an obsidian vault note or a notion page — «inbox», «flowlog», «the obsidian vault», «obsidian», «notion», «all notes», «edit the note», «append to inbox», «rename the note», «update the notion page», a vault path, a notion url.
 ---
 
 # notes — the channel per op, measured
