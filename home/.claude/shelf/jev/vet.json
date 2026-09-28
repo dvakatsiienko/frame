@@ -4,7 +4,7 @@
         "inbox-lanes": {
             "since": "2026-09-20",
             "state": "vetting",
-            "verdicts": 4,
+            "verdicts": 5,
             "misses": 1,
             "what": "the boot digest lanes every inbox item (ticket · fold · flowlog · answer · drop) before cclio parses it"
         },

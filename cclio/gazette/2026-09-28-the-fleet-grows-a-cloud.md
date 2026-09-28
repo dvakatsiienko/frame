@@ -1,7 +1,7 @@
 ---
 date: 2026-09-28
 slug: the-fleet-grows-a-cloud
-tickets: [BYT-85, BYT-95, BYT-96, BYT-100, FRM-255, BYT-97, FRM-147, FRM-251, BYT-109, BYT-110]
+tickets: [BYT-85, BYT-95, BYT-96, BYT-100, FRM-255, BYT-97, FRM-147, FRM-251, BYT-109, BYT-110, BYT-86, BYT-87, BYT-88, BYT-108, BYT-111, FRM-266]
 posted: {health: yes}
 ---
 
@@ -56,8 +56,28 @@ posted: {health: yes}
 - tart run 5 (the full Brewfile) in progress; chords → bytes [BYT-109](https://linear.app/x-com/issue/BYT-109) and the sidebar → kit [BYT-110](https://linear.app/x-com/issue/BYT-110) in Triage
 - next: the shift debrief → atelier docs → crew-designer research → the designer run, a browserbase round beside it
 
+⸻ upd 23:30 — the first shift nobody steered
+
+## shipped
+
+- the trophy-sys shift, m1.1 of [FRM-266](https://linear.app/x-com/issue/FRM-266): the first run with no steers — the npsso bug (a client query latched the dead-token error), gremlins, hardening tails, CONTEXT + six ADRs; then early re-mint and the gremlins answers, bytes #111 / #113 / #114, all live: [BYT-88](https://linear.app/x-com/issue/BYT-88)
+- every app carries its essentials: one checker, a required check on bytes main, both commit hooks, the boot digest; every app green, cv included: [BYT-111](https://linear.app/x-com/issue/BYT-111)
+- a fresh mac seeds hands-free and runs the fleet, proven twice in a tart vm; the seed installs the cli, builds sline, skips the app store on a flag: [FRM-147](https://linear.app/x-com/issue/FRM-147)
+- `lane` (commit / push / pr / merge with no «git» in the command), `pr-watch` (a watch lives until its pr merges), the travel hook (a session that enters another repo gets its memory), `/cclio:shift` (decide, log, continue)
+
+## tricks gained
+
+- the «git» refusals are claude code's worktree isolation: a bg session's git must provably target its own tree
+- a cloud vm's node needs `NODE_USE_ENV_PROXY=1` before browserbase attaches its key
+- names lead with the mode: ☕ lane · ☀️ day shift · 🌙 night shift
+
+## state
+
+- tomorrow: atelier docs sharpen with dima, then the designer run; sys waits for [BYT-86](https://linear.app/x-com/issue/BYT-86)'s grill sessions
+- frame + bytes pushed after the halt, no coders alive, x 0.11.158 · cclio 0.3.84
+
 ## trail
 
-- shipped: chords shift #50 (FTR + CONTEXT, 7 bindings, loopback writes) · daemon bare keys · knip on bytes via cloud · <app>-run/-verify everywhere · x:ftr · worktree seed + deadline guard · pushInsteadOf · quicksilver on vet
-- open: tart run 5 (FRM-147) · shift debrief · atelier docs · crew-designer research · designer run · browserbase round · BYT-109/110 in Triage
-- state: frame + bytes pushed and green, one coder (tart), x 0.11.152 · cclio 0.3.81, week 8 %
+- shipped: chords shift #50 · the trophy-sys shift, no steers (#111 #113 #114 live) · app essentials required on bytes main · fresh-mac seed proven twice (FRM-147 closed) · lane · pr-watch · the travel hook · /cclio:shift
+- open: atelier docs sharpen → the designer run (adhd round) · quicksilver round 1 · BYT-86 grill sessions (dima schedules) · the first night shift (dima picks)
+- state: frame + bytes pushed, no coders, x 0.11.158 · cclio 0.3.84, week ~17 %

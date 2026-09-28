@@ -128,3 +128,5 @@ the bugs, ranked by cost:
 - not graded: the App Store apps (skipped), `op-run.sh` (no fleet token in the VM), the git-crypt key (nothing in round 2 touched `gmail/`).
 - **cleanup before the VM goes**: check dima's Apple device list (the hung iCloud and App Store sign-ins), and remove the VM's 1Password device and its Claude login session. only then `tart delete seed-3`. the cached image in `~/.tart` stays.
 - the bed, if it is rebuilt: the extra disk, the brew `tmp` symlink, `HOMEBREW_CASK_OPTS` in `/etc/zshenv`. or a 120 GB base image, built once with packer, so the recovery-partition wall never comes up.
+
+**verdict: adopted** (2026-09-28) — a fresh mac seeds hands-free to exit 0 and runs the fleet: round 1 (the seed end to end, 7m41s) and round 2 (the fleet boots, the 1password agent signs a verified commit, `seed.sh --claude --without-appstore` exits 0). closed with [FRM-147](https://linear.app/x-com/issue/FRM-147).
