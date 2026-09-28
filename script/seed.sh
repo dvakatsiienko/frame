@@ -36,6 +36,7 @@ act() {
         line "$step" dry-run "$*"
     else
         "$@"
+        line "$step" ran "$*"
     fi
 }
 
@@ -54,7 +55,7 @@ done
 if command -v brew >/dev/null 2>&1; then
     line brew "done" "$(brew --prefix)"
 else
-    hands brew 'install Homebrew with the one-line installer on https://brew.sh, then re-run'
+    hands brew 'install Homebrew with the one-line installer on https://brew.sh, skip its «next steps» (the linked ~/.zprofile does that), then re-run'
 fi
 
 # 3 · fnm + pnpm through brew, node through fnm (the version is .node-version's major)
@@ -83,7 +84,7 @@ fi
 act deps pnpm install --frozen-lockfile
 
 # 5 · the Brewfile, macos defaults, duti — the repo's existing script, unchanged
-act macos pnpm macos:setup
+act macos pnpm macos:setup apply
 
 # 6 · the mirror — ~/.claude stays out unless --claude
 link_flag=--without-claude
@@ -93,6 +94,24 @@ if [ "$dry" = 1 ]; then
 elif ! node script/frame-link.ts apply $link_flag; then
     hands link 'the files «in the way» above are real files where a link belongs — keep (mv into home/) or drop each, then re-run'
 fi
+
+# the zsh files are sourced by a stub, never linked (manifest.ts noLink) — the seed writes the stubs
+for f in .zshenv .zprofile .zshrc; do
+    src="source \"\$HOME/frame/home/$f\""
+    if grep -qF "$src" "$HOME/$f" 2>/dev/null; then
+        line zsh "done" "~/$f sources frame"
+    elif [ -e "$HOME/$f" ]; then
+        hands zsh "~/$f exists — add the line $src to it (or drop the file), then re-run"
+    elif [ "$dry" = 1 ]; then
+        line zsh dry-run "write the ~/$f stub"
+    else
+        printf '%s\n' '# stub — real file lives in the frame repo.' \
+            '# Not symlinked: Cowork refuses to trust a folder that a protected home path resolves into.' \
+            "$src" >"$HOME/$f"
+        line zsh "done" "~/$f stub written"
+    fi
+done
+
 if [ "$claude" = 1 ] && [ "$dry" = 1 ]; then
     line claude dry-run "$HOME/.claude would be linked"
 elif [ "$claude" = 1 ]; then
