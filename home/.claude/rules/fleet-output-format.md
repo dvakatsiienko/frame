@@ -182,7 +182,9 @@ file he names.
   a turn woken by a peer, a monitor or an idle notice answers in 1–3 lines with no ⏳ reprint —
   those turns interleave his thread, and a reprint per event buried it (dima, 2026-09-28). an ask that only
   appeared once is an ask he never saw. (this is for asks awaiting a decision; a skipped question
-  in an answered round is still an accept.) the header sits OUTSIDE the fence as a plain line;
+  in an answered round is still an accept.) **while a shift runs, the block is suspended:** a shift
+  decides, logs and parks instead of asking, and its report carries the decisions (`cclio:shift`,
+  dima 2026-09-28). the header sits OUTSIDE the fence as a plain line;
   the fence holds only the numbered asks, so what he copies is exactly what he answers (dima,
   2026-09-14: cw rendered the in-fence header as a thing to delete after every paste):
 

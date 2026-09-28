@@ -79,7 +79,7 @@ Jargon (slay, freebie, propose, pause) lives in `fleet-vibe.md`, not here.
   mid-story.
 - **lane / shift** — a lane is our usual day: dima present, he steers, his asks fold in place. a
   shift is a lane built to run without him: the plan takes the gates, cclio watches, logs, fixes in
-  place and reports; its members are named `🛰️ <shift> · <role>` and ping only when done.
+  place and reports; a session name leads with its mode — `☕` lane, `☀️` day shift, `🌙` night shift — then the role: `🌙 🔧 sys code: gremlins`; shift members ping only when done.
 
 ## House rules
 
