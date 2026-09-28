@@ -124,3 +124,4 @@ the question: do monitors catch the changes we care about — a github issue's s
 - `T7-negative` · 1d · `monitor_001f089b8fbb4ada989f0a1062b99b80` · truth: never happens → any event is a false positive
 
 grading: per monitor — fired (y/n), latency from the real event, false positives, and the balance delta over the window. a monitor that never fires on a real event is a miss, never «quiet».
+- 2026-09-28 · monitor · claude-code#90751 auto-fix default · created `a7467339` (1d, event_stream) — the second github-issue watch after the canary set

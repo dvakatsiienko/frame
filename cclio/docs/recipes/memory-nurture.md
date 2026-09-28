@@ -104,9 +104,15 @@ each layer against itself misses all of it. Examples that fell out: the spawn-de
 verbatim in an always-loaded rule *and* in a leaf · a boot rule existed in three places · a whole
 tracker rule duplicated a coordinator memory.
 
-### step 2.2 · the cruft pass — `/claude-api prompt-audit`
+### step 2.2 · the cruft pass — `/doctor prompt-audit`, then `/claude-api prompt-audit`
 
-the bundled `claude-api` skill's `prompt-audit` subcommand, run over root `CLAUDE.md` + `rules/`
+first door since cc 2.1.280: `/doctor prompt-audit` (built in) audits CLAUDE.md, skills, agents
+and commands for prompting patterns written for older models, in one invoke — agents and commands
+are ground the older door never covered. apply its findings by hand. (? unprobed: whether a
+`claude --bg '/doctor prompt-audit'` spawn runs it the way `/run-skill-generator` ran — try that
+first, else dima types it) (evergreen borrow, dima's yes 2026-09-28)
+
+the second door, still useful on a single file or on memory leaves: the bundled `claude-api` skill's `prompt-audit` subcommand, run over root `CLAUDE.md` + `rules/`
 (then cclio's memory, then the skills): it lists instructions written for older models — hedges,
 restated defaults, «be thorough»-class no-ops — with `file:line` and a proposed diff, changes
 nothing by itself. ran once on 2026-09-07: four hunks over root + rules, all applied. one invoke,

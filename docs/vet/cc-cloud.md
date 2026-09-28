@@ -10,6 +10,12 @@ Ticket: none
 **window:** 2026-09-28 → 2026-11-04. the $250 cloud credit expires 2026-11-05 09:59 GMT+2; the vet spends it on purpose.
 **the meter:** dima's usage page, before and after each job (no field reads the credit).
 
+## the question the vet answers — two phases (dima, 2026-09-28)
+
+- **while the credit lasts:** explore wide. every candidate use below gets one real job; the credit is spent on purpose.
+- **after it is spent:** a cloud job is picked deliberately, and it must answer one question — «is spending dima's plan window on this justified, when a local coder on his always-on mac could do it?» the answer names what the cloud gives that a local `--bg` coder cannot: isolation (many parallel trees, no shared hooks), survival across a reboot or an os update, pr auto-fix, a start from the phone. no such gain → a local coder.
+- open: whether cloud usage after the credit draws from the plan window or bills apart — unread; one cloud job and one same-sized local job, compared on the usage page, settle it.
+
 ## strong and weak — day 0
 
 - strong: runs while the mac sleeps · the credit pays first · a fresh VM per job, so parallel PRs never share a tree · node 24 + pnpm 12 preinstalled · reaches `api.browserbase.com` · steerable by `SendMessage`, readable by `--teleport`
@@ -35,3 +41,12 @@ Ticket: none
 - 2026-09-28 · #8 ✅ · probe 3b (session_01P2tbibq4RHKhUQ2gkqqQ46) after the setup script landed in «cloud base»: 19 `x:*` skills in the session's list, `gh` 2.45, node 24, pnpm 12.3.4 · first session after a script edit ran minutes longer (cache rebuild) · credit not read
 - 2026-09-28 · #8 · probe 2 on bytes (session_01Vh92jhsWo8LiocQzhKGtb7): private `frame` IS reachable from the VM (`git ls-remote` ok), a sparse clone of `home/.claude/plugin-x` ok, `claude plugin marketplace add <dir>` + `install x@x` ok (0.11.139 — the pushed version) · the x:* skills load only in the NEXT session · 🚫 `gh` is NOT installed (the research said preinstalled) · credit not read
 - 2026-09-28 · probe · read-only environment report on bytes (session_014QV6GViG5BzJYugdtrZuzw) · credit not read · worked: launched through `script`, read back with `--teleport` · details in `docs/vet/browserbase.md` round 1
+
+## round 1 · 2026-09-28 · a pr-lane coder — BYT-97 knip report
+
+- job: install + configure knip on bytes, one evaluated report as a pr comment, no deletions. brief = `/x:crew-coder` short form + the cloud deltas, named `☁️ cloud: BYT-97 knip report`
+- result: [bytes#105](https://github.com/dvakatsiienko/bytes/pull/105), 3 files, ci green, 73 findings each with a verdict + reason, nothing deleted, 5 `?` decisions in the body — the brief held
+- surprise: the session pins its own `claude/<slug>` branch and ignores the brief's `coder/…` name → a head-keyed pr watch goes blind (skill fixed: key on the ticket id in the body)
+- read-back: `claude -p … --teleport <id>` from a scratch clone answered in one call
+- meter: $245 of $250 left after round 1 (probes 1–5 on 09-28 + the name probe + this job — no «before» split); week 3 %, session 18 % at ~16:00
+- verdict for this use: works; the report quality matches a local coder's
