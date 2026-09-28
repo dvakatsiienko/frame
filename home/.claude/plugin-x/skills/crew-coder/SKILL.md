@@ -274,3 +274,4 @@ still hold for hygiene (commit shape, identity, no stray files), not for ceremon
   in the dashboard, 2026-09-12). reversible or not, still named.
 
 **Done** = final commit (or PR url) + the Linear comment + the ping. Nothing else counts.
+📌 **one Linear comment per job**, the done-report — each one notifies dima. a mid-job comment only to stash what the fleet will need later.
