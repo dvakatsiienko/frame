@@ -5,7 +5,7 @@ recipes only. **vocabulary is normative elsewhere**: `~/frame/docs/tracker/CONTE
 before the first write of a session — team, project, story, ticket, label, assignee, priority,
 estimate are all defined there and are never restated here.
 
-📌 the split is deliberate (`CONTEXT-MAP.md`): if a definition here disagrees with the tracker
+📌 the split is deliberate (`CONTEXT-FTR.md`): if a definition here disagrees with the tracker
 context, the tracker context wins and this file is the bug.
 
 single tracker since 2026-08-13; gh issues retired (closed history with pointer comments).

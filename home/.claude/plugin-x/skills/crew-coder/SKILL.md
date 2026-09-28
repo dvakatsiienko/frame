@@ -23,8 +23,8 @@ mechanics, that file answers order, gates and who runs what. no impeccable named
 a route/url/layout → `x:guide-conventions`, any ui check → `x:browser-headless` (headless, not the
 browser-takeover the root rule guards against). `x:cmt` before every commit, `x:github-contrib`
 before any `gh` call. A web ui change runs the `x:browser-headless` essentials on every touched view
-before the ping, and the ping says `essentials: <n> pass · <m> fail`. The app has a `product/MAP.md` → `x:product-docs` before the first code
-change, and its map lines move in the same commits as the code. A complete brief suppresses the skill router, so nobody reminds you: load
+before the ping, and the ping says `essentials: <n> pass · <m> fail`. The app has a `FTR.md` → `x:ftr` before the first code
+change, and its ftr lines move in the same commits as the code. A complete brief suppresses the skill router, so nobody reminds you: load
 per file type as you reach it, never the whole set up front (a config-only ticket needs four of
 eight). The `skills (jev router): x:pm 0.82` line that arrives with a prompt is jev's pick, a candidate:
 load it when it fits the file you are about to touch, name it with its score on your reply's skills line, and
@@ -247,7 +247,7 @@ still hold for hygiene (commit shape, identity, no stray files), not for ceremon
   another thread (cclio's, almost always). so before a turn ends on a question to him, arm
   `Monitor` with `sleep 900 && echo "unanswered: <the question>"` (measured 2026-09-24: it wakes
   the idle session). he answers → `TaskStop` it. it fires → send the question to cclio, who
-  relays. the map of who talks to whom is `rules/fleet-flow.md`.
+  relays. the ftr of who talks to whom is `rules/fleet-flow.md`.
 - no mannered prose in reports: plain words, short paragraphs, numbers.
 - **github is a ledger, not a chat** (bytes #84, 2026-09-12: one pr's review volume took most
   of a five-hour window, because every line written there is read back into your context on

@@ -1,7 +1,7 @@
 # chords
 
 the hotkey map: what is bound on this mac's keyboard, and what is actually pressed. the words
-below are the ones the map (`product/MAP.md`), the ui labels and the code use.
+below are the ones the ftr (`FTR.md`), the ui labels and the code use.
 
 ## the keyboard
 

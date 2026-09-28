@@ -1,10 +1,10 @@
 ---
-name: product-docs
-description: Load BEFORE reading or writing an app's product map — «product docs», «the map», `product/MAP.md`, «what does <feature> do», «draft the map», «map lines», exit lines for an app that has a map, a coder or verifier brief that names map lines.
+name: ftr
+description: Load BEFORE reading or writing an app's ftr — «ftr», «features doc», «the ftr», `FTR.md`, «what does <feature> do», «draft the ftr», «ftr lines», «map lines», exit lines for an app that has an ftr, a coder or verifier brief that names ftr lines.
 argument-hint: "[draft|update|read] <app dir>"
 ---
 
-# product-docs
+# ftr
 
 An app's product docs are three files with two owners. The **map** is ours: one line per feature,
 each line a check the app must pass. It answers «what does X do» in one read and supplies the
@@ -14,16 +14,16 @@ exit lines a verifier checks.
 
 - `PRODUCT.md` — impeccable's: character, users, purpose, principles. Hand edits are allowed. Never
   put features here: every impeccable session loads the whole file.
-- `product/MAP.md` — ours, never read by impeccable. The feature ledger.
-- `CONTEXT.md` — ours, the app's glossary: every domain word the map uses, defined once. Written
-  with matt's `domain-modeling` skill; the map, the ui labels and the code use its words.
+- `FTR.md` — ours, never read by impeccable. The feature ledger.
+- `CONTEXT.md` — ours, the app's glossary: every domain word the ftr uses, defined once. Written
+  with matt's `domain-modeling` skill; the ftr, the ui labels and the code use its words.
 
 `DESIGN.md` stays impeccable's own (`document` writes it after a build, and its sidecar json
 regenerates with it).
 
 ## the line shape
 
-The map opens with a 4-line legend, then groups features under `## <route> — <view>` headings:
+The ftr opens with a 4-line legend, then groups features under `## <route> — <view>` headings:
 
 ```md
 - 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
@@ -58,7 +58,7 @@ losing variant's line is deleted.
 - name a thing by the label the ui shows. A region with no visible label takes its code name,
   and the missing label is reported to dima as a finding.
 - commands with no ui (scripts, a cli) go under a last `## scripts` heading; a designer skips it.
-- over ~150 lines → split into an index plus `product/<route>.md` leaves.
+- over ~150 lines → split into an index plus `ftr/<route>.md` leaves.
 
 ## who reads what
 
@@ -77,23 +77,23 @@ losing variant's line is deleted.
 3. Write the given/when/then lines for what he kept. Run each check in the app's verify recipe:
    ✅ passes, 🐞 fails, ⬜ not run yet (a destructive path waiting for a scratch server).
 4. Pull the domain words the lines use into `CONTEXT.md` through `domain-modeling`, and align the
-   lines to its words. A new app runs this order the other way: the glossary first, then the map.
-5. Commit `product/MAP.md`, `CONTEXT.md`, the app's `CONTEXT-MAP.md` entry when the repo has one,
+   lines to its words. A new app runs this order the other way: the glossary first, then the ftr.
+5. Commit `FTR.md`, `CONTEXT.md`, the app's `CONTEXT-FTR.md` entry when the repo has one,
    and two lines — the bridge is resident in every session in the repo:
    - the repo's root `AGENTS.md` carries the rule once (add it if missing): «an app with
-     `product/MAP.md` updates its map line, and any new domain word its `CONTEXT.md` entry, in the
-     same commit as the code (`x:product-docs`)»
-   - the app's `AGENTS.md` carries only the pointer: `product/MAP.md` + `CONTEXT.md` — read your
+     `FTR.md` updates its ftr line, and any new domain word its `CONTEXT.md` entry, in the
+     same commit as the code (`x:ftr`)»
+   - the app's `AGENTS.md` carries only the pointer: `FTR.md` + `CONTEXT.md` — read your
      section before changing what the app does
 6. Report the cost: minutes and a rough token count for the draft. The pilot measures this.
 
-## map-first — a new ask becomes a map line before anything else
+## map-first — a new ask becomes a ftr line before anything else
 
-- a product-shaped ask from dima (a feature, a change, a bug he saw) lands as a map line first:
+- a product-shaped ask from dima (a feature, a change, a bug he saw) lands as a ftr line first:
   🧭 for new behaviour, 🐞 on the existing line for a bug. the ticket and the spawn ask only name
   the lines to build; they never restate them. non-product work (a script, a hazard line) stays a
   ticket bullet.
-- **write the line where the map is live.** while a coder's branch is open, the map in its worktree
+- **write the line where the ftr is live.** while a coder's branch is open, the ftr in its worktree
   is the live copy: the line goes to the coder as a message, never onto main, where it collides
   with the coder's flips. no branch open → main.
 
@@ -110,19 +110,19 @@ losing variant's line is deleted.
 
 ## exit lines
 
-- an app with a map takes its exit lines from the map: the spawn ask names the lines to build,
+- an app with an ftr takes its exit lines from the ftr: the spawn ask names the lines to build,
   and the verifier reads their given/when/then plus the pr's own map diff
-  (`git diff origin/main... -- product/MAP.md`) — every line the pr adds or flips is an exit line.
+  (`git diff origin/main... -- FTR.md`) — every line the pr adds or flips is an exit line.
   the ask may add steering lines on top; product behaviour never lives only in ticket prose.
 - the verifier checks each line, its status, that its `makes:` output exists as written, and
   that every domain word the line uses is defined.
 - at close, cclio runs `gh pr diff <n> --name-only`: an app pr that changes source and not
-  `product/MAP.md` gets one question — «no feature changed?» — before the merge.
+  `FTR.md` gets one question — «no feature changed?» — before the merge.
 - no map → hand-written exit lines, and the app's `AGENTS.md` carries `map: none — <reason>`
   (not drafted yet, or none by choice).
 
 ## completion criterion
 
 Every feature the change touched has a line whose status matches the verify recipe, and no
-code change in the diff lacks its map line, and every domain word the touched lines use has its
+code change in the diff lacks its ftr line, and every domain word the touched lines use has its
 `CONTEXT.md` entry.
