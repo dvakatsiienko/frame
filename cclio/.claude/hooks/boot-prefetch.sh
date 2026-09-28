@@ -146,6 +146,15 @@ done
 echo "-- ci + vercel reds, 48 h (ci-watch.sh --boot; --watch is the in-session monitor) --"
 "$(dirname "$0")/ci-watch.sh" --boot || fail "ci-watch could not query gh or vercel"
 
+echo "-- app essentials (bytes/script/apps-essentials.ts, BYT-111; 🔴 = a gap to fold into today) --"
+ESS="$HOME/projects/bytes/script/apps-essentials.ts"
+if [ -f "$ESS" ]; then
+  (cd "$HOME/projects/bytes" && node "$ESS" 2>&1 | tail -20)
+  node "$ESS" --app "$HOME/frame/hotkeys/chords" 2>&1 | grep -v '^✅'
+else
+  echo "bytes checker not found — skipped"
+fi
+
 echo "-- parallel monitors (pull-only: unseen events print once, ids land in parallel-monitor-seen.txt) --"
 SEEN="$HOME/.claude/shelf/parallel-monitor-seen.txt"
 touch "$SEEN"
