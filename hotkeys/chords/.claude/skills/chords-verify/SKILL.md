@@ -49,7 +49,7 @@ this skill never re-describes launching.
    panels all sit on the first screen (page height 919, the rest is padding). `scrollWidth -
    innerWidth` is `0` at both widths.
 5. **the tab walk with a key selected** — click a cap, then `tab-walk.sh` from `x:browser-headless`:
-   58 stops, 0 flags on main.
+   58 stops, 0 flags on main (measured with the probe `q` row planted and selected).
 6. **stats renders** — `find role button click --name stats --exact` → `/stats`: the totals row
    and the CHORDS / CHORDS PER APP lists (DOM bars, 0 svg), `errors` at 0.
 
@@ -57,7 +57,8 @@ this skill never re-describes launching.
 
 dnd-kit sets `aria-disabled="true"` on every cap whose drag is off: 61 of 84 on main, and they are
 free keys that still click, with a `pointer` cursor. it means «not draggable», never «not
-clickable» — do not report it. the essentials script skips `[aria-disabled=true]` in its cover
+clickable», so it is not a finding. (61 was measured with the probe `q` row planted, which made
+`q` bound; plain main reads about one more.) the essentials script skips `[aria-disabled=true]` in its cover
 and cursor checks, so those 61 caps are proven by check 4 and the tab walk, not by essentials.
 
 ## essentials
