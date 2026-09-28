@@ -27,7 +27,7 @@
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
-      "/Users/dima"
+      "~"
     ]
   },
   "model": "opus[1m]",
@@ -153,7 +153,7 @@
   "enableWorkflows": true,
   "statusLine": {
     "type": "command",
-    "command": "/Users/dima/.claude/sline/bin",
+    "command": "~/.claude/sline/bin",
     "padding": 0,
     "refreshInterval": 60
   },
@@ -180,7 +180,7 @@
     "x": {
       "source": {
         "source": "directory",
-        "path": "/Users/dima/frame/home/.claude/plugin-x"
+        "path": "~/frame/home/.claude/plugin-x"
       },
       "autoUpdate": true
     },
