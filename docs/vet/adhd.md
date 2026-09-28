@@ -22,6 +22,13 @@ Ticket: none
 
 `permissions.deny: ["Skill(adhd:adhd)"]` in `cclio/.claude/settings.json`: cclio's own Skill call returns «blocked by permission rules», dima's typed `/adhd:adhd` expands. the description stays in the skill listing (~100 tokens resident); the deny only stops the call.
 
+## the doors — measured 2026-09-28
+
+- **cli** `adhd` 0.1.4 (`pnpm add -g adhd-agent`, not in brew): runs on the claude login (no `ANTHROPIC_API_KEY` in env, exit 0), **~18.5k tokens per call** — the agent-sdk session skips claude.md, rules and memory. a 1 × 3 × 1 probe took 22 s. 9 of its 12 session transcripts carry zero usage, unexplained. run it from a neutral dir: `cd <scratch> && adhd "<problem>" --frames N --ideas N --top N --json --quiet`
+- **skill by hand** (`Agent` tool branches): **~94k per branch** — a subagent inherits the coordinator's loaded stack whatever its cwd
+- 🚫 `claude -p --bare` skips all memory but takes api-key auth only, never the subscription login
+- the default door is the cli; the skill only when a branch needs this session's context
+
 ## candidates — real asks only, from the reset on
 
 - the `crew-designer` four phases, and the 10 atelier looks
