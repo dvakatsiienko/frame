@@ -138,8 +138,9 @@
 [init]
 	defaultBranch = main
 
-# every https github remote is rewritten to ssh, so pushes use the 1Password key
+# pushes to an https github remote go over ssh, so they use the 1Password key; fetches stay
+# https — a fetch rewritten to ssh hangs on a fresh mac until 1Password is signed in (FRM-147)
 [url "git@github.com:"]
-	insteadOf = https://github.com/
+	pushInsteadOf = https://github.com/
 [coderabbit]
 	machineId = cli/1b1584fc4c1f445a8a3f1fa406c2b793
