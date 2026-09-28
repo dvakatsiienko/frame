@@ -73,7 +73,30 @@ still open, not the seed's to fix:
 - 2026-09-28 19:06 — seed run 4: every step `done`/`ran`, `claude done: plugins install … on the next claude launch`, the two sign-ins, exit 2. ✅ **plain `pnpm frame:link` → «Everything mirrored», exit 0** (round 1 needed `--without-claude`). `~/.claude → ~/frame/home/.claude`.
 - **state handed to dima**: the `seed-3` window is open, user `admin`/`admin`, and nothing is signed in. `Claude.app` and `1Password.app` are in `/Volumes/Extra/Applications`.
 
-## round 2 — claude inside the VM (next)
+## round 2 — claude inside the VM
+
+- 2026-09-28 19:15 — dima logged in to Claude Code in the `seed-3` window (2.1.283, Claude Max, `/rc` on). He ran it as `~/.local/bin/claude` because his shell had no `~/.local/bin` on PATH.
+  - **the seed is not the cause**: a new `zsh -li` finds `~/.local/bin/claude` (`home/.zshenv:85`). his Terminal shell (pid 591) started at 15:55 VM time, 11 min before the seed wrote the stubs at 16:06. a shell open during the seed never sources them. find: the seed's closing line should say «open a new terminal».
+- 2026-09-28 19:16 — the first launch installed **6 of 7 enabled plugins** (context7, typescript-lsp, warp, mattpocock-skills, typesafe, humanize). **`x` is missing.**
+  - 🐛 **`settings.json` hard-codes `/Users/dima` three times**: the `x` marketplace path (`/Users/dima/frame/home/.claude/plugin-x`), the `statusLine` command (`/Users/dima/.claude/sline/bin`), and `additionalDirectories`. on a mac whose user is not `dima`, plugin `x` and the statusline are gone without an error. dima's own mac shares the username, so this bites only a VM or a second user. `~/…` or `$HOME` would fix it, if Claude Code expands them in those fields (not measured).
+  - 🐛 **`~/.claude` is linked wholesale on a fresh mac**, because no real `~/.claude` exists yet for the mirror to descend into. every runtime write lands inside the git tree: 666 files in `plugins/cache`, `backups/`, `cache/`, and `sessions/<pid>.<hash>.key`, all untracked. a live session key sits one `git add .` away from a commit. the host never shows this, because its `~/.claude` is a real directory with only leaves linked. the fix: the seed makes `~/.claude` a real directory first, or `.gitignore` covers the runtime dirs.
+- 2026-09-28 19:17 — 🐛 **nothing builds `sline`.** `home/.claude/sline/bin` is gitignored, so a seeded mac has no statusline even for user `dima`. played as the human: `pnpm sline:build` (go 1.27.1 from the Brewfile), exit 0.
+- bed stand-ins for the grading, not seed changes:
+  - `/Users/dima → /Users/admin` symlink, to stand in for dima's username.
+  - `security unlock-keychain` in each ssh session, since the keychain locks per ssh login and a locked one reads as «Not logged in».
+- 2026-09-28 19:18 — **the fleet boot, graded headless** (`claude -p --output-format stream-json`, trust dialog not accepted):
+  - ✅ plugins: 7 (`x` included) + the built-in `agents-md` and `telemetry`. skills: 74, **`x:` 26 of 26** dirs in `plugin-x/skills`. MCP: `context7` connected.
+  - ✅ the rules chain: asked for the operator's name, whether `fleet-output-format.md` is loaded, and what `slay` means, the model answered `name=Dima rules=yes vibe=git push` (opus, $0.44 for the boot).
+  - ✅ hooks: `SessionStart` ×3 exit 0. `PreToolUse`, proven by its effect: haiku was told to run a background `sleep 1` with no deadline, and `bg-deadline-guard.py` refused it with its own error text. `UserPromptSubmit`, `Stop`, and `PostToolUse` were not graded one by one: stream-json reports only `SessionStart` events.
+  - ✅ `sline` renders from the `statusLine` command: one line, 918 bytes, the repo, the branch link, the session cost. the first render took **17 s** cold, then 0.1 s warm.
+  - 📌 in a non-interactive `zsh -lc`, `node` resolves to brew's v26.10.0 (a dependency of `agent-browser` and `vercel`). fnm's v24 wins only in interactive shells. `sline` showed v26 when run that way. inference: claude, launched from an interactive shell, shows v24.
+- `Ignoring 6 permissions.allow entries … workspace has not been trusted`: expected until the first interactive `claude` in `~/frame` accepts the trust dialog.
+
+### the sign-in wall — left for dima
+
+- App Store sign-in, then `mas install 6746069877 953040671`.
+- 1Password sign-in + SSH agent + CLI integration. that unlocks git push over ssh and every `op://` key: the jev router behind `skill-route.sh`, the agent tokens.
+- then a seed re-run to **exit 0**, and an interactive `claude` in `~/frame` (trust dialog, and restart his session so the `/Users/dima` stand-in gives it `x` + the statusline).
 
 - a claude login: dima signs in to Claude Code in the VM window (an OAuth browser round), or a scoped API key from 1password, never his main one.
 - `--claude`: the seed links `~/.claude`; `settings.json` then installs the plugins on the first launch, which needs network to the marketplaces and the `plugin-x` path at `~/frame`.
