@@ -92,13 +92,39 @@ still open, not the seed's to fix:
   - 📌 in a non-interactive `zsh -lc`, `node` resolves to brew's v26.10.0 (a dependency of `agent-browser` and `vercel`). fnm's v24 wins only in interactive shells. `sline` showed v26 when run that way. inference: claude, launched from an interactive shell, shows v24.
 - `Ignoring 6 permissions.allow entries … workspace has not been trusted`: expected until the first interactive `claude` in `~/frame` accepts the trust dialog.
 
-### the sign-in wall — left for dima
+- 2026-09-28 — dima's `ssh admin@192.168.64.3` rejected the password `admin` twice. the password was unchanged: a password-only login worked (`-o PubkeyAuthentication=no`). inference: his `Host *` sends every host through the 1Password agent, whose keys use up sshd's auth tries before the password counts.
+- 2026-09-28 — **App Store: skipped, the apple sign-in hangs in the VM** (it stalled after the 2FA code). the two `mas` apps stay uninstalled. dima's call.
+  - 📌 **his iCloud sign-in in System Settings was attempted too, and it also hung at the 2FA code.** System Settings still shows «Sign in with your Apple Account». at cleanup, check his Apple device list in case the VM got registered anyway.
+  - the seed has no way to skip the `appstore` stop. step 5 overwrites `HOMEBREW_BUNDLE_MAS_SKIP` with the Brewfile's ids on every run (`script/seed.sh:104`), and step 9 counts any missing id as a stop, so no run reaches exit 0 without both apps. a way to skip it, not built yet: a `--without-appstore` flag that skips step 9 (or reports it `skipped`), the same shape as `--without-claude` on `frame:link`.
 
-- App Store sign-in, then `mas install 6746069877 953040671`.
-- 1Password sign-in + SSH agent + CLI integration. that unlocks git push over ssh and every `op://` key: the jev router behind `skill-route.sh`, the agent tokens.
-- then a seed re-run to **exit 0**, and an interactive `claude` in `~/frame` (trust dialog, and restart his session so the `/Users/dima` stand-in gives it `x` + the statusline).
+- 2026-09-28 19:38 — seed re-run after dima's 1Password sign-in: `1password done: an account is signed in`, `appstore waiting`, exit 2 on the one stop left.
+  - 🐛 **the `1password` check is too weak.** it reads `op account list`, which a standalone `op account add` satisfies. dima signed in through the CLI, and the 1Password app had never run (no process, no Group Container). so the seed reported `done` with **no SSH agent**: `~/.ssh/config`'s `IdentityAgent` points at a socket that does not exist. the check should test the socket, e.g. `SSH_AUTH_SOCK=<agent.sock> ssh-add -l`.
+  - over ssh, `op` has no session (`could not find session token for account my`). a CLI sign-in is per terminal.
+  - launched with `open` from `/Volumes/Extra/Applications`, **the app copied itself to `/Applications`** and runs from there (pid 26607). a copy stays on the extra disk. so `gpg.ssh.program`'s `/Applications/…/op-ssh-sign` path is right, even in the bed.
+- 2026-09-28 20:10 — dima signed in to the 1Password app and ran `cd ~/frame && claude`: trusted (`hasTrustDialogAccepted: true`), `/rc` on, sline rendered, «AGENTS.md loaded: /Users/admin/frame/AGENTS.md».
+  - **the SSH agent was still off**: `settings.json` has `developers.cliSharedLockState.enabled: true` (CLI integration) and no `sshAgent` key, only `t/s.sock` exists, and there is no `t/agent.sock`. so the signed commit failed (`fatal: failed to write commit object`), and `ssh -T git@github.com` gave no identity.
+- 2026-09-28 19:38 — 🐛 **`script/op-run.sh` has no path onto a new mac.** it reads the `x-fleet` token from the login keychain (`op-service-account-x-fleet`). nothing in the seed or the docs puts it there, and a missing item gives an empty token, so `op` fails with a misleading «You are not currently signed in». the VM has no such item (keychain exit 44).
 
-- a claude login: dima signs in to Claude Code in the VM window (an OAuth browser round), or a scoped API key from 1password, never his main one.
-- `--claude`: the seed links `~/.claude`; `settings.json` then installs the plugins on the first launch, which needs network to the marketplaces and the `plugin-x` path at `~/frame`.
-- the git-crypt key, if round 2 touches `gmail/`; nothing else needs it.
-- the bed as built here: the extra disk, the brew `tmp` symlink, `HOMEBREW_CASK_OPTS` in `/etc/zshenv`. or a 120 GB base image, built once with packer, so the recovery-partition wall never comes up.
+- 2026-09-28 20:35 — dima turned on «Use the SSH agent». `t/agent.sock` came up and `ssh-add -l` lists one ED25519 key. `ssh -T git@github.com` answers «Hi dvakatsiienko!» through the agent.
+  - the first signed commit waited on 1Password's approval prompt in the VM and hit the 150 s cap. after the approval: `git commit` signs in 0 s, and `git verify-commit` gives `Good "git" signature … ED25519 key SHA256:iPoh…O4wU`, `%G?` = `G`. the linked `.gitconfig` and `allowed_signers` work unchanged.
+
+## verdict, round 2
+
+**a seeded mac runs the fleet.** after the seed, one Claude login, and the 1Password app with its SSH agent, claude boots in `~/frame` with the whole chain: the rules, 26/26 `x:` skills, the hooks, the statusline, and signed commits to github. two stand-ins covered what the seed could not: a `/Users/dima` symlink and a manual `pnpm sline:build`.
+
+the bugs, ranked by cost:
+1. **`~/.claude` is linked wholesale on a fresh mac.** runtime state lands untracked in the repo, including a session `.key` one `git add .` from a commit.
+2. **`settings.json` hard-codes `/Users/dima`** (the `x` marketplace, `statusLine`, `additionalDirectories`). any other username silently loses `x` and the statusline.
+3. **the `1password` stop passes on a CLI-only sign-in.** `op account list` is satisfied by `op account add`, with the app never run and no SSH agent, so no signing and no ssh to github. the check should test the agent socket.
+4. **nothing installs the Claude Code CLI.** the seed counts the desktop `Claude.app` as installed.
+5. **nothing builds `sline`.** its `bin` is gitignored, so there is no statusline until `pnpm sline:build`.
+6. **`op-run.sh` has no provisioning path** for the `x-fleet` token, and its error when the token is missing is misleading. a gap by choice in the VM: the fleet token stays off a throwaway machine.
+7. **the `appstore` stop cannot be skipped**, so exit 0 is out of reach when the Apple sign-in fails, as it did here (it hung after the 2FA code). proposed `--without-appstore`.
+8. **the seed's closing line should say «open a new terminal»**: a shell open during the seed never sources the stubs.
+
+### left open after round 2
+
+- the seed fixes (`168a2108`) re-run on `seed-3` with `--without-appstore`: the next coder's round.
+- not graded: the App Store apps (skipped), `op-run.sh` (no fleet token in the VM), the git-crypt key (nothing in round 2 touched `gmail/`).
+- **cleanup before the VM goes**: check dima's Apple device list (the hung iCloud and App Store sign-ins), and remove the VM's 1Password device and its Claude login session. only then `tart delete seed-3`. the cached image in `~/.tart` stays.
+- the bed, if it is rebuilt: the extra disk, the brew `tmp` symlink, `HOMEBREW_CASK_OPTS` in `/etc/zshenv`. or a 120 GB base image, built once with packer, so the recovery-partition wall never comes up.
