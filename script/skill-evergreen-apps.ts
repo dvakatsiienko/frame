@@ -173,6 +173,10 @@ if (isMarking) {
         marker: newest[s.name] ?? s.marker,
     }));
     writeFileSync(SOURCES, `${JSON.stringify(next, null, 2)}\n`);
+    // biome owns this file's shape; an unformatted write failed the next commit's hook
+    execFileSync('npx', ['biome', 'format', '--write', SOURCES], {
+        stdio: 'ignore',
+    });
     console.log(
         `\nmarkers advanced: ${Object.keys(newest).join(', ') || 'none'}`,
     );

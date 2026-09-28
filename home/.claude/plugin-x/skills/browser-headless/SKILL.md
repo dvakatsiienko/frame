@@ -24,6 +24,10 @@ A coder before its ping and a verifier in every round run `essentials/essentials
 and `essentials/tab-walk.sh` from this skill's base dir on every view the change touched, at
 1280 and 390 wide. **Run them; reading `essentials/essentials.md` is only needed when a check
 fails or misfires.** The report carries `essentials: <n> pass · <m> fail`.
+📌 essentials skip `[aria-disabled=true]` — dnd-kit sets it on every draggable item (61 of 84 chords
+caps), so a drag-and-drop view needs its own checks for those. the pass repeats in every app's
+`<app>-verify` (both widths + the tab walk); one wrapper script for it is a candidate, not built yet
+(2026-09-28, nine apps did it by hand).
 
 ## the split — which browser when
 

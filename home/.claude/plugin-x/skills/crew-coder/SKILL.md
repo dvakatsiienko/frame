@@ -237,6 +237,7 @@ still hold for hygiene (commit shape, identity, no stray files), not for ceremon
 - **report back where you were briefed.** A plain reply reaches nobody. Code tab: ping cclio via
   `mcp__ccd_session_mgmt__send_message` (load via ToolSearch) to the session id in the brief.
   `--bg` session: your idle state is the signal; the coordinator subscribed.
+- **a probe prints counts or filtered fields, never a raw payload** — a loose selector and a wrong `2>&1` order dumped ~40k tokens of tables and json into one coder's context (2026-09-28)
 - **ping on four events only** — you stop for dima (a pick, a decision) · you are blocked · the
   assignment is done · a find dima would truly want (a better way to build a feature). step
   progress stays in your commits and your own chat; a push request rides the next of those four

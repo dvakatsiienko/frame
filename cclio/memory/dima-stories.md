@@ -10,9 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «is shortcuts as useless as Reminders?» · 2026-09-14
-Three research rounds had produced a ranked list of apple shortcuts for his profile. He read it and said all of them looked useless — the top pick would append to an inbox he keeps structured by hand — and asked a different question: is the feature itself Reminders-grade, present but not good? The fourth round, on what power users actually conclude, said keep-minimal: policy ceiling, yearly reliability bugs, worth it only for the phone's action button. The felt sense was about the category, not the list. Same day, smaller: «you will forget to disable impeccable» — right about who owns a toggle before the rule was written. → DOT-237 apple-shortcuts vector, `craft-spawning`
-
 ## the square · 2026-09-15
 A blank square appeared in the menu bar after the macos 27 upgrade. Two api listings and two
 inferences from me — raycast notes' toggle, then raycast's own icon — and both settings changed
@@ -76,3 +73,6 @@ The atelier map had just been drafted and 28 of its lines had passed a scripted 
 
 ## «a run skill would pick up run-atelier and hang» · 2026-09-27
 The built-in `run` and the generated `run-<app>` skills had just been adopted, and `run-atelier` said «leave the server running» so dima could watch a coder's tree. He asked: «if a built-in run skill is designed to only do a sanity check … then a skill like run-atelier would interfere with it … or am I getting something wrong?» He was right: `run` defers to any project skill whose description says it launches the app, so every sanity pass would have left a server behind — the same shape as the orphan vite a coder had left on `:5173` the day before. The fix split the two jobs: `run-<app>` stays neutral (start, drive, stop) and the keep-alive moved into the coder's contract. His felt sense read the two skills as one system before either of us had run them together. → `crew-coder`, `run-atelier`, `run-chords`
+
+## «you closed the pr, not merged it» · 2026-09-28
+The auto-archive probe had closed its pr and watched the card stay; my verdict went out as «auto-archive does nothing for our sessions». He read it and said the close was a different event from a merge — it might archive on merge alone. The merge round kept the verdict for our `--bg` and `--cloud` sessions, and then his own two desktop-made probes showed the real line: a desktop-made local session is archived and stopped at its merge. His question split one event I had treated as two into the two it was, and the second probe he set up found the case my first one could not reach. → `craft-spawning`, the auto-archive line
