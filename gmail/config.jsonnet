@@ -14,11 +14,23 @@ local deleteRule(name, list) =
     actions: { delete: true },
   }];
 
+// a sender whose billing mail stays wanted, with one kind of promo trashed by its words. gmail
+// matches whole words only, so every inflected form is listed.
+local promoRule(sender, words) = [{
+  filter: { and: [{ from: sender }, { or: [{ query: w } for w in words] }] },
+  actions: { delete: true },
+}];
+
 {
   version: 'v1alpha3',
   author: { name: 'Dima Vakatsiienko', email: me },
   rules:
     deleteRule('address', blocklist.address)
     + deleteRule('domain', ['@' + d for d in blocklist.domain])
-    + deleteRule('name', blocklist.name),
+    + deleteRule('name', blocklist.name)
+    // lanet isp: the autopay nag has no unsubscribe link (dima, 2026-09-28)
+    + promoRule('info@lanet.ua', [
+      'автоплатіж', 'автоплатежу', 'автоплатежем', 'автоплатежі',
+      'автооплата', 'автооплату', 'автооплати', 'автооплатою',
+    ]),
 }
