@@ -63,8 +63,19 @@ and cursor checks, so those 61 caps are proven by check 4 and the tab walk, not 
 
 ## essentials
 
-`x:browser-headless` essentials on every touched view at 1280 and 390. main: clean at 1280 with a
-key selected; at 390 one baseline fail — the `n` cap («Notion») reads cursor `auto`.
+`x:browser-headless`'s `essentials/run.sh` on every touched view — both widths, the tab walk and errors in one line:
+
+```bash
+<browser-headless>/essentials/run.sh http://localhost:7383/ --allow 'cursor=Notion' --allow 'tab=role=tab «hyper'
+```
+
+the two allows are chords' baselines, and nothing else is allowed:
+- `cursor=Notion` — at 390 the `n` cap («Notion») reads cursor `auto`
+- `tab=role=tab «hyper` — every layer tab is its own tab stop (13, where a tablist wants one): in a hotkey map the
+  layers are the content, so each stays reachable by Tab (dima, 2026-09-29)
+
+main is ✅ with exactly those two (2026-09-29). a state the command does not open (a key selected) takes one
+`essentials.js` eval on the open page.
 
 ## evidence
 
