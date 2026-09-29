@@ -1,7 +1,9 @@
 # AGENTS.md: speak
 
 the voice admin for x-speak, as a served app. vite + react + tailwind, one page, built to `dist/` and served
-with its api by `server.ts` on 127.0.0.1:7386 (`pnpm speak:admin`, dev on 7387 with `pnpm speak:admin-dev`).
+with its api by `server.ts` on 127.0.0.1:7386 — always on through the launchd job `x-speak-admin`
+(`schedule/jobs/x-speak-admin`); dev on 7387 with `pnpm speak:admin-dev`, proxying to it. a ui change is live after
+`pnpm speak:admin-build`; a `server.ts` change needs `pnpm schedule:restart x-speak-admin`.
 not deployed anywhere: it edits this mac's config.json and talks to this mac's daemon.
 
 **`FTR.md` + `CONTEXT.md`** — read your section before changing what the app does.

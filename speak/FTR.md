@@ -79,6 +79,6 @@
 
 ## scripts
 
-- ✅ `pnpm speak:admin` serves the built page and the api on 127.0.0.1:7386
+- ✅ `x-speak-admin` (launchd, always on) serves the built page and the api on 127.0.0.1:7386; `pnpm speak:admin` runs the same server by hand when the job is stopped
 - ✅ `pnpm speak:admin-dev` runs vite on 7387, proxying /api to 7386
 - ✅ `pnpm speak:admin-build` builds `dist/`

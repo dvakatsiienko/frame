@@ -26,13 +26,14 @@ the installer is idempotent, and it waits for a job to actually leave the domain
 rebootstrapping it. `bootout` returns before the teardown finishes, and a bootstrap that races
 it is refused.
 
-## the five local jobs
+## the six local jobs
 
 - `x-monitor-hotkey-stats` — always on, counts chord presses, never keystrokes
 - `x-monitor-hotkey-live` — always on, keeps the hotkey map's data current
 - `x-autoclean-screenshots` — daily 12:00, trashes screenshots older than 30 days
 - `x-atelier-live` — always on, serves atelier (bytes `apps/atelier`) at localhost:5180
 - `x-speak` — always on, F5 reads the selection aloud, F5 again stops
+- `x-speak-admin` — always on, serves speak, the voice admin, at 127.0.0.1:7386
 
 each plist opens with a comment describing itself; the raycast `schedule` command renders it.
 

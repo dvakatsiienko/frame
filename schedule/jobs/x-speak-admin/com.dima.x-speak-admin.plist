@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  🎚️ x-speak-admin — keeps speak, x-speak's voice admin, running.
+
+  - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 10s
+  - serves — http://127.0.0.1:7386 — the built page from speak/dist and its api; the api writes config.json and talks to x-speak over its control socket
+  - idle cost — one resting node process, ~50 MB
+  - output — ~/.local/share/x-speak-admin/daemon.log, daemon.err.log for stderr
+  - source — ~/frame/speak/server.ts (the app is ~/frame/speak)
+  - open — http://127.0.0.1:7386
+  - manual — pnpm speak:admin from the frame root runs the same server in a terminal (stop this job first: one port)
+  - setup — mkdir -p ~/.local/share/x-speak-admin; launchd will not create a missing log dir
+  - gotcha — needs no permission; a ui change is live after pnpm speak:admin-build, no restart (the server reads dist on every request); a server.ts change needs pnpm schedule:restart x-speak-admin
+
+  node is fnm's `default` alias for the same reason as x-atelier-live: a shell's node dies with that shell, the
+  alias is a stable symlink fnm repoints on every version bump.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dima.x-speak-admin</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- launchd does not expand ~, so every path is absolute by necessity. -->
+        <string>/Users/dima/.local/share/fnm/aliases/default/bin/node</string>
+        <string>/Users/dima/frame/speak/server.ts</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/dima/frame</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/dima/.local/share/x-speak-admin/daemon.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/dima/.local/share/x-speak-admin/daemon.err.log</string>
+</dict>
+</plist>
