@@ -260,7 +260,21 @@ export const App = () => {
                     <h1 className='m-0 text-lg'>
                         <a
                             className='flex items-center gap-2 rounded-full font-bold text-pill-ink no-underline hover:text-white'
-                            href='/'>
+                            href='/'
+                            // one page: home is the top of it, with the #column anchor dropped — never a reload,
+                            // which would throw away unsaved edits
+                            onClick={(event) => {
+                                event.preventDefault();
+                                history.pushState(null, '', '/');
+                                window.scrollTo({
+                                    behavior: matchMedia(
+                                        '(prefers-reduced-motion: reduce)',
+                                    ).matches
+                                        ? 'instant'
+                                        : 'smooth',
+                                    top: 0,
+                                });
+                            }}>
                             <MeterMark />
                             speak
                         </a>
