@@ -166,7 +166,7 @@ export const App = () => {
     const statusData = status.data ?? {};
     const healthText = statusData.error
         ? statusData.error
-        : `daemon up · accessibility ${statusData.accessibility ? 'granted' : 'missing'}${statusData.speaking ? ' · speaking' : ''}`;
+        : `daemon up${statusData.accessibility === false ? ' · accessibility missing' : ''}${statusData.speaking ? ' · speaking' : ''}`;
 
     const columnListJSX = LANGS.map(([lang, title]) => {
         return (
@@ -211,16 +211,48 @@ export const App = () => {
         );
     });
 
+    const langLinkListJSX = LANGS.map(([lang, title]) => {
+        return (
+            <li key={lang}>
+                <a
+                    className='block rounded-full px-3 py-1 text-sm text-pill-muted no-underline hover:bg-pill-hover hover:text-pill-ink'
+                    href={`#col-${lang}`}>
+                    {title}
+                </a>
+            </li>
+        );
+    });
+
     return (
         <>
-            <header className='mx-auto flex max-w-[1280px] flex-wrap items-center gap-4 p-4'>
-                <h1 className='m-0 text-lg'>
-                    <a
-                        className='font-bold text-ink no-underline hover:underline'
-                        href='/'>
-                        🔊 speak voices
-                    </a>
-                </h1>
+            <div className='sticky top-3 z-30 mx-auto mt-3 max-w-[1280px] px-4'>
+                <header className={capsuleClass}>
+                    <h1 className='m-0 text-lg'>
+                        <a
+                            className='flex items-center gap-2 rounded-full font-bold text-pill-ink no-underline hover:text-white'
+                            href='/'>
+                            <MeterMark />
+                            speak
+                        </a>
+                    </h1>
+                    <nav aria-label='languages'>
+                        <ul className='m-0 flex list-none gap-1 p-0'>
+                            {langLinkListJSX}
+                        </ul>
+                    </nav>
+                    <span className='flex-1' />
+                    <span className='select-text text-sm text-pill-muted'>
+                        {healthText}
+                    </span>
+                    <button
+                        className={pillButtonClass}
+                        onClick={() => void stop()}
+                        type='button'>
+                        ■ stop
+                    </button>
+                </header>
+            </div>
+            <div className='mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-6 gap-y-2 px-4 pt-5'>
                 <label className='text-sm text-muted'>
                     first audio budget{' '}
                     <input
@@ -242,7 +274,7 @@ export const App = () => {
                 <label className='flex items-center gap-2 text-sm text-muted'>
                     pill glide
                     <input
-                        className='w-28'
+                        className='h-6 w-28'
                         max={120}
                         min={0}
                         onChange={(event) =>
@@ -260,14 +292,7 @@ export const App = () => {
                         {draft.meterGlideMs ?? 15} ms
                     </output>
                 </label>
-                <span className='text-sm text-muted'>{healthText}</span>
-                <button
-                    className={buttonClass}
-                    onClick={() => void stop()}
-                    type='button'>
-                    ■ stop
-                </button>
-            </header>
+            </div>
             <DragDropProvider
                 // react owns the order through the whole drag: move() on every drag-over, the snapshot back on a
                 // cancel. applying it only on drop fought dnd-kit's optimistic dom reorder (the page and the ranks
@@ -305,39 +330,66 @@ export const App = () => {
                     {columnListJSX}
                 </main>
             </DragDropProvider>
-            <footer className='sticky bottom-0 mx-auto flex max-w-[1280px] flex-wrap items-center gap-3 border-t border-line bg-bg p-4'>
-                <button
-                    className={primaryClass}
-                    disabled={!isDirty}
-                    onClick={() => void save()}
-                    type='button'>
-                    save
-                </button>
-                <button
-                    className={buttonClass}
-                    disabled={!isDirty}
-                    onClick={reset}
-                    type='button'>
-                    reset
-                </button>
-                <span
-                    className={`select-text text-sm ${message.kind === 'error' ? 'text-bad' : message.kind === 'ok' ? 'text-ok' : ''}`}
-                    role='status'>
-                    {message.text}
-                </span>
-            </footer>
+            <div className='sticky bottom-3 z-30 mx-auto max-w-[1280px] px-4'>
+                <footer className={capsuleClass}>
+                    <button
+                        className={savePillClass}
+                        disabled={!isDirty}
+                        onClick={() => void save()}
+                        type='button'>
+                        save
+                    </button>
+                    <button
+                        className={pillButtonClass}
+                        disabled={!isDirty}
+                        onClick={reset}
+                        type='button'>
+                        reset
+                    </button>
+                    <span
+                        className={`select-text text-sm ${message.kind === 'error' ? 'text-pill-bad' : message.kind === 'ok' ? 'text-pill-ok' : 'text-pill-muted'}`}
+                        role='status'>
+                        {message.text}
+                    </span>
+                </footer>
+            </div>
         </>
     );
 };
 
-/* Styles */
-const buttonClass =
-    'min-h-8 min-w-8 rounded-md border border-line bg-surface-2 px-3 py-1 text-sm hover:border-muted hover:bg-surface disabled:opacity-50';
+// the pill's meter as a still mark: five bars, centre-heavy, in the live indigo
+const MeterMark = () => {
+    const barListJSX = [0.35, 0.65, 1, 0.65, 0.35].map((height, index) => {
+        return (
+            <rect
+                fill='var(--color-pill-accent)'
+                height={16 * height}
+                key={index}
+                rx='1.25'
+                width='2.5'
+                x={3 + index * 4}
+                y={12 - 8 * height}
+            />
+        );
+    });
+    return (
+        <svg aria-hidden='true' className='size-6' viewBox='0 0 24 24'>
+            {barListJSX}
+        </svg>
+    );
+};
 
-// its own classes, not buttonClass plus overrides: two bg utilities on one element resolve by stylesheet order, and
-// bg-surface-2 won — the save button rendered white on grey
-const primaryClass =
-    'min-h-8 min-w-8 rounded-md border border-accent bg-accent px-3 py-1 text-sm font-semibold text-on-accent hover:brightness-110 disabled:opacity-50';
+/* Styles */
+// the pill's capsule: dark glass in both themes, a hairline of white, its own ink
+const capsuleClass =
+    'flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[22px] border border-pill-line bg-pill/95 px-3 py-1.5 text-pill-ink shadow-lg';
+
+const pillButtonClass =
+    'min-h-8 min-w-8 rounded-full border border-pill-line px-3 py-1 text-sm text-pill-ink hover:bg-pill-hover disabled:opacity-50';
+
+// its own classes, not pillButtonClass plus overrides: two bg utilities on one element resolve by stylesheet order
+const savePillClass =
+    'min-h-8 min-w-8 rounded-full border border-pill-accent bg-pill-accent px-4 py-1 text-sm font-semibold text-pill hover:brightness-110 disabled:opacity-50';
 
 /* Helpers */
 const SAMPLES: Record<Lang, string> = {

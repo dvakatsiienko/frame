@@ -63,7 +63,7 @@ export const Column = (props: ColumnProps) => {
     });
 
     return (
-        <section id={`col-${props.lang}`}>
+        <section className='scroll-mt-24' id={`col-${props.lang}`}>
             <h2 className='mb-2 text-base font-semibold'>{props.title}</h2>
             <label className='mb-3 block text-sm text-muted'>
                 sample line

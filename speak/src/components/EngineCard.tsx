@@ -1,5 +1,7 @@
+import type { CSSProperties } from 'react';
 import { useSortable } from '@dnd-kit/react/sortable';
 
+import { BRAND_HUE, EngineMark } from '@/components/EngineMark.tsx';
 import { StateBadge } from '@/components/StateBadge.tsx';
 import { VoicePicker } from '@/components/VoicePicker.tsx';
 
@@ -14,7 +16,7 @@ import {
 export const EngineCard = (props: EngineCardProps) => {
     const label = ENGINE_LABELS[props.engine];
     const isOn = props.rank !== undefined;
-    // a quota refusal fails every preview until the credits come back, so ▶ is locked and the card says why
+    // a quota refusal fails every preview until the credits come back, so ▶ is locked; the badge says why
     const quotaNote =
         props.status?.state === 'no quota' ? props.status.note : undefined;
     const sortable = useSortable({
@@ -111,10 +113,11 @@ export const EngineCard = (props: EngineCardProps) => {
 
     return (
         <li
-            className={`grid gap-2 rounded-lg p-3 ${isOn ? 'border border-line bg-surface' : 'border border-dashed border-line'} ${sortable.isDropTarget ? 'outline-2 outline-accent' : ''}`}
+            className={`grid gap-2 rounded-lg p-3 ${isOn ? 'brand-wash border border-line' : 'border border-dashed border-line'} ${sortable.isDropTarget ? 'outline-2 outline-accent' : ''}`}
             data-engine={props.engine}
             // only a chain card is sortable: dnd-kit stamps role and a tab stop on what it registers
-            ref={isOn ? sortable.ref : undefined}>
+            ref={isOn ? sortable.ref : undefined}
+            style={{ '--brand': BRAND_HUE[props.engine] } as CSSProperties}>
             <div className='flex items-center gap-2'>
                 {isOn && (
                     // dnd-kit's keyboard handle too: space picks the card up, arrows move it, space drops
@@ -130,6 +133,7 @@ export const EngineCard = (props: EngineCardProps) => {
                 <span className='text-sm tabular-nums text-muted'>
                     {isOn ? (props.rank ?? 0) + 1 : '–'}
                 </span>
+                <EngineMark engine={props.engine} isDim={!isOn} />
                 <span className='flex-1 font-semibold'>{label}</span>
                 <StateBadge state={props.status} />
             </div>
@@ -151,14 +155,6 @@ export const EngineCard = (props: EngineCardProps) => {
                 {orderJSX}
                 {playJSX}
             </div>
-            {quotaNote !== undefined && (
-                <p
-                    className='m-0 select-text text-sm text-bad'
-                    role='status'
-                    title={quotaNote}>
-                    {creditsLeft(quotaNote)} — skipped until they return
-                </p>
-            )}
             {settingsJSX}
         </li>
     );
@@ -213,15 +209,6 @@ const Info = (props: { text: string }) => {
 /* Styles */
 const buttonClass =
     'min-h-8 min-w-8 rounded-md border border-line bg-surface-2 px-3 py-1 text-sm hover:border-muted hover:bg-surface disabled:opacity-50';
-
-/* Helpers */
-// elevenlabs says «You have 14 credits remaining, while 22 …»; the card keeps the number, the tooltip keeps the rest
-const creditsLeft = (note: string) => {
-    const left = note.match(/have (\d+) credits? remaining/)?.[1];
-    return left === undefined
-        ? 'out of quota'
-        : `out of quota, ${left} credits left`;
-};
 
 /* Types */
 interface EngineCardProps {

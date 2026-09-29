@@ -9,7 +9,8 @@ export const StateBadge = (props: StateBadgeProps) => {
 
     return (
         <span
-            className={`rounded border border-current px-2 text-sm ${stateColour[state] ?? 'text-muted'}`}>
+            className={`rounded border border-current px-2 text-sm ${stateColour[state] ?? 'text-muted'}`}
+            title={props.state?.note && quotaTitle(props.state.note)}>
             {state}
             {until}
         </span>
@@ -21,7 +22,15 @@ const stateColour: Record<string, string> = {
     benched: 'text-warn',
     live: 'text-ok',
     'no key': 'text-bad',
-    'no quota': 'text-bad',
+    // a waiting state, not an error: the chain already skips it, so it reads quiet
+    'no quota': 'text-muted',
+};
+
+// elevenlabs says «You have 14 credits remaining, while 22 …»; the number leads, the provider's words follow
+const quotaTitle = (note: string) => {
+    const left = note.match(/have (\d+) credits? remaining/)?.[1];
+    const lead = left === undefined ? 'out of quota' : `${left} credits left`;
+    return `${lead} — the chain skips it until they return. ${note}`;
 };
 
 /* Types */

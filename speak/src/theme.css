@@ -13,6 +13,15 @@
   --color-ok: #2f6b3a;
   --color-warn: #8a5a00;
   --color-bad: #a33a2a;
+  /* the pill: dark glass in both themes, its own ink and the night indigo */
+  --color-pill: #151517;
+  --color-pill-ink: #ecebe8;
+  --color-pill-muted: #a9a59c;
+  --color-pill-line: #ffffff24;
+  --color-pill-hover: #ffffff14;
+  --color-pill-accent: #9aa2ff;
+  --color-pill-ok: #8cc79a;
+  --color-pill-bad: #ec8a78;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,6 +47,7 @@
   }
   /* tab focus scrolls clear of the sticky save bar */
   html {
+    scroll-padding-top: 88px;
     scroll-padding-bottom: 88px;
   }
   body {
@@ -76,5 +86,15 @@
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
+  }
+}
+
+/* a chain card takes a faint wash of its engine's brand hue along its top; the hue never reaches a control */
+@layer components {
+  .brand-wash {
+    background: linear-gradient(
+      color-mix(in oklab, var(--brand) 10%, var(--color-surface)),
+      var(--color-surface) 56px
+    );
   }
 }

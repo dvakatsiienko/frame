@@ -57,10 +57,12 @@
   - the controls also return to ▶ when the speech ends on its own
 - ✅ a sample line per language, editable
 - ✅ a status badge per engine: live, benched until a time, no key, or no quota
-- ⬜ an engine out of quota locks its ▶ and says so on the card
+- ✅ an engine out of quota locks its ▶ and says so on the card
   - given elevenlabs refused a request with quota_exceeded
   - when the page shows its cards
-  - then each elevenlabs card reads «no quota», its ▶ is disabled, and one line reads «out of quota, <n> credits left — skipped until they return», the provider's full message on hover
+  - then each elevenlabs card's badge reads «no quota» in a quiet colour and its ▶ is disabled
+  - and hovering the badge shows «<n> credits left — the chain skips it until they return», then the provider's message
+  - decision: quiet, not red — the chain already skips it; dima found the red line «a bit too much» (2026-09-29)
   - and the state clears after the engine's next success
   - decision: the chain already falls through on a quota refusal; the card only has to make it visible (dima, 2026-09-29)
 - ✅ the header shows the daemon's accessibility state and whether it is speaking

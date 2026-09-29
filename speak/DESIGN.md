@@ -128,11 +128,16 @@ a warm-neutral paper and a near-black night, one indigo voice, three quiet state
 ### State
 - **Ok** (#2f6b3a light, #8cc79a dark): `live`, a save that landed.
 - **Warn** (#8a5a00 light, #e0b35c dark): `benched until …`.
-- **Bad** (#a33a2a light, #ec8a78 dark): `no key`, `no quota`, a rejected save.
+- **Bad** (#a33a2a light, #ec8a78 dark): `no key`, a rejected save.
+- **Muted** also marks a waiting state: `no quota` is expected and already skipped, so it reads quiet.
 
 ### Named Rules
 **The One Voice Rule.** indigo is the only accent. a state hue marks state and nothing else; a brand colour never
 leaks into a control.
+
+**The Brand Stays Home Rule.** each engine keeps its own hue — elevenlabs ink, kokoro rose (#e0457b), siri violet
+(#8b5cf6), fish ocean (#0e8fd6), gemini blue (#6f8cf2) — but only in its 24px mark and a 10% wash along the top of
+its chain card. a card outside the chain dims its mark.
 
 **The Word First Rule.** every state reads as a word in a bordered badge; the colour only repeats it.
 
@@ -175,6 +180,13 @@ engine outside the chain has a dashed one — the dash says «not playing». the
 
 ## Components
 
+### Pill chrome (header and save bar)
+- the header and the save bar are the pill, grown: a 22px-rounded capsule of dark glass (#151517 at 95%) with a white
+  hairline, sticky 12px from the top and bottom edge, in both themes.
+- inside, the pill's own ink and the night indigo: the save button is an indigo capsule, the others hairline capsules.
+- the header holds the name with a still meter mark (five indigo bars, centre-heavy), the language links, the daemon
+  line and stop; the settings row (first audio budget, pill glide) sits under it on the page.
+
 ### Buttons
 - **Shape:** gently rounded (6px), at least 32×32.
 - **Plain:** surface-2 fill, 1px line, ink label; hover lifts to the surface with a muted line.
@@ -186,8 +198,8 @@ engine outside the chain has a dashed one — the dash says «not playing». the
 - **In the chain:** surface fill, solid 1px line, 12px padding. the header row: drag handle (grab cursor), rank,
   engine name, state badge. then the chain switch, ↑ / ↓ and ▶. then voice, speed and gain.
 - **Outside the chain:** no fill, dashed line, name and switch only.
-- **Out of quota:** ▶ is disabled and one bad-coloured line names the credits left; the provider's message sits in
-  its tooltip.
+- **Out of quota:** a muted `no quota` badge and a disabled ▶; the credits left and the provider's message sit in the
+  badge's tooltip. nothing red — the chain already skips it.
 - **Drop target:** a 2px indigo outline while a dragged card hovers it.
 
 ### Inputs / Fields
@@ -206,7 +218,8 @@ engine outside the chain has a dashed one — the dash says «not playing». the
 - one meter of 17 bars, 2.5px wide with 2.5px gaps, centre-heavy (edges reach 40% of the centre), with headroom so
   a loud read never fills it; live bars in meter indigo (#8f94ff), rest bars as dim dots (white at 22%).
 - ✕, ⏸ / ▶, ■ with its F6 hint, and the pin, each a quiet glyph button.
-- the meter animates only while audio plays; at rest it draws once and holds.
+- the meter reads the sound every 10 ms (each 100 ms audio buffer cut into ten windows) and glides by the «pill
+  glide» setting; it animates only while audio plays and at rest draws once and holds.
 
 ## Do's and Don'ts
 

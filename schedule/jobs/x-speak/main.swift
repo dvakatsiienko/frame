@@ -92,22 +92,30 @@ final class Player {
     private var generation = 0
 
     var isPlaying: Bool { pending > 0 }
-    // the panel's meter: the mixer's level per audio buffer, only while the engine renders
-    var onLevel: ((Float) -> Void)?
+    // the panel's meter: the mixer's levels, one per 10 ms of a rendered buffer, and the spacing between them
+    var onLevels: (([Float], TimeInterval) -> Void)?
 
     init() {
         engine.attach(node)
         engine.attach(pace)
         engine.connect(node, to: pace, format: format)
         engine.connect(pace, to: engine.mainMixerNode, format: format)
-        // one reading per audio buffer (1024 frames, ~21 ms): the meter eases between them every display frame
+        // coreaudio hands the tap 100 ms buffers whatever size is asked (4800 frames at 48 kHz, measured with 512 and
+        // 1024), so one reading per buffer fed the meter 10 times a second. each buffer is cut into 10 ms windows
+        // instead, and the meter plays them out over the buffer's span: ~100 readings a second
         engine.mainMixerNode.installTap(onBus: 0, bufferSize: 1024, format: nil) { [weak self] buffer, _ in
             guard let samples = buffer.floatChannelData?[0], buffer.frameLength > 0 else { return }
-            var sum: Float = 0
-            for i in 0..<Int(buffer.frameLength) { sum += samples[i] * samples[i] }
-            let decibels = 10 * log10(max(sum / Float(buffer.frameLength), 1e-9))
-            let level = min(1, max(0, (decibels + 50) / 50))
-            Task { @MainActor in self?.onLevel?(level) }
+            let frames = Int(buffer.frameLength)
+            let window = max(1, Int(buffer.format.sampleRate / 100))
+            let levels = stride(from: 0, to: frames, by: window).map { start in
+                let end = min(frames, start + window)
+                var sum: Float = 0
+                for i in start..<end { sum += samples[i] * samples[i] }
+                let decibels = 10 * log10(max(sum / Float(end - start), 1e-9))
+                return min(1, max(0, (decibels + 50) / 50))
+            }
+            let spacing = Double(window) / buffer.format.sampleRate
+            Task { @MainActor in self?.onLevels?(levels, spacing) }
         }
     }
 
@@ -231,7 +239,7 @@ final class Speaker {
     }
 
     init() {
-        player.onLevel = { [panel] level in panel.model.push(level) }
+        player.onLevels = { [panel] levels, spacing in panel.model.push(levels, spacing: spacing) }
         panel.model.onClose = { [panel] in panel.hide() }
         panel.model.onPause = { [weak self] in self?.togglePause() }
         panel.model.onStop = { [weak self] in

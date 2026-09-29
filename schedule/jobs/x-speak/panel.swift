@@ -27,10 +27,10 @@ final class PanelModel: ObservableObject {
     var onDrag: () -> Void = {}
     var onDragEnd: () -> Void = {}
 
-    func push(_ level: Float) {
+    func push(_ levels: [Float], spacing: TimeInterval) {
         guard !isPaused else { return }
-        meter.push(level)
-        if !hasSignal, level > 0.04 { hasSignal = true }
+        meter.enqueue(levels, spacing: spacing)
+        if !hasSignal, levels.contains(where: { $0 > 0.04 }) { hasSignal = true }
     }
 
     func resetLevels() {
@@ -39,8 +39,8 @@ final class PanelModel: ObservableObject {
     }
 }
 
-// the level history (newest first, mirrored out from the centre) and the bars as drawn. readings land ~47 times a
-// second, one per audio buffer; every display frame each bar glides a share of the way to its reading, so the
+// the level history (newest first, mirrored out from the centre) and the bars as drawn. readings play out ~100 times
+// a second, 10 ms apart; every display frame each bar glides a share of the way to its reading (pill glide), so the
 // meter flows instead of stepping (dima: «smooth, like requestAnimationFrame»)
 @MainActor
 final class Meter {
@@ -52,14 +52,22 @@ final class Meter {
         return 0.4 + 0.6 * pow(cos(distance * .pi / 2), 2)
     }
     private var lastFrame: Date?
+    // readings waiting for their moment: a 100 ms buffer's ten windows, each due 10 ms after the last
+    private var pending: [(due: Date, level: Float)] = []
+
+    func enqueue(_ levels: [Float], spacing: TimeInterval) {
+        let start = max(Date(), pending.last.map { $0.due.addingTimeInterval(spacing) } ?? .distantPast)
+        pending += levels.enumerated().map { (start.addingTimeInterval(Double($0.offset) * spacing), $0.element) }
+    }
 
     func push(_ level: Float) {
         // a short decay, so a pause between words does not snap the centre bar to a dot
         history.removeLast()
-        history.insert(max(level, (history.first ?? 0) * 0.72), at: 0)
+        history.insert(max(level, (history.first ?? 0) * 0.85), at: 0)
     }
 
     func reset() {
+        pending = []
         history = history.map { _ in 0 }
         shown = shown.map { _ in 0 }
         lastFrame = nil
@@ -74,6 +82,10 @@ final class Meter {
     func frame(at date: Date) -> [Float] {
         let dt = lastFrame.map { min(0.1, date.timeIntervalSince($0)) } ?? 1.0 / 60
         lastFrame = date
+        while let next = pending.first, next.due <= date {
+            push(next.level)
+            pending.removeFirst()
+        }
         let ease = Float(1 - exp(-dt / max(0.0001, config.meterGlideMs / 1000)))
         let raw = history.reversed() + history.dropFirst()
         // a light blur across neighbours, so the wave reads as one flowing shape, not 17 independent bars
