@@ -7,6 +7,8 @@ struct Config: Decodable {
     let chain: [Lang: [Engine]]
     // a cloud engine with no audio by then yields to the next one, while nothing is playing yet
     let firstAudioMs: Int
+    // the pill's bars: how long each takes to glide most of the way to a new reading; 0 steps straight to it
+    let meterGlideMs: Double
     let engines: [Engine: EngineConfig]
 
     subscript(engine: Engine) -> EngineConfig { engines[engine] ?? EngineConfig() }
@@ -17,12 +19,14 @@ struct Config: Decodable {
             try names.map { try Self.parse($0, Engine.init) }
         }
         firstAudioMs = try container.decode(Int.self, forKey: .firstAudioMs)
+        meterGlideMs = try container.decodeIfPresent(Double.self, forKey: .meterGlideMs) ?? 15
         engines = try Self.keyed(container.decode([String: EngineConfig].self, forKey: .engines), Engine.init) { $0 }
     }
 
     private init(chain: [Lang: [Engine]], firstAudioMs: Int, engines: [Engine: EngineConfig]) {
         self.chain = chain
         self.firstAudioMs = firstAudioMs
+        meterGlideMs = 15
         self.engines = engines
     }
 
@@ -43,7 +47,7 @@ struct Config: Decodable {
         engines: [.kokoro: EngineConfig(voice: ["en": "af_heart"], gain: 1.9)],
     )
 
-    private enum CodingKeys: String, CodingKey { case chain, firstAudioMs, engines }
+    private enum CodingKeys: String, CodingKey { case chain, firstAudioMs, meterGlideMs, engines }
 }
 
 struct EngineConfig: Decodable {

@@ -239,6 +239,27 @@ export const App = () => {
                     />{' '}
                     ms
                 </label>
+                <label className='flex items-center gap-2 text-sm text-muted'>
+                    pill glide
+                    <input
+                        className='w-28'
+                        max={120}
+                        min={0}
+                        onChange={(event) =>
+                            edit({
+                                ...draft,
+                                meterGlideMs: Number(event.target.value),
+                            })
+                        }
+                        step={1}
+                        title='how long the pill’s bars take to reach a new level; 0 jumps straight to it'
+                        type='range'
+                        value={draft.meterGlideMs ?? 15}
+                    />
+                    <output className='w-12 tabular-nums text-ink'>
+                        {draft.meterGlideMs ?? 15} ms
+                    </output>
+                </label>
                 <span className='text-sm text-muted'>{healthText}</span>
                 <button
                     className={buttonClass}

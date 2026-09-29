@@ -12,3 +12,4 @@
 - **benched** — an engine the daemon skips for a while after a quota, auth or network failure
 - **no quota** — an engine whose provider refused a request as over its credit quota; benched for an hour and shown as such until its next success
 - **x-speak** — the resident daemon (`schedule/jobs/x-speak`) that owns the hotkey, the engines and config.json
+- **pill glide** — how long the pill's bars take to reach a new level, in ms (`meterGlideMs`)

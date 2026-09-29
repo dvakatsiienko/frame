@@ -43,5 +43,6 @@
             "speed": 1
         }
     },
-    "firstAudioMs": 500
+    "firstAudioMs": 900,
+    "meterGlideMs": 1
 }
