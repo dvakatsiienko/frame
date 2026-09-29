@@ -53,7 +53,9 @@ pick minutes · rounds
 - 2026-09-29 · atelier · brief v1 · A/B adhd — frames from /adhd:adhd instead of the axis corners · 4 takes (remove-the-assumption, inversion, speedrunner, logistics) · 5 artboards (4 takes + 1 shared art piece) · 49.7k out, 138k cache write (session transcript) + 5 sonnet diverge branches ≈ 291k subagent tokens · 8 wall min · 5h 23 → 32 %, 7d 30 → 31 % · pick min pending · round 1
 - 2026-09-29 · atelier · brief-vague (A/B vague) · full, blind · 4 takes · 5 artboards (4 takes + 1 shared art piece) · ~59.6k out (session transcript usage), in 137k cache-write + 2.5M cache-read · 9 wall min · 5h 23 → 33 %, 7d 30 → 31 % (window shared with parallel sessions) · pick min pending · round 1
 
-## verdict — draft 2026-09-29, final after dima's comparison
+## verdict — 2026-09-29: adopted (dima: «looks very good, and as a first take, almost works for me»)
+
+- dima's comparison, a tired first look: **the gated brief got closer** (v1 best); **the vague brief gave the more different ideas**; glass over swiss
 
 - **the flow works end to end**: interview → brief → 4 blind takes on the canvas in ~11 min → dima's pick → 3 state
   variants in ~3 min. the blinding held (no session read the app's repo or named its old art).
