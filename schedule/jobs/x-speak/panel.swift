@@ -7,6 +7,8 @@ import SwiftUI
 @MainActor
 final class PanelModel: ObservableObject {
     @Published var isPaused = false
+    // the pause button follows the speech: ⏸ while it talks, ▶ while paused, a dim ▶ when nothing plays
+    @Published var isSpeaking = false
     @Published var isSticky = UserDefaults.standard.bool(forKey: "panelSticky") {
         didSet { UserDefaults.standard.set(isSticky, forKey: "panelSticky") }
     }
@@ -42,7 +44,13 @@ struct PanelView: View {
             PillButton(model: model, symbol: "xmark", label: "Close the panel, keep speaking", action: model.onClose)
             LevelMeter(levels: model.levels)
                 .frame(maxWidth: .infinity)
-            PillButton(model: model, symbol: model.isPaused ? "play.fill" : "pause.fill", label: model.isPaused ? "Resume" : "Pause", action: model.onPause)
+            PillButton(
+                model: model,
+                symbol: model.isSpeaking && !model.isPaused ? "pause.fill" : "play.fill",
+                label: !model.isSpeaking ? "Nothing playing" : model.isPaused ? "Resume · F5" : "Pause · F5",
+                isDisabled: !model.isSpeaking,
+                action: model.onPause,
+            )
             PillButton(model: model, symbol: "stop.fill", label: "Stop · F6", hint: "F6", action: model.onStop)
             PillButton(model: model, symbol: model.isSticky ? "pin.fill" : "pin", label: model.isSticky ? "Unstick" : "Stick: stay after speech ends", isOn: model.isSticky) {
                 model.isSticky.toggle()
@@ -91,6 +99,7 @@ struct PillButton: View {
     let label: String
     var hint: String?
     var isOn = false
+    var isDisabled = false
     let action: () -> Void
 
     private var isHovered: Bool { model.hovered == label }
@@ -115,6 +124,8 @@ struct PillButton: View {
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0.35 : 1)
         .help(label)
         .accessibilityLabel(label)
         .onHover { isHovered in
@@ -204,6 +215,7 @@ final class Panel {
 
     func show() {
         model.isPaused = false
+        model.isSpeaking = true
         if !window.isVisible { placeOnPointerScreen() }
         window.orderFrontRegardless()
     }
@@ -215,6 +227,7 @@ final class Panel {
 
     func demo() {
         model.levels = (0..<model.levels.count).map { index in Float(0.85 - Double(index) * 0.08 + 0.12 * sin(Double(index) * 1.9)) }
+        model.isSpeaking = true
         if !window.isVisible { placeOnPointerScreen() }
         window.orderFrontRegardless()
     }
@@ -224,6 +237,7 @@ final class Panel {
     // speech is over: the panel goes too, unless stick holds it
     func speechEnded() {
         model.isPaused = false
+        model.isSpeaking = false
         model.resetLevels()
         if !model.isSticky { hide() }
     }
