@@ -116,6 +116,86 @@
 				<string>standard</string>
 			</dict>
 		</dict>
+		<key>233</key>
+		<dict>
+			<key>enabled</key>
+			<false/>
+			<key>value</key>
+			<dict>
+				<key>parameters</key>
+				<array>
+					<integer>109</integer>
+					<integer>46</integer>
+					<integer>1048576</integer>
+				</array>
+				<key>type</key>
+				<string>standard</string>
+			</dict>
+		</dict>
+		<key>235</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>value</key>
+			<dict>
+				<key>parameters</key>
+				<array>
+					<integer>65535</integer>
+					<integer>65535</integer>
+					<integer>0</integer>
+				</array>
+				<key>type</key>
+				<string>standard</string>
+			</dict>
+		</dict>
+		<key>237</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>value</key>
+			<dict>
+				<key>parameters</key>
+				<array>
+					<integer>102</integer>
+					<integer>3</integer>
+					<integer>8650752</integer>
+				</array>
+				<key>type</key>
+				<string>standard</string>
+			</dict>
+		</dict>
+		<key>238</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>value</key>
+			<dict>
+				<key>parameters</key>
+				<array>
+					<integer>99</integer>
+					<integer>8</integer>
+					<integer>8650752</integer>
+				</array>
+				<key>type</key>
+				<string>standard</string>
+			</dict>
+		</dict>
+		<key>239</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>value</key>
+			<dict>
+				<key>parameters</key>
+				<array>
+					<integer>114</integer>
+					<integer>15</integer>
+					<integer>8650752</integer>
+				</array>
+				<key>type</key>
+				<string>standard</string>
+			</dict>
+		</dict>
 		<key>260</key>
 		<dict>
 			<key>enabled</key>
@@ -151,7 +231,7 @@
 		<key>263</key>
 		<dict>
 			<key>enabled</key>
-			<true/>
+			<false/>
 			<key>value</key>
 			<dict>
 				<key>parameters</key>
@@ -327,7 +407,7 @@
 		<key>79</key>
 		<dict>
 			<key>enabled</key>
-			<integer>0</integer>
+			<false/>
 			<key>value</key>
 			<dict>
 				<key>parameters</key>
@@ -383,6 +463,22 @@
 					<integer>65535</integer>
 					<integer>124</integer>
 					<integer>8781824</integer>
+				</array>
+				<key>type</key>
+				<string>standard</string>
+			</dict>
+		</dict>
+		<key>98</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>value</key>
+			<dict>
+				<key>parameters</key>
+				<array>
+					<integer>47</integer>
+					<integer>44</integer>
+					<integer>1179648</integer>
 				</array>
 				<key>type</key>
 				<string>standard</string>
