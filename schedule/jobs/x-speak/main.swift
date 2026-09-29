@@ -80,12 +80,29 @@ final class Player {
     private var generation = 0
 
     var isPlaying: Bool { pending > 0 }
+    // the panel's meter: the mixer's level, at most every 50 ms, and only while the engine renders
+    var onLevel: ((Float) -> Void)?
 
     init() {
         engine.attach(node)
         engine.attach(pace)
         engine.connect(node, to: pace, format: format)
         engine.connect(pace, to: engine.mainMixerNode, format: format)
+        let lastLevel = OSAllocatedUnfairLock(initialState: ContinuousClock.now)
+        engine.mainMixerNode.installTap(onBus: 0, bufferSize: 1024, format: nil) { [weak self] buffer, _ in
+            guard let samples = buffer.floatChannelData?[0], buffer.frameLength > 0 else { return }
+            let isDue = lastLevel.withLock { last in
+                guard ContinuousClock.now - last >= .milliseconds(50) else { return false }
+                last = .now
+                return true
+            }
+            guard isDue else { return }
+            var sum: Float = 0
+            for i in 0..<Int(buffer.frameLength) { sum += samples[i] * samples[i] }
+            let decibels = 10 * log10(max(sum / Float(buffer.frameLength), 1e-9))
+            let level = min(1, max(0, (decibels + 50) / 40))
+            Task { @MainActor in self?.onLevel?(level) }
+        }
     }
 
     // s16le mono 24 kHz → float, with the engine's gain and speed
@@ -112,6 +129,9 @@ final class Player {
             }
         }
     }
+
+    func pause() { node.pause() }
+    func resume() { node.play() }
 
     func drained() async {
         if pending == 0 { return }
@@ -154,6 +174,8 @@ final class SystemVoice: NSObject, NSSpeechSynthesizerDelegate {
     }
 
     func stop() { synth?.stopSpeaking() }
+    func pause() { synth?.pauseSpeaking(at: .immediateBoundary) }
+    func resume() { synth?.continueSpeaking() }
 
     nonisolated func speechSynthesizer(_ sender: NSSpeechSynthesizer, willSpeakWord range: NSRange, of string: String) {
         guard range.location == 0 else { return }
@@ -172,6 +194,7 @@ final class SystemVoice: NSObject, NSSpeechSynthesizerDelegate {
 final class Speaker {
     private let player = Player()
     private let systemVoice = SystemVoice()
+    let panel = Panel()
     private var keys: [Engine: String] = [:]
     private var keysLoadedAt: Date?
     // engine → when it may be tried again; a failure costs its time once, then nothing until the reset
@@ -194,6 +217,31 @@ final class Speaker {
                 : until.map { ["state": "benched", "until": ISO8601DateFormatter().string(from: $0)] } ?? ["state": "live"]
         }
         return result
+    }
+
+    init() {
+        player.onLevel = { [panel] level in panel.model.push(level) }
+        panel.model.onClose = { [panel] in panel.hide() }
+        panel.model.onPause = { [weak self] in self?.togglePause() }
+        panel.model.onStop = { [weak self] in
+            self?.stop()
+            self?.panel.speechEnded()
+        }
+        panel.model.onUnstick = { [weak self] in
+            if self?.isSpeaking == false { self?.panel.hide() }
+        }
+    }
+
+    func togglePause() {
+        guard isSpeaking else { return }
+        panel.model.isPaused.toggle()
+        if panel.model.isPaused {
+            player.pause()
+            systemVoice.pause()
+        } else {
+            player.resume()
+            systemVoice.resume()
+        }
     }
 
     func stop() {
@@ -255,6 +303,7 @@ final class Speaker {
     func toggle() async {
         if job != nil {
             stop()
+            panel.speechEnded()
             log("stop")
             return
         }
@@ -281,6 +330,7 @@ final class Speaker {
 
     // `only` is --engine: one engine, no chain
     func speak(_ parts: [Chunk], only: Engine?, pressed: ContinuousClock.Instant) {
+        panel.show()
         job = Task {
             var isFirst = true
             for chunk in parts {
@@ -315,6 +365,7 @@ final class Speaker {
                 job = nil
                 draft = nil
                 player.idle()
+                panel.speechEnded()
             }
         }
     }

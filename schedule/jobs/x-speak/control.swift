@@ -65,6 +65,14 @@ final class Control {
             return reply(error.map { ["error": $0] } ?? ["ok": true])
         case "stop":
             speaker.stop()
+            speaker.panel.speechEnded()
+            return reply(["ok": true])
+        // shows the pill with sample levels in a forced appearance, for screenshots of a design take
+        case "panel-demo":
+            speaker.panel.demo(appearance: request.text == "dark" ? .darkAqua : .aqua)
+            return reply(["ok": true])
+        case "panel-hide":
+            speaker.panel.hide()
             return reply(["ok": true])
         case "preview":
             guard let engine = request.engine.flatMap(Engine.init), let text = request.text else { return reply(["error": "preview needs engine and text"]) }
