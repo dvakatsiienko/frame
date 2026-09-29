@@ -1,6 +1,6 @@
 {
     "chain": {
-        "en": ["elevenlabs", "fish", "kokoro", "system"],
+        "en": ["elevenlabs", "kokoro", "fish", "system"],
         "ru": ["elevenlabs", "system"],
         "uk": ["elevenlabs", "system"]
     },
@@ -44,5 +44,6 @@
         }
     },
     "firstAudioMs": 900,
-    "meterGlideMs": 1
+    "meterFlowMs": 172,
+    "meterGlideMs": 30
 }

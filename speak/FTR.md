@@ -66,11 +66,12 @@
   - and the state clears after the engine's next success
   - decision: the chain already falls through on a quota refusal; the card only has to make it visible (dima, 2026-09-29)
 - ✅ the header shows the daemon's accessibility state and whether it is speaking
-- ✅ «pill glide» sets how fast the pill's bars follow the sound
-  - makes: `meterGlideMs` in config.json
-  - given the header's pill glide slider
-  - when the user sets it to 40 and saves
-  - then config.json reads 40 and the daemon reloads; 0 steps the bars straight to each level
+- ✅ «pill glide» and «pill flow» tune the pill's wave, each a slider and a number box in ms
+  - makes: `meterGlideMs` and `meterFlowMs` in config.json
+  - given the settings row under the header
+  - when the user types 55 in the pill flow box and saves
+  - then config.json reads meterFlowMs 55, the slider moves to 55, and the daemon reloads
+  - glide: how long a bar takes to reach a new level (0 jumps). flow: how long the wave holds before moving one bar outward
   - decision: a slider, not a fixed number — dima tuned it by feel over six rounds (70 → 1 ms)
 - ✅ ■ stop ends any speech
 - ✅ the first audio budget, in ms

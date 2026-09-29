@@ -60,14 +60,26 @@ final class Meter {
         pending += levels.enumerated().map { (start.addingTimeInterval(Double($0.offset) * spacing), $0.element) }
     }
 
+    // readings arrive every 10 ms; the wave moves one bar outward per meterFlowMs, carrying the loudest reading of
+    // that span, so the travel speed is a setting and not the audio's buffer rate
+    private var stepPeak: Float = 0
+    private var stepReadings = 0
+
     func push(_ level: Float) {
+        stepPeak = max(stepPeak, level)
+        stepReadings += 1
+        guard stepReadings >= max(1, Int((config.meterFlowMs / 10).rounded())) else { return }
         // a short decay, so a pause between words does not snap the centre bar to a dot
         history.removeLast()
-        history.insert(max(level, (history.first ?? 0) * 0.85), at: 0)
+        history.insert(max(stepPeak, (history.first ?? 0) * 0.72), at: 0)
+        stepPeak = 0
+        stepReadings = 0
     }
 
     func reset() {
         pending = []
+        stepPeak = 0
+        stepReadings = 0
         history = history.map { _ in 0 }
         shown = shown.map { _ in 0 }
         lastFrame = nil

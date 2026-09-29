@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { Column } from '@/components/Column.tsx';
+import { MsSetting } from '@/components/MsSetting.tsx';
 import { SectionFallback } from '@/components/SectionFallback.tsx';
 
 import {
@@ -271,27 +272,22 @@ export const App = () => {
                     />{' '}
                     ms
                 </label>
-                <label className='flex items-center gap-2 text-sm text-muted'>
-                    pill glide
-                    <input
-                        className='h-6 w-28'
-                        max={120}
-                        min={0}
-                        onChange={(event) =>
-                            edit({
-                                ...draft,
-                                meterGlideMs: Number(event.target.value),
-                            })
-                        }
-                        step={1}
-                        title='how long the pill’s bars take to reach a new level; 0 jumps straight to it'
-                        type='range'
-                        value={draft.meterGlideMs ?? 15}
-                    />
-                    <output className='w-12 tabular-nums text-ink'>
-                        {draft.meterGlideMs ?? 15} ms
-                    </output>
-                </label>
+                <MsSetting
+                    hint='how long a bar takes to reach a new level; 0 jumps straight to it'
+                    label='pill glide'
+                    max={200}
+                    onChange={(value) =>
+                        edit({ ...draft, meterGlideMs: value })
+                    }
+                    value={draft.meterGlideMs ?? 30}
+                />
+                <MsSetting
+                    hint='how long the wave holds before moving one bar outward; lower travels faster'
+                    label='pill flow'
+                    max={200}
+                    onChange={(value) => edit({ ...draft, meterFlowMs: value })}
+                    value={draft.meterFlowMs ?? 40}
+                />
             </div>
             <DragDropProvider
                 // react owns the order through the whole drag: move() on every drag-over, the snapshot back on a

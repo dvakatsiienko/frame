@@ -73,6 +73,7 @@ export interface Config {
     chain: Partial<Record<Lang, Engine[]>>;
     firstAudioMs: number;
     meterGlideMs?: number;
+    meterFlowMs?: number;
     engines: Partial<Record<Engine, EngineSettings>>;
 }
 
