@@ -6,10 +6,13 @@
     },
     "engines": {
         "elevenlabs": {
-            "gain": 1,
+            "gain": 1.2,
             "model": "eleven_v4_turbo",
             "speed": 1,
-            "voice": { "*": "EXAVITQu4vr4xnSDxMaL" }
+            "voice": {
+                "*": "EXAVITQu4vr4xnSDxMaL",
+                "en": "cgSgspJ2msm6clMCkdW9"
+            }
         },
         "fish": {
             "gain": 1,
@@ -24,12 +27,16 @@
         "gemini": {
             "gain": 1,
             "model": "gemini-3.8-flash-tts",
-            "voice": { "*": "Kore" }
+            "voice": {
+                "*": "Kore"
+            }
         },
         "kokoro": {
             "gain": 1.9,
             "speed": 1,
-            "voice": { "*": "af_heart" }
+            "voice": {
+                "*": "af_heart"
+            }
         },
         "system": {
             "speed": 1
