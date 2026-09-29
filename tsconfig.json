@@ -26,6 +26,7 @@
     "include": [
         "script/**/*.ts",
         "hotkeys/*.ts",
+        "speak/admin/*.ts",
         "brand/profile/*.ts",
         "home/.claude/plugin-x/lib/*.ts"
     ]
