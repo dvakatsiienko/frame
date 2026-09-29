@@ -89,6 +89,7 @@ enum ConfigError: Error, CustomStringConvertible {
 final class ConfigFile {
     private let url: URL
     private var loadedStamp: Date?
+    private var lastError: String?
     private(set) var current = Config.fallback
 
     init(_ url: URL) { self.url = url }
@@ -104,16 +105,21 @@ final class ConfigFile {
         }
     }
 
-    // cheap enough for every press: one stat, and a parse only when the file changed
-    func refresh() {
+    // cheap enough for every press: one stat, and a parse only when the file changed. returns the reason the
+    // file on disk is not the one in use, if it is not
+    @discardableResult
+    func refresh() -> String? {
         let stamp = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
-        guard stamp != loadedStamp else { return }
+        guard stamp != loadedStamp else { return lastError }
         loadedStamp = stamp
         do {
             current = try JSONDecoder().decode(Config.self, from: Data(contentsOf: url))
+            lastError = nil
             log("config: loaded \(url.lastPathComponent)")
         } catch {
-            log("config: kept the last good one — \(url.lastPathComponent): \(Self.describe(error))")
+            lastError = "\(url.lastPathComponent): \(Self.describe(error))"
+            log("config: kept the last good one — \(lastError!)")
         }
+        return lastError
     }
 }

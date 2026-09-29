@@ -23,8 +23,8 @@ let kokoroURL = URL(string: "http://127.0.0.1:7383")!
 // a voice named in config.json wins; otherwise the best installed uk/ru voice, so an enhanced download is picked up
 // with no rebuild. en keeps the Spoken Content voice (siri voice 4), which no voice list exposes
 @MainActor
-func systemVoice(for lang: Lang) -> NSSpeechSynthesizer.VoiceName? {
-    if let named = config[.system].voice(for: lang) { return NSSpeechSynthesizer.VoiceName(rawValue: named) }
+func systemVoice(for lang: Lang, _ settings: EngineConfig) -> NSSpeechSynthesizer.VoiceName? {
+    if let named = settings.voice(for: lang) { return NSSpeechSynthesizer.VoiceName(rawValue: named) }
     guard lang != .en else { return nil }
     return AVSpeechSynthesisVoice.speechVoices()
         .filter { $0.language.hasPrefix(lang.rawValue) }
@@ -142,10 +142,10 @@ final class SystemVoice: NSObject, NSSpeechSynthesizerDelegate {
     private var done: CheckedContinuation<Void, Never>?
     var onFirstWord: (() -> Void)?
 
-    func speak(_ chunk: Chunk) async {
-        let synth = systemVoice(for: chunk.lang).flatMap { NSSpeechSynthesizer(voice: $0) } ?? NSSpeechSynthesizer()
+    func speak(_ chunk: Chunk, _ settings: EngineConfig) async {
+        let synth = systemVoice(for: chunk.lang, settings).flatMap { NSSpeechSynthesizer(voice: $0) } ?? NSSpeechSynthesizer()
         synth.delegate = self
-        synth.rate *= Float(config[.system].speed)
+        synth.rate *= Float(settings.speed)
         self.synth = synth
         await withCheckedContinuation { continuation in
             done = continuation
@@ -178,6 +178,39 @@ final class Speaker {
     private var skipUntil: [Engine: Date] = [:]
     private var job: Task<Void, Never>?
     private var kokoroPrefetch: (text: String, task: Task<Data, Error>)?
+    // a preview's unsaved card settings, in force for that one job
+    private var draft: (engine: Engine, settings: EngineConfig)?
+
+    private func settings(_ engine: Engine) -> EngineConfig {
+        draft.flatMap { $0.engine == engine ? $0.settings : nil } ?? config[engine]
+    }
+
+    func health() -> [String: [String: String]] {
+        var result: [String: [String: String]] = [:]
+        for engine in Engine.allCases {
+            let needsKey = engine.isCloud && keys[engine] == nil
+            let until = skipUntil[engine].flatMap { $0 > Date() ? $0 : nil }
+            result[engine.rawValue] = needsKey ? ["state": "no key"]
+                : until.map { ["state": "benched", "until": ISO8601DateFormatter().string(from: $0)] } ?? ["state": "live"]
+        }
+        return result
+    }
+
+    func stop() {
+        job?.cancel()
+        player.stop()
+        systemVoice.stop()
+        job = nil
+        draft = nil
+    }
+
+    // a preview ignores the bench: dima asked to hear this engine, so it is tried even when benched
+    func preview(_ text: String, with engine: Engine, settings: EngineConfig) {
+        stop()
+        draft = (engine, settings)
+        skipUntil[engine] = nil
+        speak(chunks(normalize(text)), only: engine, pressed: .now)
+    }
 
     var isSpeaking: Bool { job != nil }
 
@@ -215,21 +248,23 @@ final class Speaker {
         server.standardError = FileHandle.nullDevice
         try? server.run()
         for _ in 0..<240 where !(await kokoroReady()) { try? await Task.sleep(for: .milliseconds(250)) }
-        _ = try? await URLSession.shared.data(for: kokoroRequest("Ready."))
+        _ = try? await URLSession.shared.data(for: kokoroRequest("Ready.", voice: config[.kokoro].voice(for: .en)))
         log("kokoro: warm")
     }
 
     func toggle() async {
-        if let job {
-            job.cancel()
-            player.stop()
-            systemVoice.stop()
-            self.job = nil
+        if job != nil {
+            stop()
             log("stop")
             return
         }
         let pressed = ContinuousClock.now
         configFile.refresh()
+        // read live: a grant given while the daemon runs applies on the next press, no restart
+        guard AXIsProcessTrusted() else {
+            log("press: accessibility missing — grant bin/x-speak in Privacy & Security")
+            return
+        }
         let (text, via) = await grabSelection()
         let grabbed = elapsed(pressed)
         let parts = chunks(normalize(text ?? ""))
@@ -252,7 +287,8 @@ final class Speaker {
                 let candidates = (only.map { [$0] } ?? config.chain[chunk.lang] ?? []).filter { $0.speaks(chunk.lang) && (skipUntil[$0] ?? .distantPast) < Date() }
                 // a cloud engine racing its deadline: kokoro renders the same chunk meanwhile, so a miss costs nothing
                 if candidates.first?.isCloud == true, candidates.contains(.kokoro), !player.isPlaying {
-                    kokoroPrefetch = (chunk.text, Task { try await kokoroPCM(chunk.text) })
+                    let voice = settings(.kokoro).voice(for: .en)
+                    kokoroPrefetch = (chunk.text, Task { try await kokoroPCM(chunk.text, voice: voice) })
                 }
                 // one first-audio budget per chunk, shared by every cloud engine: misses never stack
                 let budgetEnds = player.isPlaying || systemVoice.isBusy ? nil : ContinuousClock.now + .milliseconds(config.firstAudioMs)
@@ -277,6 +313,7 @@ final class Speaker {
             await player.drained()
             if !Task.isCancelled {
                 job = nil
+                draft = nil
                 player.idle()
             }
         }
@@ -298,19 +335,19 @@ final class Speaker {
         case .system:
             await player.drained()
             systemVoice.onFirstWord = onAudio
-            await systemVoice.speak(chunk)
+            await systemVoice.speak(chunk, settings(.system))
         case .gemini:
             try await playGemini(chunk, onAudio: onAudio)
         // the kokoro server answers only once the whole chunk is rendered, so there is nothing to stream
         case .kokoro:
             let prefetched = kokoroPrefetch.flatMap { $0.text == chunk.text ? $0.task : nil }
             kokoroPrefetch = nil
-            let pcm = if let prefetched { try await prefetched.value } else { try await kokoroPCM(chunk.text) }
-            try player.schedule(pcm, config[.kokoro])
+            let pcm = if let prefetched { try await prefetched.value } else { try await kokoroPCM(chunk.text, voice: settings(.kokoro).voice(for: .en)) }
+            try player.schedule(pcm, settings(.kokoro))
             onAudio()
         default:
             let request = try request(for: engine, chunk)
-            try await stream(request, config[engine], deadline: deadline, onAudio: onAudio)
+            try await stream(request, settings(engine), deadline: deadline, onAudio: onAudio)
         }
     }
 
@@ -319,22 +356,22 @@ final class Speaker {
         case .elevenlabs:
             guard let key = keys[.elevenlabs] else { throw EngineError.noKey }
             // a premade voice: library voices answer 402 on free and restricted keys
-            guard let voice = config[.elevenlabs].voice(for: chunk.lang) else { throw EngineError.noVoice }
+            guard let voice = settings(.elevenlabs).voice(for: chunk.lang) else { throw EngineError.noVoice }
             var request = URLRequest(url: URL(string: "https://api.elevenlabs.io/v1/text-to-speech/\(voice)/stream?output_format=pcm_24000")!)
             request.httpMethod = "POST"
             request.setValue(key, forHTTPHeaderField: "xi-api-key")
             request.setValue("application/json", forHTTPHeaderField: "content-type")
-            request.httpBody = try JSONSerialization.data(withJSONObject: ["language_code": chunk.lang.rawValue, "model_id": config[.elevenlabs].model ?? "eleven_v4_turbo", "text": chunk.text])
+            request.httpBody = try JSONSerialization.data(withJSONObject: ["language_code": chunk.lang.rawValue, "model_id": settings(.elevenlabs).model ?? "eleven_v4_turbo", "text": chunk.text])
             return request
         case .fish:
             guard let key = keys[.fish] else { throw EngineError.noKey }
-            guard let voice = config[.fish].voice(for: chunk.lang) else { throw EngineError.noVoice }
+            guard let voice = settings(.fish).voice(for: chunk.lang) else { throw EngineError.noVoice }
             // s2.1-pro-free: no character cap, free until 2026-11-30; after that its non-2xx drops the tier by itself
             var request = URLRequest(url: URL(string: "https://api.fish.audio/v1/tts")!)
             request.httpMethod = "POST"
             request.setValue("Bearer \(key)", forHTTPHeaderField: "authorization")
             request.setValue("application/json", forHTTPHeaderField: "content-type")
-            request.setValue(config[.fish].model ?? "s2.1-pro-free", forHTTPHeaderField: "model")
+            request.setValue(settings(.fish).model ?? "s2.1-pro-free", forHTTPHeaderField: "model")
             request.httpBody = try JSONSerialization.data(withJSONObject: [
                 "format": "pcm", "latency": "balanced", "reference_id": voice, "sample_rate": 24000, "text": chunk.text,
             ])
@@ -398,7 +435,7 @@ final class Speaker {
 
     private func playGemini(_ chunk: Chunk, onAudio: () -> Void) async throws {
         guard let key = keys[.gemini] else { throw EngineError.noKey }
-        let settings = config[.gemini]
+        let settings = settings(.gemini)
         let model = settings.model ?? "gemini-3.8-flash-tts"
         var request = URLRequest(url: URL(string: "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent")!)
         request.httpMethod = "POST"
@@ -426,13 +463,12 @@ extension SystemVoice {
     var isBusy: Bool { onFirstWord != nil }
 }
 
-@MainActor
-func kokoroRequest(_ text: String) -> URLRequest {
+func kokoroRequest(_ text: String, voice: String?) -> URLRequest {
     var request = URLRequest(url: kokoroURL.appending(path: "v1/audio/speech"))
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "content-type")
     request.httpBody = try? JSONSerialization.data(withJSONObject: [
-        "input": text, "model": "mlx-community/Kokoro-82M-bf16", "response_format": "pcm", "voice": config[.kokoro].voice(for: .en) ?? "af_heart",
+        "input": text, "model": "mlx-community/Kokoro-82M-bf16", "response_format": "pcm", "voice": voice ?? "af_heart",
     ])
     return request
 }
@@ -484,10 +520,12 @@ func copySelection() async -> String? {
 
 @MainActor let speaker = Speaker()
 
+// main stays synchronous: NSApplication.run() inside an async main blocked the main actor for good, so no
+// hotkey handler and no control reply ever ran (dima's first F5, 2026-09-29)
 @main
 struct XSpeak {
     @MainActor
-    static func main() async {
+    static func main() {
         var args = Array(CommandLine.arguments.dropFirst())
         var only: Engine?
         if let flag = args.firstIndex(of: "--engine"), flag + 1 < args.count, let engine = Engine(rawValue: args[flag + 1]) {
@@ -496,24 +534,34 @@ struct XSpeak {
         }
         configFile.refresh()
 
-        await speaker.loadKeys()
         if !args.isEmpty {
-            if only == nil || only == .kokoro { await speaker.warmKokoro() }
-            speaker.speak(chunks(normalize(args.joined(separator: " "))), only: only, pressed: .now)
-            while speaker.isSpeaking { try? await Task.sleep(for: .milliseconds(50)) }
-            exit(0)
+            Task {
+                await speaker.loadKeys()
+                if only == nil || only == .kokoro { await speaker.warmKokoro() }
+                speaker.speak(chunks(normalize(args.joined(separator: " "))), only: only, pressed: .now)
+                while speaker.isSpeaking { try? await Task.sleep(for: .milliseconds(50)) }
+                exit(0)
+            }
+            dispatchMain()
         }
 
-        log("daemon: accessibility \(AXIsProcessTrusted() ? "granted" : "MISSING — the grab falls back to nothing")")
-        Task { await speaker.warmKokoro() }
+        Task {
+            await speaker.loadKeys()
+            await speaker.warmKokoro()
+        }
+        let control = Control()
+        control.start()
         var hotKey: EventHotKeyRef?
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
         InstallEventHandler(GetEventDispatcherTarget(), { _, _, _ in
+            log("hotkey: F5")
             Task { @MainActor in await speaker.toggle() }
             return noErr
         }, 1, &spec, nil, nil)
         let status = RegisterEventHotKey(UInt32(kVK_F5), 0, EventHotKeyID(signature: 0x5350_4B31, id: 1), GetEventDispatcherTarget(), 0, &hotKey)
-        log("daemon: F5 \(status == noErr ? "registered" : "refused (\(status))")")
+        // with the prompt option macos itself asks for the grant, naming this exact process — no guessing which entry
+        let isTrusted = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
+        log("daemon: F5 \(status == noErr ? "registered" : "refused (\(status))"), accessibility \(isTrusted ? "granted" : "missing — macos shows its grant prompt")")
         NSApplication.shared.setActivationPolicy(.prohibited)
         NSApplication.shared.run()
     }
@@ -521,9 +569,8 @@ struct XSpeak {
 
 enum StreamState { case waiting, playing, timedOut }
 
-@MainActor
-func kokoroPCM(_ text: String) async throws -> Data {
-    let (data, response) = try await URLSession.shared.data(for: kokoroRequest(text))
+func kokoroPCM(_ text: String, voice: String?) async throws -> Data {
+    let (data, response) = try await URLSession.shared.data(for: kokoroRequest(text, voice: voice))
     let status = (response as? HTTPURLResponse)?.statusCode ?? 0
     guard status == 200 else { throw EngineError.status(status) }
     return data
