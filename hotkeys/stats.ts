@@ -18,6 +18,12 @@ export interface Tally {
     count: number;
 }
 
+export interface FeatureTally {
+    feature: string;
+    count: number;
+    chords: { chord: string; count: number }[];
+}
+
 export interface Window {
     days?: number;
     app?: string;
@@ -115,7 +121,7 @@ export const labelAt = (
 // climbs by one per move forever.
 export const liveHotkeys = (
     hotkeys: readonly Hotkey[],
-    on: string = new Date().toISOString().slice(0, 10),
+    on: string = localMinute(),
 ): Hotkey[] =>
     hotkeys.filter((hotkey) => hotkey.until === undefined || hotkey.until > on);
 
@@ -134,6 +140,66 @@ export const byLabelledChord =
     };
 export const byApp = (event: LogEvent) => event.app;
 
+export const featureOf = (hotkey: Hotkey) => hotkey.feature ?? hotkey.action;
+
+// Presses per feature, whatever key carried it at the time: each press is labelled as of its own
+// moment, then filed under that label's feature. The chords under a feature ride along, so the
+// page can show where the count came from — opt+esc, then F4, then x-speak's key.
+export const tallyFeatures = (
+    hotkeys: readonly Hotkey[],
+    events: readonly LogEvent[],
+): FeatureTally[] => {
+    const rows = new Map<string, Map<string, number>>();
+    for (const event of events) {
+        if (event.chord === undefined) continue;
+        const hotkey = labelAt(hotkeys, event.chord, event.ts);
+        if (!hotkey) continue;
+        const chords = rows.get(featureOf(hotkey)) ?? new Map<string, number>();
+        chords.set(event.chord, (chords.get(event.chord) ?? 0) + 1);
+        rows.set(featureOf(hotkey), chords);
+    }
+    return [...rows]
+        .map(([feature, chords]) => ({
+            chords: [...chords]
+                .map(([chord, count]) => ({ chord, count }))
+                .sort((a, z) => z.count - a.count),
+            count: [...chords.values()].reduce((sum, count) => sum + count, 0),
+            feature,
+        }))
+        .sort(
+            (a, z) => z.count - a.count || a.feature.localeCompare(z.feature),
+        );
+};
+
+const bareModifiers = new Set([
+    'cmd',
+    'rcmd',
+    'opt',
+    'ropt',
+    'ctrl',
+    'rctrl',
+    'shift',
+    'rshift',
+]);
+
+const isStrayModifier = (chord: string) => bareModifiers.has(chord);
+
+// ⌥ or ⌥⇧ on a printable key types a character on the birman layout (opt+9 is →, opt+- is —).
+// Unbound, that is typing — the recorder stops writing it; this hides what it wrote before.
+const isTypedCharacter = (chord: string) =>
+    /^opt\+(shift\+)?(.|space)$/.test(chord);
+
+// Presses the tables leave out: an unbound bare modifier (a ⌘-click, a chord abandoned half-way —
+// 3,269 bare `cmd` in the first 16 days) and unbound ⌥-typing. The log keeps them; this only
+// stops them ranking.
+export const isUntracked = (
+    hotkeys: readonly Hotkey[],
+    event: LogEvent,
+): boolean =>
+    event.chord !== undefined &&
+    (isStrayModifier(event.chord) || isTypedCharacter(event.chord)) &&
+    labelAt(hotkeys, event.chord, event.ts) === undefined;
+
 // Bound somewhere, never pressed in the window — the rebind candidates.
 export const unpressed = (
     hotkeys: readonly Hotkey[],
@@ -143,4 +209,14 @@ export const unpressed = (
         events.flatMap((event) => (event.chord ? [event.chord] : [])),
     );
     return hotkeys.filter((hotkey) => !seen.has(chordOf(hotkey)));
+};
+
+/* Helpers */
+
+// the log's own clock: local time, minute precision, so `until` in either form compares
+export const localMinute = () => {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
+        .toISOString()
+        .slice(0, 16);
 };

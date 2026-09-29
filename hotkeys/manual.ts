@@ -287,10 +287,13 @@ export const manualHotkeys = [
         key: '0',
         mods: 'cmd+shift',
     },
-    // system settings → accessibility → read & speak → speak selection (siri voice 4); hotkey buried in its ⓘ sheet. moved to F4 2026-09-28
+    // read aloud, one feature across three homes: macOS speak selection (siri voice 4, the key buried in its ⓘ
+    // sheet) on opt+esc, moved to F4 2026-09-28, retired 2026-09-29 for x-speak — which went F5/F6, then F4/F5
+    // that evening. x-speak registers its own hotkeys (schedule/jobs/x-speak), no app pane to read them from
     {
         action: 'Speak selection (read aloud)',
         app: 'macos',
+        feature: 'read aloud',
         key: 'esc',
         mods: 'opt',
         until: '2026-09-28',
@@ -298,24 +301,45 @@ export const manualHotkeys = [
     {
         action: 'Speak selection (read aloud)',
         app: 'macos',
+        feature: 'read aloud',
         key: 'f4',
         mods: '',
         since: '2026-09-28',
+        until: '2026-09-29T22:41',
     },
-    // x-speak registers its own hotkey (schedule/jobs/x-speak), no app pane to read it from
     {
         action: 'Speak selection, neural (no selection: pause / resume)',
         app: 'x-speak',
+        feature: 'read aloud',
         key: 'f5',
         mods: '',
         since: '2026-09-29',
+        until: '2026-09-29T22:41',
+    },
+    {
+        action: 'Speak selection, neural (no selection: pause / resume)',
+        app: 'x-speak',
+        feature: 'read aloud',
+        key: 'f4',
+        mods: '',
+        since: '2026-09-29T22:41',
     },
     {
         action: 'Stop speaking',
         app: 'x-speak',
+        feature: 'stop reading',
         key: 'f6',
         mods: '',
         since: '2026-09-29',
+        until: '2026-09-29T22:41',
+    },
+    {
+        action: 'Stop speaking',
+        app: 'x-speak',
+        feature: 'stop reading',
+        key: 'f5',
+        mods: '',
+        since: '2026-09-29T22:41',
     },
     // homerow — its prefs (com.superultra.Homerow) name these three; hand-kept until a reader earns its place
     ...(
@@ -402,6 +426,11 @@ export interface Hotkey {
     mods: string;
     key: string;
     action: string;
+    // What the binding does, named once for every key and app that ever did it — «read aloud»
+    // was opt+esc, then F4 on the system voice, then x-speak. Rows sharing a feature add up on
+    // the stats page, so a rebind is a new dated row with the same feature and its history
+    // follows it. Unset, the action is the feature.
+    feature?: string;
     note?: string;
     // ISO date the binding took this meaning; a press before it keeps the older row's label
     since?: string;
@@ -409,11 +438,10 @@ export interface Hotkey {
     // freed its old meaning has to end, or every later press on that now-empty chord would
     // still be credited to whatever used to live there.
     //
-    // 📌 Both are DAY granularity and the split is only as sharp as that: presses made earlier
-    // on the same day a move is recorded fall on the new side of the line and are credited to
-    // nobody. Sharpening it means comparing instants rather than strings, which labelAt cannot
-    // do cheaply — it runs once per event and the log is tens of thousands. Measured on a real
-    // move: 66 of that day's presses landed on the wrong side.
+    // 📌 A day (`2026-09-28`) or a local minute (`2026-09-29T22:50`). Both compare as strings
+    // against the log's local timestamps, so a same-day move takes the minute form and splits
+    // the day exactly; a bare day credits that day's earlier presses to the new side (66 did,
+    // on the first real move).
     until?: string;
     // Where this row came from, stamped by the scan. Only `manual` rows can be edited from the
     // ui: everything else is read out of its own app's config, so a write here would be a lie

@@ -5,12 +5,14 @@ import {
     byApp,
     byChord,
     byLabelledChord,
+    isUntracked,
     labelAt,
     liveHotkeys,
     ofKind,
     parseEvents,
     selectEvents,
     tally,
+    tallyFeatures,
     unpressed,
 } from './stats.ts';
 
@@ -302,5 +304,89 @@ describe('labelAt', () => {
             'shift+cmd+5\tScrolling Capture\tcleanshot',
             'shift+cmd+5\tAll-In-One\tcleanshot',
         ]);
+    });
+});
+
+describe('tallyFeatures', () => {
+    const readAloud: Hotkey[] = [
+        {
+            action: 'speak',
+            app: 'macos',
+            feature: 'read aloud',
+            key: 'esc',
+            mods: 'opt',
+            until: '2026-09-28',
+        },
+        {
+            action: 'speak',
+            app: 'macos',
+            feature: 'read aloud',
+            key: 'f4',
+            mods: '',
+            since: '2026-09-28',
+            until: '2026-09-29T22:41',
+        },
+        {
+            action: 'read',
+            app: 'x-speak',
+            feature: 'read aloud',
+            key: 'f4',
+            mods: '',
+            since: '2026-09-29T22:41',
+        },
+    ];
+
+    it('adds up every key a feature ever lived on', () => {
+        const events = parseEvents(
+            [
+                chord('2026-09-20T10:00:00+03:00', 'opt+esc'),
+                chord('2026-09-28T10:00:00+03:00', 'f4'),
+                chord('2026-09-29T23:00:00+03:00', 'f4'),
+            ].join('\n'),
+        );
+        expect(tallyFeatures(readAloud, events)).toEqual([
+            {
+                chords: [
+                    { chord: 'f4', count: 2 },
+                    { chord: 'opt+esc', count: 1 },
+                ],
+                count: 3,
+                feature: 'read aloud',
+            },
+        ]);
+    });
+
+    it('leaves out a press on a key after its meaning ended', () => {
+        const events = parseEvents(
+            chord('2026-09-29T10:00:00+03:00', 'opt+esc'),
+        );
+        expect(tallyFeatures(readAloud, events)).toEqual([]);
+    });
+});
+
+describe('isUntracked', () => {
+    const wispr: Hotkey[] = [
+        { action: 'ptt', app: 'wispr flow', key: 'rcmd', mods: '' },
+    ];
+    const [lcmd, rcmd] = parseEvents(
+        [
+            chord('2026-09-20T10:00:00+03:00', 'cmd'),
+            chord('2026-09-20T10:00:01+03:00', 'rcmd'),
+        ].join('\n'),
+    );
+
+    it('marks an unbound bare modifier', () => {
+        expect(isUntracked(wispr, lcmd!)).toBe(true);
+    });
+
+    it('marks an unbound opt-typed character', () => {
+        const [typed] = parseEvents(
+            chord('2026-09-20T10:00:00+03:00', 'opt+9'),
+        );
+        expect(isUntracked(wispr, typed!)).toBe(true);
+    });
+
+    it('keeps a bare modifier that is bound', () => {
+        expect(isUntracked(wispr, rcmd!)).toBe(false);
     });
 });

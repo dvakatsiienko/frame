@@ -123,6 +123,15 @@
 - ✅ window tabs all / month / week, with the span the log really covers
   - when the user picks a window
   - then the numbers change to that window and a label says the span the log covers
+- ✅ features, ranked: each sums its presses over every chord it ever lived on, the chords beside it
+  - given read aloud moved from opt+esc to F4 on the system voice, then to x-speak
+  - when the user opens stats
+  - then one «read aloud» row counts all of them and lists `opt+esc 6,055 · f5 675 · f4 564`
+  - decision: history belongs to the feature, not the key — a rebind must carry it (dima, 2026-09-29)
+- ✅ presses that are not hotkeys are left out of every table: an unbound bare modifier, unbound ⌥-typing
+  - given bare `cmd` and `opt+9` presses in the log, only `rcmd` and `opt+1` bound
+  - then no `cmd` or `opt+9` row shows, and presses counts without them; the log keeps every line
+  - decision: hidden, not wiped — ⌘-clicks, half chords and birman ⌥-characters are never a binding; the recorder stops writing both (dima, 2026-09-29)
 - ✅ tiles: presses, chords, switches, never pressed of bound
   - then four tiles show presses, chords, switches and `<n> of <bound>` never pressed
 - ✅ chords, ranked; a row opens the board on that key

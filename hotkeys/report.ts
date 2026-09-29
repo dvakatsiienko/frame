@@ -6,14 +6,17 @@ import { cachedAppName } from './app-name.ts';
 import { chordOf } from './chord.ts';
 import type { Hotkey } from './manual.ts';
 import {
+    type FeatureTally,
     LABEL_SEPARATOR,
     type LogEvent,
     byApp,
     byLabelledChord,
+    isUntracked,
     liveHotkeys,
     ofKind,
     selectEvents,
     tally,
+    tallyFeatures,
     unpressed,
 } from './stats.ts';
 
@@ -35,7 +38,9 @@ export const buildReport = (
     // ask what is on the keyboard today, so they read only the live ones.
     const live = liveHotkeys(bindings);
     const selected = selectEvents(events, { days: windowDays[window] });
-    const chords = ofKind(selected, 'chord');
+    const chords = ofKind(selected, 'chord').filter(
+        (event) => !isUntracked(bindings, event),
+    );
     const switches = ofKind(selected, 'activate');
 
     // Never pressed means never, on purpose, and so it reads the whole log rather than the
@@ -56,6 +61,7 @@ export const buildReport = (
         switches: switches.length,
         switchesPerApp: tally(switches, byApp).map(toAppRow),
         topChords: tally(chords, byLabelledChord(bindings)).map(toChordRow),
+        topFeatures: tallyFeatures(bindings, chords),
         window,
     };
 };
@@ -157,6 +163,7 @@ export interface StatsReport {
     switches: number;
     boundCount: number;
     topChords: ChordRow[];
+    topFeatures: FeatureTally[];
     chordsPerApp: AppRow[];
     switchesPerApp: AppRow[];
     neverPressed: ColdRow[];

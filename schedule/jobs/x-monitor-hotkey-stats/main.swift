@@ -1,9 +1,5 @@
 // x-monitor-hotkey-stats — counts which chords actually get pressed, per app.
 //
-// 📌 NEXT REBUILD: a modifier HELD past ~300 ms with key events arriving while it is down should
-// count once on release. That is wispr's push-to-talk on rcmd — it types the transcript while the
-// key is still held, and the current down-then-up-with-no-key-between rule cancels the press.
-//
 // Privacy by construction: a KEY event reaches disk only when cmd, ctrl or opt is held, or when
 // it is esc or F1–F12 (`bareKeys` in chord.swift). Plain typing, shift+letter and every password
 // field are dropped inside the callback, before anything is formatted. App switches carry a
@@ -72,6 +68,9 @@ var tapPort: CFMachPort?
 
 var bare = BareModifier()
 
+// the event's own clock (nanoseconds since boot), for the hold-to-talk rule
+func seconds(_ event: CGEvent) -> TimeInterval { Double(event.timestamp) / 1_000_000_000 }
+
 func frontApp() -> String {
     NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "unknown"
 }
@@ -88,13 +87,13 @@ let handler: CGEventTapCallBack = { _, type, event, _ in
     let flags = event.flags
 
     if type == .flagsChanged {
-        if let name = bare.flagsChanged(flags, event.getIntegerValueField(.keyboardEventKeycode)) {
+        if let name = bare.flagsChanged(flags, event.getIntegerValueField(.keyboardEventKeycode), at: seconds(event)) {
             log.append(kind: "chord", chord: name, app: frontApp())
         }
         return Unmanaged.passUnretained(event)
     }
 
-    bare.keyDown()
+    bare.keyDown(at: seconds(event))
 
     // Holding a chord fires keyDown repeatedly; one press must count once.
     guard event.getIntegerValueField(.keyboardEventAutorepeat) == 0 else {

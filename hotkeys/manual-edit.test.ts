@@ -231,6 +231,35 @@ describe('moveManualText', () => {
         );
     });
 
+    it('carries the feature across, so its presses follow the move', () => {
+        const row: Hotkey = {
+            action: 'Speak',
+            app: 'x-speak',
+            feature: 'read aloud',
+            key: 'f4',
+            mods: '',
+        };
+        const text = `export const manualHotkeys = [
+    {
+        action: 'Speak',
+        app: 'x-speak',
+        feature: 'read aloud',
+        key: 'f4',
+        mods: '',
+    },
+] satisfies readonly Hotkey[];
+`;
+        const next = moveManualText(text, [row], {
+            from: row,
+            on: '2026-09-30',
+            to: { action: 'Speak', key: 'f8', mods: '' },
+        });
+
+        expect(flat(next)).toContain(
+            "feature: 'read aloud', key: 'f8', mods: '', since: '2026-09-30',",
+        );
+    });
+
     it('refuses a move that changes nothing', () => {
         expect(() =>
             move(rows[0] as Hotkey, {

@@ -12,18 +12,23 @@ enum Ev {
     case down(Int64, CGEventFlags)
     case up(Int64, CGEventFlags)
     case key
+    // the clock moves on, in seconds
+    case wait(TimeInterval)
 }
 
 // Feeds a physical sequence through the state machine and returns every bare modifier logged.
 func replay(_ events: [Ev]) -> [String] {
     var bare = BareModifier()
     var logged: [String] = []
+    var clock: TimeInterval = 0
     for e in events {
         switch e {
         case let .down(code, flags), let .up(code, flags):
-            if let name = bare.flagsChanged(flags, code) { logged.append(name) }
+            if let name = bare.flagsChanged(flags, code, at: clock) { logged.append(name) }
         case .key:
-            bare.keyDown()
+            bare.keyDown(at: clock)
+        case let .wait(seconds):
+            clock += seconds
         }
     }
     return logged
@@ -66,9 +71,27 @@ enum ChordTest {
         ]), [])
 
         expect("a bare tap right after a chord still counts", replay([
-            .down(Key.opt, .maskAlternate), .key, .up(Key.opt, none),
+            .down(Key.rcmd, .maskCommand), .key, .up(Key.rcmd, none),
+            .down(Key.rcmd, .maskCommand), .up(Key.rcmd, none),
+        ]), ["rcmd"])
+
+        expect("an unbound bare modifier is not logged", replay([
+            .down(Key.cmd, .maskCommand), .up(Key.cmd, none),
             .down(Key.opt, .maskAlternate), .up(Key.opt, none),
-        ]), ["opt"])
+        ]), [])
+
+        expect("rcmd held past the hold-to-talk line counts though keys arrive under it", replay([
+            .down(Key.rcmd, .maskCommand), .wait(0.4), .key, .key, .up(Key.rcmd, none),
+        ]), ["rcmd"])
+
+        expect("rcmd with a key inside the hold-to-talk line is a chord, not a press", replay([
+            .down(Key.rcmd, .maskCommand), .wait(0.1), .key, .up(Key.rcmd, none),
+        ]), [])
+
+        expect("opt on a digit is a typed character", chordFor(.maskAlternate, 25), nil)
+        expect("opt+shift on a symbol is a typed character", chordFor([.maskAlternate, .maskShift], 27), nil)
+        expect("a bound opt digit still logs", chordFor(.maskAlternate, 18), "opt+1")
+        expect("opt on a non-printable key logs", chordFor(.maskAlternate, 51), "opt+backspace")
 
         expect("bare f1 logs", chordFor(none, 122), "f1")
         expect("bare f12 logs", chordFor(none, 111), "f12")

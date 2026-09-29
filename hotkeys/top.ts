@@ -29,10 +29,12 @@ import {
     byApp,
     byChord,
     byLabelledChord,
+    isUntracked,
     liveHotkeys,
     ofKind,
     selectEvents,
     tally,
+    tallyFeatures,
     unpressed,
 } from './stats.ts';
 
@@ -161,11 +163,22 @@ const chordLabel = (name: string) => {
     return chord && action ? `${chord}  ${dim(`${action} · ${app}`)}` : name;
 };
 
-step(`chords  ${dim(`${chords.length} presses`)}`);
-table(tally(chords, byLabelledChord(bindings)), chordLabel);
+const pressed = chords.filter((event) => !isUntracked(bindings, event));
+
+step('features');
+table(
+    tallyFeatures(bindings, pressed).map(({ feature, count }) => ({
+        count,
+        name: feature,
+    })),
+    (name) => name,
+);
+
+step(`chords  ${dim(`${pressed.length} presses`)}`);
+table(tally(pressed, byLabelledChord(bindings)), chordLabel);
 
 step('chords per app');
-table(tally(chords, byApp), appName);
+table(tally(pressed, byApp), appName);
 
 if (switches.length > 0) {
     step(`switches per app  ${dim(`${switches.length} activations`)}`);
@@ -190,8 +203,8 @@ const plural = (n: number, one: string, many: string) =>
     `${n} ${n === 1 ? one : many}`;
 done(
     [
-        plural(chords.length, 'press', 'presses'),
-        plural(tally(chords, byChord).length, 'chord', 'chords'),
+        plural(pressed.length, 'press', 'presses'),
+        plural(tally(pressed, byChord).length, 'chord', 'chords'),
         plural(switches.length, 'switch', 'switches'),
     ].join(' · '),
 );

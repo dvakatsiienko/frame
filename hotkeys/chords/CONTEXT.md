@@ -43,12 +43,16 @@ _Avoid_: manual hotkey, custom binding
 One read of every config source into the full list of bindings.
 _Avoid_: sync, import
 
+**Feature**:
+What a binding does, named once across every chord and app that ever did it (`read aloud` was opt+esc, then F4 on the system voice, then x-speak's F4). A rebind keeps it, so its presses follow; unset, the action is the feature.
+_Avoid_: function, command, capability
+
 **Rebind**:
-Moving a hand-kept binding to another chord: the old row ends, a new row starts on the new chord.
+Moving a hand-kept binding to another chord: the old row ends, a new row starts on the new chord, with the same feature.
 _Avoid_: remap, move, reassign
 
 **Since row**:
-A binding row dated with the day it started; the rows before it carry the day they ended. Press counts split at that date.
+A binding row dated with the day or local minute it started; the rows before it carry when they ended. Press counts split at that moment.
 _Avoid_: history entry, version
 
 **Note**:

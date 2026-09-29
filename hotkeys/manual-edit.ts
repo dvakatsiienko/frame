@@ -24,6 +24,7 @@ const LINE_WIDTH = 80;
 const FIELD_ORDER = [
     'action',
     'app',
+    'feature',
     'key',
     'mods',
     'note',

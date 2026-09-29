@@ -88,6 +88,7 @@ export const keyCap: Record<number, string> = {
     75: 'keypad/',
     76: 'keypadenter',
     78: 'keypad-',
+    80: 'f19',
     81: 'keypad=',
     82: 'keypad0',
     83: 'keypad1',

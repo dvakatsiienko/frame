@@ -33,7 +33,7 @@ import {
 import { type NoteInput, readNotes, saveNote } from './notes.ts';
 import { chordsDevPort, chordsPort } from './ports.ts';
 import { buildReport, isWindowName, windowDays } from './report.ts';
-import { liveHotkeys } from './stats.ts';
+import { liveHotkeys, localMinute } from './stats.ts';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const DIST = join(import.meta.dirname, 'chords/dist');
@@ -227,7 +227,7 @@ const applyManual = async (op: 'edit' | 'move', body: unknown) => {
         op === 'move'
             ? moveManualText(text, rows, {
                   ...(body as ManualMove),
-                  on: new Date().toISOString().slice(0, 10),
+                  on: localMinute(),
               })
             : editManualText(text, rows, body as ManualEdit);
 

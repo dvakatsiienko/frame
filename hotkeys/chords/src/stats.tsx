@@ -78,6 +78,7 @@ export const StatsPage = () => {
     // Per table, because he expands the one he is reading and leaves the others alone.
     // localStorage throws outright in a private window and a throw in render blanks the page,
     // so both sides are guarded and an unreadable store simply means folded.
+    const featuresFold = useFold('features');
     const chordsFold = useFold('chords');
     const chordAppsFold = useFold('chords-per-app');
     const switchAppsFold = useFold('switches-per-app');
@@ -166,6 +167,32 @@ export const StatsPage = () => {
                 id='stats-panel'
                 role='tabpanel'>
                 <div className='grid gap-[22px]'>
+                    <section className='grid gap-2.5'>
+                        <h2 className={H2}>features</h2>
+                        <StatList fold={featuresFold}>
+                            {report.topFeatures.map((row) => {
+                                return (
+                                    <StatRow
+                                        count={row.count}
+                                        detail={row.chords
+                                            .map(
+                                                (each) =>
+                                                    `${each.chord} ${each.count.toLocaleString('en')}`,
+                                            )
+                                            .join(' · ')}
+                                        key={row.feature}
+                                        label={row.feature}
+                                        top={topOf(report.topFeatures)}
+                                    />
+                                );
+                            })}
+                        </StatList>
+                        <FoldButton
+                            fold={featuresFold}
+                            total={report.topFeatures.length}
+                        />
+                    </section>
+
                     <section className='grid gap-2.5'>
                         <h2 className={H2}>chords</h2>
                         <StatList fold={chordsFold}>

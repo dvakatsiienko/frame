@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 
 // Keys that are never typing, so they may reach disk with no modifier held. Bare F1–F4 are
 // homerow and read-aloud bindings, bare esc is wispr's cancel. A letter, digit or symbol never
@@ -7,6 +8,13 @@ import CoreGraphics
 let bareKeys: Set<String> = [
     "esc", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12",
 ]
+
+// ⌥ and ⌥⇧ on a printable key type a character on the birman layout (opt+- is —, opt+9 is →):
+// that is typing, and it never reaches disk. The ⌥ bindings on printable keys are named here —
+// a new one joins this set, or its presses go unrecorded.
+let optBoundKeys: Set<String> = ["1", "2", "3", "f", "r"]
+
+func isPrintable(_ key: String) -> Bool { key.count == 1 || key == "space" }
 
 // Canonical modifier order, identical to `modOrder` in hotkeys/chord.ts:
 // hyper, ctrl, opt, shift, cmd. All four together collapse to `hyper`.
@@ -21,6 +29,8 @@ func chordFor(_ flags: CGEventFlags, _ keyCode: Int64) -> String? {
 
     // Shift alone is typing, never a hotkey. This is the privacy gate.
     guard ctrl || opt || cmd || bareKeys.contains(key) else { return nil }
+    // ⌥-typing, the same privacy gate one layer up
+    if opt && !ctrl && !cmd && isPrintable(key) && !optBoundKeys.contains(key) { return nil }
 
     var parts: [String] = []
     if ctrl && opt && shift && cmd {
@@ -52,12 +62,24 @@ let modifierName: [Int64: String] = [
     59: "ctrl", 60: "rshift", 61: "ropt", 62: "rctrl",
 ]
 
+// Only a bare modifier something listens for is a press worth keeping. Every other one is a
+// ⌘-click, an opt-drag or a chord let go half-way: 3,269 bare `cmd`, 1,546 `opt` and 1,472
+// `ctrl` in the first 16 days, none of them bound. Binding a new bare modifier means adding it
+// here — the history for it starts that day.
+let boundBareModifiers: Set<String> = ["rcmd"]
+
+// Held this long, a modifier is push-to-talk rather than the start of a chord: wispr types the
+// transcript while rcmd is still down, and those synthetic keys must not cancel the press.
+let holdToTalk: TimeInterval = 0.3
+
 struct BareModifier {
     private var pending: String?
+    private var downAt: TimeInterval = 0
     private var heldCount = 0
 
-    // Returns the bare modifier to log, if this event completed one.
-    mutating func flagsChanged(_ flags: CGEventFlags, _ keyCode: Int64) -> String? {
+    // Returns the bare modifier to log, if this event completed one. `time` is the event's own
+    // clock in seconds; only differences are read.
+    mutating func flagsChanged(_ flags: CGEventFlags, _ keyCode: Int64, at time: TimeInterval) -> String? {
         let held = [CGEventFlags.maskControl, .maskAlternate, .maskShift, .maskCommand]
             .filter { flags.contains($0) }.count
         defer { heldCount = held }
@@ -66,11 +88,13 @@ struct BareModifier {
             defer { pending = nil }
             return pending
         }
-        pending = held == 1 && heldCount == 0 ? modifierName[keyCode] : nil
+        let name = held == 1 && heldCount == 0 ? modifierName[keyCode] : nil
+        pending = name.flatMap { boundBareModifiers.contains($0) ? $0 : nil }
+        downAt = time
         return nil
     }
 
-    mutating func keyDown() {
-        pending = nil
+    mutating func keyDown(at time: TimeInterval) {
+        if time - downAt < holdToTalk { pending = nil }
     }
 }

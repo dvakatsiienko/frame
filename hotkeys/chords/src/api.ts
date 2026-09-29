@@ -95,6 +95,12 @@ export interface ChordStat {
     app: string | null;
     count: number;
 }
+// one thing dima does, summed over every key it ever lived on — the chords say where it came from
+export interface FeatureStat {
+    feature: string;
+    count: number;
+    chords: { chord: string; count: number }[];
+}
 export interface AppStat {
     app: string;
     bundleId: string;
@@ -118,6 +124,7 @@ export interface StatsReport {
     switches: number;
     boundCount: number;
     topChords: ChordStat[];
+    topFeatures: FeatureStat[];
     chordsPerApp: AppStat[];
     switchesPerApp: AppStat[];
     neverPressed: ColdStat[];
