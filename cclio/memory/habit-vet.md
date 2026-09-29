@@ -18,4 +18,4 @@ is dropped by silence, not by data.
   already works. an untried feature at the verdict is named as untried, never folded into «fine».
 - **the verdict date is in `_reminders.md`;** the verdict line (adopted / dropped) closes the file.
 
-live vets: `parallel` (to 10-01) · `adhd` (to 10-05) · `quicksilver` (to 10-12) · `browserbase` (to 10-05, stress list in `docs/vet/browserbase.md`) · `cc-cloud` (to 11-04, when the credit expires).
+live vets: `parallel` (to 10-06) · `adhd` (to 10-05) · `quicksilver` (to 10-12) · `browserbase` (to 10-05, stress list in `docs/vet/browserbase.md`) · `cc-cloud` (to 11-04, when the credit expires) · `exa` (to 10-06, head-to-head with `parallel`, stress list in `docs/vet/exa.md`).
