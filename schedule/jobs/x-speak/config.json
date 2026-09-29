@@ -1,6 +1,6 @@
 {
     "chain": {
-        "en": ["elevenlabs", "kokoro", "system"],
+        "en": ["kokoro", "elevenlabs", "system"],
         "ru": ["elevenlabs", "system"],
         "uk": ["elevenlabs", "system"]
     },
@@ -33,6 +33,7 @@
             }
         },
         "kokoro": {
+            "favourites": ["af_heart"],
             "gain": 1.9,
             "speed": 1,
             "voice": {
