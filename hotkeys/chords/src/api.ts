@@ -100,6 +100,8 @@ export interface FeatureStat {
     feature: string;
     count: number;
     chords: { chord: string; count: number }[];
+    // no live binding does it any more: the count is history
+    isRetired: boolean;
 }
 export interface AppStat {
     app: string;

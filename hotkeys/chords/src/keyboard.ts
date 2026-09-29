@@ -106,5 +106,20 @@ export const layerMods = (layer: string) =>
         ? new Set(['caps'])
         : new Set(layer.split('+').filter(Boolean));
 
+// ⌘ leads any modifier set it is part of — dima reads cmd+ctrl, not ctrl+cmd (2026-09-29). display
+// only: the log and the bindings key on the stored order (hotkeys/chord.ts), and renaming that
+// would orphan every press already written
+const cmdFirst = (mods: string[]) =>
+    mods.includes('cmd')
+        ? ['cmd', ...mods.filter((mod) => mod !== 'cmd')]
+        : mods;
+
+export const showChord = (chord: string) => {
+    const tokens = chord.split('+');
+    return tokens.length < 2
+        ? chord
+        : [...cmdFirst(tokens.slice(0, -1)), tokens.at(-1)].join('+');
+};
+
 export const layerName = (layer: string) =>
-    layer === '' ? 'no modifier' : layer;
+    layer === '' ? 'no modifier' : cmdFirst(layer.split('+')).join('+');

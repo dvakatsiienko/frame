@@ -6,7 +6,7 @@ below are the ones the ftr (`FTR.md`), the ui labels and the code use.
 ## the keyboard
 
 **Chord**:
-A key plus the modifiers held with it, spelled `mods+key` in a fixed modifier order (`hyper+a`, `shift+cmd+4`).
+A key plus the modifiers held with it, spelled `mods+key` in a fixed modifier order (`hyper+a`, `cmd+shift+4`). The page puts cmd first whenever it is held; the log and the bindings keep the stored order (`shift+cmd+4`), which the page never shows.
 _Avoid_: shortcut, combo, hotkey (for the keys themselves)
 
 **Hyper**:

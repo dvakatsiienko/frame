@@ -7,6 +7,14 @@
 
 ## every page — the frame
 
+- ✅ the mark and «chords», top-left, go home to the board
+  - given the stats page is open
+  - when the user clicks the mark or «chords»
+  - then the url reads `/` and the board is back; the pointer is a hand and the name underlines on hover
+  - makes: the four-keycap mark, also the favicon
+- ✅ cmd leads every chord and layer it is part of, on every page
+  - then a layer tab reads `cmd+ctrl`, a stats row `cmd+shift+4`, the glance keycaps ⌘ first
+  - decision: display only — the log keys on the stored `ctrl+cmd` order, so renaming it would orphan every press (dima, 2026-09-29)
 - ✅ board / stats tabs switch the page, back button included
   - given the board is open
   - when the user clicks stats, then the browser's back button
@@ -128,10 +136,18 @@
   - when the user opens stats
   - then one «read aloud» row counts all of them and lists `opt+esc 6,055 · f5 675 · f4 564`
   - decision: history belongs to the feature, not the key — a rebind must carry it (dima, 2026-09-29)
+  - and a feature no live binding does any more reads «retired» before its chords (Restore, dropped 2026-09-21)
 - ✅ presses that are not hotkeys are left out of every table: an unbound bare modifier, unbound ⌥-typing
   - given bare `cmd` and `opt+9` presses in the log, only `rcmd` and `opt+1` bound
   - then no `cmd` or `opt+9` row shows, and presses counts without them; the log keeps every line
   - decision: hidden, not wiped — ⌘-clicks, half chords and birman ⌥-characters are never a binding; the recorder stops writing both (dima, 2026-09-29)
+- ✅ each table heading has an «i» that says in one line what the table counts
+  - when the user hovers or focuses the «i» beside «switches per app»
+  - then «how often each app came to the front — ⌘-tab, a click, the dock or a hotkey» shows
+- ✅ a press is labelled by the binding of the app it was pressed in
+  - given esc bound in cursor (hideToasts) and in wispr flow (dismiss)
+  - then esc pressed in chrome counts for wispr's dismiss, esc pressed in cursor for cursor's hideToasts
+  - decision: an in-app binding owns only its own app's presses — 631 esc had all gone to cursor (dima, 2026-09-29)
 - ✅ tiles: presses, chords, switches, never pressed of bound
   - then four tiles show presses, chords, switches and `<n> of <bound>` never pressed
 - ✅ chords, ranked; a row opens the board on that key

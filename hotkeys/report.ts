@@ -11,6 +11,7 @@ import {
     type LogEvent,
     byApp,
     byLabelledChord,
+    featureOf,
     isUntracked,
     liveHotkeys,
     ofKind,
@@ -61,7 +62,13 @@ export const buildReport = (
         switches: switches.length,
         switchesPerApp: tally(switches, byApp).map(toAppRow),
         topChords: tally(chords, byLabelledChord(bindings)).map(toChordRow),
-        topFeatures: tallyFeatures(bindings, chords),
+        // a feature no live binding carries still shows its history, marked retired
+        topFeatures: tallyFeatures(bindings, chords).map((row) => ({
+            ...row,
+            isRetired: !live.some(
+                (hotkey) => featureOf(hotkey) === row.feature,
+            ),
+        })),
         window,
     };
 };
@@ -163,7 +170,7 @@ export interface StatsReport {
     switches: number;
     boundCount: number;
     topChords: ChordRow[];
-    topFeatures: FeatureTally[];
+    topFeatures: (FeatureTally & { isRetired: boolean })[];
     chordsPerApp: AppRow[];
     switchesPerApp: AppRow[];
     neverPressed: ColdRow[];

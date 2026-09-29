@@ -99,20 +99,41 @@ export const byChord = (event: LogEvent) => event.chord ?? '';
 // not already ended. A reshuffle adds a dated row and the history stays honest instead of being
 // relabelled; a move ends the old row, so a press on the freed chord afterwards belongs to
 // nobody rather than to whatever used to be there.
+//
+// An in-app binding means something only while its app is in front: cursor's esc is
+// hideToasts inside cursor and nothing in chrome. So it labels a press only from that app, and
+// where it does it wins over a global one on the same chord (631 esc presses had all been
+// credited to cursor, from every app). `app` is the press's bundle id; without one, every row
+// is a candidate, as before.
 export const labelAt = (
     hotkeys: readonly Hotkey[],
     chord: string,
     ts: string,
+    app?: string,
 ): Hotkey | undefined =>
     hotkeys
         .filter(
             (hotkey) =>
                 chordOf(hotkey) === chord &&
                 (hotkey.since === undefined || hotkey.since <= ts) &&
-                (hotkey.until === undefined || ts < hotkey.until),
+                (hotkey.until === undefined || ts < hotkey.until) &&
+                (app === undefined || isInScope(hotkey, app)),
         )
-        .sort((a, z) => (a.since ?? '').localeCompare(z.since ?? ''))
+        .sort(
+            (a, z) =>
+                Number(Object.hasOwn(inAppBundles, a.app)) -
+                    Number(Object.hasOwn(inAppBundles, z.app)) ||
+                (a.since ?? '').localeCompare(z.since ?? ''),
+        )
         .at(-1);
+
+// the binding owners whose shortcuts work only inside their own app, by bundle id
+const inAppBundles: Record<string, readonly string[]> = {
+    cursor: ['com.todesktop.230313mzl4w4u92'],
+};
+
+const isInScope = (hotkey: Hotkey, app: string) =>
+    inAppBundles[hotkey.app]?.includes(app) ?? true;
 
 // What is bound right now. `until` is the day a meaning ended, read exclusively — the same
 // boundary labelAt uses — so a row past it is history: it still explains the presses it earned
@@ -133,7 +154,7 @@ export const byLabelledChord =
     (hotkeys: readonly Hotkey[]) =>
     (event: LogEvent): string => {
         const chord = event.chord ?? '';
-        const hotkey = labelAt(hotkeys, chord, event.ts);
+        const hotkey = labelAt(hotkeys, chord, event.ts, event.app);
         return hotkey
             ? `${chord}${LABEL_SEPARATOR}${hotkey.action}${LABEL_SEPARATOR}${hotkey.app}`
             : chord;
@@ -152,7 +173,7 @@ export const tallyFeatures = (
     const rows = new Map<string, Map<string, number>>();
     for (const event of events) {
         if (event.chord === undefined) continue;
-        const hotkey = labelAt(hotkeys, event.chord, event.ts);
+        const hotkey = labelAt(hotkeys, event.chord, event.ts, event.app);
         if (!hotkey) continue;
         const chords = rows.get(featureOf(hotkey)) ?? new Map<string, number>();
         chords.set(event.chord, (chords.get(event.chord) ?? 0) + 1);
@@ -198,7 +219,7 @@ export const isUntracked = (
 ): boolean =>
     event.chord !== undefined &&
     (isStrayModifier(event.chord) || isTypedCharacter(event.chord)) &&
-    labelAt(hotkeys, event.chord, event.ts) === undefined;
+    labelAt(hotkeys, event.chord, event.ts, event.app) === undefined;
 
 // Bound somewhere, never pressed in the window — the rebind candidates.
 export const unpressed = (

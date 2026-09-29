@@ -390,3 +390,32 @@ describe('isUntracked', () => {
         expect(isUntracked(wispr, rcmd!)).toBe(false);
     });
 });
+
+describe('labelAt', () => {
+    const esc: Hotkey[] = [
+        { action: 'dismiss', app: 'wispr flow', key: 'esc', mods: '' },
+        { action: 'hideToasts', app: 'cursor', key: 'esc', mods: '' },
+    ];
+
+    it('gives an in-app binding the press made inside its app', () => {
+        expect(
+            labelAt(
+                esc,
+                'esc',
+                '2026-09-20T10:00:00+03:00',
+                'com.todesktop.230313mzl4w4u92',
+            )?.action,
+        ).toBe('hideToasts');
+    });
+
+    it('keeps an in-app binding off a press made in another app', () => {
+        expect(
+            labelAt(
+                esc,
+                'esc',
+                '2026-09-20T10:00:00+03:00',
+                'com.google.Chrome',
+            )?.action,
+        ).toBe('dismiss');
+    });
+});

@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 /* Components */
+import { Info } from '@/components/Info.tsx';
 import { Notice, apiTrouble } from '@/components/Notice.tsx';
 import { StatRow } from '@/components/StatRow.tsx';
 
@@ -14,7 +15,7 @@ import {
     subscribeLive,
     windowNames,
 } from '@/api.ts';
-import { colorOf } from '@/keyboard.ts';
+import { colorOf, showChord } from '@/keyboard.ts';
 import { queryKeys, useStats } from '@/queries.ts';
 import { navigate } from '@/router.ts';
 import { GHOST, H2, TAB } from '@/ui.ts';
@@ -168,16 +169,24 @@ export const StatsPage = () => {
                 role='tabpanel'>
                 <div className='grid gap-[22px]'>
                     <section className='grid gap-2.5'>
-                        <h2 className={H2}>features</h2>
+                        <h2 className={H2}>
+                            features{' '}
+                            <Info text='presses of each thing you do, added up over every key it ever lived on' />
+                        </h2>
                         <StatList fold={featuresFold}>
                             {report.topFeatures.map((row) => {
                                 return (
                                     <StatRow
                                         count={row.count}
-                                        detail={row.chords
-                                            .map(
-                                                (each) =>
-                                                    `${each.chord} ${each.count.toLocaleString('en')}`,
+                                        detail={(row.isRetired
+                                            ? ['retired']
+                                            : []
+                                        )
+                                            .concat(
+                                                row.chords.map(
+                                                    (each) =>
+                                                        `${showChord(each.chord)} ${each.count.toLocaleString('en')}`,
+                                                ),
                                             )
                                             .join(' · ')}
                                         key={row.feature}
@@ -194,7 +203,10 @@ export const StatsPage = () => {
                     </section>
 
                     <section className='grid gap-2.5'>
-                        <h2 className={H2}>chords</h2>
+                        <h2 className={H2}>
+                            chords{' '}
+                            <Info text='presses of each key combo, labelled with what it did at the time' />
+                        </h2>
                         <StatList fold={chordsFold}>
                             {report.topChords.map((row) => {
                                 return (
@@ -211,7 +223,7 @@ export const StatsPage = () => {
                                                 : undefined
                                         }
                                         key={`${row.chord}-${row.action ?? ''}`}
-                                        label={row.chord}
+                                        label={showChord(row.chord)}
                                         onSelect={() => openOnBoard(row.chord)}
                                         top={topOf(report.topChords)}
                                     />
@@ -225,7 +237,10 @@ export const StatsPage = () => {
                     </section>
 
                     <section className='grid gap-2.5'>
-                        <h2 className={H2}>switches per app</h2>
+                        <h2 className={H2}>
+                            switches per app{' '}
+                            <Info text='how often each app came to the front — ⌘-tab, a click, the dock or a hotkey' />
+                        </h2>
                         <StatList fold={switchAppsFold}>
                             {report.switchesPerApp.map((row) => {
                                 return (
@@ -247,7 +262,10 @@ export const StatsPage = () => {
 
                 <div className='grid gap-[22px]'>
                     <section className='grid gap-2.5'>
-                        <h2 className={H2}>chords per app</h2>
+                        <h2 className={H2}>
+                            chords per app{' '}
+                            <Info text='hotkey presses made while each app was in front' />
+                        </h2>
                         <StatList fold={chordAppsFold}>
                             {report.chordsPerApp.map((row) => {
                                 return (
@@ -267,7 +285,10 @@ export const StatsPage = () => {
                     </section>
 
                     <section className='grid gap-2.5'>
-                        <h2 className={H2}>never pressed</h2>
+                        <h2 className={H2}>
+                            never pressed{' '}
+                            <Info text='bound keys never pressed in the whole log — the rebind candidates' />
+                        </h2>
                         <p className='text-[12px] text-ink-2'>
                             lifetime, whatever the window above says — a rebind
                             candidate does not stop being one because the view
@@ -295,7 +316,7 @@ export const StatsPage = () => {
                                                     openOnBoard(row.chord)
                                                 }
                                                 type='button'>
-                                                {row.chord}
+                                                {showChord(row.chord)}
                                             </button>
                                             <span className='truncate text-[12px] text-ink-2'>
                                                 {row.action} · {row.app}

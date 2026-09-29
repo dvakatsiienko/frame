@@ -15,6 +15,7 @@ import {
     capLabel,
     colorOf,
     layerMods,
+    layerName,
     layout,
     modKeys,
 } from '@/keyboard.ts';
@@ -356,7 +357,7 @@ const Knob = (props: KnobProps) => {
             className='flex items-center justify-center'
             style={{ gridColumn: `span ${props.width}` }}>
             <button
-                aria-label={`layer dial — ${props.layer || 'no modifier'}`}
+                aria-label={`layer dial — ${layerName(props.layer)}`}
                 className='knob relative size-[38px] cursor-pointer rounded-full border-0 p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
                 onClick={() => step(1)}
                 ref={knob}
