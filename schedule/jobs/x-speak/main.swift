@@ -1,4 +1,4 @@
-// x-speak — select text, press F5: read aloud; F5 again: stop. one resident process so the hot path
+// x-speak — select text, press F5: read it aloud, cutting off whatever was playing; F6: stop. one resident process so the hot path
 // pays no boot, no key fetch and no player spawn (the node version paid ~1.2 s, measured 2026-09-29).
 // usage: x-speak                        the daemon (launchd)
 //        x-speak [--engine <name>] text one-shot, for listening tests
@@ -326,13 +326,17 @@ final class Speaker {
         log("kokoro: warm")
     }
 
-    func toggle() async {
-        if job != nil {
-            stop()
-            panel.speechEnded()
-            log("stop")
-            return
-        }
+    // F6: stop, and the pill leaves unless stick holds it
+    func stopPressed() {
+        guard job != nil else { return }
+        stop()
+        panel.speechEnded()
+        log("stop")
+    }
+
+    // F5: always the new selection. what plays is cut only once there is something new to say, so an empty press
+    // leaves it playing (dima, 2026-09-29: F5 starts every time, F6 stops)
+    func readPressed() async {
         let pressed = ContinuousClock.now
         configFile.refresh()
         // read live: a grant given while the daemon runs applies on the next press, no restart
@@ -348,6 +352,7 @@ final class Speaker {
             return
         }
         log("press: grab \(via) \(grabbed), normalize \(elapsed(pressed)), \(parts.count) chunks")
+        if job != nil { stop() }
         speak(parts, only: nil, pressed: pressed)
         if keys.count < 3, let loaded = keysLoadedAt, Date().timeIntervalSince(loaded) > 60 {
             Task { await loadKeys() }
@@ -638,15 +643,23 @@ struct XSpeak {
         control.start()
         var hotKey: EventHotKeyRef?
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
-        InstallEventHandler(GetEventDispatcherTarget(), { _, _, _ in
-            log("hotkey: F5")
-            Task { @MainActor in await speaker.toggle() }
+        // one handler for both keys; the hotkey id says which fired: 1 is F5, 2 is F6
+        InstallEventHandler(GetEventDispatcherTarget(), { _, event, _ in
+            var fired = EventHotKeyID()
+            GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID), nil, MemoryLayout<EventHotKeyID>.size, nil, &fired)
+            let isStop = fired.id == 2
+            log("hotkey: \(isStop ? "F6" : "F5")")
+            Task { @MainActor in
+                if isStop { speaker.stopPressed() } else { await speaker.readPressed() }
+            }
             return noErr
         }, 1, &spec, nil, nil)
+        var stopKey: EventHotKeyRef?
         let status = RegisterEventHotKey(UInt32(kVK_F5), 0, EventHotKeyID(signature: 0x5350_4B31, id: 1), GetEventDispatcherTarget(), 0, &hotKey)
+        let stopStatus = RegisterEventHotKey(UInt32(kVK_F6), 0, EventHotKeyID(signature: 0x5350_4B31, id: 2), GetEventDispatcherTarget(), 0, &stopKey)
         // with the prompt option macos itself asks for the grant, naming this exact process — no guessing which entry
         let isTrusted = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
-        log("daemon: F5 \(status == noErr ? "registered" : "refused (\(status))"), accessibility \(isTrusted ? "granted" : "missing — macos shows its grant prompt")")
+        log("daemon: F5 \(status == noErr ? "registered" : "refused (\(status))"), F6 \(stopStatus == noErr ? "registered" : "refused (\(stopStatus))"), accessibility \(isTrusted ? "granted" : "missing — macos shows its grant prompt")")
         NSApplication.shared.setActivationPolicy(.prohibited)
         NSApplication.shared.run()
     }

@@ -43,7 +43,7 @@ struct PanelView: View {
             LevelMeter(levels: model.levels)
                 .frame(maxWidth: .infinity)
             PillButton(model: model, symbol: model.isPaused ? "play.fill" : "pause.fill", label: model.isPaused ? "Resume" : "Pause", action: model.onPause)
-            PillButton(model: model, symbol: "stop.fill", label: "Stop · F5", hint: "F5", action: model.onStop)
+            PillButton(model: model, symbol: "stop.fill", label: "Stop · F6", hint: "F6", action: model.onStop)
             PillButton(model: model, symbol: model.isSticky ? "pin.fill" : "pin", label: model.isSticky ? "Unstick" : "Stick: stay after speech ends", isOn: model.isSticky) {
                 model.isSticky.toggle()
                 if !model.isSticky { model.onUnstick() }

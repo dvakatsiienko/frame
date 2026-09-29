@@ -304,9 +304,16 @@ export const manualHotkeys = [
     },
     // x-speak registers its own hotkey (schedule/jobs/x-speak), no app pane to read it from
     {
-        action: 'Speak selection, neural (again to stop)',
+        action: 'Speak selection, neural (a new press restarts)',
         app: 'x-speak',
         key: 'f5',
+        mods: '',
+        since: '2026-09-29',
+    },
+    {
+        action: 'Stop speaking',
+        app: 'x-speak',
+        key: 'f6',
         mods: '',
         since: '2026-09-29',
     },

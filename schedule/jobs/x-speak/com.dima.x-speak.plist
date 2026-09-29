@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  🔊 x-speak — select text, press F5: read aloud; F5 again: stop.
+  🔊 x-speak — select text, press F5: read it aloud (a new F5 cuts off what plays); F6: stop.
 
   - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 30s
   - config — config.json beside this plist: chain per language, voice, speed and gain per engine, the first-audio budget; re-read on the next F5 after a save, a bad edit keeps the last good one
