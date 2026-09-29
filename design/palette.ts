@@ -1,7 +1,9 @@
 import { parseArgs } from 'node:util';
 import type { CssColor } from '@adobe/leonardo-contrast-colors';
 import { BackgroundColor, Color, Theme } from '@adobe/leonardo-contrast-colors';
-import { converter } from 'culori';
+import { converter, parse } from 'culori';
+
+import { roleGroups } from './lib/roles.ts';
 
 const usage = `design:palette <seed> --ratios 3,4.5,7 [--bg #ffffff] [--name brand]
 
@@ -32,8 +34,15 @@ if (
 }
 
 const lightness = converter('lab65')(values.bg)?.l;
-if (lightness === undefined)
-    throw new Error(`--bg: cannot parse colour ${values.bg}`);
+const problem =
+    (!parse(seed) && `cannot parse seed colour ${seed}`) ||
+    (lightness === undefined && `--bg: cannot parse colour ${values.bg}`) ||
+    (roleGroups.some((group) => group === values.name) &&
+        `--name ${values.name} is a role group, pick another`);
+if (problem || lightness === undefined) {
+    console.error(problem);
+    process.exit(2);
+}
 
 const theme = new Theme({
     backgroundColor: new BackgroundColor({

@@ -23,6 +23,11 @@ const diffPath = formatPath({ dir, ext: '.png', name: `${name}.diff` });
 const result = await compare(comp, shot, diffPath, {
     diffOverlay: true,
     noFailOnFsErrors: true,
+}).catch((error: unknown) => {
+    console.error(
+        `cannot compare: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exit(2);
 });
 
 if (result.match) {
@@ -38,6 +43,6 @@ if (result.reason === 'pixel-diff') {
 console.error(
     result.reason === 'layout-diff'
         ? 'the two images differ in size — shoot the build at the comp viewport'
-        : `no such file: ${result.file}`,
+        : `cannot read ${result.file} — missing, or not a png`,
 );
 process.exit(2);

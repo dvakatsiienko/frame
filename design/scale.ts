@@ -19,9 +19,12 @@ const { values } = parseArgs({
         'min-width': { default: '320', type: 'string' },
     },
 });
-if (values.help) {
+const isBadNumber = Object.values(values).some(
+    (value) => typeof value === 'string' && !(Number(value) > 0),
+);
+if (values.help || isBadNumber) {
     console.log(usage);
-    process.exit(0);
+    process.exit(values.help ? 0 : 2);
 }
 
 const viewport = {
