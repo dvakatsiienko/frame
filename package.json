@@ -32,6 +32,7 @@
         "hotkeys:map": "open http://localhost:7373",
         "hotkeys:live": "node ./hotkeys/live.ts --watch",
         "hotkeys:scan": "node ./hotkeys/scan.ts",
+        "hotkeys:stamp": "node ./hotkeys/stamp.ts",
         "hotkeys:top": "node ./hotkeys/top.ts",
         "jev:inbox": "./script/op-run.sh node ./script/inbox-triage.ts",
         "jev:flawlog": "./script/op-run.sh node ./script/flawlog-triage.ts",

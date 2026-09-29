@@ -26,14 +26,12 @@ import type { Hotkey } from './manual.ts';
 import {
     type ManualEdit,
     ManualEditError,
-    type ManualMove,
     editManualText,
-    moveManualText,
 } from './manual-edit.ts';
 import { type NoteInput, readNotes, saveNote } from './notes.ts';
 import { chordsDevPort, chordsPort } from './ports.ts';
 import { buildReport, isWindowName, windowDays } from './report.ts';
-import { liveHotkeys, localMinute } from './stats.ts';
+import { liveHotkeys } from './stats.ts';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const DIST = join(import.meta.dirname, 'chords/dist');
@@ -213,23 +211,13 @@ const manualRows = async (): Promise<readonly Hotkey[]> => {
     return module.manualHotkeys as readonly Hotkey[];
 };
 
-// Two operations, one file. `edit` rewrites a row in place — a surface rename, or a chord that
-// simply moved without the history mattering. `move` is the one dima asked for: the old meaning
-// ends on today's date and a new one starts, so the presses already recorded stay with whatever
-// earned them.
-//
-// The date is stamped here rather than taken from the body. A client's clock is not a fact this
-// server should accept, and the whole point of the field is that it is trustworthy.
-const applyManual = async (op: 'edit' | 'move', body: unknown) => {
+// `edit` and `move` both rewrite the row in place — a surface rename, or a chord that moved.
+const applyManual = async (body: unknown) => {
     const text = readFileSync(MANUAL, 'utf8');
     const rows = await manualRows();
-    const next =
-        op === 'move'
-            ? moveManualText(text, rows, {
-                  ...(body as ManualMove),
-                  on: localMinute(),
-              })
-            : editManualText(text, rows, body as ManualEdit);
+    // a rebind edits the row in place: the recorder stamps each press with its feature, so the
+    // history follows the feature and no ended row is kept to explain the past (2026-09-29)
+    const next = editManualText(text, rows, body as ManualEdit);
 
     writeFileSync(MANUAL, next);
 };
@@ -314,7 +302,7 @@ const api = async (
         }
 
         try {
-            await applyManual(op, body);
+            await applyManual(body);
         } catch (error) {
             if (error instanceof ManualEditError) {
                 return send(response, 409, { error: error.message });

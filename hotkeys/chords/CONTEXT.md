@@ -48,12 +48,8 @@ What a binding does, named once across every chord and app that ever did it (`re
 _Avoid_: function, command, capability
 
 **Rebind**:
-Moving a hand-kept binding to another chord: the old row ends, a new row starts on the new chord, with the same feature.
+Moving a hand-kept binding to another chord: the row is edited in place and keeps its feature, so the presses — each stamped with its feature — follow it.
 _Avoid_: remap, move, reassign
-
-**Since row**:
-A binding row dated with the day or local minute it started; the rows before it carry when they ended. Press counts split at that moment.
-_Avoid_: history entry, version
 
 **Note**:
 Free text dima files under a chord for the next rebind session, kept in `notes.json`.

@@ -13,6 +13,7 @@ import {
     byLabelledChord,
     featureOf,
     isUntracked,
+    liveFeatures,
     liveHotkeys,
     ofKind,
     selectEvents,
@@ -39,9 +40,10 @@ export const buildReport = (
     // time, so it reads every row a move ever ended; the bound count and the never-pressed list
     // ask what is on the keyboard today, so they read only the live ones.
     const live = liveHotkeys(bindings);
+    const tracked = liveFeatures(bindings);
     const selected = selectEvents(events, { days: windowDays[window] });
     const chords = ofKind(selected, 'chord').filter(
-        (event) => !isUntracked(bindings, event),
+        (event) => !isUntracked(bindings, event, tracked),
     );
     const switches = ofKind(selected, 'activate');
 
@@ -51,7 +53,7 @@ export const buildReport = (
     const cold = unpressed(live, ofKind(events, 'chord'));
 
     const counted = ofKind(events, 'chord').filter(
-        (event) => !isUntracked(bindings, event),
+        (event) => !isUntracked(bindings, event, tracked),
     );
     const weekOf = (fromDays: number, toDays: number) => {
         const now = Date.now();
@@ -66,6 +68,10 @@ export const buildReport = (
             ]),
         );
     };
+    const liveChordsOf = (feature: string) =>
+        new Set(
+            live.filter((hotkey) => featureOf(hotkey) === feature).map(chordOf),
+        );
     const thisWeek = weekOf(0, 7);
     const lastWeek = weekOf(7, 14);
 
@@ -81,14 +87,19 @@ export const buildReport = (
         switches: switches.length,
         switchesPerApp: tally(switches, byApp).map(toAppRow),
         timePerApp: timeInFront(selected).map(toAppRow),
-        topChords: tally(chords, byLabelledChord(bindings)).map(toChordRow),
-        // a feature no live binding carries still shows its history, marked retired. the trend
-        // is always the last seven days against the seven before, whatever the window
+        topChords: tally(chords, byLabelledChord(bindings))
+            .filter((row) => row.name !== '')
+            .map(toChordRow),
+        // the trend is always the last seven days against the seven before, whatever the window
         topFeatures: tallyFeatures(bindings, chords).map((row) => ({
             ...row,
-            isRetired: !live.some(
-                (hotkey) => featureOf(hotkey) === row.feature,
+            // the keys the feature lives on now; presses from keys it has left fold into one sum
+            chords: row.chords.filter((each) =>
+                liveChordsOf(row.feature).has(each.chord),
             ),
+            earlier: row.chords
+                .filter((each) => !liveChordsOf(row.feature).has(each.chord))
+                .reduce((sum, each) => sum + each.count, 0),
             lastWeek: lastWeek.get(row.feature) ?? 0,
             thisWeek: thisWeek.get(row.feature) ?? 0,
         })),
@@ -194,7 +205,8 @@ export interface StatsReport {
     boundCount: number;
     topChords: ChordRow[];
     topFeatures: (FeatureTally & {
-        isRetired: boolean;
+        // presses from keys the feature no longer lives on
+        earlier: number;
         thisWeek: number;
         lastWeek: number;
     })[];

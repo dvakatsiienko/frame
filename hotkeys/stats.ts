@@ -11,6 +11,8 @@ export interface LogEvent {
     kind: EventKind;
     app: string;
     chord?: string;
+    // what the press did, stamped by the recorder at press time (or by the one-time backfill)
+    feature?: string;
 }
 
 export interface Tally {
@@ -46,13 +48,17 @@ export const parseEvents = (jsonl: string): LogEvent[] =>
             return [];
         }
         if (typeof parsed !== 'object' || parsed === null) return [];
-        const { ts, kind, chord, app } = parsed as Record<string, unknown>;
+        const { ts, kind, chord, app, feature } = parsed as Record<
+            string,
+            unknown
+        >;
         if (typeof ts !== 'string' || typeof app !== 'string') return [];
         const resolved: EventKind = isKind(kind) ? kind : 'chord';
         if (resolved === 'chord') {
-            return typeof chord === 'string'
-                ? [{ app, chord, kind: resolved, ts }]
-                : [];
+            if (typeof chord !== 'string') return [];
+            return typeof feature === 'string'
+                ? [{ app, chord, feature, kind: resolved, ts }]
+                : [{ app, chord, kind: resolved, ts }];
         }
         return [{ app, kind: resolved, ts }];
     });
@@ -100,11 +106,10 @@ export const byChord = (event: LogEvent) => event.chord ?? '';
 // relabelled; a move ends the old row, so a press on the freed chord afterwards belongs to
 // nobody rather than to whatever used to be there.
 //
-// An in-app binding means something only while its app is in front: cursor's esc is
-// hideToasts inside cursor and nothing in chrome. So it labels a press only from that app, and
-// where it does it wins over a global one on the same chord (631 esc presses had all been
-// credited to cursor, from every app). `app` is the press's bundle id; without one, every row
-// is a candidate, as before.
+// An in-app binding (its `scope` names the bundles it works in) means something only while its
+// app is in front, so it labels a press only from that app, and there it wins over a global one
+// on the same chord — 631 esc presses had once all gone to an editor's in-app esc. `app` is the
+// press's bundle id; without one, every row is a candidate.
 export const labelAt = (
     hotkeys: readonly Hotkey[],
     chord: string,
@@ -121,19 +126,26 @@ export const labelAt = (
         )
         .sort(
             (a, z) =>
-                Number(Object.hasOwn(inAppBundles, a.app)) -
-                    Number(Object.hasOwn(inAppBundles, z.app)) ||
+                Number(a.scope !== undefined) - Number(z.scope !== undefined) ||
                 (a.since ?? '').localeCompare(z.since ?? ''),
         )
         .at(-1);
 
-// the binding owners whose shortcuts work only inside their own app, by bundle id
-const inAppBundles: Record<string, readonly string[]> = {
-    cursor: ['com.todesktop.230313mzl4w4u92'],
-};
-
 const isInScope = (hotkey: Hotkey, app: string) =>
-    inAppBundles[hotkey.app]?.includes(app) ?? true;
+    hotkey.scope?.includes(app) ?? true;
+
+// What a press did. The recorder stamps it at press time, so a line carries its own meaning and
+// no ended binding has to be remembered to explain it; a line written before stamping falls back
+// to the binding that held its chord at that moment.
+export const featureAt = (
+    hotkeys: readonly Hotkey[],
+    event: LogEvent,
+): string | undefined => {
+    if (event.feature !== undefined) return event.feature;
+    if (event.chord === undefined) return undefined;
+    const hotkey = labelAt(hotkeys, event.chord, event.ts, event.app);
+    return hotkey && featureOf(hotkey);
+};
 
 // What is bound right now. `until` is the day a meaning ended, read exclusively — the same
 // boundary labelAt uses — so a row past it is history: it still explains the presses it earned
@@ -148,16 +160,24 @@ export const liveHotkeys = (
 
 export const LABEL_SEPARATOR = '\t';
 
-// Tally key for the chords table: the chord plus the label it had at press time, so a swapped
-// chord shows one row per meaning.
+// Tally key for the chords table: the chord and the live binding that does the press's feature
+// on it. A press on a key its feature has left (opt+esc, now read aloud lives on F4) has no row
+// here and answers '' — its count lives on in the feature, and the table shows the keyboard as
+// it is.
 export const byLabelledChord =
     (hotkeys: readonly Hotkey[]) =>
     (event: LogEvent): string => {
         const chord = event.chord ?? '';
-        const hotkey = labelAt(hotkeys, chord, event.ts, event.app);
+        const feature = featureAt(hotkeys, event);
+        const hotkey = hotkeys.find(
+            (each) =>
+                chordOf(each) === chord &&
+                featureOf(each) === feature &&
+                isInScope(each, event.app),
+        );
         return hotkey
             ? `${chord}${LABEL_SEPARATOR}${hotkey.action}${LABEL_SEPARATOR}${hotkey.app}`
-            : chord;
+            : '';
     };
 export const byApp = (event: LogEvent) => event.app;
 
@@ -201,12 +221,11 @@ export const tallyFeatures = (
 ): FeatureTally[] => {
     const rows = new Map<string, Map<string, number>>();
     for (const event of events) {
-        if (event.chord === undefined) continue;
-        const hotkey = labelAt(hotkeys, event.chord, event.ts, event.app);
-        if (!hotkey) continue;
-        const chords = rows.get(featureOf(hotkey)) ?? new Map<string, number>();
+        const feature = featureAt(hotkeys, event);
+        if (event.chord === undefined || feature === undefined) continue;
+        const chords = rows.get(feature) ?? new Map<string, number>();
         chords.set(event.chord, (chords.get(event.chord) ?? 0) + 1);
-        rows.set(featureOf(hotkey), chords);
+        rows.set(feature, chords);
     }
     return [...rows]
         .map(([feature, chords]) => ({
@@ -221,15 +240,22 @@ export const tallyFeatures = (
         );
 };
 
-// A press counts only when a binding explains it. Everything else — a ⌘-click read as a bare
-// cmd, a birman ⌥-character, an app's own cmd+r / cmd+t nobody mapped — is left out of every
-// table (dima, 2026-09-29: «too much, and no app lets us read them all»). The log keeps it all.
+// A press counts only while its feature is on the keyboard: some live binding does it. That
+// drops what was never a hotkey (a ⌘-click read as bare cmd, a birman ⌥-character, an app's own
+// cmd+r nobody mapped) and what dima stopped using (a binding removed takes its presses off the
+// page with it). The log keeps every line. (dima, 2026-09-29)
+export const liveFeatures = (hotkeys: readonly Hotkey[]) =>
+    new Set(liveHotkeys(hotkeys).map(featureOf));
+
 export const isUntracked = (
     hotkeys: readonly Hotkey[],
     event: LogEvent,
-): boolean =>
-    event.chord !== undefined &&
-    labelAt(hotkeys, event.chord, event.ts, event.app) === undefined;
+    live: ReadonlySet<string> = liveFeatures(hotkeys),
+): boolean => {
+    if (event.chord === undefined) return false;
+    const feature = featureAt(hotkeys, event);
+    return feature === undefined || !live.has(feature);
+};
 
 // Bound somewhere, never pressed in the window — the rebind candidates.
 export const unpressed = (

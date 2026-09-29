@@ -5,6 +5,7 @@ import {
     byApp,
     byChord,
     byLabelledChord,
+    featureAt,
     isUntracked,
     labelAt,
     liveHotkeys,
@@ -402,7 +403,13 @@ describe('isUntracked', () => {
 describe('labelAt', () => {
     const esc: Hotkey[] = [
         { action: 'dismiss', app: 'wispr flow', key: 'esc', mods: '' },
-        { action: 'hideToasts', app: 'cursor', key: 'esc', mods: '' },
+        {
+            action: 'hideToasts',
+            app: 'cursor',
+            key: 'esc',
+            mods: '',
+            scope: ['com.todesktop.230313mzl4w4u92'],
+        },
     ];
 
     it('gives an in-app binding the press made inside its app', () => {
@@ -456,5 +463,45 @@ describe('timeInFront', () => {
         expect(timeInFront(events).map((row) => row.name)).not.toContain(
             'com.apple.loginwindow',
         );
+    });
+});
+
+describe('featureAt', () => {
+    it('takes the feature the recorder stamped over any binding', () => {
+        const [press] = parseEvents(
+            JSON.stringify({
+                app: 'a',
+                chord: 'opt+esc',
+                feature: 'read aloud',
+                kind: 'chord',
+                ts: '2026-09-20T10:00:00+03:00',
+            }),
+        );
+        expect(featureAt([], press!)).toBe('read aloud');
+    });
+});
+
+describe('byLabelledChord', () => {
+    const live: Hotkey[] = [
+        {
+            action: 'read',
+            app: 'x-speak',
+            feature: 'read aloud',
+            key: 'f4',
+            mods: '',
+        },
+    ];
+
+    it('gives no chords row to a press on a key its feature has left', () => {
+        const [old] = parseEvents(
+            JSON.stringify({
+                app: 'a',
+                chord: 'opt+esc',
+                feature: 'read aloud',
+                kind: 'chord',
+                ts: '2026-09-20T10:00:00+03:00',
+            }),
+        );
+        expect(byLabelledChord(live)(old!)).toBe('');
     });
 });

@@ -55,7 +55,7 @@ mac's press log.
 
 - `manual.ts` is the single source for the sealed apps. the app is its editor; nothing caches it,
   and a change to it is picked up by mtime, the same road a hand edit takes
-- six config sources are read automatically (wispr flow, magnet, bartender, cursor, macos, plus
+- config sources are read automatically (wispr flow, magnet, bartender, macos, plus
   the hand-kept list). raycast, cleanshot and 1password are hand-kept because they seal theirs
 - the board is drawn as a NuPhy Air75; the layout table is that keyboard, not a generic one
 - local only, no auth, no deployment target. the press log is a precise record of how dima works

@@ -180,22 +180,18 @@ export const StatsPage = () => {
                                 return (
                                     <StatRow
                                         count={row.count}
-                                        detail={(row.isRetired
-                                            ? ['retired']
-                                            : [
-                                                  trendOf(
-                                                      row.thisWeek,
-                                                      row.lastWeek,
-                                                  ),
-                                              ]
-                                        )
-                                            .concat(
-                                                row.chords.map(
-                                                    (each) =>
-                                                        `${showChord(each.chord)} ${each.count.toLocaleString('en')}`,
-                                                ),
-                                            )
-                                            .join(' · ')}
+                                        detail={[
+                                            trendOf(row.thisWeek, row.lastWeek),
+                                            ...row.chords.map(
+                                                (each) =>
+                                                    `${showChord(each.chord)} ${each.count.toLocaleString('en')}`,
+                                            ),
+                                            ...(row.earlier > 0
+                                                ? [
+                                                      `earlier keys ${row.earlier.toLocaleString('en')}`,
+                                                  ]
+                                                : []),
+                                        ].join(' · ')}
                                         key={row.feature}
                                         label={row.feature}
                                         top={topOf(report.topFeatures)}

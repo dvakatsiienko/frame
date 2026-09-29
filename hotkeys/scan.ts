@@ -1,4 +1,4 @@
-// prints every hotkey the machine will tell us about, as json: wispr flow, cursor, macos, plus
+// prints every hotkey the machine will tell us about, as json: wispr flow, macos, plus
 // the hand-kept list in manual.ts.
 //   node ./hotkeys/scan.ts
 //
@@ -11,7 +11,7 @@ import { join } from 'node:path';
 
 import { canonical, keyCap } from './chord.ts';
 import { type Hotkey, manualHotkeys } from './manual.ts';
-import { cursorKeybindings, macosPreference, wisprConfig } from './sources.ts';
+import { macosPreference, wisprConfig } from './sources.ts';
 
 const modifierCodes = new Set([55, 56, 58, 59, 63]);
 const modsOf = (mask: number, bits: [number, string][]) =>
@@ -71,33 +71,6 @@ const wispr = (): Hotkey[] => {
         });
 };
 
-// Cursor spells keys the vscode way; the daemon and the board spell them the way keyCap does, and
-// a binding that spells its key differently never joins a press.
-const CURSOR_NAMES: Record<string, string> = {
-    alt: 'opt',
-    delete: 'del',
-    enter: 'return',
-    escape: 'esc',
-};
-
-const cursor = (): Hotkey[] => {
-    const text = readFileSync(cursorKeybindings, 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/^\s*\/\/.*$/gm, '');
-    const binds: { key: string; command: string }[] = JSON.parse(text);
-    return binds
-        .filter((b) => !b.command.startsWith('-'))
-        .map((b) => {
-            const parts = b.key.split('+').map((p) => CURSOR_NAMES[p] ?? p);
-            return {
-                action: b.command,
-                app: 'cursor',
-                key: parts.at(-1) ?? b.key,
-                mods: parts.slice(0, -1).join('+'),
-            };
-        });
-};
-
 const macos = (): Hotkey[] => {
     const plist = execFileSync(
         'plutil',
@@ -127,7 +100,7 @@ const macos = (): Hotkey[] => {
     });
 };
 
-const scanned = [wispr, cursor, macos].flatMap((scan) => {
+const scanned = [wispr, macos].flatMap((scan) => {
     try {
         return scan();
     } catch (error) {

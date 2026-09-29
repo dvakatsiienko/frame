@@ -112,18 +112,6 @@ const blocksOf = (text: string, row: Hotkey) =>
                 block.text.includes(`mods: ${quote(row.mods)}`),
         );
 
-// The one that ended on a given day — the row a same-day return brings back. liveBlockOf
-// cannot find it, since skipping rows that carry an `until` is that function's whole job.
-const endedBlockOf = (text: string, row: Hotkey, on: string) => {
-    const blocks = blocksOf(text, row).filter((block) =>
-        block.text.includes(`until: ${quote(on)}`),
-    );
-
-    return blocks.length === 1
-        ? (blocks[0] as ReturnType<typeof objectBlockAt>)
-        : undefined;
-};
-
 // The live row is the one whose block carries no `until`.
 const liveBlockOf = (text: string, row: Hotkey) => {
     const blocks = blocksOf(text, row).filter(
@@ -254,25 +242,6 @@ const dropTupleLine = (text: string, tupleAt: number) => {
     return text.slice(0, lineStart) + text.slice(lineEnd + 1);
 };
 
-// The same removal for a row that is already an object: it owns its whole line, or several of
-// them once biome has exploded it, and lifting the block alone would leave the indent, the
-// trailing comma and the newline behind — which does not parse.
-const dropRowBlock = (
-    text: string,
-    block: ReturnType<typeof objectBlockAt>,
-) => {
-    const lineStart = text.lastIndexOf('\n', block.open) + 1;
-    const lineEnd = text.indexOf('\n', block.close);
-
-    if (text.slice(lineStart, block.open).trim() !== '') {
-        throw new ManualEditError(
-            'that row shares its line — edit manual.ts by hand',
-        );
-    }
-
-    return text.slice(0, lineStart) + text.slice(lineEnd + 1);
-};
-
 const appendRow = (text: string, row: Hotkey) => {
     const at = text.lastIndexOf(TERMINATOR);
 
@@ -283,97 +252,6 @@ const appendRow = (text: string, row: Hotkey) => {
     }
 
     return `${text.slice(0, at)}${printRow(row)}\n${text.slice(at)}`;
-};
-
-// A move, as one action rather than three edits (dima, 2026-09-20). Moving Chrome from hyper+1
-// to hyper+7 is not "change the key": the presses already recorded on hyper+1 were Chrome's and
-// have to stay Chrome's, while hyper+1 itself stops meaning anything. So the old row is ENDED
-// on the date and a new row STARTS on it, and stats.ts reads both.
-//
-// Ending a tuple row means lifting it out of its group first: a tuple is `[key, action]` and has
-// nowhere to carry a date.
-export const moveManualText = (
-    text: string,
-    rows: readonly Hotkey[],
-    move: ManualMove,
-) => {
-    const row = onlyMatch(rows, move.from);
-    const ended: Hotkey = { ...row, until: move.on };
-    const started: Hotkey = {
-        ...row,
-        action: move.to.action,
-        key: move.to.key,
-        mods: canonicalMods(move.to.mods),
-        since: move.on,
-        until: undefined,
-    };
-
-    if (chordOf(started) === chordOf(row) && started.action === row.action) {
-        throw new ManualEditError('that move changes nothing');
-    }
-
-    // A chord taken and given back on one day never lived long enough to count a press, so a
-    // row claiming it did is noise in the history rather than a fact about it. It goes instead
-    // of being written out with a zero-length life — five of them survived one test session on
-    // 2026-09-22, and stats.ts would read every one as a real meaning this machine once had.
-    const isZeroLength =
-        ended.since !== undefined && ended.since === ended.until;
-
-    // A chord handed back on the day it was taken never stopped meaning what it means. Day
-    // granularity cannot hold the gap — labelAt reads `until` exclusively, so no press was ever
-    // labelled by the absence — and two identical rows meeting at one date is the seam a second
-    // rebind reads as duplicates rather than as one chain. So the row that ended today simply
-    // stops having ended. Across two dates the chord really did mean nothing in between, and
-    // the rows stay apart.
-    const returning = rows.find(
-        (candidate) =>
-            candidate.until === move.on &&
-            candidate.app === started.app &&
-            candidate.action === started.action &&
-            chordOf(candidate) === chordOf(started),
-    );
-
-    // Either the new meaning starts as its own row, or it is the old one resuming.
-    const startRow = (into: string) => {
-        const ends = returning && endedBlockOf(into, returning, move.on);
-
-        if (!ends) return appendRow(into, started);
-
-        const indent = ' '.repeat(
-            ends.open - into.lastIndexOf('\n', ends.open) - 1,
-        );
-
-        return (
-            into.slice(0, ends.open) +
-            rowLiteral({ ...returning, until: undefined }, indent) +
-            into.slice(ends.close)
-        );
-    };
-
-    const tuple = `[${quote(row.key)}, ${quote(row.action)}]`;
-    const tupleAt = onlyIndex(text, tuple, `the pair ${tuple}`);
-
-    if (tupleAt !== null) {
-        const dropped = dropTupleLine(text, tupleAt);
-
-        return startRow(isZeroLength ? dropped : appendRow(dropped, ended));
-    }
-
-    // The old row stays exactly where it is, under whatever comment explains it, and only gains
-    // its end date. Only the new row is appended.
-    const block = liveBlockOf(text, row);
-
-    if (isZeroLength) return startRow(dropRowBlock(text, block));
-
-    const indent = ' '.repeat(
-        block.open - text.lastIndexOf('\n', block.open) - 1,
-    );
-
-    return startRow(
-        text.slice(0, block.open) +
-            rowLiteral(ended, indent) +
-            text.slice(block.close),
-    );
 };
 
 /* Types */
@@ -388,11 +266,4 @@ export interface ManualRowRef {
 export interface ManualEdit {
     from: ManualRowRef;
     to: { mods: string; key: string; action: string };
-}
-export interface ManualMove {
-    from: ManualRowRef;
-    to: { mods: string; key: string; action: string };
-    // The ISO date the move happens. It is the caller's, not this module's: a test needs to
-    // name it, and a clock reached for in here could not be one.
-    on: string;
 }

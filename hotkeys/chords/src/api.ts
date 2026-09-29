@@ -100,8 +100,8 @@ export interface FeatureStat {
     feature: string;
     count: number;
     chords: { chord: string; count: number }[];
-    // no live binding does it any more: the count is history
-    isRetired: boolean;
+    // presses from keys the feature no longer lives on
+    earlier: number;
     // the last seven days and the seven before, whatever the window
     thisWeek: number;
     lastWeek: number;

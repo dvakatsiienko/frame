@@ -30,6 +30,7 @@ import {
     byChord,
     byLabelledChord,
     isUntracked,
+    liveFeatures,
     liveHotkeys,
     ofKind,
     selectEvents,
@@ -164,7 +165,10 @@ const chordLabel = (name: string) => {
     return chord && action ? `${chord}  ${dim(`${action} · ${app}`)}` : name;
 };
 
-const pressed = chords.filter((event) => !isUntracked(bindings, event));
+const tracked = liveFeatures(bindings);
+const pressed = chords.filter(
+    (event) => !isUntracked(bindings, event, tracked),
+);
 
 step('features');
 table(
@@ -176,7 +180,10 @@ table(
 );
 
 step(`chords  ${dim(`${pressed.length} presses`)}`);
-table(tally(pressed, byLabelledChord(bindings)), chordLabel);
+table(
+    tally(pressed, byLabelledChord(bindings)).filter((row) => row.name !== ''),
+    chordLabel,
+);
 
 step(`time per app  ${dim('minutes in front, a gap over 15 capped')}`);
 table(timeInFront(window), appName);

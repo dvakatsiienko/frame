@@ -22,6 +22,12 @@ nothing else needs touching: the live job sees its mtime move, reruns the scan, 
 - `chords/` — the app itself, vite + react + tailwind. `pnpm chords:build`, `pnpm hotkeys:map`
 - `notes.json` — what dima wants on a chord, committed, written only through `/api/notes`
 - `macos-audit.ts` — diffs the three system domains against `macos/`, exit 1 on drift
+- `stamp.ts` — `pnpm hotkeys:stamp [--prune]`: backfills `feature` onto unstamped press lines; `--prune` deletes
+  every press no live binding's feature explains. stop the recorder first (it refuses otherwise), backup is automatic
+
+📌 **a press line carries its `feature`**, stamped by the recorder from `hotkeys.json`'s live rows, so
+`manual.ts` holds only what is on the keyboard: a rebind edits its row in place, and removing a binding
+followed by `hotkeys:stamp --prune` removes its history too.
 
 ## the server
 

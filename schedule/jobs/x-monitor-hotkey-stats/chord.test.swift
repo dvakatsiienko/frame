@@ -93,6 +93,17 @@ enum ChordTest {
         expect("a bound opt digit still logs", chordFor(.maskAlternate, 18), "opt+1")
         expect("opt on a non-printable key logs", chordFor(.maskAlternate, 51), "opt+backspace")
 
+        let bindings = Bindings([
+            Binding(mods: "", key: "f4", action: "read", feature: "read aloud", scope: nil, until: nil),
+            Binding(mods: "", key: "esc", action: "dismiss", feature: nil, scope: nil, until: nil),
+            Binding(mods: "", key: "esc", action: "hideToasts", feature: nil, scope: ["cursor.app"], until: nil),
+            Binding(mods: "opt", key: "esc", action: "speak", feature: "read aloud", scope: nil, until: "2026-09-28"),
+        ], now: "2026-09-29T22:41")
+        expect("a press takes its binding's feature", bindings.feature(of: "f4", in: "any"), "read aloud")
+        expect("an unset feature falls back to the action", bindings.feature(of: "esc", in: "chrome"), "dismiss")
+        expect("an in-app binding wins inside its app", bindings.feature(of: "esc", in: "cursor.app"), "hideToasts")
+        expect("an ended binding stamps nothing", bindings.feature(of: "opt+esc", in: "any"), nil)
+
         expect("bare f1 logs", chordFor(none, 122), "f1")
         expect("bare f12 logs", chordFor(none, 111), "f12")
         expect("bare esc logs", chordFor(none, 53), "esc")

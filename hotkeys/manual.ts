@@ -43,14 +43,6 @@ export const manualHotkeys = [
     {
         action: 'linear-query-tickets (quicklink)',
         app: 'raycast',
-        key: 'pageup',
-        mods: 'hyper',
-        since: '2026-09-18',
-        until: '2026-09-22',
-    },
-    {
-        action: 'linear-query-tickets (quicklink)',
-        app: 'raycast',
         key: 'g',
         mods: 'hyper',
         since: '2026-09-22',
@@ -123,14 +115,6 @@ export const manualHotkeys = [
         key: 'c',
         mods: 'ctrl+opt',
         since: '2026-09-19',
-    },
-    {
-        action: 'Restore',
-        app: 'raycast',
-        key: 'backspace',
-        mods: 'ctrl+opt',
-        since: '2026-09-19',
-        until: '2026-09-21',
     },
     {
         action: 'Move to Previous Display',
@@ -226,14 +210,6 @@ export const manualHotkeys = [
         since: '2026-09-17',
     },
     {
-        action: 'Self-Timer',
-        app: 'cleanshot',
-        key: '`',
-        mods: 'cmd+shift',
-        since: '2026-09-19',
-        until: '2026-09-26',
-    },
-    {
         action: 'Capture Text (OCR)',
         app: 'cleanshot',
         key: '2',
@@ -286,35 +262,8 @@ export const manualHotkeys = [
         key: '0',
         mods: 'cmd+shift',
     },
-    // read aloud, one feature across three homes: macOS speak selection (siri voice 4, the key buried in its ⓘ
-    // sheet) on opt+esc, moved to F4 2026-09-28, retired 2026-09-29 for x-speak — which went F5/F6, then F4/F5
-    // that evening. x-speak registers its own hotkeys (schedule/jobs/x-speak), no app pane to read them from
-    {
-        action: 'Speak selection (read aloud)',
-        app: 'macos',
-        feature: 'read aloud',
-        key: 'esc',
-        mods: 'opt',
-        until: '2026-09-28',
-    },
-    {
-        action: 'Speak selection (read aloud)',
-        app: 'macos',
-        feature: 'read aloud',
-        key: 'f4',
-        mods: '',
-        since: '2026-09-28',
-        until: '2026-09-29T22:41',
-    },
-    {
-        action: 'Speak selection, neural (no selection: pause / resume)',
-        app: 'x-speak',
-        feature: 'read aloud',
-        key: 'f5',
-        mods: '',
-        since: '2026-09-29',
-        until: '2026-09-29T22:41',
-    },
+    // read aloud: x-speak registers its own hotkeys (schedule/jobs/x-speak), no app pane to read them from.
+    // its presses from earlier homes (opt+esc, the system voice's F4, x-speak's F5) carry the feature in the log
     {
         action: 'Speak selection, neural (no selection: pause / resume)',
         app: 'x-speak',
@@ -322,15 +271,6 @@ export const manualHotkeys = [
         key: 'f4',
         mods: '',
         since: '2026-09-29T22:41',
-    },
-    {
-        action: 'Stop speaking',
-        app: 'x-speak',
-        feature: 'stop reading',
-        key: 'f6',
-        mods: '',
-        since: '2026-09-29',
-        until: '2026-09-29T22:41',
     },
     {
         action: 'Stop speaking',
@@ -446,4 +386,8 @@ export interface Hotkey {
     // ui: everything else is read out of its own app's config, so a write here would be a lie
     // the next scan erases. It is not written by hand — manual.ts never carries it in source.
     source?: 'manual' | 'scan';
+    // Bundle ids the binding works in, stamped by the scan for an app whose shortcuts live inside
+    // it (cursor). Unset, it works everywhere. The recorder and the page both read it from
+    // hotkeys.json, so «in-app only» is decided in one place.
+    scope?: readonly string[];
 }

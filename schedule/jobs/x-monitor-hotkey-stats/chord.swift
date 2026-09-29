@@ -12,7 +12,7 @@ let bareKeys: Set<String> = [
 // ⌥ and ⌥⇧ on a printable key type a character on the birman layout (opt+- is —, opt+9 is →):
 // that is typing, and it never reaches disk. The ⌥ bindings on printable keys are named here —
 // a new one joins this set, or its presses go unrecorded.
-let optBoundKeys: Set<String> = ["1", "2", "3", "f", "r"]
+let optBoundKeys: Set<String> = ["1", "2", "3"]
 
 func isPrintable(_ key: String) -> Bool { key.count == 1 || key == "space" }
 
@@ -96,5 +96,37 @@ struct BareModifier {
 
     mutating func keyDown(at time: TimeInterval) {
         if time - downAt < holdToTalk { pending = nil }
+    }
+}
+
+// What a press did, stamped onto its line so the log carries its own meaning: a rebind needs no
+// ended binding kept around to explain the presses before it. Read from hotkeys/hotkeys.json —
+// the live rows only — and resolved the way the page labels: an in-app row (its `scope` holds
+// the frontmost bundle) wins over a global one on the same chord.
+struct Binding: Decodable {
+    let mods: String
+    let key: String
+    let action: String
+    let feature: String?
+    let scope: [String]?
+    let until: String?
+
+    var chord: String { mods.isEmpty ? key : "\(mods)+\(key)" }
+}
+
+struct Bindings {
+    private var byChord: [String: [Binding]] = [:]
+
+    // `now` is the local minute, the same clock `until` is written in
+    init(_ rows: [Binding], now: String) {
+        for row in rows where row.until.map({ $0 > now }) ?? true {
+            byChord[row.chord, default: []].append(row)
+        }
+    }
+
+    func feature(of chord: String, in app: String) -> String? {
+        let fits = (byChord[chord] ?? []).filter { $0.scope?.contains(app) ?? true }
+        let row = fits.first { $0.scope != nil } ?? fits.first
+        return row.map { $0.feature ?? $0.action }
     }
 }

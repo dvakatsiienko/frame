@@ -50,8 +50,7 @@
   - then a bound cap shows its legend, its press count, its first action, and a top edge in its app's colour
   - given a binding on `home`, `end`, `pageup` or `pagedown`
   - then it shows on that cap — every cap is named the way the daemon names its key
-  - and a cursor binding spelled the vscode way (`escape`, `enter`) shows on `esc`, `return`
-  - given a binding moved with a dated row (read-aloud: `opt+esc` until 09-28, `f4` since 09-28)
+  - given a binding moved to another key (read aloud: `opt+esc`, then `f4`)
   - then the new cap shows it and the old chord shows no binding
   - 📌 `del` has no cap on the Air75 (the daemon sees it, likely from fn+backspace) — a binding on `del` shows on no cap; dima's call
   - when the user opens stats and comes back to the board
@@ -138,7 +137,8 @@
   - when the user opens stats
   - then one «read aloud» row counts all of them and lists `opt+esc 6,055 · f5 675 · f4 564`
   - decision: history belongs to the feature, not the key — a rebind must carry it (dima, 2026-09-29)
-  - and a feature no live binding does any more reads «retired» before its chords (Restore, dropped 2026-09-21)
+  - makes: every press line in the log carries its `feature`, stamped by the recorder at press time; a rebind edits the row in place and keeps no ended row
+  - and a binding removed takes its presses with it: `pnpm hotkeys:stamp --prune` deletes them from the log, backup first
   - and each feature names its last seven days against the seven before: «7d 4,457 ▲ 108%»
 - ✅ only presses a binding explains are counted; every other press is left out of every table
   - given bare `cmd`, `opt+9` and `cmd+r` in the log, and only `rcmd` and `opt+1` bound
@@ -152,9 +152,8 @@
   - when the user hovers or focuses the «i» beside «switches per app»
   - then «how often each app came to the front — ⌘-tab, a click, the dock or a hotkey» shows
 - ✅ a press is labelled by the binding of the app it was pressed in
-  - given esc bound in cursor (hideToasts) and in wispr flow (dismiss)
-  - then esc pressed in chrome counts for wispr's dismiss, esc pressed in cursor for cursor's hideToasts
-  - decision: an in-app binding owns only its own app's presses — 631 esc had all gone to cursor (dima, 2026-09-29)
+  - given a binding whose scope names one app, and a global one on the same chord
+  - then the chord pressed in that app counts for the scoped binding, pressed anywhere else for the global one
 - ✅ tiles: presses, chords, switches, never pressed of bound
   - then four tiles show presses, chords, switches and `<n> of <bound>` never pressed
 - ✅ chords, ranked; a row opens the board on that key
@@ -180,7 +179,8 @@
 
 ## scripts
 
-- ✅ `pnpm hotkeys:scan` reads wispr flow, cursor, macos and `manual.ts`, and says nothing when all read
+- ✅ `pnpm hotkeys:scan` reads wispr flow, macos and `manual.ts`, and says nothing when all read
+  - decision: cursor is not read — dima tracks none of its in-app shortcuts (2026-09-29)
   - makes: `hotkeys/hotkeys.json`, the snapshot the board draws
   - when every source reads, then stderr is empty and the exit is 0
   - when a source cannot be read, then a `skipped <source>` line names it
