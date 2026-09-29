@@ -48,29 +48,49 @@ Dima browses before he picks. print this block at the top of the questions messa
 - 🎨 the design languages, one sample each → `~/projects/studio/directions/gallery.html` (and its
   artifact link when one is published)
 
-## 4. the questions — one message, ≤10, each a pick
+## 4. the questions — one message, ≤10, two options each
 
-Numbered, one per line, each with its options and a ➡️ recommendation, the line's end free for
-his `←`. A skipped line means he accepts the recommendation. Drop any line the prep settled.
+Two question kinds, never mixed in one question:
 
-1. purpose + audience — your one-line reading of `PRODUCT.md` → «right?»
-2. the view in scope — one key view by default; name it from `FTR.md`
-3. axis 1 — a pair from the list below, or his own:
-   - quiet ↔ expressive
-   - dense ↔ airy
-   - tool ↔ toy
-   - warm ↔ cool
-   - classic ↔ experimental
-   - soft ↔ sharp
-4. axis 2 — a second pair, different in kind from the first (one about feel, one about layout)
-5. references — up to 3 links (from the lists above or his own), each with **what exactly to
-   take** from it (the type? the density? the one screen?)
-6. do lines — offer 5 candidates to tick, he adds his own; the brief needs ≥3
-7. don't lines — offer 5 candidates (the AI look is the first source: purple gradients and glow,
-   SaaS card kits, cream + serif + clay, near-black + one acid accent), he adds his own; ≥3
-8. which do/don't lines are **hard** (a take breaking one is out)
-9. states to cover — the list from `FTR.md` (empty, loading, error …) → «all of them?»
-10. the spread — 4 takes, blind yes/no, the artifact door for sharing (➡️ files only)
+- **character** — a fixed lean every take shares (quiet or expressive). dima picks a side.
+- **axes** — what the 4 takes vary. dima picks a *pair*, never a side; say so in the question
+  («the 4 takes differ on this — pick which difference you want to see»).
+
+The shape, in plain markdown (never inside a code fence):
+
+- a bold numbered question in plain words, one line
+- **a.** and **b.** as sub-bullets, one per line, each with what it looks like in one clause; the
+  recommended one leads with ➡️. «or your own» is always allowed, never listed as an option.
+- nothing packed into one line: no `·` runs, no option lists inside a sentence
+
+Then one answer fence at the end, one line per question, pre-filled with the recommendation, so
+dima copies it and edits only what he disagrees with:
+
+```
+1. a
+2. a
+3. b ← my own: …
+```
+
+The questions, drop any the prep settled:
+
+1. purpose + audience — your one-line reading of `PRODUCT.md`, right or needs a fix
+2. the view in scope — one key view from `FTR.md`, and what art sits in it (never the app's
+   existing pieces on a blind job)
+3. character — the leans every take shares, one question per lean: quiet or expressive, tool or
+   toy, cool or warm, sharp or soft, airy or dense. ask only the ones the app does not already
+   settle
+4. the language — his top pick or his top two, from his gallery order when he has one
+5. axis 1 — two candidate pairs, built from his picks above (the language often makes one:
+   «glass ↔ swiss»)
+6. axis 2 — two candidate pairs, different in kind from axis 1 (one about material or feel, one
+   about layout)
+7. references — up to 3 links with **what exactly to take** from each, yours or his
+8. do and don't lines — 5 candidates each (don'ts start from the AI look), ticked by default;
+   the brief needs ≥3 of each, and he marks the **hard** ones
+9. states — the takes draw the ideal state + one more and the rest go on the pick, or all
+   states now
+10. the spread — 4 takes, blind, files only, or his changes
 
 ## 5. the gate — before the brief is written
 
