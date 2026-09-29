@@ -20,14 +20,25 @@ nobody reads `--help` twice: check the list once per session before improvising 
 
 ## the essentials — run on every web ui change
 
-A coder before its ping and a verifier in every round run `essentials/essentials.js` (one eval)
-and `essentials/tab-walk.sh` from this skill's base dir on every view the change touched, at
-1280 and 390 wide. **Run them; reading `essentials/essentials.md` is only needed when a check
-fails or misfires.** The report carries `essentials: <n> pass · <m> fail`.
+A coder before its ping and a verifier in every round run one command from this skill's base dir
+on every view the change touched:
+
+```bash
+<base dir>/essentials/run.sh <url> [--wait <ready selector>] [--deny <selector>] [--allow <check>=<regex>]
+```
+
+It runs `essentials.js` and the tab walk at 1280 and 390, scrolls back to the top, counts console
+and page errors, and prints one line — the report quotes it as the `essentials:` line. Exit 1 on any
+fail. **Reading `essentials/essentials.md` is only needed when a check fails or misfires**; the flags
+live in `run.sh`'s header.
+- `--wait` names what the page shows once its data landed — without it the checks can hit a
+  half-rendered page and flake (speak's 390 «covered», 2026-09-29)
+- `--allow` is the only way a baseline fail stays green, and the line counts every item it allowed —
+  an app's `<app>-verify` names its allows with the reason (the page-level sticky bar, chords' n cap)
+- a single state (a popover open, an item selected) is one `essentials.js` eval on the open page, or
+  `tab-walk.sh` alone
 📌 essentials skip `[aria-disabled=true]` — dnd-kit sets it on every draggable item (61 of 84 chords
-caps), so a drag-and-drop view needs its own checks for those. the pass repeats in every app's
-`<app>-verify` (both widths + the tab walk); one wrapper script for it is a candidate, not built yet
-(2026-09-28, nine apps did it by hand).
+caps), so a drag-and-drop view needs its own checks for those.
 📌 the tab walk scrolls the page: a screenshot taken after it can lie (a sticky header hid a row, 2026-09-28) — scroll back to the top, or shoot before the walk.
 
 ## the split — which browser when

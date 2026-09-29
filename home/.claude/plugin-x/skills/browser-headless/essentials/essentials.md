@@ -1,19 +1,14 @@
 # web ui essentials — the checks every web verify pass runs
 
-Two scripts, run on every view the change touched. The coder runs them before its ping; the
-verifier runs them again and its report carries the line `essentials: <n> pass · <m> fail`.
-A failure is a defect like any other: the coder fixes it, the verifier re-checks.
+`run.sh` is the pass for one view, at both widths, in one line; the coder runs it before its ping,
+the verifier again, and the report quotes its line. A failure is a defect like any other: the coder
+fixes it, the verifier re-checks.
 
 ```bash
 S=<this skill's base dir>/essentials
+$S/run.sh <url> [--wait <ready selector>] [--deny <selector>] [--allow <check>=<regex>]  # one view, both widths
 agent-browser eval "$(cat $S/essentials.js)"            # one state of one view, ~0.5 s
-$S/tab-walk.sh [--deny '<selector>'] [--list]            # one view, ~0.2 s per tab stop
-```
-
-Many views at both widths, one line:
-
-```bash
-for w in '1280 800' '390 844'; do agent-browser set viewport $w; for u in /a /b; do agent-browser open "$BASE$u"; agent-browser wait --load load; agent-browser eval "$(cat $S/essentials.js)" | jq -c '{url, viewport, fail}'; done; done
+$S/tab-walk.sh [--deny '<selector>'] [--list]            # the tab walk alone, ~0.2 s per tab stop
 ```
 
 Run `essentials.js` on every state that changed (selected, open, empty, loading, error) at 1280

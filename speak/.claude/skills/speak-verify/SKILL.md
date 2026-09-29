@@ -30,9 +30,12 @@ the page AND the state behind it: a drag or a save is proven by the ranks the pa
 
 ## essentials
 
-`x:browser-headless` essentials and the tab walk at 1280 and 390. baseline: `covered` flags the page-level sticky
-save bar (the checker skips sticky chrome only inside a scroll box); everything else passes, the tab walk flags
-nothing.
+```bash
+~/.claude/plugins/cache/x/x/<version>/skills/browser-headless/essentials/run.sh http://127.0.0.1:7386/ --wait '[data-engine]'
+```
+
+one line, both widths; clean on main with no allows (2026-09-29). with a voice list open, «covered» names what the
+popover sits on — run `essentials.js` alone for that state and read it as expected.
 
 ## evidence
 
