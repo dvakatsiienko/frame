@@ -124,6 +124,7 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
 ### launchd + tcc (`schedule/`, `hotkeys/`)
 
 - **an ad-hoc-signed binary's tcc grant is pinned to its cdhash** — any source change moves the hash and Input Monitoring silently stops applying; a listen-only tap still «succeeds» and hears nothing (chord lines stop, app-switch lines continue — the tell). the order is edit → build → **re-grant** → restart; a tap created before the grant stays deaf. a plain off/on of the row can re-authorise the old hash — remove the row and add the binary back (2026-09-19)
+- **macOS 27 renamed the Accessibility list to «Device Control and Data Access»** (Privacy & Security); the old deep link still lands on it — `open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"` (x-speak's grant, 2026-09-29)
 - **PlistBuddy cannot `Set` array elements past index 0** in these prefs (`Cannot Perform Set On Containers`; index 0 works, which makes it look transient) — write with python `plistlib` and assert the value's type first (2026-09-19)
 - **FDA on an ad-hoc-signed launchd binary does not unlock `FileManager.trashItem` on an iCloud-managed
   folder** (`~/Desktop` with Desktop & Documents in iCloud): reads and a plain `moveItem` into `~/.Trash`
