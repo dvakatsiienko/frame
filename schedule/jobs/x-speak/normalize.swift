@@ -45,7 +45,8 @@ private func stripMarkdown(_ text: String) -> String {
     t = sub(t, "^\\s*>\\s?", "", .anchorsMatchLines)
     t = sub(t, "(\\*\\*|__|~~|`)", "")
     t = sub(t, "(^|\\s)[*_]([^*_\\n]+)[*_](?=\\s|[.,!?]|$)", "$1$2")
-    return sub(t, "[\\p{Extended_Pictographic}\\x{FE0F}\\x{200D}]", "")
+    // pictographs, skin tones, flags, keycaps, tag sequences and the joiners that glue them
+    return sub(t, "[\\p{Extended_Pictographic}\\p{Emoji_Modifier}\\p{Regional_Indicator}\\x{FE0E}\\x{FE0F}\\x{200D}\\x{20E3}\\x{E0020}-\\x{E007F}]", "")
 }
 
 private func rewriteLatin(_ text: String) -> String {

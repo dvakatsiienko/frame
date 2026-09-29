@@ -132,5 +132,17 @@
     {
         "in": "run x:cmt then slay",
         "out": [["en", "run x cmt then slay"]]
+    },
+    {
+        "in": "ship it 🇺🇦 today",
+        "out": [["en", "ship it today"]]
+    },
+    {
+        "in": "👍🏽 done, family 👨‍👩‍👧 photo ✨",
+        "out": [["en", "done, family photo"]]
+    },
+    {
+        "in": "готово ✅ 🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+        "out": [["uk", "готово"]]
     }
 ]

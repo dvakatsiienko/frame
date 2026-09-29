@@ -14,15 +14,25 @@ enum Engine: String, CaseIterable {
     func speaks(_ lang: Lang) -> Bool { self != .kokoro || lang == .en }
 }
 
-// gemini sits outside the chain: a test drive only, forced with --engine gemini (its free tier trains on input)
-let chain: [Engine] = [.elevenlabs, .fish, .kokoro, .system]
+// from dima's blind test (2026-09-29): en elevenlabs → kokoro → siri, uk/ru elevenlabs → Lesya/Milena (kokoro is en only).
+// outside the chain, forced with --engine: fish (1.08 s first byte, garbled ru, rated last) and gemini (rough, 4 s)
+let chain: [Engine] = [.elevenlabs, .kokoro, .system]
 
-// a cloud engine that has not produced audio by then yields to the next one, but only while nothing plays
-let firstAudioDeadline: Duration = .milliseconds(400)
+// a cloud engine that has not produced audio by then yields to the next one, but only while nothing plays;
+// elevenlabs answers in ~0.3 s warm, a cold connection adds dns + tls on top
+let firstAudioDeadline: Duration = .milliseconds(500)
 let kokoroURL = URL(string: "http://127.0.0.1:7383")!
 // kokoro peaks at -6 dBFS (measured), dima heard it as quiet
 let gains: [Engine: Float] = [.kokoro: 1.9]
-let systemVoices: [Lang: String] = [.uk: "com.apple.voice.compact.uk-UA.Lesya", .ru: "com.apple.voice.compact.ru-RU.Milena"]
+// the best installed uk/ru voice, so an enhanced or premium download is picked up with no rebuild; en keeps the
+// Spoken Content voice (siri voice 4), which no voice list exposes
+func systemVoice(for lang: Lang) -> NSSpeechSynthesizer.VoiceName? {
+    guard lang != .en else { return nil }
+    return AVSpeechSynthesisVoice.speechVoices()
+        .filter { $0.language.hasPrefix(lang.rawValue) }
+        .max { $0.quality.rawValue < $1.quality.rawValue }
+        .map { NSSpeechSynthesizer.VoiceName(rawValue: $0.identifier) }
+}
 
 struct Chunk {
     let lang: Lang
@@ -129,7 +139,7 @@ final class SystemVoice: NSObject, NSSpeechSynthesizerDelegate {
     var onFirstWord: (() -> Void)?
 
     func speak(_ chunk: Chunk) async {
-        let synth = systemVoices[chunk.lang].flatMap { NSSpeechSynthesizer(voice: NSSpeechSynthesizer.VoiceName(rawValue: $0)) } ?? NSSpeechSynthesizer()
+        let synth = systemVoice(for: chunk.lang).flatMap { NSSpeechSynthesizer(voice: $0) } ?? NSSpeechSynthesizer()
         synth.delegate = self
         self.synth = synth
         await withCheckedContinuation { continuation in
@@ -300,8 +310,9 @@ final class Speaker {
         switch engine {
         case .elevenlabs:
             guard let key = keys[.elevenlabs] else { throw EngineError.noKey }
-            // premade voice: free and restricted keys get 402 on library voices; v4 turbo: 0.31 s first byte vs 1.9 s on v4
-            var request = URLRequest(url: URL(string: "https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb/stream?output_format=pcm_24000")!)
+            // Sarah, premade (library voices 402 on free and restricted keys); female only, per dima's blind test.
+            // v4 turbo: 0.31 s first byte vs 1.9 s on v4
+            var request = URLRequest(url: URL(string: "https://api.elevenlabs.io/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL/stream?output_format=pcm_24000")!)
             request.httpMethod = "POST"
             request.setValue(key, forHTTPHeaderField: "xi-api-key")
             request.setValue("application/json", forHTTPHeaderField: "content-type")

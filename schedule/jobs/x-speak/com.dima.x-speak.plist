@@ -4,7 +4,7 @@
   🔊 x-speak — select text, press F5: read aloud; F5 again: stop.
 
   - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 30s
-  - engines — elevenlabs → fish → kokoro → the macos voice (siri en, Lesya uk, Milena ru); one 400 ms first-audio budget per chunk, kokoro renders in parallel so a cloud miss costs nothing
+  - engines — en: elevenlabs (Sarah) → kokoro → siri; uk/ru: elevenlabs → the best installed Lesya/Milena. one 500 ms first-audio budget per chunk, kokoro renders in parallel so a cloud miss costs nothing. fish and gemini only with --engine
   - keys — fetched once at start through script/op-run.sh, held in memory only
   - kokoro — starts mlx_audio.server on 127.0.0.1:7383 and keeps it warm (~620 MB)
   - output — ~/.local/share/x-speak/daemon.err.log: one line per press with grab, normalize and first-audio times
