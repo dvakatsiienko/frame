@@ -55,6 +55,15 @@
             "command": "python3 ~/.claude/shelf/hooks/agents-travel.py"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/shelf/hooks/authoring-guard.py"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

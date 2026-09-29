@@ -10,15 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## the subtle flicker · 2026-09-16
-He switched the AW3225QF from fixed 120 Hz to variable and said: «sometimes observe a strange effect. it is
-very hard to notice … the parts that have a lot of solid color in the background a bit flicker … hard to
-explain verbally why it happens.» No reason, only the feel and the place it showed (a beige app
-background). The research named it in one pass: QD-OLED gamma spikes at particular frame rates under
-VRR, worst on flat mid-tones, apple's own page says «choose a fixed refresh rate instead». The felt
-sense had the mechanism's fingerprint — solid colour, subtle, not distortion — before any of us had
-the word for it. → DOT-237 session notes, fixed 120 Hz
-
 ## «it definitely 100 % worked before» · 2026-09-17
 Three research rounds and my own probe said the caret language indicator could not be turned off
 globally on macOS 27 without losing the Birman layouts — the pref made them vanish from the
@@ -73,3 +64,5 @@ The auto-archive probe had closed its pr and watched the card stay; my verdict w
 ## «you were still asking me confirmation questions» · 2026-09-28
 He wrote the trophy-sys plan with me, said «start shift» and went to cook. I kept sending him ⏳ blocks between his steps at the stove, and he answered them. After dinner he named it: «you have memories that instruct you to use a turn-based approach … when paired with a shift, the boundary is blurry, so you try to do both.» No rule was broken; every habit was right for a lane and wrong for a shift. His felt sense saw two modes where I ran one with exceptions, and the first night shift needed exactly that line. → `cclio:shift`, the ⏳ exception in `fleet-output-format`
 
+## «make it lightning fast» · 2026-09-29
+speak worked end to end on node: raycast → a script → op-run for the keys → ffplay, with a clean engine fallback. he listened and said: «system readaloud have slight .1s delay before speaking. i feel that with those fallbacks the latency also be present. make it fast.» no profiler, only the feel of F4 beside ours. the coder timed each stage: op-run 800 ms per press, a player spawn 250–360 ms, `say` 280 ms — over a second before any synthesis, against F4's already-running speech engine. the whole node design went; one resident swift daemon took its place, and his first F5 heard Sarah at 401 ms, warm ones at 189. his felt sense named the architecture before anyone measured it. → `schedule/jobs/x-speak`, the latency line in `craft-spawning`

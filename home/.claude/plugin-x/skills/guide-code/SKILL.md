@@ -46,6 +46,14 @@ their head.
 - **Smallest proof.** Targeted tests and typecheck for what you touched; CI owns the full
   suite — no repo-wide checks unasked.
 
+## traps that cost hours
+
+- **an AppKit daemon's `main` is synchronous.** `NSApplication.run()` inside `static func main() async`
+  starves the main actor, so no hotkey or timer Task ever runs — and a one-shot test never runs the
+  app loop, so only a real key press shows it (speak, 40 min, 2026-09-29).
+- **a UI order lives in an array, never in object keys.** a formatter's key sort (biome) reorders an
+  object silently, and the columns move with it.
+
 **Completion criterion:** the diff was walked against the ladder — what got deleted, derived,
 or inlined before anything was written — and a change that only adds names the reason. One
 sentence in the report, not a section.

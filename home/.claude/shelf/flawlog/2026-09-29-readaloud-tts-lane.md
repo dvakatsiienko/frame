@@ -1,0 +1,25 @@
+# flawlog — 2026-09-29 · cclio-fe · readaloud tts + lane
+
+- a fresh AI Studio auth key (`AQ.` prefix) answered 401 «invalid authentication credentials» for ~2 min after creation, then 200 · cost one false «key broken» read · lesson: a new gemini key gets one retry after a minute before it is called bad
+- a «blind» advisor run in a fresh agent read the built `speak/` v0 through its cwd (cclio sits inside frame) and graded the plan, not the problem · cost: the blind a/b is half-blind · lesson: a blind run gets a cwd outside the repo (the scratchpad) and «do not read ~/frame» in its brief
+- speak coder retro (FRM-269), ranked by cost:
+  - ~40 min: `NSApp.run()` inside `static func main() async` starves the main actor, so no hotkey Task ever runs; one-shot tests never ran the app loop · lesson: an AppKit daemon's main is sync (x:guide-code swift line candidate)
+  - ~25 min: the node design (raycast → node → op-run → ffplay) was built and deleted · lesson: measure each stage of a latency-bound tool before building; my brief said «node .ts» and the coder did not argue it on day one
+  - ~15 min: `op run` masks secrets in a child's stdout · lesson: reading a key from op-run's stdout needs `OP_RUN_NO_MASKING=true` (fleet-hazards candidate)
+  - ~15 min: my brief relayed parallel's unmeasured «v4 rides text-to-dialogue» as fact · lesson: a research fact in a brief carries «?» until measured
+  - ~10 min: biome's key sort reordered a UI order kept in an object · lesson: a UI order lives in an array
+  - ~10 min: stacked per-engine deadlines gave 1.28 s first audio · lesson: one shared budget per chunk
+  - automation ask: `schedule:restart <job>` (bootout → wait → bootstrap for one job), hand-rolled 3×
+- favicon art retro (FRM-269):
+  - my brief promised «ship lands svg + png sizes» but `atelier:ship` copied svgs only · lesson: a brief that names a tool's output checks the tool has that verb first
+  - my brief's «touch only the head + icons» missed that speak's server served only `/` and /api · lesson: an asset wired into a page names who serves the url
+  - frame biome lints `.svg` (useSortedAttributes); art shipped outside `assets/` needs its exclusion in the same commit (fleet-hazards candidate, sibling of the vendored-code line)
+  - automation ask: `atelier:icons --sheet` for the 16/32/180 contact sheet, repeats on every icon job
+- atelier coder retro (BYT-105 #115):
+  - the worktree git guard refuses any command whose text holds a url or a chain (`?crash=` in an agent-browser url read as git) · ~4 turns · fix already known: scratch script by path
+  - the ci reviewer finishes by editing its «working…» comment in place — a watcher keyed on created_at misses the verdict (x:github-contrib candidate)
+  - automation ask: the essentials-at-two-widths wrapper (look.sh + ess.sh), third hand-built copy this week — x:browser-headless candidate
+- speak react admin: the coder wrote AGENTS.md + two skills without loading writing-for-agents; the authoring-trigger rule fires only on Read, so a fresh write gets no reminder (second sighting of the known gap)
+- 🤖 automate (fleet-identity #4): the essentials-at-two-widths wrapper was hand-run by THREE coders today (atelier #115, speak admin, the pill) — x:browser-headless already names it «a candidate, not built yet» · build it, not ticket it
+- 🤖 automate candidate: a verify-kit config snapshot/restore (cp + cmp) around any write test — x:app-essentials anticipates a shared kit
+- ✅ flushed at the 17:40 checkpoint: 11 actions (fleet-hazards, frame AGENTS.md, guide-code, github-contrib, app-essentials, craft-spawning, BYT-105, the authoring-guard hook, a story); the rest dropped as settled

@@ -39,6 +39,6 @@ home and both call it. the steps expected to repeat, each with its likely home:
 - a free port and blank prod kv per tree → `worktree:seed` (done; live psn tokens are copied on purpose, dima 2026-09-28)
 - the essentials run against main's src as a baseline → `x:browser-headless`
 - prove the store is local before any write → a `health` contract every app's api answers
-- state backup and restore, admin login → a shared `verify-kit` lib that each app's kit sources
+- state backup and restore, admin login → a shared `verify-kit` lib that each app's kit sources — **second sighting 2026-09-29**: speak's admin needed a config snapshot + restore (cp, then cmp) around every write test, so the step moves to the shared lib on the next kit touched
 
 **Done** = the checker prints ✅ for the app, and its root README and `CONTEXT-MAP.md` rows exist.

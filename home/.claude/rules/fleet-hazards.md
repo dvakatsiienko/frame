@@ -86,6 +86,7 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 - **after a `git mv`, stage only the new paths** — the old path in a pathspec kills the whole `git add` («did not match any files»), and a commit then carries the moves without the edits (twice, 2026-09-28)
 - **vendored code gets its biome exclusion in the same commit that adds it** — the commit hook formats staged files only, ci runs `biome ci` over the repo, so a vendored skill turned main red after a green commit (2026-09-28)
 - **a push is read by `git ls-remote`, never by grepping its output** — a `grep -E` with `->` in the pattern hit the ugrep alias, the pipe died, and the push never ran behind a quiet screen (2026-09-28)
+- **`op run` masks secrets in its child's stdout** — a script that reads a key back from an `op-run` child gets `<concealed by 1Password>`; the child sets `OP_RUN_NO_MASKING=true` and keeps the key in memory only (speak's daemon, 15 min, 2026-09-29)
 
 ## green statuses
 
