@@ -26,16 +26,17 @@ the installer is idempotent, and it waits for a job to actually leave the domain
 rebootstrapping it. `bootout` returns before the teardown finishes, and a bootstrap that races
 it is refused.
 
-## the four local jobs
+## the five local jobs
 
 - `x-monitor-hotkey-stats` — always on, counts chord presses, never keystrokes
 - `x-monitor-hotkey-live` — always on, keeps the hotkey map's data current
 - `x-autoclean-screenshots` — daily 12:00, trashes screenshots older than 30 days
 - `x-atelier-live` — always on, serves atelier (bytes `apps/atelier`) at localhost:5180
+- `x-speak` — always on, F5 reads the selection aloud, F5 again stops
 
 each plist opens with a comment describing itself; the raycast `schedule` command renders it.
 
-⚠️ **both binaries hold a TCC grant, and it is keyed on the codesign identifier, not the path.**
+⚠️ **the swift binaries hold a TCC grant, and it is keyed on the codesign identifier, not the path.**
 measured 2026-09-19: moving a job to a new directory and rebuilding kept both grants, because
 `--identifier com.dima.<name>` stayed the same. **renaming a job breaks them**, because the
 identifier is part of the name. `x-monitor-hotkey-live` is exempt: it runs node, holds no

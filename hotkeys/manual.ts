@@ -302,6 +302,14 @@ export const manualHotkeys = [
         mods: '',
         since: '2026-09-28',
     },
+    // x-speak registers its own hotkey (schedule/jobs/x-speak), no app pane to read it from
+    {
+        action: 'Speak selection, neural (again to stop)',
+        app: 'x-speak',
+        key: 'f5',
+        mods: '',
+        since: '2026-09-29',
+    },
     // homerow — its prefs (com.superultra.Homerow) name these three; hand-kept until a reader earns its place
     ...(
         [

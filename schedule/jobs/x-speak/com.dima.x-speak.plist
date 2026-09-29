@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  🔊 x-speak — select text, press F5: read aloud; F5 again: stop.
+
+  - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 30s
+  - engines — elevenlabs → fish → kokoro → the macos voice (siri en, Lesya uk, Milena ru); one 400 ms first-audio budget per chunk, kokoro renders in parallel so a cloud miss costs nothing
+  - keys — fetched once at start through script/op-run.sh, held in memory only
+  - kokoro — starts mlx_audio.server on 127.0.0.1:7383 and keeps it warm (~620 MB)
+  - output — ~/.local/share/x-speak/daemon.err.log: one line per press with grab, normalize and first-audio times
+  - source — ~/frame/schedule/jobs/x-speak/main.swift, normalize.swift; golden.json is the normalizer's contract
+  - gotcha — needs Accessibility for the selection grab; signed with «x-speak local signing» the grant survives rebuilds, ad-hoc it pins to the cdhash
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dima.x-speak</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- launchd does not expand ~, so this path is absolute by necessity.
+             Build it first: pnpm speak:build -->
+        <string>/Users/dima/frame/schedule/jobs/x-speak/bin/x-speak</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <!-- Interactive: the hot path is a keypress waiting on audio -->
+    <key>ProcessType</key>
+    <string>Interactive</string>
+
+    <key>StandardOutPath</key>
+    <string>/Users/dima/.local/share/x-speak/daemon.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/dima/.local/share/x-speak/daemon.err.log</string>
+</dict>
+</plist>

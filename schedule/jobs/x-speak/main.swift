@@ -1,0 +1,503 @@
+// x-speak — select text, press F5: read aloud; F5 again: stop. one resident process so the hot path
+// pays no boot, no key fetch and no player spawn (the node version paid ~1.2 s, measured 2026-09-29).
+// usage: x-speak                        the daemon (launchd)
+//        x-speak [--engine <name>] text one-shot, for listening tests
+import AppKit
+import AVFoundation
+import Carbon.HIToolbox
+import os
+
+enum Engine: String, CaseIterable {
+    case elevenlabs, fish, kokoro, system, gemini
+
+    var isCloud: Bool { self != .kokoro && self != .system }
+    func speaks(_ lang: Lang) -> Bool { self != .kokoro || lang == .en }
+}
+
+// gemini sits outside the chain: a test drive only, forced with --engine gemini (its free tier trains on input)
+let chain: [Engine] = [.elevenlabs, .fish, .kokoro, .system]
+
+// a cloud engine that has not produced audio by then yields to the next one, but only while nothing plays
+let firstAudioDeadline: Duration = .milliseconds(400)
+let kokoroURL = URL(string: "http://127.0.0.1:7383")!
+// kokoro peaks at -6 dBFS (measured), dima heard it as quiet
+let gains: [Engine: Float] = [.kokoro: 1.9]
+let systemVoices: [Lang: String] = [.uk: "com.apple.voice.compact.uk-UA.Lesya", .ru: "com.apple.voice.compact.ru-RU.Milena"]
+
+struct Chunk {
+    let lang: Lang
+    let text: String
+}
+
+enum EngineError: Error {
+    case noKey, status(Int), timeout
+}
+
+func log(_ line: String) {
+    let stamp = ISO8601DateFormatter.string(from: Date(), timeZone: .current, formatOptions: [.withTime, .withColonSeparatorInTime, .withFractionalSeconds])
+    FileHandle.standardError.write(Data("\(stamp) \(line)\n".utf8))
+}
+
+func elapsed(_ since: ContinuousClock.Instant) -> String {
+    let ms = (ContinuousClock.now - since).components
+    return "\(ms.seconds * 1000 + ms.attoseconds / 1_000_000_000_000_000) ms"
+}
+
+// sentences, and a long first sentence cut at its first comma past 40 chars, so audio starts early
+func chunks(_ runs: [Run]) -> [Chunk] {
+    var result: [Chunk] = []
+    for run in runs {
+        let marked = run.text.replacingOccurrences(of: "([.!?…;])\\s+", with: "$1\0", options: .regularExpression)
+        for sentence in marked.split(separator: "\0") {
+            var text = String(sentence)
+            if result.isEmpty, text.count > 100, let comma = text.dropFirst(40).firstIndex(of: ",") {
+                result.append(Chunk(lang: run.lang, text: String(text[...comma])))
+                text = String(text[text.index(after: comma)...]).trimmingCharacters(in: .whitespaces)
+            }
+            result.append(Chunk(lang: run.lang, text: text))
+        }
+    }
+    return result
+}
+
+@MainActor
+final class Player {
+    private let engine = AVAudioEngine()
+    private let node = AVAudioPlayerNode()
+    private let format = AVAudioFormat(standardFormatWithSampleRate: 24000, channels: 1)!
+    private var pending = 0
+    private var drainWaiters: [CheckedContinuation<Void, Never>] = []
+    private var generation = 0
+
+    var isPlaying: Bool { pending > 0 }
+
+    init() {
+        engine.attach(node)
+        engine.connect(node, to: engine.mainMixerNode, format: format)
+    }
+
+    // s16le mono 24 kHz → float, with the engine's gain
+    func schedule(_ pcm: Data, gain: Float) throws {
+        let frames = pcm.count / 2
+        guard frames > 0, let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(frames)) else { return }
+        buffer.frameLength = AVAudioFrameCount(frames)
+        let out = buffer.floatChannelData![0]
+        pcm.withUnsafeBytes { raw in
+            let samples = raw.bindMemory(to: Int16.self)
+            for i in 0..<frames { out[i] = max(-1, min(1, Float(Int16(littleEndian: samples[i])) / 32768 * gain)) }
+        }
+        if !engine.isRunning { try engine.start() }
+        if !node.isPlaying { node.play() }
+        pending += 1
+        let scheduledIn = generation
+        node.scheduleBuffer(buffer) { [weak self] in
+            Task { @MainActor in
+                guard let self, self.generation == scheduledIn else { return }
+                self.pending -= 1
+                if self.pending == 0 { self.releaseWaiters() }
+            }
+        }
+    }
+
+    func drained() async {
+        if pending == 0 { return }
+        await withCheckedContinuation { drainWaiters.append($0) }
+    }
+
+    func stop() {
+        generation += 1
+        node.stop()
+        pending = 0
+        releaseWaiters()
+    }
+
+    // an idle engine still holds the output device; let it go between jobs
+    func idle() {
+        if pending == 0 { engine.pause() }
+    }
+
+    private func releaseWaiters() {
+        drainWaiters.forEach { $0.resume() }
+        drainWaiters = []
+    }
+}
+
+@MainActor
+final class SystemVoice: NSObject, NSSpeechSynthesizerDelegate {
+    private var synth: NSSpeechSynthesizer?
+    private var done: CheckedContinuation<Void, Never>?
+    var onFirstWord: (() -> Void)?
+
+    func speak(_ chunk: Chunk) async {
+        let synth = systemVoices[chunk.lang].flatMap { NSSpeechSynthesizer(voice: NSSpeechSynthesizer.VoiceName(rawValue: $0)) } ?? NSSpeechSynthesizer()
+        synth.delegate = self
+        self.synth = synth
+        await withCheckedContinuation { continuation in
+            done = continuation
+            synth.startSpeaking(chunk.text)
+        }
+    }
+
+    func stop() { synth?.stopSpeaking() }
+
+    nonisolated func speechSynthesizer(_ sender: NSSpeechSynthesizer, willSpeakWord range: NSRange, of string: String) {
+        guard range.location == 0 else { return }
+        MainActor.assumeIsolated { onFirstWord?(); onFirstWord = nil }
+    }
+
+    nonisolated func speechSynthesizer(_ sender: NSSpeechSynthesizer, didFinishSpeaking finishedSpeaking: Bool) {
+        MainActor.assumeIsolated {
+            done?.resume()
+            done = nil
+        }
+    }
+}
+
+@MainActor
+final class Speaker {
+    private let player = Player()
+    private let systemVoice = SystemVoice()
+    private var keys: [Engine: String] = [:]
+    private var keysLoadedAt: Date?
+    // engine → when it may be tried again; a failure costs its time once, then nothing until the reset
+    private var skipUntil: [Engine: Date] = [:]
+    private var job: Task<Void, Never>?
+    private var kokoroPrefetch: (text: String, task: Task<Data, Error>)?
+
+    var isSpeaking: Bool { job != nil }
+
+    // one op-run per daemon start (~0.8 s), never on the hot path; a key pasted later is picked up within a minute
+    func loadKeys() async {
+        keysLoadedAt = Date()
+        let names: [(Engine, String)] = [(.elevenlabs, "ELEVENLABS_API_KEY"), (.fish, "FISH_API_KEY"), (.gemini, "GEMINI_API_KEY")]
+        let printf = "printf '%s\\0%s\\0%s' " + names.map { "\"$\($0.1)\"" }.joined(separator: " ")
+        let output: String = await Task.detached {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/bin/sh")
+            process.arguments = [NSHomeDirectory() + "/frame/script/op-run.sh", "/bin/sh", "-c", printf]
+            // op run masks secrets in its child's stdout; the keys go straight into this process, never a log
+            process.environment = ProcessInfo.processInfo.environment.merging(["OP_RUN_NO_MASKING": "true"]) { $1 }
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            process.standardError = FileHandle.nullDevice
+            try? process.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            return String(decoding: data, as: UTF8.self)
+        }.value
+        for (value, (engine, _)) in zip(output.split(separator: "\0", omittingEmptySubsequences: false), names) where !value.isEmpty {
+            keys[engine] = String(value)
+        }
+        log("keys: " + names.map { "\($0.0.rawValue) \(keys[$0.0] == nil ? "missing" : "ok")" }.joined(separator: ", "))
+    }
+
+    func warmKokoro() async {
+        if await kokoroReady() { return }
+        let server = Process()
+        server.executableURL = URL(fileURLWithPath: NSHomeDirectory() + "/.local/bin/mlx_audio.server")
+        server.arguments = ["--host", "127.0.0.1", "--port", "7383"]
+        server.standardOutput = FileHandle.nullDevice
+        server.standardError = FileHandle.nullDevice
+        try? server.run()
+        for _ in 0..<240 where !(await kokoroReady()) { try? await Task.sleep(for: .milliseconds(250)) }
+        _ = try? await URLSession.shared.data(for: kokoroRequest("Ready."))
+        log("kokoro: warm")
+    }
+
+    func toggle() async {
+        if let job {
+            job.cancel()
+            player.stop()
+            systemVoice.stop()
+            self.job = nil
+            log("stop")
+            return
+        }
+        let pressed = ContinuousClock.now
+        let (text, via) = await grabSelection()
+        let grabbed = elapsed(pressed)
+        let parts = chunks(normalize(text ?? ""))
+        guard !parts.isEmpty else {
+            log("press: nothing selected (grab \(via) \(grabbed))")
+            return
+        }
+        log("press: grab \(via) \(grabbed), normalize \(elapsed(pressed)), \(parts.count) chunks")
+        speak(parts, engines: chain, pressed: pressed)
+        if keys.count < 3, let loaded = keysLoadedAt, Date().timeIntervalSince(loaded) > 60 {
+            Task { await loadKeys() }
+        }
+    }
+
+    func speak(_ parts: [Chunk], engines: [Engine], pressed: ContinuousClock.Instant) {
+        job = Task {
+            var isFirst = true
+            for chunk in parts {
+                let candidates = engines.filter { $0.speaks(chunk.lang) && (skipUntil[$0] ?? .distantPast) < Date() }
+                // a cloud engine racing its deadline: kokoro renders the same chunk meanwhile, so a miss costs nothing
+                if candidates.first?.isCloud == true, candidates.contains(.kokoro), !player.isPlaying {
+                    kokoroPrefetch = (chunk.text, Task { try await kokoroPCM(chunk.text) })
+                }
+                // one first-audio budget per chunk, shared by every cloud engine: misses never stack
+                let budgetEnds = player.isPlaying || systemVoice.isBusy ? nil : ContinuousClock.now + firstAudioDeadline
+                for engine in candidates {
+                    let deadline = engine.isCloud ? budgetEnds.map { $0 - ContinuousClock.now } : nil
+                    if let deadline, deadline <= .zero { continue }
+                    do {
+                        try await speak(chunk, with: engine, deadline: deadline) {
+                            if isFirst { log("first audio: \(engine.rawValue) \(elapsed(pressed))") }
+                            isFirst = false
+                        }
+                        break
+                    } catch is CancellationError {
+                        return
+                    } catch {
+                        if Task.isCancelled { return }
+                        handle(error, from: engine)
+                    }
+                }
+            }
+            await player.drained()
+            if !Task.isCancelled {
+                job = nil
+                player.idle()
+            }
+        }
+    }
+
+    // quota or auth → an hour off; slow, 5xx or offline → a minute off; a missing key costs nothing to re-check
+    private func handle(_ error: Error, from engine: Engine) {
+        let pause: TimeInterval? = switch error {
+        case EngineError.noKey: nil
+        case EngineError.status(let code) where [401, 402, 403, 429].contains(code): 3600
+        default: 60
+        }
+        if let pause { skipUntil[engine] = Date().addingTimeInterval(pause) }
+        log("\(engine.rawValue) skipped: \(error)\(pause.map { ", off for \(Int($0)) s" } ?? "")")
+    }
+
+    private func speak(_ chunk: Chunk, with engine: Engine, deadline: Duration?, onAudio: @escaping () -> Void) async throws {
+        switch engine {
+        case .system:
+            await player.drained()
+            systemVoice.onFirstWord = onAudio
+            await systemVoice.speak(chunk)
+        case .gemini:
+            try await playGemini(chunk, onAudio: onAudio)
+        // the kokoro server answers only once the whole chunk is rendered, so there is nothing to stream
+        case .kokoro:
+            let prefetched = kokoroPrefetch.flatMap { $0.text == chunk.text ? $0.task : nil }
+            kokoroPrefetch = nil
+            let pcm = if let prefetched { try await prefetched.value } else { try await kokoroPCM(chunk.text) }
+            try player.schedule(pcm, gain: gains[.kokoro] ?? 1)
+            onAudio()
+        default:
+            let request = try request(for: engine, chunk)
+            try await stream(request, gain: gains[engine] ?? 1, deadline: deadline, onAudio: onAudio)
+        }
+    }
+
+    private func request(for engine: Engine, _ chunk: Chunk) throws -> URLRequest {
+        switch engine {
+        case .elevenlabs:
+            guard let key = keys[.elevenlabs] else { throw EngineError.noKey }
+            // premade voice: free and restricted keys get 402 on library voices; v4 turbo: 0.31 s first byte vs 1.9 s on v4
+            var request = URLRequest(url: URL(string: "https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb/stream?output_format=pcm_24000")!)
+            request.httpMethod = "POST"
+            request.setValue(key, forHTTPHeaderField: "xi-api-key")
+            request.setValue("application/json", forHTTPHeaderField: "content-type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: ["language_code": chunk.lang.rawValue, "model_id": "eleven_v4_turbo", "text": chunk.text])
+            return request
+        case .fish:
+            guard let key = keys[.fish] else { throw EngineError.noKey }
+            // s2.1-pro-free: no character cap, free until 2026-11-30; after that its non-2xx drops the tier by itself
+            var request = URLRequest(url: URL(string: "https://api.fish.audio/v1/tts")!)
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(key)", forHTTPHeaderField: "authorization")
+            request.setValue("application/json", forHTTPHeaderField: "content-type")
+            request.setValue("s2.1-pro-free", forHTTPHeaderField: "model")
+            request.httpBody = try JSONSerialization.data(withJSONObject: ["format": "pcm", "latency": "balanced", "sample_rate": 24000, "text": chunk.text])
+            return request
+        default:
+            preconditionFailure("\(engine) is not a streaming engine")
+        }
+    }
+
+    // plays as bytes arrive; with a deadline, no audio by then throws before anything was heard
+    // the byte loop runs off the main actor: on it, a buffered response starved the deadline timer (fish
+    // played at 604 ms under a 400 ms deadline). `state` settles the race — audio or timeout, never both.
+    private func stream(_ request: URLRequest, gain: Float, deadline: Duration?, onAudio: @escaping () -> Void) async throws {
+        let state = OSAllocatedUnfairLock(initialState: StreamState.waiting)
+        let player = self.player
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                let (bytes, response) = try await URLSession.shared.bytes(for: request)
+                let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+                guard status == 200 else { throw EngineError.status(status) }
+                var buffer = Data()
+                // 20 ms for the first buffer so audio starts at once, then 100 ms to schedule cheaply
+                var threshold = 960
+                func flush() async throws {
+                    let pcm = buffer.prefix(buffer.count & ~1)
+                    buffer.removeFirst(pcm.count)
+                    let isFirst = state.withLock { current in
+                        guard current != .timedOut else { return false }
+                        defer { current = .playing }
+                        return current == .waiting
+                    }
+                    guard state.withLock({ $0 == .playing }) else { throw CancellationError() }
+                    try await MainActor.run {
+                        try player.schedule(Data(pcm), gain: gain)
+                        if isFirst { onAudio() }
+                    }
+                }
+                for try await byte in bytes {
+                    buffer.append(byte)
+                    if buffer.count >= threshold {
+                        try await flush()
+                        threshold = 4800
+                    }
+                }
+                if buffer.count > 1 { try await flush() }
+            }
+            if let deadline {
+                group.addTask {
+                    try await Task.sleep(for: deadline)
+                    let isLate = state.withLock { current in
+                        guard current == .waiting else { return false }
+                        current = .timedOut
+                        return true
+                    }
+                    if isLate { throw EngineError.timeout }
+                }
+            }
+            try await group.waitForAll()
+        }
+    }
+
+    private func playGemini(_ chunk: Chunk, onAudio: () -> Void) async throws {
+        guard let key = keys[.gemini] else { throw EngineError.noKey }
+        var request = URLRequest(url: URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-tts:generateContent")!)
+        request.httpMethod = "POST"
+        request.setValue(key, forHTTPHeaderField: "x-goog-api-key")
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "contents": [["parts": [["text": chunk.text]]]],
+            "generationConfig": ["responseModalities": ["AUDIO"], "speechConfig": ["voiceConfig": ["prebuiltVoiceConfig": ["voiceName": "Kore"]]]],
+        ])
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        guard status == 200 else { throw EngineError.status(status) }
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let parts = ((json?["candidates"] as? [[String: Any]])?.first?["content"] as? [String: Any])?["parts"] as? [[String: Any]]
+        guard let base64 = (parts?.first?["inlineData"] as? [String: Any])?["data"] as? String, var audio = Data(base64Encoded: base64) else {
+            throw EngineError.status(0)
+        }
+        if audio.prefix(4) == Data("RIFF".utf8) { audio = audio.dropFirst(44) }
+        try player.schedule(Data(audio), gain: 1)
+        onAudio()
+    }
+}
+
+extension SystemVoice {
+    var isBusy: Bool { onFirstWord != nil }
+}
+
+func kokoroRequest(_ text: String) -> URLRequest {
+    var request = URLRequest(url: kokoroURL.appending(path: "v1/audio/speech"))
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "content-type")
+    request.httpBody = try? JSONSerialization.data(withJSONObject: [
+        "input": text, "model": "mlx-community/Kokoro-82M-bf16", "response_format": "pcm", "voice": "af_heart",
+    ])
+    return request
+}
+
+func kokoroReady() async -> Bool {
+    var request = URLRequest(url: kokoroURL.appending(path: "docs"))
+    request.timeoutInterval = 1
+    return ((try? await URLSession.shared.data(for: request))?.1 as? HTTPURLResponse)?.statusCode == 200
+}
+
+// the focused element's selected text through accessibility; ⌘C only where an app exposes none
+@MainActor
+func grabSelection() async -> (String?, String) {
+    let system = AXUIElementCreateSystemWide()
+    var focused: CFTypeRef?
+    var selected: CFTypeRef?
+    if AXUIElementCopyAttributeValue(system, kAXFocusedUIElementAttribute as CFString, &focused) == .success,
+       let element = focused, CFGetTypeID(element) == AXUIElementGetTypeID(),
+       AXUIElementCopyAttributeValue(element as! AXUIElement, kAXSelectedTextAttribute as CFString, &selected) == .success,
+       let text = selected as? String, !text.isEmpty {
+        return (text, "ax")
+    }
+    return (await copySelection(), "⌘C")
+}
+
+// the clipboard comes back whole, every type of every item, once the copy has been read
+@MainActor
+func copySelection() async -> String? {
+    let board = NSPasteboard.general
+    let saved = board.pasteboardItems?.map { item in item.types.compactMap { type in item.data(forType: type).map { (type, $0) } } } ?? []
+    let before = board.changeCount
+    let source = CGEventSource(stateID: .combinedSessionState)
+    for isDown in [true, false] {
+        let event = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: isDown)
+        event?.flags = .maskCommand
+        event?.post(tap: .cghidEventTap)
+    }
+    for _ in 0..<60 where board.changeCount == before { try? await Task.sleep(for: .milliseconds(5)) }
+    guard board.changeCount != before else { return nil }
+    let text = board.string(forType: .string)
+    board.clearContents()
+    board.writeObjects(saved.map { pairs in
+        let item = NSPasteboardItem()
+        for (type, data) in pairs { item.setData(data, forType: type) }
+        return item
+    })
+    return text
+}
+
+@MainActor let speaker = Speaker()
+
+@main
+struct XSpeak {
+    @MainActor
+    static func main() async {
+        var args = Array(CommandLine.arguments.dropFirst())
+        var engines = chain
+        if let flag = args.firstIndex(of: "--engine"), flag + 1 < args.count, let engine = Engine(rawValue: args[flag + 1]) {
+            engines = [engine]
+            args.removeSubrange(flag...(flag + 1))
+        }
+
+        await speaker.loadKeys()
+        if !args.isEmpty {
+            if engines.contains(.kokoro) { await speaker.warmKokoro() }
+            speaker.speak(chunks(normalize(args.joined(separator: " "))), engines: engines, pressed: .now)
+            while speaker.isSpeaking { try? await Task.sleep(for: .milliseconds(50)) }
+            exit(0)
+        }
+
+        log("daemon: accessibility \(AXIsProcessTrusted() ? "granted" : "MISSING — the grab falls back to nothing")")
+        Task { await speaker.warmKokoro() }
+        var hotKey: EventHotKeyRef?
+        var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+        InstallEventHandler(GetEventDispatcherTarget(), { _, _, _ in
+            Task { @MainActor in await speaker.toggle() }
+            return noErr
+        }, 1, &spec, nil, nil)
+        let status = RegisterEventHotKey(UInt32(kVK_F5), 0, EventHotKeyID(signature: 0x5350_4B31, id: 1), GetEventDispatcherTarget(), 0, &hotKey)
+        log("daemon: F5 \(status == noErr ? "registered" : "refused (\(status))")")
+        NSApplication.shared.setActivationPolicy(.prohibited)
+        NSApplication.shared.run()
+    }
+}
+
+enum StreamState { case waiting, playing, timedOut }
+
+func kokoroPCM(_ text: String) async throws -> Data {
+    let (data, response) = try await URLSession.shared.data(for: kokoroRequest(text))
+    let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+    guard status == 200 else { throw EngineError.status(status) }
+    return data
+}

@@ -1,0 +1,136 @@
+[
+    {
+        "in": "FRM-266 shipped in v0.3.85 → see `speak/`",
+        "out": [
+            ["en", "F R M 266 shipped in version 0 point 3 point 85, see speak"]
+        ]
+    },
+    {
+        "in": "🐞 briefs: agents post to linear as coder — LINEAR_API_KEY, never LINEAR_TOKEN (x 0.11.107)",
+        "out": [
+            [
+                "en",
+                "briefs: agents post to linear as coder, linear A P I key, never linear token, x 0 point 11 point 107"
+            ]
+        ]
+    },
+    {
+        "in": "🔧 memory-sync: pnpm memory-sync:copy loads the paste block on dima's word",
+        "out": [
+            [
+                "en",
+                "memory-sync: P N P M memory-sync copy loads the paste block on dima's word"
+            ]
+        ]
+    },
+    {
+        "in": "📜 fleet: the night's research lands in docs/research, folded into the vets (x 0.11.144)",
+        "out": [
+            [
+                "en",
+                "fleet: the night's research lands in docs research, folded into the vets, x 0 point 11 point 144"
+            ]
+        ]
+    },
+    {
+        "in": "FRM-251 yt-transcript: local audio/video-to-text fallback for caption-less videos",
+        "out": [
+            [
+                "en",
+                "F R M 251 yt-transcript: local audio video-to-text fallback for caption-less videos"
+            ]
+        ]
+    },
+    {
+        "in": "🎨 profile: the comp page blocks — board, stack strip, langs (FRM-258, round 4)",
+        "out": [
+            [
+                "en",
+                "profile: the comp page blocks, board, stack strip, langs, F R M 258, round 4"
+            ]
+        ]
+    },
+    {
+        "in": "read [the ticket](https://linear.app/x-com/issue/FRM-269) first",
+        "out": [["en", "read the ticket first"]]
+    },
+    {
+        "in": "docs at https://github.com/smcantab/speak11/blob/main/x.md now",
+        "out": [["en", "docs at github.com now"]]
+    },
+    {
+        "in": "see https://docs.fish.audio/developer-guide/models-pricing and ~/frame/speak/engines.ts",
+        "out": [["en", "see docs.fish.audio and frame speak engines dot ts"]]
+    },
+    {
+        "in": "call dangerouslySetInnerHTML and snake_case_name",
+        "out": [
+            ["en", "call dangerously Set Inner H T M L and snake case name"]
+        ]
+    },
+    {
+        "in": "first audio in 150ms at 24 kHz, measured 2026-09-29",
+        "out": [
+            [
+                "en",
+                "first audio in 150 milliseconds at 24 kilohertz, measured September 29, 2026"
+            ]
+        ]
+    },
+    {
+        "in": "the cli prints json",
+        "out": [["en", "the C L I prints jason"]]
+    },
+    {
+        "in": "a plain decimal like 3.5 stays",
+        "out": [["en", "a plain decimal like 3.5 stays"]]
+    },
+    {
+        "in": "fixed in #84 & #79",
+        "out": [["en", "fixed in number 84 and number 79"]]
+    },
+    {
+        "in": "**bold** and `code` and _italic_",
+        "out": [["en", "bold and code and italic"]]
+    },
+    {
+        "in": "запусти pnpm typecheck у репо",
+        "out": [
+            ["uk", "запусти"],
+            ["en", "P N P M typecheck"],
+            ["uk", "у репо"]
+        ]
+    },
+    {
+        "in": "Это русский текст.",
+        "out": [["ru", "Это русский текст."]]
+    },
+    {
+        "in": "дивись FRM-269 до вечора",
+        "out": [["uk", "дивись"], ["en", "F R M 269"], ["uk", "до вечора"]]
+    },
+    {
+        "in": "🔧 speak: reads aloud",
+        "out": [["en", "speak: reads aloud"]]
+    },
+    {
+        "in": "mlx-audio server on 127.0.0.1:7383 is warm",
+        "out": [["en", "mlx-audio server on localhost port 7383 is warm"]]
+    },
+    {
+        "in": "0.4 s warm / 3.7 s cold",
+        "out": [["en", "0.4 seconds warm, 3.7 seconds cold"]]
+    },
+    {
+        "in": "set budget.maxCostDollars to 5",
+        "out": [["en", "set budget dot max Cost Dollars to 5"]]
+    },
+    {
+        "in": "edit exa-spec.yaml first",
+        "out": [["en", "edit exa-spec dot yammel first"]]
+    },
+    {
+        "in": "run x:cmt then slay",
+        "out": [["en", "run x cmt then slay"]]
+    }
+]

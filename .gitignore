@@ -10,6 +10,7 @@ home/.claude/sline/sline
 home/.claude/sline/sline-state.json
 schedule/jobs/x-monitor-hotkey-stats/bin
 schedule/jobs/x-autoclean-screenshots/bin
+schedule/jobs/x-speak/bin
 
 # The shelf holds what the agents produce, and most of it is versioned. Handoffs
 # are the exception: CSTs are transient by design (deleted on ingest; nothing
