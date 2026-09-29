@@ -93,9 +93,6 @@ one message, short lines, **no queries here — pure assembly**:
   2026-09-11: «keep this habit») — the flowlog checklist, lanes marked, sub-batches labeled;
   **the board ends here and waits for dima's word.** he corrects the parse before any work runs;
   a skipped question means the recommendation is accepted
-- ✍️ prompt coaching, 1–2 lines max: the ONE thing in today's inbox that made parsing harder,
-  and how to write it next time. parsed clean → just «prompt is good». grounded in this inbox
-  or silent — never a generic writing tip
 - 🥊 self-grill, last line (omit if nothing real)
 
 ## 8. flaw capture 📝
