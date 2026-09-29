@@ -42,19 +42,19 @@ measured 2026-09-19: moving a job to a new directory and rebuilding kept both gr
 identifier is part of the name. `x-monitor-hotkey-live` is exempt: it runs node, holds no
 grant, and was renamed on 2026-09-19 with nothing to re-grant.
 
-⚠️ **changing a binary's SOURCE breaks the grant too, and the earlier test could not see it.**
-that measurement rebuilt unchanged source, so the ad-hoc cdhash came out identical and there was
-nothing for TCC to notice. when the hotkey daemon's swift actually changed on 2026-09-19 the
-cdhash moved and Input Monitoring stopped applying — an ad-hoc signature has no team id, so the
-grant is pinned to the hash of the binary itself.
+⚠️ **every build signs through `script/lib/sign.sh`, with the one local identity «x-speak local
+signing».** the grant then pins to identifier + certificate leaf and survives a source change.
+ad-hoc was the old way and is the failure case: with no team id the grant pins to the cdhash, so
+changing the swift (2026-09-19) moved the hash and Input Monitoring silently stopped applying.
+the script has no ad-hoc fallback — a missing identity fails the build.
 
 📌 **a lost Input Monitoring grant is silent, which is the trap.** `CGEvent.tapCreate` with
 `.listenOnly` still returns a live tap, so the daemon's own "tap refused" path never fires: it
 starts, logs nothing, stays `state = running`, and receives no events at all. app-switch events
 keep arriving, because those come from NSWorkspace and not the tap, so the log looks alive. the
-tell is that `kind: chord` lines stop while `kind: activate` lines continue. after editing either
-swift file: re-grant in System Settings → Privacy & Security → Input Monitoring, then prove it
-with one real keypress before believing anything else.
+tell is that `kind: chord` lines stop while `kind: activate` lines continue. a re-grant is needed
+only when the identity changes (a new certificate, a renamed job): System Settings → Privacy &
+Security → Input Monitoring, then prove it with one real keypress before believing anything else.
 
 🎯 **the order is the whole trick: edit → build → re-grant → RESTART.** a tap created before the
 grant stays deaf for the life of that process, so restarting first and re-granting second leaves
