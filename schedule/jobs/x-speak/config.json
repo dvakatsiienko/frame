@@ -1,0 +1,39 @@
+{
+    "chain": {
+        "en": ["elevenlabs", "kokoro", "system"],
+        "ru": ["elevenlabs", "system"],
+        "uk": ["elevenlabs", "system"]
+    },
+    "engines": {
+        "elevenlabs": {
+            "gain": 1,
+            "model": "eleven_v4_turbo",
+            "speed": 1,
+            "voice": { "*": "EXAVITQu4vr4xnSDxMaL" }
+        },
+        "fish": {
+            "gain": 1,
+            "model": "s2.1-pro-free",
+            "speed": 1,
+            "voice": {
+                "en": "933563129e564b19a115bedd57b7406a",
+                "ru": "2a1036d645634680b3cc69aeeb60375b",
+                "uk": "fe8ba2d4555d457ba5fec0e86430c7fe"
+            }
+        },
+        "gemini": {
+            "gain": 1,
+            "model": "gemini-3.8-flash-tts",
+            "voice": { "*": "Kore" }
+        },
+        "kokoro": {
+            "gain": 1.9,
+            "speed": 1,
+            "voice": { "*": "af_heart" }
+        },
+        "system": {
+            "speed": 1
+        }
+    },
+    "firstAudioMs": 500
+}

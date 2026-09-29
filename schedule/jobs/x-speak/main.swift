@@ -14,19 +14,17 @@ enum Engine: String, CaseIterable {
     func speaks(_ lang: Lang) -> Bool { self != .kokoro || lang == .en }
 }
 
-// from dima's blind test (2026-09-29): en elevenlabs → kokoro → siri, uk/ru elevenlabs → Lesya/Milena (kokoro is en only).
-// outside the chain, forced with --engine: fish (1.08 s first byte, garbled ru, rated last) and gemini (rough, 4 s)
-let chain: [Engine] = [.elevenlabs, .kokoro, .system]
+// chain, voices, speed, gain and the first-audio budget live in config.json, read again on the next F5 after a save
+@MainActor let configFile = ConfigFile(URL(fileURLWithPath: NSHomeDirectory() + "/frame/schedule/jobs/x-speak/config.json"))
+@MainActor var config: Config { configFile.current }
 
-// a cloud engine that has not produced audio by then yields to the next one, but only while nothing plays;
-// elevenlabs answers in ~0.3 s warm, a cold connection adds dns + tls on top
-let firstAudioDeadline: Duration = .milliseconds(500)
 let kokoroURL = URL(string: "http://127.0.0.1:7383")!
-// kokoro peaks at -6 dBFS (measured), dima heard it as quiet
-let gains: [Engine: Float] = [.kokoro: 1.9]
-// the best installed uk/ru voice, so an enhanced or premium download is picked up with no rebuild; en keeps the
-// Spoken Content voice (siri voice 4), which no voice list exposes
+
+// a voice named in config.json wins; otherwise the best installed uk/ru voice, so an enhanced download is picked up
+// with no rebuild. en keeps the Spoken Content voice (siri voice 4), which no voice list exposes
+@MainActor
 func systemVoice(for lang: Lang) -> NSSpeechSynthesizer.VoiceName? {
+    if let named = config[.system].voice(for: lang) { return NSSpeechSynthesizer.VoiceName(rawValue: named) }
     guard lang != .en else { return nil }
     return AVSpeechSynthesisVoice.speechVoices()
         .filter { $0.language.hasPrefix(lang.rawValue) }
@@ -40,7 +38,7 @@ struct Chunk {
 }
 
 enum EngineError: Error {
-    case noKey, status(Int), timeout
+    case noKey, noVoice, status(Int), timeout
 }
 
 func log(_ line: String) {
@@ -74,6 +72,8 @@ func chunks(_ runs: [Run]) -> [Chunk] {
 final class Player {
     private let engine = AVAudioEngine()
     private let node = AVAudioPlayerNode()
+    // speed without a pitch shift, applied on playback so no engine re-renders for it
+    private let pace = AVAudioUnitTimePitch()
     private let format = AVAudioFormat(standardFormatWithSampleRate: 24000, channels: 1)!
     private var pending = 0
     private var drainWaiters: [CheckedContinuation<Void, Never>] = []
@@ -83,11 +83,15 @@ final class Player {
 
     init() {
         engine.attach(node)
-        engine.connect(node, to: engine.mainMixerNode, format: format)
+        engine.attach(pace)
+        engine.connect(node, to: pace, format: format)
+        engine.connect(pace, to: engine.mainMixerNode, format: format)
     }
 
-    // s16le mono 24 kHz → float, with the engine's gain
-    func schedule(_ pcm: Data, gain: Float) throws {
+    // s16le mono 24 kHz → float, with the engine's gain and speed
+    func schedule(_ pcm: Data, _ settings: EngineConfig) throws {
+        let gain = Float(settings.gain)
+        pace.rate = Float(settings.speed)
         let frames = pcm.count / 2
         guard frames > 0, let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(frames)) else { return }
         buffer.frameLength = AVAudioFrameCount(frames)
@@ -141,6 +145,7 @@ final class SystemVoice: NSObject, NSSpeechSynthesizerDelegate {
     func speak(_ chunk: Chunk) async {
         let synth = systemVoice(for: chunk.lang).flatMap { NSSpeechSynthesizer(voice: $0) } ?? NSSpeechSynthesizer()
         synth.delegate = self
+        synth.rate *= Float(config[.system].speed)
         self.synth = synth
         await withCheckedContinuation { continuation in
             done = continuation
@@ -224,6 +229,7 @@ final class Speaker {
             return
         }
         let pressed = ContinuousClock.now
+        configFile.refresh()
         let (text, via) = await grabSelection()
         let grabbed = elapsed(pressed)
         let parts = chunks(normalize(text ?? ""))
@@ -232,23 +238,24 @@ final class Speaker {
             return
         }
         log("press: grab \(via) \(grabbed), normalize \(elapsed(pressed)), \(parts.count) chunks")
-        speak(parts, engines: chain, pressed: pressed)
+        speak(parts, only: nil, pressed: pressed)
         if keys.count < 3, let loaded = keysLoadedAt, Date().timeIntervalSince(loaded) > 60 {
             Task { await loadKeys() }
         }
     }
 
-    func speak(_ parts: [Chunk], engines: [Engine], pressed: ContinuousClock.Instant) {
+    // `only` is --engine: one engine, no chain
+    func speak(_ parts: [Chunk], only: Engine?, pressed: ContinuousClock.Instant) {
         job = Task {
             var isFirst = true
             for chunk in parts {
-                let candidates = engines.filter { $0.speaks(chunk.lang) && (skipUntil[$0] ?? .distantPast) < Date() }
+                let candidates = (only.map { [$0] } ?? config.chain[chunk.lang] ?? []).filter { $0.speaks(chunk.lang) && (skipUntil[$0] ?? .distantPast) < Date() }
                 // a cloud engine racing its deadline: kokoro renders the same chunk meanwhile, so a miss costs nothing
                 if candidates.first?.isCloud == true, candidates.contains(.kokoro), !player.isPlaying {
                     kokoroPrefetch = (chunk.text, Task { try await kokoroPCM(chunk.text) })
                 }
                 // one first-audio budget per chunk, shared by every cloud engine: misses never stack
-                let budgetEnds = player.isPlaying || systemVoice.isBusy ? nil : ContinuousClock.now + firstAudioDeadline
+                let budgetEnds = player.isPlaying || systemVoice.isBusy ? nil : ContinuousClock.now + .milliseconds(config.firstAudioMs)
                 for engine in candidates {
                     // the last candidate has nothing to yield to, so it waits as long as it takes
                     let deadline = engine.isCloud && engine != candidates.last ? budgetEnds.map { $0 - ContinuousClock.now } : nil
@@ -278,7 +285,7 @@ final class Speaker {
     // quota or auth → an hour off; slow, 5xx or offline → a minute off; a missing key costs nothing to re-check
     private func handle(_ error: Error, from engine: Engine) {
         let pause: TimeInterval? = switch error {
-        case EngineError.noKey: nil
+        case EngineError.noKey, EngineError.noVoice: nil
         case EngineError.status(let code) where [401, 402, 403, 429].contains(code): 3600
         default: 60
         }
@@ -299,11 +306,11 @@ final class Speaker {
             let prefetched = kokoroPrefetch.flatMap { $0.text == chunk.text ? $0.task : nil }
             kokoroPrefetch = nil
             let pcm = if let prefetched { try await prefetched.value } else { try await kokoroPCM(chunk.text) }
-            try player.schedule(pcm, gain: gains[.kokoro] ?? 1)
+            try player.schedule(pcm, config[.kokoro])
             onAudio()
         default:
             let request = try request(for: engine, chunk)
-            try await stream(request, gain: gains[engine] ?? 1, deadline: deadline, onAudio: onAudio)
+            try await stream(request, config[engine], deadline: deadline, onAudio: onAudio)
         }
     }
 
@@ -311,26 +318,25 @@ final class Speaker {
         switch engine {
         case .elevenlabs:
             guard let key = keys[.elevenlabs] else { throw EngineError.noKey }
-            // Sarah, premade (library voices 402 on free and restricted keys); female only, per dima's blind test.
-            // v4 turbo: 0.31 s first byte vs 1.9 s on v4
-            var request = URLRequest(url: URL(string: "https://api.elevenlabs.io/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL/stream?output_format=pcm_24000")!)
+            // a premade voice: library voices answer 402 on free and restricted keys
+            guard let voice = config[.elevenlabs].voice(for: chunk.lang) else { throw EngineError.noVoice }
+            var request = URLRequest(url: URL(string: "https://api.elevenlabs.io/v1/text-to-speech/\(voice)/stream?output_format=pcm_24000")!)
             request.httpMethod = "POST"
             request.setValue(key, forHTTPHeaderField: "xi-api-key")
             request.setValue("application/json", forHTTPHeaderField: "content-type")
-            request.httpBody = try JSONSerialization.data(withJSONObject: ["language_code": chunk.lang.rawValue, "model_id": "eleven_v4_turbo", "text": chunk.text])
+            request.httpBody = try JSONSerialization.data(withJSONObject: ["language_code": chunk.lang.rawValue, "model_id": config[.elevenlabs].model ?? "eleven_v4_turbo", "text": chunk.text])
             return request
         case .fish:
             guard let key = keys[.fish] else { throw EngineError.noKey }
+            guard let voice = config[.fish].voice(for: chunk.lang) else { throw EngineError.noVoice }
             // s2.1-pro-free: no character cap, free until 2026-11-30; after that its non-2xx drops the tier by itself
             var request = URLRequest(url: URL(string: "https://api.fish.audio/v1/tts")!)
             request.httpMethod = "POST"
             request.setValue("Bearer \(key)", forHTTPHeaderField: "authorization")
             request.setValue("application/json", forHTTPHeaderField: "content-type")
-            request.setValue("s2.1-pro-free", forHTTPHeaderField: "model")
-            // female voices from fish's model list, the most liked per language (on a re-test in dima's booth)
-            let voices: [Lang: String] = [.en: "933563129e564b19a115bedd57b7406a", .ru: "2a1036d645634680b3cc69aeeb60375b", .uk: "fe8ba2d4555d457ba5fec0e86430c7fe"]
+            request.setValue(config[.fish].model ?? "s2.1-pro-free", forHTTPHeaderField: "model")
             request.httpBody = try JSONSerialization.data(withJSONObject: [
-                "format": "pcm", "latency": "balanced", "reference_id": voices[chunk.lang]!, "sample_rate": 24000, "text": chunk.text,
+                "format": "pcm", "latency": "balanced", "reference_id": voice, "sample_rate": 24000, "text": chunk.text,
             ])
             return request
         default:
@@ -341,7 +347,7 @@ final class Speaker {
     // plays as bytes arrive; with a deadline, no audio by then throws before anything was heard
     // the byte loop runs off the main actor: on it, a buffered response starved the deadline timer (fish
     // played at 604 ms under a 400 ms deadline). `state` settles the race — audio or timeout, never both.
-    private func stream(_ request: URLRequest, gain: Float, deadline: Duration?, onAudio: @escaping () -> Void) async throws {
+    private func stream(_ request: URLRequest, _ settings: EngineConfig, deadline: Duration?, onAudio: @escaping () -> Void) async throws {
         let state = OSAllocatedUnfairLock(initialState: StreamState.waiting)
         let player = self.player
         try await withThrowingTaskGroup(of: Void.self) { group in
@@ -362,7 +368,7 @@ final class Speaker {
                     }
                     guard state.withLock({ $0 == .playing }) else { throw CancellationError() }
                     try await MainActor.run {
-                        try player.schedule(Data(pcm), gain: gain)
+                        try player.schedule(Data(pcm), settings)
                         if isFirst { onAudio() }
                     }
                 }
@@ -392,13 +398,15 @@ final class Speaker {
 
     private func playGemini(_ chunk: Chunk, onAudio: () -> Void) async throws {
         guard let key = keys[.gemini] else { throw EngineError.noKey }
-        var request = URLRequest(url: URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-tts:generateContent")!)
+        let settings = config[.gemini]
+        let model = settings.model ?? "gemini-3.8-flash-tts"
+        var request = URLRequest(url: URL(string: "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent")!)
         request.httpMethod = "POST"
         request.setValue(key, forHTTPHeaderField: "x-goog-api-key")
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         request.httpBody = try JSONSerialization.data(withJSONObject: [
             "contents": [["parts": [["text": chunk.text]]]],
-            "generationConfig": ["responseModalities": ["AUDIO"], "speechConfig": ["voiceConfig": ["prebuiltVoiceConfig": ["voiceName": "Kore"]]]],
+            "generationConfig": ["responseModalities": ["AUDIO"], "speechConfig": ["voiceConfig": ["prebuiltVoiceConfig": ["voiceName": settings.voice(for: chunk.lang) ?? "Kore"]]]],
         ])
         let (data, response) = try await URLSession.shared.data(for: request)
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
@@ -409,7 +417,7 @@ final class Speaker {
             throw EngineError.status(0)
         }
         if audio.prefix(4) == Data("RIFF".utf8) { audio = audio.dropFirst(44) }
-        try player.schedule(Data(audio), gain: 1)
+        try player.schedule(Data(audio), settings)
         onAudio()
     }
 }
@@ -418,12 +426,13 @@ extension SystemVoice {
     var isBusy: Bool { onFirstWord != nil }
 }
 
+@MainActor
 func kokoroRequest(_ text: String) -> URLRequest {
     var request = URLRequest(url: kokoroURL.appending(path: "v1/audio/speech"))
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "content-type")
     request.httpBody = try? JSONSerialization.data(withJSONObject: [
-        "input": text, "model": "mlx-community/Kokoro-82M-bf16", "response_format": "pcm", "voice": "af_heart",
+        "input": text, "model": "mlx-community/Kokoro-82M-bf16", "response_format": "pcm", "voice": config[.kokoro].voice(for: .en) ?? "af_heart",
     ])
     return request
 }
@@ -480,16 +489,17 @@ struct XSpeak {
     @MainActor
     static func main() async {
         var args = Array(CommandLine.arguments.dropFirst())
-        var engines = chain
+        var only: Engine?
         if let flag = args.firstIndex(of: "--engine"), flag + 1 < args.count, let engine = Engine(rawValue: args[flag + 1]) {
-            engines = [engine]
+            only = engine
             args.removeSubrange(flag...(flag + 1))
         }
+        configFile.refresh()
 
         await speaker.loadKeys()
         if !args.isEmpty {
-            if engines.contains(.kokoro) { await speaker.warmKokoro() }
-            speaker.speak(chunks(normalize(args.joined(separator: " "))), engines: engines, pressed: .now)
+            if only == nil || only == .kokoro { await speaker.warmKokoro() }
+            speaker.speak(chunks(normalize(args.joined(separator: " "))), only: only, pressed: .now)
             while speaker.isSpeaking { try? await Task.sleep(for: .milliseconds(50)) }
             exit(0)
         }
@@ -511,6 +521,7 @@ struct XSpeak {
 
 enum StreamState { case waiting, playing, timedOut }
 
+@MainActor
 func kokoroPCM(_ text: String) async throws -> Data {
     let (data, response) = try await URLSession.shared.data(for: kokoroRequest(text))
     let status = (response as? HTTPURLResponse)?.statusCode ?? 0

@@ -4,11 +4,12 @@
   🔊 x-speak — select text, press F5: read aloud; F5 again: stop.
 
   - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 30s
-  - engines — en: elevenlabs (Sarah) → kokoro → siri; uk/ru: elevenlabs → the best installed Lesya/Milena. one 500 ms first-audio budget per chunk, kokoro renders in parallel so a cloud miss costs nothing. fish and gemini only with --engine
+  - config — config.json beside this plist: chain per language, voice, speed and gain per engine, the first-audio budget; re-read on the next F5 after a save, a bad edit keeps the last good one
+  - engines — elevenlabs (Sarah) leads; kokoro renders the first chunk in parallel so a cloud miss costs nothing; fish and gemini only with --engine
   - keys — fetched once at start through script/op-run.sh, held in memory only
   - kokoro — starts mlx_audio.server on 127.0.0.1:7383 and keeps it warm (~620 MB)
   - output — ~/.local/share/x-speak/daemon.err.log: one line per press with grab, normalize and first-audio times
-  - source — ~/frame/schedule/jobs/x-speak/main.swift, normalize.swift; golden.json is the normalizer's contract
+  - source — ~/frame/schedule/jobs/x-speak/main.swift, config.swift, normalize.swift; golden.json is the normalizer's contract
   - gotcha — needs Accessibility for the selection grab; signed with «x-speak local signing» the grant survives rebuilds, ad-hoc it pins to the cdhash
 -->
 <plist version="1.0">
