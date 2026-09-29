@@ -1,3 +1,5 @@
+import { Info } from '@/components/Info.tsx';
+
 // a millisecond setting: a slider to feel it out, a number box to type it exactly; both edit the same value
 export const MsSetting = (props: MsSettingProps) => {
     const set = (raw: string) => {
@@ -7,13 +9,14 @@ export const MsSetting = (props: MsSettingProps) => {
     };
 
     return (
-        <div
-            className='flex items-center gap-2 text-sm text-muted'
-            title={props.hint}>
-            <span className='whitespace-nowrap'>{props.label}</span>
+        <div className='flex items-center gap-2 text-sm text-muted'>
+            <span className='flex items-center gap-1 whitespace-nowrap'>
+                {props.label}
+                <Info below text={props.info} />
+            </span>
             <input
                 aria-label={`${props.label} slider`}
-                className='h-6 w-28 min-w-0 sm:w-44'
+                className='h-6 w-28 min-w-0 lg:w-32 xl:w-40'
                 max={props.max}
                 min={0}
                 onChange={(event) => set(event.target.value)}
@@ -39,7 +42,7 @@ export const MsSetting = (props: MsSettingProps) => {
 /* Types */
 interface MsSettingProps {
     label: string;
-    hint: string;
+    info: string;
     value: number;
     max: number;
     onChange: (value: number) => void;

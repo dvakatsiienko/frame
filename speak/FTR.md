@@ -43,9 +43,9 @@
   - then focus returns to the voice button, which shows ♥ before a favourite
 - ✅ speed and gain sliders per engine, shared by every language
   - decision: the macOS voice has no gain — its synthesizer cannot go above its own level
-- ✅ an «i» beside gain explains it in one line
-  - when the user hovers or focuses the «i»
-  - then «loudness: 1 is the voice as the engine sends it, 2 is twice as loud» shows
+- ✅ an «i» beside every setting explains it in one line: what it does, which way to move it, a value to try
+  - when the user hovers or focuses the «i» beside pill flow
+  - then «how fast the wave travels outward. too fast → raise it first. try 70» shows, below the «i»
 - ✅ ▶ previews a card through the daemon
   - given x-speak is running
   - when the user presses ▶ on a card

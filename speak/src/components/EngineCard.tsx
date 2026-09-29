@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { useSortable } from '@dnd-kit/react/sortable';
 
 import { BRAND_HUE, EngineMark } from '@/components/EngineMark.tsx';
+import { Info } from '@/components/Info.tsx';
 import { StateBadge } from '@/components/StateBadge.tsx';
 import { VoicePicker } from '@/components/VoicePicker.tsx';
 
@@ -88,6 +89,7 @@ export const EngineCard = (props: EngineCardProps) => {
                 value={props.voice}
             />
             <Slider
+                info='how fast the voice talks. too fast → lower it. try 1.0'
                 label='speed'
                 max={2}
                 min={0.5}
@@ -98,7 +100,7 @@ export const EngineCard = (props: EngineCardProps) => {
             />
             {props.engine !== 'system' && (
                 <Slider
-                    info='loudness: 1 is the voice as the engine sends it, 2 is twice as loud'
+                    info='how loud the voice is. too quiet → raise it. try 1.5'
                     label='gain'
                     max={4}
                     min={0}
@@ -180,28 +182,6 @@ const Slider = (props: SliderProps) => {
                 {props.value.toFixed(props.step < 0.1 ? 2 : 1)}
             </output>
         </div>
-    );
-};
-
-// a small «i»: its line shows on hover and on keyboard focus, and Esc hides it
-const Info = (props: { text: string }) => {
-    return (
-        <span className='group relative inline-flex'>
-            <button
-                aria-label={props.text}
-                className='inline-grid size-6 cursor-help place-items-center rounded-full text-xs text-muted hover:text-ink'
-                onKeyDown={(event) =>
-                    event.key === 'Escape' && event.currentTarget.blur()
-                }
-                type='button'>
-                ⓘ
-            </button>
-            <span
-                className='invisible absolute bottom-full left-0 z-10 mb-1 w-56 rounded-md border border-line bg-surface p-2 text-sm text-ink shadow-md group-focus-within:visible group-hover:visible'
-                role='tooltip'>
-                {props.text}
-            </span>
-        </span>
     );
 };
 

@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { Column } from '@/components/Column.tsx';
+import { Info } from '@/components/Info.tsx';
 import { MsSetting } from '@/components/MsSetting.tsx';
 import { SectionFallback } from '@/components/SectionFallback.tsx';
 
@@ -284,9 +285,15 @@ export const App = () => {
             <div className='mx-auto max-w-[1280px] px-4 pt-4'>
                 <section
                     aria-label='playback'
-                    className='flex flex-wrap items-center gap-x-8 gap-y-3 rounded-[22px] border border-line bg-surface px-5 py-3'>
+                    className='flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[22px] border border-line bg-surface px-5 py-3'>
                     <label className='flex items-center gap-2 text-sm text-muted'>
-                        first audio budget{' '}
+                        <span className='flex items-center gap-1 whitespace-nowrap'>
+                            first audio budget
+                            <Info
+                                below
+                                text='how long a cloud voice gets to start before the next takes over. too many fallbacks → raise it. try 900'
+                            />
+                        </span>
                         <input
                             className='w-20 rounded-md border border-line bg-surface px-2 py-1 text-right text-sm tabular-nums text-ink'
                             max={3000}
@@ -304,7 +311,7 @@ export const App = () => {
                         ms
                     </label>
                     <MsSetting
-                        hint='how long a bar takes to reach a new level; 0 jumps straight to it'
+                        info='how smoothly a bar reaches its height. too sharp → raise it. try 30'
                         label='pill glide'
                         max={200}
                         onChange={(value) =>
@@ -313,7 +320,7 @@ export const App = () => {
                         value={draft.meterGlideMs ?? 30}
                     />
                     <MsSetting
-                        hint='how long the wave holds before moving one bar outward; lower travels faster'
+                        info='how fast the wave travels outward. too fast → raise it first. try 70'
                         label='pill flow'
                         max={200}
                         onChange={(value) =>

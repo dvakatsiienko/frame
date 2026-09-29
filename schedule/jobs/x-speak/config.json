@@ -44,6 +44,6 @@
         }
     },
     "firstAudioMs": 900,
-    "meterFlowMs": 172,
-    "meterGlideMs": 30
+    "meterFlowMs": 70,
+    "meterGlideMs": 27
 }
