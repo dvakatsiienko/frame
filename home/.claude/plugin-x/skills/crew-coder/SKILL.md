@@ -43,6 +43,8 @@ what the coordinator's halt reads.
     read hid three tools twice).
   - a taxonomy comes from a grep, never from adjacency.
   - a probe runs its control first, then the surprising input.
+  - **a cli you ship answers bad input with exit 2 and one line** — a missing arg, an unreadable file, a wrong shape;
+    never a stack trace (six such defects reached review on the `design:*` scripts, 2026-09-29).
   - **a probe that needs dima's hands asks first and launches on his word** — «he is at the
     keyboard» is never a guarantee (two wasted probe rounds, 2026-09-14).
 - **a rule you write is read from the docs, never from the lockfile** (a react-compiler line

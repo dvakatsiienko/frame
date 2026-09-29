@@ -10,16 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «it definitely 100 % worked before» · 2026-09-17
-Three research rounds and my own probe said the caret language indicator could not be turned off
-globally on macOS 27 without losing the Birman layouts — the pref made them vanish from the
-system's list. He had no cause, only the memory that a coder had fixed it once, and he sent me
-back in twice. The fix was a name-versus-id quirk: with the pref off the system renames custom
-layouts, and selecting by display name works in both states. His felt sense was wrong about the
-cause (the OS upgrade) and right about the thing that mattered: a global fix existed. → the
-layout script commands; the method-report-verify lesson: a «no» from three rounds is still an
-inference while a door stays unprobed by another name
-
 ## «should be green» · 2026-09-19
 He sent one screenshot of the raycast schedule command with an arrow at a sleeping glyph on a
 cloud job that had run fine an hour earlier: «should be green». The code was correct by its own
@@ -66,3 +56,11 @@ He wrote the trophy-sys plan with me, said «start shift» and went to cook. I k
 
 ## «make it lightning fast» · 2026-09-29
 speak worked end to end on node: raycast → a script → op-run for the keys → ffplay, with a clean engine fallback. he listened and said: «system readaloud have slight .1s delay before speaking. i feel that with those fallbacks the latency also be present. make it fast.» no profiler, only the feel of F4 beside ours. the coder timed each stage: op-run 800 ms per press, a player spawn 250–360 ms, `say` 280 ms — over a second before any synthesis, against F4's already-running speech engine. the whole node design went; one resident swift daemon took its place, and his first F5 heard Sarah at 401 ms, warm ones at 189. his felt sense named the architecture before anyone measured it. → `schedule/jobs/x-speak`, the latency line in `craft-spawning`
+
+## «it feels off to me that it is unavailable» · 2026-09-29
+he asked the speak coder to set up impeccable, and it said the plugin was inaccessible. the coder turned it on, and he came
+to me with one line: «it feels off to me that it is unavailable when I need it». the day before, he had said «keep it
+enabled, no toggling», and I had set it on at user scope. my own commit that evening edited frame's project settings and
+left `"impeccable@impeccable": false` in them; a project value beats a user value, so every frame session ran without it
+for a day. no error, no log line, only his sense that a thing he had settled was not settled. → `sys-settings-drift`,
+e4c5c8b5

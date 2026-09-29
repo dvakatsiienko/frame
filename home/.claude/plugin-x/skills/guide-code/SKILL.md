@@ -45,6 +45,8 @@ their head.
   behavior — the most common defect is a fix that works only where you tested it.
 - **Smallest proof.** Targeted tests and typecheck for what you touched; CI owns the full
   suite — no repo-wide checks unasked.
+- **A red-proof edits the existing line.** Prove a test by mutating the line it reads, never by adding a sibling
+  key — biome sorts keys on save and the original silently wins, so the test reads «hollow» when it is not.
 
 ## traps that cost hours
 

@@ -43,6 +43,9 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 
 0. **reuse before spawn** — an idle child revives by message with context intact; a warm coder is
    worth ~50k.
+0.4. **a new spawn home gets its trust key** — a `--bg` spawn reads the exact folder in `~/.claude.json`
+   (`projects[<path>].hasTrustDialogAccepted`), never a trusted parent; `~/projects/studio` was refused on its first
+   spawn (2026-09-29). set it with `jq` on a backup when the home is made.
 0.5. **spare age** — every `--bg` spawn claims a pre-warmed `claude bg-spare`, and a day-old spare
    booted a coder WITHOUT the repo's root `AGENTS.md` (2026-09-22, ccbee7b0). check
    `ps -o pid,lstart,command -ax | grep '[b]g-spare'`; older than a day → `claude daemon stop
