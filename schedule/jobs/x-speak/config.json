@@ -1,6 +1,6 @@
 {
     "chain": {
-        "en": ["elevenlabs", "kokoro", "fish", "system"],
+        "en": ["elevenlabs", "fish", "kokoro", "system"],
         "ru": ["elevenlabs", "system"],
         "uk": ["elevenlabs", "system"]
     },
@@ -21,9 +21,7 @@
             "model": "s2.1-pro-free",
             "speed": 1,
             "voice": {
-                "en": "933563129e564b19a115bedd57b7406a",
-                "ru": "9582e65623564ac38bc53eefb762af60",
-                "uk": "fe8ba2d4555d457ba5fec0e86430c7fe"
+                "*": "933563129e564b19a115bedd57b7406a"
             }
         },
         "gemini": {

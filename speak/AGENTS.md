@@ -8,8 +8,9 @@ not deployed anywhere: it edits this mac's config.json and talks to this mac's d
 
 **`FTR.md` + `CONTEXT.md`** — read your section before changing what the app does.
 
-📌 `PRODUCT.md` and `DESIGN.md` are stubs until impeccable `init` + `document` run in dima's session; they are
-impeccable's files, so replace them through it, never by hand.
+📌 `PRODUCT.md` (impeccable `init`, 2026-09-29) is the product record — read it before changing what the app
+does. `DESIGN.md` is a stub until `document` runs. both are impeccable's files: change them through it, never by
+hand.
 
 ## the daemon is not here
 

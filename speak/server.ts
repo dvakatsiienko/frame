@@ -29,20 +29,9 @@ const VOICES = {
         ['cgSgspJ2msm6clMCkdW9', 'Jessica'],
         ['pFZP5JQG7iQjIQuC4Bku', 'Lily'],
     ],
-    // fish's s2 model reads any language in any library voice; the tag is the language the voice was cloned from.
-    // female-tagged, most-used first, each answered 200 on s2.1-pro-free (2026-09-29). the old «ru female»
-    // (2a1036d6…) sounded male to dima, so it is out
-    fish: [
-        ['933563129e564b19a115bedd57b7406a', 'Sarah · en'],
-        ['98655a12fa944e26b274c535e5e03842', 'E-girl · en, soft'],
-        ['f48d143a59a946ab87c0130fd081f349', 'Polo · en'],
-        ['9582e65623564ac38bc53eefb762af60', 'Марина · ru, young'],
-        ['fe8ba2d4555d457ba5fec0e86430c7fe', 'Рената · ru, soft'],
-        ['54fafc12b07b40c4831de1e62d4bf449', 'Кутьина · ru, narrator'],
-        ['63f6b8da0e6b4a9486443b674024d2ad', 'Алиса · ru, calm'],
-        ['2625ff9fcb274801b86e2cbb0bf0bd69', 'Римма · ru, clear'],
-        ['d567e990d9ad433892ed15ecfd70ce54', 'Молодий жіночий · ru'],
-    ],
+    // fish's library is community clones, only as good as the uploaded clip; dima kept Sarah alone after a listen
+    // (2026-09-29). s2 reads any language in her voice
+    fish: [['933563129e564b19a115bedd57b7406a', 'Sarah']],
     gemini: [
         ['Kore', 'Kore'],
         ['Aoede', 'Aoede'],

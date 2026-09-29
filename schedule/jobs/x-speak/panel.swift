@@ -70,11 +70,11 @@ final class Meter {
         shown = history.reversed() + history.dropFirst()
     }
 
-    // one display frame: a frame-rate-independent ease, ~43 ms to cover most of the gap
+    // one display frame: a frame-rate-independent ease, ~35 ms to cover most of the gap
     func frame(at date: Date) -> [Float] {
         let dt = lastFrame.map { min(0.1, date.timeIntervalSince($0)) } ?? 1.0 / 60
         lastFrame = date
-        let ease = Float(1 - exp(-dt / 0.043))
+        let ease = Float(1 - exp(-dt / 0.035))
         let raw = history.reversed() + history.dropFirst()
         // a light blur across neighbours, so the wave reads as one flowing shape, not 17 independent bars
         let target = raw.indices.map { index in

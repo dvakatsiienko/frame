@@ -375,18 +375,23 @@ final class Speaker {
         panel.show()
         job = Task {
             var isFirst = true
+            // the engine that played the read's first chunk leads every later one, so one read keeps one voice: a
+            // cloud engine that missed chunk 1's budget no longer takes over mid-read once audio is playing
+            var lead: Engine?
             for chunk in parts {
-                let candidates = (only.map { [$0] } ?? config.chain[chunk.lang] ?? []).filter { $0.speaks(chunk.lang) && (skipUntil[$0] ?? .distantPast) < Date() }
+                var candidates = (only.map { [$0] } ?? config.chain[chunk.lang] ?? []).filter { $0.speaks(chunk.lang) && (skipUntil[$0] ?? .distantPast) < Date() }
+                if let lead, let at = candidates.firstIndex(of: lead) { candidates.insert(candidates.remove(at: at), at: 0) }
                 // a cloud engine racing its deadline: kokoro renders the same chunk meanwhile, so a miss costs nothing
-                if candidates.first?.isCloud == true, candidates.contains(.kokoro), !player.isPlaying {
+                if lead == nil, candidates.first?.isCloud == true, candidates.contains(.kokoro), !player.isPlaying {
                     let voice = settings(.kokoro).voice(for: .en)
                     kokoroPrefetch = (chunk.text, Task { try await kokoroPCM(chunk.text, voice: voice) })
                 }
                 // one first-audio budget per chunk, shared by every cloud engine: misses never stack
                 let budgetEnds = player.isPlaying || systemVoice.isBusy ? nil : ContinuousClock.now + .milliseconds(config.firstAudioMs)
                 for engine in candidates {
-                    // the last candidate has nothing to yield to, so it waits as long as it takes
-                    let deadline = engine.isCloud && engine != candidates.last ? budgetEnds.map { $0 - ContinuousClock.now } : nil
+                    // the last candidate has nothing to yield to, so it waits as long as it takes; neither does the read's
+                    // lead — a gap between chunks must not hand its voice to the next engine
+                    let deadline = engine.isCloud && engine != candidates.last && engine != lead ? budgetEnds.map { $0 - ContinuousClock.now } : nil
                     if let deadline, deadline <= .zero { continue }
                     do {
                         try await speak(chunk, with: engine, deadline: deadline) {
@@ -394,6 +399,8 @@ final class Speaker {
                             isFirst = false
                         }
                         outOfQuota[engine] = nil
+                        if let lead, lead != engine { log("voice switch: \(lead.rawValue) → \(engine.rawValue) mid-read") }
+                        lead = engine
                         break
                     } catch is CancellationError {
                         return
