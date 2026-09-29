@@ -23,7 +23,10 @@ the page AND the state behind it: a drag or a save is proven by the ranks the pa
 7. **preview** — ▶ on the kokoro card: the status line reads «▶ kokoro · en» and the daemon log gets a
    `first audio: kokoro` line
 8. **gain «i»** — focusing the «i» makes its tooltip visible with the one-line explanation
-9. **favicons** — `/speak-32.png` answers 200 image/png; `/../package.json` answers 404
+9. **favourites** — open elevenlabs's voice list, ♡ Lily: she moves to the top as ♥; tick «only ♥ favourites»:
+   only Lily stays; focus her row, Enter: the button reads «♥ Lily» and holds focus; Esc on a reopened list closes
+   it with focus back on the button. save: the diff adds `"favourites": [...]` and the daemon logs «config: loaded»
+10. **favicons** — `/speak-32.png` answers 200 image/png; `/../package.json` answers 404
 
 ## essentials
 

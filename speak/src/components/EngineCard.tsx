@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/react/sortable';
 
 import { StateBadge } from '@/components/StateBadge.tsx';
+import { VoicePicker } from '@/components/VoicePicker.tsx';
 
 import {
     ENGINE_LABELS,
@@ -18,14 +19,6 @@ export const EngineCard = (props: EngineCardProps) => {
         group: props.lang,
         id: `${props.lang}:${props.engine}`,
         index: props.rank ?? -1,
-    });
-
-    const optionListJSX = props.voiceOptions.map(([id, name]) => {
-        return (
-            <option key={id} value={id}>
-                {name}
-            </option>
-        );
     });
 
     const orderJSX = isOn && (
@@ -51,13 +44,14 @@ export const EngineCard = (props: EngineCardProps) => {
 
     const settingsJSX = isOn && (
         <div className='grid gap-2'>
-            <select
-                aria-label={`${label} voice for ${props.lang}`}
-                className='w-full rounded-md border border-line bg-surface px-2 py-1 text-sm'
-                onChange={(event) => props.onVoice(event.target.value)}
-                value={props.voice}>
-                {optionListJSX}
-            </select>
+            <VoicePicker
+                favourites={props.settings.favourites ?? []}
+                label={`${label} voice for ${props.lang}`}
+                onChange={props.onVoice}
+                onFavourite={props.onFavourite}
+                options={props.voiceOptions}
+                value={props.voice}
+            />
             <Slider
                 label='speed'
                 max={2}
@@ -200,6 +194,7 @@ interface EngineCardProps {
     onSettings: (patch: EngineSettings) => void;
     onToggle: (isOn: boolean) => void;
     onVoice: (voice: string) => void;
+    onFavourite: (voice: string, isFavourite: boolean) => void;
 }
 
 interface SliderProps {

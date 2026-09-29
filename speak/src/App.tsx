@@ -75,6 +75,18 @@ export const App = () => {
         else delete current[lang];
         setEngine(engine, { voice: current });
     };
+    const setFavourite = (
+        engine: Engine,
+        voice: string,
+        isFavourite: boolean,
+    ) => {
+        const current = draft.engines[engine]?.favourites ?? [];
+        setEngine(engine, {
+            favourites: isFavourite
+                ? [...current, voice]
+                : current.filter((each) => each !== voice),
+        });
+    };
     const preview = async (engine: Engine, lang: Lang) => {
         const voice = voiceOf(draft, engine, lang);
         const reply = await api.preview({
@@ -123,6 +135,7 @@ export const App = () => {
                             chain: { ...draft.chain, [lang]: chain },
                         })
                     }
+                    onFavourite={setFavourite}
                     onPreview={(engine) => void preview(engine, lang)}
                     onSample={(sample) =>
                         setSamples({ ...samples, [lang]: sample })

@@ -30,6 +30,9 @@ export const Column = (props: ColumnProps) => {
                 isLast={rank === chain.length - 1}
                 key={engine}
                 lang={props.lang}
+                onFavourite={(voice, isFavourite) =>
+                    props.onFavourite(engine, voice, isFavourite)
+                }
                 onMove={(step) => props.onChain(swap(chain, rank, rank + step))}
                 onPreview={() => props.onPreview(engine)}
                 onSettings={(patch) => props.onSettings(engine, patch)}
@@ -107,4 +110,5 @@ interface ColumnProps {
     onSample: (sample: string) => void;
     onSettings: (engine: Engine, patch: EngineSettings) => void;
     onVoice: (engine: Engine, voice: string) => void;
+    onFavourite: (engine: Engine, voice: string, isFavourite: boolean) => void;
 }

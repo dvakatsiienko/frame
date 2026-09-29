@@ -3,6 +3,7 @@
 - **engine** — a way to turn text into speech: elevenlabs, kokoro, fish, gemini, or the macOS voice
 - **chain** — one language's engines in the order the daemon tries them; a failing engine hands the line to the next
 - **voice** — the speaker an engine uses, chosen per language
+- **favourite** — a voice marked ♥ for an engine; favourites sort first in that engine's list, and only the admin reads them
 - **speed** — playback rate, pitch kept; 1 is the engine's own pace
 - **gain** — loudness multiplier on an engine's audio; 1 is as sent
 - **sample line** — the text ▶ speaks for a column; it is never saved

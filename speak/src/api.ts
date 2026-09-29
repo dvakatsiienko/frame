@@ -59,6 +59,8 @@ export type Engine = (typeof ENGINES)[number];
 
 export interface EngineSettings {
     model?: string;
+    // voice ids dima hearted; the daemon ignores them, the admin sorts them to the top
+    favourites?: string[];
     voice?: Partial<Record<Lang | '*', string>>;
     speed?: number;
     gain?: number;

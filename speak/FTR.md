@@ -28,6 +28,17 @@
 - ✅ a voice per engine and language
   - given the macOS voice card
   - then its list holds only installed female voices of that language, «Spoken Content voice (Siri)» for en, «best installed» for uk and ru
+- ✅ a ♥ on each voice marks it a favourite, per engine
+  - makes: a `favourites` list per engine in config.json
+  - given the voice list of a card is open
+  - when the user presses ♡ beside a voice
+  - then it turns ♥ and the voice moves to the top of that engine's list in every language
+- ✅ «only ♥ favourites» filters a voice list to the favourites
+  - given an engine with at least one favourite
+  - when the user ticks «only ♥ favourites»
+  - then only the favourites stay in the list; with none, the filter is disabled
+- ✅ a voice list opens as a popover and closes on a pick, on Esc, or on a click outside
+  - then focus returns to the voice button, which shows ♥ before a favourite
 - ✅ speed and gain sliders per engine, shared by every language
   - decision: the macOS voice has no gain — its synthesizer cannot go above its own level
 - ✅ an «i» beside gain explains it in one line
