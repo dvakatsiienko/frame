@@ -163,6 +163,35 @@ export const byApp = (event: LogEvent) => event.app;
 
 export const featureOf = (hotkey: Hotkey) => hotkey.feature ?? hotkey.action;
 
+// An app's time in front: each activation lasts until the next one. The log has no lock, sleep or
+// idle events, so a gap is capped — past 15 minutes dima was most likely away, not reading.
+export const IDLE_CAP_MS = 15 * 60_000;
+
+const awayApps = new Set([
+    'com.apple.loginwindow',
+    'com.apple.ScreenSaver.Engine',
+]);
+
+export const timeInFront = (events: readonly LogEvent[]): Tally[] => {
+    const switches = events
+        .filter((event) => event.kind === 'activate')
+        .map((event) => ({ app: event.app, at: Date.parse(event.ts) }))
+        .sort((a, z) => a.at - z.at);
+    const minutes = new Map<string, number>();
+    switches.forEach((each, at) => {
+        // the lock screen coming to the front is dima leaving: its span is away time, not an app
+        if (awayApps.has(each.app)) return;
+        const next =
+            switches[at + 1]?.at ?? Math.min(Date.now(), each.at + IDLE_CAP_MS);
+        const spent = Math.min(next - each.at, IDLE_CAP_MS) / 60_000;
+        minutes.set(each.app, (minutes.get(each.app) ?? 0) + spent);
+    });
+    return [...minutes]
+        .map(([name, count]) => ({ count: Math.round(count), name }))
+        .filter((row) => row.count > 0)
+        .sort((a, z) => z.count - a.count || a.name.localeCompare(z.name));
+};
+
 // Presses per feature, whatever key carried it at the time: each press is labelled as of its own
 // moment, then filed under that label's feature. The chords under a feature ride along, so the
 // page can show where the count came from — opt+esc, then F4, then x-speak's key.
@@ -192,33 +221,14 @@ export const tallyFeatures = (
         );
 };
 
-const bareModifiers = new Set([
-    'cmd',
-    'rcmd',
-    'opt',
-    'ropt',
-    'ctrl',
-    'rctrl',
-    'shift',
-    'rshift',
-]);
-
-const isStrayModifier = (chord: string) => bareModifiers.has(chord);
-
-// ⌥ or ⌥⇧ on a printable key types a character on the birman layout (opt+9 is →, opt+- is —).
-// Unbound, that is typing — the recorder stops writing it; this hides what it wrote before.
-const isTypedCharacter = (chord: string) =>
-    /^opt\+(shift\+)?(.|space)$/.test(chord);
-
-// Presses the tables leave out: an unbound bare modifier (a ⌘-click, a chord abandoned half-way —
-// 3,269 bare `cmd` in the first 16 days) and unbound ⌥-typing. The log keeps them; this only
-// stops them ranking.
+// A press counts only when a binding explains it. Everything else — a ⌘-click read as a bare
+// cmd, a birman ⌥-character, an app's own cmd+r / cmd+t nobody mapped — is left out of every
+// table (dima, 2026-09-29: «too much, and no app lets us read them all»). The log keeps it all.
 export const isUntracked = (
     hotkeys: readonly Hotkey[],
     event: LogEvent,
 ): boolean =>
     event.chord !== undefined &&
-    (isStrayModifier(event.chord) || isTypedCharacter(event.chord)) &&
     labelAt(hotkeys, event.chord, event.ts, event.app) === undefined;
 
 // Bound somewhere, never pressed in the window — the rebind candidates.

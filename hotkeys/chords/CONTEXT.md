@@ -73,6 +73,14 @@ _Avoid_: history, event log
 The frontmost app changing, as the press log records it.
 _Avoid_: app switch event, activation, focus change
 
+**Time in front**:
+The minutes an app held the front, from its switch to the next one; a gap over 15 minutes counts as 15, the lock screen as away.
+_Avoid_: screen time, usage time
+
+**Reach cost**:
+How hard a chord is to press: the key's rows from the home row, its sideways distance to the nearest home key, and a cost per held modifier. The rebind advisor ranks by it.
+_Avoid_: difficulty, ergonomics score
+
 **Never pressed**:
 A binding with no press in the whole press log — a rebind candidate.
 _Avoid_: cold, unused, dead

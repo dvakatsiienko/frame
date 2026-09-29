@@ -18,6 +18,7 @@ import {
     selectEvents,
     tally,
     tallyFeatures,
+    timeInFront,
     unpressed,
 } from './stats.ts';
 
@@ -49,9 +50,27 @@ export const buildReport = (
     // would be making a different claim in the same words.
     const cold = unpressed(live, ofKind(events, 'chord'));
 
+    const counted = ofKind(events, 'chord').filter(
+        (event) => !isUntracked(bindings, event),
+    );
+    const weekOf = (fromDays: number, toDays: number) => {
+        const now = Date.now();
+        const inWeek = counted.filter((event) => {
+            const age = (now - Date.parse(event.ts)) / 86_400_000;
+            return age >= fromDays && age < toDays;
+        });
+        return new Map(
+            tallyFeatures(bindings, inWeek).map((row) => [
+                row.feature,
+                row.count,
+            ]),
+        );
+    };
+    const thisWeek = weekOf(0, 7);
+    const lastWeek = weekOf(7, 14);
+
     return {
         boundCount: live.length,
-        chordsPerApp: tally(chords, byApp).map(toAppRow),
         neverPressed: cold.map((hotkey) => ({
             action: hotkey.action,
             app: hotkey.app,
@@ -61,13 +80,17 @@ export const buildReport = (
         span: spanOf(selected, windowDays[window]),
         switches: switches.length,
         switchesPerApp: tally(switches, byApp).map(toAppRow),
+        timePerApp: timeInFront(selected).map(toAppRow),
         topChords: tally(chords, byLabelledChord(bindings)).map(toChordRow),
-        // a feature no live binding carries still shows its history, marked retired
+        // a feature no live binding carries still shows its history, marked retired. the trend
+        // is always the last seven days against the seven before, whatever the window
         topFeatures: tallyFeatures(bindings, chords).map((row) => ({
             ...row,
             isRetired: !live.some(
                 (hotkey) => featureOf(hotkey) === row.feature,
             ),
+            lastWeek: lastWeek.get(row.feature) ?? 0,
+            thisWeek: thisWeek.get(row.feature) ?? 0,
         })),
         window,
     };
@@ -170,8 +193,13 @@ export interface StatsReport {
     switches: number;
     boundCount: number;
     topChords: ChordRow[];
-    topFeatures: (FeatureTally & { isRetired: boolean })[];
-    chordsPerApp: AppRow[];
+    topFeatures: (FeatureTally & {
+        isRetired: boolean;
+        thisWeek: number;
+        lastWeek: number;
+    })[];
     switchesPerApp: AppRow[];
+    // minutes in front, an idle gap capped at 15
+    timePerApp: AppRow[];
     neverPressed: ColdRow[];
 }

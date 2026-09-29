@@ -11,21 +11,60 @@ export const layout = [
     [['ctrl', 5], ['opt', 5], ['cmd', 5], ['space', 25], ['rcmd', 4], ['fn', 4], ['rctrl', 4], ['left', 4], ['down', 4], ['right', 4]],
 ] as const satisfies readonly (readonly (readonly [string, number])[])[];
 
-// The order layer tabs appear in: how often dima reaches for each, not alphabetical. A layer
-// the scan finds that is not on this list sorts last rather than disappearing.
-export const layerOrder = [
-    'hyper',
-    'ctrl+opt',
-    'opt',
-    'cmd',
-    'ctrl+cmd',
-    'shift+cmd',
-    'ctrl',
-    'ctrl+shift',
-    'shift',
-    'ctrl+opt+cmd',
-    '',
-];
+// dima's reading order for the layer tabs (2026-09-29): hyper, then a group per leading modifier —
+// cmd, ctrl, opt, shift — each growing from its bare layer outward, and no modifier last. A rule,
+// not a list, so a layer that appears later sorts itself.
+const leadRank = ['hyper', 'cmd', 'ctrl', 'opt', 'shift'];
+
+const layerRank = (layer: string): [number, number, string] => {
+    if (layer === '') return [99, 0, ''];
+    const shown = layerName(layer).split('+');
+    const lead = leadRank.indexOf(shown[0] ?? '');
+    return [lead === -1 ? 50 : lead, shown.length, shown.join('+')];
+};
+
+export const compareLayers = (a: string, z: string) => {
+    const [aLead, aSize, aName] = layerRank(a);
+    const [zLead, zSize, zName] = layerRank(z);
+    return aLead - zLead || aSize - zSize || aName.localeCompare(zName);
+};
+
+// Reach, for the rebind advisor: how far a key sits from the resting hands. Rows away from the
+// home row cost most (the f-row 2.5, numbers 2, the letter rows 1), then the sideways distance
+// to the nearest home key, then each held modifier. A heuristic, not a measurement — it ranks.
+const rowCost = [2.5, 2, 1, 0, 1, 1.5];
+const homeKeys = ['a', 's', 'd', 'f', 'j', 'k', 'l', ';'];
+
+const keyPlace = new Map<string, { row: number; x: number }>(
+    layout.flatMap((row, at) => {
+        let left = 0;
+        return row.map(([key, width]) => {
+            const place = [key, { row: at, x: left + width / 2 }] as const;
+            left += width;
+            return place;
+        });
+    }),
+);
+
+const homeX = homeKeys.flatMap((key) => keyPlace.get(key)?.x ?? []);
+
+export const reachOf = (key: string): number | undefined => {
+    const place = keyPlace.get(key);
+    if (!place || key === '') return undefined;
+    if (key === 'space') return 0.5;
+    const sideways = Math.min(...homeX.map((x) => Math.abs(place.x - x)));
+    return (rowCost[place.row] ?? 2) + (sideways / 4) * 0.5;
+};
+
+export const chordCost = (mods: string, key: string): number | undefined => {
+    const reach = reachOf(key);
+    if (reach === undefined) return undefined;
+    const held =
+        mods === '' ? 0 : mods === 'hyper' ? 1 : mods.split('+').length;
+    return reach + held * 0.75;
+};
+
+export const layoutKeys = [...keyPlace.keys()].filter((key) => key !== '');
 
 export const modKeys = new Set([
     'ctrl',

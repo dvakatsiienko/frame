@@ -27,7 +27,13 @@ import {
     putNote,
     subscribeLive,
 } from '@/api.ts';
-import { colorOf, layerName, layerOrder, layout, modKeys } from '@/keyboard.ts';
+import {
+    colorOf,
+    compareLayers,
+    layerName,
+    layout,
+    modKeys,
+} from '@/keyboard.ts';
 import { queryKeys, useNotes, usePrefetchStats, useScan } from '@/queries.ts';
 import { GHOST, H2, TAB } from '@/ui.ts';
 
@@ -162,11 +168,7 @@ export const BoardPage = (props: BoardPageProps) => {
     const layers = useMemo(() => {
         const present = [...new Set(hotkeys.map((hotkey) => hotkey.mods))];
 
-        return present.sort(
-            (a, z) =>
-                (layerOrder.indexOf(a) + 1 || 99) -
-                (layerOrder.indexOf(z) + 1 || 99),
-        );
+        return present.sort(compareLayers);
     }, [hotkeys]);
 
     const noted = useMemo(

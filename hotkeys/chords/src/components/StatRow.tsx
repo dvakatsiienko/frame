@@ -16,7 +16,7 @@ export const StatRow = (props: StatRowProps) => {
     return (
         <li className='grid grid-cols-[64px_140px_minmax(0,1fr)] items-center gap-3 border-b border-line py-[3px] text-[13px]'>
             <span className='text-right font-mono text-[13px] tabular-nums text-ink'>
-                {props.count.toLocaleString()}
+                {props.value ?? props.count.toLocaleString()}
             </span>
             <span
                 aria-hidden='true'
@@ -61,6 +61,8 @@ export const StatRow = (props: StatRowProps) => {
 /* Types */
 interface StatRowProps {
     count: number;
+    // what the number column prints when the count is not the reading (minutes as «4h 12m»)
+    value?: string;
     detail?: string;
     dotColor?: string;
     label: string;

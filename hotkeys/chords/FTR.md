@@ -10,11 +10,13 @@
 - ✅ the mark and «chords», top-left, go home to the board
   - given the stats page is open
   - when the user clicks the mark or «chords»
-  - then the url reads `/` and the board is back; the pointer is a hand and the name underlines on hover
-  - makes: the four-keycap mark, also the favicon
+  - then the url reads `/` and the board is back, with no reload; the pointer is a hand
+  - decision: the ⌨️ emoji is the mark and the favicon (dima, 2026-09-29)
 - ✅ cmd leads every chord and layer it is part of, on every page
   - then a layer tab reads `cmd+ctrl`, a stats row `cmd+shift+4`, the glance keycaps ⌘ first
   - decision: display only — the log keys on the stored `ctrl+cmd` order, so renaming it would orphan every press (dima, 2026-09-29)
+- ✅ layer tabs read hyper, then the cmd layers, ctrl, opt, shift — each from its bare layer outward — and no modifier last
+  - decision: dima's reading order (2026-09-29); a rule, so a new layer sorts itself
 - ✅ board / stats tabs switch the page, back button included
   - given the board is open
   - when the user clicks stats, then the browser's back button
@@ -137,10 +139,15 @@
   - then one «read aloud» row counts all of them and lists `opt+esc 6,055 · f5 675 · f4 564`
   - decision: history belongs to the feature, not the key — a rebind must carry it (dima, 2026-09-29)
   - and a feature no live binding does any more reads «retired» before its chords (Restore, dropped 2026-09-21)
-- ✅ presses that are not hotkeys are left out of every table: an unbound bare modifier, unbound ⌥-typing
-  - given bare `cmd` and `opt+9` presses in the log, only `rcmd` and `opt+1` bound
-  - then no `cmd` or `opt+9` row shows, and presses counts without them; the log keeps every line
-  - decision: hidden, not wiped — ⌘-clicks, half chords and birman ⌥-characters are never a binding; the recorder stops writing both (dima, 2026-09-29)
+  - and each feature names its last seven days against the seven before: «7d 4,457 ▲ 108%»
+- ✅ only presses a binding explains are counted; every other press is left out of every table
+  - given bare `cmd`, `opt+9` and `cmd+r` in the log, and only `rcmd` and `opt+1` bound
+  - then no `cmd`, `opt+9` or `cmd+r` row shows, and presses counts without them; the log keeps every line
+  - decision: hidden, not wiped — ⌘-clicks, birman ⌥-characters and each app's own shortcuts are too many to map and not hotkeys dima chose (dima, 2026-09-29); the recorder stops writing the first two
+- ✅ rebind advisor: up to six moves that put a busy feature on a cheaper key
+  - given hyper+1 (Google Chrome, 1,404) and hyper+j free
+  - then «Google Chrome hyper+1 → free hyper+j» shows; a free key and a swap partner are each offered once, one suggestion per feature
+  - decision: no ai — a key's cost is its rows from home, its sideways distance and a cost per held modifier; only hyper, the bare f-keys and cmd+ctrl+opt are searched, because an app hides its own shortcuts everywhere else
 - ✅ each table heading has an «i» that says in one line what the table counts
   - when the user hovers or focuses the «i» beside «switches per app»
   - then «how often each app came to the front — ⌘-tab, a click, the dock or a hotkey» shows
@@ -153,8 +160,11 @@
 - ✅ chords, ranked; a row opens the board on that key
   - when the user clicks a chord row
   - then the board opens on that chord's layer with its key selected
-- ✅ chords per app, ranked
-- ✅ switches per app, ranked
+- ✅ time per app: minutes in front, from one switch to the next
+  - then Claude leads in hours and minutes; a gap over 15 minutes counts as 15, and the lock screen counts as away
+  - decision: replaces chords per app, which said «where shortcuts are pressed», not «which apps are used» (dima, 2026-09-29)
+- ✅ switches to app, ranked: every time an app came to the front
+  - decision: kept beside time — dima switches only to use an app, so it counts real use (2026-09-29)
 - ✅ never pressed, lifetime; a chord opens the board on that key
   - when the user switches the window
   - then the never-pressed list does not change

@@ -102,6 +102,9 @@ export interface FeatureStat {
     chords: { chord: string; count: number }[];
     // no live binding does it any more: the count is history
     isRetired: boolean;
+    // the last seven days and the seven before, whatever the window
+    thisWeek: number;
+    lastWeek: number;
 }
 export interface AppStat {
     app: string;
@@ -127,8 +130,9 @@ export interface StatsReport {
     boundCount: number;
     topChords: ChordStat[];
     topFeatures: FeatureStat[];
-    chordsPerApp: AppStat[];
     switchesPerApp: AppStat[];
+    // count is minutes in front, an idle gap capped at 15
+    timePerApp: AppStat[];
     neverPressed: ColdStat[];
 }
 

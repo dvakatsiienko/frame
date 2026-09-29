@@ -35,6 +35,7 @@ import {
     selectEvents,
     tally,
     tallyFeatures,
+    timeInFront,
     unpressed,
 } from './stats.ts';
 
@@ -177,8 +178,8 @@ table(
 step(`chords  ${dim(`${pressed.length} presses`)}`);
 table(tally(pressed, byLabelledChord(bindings)), chordLabel);
 
-step('chords per app');
-table(tally(pressed, byApp), appName);
+step(`time per app  ${dim('minutes in front, a gap over 15 capped')}`);
+table(timeInFront(window), appName);
 
 if (switches.length > 0) {
     step(`switches per app  ${dim(`${switches.length} activations`)}`);

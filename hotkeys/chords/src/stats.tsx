@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 /* Components */
+import { Advisor } from '@/components/Advisor.tsx';
 import { Info } from '@/components/Info.tsx';
 import { Notice, apiTrouble } from '@/components/Notice.tsx';
 import { StatRow } from '@/components/StatRow.tsx';
@@ -16,7 +17,7 @@ import {
     windowNames,
 } from '@/api.ts';
 import { colorOf, showChord } from '@/keyboard.ts';
-import { queryKeys, useStats } from '@/queries.ts';
+import { queryKeys, useScan, useStats } from '@/queries.ts';
 import { navigate } from '@/router.ts';
 import { GHOST, H2, TAB } from '@/ui.ts';
 
@@ -81,7 +82,8 @@ export const StatsPage = () => {
     // so both sides are guarded and an unreadable store simply means folded.
     const featuresFold = useFold('features');
     const chordsFold = useFold('chords');
-    const chordAppsFold = useFold('chords-per-app');
+    const timeAppsFold = useFold('time-per-app');
+    const scan = useScan();
     const switchAppsFold = useFold('switches-per-app');
 
     const windowTabListJSX = windowNames.map((name) => {
@@ -180,7 +182,12 @@ export const StatsPage = () => {
                                         count={row.count}
                                         detail={(row.isRetired
                                             ? ['retired']
-                                            : []
+                                            : [
+                                                  trendOf(
+                                                      row.thisWeek,
+                                                      row.lastWeek,
+                                                  ),
+                                              ]
                                         )
                                             .concat(
                                                 row.chords.map(
@@ -238,8 +245,8 @@ export const StatsPage = () => {
 
                     <section className='grid gap-2.5'>
                         <h2 className={H2}>
-                            switches per app{' '}
-                            <Info text='how often each app came to the front — ⌘-tab, a click, the dock or a hotkey' />
+                            switches to app{' '}
+                            <Info text='how often you switched to each app — ⌘-tab, a click, the dock or a hotkey' />
                         </h2>
                         <StatList fold={switchAppsFold}>
                             {report.switchesPerApp.map((row) => {
@@ -261,26 +268,32 @@ export const StatsPage = () => {
                 </div>
 
                 <div className='grid gap-[22px]'>
+                    <Advisor
+                        features={report.topFeatures}
+                        hotkeys={scan.data?.hotkeys ?? []}
+                    />
+
                     <section className='grid gap-2.5'>
                         <h2 className={H2}>
-                            chords per app{' '}
-                            <Info text='hotkey presses made while each app was in front' />
+                            time per app{' '}
+                            <Info text='time each app spent in front — from one switch to the next, a gap over 15 minutes counted as 15, the lock screen as away' />
                         </h2>
-                        <StatList fold={chordAppsFold}>
-                            {report.chordsPerApp.map((row) => {
+                        <StatList fold={timeAppsFold}>
+                            {report.timePerApp.map((row) => {
                                 return (
                                     <StatRow
                                         count={row.count}
                                         key={row.bundleId}
                                         label={row.app}
-                                        top={topOf(report.chordsPerApp)}
+                                        top={topOf(report.timePerApp)}
+                                        value={duration(row.count)}
                                     />
                                 );
                             })}
                         </StatList>
                         <FoldButton
-                            fold={chordAppsFold}
-                            total={report.chordsPerApp.length}
+                            fold={timeAppsFold}
+                            total={report.timePerApp.length}
                         />
                     </section>
 
@@ -334,6 +347,19 @@ export const StatsPage = () => {
 };
 
 /* Helpers */
+
+// «7d 412 ▲ 18%»: this week, and which way it moved from the week before
+const trendOf = (thisWeek: number, lastWeek: number) => {
+    if (lastWeek === 0) return `7d ${thisWeek.toLocaleString('en')}`;
+    const change = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
+    const mark = change > 0 ? '▲' : change < 0 ? '▼' : '=';
+    return `7d ${thisWeek.toLocaleString('en')} ${mark} ${Math.abs(change)}%`;
+};
+
+const duration = (minutes: number) =>
+    minutes < 60
+        ? `${minutes}m`
+        : `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 
 // What the window actually covers, beside the control that set it. The log began six days
 // before this was written, so `all`, `month` and `week` answer with the same numbers and the

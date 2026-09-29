@@ -1,8 +1,6 @@
 /* Core */
 /* Components */
 
-import { ChordsMark } from '@/components/ChordsMark.tsx';
-
 import { BoardPage } from '@/board.tsx';
 /* Instruments */
 import { useStatsPrefetcher } from '@/queries.ts';
@@ -40,16 +38,20 @@ export const App = () => {
 
     return (
         <div className='mx-auto grid max-w-[1180px] grid-cols-[minmax(0,1fr)] gap-[22px]'>
-            <header className='flex flex-wrap items-baseline gap-x-[18px] gap-y-2'>
+            <header className='flex flex-wrap items-center gap-x-[18px] gap-y-2'>
                 <h1 className='m-0 font-sans text-[22px]/[1.2] font-semibold text-balance'>
                     <a
-                        className='inline-flex cursor-pointer items-center gap-2 rounded-md text-ink no-underline decoration-2 underline-offset-4 hover:underline'
+                        className='inline-flex cursor-pointer items-center gap-2 rounded-md text-ink no-underline'
                         href='/'
                         onClick={(event) => {
                             event.preventDefault();
                             navigate('/');
                         }}>
-                        <ChordsMark className='size-[26px] self-center' />
+                        <span
+                            aria-hidden='true'
+                            className='text-[22px] leading-none'>
+                            ⌨️
+                        </span>
                         chords
                     </a>
                 </h1>

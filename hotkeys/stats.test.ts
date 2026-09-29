@@ -13,6 +13,7 @@ import {
     selectEvents,
     tally,
     tallyFeatures,
+    timeInFront,
     unpressed,
 } from './stats.ts';
 
@@ -386,6 +387,13 @@ describe('isUntracked', () => {
         expect(isUntracked(wispr, typed!)).toBe(true);
     });
 
+    it('marks an app shortcut no binding explains', () => {
+        const [reload] = parseEvents(
+            chord('2026-09-20T10:00:00+03:00', 'cmd+r'),
+        );
+        expect(isUntracked(wispr, reload!)).toBe(true);
+    });
+
     it('keeps a bare modifier that is bound', () => {
         expect(isUntracked(wispr, rcmd!)).toBe(false);
     });
@@ -417,5 +425,36 @@ describe('labelAt', () => {
                 'com.google.Chrome',
             )?.action,
         ).toBe('dismiss');
+    });
+});
+
+describe('timeInFront', () => {
+    it('caps an idle gap at 15 minutes', () => {
+        const events = parseEvents(
+            [
+                activate('2026-09-20T10:00:00+03:00', 'a'),
+                activate('2026-09-20T11:00:00+03:00', 'b'),
+                activate('2026-09-20T11:05:00+03:00', 'a'),
+            ].join('\n'),
+        );
+        expect(timeInFront(events).find((row) => row.name === 'b')?.count).toBe(
+            5,
+        );
+        expect(timeInFront(events).find((row) => row.name === 'a')?.count).toBe(
+            30,
+        );
+    });
+
+    it('does not count the lock screen as an app', () => {
+        const events = parseEvents(
+            [
+                activate('2026-09-20T10:00:00+03:00', 'com.apple.loginwindow'),
+                activate('2026-09-20T10:10:00+03:00', 'a'),
+                activate('2026-09-20T10:12:00+03:00', 'b'),
+            ].join('\n'),
+        );
+        expect(timeInFront(events).map((row) => row.name)).not.toContain(
+            'com.apple.loginwindow',
+        );
     });
 });

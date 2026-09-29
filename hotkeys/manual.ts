@@ -13,7 +13,6 @@ export const manualHotkeys = [
             ['e', 'Linear'],
             ['n', 'Notion'],
             ['m', 'Telegram'],
-            ['k', 'Calendar'],
             ['d', 'Obsidian'],
             ['c', 'Slack'],
             ['s', 'Spark'],
