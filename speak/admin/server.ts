@@ -85,6 +85,14 @@ async function body(request: IncomingMessage) {
     return JSON.parse(text || '{}');
 }
 
+// the favicons, by exact name only: nothing else on disk is reachable
+const ICONS: Record<string, string> = {
+    'speak-180.png': 'image/png',
+    'speak-32.png': 'image/png',
+    'speak-dark.svg': 'image/svg+xml',
+    'speak-light.svg': 'image/svg+xml',
+};
+
 function send(
     response: ServerResponse,
     status: number,
@@ -125,6 +133,17 @@ createServer(async (request, response) => {
             200,
             readFileSync(PAGE, 'utf8'),
             'text/html; charset=utf-8',
+        );
+    const icon =
+        request.method === 'GET'
+            ? ICONS[request.url?.slice(1) ?? '']
+            : undefined;
+    if (icon)
+        return send(
+            response,
+            200,
+            readFileSync(join(import.meta.dirname, request.url ?? '')),
+            icon,
         );
     if (!route) return send(response, 404, { error: 'not found' });
     try {
