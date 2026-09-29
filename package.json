@@ -44,6 +44,7 @@
         "plugin:release": "node ./script/plugin-release.ts",
         "rayconfig:decrypt": "./script/op-run.sh node ./script/rayconfig-decrypt.ts",
         "repo:defaults": "node ./script/repo-defaults.ts",
+        "research:lanes": "./script/research-lanes.sh",
         "schedule:install": "node ./schedule/install.ts",
         "schedule:restart": "node ./schedule/restart.ts",
         "skill:cclio-mode-snapshot": "node ./script/skill-cclio-mode-snapshot.ts",
