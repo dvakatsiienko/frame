@@ -11,7 +11,8 @@ Your arguments, verbatim: `$ARGUMENTS` — the app, then `quick` for a quick job
 are `~/projects/studio/AGENTS.md`; this file is the procedure.
 
 **Solid designs come first.** Every rule below exists to make the spread truly different and
-the pick truly good. Report to whoever started you (cclio, or dima in this chat).
+the pick truly good. Report to whoever started you: dima in this chat, and cclio by one
+`SendMessage` per spread (the canvas link + one line per take) — a plain reply reaches only this chat.
 
 ## 1. read the brief
 
@@ -85,7 +86,8 @@ engineer. each names at most five problems, pinned to a region, each as problem 
 One line per spread in `~/frame/docs/vet/design-run.md`:
 date · app · brief version · mode · takes · artboards · tokens in/out · wall minutes · usage
 window % before and after (`~/.claude/shelf/cc-usage-window.json`, read at the start and the
-end) · pick minutes · rounds.
+end) · pick minutes · rounds. output tokens come from this session's own footer at the spread's
+end («↓68.4k tokens»); never write «not measurable».
 
 ## completion criterion
 
