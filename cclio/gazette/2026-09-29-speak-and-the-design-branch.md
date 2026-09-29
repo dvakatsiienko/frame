@@ -13,7 +13,7 @@ posted: {health: no}
 - 🔏 **every frame daemon signs with one cert** (`script/lib/sign.sh`, valid to 2036): privacy grants survive rebuilds; `pnpm schedule:restart <job>` came with it.
 - 🗺️ **atelier's map** — the crash lines made drivable and `atelier-verify` walks the map ([#115](https://github.com/dvakatsiienko/bytes/pull/115)), 31 lines 🔎 by dima, a purpose + states pair per view for the designer: [BYT-105](https://linear.app/x-com/issue/BYT-105).
 - 🎨 **the design branch researched** — five lanes on 12 vectors plus cowork-vs-cc: brief gate → 4 takes on 2 named axes → pick → impeccable builds; design from claude code (`docs/research/design-process.md`, [FRM-244](https://linear.app/x-com/issue/FRM-244)).
-- 📐 **recipes** — `design-branch-refresh` and `read-aloud-refresh`; the scan for more: [FRM-270](https://linear.app/x-com/issue/FRM-270).
+- 📐 **recipes** — `refresh-design-branch` and `refresh-read-aloud`; the scan for more: [FRM-270](https://linear.app/x-com/issue/FRM-270).
 
 ## tricks gained
 

@@ -1,4 +1,4 @@
-# read-aloud-refresh — recipe
+# refresh-read-aloud — recipe
 
 Keeps `speak` — dima's F5 read-aloud — on the best voices, models and techniques. Born from
 [FRM-269](https://linear.app/x-com/issue/FRM-269) (2026-09-29). Recipe entity per [_spec.md](_spec.md).
