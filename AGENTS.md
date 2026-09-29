@@ -108,6 +108,8 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
 - `gifs/` — dima's gif storage, one dir per gif, `gifs/AGENTS.md` is the contract.
 - `brand/` — avatars and marks (`brand/avatars/fleet/` is the crew); `assets/` — the readme's own
   art, badges and clips, drawn by scripts.
+- `design/` — the designer's instruments (`pnpm design:*`: contrast, palette, cvd, scale, tokens,
+  diff); the designer itself lives in `~/projects/studio`.
 - `gmail/` — the `gmailctl` filter set and the block list; `schedule/` — every launchd job.
 - `cc` is a symlink to `home/.claude/`, a short path for the agent system.
 

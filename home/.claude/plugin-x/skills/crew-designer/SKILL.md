@@ -40,8 +40,10 @@ For each take, before any render:
    spacing rhythm, and an ascii wireframe of the key view.
 2. **the review** — read each plan against the brief's hard lines and the veto list
    ([veto.md](veto.md)). a part that reads like the default gets rewritten, not softened.
-   contrast is computed, never eyeballed: the `design:*` scripts in `~/frame/package.json`
-   when they exist, colorjs.io otherwise.
+   colour is computed, never eyeballed: `pnpm -C ~/frame design:contrast <tokens.json>` and
+   `design:cvd` on every palette — absolute paths, the script runs from `~/frame` (`--help`
+   names the tokens shape); `design:palette` builds a
+   ramp at target ratios, `design:scale` the fluid steps.
 
 Only then render.
 

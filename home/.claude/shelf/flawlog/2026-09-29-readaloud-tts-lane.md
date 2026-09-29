@@ -23,3 +23,9 @@
 - 🤖 automate (fleet-identity #4): the essentials-at-two-widths wrapper was hand-run by THREE coders today (atelier #115, speak admin, the pill) — x:browser-headless already names it «a candidate, not built yet» · build it, not ticket it
 - 🤖 automate candidate: a verify-kit config snapshot/restore (cp + cmp) around any write test — x:app-essentials anticipates a shared kit
 - ✅ flushed at the 17:40 checkpoint: 11 actions (fleet-hazards, frame AGENTS.md, guide-code, github-contrib, app-essentials, craft-spawning, BYT-105, the authoring-guard hook, a story); the rest dropped as settled
+- design scripts coder retro (FRM-244, 3d221afe + 1b475437):
+  - matt's code-review found 6 input-validation defects coderabbit missed (6 vs 0), all «bad input → stack trace or wrong exit» · lesson: a cli brief carries «every bad input exits 2 with one line» (craft-spawning / x:crew-coder candidate)
+  - a red-proof that adds a sibling key read as a hollow test — biome sorts keys on save and the original overrode the injected one · lesson: a mutation edits the existing line, never adds a sibling (guide-code candidate)
+  - «port the dataviz thresholds» had no reachable source; the ΔE metric (CIEDE2000) is the coder's pick · lesson: a brief names the metric, not a source it cannot open
+  - 🤖 automation ask: `red-proof <file> <anchor> <replacement> <test>` in plugin-x/bin — assert anchor, run vitest, restore, print RED/GREEN; hand-rolled on every test-shipping job
+- fixed: impeccable stayed off in frame for a day — the 09-28 «on, no toggling» change set user scope and left frame's project `false`, which wins (e4c5c8b5). lesson: a plugin on/off change greps every settings layer, project files included
