@@ -1,16 +1,16 @@
 {
     "components": [
         {
-            "css": ".ds-btn{min-height:32px;min-width:32px;padding:4px 12px;font-size:14px;border-radius:6px;border:1px solid var(--color-line);background:var(--color-surface-2);color:var(--color-ink);cursor:pointer}.ds-btn:hover{border-color:var(--color-muted);background:var(--color-surface)}.ds-btn:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}",
-            "description": "every plain action: ↑ ↓ ▶ reset stop.",
-            "html": "<button class=\"ds-btn\">reset</button>",
+            "css": ".ds-btn{display:inline-grid;place-items:center;width:32px;height:32px;font-size:14px;border-radius:9999px;border:1px solid var(--color-line);background:var(--color-surface-2);color:var(--color-ink);cursor:pointer}.ds-btn:hover{border-color:var(--color-muted);background:var(--color-surface)}.ds-btn:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}",
+            "description": "a card's action: ↑ ↓ ▶ — the pill's button on the page, a round hairline",
+            "html": "<button class=\"ds-btn\">▶</button>",
             "kind": "button",
             "name": "Button",
             "refersTo": "button"
         },
         {
-            "css": ".ds-btn-primary{min-height:32px;padding:4px 12px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--color-accent);background:var(--color-accent);color:var(--color-on-accent);cursor:pointer}.ds-btn-primary:hover{filter:brightness(1.1)}.ds-btn-primary:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}",
-            "description": "save, the one primary action.",
+            "css": ".ds-btn-primary{height:32px;padding:0 14px;font-size:14px;font-weight:600;border-radius:9999px;border:1px solid var(--color-pill-accent);background:var(--color-pill-accent);color:var(--color-pill);cursor:pointer}.ds-btn-primary:hover{filter:brightness(1.1)}.ds-btn-primary:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}",
+            "description": "save, the one primary action — an indigo capsule in the save bar",
             "html": "<button class=\"ds-btn-primary\">save</button>",
             "kind": "button",
             "name": "Primary Button",
@@ -25,17 +25,17 @@
             "refersTo": "input"
         },
         {
-            "css": ".ds-badge{display:inline-block;padding:0 8px;font-size:14px;border-radius:4px;border:1px solid currentColor}.ds-ok{color:var(--color-ok)}.ds-bad{color:var(--color-bad)}",
+            "css": ".ds-badge{display:inline-block;padding:0 8px;font-size:14px;border-radius:4px;border:1px solid currentColor}.ds-ok{color:var(--color-ok)}.ds-muted{color:var(--color-muted)}",
             "description": "an engine's state as a word.",
-            "html": "<span class=\"ds-badge ds-ok\">live</span> <span class=\"ds-badge ds-bad\">no quota</span>",
+            "html": "<span class=\"ds-badge ds-ok\">live</span> <span class=\"ds-badge ds-muted\">no quota</span>",
             "kind": "chip",
             "name": "State Badge",
             "refersTo": "state-badge"
         },
         {
-            "css": ".ds-card{display:grid;gap:8px;padding:12px;border-radius:8px;border:1px solid var(--color-line);background:var(--color-surface);margin-bottom:8px}.ds-card-off{background:transparent;border-style:dashed}.ds-card-head{display:flex;align-items:center;gap:8px}.ds-card-head b{flex:1}.ds-rank{font-size:14px;color:var(--color-muted);font-variant-numeric:tabular-nums}.ds-badge{padding:0 8px;font-size:14px;border-radius:4px;border:1px solid currentColor}.ds-ok{color:var(--color-ok)}",
-            "description": "one engine in a language's chain; dashed when outside it.",
-            "html": "<div class=\"ds-card\"><div class=\"ds-card-head\"><span class=\"ds-rank\">1</span><b>Kokoro (local)</b><span class=\"ds-badge ds-ok\">live</span></div></div><div class=\"ds-card ds-card-off\"><b>Gemini</b></div>",
+            "css": ".ds-card{display:grid;gap:12px;padding:16px;border-radius:16px;border:1px solid var(--color-line);background:linear-gradient(color-mix(in oklab,#e0457b 10%,var(--color-surface)),var(--color-surface) 56px)}.ds-card-head{display:flex;align-items:center;gap:10px}.ds-card-head b{flex:1}.ds-mark{width:24px;height:24px;border-radius:6px;background:#e0457b}.ds-badge{padding:0 8px;font-size:14px;border-radius:4px;border:1px solid currentColor;color:var(--color-ok)}.ds-row{display:flex;align-items:center;gap:10px;font-size:14px}.ds-row input{width:16px;height:16px}",
+            "description": "one engine in a language's chain: grip, mark, name, badge; the rank in the words; dashed when outside the chain",
+            "html": "<div class=\"ds-card\"><div class=\"ds-card-head\"><span class=\"ds-mark\"></span><b>Kokoro (local)</b><span class=\"ds-badge\">live</span></div><label class=\"ds-row\"><input type=\"checkbox\" checked> 2nd in the en chain</label></div>",
             "kind": "card",
             "name": "Engine Card",
             "refersTo": "engine-card"
@@ -47,6 +47,14 @@
             "kind": "custom",
             "name": "The Pill",
             "refersTo": "pill"
+        },
+        {
+            "css": ".ds-chrome{display:flex;align-items:center;gap:16px;padding:6px 12px;border-radius:22px;border:1px solid #ffffff24;background:#151517f2;color:#ecebe8}.ds-chrome a{color:#a9a59c;font-size:14px}.ds-sp{flex:1}.ds-chrome button{height:32px;padding:0 14px;border-radius:9999px;border:1px solid #ffffff24;background:transparent;color:#ecebe8}",
+            "description": "the header and the save bar: the pill, grown — a dark-glass capsule in both themes",
+            "html": "<div class=\"ds-chrome\"><b>speak</b><a>english</a><a>українська</a><span class=\"ds-sp\"></span><button>■ stop</button></div>",
+            "kind": "nav",
+            "name": "Pill Chrome",
+            "refersTo": "pill"
         }
     ],
     "extensions": {
@@ -57,6 +65,26 @@
             }
         ],
         "colorMeta": {
+            "brand-fish": {
+                "canonical": "#0e8fd6",
+                "displayName": "Fish Ocean",
+                "role": "tertiary"
+            },
+            "brand-gemini": {
+                "canonical": "#6f8cf2",
+                "displayName": "Gemini Blue",
+                "role": "tertiary"
+            },
+            "brand-kokoro": {
+                "canonical": "#e0457b",
+                "displayName": "Kokoro Rose",
+                "role": "tertiary"
+            },
+            "brand-siri": {
+                "canonical": "#8b5cf6",
+                "displayName": "Siri Violet",
+                "role": "tertiary"
+            },
             "meter-indigo": {
                 "canonical": "#8f94ff",
                 "displayName": "Meter Indigo",
@@ -71,6 +99,16 @@
                 "canonical": "#f6f5f2",
                 "displayName": "Paper",
                 "role": "neutral"
+            },
+            "pill": {
+                "canonical": "#151517",
+                "displayName": "Pill Glass",
+                "role": "neutral"
+            },
+            "pill-accent": {
+                "canonical": "#9aa2ff",
+                "displayName": "Pill Indigo (night)",
+                "role": "primary"
             },
             "pill-indigo": {
                 "canonical": "#4a55c8",
@@ -95,9 +133,14 @@
         },
         "motion": [
             {
-                "name": "meter-ease",
-                "purpose": "the pill's bars glide to each reading; runs only while audio plays",
-                "value": "1 - exp(-dt / 0.015)"
+                "name": "meter-glide",
+                "purpose": "a pill bar glides to its reading; meterGlideMs is a setting (default 30)",
+                "value": "1 - exp(-dt / meterGlideMs)"
+            },
+            {
+                "name": "meter-flow",
+                "purpose": "the wave's travel speed, readings every 10 ms; a setting (default 40)",
+                "value": "one bar outward per meterFlowMs"
             }
         ],
         "shadows": [
@@ -126,7 +169,7 @@
             }
         }
     },
-    "generatedAt": "2026-09-29T16:59:18+00:00",
+    "generatedAt": "2026-09-29T18:32:31+00:00",
     "narrative": {
         "donts": [
             "Don't add a shadow to a card or a second accent colour.",
@@ -141,7 +184,7 @@
         ],
         "keyCharacteristics": [
             "one accent, pill indigo, on primary actions, checked controls, focus and selection",
-            "flat: 1px lines and layered greys, never a shadow on the page",
+            "flat: 1px lines and layered greys; the only shadows float (the chrome, the popover)",
             "state in words and borders, colour only as a second signal",
             "lowercase, short, plain copy",
             "light (paper) and dark (night) from the same tokens"
@@ -157,6 +200,11 @@
             {
                 "body": "every state reads as a word in a bordered badge; the colour only repeats it.",
                 "name": "The Word First Rule",
+                "section": "colors"
+            },
+            {
+                "body": "each engine keeps its own hue — elevenlabs ink, kokoro rose, siri violet, fish ocean, gemini blue — but only in its 24px mark and a 10% wash along the top of its chain card. a card outside the chain dims its mark.",
+                "name": "The Brand Stays Home Rule",
                 "section": "colors"
             },
             {

@@ -43,7 +43,7 @@
   - then focus returns to the voice button, which shows ♥ before a favourite
 - ✅ speed and gain sliders per engine, shared by every language
   - decision: the macOS voice has no gain — its synthesizer cannot go above its own level
-- ✅ an «i» beside every setting explains it in one line: what it does, which way to move it, a value to try
+- 🔎 an «i» beside every setting explains it in one line: what it does, which way to move it, a value to try
   - when the user hovers or focuses the «i» beside pill flow
   - then «how fast the wave travels outward. too fast → raise it first. try 70» shows, below the «i»
 - ✅ ▶ previews a card through the daemon
@@ -57,7 +57,7 @@
   - the controls also return to ▶ when the speech ends on its own
 - ✅ a sample line per language, editable
 - ✅ a status badge per engine: live, benched until a time, no key, or no quota
-- ✅ an engine out of quota locks its ▶ and says so on the card
+- 🔎 an engine out of quota locks its ▶ and says so on the card
   - given elevenlabs refused a request with quota_exceeded
   - when the page shows its cards
   - then each elevenlabs card's badge reads «no quota» in a quiet colour and its ▶ is disabled
@@ -66,12 +66,12 @@
   - and the state clears after the engine's next success
   - decision: the chain already falls through on a quota refusal; the card only has to make it visible (dima, 2026-09-29)
 - ✅ the header shows the daemon's accessibility state and whether it is speaking
-- ✅ «infinite waveform» plays the pill's wave with no voice, to tune glide and flow by eye
+- 🔎 «infinite waveform» plays the pill's wave with no voice, to tune glide and flow by eye
   - given the playback panel under the header
   - when the user turns on infinite waveform
   - then the pill shows and animates speech-shaped levels, following the unsaved glide and flow as they change
   - and it stops when turned off, when the tab closes, when a real read starts, or after 5 minutes without an update
-- ✅ «pill glide» and «pill flow» tune the pill's wave, each a slider and a number box in ms
+- 🔎 «pill glide» and «pill flow» tune the pill's wave, each a slider and a number box in ms
   - makes: `meterGlideMs` and `meterFlowMs` in config.json
   - given the settings row under the header
   - when the user types 55 in the pill flow box and saves
