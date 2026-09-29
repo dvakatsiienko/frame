@@ -121,11 +121,11 @@ struct PanelView: View {
             PillButton(
                 model: model,
                 symbol: model.isSpeaking && !model.isPaused ? "pause.fill" : "play.fill",
-                label: !model.isSpeaking ? "Nothing playing" : model.isPaused ? "Resume · F5" : "Pause · F5",
+                label: !model.isSpeaking ? "Nothing playing" : model.isPaused ? "Resume · F4" : "Pause · F4",
                 isDisabled: !model.isSpeaking,
                 action: model.onPause,
             )
-            PillButton(model: model, symbol: "stop.fill", label: "Stop · F6", hint: "F6", action: model.onStop)
+            PillButton(model: model, symbol: "stop.fill", label: "Stop · F5", hint: "F5", action: model.onStop)
             PillButton(model: model, symbol: model.isSticky ? "pin.fill" : "pin", label: model.isSticky ? "Unstick" : "Stick: stay after speech ends", isOn: model.isSticky) {
                 model.isSticky.toggle()
                 if !model.isSticky { model.onUnstick() }

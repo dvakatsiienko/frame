@@ -1,4 +1,4 @@
-// x-speak — F5 with a selection reads it aloud, cutting off what plays; F5 with none pauses / resumes; F6 stops. one resident process so the hot path
+// x-speak — F4 with a selection reads it aloud, cutting off what plays; F4 with none pauses / resumes; F5 stops. one resident process so the hot path
 // pays no boot, no key fetch and no player spawn (the node version paid ~1.2 s, measured 2026-09-29).
 // usage: x-speak                        the daemon (launchd)
 //        x-speak [--engine <name>] text one-shot, for listening tests
@@ -14,7 +14,7 @@ enum Engine: String, CaseIterable {
     func speaks(_ lang: Lang) -> Bool { self != .kokoro || lang == .en }
 }
 
-// chain, voices, speed, gain and the first-audio budget live in config.json, read again on the next F5 after a save
+// chain, voices, speed, gain and the first-audio budget live in config.json, read again on the next F4 after a save
 @MainActor let configFile = ConfigFile(URL(fileURLWithPath: NSHomeDirectory() + "/frame/schedule/jobs/x-speak/config.json"))
 @MainActor var config: Config { configFile.current }
 
@@ -344,7 +344,7 @@ final class Speaker {
         log("kokoro: warm")
     }
 
-    // F6: stop, and the pill leaves unless stick holds it
+    // F5: stop, and the pill leaves unless stick holds it
     func stopPressed() {
         guard job != nil else { return }
         stop()
@@ -352,8 +352,8 @@ final class Speaker {
         log("stop")
     }
 
-    // F5 with a selection: read it, cutting off what plays. F5 with nothing selected: pause / resume what plays
-    // (dima, 2026-09-29). F6 stops
+    // F4 with a selection: read it, cutting off what plays. F4 with nothing selected: pause / resume what plays
+    // (dima, 2026-09-29). F5 stops
     func readPressed() async {
         let pressed = ContinuousClock.now
         configFile.refresh()
@@ -651,7 +651,7 @@ func copySelection() async -> String? {
 @MainActor let speaker = Speaker()
 
 // main stays synchronous: NSApplication.run() inside an async main blocked the main actor for good, so no
-// hotkey handler and no control reply ever ran (dima's first F5, 2026-09-29)
+// hotkey handler and no control reply ever ran (dima's first F4, 2026-09-29)
 @main
 struct XSpeak {
     @MainActor
@@ -686,23 +686,23 @@ struct XSpeak {
         control.start()
         var hotKey: EventHotKeyRef?
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
-        // one handler for both keys; the hotkey id says which fired: 1 is F5, 2 is F6
+        // one handler for both keys; the hotkey id says which fired: 1 is F4, 2 is F5
         InstallEventHandler(GetEventDispatcherTarget(), { _, event, _ in
             var fired = EventHotKeyID()
             GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID), nil, MemoryLayout<EventHotKeyID>.size, nil, &fired)
             let isStop = fired.id == 2
-            log("hotkey: \(isStop ? "F6" : "F5")")
+            log("hotkey: \(isStop ? "F5" : "F4")")
             Task { @MainActor in
                 if isStop { speaker.stopPressed() } else { await speaker.readPressed() }
             }
             return noErr
         }, 1, &spec, nil, nil)
         var stopKey: EventHotKeyRef?
-        let status = RegisterEventHotKey(UInt32(kVK_F5), 0, EventHotKeyID(signature: 0x5350_4B31, id: 1), GetEventDispatcherTarget(), 0, &hotKey)
-        let stopStatus = RegisterEventHotKey(UInt32(kVK_F6), 0, EventHotKeyID(signature: 0x5350_4B31, id: 2), GetEventDispatcherTarget(), 0, &stopKey)
+        let status = RegisterEventHotKey(UInt32(kVK_F4), 0, EventHotKeyID(signature: 0x5350_4B31, id: 1), GetEventDispatcherTarget(), 0, &hotKey)
+        let stopStatus = RegisterEventHotKey(UInt32(kVK_F5), 0, EventHotKeyID(signature: 0x5350_4B31, id: 2), GetEventDispatcherTarget(), 0, &stopKey)
         // with the prompt option macos itself asks for the grant, naming this exact process — no guessing which entry
         let isTrusted = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
-        log("daemon: F5 \(status == noErr ? "registered" : "refused (\(status))"), F6 \(stopStatus == noErr ? "registered" : "refused (\(stopStatus))"), accessibility \(isTrusted ? "granted" : "missing — macos shows its grant prompt")")
+        log("daemon: F4 \(status == noErr ? "registered" : "refused (\(status))"), F5 \(stopStatus == noErr ? "registered" : "refused (\(stopStatus))"), accessibility \(isTrusted ? "granted" : "missing — macos shows its grant prompt")")
         NSApplication.shared.setActivationPolicy(.prohibited)
         NSApplication.shared.run()
     }

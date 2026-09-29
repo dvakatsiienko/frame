@@ -1,4 +1,4 @@
-// config.json beside this file: dima's knobs, re-read on the next F5 after a save. a bad edit logs one
+// config.json beside this file: dima's knobs, re-read on the next F4 after a save. a bad edit logs one
 // line and the last good config stays; the daemon never dies on a typo.
 import Foundation
 

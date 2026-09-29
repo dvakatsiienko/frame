@@ -12,15 +12,15 @@ on this mac only: served on 127.0.0.1 by a launchd job, never deployed.
 
 dima, alone. no other user, now or planned.
 
-- the daily use happens outside this page: F5 on a selection in any app reads it aloud through x-speak, F5 again
-  pauses, F6 stops.
+- the daily use happens outside this page: F4 on a selection in any app reads it aloud through x-speak, F4 again
+  pauses, F5 stops.
 - the admin is opened occasionally, after something sounded off or to try a voice: tune the chain, the voices,
   speed and gain, hear a change, then save.
 
 ## Product Purpose
 
 one page to set, per language, which engines read aloud and in what order, and how each sounds — and to hear a
-change before saving it. success: the next F5 sounds the way dima wants, without editing config.json by hand.
+change before saving it. success: the next F4 sounds the way dima wants, without editing config.json by hand.
 
 ## Positioning
 

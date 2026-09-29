@@ -220,7 +220,7 @@ engine outside the chain has a dashed one — the dash says «not playing». the
 - a 236×36 capsule of dark glass (vibrancy under 55% black) with a 1px white line at 14%, in both themes.
 - one meter of 17 bars, 2.5px wide with 2.5px gaps, centre-heavy (edges reach 40% of the centre), with headroom so
   a loud read never fills it; live bars in meter indigo (#8f94ff), rest bars as dim dots (white at 22%).
-- ✕, ⏸ / ▶, ■ with its F6 hint, and the pin, each a quiet glyph button.
+- ✕, ⏸ / ▶, ■ with its F5 hint, and the pin, each a quiet glyph button.
 - the meter reads the sound every 10 ms (each 100 ms audio buffer cut into ten windows) and glides by the «pill
   glide» setting; it animates only while audio plays and at rest draws once and holds.
 

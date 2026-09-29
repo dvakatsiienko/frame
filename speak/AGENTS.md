@@ -17,7 +17,7 @@ hand.
 x-speak lives in `schedule/jobs/x-speak/` (swift, launchd). this app reaches it only through
 `~/.local/share/x-speak/control.sock` — one json line each way: `status`, `voices`, `reload`, `preview`, `stop`.
 the chain, voices, speed, gain and budget live in `schedule/jobs/x-speak/config.json`; the page holds nothing
-else, and the daemon re-reads the file on the next F5 after a save.
+else, and the daemon re-reads the file on the next F4 after a save.
 
 ## hazards
 
