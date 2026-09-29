@@ -32,6 +32,8 @@
 (`plugin-x`), hooks, output styles, and `sline`, the statusline.
 `cclio/` is the coordinator's home, the session that plans and routes work to background coders.
 `hotkeys/` maps every keyboard chord on the machine and serves `chords`, the map's app.
+`speak/` reads the selected text aloud on a hotkey and stops on the same key, rewriting ids,
+versions, paths and code into something a voice can say.
 
 <img src="home/.claude/sline/showcase/sline.svg" width="100%" alt="sline, the statusline, as a session climbs from fresh to heavy">
 
