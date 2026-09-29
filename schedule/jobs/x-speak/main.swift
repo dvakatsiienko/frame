@@ -18,7 +18,8 @@ enum Engine: String, CaseIterable {
 @MainActor let configFile = ConfigFile(URL(fileURLWithPath: NSHomeDirectory() + "/frame/schedule/jobs/x-speak/config.json"))
 @MainActor var config: Config { configFile.current }
 
-let kokoroURL = URL(string: "http://127.0.0.1:7383")!
+// :7385, clear of chords' worktree daemon on :7383
+let kokoroURL = URL(string: "http://127.0.0.1:7385")!
 
 // a voice named in config.json wins; otherwise the best installed uk/ru voice, so an enhanced download is picked up
 // with no rebuild. en keeps the Spoken Content voice (siri voice 4), which no voice list exposes
@@ -287,15 +288,34 @@ final class Speaker {
         log("keys: " + names.map { "\($0.0.rawValue) \(keys[$0.0] == nil ? "missing" : "ok")" }.joined(separator: ", "))
     }
 
+    private var kokoroServer: Process?
+
     func warmKokoro() async {
         if await kokoroReady() { return }
         let server = Process()
         server.executableURL = URL(fileURLWithPath: NSHomeDirectory() + "/.local/bin/mlx_audio.server")
-        server.arguments = ["--host", "127.0.0.1", "--port", "7383"]
-        server.standardOutput = FileHandle.nullDevice
-        server.standardError = FileHandle.nullDevice
-        try? server.run()
+        server.arguments = ["--host", "127.0.0.1", "--port", String(kokoroURL.port ?? 7385)]
+        // launchd starts us in /, read-only, and the server makes a logs/ dir in its working directory
+        server.currentDirectoryURL = URL(fileURLWithPath: NSHomeDirectory() + "/.local/share/x-speak")
+        // its own log, beside the daemon's: a server that dies at start says why here
+        let logPath = NSHomeDirectory() + "/.local/share/x-speak/kokoro.log"
+        FileManager.default.createFile(atPath: logPath, contents: nil)
+        let logFile = FileHandle(forWritingAtPath: logPath)
+        server.standardOutput = logFile ?? FileHandle.nullDevice
+        server.standardError = logFile ?? FileHandle.nullDevice
+        server.terminationHandler = { process in log("kokoro: server exited, status \(process.terminationStatus)") }
+        do {
+            try server.run()
+        } catch {
+            log("kokoro: server did not start — \(error)")
+            return
+        }
+        kokoroServer = server
         for _ in 0..<240 where !(await kokoroReady()) { try? await Task.sleep(for: .milliseconds(250)) }
+        guard await kokoroReady() else {
+            log("kokoro: server not answering after 60 s")
+            return
+        }
         _ = try? await URLSession.shared.data(for: kokoroRequest("Ready.", voice: config[.kokoro].voice(for: .en)))
         log("kokoro: warm")
     }
