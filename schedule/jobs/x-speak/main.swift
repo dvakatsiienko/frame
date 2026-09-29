@@ -110,6 +110,8 @@ final class Player {
     func schedule(_ pcm: Data, _ settings: EngineConfig) throws {
         let gain = Float(settings.gain)
         pace.rate = Float(settings.speed)
+        // at 1× the speed stage is skipped, so its buffering adds nothing to pause, resume or the first sample
+        pace.bypass = settings.speed == 1
         let frames = pcm.count / 2
         guard frames > 0, let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(frames)) else { return }
         buffer.frameLength = AVAudioFrameCount(frames)
@@ -567,17 +569,29 @@ func kokoroReady() async -> Bool {
     return ((try? await URLSession.shared.data(for: request))?.1 as? HTTPURLResponse)?.statusCode == 200
 }
 
-// the focused element's selected text through accessibility; ⌘C only where an app exposes none
+// the focused element's selected text through accessibility; ⌘C only where an app exposes none. an empty answer
+// from accessibility is trusted as «nothing selected»: the ⌘C fallback waits ~300 ms for a copy that never comes,
+// and that wait was the delay on every pause / resume (dima, 2026-09-29)
 @MainActor
 func grabSelection() async -> (String?, String) {
-    let system = AXUIElementCreateSystemWide()
+    // electron and chromium build their accessibility tree only when asked; the flag is per app and idempotent
+    if let pid = NSWorkspace.shared.frontmostApplication?.processIdentifier {
+        AXUIElementSetAttributeValue(AXUIElementCreateApplication(pid), "AXManualAccessibility" as CFString, kCFBooleanTrue)
+    }
+    // the app's own focused element first: electron's system-wide focus query fails (-25204) where the app's answers
     var focused: CFTypeRef?
-    var selected: CFTypeRef?
-    if AXUIElementCopyAttributeValue(system, kAXFocusedUIElementAttribute as CFString, &focused) == .success,
-       let element = focused, CFGetTypeID(element) == AXUIElementGetTypeID(),
-       AXUIElementCopyAttributeValue(element as! AXUIElement, kAXSelectedTextAttribute as CFString, &selected) == .success,
-       let text = selected as? String, !text.isEmpty {
-        return (text, "ax")
+    let front = NSWorkspace.shared.frontmostApplication.map { AXUIElementCreateApplication($0.processIdentifier) }
+    if !(front.map { AXUIElementCopyAttributeValue($0, kAXFocusedUIElementAttribute as CFString, &focused) == .success } ?? false) {
+        _ = AXUIElementCopyAttributeValue(AXUIElementCreateSystemWide(), kAXFocusedUIElementAttribute as CFString, &focused)
+    }
+    if let element = focused, CFGetTypeID(element) == AXUIElementGetTypeID() {
+        var selected: CFTypeRef?
+        switch AXUIElementCopyAttributeValue(element as! AXUIElement, kAXSelectedTextAttribute as CFString, &selected) {
+        case .success: return ((selected as? String).flatMap { $0.isEmpty ? nil : $0 }, "ax")
+        // the element keeps selected text and has none right now: nothing is selected, no ⌘C wait
+        case .noValue: return (nil, "ax")
+        default: break
+        }
     }
     return (await copySelection(), "⌘C")
 }
