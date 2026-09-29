@@ -77,6 +77,27 @@ async function elevenlabs(run: Run) {
     await playPcm(body);
 }
 
+// s2.1-pro-free: no character cap, free until 2026-11-30; any non-2xx after that drops this tier by itself
+async function fish(run: Run) {
+    const key = process.env.FISH_API_KEY;
+    if (!key) throw new Error('fish: no key');
+    const body = await audioResponse('https://api.fish.audio/v1/tts', {
+        body: JSON.stringify({
+            format: 'pcm',
+            latency: 'balanced',
+            sample_rate: 24000,
+            text: run.text,
+        }),
+        headers: {
+            authorization: `Bearer ${key}`,
+            'content-type': 'application/json',
+            model: 's2.1-pro-free',
+        },
+        method: 'POST',
+    });
+    await playPcm(body);
+}
+
 async function kokoroReady() {
     try {
         return (await fetch(`${KOKORO_URL}/docs`)).ok;
@@ -158,6 +179,7 @@ function say(run: Run) {
 
 export const ENGINES = {
     elevenlabs,
+    fish,
     gemini,
     kokoro,
     say,
@@ -166,6 +188,7 @@ export const ENGINES = {
 // gemini sits outside the chain: a test drive only, forced with --engine gemini (its free tier trains on input)
 export const CHAIN = [
     'elevenlabs',
+    'fish',
     'kokoro',
     'say',
 ] as const satisfies readonly EngineName[];
