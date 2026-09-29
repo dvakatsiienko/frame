@@ -11,7 +11,7 @@ similar — adds tracker orientation. run silently, report as ONE opening messag
 🎯 **the boot ORIENTS, it never resolves.** steps 1–8 are pure parse-and-assemble: no answers
 written, no tickets touched, no inbox item worked. the opening board ends with a proposed
 processing order and STOPS for dima's word. resolution then runs as labeled sub-batches with a
-pit stop after each (`habit-pacing`); heavy queries fire at the step that needs them, never
+pit stop after each (`habit-dima-comms-pacing`); heavy queries fire at the step that needs them, never
 up front. a query too fat for its pit stop → say so to dima instead of absorbing it.
 
 ## 1. healthcheck — the digest, not a ritual

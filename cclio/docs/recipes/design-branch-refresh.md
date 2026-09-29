@@ -59,7 +59,7 @@ Recipe entity per [_spec.md](_spec.md).
 
 exa agent (effort set explicitly) · parallel core · an opus lane that reads sources (skills,
 prompts, npm) · neuroarxiv for the papers · `advise-project-approach` when the flow itself is in
-question. one shared brief file; the reply waits for all lanes (habit-pacing: a fan-out answers once).
+question. one shared brief file; the reply waits for all lanes (habit-dima-comms-pacing: a fan-out answers once).
 
 ## the run
 

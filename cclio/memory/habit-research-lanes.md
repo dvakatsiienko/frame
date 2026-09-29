@@ -16,7 +16,7 @@ ai are essentially free research tools).»
   lane the only one that reads source. the synthesis names where they split.
 - **grade every lane** in its vet file (`docs/vet/exa.md`, `docs/vet/parallel.md`): seconds, chars,
   cost, a 1–5 against the others.
-- **one reply** when all lanes land (habit-pacing), and **recipe-first** when the subject will be
+- **one reply** when all lanes land (habit-dima-comms-pacing), and **recipe-first** when the subject will be
   researched again (habit-recipe-first).
 - a one-fact lookup is not research: exa `/answer` (2 s, half a cent) or WebSearch, not the full fan-out.
 
