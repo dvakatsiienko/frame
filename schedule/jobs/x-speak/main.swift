@@ -289,8 +289,13 @@ final class Speaker {
     }
 
     private var kokoroServer: Process?
+    private var isWarmingKokoro = false
 
+    // one warm-up at a time; a finished one lifts kokoro's bench so the next press can use it
     func warmKokoro() async {
+        guard !isWarmingKokoro else { return }
+        isWarmingKokoro = true
+        defer { isWarmingKokoro = false }
         if await kokoroReady() { return }
         let server = Process()
         server.executableURL = URL(fileURLWithPath: NSHomeDirectory() + "/.local/bin/mlx_audio.server")
@@ -317,6 +322,7 @@ final class Speaker {
             return
         }
         _ = try? await URLSession.shared.data(for: kokoroRequest("Ready.", voice: config[.kokoro].voice(for: .en)))
+        skipUntil[.kokoro] = nil
         log("kokoro: warm")
     }
 
@@ -399,6 +405,10 @@ final class Speaker {
         default: 60
         }
         if let pause { skipUntil[engine] = Date().addingTimeInterval(pause) }
+        // the kokoro server is ours to keep alive: one that stops answering is started again, off the hot path
+        if engine == .kokoro, (error as? URLError)?.code == .cannotConnectToHost {
+            Task { await warmKokoro() }
+        }
         log("\(engine.rawValue) skipped: \(error)\(pause.map { ", off for \(Int($0)) s" } ?? "")")
     }
 
