@@ -390,10 +390,11 @@ final class Speaker {
         }
     }
 
-    // quota or auth → an hour off; slow, 5xx or offline → a minute off; a missing key costs nothing to re-check
+    // quota or auth → an hour off; 5xx or offline → a minute off. a slow start and a missing key cost only this
+    // press: benching on a slow start turned one miss into a minute of kokoro (dima, 2026-09-29)
     private func handle(_ error: Error, from engine: Engine) {
         let pause: TimeInterval? = switch error {
-        case EngineError.noKey, EngineError.noVoice: nil
+        case EngineError.noKey, EngineError.noVoice, EngineError.timeout: nil
         case EngineError.status(let code) where [401, 402, 403, 429].contains(code): 3600
         default: 60
         }
@@ -613,7 +614,10 @@ struct XSpeak {
                 while speaker.isSpeaking { try? await Task.sleep(for: .milliseconds(50)) }
                 exit(0)
             }
-            dispatchMain()
+            // the app loop, like the daemon: the pill is a window, and under dispatchMain its first show landed off the
+            // main thread and crashed every one-shot run
+            NSApplication.shared.setActivationPolicy(.prohibited)
+            NSApplication.shared.run()
         }
 
         Task {

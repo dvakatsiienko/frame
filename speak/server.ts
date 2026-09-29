@@ -152,9 +152,18 @@ const routes: Record<string, (request: IncomingMessage) => Promise<unknown>> = {
     'POST /api/preview': async (request) =>
         daemon({ op: 'preview', ...(await body(request)) }),
     'POST /api/stop': async () => daemon({ op: 'stop' }),
-    // the daemon validates the saved file; a rejection comes back as its own log line
     'PUT /api/config': async (request) => {
         writeFileSync(CONFIG, biomeFormatted(await body(request)));
+        return daemon({ op: 'reload' });
+    },
+    // the daemon validates the saved file; a rejection comes back as its own log line
+    // a ♥ lands at once and touches only that engine's favourites in the file on disk, so unsaved edits in the page
+    // stay unsaved
+    'PUT /api/favourites': async (request) => {
+        const { engine, favourites } = await body(request);
+        const config = JSON.parse(readFileSync(CONFIG, 'utf8'));
+        config.engines[engine] = { ...config.engines[engine], favourites };
+        writeFileSync(CONFIG, biomeFormatted(config));
         return daemon({ op: 'reload' });
     },
 };

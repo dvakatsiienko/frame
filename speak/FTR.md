@@ -33,6 +33,8 @@
   - given the voice list of a card is open
   - when the user presses ♡ beside a voice
   - then it turns ♥ and the voice moves to the top of that engine's list in every language
+  - and it is saved at once, outside the save button: pending edits stay unsaved, and save does not light up
+  - decision: a ♥ is a bookmark, not a setting — dima wants it kept the moment he clicks
 - ✅ «only ♥ favourites» filters a voice list to the favourites
   - given an engine with at least one favourite
   - when the user ticks «only ♥ favourites»

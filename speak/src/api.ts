@@ -45,6 +45,8 @@ const call = async <T>(
 
 export const api = {
     config: () => call<Config>('GET', '/api/config'),
+    favourites: (engine: Engine, favourites: string[]) =>
+        call<Reply>('PUT', '/api/favourites', { engine, favourites }),
     pause: () => call<Reply>('POST', '/api/pause'),
     preview: (payload: Preview) => call<Reply>('POST', '/api/preview', payload),
     save: (config: Config) => call<Reply>('PUT', '/api/config', config),

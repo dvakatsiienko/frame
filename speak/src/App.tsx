@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { move } from '@dnd-kit/helpers';
 import { DragDropProvider } from '@dnd-kit/react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { Column } from '@/components/Column.tsx';
@@ -36,6 +36,7 @@ export const App = () => {
         queryKey: ['status'],
         refetchInterval: playing ? 700 : 5000,
     });
+    const queryClient = useQueryClient();
     const [draft, setDraft] = useState<Config>();
     const [samples, setSamples] = useState<Record<Lang, string>>(SAMPLES);
     const dragStart = useRef<Config>(undefined);
@@ -68,7 +69,8 @@ export const App = () => {
             </p>
         );
 
-    const isDirty = draft !== saved.data;
+    // by content, not identity: a ♥ updates the draft and the saved copy alike, and that is no unsaved change
+    const isDirty = JSON.stringify(draft) !== JSON.stringify(saved.data);
     const edit = (next: Config) => {
         setDraft(next);
         setMessage({ text: 'unsaved changes' });
@@ -88,17 +90,35 @@ export const App = () => {
         else delete current[lang];
         setEngine(engine, { voice: current });
     };
-    const setFavourite = (
+    // a ♥ saves at once, outside the save button: the file, the saved copy and the draft all take it, so it
+    // never shows as an unsaved change and never carries the draft's other edits with it
+    const setFavourite = async (
         engine: Engine,
         voice: string,
         isFavourite: boolean,
     ) => {
         const current = draft.engines[engine]?.favourites ?? [];
-        setEngine(engine, {
-            favourites: isFavourite
-                ? [...current, voice]
-                : current.filter((each) => each !== voice),
+        const favourites = isFavourite
+            ? [...current, voice]
+            : current.filter((each) => each !== voice);
+        const reply = await api.favourites(engine, favourites);
+        if (reply.error)
+            return setMessage({
+                kind: 'error',
+                text: `♥ not saved — ${reply.error}`,
+            });
+        const withFavourites = (config: Config): Config => ({
+            ...config,
+            engines: {
+                ...config.engines,
+                [engine]: { ...config.engines[engine], favourites },
+            },
         });
+        queryClient.setQueryData<Config>(
+            ['config'],
+            (config) => config && withFavourites(config),
+        );
+        setDraft(withFavourites(draft));
     };
     const preview = async (engine: Engine, lang: Lang) => {
         const voice = voiceOf(draft, engine, lang);
@@ -163,7 +183,9 @@ export const App = () => {
                             chain: { ...draft.chain, [lang]: chain },
                         })
                     }
-                    onFavourite={setFavourite}
+                    onFavourite={(engine, voice, isFavourite) =>
+                        void setFavourite(engine, voice, isFavourite)
+                    }
                     onPause={() => void pause()}
                     onPreview={(engine) => void preview(engine, lang)}
                     onSample={(sample) =>
