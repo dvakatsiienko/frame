@@ -1,22 +1,26 @@
 // select text → hotkey → read aloud; the same hotkey while reading → stop.
-// the player is a detached process-group leader, so one kill of its group stops `say` mid-word.
+// the player is a detached process-group leader, so one kill of its group stops every engine mid-word.
+// a stop never touches 1password: only the player runs under op-run (~0.8 s per call, measured 2026-09-29).
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    mkdirSync,
+    openSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { parseArgs } from 'node:util';
 
-import { type Lang, type Run, normalize } from './normalize.ts';
+import { CHAIN, ENGINES, type EngineName } from './engines.ts';
+import { type Run, normalize } from './normalize.ts';
 
 const STATE_DIR = join(homedir(), 'Library/Caches/speak');
 const PID_FILE = join(STATE_DIR, 'speak.pid');
+const OP_RUN = join(import.meta.dirname, '../script/op-run.sh');
 
-// en has no -v: `say` then speaks with the Spoken Content system voice, which is where siri voice 4 lives
-const VOICES = {
-    en: [],
-    ru: ['-v', 'Milena'],
-    uk: ['-v', 'Lesya'],
-} as const satisfies Record<Lang, readonly string[]>;
-
+// a finished player leaves its pid file behind; a dead pid reads as «not running»
 function runningPid() {
     try {
         const pid = Number(readFileSync(PID_FILE, 'utf8'));
@@ -49,23 +53,28 @@ function grabSelection() {
     ).trim();
 }
 
-async function play(runs: Run[]) {
+async function play({ engines, runs }: PlayJob) {
     for (const run of runs) {
-        await new Promise((resolve) =>
-            spawn('say', [...VOICES[run.lang], run.text], {
-                stdio: 'ignore',
-            }).on('exit', resolve),
-        );
+        for (const name of engines) {
+            try {
+                await ENGINES[name](run);
+                break;
+            } catch (error) {
+                console.error(
+                    `speak: ${name} skipped — ${(error as Error).message}`,
+                );
+            }
+        }
     }
 }
 
 async function main() {
-    if (process.argv[2] === '--play') {
-        const runs: Run[] = JSON.parse(readFileSync(0, 'utf8'));
-        await play(runs);
-        if (runningPid() === process.pid) rmSync(PID_FILE, { force: true });
-        return;
-    }
+    const { positionals, values } = parseArgs({
+        allowPositionals: true,
+        options: { engine: { type: 'string' }, play: { type: 'boolean' } },
+    });
+
+    if (values.play) return play(JSON.parse(positionals[0] ?? ''));
 
     const pid = runningPid();
     if (pid) {
@@ -75,20 +84,44 @@ async function main() {
         return;
     }
 
-    const runs = normalize(process.argv[2] ?? grabSelection());
+    const engine = values.engine;
+    if (engine && !(engine in ENGINES))
+        throw new Error(
+            `speak: engines are ${Object.keys(ENGINES).join(', ')}`,
+        );
+    const runs = normalize(positionals.join(' ') || grabSelection());
     if (!runs.length) {
         console.log('speak: nothing selected');
         return;
     }
+
     mkdirSync(STATE_DIR, { recursive: true });
-    const player = spawn(process.execPath, [import.meta.filename, '--play'], {
-        detached: true,
-        stdio: ['pipe', 'ignore', 'ignore'],
-    });
-    player.stdin.end(JSON.stringify(runs));
+    const job: PlayJob = {
+        engines: engine ? [engine as EngineName] : [...CHAIN],
+        runs,
+    };
+    const player = spawn(
+        OP_RUN,
+        [process.execPath, import.meta.filename, '--play', JSON.stringify(job)],
+        {
+            detached: true,
+            stdio: [
+                'ignore',
+                'ignore',
+                openSync(join(STATE_DIR, 'speak.log'), 'a'),
+            ],
+        },
+    );
     writeFileSync(PID_FILE, String(player.pid));
     player.unref();
     console.log('🔊 speak');
 }
 
 await main();
+
+/* Types */
+
+interface PlayJob {
+    engines: EngineName[];
+    runs: Run[];
+}
