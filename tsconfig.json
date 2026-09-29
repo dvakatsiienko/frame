@@ -27,6 +27,7 @@
         "script/**/*.ts",
         "hotkeys/*.ts",
         "speak/admin/*.ts",
+        "schedule/*.ts",
         "brand/profile/*.ts",
         "home/.claude/plugin-x/lib/*.ts"
     ]
