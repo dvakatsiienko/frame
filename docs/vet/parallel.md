@@ -129,3 +129,4 @@ the question: do monitors catch the changes we care about — a github issue's s
 
 grading: per monitor — fired (y/n), latency from the real event, false positives, and the balance delta over the window. a monitor that never fires on a real event is a miss, never «quiet».
 - 2026-09-28 · monitor · claude-code#90751 auto-fix default · created `a7467339` (1d, event_stream) — the second github-issue watch after the canary set
+- 2026-09-29 · research core · the design drift research (4 lanes) · hit — the best academic coverage (SpecifyUI, Design2Code, UI-Bench, SmartUI) and an explicit 10 %-trigger cost model, dates checked · 228 s · 14.9k chars · ¢ unsettled · 4/5 (slowest lane)

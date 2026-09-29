@@ -40,7 +40,13 @@ throwaways? dima's asks, near-verbatim:
 
 lanes when it runs: `pnpm research:lanes` (exa + parallel) + an opus source lane + neuroarxiv (`habit-research-lanes`).
 
+→ researched 2026-09-29 (four lanes): `docs/research/design-drift.md` — the structured layer lives, comps retire as
+dated references; live mode costs 75–225 % of a 5-hour window a week, selective ~7–22 %.
+
 ## ledger — one line per spread
 
 date · app · brief version · mode · takes · artboards · tokens in/out · wall minutes · usage window % before → after ·
 pick minutes · rounds
+
+- 2026-09-29 · atelier · brief v1 · full, blind · 4 takes · 5 artboards (4 takes + 1 shared art piece) · ~68k out (session footer; in not read) · 10.7 wall min · 5h 18 → 21 %, 7d 30 → 30 % · pick min pending · round 1
+- 2026-09-29 · atelier · brief v1 · full, blind · pick variants of glass-experimental · 3 artboards · out tokens from the session footer (not visible in-session) · 3.1 wall min · 5h 22 → 26 %, 7d 30 → 31 % · round 2
