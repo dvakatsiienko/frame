@@ -226,7 +226,7 @@ export const App = () => {
             </DragDropProvider>
             <footer className='sticky bottom-0 mx-auto flex max-w-[1280px] flex-wrap items-center gap-3 border-t border-line bg-bg p-4'>
                 <button
-                    className={`${buttonClass} border-accent bg-accent font-semibold text-on-accent hover:bg-accent hover:brightness-110`}
+                    className={primaryClass}
                     disabled={!isDirty}
                     onClick={() => void save()}
                     type='button'>
@@ -245,6 +245,11 @@ export const App = () => {
 /* Styles */
 const buttonClass =
     'min-h-8 min-w-8 rounded-md border border-line bg-surface-2 px-3 py-1 text-sm hover:border-muted hover:bg-surface disabled:opacity-50';
+
+// its own classes, not buttonClass plus overrides: two bg utilities on one element resolve by stylesheet order, and
+// bg-surface-2 won — the save button rendered white on grey
+const primaryClass =
+    'min-h-8 min-w-8 rounded-md border border-accent bg-accent px-3 py-1 text-sm font-semibold text-on-accent hover:brightness-110 disabled:opacity-50';
 
 /* Helpers */
 const SAMPLES: Record<Lang, string> = {
