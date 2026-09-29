@@ -129,7 +129,7 @@ export const VoicePicker = (props: VoicePickerProps) => {
                         />
                         only ♥ favourites
                     </label>
-                    <ul className='m-0 grid max-h-64 list-none gap-0.5 overflow-auto p-0'>
+                    <ul className='m-0 grid max-h-64 list-none gap-0.5 overflow-auto p-1'>
                         {rowListJSX}
                     </ul>
                 </div>

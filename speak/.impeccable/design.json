@@ -1,0 +1,176 @@
+{
+    "components": [
+        {
+            "css": ".ds-btn{min-height:32px;min-width:32px;padding:4px 12px;font-size:14px;border-radius:6px;border:1px solid var(--color-line);background:var(--color-surface-2);color:var(--color-ink);cursor:pointer}.ds-btn:hover{border-color:var(--color-muted);background:var(--color-surface)}.ds-btn:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}",
+            "description": "every plain action: ↑ ↓ ▶ reset stop.",
+            "html": "<button class=\"ds-btn\">reset</button>",
+            "kind": "button",
+            "name": "Button",
+            "refersTo": "button"
+        },
+        {
+            "css": ".ds-btn-primary{min-height:32px;padding:4px 12px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--color-accent);background:var(--color-accent);color:var(--color-on-accent);cursor:pointer}.ds-btn-primary:hover{filter:brightness(1.1)}.ds-btn-primary:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}",
+            "description": "save, the one primary action.",
+            "html": "<button class=\"ds-btn-primary\">save</button>",
+            "kind": "button",
+            "name": "Primary Button",
+            "refersTo": "button-primary"
+        },
+        {
+            "css": ".ds-input{padding:4px 8px;font-size:14px;border-radius:6px;border:1px solid var(--color-line);background:var(--color-surface);color:var(--color-ink)}.ds-input:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}",
+            "description": "the sample line and the first-audio budget.",
+            "html": "<input class=\"ds-input\" value=\"Привіт! Я прочитаю вголос…\">",
+            "kind": "input",
+            "name": "Text Input",
+            "refersTo": "input"
+        },
+        {
+            "css": ".ds-badge{display:inline-block;padding:0 8px;font-size:14px;border-radius:4px;border:1px solid currentColor}.ds-ok{color:var(--color-ok)}.ds-bad{color:var(--color-bad)}",
+            "description": "an engine's state as a word.",
+            "html": "<span class=\"ds-badge ds-ok\">live</span> <span class=\"ds-badge ds-bad\">no quota</span>",
+            "kind": "chip",
+            "name": "State Badge",
+            "refersTo": "state-badge"
+        },
+        {
+            "css": ".ds-card{display:grid;gap:8px;padding:12px;border-radius:8px;border:1px solid var(--color-line);background:var(--color-surface);margin-bottom:8px}.ds-card-off{background:transparent;border-style:dashed}.ds-card-head{display:flex;align-items:center;gap:8px}.ds-card-head b{flex:1}.ds-rank{font-size:14px;color:var(--color-muted);font-variant-numeric:tabular-nums}.ds-badge{padding:0 8px;font-size:14px;border-radius:4px;border:1px solid currentColor}.ds-ok{color:var(--color-ok)}",
+            "description": "one engine in a language's chain; dashed when outside it.",
+            "html": "<div class=\"ds-card\"><div class=\"ds-card-head\"><span class=\"ds-rank\">1</span><b>Kokoro (local)</b><span class=\"ds-badge ds-ok\">live</span></div></div><div class=\"ds-card ds-card-off\"><b>Gemini</b></div>",
+            "kind": "card",
+            "name": "Engine Card",
+            "refersTo": "engine-card"
+        },
+        {
+            "css": ".ds-pill{display:flex;align-items:center;gap:10px;width:236px;height:36px;padding:0 12px;border-radius:9999px;background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.85);font-size:12px}.ds-bars{flex:1;display:flex;align-items:center;justify-content:center;gap:2.5px;height:20px}.ds-bars b{width:2.5px;border-radius:2px;background:#8f94ff}",
+            "description": "the daemon's floating capsule; the brand's centre.",
+            "html": "<div class=\"ds-pill\"><span>✕</span><i class=\"ds-bars\"><b style=\"height:30%\"></b><b style=\"height:45%\"></b><b style=\"height:70%\"></b><b style=\"height:90%\"></b><b style=\"height:65%\"></b><b style=\"height:40%\"></b><b style=\"height:25%\"></b></i><span>⏸</span><span>■</span></div>",
+            "kind": "custom",
+            "name": "The Pill",
+            "refersTo": "pill"
+        }
+    ],
+    "extensions": {
+        "breakpoints": [
+            {
+                "name": "columns",
+                "value": "900px"
+            }
+        ],
+        "colorMeta": {
+            "meter-indigo": {
+                "canonical": "#8f94ff",
+                "displayName": "Meter Indigo",
+                "role": "primary"
+            },
+            "night": {
+                "canonical": "#121212",
+                "displayName": "Night",
+                "role": "neutral"
+            },
+            "paper": {
+                "canonical": "#f6f5f2",
+                "displayName": "Paper",
+                "role": "neutral"
+            },
+            "pill-indigo": {
+                "canonical": "#4a55c8",
+                "displayName": "Pill Indigo",
+                "role": "primary",
+                "tonalRamp": [
+                    "#141736",
+                    "#232861",
+                    "#333b8c",
+                    "#4a55c8",
+                    "#6b74d6",
+                    "#8f96e2",
+                    "#b8bdee",
+                    "#e0e2f8"
+                ]
+            },
+            "pill-indigo-night": {
+                "canonical": "#9aa2ff",
+                "displayName": "Pill Indigo (night)",
+                "role": "primary"
+            }
+        },
+        "motion": [
+            {
+                "name": "meter-ease",
+                "purpose": "the pill's bars glide to each reading; runs only while audio plays",
+                "value": "1 - exp(-dt / 0.015)"
+            }
+        ],
+        "shadows": [
+            {
+                "name": "float",
+                "purpose": "the voice popover only: floating above the page",
+                "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)"
+            }
+        ],
+        "typographyMeta": {
+            "body": {
+                "displayName": "Body",
+                "purpose": "the default"
+            },
+            "headline": {
+                "displayName": "Headline",
+                "purpose": "the app name, top-left, a link home"
+            },
+            "label": {
+                "displayName": "Label",
+                "purpose": "controls, badges, helper and status lines; numbers tabular"
+            },
+            "title": {
+                "displayName": "Title",
+                "purpose": "a language column's and an engine's name"
+            }
+        }
+    },
+    "generatedAt": "2026-09-29T16:59:18+00:00",
+    "narrative": {
+        "donts": [
+            "Don't add a shadow to a card or a second accent colour.",
+            "Don't render text under 14px.",
+            "Don't animate anything at rest — no pulse, shimmer or spinner (dima's rule)."
+        ],
+        "dos": [
+            "Do take every colour from the theme.css tokens; both themes come free.",
+            "Do say state in a word first, colour second.",
+            "Do keep indigo for action, selection and focus.",
+            "Do keep the page still; motion belongs to the pill's meter."
+        ],
+        "keyCharacteristics": [
+            "one accent, pill indigo, on primary actions, checked controls, focus and selection",
+            "flat: 1px lines and layered greys, never a shadow on the page",
+            "state in words and borders, colour only as a second signal",
+            "lowercase, short, plain copy",
+            "light (paper) and dark (night) from the same tokens"
+        ],
+        "northStar": "The Pill, Unfolded",
+        "overview": "the pill is the product's most-seen surface: a dark-glass capsule that floats over any app while x-speak reads, with one live indigo meter. this page is that pill opened up — the same restraint, the same single accent, room to tune what the pill plays.",
+        "rules": [
+            {
+                "body": "indigo is the only accent. a state hue marks state and nothing else; a brand colour never leaks into a control.",
+                "name": "The One Voice Rule",
+                "section": "colors"
+            },
+            {
+                "body": "every state reads as a word in a bordered badge; the colour only repeats it.",
+                "name": "The Word First Rule",
+                "section": "colors"
+            },
+            {
+                "body": "nothing renders below 14px; small and dim never meet.",
+                "name": "The 14px Floor Rule",
+                "section": "typography"
+            },
+            {
+                "body": "a card is a surface and a line, never a shadow; a shadow means «floating above the page».",
+                "name": "The Flat Page Rule",
+                "section": "elevation"
+            }
+        ]
+    },
+    "schemaVersion": 2,
+    "title": "Design System: speak"
+}
