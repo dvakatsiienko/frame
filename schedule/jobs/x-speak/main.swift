@@ -250,7 +250,8 @@ final class Speaker {
                 // one first-audio budget per chunk, shared by every cloud engine: misses never stack
                 let budgetEnds = player.isPlaying || systemVoice.isBusy ? nil : ContinuousClock.now + firstAudioDeadline
                 for engine in candidates {
-                    let deadline = engine.isCloud ? budgetEnds.map { $0 - ContinuousClock.now } : nil
+                    // the last candidate has nothing to yield to, so it waits as long as it takes
+                    let deadline = engine.isCloud && engine != candidates.last ? budgetEnds.map { $0 - ContinuousClock.now } : nil
                     if let deadline, deadline <= .zero { continue }
                     do {
                         try await speak(chunk, with: engine, deadline: deadline) {
@@ -326,7 +327,11 @@ final class Speaker {
             request.setValue("Bearer \(key)", forHTTPHeaderField: "authorization")
             request.setValue("application/json", forHTTPHeaderField: "content-type")
             request.setValue("s2.1-pro-free", forHTTPHeaderField: "model")
-            request.httpBody = try JSONSerialization.data(withJSONObject: ["format": "pcm", "latency": "balanced", "sample_rate": 24000, "text": chunk.text])
+            // female voices from fish's model list, the most liked per language (on a re-test in dima's booth)
+            let voices: [Lang: String] = [.en: "933563129e564b19a115bedd57b7406a", .ru: "2a1036d645634680b3cc69aeeb60375b", .uk: "fe8ba2d4555d457ba5fec0e86430c7fe"]
+            request.httpBody = try JSONSerialization.data(withJSONObject: [
+                "format": "pcm", "latency": "balanced", "reference_id": voices[chunk.lang]!, "sample_rate": 24000, "text": chunk.text,
+            ])
             return request
         default:
             preconditionFailure("\(engine) is not a streaming engine")
