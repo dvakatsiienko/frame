@@ -83,6 +83,14 @@ isolated divergent frames have support for text ideation (persona and frame sets
 
 vague asks («make it modern») · no real content · no named direction · coding before exploration · picking the first plausible take · mixing branches before all are rendered · iterating on the wrong take · pixel-pushing before structure and states · the model self-certifying. each has a gate above; the brief gate carries most of the weight.
 
+## where to design — Cowork or Claude Code (researched 2026-09-29, sources ≥ 09-01)
+
+- **one Design capability behind several doors**, not two products: the 09-16 «Cowork is now Claude» launch put Design, Docs and Slides into ordinary conversations; the 09-23 Design guide lists the doors — a chat, the Artifacts tab, Claude Code (`/design`, the Design artifact type), standalone `claude.ai/design`. identical hidden prompts or models are **unverified**; anthropic publishes no per-surface matrix.
+- **no quality or speed comparison exists** between the surfaces; **one shared usage pool** (Design no longer has its own weekly allowance) — designing in the app does not save the Code budget.
+- claude code's own changes that week touched artifact *pages* (v2.1.283 artifact-design wording, v2.1.284 the design plan on the page), not the Design type. the «Design tab» migrates *design systems* from standalone Design; people and projects stay where they are.
+- the bridges: `/design-sync` (repo tokens/components → Design) and the handoff Design → Code; a CLI agent reading any live Cowork canvas is **unverified**.
+- ➡️ for the fleet: **design in Claude Code** through the Design artifact — agent-driven, scripted, measured, and the canvas still opens on claude.ai for dima's direct edits and comments. ⚠️ skip `/design-sync` on a blind redesign — it imports the current look. Cowork is worth one A/B take later, never a dependency.
+
 ## open questions
 
 - is the brief gate real or ceremony? test: one spread from the gated brief vs one from a deliberately vague brief on the same axes (advise-project-approach's disprovable first action)
