@@ -1,6 +1,7 @@
 packages:
   - home/.claude/mcp-x-cw
   - hotkeys/chords
+  - speak
   - import/raycast/extensions/x-ray
 
 allowBuilds:

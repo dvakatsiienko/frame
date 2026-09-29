@@ -1,6 +1,7 @@
-// the voice admin: one page on 127.0.0.1:7386 that edits x-speak's config.json and previews through the running
-// daemon. no state of its own — the file is the truth, the daemon's control socket is the only other door.
-import { readFileSync, writeFileSync } from 'node:fs';
+// the voice admin's server: the built page from dist/ and the api, on 127.0.0.1. no state of its own — config.json
+// is the truth, the daemon's control socket is the only other door.
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import {
     type IncomingMessage,
     type ServerResponse,
@@ -8,15 +9,14 @@ import {
 } from 'node:http';
 import { createConnection } from 'node:net';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { extname, join, normalize } from 'node:path';
 
-const PORT = 7386;
-const CONFIG = join(
-    import.meta.dirname,
-    '../../schedule/jobs/x-speak/config.json',
-);
+import { speakPort } from './ports.ts';
+
+const REPO = join(import.meta.dirname, '..');
+const CONFIG = join(REPO, 'schedule/jobs/x-speak/config.json');
+const DIST = join(import.meta.dirname, 'dist');
 const SOCKET = join(homedir(), '.local/share/x-speak/control.sock');
-const PAGE = join(import.meta.dirname, 'index.html');
 
 // female only (dima's blind test). elevenlabs premades answered 200 on the restricted key; charlotte and aria are
 // library voices (402). kokoro: every af_/bf_ voice answered on the warm server (2026-09-29)
@@ -59,6 +59,15 @@ const VOICES = {
     ].map((id) => [id, id]),
 } satisfies Record<string, string[][]>;
 
+const TYPES: Record<string, string> = {
+    '.css': 'text/css',
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'text/javascript',
+    '.png': 'image/png',
+    '.svg': 'image/svg+xml',
+    '.woff2': 'font/woff2',
+};
+
 function daemon(request: object) {
     return new Promise<Record<string, unknown>>((resolve) => {
         const socket = createConnection(SOCKET);
@@ -85,13 +94,19 @@ async function body(request: IncomingMessage) {
     return JSON.parse(text || '{}');
 }
 
-// the favicons, by exact name only: nothing else on disk is reachable
-const ICONS: Record<string, string> = {
-    'speak-180.png': 'image/png',
-    'speak-32.png': 'image/png',
-    'speak-dark.svg': 'image/svg+xml',
-    'speak-light.svg': 'image/svg+xml',
-};
+// the saved file is exactly what biome would write, so a save never dirties the diff or trips the commit hook
+function biomeFormatted(value: unknown) {
+    return execFileSync(
+        join(REPO, 'node_modules/.bin/biome'),
+        ['format', `--stdin-file-path=${CONFIG}`],
+        {
+            cwd: REPO,
+            encoding: 'utf8',
+            // indented in: biome keeps an object expanded when its input was, which is the committed shape
+            input: JSON.stringify(value, null, 4),
+        },
+    );
+}
 
 function send(
     response: ServerResponse,
@@ -105,6 +120,26 @@ function send(
     );
 }
 
+// dist/ only: a path that normalises outside it is a 404, never a read
+function sendStatic(response: ServerResponse, url: string) {
+    const file = normalize(
+        join(
+            DIST,
+            url === '/'
+                ? 'index.html'
+                : decodeURIComponent(url.split('?')[0] ?? ''),
+        ),
+    );
+    if (!(file.startsWith(`${DIST}/`) && existsSync(file)))
+        return send(response, 404, { error: 'not found' });
+    send(
+        response,
+        200,
+        readFileSync(file),
+        TYPES[extname(file)] ?? 'application/octet-stream',
+    );
+}
+
 const routes: Record<string, (request: IncomingMessage) => Promise<unknown>> = {
     'GET /api/config': async () => JSON.parse(readFileSync(CONFIG, 'utf8')),
     'GET /api/status': async () => daemon({ op: 'status' }),
@@ -115,42 +150,25 @@ const routes: Record<string, (request: IncomingMessage) => Promise<unknown>> = {
     'POST /api/preview': async (request) =>
         daemon({ op: 'preview', ...(await body(request)) }),
     'POST /api/stop': async () => daemon({ op: 'stop' }),
-    // written as the page built it; the daemon validates, and a rejection comes back as its own log line
+    // the daemon validates the saved file; a rejection comes back as its own log line
     'PUT /api/config': async (request) => {
-        writeFileSync(
-            CONFIG,
-            `${JSON.stringify(await body(request), null, 4)}\n`,
-        );
+        writeFileSync(CONFIG, biomeFormatted(await body(request)));
         return daemon({ op: 'reload' });
     },
 };
 
 createServer(async (request, response) => {
     const route = routes[`${request.method} ${request.url}`];
-    if (request.method === 'GET' && request.url === '/')
-        return send(
-            response,
-            200,
-            readFileSync(PAGE, 'utf8'),
-            'text/html; charset=utf-8',
-        );
-    const icon =
-        request.method === 'GET'
-            ? ICONS[request.url?.slice(1) ?? '']
-            : undefined;
-    if (icon)
-        return send(
-            response,
-            200,
-            readFileSync(join(import.meta.dirname, request.url ?? '')),
-            icon,
-        );
-    if (!route) return send(response, 404, { error: 'not found' });
+    if (!route) {
+        if (request.method === 'GET' && !request.url?.startsWith('/api/'))
+            return sendStatic(response, request.url ?? '/');
+        return send(response, 404, { error: 'not found' });
+    }
     try {
         send(response, 200, await route(request));
     } catch (error) {
         send(response, 400, { error: (error as Error).message });
     }
-}).listen(PORT, '127.0.0.1', () =>
-    console.log(`🔊 x-speak admin → http://127.0.0.1:${PORT}`),
+}).listen(speakPort, '127.0.0.1', () =>
+    console.log(`🔊 speak → http://127.0.0.1:${speakPort}`),
 );

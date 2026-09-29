@@ -29,6 +29,10 @@ pre-commit:
       # (BYT-111), so frame calls it by path. a mac without bytes checked out skips, never blocks.
       glob: "hotkeys/chords/**"
       run: test -f "$HOME/projects/bytes/script/apps-essentials.ts" || exit 0; node "$HOME/projects/bytes/script/apps-essentials.ts" --app hotkeys/chords
+    speak-essentials:
+      # the voice admin, frame's second app outside bytes; same checker, same skip on a mac without bytes
+      glob: "speak/**"
+      run: test -f "$HOME/projects/bytes/script/apps-essentials.ts" || exit 0; node "$HOME/projects/bytes/script/apps-essentials.ts" --app ./speak
 
 pre-push:
   parallel: true
