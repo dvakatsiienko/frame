@@ -42,5 +42,6 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 ## habits
 - 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
 - 🎯 @habit-ray-hoist.md — a repeated ask lands on DOT-252 the same turn as an x-ray candidate; guesses never do
+- 📐 @habit-recipe-first.md — a branch (design, voice) or a big research becomes a recipe the same session; the next refresh opens it
 - 🧪 @habit-vet.md — a tool on trial: docs research + stress list on day 0, reached first on every fitting ask, widest over deepest
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit

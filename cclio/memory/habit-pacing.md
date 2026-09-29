@@ -17,6 +17,12 @@ every item a line with status and lane — then resolve paced, after his word on
 loss dies at the parse, not at the resolve: an item with a checklist line cannot vanish. **An
 item's url travels verbatim into its flowlog line** — a link is payload, never decoration.
 
+**A fan-out answers once.** When a round depends on parallel lanes (researchers, coders, probes),
+their results land at different times — hold them and print ONE unified reply when the picture
+is whole. A lane arriving early gets a one-line «N of M in» at most, never its findings. Dima
+reads the thread cold from another window; findings staggered across turns are findings he has
+to reassemble (dima, 2026-09-29: «group them instead of printing the results of each round»).
+
 **Flag overload instead of absorbing it.** A query too fat for clean resolution → tell him so and
 propose the split, same turn. His words when this duty went unmet: *«why did not you told me even
 once how i could improve my prompt?»*
