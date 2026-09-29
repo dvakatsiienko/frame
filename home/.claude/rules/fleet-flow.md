@@ -13,6 +13,7 @@ channel — dima may step into it and steer there, and the member answers him th
 - **cclio** — talks to dima and every member · hears from all · the board in dima's tab
 - **coder** — talks to cclio (one ping per assignment) and to its verifier · hears from cclio, the verifier, and dima when he drops in · a linear comment + the ping
 - **verifier** — talks to the coder, one round line per round to cclio · hears from the coder · a dispute or a round-3 stop goes to cclio
+- **designer** — talks to cclio (one ping per spread) and to dima when he drops in · hears from cclio (the brief) and dima · the canvas link, one line per take
 - **cw** — a peer: either side opens the exchange, the shared store carries the handoffs
 - **cc cloud** — hears from cclio (the brief, then `SendMessage` steers) · cannot talk back yet · a pr, read by cclio; its transcript through `--teleport` (`x:crew-cloud`)
 

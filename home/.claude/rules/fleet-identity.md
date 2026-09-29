@@ -62,6 +62,9 @@ Jargon (slay, freebie, propose, pause) lives in `fleet-vibe.md`, not here.
   `AGENTS.md`, memory barrel and boot ritual. It orchestrates; it rarely writes product code.
 - **`coder`** — a background session doing the edits. `x:crew-coder` owns that contract;
   cclio's `craft-spawning` owns the spawn side.
+- **`designer`** — a session in `~/projects/studio` that draws takes and comps on the Claude
+  Design canvas and never edits an app's repo; impeccable builds the pick. `x:crew-designer`
+  owns its contract, `x:crew-designer-interview` the brief cclio writes with dima.
 - **`classifier`** — jev (typesafe.ai): typed judgments over a state, no tools, no memory.
   ~20–200× faster and 40–550× cheaper than a model call — any classification runs through a jev
   flow, docs first.
