@@ -51,7 +51,7 @@ final class Meter {
     func push(_ level: Float) {
         // a short decay, so a pause between words does not snap the centre bar to a dot
         history.removeLast()
-        history.insert(max(level, (history.first ?? 0) * 0.82), at: 0)
+        history.insert(max(level, (history.first ?? 0) * 0.80), at: 0)
     }
 
     func reset() {
@@ -69,7 +69,7 @@ final class Meter {
     func frame(at date: Date) -> [Float] {
         let dt = lastFrame.map { min(0.1, date.timeIntervalSince($0)) } ?? 1.0 / 60
         lastFrame = date
-        let ease = Float(1 - exp(-dt / 0.07))
+        let ease = Float(1 - exp(-dt / 0.063))
         let target = history.reversed() + history.dropFirst()
         for index in shown.indices { shown[index] += (target[index] - shown[index]) * ease }
         return shown
@@ -123,7 +123,7 @@ struct LevelMeter: View {
     let isRunning: Bool
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60, paused: !isRunning)) { context in
+        TimelineView(.animation(minimumInterval: 1.0 / 120, paused: !isRunning)) { context in
             Canvas { canvas, size in
                 let levels = meter.frame(at: context.date)
                 let width: CGFloat = 2.5
