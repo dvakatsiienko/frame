@@ -67,9 +67,9 @@ final class Control {
             speaker.stop()
             speaker.panel.speechEnded()
             return reply(["ok": true])
-        // shows the pill with sample levels in a forced appearance, for screenshots of a design take
+        // shows the pill with sample levels, for screenshots of a design take
         case "panel-demo":
-            speaker.panel.demo(appearance: request.text == "dark" ? .darkAqua : .aqua)
+            speaker.panel.demo()
             return reply(["ok": true])
         case "panel-hide":
             speaker.panel.hide()
