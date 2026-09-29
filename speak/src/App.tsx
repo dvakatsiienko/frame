@@ -41,6 +41,34 @@ export const App = () => {
     const [draft, setDraft] = useState<Config>();
     const [samples, setSamples] = useState<Record<Lang, string>>(SAMPLES);
     const dragStart = useRef<Config>(undefined);
+    // the pill's infinite waveform: it plays the draft's glide and flow live, re-arms the daemon's 5-minute deadline
+    // every minute, and turns off when toggled off, on unmount, or when the tab goes away
+    const [isWaveOn, setIsWaveOn] = useState(false);
+    const glide = draft?.meterGlideMs;
+    const flow = draft?.meterFlowMs;
+    useEffect(() => {
+        if (isWaveOn) void api.wave({ flow, glide, on: true });
+    }, [isWaveOn, glide, flow]);
+    useEffect(() => {
+        if (!isWaveOn) return;
+        const off = () =>
+            navigator.sendBeacon(
+                '/api/wave',
+                new Blob([JSON.stringify({ on: false })], {
+                    type: 'application/json',
+                }),
+            );
+        const keepAlive = setInterval(
+            () => void api.wave({ on: true }),
+            60_000,
+        );
+        window.addEventListener('pagehide', off);
+        return () => {
+            clearInterval(keepAlive);
+            window.removeEventListener('pagehide', off);
+            void api.wave({ on: false });
+        };
+    }, [isWaveOn]);
     const [message, setMessage] = useState<{
         text: string;
         kind?: 'ok' | 'error';
@@ -253,41 +281,60 @@ export const App = () => {
                     </button>
                 </header>
             </div>
-            <div className='mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-6 gap-y-2 px-4 pt-5'>
-                <label className='text-sm text-muted'>
-                    first audio budget{' '}
-                    <input
-                        className='w-22 rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink'
-                        max={3000}
-                        min={100}
-                        onChange={(event) =>
-                            edit({
-                                ...draft,
-                                firstAudioMs: Number(event.target.value),
-                            })
+            <div className='mx-auto max-w-[1280px] px-4 pt-4'>
+                <section
+                    aria-label='playback'
+                    className='flex flex-wrap items-center gap-x-8 gap-y-3 rounded-[22px] border border-line bg-surface px-5 py-3'>
+                    <label className='flex items-center gap-2 text-sm text-muted'>
+                        first audio budget{' '}
+                        <input
+                            className='w-20 rounded-md border border-line bg-surface px-2 py-1 text-right text-sm tabular-nums text-ink'
+                            max={3000}
+                            min={100}
+                            onChange={(event) =>
+                                edit({
+                                    ...draft,
+                                    firstAudioMs: Number(event.target.value),
+                                })
+                            }
+                            step={50}
+                            type='number'
+                            value={draft.firstAudioMs}
+                        />{' '}
+                        ms
+                    </label>
+                    <MsSetting
+                        hint='how long a bar takes to reach a new level; 0 jumps straight to it'
+                        label='pill glide'
+                        max={200}
+                        onChange={(value) =>
+                            edit({ ...draft, meterGlideMs: value })
                         }
-                        step={50}
-                        type='number'
-                        value={draft.firstAudioMs}
-                    />{' '}
-                    ms
-                </label>
-                <MsSetting
-                    hint='how long a bar takes to reach a new level; 0 jumps straight to it'
-                    label='pill glide'
-                    max={200}
-                    onChange={(value) =>
-                        edit({ ...draft, meterGlideMs: value })
-                    }
-                    value={draft.meterGlideMs ?? 30}
-                />
-                <MsSetting
-                    hint='how long the wave holds before moving one bar outward; lower travels faster'
-                    label='pill flow'
-                    max={200}
-                    onChange={(value) => edit({ ...draft, meterFlowMs: value })}
-                    value={draft.meterFlowMs ?? 40}
-                />
+                        value={draft.meterGlideMs ?? 30}
+                    />
+                    <MsSetting
+                        hint='how long the wave holds before moving one bar outward; lower travels faster'
+                        label='pill flow'
+                        max={200}
+                        onChange={(value) =>
+                            edit({ ...draft, meterFlowMs: value })
+                        }
+                        value={draft.meterFlowMs ?? 40}
+                    />
+                    <label className='flex min-h-8 cursor-pointer select-none items-center gap-2.5 text-sm text-muted'>
+                        <input
+                            aria-checked={isWaveOn}
+                            checked={isWaveOn}
+                            className='size-4'
+                            onChange={(event) =>
+                                setIsWaveOn(event.target.checked)
+                            }
+                            role='switch'
+                            type='checkbox'
+                        />
+                        infinite waveform
+                    </label>
+                </section>
             </div>
             <DragDropProvider
                 // react owns the order through the whole drag: move() on every drag-over, the snapshot back on a
@@ -322,12 +369,12 @@ export const App = () => {
                 onDragStart={() => {
                     dragStart.current = draft;
                 }}>
-                <main className='mx-auto grid max-w-[1280px] grid-cols-1 gap-4 p-4 min-[900px]:grid-cols-3'>
+                <main className='mx-auto grid max-w-[1280px] grid-cols-1 gap-x-6 gap-y-10 px-4 pt-8 pb-28 min-[900px]:grid-cols-3'>
                     {columnListJSX}
                 </main>
             </DragDropProvider>
             <div className='sticky bottom-3 z-30 mx-auto max-w-[1280px] px-4'>
-                <footer className={capsuleClass}>
+                <footer className='flex flex-wrap items-center gap-2 rounded-[22px] border border-pill-line bg-pill/95 p-2 text-pill-ink shadow-lg'>
                     <button
                         className={savePillClass}
                         disabled={!isDirty}
@@ -343,7 +390,7 @@ export const App = () => {
                         reset
                     </button>
                     <span
-                        className={`select-text text-sm ${message.kind === 'error' ? 'text-pill-bad' : message.kind === 'ok' ? 'text-pill-ok' : 'text-pill-muted'}`}
+                        className={`select-text px-2 text-sm ${message.kind === 'error' ? 'text-pill-bad' : message.kind === 'ok' ? 'text-pill-ok' : 'text-pill-muted'}`}
                         role='status'>
                         {message.text}
                     </span>
@@ -381,11 +428,11 @@ const capsuleClass =
     'flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[22px] border border-pill-line bg-pill/95 px-3 py-1.5 text-pill-ink shadow-lg';
 
 const pillButtonClass =
-    'min-h-8 min-w-8 rounded-full border border-pill-line px-3 py-1 text-sm text-pill-ink hover:bg-pill-hover disabled:opacity-50';
+    'h-8 rounded-full border border-pill-line px-3.5 text-sm text-pill-ink hover:bg-pill-hover disabled:opacity-50';
 
 // its own classes, not pillButtonClass plus overrides: two bg utilities on one element resolve by stylesheet order
 const savePillClass =
-    'min-h-8 min-w-8 rounded-full border border-pill-accent bg-pill-accent px-4 py-1 text-sm font-semibold text-pill hover:brightness-110 disabled:opacity-50';
+    'h-8 rounded-full border border-pill-accent bg-pill-accent px-3.5 text-sm font-semibold text-pill hover:brightness-110 disabled:opacity-50';
 
 /* Helpers */
 const SAMPLES: Record<Lang, string> = {

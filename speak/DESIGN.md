@@ -158,8 +158,9 @@ its chain card. a card outside the chain dims its mark.
 
 ## Layout
 
-a centred column, max 1280px, 16px gutters. the language columns stack on one axis below 900px and sit three
-across above it, 16px apart. inside a column: the title, the sample line, then the cards 8px apart; inside a card,
+a centred column, max 1280px, 16px gutters. under the header, a playback panel (22px-rounded surface, like the
+chrome): first audio budget, pill glide, pill flow, infinite waveform. then the language columns: stacked below
+900px, three across above it, 24px apart, 40px apart when stacked, 32px under the panel; cards 12px apart. inside a column: the title, the sample line, then the cards 8px apart; inside a card,
 8px steps. a sticky save bar holds the bottom edge, and focus scrolls clear of it (88px scroll padding). the scale
 is 4px-based: 4, 8, 12, 16.
 
@@ -184,19 +185,21 @@ engine outside the chain has a dashed one — the dash says «not playing». the
 - the header and the save bar are the pill, grown: a 22px-rounded capsule of dark glass (#151517 at 95%) with a white
   hairline, sticky 12px from the top and bottom edge, in both themes.
 - inside, the pill's own ink and the night indigo: the save button is an indigo capsule, the others hairline capsules.
+- the save bar pads evenly, 8px on every side of its 32px buttons.
 - the header holds the name with a still meter mark (five indigo bars, centre-heavy), the language links, the daemon
   line and stop; the settings row (first audio budget, pill glide) sits under it on the page.
 
 ### Buttons
-- **Shape:** gently rounded (6px), at least 32×32.
+- **Shape:** on a card, a round 32px hairline (the pill's button on the page); in the chrome, 32px-tall capsules.
 - **Plain:** surface-2 fill, 1px line, ink label; hover lifts to the surface with a muted line.
 - **Primary:** pill indigo fill and line, semibold label; hover brightens. one per screen: save.
 - **Disabled:** half opacity and a not-allowed cursor.
 - **Focus:** a 2px indigo ring, 2px out.
 
 ### Engine card
-- **In the chain:** surface fill, solid 1px line, 12px padding. the header row: drag handle (grab cursor), rank,
-  engine name, state badge. then the chain switch, ↑ / ↓ and ▶. then voice, speed and gain.
+- **In the chain:** 16px-rounded, surface fill with its brand wash, solid 1px line, 16px padding, 12px between rows.
+  the top row: grip (grab cursor), mark, engine name, state badge. then a 16px switch labelled «1st in the en chain»
+  (the rank lives in the words), ↑ / ↓ and ▶. then voice, speed and gain.
 - **Outside the chain:** no fill, dashed line, name and switch only.
 - **Out of quota:** a muted `no quota` badge and a disabled ▶; the credits left and the provider's message sit in the
   badge's tooltip. nothing red — the chain already skips it.

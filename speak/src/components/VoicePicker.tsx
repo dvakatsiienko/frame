@@ -99,7 +99,7 @@ export const VoicePicker = (props: VoicePickerProps) => {
                 aria-expanded={isOpen}
                 aria-haspopup='dialog'
                 aria-label={`${props.label}: ${current}`}
-                className='flex w-full items-center justify-between rounded-md border border-line bg-surface px-2 py-1 text-left text-sm hover:border-muted'
+                className='flex w-full items-center justify-between rounded-lg border border-line bg-surface px-3 py-1.5 text-left text-sm hover:border-muted'
                 onClick={() => setIsOpen(!isOpen)}
                 ref={trigger}
                 type='button'>

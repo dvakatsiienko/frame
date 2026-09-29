@@ -150,6 +150,8 @@ const routes: Record<string, (request: IncomingMessage) => Promise<unknown>> = {
     'POST /api/preview': async (request) =>
         daemon({ op: 'preview', ...(await body(request)) }),
     'POST /api/stop': async () => daemon({ op: 'stop' }),
+    'POST /api/wave': async (request) =>
+        daemon({ op: 'wave', ...(await body(request)) }),
     'PUT /api/config': async (request) => {
         writeFileSync(CONFIG, biomeFormatted(await body(request)));
         return daemon({ op: 'reload' });

@@ -380,6 +380,8 @@ final class Speaker {
 
     // `only` is --engine: one engine, no chain
     func speak(_ parts: [Chunk], only: Engine?, pressed: ContinuousClock.Instant) {
+        // real speech ends the admin's infinite waveform: the meter goes back to the sound
+        panel.stopWave()
         panel.show()
         job = Task {
             var isFirst = true

@@ -10,10 +10,10 @@ export const MsSetting = (props: MsSettingProps) => {
         <div
             className='flex items-center gap-2 text-sm text-muted'
             title={props.hint}>
-            <span>{props.label}</span>
+            <span className='whitespace-nowrap'>{props.label}</span>
             <input
                 aria-label={`${props.label} slider`}
-                className='h-6 w-44'
+                className='h-6 w-28 min-w-0 sm:w-44'
                 max={props.max}
                 min={0}
                 onChange={(event) => set(event.target.value)}

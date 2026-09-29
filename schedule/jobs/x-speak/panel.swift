@@ -68,7 +68,7 @@ final class Meter {
     func push(_ level: Float) {
         stepPeak = max(stepPeak, level)
         stepReadings += 1
-        guard stepReadings >= max(1, Int((config.meterFlowMs / 10).rounded())) else { return }
+        guard stepReadings >= max(1, Int(((waveTuning?.flow ?? config.meterFlowMs) / 10).rounded())) else { return }
         // a short decay, so a pause between words does not snap the centre bar to a dot
         history.removeLast()
         history.insert(max(stepPeak, (history.first ?? 0) * 0.72), at: 0)
@@ -98,7 +98,7 @@ final class Meter {
             push(next.level)
             pending.removeFirst()
         }
-        let ease = Float(1 - exp(-dt / max(0.0001, config.meterGlideMs / 1000)))
+        let ease = Float(1 - exp(-dt / max(0.0001, (waveTuning?.glide ?? config.meterGlideMs) / 1000)))
         let raw = history.reversed() + history.dropFirst()
         // a light blur across neighbours, so the wave reads as one flowing shape, not 17 independent bars
         let target = raw.indices.map { index in
@@ -148,6 +148,18 @@ struct PanelView: View {
 // the one accent (Linear's indigo), on live bars only; at rest the bars are dim dots
 let meterAccent = Color(red: 0.56, green: 0.58, blue: 1.0)
 let panelSize = CGSize(width: 236, height: 36)
+
+// the infinite waveform's unsaved glide and flow, in force only while it runs
+@MainActor var waveTuning: (glide: Double, flow: Double)?
+
+// a talking voice without the voice: ~4 syllables a second inside ~1.6 s phrases, a short breath between them
+func speechLevel(at t: Double) -> Double {
+    let phrase = t.truncatingRemainder(dividingBy: 1.6)
+    guard phrase < 1.3 else { return 0.02 }
+    let syllable = abs(sin(t * .pi * 4.2))
+    let texture = 0.5 + 0.5 * sin(t * 37) * sin(t * 13)
+    return min(0.95, 0.25 + 0.45 * syllable + 0.15 * texture)
+}
 
 // newest level in the centre, older ones moving outward on both sides. a 60 fps timeline while speech with a signal
 // plays — measured: +7 % of one core at 60, +11 % at 120, with the eased bars equally smooth to the eye; paused,
@@ -306,6 +318,39 @@ final class Panel {
     func hide() {
         window.orderOut(nil)
         model.resetLevels()
+    }
+
+    // the admin's infinite waveform: speech-shaped levels with no audio, so glide and flow can be tuned by eye with
+    // their unsaved values. every call re-arms a 5-minute deadline; an admin tab that vanished cannot leave it running
+    private var waveTimer: Timer?
+    private var waveDeadline = Date.distantPast
+
+    func wave(on: Bool, glide: Double?, flow: Double?) {
+        guard on else { return stopWave() }
+        waveTuning = (glide ?? waveTuning?.glide ?? config.meterGlideMs, flow ?? waveTuning?.flow ?? config.meterFlowMs)
+        waveDeadline = Date().addingTimeInterval(300)
+        guard waveTimer == nil else { return }
+        model.isPaused = false
+        model.isSpeaking = true
+        if !window.isVisible { placeOnPointerScreen() }
+        window.orderFrontRegardless()
+        let start = Date()
+        waveTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                if Date() > self.waveDeadline { return self.stopWave() }
+                let t0 = Date().timeIntervalSince(start)
+                self.model.push((0..<10).map { Float(speechLevel(at: t0 + Double($0) * 0.01)) }, spacing: 0.01)
+            }
+        }
+    }
+
+    func stopWave() {
+        guard let timer = waveTimer else { return }
+        timer.invalidate()
+        waveTimer = nil
+        waveTuning = nil
+        speechEnded()
     }
 
     func demo() {

@@ -12,7 +12,7 @@
 - ✅ a chain card per engine, in the order the daemon tries them
   - given a language's chain in config.json
   - when the page loads
-  - then its cards show in that order, ranked 1…n, and the engines outside the chain follow as dashed cards
+  - then its cards show in that order, each labelled «1st / 2nd / … in the <lang> chain», and the engines outside the chain follow as dashed cards
 - ✅ a toggle puts an engine in or out of a chain
   - given an engine outside the en chain
   - when the user ticks «in the en chain»
@@ -66,6 +66,11 @@
   - and the state clears after the engine's next success
   - decision: the chain already falls through on a quota refusal; the card only has to make it visible (dima, 2026-09-29)
 - ✅ the header shows the daemon's accessibility state and whether it is speaking
+- ✅ «infinite waveform» plays the pill's wave with no voice, to tune glide and flow by eye
+  - given the playback panel under the header
+  - when the user turns on infinite waveform
+  - then the pill shows and animates speech-shaped levels, following the unsaved glide and flow as they change
+  - and it stops when turned off, when the tab closes, when a real read starts, or after 5 minutes without an update
 - ✅ «pill glide» and «pill flow» tune the pill's wave, each a slider and a number box in ms
   - makes: `meterGlideMs` and `meterFlowMs` in config.json
   - given the settings row under the header

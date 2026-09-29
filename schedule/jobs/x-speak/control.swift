@@ -78,6 +78,9 @@ final class Control {
         case "panel-demo":
             speaker.panel.demo()
             return reply(["ok": true])
+        case "wave":
+            speaker.panel.wave(on: request.on ?? false, glide: request.glide, flow: request.flow)
+            return reply(["ok": true])
         case "panel-hide":
             speaker.panel.hide()
             return reply(["ok": true])
@@ -108,4 +111,7 @@ struct Request: Decodable {
     let engine: String?
     let text: String?
     let settings: EngineConfig?
+    let on: Bool?
+    let glide: Double?
+    let flow: Double?
 }

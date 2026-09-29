@@ -53,6 +53,7 @@ export const api = {
     status: () => call<Status & Reply>('GET', '/api/status'),
     stop: () => call<Reply>('POST', '/api/stop'),
     voices: () => call<Voices>('GET', '/api/voices'),
+    wave: (payload: Wave) => call<Reply>('POST', '/api/wave', payload),
 };
 
 /* Types */
@@ -114,4 +115,11 @@ export interface Preview {
     engine: Engine;
     text: string;
     settings: EngineSettings;
+}
+
+// the pill's infinite waveform: on with the draft's glide and flow, off to hand the meter back
+export interface Wave {
+    on: boolean;
+    glide?: number;
+    flow?: number;
 }

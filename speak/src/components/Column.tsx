@@ -64,17 +64,17 @@ export const Column = (props: ColumnProps) => {
 
     return (
         <section className='scroll-mt-24' id={`col-${props.lang}`}>
-            <h2 className='mb-2 text-base font-semibold'>{props.title}</h2>
-            <label className='mb-3 block text-sm text-muted'>
+            <h2 className='mb-3 text-base font-semibold'>{props.title}</h2>
+            <label className='mb-5 block text-sm text-muted'>
                 sample line
                 <input
-                    className='mt-1 block w-full rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink'
+                    className='mt-1.5 block w-full rounded-lg border border-line bg-surface px-3 py-1.5 text-sm text-ink'
                     onChange={(event) => props.onSample(event.target.value)}
                     type='text'
                     value={props.sample}
                 />
             </label>
-            <ol className='grid list-none gap-2 p-0'>{cardListJSX}</ol>
+            <ol className='m-0 grid list-none gap-3 p-0'>{cardListJSX}</ol>
         </section>
     );
 };

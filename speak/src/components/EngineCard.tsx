@@ -113,43 +113,42 @@ export const EngineCard = (props: EngineCardProps) => {
 
     return (
         <li
-            className={`grid gap-2 rounded-lg p-3 ${isOn ? 'brand-wash border border-line' : 'border border-dashed border-line'} ${sortable.isDropTarget ? 'outline-2 outline-accent' : ''}`}
+            className={`grid gap-3 rounded-2xl p-4 ${isOn ? 'brand-wash border border-line' : 'border border-dashed border-line'} ${sortable.isDropTarget ? 'outline-2 outline-accent' : ''}`}
             data-engine={props.engine}
             // only a chain card is sortable: dnd-kit stamps role and a tab stop on what it registers
             ref={isOn ? sortable.ref : undefined}
             style={{ '--brand': BRAND_HUE[props.engine] } as CSSProperties}>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-2.5'>
                 {isOn && (
                     // dnd-kit's keyboard handle too: space picks the card up, arrows move it, space drops
                     <button
                         aria-label={`drag ${label} to reorder`}
-                        className='inline-grid size-6 cursor-grab select-none place-items-center text-lg leading-none text-muted active:cursor-grabbing'
+                        className='-ml-1.5 inline-grid h-7 w-6 cursor-grab select-none place-items-center rounded text-base leading-none text-muted hover:text-ink active:cursor-grabbing'
                         ref={sortable.handleRef}
                         title='drag to reorder'
                         type='button'>
                         ⠿
                     </button>
                 )}
-                <span className='text-sm tabular-nums text-muted'>
-                    {isOn ? (props.rank ?? 0) + 1 : '–'}
-                </span>
                 <EngineMark engine={props.engine} isDim={!isOn} />
                 <span className='flex-1 font-semibold'>{label}</span>
                 <StateBadge state={props.status} />
             </div>
             <div className='flex items-center gap-2'>
-                <label className='inline-flex cursor-pointer select-none items-center gap-1 text-sm'>
+                <label className='inline-flex min-h-8 cursor-pointer select-none items-center gap-2.5 text-sm'>
                     <input
                         aria-checked={isOn}
                         checked={isOn}
-                        className='size-6'
+                        className='size-4'
                         onChange={(event) =>
                             props.onToggle(event.target.checked)
                         }
                         role='switch'
                         type='checkbox'
                     />
-                    in the {props.lang} chain
+                    {isOn
+                        ? `${ordinal((props.rank ?? 0) + 1)} in the ${props.lang} chain`
+                        : `in the ${props.lang} chain`}
                 </label>
                 <span className='flex-1' />
                 {orderJSX}
@@ -207,8 +206,13 @@ const Info = (props: { text: string }) => {
 };
 
 /* Styles */
+// the pill's button, on the page: a round hairline
 const buttonClass =
-    'min-h-8 min-w-8 rounded-md border border-line bg-surface-2 px-3 py-1 text-sm hover:border-muted hover:bg-surface disabled:opacity-50';
+    'inline-grid size-8 place-items-center rounded-full border border-line bg-surface-2 text-sm hover:border-muted hover:bg-surface disabled:opacity-40';
+
+/* Helpers */
+const ordinal = (n: number) =>
+    `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 
 /* Types */
 interface EngineCardProps {
