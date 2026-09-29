@@ -50,3 +50,17 @@ pick minutes · rounds
 
 - 2026-09-29 · atelier · brief v1 · full, blind · 4 takes · 5 artboards (4 takes + 1 shared art piece) · ~68k out (session footer; in not read) · 10.7 wall min · 5h 18 → 21 %, 7d 30 → 30 % · pick min pending · round 1
 - 2026-09-29 · atelier · brief v1 · full, blind · pick variants of glass-experimental · 3 artboards · out tokens from the session footer (not visible in-session) · 3.1 wall min · 5h 22 → 26 %, 7d 30 → 31 % · round 2
+- 2026-09-29 · atelier · brief v1 · A/B adhd — frames from /adhd:adhd instead of the axis corners · 4 takes (remove-the-assumption, inversion, speedrunner, logistics) · 5 artboards (4 takes + 1 shared art piece) · 49.7k out, 138k cache write (session transcript) + 5 sonnet diverge branches ≈ 291k subagent tokens · 8 wall min · 5h 23 → 32 %, 7d 30 → 31 % · pick min pending · round 1
+- 2026-09-29 · atelier · brief-vague (A/B vague) · full, blind · 4 takes · 5 artboards (4 takes + 1 shared art piece) · ~59.6k out (session transcript usage), in 137k cache-write + 2.5M cache-read · 9 wall min · 5h 23 → 33 %, 7d 30 → 31 % (window shared with parallel sessions) · pick min pending · round 1
+
+## verdict — draft 2026-09-29, final after dima's comparison
+
+- **the flow works end to end**: interview → brief → 4 blind takes on the canvas in ~11 min → dima's pick → 3 state
+  variants in ~3 min. the blinding held (no session read the app's repo or named its old art).
+- **cost per spread: ~50–70k output tokens, 8–11 wall minutes** (v1 ~68k, vague ~60k, adhd ~50k + ~291k in five sonnet
+  branches). the window % per spread is unreliable tonight — three spreads and four research lanes shared one window
+  (18 → 33 % over the evening).
+- **open, needs dima's eye**: gated brief vs vague (on-target?), axis corners vs adhd frames (more different? worth the
+  extra subagent tokens?). then: adopt, reshape or drop.
+- fixed on the way: the interview's question shape (x 0.11.165), the designer's ping + footer tokens (x 0.11.166), the
+  12 px key floor.
