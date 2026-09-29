@@ -10,4 +10,5 @@
 - **preview** — the daemon speaking a sample line with a card's unsaved settings
 - **first audio budget** — how long a cloud engine may take to start speaking before the chain moves on
 - **benched** — an engine the daemon skips for a while after a quota, auth or network failure
+- **no quota** — an engine whose provider refused a request as over its credit quota; benched for an hour and shown as such until its next success
 - **x-speak** — the resident daemon (`schedule/jobs/x-speak`) that owns the hotkey, the engines and config.json

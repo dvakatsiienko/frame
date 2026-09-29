@@ -21,6 +21,7 @@ const stateColour: Record<string, string> = {
     benched: 'text-warn',
     live: 'text-ok',
     'no key': 'text-bad',
+    'no quota': 'text-bad',
 };
 
 /* Types */

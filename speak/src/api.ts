@@ -85,7 +85,15 @@ export interface Status {
     speaking?: boolean;
     paused?: boolean;
     engines?: Partial<
-        Record<Engine, { state: 'live' | 'benched' | 'no key'; until?: string }>
+        Record<
+            Engine,
+            {
+                state: 'live' | 'benched' | 'no key' | 'no quota';
+                until?: string;
+                // the provider's own words on a quota refusal
+                note?: string;
+            }
+        >
     >;
 }
 

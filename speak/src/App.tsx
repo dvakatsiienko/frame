@@ -321,8 +321,8 @@ const primaryClass =
 /* Helpers */
 const SAMPLES: Record<Lang, string> = {
     en: 'FRM-266 shipped in v0.3.85 → see `speak/`',
-    ru: 'FRM-266 вышел в v0.3.85 → смотри `speak/`',
-    uk: 'FRM-266 вийшов у v0.3.85 → дивись `speak/`',
+    ru: 'Привет! Это проверка голоса: FRM-266 вышел в версии 0.3.85, загляни в папку speak.',
+    uk: 'Привіт! Це перевірка голосу: FRM-266 вийшов у версії 0.3.85, зазирни в теку speak.',
 };
 
 /* Types */

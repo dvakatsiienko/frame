@@ -46,12 +46,17 @@ final class PanelModel: ObservableObject {
 final class Meter {
     private var history = [Float](repeating: 0, count: 9)
     private var shown = [Float](repeating: 0, count: 17)
+    // centre-heavy envelope: the edges reach ~40 % of the centre, so the meter reads as a curve, never a full block
+    private let envelope: [Float] = (0..<17).map { index in
+        let distance = Float(abs(index - 8)) / 8
+        return 0.4 + 0.6 * pow(cos(distance * .pi / 2), 2)
+    }
     private var lastFrame: Date?
 
     func push(_ level: Float) {
         // a short decay, so a pause between words does not snap the centre bar to a dot
         history.removeLast()
-        history.insert(max(level, (history.first ?? 0) * 0.80), at: 0)
+        history.insert(max(level, (history.first ?? 0) * 0.72), at: 0)
     }
 
     func reset() {
@@ -65,12 +70,17 @@ final class Meter {
         shown = history.reversed() + history.dropFirst()
     }
 
-    // one display frame: a frame-rate-independent ease, ~70 ms to cover most of the gap
+    // one display frame: a frame-rate-independent ease, ~43 ms to cover most of the gap
     func frame(at date: Date) -> [Float] {
         let dt = lastFrame.map { min(0.1, date.timeIntervalSince($0)) } ?? 1.0 / 60
         lastFrame = date
-        let ease = Float(1 - exp(-dt / 0.063))
-        let target = history.reversed() + history.dropFirst()
+        let ease = Float(1 - exp(-dt / 0.043))
+        let raw = history.reversed() + history.dropFirst()
+        // a light blur across neighbours, so the wave reads as one flowing shape, not 17 independent bars
+        let target = raw.indices.map { index in
+            let left = raw[max(0, index - 1)], right = raw[min(raw.count - 1, index + 1)]
+            return (left + 2 * raw[index] + right) / 4 * envelope[index]
+        }
         for index in shown.indices { shown[index] += (target[index] - shown[index]) * ease }
         return shown
     }

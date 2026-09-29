@@ -14,6 +14,9 @@ import {
 export const EngineCard = (props: EngineCardProps) => {
     const label = ENGINE_LABELS[props.engine];
     const isOn = props.rank !== undefined;
+    // a quota refusal fails every preview until the credits come back, so ▶ is locked and the card says why
+    const quotaNote =
+        props.status?.state === 'no quota' ? props.status.note : undefined;
     const sortable = useSortable({
         disabled: !isOn,
         group: props.lang,
@@ -43,7 +46,9 @@ export const EngineCard = (props: EngineCardProps) => {
         <button
             aria-label={`preview ${label} in ${props.lang}`}
             className={buttonClass}
+            disabled={quotaNote !== undefined}
             onClick={props.onPreview}
+            title={quotaNote && 'out of quota — nothing to preview'}
             type='button'>
             ▶
         </button>
@@ -146,6 +151,14 @@ export const EngineCard = (props: EngineCardProps) => {
                 {orderJSX}
                 {playJSX}
             </div>
+            {quotaNote !== undefined && (
+                <p
+                    className='m-0 select-text text-sm text-bad'
+                    role='status'
+                    title={quotaNote}>
+                    {creditsLeft(quotaNote)} — skipped until they return
+                </p>
+            )}
             {settingsJSX}
         </li>
     );
@@ -200,6 +213,15 @@ const Info = (props: { text: string }) => {
 /* Styles */
 const buttonClass =
     'min-h-8 min-w-8 rounded-md border border-line bg-surface-2 px-3 py-1 text-sm hover:border-muted hover:bg-surface disabled:opacity-50';
+
+/* Helpers */
+// elevenlabs says «You have 14 credits remaining, while 22 …»; the card keeps the number, the tooltip keeps the rest
+const creditsLeft = (note: string) => {
+    const left = note.match(/have (\d+) credits? remaining/)?.[1];
+    return left === undefined
+        ? 'out of quota'
+        : `out of quota, ${left} credits left`;
+};
 
 /* Types */
 interface EngineCardProps {

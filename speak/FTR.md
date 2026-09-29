@@ -56,7 +56,13 @@
   - then the speech pauses and the button reads ▶ (resume); ■ stops it, and the card shows ▶ again
   - the controls also return to ▶ when the speech ends on its own
 - ✅ a sample line per language, editable
-- ✅ a status badge per engine: live, benched until a time, or no key
+- ✅ a status badge per engine: live, benched until a time, no key, or no quota
+- ⬜ an engine out of quota locks its ▶ and says so on the card
+  - given elevenlabs refused a request with quota_exceeded
+  - when the page shows its cards
+  - then each elevenlabs card reads «no quota», its ▶ is disabled, and one line reads «out of quota, <n> credits left — skipped until they return», the provider's full message on hover
+  - and the state clears after the engine's next success
+  - decision: the chain already falls through on a quota refusal; the card only has to make it visible (dima, 2026-09-29)
 - ✅ the header shows the daemon's accessibility state and whether it is speaking
 - ✅ ■ stop ends any speech
 - ✅ the first audio budget, in ms

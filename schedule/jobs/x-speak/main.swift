@@ -40,6 +40,17 @@ struct Chunk {
 
 enum EngineError: Error {
     case noKey, noVoice, status(Int), timeout
+    // the provider's own words, e.g. «you have 14 credits remaining, while 203 are required»
+    case quota(String)
+}
+
+// a non-200 reply: a quota answer (elevenlabs says `quota_exceeded` in its json) is told apart from a plain status
+func failure(_ status: Int, _ bytes: URLSession.AsyncBytes) async -> EngineError {
+    var body = Data()
+    do { for try await byte in bytes { body.append(byte); if body.count > 4096 { break } } } catch {}
+    let detail = (try? JSONSerialization.jsonObject(with: body) as? [String: Any])?["detail"] as? [String: Any]
+    guard detail?["status"] as? String == "quota_exceeded" || detail?["code"] as? String == "quota_exceeded" else { return .status(status) }
+    return .quota(detail?["message"] as? String ?? "out of quota")
 }
 
 func log(_ line: String) {
@@ -95,7 +106,7 @@ final class Player {
             var sum: Float = 0
             for i in 0..<Int(buffer.frameLength) { sum += samples[i] * samples[i] }
             let decibels = 10 * log10(max(sum / Float(buffer.frameLength), 1e-9))
-            let level = min(1, max(0, (decibels + 50) / 40))
+            let level = min(1, max(0, (decibels + 50) / 50))
             Task { @MainActor in self?.onLevel?(level) }
         }
     }
@@ -196,6 +207,8 @@ final class Speaker {
     private var keysLoadedAt: Date?
     // engine → when it may be tried again; a failure costs its time once, then nothing until the reset
     private var skipUntil: [Engine: Date] = [:]
+    // engine → the provider's quota message; cleared by the engine's next success, so a monthly reset heals itself
+    private var outOfQuota: [Engine: String] = [:]
     private var job: Task<Void, Never>?
     private var kokoroPrefetch: (text: String, task: Task<Data, Error>)?
     // a preview's unsaved card settings, in force for that one job
@@ -211,7 +224,8 @@ final class Speaker {
             let needsKey = engine.isCloud && keys[engine] == nil
             let until = skipUntil[engine].flatMap { $0 > Date() ? $0 : nil }
             result[engine.rawValue] = needsKey ? ["state": "no key"]
-                : until.map { ["state": "benched", "until": ISO8601DateFormatter().string(from: $0)] } ?? ["state": "live"]
+                : outOfQuota[engine].map { ["state": "no quota", "note": $0] }
+                ?? until.map { ["state": "benched", "until": ISO8601DateFormatter().string(from: $0)] } ?? ["state": "live"]
         }
         return result
     }
@@ -379,6 +393,7 @@ final class Speaker {
                             if isFirst { log("first audio: \(engine.rawValue) \(elapsed(pressed))") }
                             isFirst = false
                         }
+                        outOfQuota[engine] = nil
                         break
                     } catch is CancellationError {
                         return
@@ -404,9 +419,11 @@ final class Speaker {
         let pause: TimeInterval? = switch error {
         case EngineError.noKey, EngineError.noVoice, EngineError.timeout: nil
         case EngineError.status(let code) where [401, 402, 403, 429].contains(code): 3600
+        case EngineError.quota: 3600
         default: 60
         }
         if let pause { skipUntil[engine] = Date().addingTimeInterval(pause) }
+        if case EngineError.quota(let message) = error { outOfQuota[engine] = message }
         // the kokoro server is ours to keep alive: one that stops answering is started again, off the hot path
         if engine == .kokoro, (error as? URLError)?.code == .cannotConnectToHost {
             Task { await warmKokoro() }
@@ -475,7 +492,7 @@ final class Speaker {
             group.addTask {
                 let (bytes, response) = try await URLSession.shared.bytes(for: request)
                 let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-                guard status == 200 else { throw EngineError.status(status) }
+                guard status == 200 else { throw await failure(status, bytes) }
                 var buffer = Data()
                 // 20 ms for the first buffer so audio starts at once, then 100 ms to schedule cheaply
                 var threshold = 960
