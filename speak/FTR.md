@@ -48,6 +48,11 @@
   - given x-speak is running
   - when the user presses ▶ on a card
   - then the daemon speaks the column's sample line with that card's unsaved settings, and the status line reads «▶ <engine> · <lang>»
+- ✅ while a card plays, its ▶ becomes ⏸ and ■
+  - given a card's preview is speaking
+  - when the user presses ⏸
+  - then the speech pauses and the button reads ▶ (resume); ■ stops it, and the card shows ▶ again
+  - the controls also return to ▶ when the speech ends on its own
 - ✅ a sample line per language, editable
 - ✅ a status badge per engine: live, benched until a time, or no key
 - ✅ the header shows the daemon's accessibility state and whether it is speaking
@@ -57,10 +62,14 @@
 ## save
 
 - ✅ save writes config.json
-  - makes: `schedule/jobs/x-speak/config.json`, in biome's own format
+  - makes: `schedule/jobs/x-speak/config.json`, in biome's own format with its keys sorted
   - given an unsaved change
   - when the user presses save
   - then the file changes by exactly that edit, and the status line reads «saved · the daemon loaded it»
+- ✅ reset drops every unsaved edit
+  - given an unsaved change
+  - when the user presses reset
+  - then the page shows the saved config again, save and reset disable, and nothing is written
 - ✅ a rejected save shows the daemon's own line
   - given a config the daemon cannot read
   - when it is saved

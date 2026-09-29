@@ -21,6 +21,34 @@ export const EngineCard = (props: EngineCardProps) => {
         index: props.rank ?? -1,
     });
 
+    // ▶ starts a preview; while this card plays, ⏸ / ▶ pause and resume it and ■ stops it
+    const playJSX = props.playState ? (
+        <>
+            <button
+                aria-label={`${props.playState === 'paused' ? 'resume' : 'pause'} ${label}`}
+                className={buttonClass}
+                onClick={props.onPause}
+                type='button'>
+                {props.playState === 'paused' ? '▶' : '⏸'}
+            </button>
+            <button
+                aria-label={`stop ${label}`}
+                className={buttonClass}
+                onClick={props.onStop}
+                type='button'>
+                ■
+            </button>
+        </>
+    ) : (
+        <button
+            aria-label={`preview ${label} in ${props.lang}`}
+            className={buttonClass}
+            onClick={props.onPreview}
+            type='button'>
+            ▶
+        </button>
+    );
+
     const orderJSX = isOn && (
         <>
             <button
@@ -116,13 +144,7 @@ export const EngineCard = (props: EngineCardProps) => {
                 </label>
                 <span className='flex-1' />
                 {orderJSX}
-                <button
-                    aria-label={`preview ${label} in ${props.lang}`}
-                    className={buttonClass}
-                    onClick={props.onPreview}
-                    type='button'>
-                    ▶
-                </button>
+                {playJSX}
             </div>
             {settingsJSX}
         </li>
@@ -191,6 +213,9 @@ interface EngineCardProps {
     voiceOptions: [string, string][];
     onMove: (step: -1 | 1) => void;
     onPreview: () => void;
+    onPause: () => void;
+    onStop: () => void;
+    playState?: 'playing' | 'paused';
     onSettings: (patch: EngineSettings) => void;
     onToggle: (isOn: boolean) => void;
     onVoice: (voice: string) => void;

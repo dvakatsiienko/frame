@@ -94,11 +94,12 @@ async function body(request: IncomingMessage) {
     return JSON.parse(text || '{}');
 }
 
-// the saved file is exactly what biome would write, so a save never dirties the diff or trips the commit hook
+// the saved file is exactly what biome would write — formatted and its keys sorted — so a save never dirties the
+// diff or trips the commit hook (a format-only save left favourites unsorted, and the hook refused dima's commit)
 function biomeFormatted(value: unknown) {
     return execFileSync(
         join(REPO, 'node_modules/.bin/biome'),
-        ['format', `--stdin-file-path=${CONFIG}`],
+        ['check', '--write', `--stdin-file-path=${CONFIG}`],
         {
             cwd: REPO,
             encoding: 'utf8',
@@ -147,6 +148,7 @@ const routes: Record<string, (request: IncomingMessage) => Promise<unknown>> = {
         ...VOICES,
         system: (await daemon({ op: 'voices' })).system ?? [],
     }),
+    'POST /api/pause': async () => daemon({ op: 'pause' }),
     'POST /api/preview': async (request) =>
         daemon({ op: 'preview', ...(await body(request)) }),
     'POST /api/stop': async () => daemon({ op: 'stop' }),

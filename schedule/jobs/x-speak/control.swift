@@ -57,12 +57,19 @@ final class Control {
         guard let request = try? JSONDecoder().decode(Request.self, from: line) else { return reply(["error": "bad request"]) }
         switch request.op {
         case "status":
-            return reply(["engines": speaker.health(), "accessibility": AXIsProcessTrusted(), "speaking": speaker.isSpeaking])
+            return reply([
+                "engines": speaker.health(), "accessibility": AXIsProcessTrusted(),
+                "speaking": speaker.isSpeaking, "paused": speaker.panel.model.isPaused,
+            ])
         case "voices":
             return reply(["system": installedVoices()])
         case "reload":
             let error = configFile.refresh()
             return reply(error.map { ["error": $0] } ?? ["ok": true])
+        // pause and resume, the pill's ⏸ from the admin
+        case "pause":
+            speaker.togglePause()
+            return reply(["ok": true])
         case "stop":
             speaker.stop()
             speaker.panel.speechEnded()

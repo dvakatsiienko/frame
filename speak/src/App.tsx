@@ -28,11 +28,13 @@ export const App = () => {
         queryKey: ['voices'],
         staleTime: Number.POSITIVE_INFINITY,
     });
-    // polled while the tab is visible; react-query stops it with the tab
+    // the card whose ▶ started the speech; its controls follow the daemon's status until the speech ends
+    const [playing, setPlaying] = useState<Playing>();
+    // polled while the tab is visible (react-query stops it with the tab); fast while a card plays
     const status = useQuery({
         queryFn: api.status,
         queryKey: ['status'],
-        refetchInterval: 5000,
+        refetchInterval: playing ? 700 : 5000,
     });
     const [draft, setDraft] = useState<Config>();
     const [samples, setSamples] = useState<Record<Lang, string>>(SAMPLES);
@@ -45,6 +47,17 @@ export const App = () => {
     useEffect(() => {
         if (saved.data && !draft) setDraft(saved.data);
     }, [saved.data, draft]);
+
+    // a preview counts as over once the daemon was seen speaking and then went quiet, or never started within 8 s
+    useEffect(() => {
+        if (!(playing && status.data)) return;
+        if (status.data.speaking) {
+            if (!playing.hasStarted)
+                setPlaying({ ...playing, hasStarted: true });
+        } else if (playing.hasStarted || Date.now() - playing.since > 8000) {
+            setPlaying(undefined);
+        }
+    }, [status.data, playing]);
 
     if (!draft)
         return (
@@ -102,6 +115,21 @@ export const App = () => {
                 ? { kind: 'error', text: reply.error }
                 : { text: `▶ ${engine} · ${lang}` },
         );
+        if (!reply.error)
+            setPlaying({ engine, hasStarted: false, lang, since: Date.now() });
+    };
+    const pause = async () => {
+        await api.pause();
+        await status.refetch();
+    };
+    const stop = async () => {
+        await api.stop();
+        setPlaying(undefined);
+    };
+    // back to the saved config: every unsaved edit goes, nothing is written
+    const reset = () => {
+        setDraft(saved.data);
+        setMessage({ text: 'reset to the saved config' });
     };
     const save = async () => {
         const reply = await api.save(draft);
@@ -136,12 +164,22 @@ export const App = () => {
                         })
                     }
                     onFavourite={setFavourite}
+                    onPause={() => void pause()}
                     onPreview={(engine) => void preview(engine, lang)}
                     onSample={(sample) =>
                         setSamples({ ...samples, [lang]: sample })
                     }
                     onSettings={setEngine}
+                    onStop={() => void stop()}
                     onVoice={(engine, voice) => setVoice(engine, lang, voice)}
+                    playing={
+                        playing?.lang === lang
+                            ? {
+                                  engine: playing.engine,
+                                  isPaused: statusData.paused === true,
+                              }
+                            : undefined
+                    }
                     sample={samples[lang]}
                     status={statusData}
                     title={title}
@@ -182,7 +220,7 @@ export const App = () => {
                 <span className='text-sm text-muted'>{healthText}</span>
                 <button
                     className={buttonClass}
-                    onClick={() => void api.stop()}
+                    onClick={() => void stop()}
                     type='button'>
                     ■ stop
                 </button>
@@ -232,6 +270,13 @@ export const App = () => {
                     type='button'>
                     save
                 </button>
+                <button
+                    className={buttonClass}
+                    disabled={!isDirty}
+                    onClick={reset}
+                    type='button'>
+                    reset
+                </button>
                 <span
                     className={`select-text text-sm ${message.kind === 'error' ? 'text-bad' : message.kind === 'ok' ? 'text-ok' : ''}`}
                     role='status'>
@@ -257,3 +302,11 @@ const SAMPLES: Record<Lang, string> = {
     ru: 'FRM-266 вышел в v0.3.85 → смотри `speak/`',
     uk: 'FRM-266 вийшов у v0.3.85 → дивись `speak/`',
 };
+
+/* Types */
+interface Playing {
+    engine: Engine;
+    lang: Lang;
+    hasStarted: boolean;
+    since: number;
+}

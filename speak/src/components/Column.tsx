@@ -34,8 +34,10 @@ export const Column = (props: ColumnProps) => {
                     props.onFavourite(engine, voice, isFavourite)
                 }
                 onMove={(step) => props.onChain(swap(chain, rank, rank + step))}
+                onPause={props.onPause}
                 onPreview={() => props.onPreview(engine)}
                 onSettings={(patch) => props.onSettings(engine, patch)}
+                onStop={props.onStop}
                 onToggle={(isOn) =>
                     props.onChain(
                         isOn
@@ -44,6 +46,13 @@ export const Column = (props: ColumnProps) => {
                     )
                 }
                 onVoice={(voice) => props.onVoice(engine, voice)}
+                playState={
+                    props.playing?.engine === engine
+                        ? props.playing.isPaused
+                            ? 'paused'
+                            : 'playing'
+                        : undefined
+                }
                 rank={rank >= 0 ? rank : undefined}
                 settings={props.config.engines[engine] ?? {}}
                 status={props.status.engines?.[engine]}
@@ -107,6 +116,9 @@ interface ColumnProps {
     voices?: Voices;
     onChain: (chain: Engine[]) => void;
     onPreview: (engine: Engine) => void;
+    onPause: () => void;
+    onStop: () => void;
+    playing?: { engine: Engine; isPaused: boolean };
     onSample: (sample: string) => void;
     onSettings: (engine: Engine, patch: EngineSettings) => void;
     onVoice: (engine: Engine, voice: string) => void;

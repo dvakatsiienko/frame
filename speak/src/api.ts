@@ -45,6 +45,7 @@ const call = async <T>(
 
 export const api = {
     config: () => call<Config>('GET', '/api/config'),
+    pause: () => call<Reply>('POST', '/api/pause'),
     preview: (payload: Preview) => call<Reply>('POST', '/api/preview', payload),
     save: (config: Config) => call<Reply>('PUT', '/api/config', config),
     status: () => call<Status & Reply>('GET', '/api/status'),
@@ -80,6 +81,7 @@ export interface Reply {
 export interface Status {
     accessibility?: boolean;
     speaking?: boolean;
+    paused?: boolean;
     engines?: Partial<
         Record<Engine, { state: 'live' | 'benched' | 'no key'; until?: string }>
     >;
