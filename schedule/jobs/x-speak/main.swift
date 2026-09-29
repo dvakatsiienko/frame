@@ -81,7 +81,7 @@ final class Player {
     private var generation = 0
 
     var isPlaying: Bool { pending > 0 }
-    // the panel's meter: the mixer's level, at most every 50 ms, and only while the engine renders
+    // the panel's meter: the mixer's level per audio buffer, only while the engine renders
     var onLevel: ((Float) -> Void)?
 
     init() {
@@ -89,15 +89,9 @@ final class Player {
         engine.attach(pace)
         engine.connect(node, to: pace, format: format)
         engine.connect(pace, to: engine.mainMixerNode, format: format)
-        let lastLevel = OSAllocatedUnfairLock(initialState: ContinuousClock.now)
+        // one reading per audio buffer (1024 frames, ~21 ms): the meter eases between them every display frame
         engine.mainMixerNode.installTap(onBus: 0, bufferSize: 1024, format: nil) { [weak self] buffer, _ in
             guard let samples = buffer.floatChannelData?[0], buffer.frameLength > 0 else { return }
-            let isDue = lastLevel.withLock { last in
-                guard ContinuousClock.now - last >= .milliseconds(50) else { return false }
-                last = .now
-                return true
-            }
-            guard isDue else { return }
             var sum: Float = 0
             for i in 0..<Int(buffer.frameLength) { sum += samples[i] * samples[i] }
             let decibels = 10 * log10(max(sum / Float(buffer.frameLength), 1e-9))
