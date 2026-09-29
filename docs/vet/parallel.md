@@ -109,6 +109,7 @@ source: `docs/research/exa.md`. key `op://dev/exa-golden/credential` → `EXA_AP
 - 2026-09-28 · extract · browserbase.com/pricing (a js marketing page) · hit: all four plans with limits · 2 s · excerpt truncated at ~300 chars by default, `--full-content --json` gave the whole page · ¢ not read
 - 2026-09-29 · research core · readaloud tts (siri replacement: quality ranks, free tiers, mac local, raycast toggle) · 4/5 (the full AA table with elo, fish s2.1 free to 11-30, chirp 1M/azure 500k free, a correct pgid toggle recipe; missed speak11 — the exact elevenlabs→kokoro-on-429 app — and the live raycast elevenlabs extension) vs opus 5/5 (both found, plus mlx vs fluidaudio head-to-head) · 275 s · 10.9k chars · ¢ not read
 - 2026-09-29 · research core #2 · readaloud tech-text normalization + engine gaps (vs exa agent + opus) · 4/5 (unique: eleven v4 rides the text-to-dialogue api, v4 lists uk + ru, gemini uk absent, gemini 3.8 flash-lite; weak: quota error given as «400/401», no local probe) vs exa 5/5 (93 s, $0.10) and opus 5/5 (local runs) · 319 s · 18.2k chars · ¢ not read
+- 2026-09-29 · research core · design process, 12 vectors (vs exa agent + opus sources + neuroarxiv + advise) · 4/5: the most sceptical lane — flagged the candycode process claim and the Galileo→Stitch story as unverified, a clean 8-step brief order; no source quotes, no versions beyond culori/apca · 283 s · 11.9k chars · ¢ not read
 
 ## monitor round — 2026-09-27 (dima: «let's test at full scale and measure the costs»)
 
