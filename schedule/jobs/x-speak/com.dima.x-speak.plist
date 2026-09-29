@@ -23,6 +23,13 @@
         <string>/Users/dima/frame/schedule/jobs/x-speak/bin/x-speak</string>
     </array>
 
+    <!-- launchd's PATH has no homebrew; op-run.sh needs `op` from it to fetch the keys -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
     <key>RunAtLoad</key>
     <true/>
 
