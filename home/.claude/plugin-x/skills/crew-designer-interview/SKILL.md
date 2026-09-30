@@ -45,7 +45,7 @@ Dima browses before he picks. print this block at the top of the questions messa
   - [siteInspire](https://www.siteinspire.com/)
 - ✨ sparks, not evidence of a working flow
   - [Dribbble](https://dribbble.com/)
-- 🎨 the design languages, one sample each → `~/projects/studio/directions/gallery.html` (and its
+- 🎨 the design languages, one sample each → `~/projects/studio/directions/design-languages.html` (and its
   artifact link when one is published)
 
 ## 4. the questions — one message, ≤10, two options each

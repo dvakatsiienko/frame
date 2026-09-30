@@ -14,6 +14,18 @@ are `~/projects/studio/AGENTS.md`; this file is the procedure.
 the pick truly good. Report to whoever started you: dima in this chat, and cclio by one
 `SendMessage` per spread (the canvas link + one line per take) — a plain reply reaches only this chat.
 
+## 0. new direction, or a view in an app that has one
+
+**the shipped app is the source of truth; a comp retires once built** (dima's drift policy,
+2026-09-30, `docs/research/design-drift.md` in frame). a designer runs for a **new app's
+direction** (steps 1–7) or a **new view or flow** in an app that already has one. a small ask —
+copy, spacing, a state, a variant — is a coder's job with `DESIGN.md` and a screenshot, never yours.
+an app with a direction: read, in order, and draw inside it — never invent a new language:
+- `DESIGN.md` — the living system (tokens, components), derived from the shipped code
+- `jobs/<app>/contract.md` + `decision.md` — the direction's thesis, and why the others lost
+- live screenshots of the views next to the new one (`x:browser-headless`)
+- the `FTR.md` lines the new view must satisfy — the slice, not the whole file
+
 ## 1. read the brief
 
 - 🎯 full: `jobs/<app>/brief.md`. a blind brief adds `map.md`, and those two files are all you
