@@ -6,7 +6,8 @@
  *   pnpm crew:audit --days 7   a wider window
  *
  * One line per coder session (started with /x:crew-coder): its id, its cwd, when it first read
- * how-you-work.md, when it first edited, and per compaction whether a re-read followed.
+ * how-you-work.md, when it first edited, per compaction whether a re-read followed, and how many
+ * library-docs lookups it made (ctx7, the context7 mcp, web search or fetch).
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -56,6 +57,7 @@ for (const file of transcripts) {
     let firstRead: string | undefined;
     let firstEdit: string | undefined;
     const compacts: { at: string; reread: boolean }[] = [];
+    const docs = { ctx7: 0, mcp: 0, web: 0 };
 
     for (const raw of text.split('\n')) {
         if (!raw) continue;
@@ -78,6 +80,10 @@ for (const file of transcripts) {
                 editTools.has(block.name ?? '') ||
                 (block.name === 'Bash' && editBins.test(target));
             if (isEdit) firstEdit ??= at;
+            if (block.name === 'Bash' && /\bctx7\b/.test(target)) docs.ctx7++;
+            if (block.name?.startsWith('mcp__plugin_context7')) docs.mcp++;
+            if (block.name === 'WebSearch' || block.name === 'WebFetch')
+                docs.web++;
         }
     }
 
@@ -86,7 +92,7 @@ for (const file of transcripts) {
         .map((c) => `${c.reread ? '✅' : '🚫'} compact ${c.at}`)
         .join(', ');
     console.log(
-        `${inOrder ? '✅' : '🚫'} ${file.split('/').at(-1)?.slice(0, 8)} ${cwd.replace(homedir(), '~')} · read ${firstRead ?? 'never'} · first edit ${firstEdit ?? 'none'}${compactLine ? ` · ${compactLine}` : ''}`,
+        `${inOrder ? '✅' : '🚫'} ${file.split('/').at(-1)?.slice(0, 8)} ${cwd.replace(homedir(), '~')} · read ${firstRead ?? 'never'} · first edit ${firstEdit ?? 'none'} · docs ctx7 ${docs.ctx7} mcp ${docs.mcp} web ${docs.web}${compactLine ? ` · ${compactLine}` : ''}`,
     );
 }
 console.log(`crew:audit — ${coders} coder session(s) in ${values.days} day(s)`);

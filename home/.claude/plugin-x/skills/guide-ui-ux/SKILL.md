@@ -30,6 +30,10 @@ guides (`guide-react`) sit on top of this one.
   stop and arrows move inside it: build it from the base-ui composite, never hand-rolled
   `tabIndex`; positive `tabIndex` is banned. a splitter is a stop by default (arrows resize); an
   app opts out only with a reason in its verify recipe's `--deny` list
+- **every text a person reads in the app is written with `x:writing-for-humans` loaded** — a caption
+  says what to look at, never how it is computed, in one short line; «hours played against completion ·
+  log scale · mark size is the trophy count · titles with no trophy earned are hidden» was the tell
+  (trophy-sys, dima, 2026-09-30)
 - **a control that opens a list gets a single-key shortcut, its hint shown on the control** like
   its keyed siblings — a picker is reached as fast as the actions beside it (dima, 2026-09-30:
   atelier's pieces list)
