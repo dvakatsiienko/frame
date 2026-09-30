@@ -11,6 +11,7 @@ enum Engine: String, CaseIterable {
     case elevenlabs, fish, kokoro, system, gemini
 
     var isCloud: Bool { self != .kokoro && self != .system }
+    var streams: Bool { self == .elevenlabs || self == .fish }
     func speaks(_ lang: Lang) -> Bool { self != .kokoro || lang == .en }
 }
 
@@ -90,6 +91,8 @@ final class Player {
     private var pending = 0
     private var drainWaiters: [CheckedContinuation<Void, Never>] = []
     private var generation = 0
+    // when the queue ran dry mid-read: the next buffer logs the silence the listener heard
+    private var dryAt: ContinuousClock.Instant?
 
     var isPlaying: Bool { pending > 0 }
     // the panel's meter: the mixer's levels, one per 10 ms of a rendered buffer, and the spacing between them
@@ -135,13 +138,18 @@ final class Player {
         }
         if !engine.isRunning { try engine.start() }
         if !node.isPlaying { node.play() }
+        if pending == 0, let dryAt { log("silence: \(elapsed(dryAt)) mid-read") }
+        dryAt = nil
         pending += 1
         let scheduledIn = generation
         node.scheduleBuffer(buffer) { [weak self] in
             Task { @MainActor in
                 guard let self, self.generation == scheduledIn else { return }
                 self.pending -= 1
-                if self.pending == 0 { self.releaseWaiters() }
+                if self.pending == 0 {
+                    self.dryAt = .now
+                    self.releaseWaiters()
+                }
             }
         }
     }
@@ -158,11 +166,13 @@ final class Player {
         generation += 1
         node.stop()
         pending = 0
+        dryAt = nil
         releaseWaiters()
     }
 
     // an idle engine still holds the output device; let it go between jobs
     func idle() {
+        dryAt = nil
         if pending == 0 { engine.pause() }
     }
 
@@ -219,6 +229,9 @@ final class Speaker {
     private var outOfQuota: [Engine: String] = [:]
     private var job: Task<Void, Never>?
     private var kokoroPrefetch: (text: String, task: Task<Data, Error>)?
+    // the next chunk's request, opened once this one is heard: its first-audio wait (0.5–3 s on fish's free tier)
+    // hides behind the audio instead of sitting between two sentences
+    private var cloudPrefetch: (engine: Engine, text: String, task: Task<(URLSession.AsyncBytes, URLResponse), Error>)?
     // a preview's unsaved card settings, in force for that one job
     private var draft: (engine: Engine, settings: EngineConfig)?
 
@@ -265,6 +278,8 @@ final class Speaker {
 
     func stop() {
         job?.cancel()
+        cloudPrefetch?.task.cancel()
+        cloudPrefetch = nil
         player.stop()
         systemVoice.stop()
         job = nil
@@ -388,7 +403,7 @@ final class Speaker {
             // the engine that played the read's first chunk leads every later one, so one read keeps one voice: a
             // cloud engine that missed chunk 1's budget no longer takes over mid-read once audio is playing
             var lead: Engine?
-            for chunk in parts {
+            for (index, chunk) in parts.enumerated() {
                 var candidates = (only.map { [$0] } ?? config.chain[chunk.lang] ?? []).filter { $0.speaks(chunk.lang) && (skipUntil[$0] ?? .distantPast) < Date() }
                 if let lead, let at = candidates.firstIndex(of: lead) { candidates.insert(candidates.remove(at: at), at: 0) }
                 // a cloud engine racing its deadline: kokoro renders the same chunk meanwhile, so a miss costs nothing
@@ -407,6 +422,7 @@ final class Speaker {
                         try await speak(chunk, with: engine, deadline: deadline) {
                             if isFirst { log("first audio: \(engine.rawValue) \(elapsed(pressed))") }
                             isFirst = false
+                            if engine.streams, parts.indices.contains(index + 1) { self.openAhead(parts[index + 1], with: engine) }
                         }
                         outOfQuota[engine] = nil
                         if let lead, lead != engine { log("voice switch: \(lead.rawValue) → \(engine.rawValue) mid-read") }
@@ -464,9 +480,19 @@ final class Speaker {
             try player.schedule(pcm, settings(.kokoro))
             onAudio()
         default:
+            let ahead = cloudPrefetch.flatMap { $0.engine == engine && $0.text == chunk.text ? $0.task : nil }
+            if ahead == nil { cloudPrefetch?.task.cancel() }
+            cloudPrefetch = nil
             let request = try request(for: engine, chunk)
-            try await stream(request, settings(engine), deadline: deadline, onAudio: onAudio)
+            let open = ahead ?? Task { try await URLSession.shared.bytes(for: request) }
+            try await stream(open, settings(engine), deadline: deadline, onAudio: onAudio)
         }
+    }
+
+    private func openAhead(_ chunk: Chunk, with engine: Engine) {
+        guard let request = try? request(for: engine, chunk) else { return }
+        cloudPrefetch?.task.cancel()
+        cloudPrefetch = (engine, chunk.text, Task { try await URLSession.shared.bytes(for: request) })
     }
 
     private func request(for engine: Engine, _ chunk: Chunk) throws -> URLRequest {
@@ -502,12 +528,12 @@ final class Speaker {
     // plays as bytes arrive; with a deadline, no audio by then throws before anything was heard
     // the byte loop runs off the main actor: on it, a buffered response starved the deadline timer (fish
     // played at 604 ms under a 400 ms deadline). `state` settles the race — audio or timeout, never both.
-    private func stream(_ request: URLRequest, _ settings: EngineConfig, deadline: Duration?, onAudio: @escaping () -> Void) async throws {
+    private func stream(_ open: Task<(URLSession.AsyncBytes, URLResponse), Error>, _ settings: EngineConfig, deadline: Duration?, onAudio: @escaping () -> Void) async throws {
         let state = OSAllocatedUnfairLock(initialState: StreamState.waiting)
         let player = self.player
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                let (bytes, response) = try await URLSession.shared.bytes(for: request)
+                let (bytes, response) = try await withTaskCancellationHandler { try await open.value } onCancel: { open.cancel() }
                 let status = (response as? HTTPURLResponse)?.statusCode ?? 0
                 guard status == 200 else { throw await failure(status, bytes) }
                 var buffer = Data()
