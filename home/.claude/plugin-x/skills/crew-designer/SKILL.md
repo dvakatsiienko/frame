@@ -92,6 +92,9 @@ engineer. each names at most five problems, pinned to a region, each as problem 
 - `jobs/<app>/contract.md` — the direction contract, ~150 words: the thesis, the tokens, the
   type roles, the layout, the states, the hard don'ts. impeccable builds from this and the comp;
   you never edit the app's repo.
+- at the build (the coder's job, not yours): the contract's thesis + don'ts fold into the app's
+  `DESIGN.md` as its direction section, and `decision.md` lands as an ADR in the app's `docs/adr/` —
+  the app carries no new design file names; studio keeps the working copies.
 
 ## 8. the cost ledger — every spread
 

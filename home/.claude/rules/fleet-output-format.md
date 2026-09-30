@@ -186,10 +186,14 @@ file he names.
   cta of every turn, repeated in every following reply to HIS message until he verdicts each. an
   ask that only appeared once is an ask he never saw. (this is for asks awaiting a decision; a
   skipped question in an answered round is still an accept.)
+  - **the block is ONE live bucket.** every print carries every open ask, renumbered from 1; an
+    ask leaves only when he verdicts it. a new ask joins the bucket, it never starts a second,
+    partial block — he copies the newest block and must never miss an older ask (dima,
+    2026-09-30: a 2-item and a 3-item block printed 15 minutes apart).
   - **his thread is the lane; member traffic stays out of it** (dima, 2026-09-30: coder replies
     buried the reports he came back for). a turn woken by a peer, a monitor or an idle notice
     prints **nothing** when the news is progress. a decision, a question, a doubt or a find he
-    would want gets one line — `🔔 <member>: <what> → ⏳ <n>` — and the ask joins the ⏳ block.
+    would want gets one line — `🔔 <member>: <what> → ⏳ <n>` — and the whole bucket follows it.
   - **a coder's report reaches dima once** — a digest of ≤5 lines in the turn it lands; later
     turns point at it by name and never reprint it.
   - **one reply per round, written whole** — a fan-out, a research, a plan lands as one message he
