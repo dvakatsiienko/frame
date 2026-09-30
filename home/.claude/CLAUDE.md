@@ -83,6 +83,7 @@ Anything we create should not just work well. It should be approachable and easy
   - ✅ `handoff-delete`, `handoff-create`, `plugin-x`, `plugin-x-cw`
   - ❌ `delete-handoff`, `create-handoff`, `x-plugin`, `desktop-plugin-x`
 - applies to anything that can grow into a family: variables, folders, skills, commands, tools. siblings then sort and group by subject.
+- a single that will never grow siblings takes its most natural reading instead — `shape-idea`, not `idea-shape`. the test is one question: will siblings come?
 - `entity-first <scope>` is the keyword. do the rename, report what changed, skip the explanation.
 - **one name on every layer.** a feature's name is the same string in its dir, binary, launchd label, codesign id, script names, log strings, data dir and docs. a rename moves all of them in one change; done = `grep -rn '<old name>'` prints nothing, and the report says so. a pnpm script family may carry a short alias of the name when the full one is hostile to type (`monitor-hotkey:top` for `x-monitor-hotkey-stats`).
 
