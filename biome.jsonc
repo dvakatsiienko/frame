@@ -18,7 +18,8 @@
       "!home/.claude/sline/showcase/sline.svg", // rendered by render-svg.ts, never hand-edited
       "!brand", // generated avatar and brand art (svg + png), never hand-formatted
       "!speak/public/speak-*.svg", // the speak favicon, written by atelier:ship
-      "!hotkeys/chords/src/svg/logos/*.svg", // brand marks fetched by art-kit logo.ts, byte-for-byte what the brand ships
+      "!logos/marks", // brand marks and app icons fetched by art-kit logo.ts, byte-for-byte what the brand ships
+      "!logos/data.gen.ts", // written by logos/build.ts
 
       // Not ours to format — editor/app config consumed verbatim, and themes
       // whose diffs would be pure noise.

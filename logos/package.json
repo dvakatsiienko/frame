@@ -1,0 +1,13 @@
+{
+    "name": "@frame/logos",
+    "version": "0.0.0",
+    "description": "product marks as inline data urls: brand svgs fetched by art-kit logo.ts, mac app icons for the rest",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./index.ts"
+    },
+    "scripts": {
+        "build": "node build.ts"
+    }
+}

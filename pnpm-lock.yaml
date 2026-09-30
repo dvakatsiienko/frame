@@ -261,6 +261,9 @@ importers:
       '@fontsource/ibm-plex-sans':
         specifier: 5.3.0
         version: 5.3.0
+      '@frame/logos':
+        specifier: workspace:*
+        version: link:../../logos
       '@tanstack/react-query':
         specifier: 5.103.2
         version: 5.103.2(react@19.3.0)
@@ -289,6 +292,8 @@ importers:
       node-emoji:
         specifier: 2.2.0
         version: 2.2.0
+
+  logos: {}
 
   speak:
     dependencies:

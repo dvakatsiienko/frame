@@ -111,6 +111,8 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
 - `design/` — the designer's instruments (`pnpm design:*`: contrast, palette, cvd, scale, tokens,
   diff); the designer itself lives in `~/projects/studio`.
 - `gmail/` — the `gmailctl` filter set and the block list; `schedule/` — every launchd job.
+- `logos/` — `@frame/logos`, the one logo store every app imports (`workspace:*`); marks enter only
+  through art-kit's `logo.ts`, never into an app's own tree.
 - `cc` is a symlink to `home/.claude/`, a short path for the agent system.
 
 📌 **1Password is required** for SSH signing. Vim plugins need a manual `:PlugInstall` after setup.

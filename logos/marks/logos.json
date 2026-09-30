@@ -1,0 +1,310 @@
+{
+    "1password-dark.svg": {
+        "name": "1password",
+        "theme": "dark"
+    },
+    "1password.svg": {
+        "name": "1password",
+        "theme": "light"
+    },
+    "app-store.svg": {
+        "name": "app store",
+        "theme": "light"
+    },
+    "battledotnet.svg": {
+        "name": "battledotnet",
+        "theme": "light"
+    },
+    "chrome.svg": {
+        "name": "chrome",
+        "theme": "light"
+    },
+    "claude-ai.svg": {
+        "name": "claude ai",
+        "theme": "light"
+    },
+    "com-apple-activitymonitor.png": {
+        "app": "com.apple.ActivityMonitor",
+        "size": 32
+    },
+    "com-apple-audio-audiomidisetup.png": {
+        "app": "com.apple.audio.AudioMIDISetup",
+        "size": 32
+    },
+    "com-apple-calculator.png": {
+        "app": "com.apple.calculator",
+        "size": 32
+    },
+    "com-apple-campo.png": {
+        "app": "com.apple.campo",
+        "size": 32
+    },
+    "com-apple-clock.png": {
+        "app": "com.apple.clock",
+        "size": 32
+    },
+    "com-apple-console.png": {
+        "app": "com.apple.Console",
+        "size": 32
+    },
+    "com-apple-dictionary.png": {
+        "app": "com.apple.Dictionary",
+        "size": 32
+    },
+    "com-apple-digitalcolormeter.png": {
+        "app": "com.apple.DigitalColorMeter",
+        "size": 32
+    },
+    "com-apple-diskutility.png": {
+        "app": "com.apple.DiskUtility",
+        "size": 32
+    },
+    "com-apple-facetime.png": {
+        "app": "com.apple.FaceTime",
+        "size": 32
+    },
+    "com-apple-finder.png": {
+        "app": "com.apple.finder",
+        "size": 32
+    },
+    "com-apple-games.png": {
+        "app": "com.apple.games",
+        "size": 32
+    },
+    "com-apple-generativeplaygroundapp.png": {
+        "app": "com.apple.GenerativePlaygroundApp",
+        "size": 32
+    },
+    "com-apple-grapher.png": {
+        "app": "com.apple.grapher",
+        "size": 32
+    },
+    "com-apple-helpviewer.png": {
+        "app": "com.apple.helpviewer",
+        "size": 32
+    },
+    "com-apple-home.png": {
+        "app": "com.apple.Home",
+        "size": 32
+    },
+    "com-apple-ical.png": {
+        "app": "com.apple.iCal",
+        "size": 32
+    },
+    "com-apple-image-capture.png": {
+        "app": "com.apple.Image_Capture",
+        "size": 32
+    },
+    "com-apple-magnifier.png": {
+        "app": "com.apple.Magnifier",
+        "size": 32
+    },
+    "com-apple-mail.png": {
+        "app": "com.apple.mail",
+        "size": 32
+    },
+    "com-apple-migrateassistant.png": {
+        "app": "com.apple.MigrateAssistant",
+        "size": 32
+    },
+    "com-apple-mobilesms.png": {
+        "app": "com.apple.MobileSMS",
+        "size": 32
+    },
+    "com-apple-notes.png": {
+        "app": "com.apple.Notes",
+        "size": 32
+    },
+    "com-apple-photos.png": {
+        "app": "com.apple.Photos",
+        "size": 32
+    },
+    "com-apple-preview.png": {
+        "app": "com.apple.Preview",
+        "size": 32
+    },
+    "com-apple-printcenter.png": {
+        "app": "com.apple.printcenter",
+        "size": 32
+    },
+    "com-apple-screencontinuity.png": {
+        "app": "com.apple.ScreenContinuity",
+        "size": 32
+    },
+    "com-apple-screensharing.png": {
+        "app": "com.apple.ScreenSharing",
+        "size": 32
+    },
+    "com-apple-scripteditor2.png": {
+        "app": "com.apple.ScriptEditor2",
+        "size": 32
+    },
+    "com-apple-shortcuts.png": {
+        "app": "com.apple.shortcuts",
+        "size": 32
+    },
+    "com-apple-stickies.png": {
+        "app": "com.apple.Stickies",
+        "size": 32
+    },
+    "com-apple-systempreferences.png": {
+        "app": "com.apple.systempreferences",
+        "size": 32
+    },
+    "com-apple-systemprofiler.png": {
+        "app": "com.apple.SystemProfiler",
+        "size": 32
+    },
+    "com-apple-weather.png": {
+        "app": "com.apple.weather",
+        "size": 32
+    },
+    "com-cloudmagic-macmail.png": {
+        "app": "com.CloudMagic.MacMail",
+        "size": 32
+    },
+    "com-cron-electron.png": {
+        "app": "com.cron.electron",
+        "size": 32
+    },
+    "com-electron-wispr-flow.png": {
+        "app": "com.electron.wispr-flow",
+        "size": 32
+    },
+    "com-eventur-hide-me.png": {
+        "app": "com.eventur.Hide.me",
+        "size": 32
+    },
+    "com-marcoappio-app.png": {
+        "app": "com.marcoappio.app",
+        "size": 32
+    },
+    "com-neovide-neovide.png": {
+        "app": "com.neovide.neovide",
+        "size": 32
+    },
+    "com-ookla-speedtest-macos.png": {
+        "app": "com.ookla.speedtest-macos",
+        "size": 32
+    },
+    "com-readdle-smartemail-mac.png": {
+        "app": "com.readdle.smartemail-Mac",
+        "size": 32
+    },
+    "com-superduper-superwhisper.png": {
+        "app": "com.superduper.superwhisper",
+        "size": 32
+    },
+    "com-superultra-homerow.png": {
+        "app": "com.superultra.Homerow",
+        "size": 32
+    },
+    "com-surteesstudios-bartender.png": {
+        "app": "com.surteesstudios.Bartender",
+        "size": 32
+    },
+    "com-tunnelbear-mac-tunnelbear.png": {
+        "app": "com.tunnelbear.mac.TunnelBear",
+        "size": 32
+    },
+    "com-tw93-moleapp.png": {
+        "app": "com.tw93.MoleApp",
+        "size": 32
+    },
+    "com-vorssaint-utils.png": {
+        "app": "com.vorssaint.utils",
+        "size": 32
+    },
+    "cursor-dark.svg": {
+        "name": "cursor",
+        "theme": "dark"
+    },
+    "cursor.svg": {
+        "name": "cursor",
+        "theme": "light"
+    },
+    "github-dark.svg": {
+        "name": "github",
+        "theme": "dark"
+    },
+    "github.svg": {
+        "name": "github",
+        "theme": "light"
+    },
+    "google-drive.svg": {
+        "name": "google drive",
+        "theme": "light"
+    },
+    "homebrew.svg": {
+        "name": "homebrew",
+        "theme": "light"
+    },
+    "linear.svg": {
+        "name": "linear",
+        "theme": "light"
+    },
+    "net-battle-bootstrapper.png": {
+        "app": "net.battle.bootstrapper",
+        "size": 32
+    },
+    "notion.svg": {
+        "name": "notion",
+        "theme": "light"
+    },
+    "nuphyio2-your-app.png": {
+        "app": "NuPhyIO2.your-app",
+        "size": 32
+    },
+    "obsidian.svg": {
+        "name": "obsidian",
+        "theme": "light"
+    },
+    "pl-maketheweb-cleanshotx.png": {
+        "app": "pl.maketheweb.cleanshotx",
+        "size": 32
+    },
+    "pro-betterdisplay-betterdisplay.png": {
+        "app": "pro.betterdisplay.BetterDisplay",
+        "size": 32
+    },
+    "proton-mail.svg": {
+        "name": "proton mail",
+        "theme": "light"
+    },
+    "raycast.svg": {
+        "name": "raycast",
+        "theme": "light"
+    },
+    "safari.svg": {
+        "name": "safari",
+        "theme": "light"
+    },
+    "slack.svg": {
+        "name": "slack",
+        "theme": "light"
+    },
+    "spotify.svg": {
+        "name": "spotify",
+        "theme": "light"
+    },
+    "steam.svg": {
+        "name": "steam",
+        "theme": "light"
+    },
+    "telegram.svg": {
+        "name": "telegram",
+        "theme": "light"
+    },
+    "things.svg": {
+        "name": "things",
+        "theme": "light"
+    },
+    "warp.svg": {
+        "name": "warp",
+        "theme": "light"
+    },
+    "zoom.svg": {
+        "name": "zoom",
+        "theme": "light"
+    }
+}

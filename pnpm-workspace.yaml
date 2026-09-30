@@ -1,6 +1,7 @@
 packages:
   - home/.claude/mcp-x-cw
   - hotkeys/chords
+  - logos
   - speak
   - import/raycast/extensions/x-ray
 
