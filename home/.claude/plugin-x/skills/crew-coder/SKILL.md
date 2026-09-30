@@ -17,6 +17,12 @@ briefed you; the report goes back to whoever did.
 `~/frame/docs/knowledge/impeccable-refine.md` first and follow it; the tool's docs answer
 mechanics, that file answers order, gates and who runs what. no impeccable named → never load it.
 
+**a brief that links a design canvas** → render its boards to png before the first file:
+`Artifact read <canvas url>` with `path: artifact-type/dc-runtime.js`, save it, then
+`pnpm -C ~/frame design:comp-render <studio>/jobs/<app>/takes/project <runtime.js> <out dir>`
+(`--help` for one board and its dials). read the pngs as a checklist of the comp's devices —
+three skipped devices cost BYT-113 a finish round; `design:diff` compares a build shot to a png.
+
 
 `x:guide-code` first, then **only the guides for the file types you actually touch** — `.ts` →
 `x:guide-typescript`, `.tsx` → plus `x:guide-react`, anything a human looks at → `x:guide-ui-ux`,
