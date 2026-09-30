@@ -144,7 +144,10 @@ for repo in "$HOME/frame" "$HOME/projects/bytes"; do
 done
 
 echo "-- ci + vercel reds, 48 h (ci-watch.sh --boot; --watch is the in-session monitor) --"
-"$(dirname "$0")/ci-watch.sh" --boot || fail "ci-watch could not query gh or vercel"
+# the FAIL names the call that failed — a bare «could not query» sat next to a working gh twice (FRM-261)
+cw_err=$(mktemp)
+"$(dirname "$0")/ci-watch.sh" --boot 2>"$cw_err" || fail "ci-watch --boot exited $?: $(grep . "$cw_err" | tail -1 || echo 'no stderr')"
+rm -f "$cw_err"
 
 echo "-- app essentials (bytes/script/apps-essentials.ts, BYT-111; 🔴 = a gap to fold into today) --"
 ESS="$HOME/projects/bytes/script/apps-essentials.ts"

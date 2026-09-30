@@ -1,9 +1,9 @@
 #!/bin/bash
 # deploy-watch — after a push: the ci runs for one head, then the newest prod deploy of every
-# app that head touched, as lines. emits only terminal states plus a heartbeat every 2 min, so a
+# app its Deploy run fired, as lines. emits only terminal states plus a heartbeat every 2 min, so a
 # Monitor on it is quiet until something has actually finished — and a quiet wait is visible.
 #   deploy-watch.sh [sha] [repo dir]   sha defaults to HEAD, repo dir to the cwd
-# a vercel project is named after its app dir (apps/<name>); a head that touched no app ends
+# a vercel project is named after its app dir (apps/<name>); a Deploy that fired no hook ends
 # after the ci runs. vercel webhooks are pro-only, so polling is the only door on this plan.
 set -u
 cd "${2:-.}" || exit 1
@@ -39,15 +39,16 @@ while :; do
   sleep $tick
 done
 
-# the whole pushed range, not the head alone — a push of two commits hid the first one's app
-base=$(git rev-parse -q --verify "origin/main@{1}" 2>/dev/null)
-changed() { if [ -n "$base" ]; then git diff --name-only "$base" "$sha"; else git diff-tree --no-commit-id --name-only -r "$sha"; fi; }
-apps=$(changed | sed -n 's#^apps/\([^/]*\)/.*#\1#p' | sort -u)
-# a shared package reaches every app, so a head touching packages/ deploys them all
-changed | grep -q '^packages/' && apps=$(ls -d apps/*/ | sed 's#apps/\(.*\)/#\1#')
-# an app with no vercel.json has no vercel project (atelier runs local only) — nothing to wait for
-apps=$(for app in $apps; do [ -f "apps/$app/vercel.json" ] && echo "$app"; done)
-[ -z "$apps" ] && { echo "no deployed app touched by $short — nothing deploys"; exit 0; }
+# the Deploy run decides what deploys (turbo --affected), so its own log is the list — a path diff of
+# our own guessed wrong twice: a root package.json marks every app, and atelier has no vercel project
+deploy_run=$(gh run list --commit "$sha" --workflow deploy.yml --json databaseId --jq '.[0].databaseId // empty' 2>/dev/null)
+[ -z "$deploy_run" ] && { echo "no Deploy run for $short — nothing was asked to deploy"; exit 0; }
+decision=$(gh run view "$deploy_run" --log 2>/dev/null | grep -E 'to deploy:|nothing affected that Vercel deploys' | head -1 | sed 's/.*Z //')
+case "$decision" in
+  *"to deploy:"*) apps=${decision#*to deploy:} ;;
+  *"nothing affected"*) echo "Deploy for $short: nothing affected — no hooks fired"; exit 0 ;;
+  *) echo "Deploy for $short: its log names no apps (run $deploy_run) — read it by hand"; exit 1 ;;
+esac
 
 for app in $apps; do
   n=0
