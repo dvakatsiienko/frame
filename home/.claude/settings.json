@@ -169,7 +169,7 @@
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": false,
-    "typescript-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": false,
     "warp@claude-code-warp": true,
     "mattpocock-skills@claude-plugins-official": true,
     "x@x": true,

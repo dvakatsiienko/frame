@@ -43,6 +43,9 @@ their head.
   unsnooze, close needs reopen. A one-way door is a bug.
 - **Every entry point.** Before calling a change done, name the other paths reaching the same
   behavior — the most common defect is a fix that works only where you tested it.
+- **Every use site.** A TypeScript rename or «who uses X» starts with the `LSP` tool's
+  `findReferences` (`ToolSearch select:LSP` first): the exact sites, re-exports and same-named
+  strings told apart. grep follows for strings, docs and non-TS files.
 - **Smallest proof.** Targeted tests and typecheck for what you touched; CI owns the full
   suite — no repo-wide checks unasked.
 - **A red-proof edits the existing line.** Prove a test by mutating the line it reads, never by adding a sibling
