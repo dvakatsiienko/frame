@@ -68,3 +68,10 @@ pick minutes · rounds
   extra subagent tokens?). then: adopt, reshape or drop.
 - fixed on the way: the interview's question shape (x 0.11.165), the designer's ping + footer tokens (x 0.11.166), the
   12 px key floor.
+
+## comp → build — atelier shipped (2026-09-30)
+
+- the build: [bytes#116](https://github.com/dvakatsiienko/bytes/pull/116) (`2f80ca64`), one coder from `contract.md` + the comp, 9 verifier rounds; favicon [#117](https://github.com/dvakatsiienko/bytes/pull/117) from the new tokens
+- impeccable's finish review: 8 material fixes, 3 of them comp devices the coder had skipped — rendering the boards to png first (now `design:comp-render`, a crew-coder step) is the fix
+- what the comp never covered, found by dima's eye in 3 review rounds: chrome placement on a letterboxed piece (the comp's art filled the screen) — ended as «The One Frame Rule» in `DESIGN.md`; the pieces list key
+- `DESIGN.md` now exists (impeccable's documenter, from the shipped code) → the drift-policy test drive starts today
