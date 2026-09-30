@@ -194,7 +194,7 @@ file he names.
     turns point at it by name and never reprint it.
   - **one reply per round, written whole** — a fan-out, a research, a plan lands as one message he
     could read alone, so a reprint is a copy, never a rebuild.
-  - **a line under the block's fence points at the last report**: `📄 last report: <topic> · <HH:MM>`.
+  - **a line under the block's fence points at the last report**: `📄 last report: **<topic>** · <HH:MM>` — the name bold so it scans.
     his **`rewind`** reprints that report in full plus the block; `rewind <topic>` an older one.
   - **while a shift runs, the block is suspended:** a shift decides, logs and parks instead of
     asking, and its report carries the decisions (`cclio:shift`, dima 2026-09-28).
@@ -209,7 +209,7 @@ file he names.
       2. <ask> ➡️ <recommendation>
       ```
 
-      📄 last report: <topic> · <HH:MM>
+      📄 last report: **<topic>** · <HH:MM>
 
 ## reply skeletons
 

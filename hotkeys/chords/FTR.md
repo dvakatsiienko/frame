@@ -1,5 +1,7 @@
 # chords — the ftr
 
+claims: `hotkeys/serve.ts`
+
 - 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
 - given/when/then lines are the verifier's exit lines
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
