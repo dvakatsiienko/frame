@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# red-proof <file> <anchor> <replacement> <test> — proves a test reads <file>: swap the anchor, the test
+# must go red; restore byte-for-byte, it must go green again. exit 0 only on red-then-green.
+set -u
+[ $# -eq 4 ] || { echo "usage: red-proof <file> <anchor> <replacement> <test>" >&2; exit 2; }
+file=$1 anchor=$2 replacement=$3 test=$4
+[ -f "$file" ] || { echo "red-proof: no file $file" >&2; exit 2; }
+count=$(ANCHOR="$anchor" python3 -c 'import os,sys; print(open(sys.argv[1]).read().count(os.environ["ANCHOR"]))' "$file")
+[ "$count" = 1 ] || { echo "red-proof: anchor found $count times in $file, needs exactly 1" >&2; exit 2; }
+
+backup=$(mktemp)
+cp -p "$file" "$backup"
+restore() { cp -p "$backup" "$file"; rm -f "$backup"; }
+trap restore EXIT INT TERM
+
+ANCHOR="$anchor" REPL="$replacement" python3 -c 'import os,sys; p=sys.argv[1]; s=open(p).read(); open(p,"w").write(s.replace(os.environ["ANCHOR"],os.environ["REPL"],1))' "$file"
+if npx vitest run "$test" >/dev/null 2>&1; then red=0; else red=1; fi
+restore
+trap - EXIT INT TERM
+if npx vitest run "$test" >/dev/null 2>&1; then green=1; else green=0; fi
+
+[ $red = 1 ] && echo "RED   mutated: the test failed, as it should" || echo "✗     mutated: the test still passed — it does not read this line"
+[ $green = 1 ] && echo "GREEN restored: the test passes again" || echo "✗     restored: the test fails on the original too"
+[ $red = 1 ] && [ $green = 1 ]
