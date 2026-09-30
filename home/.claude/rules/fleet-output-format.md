@@ -245,7 +245,10 @@ file he names.
 - 🏷️ incremental art or product work (a diorama set, an mvp growing round by round) → every
   report ends with its version label — `mvp`, `mvp v1`, `mvp v2`, `prod`, or a number like
   `0.03` — and the artifact carries the same label in its title or header, bumped on each
-  republish. one-off work carries no label (dima, 2026-09-25)
+  republish. one-off work carries no label (dima, 2026-09-25). **the artifact's title is the source
+  of the label**: a message quotes the version the title shows, never its own count — «canvas v10»
+  in a reply while the title still read «spread v1» sent dima looking for a page that was right
+  there (2026-09-30)
 - 🃏 a one-line lowercase haiku at session wrap
 
 ## a multi-item drop gets restated
