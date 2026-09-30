@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+/**
+ * ? edit-batch — many anchored edits in one call, all or nothing.
+ * ?
+ * ?   edit-batch <batch-file>
+ * ?
+ * ? The batch format lives in script/lib/edit-batch.ts. Every anchor is checked in memory
+ * ? first; one miss writes nothing. A worktree coder runs it by path, so no command text names
+ * ? git and the isolation guard lets it through — the same door as `lane` and `edit-anchored`.
+ * ?
+ * ? Exit codes: 0 all written (one `<file>:<line>` per edit), 1 an edit refused or a write did
+ * ? not land, 2 the arguments or the batch are malformed.
+ */
+
+/* Core */
+import { readFileSync, writeFileSync } from 'node:fs';
+
+/* Instruments */
+import { applyBatch, parseBatch } from '../../../../script/lib/edit-batch.ts';
+
+const [batchFile] = process.argv.slice(2);
+if (!batchFile) {
+    console.error('usage: edit-batch <batch-file>');
+    process.exit(2);
+}
+
+const batch = parseBatch(readFileSync(batchFile, 'utf8'));
+if (batch.error !== null) {
+    console.error(`${batchFile}: ${batch.error}`);
+    process.exit(2);
+}
+
+const applied = applyBatch(batch.edits, (file) => readFileSync(file, 'utf8'));
+if (applied.error !== null) {
+    console.error(`${applied.error} — nothing written.`);
+    process.exit(1);
+}
+
+for (const [file, text] of applied.texts) writeFileSync(file, text);
+for (const [file, text] of applied.texts) {
+    if (readFileSync(file, 'utf8') !== text) {
+        console.error(`${file}: the write did not land — read it before trusting anything.`);
+        process.exit(1);
+    }
+}
+console.log(applied.hits.join('\n'));
