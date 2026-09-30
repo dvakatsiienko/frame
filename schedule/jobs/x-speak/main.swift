@@ -505,7 +505,11 @@ final class Speaker {
         default: 60
         }
         if let pause { skipUntil[engine] = Date().addingTimeInterval(pause) }
-        if case EngineError.quota(let message) = error { outOfQuota[engine] = message }
+        if case EngineError.quota(let message) = error {
+            outOfQuota[engine] = message
+            // the refusal knows no refill date; the probe does, and benches the engine until then instead of for an hour
+            Task { await probeQuota() }
+        }
         // the kokoro server is ours to keep alive: one that stops answering is started again, off the hot path
         if engine == .kokoro, (error as? URLError)?.code == .cannotConnectToHost {
             Task { await warmKokoro() }
