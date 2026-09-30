@@ -80,6 +80,8 @@ caps), so a drag-and-drop view needs its own checks for those.
 - **`network route --status` filters requests, it does not set a status** — fake a failing endpoint
   with `--abort`, or a real server error
 
+- **a long-lived agent-browser session drifts to `visibilityState: hidden`** — css fades freeze at their start, focus-visible buttons read invisible (8 false essentials flags at 390 px), requestAnimationFrame stops. start a fresh session per verify; a suspicious run checks `document.visibilityState` first (the BYT-113 verifier, 2026-09-30).
+
 ## habits
 
 - `--json` on every verb when the output feeds a decision.

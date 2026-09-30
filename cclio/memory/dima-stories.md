@@ -10,14 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «should be green» · 2026-09-19
-He sent one screenshot of the raycast schedule command with an arrow at a sleeping glyph on a
-cloud job that had run fine an hour earlier: «should be green». The code was correct by its own
-rule — 🟢 meant «executing now», 💤 meant «idle and fine» — and a scheduled job is idle almost all
-its life, so no daily job could ever be green. The bug was the glance question the glyph answered:
-«is it running» where he asks «did the last run go ok». One row, one arrow, and the semantic was
-wrong for every job on the list. → the ✅ glyph, `toHealth` in x-ray's launchd.ts
-
 ## «will you catch up a skipped monday?» · 2026-09-20
 The apps lane of evergreen was built and about to run for the first time. He asked two questions
 in a row, neither about the code: «will you catch up a skipped monday» and «is the next one still
@@ -64,3 +56,12 @@ enabled, no toggling», and I had set it on at user scope. my own commit that ev
 left `"impeccable@impeccable": false` in them; a project value beats a user value, so every frame session ran without it
 for a day. no error, no log line, only his sense that a thing he had settled was not settled. → `sys-settings-drift`,
 e4c5c8b5
+
+## «the question we covered in a grill makes the design totally different» · 2026-09-30
+speak was built on a random ask the day before and never shaped. the re-shape grill took four
+questions: why (he hears 90 % of his text, F4 is his most-used hotkey), what the product is (the pill and
+the admin, both daily), the friction (a forgotten selection turns pause into «read this instead»), what
+goes (nothing — the providers are his playground). each answer moved the design: ⇧F4 pause came out of
+one question, the pill's volume and speed popovers out of another, word highlight turned from a nice-to-have
+into «I follow the text while it reads». his note after it: «a grilling session before design has incredible
+value … if we would not grill but just start a design randomly» — the day shape-idea became an invariant. → `x:shape-idea`, `fleet-identity`

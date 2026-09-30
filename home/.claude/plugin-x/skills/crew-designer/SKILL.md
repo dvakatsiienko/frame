@@ -34,6 +34,14 @@ an app with a direction: read, in order, and draw inside it — never invent a n
   3-line `brief.md` naming them, so the pick has something to point at.
 - an `## open` line is your call: decide it and say what you chose.
 
+## references — never during the takes
+
+a spread draws blind: a designer that has just seen ten settings panels draws their average, and a
+reference makes copying cheap. references come in only after the pick, at most 5 per job, each logged
+in the ledger (what, why): for a component with strong user conventions (a scrubber, a volume popover),
+for the fix pass's detail polish, or when dima rejected every take twice. they come from public galleries
+through `x:browser-headless` (godly, land-book, dribbble search) — a reference, never a copy.
+
 ## 2. frames — four takes that cover the axes
 
 The spread is **4 takes at the four corners of the two axes** (low-low, low-high, high-low,
@@ -81,6 +89,8 @@ middle take tends to win because it is in the middle, so dima picks the corner h
 - **three iteration rounds at most.** a fourth means the brief is wrong: back to the interview.
 
 ## 6. critique before the handoff
+
+- one check in every critique: is any take or the pick a near-copy of a reference? a yes goes back to the drawing.
 
 On screenshots of the final comp, three short passes in separate roles: a UX designer, a PM, an
 engineer. each names at most five problems, pinned to a region, each as problem + goal

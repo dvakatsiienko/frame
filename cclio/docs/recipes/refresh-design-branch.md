@@ -38,6 +38,7 @@ Recipe entity per [_spec.md](_spec.md).
    scales, tokens, diffing): new versions, dead ones
 8. adhd / frame branching for design — new evidence (neuroarxiv lane)
 9. anti-patterns — how design work goes wrong upstream, the gates against it
+10. reference galleries — which public galleries are alive and good right now (godly, land-book, dribbble search, …) for the designer's after-the-pick references; paid doors (mobbin, refero) stay out (dima, 2026-09-30)
 
 ## analysis vectors (local evidence)
 
