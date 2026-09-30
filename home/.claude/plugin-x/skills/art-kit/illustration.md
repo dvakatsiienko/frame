@@ -1,10 +1,10 @@
 # illustration — code → picture
 
 there is no image model here. the picture is written as code (seeded svg shapes), lit and rendered
-in three.js, and baked to webp/png. the studio for it is **atelier** (`bytes/apps/atelier`,
+in three.js, and shot to webp/png. the studio for it is **atelier** (`bytes/apps/atelier`,
 [BYT-103](https://linear.app/x-com/issue/BYT-103)). the scenes live in `apps/atelier/art/`;
 `pnpm dev:atelier` from the bytes root opens it, and `apps/atelier/AGENTS.md` says how to add a
-piece, bake and ship.
+piece, shoot and ship.
 
 ## the look comes from a recipe, not a library
 
@@ -31,4 +31,4 @@ render → screenshot → read it beside the reference at the same size → writ
 one bounded change → render again. iterate privately; dima sees takes, not every round.
 
 **done when** the render sits beside the reference with no gap left on the list, the take is saved
-(atelier) or baked into `out/`, and the report ends with its version label.
+(atelier) or shot into `out/`, and the report ends with its version label.

@@ -1,6 +1,6 @@
 ---
 name: art-kit
-description: Load BEFORE making any picture or clip — «make a gif», «meme», a YouTube link with timestamps, «captions over a clip», «shrink this gif», «terminal clip», «vhs», «draw», «diorama», «illustration», «readme art», «hero image», «icon», «logo», «brand svg», «atelier», «bake».
+description: Load BEFORE making any picture or clip — «make a gif», «meme», a YouTube link with timestamps, «captions over a clip», «shrink this gif», «terminal clip», «vhs», «draw», «diorama», «illustration», «readme art», «hero image», «icon», «logo», «brand svg», «atelier», «shot».
 argument-hint: "<what to make> [source]"
 ---
 

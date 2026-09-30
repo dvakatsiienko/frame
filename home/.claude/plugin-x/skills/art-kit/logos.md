@@ -28,7 +28,7 @@ node ~/frame/home/.claude/plugin-x/skills/art-kit/scripts/logo.ts --refresh
 - a stderr line says when svgl matched a different title than the name asked — «calendar» is
   google calendar there, not apple's. read it before keeping the mark.
 - `--dark` adds the dark-background file, and writes nothing when svgl ships one file for both.
-- `--mono` skips svgl: a one-color mark. `build.ts` bakes it black for light and white for dark,
+- `--mono` skips svgl: a one-color mark. `build.ts` draws it black for light and white for dark,
   since an `<img>` draws `currentColor` black and the mark vanishes on a dark page.
 - `--app <bundle id>` — an installed mac app's own icon as a png (32 px for a 16 px slot), for the
   apps neither catalogue carries (cleanshot, finder, wispr flow). machine-local: `--refresh` prints
