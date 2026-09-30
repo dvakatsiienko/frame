@@ -1,5 +1,6 @@
 import type { Hotkey } from '@hotkeys/manual.ts';
 
+import { AppLogo } from '@/components/AppLogo.tsx';
 import { Info } from '@/components/Info.tsx';
 
 import type { FeatureStat } from '@/api.ts';
@@ -17,9 +18,18 @@ export const Advisor = (props: AdvisorProps) => {
                 <li
                     className='grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-b border-line py-[5px] text-[13px]'
                     key={each.id}>
-                    <span className='truncate'>
-                        <span className='font-mono'>{each.feature}</span>{' '}
-                        <span className='text-ink-2'>{each.move}</span>
+                    <span className='flex items-center gap-2 overflow-hidden'>
+                        <AppLogo
+                            fallback='blank'
+                            name={each.feature}
+                            size={16}
+                        />
+                        <span
+                            className='truncate'
+                            title={`${each.feature} ${each.move}`}>
+                            <span className='font-mono'>{each.feature}</span>{' '}
+                            <span className='text-ink-2'>{each.move}</span>
+                        </span>
                     </span>
                     <span className='font-mono tabular-nums text-[12px] text-ink-2'>
                         {each.presses.toLocaleString('en')} presses

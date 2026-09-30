@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 /**
  * One ranked row: count, bar, label — the shape `hotkeys:top` already prints, on one line.
  *
@@ -14,7 +16,12 @@ export const StatRow = (props: StatRowProps) => {
         props.top > 0 ? Math.max(1, (props.count / props.top) * 100) : 0;
 
     return (
-        <li className='grid grid-cols-[64px_140px_minmax(0,1fr)] items-center gap-3 border-b border-line py-[3px] text-[13px]'>
+        <li
+            className={`grid items-center gap-3 border-b border-line py-[3px] text-[13px] ${props.icon ? 'grid-cols-[16px_64px_140px_minmax(0,1fr)]' : 'grid-cols-[64px_140px_minmax(0,1fr)]'}`}>
+            {/* the marks lead the line: one column down the left edge the eye scans for products (dima's A/B, 2026-09-30) */}
+            {props.icon ? (
+                <span className='flex self-center'>{props.icon}</span>
+            ) : null}
             <span className='text-right font-mono text-[13px] tabular-nums text-ink'>
                 {props.value ?? props.count.toLocaleString()}
             </span>
@@ -65,6 +72,8 @@ interface StatRowProps {
     value?: string;
     detail?: string;
     dotColor?: string;
+    // a mark before the label: an app's logo, or a blank slot that keeps a list's labels aligned
+    icon?: ReactNode;
     label: string;
     // Present only where the label names a chord the board can open. An app row has nowhere to
     // go, so it stays plain text rather than a button that does nothing.

@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 /* Components */
 import { Advisor } from '@/components/Advisor.tsx';
+import { AppLogo } from '@/components/AppLogo.tsx';
 import { Info } from '@/components/Info.tsx';
 import { Notice, apiTrouble } from '@/components/Notice.tsx';
 import { StatRow } from '@/components/StatRow.tsx';
@@ -192,6 +193,13 @@ export const StatsPage = () => {
                                                   ]
                                                 : []),
                                         ].join(' · ')}
+                                        icon={
+                                            <AppLogo
+                                                fallback='blank'
+                                                name={row.feature}
+                                                size={16}
+                                            />
+                                        }
                                         key={row.feature}
                                         label={row.feature}
                                         top={topOf(report.topFeatures)}
@@ -249,6 +257,14 @@ export const StatsPage = () => {
                                 return (
                                     <StatRow
                                         count={row.count}
+                                        icon={
+                                            <AppLogo
+                                                bundleId={row.bundleId}
+                                                fallback='glyph'
+                                                name={row.app}
+                                                size={16}
+                                            />
+                                        }
                                         key={row.bundleId}
                                         label={row.app}
                                         top={topOf(report.switchesPerApp)}
@@ -279,6 +295,14 @@ export const StatsPage = () => {
                                 return (
                                     <StatRow
                                         count={row.count}
+                                        icon={
+                                            <AppLogo
+                                                bundleId={row.bundleId}
+                                                fallback='glyph'
+                                                name={row.app}
+                                                size={16}
+                                            />
+                                        }
                                         key={row.bundleId}
                                         label={row.app}
                                         top={topOf(report.timePerApp)}

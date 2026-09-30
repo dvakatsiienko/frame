@@ -10,6 +10,8 @@ import { useDraggable, useDroppable } from '@dnd-kit/react';
 import { chordOf } from '@hotkeys/chord.ts';
 import type { Hotkey } from '@hotkeys/manual.ts';
 
+import { AppLogo, hasLogo } from '@/components/AppLogo.tsx';
+
 import {
     capFamily,
     capLabel,
@@ -292,16 +294,36 @@ const Keycap = (props: KeycapProps) => {
                     </span>
                 )}
             </span>
-            <span className='overflow-hidden font-sans text-[12px]/[1.15] font-normal text-ellipsis whitespace-nowrap text-ink-2'>
-                {props.pending && !props.binds[0]
-                    ? 'was here…'
-                    : props.binds[0]
-                      ? props.binds[0].action +
-                        (props.binds.length > 1
-                            ? ` +${props.binds.length - 1}`
-                            : '')
-                      : ''}
-            </span>
+            {/* a product's own mark says the app faster than a name cut to «Goo…»; the title keeps the name */}
+            {props.binds[0] &&
+            !props.pending &&
+            hasLogo(props.binds[0].action) ? (
+                <span className='flex items-center gap-1'>
+                    <AppLogo
+                        fallback='none'
+                        name={props.binds[0].action}
+                        size={16}
+                    />
+                    {/* the mark is alt="" — the cap's accessible name still carries its action */}
+                    <span className='sr-only'>{props.binds[0].action}</span>
+                    {props.binds.length > 1 ? (
+                        <span className='font-sans text-[12px]/none text-ink-2'>
+                            +{props.binds.length - 1}
+                        </span>
+                    ) : null}
+                </span>
+            ) : (
+                <span className='min-w-0 overflow-hidden font-sans text-[12px]/[1.15] font-normal text-ellipsis whitespace-nowrap text-ink-2'>
+                    {props.pending && !props.binds[0]
+                        ? 'was here…'
+                        : props.binds[0]
+                          ? props.binds[0].action +
+                            (props.binds.length > 1
+                                ? ` +${props.binds.length - 1}`
+                                : '')
+                          : ''}
+                </span>
+            )}
             {/* The corner the count left. A 7px dot fits anywhere; the count did not. */}
             {props.noted && (
                 <span className='absolute right-1.5 bottom-1.5 size-[7px] rounded-full bg-accent' />

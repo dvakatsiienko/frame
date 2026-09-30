@@ -55,6 +55,10 @@
   - 📌 `del` has no cap on the Air75 (the daemon sees it, likely from fn+backspace) — a binding on `del` shows on no cap; dima's call
   - when the user opens stats and comes back to the board
   - then the counts are still there
+- ✅ a cap whose action opens a product shows the product's mark in place of the name
+  - given `hyper+1` opens Google Chrome
+  - then its cap shows the chrome mark, a hover names «raycast: Google Chrome», and a screen reader reads the action
+  - decision: the mark alone — a name cut to «Goo…» said less than the mark (dima, 2026-09-30)
 - ✅ a bound key never pressed carries a ring
   - given a binding on the layer with no press in the log
   - then its cap shows `—` for the count and an inset ring
@@ -155,6 +159,13 @@
   - given a binding whose scope names one app, and a global one on the same chord
   - then the chord pressed in that app counts for the scoped binding, pressed anywhere else for the global one
 - ✅ tiles: presses, chords, switches, never pressed of bound
+- ✅ feature, advisor and app rows lead with the product's mark
+  - given time per app is on screen
+  - then every row starts with a mark, in one column down the left edge, in light and dark
+  - then an app with no mark shows its initial on a grey square
+  - then a feature that is no product keeps an empty slot, so the names stay aligned
+  - decision: the mark leads the line, before the count — one column the eye scans (dima's A/B, 2026-09-30)
+  - 📌 round 2: actions (delete word, paste), speak's lines and raycast-owned features get marks of their own
   - then four tiles show presses, chords, switches and `<n> of <bound>` never pressed
 - ✅ chords, ranked; a row opens the board on that key
   - when the user clicks a chord row

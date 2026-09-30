@@ -95,6 +95,10 @@
   --app-raycast: #ff5c5c;
   --app-wispr: #8b5cf6;
 
+  /* AppLogo: which of a mark's two files shows */
+  --logo-on-light: inline-block;
+  --logo-on-dark: none;
+
   color-scheme: light;
 }
 
@@ -129,6 +133,9 @@
     --app-magnet: #5b9cff;
     --app-raycast: #ff6b6b;
     --app-wispr: #a78bfa;
+
+    --logo-on-light: none;
+    --logo-on-dark: inline-block;
 
     color-scheme: dark;
   }
@@ -165,10 +172,21 @@
   --app-raycast: #ff6b6b;
   --app-wispr: #a78bfa;
 
+  --logo-on-light: none;
+  --logo-on-dark: inline-block;
+
   color-scheme: dark;
 }
 
 @layer components {
+  .logo-light {
+    display: var(--logo-on-light);
+  }
+
+  .logo-dark {
+    display: var(--logo-on-dark);
+  }
+
   /*
    * The two led rails on the Air75's aluminium sides, one per side, eight square lights each
    * running blue at the top through green and yellow to red at the bottom — the strip in dima's

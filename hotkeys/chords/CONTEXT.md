@@ -27,6 +27,10 @@ _Avoid_: empty key, unbound cap
 
 ## what is bound
 
+**Mark**:
+A product's own logo, or a mac app's own icon, drawn beside its name; every mark comes from frame's `@frame/logos` store.
+_Avoid_: icon, glyph
+
 **Binding**:
 One chord meaning one action in one app.
 _Avoid_: hotkey, shortcut, mapping
