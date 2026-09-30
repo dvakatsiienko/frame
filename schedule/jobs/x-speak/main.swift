@@ -227,6 +227,7 @@ final class Speaker {
     private var skipUntil: [Engine: Date] = [:]
     // engine → the provider's quota message; cleared by the engine's next success, so a monthly reset heals itself
     private var outOfQuota: [Engine: String] = [:]
+    private var quotaProbedAt: Date?
     private var job: Task<Void, Never>?
     private var kokoroPrefetch: (text: String, task: Task<Data, Error>)?
     // the next chunk's request, opened once this one is heard: its first-audio wait (0.5–3 s on fish's free tier)
@@ -239,7 +240,9 @@ final class Speaker {
         draft.flatMap { $0.engine == engine ? $0.settings : nil } ?? config[engine]
     }
 
+    // the admin asks every few seconds: a status older than 10 min refreshes the quota behind this answer
     func health() -> [String: [String: String]] {
+        if quotaProbedAt.map({ Date().timeIntervalSince($0) > 600 }) ?? true { Task { await probeQuota() } }
         var result: [String: [String: String]] = [:]
         for engine in Engine.allCases {
             let needsKey = engine.isCloud && keys[engine] == nil
@@ -325,6 +328,52 @@ final class Speaker {
     private var isWarmingKokoro = false
 
     // one warm-up at a time; a finished one lifts kokoro's bench so the next press can use it
+    // the providers' balance calls cost nothing: a card shows the real quota before a press finds it, and an empty
+    // engine sits benched until its refill instead of spending ~1 s of every press on a refusal
+    func probeQuota() async {
+        quotaProbedAt = Date()
+        async let eleven = elevenlabsQuota()
+        async let fish = fishQuota()
+        for (engine, quota) in [(Engine.elevenlabs, await eleven), (.fish, await fish)] {
+            switch quota {
+            case .empty(let message, let until)?:
+                outOfQuota[engine] = message
+                skipUntil[engine] = until
+            case .left? where outOfQuota[engine] != nil:
+                outOfQuota[engine] = nil
+                skipUntil[engine] = nil
+            default: break
+            }
+        }
+    }
+
+    // needs the key's «User» permission (user_read); a key without it answers 401 and the card keeps its last state
+    private func elevenlabsQuota() async -> Quota? {
+        guard let key = keys[.elevenlabs] else { return nil }
+        var request = URLRequest(url: URL(string: "https://api.elevenlabs.io/v1/user/subscription")!)
+        request.setValue(key, forHTTPHeaderField: "xi-api-key")
+        guard let (data, _) = try? await URLSession.shared.data(for: request),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let used = json["character_count"] as? Int, let limit = json["character_limit"] as? Int,
+              let reset = json["next_character_count_reset_unix"] as? Double else { return nil }
+        // a sentence costs 30–200 credits, so under 100 left a press fails more often than it plays
+        guard limit - used < 100 else { return .left }
+        let refill = Date(timeIntervalSince1970: reset)
+        return .empty("\(limit - used) of \(limit) credits left, refills \(refill.formatted(.dateTime.month(.abbreviated).day()))", until: refill)
+    }
+
+    // the free model draws on no balance; a paid one spends the pay-as-you-go api credit, which has no refill date
+    private func fishQuota() async -> Quota? {
+        guard (settings(.fish).model ?? "s2.1-pro-free").hasSuffix("-free") == false else { return .left }
+        guard let key = keys[.fish] else { return nil }
+        var request = URLRequest(url: URL(string: "https://api.fish.audio/wallet/self/api-credit")!)
+        request.setValue("Bearer \(key)", forHTTPHeaderField: "authorization")
+        guard let (data, _) = try? await URLSession.shared.data(for: request),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let credit = (json["credit"] as? String).flatMap(Double.init) else { return nil }
+        return credit > 0 ? .left : .empty("api balance $0 — top up at fish.audio", until: Date().addingTimeInterval(3600))
+    }
+
     func warmKokoro() async {
         guard !isWarmingKokoro else { return }
         isWarmingKokoro = true
@@ -706,6 +755,7 @@ struct XSpeak {
 
         Task {
             await speaker.loadKeys()
+            await speaker.probeQuota()
             await speaker.warmKokoro()
         }
         let control = Control()
@@ -735,6 +785,8 @@ struct XSpeak {
 }
 
 enum StreamState { case waiting, playing, timedOut }
+
+enum Quota { case left, empty(String, until: Date) }
 
 func kokoroPCM(_ text: String, voice: String?) async throws -> Data {
     let (data, response) = try await URLSession.shared.data(for: kokoroRequest(text, voice: voice))
