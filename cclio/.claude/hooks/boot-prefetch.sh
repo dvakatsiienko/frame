@@ -155,6 +155,32 @@ else
   echo "bytes checker not found — skipped"
 fi
 
+echo "-- gh watch (every github issue/pr link in _reminders.md; a change prints once, state in gh-watch-seen.tsv) --"
+GH_SEEN="$HOME/.claude/shelf/gh-watch-seen.tsv"
+touch "$GH_SEEN"
+gh_urls=$(grep -o 'https://github.com/[^/)]*/[^/)]*/\(issues\|pull\)/[0-9]*' "$HOME/frame/cclio/memory/_reminders.md" | sort -u)
+gh_ok=0 gh_changed=0 gh_state=""
+for url in $gh_urls; do
+  api=$(printf '%s' "$url" | sed -E 's#https://github.com/([^/]+)/([^/]+)/(issues|pull)/([0-9]+)#repos/\1/\2/issues/\4#')
+  now=$(timeout 10 gh api "$api" --jq '[.state, (.state_reason // ""), (.pull_request.merged_at // ""), ([.labels[].name] | join(",")), (.comments | tostring)] | join(" · ")' 2>/dev/null) || continue
+  gh_ok=$((gh_ok + 1))
+  gh_state="$gh_state$url	$now
+"
+  before=$(awk -F'\t' -v u="$url" '$1 == u { print $2 }' "$GH_SEEN")
+  if [ "$before" != "$now" ]; then
+    gh_changed=$((gh_changed + 1))
+    echo "🐙 $url — ${before:-new} → $now"
+  fi
+done
+gh_total=$(printf '%s\n' "$gh_urls" | grep -c .)
+if [ "$gh_ok" -lt "$gh_total" ]; then
+  fail "gh watch: $gh_ok of $gh_total links answered"
+fi
+if [ "$gh_ok" -gt 0 ]; then
+  printf '%s' "$gh_state" > "$GH_SEEN"
+  if [ "$gh_changed" -eq 0 ]; then echo "$gh_ok watched, no change"; fi
+fi
+
 echo "-- parallel monitors (pull-only: unseen events print once, ids land in parallel-monitor-seen.txt) --"
 SEEN="$HOME/.claude/shelf/parallel-monitor-seen.txt"
 touch "$SEEN"
