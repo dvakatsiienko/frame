@@ -36,8 +36,10 @@ the ticket is Dima's. **Never pass `--assignee`.** Unassigned is the default and
 until he assigns himself. This is absolute for workspace `x-com`, teams `FRM` and `BYT` — an oss
 repo or a client tracker follows that project's conventions instead.
 
-**One exception, the `standing` label:** recurring work with no last round legitimately stays In
-Progress between rounds. An In Progress ticket *without* that label is stale, not standing.
+**The `standing` label** marks recurring work with no last round — a wish list, a running record. It
+stays in **Todo** between rounds, never In Progress or In Review; a round of work on it is a child
+ticket, which carries the state, the `- ticket:` lines, the pr and the done-report (dima, 2026-09-30).
+An In Progress ticket is always live work — one that is not is stale.
 
 ## Ids are never invented
 

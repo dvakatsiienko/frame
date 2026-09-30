@@ -228,6 +228,11 @@ deliberately, when it covers a real ctx gap, never as flood. Comments = trail (l
 provenance) plus that gap. The closing word on every close is the floor's rule
 (`rules/linear-flow.md`).
 
+**A `standing` ticket carries no comments at all** — it never closes, so its trail would only grow and
+go stale (dima, 2026-09-30, BYT-105). a coder round on it opens a child ticket: the child gets the
+work state, the `- ticket:` lines, the pr link and the done-report, and closes with the round; a
+shipped wish leaves the standing body as the child's link. the standing body is only its open list.
+
 ## Reading — the fetch contract
 
 `linear issue view` is a fixed pre-baked query that omits most of this. **Use `linear api`

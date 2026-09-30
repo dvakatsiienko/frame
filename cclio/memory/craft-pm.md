@@ -132,6 +132,12 @@ fix shipped this turn). everything else — however obviously finished — lands
 - a close he approved still gets its closing word in the body — approval covers the state
   change, never excuses a bare-close
 
+## a round on a standing ticket is a child ticket
+
+a coder brief never names a `standing` ticket (BYT-105 «atelier wishes», FRM-255 «chords wishes»):
+it names a fresh child, so the done-report, the pr automation and the state all land on the child and
+the standing ticket stays in Todo with a clean body (dima, 2026-09-30). the mechanics are in `x:pm`.
+
 ## tickets must be pretty
 
 Subject-first title, body with only key data. No fluff, no walls, no descriptions written for a
