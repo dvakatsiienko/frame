@@ -112,12 +112,15 @@ claims: `schedule/jobs/x-speak/`
   - given text selected in any app
   - when the user presses F4
   - then the daemon speaks it through the chain for its language, and the pill shows
+- ⬜ F4 with nothing selected pauses, then resumes
+  - given speech playing and no text selected
+  - when the user presses F4
+  - then the speech pauses; F4 again resumes it where it stopped
 - ⬜ ⇧F4 pauses, then resumes, whatever is selected
   - given speech playing
   - when the user presses ⇧F4
   - then the speech pauses and the pill's button reads ▶; ⇧F4 again resumes it where it stopped
-  - and F4 with nothing selected does nothing — pause is ⇧F4's alone
-  - decision: F4 only ever reads, so a stray F4 on an empty selection never pauses by surprise (dima, 2026-09-30)
+  - decision: pause has two doors — F4 on an empty selection and ⇧F4 always — so a selection left on screen never blocks a pause (dima, 2026-09-30)
 - ⬜ F5 stops the speech
 - ⬜ the pill floats while speech plays: its wave, ⏸ / ▶, ■, stick and close
   - then the ⏸ / ▶ button follows the speech, and the pill never takes focus from the app in front

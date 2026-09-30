@@ -32,7 +32,7 @@ it is refused.
 - `x-monitor-hotkey-live` — always on, keeps the hotkey map's data current
 - `x-autoclean-screenshots` — daily 12:00, trashes screenshots older than 30 days
 - `x-atelier-live` — always on, serves atelier (bytes `apps/atelier`) at localhost:5180
-- `x-speak` — always on, F4 reads the selection aloud, ⇧F4 pauses / resumes, F5 stops
+- `x-speak` — always on, F4 reads the selection aloud (nothing selected: pause / resume), ⇧F4 pauses / resumes, F5 stops
 - `x-speak-admin` — always on, serves speak, the voice admin, at 127.0.0.1:7386
 
 each plist opens with a comment describing itself; the raycast `schedule` command renders it.

@@ -1,4 +1,4 @@
-// x-speak — F4 reads the selection aloud, cutting off what plays; ⇧F4 pauses / resumes; F5 stops. one resident process so the hot path
+// x-speak — F4 reads the selection aloud, cutting off what plays, and with none pauses / resumes; ⇧F4 pauses / resumes; F5 stops. one resident process so the hot path
 // pays no boot, no key fetch and no player spawn (the node version paid ~1.2 s, measured 2026-09-29).
 // usage: x-speak                        the daemon (launchd)
 //        x-speak [--engine <name>] text one-shot, for listening tests
@@ -426,8 +426,8 @@ final class Speaker {
         log("stop")
     }
 
-    // F4 reads the selection, cutting off what plays; with nothing selected it does nothing — ⇧F4 owns pause
-    // (dima, 2026-09-30). F5 stops
+    // F4 reads the selection, cutting off what plays; with nothing selected it pauses / resumes what plays. ⇧F4 is
+    // pause's second door, selection or not (dima, 2026-09-30). F5 stops
     func readPressed() async {
         let pressed = ContinuousClock.now
         configFile.refresh()
@@ -440,7 +440,8 @@ final class Speaker {
         let grabbed = elapsed(pressed)
         let parts = chunks(normalize(text ?? ""))
         guard !parts.isEmpty else {
-            log("press: nothing selected (grab \(via) \(grabbed))")
+            log("press: nothing selected (grab \(via) \(grabbed))\(isSpeaking ? " → pause / resume" : "")")
+            togglePause()
             return
         }
         log("press: grab \(via) \(grabbed), normalize \(elapsed(pressed)), \(parts.count) chunks")
