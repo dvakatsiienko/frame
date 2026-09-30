@@ -43,6 +43,7 @@ Derive types from the source of truth; hand-retyped copies drift, derivations ca
 - cva config → `VariantProps<typeof buttonCva>`
 - Convex table → `Doc<'chats'>`, generated `api` types
 - `as const` list → `(typeof themeList)[number]`
+- `as const` object → its values: `(typeof routes)[keyof typeof routes]`
 
 ## `satisfies` — the habit to build
 
@@ -68,6 +69,43 @@ Reach for it on anything config-shaped: option lists, route maps, tool registrie
 - **`as const`** for fixed lists and config literals; derive the union from the list instead
   of maintaining a parallel union type.
 - **No `enum`.** The `as const` list plus its derived union does the same job with no runtime object.
+- **An id family built from two unions is a template literal type** — every combination, typo-proof.
+
+```ts
+// tip by matt pocock
+const routes = { home: '/', admin: '/admin' } as const;
+type Route = (typeof routes)[keyof typeof routes]; // '/' | '/admin'
+
+type Feature = 'auth' | 'payments';
+type ErrorType = 'unknown' | 'too-many-requests';
+type ErrorCode = `${Feature}:${ErrorType}`; // 'auth:unknown' | 'payments:too-many-requests' | …
+```
+
+## Unions
+
+- **A value in one of a few shapes is a discriminated union** — each branch carries only its own
+  data, so an `error` without `status: 'error'` cannot compile. The tell: a `status` field beside
+  two or more `?:` fields.
+- **A switch over the discriminant ends in `default: return value satisfies never`** — a new
+  variant turns every unhandled switch red at typecheck, and the error names the missing branch.
+  The one miss a grep never finds.
+
+```ts
+// tip by matt pocock
+type FetchState =
+  | { status: 'loading' }
+  | { status: 'success'; data: { id: string } }
+  | { status: 'error'; error: Error };
+
+const describeState = (state: FetchState) => {
+  switch (state.status) {
+    case 'loading': return 'loading';
+    case 'success': return state.data.id;
+    case 'error': return state.error.message;
+    default: return state satisfies never;
+  }
+};
+```
 
 ## Placement
 
