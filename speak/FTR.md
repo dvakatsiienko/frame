@@ -59,6 +59,8 @@ claims: `schedule/jobs/x-speak/`
   - the controls also return to ▶ when the speech ends on its own
 - ✅ a sample line per language, editable
 - ✅ a status badge per engine: live, benched until a time, no key, or no quota
+- 🧭 each provider card expresses its provider, and the controls read as part of the app
+  - decision: dima, 2026-09-30 — «each card to represent the provider in a beautiful and expressive way»; the cards read heavy and the controls disconnected today. sharpened into given/when/then at the designer's pick
 - ✅ an engine out of quota locks its ▶ and says so on the card
   - given the daemon's quota probe finds elevenlabs under 100 credits — at daemon start, on a status older than 10 min, or right after a refused request
   - when the page shows its cards
@@ -129,6 +131,21 @@ claims: `schedule/jobs/x-speak/`
   - when speech next plays on that display
   - then the pill opens at the same spot; a display it never sat on gets bottom centre, above the dock
 - ⬜ stick keeps the pill up after speech ends; unstick lets it go
+- 🧭 the pill's volume and speed icons open a slider and a number box
+  - given the pill showing
+  - when the user clicks its volume or its speed icon
+  - then a slider and a number box open; a typed value applies on Enter; ↑ / ↓ step by 1, ⇧ by 4, ⌥ fine
+  - and the next F4 keeps the value
+  - decision: two icons, not a panel — the pill stays a pill (dima, 2026-09-30 re-shape)
+- 🧭 the pill shows the sentence being read, the spoken word lit, in step with the audio
+  - given speech playing through kokoro, elevenlabs or the macOS voice
+  - then the pill shows the current sentence with the spoken word lit, in step with the audio
+  - decision: timings come from the engines — kokoro's word timestamps (mlx-audio drops them today), elevenlabs' stream/with-timestamps, the macOS voice's willSpeakWord; whisper alignment only as a last resort (the highlight research, 2026-09-30)
+- 🧭 in native apps the spoken word gets a click-through highlight over the source text — an experiment
+  - given text read from TextEdit, Notes or Safari
+  - then the spoken word gets a click-through overlay over the source text
+  - and where the app gives no text bounds, nothing draws and the pill carries it
+  - decision: an experiment — dima «I often follow a text that is read aloud and read myself in parallel»; dropped if it does not land. terminals, pdf and chrome-by-default are out
 
 ## scripts
 
