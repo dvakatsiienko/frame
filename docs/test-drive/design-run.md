@@ -52,6 +52,8 @@ pick minutes · rounds
 - 2026-09-29 · atelier · brief v1 · full, blind · pick variants of glass-experimental · 3 artboards · out tokens from the session footer (not visible in-session) · 3.1 wall min · 5h 22 → 26 %, 7d 30 → 31 % · round 2
 - 2026-09-29 · atelier · brief v1 · A/B adhd — frames from /adhd:adhd instead of the axis corners · 4 takes (remove-the-assumption, inversion, speedrunner, logistics) · 5 artboards (4 takes + 1 shared art piece) · 49.7k out, 138k cache write (session transcript) + 5 sonnet diverge branches ≈ 291k subagent tokens · 8 wall min · 5h 23 → 32 %, 7d 30 → 31 % · pick min pending · round 1
 - 2026-09-29 · atelier · brief-vague (A/B vague) · full, blind · 4 takes · 5 artboards (4 takes + 1 shared art piece) · ~59.6k out (session transcript usage), in 137k cache-write + 2.5M cache-read · 9 wall min · 5h 23 → 33 %, 7d 30 → 31 % (window shared with parallel sessions) · pick min pending · round 1
+- 2026-09-30 · atelier · brief v1 · full, blind · round 3 on glass-experimental (all settings on the ring, film strip, small-art stage) · 3 artboards · ~35k out (estimate: session footer not visible in-session) · ~7 wall min · 5h 27 → 30 %, 7d 37 → 38 % · round 3 (last allowed)
+- 2026-09-30 · atelier · brief v1 · critique (ux, pm, engineer; rendered locally with the canvas runtime in agent-browser) + fix pass + decision.md + contract.md · 3 artboards re-rendered twice · output tokens not visible in-session · ~12 wall min · 5h 30 → 32 % · closed, the pick = glass-experimental
 
 ## verdict — 2026-09-29: adopted (dima: «looks very good, and as a first take, almost works for me»)
 
