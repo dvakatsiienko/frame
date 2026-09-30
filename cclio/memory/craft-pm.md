@@ -138,6 +138,13 @@ a coder brief never names a `standing` ticket (BYT-105 «atelier wishes», FRM-2
 it names a fresh child, so the done-report, the pr automation and the state all land on the child and
 the standing ticket stays in Todo with a clean body (dima, 2026-09-30). the mechanics are in `x:pm`.
 
+## gremlins stay empty — a touched app exhausts them first
+
+each app keeps a `stash` pair: «<app> gremlins» (fixes, priority 2) + «<app> wishes» (features) —
+trophy-sys BYT-88/89, atelier BYT-115/105, chords FRM-277/255. gremlins are bugs, and bugs should not
+exist (dima, 2026-09-30): any round that touches an app carries its open gremlins into the same brief,
+first. `standing` stays for the fleet's records (pm, memory, nvim, skills), never an app's list.
+
 ## tickets must be pretty
 
 Subject-first title, body with only key data. No fluff, no walls, no descriptions written for a
