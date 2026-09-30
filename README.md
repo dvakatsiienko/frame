@@ -32,7 +32,7 @@
 (`plugin-x`), hooks, output styles, and `sline`, the statusline.
 `cclio/` is the coordinator's home, the session that plans and routes work to background coders.
 `hotkeys/` maps every keyboard chord on the machine and serves `chords`, the map's app.
-`x-speak` (a `schedule/` daemon) reads the selected text aloud on F4 (with nothing selected it pauses / resumes) and stops on F5,
+`x-speak` (a `schedule/` daemon) reads the selected text aloud on F4, pauses / resumes on ⇧F4 and stops on F5,
 rewriting ids, versions, paths and code into something a voice can say; `speak/` is its voice admin
 (`pnpm speak:admin`).
 

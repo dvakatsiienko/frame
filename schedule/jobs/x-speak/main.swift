@@ -1,4 +1,4 @@
-// x-speak — F4 with a selection reads it aloud, cutting off what plays; F4 with none pauses / resumes; F5 stops. one resident process so the hot path
+// x-speak — F4 reads the selection aloud, cutting off what plays; ⇧F4 pauses / resumes; F5 stops. one resident process so the hot path
 // pays no boot, no key fetch and no player spawn (the node version paid ~1.2 s, measured 2026-09-29).
 // usage: x-speak                        the daemon (launchd)
 //        x-speak [--engine <name>] text one-shot, for listening tests
@@ -413,6 +413,12 @@ final class Speaker {
     }
 
     // F5: stop, and the pill leaves unless stick holds it
+    // ⇧F4: pause / resume what plays, whatever is selected
+    func pausePressed() {
+        log("press: ⇧F4 → \(isSpeaking ? (panel.model.isPaused ? "resume" : "pause") : "nothing playing")")
+        togglePause()
+    }
+
     func stopPressed() {
         guard job != nil else { return }
         stop()
@@ -420,8 +426,8 @@ final class Speaker {
         log("stop")
     }
 
-    // F4 with a selection: read it, cutting off what plays. F4 with nothing selected: pause / resume what plays
-    // (dima, 2026-09-29). F5 stops
+    // F4 reads the selection, cutting off what plays; with nothing selected it does nothing — ⇧F4 owns pause
+    // (dima, 2026-09-30). F5 stops
     func readPressed() async {
         let pressed = ContinuousClock.now
         configFile.refresh()
@@ -434,8 +440,7 @@ final class Speaker {
         let grabbed = elapsed(pressed)
         let parts = chunks(normalize(text ?? ""))
         guard !parts.isEmpty else {
-            log("press: nothing selected (grab \(via) \(grabbed))\(isSpeaking ? " → pause / resume" : "")")
-            togglePause()
+            log("press: nothing selected (grab \(via) \(grabbed))")
             return
         }
         log("press: grab \(via) \(grabbed), normalize \(elapsed(pressed)), \(parts.count) chunks")
@@ -778,23 +783,29 @@ struct XSpeak {
         control.start()
         var hotKey: EventHotKeyRef?
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
-        // one handler for both keys; the hotkey id says which fired: 1 is F4, 2 is F5
+        // one handler for every key; the hotkey id says which fired: 1 is F4, 2 is F5, 3 is ⇧F4
         InstallEventHandler(GetEventDispatcherTarget(), { _, event, _ in
             var fired = EventHotKeyID()
             GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID), nil, MemoryLayout<EventHotKeyID>.size, nil, &fired)
-            let isStop = fired.id == 2
-            log("hotkey: \(isStop ? "F5" : "F4")")
+            let id = fired.id
+            log("hotkey: \(id == 2 ? "F5" : id == 3 ? "⇧F4" : "F4")")
             Task { @MainActor in
-                if isStop { speaker.stopPressed() } else { await speaker.readPressed() }
+                switch id {
+                case 2: speaker.stopPressed()
+                case 3: speaker.pausePressed()
+                default: await speaker.readPressed()
+                }
             }
             return noErr
         }, 1, &spec, nil, nil)
         var stopKey: EventHotKeyRef?
+        var pauseKey: EventHotKeyRef?
         let status = RegisterEventHotKey(UInt32(kVK_F4), 0, EventHotKeyID(signature: 0x5350_4B31, id: 1), GetEventDispatcherTarget(), 0, &hotKey)
         let stopStatus = RegisterEventHotKey(UInt32(kVK_F5), 0, EventHotKeyID(signature: 0x5350_4B31, id: 2), GetEventDispatcherTarget(), 0, &stopKey)
+        let pauseStatus = RegisterEventHotKey(UInt32(kVK_F4), UInt32(shiftKey), EventHotKeyID(signature: 0x5350_4B31, id: 3), GetEventDispatcherTarget(), 0, &pauseKey)
         // with the prompt option macos itself asks for the grant, naming this exact process — no guessing which entry
         let isTrusted = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
-        log("daemon: F4 \(status == noErr ? "registered" : "refused (\(status))"), F5 \(stopStatus == noErr ? "registered" : "refused (\(stopStatus))"), accessibility \(isTrusted ? "granted" : "missing — macos shows its grant prompt")")
+        log("daemon: F4 \(status == noErr ? "registered" : "refused (\(status))"), F5 \(stopStatus == noErr ? "registered" : "refused (\(stopStatus))"), ⇧F4 \(pauseStatus == noErr ? "registered" : "refused (\(pauseStatus))"), accessibility \(isTrusted ? "granted" : "missing — macos shows its grant prompt")")
         NSApplication.shared.setActivationPolicy(.prohibited)
         NSApplication.shared.run()
     }
