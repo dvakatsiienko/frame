@@ -12,11 +12,13 @@
     "includes": [
       "!**/public/**/*",
       "!home/.claude/skills/quicksilver", // vendored upstream skill, on vet — never reformatted
+      "!home/.claude/plugin-x/lsp/typescript-native", // vendored ts 7 lsp proxy, pinned sha — never reformatted
       "!.claude/worktrees", // coder worktrees carry their own biome.jsonc — a nested root otherwise
       "!assets", // generated readme art: mac.svg keeps ascii spacing under xml:space, a reformat breaks it
       "!home/.claude/sline/showcase/sline.svg", // rendered by render-svg.ts, never hand-edited
       "!brand", // generated avatar and brand art (svg + png), never hand-formatted
       "!speak/public/speak-*.svg", // the speak favicon, written by atelier:ship
+      "!hotkeys/chords/src/svg/logos/*.svg", // brand marks fetched by art-kit logo.ts, byte-for-byte what the brand ships
 
       // Not ours to format — editor/app config consumed verbatim, and themes
       // whose diffs would be pure noise.

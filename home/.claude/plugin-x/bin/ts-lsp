@@ -1,8 +1,0 @@
-#!/bin/sh
-# typescript 7's native language server; the repo's own tsc first, so the lsp matches the typecheck gate
-d=${1:-$PWD}
-while [ "$d" != / ]; do
-  [ -x "$d/node_modules/.bin/tsc" ] && exec "$d/node_modules/.bin/tsc" --lsp --stdio
-  d=$(dirname "$d")
-done
-exec tsc --lsp --stdio

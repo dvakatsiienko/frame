@@ -1,7 +1,9 @@
 {
     "typescript": {
-        "args": ["${CLAUDE_PROJECT_DIR}"],
-        "command": "${CLAUDE_PLUGIN_ROOT}/bin/ts-lsp",
+        "args": [
+            "${CLAUDE_PLUGIN_ROOT}/lsp/typescript-native/scripts/launch.mjs"
+        ],
+        "command": "node",
         "extensionToLanguage": {
             ".cjs": "javascript",
             ".cts": "typescript",
