@@ -4,15 +4,15 @@
         "inbox-lanes": {
             "since": "2026-09-20",
             "state": "vetting",
-            "verdicts": 5,
+            "verdicts": 6,
             "misses": 1,
             "what": "the boot digest lanes every inbox item (ticket · fold · flowlog · answer · drop) before cclio parses it"
         },
         "skill-router": {
-            "since": "2026-09-28",
+            "since": "2026-09-30",
             "state": "vetting",
-            "verdicts": 26,
-            "misses": 18,
+            "verdicts": 30,
+            "misses": 22,
             "what": "the UserPromptSubmit hook names the skills a prompt should load",
             "lanes": {
                 "x:guide-code": {
@@ -29,7 +29,7 @@
                 },
                 "x:writing-for-humans": {
                     "hit": 0,
-                    "total": 2
+                    "total": 5
                 },
                 "cclio:halt": {
                     "hit": 0,
@@ -58,14 +58,18 @@
                 "x:handoff-ingest": {
                     "hit": 0,
                     "total": 1
+                },
+                "x:ftr": {
+                    "hit": 0,
+                    "total": 1
                 }
             }
         },
         "flawlog-lanes": {
-            "since": "2026-09-27",
+            "since": "2026-09-29",
             "state": "vetting",
-            "verdicts": 24,
-            "misses": 17,
+            "verdicts": 26,
+            "misses": 18,
             "what": "every flawlog line laned memory · rule · story · ticket · drop before the halt flush (the coder retro is a separate, future flow)",
             "lanes": {
                 "ticket": {

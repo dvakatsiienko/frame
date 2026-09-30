@@ -24,3 +24,7 @@
 2026-09-28T02:08:23.799Z	miss	lane=x:guide-code «📋 copy → cloud base setup script ✓» routed x:guide-code 0.84 — a pasted-done ack, nothing to code
 2026-09-28T03:09:55.015Z	miss	lane=x:notes «refresh models.md» routed x:notes 0.65 — a repo doc under docs/knowledge, not a vault note
 2026-09-28T03:42:55.796Z	miss	lane=x:guide-code «an operation-cost table … inside the shift file» routed x:guide-code 0.63 — a doc edit, no code
+2026-09-29T16:03:52.304Z	miss	lane=x:writing-for-humans recipe rename + PRODUCT.md edit + coder spawn; no message for a human
+2026-09-29T16:03:52.420Z	miss	lane=x:ftr PRODUCT.md purpose edit, no ftr line touched
+2026-09-30T12:54:05.743Z	miss	lane=x:writing-for-humans reply to her meant a reply to cclio, an agent peer, not a human message
+2026-09-30T13:04:18.678Z	miss	lane=x:writing-for-humans a message to cclio (agent peer), not to a human
