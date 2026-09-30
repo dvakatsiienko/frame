@@ -97,3 +97,4 @@ every round runs the same ask twice, the usual door and the qs door, and logs on
 ## rounds
 
 <!-- one line per round: date · feature · ask · hit · tokens saved · seconds -->
+- 2026-09-30 · `qs filter` «user-visible change?» over 47 speak commit subjects (drift agent) · miss: 1.0 s, 16.5k jev tokens, $0.0007, 19 of 47 borderline, `cdc19aaa` (quota cards) scored 0.49 and the react admin 0.37 · the input was already in context, and terse subjects are the weak band the skill warns about — wrong fit, not a broken tool

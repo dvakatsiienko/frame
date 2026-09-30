@@ -73,6 +73,7 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 
 - **`--effort` is honoured** on `claude --bg` — pass it every time, it is a flag, never inherited.
   a `Workflow` `agent()` call honours its per-call `effort` too (2.1.258).
+- ❗ **a plugin bump does not reach a running desktop-born session** — `/reload-plugins` + `/reload-skills` in a Code-tab coder left it on x 0.11.167 with 0 LSP servers while the cache held 0.11.175 (2026-09-30, the speak coder). a skill or LSP change is tested in a FRESH session; the probe is the session reporting its loaded version, never «i reloaded».
 - ✅ **a user-only skill runs when the spawn prompt starts with it** — `claude --bg '/run-skill-generator <app> …'` generated 9 run skills with no hands (2026-09-27, cc 2.1.283). the same door as `/x:crew-coder`: a skill a model cannot load is typed by the spawn instead; a `SendMessage` carrying the slash text still does not expand.
 - ✅ **`claude --bg '<prompt>'` RUNS the prompt** (re-verified 2.1.258; it came up idle on 2.1.239).
   `SendMessage` is still how you brief it later, and the only way to attach `notify_when_idle`.
