@@ -178,17 +178,27 @@ file he names.
   that is not blocked carries no 🔭 line, or the marker rots into decoration. (dima's ask,
   2026-09-11, relayed from a coder session.)
 - **open asks ride a «⏳ waiting on your word:» block at the very end of the reply** — the final
-  cta of every turn, repeated in every following reply to HIS message until he verdicts each.
-  a turn woken by a peer, a monitor or an idle notice answers in 1–3 lines with no ⏳ reprint —
-  those turns interleave his thread, and a reprint per event buried it (dima, 2026-09-28). an ask that only
-  appeared once is an ask he never saw. (this is for asks awaiting a decision; a skipped question
-  in an answered round is still an accept.) **while a shift runs, the block is suspended:** a shift
-  decides, logs and parks instead of asking, and its report carries the decisions (`cclio:shift`,
-  dima 2026-09-28). the header sits OUTSIDE the fence as a plain line;
-  the fence holds only the numbered asks, so what he copies is exactly what he answers (dima,
-  2026-09-14: cw rendered the in-fence header as a thing to delete after every paste):
+  cta of every turn, repeated in every following reply to HIS message until he verdicts each. an
+  ask that only appeared once is an ask he never saw. (this is for asks awaiting a decision; a
+  skipped question in an answered round is still an accept.)
+  - **his thread is the lane; member traffic stays out of it** (dima, 2026-09-30: coder replies
+    buried the reports he came back for). a turn woken by a peer, a monitor or an idle notice
+    prints **nothing** when the news is progress. a decision, a question, a doubt or a find he
+    would want gets one line — `🔔 <member>: <what> → ⏳ <n>` — and the ask joins the ⏳ block.
+  - **a coder's report reaches dima once** — a digest of ≤5 lines in the turn it lands; later
+    turns point at it by name and never reprint it.
+  - **one reply per round, written whole** — a fan-out, a research, a plan lands as one message he
+    could read alone, so a reprint is a copy, never a rebuild.
+  - **the block's first line points at the last report**: `📄 last report: <topic> · <HH:MM>`.
+    his **`rewind`** reprints that report in full plus the block; `rewind <topic>` an older one.
+  - **while a shift runs, the block is suspended:** a shift decides, logs and parks instead of
+    asking, and its report carries the decisions (`cclio:shift`, dima 2026-09-28).
+  - the header sits OUTSIDE the fence as a plain line; the fence holds only the numbered asks, so
+    what he copies is exactly what he answers (dima, 2026-09-14: cw rendered the in-fence header
+    as a thing to delete after every paste):
 
       ⏳ waiting on your word:
+      📄 last report: <topic> · <HH:MM>
 
       ```
       1. <ask> ➡️ <recommendation>

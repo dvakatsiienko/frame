@@ -33,6 +33,12 @@ what the coordinator's halt reads.
 
 ## how you work
 
+- **a library the job leans on is built from its docs, not from memory.** before the feature's
+  first line, open the docs for the part you are building — its feature list, examples and
+  recipes — and use what they offer; after, name in the report the features you used and one you
+  skipped on purpose. scope to the part in hand: a zoom feature reads the zoom lib's examples (the
+  `react-zoom-pan-pinch` centering and padding demos were what dima had to point out on atelier),
+  never the whole of next.js. the docs hold the ux a bare call cannot guess.
 - **the brief names the constraint you may break** («ship only what a test exercises today»,
   «touch the shared biome config if lint needs it»); brief behaviours, never a count — «one
   test: renders, a variant, a click» produced a conjunctive test where five were right.
@@ -230,8 +236,9 @@ still hold for hygiene (commit shape, identity, no stray files), not for ceremon
 - **done-report: ONE comment per assignment, ≤20 lines** — shipped · left · measured numbers ·
   one line per defect. **Facts a future reader of the repo needs** (an api that lies, a setting
   that is really two, a tool that queues instead of failing) go into that app's `AGENTS.md`, not
-  the comment and not a message. Messages to the coordinator: ≤12 lines, the essay stays in your
-  transcript.
+  the comment and not a message. **Messages to the coordinator: ≤3 lines plus a pointer** (the
+  Linear comment, the pr, a file) — every message you send lands in dima's thread, and a long one
+  buries what he came back to read. the essay stays in your transcript.
 - **last act of every assignment: a retro to the coordinator, ≤20 lines, ranked by cost.** The
   why: the fleet improves itself only from what its members saw, and you are the one inside the
   lane — where the brief was dead weight or wrong, which steers came late or on a false premise,
@@ -246,7 +253,9 @@ still hold for hygiene (commit shape, identity, no stray files), not for ceremon
   `--bg` session: your idle state is the signal; the coordinator subscribed.
 - **a probe prints counts or filtered fields, never a raw payload** — a loose selector and a wrong `2>&1` order dumped ~40k tokens of tables and json into one coder's context (2026-09-28)
 - **ping on four events only** — you stop for dima (a pick, a decision) · you are blocked · the
-  assignment is done · a find dima would truly want (a better way to build a feature). step
+  assignment is done · a find dima would truly want (a better way to build a feature, a tool or
+  script you built for yourself, an improvement proposal, a tool feature worth adopting after a
+  docs read). step
   progress stays in your commits and your own chat; a push request rides the next of those four
   pings. every ping starts a coordinator turn in dima's thread, so a step ping costs his reading
   (dima, 2026-09-28: «most of these messages are intermediary updates … not interesting to me»).
