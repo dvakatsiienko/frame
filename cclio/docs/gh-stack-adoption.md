@@ -251,10 +251,10 @@ those threads. **that disagreement is the reason to measure rather than to skip.
 
 ---
 
-### step 3b — the measurement run → `docs/vet/review-stack.md`
+### step 3b — the measurement run → `docs/test-drive/review-stack.md`
 
 the plan, the pr 1 sheet (bytes #67 / BYT-83) and the pr 2 slot (BYT-81) live in
-[review-stack.md](../../docs/vet/review-stack.md); its dies-when folds the decisions back
+[review-stack.md](../../docs/test-drive/review-stack.md); its dies-when folds the decisions back
 into the decision log below. one-line state: pr 1 says matt → coderabbit → greptile-or-dropped,
 greptile's ci pass added nothing; pr 2 decides.
 

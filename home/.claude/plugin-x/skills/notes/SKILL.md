@@ -5,7 +5,7 @@ description: Load BEFORE any read or edit of an obsidian vault note or a notion 
 
 # notes — the channel per op, measured
 
-one suite, six lanes, 2026-09-10 (`docs/vet/notes-stack/results-2026-09-10.md`). the
+one suite, six lanes, 2026-09-10 (`docs/test-drive/notes-stack/results-2026-09-10.md`). the
 pick per op is the cheapest lane that does not break the vault; nothing here is a preference.
 
 ## obsidian

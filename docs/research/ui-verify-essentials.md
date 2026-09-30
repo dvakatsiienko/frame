@@ -6,7 +6,7 @@ Ticket: FRM-244
 
 # ui verify essentials — automated checks every web verify pass runs
 
-Three lanes: an opus agent reading package sources, two `parallel-cli` core runs. Grades in `docs/vet/parallel.md`.
+Three lanes: an opus agent reading package sources, two `parallel-cli` core runs. Grades in `docs/test-drive/parallel.md`.
 
 ## checks, in-page (agent-browser eval)
 

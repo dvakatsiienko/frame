@@ -1,8 +1,8 @@
 ---
-dies-when: adhd is adopted as a user-only skill or dropped after the vet week (2026-10-05)
+dies-when: adhd is adopted as a user-only skill or dropped after the test-drive week (2026-10-05)
 ---
 
-# adhd — parallel divergent ideation, on vet
+# adhd — parallel divergent ideation, on a test drive
 
 Ticket: none
 
@@ -37,7 +37,7 @@ Ticket: none
 - **atelier art** (`x:art-kit` illustration branch):
   - **scene concept, before the brief** — frames give distinct concepts (paper-cut stage, cartographer's map, picture-book spread, game level, one colour $0); the critic kills literal icons, readme-width clutter, the already-done; 3 concepts deepened into the brief shape, 3 takes, dima picks
   - **technique hunt, the biggest lever** — frames as media (linocut, risograph, stained glass, isometric voxel, embroidery); each branch proposes one technique rule the way `trace()` is one; the critic keeps what can be written as seeded code → new atelier recipes
-  - **stall critics, the pattern not the skill** — at a stall (the same verdict two rounds in a row), isolated critics read the screenshot under one lens each: silhouette at 16 px, value contrast, colour harmony, composition and leading line, edge craft; a merge pass ranks. the stock skill's branches get text only, so this is an `art-kit` loop variant, written only if the vet holds
+  - **stall critics, the pattern not the skill** — at a stall (the same verdict two rounds in a row), isolated critics read the screenshot under one lens each: silhouette at 16 px, value contrast, colour harmony, composition and leading line, edge craft; a merge pass ranks. the stock skill's branches get text only, so this is an `art-kit` loop variant, written only if the test drive holds
   - cost placement: once per scene or recipe; per render round is too expensive. the reference image is the critic's fence
 - not bytes naming (dima: the frame rename settles first)
 

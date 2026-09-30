@@ -1,8 +1,8 @@
 ---
-dies-when: browserbase is adopted as a door or dropped at the vet verdict (2026-10-05)
+dies-when: browserbase is adopted as a door or dropped at the test-drive verdict (2026-10-05)
 ---
 
-# browserbase — cloud browsers for agents, on vet
+# browserbase — cloud browsers for agents, on a test drive
 
 Ticket: none
 
@@ -23,7 +23,7 @@ Ticket: none
 ## stress list — one real fleet ask per feature
 
 1. **`agent-browser -p browserbase` from the mac** — the essentials on a bytes app at 390 / 1280; compare minutes, latency, parity with local
-2. **a cloud cc session drives it** — `claude --cloud` on bytes (no git-crypt there), key through the pro/max credential proxy, not an env var; the cloud VM has no full browser, so this is the pairing the vet exists to prove
+2. **a cloud cc session drives it** — `claude --cloud` on bytes (no git-crypt there), key through the pro/max credential proxy, not an env var; the cloud VM has no full browser, so this is the pairing the test drive exists to prove
 3. **context + live view** — dima logs in once by hand to a site he owns an account on, the session closes with `persist: true`, a later session reuses it; measure how long the login survives
 4. **replay as visibility** — a verifier round in a browserbase session, dima watches the replay link instead of reading the report
 5. **fetch / search vs `parallel-cli` / WebFetch** — the same 5 lookups through each, one of them a JS shell page

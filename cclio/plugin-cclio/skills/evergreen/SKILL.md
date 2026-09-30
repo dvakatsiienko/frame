@@ -180,7 +180,7 @@ same message («hold #61») subtract from the round.
   because nobody looked there), then `npx -y skills@latest update -g -y` once
   (`~/.agents/.skill-lock.json`, untracked — snapshot it to the scratchpad first), and
   `npx -y skills@latest update -p -y` in `~/frame/cclio` (`skills-lock.json`: advise-project-approach,
-  on vet). the digest line per scope is
+  on a test drive). the digest line per scope is
   the lockfile diff (`git diff -- '**/skills-lock.json'` in bytes, a byte-compare for global);
   a moved hash names the skill.
 - **plugins lane, same weekly slot** — a marketplace refreshes itself only where

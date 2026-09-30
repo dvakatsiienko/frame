@@ -8,7 +8,7 @@ Ticket: [FRM-244](https://linear.app/x-com/issue/FRM-244)
 
 researched 2026-09-29, four lanes on one brief: exa agent · parallel core · an opus lane reading primary sources ·
 neuroarxiv (20 arXiv papers). the input number: one 4-take spread = ~68k output tokens, ~10.7 min, ~3 % of a 5-hour
-window (atelier v1, `docs/vet/design-run.md`).
+window (atelier v1, `docs/test-drive/design-run.md`).
 
 ## the verdict — all four lanes agree
 

@@ -41,7 +41,7 @@ Recipe entity per [_spec.md](_spec.md).
 
 ## analysis vectors (local evidence)
 
-- the run ledger (`docs/vet/design-run.md`): tokens, minutes, usage-window % per spread, pick time,
+- the run ledger (`docs/test-drive/design-run.md`): tokens, minutes, usage-window % per spread, pick time,
   mash-up requests, rounds past 3 — did the recipe's rules hold?
 - dima's verdicts on past picks: which brief lines caused a choice, which axes produced mash-ups
 - do the two skills still agree with the research doc line by line?
@@ -55,7 +55,7 @@ Recipe entity per [_spec.md](_spec.md).
 - `docs/research/design-process.md` — the distilled evidence, until the skills fully carry it
 - the `design:*` scripts in frame `package.json`
 
-## lanes (per habit-vet: reach for the live vets first)
+## lanes (per habit-test-drive: reach for the live test drives first)
 
 exa agent (effort set explicitly) · parallel core · an opus lane that reads sources (skills,
 prompts, npm) · neuroarxiv for the papers · `advise-project-approach` when the flow itself is in

@@ -88,7 +88,7 @@ combines with a role (different groups).
   `improvement` when genuinely unclear.
 - **state** — `standing` (recurring work with no last round — a rolling review, a periodic sweep;
   it legitimately stays In Progress between rounds, the one exception to state-tracks-reality) ·
-  `vet` 🧪 (examine an idea before committing to it). `walkthrough` is dima's own mark — he wants to
+  `test drive` 🧪 (examine an idea before committing to it). `walkthrough` is dima's own mark — he wants to
   be walked through the work as a learning session, never a delegation; apply it only when he says so.
 - 📌 **a label never names a project.** `harness: home baked` was deleted for exactly that
   (TRK-0004) — the area of work belongs in the project field.

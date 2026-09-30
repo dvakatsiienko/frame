@@ -98,10 +98,10 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
   a doc survives the ticket that prompted it. `Ticket: FRM-N` on its own line at the top, mandatory — a doc no ticket owns writes `Ticket: none`. **Every research doc carries `dies-when:` frontmatter at creation** — the condition that
   retires it (distilled into an artifact, hatched into a skill/rule, or acted on). Reading a doc
   past its `dies-when` means deleting or flagging it.
-- **Vets** — `docs/vet/<subject>.md`, one file per tool or lane on trial (`parallel`, `review-stack`,
-  `ctx-burn`, `notes-stack/` with its bench scripts). A vet is a running measurement any session
+- **Test drives** — `docs/test-drive/<subject>.md`, one file per tool or lane on trial (`parallel`, `review-stack`,
+  `ctx-burn`, `notes-stack/` with its bench scripts). A test drive is a running measurement any session
   may append a round to, so it lives here and never under `cclio/`; it closes with a verdict line
-  (adopted / dropped) and stays as the record. A research doc answers once; a vet accumulates.
+  (adopted / dropped) and stays as the record. A research doc answers once; a test drive accumulates.
 
 ## the other homes at root
 

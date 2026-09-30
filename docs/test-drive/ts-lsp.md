@@ -1,4 +1,4 @@
-# vet — the TypeScript LSP (native TS 7 server)
+# test drive — the TypeScript LSP (native TS 7 server)
 
 on trial 2026-09-30 → 2026-10-14. dima: «set it on … watch it yourself, and measure how useful it
 is … pull it into our stack and measure it under a weight for 2 weeks».
@@ -36,7 +36,7 @@ is … pull it into our stack and measure it under a weight for 2 weeks».
 
 ## measure
 
-`python3 docs/vet/ts-lsp/usage.py [since]` — LSP calls per session with the operation mix, beside
+`python3 docs/test-drive/ts-lsp/usage.py [since]` — LSP calls per session with the operation mix, beside
 the grep calls in the same session. read it at every halt; a coder retro names one case where LSP
 beat grep or lost to it.
 

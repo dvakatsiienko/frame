@@ -73,7 +73,7 @@ a `design:*` script family (packages verified on npm 2026-09-29):
 
 ## measuring a run
 
-log per run, in `docs/vet/design-run.md`: brief version · takes · artboards · tokens in/out · wall minutes · usage-window % before/after · renders and retries · pick time · the 1–5 rubric (job clarity, hierarchy, distinctiveness, accessibility, implementation risk, dima's preference). compare cost per *selected usable direction*, not per draft.
+log per run, in `docs/test-drive/design-run.md`: brief version · takes · artboards · tokens in/out · wall minutes · usage-window % before/after · renders and retries · pick time · the 1–5 rubric (job clarity, hierarchy, distinctiveness, accessibility, implementation risk, dima's preference). compare cost per *selected usable direction*, not per draft.
 
 ## the adhd question
 

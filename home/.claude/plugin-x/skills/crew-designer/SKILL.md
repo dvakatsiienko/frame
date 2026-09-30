@@ -83,7 +83,7 @@ engineer. each names at most five problems, pinned to a region, each as problem 
 
 ## 8. the cost ledger — every spread
 
-One line per spread in `~/frame/docs/vet/design-run.md`:
+One line per spread in `~/frame/docs/test-drive/design-run.md`:
 date · app · brief version · mode · takes · artboards · tokens in/out · wall minutes · usage
 window % before and after (`~/.claude/shelf/cc-usage-window.json`, read at the start and the
 end) · pick minutes · rounds. output tokens come from this session's own footer at the spread's

@@ -1,5 +1,5 @@
 ---
-dies-when: parallel is adopted as a door or dropped after the vet period
+dies-when: parallel is adopted as a door or dropped after the test-drive period
 ---
 
 # parallel.ai vs built-in WebSearch — measured 2026-09-24
@@ -66,7 +66,7 @@ lanes: ws = built-in WebSearch · fast = `--mode fast` · agentic = `--mode agen
 - is fast slower only because it ran first (a cold start)? re-run the order reversed
 - core vs `core-fast` / `pro-fast` (the default) on the same two questions
 
-## day-0 re-read — 2026-09-28 (`habit-vet`: the untried features before the verdict)
+## day-0 re-read — 2026-09-28 (`habit-test-drive`: the untried features before the verdict)
 
 source: `docs/research/parallel.md`. tried so far: search fast/advanced, research core, extract, monitor (pull). untried, one real ask each before 10-01:
 - search `basic` (longer excerpts) and `turbo` (~200 ms) — the beta `agentic` we used maps to `advanced`
@@ -88,7 +88,7 @@ source: `docs/research/exa.md`. key `op://dev/exa-golden/credential` → `EXA_AP
 - the benchmark to beat, read in full: exa deep 83 % vs parallel advanced 77 % on search+fetch for docs tickets, but exa was slower (37 s vs 33 s) and dearer ($0.127 vs $0.096 per task); search-only, perplexity led and exa fast was 66 %. context7 was not in it
 - exa `/context` (code snippets from repos and docs) is the one feature parallel has no answer to — one of the 5 lookups goes there
 
-## vet log — one line per round, to 2026-10-01
+## test-drive log — one line per round, to 2026-10-01
 
 - 2026-09-24 · search fast+advanced · 10 fleet lookups · 6/10 + 9/10 hits (websearch 9/10) · 4.4 s / 2.0 s · 3–60k chars per call · ~6¢ settled for 22 calls
 - 2026-09-24 · research core · em-dash + self-wake questions · 4/5 + 5/5 · 95 s / 75 s · one answer each, ~4k chars · ~4¢ each (upper bound)

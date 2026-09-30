@@ -35,7 +35,7 @@ record; detectors are directional signals only.
    gold gate — [pangram.com](https://www.pangram.com) (2,000 words/day free, the accuracy leader),
    run by Dima's hand, never automated. print lane 1, hand the draft to Dima; disagreement between
    the two is itself signal. detector scores are directional, never pass/fail: light editing swings
-   every tool 15–30 points. Dima is the validator of record. (🧪 on vet: he compares the lanes
+   every tool 15–30 points. Dima is the validator of record. (🧪 on a test drive: he compares the lanes
    himself; the lane earns its keep after a few real runs, or goes.) This step alone may be
    skipped for a two-line chat reply; step 4 never is.
 6. **Hand over fenced.** The final draft ships in a copy fence with a destination ribbon.

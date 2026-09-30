@@ -1,5 +1,5 @@
 ---
-dies-when: the cc-cloud vet verdict (2026-11-04) — the kept uses live in `x:crew-cloud`
+dies-when: the cc-cloud test-drive verdict (2026-11-04) — the kept uses live in `x:crew-cloud`
 ---
 
 Ticket: none

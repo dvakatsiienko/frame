@@ -10,7 +10,7 @@ GitHub repo, runs while the mac sleeps, and dies when idle. It carries **nothing
 user `CLAUDE.md`, no rules, no plugin `x`, no memory, no 1password, no launchd. It does load the
 repo's own `AGENTS.md` / `CLAUDE.md`. So the brief carries the rest, and the PR carries the report.
 
-Sources: `docs/vet/browserbase.md` round 1 (the probe, 2026-09-28), the day's research in
+Sources: `docs/test-drive/browserbase.md` round 1 (the probe, 2026-09-28), the day's research in
 `docs/research/cc-cloud.md`, code.claude.com `claude-code-on-the-web` and
 `cloud-environments`.
 
@@ -166,7 +166,7 @@ claude plugin install x@x
 
 No field reads the $250 credit — not the statusline, not a cli (docs + research, 2026-09-28).
 Before and after a cloud job the coordinator reads claude.ai → Settings → Usage through
-`claude-in-chrome`, one page-text call each (dima's yes, 2026-09-28); the job's line in the vet
+`claude-in-chrome`, one page-text call each (dima's yes, 2026-09-28); the job's line in the test-drive
 log carries both numbers.
 
 **Done** = the pr exists with its exit lines graded, cclio has read it, and the session is archived

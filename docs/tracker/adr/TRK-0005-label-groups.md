@@ -15,7 +15,7 @@ mutually exclusive — one label per group on a ticket, an update carrying two i
 `needs data` had no distinct use since TRK-0004 created it. seven tickets relabelled, the label deleted,
 `research`'s description absorbs the meaning. TRK-0004's «closed at three» becomes closed at two.
 
-loose labels stay loose because they combine: `freebie` `granular` `walkthrough` `research` `vet`
+loose labels stay loose because they combine: `freebie` `granular` `walkthrough` `research` `test drive`
 `standing`.
 
 consequences: the role slot in `docs/tracker/CONTEXT.md` becomes the group list; the triage bridge

@@ -2,7 +2,7 @@
 
 Keeps `x:art-kit` current in every branch: gifs, terminal clips, illustration, brand logos, and how
 an svg ships in an app. Born from the 2026-09-30 svg round (three lanes, graded in
-`docs/vet/exa.md` + `docs/vet/parallel.md`). Recipe entity per [_spec.md](_spec.md).
+`docs/test-drive/exa.md` + `docs/test-drive/parallel.md`). Recipe entity per [_spec.md](_spec.md).
 
 ## the want (dima's, 2026-09-30)
 
@@ -78,7 +78,7 @@ an svg ships in an app. Born from the 2026-09-30 svg round (three lanes, graded 
 3. the analysis vectors, run locally while the lanes work
 4. distill: clever-merge into the artifacts, one branch file at a time; raw lane output dies here;
    bump `x`
-5. grade every lane in its vet file; print dima the delta per branch, noop included
+5. grade every lane in its test-drive file; print dima the delta per branch, noop included
 
 ## cadence
 

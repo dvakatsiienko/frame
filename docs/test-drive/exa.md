@@ -1,8 +1,8 @@
 ---
-dies-when: exa is adopted as the research door (replacing or beside parallel) or dropped after the vet period
+dies-when: exa is adopted as the research door (replacing or beside parallel) or dropped after the test-drive period
 ---
 
-# exa — vet (research door, parallel's challenger)
+# exa — test drive (research door, parallel's challenger)
 
 Ticket: none
 
@@ -132,7 +132,7 @@ Ticket: none
 ### team management — `https://admin-api.exa.ai/team-management` (separate spec)
 
 - api keys · create / list / get / update (name, rate limit) / delete · per-key budgets (a key over budget returns 402)
-- key usage · `GET …/api-keys/{id}/usage?start_date&end_date` · authoritative billed cost, 180-day lookback · **the clean way to settle a vet's $ per round** — but the api is «enabled per team» with a service key; ask exa support or read the dashboard instead
+- key usage · `GET …/api-keys/{id}/usage?start_date&end_date` · authoritative billed cost, 180-day lookback · **the clean way to settle a test drive's $ per round** — but the api is «enabled per team» with a service key; ask exa support or read the dashboard instead
 - teams, invites, zdr (enterprise), hipaa (enterprise)
 
 ### limits and billing
@@ -249,7 +249,7 @@ one real ask per feature, widest over deepest. «records» = the fields of the m
   - records: s, $ actual vs cap, `stopReason`, rows returned, rows valid
 - **agent `outputSchema` + `input.data` enrichment**
   - twin: `parallel-cli research run` with input rows
-  - ask: our 10 live vet tools as rows → add `{pricing_url, free_tier, latest_version}`
+  - ask: our 10 live test-drive tools as rows → add `{pricing_url, free_tier, latest_version}`
   - records: fill rate, nulls, wrong cells, $
 - **agent `input.exclusion` + `previousRunId`**
   - twin: none
@@ -287,7 +287,7 @@ one real ask per feature, widest over deepest. «records» = the fields of the m
 
 ### measurement protocol
 
-one line per round in `docs/vet/exa.md`, the same fields `docs/vet/parallel.md` uses, so the two logs diff cleanly.
+one line per round in `docs/test-drive/exa.md`, the same fields `docs/test-drive/parallel.md` uses, so the two logs diff cleanly.
 
 - **same ask, both doors, same turn** — exa call and its parallel twin fired back to back with the ask text verbatim; order alternates round to round
 - **seconds** — wall clock of the http call (`curl -w %{time_total}`); agent and research runs: `createdAt`→`completedAt` from the run object (exa's `startedAt` can be null), plus our own wall clock including polling

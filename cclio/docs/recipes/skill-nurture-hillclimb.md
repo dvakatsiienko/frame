@@ -15,7 +15,7 @@ measures whether a skill fires and is followed, and improves it against the meas
   train set and a held-out test set (the existing `cmt`/`notes`/`pm` cases are the pattern).
 - **baseline** — `claude plugin eval` on both sets before any edit.
 - **the loop** — change ONE thing (usually the description's trigger words), rerun train; keep the
-  change only if train rises and test does not drop; log each round in `docs/vet/`.
+  change only if train rises and test does not drop; log each round in `docs/test-drive/`.
 - **stop** — a round count or a spend cap set before the first run.
 - the same loop runs in small at every halt for jev (`memory/sys-jev.md`, the sharpening loop) —
   point there, never restate it.

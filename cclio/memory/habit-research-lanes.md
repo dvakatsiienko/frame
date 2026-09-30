@@ -14,10 +14,10 @@ ai are essentially free research tools).»
     when a plan or a process is about to be chosen (adopted)
 - **the lanes disagree on purpose**: exa is broad and dated, parallel the most sceptical, the opus
   lane the only one that reads source. the synthesis names where they split.
-- **grade every lane** in its vet file (`docs/vet/exa.md`, `docs/vet/parallel.md`): seconds, chars,
+- **grade every lane** in its test-drive file (`docs/test-drive/exa.md`, `docs/test-drive/parallel.md`): seconds, chars,
   cost, a 1–5 against the others.
 - **one reply** when all lanes land (habit-dima-comms-pacing), and **recipe-first** when the subject will be
   researched again (habit-recipe-first).
 - a one-fact lookup is not research: exa `/answer` (2 s, half a cent) or WebSearch, not the full fan-out.
 
-Related: [habit-vet](habit-vet.md), [habit-recipe-first](habit-recipe-first.md)
+Related: [habit-test-drive](habit-test-drive.md), [habit-recipe-first](habit-recipe-first.md)

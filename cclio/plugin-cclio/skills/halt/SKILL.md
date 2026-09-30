@@ -136,18 +136,18 @@ as coordinator or pm, with the fix — `🥊 <issue>` + `➡️ <approach>`, one
 pair into the CST META. the next boot prints it and reads no flawlog. grounded in this log or
 absent, never invented.
 
-## phase 3b — the vet board
-**the vet verdicts, every halt:** each jev lane the flush disagreed with is
+## phase 3b — vet verdicts + the trial board
+**the test-drive verdicts, every halt:** each jev lane the flush disagreed with is
 `pnpm jev:vet miss flawlog-lanes <why>`; a clean run is one `ok`. the same for the day's inbox
 lanes (`inbox-lanes`) and the router's loads (`skill-router`, from `shelf/jev/route.log` vs the
 flawlog's «skill not loaded» lines). a miss is also a criterion to reword in
 `script/lib/jev-questions.ts` in the same halt — the flow passes its window because it was
 sharpened, not because it was watched. the boot prints every flow's streak.
 **then `pnpm jev:report`**, printed right after the flush verdicts — one block per flow; a flow with a miss today gets its criterion sharpened in place, `RUNS=3`, same halt. its health line carries the router latency (`avg · p95`): a p95 over 2 s or a rising avg is a finding for the flush, since every prompt waits on it.
-**then the vet board — everything on trial, not only jev** (dima, 2026-09-25, «let's try»): one
+**then the trial board — everything on trial, not only jev** (dima, 2026-09-25, «let's try»): one
 line per item — name · state (vetting n/14, open, due) · days left · today's evidence — built from
 four sources, each read, never recalled: `shelf/jev/vet.json` (the flows, after today's verdicts),
-the open files in `docs/vet/` (a file without a verdict line is open), the 🔬/👁️ trial reminders in
+the open files in `docs/test-drive/` (a file without a verdict line is open), the 🔬/👁️ trial reminders in
 `memory/_reminders.md`, and the model/effort trials (`docs/knowledge/models.md`, the spawn defaults in
 `craft-spawning`). ⏰ leads any line due within 3 days; an item with no evidence today still gets its
 line — a trial nobody names is being dropped by default.

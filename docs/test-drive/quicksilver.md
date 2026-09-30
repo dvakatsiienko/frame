@@ -1,8 +1,8 @@
 ---
-dies-when: the vet closes with adopted or dropped (by 2026-10-12)
+dies-when: the test drive closes with adopted or dropped (by 2026-10-12)
 ---
 
-# quicksilver — vet
+# quicksilver — test drive
 
 Ticket: none
 
@@ -11,12 +11,12 @@ Ticket: none
 - [quicksilver](https://github.com/UditAkhourii/quicksilver) v0.2.0 @ `5d6fe5c` — a cc skill plus one script (`qs.mjs`, no deps) that sends bulk judgment calls to jev (`POST api.typesafe.ai/v1/systemone`) and prints a compact shortlist back to claude.
 - verbs: `filter` (yes/no per item or per line), `classify` (one-of-n labels), `rank` (top-k vs a query), `find` (lines in a huge file), `ask` (one question over one big doc), `status`.
 - vendored at `home/.claude/skills/quicksilver/`; every call runs as `~/frame/script/op-run.sh node ~/.claude/skills/quicksilver/scripts/qs.mjs <cmd> …` (key from 1password, never `qs setup`).
-- 📌 the question this vet answers: what does it add over our own jev lanes (`script/lib/jev.ts`, the skill router, inbox lanes)? those are fixed rubrics wired into code; quicksilver is the ad-hoc door for a one-off bulk read mid-task.
+- 📌 the question this test drive answers: what does it add over our own jev lanes (`script/lib/jev.ts`, the skill router, inbox lanes)? those are fixed rubrics wired into code; quicksilver is the ad-hoc door for a one-off bulk read mid-task.
 
 ## window
 
 - 2026-09-28 → 2026-10-12.
-- 📌 the vendored `SKILL.md` header says «on vet to 2026-10-05»; this file says 10-12 — one of the two gets corrected.
+- 📌 the vendored `SKILL.md` header says «on a test drive to 2026-10-05»; this file says 10-12 — one of the two gets corrected.
 
 ## the meter
 
@@ -65,7 +65,7 @@ every round runs the same ask twice, the usual door and the qs door, and logs on
 - adopters, claims only: [qveys/agent-skills#29](https://github.com/qveys/agent-skills/pull/29) vendored it and flagged the third-party send; [#35](https://github.com/qveys/agent-skills/pull/35) uses `qs filter - --lines` on long local output only, «never on a remote pane (content goes to a third-party api)»; [bubble-ops-loop#515](https://github.com/Bubble-invest/bubble-ops-loop/pull/515) ported the ux (probability-first lines, `?` band) into their own `jev.py`, not the code.
 - sibling tools, claims: [jev-pilot](https://github.com/Akramovic1/jev-pilot) (jev picks effort, model and skill per turn, 3 stars); [decision-first](https://www.reddit.com/r/ClaudeWorkflows/comments/1wjthli/workflow_claude_code_skill_for_robust) (logs every jev attempt, self-reports 9/10 fires on 20 self-written prompts); a [r/PromptEngineering plugin](https://www.reddit.com/r/PromptEngineering/comments/1wjmhj0/a_jev_claude_code_plugin_that_saves_30_token_usage) claiming −30 % context.
 - jev reviews: [eesel](https://www.eesel.ai/blog/typesafe-jev-review) — speed and price real, «can't hallucinate» oversold (confidently wrong still happens), the accuracy chart puts jev near a mid-tier reasoning model; its 93 % triage number is a vendor trial. the [langchain jev-as-judge post](https://www.langchain.com/blog/jev-agent-evals-langsmith) is exploratory.
-- same author as `adhd`, also on vet here; same launch shape: a self-built bench and a headline percentage.
+- same author as `adhd`, also on a test drive here; same launch shape: a self-built bench and a headline percentage.
 
 **verdict at day 0** — plausibly useful in a narrow band (needle lines in a big log, «which files touch X», bulk labels that are clear), backed by one self-benchmark only. evidence is weak; the vet is the first independent measurement.
 
@@ -87,7 +87,7 @@ every round runs the same ask twice, the usual door and the qs door, and logs on
 ## weak sides
 
 - **accuracy** — 90 vs 94 % on the author's own bench, and a real log at 23 vs 54 %; the `?` band is where the errors sat, so claude still reads it. literal reading punishes a loose question.
-- **model pin** — defaults to `jev-latest`, which moves on release, and a moved model shifts thresholds silently. pin it: `QUICKSILVER_MODEL=jev-1.13.0` in `op.env`, or `--model jev-1.13.0` on every call (not done yet — this vet wrote only this file).
+- **model pin** — defaults to `jev-latest`, which moves on release, and a moved model shifts thresholds silently. pin it: `QUICKSILVER_MODEL=jev-1.13.0` in `op.env`, or `--model jev-1.13.0` on every call (not done yet — this test drive wrote only this file).
 - **shared rate limit** — 1,200 req/min per account, shared with the skill-router hook, which is synchronous. a big qs run at concurrency 16 can 429 the router and make dima's prompts wait.
 - **cost** — negligible in dollars (the bench spent $0.45 for 12 tasks, the most on `find`: $0.21); the real spend is claude reading the survivors.
 - **data leaves the machine** — every item's text goes to `api.typesafe.ai`, retained per the dpa (no zero retention on our plan). the secret guard reads filenames only: a token inside a log line is sent. a git-crypt file in an unlocked tree is sent as plaintext. never point it at the vault, `gmail/`, transcripts with keys, or encrypted paths.

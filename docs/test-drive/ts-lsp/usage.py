@@ -1,5 +1,5 @@
 # LSP tool use across session transcripts, beside the grep it could replace
-# usage: python3 docs/vet/ts-lsp/usage.py [since YYYY-MM-DD, default 2026-09-30]
+# usage: python3 docs/test-drive/ts-lsp/usage.py [since YYYY-MM-DD, default 2026-09-30]
 import collections, json, pathlib, re, sys
 
 since = sys.argv[1] if len(sys.argv) > 1 else '2026-09-30'

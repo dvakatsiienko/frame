@@ -1,5 +1,5 @@
 ---
-dies-when: the browserbase vet verdict (2026-10-05) — the adopted parts live in `docs/vet/browserbase.md` and `x:crew-cloud`
+dies-when: the browserbase test-drive verdict (2026-10-05) — the adopted parts live in `docs/test-drive/browserbase.md` and `x:crew-cloud`
 ---
 
 Ticket: none
