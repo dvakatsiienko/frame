@@ -229,6 +229,8 @@ final class Speaker {
     private var outOfQuota: [Engine: String] = [:]
     private var quotaProbedAt: Date?
     private var job: Task<Void, Never>?
+    // numbers each read in the log, so two reads talking at once show as two numbers interleaved
+    private var reads = 0
     private var kokoroPrefetch: (text: String, task: Task<Data, Error>)?
     // the next chunk's request, opened once this one is heard: its first-audio wait (0.5–3 s on fish's free tier)
     // hides behind the audio instead of sitting between two sentences
@@ -283,6 +285,8 @@ final class Speaker {
         job?.cancel()
         cloudPrefetch?.task.cancel()
         cloudPrefetch = nil
+        kokoroPrefetch?.task.cancel()
+        kokoroPrefetch = nil
         player.stop()
         systemVoice.stop()
         job = nil
@@ -447,12 +451,17 @@ final class Speaker {
         // real speech ends the admin's infinite waveform: the meter goes back to the sound
         panel.stopWave()
         panel.show()
+        reads += 1
+        let read = reads
         job = Task {
             var isFirst = true
             // the engine that played the read's first chunk leads every later one, so one read keeps one voice: a
             // cloud engine that missed chunk 1's budget no longer takes over mid-read once audio is playing
             var lead: Engine?
             for (index, chunk) in parts.enumerated() {
+                // the mac voice and kokoro finish a chunk normally even after a stop, so a stopped read ends here
+                if Task.isCancelled { return }
+                log("read \(read): chunk \(index + 1)/\(parts.count)")
                 var candidates = (only.map { [$0] } ?? config.chain[chunk.lang] ?? []).filter { $0.speaks(chunk.lang) && (skipUntil[$0] ?? .distantPast) < Date() }
                 if let lead, let at = candidates.firstIndex(of: lead) { candidates.insert(candidates.remove(at: at), at: 0) }
                 // a cloud engine racing its deadline: kokoro renders the same chunk meanwhile, so a miss costs nothing
@@ -521,6 +530,7 @@ final class Speaker {
         switch engine {
         case .system:
             await player.drained()
+            try Task.checkCancellation()
             systemVoice.onFirstWord = onAudio
             await systemVoice.speak(chunk, settings(.system))
         case .gemini:
@@ -530,6 +540,8 @@ final class Speaker {
             let prefetched = kokoroPrefetch.flatMap { $0.text == chunk.text ? $0.task : nil }
             kokoroPrefetch = nil
             let pcm = if let prefetched { try await prefetched.value } else { try await kokoroPCM(chunk.text, voice: settings(.kokoro).voice(for: .en)) }
+            // a render that lands after a stop never reaches the player
+            try Task.checkCancellation()
             try player.schedule(pcm, settings(.kokoro))
             onAudio()
         default:
