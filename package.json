@@ -65,7 +65,8 @@
         "typecheck": "tsc --noEmit && pnpm -r typecheck",
         "test": "vitest run",
         "test:watch": "vitest",
-        "check": "biome check --write"
+        "check": "biome check --write",
+        "crew:audit": "node ./script/crew-audit.ts"
     },
     "dependencies": {
         "zx": "8.8.5"
