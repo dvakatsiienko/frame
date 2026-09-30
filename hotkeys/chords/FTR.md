@@ -153,11 +153,8 @@
   - then «Google Chrome hyper+1 → free hyper+j» shows; a free key and a swap partner are each offered once, one suggestion per feature
   - decision: no ai — a key's cost is its rows from home, its sideways distance and a cost per held modifier; only hyper, the bare f-keys and cmd+ctrl+opt are searched, because an app hides its own shortcuts everywhere else
 - ✅ each table heading has an «i» that says in one line what the table counts
-  - when the user hovers or focuses the «i» beside «switches per app»
-  - then «how often each app came to the front — ⌘-tab, a click, the dock or a hotkey» shows
-- ✅ a press is labelled by the binding of the app it was pressed in
-  - given a binding whose scope names one app, and a global one on the same chord
-  - then the chord pressed in that app counts for the scoped binding, pressed anywhere else for the global one
+  - when the user hovers or focuses the «i» beside «switches to app»
+  - then «how often you switched to each app — ⌘-tab, a click, the dock or a hotkey» shows
 - ✅ tiles: presses, chords, switches, never pressed of bound
 - ✅ feature, advisor and app rows lead with the product's mark
   - given time per app is on screen

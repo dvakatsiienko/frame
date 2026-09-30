@@ -51,7 +51,7 @@ this skill never re-describes launching.
 5. **the tab walk with a key selected** — click a cap, then `tab-walk.sh` from `x:browser-headless`:
    58 stops, 0 flags on main (measured with the probe `q` row planted and selected).
 6. **stats renders** — `find role button click --name stats --exact` → `/stats`: the totals row
-   and the CHORDS / CHORDS PER APP lists (DOM bars, 0 svg), `errors` at 0.
+   and the CHORDS / TIME PER APP lists (DOM bars, no chart svg), `errors` at 0.
 
 ## the false lead — `aria-disabled` on caps
 
