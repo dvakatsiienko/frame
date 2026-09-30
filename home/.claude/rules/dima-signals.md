@@ -17,7 +17,10 @@
     different work, ask in one line instead of guessing
   - every mapping goes into the reply's 👀 parsed list (`«Quards» → chords`), so a wrong read shows
     before it becomes work
-  - a word that breaks twice is named to him as a candidate for his Wispr dictionary
+  - **every misheard word also gets a 🎙️ line right above the ⏳ block**, in the reply where it
+    appeared: `🎙️ wispr: «Creo coder» → crew-coder · add «Creo coder» → «crew coder», correct a
+    misspelling on`. he adds the entry to Wispr Flow's dictionary, and the mishearing stops at the
+    source (dima, 2026-09-30)
 - he ships ideas half-formed on purpose and sharpens them in the exchange; mid-turn corrections
   arrive while you are still running — check for them specifically.
 - how he works: lowercase, fast; says «i'm tired :D» and keeps going for another hour; prefers
