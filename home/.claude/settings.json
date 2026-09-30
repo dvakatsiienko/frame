@@ -132,6 +132,15 @@
             "command": "bash ~/.claude/shelf/hooks/opus-register-capture.sh"
           }
         ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/shelf/hooks/crew-recompact.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
