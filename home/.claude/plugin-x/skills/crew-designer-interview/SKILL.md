@@ -91,6 +91,9 @@ The questions, drop any the prep settled:
    the brief needs ≥3 of each, and he marks the **hard** ones
 9. states — the takes draw the ideal state + one more and the rest go on the pick, or all
    states now
+   - the window shapes too: the key view at the app's real sizes (wide, tall, narrow — and for a
+     piece that does not fill the screen, what the empty bands hold). atelier's comp drew one shape,
+     and the chrome placement on a letterboxed piece fell to dima's eye for 3 rounds (2026-09-30)
 10. the spread — 4 takes, blind, files only, or his changes
 
 ## 5. the gate — before the brief is written

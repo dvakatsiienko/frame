@@ -22,6 +22,9 @@ mechanics, that file answers order, gates and who runs what. no impeccable named
 `pnpm -C ~/frame design:comp-render <studio>/jobs/<app>/takes/project <runtime.js> <out dir>`
 (`--help` for one board and its dials). read the pngs as a checklist of the comp's devices —
 three skipped devices cost BYT-113 a finish round; `design:diff` compares a build shot to a png.
+before «final», shoot the built view at every window shape the brief names (at least wide 1728×1117,
+standard 1440×900, narrow 900×1200) and read each against the comp — atelier's letterbox chrome reached
+dima in 3 review rounds because nobody looked at a wide window first.
 
 **then read [how-you-work.md](how-you-work.md) in full** (beside this file,
 `~/frame/home/.claude/plugin-x/skills/crew-coder/how-you-work.md`) — the lessons every coder paid
