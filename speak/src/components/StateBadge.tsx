@@ -26,8 +26,11 @@ const stateColour: Record<string, string> = {
     'no quota': 'text-muted',
 };
 
-// elevenlabs says «You have 14 credits remaining, while 22 …»; the number leads, the provider's words follow
+// the daemon's probe writes «3 of 10000 credits left, refills 30 Oct» — already the lead. a refusal reads
+// «You have 14 credits remaining, while 22 …»: its number leads, the provider's words follow
 const quotaTitle = (note: string) => {
+    if (/^\d+ of \d+ credits left/.test(note))
+        return `${note} — the chain skips it until then`;
     const left = note.match(/have (\d+) credits? remaining/)?.[1];
     const lead = left === undefined ? 'out of quota' : `${left} credits left`;
     return `${lead} — the chain skips it until they return. ${note}`;

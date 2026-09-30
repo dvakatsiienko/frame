@@ -29,9 +29,10 @@ the page AND the state behind it: a drag or a save is proven by the ranks the pa
    only Lily stays; focus her row, Enter: the button reads «♥ Lily» and holds focus; Esc on a reopened list closes
    it with focus back on the button. save: the diff adds `"favourites": [...]` and the daemon logs «config: loaded»
 10. **favicons** — `/speak-32.png` answers 200 image/png; `/../package.json` answers 404
-11. **no quota** — while elevenlabs is short of credits, a preview longer than the credits left benches it: its
-    badges read «no quota» in the muted colour, ▶ is disabled, the badge's title leads «<n> credits left». credits
-    back → skip and say so
+11. **no quota** — while elevenlabs holds under 100 credits, the daemon's probe benches it with no preview needed:
+    `{"op":"status"}` on the control socket reads `"no quota"` with the note «<n> of <m> credits left, refills
+    <date>»; its badges read «no quota» in the muted colour, ▶ is disabled, the badge's title leads with that note.
+    credits back → skip and say so
 12. **glide / flow** — type 55 in the pill flow box, save: config.json reads `meterFlowMs` 55 and the slider sits
     at 55; restore the value
 13. **infinite waveform** — toggle it on: a window owned by «x-speak» is on screen (`CGWindowListCopyWindowInfo`)

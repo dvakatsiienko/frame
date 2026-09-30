@@ -57,13 +57,15 @@
   - the controls also return to ▶ when the speech ends on its own
 - ✅ a sample line per language, editable
 - ✅ a status badge per engine: live, benched until a time, no key, or no quota
-- 🔎 an engine out of quota locks its ▶ and says so on the card
-  - given elevenlabs refused a request with quota_exceeded
+- ✅ an engine out of quota locks its ▶ and says so on the card
+  - given the daemon's quota probe finds elevenlabs under 100 credits — at daemon start, on a status older than 10 min, or right after a refused request
   - when the page shows its cards
   - then each elevenlabs card's badge reads «no quota» in a quiet colour and its ▶ is disabled
-  - and hovering the badge shows «<n> credits left — the chain skips it until they return», then the provider's message
+  - and hovering the badge shows «<n> of <m> credits left, refills <date> — the chain skips it until then»
+  - and the daemon benches it until that refill date, so a press never waits on its refusal
+  - given fish runs a paid model and its api balance is $0 → fish reads «no quota» the same way, benched for an hour
   - decision: quiet, not red — the chain already skips it; dima found the red line «a bit too much» (2026-09-29)
-  - and the state clears after the engine's next success
+  - and the state clears when the probe sees credits again, or after the engine's next success
   - decision: the chain already falls through on a quota refusal; the card only has to make it visible (dima, 2026-09-29)
 - ✅ the header shows the daemon's accessibility state and whether it is speaking
 - 🔎 «infinite waveform» plays the pill's wave with no voice, to tune glide and flow by eye
@@ -81,6 +83,11 @@
 - ✅ ■ stop ends any speech
 - ✅ the first audio budget, in ms
 
+- ⬜ the logo goes home without a reload
+  - given the page scrolled down, with an unsaved edit
+  - when the user clicks the speak logo, top-left
+  - then the page scrolls to the top, the url drops its #column, and the edit is still there; under reduced motion the jump is instant
+
 ## save
 
 - ✅ save writes config.json
@@ -96,6 +103,22 @@
   - given a config the daemon cannot read
   - when it is saved
   - then the status line reads «rejected — config.json: unknown name «…» …» and the daemon keeps its last good config
+
+## x-speak — hotkey + pill
+
+- ⬜ F4 reads the selected text aloud, cutting off whatever plays
+  - given text selected in any app
+  - when the user presses F4
+  - then the daemon speaks it through the chain for its language, and the pill shows
+- ⬜ F4 with nothing selected pauses, then resumes
+- ⬜ F5 stops the speech
+- ⬜ the pill floats while speech plays: its wave, ⏸ / ▶, ■, stick and close
+  - then the ⏸ / ▶ button follows the speech, and the pill never takes focus from the app in front
+- ⬜ the pill drags anywhere and keeps its spot per display
+  - given the pill dragged on one display
+  - when speech next plays on that display
+  - then the pill opens at the same spot; a display it never sat on gets bottom centre, above the dock
+- ⬜ stick keeps the pill up after speech ends; unstick lets it go
 
 ## scripts
 
