@@ -36,8 +36,10 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   reviewer on this head; the guard publishes `review:clean`, the required check on main —
   never created = blocked. a later push leaves it stale — re-review = remove + add the label,
   at most twice per pr, a third round on dima's word. read the counter before every label, never
-  from memory: `gh api 'repos/<o>/<r>/actions/workflows/review.yml/runs?branch=<head>' --jq
-  '[.workflow_runs[] | select(.conclusion=="success")] | length'` — at 2 the label does nothing. 📌 a green `review:clean` means a review ran; until the reviewer's
+  from memory: `gh api --paginate 'repos/<o>/<r>/actions/workflows/review.yml/runs?per_page=100'
+  --jq '.workflow_runs[] | select(.head_branch=="<pr branch>" and .conclusion=="success") | .id' | wc -l`
+  — at 2 the label does nothing. filter on the client: the server's `?branch=` answered 0 while
+  the same list showed the success (#116, 2026-09-30). 📌 a green `review:clean` means a review ran; until the reviewer's
   own verdict marker gates it, the findings live in its comment — read that.
 - a claude-code-action pr that edits a workflow already on the default branch IS reviewed
   (measured 2026-09-12: #79 got two rounds with verdict lines; the «self-skips» belief in

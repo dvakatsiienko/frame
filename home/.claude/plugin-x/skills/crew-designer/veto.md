@@ -8,7 +8,9 @@ choice free was not deciding: rewrite that part.
 - cream `#F4F1EA` + a serif + a clay accent (the «premium beige» look, brass included)
 - near-black + one acid accent
 - purple, indigo or cyan gradients, and glow
-- SaaS card kits: same-size cards of icon + heading + text as the page structure, nested cards
+- SaaS card kits: same-size cards of icon + heading + text as the page structure, nested cards,
+  one soft grey shadow on every rounded card
+- terracotta `#D97757` — Claude's own accent, it reads as the tell
 - all-caps eyebrows above headings, `A · B · C` meta strings, `→` on every link
 - monospace as a «technical» costume rather than for code, data or measurement
 - a coloured `border-left` on cards, callouts or list items
