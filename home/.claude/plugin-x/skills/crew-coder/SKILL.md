@@ -124,8 +124,10 @@ what the coordinator's halt reads.
 
 Dima typed the brief himself for something small. No ticket exists and none is expected — never
 ask for an id, never guess one. No worktree, no PR: work on `main` in the current checkout, commit
-on his word. Suggest and ask before each move instead of running the lane; the lane sections below
-still hold for hygiene (commit shape, identity, no stray files), not for ceremony.
+on his word. A small ask runs straight through — no «may I» before each step; ask only at a real fork
+or before anything irreversible. Step 0 and the docs habit hold in full (the ftr line, the guides, the
+library docs); the lane sections below hold for hygiene (commit shape, identity, no stray files), not
+for ceremony.
 
 ## the git lane
 

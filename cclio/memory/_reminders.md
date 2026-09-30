@@ -26,7 +26,6 @@ Store contract: the `remind` skill. Both tiers die only when Dima drops them.
 
 
 
-⏰ 🦉👁️ next.js agent-files generator — the 4 bytes next apps (`cv` `figmentation` `financial` `x-com-chat`) hand-own AGENTS.md since 2026-09-19; next 16.3.5 still upserts its managed block on `next dev` and `create-next-app` still scaffolds CLAUDE.md. raise when vercel/next.js [#98910](https://github.com/vercel/next.js/pull/98910) merges or a release note names `agentRules` / the CLAUDE.md shim: re-read `generate-agent-files.ts`, decide `agentRules: false` per app + strip the markers, or keep the block. watched by the gh watch (boot digest); the boot prints its events — set 2026-09-19
 
 ⏰ 🦉👁️ the `@types/react` override in bytes `pnpm-workspace.yaml` — set 2026-09-21 because `@visx/event` (via `prisma` → `@prisma/studio-core`) still ranges `@types/react` 19.2.x and next's styled-jsx types resolved the hoisted copy, breaking every `React.X` global-namespace use on 19.3. raise when parallel monitor `186f30a4` (weekly) fires, or at an evergreen major of `prisma` or `@visx/*`: remove the two override lines, `pnpm install`, `ls node_modules/.pnpm | grep '@types+react@'` — one version → the override is dead, commit the removal — set 2026-09-21
 
