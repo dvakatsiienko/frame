@@ -26,6 +26,11 @@ retroactively, not when the commit lands.
 
     linear issue update FRM-N --state "In Progress"
 
+📌 **An agent starts only a ticket labelled `agent`.** A `human` ticket is dima's to start — an agent
+never moves it, never picks it for a lane, a shift or a test, even when it looks ready (dima,
+2026-09-30, after BYT-86 — `standing`, `human` — was proposed as a shift candidate). Labels are read
+from the ticket in the same turn, never recalled.
+
 📌 **Moving a ticket never assigns it.** In Progress says the work is happening; the assignee says
 the ticket is Dima's. **Never pass `--assignee`.** Unassigned is the default and stays that way
 until he assigns himself. This is absolute for workspace `x-com`, teams `FRM` and `BYT` — an oss
