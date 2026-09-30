@@ -88,3 +88,7 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
   colours» went out as a reason; the pair then measured Δ 2/255.
 - **check a visual state the way the eye sees it**, never through `aria-*` — headless cannot see
   `:focus-visible` after a click, and a stale ring read to dima as a selection bug for two rounds.
+- **a tree served for dima starts with `timeout: 7200000`** — the 30-minute background default killed
+  atelier's served tree mid-job (BYT-113).
+- **before any commit, `pwd` is your worktree** — after reading the comp in studio, a coder's shell stayed
+  there and its first commit landed on studio's `main` (BYT-113, reset before any push).

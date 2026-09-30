@@ -10,13 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «will you catch up a skipped monday?» · 2026-09-20
-The apps lane of evergreen was built and about to run for the first time. He asked two questions
-in a row, neither about the code: «will you catch up a skipped monday» and «is the next one still
-monday». Each found a gap — the lane tracked dates where it needed markers, and «due» was seven
-days where it needed «a monday passed». Two real bugs before the lane ran once, found by asking
-what the thing does on the day it fails, not on the day it works. → DOT-232, the apps lane
-
 ## «not a fan of overrides» · 2026-09-21
 Three production builds were red after a react types bump; the fix that made them green was a
 pnpm override pinning `@types/react` to one copy. He read it and said «not a fan of overrides.
@@ -65,3 +58,11 @@ goes (nothing — the providers are his playground). each answer moved the desig
 one question, the pill's volume and speed popovers out of another, word highlight turned from a nice-to-have
 into «I follow the text while it reads». his note after it: «a grilling session before design has incredible
 value … if we would not grill but just start a design randomly» — the day shape-idea became an invariant. → `x:shape-idea`, `fleet-identity`
+
+## «why not here?» · 2026-09-30
+the atelier lens ring was built from the comp and clean in the verifier's eyes. on his wide screen the art sat
+letterboxed, and he circled the empty dark band above it: «why not here?». two rounds moved the pills toward the band,
+and each still felt off to him; then he named it — sticking them to the art's edge «reads off … they break out of a
+horizontal rhythm compared to other pills». the comp had drawn only one window shape, where the art fills the screen,
+so nobody had designed the letterbox case; his eye was the spec. → «The One Frame Rule» in atelier's `DESIGN.md`, the
+window-shapes question in `crew-designer-interview`

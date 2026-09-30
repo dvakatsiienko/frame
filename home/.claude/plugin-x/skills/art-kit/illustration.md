@@ -32,3 +32,8 @@ one bounded change → render again. iterate privately; dima sees takes, not eve
 
 **done when** the render sits beside the reference with no gap left on the list, the take is saved
 (atelier) or shot into `out/`, and the report ends with its version label.
+
+## icons and favicons
+
+- draw on a grid of size/16 units and check the pixel view at 16 px before any polish — half-pixel
+  pills, a shadow smearing a gap and an off-grid sun cost the atelier favicon most of its rounds (#117)
