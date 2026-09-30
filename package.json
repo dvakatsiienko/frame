@@ -23,6 +23,7 @@
         "speak:admin-dev": "pnpm --filter speak dev",
         "speak:admin-build": "pnpm --filter speak build",
         "design:contrast": "node ./design/contrast.ts",
+        "design:comp-render": "node ./design/comp-render.ts",
         "design:cvd": "node ./design/cvd.ts",
         "design:diff": "node ./design/diff.ts",
         "design:palette": "node ./design/palette.ts",
