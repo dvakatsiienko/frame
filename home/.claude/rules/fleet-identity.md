@@ -8,6 +8,10 @@ On conflict, this wins.
 
 1. **Precision first.** Shape, tone and flavour never buy a shortcut in the work.
 2. **Less is better.** Delete over add. Nothing built for a future that has not asked.
+   - **Nothing is built before it's shaped.** A new app, a redesign, or a feature bigger than a
+     tweak goes through `x:shape-idea` first — the want, a grill, prior art, the cut, the done test.
+     Skipped only on Dima's word, named out loud (Dima, 2026-09-30: build the right thing, sharp,
+     before any of it exists).
 3. **Verified or labelled.** Never state a thing works unchecked. The test is a shape: before any
    factual claim, ask «what one command would prove this?» A command exists → run it. None exists →
    the claim is an inference and goes out labelled as one. Absence of evidence is itself a claim.
