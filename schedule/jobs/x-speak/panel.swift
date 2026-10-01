@@ -55,8 +55,12 @@ final class Meter {
     // readings waiting for their moment: a 100 ms buffer's ten windows, each due 10 ms after the last
     private var pending: [(due: Date, level: Float)] = []
 
+    // a reading still undrawn a second past its moment is dropped: with the timeline paused and the tap still feeding,
+    // five idle hours piled up ~1.8 M readings, and the next frame spent 6.5 min of main draining them
     func enqueue(_ levels: [Float], spacing: TimeInterval) {
-        let start = max(Date(), pending.last.map { $0.due.addingTimeInterval(spacing) } ?? .distantPast)
+        let now = Date()
+        pending.removeFirst(pending.prefix { $0.due < now.addingTimeInterval(-1) }.count)
+        let start = max(now, pending.last.map { $0.due.addingTimeInterval(spacing) } ?? .distantPast)
         pending += levels.enumerated().map { (start.addingTimeInterval(Double($0.offset) * spacing), $0.element) }
     }
 
@@ -94,10 +98,9 @@ final class Meter {
     func frame(at date: Date) -> [Float] {
         let dt = lastFrame.map { min(0.1, date.timeIntervalSince($0)) } ?? 1.0 / 60
         lastFrame = date
-        while let next = pending.first, next.due <= date {
-            push(next.level)
-            pending.removeFirst()
-        }
+        let due = pending.prefix { $0.due <= date }
+        due.forEach { push($0.level) }
+        pending.removeFirst(due.count)
         let ease = Float(1 - exp(-dt / max(0.0001, (waveTuning?.glide ?? config.meterGlideMs) / 1000)))
         let raw = history.reversed() + history.dropFirst()
         // a light blur across neighbours, so the wave reads as one flowing shape, not 17 independent bars

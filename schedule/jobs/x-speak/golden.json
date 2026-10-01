@@ -60,7 +60,7 @@
     },
     {
         "in": "see https://docs.fish.audio/developer-guide/models-pricing and ~/frame/speak/engines.ts",
-        "out": [["en", "see docs.fish.audio and frame speak engines dot ts"]]
+        "out": [["en", "see docs.fish.audio and engines dot ts"]]
     },
     {
         "in": "call dangerouslySetInnerHTML and snake_case_name",
@@ -144,5 +144,213 @@
     {
         "in": "готово ✅ 🏴󠁧󠁢󠁳󠁣󠁴󠁿",
         "out": [["uk", "готово"]]
+    },
+    {
+        "in": "see docs/test-drive/exa.md for the round",
+        "out": [["en", "see exa dot md for the round"]]
+    },
+    {
+        "in": "run `./script/op-run.sh` before the push",
+        "out": [["en", "run op-run dot sh before the push"]]
+    },
+    {
+        "in": "edit ~/frame/schedule/jobs/x-speak/config.json first",
+        "out": [["en", "edit config dot jason first"]]
+    },
+    {
+        "in": "the report is at file:///Users/dima/frame/docs/research/svg-round.md now",
+        "out": [["en", "the report is at a markdown file link now"]]
+    },
+    {
+        "in": "open file:///Users/dima/Downloads/invoice.pdf to check it",
+        "out": [["en", "open a pdf file link to check it"]]
+    },
+    {
+        "in": "the folder is file:///Users/dima/frame/docs",
+        "out": [["en", "the folder is a file link"]]
+    },
+    {
+        "in": "the daemon is stuck, PID 65632 never answers",
+        "out": [["en", "the daemon is stuck, pid never answers"]]
+    },
+    {
+        "in": "sample of pid 16620 shows the main thread blocked",
+        "out": [["en", "sample of pid shows the main thread blocked"]]
+    },
+    {
+        "in": "reverted in af8572af, see the gremlin",
+        "out": [["en", "reverted in a commit, see the gremlin"]]
+    },
+    {
+        "in": "bisect points at ce906229 and d0fcc285",
+        "out": [["en", "bisect points at a commit and a commit"]]
+    },
+    {
+        "in": "landed in af8572af7c5105cb0532222f3f842a9c9c4a83b1 on main",
+        "out": [["en", "landed in a commit on main"]]
+    },
+    {
+        "in": "the window 558CC9AE-795B-40B7-ACDA-88D948FD638B has no title",
+        "out": [["en", "the window an id has no title"]]
+    },
+    {
+        "in": "grant 3E1A7B52-90C4-4D6F-8A21-5C7E0B9D4F11 expired",
+        "out": [["en", "grant an id expired"]]
+    },
+    {
+        "in": "the key 933563129e564b19a115bedd57b7406a is masked",
+        "out": [["en", "the key an id is masked"]]
+    },
+    {
+        "in": "the job k9x2m4p7q1w8e5r3t6 is queued",
+        "out": [["en", "the job an id is queued"]]
+    },
+    {
+        "in": "the face added a cafe and deadbeef",
+        "out": [["en", "the face added a cafe and deadbeef"]]
+    },
+    {
+        "in": "the daemon logged 65632 lines in 2026",
+        "out": [["en", "the daemon logged 65632 lines in 2026"]]
+    },
+    {
+        "in": "FRM-283 fixed in af8572af",
+        "out": [["en", "F R M 283 fixed in a commit"]]
+    },
+    {
+        "in": "file:///Users/dima/frame/speak/dist/index.html is the build",
+        "out": [["en", "an H T M L file link is the build"]]
+    },
+    {
+        "in": "fix the wake hang\nstop both voices\nteach the normalizer",
+        "out": [
+            ["en", "fix the wake hang. stop both voices. teach the normalizer"]
+        ]
+    },
+    {
+        "in": "- kokoro first\n- elevenlabs when it has quota\n- the mac voice last",
+        "out": [
+            [
+                "en",
+                "kokoro first. elevenlabs when it has quota. the mac voice last"
+            ]
+        ]
+    },
+    {
+        "in": "two lines:\nthe first ends with a colon\nthe last one ends with a dot.",
+        "out": [
+            [
+                "en",
+                "two lines: the first ends with a colon. the last one ends with a dot."
+            ]
+        ]
+    },
+    {
+        "in": "speak reads FRM-283 ✅\nthen ships v0.3.86",
+        "out": [
+            [
+                "en",
+                "speak reads F R M 283. then ships version 0 point 3 point 86"
+            ]
+        ]
+    },
+    {
+        "in": "перший рядок без крапки\nthe second line in english",
+        "out": [
+            ["uk", "перший рядок без крапки."],
+            ["en", "the second line in english"]
+        ]
+    },
+    {
+        "in": "keep input/output\nnext",
+        "out": [["en", "keep input output. next"]]
+    },
+    {
+        "in": "input/output/error and ios/android/web on 10/01/2026",
+        "out": [["en", "input output error and ios android web on 10 01 2026"]]
+    },
+    {
+        "in": "open file:///x/svg-round.md.",
+        "out": [["en", "open a markdown file link."]]
+    },
+    {
+        "in": "file:///x/a.md\nnext line",
+        "out": [["en", "a markdown file link. next line"]]
+    },
+    {
+        "in": "https://github.com/o/r/commit/af8572af now",
+        "out": [["en", "github.com now"]]
+    },
+    {
+        "in": "1e10000 iterations, colour #ff00aa80, base64EncodedString",
+        "out": [
+            ["en", "1e10000 iterations, colour #ff00aa80, base64Encoded String"]
+        ]
+    },
+    {
+        "in": "ISO8601DateFormatter writes the stamp",
+        "out": [["en", "ISO8601Date Formatter writes the stamp"]]
+    },
+    {
+        "in": "look (see notes)\nthen go",
+        "out": [["en", "look, see notes. then go"]]
+    },
+    {
+        "in": "first line\r\nsecond line",
+        "out": [["en", "first line. second line"]]
+    },
+    {
+        "in": "pid=4242 and PID 77 died",
+        "out": [["en", "pid and pid died"]]
+    },
+    {
+        "in": "node 22.x/24.x both",
+        "out": [["en", "node 22.x 24.x both"]]
+    },
+    {
+        "in": "￼￼￼lane1. select the same ⏳ block in the same app, press F4 once, say «done» ➡️ now, 10 s2. the atelier ftr ↔ tests baseline as a child of FRM-268 for a fresh coder ➡️ yes, after speak merges",
+        "out": [
+            [
+                "en",
+                "lane. 1: select the same block in the same app, press F4 once, say done, now, 10 seconds. 2: the atelier ftr tests baseline as a child of F R M 268 for a fresh coder, yes, after speak merges"
+            ]
+        ]
+    },
+    {
+        "in": "see FRM-283. then python3. done",
+        "out": [["en", "see F R M 283. then python3. done"]]
+    },
+    {
+        "in": "steps1. build it2. ship it3. watch it",
+        "out": [["en", "steps. 1: build it. 2: ship it. 3: watch it"]]
+    },
+    {
+        "in": "lane\n1. F4-over-F4 ear check ➡️ now\n2. merge #52 ➡️ on clean",
+        "out": [
+            [
+                "en",
+                "lane. 1: F4-over-F4 ear check, now. 2: merge number 52, on clean"
+            ]
+        ]
+    },
+    {
+        "in": "see FRM-1. then FRM-2. done",
+        "out": [["en", "see F R M 1. then F R M 2. done"]]
+    },
+    {
+        "in": "lane1. merge pr #522. sleep now3. done",
+        "out": [["en", "lane. 1: merge P R number 52. 2: sleep now. 3: done"]]
+    },
+    {
+        "in": "2026. was a long year",
+        "out": [["en", "2026. was a long year"]]
+    },
+    {
+        "in": "fixed in step1. it shipped in 2022. done",
+        "out": [["en", "fixed in step1. it shipped in 2022. done"]]
+    },
+    {
+        "in": "lane1. bump node to 22. then pnpm 12. done",
+        "out": [["en", "lane1. bump node to 22. then P N P M 12. done"]]
     }
 ]
