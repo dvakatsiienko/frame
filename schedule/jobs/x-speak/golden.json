@@ -60,7 +60,7 @@
     },
     {
         "in": "see https://docs.fish.audio/developer-guide/models-pricing and ~/frame/speak/engines.ts",
-        "out": [["en", "see docs.fish.audio and frame speak engines dot ts"]]
+        "out": [["en", "see docs.fish.audio and engines dot ts"]]
     },
     {
         "in": "call dangerouslySetInnerHTML and snake_case_name",
@@ -144,5 +144,121 @@
     {
         "in": "готово ✅ 🏴󠁧󠁢󠁳󠁣󠁴󠁿",
         "out": [["uk", "готово"]]
+    },
+    {
+        "in": "see docs/test-drive/exa.md for the round",
+        "out": [["en", "see exa dot md for the round"]]
+    },
+    {
+        "in": "run `./script/op-run.sh` before the push",
+        "out": [["en", "run op-run dot sh before the push"]]
+    },
+    {
+        "in": "edit ~/frame/schedule/jobs/x-speak/config.json first",
+        "out": [["en", "edit config dot jason first"]]
+    },
+    {
+        "in": "the report is at file:///Users/dima/frame/docs/research/svg-round.md now",
+        "out": [["en", "the report is at a markdown file link now"]]
+    },
+    {
+        "in": "open file:///Users/dima/Downloads/invoice.pdf to check it",
+        "out": [["en", "open a pdf file link to check it"]]
+    },
+    {
+        "in": "the folder is file:///Users/dima/frame/docs",
+        "out": [["en", "the folder is a file link"]]
+    },
+    {
+        "in": "the daemon is stuck, PID 65632 never answers",
+        "out": [["en", "the daemon is stuck, pid never answers"]]
+    },
+    {
+        "in": "sample of pid 16620 shows the main thread blocked",
+        "out": [["en", "sample of pid shows the main thread blocked"]]
+    },
+    {
+        "in": "reverted in af8572af, see the gremlin",
+        "out": [["en", "reverted in a commit, see the gremlin"]]
+    },
+    {
+        "in": "bisect points at ce906229 and d0fcc285",
+        "out": [["en", "bisect points at a commit and a commit"]]
+    },
+    {
+        "in": "landed in af8572af7c5105cb0532222f3f842a9c9c4a83b1 on main",
+        "out": [["en", "landed in a commit on main"]]
+    },
+    {
+        "in": "the window 558CC9AE-795B-40B7-ACDA-88D948FD638B has no title",
+        "out": [["en", "the window an id has no title"]]
+    },
+    {
+        "in": "grant 3E1A7B52-90C4-4D6F-8A21-5C7E0B9D4F11 expired",
+        "out": [["en", "grant an id expired"]]
+    },
+    {
+        "in": "the key 933563129e564b19a115bedd57b7406a is masked",
+        "out": [["en", "the key an id is masked"]]
+    },
+    {
+        "in": "the job k9x2m4p7q1w8e5r3t6 is queued",
+        "out": [["en", "the job an id is queued"]]
+    },
+    {
+        "in": "the face added a cafe and deadbeef",
+        "out": [["en", "the face added a cafe and deadbeef"]]
+    },
+    {
+        "in": "the daemon logged 65632 lines in 2026",
+        "out": [["en", "the daemon logged 65632 lines in 2026"]]
+    },
+    {
+        "in": "FRM-283 fixed in af8572af",
+        "out": [["en", "F R M 283 fixed in a commit"]]
+    },
+    {
+        "in": "file:///Users/dima/frame/speak/dist/index.html is the build",
+        "out": [["en", "an H T M L file link is the build"]]
+    },
+    {
+        "in": "fix the wake hang\nstop both voices\nteach the normalizer",
+        "out": [
+            ["en", "fix the wake hang. stop both voices. teach the normalizer"]
+        ]
+    },
+    {
+        "in": "- kokoro first\n- elevenlabs when it has quota\n- the mac voice last",
+        "out": [
+            [
+                "en",
+                "kokoro first. elevenlabs when it has quota. the mac voice last"
+            ]
+        ]
+    },
+    {
+        "in": "two lines:\nthe first ends with a colon\nthe last one ends with a dot.",
+        "out": [
+            [
+                "en",
+                "two lines: the first ends with a colon. the last one ends with a dot."
+            ]
+        ]
+    },
+    {
+        "in": "speak reads FRM-283 ✅\nthen ships v0.3.86",
+        "out": [
+            [
+                "en",
+                "speak reads F R M 283. then ships version 0 point 3 point 86"
+            ]
+        ]
+    },
+    {
+        "in": "перший рядок без крапки\nthe second line in english",
+        "out": [
+            ["uk", "перший рядок без крапки."],
+            ["en", "the second line in english"]
+        ]
     }
 ]

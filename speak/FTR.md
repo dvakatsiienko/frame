@@ -124,6 +124,14 @@ claims: `schedule/jobs/x-speak/`
   - then the speech pauses and the pill's button reads ▶; ⇧F4 again resumes it where it stopped
   - decision: pause has two doors — F4 on an empty selection and ⇧F4 always — so a selection left on screen never blocks a pause (dima, 2026-09-30)
 - ⬜ F5 stops the speech
+- ⬜ tech text reads as words: a path says its last part, ids are cut
+  - given selected text holding a path, a file link, a pid, a git hash or a long id
+  - when the user presses F4
+  - then the voice says «exa dot md» for `docs/test-drive/exa.md`, «a markdown file link», «pid», «a commit», «an id» — never a full path or the digits
+- ⬜ selected lines read as sentences
+  - given several selected lines with no end punctuation
+  - when the user presses F4
+  - then each line ends with a short pause, never one run-on sentence
 - ⬜ the pill floats while speech plays: its wave, ⏸ / ▶, ■, stick and close
   - then the ⏸ / ▶ button follows the speech, and the pill never takes focus from the app in front
 - ⬜ the pill drags anywhere and keeps its spot per display
