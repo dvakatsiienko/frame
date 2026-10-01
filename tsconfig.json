@@ -32,6 +32,7 @@
         "brand/profile/*.ts",
         "home/.claude/plugin-x/lib/*.ts",
         "home/.claude/plugin-x/skills/*/scripts/*.ts",
-        "logos/*.ts"
+        "logos/*.ts",
+        "x/*.ts"
     ]
 }

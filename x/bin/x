@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# x — runs the x cli from source on bun. the nearest directory above the cwd that holds
+# x/main.ts wins, so a worktree runs its own edits; anywhere else (bytes, ~) runs the
+# checkout this shim lives in.
+dir=${PWD}
+while [[ ${dir} != / ]]; do
+    [[ -f ${dir}/x/main.ts && -f ${dir}/x/registry.ts && -x ${dir}/x/bin/x ]] &&
+        exec bun "${dir}/x/main.ts" "$@"
+    dir=${dir%/*}
+    [[ -z ${dir} ]] && dir=/
+done
+here=$(realpath "${BASH_SOURCE[0]}")
+exec bun "${here%/bin/x}/main.ts" "$@"
