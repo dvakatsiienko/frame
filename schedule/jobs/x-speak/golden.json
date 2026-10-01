@@ -298,5 +298,13 @@
     {
         "in": "first line\r\nsecond line",
         "out": [["en", "first line. second line"]]
+    },
+    {
+        "in": "pid=4242 and PID 77 died",
+        "out": [["en", "pid and pid died"]]
+    },
+    {
+        "in": "node 22.x/24.x both",
+        "out": [["en", "node 22.x 24.x both"]]
     }
 ]

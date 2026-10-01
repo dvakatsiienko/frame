@@ -64,7 +64,7 @@ private func rewriteLatin(_ text: String) -> String {
     }
     t = sub(t, "\\bhttps?://(?:www\\.)?([^/\\s)]+)\\S*", "$1", .caseInsensitive)
     t = sub(t, "\\b[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}\\b", "an id")
-    t = sub(t, "\\b(pid)\\b:?\\s*\\d+", "pid", .caseInsensitive)
+    t = sub(t, "\\b(pid)\\b\\s*[:=]?\\s*\\d+", "pid", .caseInsensitive)
     // two letters and two digits at least, so «1e10000» and «deadbeef» stay words; a «#» in front is a colour
     t = sub(t, "(?<![#\\w])(?=(?:[0-9a-f]*\\d){2})(?=(?:[0-9a-f]*[a-f]){2})(?:[0-9a-f]{7,12}|[0-9a-f]{40})\\b", "a commit")
     // six digits at least, so a type name like «ISO8601DateFormatter» stays a name
@@ -86,8 +86,9 @@ private func rewriteLatin(_ text: String) -> String {
     // a path says only its last part; a bare «audio/video» is two words, not a path
     t = sub(t, "(?:~|\\.{1,2})?/?(?:[\\w.-]+/)+[\\w.-]*") { g in
         let parts = g[0].split(separator: "/").filter { !["~", ".", ".."].contains($0) }
-        // a sentence end the line-break rule put on the leaf is not a file extension
-        let hasExtension = parts.last?.range(of: "\\.\\w+\\.?$", options: .regularExpression) != nil
+        // a file name has a word before its extension («exa.md»), a version has digits («24.x»); a sentence end the
+        // line-break rule put on the leaf is not an extension either
+        let hasExtension = parts.last?.range(of: "[A-Za-z][\\w-]*\\.[A-Za-z]\\w*\\.?$", options: .regularExpression) != nil
         let isPath = g[0].first.map { "~./".contains($0) } == true || g[0].hasSuffix("/") || hasExtension
         return isPath ? parts.last.map(String.init) ?? "" : parts.joined(separator: " ")
     }
