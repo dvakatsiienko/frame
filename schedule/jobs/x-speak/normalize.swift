@@ -44,7 +44,7 @@ private func stripMarkdown(_ text: String) -> String {
     t = sub(t, "^\\s{0,3}#{1,6}\\s+", "", .anchorsMatchLines)
     t = sub(t, "^\\s*[-*+]\\s+", "", .anchorsMatchLines)
     // a numbered line says its number, then a short pause: «1. merge» → «1: merge», read «one: merge»
-    t = sub(t, "^\\s*(\\d+)\\.\\s+", "$1: ", .anchorsMatchLines)
+    t = sub(t, "^\\s*(\\d{1,2})\\.\\s+", "$1: ", .anchorsMatchLines)
     t = sub(t, "^\\s*>\\s?", "", .anchorsMatchLines)
     t = sub(t, "(\\*\\*|__|~~|`)", "")
     t = sub(t, "(^|\\s)[*_]([^*_\\n]+)[*_](?=\\s|[.,!?]|$)", "$1$2")
@@ -158,13 +158,17 @@ func splitRuns(_ text: String) -> [Run] {
 
 // chromium's accessibility text (the Claude app, electron) drops a list's line breaks and glues each number to the
 // line above: «lane1. merge now2. sleep». numbers that run 1, 2, … right after a non-digit get their lines back; a
-// lone glued «3.» (FRM-283.) is never a list. U+FFFC stands in for an inline image or icon and has nothing to say
+// lone glued «3.» (FRM-283.) is never a list, and an id's own digits after «-» or «#» never start one. from 2 on, a
+// line that ends in a digit («pr #522.») is tried too, once no cleaner match exists. U+FFFC stands in for an inline
+// image or icon and has nothing to say
 private func unglueLists(_ text: String) -> String {
     var t = text.replacingOccurrences(of: "\u{FFFC}", with: "")
     var breaks: [Int] = []
     var from = t.startIndex
     for number in 1... {
-        guard let found = t.range(of: "(?<=[^\\s\\d])\(number)\\. ", options: .regularExpression, range: from..<t.endIndex) else { break }
+        let clean = "(?<=[^\\s\\d#-])\(number)\\. ", afterDigit = "(?<=\\d)\(number)\\. "
+        let search = { (pattern: String) in t.range(of: pattern, options: .regularExpression, range: from..<t.endIndex) }
+        guard let found = search(clean) ?? (number > 1 ? search(afterDigit) : nil) else { break }
         breaks.append(t.distance(from: t.startIndex, to: found.lowerBound))
         from = found.upperBound
     }

@@ -332,5 +332,17 @@
                 "lane. 1: F4-over-F4 ear check, now. 2: merge number 52, on clean"
             ]
         ]
+    },
+    {
+        "in": "see FRM-1. then FRM-2. done",
+        "out": [["en", "see F R M 1. then F R M 2. done"]]
+    },
+    {
+        "in": "lane1. merge pr #522. sleep now3. done",
+        "out": [["en", "lane. 1: merge P R number 52. 2: sleep now. 3: done"]]
+    },
+    {
+        "in": "2026. was a long year",
+        "out": [["en", "2026. was a long year"]]
     }
 ]
