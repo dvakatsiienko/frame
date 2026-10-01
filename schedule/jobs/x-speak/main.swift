@@ -162,14 +162,18 @@ final class Player {
         await withCheckedContinuation { drainWaiters.append($0) }
     }
 
-    // the engine pauses too: a running engine keeps the meter's tap feeding silence, and hours of it once froze the pill
+    // the engine pauses 2 s later, once nothing new plays: one left running feeds the meter's tap silence, and hours of
+    // it once froze the pill; one paused at once restarted under the next read and stumbled the F4-over-F4 hand-off
     func stop() {
         generation += 1
         node.stop()
-        engine.pause()
         pending = 0
         dryAt = nil
         releaseWaiters()
+        Task {
+            try? await Task.sleep(for: .seconds(2))
+            if pending == 0 { engine.pause() }
+        }
     }
 
     // an idle engine still holds the output device; let it go between jobs

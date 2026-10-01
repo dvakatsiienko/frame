@@ -114,6 +114,7 @@ claims: `schedule/jobs/x-speak/`
   - given text selected in any app
   - when the user presses F4
   - then the daemon speaks it through the chain for its language, and the pill shows
+  - and a read already playing stops before the new one's first audio, on every engine, with a clean hand-off: no stumble, no second voice
 - ⬜ F4 with nothing selected pauses, then resumes
   - given speech playing and no text selected
   - when the user presses F4
