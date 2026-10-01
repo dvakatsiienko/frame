@@ -306,5 +306,31 @@
     {
         "in": "node 22.x/24.x both",
         "out": [["en", "node 22.x 24.x both"]]
+    },
+    {
+        "in": "￼￼￼lane1. select the same ⏳ block in the same app, press F4 once, say «done» ➡️ now, 10 s2. the atelier ftr ↔ tests baseline as a child of FRM-268 for a fresh coder ➡️ yes, after speak merges",
+        "out": [
+            [
+                "en",
+                "lane. 1: select the same block in the same app, press F4 once, say done, now, 10 seconds. 2: the atelier ftr tests baseline as a child of F R M 268 for a fresh coder, yes, after speak merges"
+            ]
+        ]
+    },
+    {
+        "in": "see FRM-283. then python3. done",
+        "out": [["en", "see F R M 283. then python3. done"]]
+    },
+    {
+        "in": "steps1. build it2. ship it3. watch it",
+        "out": [["en", "steps. 1: build it. 2: ship it. 3: watch it"]]
+    },
+    {
+        "in": "lane\n1. F4-over-F4 ear check ➡️ now\n2. merge #52 ➡️ on clean",
+        "out": [
+            [
+                "en",
+                "lane. 1: F4-over-F4 ear check, now. 2: merge number 52, on clean"
+            ]
+        ]
     }
 ]

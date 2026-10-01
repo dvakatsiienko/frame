@@ -42,10 +42,14 @@ private func stripMarkdown(_ text: String) -> String {
     t = sub(t, "!\\[[^\\]]*\\]\\([^)]*\\)", "")
     t = sub(t, "\\[([^\\]]+)\\]\\([^)]*\\)", "$1")
     t = sub(t, "^\\s{0,3}#{1,6}\\s+", "", .anchorsMatchLines)
-    t = sub(t, "^\\s*(?:[-*+]|\\d+\\.)\\s+", "", .anchorsMatchLines)
+    t = sub(t, "^\\s*[-*+]\\s+", "", .anchorsMatchLines)
+    // a numbered line says its number, then a short pause: «1. merge» → «1: merge», read «one: merge»
+    t = sub(t, "^\\s*(\\d+)\\.\\s+", "$1: ", .anchorsMatchLines)
     t = sub(t, "^\\s*>\\s?", "", .anchorsMatchLines)
     t = sub(t, "(\\*\\*|__|~~|`)", "")
     t = sub(t, "(^|\\s)[*_]([^*_\\n]+)[*_](?=\\s|[.,!?]|$)", "$1$2")
+    // ➡️ is an arrow before it is a pictograph: it pauses like «→» instead of vanishing
+    t = sub(t, "\\x{27A1}\\x{FE0F}?", " → ")
     // pictographs, skin tones, flags, keycaps, tag sequences and the joiners that glue them
     t = sub(t, "[\\p{Extended_Pictographic}\\p{Emoji_Modifier}\\p{Regional_Indicator}\\x{FE0E}\\x{FE0F}\\x{200D}\\x{20E3}\\x{E0020}-\\x{E007F}]", "")
     // a line that ends bare ends a sentence: several lines read as one run-on otherwise (dima: «it sounds like a single sentence»)
@@ -152,8 +156,26 @@ func splitRuns(_ text: String) -> [Run] {
         .filter { $0.text.contains { $0.isLetter || $0.isNumber } }
 }
 
+// chromium's accessibility text (the Claude app, electron) drops a list's line breaks and glues each number to the
+// line above: «lane1. merge now2. sleep». numbers that run 1, 2, … right after a non-digit get their lines back; a
+// lone glued «3.» (FRM-283.) is never a list. U+FFFC stands in for an inline image or icon and has nothing to say
+private func unglueLists(_ text: String) -> String {
+    var t = text.replacingOccurrences(of: "\u{FFFC}", with: "")
+    var breaks: [Int] = []
+    var from = t.startIndex
+    for number in 1... {
+        guard let found = t.range(of: "(?<=[^\\s\\d])\(number)\\. ", options: .regularExpression, range: from..<t.endIndex) else { break }
+        breaks.append(t.distance(from: t.startIndex, to: found.lowerBound))
+        from = found.upperBound
+    }
+    guard breaks.count >= 2 else { return t }
+    // from the end, so each offset still points where it did
+    for offset in breaks.reversed() { t.insert("\n", at: t.index(t.startIndex, offsetBy: offset)) }
+    return t
+}
+
 func normalize(_ text: String) -> [Run] {
-    splitRuns(stripMarkdown(text))
+    splitRuns(stripMarkdown(unglueLists(text)))
         .map { Run(lang: $0.lang, text: rewriteSymbols($0.lang == .en ? rewriteLatin($0.text) : $0.text)) }
         .filter { !$0.text.isEmpty }
 }

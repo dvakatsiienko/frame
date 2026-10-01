@@ -110,7 +110,7 @@ claims: `schedule/jobs/x-speak/`
 
 ## x-speak — hotkey + pill
 
-- ⬜ F4 reads the selected text aloud, cutting off whatever plays
+- ✅ F4 reads the selected text aloud, cutting off whatever plays
   - given text selected in any app
   - when the user presses F4
   - then the daemon speaks it through the chain for its language, and the pill shows
@@ -124,18 +124,19 @@ claims: `schedule/jobs/x-speak/`
   - when the user presses ⇧F4
   - then the speech pauses and the pill's button reads ▶; ⇧F4 again resumes it where it stopped
   - decision: pause has two doors — F4 on an empty selection and ⇧F4 always — so a selection left on screen never blocks a pause (dima, 2026-09-30)
-- ⬜ F5 stops the speech
+- ✅ F5 stops the speech
   - given a read playing on any engine
   - when the user presses F5
   - then every voice goes silent at once, and none keeps talking
-- ⬜ tech text reads as words: a path says its last part, ids are cut
+- ✅ tech text reads as words: a path says its last part, ids are cut
   - given selected text holding a path, a file link, a pid, a git hash or a long id
   - when the user presses F4
   - then the voice says «exa dot md» for `docs/test-drive/exa.md`, «a markdown file link», «pid», «a commit», «an id» — never a full path or the digits
-- ⬜ selected lines read as sentences
+- ✅ selected lines read as sentences
   - given several selected lines with no end punctuation
   - when the user presses F4
   - then each line ends with a short pause, never one run-on sentence
+  - and a numbered line says its number first («one: merge»), even when the app hands its lines over glued together
 - ⬜ the pill floats while speech plays: its wave, ⏸ / ▶, ■, stick and close
   - then the ⏸ / ▶ button follows the speech, and the pill never takes focus from the app in front
 - ⬜ the pill drags anywhere and keeps its spot per display
