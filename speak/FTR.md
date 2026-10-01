@@ -7,6 +7,14 @@ claims: `schedule/jobs/x-speak/`
 - makes: lines name what a feature leaves behind
 - decision: lines record a choice and its reason
 
+## every control — the page and the pill
+
+- 🧭 every icon-only control names itself on hover and on keyboard focus, and to a screen reader
+  - given an icon-only control (close, volume, speed, pause, stop, stick) on the page or the pill
+  - when the pointer rests on it, or Tab lands on it
+  - then a short hint shows its name and its key («pause ⇧F4»), and VoiceOver reads the same name
+  - decision: app-wide, not per control (dima, 2026-10-01: «hover also have to be present across the app (a11y)»); the look is the merge canvas board «T1 merge · pill · hover tooltips»
+
 ## / — voices
 
 - ✅ one column per language, in the order english, українська, русский
