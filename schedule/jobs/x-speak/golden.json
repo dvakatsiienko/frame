@@ -344,5 +344,13 @@
     {
         "in": "2026. was a long year",
         "out": [["en", "2026. was a long year"]]
+    },
+    {
+        "in": "fixed in step1. it shipped in 2022. done",
+        "out": [["en", "fixed in step1. it shipped in 2022. done"]]
+    },
+    {
+        "in": "lane1. bump node to 22. then pnpm 12. done",
+        "out": [["en", "lane1. bump node to 22. then P N P M 12. done"]]
     }
 ]

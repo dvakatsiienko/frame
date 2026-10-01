@@ -159,22 +159,24 @@ func splitRuns(_ text: String) -> [Run] {
 // chromium's accessibility text (the Claude app, electron) drops a list's line breaks and glues each number to the
 // line above: «lane1. merge now2. sleep». numbers that run 1, 2, … right after a non-digit get their lines back; a
 // lone glued «3.» (FRM-283.) is never a list, and an id's own digits after «-» or «#» never start one. from 2 on, a
-// line that ends in a digit («pr #522.») is tried too, once no cleaner match exists. U+FFFC stands in for an inline
-// image or icon and has nothing to say
+// line that ends in a digit («pr #522. sleep now3.») is tried too, once no cleaner match exists, and kept only when
+// the next number follows it: «node to 22. done» keeps its 22. U+FFFC stands in for an inline image or icon
 private func unglueLists(_ text: String) -> String {
     var t = text.replacingOccurrences(of: "\u{FFFC}", with: "")
-    var breaks: [Int] = []
+    var breaks: [(offset: Int, afterDigit: Bool)] = []
     var from = t.startIndex
     for number in 1... {
         let clean = "(?<=[^\\s\\d#-])\(number)\\. ", afterDigit = "(?<=\\d)\(number)\\. "
         let search = { (pattern: String) in t.range(of: pattern, options: .regularExpression, range: from..<t.endIndex) }
-        guard let found = search(clean) ?? (number > 1 ? search(afterDigit) : nil) else { break }
-        breaks.append(t.distance(from: t.startIndex, to: found.lowerBound))
+        let cleanFound = search(clean)
+        guard let found = cleanFound ?? (number > 1 ? search(afterDigit) : nil) else { break }
+        breaks.append((t.distance(from: t.startIndex, to: found.lowerBound), cleanFound == nil))
         from = found.upperBound
     }
+    while breaks.last?.afterDigit == true { breaks.removeLast() }
     guard breaks.count >= 2 else { return t }
     // from the end, so each offset still points where it did
-    for offset in breaks.reversed() { t.insert("\n", at: t.index(t.startIndex, offsetBy: offset)) }
+    for (offset, _) in breaks.reversed() { t.insert("\n", at: t.index(t.startIndex, offsetBy: offset)) }
     return t
 }
 
