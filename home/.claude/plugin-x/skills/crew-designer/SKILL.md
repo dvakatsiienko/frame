@@ -91,7 +91,9 @@ middle take tends to win because it is in the middle, so dima picks the corner h
 - **dima picks by commenting on the canvas, never by describing boards in text** (dima, 2026-10-01):
   a «best …» comment on the part he likes, a steer comment on what to change. cclio's side:
   1. before he looks, print him the short list of what to judge (one line per surface: page, card,
-     selected state, stats, pill, …) — the list he comments against
+     selected state, stats, pill, …) — the list he comments against. **every pointer at a spot on a
+     canvas carries an exact text from that board in bold** («**cut in the last seven days**»): he
+     finds it with ⌘F in the browser; a board title alone is too hard to find (dima, 2026-10-01)
   2. hoist every comment from every canvas (`ArtifactComments` read, all pages), and check the boards
      for drawn parts no comment touched — those go back to him by name
   3. write a merge brief: per surface, the board that won and its source, the steers, the open forks
