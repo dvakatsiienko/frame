@@ -99,6 +99,12 @@ middle take tends to win because it is in the middle, so dima picks the corner h
   3. write a merge brief: per surface, the board that won and its source, the steers, the open forks
      as a/b boards; one designer draws ONE merged take from it
   4. tally the «best» tags per arm in the design-run ledger — the model and effort stats
+- **the designer asks dima only on the canvas**: a sticky note beside the board, starting with the
+  literal «dima-confirm-N:» and one line of what to decide; he ⌘F-searches «dima-confirm» and steps
+  through them. one channel per question — cclio never relays a pick for a question a note already
+  asks (dima, 2026-10-01: two channels gave him two answers to one question). an answered note is removed.
+- **comment rounds on a long session are the cost**: a fresh session per batch of rounds, reading the
+  brief and the canvas files, beats a session carrying 700k (the speak merge: $17 spread, $54 total)
 - a mash-up across takes is the expected outcome of that review, not a failure; it still says the
   axes bundled two choices — name which, for the next brief.
 - after the pick: **2–3 variants** of it, now covering the brief's states.
