@@ -6,8 +6,9 @@ description: load when dima types /cclio:checkpoint, says «checkpoint», or war
 
 **a half-halt, no exit.** frees the thread of a finished topic while everything else survives —
 the same guarantees as a halt, minus the goodbye. dima's spec (2026-09-10): as few steps as
-possible; memory as precise as possible after the resume; only the unwanted absent; he names what
-to drop, or i suggest and drop only what he confirms.
+possible; memory as precise as possible after the resume; only the unwanted absent. since
+2026-10-01 the drop list is mine to decide, no approval round: «when you run checkpoint, just print
+me a compact prompt upfront, saving a turn».
 
 📌 `/compact` is dima's to type; nothing here can run it. the ritual ends by handing him the line.
 
@@ -18,14 +19,13 @@ message to me until «resume»; finish and commit what you are on». a message t
 arrives in a thinned thread and its detail is lost (dima, 2026-09-30). the roster with each paused
 member goes into the CST.
 
-## 1. the keep/drop proposal — one message, then stop
+## 1. the keep/drop list — decided, never asked
 
-- list the session's topics, one line each, **kept by default**
-- mark my drop suggestions 🗑️ with the file that already holds the outcome (a doc, a ticket, the
-  flawlog); nothing drops unconfirmed
-- with args (`/cclio:checkpoint drop notes bench, the #67 rounds`): his list wins, no proposal
-  round — go straight to 2. still add my own 🗑️ suggestions under his list in the landing
-  message: he may have forgotten a finished topic (dima, 2026-09-11)
+- every session topic is **kept by default**; a topic drops only when a file already holds its
+  outcome (a doc, a ticket, a commit, the flawlog), and its CST line names that file
+- with args (`/cclio:checkpoint drop notes bench, the #67 rounds`): his list wins, mine adds to it
+- the list rides the final message as the `/compact` line itself — printed with the landing, no
+  separate proposal turn; he edits the line before pasting if a drop is wrong
 - the two verbs, his framing: `/compact` describes what to **keep**, `/checkpoint` describes
   what to **drop** — everything useful carries over, only fluff goes
 - always kept, unlisted: the boot ingest, the inbox items and their homes, every open ask in his
@@ -82,5 +82,5 @@ once two runs pass.
 
 ## completion criterion
 
-the proposal was verdicted line by line, the CST is in the store, the coder roster is stopped or
+the `/compact` line names every drop with its file, the CST is in the store, the coder roster is stopped or
 carried on purpose, and the two-line fence is the last thing in the reply.
