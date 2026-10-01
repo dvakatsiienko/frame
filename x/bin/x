@@ -4,7 +4,8 @@
 # checkout this shim lives in.
 dir=${PWD}
 while [[ ${dir} != / ]]; do
-    [[ -f ${dir}/x/main.ts ]] && exec bun "${dir}/x/main.ts" "$@"
+    [[ -f ${dir}/x/main.ts && -f ${dir}/x/registry.ts && -x ${dir}/x/bin/x ]] &&
+        exec bun "${dir}/x/main.ts" "$@"
     dir=${dir%/*}
     [[ -z ${dir} ]] && dir=/
 done

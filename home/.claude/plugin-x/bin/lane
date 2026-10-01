@@ -9,8 +9,13 @@ case ${verb} in
     commit | push | merge-main | unlock) shift; exec "${x}" lane "${verb}" --apply "$@" ;;
     pr-open)
         shift
-        if [[ ${1:-} == --dry-run ]]; then shift; exec "${x}" lane pr-open "$@"; fi
-        exec "${x}" lane pr-open --apply "$@"
+        if [[ ${1:-} != --dry-run ]]; then exec "${x}" lane pr-open --apply "$@"; fi
+        shift
+        # the plan exits 4 in x; the old dry run exited 0
+        "${x}" lane pr-open "$@"
+        code=$?
+        ((code == 4)) && exit 0
+        exit "${code}"
         ;;
-    *) exec "${x}" lane ;;
+    *) "${x}" lane; exit 2 ;;
 esac

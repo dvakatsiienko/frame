@@ -122,12 +122,16 @@ function commit({ args }: Input): Outcome {
         process.stderr.write(`${committed.log}\n`);
         throw new Fail(
             'commit failed — the hook output is above',
-            'fix what the hooks name, then rerun the same x lane commit',
+            `x lane commit ${msgFile} -- ${paths.join(' ')}`,
         );
     }
 
     return {
-        data: { branch: branch(), sha: head(), tree },
+        data: {
+            branch: git(['symbolic-ref', '--quiet', '--short', 'HEAD']).out,
+            sha: head(),
+            tree,
+        },
         status: 'ok',
     };
 }
@@ -259,7 +263,10 @@ function unlock(): Outcome {
         });
         if (!unlocked.isOk) {
             process.stderr.write(`${unlocked.log}\n`);
-            throw new Fail('git-crypt unlock failed', 'read its output above');
+            throw new Fail(
+                'git-crypt unlock failed — its output is above',
+                'git-crypt status',
+            );
         }
     }
 
@@ -287,7 +294,10 @@ function unlock(): Outcome {
 
     const left = lockedPaths(tree);
     if (left.length > 0)
-        throw new Fail(`still ciphertext: ${left.join(', ')}`, 'git status');
+        throw new Fail(
+            `still ciphertext: ${left.join(', ')}`,
+            'git-crypt status',
+        );
     return { data: { tree, unlocked: locked.length }, status: 'ok' };
 }
 

@@ -9,7 +9,7 @@ const dim = (text: string) => `\x1b[2m${text}\x1b[22m`;
 
 export function main(argv: string[]) {
     const isJson =
-        argv.includes('--json') ||
+        optionsOf(argv).includes('--json') ||
         Boolean(process.env.CLAUDECODE || process.env.AI_AGENT) ||
         !process.stdout.isTTY;
     const firstFlag = argv.findIndex((arg) => arg.startsWith('-'));
@@ -56,7 +56,9 @@ export function main(argv: string[]) {
                       'report it to cclio with the stack below',
                   );
         if (!(error instanceof Fail))
-            process.stderr.write(`${(error as Error).stack}\n`);
+            process.stderr.write(
+                `${error instanceof Error ? error.stack : String(error)}\n`,
+            );
         const status = fail.isUsage ? 'usage' : 'failed';
         print(
             { error: fail.message, next: fail.next, ok: false, status },
@@ -80,7 +82,11 @@ function dispatch(
             strict: true,
         });
     } catch (error) {
-        throw new Fail((error as Error).message, `x ${verb.name} --help`, true);
+        throw new Fail(
+            error instanceof Error ? error.message : String(error),
+            `x ${verb.name} --help`,
+            true,
+        );
     }
 
     if (parsed.values.help) {
@@ -162,6 +168,12 @@ function list(words: string[], print: Print) {
 
 function confirmCommand(verb: Verb, rest: string[]) {
     return ['x', verb.name, '--apply', ...rest.map(quote)].join(' ');
+}
+
+// a path after `--` is never a flag
+function optionsOf(argv: string[]) {
+    const end = argv.indexOf('--');
+    return end === -1 ? argv : argv.slice(0, end);
 }
 
 const quote = (arg: string) =>
