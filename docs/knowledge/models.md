@@ -149,6 +149,31 @@ thinking only). **[vendor]**
   active: retirement not before 2026-10-15, with ≥60 days' notice. **[vendor]**
 - Since cc 2.1.198 Explore no longer runs on haiku — it inherits the session model. **[verified]**
 
+## anthropic's own advice — the 5.5 family webinar, 2026-10-01 [vendor]
+
+dima's screenshots of the Anthropic webinar (Lucas Gonzalez), read through his shelf:
+
+- **start with opus 5.5**, the recommended default; fable for power users and frontier work; sonnet 5.5 when cost or
+  latency matters most; «haiku next» is coming for high-volume api work
+- **bounded vs unbounded tasks**: past a point more intelligence adds nothing to a bounded task (cheaper models fit);
+  an unbounded task keeps paying for intelligence (fable's lane). the vendor's claim: there are far more unbounded
+  tasks than teams believe
+- **a large refactor, split across three models** (an example setup, «test the split on your own tasks»):
+  - architect: fable 5.1 with opus 5.5 — agree the target design, weigh the trade-offs that are costly to reverse
+  - plan and orchestrate: opus 5.5 — scoped tasks, track progress, review what comes back, keep the hard tasks
+  - implement: sonnet 5.5, many in parallel — easy and medium tasks, flag anything harder than expected
+  - this is the vendor's version of dima's «fable as an adviser in shape-idea» idea — the research ticket tests it
+- **three prompt lines worth pasting**, each for its situation only (the first two from the opus 5.5 prompting guide):
+  - agent works across several apps: «Before taking any action, explore broadly with tool calls» — more tasks done
+    right, for slightly more tool calls
+  - more frequent updates: «The user hasn't heard from you in a while. Say what you're doing», sent after five silent
+    tool calls — half the long silences, no measurable cost (claude code already injects this line)
+  - the final answer goes missing: «Finish your tool calls first. Write the final answer last»
+- **cache reads are where agents spend**: an agent re-sends its context every turn; opus 5.5 cache reads are $0.20/M,
+  5 % of input (was 10 % on opus 5); a 50-turn run re-reading 100k tokens costs ~$1.00 cached vs $20 uncached.
+  sonnet 5.5 reads cache at the same $0.20, so a long sonnet loop saves on output, not on re-reads
+- sonnet 5.5's api default effort is `high`, opus 5.5's is `medium` (matches the cards above)
+
 ## spawn defaults — set by Dima, binding on every surface that spawns
 
 - **opus-5.5 · the default coder** · `--effort medium` standing default (dima's call 2026-09-25,
