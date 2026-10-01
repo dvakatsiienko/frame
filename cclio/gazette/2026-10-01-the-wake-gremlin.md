@@ -68,8 +68,19 @@ a quick night session, ~01:40–03:30. no builds, no coders. the speak lane stay
 - next: FRM-289 (the daemon lane) spawns at the 5h reset; design work moves to the start of a fresh window
 - the design comms model is the open problem for the next session
 
+⸻ upd 23:35 (halt)
+
+**shipped**
+- design comms: the canvas lets only a human open a thread, so the review moves to ballot — a click-to-answer page whose answers cclio reads back ([FRM-293](https://linear.app/x-com/issue/FRM-293)); computer use tried and dropped; the agent-comment ask filed as [claude-code#98798](https://github.com/anthropics/claude-code/issues/98798)
+- `x:crew-designer` runs four phases of rising fidelity (outline → direction → states → polish), a ballot at each end, a fresh session per phase
+- the speak merge closed at v1.19 with `decision.md` + `contract.md`; the settings popover grows out of the header (contract rule)
+- iTerm loads frame prefs again, line spacing 1.2; the flawlog flushed twice
+
+**state**
+- the week (weekly 74 %): the speak build FRM-289 → 292 + the strategy session on the big prompt + the jev router measurement; chords and trophy-sys move to next week
+
 ## trail
 
-- shipped: x cli v0 #53 · speak shaped + designed (3 arms → merge, 25 boards) + ticketed FRM-288–292 · F4 fixes (bullets, slack, chrome) · atelier ftr baseline · adviser researched + trialled · vorssaint shelf · iterm 1.2
-- open: FRM-289 daemon lane at the 5h reset · design comms model · cli opentui v0.1 · jev rebuild · FRM-283 overnight check
-- state: frame pushed, no coders · cclio 0.3.90 · x 0.11.197
+- shipped: x cli v0 #53 · speak designed (3 arms → merge v1.19) + ticketed FRM-288–292 · F4 fixes · adviser trial · ballot + the four design phases · iterm 1.2
+- open: FRM-289 daemon lane, morning · the strategy session · jev router measurement · ballot build FRM-293 · FRM-283 overnight check
+- state: frame pushed at the halt, no coders · cclio 0.3.90 · x 0.11.199
