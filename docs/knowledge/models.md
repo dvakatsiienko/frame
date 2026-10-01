@@ -1,6 +1,6 @@
 ---
-researched: 2026-09-28
-refresh-when: a new model ships (Sonnet 5.5 and Haiku 5.5 are announced «in the coming weeks»), a benchmark is published, or Dima's lived read changes
+researched: 2026-10-01
+refresh-when: haiku 5.5 ships, a new model ships, a benchmark lands, Dima's read changes — and a scheduled re-run ~2026-12-24 (sonnet 5.5 data thin at launch)
 ticket: DOT-130
 ---
 
@@ -46,6 +46,8 @@ output. Fast mode $8/$40 (API only).
   (Anthropic system card). **[bench]** Independent: CursorBench 4.0 **52.5 % medium · 56.0 %
   high/xhigh · 57.8 % max** (Cursor); FrontierSWE v2 62.3 %, behind GPT-6 Astra (Proximal);
   GDPval-AA 1846 Elo (Artificial Analysis). **[bench]**
+- AA Intelligence Index: medium **51**, max **58**; **73 tok/s** at medium (Artificial Analysis).
+  **[bench]**
 - ⚠️ **Weak at** — can state an unverified inference as fact, drop its own doubts, or make a narrow
   change without asking whether the design is right (its own system card). More likely than
   earlier models to act on malicious instructions pasted into the prompt and to accept unverifiable
@@ -53,7 +55,7 @@ output. Fast mode $8/$40 (API only).
   styles; «avoid a generic look» swaps one default for another — name the patterns to avoid.
   **[vendor]**
 - **Pick it for** — every coder by default at `medium`; `high` for scaffolding, migrations and
-  cross-cutting refactors; the verifier at `high`.
+  cross-cutting refactors; the verifier at `medium`.
 
 ## fable-5.1 — `claude-fable-5-1` · the escalation
 
@@ -95,10 +97,36 @@ All-round work, codes no worse than opus, differently. **[dima]** Cyber / bio-ch
 distillation-flagged queries could route to Opus 4.8 mid-session; 30-day retention mandatory.
 **[vendor]**
 
-## sonnet-5 — `claude-sonnet-5`
+## sonnet-5.5 — `claude-sonnet-5-5` · the helper
+
+Launched 2026-09-28. **$2/$10**, cache writes $2.50, **cache reads $0.20 (same as opus-5.5)**,
+1M / 128K. **[vendor]**
+
+- Effort: default `high` on the API, `medium` in Claude Code; levels are recalibrated from
+  sonnet-5. The lowest API setting is `between_tools` (thinking off, at `high` or below, sonnet-5.5
+  only); Claude Code's floor is `low`. **[vendor]**
+- **Best at** — fast codebase reading and terminal work: Terminal-Bench 4.0 **70.6 %**, above
+  opus-5.5's 66.4 %. Scoped fixes, documents. **[bench]** **[vendor]**
+  - a deep codebase audit at about half opus's cost. **[community]** — one bench.
+- Below opus-5.5 at every matched effort: **[bench]**
+  - AA index medium 41, high 47, max 56; opus medium 51, max 58
+  - CursorBench 4.0 medium 39.2 %, high 47.8 %, xhigh 53.1 %, max 55.5 %; opus medium 52.5 %
+  - CodeRabbit review catch 6/13 vs 8/13, precision 41 % vs 67 %
+- ⚠️ **Weak at**
+  - `max`: ~193K tokens per task, dearer than opus max, and FrontierCode drops below xhigh.
+    **[bench]**
+  - `low`: skips verification on coding tasks. **[vendor]**
+  - frontend design. **[community]**
+  - token volume: long loops cost about the same as opus. **[community]**
+- **Pick it for** — Explore and codebase reading, scoped mechanical edits with an opus review of
+  diff + check output, both at `medium`; retrieval sub-lanes under an opus synthesiser.
+- **Never** — the main coder, the sole verifier, design work, or `xhigh`/`max`.
+
+## sonnet-5 — `claude-sonnet-5` · previous sonnet, still served
 
 Launched 2026-06-30. **$2/$10 — the introductory price was made permanent** (the planned
-September rise to $3/$15 did not happen). 1M / 128K, effort default `high`.
+September rise to $3/$15 did not happen). 1M / 128K, effort default `high`. Superseded by
+sonnet-5.5 at the same price; active to ≥2027-06-30. **[vendor]**
 
 - **Weaker fallback** — quota pressure or simple ops. **[dima]**
 - The most agentic Sonnet: plans, uses browser and terminal, follows through; at higher effort
@@ -107,7 +135,7 @@ September rise to $3/$15 did not happen). 1M / 128K, effort default `high`.
 - SWE-bench Pro **63.2 %** (a secondary leaderboard snapshot, BenchLM) — **26 points under
   opus-5.5**. **[bench]**
 - **Pick it for** — routine, well-specified coding and high-volume work. **Avoid** for hard
-  multi-step engineering. Sonnet 5.5 is announced for «the coming weeks». **[vendor]**
+  multi-step engineering.
 
 ## haiku-4.5 — `claude-haiku-4-5`
 
@@ -116,16 +144,33 @@ thinking only). **[vendor]**
 
 - SWE-bench Verified 73.3 % (Anthropic, 2025). **[bench]** 📌 a 4.x-era number — never compare it
   to the 5-generation lines above.
-- **Pick it for** — subagents, classification, summarization, retrieval, bulk processing. Haiku 5.5
-  is announced for «the coming weeks». **[vendor]**
+- **Pick it for** — subagents, classification, summarization, retrieval, bulk processing.
+- Haiku 5.5 was announced 2026-09-28 for «the coming weeks», undated. **[vendor]** 4.5 stays
+  active: retirement not before 2026-10-15, with ≥60 days' notice. **[vendor]**
+- Since cc 2.1.198 Explore no longer runs on haiku — it inherits the session model. **[verified]**
 
 ## spawn defaults — set by Dima, binding on every surface that spawns
 
 - **opus-5.5 · the default coder** · `--effort medium` standing default (dima's call 2026-09-25,
   backed by the migration guide) · `high` for large scaffolding, migrations and cross-cutting
-  refactors · the **verifier** always opus-5.5 `high` · `xhigh`/`max` only after a measured gain
-- **fable-5.1** · 🚫 never spawned unless Dima asks by name · then `low`, until he says otherwise
-- **sonnet-5** · quota pressure, simple specified work · pass effort explicitly
+  refactors · the **verifier** always opus-5.5 `medium` · `xhigh`/`max` only after a measured gain
+- **fable-5.1** · 🚫 never spawned unless Dima asks by name · then `medium`; for design «not lower
+  than medium, maybe high, not extrahigh, not max» (dima, 2026-10-01) **[dima]**
+  - the 2026-10-01 speak a/b, one design spread at list prices: opus-5.5 medium $4.35, fable-5.1
+    medium $13.44, fable-5.1 high $15.52 (`docs/test-drive/design-run.md`); Dima judged fable's
+    drawing the better. **[measured]**
+- **sonnet-5.5 · the helper, never the coder** · `medium` is the baseline — the vendor default in
+  Claude Code and its starting point for agentic tool use [verified]. jobs: Explore / codebase
+  reading, scoped mechanical edits under an opus review of diff + check output, retrieval sub-lanes
+  under an opus synthesiser [inferred from thin evidence — one community bench, vendor
+  positioning]. `high` for a harder read; never `low` for code (skips verification [verified,
+  vendor]); never `xhigh`/`max` (dearer than opus, scores drop [verified, bench]). doors: an agent
+  file with `model: sonnet` + `effort: medium` for subagents, Workflow `agent()` with
+  `{model, effort}`, or `claude --bg --model sonnet --effort medium` [doors verified from docs/CLI;
+  a sonnet spawn not probed on 2.1.286].
+- **Explore** · runs on sonnet-5.5 `medium`: `home/.claude/agents/explore.md` pins `model: sonnet`,
+  `effort: medium`, on a one-week test drive to 2026-10-08 (`docs/test-drive/explore.md`); without
+  that file it inherits the session model (opus-5.5)
 - **haiku-4.5** · bulk, classification, retrieval · no effort flag exists
 
 📌 **`--effort` is a flag on `claude --bg` and is honoured; it is never inherited** — pass it every
