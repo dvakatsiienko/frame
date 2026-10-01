@@ -4,7 +4,7 @@ Ticket: [FRM-244](https://linear.app/x-com/issue/FRM-244)
 
 the flow under test: `x:crew-designer-interview` → `brief.md` → `x:crew-designer` in `~/projects/studio` → 4 takes on
 the Claude Design canvas → dima's pick → 2–3 variants → impeccable builds. evidence behind it:
-`docs/research/design-process.md`. verdict line at the end: adopted, reshaped, or dropped.
+`x:crew-designer` (the research it came from was distilled there and deleted 2026-10-01). verdict line at the end: adopted, reshaped, or dropped.
 
 ## what the first run tests (atelier, blind)
 

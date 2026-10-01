@@ -27,3 +27,4 @@
 2026-10-01T00:17:27.901Z	miss	lane=drop artifact-id line laned memory; it named no holding rule — line fixed to name method-report-verify
 2026-10-01T00:17:28.016Z	miss	lane=drop skill-not-loaded / tool-refusal / built-in-collision lines laned rule; criterion sharpened, RUNS=3 6/6
 2026-10-01T00:17:28.130Z	ok	lane=memory not-reproduced + ➡️-sizing lines laned memory, matched the flush
+2026-10-01T19:52:27.434Z	miss	lane=ticket Linear renumbering a list was laned ticket; linear was missing from the rule criterion's tool list — added, RUNS=3 now rule 62

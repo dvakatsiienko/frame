@@ -82,7 +82,10 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 - **a delete names the file the grep proved, never its dir** — «TriangleSvg has no users» was true, `trash src/elements/icons` took the live `ExternalLinkSvg.tsx` with it (2026-09-21); the unit of a delete is the path the evidence named
 - **`${var}` before any non-ascii character** — bash reads `«$var»` as a variable named `var»` and dies
   on «unbound variable» under `set -u` (twice in one session, 2026-09-26); brace every variable that
-  touches a guillemet, an emoji or a dash glyph
+  touches a guillemet, an emoji or a dash glyph — and every variable before a colon: zsh reads
+  `$SHA:refs/heads/main` as the `:r` modifier on `$SHA`, and the push refspec lost its sha (2026-10-01)
+- **a hand-kept plist or json changed for one value gets a one-line edit, never a re-serialize** —
+  `plistlib.dumps` rewrote all 984 lines of the iterm prefs for one spacing value (2026-10-01)
 - an `sd` replacement never carries a `$` — inside a double-quoted argument the shell expands
   `$dir` / `$line` to nothing and the line ships hollow (three sightings, 2026-09-17/18). that
   edit goes through the Edit tool or a python literal

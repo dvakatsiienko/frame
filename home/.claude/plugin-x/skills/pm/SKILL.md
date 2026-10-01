@@ -59,6 +59,8 @@ call and is always cheaper than a wrong guess.
   `issue update`) or `--body-file f.md` (`issue comment add` / `issue comment update` — there is no
   top-level `comment` command). Inline `--description "$(cat …)"` lets the shell mangle `$VAR` and
   backticks silently.
+- **Linear renumbers a list in a description** — an inline «2. … and 3. …» inside a list item is
+  re-counted with the list; write list items without inline numbers.
 - **labels replace, never add** — `issue update --label` drops every label you omit, silently, with
   a success message. Pass the full intended set (`--label agent --label improvement --label 'opus
   5'`) and verify: `linear api 'query { issue(id: "FRM-N") { labels { nodes { name } } } }'`.

@@ -2,7 +2,7 @@
 date: 2026-10-01
 slug: the-wake-gremlin
 tickets: []
-posted: {health: no}
+posted: {health: yes}
 ---
 
 # 🗞️ cclio's gazette · the wake gremlin

@@ -6,6 +6,8 @@ ticket: FRM-43
 dies-when: FRM-43's build-or-not verdict lands; the parts that fit the night shift are distilled into cclio:shift at m1 first
 ---
 
+Ticket: none
+
 # Building a custom agent orchestration harness on Claude Code / Agent SDK
 
 Scope: a solo power user, one Mac, one coordinator agent that dispatches to coder agents, memory that

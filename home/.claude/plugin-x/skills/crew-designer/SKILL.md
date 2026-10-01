@@ -111,7 +111,7 @@ middle take tends to win because it is in the middle, so dima picks the corner h
      selected state, stats, pill, …) — the list he comments against. **every pointer at a spot on a
      canvas carries an exact text from that board in bold** («**cut in the last seven days**»): he
      finds it with ⌘F in the browser; a board title alone is too hard to find (dima, 2026-10-01)
-  2. hoist every comment from every canvas (`ArtifactComments` read, all pages), and check the boards
+  2. hoist every comment from every canvas (`ArtifactComments` read, all pages) by its anchor detail — the element it sits on, never just its board — and check the boards
      for drawn parts no comment touched — those go back to him by name
   3. write a merge brief: per surface, the board that won and its source, the steers, the open forks
      as a/b boards; one designer draws ONE merged take from it

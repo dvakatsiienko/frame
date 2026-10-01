@@ -53,7 +53,6 @@ Recipe entity per [_spec.md](_spec.md).
 - `plugin-x/skills/crew-designer/SKILL.md` — the designer's execution rules
 - `~/projects/studio/AGENTS.md` — the designer's home rules; `~/projects/studio/directions/` — the gallery source
 - the design directions gallery artifact (its link lives in the interview skill)
-- `docs/research/design-process.md` — the distilled evidence, until the skills fully carry it
 - the `design:*` scripts in frame `package.json`
 
 ## lanes (per habit-test-drive: reach for the live test drives first)
@@ -78,4 +77,4 @@ Claude Design / Cowork ships a major update.
 
 ## last run
 
-- 2026-09-29 — the founding research: five lanes, 12 vectors, plus a Cowork-vs-CC lane (`docs/research/design-process.md`)
+- 2026-09-29 — the founding research: five lanes, 12 vectors, plus a Cowork-vs-CC lane (`docs/research/design-process.md`, distilled into `x:crew-designer` and deleted 2026-10-01)

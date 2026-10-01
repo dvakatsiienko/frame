@@ -4,7 +4,7 @@ dies-when: the review desk is a skill or script the designer flow uses (x:crew-d
 
 # design review comms — how a designer agent asks dima without making him hunt
 
-Ticket: none
+Ticket: [FRM-293](https://linear.app/x-com/issue/FRM-293)
 
 dima, 2026-10-01: «designing communications is exhaustive for me (because I have to hop across frames too much and spend a lot of effort on finding the right place you are interested in)» · «can this be a checkbox?»
 

@@ -24,3 +24,13 @@
 - → FRM-281 (log lines get a date) · FRM-282 (speak:daemon-swap, speak:audible) · FRM-285 closing word (the v0.1 list: base-ahead warning, smudge-off + mutation verbs)
 - dropped, verified false: «`gh run list --commit` misses pull_request runs» — it returned run 36888180692 (pull_request, 6c3e772)
 - dropped, fixed: the FRM-279 dupe, the wispr quit (sqlite writes while it runs), the push race (`x lane push`), research-lanes exit 0 (27939592), the sonnet-before-EnterWorktree helper (one sighting, kept in the coder retro)
+
+## evening (after the 19:55 flush)
+- zsh read `$SHA:refs/heads/main` as the `:r` modifier on `$SHA` — the push refspec lost its sha and git refused it; brace every variable before a colon (`${SHA}:refs/…`) · one failed push · candidate fleet-hazards line (bash tool section)
+- `plistlib.dumps` on a hand-kept xml plist reformatted all 984 lines for a one-value change; an in-place `sed` on the one line kept the diff to 1 · candidate fleet-hazards line
+- Linear renumbers a markdown list in a description: inline «2. … and 3. …» inside an item got re-counted, so FRM-291's exit numbers drifted · write exit lines without inline numbers
+- fixed: I hoisted a canvas comment by its board and misread its target (benched B vs the big card's wave); the anchor detail names the element — read the anchor, not the board
+- fixed: I relayed «remove B» while the designer's own block had recommended «keep», and dima answered both — one channel per question (x:crew-designer, dima-confirm → ballot)
+- fixed: a fable 5.1 high comment session ran 141 min at up to 731k context, $63 — half cache reads; a fresh session per batch of rounds (x:crew-designer, craft-spawning)
+- good: research-lanes' green path proven on the adviser brief (both lanes completed, exit 0)
+- good: a page with the `db` capability is a two-way channel — dima clicks, cclio reads with ArtifactData; the canvas's `composer_only` comments are one-way

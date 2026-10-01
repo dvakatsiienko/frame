@@ -6,6 +6,8 @@ ticket: FRM-43
 dies-when: FRM-43's build-or-not verdict lands; the parts that fit the night shift are distilled into cclio:shift at m1 first
 ---
 
+Ticket: none
+
 # Claude Code extension surfaces
 
 Reference for building a custom orchestration harness on top of Claude Code (ccli). Mechanics + gotchas per surface, primary sources cited inline. Several of these surfaces are version-sensitive — re-verify against `https://code.claude.com/docs/en/claude_code_docs_map.md` before depending on exact behavior in production tooling.

@@ -76,13 +76,13 @@
         "flawlog-lanes": {
             "since": "2026-10-01",
             "state": "vetting",
-            "verdicts": 29,
-            "misses": 20,
+            "verdicts": 30,
+            "misses": 21,
             "what": "every flawlog line laned memory · rule · story · ticket · drop before the halt flush (the coder retro is a separate, future flow)",
             "lanes": {
                 "ticket": {
                     "hit": 0,
-                    "total": 4
+                    "total": 5
                 },
                 "rule": {
                     "hit": 2,

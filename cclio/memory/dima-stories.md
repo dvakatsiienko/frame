@@ -10,9 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «coder still looks like a cat» · 2026-09-23
-twelve renders of a pixel coder, and after each one he said the same thing: «still looks like a cat». the palette, the helmet, the tools all changed; the verdict did not. the cause was never in the face — every take gave the head two pointed top corners, and at 16 px a silhouette with pointed corners reads «cat» before any eye or nose is seen. floppy ears hanging beside the head fixed it in one pass. his felt sense read the silhouette; i kept editing the features. → `brand/avatars/fleet/coder`, the flawlog line on species cues
-
 ## «why is foxglove so much better?» · 2026-09-25
 three days of readme art, and he said the versions «were much weaker and unpolished, at least as a basis», next to an opus-made paper diorama from a test repo. his first guesses were the target (svg in a readme) and his own «mvp» framing. the answer came from reading the reference itself: no library at all, one small recipe — a seeded `trace()` that cuts every edge, two shadows a layer, a grain tile — and a one-scene prompt that named the layers, the palette and the technique. his brief had eleven asks across three repos and no technique; mine never flagged the overload. the felt sense — «this is not the level it should be» — arrived days before the reason. → `x:art-kit` illustration branch, atelier
 
@@ -66,3 +63,6 @@ reproduced». his reply: «why? not good. my most used feature is flawed». no t
 the present could not clear a failure of the past. the daemon's own log held it one awk away: the F4 at 01:51 hung
 6.5 minutes, then twelve queued presses flushed in the same millisecond — a blocked main thread, which also starved
 the control socket. his felt sense read the claim's timeframe before I did. → `method-report-verify`, the speak wake gremlin
+
+## «today was chaotic for me» · 2026-10-01
+three designers drew speak at full fidelity, 25 boards each, and he reviewed all of it by hopping across canvases, hunting the spots my messages named while the boards carried three naming schemes. late in the evening he named the feeling first, «designing is a bit chaotic … because of this rough back-and-forth with scattered places», and only then the cause: «initially we planned a design flow like this, split into four phases … that phase idea got buried somewhere». the first spread had asked layout, colour, copy and states in one go, so every comment was a polish comment on everything; and the canvas lets only a human open a thread, so every question came back to him as words to search for. his felt sense read the process before the cost did ($63 on one fable session). → `x:crew-designer` four phases, ballot ([FRM-293](https://linear.app/x-com/issue/FRM-293)), `docs/research/design-review-comms.md`
