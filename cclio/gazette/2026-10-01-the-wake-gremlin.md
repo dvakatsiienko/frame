@@ -49,8 +49,27 @@ a quick night session, ~01:40–03:30. no builds, no coders. the speak lane stay
 - next: checkpoint → speak shape-lite → fable designer a/b → cli grill while it draws
 - FRM-283 open until the first F4 after an overnight sleep
 
+⸻ upd 21:45
+
+**shipped**
+- `x`, the cli v0 ([#53](https://github.com/dvakatsiienko/frame/pull/53), [FRM-285](https://linear.app/x-com/issue/FRM-285)): one verb registry, `x lane` (a frame worktree pushes through the main checkout, git-crypt ciphertext refused with `x lane unlock`), `x schema`, json for agents; shaped through 5 research lanes, the old 6-ticket chain closed
+- speak shaped at a prod grade and designed: 3 arms (opus medium, fable medium, fable high) → dima's 39 canvas comments → one merged take, 25 boards, `decision.md` + `contract.md`; the build ticketed as [FRM-288](https://linear.app/x-com/issue/FRM-288) → 289–292 after a 3-arm adviser trial said «revise»
+- speak F4 fixes: list markers and «■» silent, glued bullets pause, Slack grabs with ⌘C, an idle F4 tries ⌘C when accessibility sees nothing
+- the atelier ftr ↔ tests baseline ([FRM-286](https://linear.app/x-com/issue/FRM-286)): 20 of 49 lines tested, all partial → the checker as a skill
+- the fable adviser researched ([FRM-287](https://linear.app/x-com/issue/FRM-287)): a `--bg` critic on a fixed template, never the built-in `--advisor` (no brief, encrypted output)
+- the vorssaint shelf as a door (`pnpm vorssaint:shelf`), iTerm back on frame prefs at line spacing 1.2, models.md refreshed + the Anthropic 5.5 webinar folded
+
+**tricks gained**
+- fable 5.1 high draws the best and costs the most: $4–17 a spread, and a long comment session reached $63 — half of it cache reads on a 700k context
+- dima picks by commenting on the canvas; ⌘F on an exact board text, and «dima-confirm-N» stickies, beat describing boards in chat
+- an adviser on the build plan caught the plan's cut flaws before any coder ran; a cheap arm caught the big four, fable added two real ones
+
+**state**
+- next: FRM-289 (the daemon lane) spawns at the 5h reset; design work moves to the start of a fresh window
+- the design comms model is the open problem for the next session
+
 ## trail
 
-- shipped: speak gremlins merged #52 (wake hang, one voice, normalizer) · roadmap redrawn, cli now · linear:archive + wispr:add · not-for lines + stack · Explore on sonnet · jev compaction on, router off
-- open: speak shape-lite → fable designer a/b → cli grill · jev rebuild from the 200-prompt set · atelier ftr baseline · FRM-283 overnight check
-- state: frame 165d2ab1 (6 unpushed), no coders · cclio 0.3.90 · x 0.11.192
+- shipped: x cli v0 #53 · speak shaped + designed (3 arms → merge, 25 boards) + ticketed FRM-288–292 · F4 fixes (bullets, slack, chrome) · atelier ftr baseline · adviser researched + trialled · vorssaint shelf · iterm 1.2
+- open: FRM-289 daemon lane at the 5h reset · design comms model · cli opentui v0.1 · jev rebuild · FRM-283 overnight check
+- state: frame pushed, no coders · cclio 0.3.90 · x 0.11.197
