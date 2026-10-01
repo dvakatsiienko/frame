@@ -5,7 +5,7 @@ we pull, it judges, we write back. two lanes live, both from 2026-09-19:
 
 - **inbox lanes** — the boot digest prints every inbox item with a lane (ticket · fold · flowlog ·
   answer · drop) and a `needsVerdict` band. it pre-sorts; the flowlog parse is still mine.
-- **skill router** — a `UserPromptSubmit` hook (cclio scope for now) prints `skills (jev router):
+- **skill router** — a `UserPromptSubmit` hook at user scope (`home/.claude/settings.json`), so it runs in every fleet session, coders included prints `skills (jev router):
   x:pm 0.81, …` for every skill ≥ 0.6, score included. the built-in router still runs; jev stops
   the misses. 📌 the hook is synchronous — every prompt in cclio waits for it (~0.8–1.8 s measured
   2026-09-22). log: `~/.claude/shelf/jev/route.log` (time · top pick · loads · prompt · ms). kill

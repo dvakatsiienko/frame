@@ -59,6 +59,7 @@ his framing rather than a paraphrase of it. **his words outrank any restatement 
 - *«the adversary code review tool can be picked from a pool - we can connect all tools… so we see
   whole picture»* · then: *«yes yes we will filter out adversaries after some amount of turns»*
 - *«i'd like to test graphite reviews too, wana full picure»*
+- 2026-10-01: macroscope joins the pool of review tools to test drive, beside graphite — *«i found new tool that possibly very cool - macroscope (add it to planned test drive list)»*
 - on greptile's CLI: *«test flight of its cli won't hurt - test, measure the quality and adverted
   noise»*
 - on the trigger: *«try find better approach along the way»* — b is locked, the search stays open.
