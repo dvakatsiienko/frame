@@ -8,9 +8,11 @@ web
 
 on this mac only: served on 127.0.0.1 by a launchd job, never deployed.
 
+grade: **prod** — finished as if shipped: every state drawn, night included, polish at a public app's level.
+
 ## Users
 
-dima, alone. no other user, now or planned.
+mine: my personal app, for my own use.
 
 - the daily use happens outside this page: F4 on a selection in any app reads it aloud through x-speak, and a new
   F4 overrides the reading; F4 with nothing selected, or ⇧F4 always, pauses and resumes; F5 stops.

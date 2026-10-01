@@ -727,8 +727,15 @@ func kokoroReady() async -> Bool {
 // the focused element's selected text through accessibility; ⌘C only where an app exposes none. an empty answer
 // from accessibility is trusted as «nothing selected»: the ⌘C fallback waits ~300 ms for a copy that never comes,
 // and that wait was the delay on every pause / resume (dima, 2026-09-29)
+// apps whose accessibility focus is a different element from the selection: Slack reports its message box, empty,
+// while the selected text sits in the message list (36 «nothing selected» presses, 2026-10-01)
+let copyOnlyApps: Set<String> = ["com.tinyspeck.slackmacgap"]
+
 @MainActor
 func grabSelection() async -> (String?, String) {
+    if let id = NSWorkspace.shared.frontmostApplication?.bundleIdentifier, copyOnlyApps.contains(id) {
+        return (await copySelection(), "⌘C")
+    }
     // electron and chromium build their accessibility tree only when asked; the flag is per app and idempotent
     if let pid = NSWorkspace.shared.frontmostApplication?.processIdentifier {
         AXUIElementSetAttributeValue(AXUIElementCreateApplication(pid), "AXManualAccessibility" as CFString, kCFBooleanTrue)

@@ -52,6 +52,8 @@ private func stripMarkdown(_ text: String) -> String {
     t = sub(t, "\\x{27A1}\\x{FE0F}?", " → ")
     // pictographs, skin tones, flags, keycaps, tag sequences and the joiners that glue them
     t = sub(t, "[\\p{Extended_Pictographic}\\p{Emoji_Modifier}\\p{Regional_Indicator}\\x{FE0E}\\x{FE0F}\\x{200D}\\x{20E3}\\x{E0020}-\\x{E007F}]", "")
+    // bullets and geometric shapes: the Claude app hands nested list markers over as «■», read as «black square»
+    t = sub(t, "[\\x{2022}\\x{2023}\\x{2043}\\x{25A0}-\\x{25FF}\\x{2605}\\x{2606}]", "")
     // a line that ends bare ends a sentence: several lines read as one run-on otherwise (dima: «it sounds like a single sentence»)
     return sub(t, "(?<=[\\p{L}\\p{N})\\]])[ \\t]*\\r?\\n", ".\n")
 }
@@ -163,6 +165,8 @@ func splitRuns(_ text: String) -> [Run] {
 // the next number follows it: «node to 22. done» keeps its 22. U+FFFC stands in for an inline image or icon
 private func unglueLists(_ text: String) -> String {
     var t = text.replacingOccurrences(of: "\u{FFFC}", with: "")
+    // a bulleted item glued to the one above opens on a quote that touches the last word: «… stays open«a gui …»
+    t = t.replacingOccurrences(of: "(?<=[\\p{L}\\p{N}])(?=[«“])", with: "\n", options: .regularExpression)
     var breaks: [(offset: Int, afterDigit: Bool)] = []
     var from = t.startIndex
     for number in 1... {

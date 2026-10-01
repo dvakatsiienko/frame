@@ -352,5 +352,23 @@
     {
         "in": "lane1. bump node to 22. then pnpm 12. done",
         "out": [["en", "lane1. bump node to 22. then P N P M 12. done"]]
+    },
+    {
+        "in": "so phase it:\n■ first, a generated agent help\n■ then keyword search (43k★)",
+        "out": [
+            [
+                "en",
+                "so phase it: first, a generated agent help. then keyword search, 43k"
+            ]
+        ]
+    },
+    {
+        "in": "«cli with muscles, or BYT-52 (the harness)?» → moves to FRM-43, the harness verdict, which stays open«a gui, or a terminal app with ui elements» → answered here",
+        "out": [
+            [
+                "en",
+                "C L I with muscles, or B Y T 52, the harness? moves to F R M 43, the harness verdict, which stays open. a gui, or a terminal app with U I elements, answered here"
+            ]
+        ]
     }
 ]

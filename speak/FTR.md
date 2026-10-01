@@ -92,6 +92,22 @@ claims: `schedule/jobs/x-speak/`
   - when the user clicks the speak logo, top-left
   - then the page scrolls to the top, the url drops its #column, and the edit is still there; under reduced motion the jump is instant
 
+## stats — the quick view
+
+- 🧭 every read leaves one record
+  - makes: `~/.local/share/x-speak/reads.jsonl`, one line per read: time, source app, words, characters the normalizer cut, seconds listened, engine
+  - given a read that plays to its end, or is stopped by F5 or a new F4
+  - then one line lands with the seconds actually heard
+  - decision: every stat derives from this one record, nothing is stored twice (shape-lite, 2026-10-01)
+- 🧭 one compact quick view shows the stats in the admin
+  - given a week of records
+  - when the admin loads
+  - then one compact view shows: minutes listened, reading time saved, the top source apps, and what the normalizer cut
+  - and hovering a figure may open a popover with its detail
+  - decision: compact, one view, no dashboard and no stats page yet; peak hours dropped (dima, 2026-10-01: «let's try compact without breeding a lot of additional views»)
+- 🧭 reading time saved = words heard ÷ 238 wpm
+  - decision: 238 wpm is the default silent reading speed (Brysbaert 2019, unchecked); a one-time «measure me» is later, not in the cut
+
 ## save
 
 - ✅ save writes config.json
@@ -115,6 +131,7 @@ claims: `schedule/jobs/x-speak/`
   - when the user presses F4
   - then the daemon speaks it through the chain for its language, and the pill shows
   - and a read already playing stops before the new one's first audio, on every engine, with a clean hand-off: no stumble, no second voice
+  - decision: Slack grabs with ⌘C, never accessibility — its focused element is the empty message box, not the selection (36 «nothing selected» presses, 2026-10-01); a read costs ~20–50 ms, F4-to-pause with nothing selected waits 300 ms there
 - ⬜ F4 with nothing selected pauses, then resumes
   - given speech playing and no text selected
   - when the user presses F4
@@ -137,6 +154,7 @@ claims: `schedule/jobs/x-speak/`
   - when the user presses F4
   - then each line ends with a short pause, never one run-on sentence
   - and a numbered line says its number first («one: merge»), even when the app hands its lines over glued together
+  - and list markers («■», «•», «★») are never spoken; a bulleted item glued to the one above on an opening «/“ still gets its pause
 - ⬜ the pill floats while speech plays: its wave, ⏸ / ▶, ■, stick and close
   - then the ⏸ / ▶ button follows the speech, and the pill never takes focus from the app in front
 - ⬜ the pill drags anywhere and keeps its spot per display
