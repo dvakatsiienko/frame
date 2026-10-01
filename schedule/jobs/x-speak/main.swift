@@ -91,6 +91,8 @@ final class Player {
     private var pending = 0
     private var drainWaiters: [CheckedContinuation<Void, Never>] = []
     private var generation = 0
+    // every buffer ever scheduled: a stop's delayed pause holds off once anything new was scheduled after it
+    private var scheduled = 0
     // when the queue ran dry mid-read: the next buffer logs the silence the listener heard
     private var dryAt: ContinuousClock.Instant?
 
@@ -141,6 +143,7 @@ final class Player {
         if pending == 0, let dryAt { log("silence: \(elapsed(dryAt)) mid-read") }
         dryAt = nil
         pending += 1
+        scheduled += 1
         let scheduledIn = generation
         node.scheduleBuffer(buffer) { [weak self] in
             Task { @MainActor in
@@ -162,17 +165,19 @@ final class Player {
         await withCheckedContinuation { drainWaiters.append($0) }
     }
 
-    // the engine pauses 2 s later, once nothing new plays: one left running feeds the meter's tap silence, and hours of
-    // it once froze the pill; one paused at once restarted under the next read and stumbled the F4-over-F4 hand-off
+    // the engine pauses 2 s later, unless a new read scheduled audio meanwhile: one left running feeds the meter's tap
+    // silence, and hours of it once froze the pill; one paused at once restarted under the next read and stumbled the
+    // F4-over-F4 hand-off. a new read's own idle() pauses it once that read ends
     func stop() {
         generation += 1
         node.stop()
         pending = 0
         dryAt = nil
         releaseWaiters()
+        let stoppedAt = scheduled
         Task {
             try? await Task.sleep(for: .seconds(2))
-            if pending == 0 { engine.pause() }
+            if scheduled == stoppedAt { engine.pause() }
         }
     }
 
