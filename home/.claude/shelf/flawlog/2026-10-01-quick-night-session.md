@@ -1,0 +1,8 @@
+# flawlog — 2026-10-01 · cclio-59 · the quick night session
+
+- I said «not reproduced» about the speak admin's «daemon did not answer in 3 s» after two live probes answered in ~10 ms — the cause was one awk away in `daemon.err.log`: F4 at 01:51:43 hung 6.5 min, 12 queued F4 flushed in the same ms at 01:58:22 = the main thread blocked after wake · dima: «why? not good. my most used feature is flawed» · lesson: a transient failure is read from the logs (gaps, bursts, the window around the report) before «not reproduced» is said
+- my ➡️ line said «rename first, then the designer» — the CST's 10-01 lane plan, printed at 01:40 to a tired dima on a «quick session» · he read it as me spawning a designer · lesson: a ➡️ next move is sized to dima's stated energy and window, never copied from a CST's first-acts
+- I recommended «delete #1 + #2» for the atelier artifacts while my reply mapped them to the adhd/vague spreads by assumption — the list showed #1 = canvas v15; caught before the delete call · lesson: an id named in an action ask is mapped from a `list`, never from my reading of the inbox — already in `method-report-verify` («my own recall is a relay»)
+- the vault read at turn 1 ran raw without loading `x:notes` (jev picked it at 0.60) · a skill-not-loaded miss
+- the Artifact delete is refused in this session («needs the user's confirmation … no one can answer it») — deletes are dima's hands: `/artifacts` → d · a fact, the tool says it, nothing to store
+- dima typed `/init mini …` meaning a quick boot; the built-in CLAUDE.md generator fired on it · the cclio boot is `/cclio:init`; a bare `/init` will keep colliding

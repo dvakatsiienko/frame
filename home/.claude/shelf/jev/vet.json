@@ -9,19 +9,19 @@
             "what": "the boot digest lanes every inbox item (ticket · fold · flowlog · answer · drop) before cclio parses it"
         },
         "skill-router": {
-            "since": "2026-09-30",
+            "since": "2026-10-01",
             "state": "vetting",
-            "verdicts": 30,
-            "misses": 22,
+            "verdicts": 34,
+            "misses": 25,
             "what": "the UserPromptSubmit hook names the skills a prompt should load",
             "lanes": {
                 "x:guide-code": {
                     "hit": 1,
-                    "total": 4
+                    "total": 5
                 },
                 "x:notes": {
-                    "hit": 0,
-                    "total": 3
+                    "hit": 1,
+                    "total": 4
                 },
                 "x:github-contrib": {
                     "hit": 0,
@@ -62,14 +62,22 @@
                 "x:ftr": {
                     "hit": 0,
                     "total": 1
+                },
+                "x:app-essentials": {
+                    "hit": 0,
+                    "total": 1
+                },
+                "x:guide-ui-ux": {
+                    "hit": 0,
+                    "total": 1
                 }
             }
         },
         "flawlog-lanes": {
-            "since": "2026-09-29",
+            "since": "2026-10-01",
             "state": "vetting",
-            "verdicts": 26,
-            "misses": 18,
+            "verdicts": 29,
+            "misses": 20,
             "what": "every flawlog line laned memory · rule · story · ticket · drop before the halt flush (the coder retro is a separate, future flow)",
             "lanes": {
                 "ticket": {
@@ -86,11 +94,11 @@
                 },
                 "drop": {
                     "hit": 1,
-                    "total": 5
+                    "total": 7
                 },
                 "memory": {
-                    "hit": 0,
-                    "total": 1
+                    "hit": 1,
+                    "total": 2
                 }
             }
         }

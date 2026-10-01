@@ -24,6 +24,7 @@ The four failure shapes, each measured here:
   for a researcher's claim. 5 of 8 catches on 2026-09-05 were this shape (cron POST, `waitUntil`,
   refresh rotation, `3h` ttl, a gateway's schema); `/insights` named the pattern the same day.
   the label «verified» is earned by the probe, never by confidence.
+- 🚨 **«not reproduced» is said only after the log window around the report is read** — gaps, bursts, the lines either side. two live probes answered speak's socket in ~10 ms, and `daemon.err.log` held the cause one awk away: F4 hung 6.5 min after wake, then 12 queued presses flushed in one ms (a blocked main thread). a live probe measures now; the log measured then (2026-10-01).
 - 🚨 **one observation carries more than one meaning.** before reporting a run as proof of X,
   ask what else it is evidence of — the greptile skip on bytes #83 was reported as «the owner
   test works» and was also the concurrency-cancel bug, missing damage by seconds (2026-09-12).

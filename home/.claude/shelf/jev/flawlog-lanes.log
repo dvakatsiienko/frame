@@ -24,3 +24,6 @@
 2026-09-28T19:49:49.362Z	ok	09-28: 83 lines; the disagreements were lines whose fix landed later in the session without a «fixed:» prefix — my marking habit, not the criterion
 2026-09-29T18:38:37.338Z	miss	the impeccable lesson laned drop; it landed in sys-settings-drift
 2026-09-30T17:32:44.116Z	ok	disagreements were lines whose fix shipped later the same day without a fixed: mark — writer's miss, the rubric handled marked lines right
+2026-10-01T00:17:27.901Z	miss	lane=drop artifact-id line laned memory; it named no holding rule — line fixed to name method-report-verify
+2026-10-01T00:17:28.016Z	miss	lane=drop skill-not-loaded / tool-refusal / built-in-collision lines laned rule; criterion sharpened, RUNS=3 6/6
+2026-10-01T00:17:28.130Z	ok	lane=memory not-reproduced + ➡️-sizing lines laned memory, matched the flush

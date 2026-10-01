@@ -10,14 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «not a fan of overrides» · 2026-09-21
-Three production builds were red after a react types bump; the fix that made them green was a
-pnpm override pinning `@types/react` to one copy. He read it and said «not a fan of overrides.
-how does it work and why is it needed? how to not forget to remove it?» — no argument against
-the fix, only a taste. The reason arrived while answering: an override hides a dependant whose
-range renovate will never lift, so the pin outlives its cause unless something reminds. The
-felt sense was about the shelf life, not the mechanism. → the override reminder in `_reminders.md`
-
 ## «coder still looks like a cat» · 2026-09-23
 twelve renders of a pixel coder, and after each one he said the same thing: «still looks like a cat». the palette, the helmet, the tools all changed; the verdict did not. the cause was never in the face — every take gave the head two pointed top corners, and at 16 px a silhouette with pointed corners reads «cat» before any eye or nose is seen. floppy ears hanging beside the head fixed it in one pass. his felt sense read the silhouette; i kept editing the features. → `brand/avatars/fleet/coder`, the flawlog line on species cues
 
@@ -66,3 +58,11 @@ and each still felt off to him; then he named it — sticking them to the art's 
 horizontal rhythm compared to other pills». the comp had drawn only one window shape, where the art fills the screen,
 so nobody had designed the letterbox case; his eye was the spec. → «The One Frame Rule» in atelier's `DESIGN.md`, the
 window-shapes question in `crew-designer-interview`
+
+## «why? not good» · 2026-10-01
+he sneaked back to the keyboard after sleep, and speak's admin said the daemon was unreachable; F4, his most-used
+hotkey, had read nothing since the mac woke. I probed the socket twice, both answered in ~10 ms, and I wrote «not
+reproduced». his reply: «why? not good. my most used feature is flawed». no theory, only the sense that a probe of
+the present could not clear a failure of the past. the daemon's own log held it one awk away: the F4 at 01:51 hung
+6.5 minutes, then twelve queued presses flushed in the same millisecond — a blocked main thread, which also starved
+the control socket. his felt sense read the claim's timeframe before I did. → `method-report-verify`, the speak wake gremlin

@@ -28,3 +28,7 @@
 2026-09-29T16:03:52.420Z	miss	lane=x:ftr PRODUCT.md purpose edit, no ftr line touched
 2026-09-30T12:54:05.743Z	miss	lane=x:writing-for-humans reply to her meant a reply to cclio, an agent peer, not a human message
 2026-09-30T13:04:18.678Z	miss	lane=x:writing-for-humans a message to cclio (agent peer), not to a human
+2026-10-01T00:14:12.714Z	ok	lane=x:notes vault read + inbox parse, right pick both prompts
+2026-10-01T00:14:12.830Z	miss	lane=x:guide-code fired 0.68 on a speak-product/cli-language question, no code written
+2026-10-01T00:14:12.940Z	miss	lane=x:app-essentials fired 0.65 on «speak public app» talk, nothing wired
+2026-10-01T00:14:13.050Z	miss	lane=x:guide-ui-ux fired 0.64 on a product question, nothing rendered

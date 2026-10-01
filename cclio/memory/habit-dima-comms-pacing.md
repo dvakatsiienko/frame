@@ -23,6 +23,8 @@ is whole. A lane arriving early gets a one-line «N of M in» at most, never its
 reads the thread cold from another window; findings staggered across turns are findings he has
 to reassemble (dima, 2026-09-29: «group them instead of printing the results of each round»).
 
+**The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer» copied from the 10-01 lane plan; he read it as a designer being spawned (2026-10-01). a plan for tomorrow stays tomorrow's.
+
 **Flag overload instead of absorbing it.** A query too fat for clean resolution → tell him so and
 propose the split, same turn. His words when this duty went unmet: *«why did not you told me even
 once how i could improve my prompt?»*
