@@ -1,6 +1,6 @@
 ---
 name: ftr
-description: Load BEFORE reading or writing an app's ftr — «ftr», «features doc», «the ftr», `FTR.md`, «what does <feature> do», «draft the ftr», «ftr lines», «map lines», exit lines for an app that has an ftr, a coder or verifier brief that names ftr lines.
+description: Load BEFORE reading or writing an app's ftr — «ftr», «features doc», «the ftr», `FTR.md`, «what does <feature> do», «draft the ftr», «ftr lines», «map lines», exit lines for an app that has an ftr, a coder or verifier brief that names ftr lines. Not for `PRODUCT.md` or `DESIGN.md`.
 argument-hint: "[draft|update|read] <app dir>"
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: app-essentials
-description: Load BEFORE creating or wiring up an app — «new app», «scaffold an app», «add an app to bytes», «wire up the app», «app essentials», «apps:essentials is red», a new dir under bytes apps/ — and before a coder spawn into an app that fails the checker.
+description: Load BEFORE creating or wiring up an app — «new app», «scaffold an app», «add an app to bytes», «wire up the app», «app essentials», «apps:essentials is red», a new dir under bytes apps/ — and before a coder spawn into an app that fails the checker. Not for a question about an existing app.
 ---
 
 # app-essentials

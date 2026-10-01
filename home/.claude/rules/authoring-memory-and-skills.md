@@ -70,6 +70,9 @@ set. at create time, decide cw inclusion; if yes: `ln -s ../../plugin-x/skills/<
 when …» (dima's call 2026-08-25, sharpening `docs/knowledge/authoring-skill.md`). the NAME carries
 the entity, the BODY carries the what — details are one invoke away. never let a description
 explain or answer: that is body content paid resident, every turn.
+**a «Not for …» clause is part of the trigger**, added only when a misfire is on record — it names
+the lookalike case in the words that misfired («Not for a 1password vault or item.») (dima's yes,
+2026-10-01, after the jev router's miss log).
 **seed the trigger with magic keywords** — the literal words dima would type («commit this», a
 pasted url, «walk me through»), not an abstract paraphrase of the situation; the description
 fires by matching the prompt, and it can only match words that actually appear in one.

@@ -1,6 +1,6 @@
 ---
 name: guide-ui-ux
-description: Load EVERY time you render anything a human looks at — html, react/jsx, an artifact page, a chart, a tui — before the first element is written or reviewed.
+description: Load EVERY time you render anything a human looks at — html, react/jsx, an artifact page, a chart, a tui — before the first element is written or reviewed. Not for a question or an idea about a screen in chat.
 ---
 
 # UI/UX floor
