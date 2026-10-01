@@ -4,6 +4,8 @@
 # `pr-open --dry-run` maps to x's plan (no --apply).
 here=$(realpath "${BASH_SOURCE[0]}")
 x=${here%/home/.claude/plugin-x/bin/lane}/x/bin/x
+# a plugin-cache copy sits outside the repo; the frame checkout is the one home of x
+[[ -x ${x} ]] || x=${HOME}/frame/x/bin/x
 verb=${1:-}
 case ${verb} in
     commit | push | merge-main | unlock) shift; exec "${x}" lane "${verb}" --apply "$@" ;;

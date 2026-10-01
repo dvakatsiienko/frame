@@ -1,7 +1,7 @@
 import { parseArgs } from 'node:util';
 
 import { findVerb, globalFlags, usage, verbsUnder } from './registry.ts';
-import type { Outcome, Verb } from './verb.ts';
+import type { Data, Verb } from './verb.ts';
 import { Fail, exitCodes } from './verb.ts';
 
 const bold = (text: string) => `\x1b[1m${text}\x1b[22m`;
@@ -12,8 +12,7 @@ export function main(argv: string[]) {
         optionsOf(argv).includes('--json') ||
         Boolean(process.env.CLAUDECODE || process.env.AI_AGENT) ||
         !process.stdout.isTTY;
-    const firstFlag = argv.findIndex((arg) => arg.startsWith('-'));
-    const words = firstFlag === -1 ? argv : argv.slice(0, firstFlag);
+    const words = optionsOf(argv).filter((arg) => !arg.startsWith('-'));
     const found = findVerb(words);
     const name = found?.verb.name ?? words.join(' ');
     const print = (envelope: Record<string, unknown>, human: string) => {
@@ -31,7 +30,8 @@ export function main(argv: string[]) {
     try {
         if (!found) return list(words, print);
 
-        const outcome = dispatch(found.verb, argv.slice(found.depth), print);
+        const rest = withoutVerb(argv, found.depth);
+        const outcome = dispatch(found.verb, rest, print);
         if (!outcome) return exitCodes.ok;
         if (outcome.status === 'ok') {
             print(
@@ -41,7 +41,7 @@ export function main(argv: string[]) {
             return exitCodes.ok;
         }
 
-        const next = confirmCommand(found.verb, argv.slice(found.depth));
+        const next = confirmCommand(found.verb, rest);
         print(
             { next, ok: false, plan: outcome.plan, status: 'confirm' },
             `${lines(outcome.plan)}\n${bold('confirm:')} ${next}`,
@@ -124,7 +124,20 @@ function dispatch(
             true,
         );
 
-    return verb.run({ args, isApplied: parsed.values.apply === true });
+    if (verb.needsApply && parsed.values.apply !== true)
+        return { plan: verb.plan(args), status: 'confirm' };
+    return { data: verb.run(args), status: 'ok' };
+}
+
+// drops the verb's own words, wherever a flag before them put them
+function withoutVerb(argv: string[], depth: number) {
+    const end = optionsOf(argv).length;
+    let skipped = 0;
+    return argv.filter((arg, i) => {
+        const isVerbWord = skipped < depth && !arg.startsWith('-') && i < end;
+        if (isVerbWord) skipped++;
+        return !isVerbWord;
+    });
 }
 
 function list(words: string[], print: Print) {
@@ -191,3 +204,5 @@ if (import.meta.main) process.exitCode = main(process.argv.slice(2));
 
 /* Types */
 type Print = (envelope: Record<string, unknown>, human: string) => void;
+
+type Outcome = { status: 'ok'; data: Data } | { status: 'confirm'; plan: Data };

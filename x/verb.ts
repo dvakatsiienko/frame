@@ -13,9 +13,7 @@ export class Fail extends Error {
 }
 
 /* Types */
-export type Outcome =
-    | { status: 'ok'; data: Record<string, unknown> }
-    | { status: 'confirm'; plan: Record<string, unknown> };
+export type Data = Record<string, unknown>;
 
 export type FlagSpec = { type: 'boolean' | 'string'; description: string };
 
@@ -26,16 +24,14 @@ export type ArgSpec = {
     isVariadic?: boolean;
 };
 
-export type Input = {
-    args: string[];
-    isApplied: boolean;
-};
-
+// a verb that publishes or destroys carries a plan: dispatch prints it and exits 4
+// until --apply, so the gate lives in the entry, never in run()
 export type Verb = {
     name: string;
     purpose: string;
     args: readonly ArgSpec[];
-    // publishes or destroys: without --apply it prints its plan and exits 4
-    needsApply: boolean;
-    run: (input: Input) => Outcome;
-};
+    run: (args: string[]) => Data;
+} & (
+    | { needsApply: false }
+    | { needsApply: true; plan: (args: string[]) => Data }
+);

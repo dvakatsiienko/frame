@@ -9,7 +9,7 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-import type { Input, Outcome, Verb } from './verb.ts';
+import type { Verb } from './verb.ts';
 import { Fail } from './verb.ts';
 
 const cryptMagic = Buffer.from('\0GITCRYPT\0');
@@ -41,6 +41,7 @@ export const laneVerbs = [
         args: [],
         name: 'lane push',
         needsApply: true,
+        plan: pushPlan,
         purpose:
             "push HEAD's sha to its branch and read the remote back; a frame worktree pushes from the main checkout",
         run: push,
@@ -52,6 +53,7 @@ export const laneVerbs = [
         ],
         name: 'lane pr-open',
         needsApply: true,
+        plan: prPlan,
         purpose:
             'open a pr from the pushed branch onto main as the x-coder-cc app',
         run: prOpen,
@@ -75,7 +77,7 @@ export const laneVerbs = [
 ] as const satisfies readonly Verb[];
 
 /* Verbs */
-function commit({ args }: Input): Outcome {
+function commit(args: string[]) {
     const [msgFile, ...paths] = args;
     if (!(msgFile && existsSync(msgFile)))
         throw new Fail(
@@ -127,22 +129,18 @@ function commit({ args }: Input): Outcome {
     }
 
     return {
-        data: {
-            branch: git(['symbolic-ref', '--quiet', '--short', 'HEAD']).out,
-            sha: head(),
-            tree,
-        },
-        status: 'ok',
+        branch: git(['symbolic-ref', '--quiet', '--short', 'HEAD']).out,
+        sha: head(),
+        tree,
     };
 }
 
-function push({ isApplied }: Input): Outcome {
-    const name = branch();
-    const sha = head();
-    const { from, reason } = pushHome();
-    if (!isApplied)
-        return { plan: { branch: name, from, reason, sha }, status: 'confirm' };
+function pushPlan() {
+    return { branch: branch(), sha: head(), ...pushHome() };
+}
 
+function push() {
+    const { branch: name, from, sha } = pushPlan();
     const pushed = git(
         ['push', '-q', 'origin', `${sha}:refs/heads/${name}`],
         from,
@@ -161,10 +159,10 @@ function push({ isApplied }: Input): Outcome {
             `remote is ${remote || 'empty'}, HEAD is ${sha}`,
             'x lane push --apply',
         );
-    return { data: { branch: name, from, remote, sha }, status: 'ok' };
+    return { branch: name, from, remote, sha };
 }
 
-function prOpen({ args, isApplied }: Input): Outcome {
+function prPlan(args: string[]) {
     const [title = '', bodyFile = ''] = args;
     if (!existsSync(bodyFile))
         throw new Fail(
@@ -189,12 +187,11 @@ function prOpen({ args, isApplied }: Input): Outcome {
         '--body-file',
         bodyFile,
     ];
-    if (!isApplied)
-        return {
-            plan: { argv: ['github-token-wrap', ...argv], branch: name },
-            status: 'confirm',
-        };
+    return { argv, branch: name };
+}
 
+function prOpen(args: string[]) {
+    const { argv, branch: name } = prPlan(args);
     const opened = run(wrapPath, argv);
     if (!opened.isOk) {
         process.stderr.write(`${opened.log}\n`);
@@ -203,10 +200,10 @@ function prOpen({ args, isApplied }: Input): Outcome {
             'gh pr view',
         );
     }
-    return { data: { branch: name, url: opened.out }, status: 'ok' };
+    return { branch: name, url: opened.out };
 }
 
-function mergeMain(): Outcome {
+function mergeMain() {
     branch();
     mustGit(['fetch', '-q', 'origin', 'main'], 'fetch');
 
@@ -225,16 +222,15 @@ function mergeMain(): Outcome {
             'resolve them, then x lane commit <msg-file> -- <resolved paths>',
         );
     }
-    return { data: { sha: head() }, status: 'ok' };
+    return { sha: head() };
 }
 
 // the recipe from shelf/hooks/worktree-seed.sh: the key lives in the main .git, and the
 // unlock runs `git status`, which dies on the clean filter unless both filters are off
-function unlock(): Outcome {
+function unlock() {
     const tree = top();
     const locked = lockedPaths(tree);
-    if (locked.length === 0)
-        return { data: { tree, unlocked: 0 }, status: 'ok' };
+    if (locked.length === 0) return { tree, unlocked: 0 };
 
     const key = join(
         mustGit(
@@ -270,9 +266,10 @@ function unlock(): Outcome {
         }
     }
 
-    // the unlock installs the key, but git sees the ciphertext as unchanged and never
-    // re-smudges it; a file is removed only while its raw bytes ARE its index blob
-    for (const path of locked) {
+    // in a real frame tree the unlock decrypts by itself; in a fresh fixture git sees the
+    // ciphertext as unchanged and never re-smudges it. so the set is read again, and a file
+    // is removed only while its raw bytes ARE its index blob
+    for (const path of lockedPaths(tree)) {
         const raw = mustGit(
             ['hash-object', '--no-filters', '--', path],
             'hash-object',
@@ -298,7 +295,7 @@ function unlock(): Outcome {
             `still ciphertext: ${left.join(', ')}`,
             'git-crypt status',
         );
-    return { data: { tree, unlocked: locked.length }, status: 'ok' };
+    return { tree, unlocked: locked.length };
 }
 
 /* Git */

@@ -137,6 +137,10 @@ describe('x lane', () => {
         expect(run.envelope().next).toBe('x lane push --apply');
     });
 
+    it('finds the verb behind a global flag', () => {
+        expect(x(['--json', 'lane', 'push'], fixtureRepo()).code).toBe(4);
+    });
+
     it('refuses to commit in a worktree that holds git-crypt ciphertext, naming x lane unlock', () => {
         const tree = lockedWorktree();
         writeFileSync(join(tree, 'readme.txt'), 'two\n');

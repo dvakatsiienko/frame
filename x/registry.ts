@@ -1,5 +1,5 @@
 import { laneVerbs } from './lane.ts';
-import type { FlagSpec, Input, Outcome, Verb } from './verb.ts';
+import type { FlagSpec, Verb } from './verb.ts';
 import { Fail, exitCodes } from './verb.ts';
 
 export const globalFlags = {
@@ -94,10 +94,10 @@ export function lintPurpose(verb: Pick<Verb, 'name' | 'purpose'>) {
     return problems;
 }
 
-function schema({ args }: Input): Outcome {
+function schema(args: string[]) {
     const prefix = args.join(' ');
     const matched = verbsUnder(prefix);
     if (matched.length === 0)
         throw new Fail(`no verb or group named ${prefix}`, 'x --help', true);
-    return { data: { verbs: matched.map(toSchema) }, status: 'ok' };
+    return { verbs: matched.map(toSchema) };
 }

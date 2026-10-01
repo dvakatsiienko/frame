@@ -8,8 +8,9 @@ it runs the checkout the shim lives in.
 
 - an entry (`Verb` in `verb.ts`) drives dispatch, `--help`, `x schema <verb>` and the purpose lint —
   never a second list. a group is the first word of the name (`lane commit` → `lane`).
-- `needsApply: true` for a verb that publishes or destroys: without `--apply` it returns its plan and
-  exits 4 with the exact confirm command. nothing else asks.
+- `needsApply: true` for a verb that publishes or destroys, with a `plan(args)`: dispatch calls the
+  plan and exits 4 with the exact confirm command until `--apply`; `run` never checks the flag.
+  nothing else asks.
 - a failure throws `Fail(message, next)`: `next` is the command that moves the caller forward.
 - the purpose line is what an agent picks a verb by; `x.test.ts` runs `lintPurpose` over every verb.
 - verbs use node apis only (`node:child_process`, `node:util`), never `Bun.*`, so vitest runs the
@@ -28,6 +29,7 @@ it runs the checkout the shim lives in.
   the old `lane` published without asking.
 - `lane push` from a frame worktree pushes from the main checkout: the pre-push mirror gate reads
   `~` symlinks that point there, so a worktree push always failed. same sha, shared objects.
-- `lane commit` refuses while git-crypt files hold ciphertext; `lane unlock` decrypts them. the
-  unlock alone leaves ciphertext in place — git sees the files as unchanged — so each one is
-  removed and checked out again, only while its raw bytes equal its index blob.
+- `lane commit` refuses while git-crypt files hold ciphertext; `lane unlock` decrypts them. in a real
+  frame tree `git-crypt unlock` decrypts by itself; in a fresh fixture it leaves the ciphertext (git
+  sees the files as unchanged). so the locked set is read again after it, and each file still locked
+  is removed and checked out, only while its raw bytes equal its index blob.
