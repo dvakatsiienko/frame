@@ -74,6 +74,11 @@ Only then render.
   `design`); its own instructions win on how the canvas is filled — read them on the first run.
 - **one artboard per take, the key view only**, with real content from the brief, labelled by
   axis position. states come later, on the pick.
+- **board titles follow one scheme, the brief's own words**: `T<n> <take> · <view> · <state>`, the
+  view and state names copied from the brief's View and States lines — `T1 columns-sound · admin ·
+  1440 ideal`. dima reviews several canvases side by side and names a board by its title; when every
+  arm names the same board the same way, he can point at it (dima, 2026-10-01: three arms gave the
+  top-left board three different names, and the cross-canvas review stalled).
 - author each take as a file in `jobs/<app>/takes/` and publish from there. the canvas stays
   private until dima shares it; the files are the source.
 - the cheap habits that keep quality: [thrift.md](thrift.md).
@@ -83,8 +88,17 @@ Only then render.
 Print the canvas link, then one line per take: its axis position and thesis. Say out loud that a
 middle take tends to win because it is in the middle, so dima picks the corner he wants.
 
-- **a mash-up ask** («the colours of 2 with the layout of 4») means the axes were wrong: say so,
-  propose sharper axes for the brief, and draw no extra takes.
+- **dima picks by commenting on the canvas, never by describing boards in text** (dima, 2026-10-01):
+  a «best …» comment on the part he likes, a steer comment on what to change. cclio's side:
+  1. before he looks, print him the short list of what to judge (one line per surface: page, card,
+     selected state, stats, pill, …) — the list he comments against
+  2. hoist every comment from every canvas (`ArtifactComments` read, all pages), and check the boards
+     for drawn parts no comment touched — those go back to him by name
+  3. write a merge brief: per surface, the board that won and its source, the steers, the open forks
+     as a/b boards; one designer draws ONE merged take from it
+  4. tally the «best» tags per arm in the design-run ledger — the model and effort stats
+- a mash-up across takes is the expected outcome of that review, not a failure; it still says the
+  axes bundled two choices — name which, for the next brief.
 - after the pick: **2–3 variants** of it, now covering the brief's states.
 - **three iteration rounds at most.** a fourth means the brief is wrong: back to the interview.
 
