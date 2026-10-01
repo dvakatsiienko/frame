@@ -203,7 +203,8 @@ final class SystemVoice: NSObject, NSSpeechSynthesizerDelegate {
         self.onFirstWord = onFirstWord
         await withCheckedContinuation { continuation in
             done = continuation
-            synth.startSpeaking(chunk.text)
+            // a synth that refuses to start never calls back, so the read would wait on it until the next press
+            if !synth.startSpeaking(chunk.text) { stop() }
         }
     }
 

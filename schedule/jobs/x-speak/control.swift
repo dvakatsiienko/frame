@@ -9,20 +9,21 @@ import os
 
 let controlSocket = NSHomeDirectory() + "/.local/share/x-speak/control.sock"
 
-// main stamps it twice a second; the socket and the watchdog read how long main has gone without a turn
+// a watchdog thread hands main a stamp twice a second; the socket and the watchdog read how long main has left it
+// unrun. a main-queue stamp, not a timer: app nap coalesces a windowless daemon's timers by seconds, and a late
+// timer read as a 4 s stall on an idle main. the suspending clock stops while the mac sleeps, so a night asleep
+// never reads as a blocked main on wake
 final class Heartbeat: @unchecked Sendable {
-    private let last = OSAllocatedUnfairLock(initialState: ContinuousClock.now)
+    private let last = OSAllocatedUnfairLock(initialState: SuspendingClock.now)
 
-    var age: Duration { .now - last.withLock { $0 } }
+    var age: Duration { SuspendingClock.now - last.withLock { $0 } }
 
-    @MainActor
     func start() {
-        // .common: a pill drag runs the loop in tracking mode, and a default-mode timer would read it as a stall
-        RunLoop.main.add(Timer(timeInterval: 0.5, repeats: true) { [last] _ in last.withLock { $0 = .now } }, forMode: .common)
         Thread.detachNewThread { [self] in
             var longest: Duration?
             while true {
-                Thread.sleep(forTimeInterval: 1)
+                DispatchQueue.main.async { [last] in last.withLock { $0 = SuspendingClock.now } }
+                Thread.sleep(forTimeInterval: 0.5)
                 let age = self.age
                 if age > .seconds(2) {
                     if longest == nil { log("main: blocked for \(seconds(age))") }
@@ -43,7 +44,8 @@ func seconds(_ duration: Duration) -> String {
 }
 
 final class Control: @unchecked Sendable {
-    private let queue = DispatchQueue(label: "x-speak.control")
+    // concurrent: a status must never queue behind another request's 2 s wait on a blocked main
+    private let queue = DispatchQueue(label: "x-speak.control", attributes: .concurrent)
     private var listener: NWListener?
     // the last status main gave, served with a «main» note while main cannot answer
     private let lastStatus = OSAllocatedUnfairLock<[String: Any]?>(uncheckedState: nil)
@@ -111,9 +113,11 @@ final class Control: @unchecked Sendable {
             if isRunning {
                 done.wait()
             } else {
-                let note = "blocked for \(seconds(heartbeat.age))"
+                let age = heartbeat.age
+                let note = "blocked for \(seconds(age))"
+                // a busy main that missed 50 ms is not a stall: the note starts where the watchdog's line does
                 if isStatus, var last = lastStatus.withLock({ $0 }) {
-                    last["main"] = note
+                    if age > .seconds(2) { last["main"] = note }
                     return reply(last)
                 }
                 return reply(["error": "main thread \(note), \(request.op) dropped", "main": note])

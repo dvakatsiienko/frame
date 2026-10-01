@@ -49,24 +49,26 @@ private func stripMarkdown(_ text: String) -> String {
     // pictographs, skin tones, flags, keycaps, tag sequences and the joiners that glue them
     t = sub(t, "[\\p{Extended_Pictographic}\\p{Emoji_Modifier}\\p{Regional_Indicator}\\x{FE0E}\\x{FE0F}\\x{200D}\\x{20E3}\\x{E0020}-\\x{E007F}]", "")
     // a line that ends bare ends a sentence: several lines read as one run-on otherwise (dima: «it sounds like a single sentence»)
-    return sub(t, "(?<=[\\p{L}\\p{N})\\]])[ \\t]*\\n", ".\n")
+    return sub(t, "(?<=[\\p{L}\\p{N})\\]])[ \\t]*\\r?\\n", ".\n")
 }
 
 private func rewriteLatin(_ text: String) -> String {
     var t = text
     // ids carry nothing a listener can use: a file link names its kind, a hash, a uuid, a long token or a pid number is cut
-    t = sub(t, "\\bfile://\\S*?(?:\\.(\\w+))?(?=[\\s)]|$)", .caseInsensitive) { g in
+    t = sub(t, "\\bfile://\\S*?(?:\\.(\\w+))?(?=[.,;:!?)]*(?:\\s|$))", .caseInsensitive) { g in
         let kind = fileKinds[g[1].lowercased()] ?? g[1].lowercased()
         guard let first = kind.first else { return "a file link" }
         // «an html», «a pdf», «a markdown»: a kind read letter by letter takes its article from the letter's name
         let isSpelled = letterAcronyms.contains(kind) || !kind.contains(where: "aeiou".contains)
         return ((isSpelled ? "aefhilmnorsx" : "aeiou").contains(first) ? "an " : "a ") + kind + " file link"
     }
+    t = sub(t, "\\bhttps?://(?:www\\.)?([^/\\s)]+)\\S*", "$1", .caseInsensitive)
     t = sub(t, "\\b[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}\\b", "an id")
     t = sub(t, "\\b(pid)\\b:?\\s*\\d+", "pid", .caseInsensitive)
-    t = sub(t, "\\b(?=[0-9a-f]*\\d)(?=[0-9a-f]*[a-f])(?:[0-9a-f]{7,12}|[0-9a-f]{40})\\b", "a commit")
-    t = sub(t, "\\b(?=[A-Za-z0-9]*\\d)(?=[A-Za-z0-9]*[A-Za-z])[A-Za-z0-9]{16,}\\b", "an id")
-    t = sub(t, "\\bhttps?://(?:www\\.)?([^/\\s)]+)\\S*", "$1", .caseInsensitive)
+    // two letters and two digits at least, so «1e10000» and «deadbeef» stay words; a «#» in front is a colour
+    t = sub(t, "(?<![#\\w])(?=(?:[0-9a-f]*\\d){2})(?=(?:[0-9a-f]*[a-f]){2})(?:[0-9a-f]{7,12}|[0-9a-f]{40})\\b", "a commit")
+    // six digits at least, so a type name like «ISO8601DateFormatter» stays a name
+    t = sub(t, "\\b(?=(?:[A-Za-z]*\\d){6})(?=[A-Za-z0-9]*[A-Za-z])[A-Za-z0-9]{16,}\\b", "an id")
     t = sub(t, "\\b(\\d{4})-(\\d{2})-(\\d{2})\\b") { g in
         guard let month = Int(g[2]), (1...12).contains(month), let day = Int(g[3]) else { return g[0] }
         return "\(months[month - 1]) \(day), \(g[1])"
@@ -84,7 +86,9 @@ private func rewriteLatin(_ text: String) -> String {
     // a path says only its last part; a bare «audio/video» is two words, not a path
     t = sub(t, "(?:~|\\.{1,2})?/?(?:[\\w.-]+/)+[\\w.-]*") { g in
         let parts = g[0].split(separator: "/").filter { !["~", ".", ".."].contains($0) }
-        let isPath = g[0].first.map { "~./".contains($0) } == true || parts.count > 2 || g[0].hasSuffix("/") || parts.last?.contains(".") == true
+        // a sentence end the line-break rule put on the leaf is not a file extension
+        let hasExtension = parts.last?.range(of: "\\.\\w+\\.?$", options: .regularExpression) != nil
+        let isPath = g[0].first.map { "~./".contains($0) } == true || g[0].hasSuffix("/") || hasExtension
         return isPath ? parts.last.map(String.init) ?? "" : parts.joined(separator: " ")
     }
     t = sub(t, "\\b(\\w+)\\.(ts|tsx|js|md|json|sh|py|swift|go|yaml|toml)\\b", "$1 dot $2")
@@ -114,6 +118,7 @@ private func rewriteSymbols(_ text: String) -> String {
     t = sub(t, "\\s+([.,!?;:])", "$1")
     t = sub(t, ",(\\s*,)+", ",")
     t = sub(t, "([.!?;:]),", "$1")
+    t = sub(t, ",([.!?;:])", "$1")
     return sub(t, "^[,\\s]+|[,\\s]+$", "")
 }
 

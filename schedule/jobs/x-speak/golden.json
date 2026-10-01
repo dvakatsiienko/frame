@@ -260,5 +260,43 @@
             ["uk", "перший рядок без крапки."],
             ["en", "the second line in english"]
         ]
+    },
+    {
+        "in": "keep input/output\nnext",
+        "out": [["en", "keep input output. next"]]
+    },
+    {
+        "in": "input/output/error and ios/android/web on 10/01/2026",
+        "out": [["en", "input output error and ios android web on 10 01 2026"]]
+    },
+    {
+        "in": "open file:///x/svg-round.md.",
+        "out": [["en", "open a markdown file link."]]
+    },
+    {
+        "in": "file:///x/a.md\nnext line",
+        "out": [["en", "a markdown file link. next line"]]
+    },
+    {
+        "in": "https://github.com/o/r/commit/af8572af now",
+        "out": [["en", "github.com now"]]
+    },
+    {
+        "in": "1e10000 iterations, colour #ff00aa80, base64EncodedString",
+        "out": [
+            ["en", "1e10000 iterations, colour #ff00aa80, base64Encoded String"]
+        ]
+    },
+    {
+        "in": "ISO8601DateFormatter writes the stamp",
+        "out": [["en", "ISO8601Date Formatter writes the stamp"]]
+    },
+    {
+        "in": "look (see notes)\nthen go",
+        "out": [["en", "look, see notes. then go"]]
+    },
+    {
+        "in": "first line\r\nsecond line",
+        "out": [["en", "first line. second line"]]
     }
 ]
