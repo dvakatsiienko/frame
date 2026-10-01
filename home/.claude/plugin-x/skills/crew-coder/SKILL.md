@@ -125,9 +125,10 @@ for ceremony.
 
 ## the git lane
 
-- **`lane` is THE way to commit, push, open a pr and merge main in a worktree** — `lane commit
-  <msg-file> -- <paths>`, `lane push`, `lane pr-open <title> <body-file>`, `lane merge-main`; the
-  guard refuses any command text holding «git», and `lane` holds none.
+- **`x lane` commits, pushes, opens the pr and merges main in a worktree** (bare `x` lists the verbs;
+  publishing ones want `--apply`) — the guard refuses command text holding «git», `x` holds none; a
+  frame worktree's `x lane push` goes through the main checkout.
+- **a test needing a new tool ships its ci install step in the same commit** (#53: exit 127 on ci).
 - **remote state comes from `git ls-remote`, never `@{u}`** — a worktree that cannot push asserted
   «pushed» twice from a stale upstream ref.
 - **PR by default in `bytes`.** First act on any pr-lane job: `git fetch && git log --oneline origin/main..main` — local main ahead of origin means your branch would carry the coordinator's unpushed commits into the pr diff (46 files instead of 7 on dotfiles #42); ask the coordinator to push before you branch. A `--bg` job briefed into a shared checkout (no worktree) has `Edit`/`Write` blocked by the isolation guard — edit through `~/frame/home/.claude/plugin-x/bin/edit-anchored <file> <anchor-file> <replacement-file>`: it writes only when the anchor matches exactly once, reads the bytes back, and prints `<file>:<line>`. The anchor and the replacement are files, so the shell never reaches them. Several edits → `~/frame/home/.claude/plugin-x/bin/edit-batch <batch-file>`: one call, every anchor checked before any write (the format is in its header) — a worktree coder spent ~20 calls on python-by-path without it (BYT-113). Then: `git worktree add .claude/worktrees/<ticket>-<slug>

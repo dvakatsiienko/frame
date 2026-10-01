@@ -19,6 +19,12 @@ x-speak lives in `schedule/jobs/x-speak/` (swift, launchd). this app reaches it 
 the chain, voices, speed, gain and budget live in `schedule/jobs/x-speak/config.json`; the page holds nothing
 else, and the daemon re-reads the file on the next F4 after a save.
 
+- **the live daemon is dima's most-used tool** — a rebuild (`pnpm speak:build`) relaunches it and cuts any read in
+  progress; announce the swap first and check the control socket's `status` is not speaking (live tests cut his
+  reads twice on FRM-283)
+- **a normalizer rule starts from the real grab**, never a guessed input: the Claude app glues list items and drops
+  line breaks, Slack's accessibility focus is the empty message box — one real F4 beat every guess (FRM-283, 10-01)
+
 ## hazards
 
 - **save goes through biome's formatter, fed indented json** — biome keeps an object expanded only when its input

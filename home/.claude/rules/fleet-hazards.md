@@ -39,7 +39,9 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   2026-08-30). in frame it is AUTOMATED: the `EnterWorktree` hook
   (`shelf/hooks/worktree-seed.sh`, user scope) runs it in every bg coder's fresh worktree; manual
   `CI=1 pnpm install` is needed only for a hand-made `git worktree add`. inline env for that
-  one command only, never global
+  one command only, never global. 📌 **to re-measure on pnpm 12:** two sessions on #53 (2026-10-01) saw
+  `CI=1 pnpm install` still print «sync hooks» and point the shims at the worktree — trust the guard
+  only after a fresh probe
 - `rebase.updateRefs` is on since the git overhaul (2026-09-03): a safety BRANCH made before a
   rebase is dragged forward with the rewrite and stops being a recovery point — a tag or the
   reflog is the net (a coder lost its net on a reword, 2026-09-05)
@@ -55,9 +57,10 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   literal arguments, run from the tree. `eval`, a variable, `cd x && git`, a pipe, or any command
   whose text names git is refused: «a worktree-isolated session's git operations must target its
   own worktree»
-- ✅ **commit, push, pr-open and merge-main run through `lane <verb>`** (plugin-x `bin/`, on PATH;
-  bare `lane` prints the verbs) — the git runs inside the script, so the command text passes
-  (4 coders lost ~1 h before it existed, 2026-09-28)
+- ✅ **commit, push, pr-open, merge-main and unlock run through `x lane <verb>`** (frame `x/`, on PATH;
+  bare `x` prints the verbs; the old plugin-x `lane` is a shim) — the git runs inside the script, so
+  the command text passes (4 coders lost ~1 h before it existed, 2026-09-28); a frame worktree's
+  `x lane push` pushes through the main checkout
 - anything else whose text names git or `eval` (a jq path like `.git.x`, `gh --jq`, an
   agent-browser `eval`) goes into a scratch script and runs by path; never override `HOME`
 

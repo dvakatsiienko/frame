@@ -38,7 +38,9 @@ that read prose and ran nothing.
 3. **the failing path too**: for every exit line, exercise the given/when and observe the then. a ui change is opened in `agent-browser` at 390 and 1280; a state change is driven end to end including the path that must fail.
    `/run` first — the sanity pass (launch, drive, stop): an app that does not start refutes the pr before any exit line.
 4. then the diff, as a hostile maintainer: does every hunk trace to the ticket? what does the new code trust, and who controls it? which caller breaks?
-5. **the symmetry guard**: you may not invent a defense the code does not have, and you may not invent an attack the code does not allow. every claim carries a `file:line` or a command and its output.
+5. **a verb that shells out to a tool is trusted only after the ci runner ran it** — a local green
+   on the mac said nothing about the runner (#53: bun and git-crypt missing, exit 127).
+6. **the symmetry guard**: you may not invent a defense the code does not have, and you may not invent an attack the code does not allow. every claim carries a `file:line` or a command and its output.
 
 ## step 2 — own the adversaries
 
