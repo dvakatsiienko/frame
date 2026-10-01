@@ -25,3 +25,5 @@ dima, 2026-10-01: «designing communications is exhaustive for me (because I hav
 
 - the designer ends a round by writing `decisions.json` (the object above, crop as a rect on a board) instead of stickies
 - a script renders the boards (`design:comp-render`), crops each spot, and publishes the desk; dima clicks; cclio reads the answers and relays them as one batch
+- computer use (claude-in-chrome, 2026-10-01): the extension drives only tabs it opens; the canvas loaded and comment mode turned on, but two clicks on an artboard opened no composer (the boards render in frames). dropped as a channel: slow, brittle, screenshot-heavy
+- no open claude-code issue asks for agent-opened canvas comments; the nearest is #88710 (anchors collapse to editor chrome)
