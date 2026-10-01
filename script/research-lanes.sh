@@ -22,18 +22,27 @@ if [ "${1:-}" = "--lane" ]; then
       ;;
     parallel)
       parallel-cli research run --processor core --text -o "$out/parallel" -f "$brief" > "$out/parallel.log" 2>&1
-      echo "parallel: exit $? · $(( $(date +%s) - s )) s · $(wc -c < "$out/parallel.md" 2>/dev/null | tr -d ' ') chars · ¢ unsettled"
+      code=$?
+      echo "parallel: exit $code · $(( $(date +%s) - s )) s · $(wc -c < "$out/parallel.md" 2>/dev/null | tr -d ' ') chars · ¢ unsettled"
+      exit $code
       ;;
   esac
   exit 0
 fi
 
 brief=${1:?usage: research-lanes <brief.md> [out-dir]}
+[ -s "$brief" ] || { echo "research-lanes: no brief at $brief" >&2; exit 1; }
 out=${2:-$(dirname "$brief")/lanes-$(date +%H%M%S)}
 mkdir -p "$out"
 op="$(dirname "$self")/op-run.sh"
 timeout 1200 "$op" "$self" --lane exa "$brief" "$out" > "$out/exa.status" 2>&1 &
+exa=$!
 timeout 900 "$op" "$self" --lane parallel "$brief" "$out" > "$out/parallel.status" 2>&1 &
-wait
+par=$!
+failed=0
+wait $exa || failed=1
+wait $par || failed=1
 cat "$out/exa.status" "$out/parallel.status"
 echo "out: $out"
+# a fan-out that ran nothing must not read green: any failed lane fails the run
+exit $failed
