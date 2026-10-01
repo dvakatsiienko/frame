@@ -1,108 +1,16 @@
 #!/usr/bin/env bash
-# lane — the coder's commit / push / pr / merge verbs, run from the current worktree.
-# the worktree bash sandbox refuses any command whose text holds «git», so the verbs live
-# here and the command a coder types never names it.
-#
-#   lane commit <msg-file> -- <paths…>   pathspec commit, prints the new sha; mid-merge it concludes the merge
-#   lane push                            push HEAD's sha to its branch, print local and remote sha
-#   lane pr-open <title> <body-file>     open a pr on main as x-coder-cc; --dry-run prints the gh argv
-#   lane merge-main                      fetch and merge origin/main; a conflict prints the files and stops
-set -euo pipefail
-
-die() { echo "lane: $*" >&2; exit 1; }
-
-branch() { git symbolic-ref --quiet --short HEAD || die "detached HEAD — check out a branch first"; }
-
-remote_sha() { git ls-remote origin "refs/heads/$1" | cut -f1; }
-
-# hook output is long: silent on success, whole on failure — the hooks are the only error channel
-quiet() {
-    local log
-    log=$(mktemp)
-    if ! "$@" >"${log}" 2>&1; then
-        cat "${log}" >&2
-        rm -f "${log}"
-        return 1
-    fi
-    rm -f "${log}"
-}
-
-cmd_commit() {
-    local msg=${1:-}
-    [[ -f ${msg} ]] || die "usage: lane commit <msg-file> -- <paths…>"
-    shift
-    [[ ${1:-} == -- ]] || die "usage: lane commit <msg-file> -- <paths…>"
-    shift
-    (($#)) || die "no paths — name what goes into the commit"
-
-    # a path gone from both the tree and the index (the old side of a mv) kills `add`,
-    # so stage only what exists and let the index carry the removal
-    local p present=()
-    for p in "$@"; do
-        if [[ -e ${p} ]] || git ls-files --error-unmatch -- "${p}" >/dev/null 2>&1; then
-            present+=("${p}")
-        fi
-    done
-    ((${#present[@]})) && git add -A -- "${present[@]}"
-
-    if [[ -f $(git rev-parse --git-path MERGE_HEAD) ]]; then
-        quiet git commit -F "${msg}" || die "merge commit failed"
-    else
-        git diff --cached --quiet -- "$@" && die "nothing staged under those paths — empty diff, no commit"
-        quiet git commit -F "${msg}" -- "$@" || die "commit failed"
-    fi
-    git rev-parse HEAD
-}
-
-cmd_push() {
-    local b sha remote
-    b=$(branch)
-    sha=$(git rev-parse HEAD)
-    quiet git push -q origin "${sha}:refs/heads/${b}" || die "push failed"
-    remote=$(remote_sha "${b}")
-    echo "local  ${sha}"
-    echo "remote ${remote}"
-    [[ ${remote} == "${sha}" ]] || die "remote does not match HEAD"
-}
-
-cmd_pr_open() {
-    local dry=0
-    if [[ ${1:-} == --dry-run ]]; then dry=1; shift; fi
-    local title=${1:-} body=${2:-}
-    [[ -n ${title} && -f ${body} ]] || die "usage: lane pr-open [--dry-run] <title> <body-file>"
-
-    local b sha
-    b=$(branch)
-    sha=$(git rev-parse HEAD)
-    [[ $(remote_sha "${b}") == "${sha}" ]] || die "origin/${b} is not at HEAD — run lane push first"
-
-    local argv=(pr create --base main --head "${b}" --title "${title}" --body-file "${body}")
-    if ((dry)); then
-        printf '%q ' github-token-wrap "${argv[@]}"
-        echo
-        return
-    fi
-    "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/github-token-wrap" "${argv[@]}"
-}
-
-cmd_merge_main() {
-    branch >/dev/null
-    quiet git fetch -q origin main || die "fetch failed"
-    if ! quiet git merge --no-edit origin/main; then
-        local conflicts
-        conflicts=$(git diff --name-only --diff-filter=U)
-        [[ -n ${conflicts} ]] || die "merge failed without conflicts — read the output above"
-        echo "conflicts:" >&2
-        echo "${conflicts}" >&2
-        die "resolve them, then lane commit <msg-file> -- <resolved paths>"
-    fi
-    git rev-parse HEAD
-}
-
-case ${1:-} in
-    commit) shift; cmd_commit "$@" ;;
-    push) shift; cmd_push "$@" ;;
-    pr-open) shift; cmd_pr_open "$@" ;;
-    merge-main) shift; cmd_merge_main "$@" ;;
-    *) sed -n 's/^#   //p' "$0" >&2; exit 2 ;;
+# lane — kept for running coders; the verbs live in the x cli now (`x lane --help`).
+# the old lane published without asking, so the publishing verbs get --apply here;
+# `pr-open --dry-run` maps to x's plan (no --apply).
+here=$(realpath "${BASH_SOURCE[0]}")
+x=${here%/home/.claude/plugin-x/bin/lane}/x/bin/x
+verb=${1:-}
+case ${verb} in
+    commit | push | merge-main | unlock) shift; exec "${x}" lane "${verb}" --apply "$@" ;;
+    pr-open)
+        shift
+        if [[ ${1:-} == --dry-run ]]; then shift; exec "${x}" lane pr-open "$@"; fi
+        exec "${x}" lane pr-open --apply "$@"
+        ;;
+    *) exec "${x}" lane ;;
 esac

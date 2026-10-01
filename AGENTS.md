@@ -113,6 +113,8 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
 - `gmail/` — the `gmailctl` filter set and the block list; `schedule/` — every launchd job.
 - `logos/` — `@frame/logos`, the one logo store every app imports (`workspace:*`); marks enter only
   through art-kit's `logo.ts`, never into an app's own tree.
+- `x/` — `x`, the personal cli (bun, from source, `x/AGENTS.md` is the verb contract); on PATH
+  through `home/.local/bin/x`.
 - `cc` is a symlink to `home/.claude/`, a short path for the agent system.
 
 📌 **1Password is required** for SSH signing. Vim plugins need a manual `:PlugInstall` after setup.
@@ -123,7 +125,7 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
 - a git worktree of `frame` cannot push (the `mirror` gate reads `~` symlinks that point at
   the main checkout)
 - **the encrypted set is `.gitattributes`** (the `filter=git-crypt` lines) — read it before calling a task git-crypt-blocked; every other file works in a fresh clone or a cloud session with no key (a «frame is git-crypt, so no cloud» call was wrong on 2026-09-28: the set was one file)
-- a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`; a hand-made `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, the unlock with the same two filters off — `GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=filter.git-crypt.clean GIT_CONFIG_VALUE_0=cat GIT_CONFIG_KEY_1=filter.git-crypt.required GIT_CONFIG_VALUE_1=false git-crypt unlock "$(git rev-parse --git-common-dir)/git-crypt/keys/default"` — because the unlock runs `git status`, which dies on the clean filter (the bare unlock failed on the chords-run probe, 2026-09-27); the main key file unlocks in one step, no copy. a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe ONLY after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob — same ciphertext, nothing plaintext can be staged
+- a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`; a hand-made `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, `x lane unlock` — the unlock with both filters off (it runs `git status`, which dies on the clean filter; the chords-run probe, 2026-09-27), plus a remove + checkout per encrypted file, because the unlock alone leaves the ciphertext in place (measured on a fixture, FRM-285). a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe ONLY after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob — same ciphertext, nothing plaintext can be staged
 - **biome lints `.svg` in frame** (`useSortedAttributes`) — art shipped outside `assets/` and `brand/` gets its `!path` exclusion in `biome.jsonc` in the same commit, or the commit is refused (speak's favicon, 2026-09-29)
 
 ### launchd + tcc (`schedule/`, `hotkeys/`)
