@@ -468,7 +468,14 @@ final class Speaker {
             log("press: accessibility missing — grant bin/x-speak in Privacy & Security")
             return
         }
-        let (text, via) = await grabSelection()
+        var (text, via) = await grabSelection()
+        // an empty accessibility answer is trusted only while something plays (F4 = pause, no 300 ms ⌘C wait);
+        // idle, F4 means «read», so ⌘C gets a try: a selection inside a canvas or a frame is not the focused
+        // element's (Chrome on a claude.ai artifact, 2026-10-01)
+        if (text ?? "").isEmpty, via == "ax", !isSpeaking {
+            text = await copySelection()
+            via = "ax → ⌘C"
+        }
         let grabbed = elapsed(pressed)
         let parts = chunks(normalize(text ?? ""))
         guard !parts.isEmpty else {
