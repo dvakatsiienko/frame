@@ -100,6 +100,12 @@ claims: `schedule/jobs/x-speak/`
   - when the user clicks the speak logo, top-left
   - then the page scrolls to the top, the url drops its #column, and the edit is still there; under reduced motion the jump is instant
 
+## keys and settings
+
+- 🧭 a key typed in the admin is stored in the macOS keychain, never in config.json; when the keychain and 1password both hold one, the keychain wins (dima, 2026-10-01)
+- 🧭 one waveform setting (bars by default; thin, wide, dots, curve, blocks) draws every card and the pill
+  - makes: a `waveform` key in config.json
+
 ## stats — the quick view
 
 - 🧭 every read leaves one record
@@ -110,7 +116,7 @@ claims: `schedule/jobs/x-speak/`
 - 🧭 one compact quick view shows the stats in the admin
   - given a week of records
   - when the admin loads
-  - then one compact view shows: minutes listened, reading time saved, the top source apps, and what the normalizer cut
+  - then one compact view shows: minutes listened, reading time saved, the top source apps, and what the normalizer cut — as kinds and counts, never real text (dima, 2026-10-01)
   - and hovering a figure may open a popover with its detail
   - decision: compact, one view, no dashboard and no stats page yet; peak hours dropped (dima, 2026-10-01: «let's try compact without breeding a lot of additional views»)
 - 🧭 reading time saved = words heard ÷ 238 wpm
@@ -178,10 +184,12 @@ claims: `schedule/jobs/x-speak/`
   - then a slider and a number box open; a typed value applies on Enter; ↑ / ↓ step by 1, ⇧ by 4, ⌥ fine
   - and the next F4 keeps the value
   - decision: two icons, not a panel — the pill stays a pill (dima, 2026-09-30 re-shape)
+  - decision: the volume is a master level, a config key on top of each engine's gain (dima, 2026-10-01)
 - 🧭 the pill shows the sentence being read, the spoken word lit, in step with the audio
   - given speech playing through kokoro, elevenlabs or the macOS voice
   - then the pill shows the current sentence with the spoken word lit, in step with the audio
   - decision: timings come from the engines — kokoro's word timestamps (mlx-audio drops them today), elevenlabs' stream/with-timestamps, the macOS voice's willSpeakWord; whisper alignment only as a last resort (the highlight research, 2026-09-30)
+  - decision: the line shows the normalized text, so the lit word matches what is heard; an engine without word timings (kokoro today) gets a char-proportional estimate (dima, 2026-10-01)
 - 🧭 in native apps the spoken word gets a click-through highlight over the source text — an experiment
   - given text read from TextEdit, Notes or Safari
   - then the spoken word gets a click-through overlay over the source text
