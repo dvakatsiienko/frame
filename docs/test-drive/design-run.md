@@ -75,3 +75,26 @@ pick minutes · rounds
 - impeccable's finish review: 8 material fixes, 3 of them comp devices the coder had skipped — rendering the boards to png first (now `design:comp-render`, a crew-coder step) is the fix
 - what the comp never covered, found by dima's eye in 3 review rounds: chrome placement on a letterboxed piece (the comp's art filled the screen) — ended as «The One Frame Rule» in `DESIGN.md`; the pieces list key
 - `DESIGN.md` now exists (impeccable's documenter, from the shipped code) → the drift-policy test drive starts today
+
+## model × effort — fable 5.1 vs opus 5.5 (from 2026-10-01)
+
+dima, 2026-10-01: «measure fable designer token usage to compare against opus 5.5 and consider effort». the meter:
+`python3 docs/test-drive/design-run/usage.py <session-id>…` — tokens per model (subagents included), wall minutes and $
+at list prices, 1h cache writes at 2× input. effort is not recorded in a transcript; it comes from the spawn line.
+
+opus 5.5 baseline, the atelier spreads (effort not recorded at spawn, likely the default):
+- spread v1 (62e56c11) · 4 takes · out 107k · cache write 261k · read 12.8M · $6.78 · 46.5 wall min (incl. idle)
+- spread vague (ceed2212) · 4 takes · out 62k · write 148k · read 3.9M · $3.20 · 9.4 min
+- spread adhd (8882b18d) · 4 takes · out 57k + sonnet branches · $4.25 · 9.5 min
+- round 3 (38cc02b0) · 3 artboards · out 74k · write 240k · read 19.1M · $7.22 · 34.1 min
+
+fable 5.1, speak brief v1.2, 2 takes + the blind pill side take each, one line per arm when its spread lands:
+- 2026-10-01 · speak · brief v1.2 · full · arm medium (3261de54) · 2 takes + blind pills A/B · 8 artboards · ~245k tokens by the session counter (in+out, the split is on the session footer) + blind lanes 77k (A, FTR, 1.8 min) and 94k (B, PRODUCT, 3.7 min) · 16 wall min (16:30–16:46) · 5 h window 34 → 52 % (shared with the other arm), week 55 → 57 % · pick minutes and rounds: open
+- 2026-10-01 · speak · brief v1.2 · full · arm opus 5.5 medium · 2 takes + blind pills A/B + pass 2 · 9 artboards · ~115k tokens by the session counter (in+out; the split is on the session footer) · blind lanes inside it: A (FTR) ~1.5 min, B (PRODUCT) ~1 min · 10 wall min (16:37–16:47) · 5 h window 43 → 55 % (shared with the fable arms), week 56 → 57 % · pick minutes and rounds: open
+- 2026-10-01 · speak · brief v1.2 · full · arm high (52d7c203) · 2 takes + blind pills A/B + pass 2 · 13 artboards (per take: admin ideal, admin benched, 1728, 900, pill, stats; one blind-pill board) · ~302k tokens by the session counter (in+out; the job state file reads 128k, the split is on the session footer) · blind lanes inside it: A (FTR) and B (PRODUCT) ~1 min of plan each, frozen before `DESIGN.md` was opened, per-lane tokens not split · 24 wall min (16:30–16:54) · 5 h window 34 → 60 % (shared with the other arms), week 55 → 58 % · pick minutes and rounds: open
+- metered at the spread (usage.py, list prices): opus 5.5 medium $4.35 · 11.0 min · out 74k — fable 5.1 medium $13.44 · 15.5 min · out 94k — fable 5.1 high $15.52 · 24.7 min · out 135k (high grew to ~$25 with dima's comment rounds)
+- 📌 the blind leaked: the gallery/tab titles named arms («speak opus v1», «high arm v1») before dima looked
+- dima's verdict (2026-10-01, unblinded): **fable medium and high beat opus**; medium vs high each wins in some scenarios. 34 canvas comments: opus 5, fable medium 11, fable high 18 — most «best» picks land on the two fable canvases
+- friction: each arm titled the same board differently, so the cross-canvas review stalled; fixed in `x:crew-designer` (one board-title scheme from the brief's words)
+- «best» tags per arm (dima's canvas comments, 2026-10-01, 39 comments): fable high 13 positive + 7 steers · fable medium 9 positive + 4 steers · opus 2 positive + 3 steers. the merge take (brief v1.3) borrows: page + selected card + waveform + footer stats + popover (fable high) · header + card + popovers + pill shape (fable medium) · order line + detailed stats (opus)
+- the review flow, adopted: dima comments on the canvases → cclio hoists every comment + a coverage check of uncommented parts → one merge brief → one designer draws the merged take (`x:crew-designer` step 5)
