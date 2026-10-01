@@ -29,8 +29,28 @@ a quick night session, ~01:40–03:30. no builds, no coders. the speak lane stay
 - open: the speak lane (wake gremlin + normalizer coder, then shape lens / public / fable designer) · the wispr probe · the jev program · the «what i missed» view · the 4×4 fanout
 - frame c1ab1513 local, no coders
 
+⸻ upd 16:55 (checkpoint)
+
+**shipped**
+- speak gremlins merged ([#52](https://github.com/dvakatsiienko/frame/pull/52), [FRM-283](https://linear.app/x-com/issue/FRM-283)): the wake hang was an O(n²) meter drain on the main thread, the double voice a late «finished» from a stopped system voice; one voice at a time, F4-over-F4 without the stutter, the normalizer skips paths and ids and reads glued chromium lists; 7 verifier rounds, golden 71/71
+- roadmap: order-only edges redrawn, cli pulled to 2026-10-01, trophy-sys planned for the design lane
+- Linear cap: auto-archive never fires (projects never close) → `pnpm linear:archive` in every halt, 140 archived
+- `pnpm wispr:add`: dictionary words written while Wispr runs; the ⏳ block is one fence with a «wispr adds» section
+- «not for» lines on 8 misfiring skills, the stack convention (visx, react-zoom-pan-pinch, rifm, motion, react-query)
+- Explore runs on sonnet 5.5 fleet-wide (proven); fast-jev-compaction on at cclio scope, key from 1password via `--values-stdin`
+- the jev router is off: its misses are its shape (45 yes/no, no «none», no context); 200 blind-labelled prompts mined for the rebuild ([FRM-268](https://linear.app/x-com/issue/FRM-268) carries the video's 7 uses)
+
+**tricks gained**
+- `claude plugin configure <p> --values-stdin` sets a sensitive plugin option with no tty and no echo
+- a Linear create that answers «usage limit exceeded» may still create the ticket — search the run marker before a retry
+- a capture build plus one real F4 beat any guess about what an app hands the daemon
+
+**state**
+- next: checkpoint → speak shape-lite → fable designer a/b → cli grill while it draws
+- FRM-283 open until the first F4 after an overnight sleep
+
 ## trail
 
-- shipped: speak wake gremlin located (main thread blocked after wake) · medium = every model's effort baseline · sonnet 5.5 refresh · dima's lens ideas in studio
-- open: speak lane 10-01/02 (gremlin + normalizer coder, shape lens + public + fable designer) · wispr add probe · jev program · «what i missed» view
-- state: frame c1ab1513, no coders · cclio 0.3.88 · x 0.11.191
+- shipped: speak gremlins merged #52 (wake hang, one voice, normalizer) · roadmap redrawn, cli now · linear:archive + wispr:add · not-for lines + stack · Explore on sonnet · jev compaction on, router off
+- open: speak shape-lite → fable designer a/b → cli grill · jev rebuild from the 200-prompt set · atelier ftr baseline · FRM-283 overnight check
+- state: frame 165d2ab1 (6 unpushed), no coders · cclio 0.3.90 · x 0.11.192
