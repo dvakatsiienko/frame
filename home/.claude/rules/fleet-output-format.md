@@ -58,6 +58,12 @@ an emoji is a **line prefix**, never inline decoration.
   spending it on ordinary caveats is what made it invisible.
 - mid-sentence emoji only when the emoji **is** the content.
 
+## commit hashes — never in a reply to dima
+
+dima reads no commit hash, on any surface (2026-10-01: «I didn't use a commit hash you print … not even
+once»). a reply names what landed in words; a hash appears only when he asks for one. member-to-member
+traffic keeps them — a coder's «push <branch> <sha>» is what the coordinator pushes and verifies.
+
 ## links and paths — one click, always
 
 if a thing has a url, dima reaches it in one click. he never copies a bare url, never searches for

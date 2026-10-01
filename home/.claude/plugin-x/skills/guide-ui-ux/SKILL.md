@@ -39,6 +39,9 @@ guides (`guide-react`) sit on top of this one.
   atelier's pieces list)
 - **a scroll box never clips a focus ring** — a ring on an element inside an overflow container
   is `ring-inset` / a negative `outline-offset`, or the container carries padding for it
+- **an icon-only control names itself on hover, on keyboard focus and to a screen reader** — a short
+  hint with its key when it has one («pause ⇧F4»), and the same words as its accessible name; an icon
+  alone is a guess (dima, 2026-10-01, speak's pill)
 - **every clickable is `<button>`/`<a>` with its cursor and a visible hover state** — the
   surface, border or underline shifts under the pointer; an image that opens a zoom is a
   clickable too. A `div` with onClick is a keyboard hole. Hit target ≥24×24 (44 touch); a dense
