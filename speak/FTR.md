@@ -166,6 +166,7 @@ claims: `schedule/jobs/x-speak/`
   - and list markers («■», «•», «★») are never spoken; a bulleted item glued to the one above on an opening «/“ still gets its pause
 - ⬜ the pill floats while speech plays: its wave, ⏸ / ▶, ■, stick and close
   - then the ⏸ / ▶ button follows the speech, and the pill never takes focus from the app in front
+  - and paused, the wave keeps its last shape in grey and the sentence line takes the same grey, the held word on its pad; only stopped is the wave flat (dima, 2026-10-01, merge v1.14)
 - ⬜ the pill drags anywhere and keeps its spot per display
   - given the pill dragged on one display
   - when speech next plays on that display
