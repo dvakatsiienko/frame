@@ -30,3 +30,4 @@ crew-coder's rule cuts a layer with no unique finds after two real prs; this tes
 
 - 2026-09-30 · bytes#116 (atelier lens ring, 29 files) · cli --agent · 0 · 0 · — (the BYT-113 coder's retro)
 - 2026-09-30 · bytes#117 (atelier favicon) · cli --agent · 0 · 0 · —
+- 2026-10-01 · frame #52 (speak gremlins) · 2 findings (CRLF, link punctuation), 0 unique — both also found by matt code-review; verifier 15 real (9 unique), code-review 15 (5 unique) · free tier

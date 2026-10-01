@@ -232,6 +232,12 @@
         "repo": "harshaneel/humanize"
       },
       "autoUpdate": true
+    },
+    "fast-jev-compaction": {
+      "source": {
+        "source": "github",
+        "repo": "tamaratran/fast-jev-compaction"
+      }
     }
   },
   "outputStyle": "output-fun",
@@ -253,6 +259,16 @@
     }
   },
   "fastModePerSessionOptIn": true,
+  "pluginConfigs": {
+    "fast-jev-compaction@fast-jev-compaction": {
+      "options": {
+        "compactAtPercent": 95,
+        "model": "jev-1.13.0",
+        "preserveRecentMessages": 10,
+        "truncateHeadChars": 500
+      }
+    }
+  },
   "tui": "fullscreen",
   "voice": {
     "enabled": true,

@@ -17,6 +17,10 @@ right file as well, faster or cheaper?
   read-only tools), linked to `~/.claude/agents/` on 2026-10-01 — every Explore call fleet-wide now takes this arm
 - arm C, jev ranking: `rg` finds the candidate files, jev scores them 20 at a time against the question, the top 3 are
   opened (the video's use case 4: 35 files ranked in 1.6 s). not built yet — a script, built when arm B's first rounds land
+  - the video's shape (screenshots from dima, 2026-10-01): a skill, not an agent, «because skills have scripts that
+    accompany a skill» — `jev-explore/SKILL.md` + `jev_rank.py` (theirs is python; ours would be a node `.ts` script).
+    the description triggers on «where is X handled, defined or enforced»; the flow: one or two keywords → keyword search →
+    jev scores 20 files per request → Claude reads only the top 3 (0.96, 0.91, 0.87 in the demo)
 - day-0 source: the 2026-10-01 model refresh — sonnet 5.5 wins as a short-lived reader under opus; `low` skips checks
   on code, `xhigh`/`max` cost more than opus
 

@@ -1,4 +1,12 @@
 {
+  "env": {
+    "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1"
+  },
+  "permissions": {
+    "deny": [
+      "Skill(adhd:adhd)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -14,7 +22,8 @@
   "enabledPlugins": {
     "cclio@cclio": true,
     "neuroarxiv@neuroarxiv": true,
-    "adhd@adhd": true
+    "adhd@adhd": true,
+    "fast-jev-compaction@fast-jev-compaction": true
   },
   "extraKnownMarketplaces": {
     "cclio": {
@@ -36,10 +45,5 @@
         "repo": "UditAkhourii/adhd"
       }
     }
-  },
-  "permissions": {
-    "deny": [
-      "Skill(adhd:adhd)"
-    ]
   }
 }

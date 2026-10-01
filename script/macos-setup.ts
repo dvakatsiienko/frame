@@ -37,6 +37,7 @@ const FINDER = 'com.apple.finder';
 const DESKTOP_SERVICES = 'com.apple.desktopservices';
 const DOCK = 'com.apple.dock';
 const GLOBAL = 'NSGlobalDomain';
+const CLEANSHOT = 'pl.maketheweb.cleanshotx';
 
 const DEFAULTS = [
     {
@@ -223,6 +224,18 @@ const DEFAULTS = [
         key: 'InitialKeyRepeat',
         label: 'Short delay before key repeat',
         value: 10,
+    },
+    {
+        domain: CLEANSHOT,
+        key: 'downscaleRetinaScreenshots',
+        label: 'CleanShot saves Retina screenshots at 1x, so agents read small text',
+        value: true,
+    },
+    {
+        domain: CLEANSHOT,
+        key: 'screenshotFormat',
+        label: 'CleanShot saves JPG, ~10× smaller than PNG',
+        value: 'jpg',
     },
 ] as const satisfies readonly SystemDefault[];
 
