@@ -42,6 +42,23 @@ in the ledger (what, why): for a component with strong user conventions (a scrub
 for the fix pass's detail polish, or when dima rejected every take twice. they come from public galleries
 through `x:browser-headless` (godly, land-book, dribbble search) — a reference, never a copy.
 
+## the four phases — a job runs in rounds of rising fidelity
+
+a full job never draws everything at once (dima, 2026-10-01: one prod-grade spread drew 25 boards, his
+comments landed on layout, colour and copy at once, and ~15 single-comment rounds followed). each phase is
+a fresh session and ends in one ballot (dima's answers, read by cclio):
+
+1. **outline** — greyscale wireframes of the structure only: the page's layout, where each block lives,
+   the rows of a component. no colour, no type choices. he picks a structure.
+2. **direction** — 2–3 styled takes on the picked structure: palette, type, the feel of the key piece. he
+   picks a look. steps 2–4 below run here.
+3. **states** — the pick across every state and window shape the brief names.
+4. **polish** — detail rounds, as many as the tweaks need; then the handoff (step 7).
+
+draw each phase at its own fidelity as well as it can be drawn: an outline is a good wireframe, never a
+rough one. whether phases cost quality against a single prod-grade prompt is being measured on the first
+phased run (`docs/test-drive/design-run.md`).
+
 ## 2. frames — four takes that cover the axes
 
 The spread is **4 takes at the four corners of the two axes** (low-low, low-high, high-low,
