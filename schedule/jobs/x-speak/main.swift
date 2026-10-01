@@ -55,7 +55,7 @@ func failure(_ status: Int, _ bytes: URLSession.AsyncBytes) async -> EngineError
 }
 
 func log(_ line: String) {
-    let stamp = ISO8601DateFormatter.string(from: Date(), timeZone: .current, formatOptions: [.withTime, .withColonSeparatorInTime, .withFractionalSeconds])
+    let stamp = ISO8601DateFormatter.string(from: Date(), timeZone: .current, formatOptions: [.withFullDate, .withDashSeparatorInDate, .withSpaceBetweenDateAndTime, .withTime, .withColonSeparatorInTime, .withFractionalSeconds])
     FileHandle.standardError.write(Data("\(stamp) \(line)\n".utf8))
 }
 
@@ -162,9 +162,11 @@ final class Player {
         await withCheckedContinuation { drainWaiters.append($0) }
     }
 
+    // the engine pauses too: a running engine keeps the meter's tap feeding silence, and hours of it once froze the pill
     func stop() {
         generation += 1
         node.stop()
+        engine.pause()
         pending = 0
         dryAt = nil
         releaseWaiters()
@@ -182,34 +184,54 @@ final class Player {
     }
 }
 
+// one synth at a time, and only its own callbacks count: a stopped synth's late «finished» once resumed the next
+// read's wait, that read moved on while its synth still talked, and F5 could no longer reach the orphan
 @MainActor
 final class SystemVoice: NSObject, NSSpeechSynthesizerDelegate {
     private var synth: NSSpeechSynthesizer?
     private var done: CheckedContinuation<Void, Never>?
-    var onFirstWord: (() -> Void)?
+    private var onFirstWord: (() -> Void)?
 
-    func speak(_ chunk: Chunk, _ settings: EngineConfig) async {
+    var isBusy: Bool { onFirstWord != nil }
+
+    func speak(_ chunk: Chunk, _ settings: EngineConfig, onFirstWord: @escaping () -> Void) async {
+        stop()
         let synth = systemVoice(for: chunk.lang, settings).flatMap { NSSpeechSynthesizer(voice: $0) } ?? NSSpeechSynthesizer()
         synth.delegate = self
         synth.rate *= Float(settings.speed)
         self.synth = synth
+        self.onFirstWord = onFirstWord
         await withCheckedContinuation { continuation in
             done = continuation
             synth.startSpeaking(chunk.text)
         }
     }
 
-    func stop() { synth?.stopSpeaking() }
+    func stop() {
+        synth?.delegate = nil
+        synth?.stopSpeaking()
+        synth = nil
+        onFirstWord = nil
+        done?.resume()
+        done = nil
+    }
+
     func pause() { synth?.pauseSpeaking(at: .immediateBoundary) }
     func resume() { synth?.continueSpeaking() }
 
     nonisolated func speechSynthesizer(_ sender: NSSpeechSynthesizer, willSpeakWord range: NSRange, of string: String) {
         guard range.location == 0 else { return }
-        MainActor.assumeIsolated { onFirstWord?(); onFirstWord = nil }
+        MainActor.assumeIsolated {
+            guard sender === synth else { return }
+            onFirstWord?()
+            onFirstWord = nil
+        }
     }
 
     nonisolated func speechSynthesizer(_ sender: NSSpeechSynthesizer, didFinishSpeaking finishedSpeaking: Bool) {
         MainActor.assumeIsolated {
+            guard sender === synth else { return }
+            synth = nil
             done?.resume()
             done = nil
         }
@@ -282,6 +304,7 @@ final class Speaker {
     }
 
     func stop() {
+        if job != nil { log("read \(reads): stopped") }
         job?.cancel()
         cloudPrefetch?.task.cancel()
         cloudPrefetch = nil
@@ -419,11 +442,10 @@ final class Speaker {
         togglePause()
     }
 
+    // unconditional: F5 silences every voice, even one no read owns any more
     func stopPressed() {
-        guard job != nil else { return }
         stop()
         panel.speechEnded()
-        log("stop")
     }
 
     // F4 reads the selection, cutting off what plays; with nothing selected it pauses / resumes what plays. ⇧F4 is
@@ -537,8 +559,7 @@ final class Speaker {
         case .system:
             await player.drained()
             try Task.checkCancellation()
-            systemVoice.onFirstWord = onAudio
-            await systemVoice.speak(chunk, settings(.system))
+            await systemVoice.speak(chunk, settings(.system), onFirstWord: onAudio)
         case .gemini:
             try await playGemini(chunk, onAudio: onAudio)
         // the kokoro server answers only once the whole chunk is rendered, so there is nothing to stream
@@ -619,7 +640,9 @@ final class Speaker {
                         return current == .waiting
                     }
                     guard state.withLock({ $0 == .playing }) else { throw CancellationError() }
+                    // checked on main, where stop() runs: bytes that land after a stop never reach the player
                     try await MainActor.run {
+                        try Task.checkCancellation()
                         try player.schedule(Data(pcm), settings)
                         if isFirst { onAudio() }
                     }
@@ -669,13 +692,10 @@ final class Speaker {
             throw EngineError.status(0)
         }
         if audio.prefix(4) == Data("RIFF".utf8) { audio = audio.dropFirst(44) }
+        try Task.checkCancellation()
         try player.schedule(Data(audio), settings)
         onAudio()
     }
-}
-
-extension SystemVoice {
-    var isBusy: Bool { onFirstWord != nil }
 }
 
 func kokoroRequest(_ text: String, voice: String?) -> URLRequest {
@@ -782,6 +802,7 @@ struct XSpeak {
         }
         let control = Control()
         control.start()
+        heartbeat.start()
         var hotKey: EventHotKeyRef?
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
         // one handler for every key; the hotkey id says which fired: 1 is F4, 2 is F5, 3 is ⇧F4

@@ -124,6 +124,9 @@ claims: `schedule/jobs/x-speak/`
   - then the speech pauses and the pill's button reads ▶; ⇧F4 again resumes it where it stopped
   - decision: pause has two doors — F4 on an empty selection and ⇧F4 always — so a selection left on screen never blocks a pause (dima, 2026-09-30)
 - ⬜ F5 stops the speech
+  - given a read playing on any engine
+  - when the user presses F5
+  - then every voice goes silent at once, and none keeps talking
 - ⬜ tech text reads as words: a path says its last part, ids are cut
   - given selected text holding a path, a file link, a pid, a git hash or a long id
   - when the user presses F4
