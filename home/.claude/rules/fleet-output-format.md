@@ -202,15 +202,23 @@ file he names.
     his **`rewind`** reprints that report in full plus the block; `rewind <topic>` an older one.
   - **while a shift runs, the block is suspended:** a shift decides, logs and parks instead of
     asking, and its report carries the decisions (`cclio:shift`, dima 2026-09-28).
-  - the header sits OUTSIDE the fence as a plain line; the fence holds only the numbered asks, so
+  - the header sits OUTSIDE the fence as a plain line; the fence holds only what he answers, so
     what he copies is exactly what he answers (dima, 2026-09-14: cw rendered the in-fence header
-    as a thing to delete after every paste):
+    as a thing to delete after every paste).
+  - **ONE fence, one copy** (dima, 2026-10-01): the asks sit under a bare `lane` line; Wispr
+    dictionary adds (`rules/dima-signals.md`) sit in the same fence under `wispr adds`, after a
+    blank line, each pre-ticked ✓ — he unticks a wrong one, and a kept ✓ is his yes. no adds, no
+    section:
 
       ⏳ waiting on your word:
 
       ```
+      lane
       1. <ask> ➡️ <recommendation>
       2. <ask> ➡️ <recommendation>
+
+      wispr adds
+      1. <heard> → <meant> ✓
       ```
 
       📄 last report: **<topic>** · <HH:MM>

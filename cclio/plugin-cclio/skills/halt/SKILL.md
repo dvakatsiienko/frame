@@ -1,5 +1,5 @@
 ---
-description: load when dima means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop» — or types the command; «that's it for now from my side» mid-flow closes a list or a batch, not the session. add `stop` when he leaves NOW («i have to go»).
+description: load when dima means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop» — or types the command; «that's it for now from my side» mid-flow closes a list or a batch, not the session. add `stop` when he leaves NOW («i have to go»). Not for a question or a doubt about ending.
 ---
 
 # /cclio:halt
@@ -163,6 +163,9 @@ the next session directly. before writing the CST:
   the linear initiative «roadmap» in the same pass (`memory/dima-strategy.md`, the roadmap section)
   rather than bending the milestones to fit
 - one line in the wrap: `milestone · done/total · what moved`
+- `pnpm linear:archive` (in `~/frame`) — archives closed tickets untouched for 14 days. linear's own
+  auto-archive waits for the project to close, ours never do, and the free plan counts closed
+  tickets toward its 250 (a create was refused at the cap, 2026-10-01). its count goes in the wrap line
 
 
 ## phase 4 — the board

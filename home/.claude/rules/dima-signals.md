@@ -18,9 +18,12 @@
   - every mapping goes into the reply's 👀 parsed list (`«Quards» → chords`), so a wrong read shows
     before it becomes work
   - **every misheard word also gets a 🎙️ line right above the ⏳ block**, in the reply where it
-    appeared: `🎙️ wispr: «Creo coder» → crew-coder · add «Creo coder» → «crew coder», correct a
-    misspelling on`. he adds the entry to Wispr Flow's dictionary, and the mishearing stops at the
-    source (dima, 2026-09-30)
+    appeared: `🎙️ wispr: «Creo coder» → crew-coder`, and the add rides the ⏳ fence's `wispr adds`
+    section, pre-ticked ✓ (`rules/fleet-output-format.md`). his kept ✓ → the agent writes it the same
+    turn with `pnpm wispr:add '<heard>' '<meant>'` (in `~/frame`; safe while Wispr runs), and the
+    mishearing stops at the source (dima, 2026-09-30 / 2026-10-01)
+  - an add whose heard side is a real word he says in other senses (`now know` → `don't know`) is
+    left out — the replacement fires everywhere; a real name goes in with a one-word note
 - he ships ideas half-formed on purpose and sharpens them in the exchange; mid-turn corrections
   arrive while you are still running — check for them specifically.
 - how he works: lowercase, fast; says «i'm tired :D» and keeps going for another hour; prefers
