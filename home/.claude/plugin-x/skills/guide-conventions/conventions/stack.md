@@ -7,7 +7,11 @@ job gets its pick added here the day it lands, so the next app copies it instead
 - **zoom and pan** → `react-zoom-pan-pinch` — as in bytes `apps/atelier`
 - **number input** → `rifm` (`useRifm` + `rifm/number`) — as in bytes `apps/financial`,
   `AmountInput.tsx`
-- **animation** → `motion` (motion.dev) for the standard ones
+- **animation** → `motion` (motion.dev) for UI state: enter/exit, layout, gestures, springs on
+  interaction · **GSAP** for choreography: long timelines, kinetic type (SplitText), scroll
+  storytelling (ScrollTrigger), SVG draw/morph, anything seeked by time (video renders). free for
+  commercial use; in React through `useGSAP`. a component reacting to state → motion; a scene that
+  plays like a film → GSAP (dima, 2026-10-02)
 - **REST** → `@tanstack/react-query`, always
 
 ✅ a new app needs a chart → `@visx/*`, copied from trophy-sys.

@@ -31,3 +31,7 @@ crew-coder's rule cuts a layer with no unique finds after two real prs; this tes
 - 2026-09-30 · bytes#116 (atelier lens ring, 29 files) · cli --agent · 0 · 0 · — (the BYT-113 coder's retro)
 - 2026-09-30 · bytes#117 (atelier favicon) · cli --agent · 0 · 0 · —
 - 2026-10-01 · frame #52 (speak gremlins) · 2 findings (CRLF, link punctuation), 0 unique — both also found by matt code-review; verifier 15 real (9 unique), code-review 15 (5 unique) · free tier
+- 2026-10-02 · bytes#119 (design-loupe v1, 55 files) · cli --agent --committed --base main · 3 findings (2 the same README avatar gap, 1 «validate Host» major) · 0 unique real — the avatar gap was already a known skip, the Host finding is false: vite 8's host check answers 403 before plugin middleware (probed with a foreign Host + matching Origin) · free tier · ~4 min
+- 2026-10-02 · frame coder/FRM-278 (lane --repo + design:states, branch, no pr) · cli on an older head · 1 unique real (`--ftr` at a dir crashed with a stack trace → exit 2) · matt code-review found the only high (`--repo` into a mid-merge repo would conclude its merge) · free tier
+- 2026-10-02 · frame coder/FRM-294 (ab-js + red-proof --pairs, branch, no pr) · cli · 1 finding, 0 unique — the same defect the code-review fork found · free tier
+- 2026-10-02 · bytes#120 (design-loupe verify kit, 5 files) · cli --agent --base main · 1 finding, 1 unique real (`kit.sh boards` read green on an empty board list) · matt code-review found 4 others, the ci reviewer 1 (a red-proof claim with no proof on record) · free tier · ~3 min

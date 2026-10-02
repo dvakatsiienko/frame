@@ -46,13 +46,16 @@ through `x:browser-headless` (godly, land-book, dribbble search) — a reference
 
 a full job never draws everything at once (dima, 2026-10-01: one prod-grade spread drew 25 boards, his
 comments landed on layout, colour and copy at once, and ~15 single-comment rounds followed). each phase is
-a fresh session and ends in one ballot (dima's answers, read by cclio):
+a fresh session and ends in one design-loupe round (his answers, handed back to you):
 
 1. **outline** — greyscale wireframes of the structure only: the page's layout, where each block lives,
    the rows of a component. no colour, no type choices. he picks a structure.
 2. **direction** — 2–3 styled takes on the picked structure: palette, type, the feel of the key piece. he
    picks a look. steps 2–4 below run here.
-3. **states** — the pick across every state and window shape the brief names.
+3. **states** — the pick across every state and window shape the brief names. each board's root
+   names the states it shows (`data-states="paused, stuck"`); every state on the app's `FTR.md`
+   `> states:` lines appears on at least one board — never every layout in every state. the check:
+   `pnpm -C ~/frame design:states <app> --ftr <FTR.md>` lists each state's boards, exit 1 on a gap.
 4. **polish** — detail rounds, as many as the tweaks need; then the handoff (step 7).
 
 draw each phase at its own fidelity as well as it can be drawn: an outline is a good wireframe, never a
@@ -98,6 +101,8 @@ Only then render.
   top-left board three different names, and the cross-canvas review stalled).
 - author each take as a file in `jobs/<app>/takes/` and publish from there. the canvas stays
   private until dima shares it; the files are the source.
+- every word on a board is written with `x:writing-for-humans` loaded — a label says what it does, a
+  caption what to look at, in one short line. the board's copy is what ships.
 - the cheap habits that keep quality: [thrift.md](thrift.md).
 
 ## 5. the pick
@@ -116,10 +121,13 @@ middle take tends to win because it is in the middle, so dima picks the corner h
   3. write a merge brief: per surface, the board that won and its source, the steers, the open forks
      as a/b boards; one designer draws ONE merged take from it
   4. tally the «best» tags per arm in the design-run ledger — the model and effort stats
-- **the designer asks dima only on the canvas**: a sticky note beside the board, starting with the
-  literal «dima-confirm-N:» and one line of what to decide; he ⌘F-searches «dima-confirm» and steps
-  through them. one channel per question — cclio never relays a pick for a question a note already
-  asks (dima, 2026-10-01: two channels gave him two answers to one question). an answered note is removed.
+- **the designer asks dima only through design-loupe** (`~/projects/bytes/apps/design-loupe`, read its
+  `CONTEXT.md`): a round of asks in `jobs/<app>/asks.json`, each pinned with `id="ask-N"` on the element
+  it is about, a recommendation and why on every ask, ~7 asks a round at most. he opens each by a link,
+  answers in place, and hands the round over; act once per handover, never per answer — mark each
+  seen, then applied, and take the id off when applied. his own canvas comments still reach you
+  natively (Send to Claude). one channel per question — cclio never relays a pick for a question an
+  ask already carries (dima, 2026-10-01: two channels gave him two answers to one question).
 - **comment rounds on a long session are the cost**: a fresh session per batch of rounds, reading the
   brief and the canvas files, beats a session carrying 700k (the speak merge: $17 spread, $54 total)
 - a mash-up across takes is the expected outcome of that review, not a failure; it still says the

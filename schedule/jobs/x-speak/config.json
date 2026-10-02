@@ -17,7 +17,7 @@
         },
         "fish": {
             "favourites": ["933563129e564b19a115bedd57b7406a"],
-            "gain": 2,
+            "gain": 2.7,
             "model": "s2.1-pro-free",
             "speed": 1,
             "voice": {
@@ -33,7 +33,7 @@
         },
         "kokoro": {
             "favourites": ["af_heart"],
-            "gain": 1.9,
+            "gain": 2.1,
             "speed": 1,
             "voice": {
                 "*": "af_heart"

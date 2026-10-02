@@ -59,9 +59,11 @@ caps), so a drag-and-drop view needs its own checks for those.
 
 ## hazards — measured on a chart app, 2026-09-03
 
-- **`press <key>` with focus inside a Base UI popover fires ~3,000 keydowns** (measured twice on
-  atelier's pieces popover); the last lands after the popover closes and reads as «a key leaks through
-  the list». count the keydowns before blaming the app (BYT-113 verifier, 2026-09-30).
+- **`press <key>` reaches every window-level key handler, not only the focused element** — inside a
+  Base UI popover it fired ~3,000 keydowns (measured twice on atelier's pieces popover), and the last
+  lands after the popover closes and reads as «a key leaks through the list»; design-loupe's window
+  handlers fired the same way. count the keydowns before blaming the app (BYT-113 verifier, 2026-09-30;
+  BYT-116 coder, 2026-10-02).
 - ⚠️ **an unknown flag is swallowed as a positional arg and reports success** — `screenshot
   out.png --selector x` wrote a png named `--selector` into the cwd with a green ✓. verbs are
   positional: `screenshot <selector> <path>`. check `--help` for the verb before a first use.

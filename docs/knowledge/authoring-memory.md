@@ -7,6 +7,23 @@ ticket: DOT-216
 
 # memory authoring — where a fact goes, decided BEFORE it is written
 
+## contents
+
+- the mechanics that decide everything else
+- what the measurements actually say
+- the context budget
+- where a rule comes from — audit, do not invent
+- two levers that cost almost nothing
+- the pre-write checklist
+- the buckets, and the test for each
+- precedence — which layer wins
+- what NEVER goes in
+- hazards that bite silently
+- how the files are organised
+- the method, when a file needs rethinking
+- upkeep is mechanical
+- trimming — the order is binding
+
 sibling to `authoring-skill.md`: that one is how to write a skill, this one is where anything
 written belongs. **placement is decided before the write, not repaired after it.**
 

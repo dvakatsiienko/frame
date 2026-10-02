@@ -1,4 +1,4 @@
-// x-autoclean-screenshots — moves screenshots older than 30 days to the Trash, once a day.
+// x-autoclean-screenshots — moves screenshots older than 7 days to the Trash, once a day.
 //
 // A binary of our own rather than /usr/bin/find, because TCC gates ~/Desktop per executable
 // and a system binary can never be granted: find under launchd answers
@@ -15,7 +15,7 @@
 
 import Foundation
 
-let maxAgeDays = 30
+let maxAgeDays = 7
 let folder = URL(fileURLWithPath: NSHomeDirectory())
     .appendingPathComponent("Desktop/screenshots")
 

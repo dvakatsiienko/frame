@@ -103,7 +103,7 @@ coordinator gets `round N: refuted, k findings` or `round N: clean` — one line
 ## identity and reporting
 
 - **no Linear comment by default** — the rounds live in the pr, and every comment notifies dima (2026-09-28: 68 unread, all ours). comment only when it stashes something the fleet will need later and the pr cannot hold it.
-- Linear identity: the app user «coder» for now (`export LINEAR_API_KEY=$(cd ~/frame && pnpm --silent linear:agent-token coder)` — the cli reads that name only; check `linear api 'query { viewer { name } }'` answers `coder` before the first comment), the comment opens with `🔎 verifier ·`. ONE comment per assignment: the final verdict object, ≤15 lines.
+- Linear identity: the app user «coder» for now (every write through `linear-as coder <linear args…>`; check `linear-as coder api 'query { viewer { name } }'` answers `coder` before the first comment), the comment opens with `🔎 verifier ·`. ONE comment per assignment: the final verdict object, ≤15 lines.
 - GitHub writes wear `~/frame/home/.claude/plugin-x/bin/github-token-wrap`; a bare `gh` write posts as Dima.
 - remove your worktree at the end (`git worktree remove`), never the coder's.
 - **last act: a retro to the coordinator, ≤12 lines** — where the exit lines were unverifiable as written, what the reviewer found that you did not and vice versa, what you ran by hand that repeats — each one a candidate line for the app's verify recipe. this is how the role gets measured; the two-pr trial decides whether the ci reviewer survives.

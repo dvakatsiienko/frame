@@ -111,6 +111,9 @@ const describeState = (state: FetchState) => {
 
 - Types at the **bottom of the file** under `/* Types */` (guide-react's file anatomy).
 - A shared type earns its own module only when 2+ files import it.
+- **A script that dispatches with top-level `await` keeps its helpers as `function` declarations** — a
+  `const` helper defined below the dispatch is still in its TDZ when the await runs, and the script
+  crashes on first use (BYT-116 coder, 2026-10-02).
 
 ## Stack idioms
 

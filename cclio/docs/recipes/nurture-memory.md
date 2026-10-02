@@ -5,10 +5,15 @@ refresh-when: a mechanical check is added or falsified, or the drift-latency fin
 ticket: DOT-216
 ---
 
-# memory-nurture — recipe
+# nurture-memory — recipe
 
 **run this instead of re-planning an inventory.** it is the recipe that came out of the first
 full sweep; the sweep itself was one execution of it. recipe entity per [_spec.md](_spec.md).
+
+📌 **run #2 ([FRM-267](https://linear.app/x-com/issue/FRM-267)) reads
+`docs/research/skill-authoring-best-practices.md` first** — Anthropic's skill best practices and
+the Fable 5 guide, checked against us, one action line per rule, and the run's checklist to copy
+and tick. the steps below stay the method; that file is the run's input.
 
 ## the want (dima's, 2026-08-27)
 
@@ -24,6 +29,10 @@ full sweep; the sweep itself was one execution of it. recipe entity per [_spec.m
   yt-transcript)
 - new memory-hygiene practice and tooling for agent fleets — new checks worth adding to the
   loop, anthropic memory features, community approaches
+- **the snapshot diff, first and cheapest**: re-download Anthropic's two pages as `.md` (append `.md`
+  to the docs url) and `diff` them against the snapshots in
+  `docs/research/skill-authoring-best-practices/` — only the delta is new reading; then replace the
+  snapshots
 
 ## analysis vectors (local evidence — the running agent is the instrument)
 
@@ -40,7 +49,15 @@ full sweep; the sweep itself was one execution of it. recipe entity per [_spec.m
   distilled from research runs and video parses; each research phase refreshes them, raw
   findings die after the distill
 - the memory tree itself is the run's working surface, not an artifact
-- [memory-nurture.checklist.md](memory-nurture.checklist.md) — the complementary run checklist
+- 🧹 **keeping the two authoring docs fresh** — every run, on both:
+  - the snapshot diff (research vectors) decides what is new; nothing is re-read whole
+  - one layer per file: craft is matt's `writing-for-agents`, these hold cc mechanics + the rules we
+    adopt; a line that restates another layer is cut
+  - every claim keeps its tag ([measured] / [read] / [inferred]) with a version or date; a fact
+    whose version is behind the running cc is re-probed or cut
+  - investigation stories move to a research doc with a `dies-when`; the doc keeps the conclusion
+  - a size budget per file, written in the file's frontmatter; a fold that crosses it trims first
+- [nurture-memory-checklist.md](nurture-memory-checklist.md) — the complementary run checklist
   (dima's recipe): a run can span sessions, its state lives there; reset per run, shape kept
 
 🔴 **LIVE during a sweep — this file is edited WHILE the work happens, not after.** every step that
@@ -117,6 +134,13 @@ the second door, still useful on a single file or on memory leaves: the bundled 
 restated defaults, «be thorough»-class no-ops — with `file:line` and a proposed diff, changes
 nothing by itself. ran once on 2026-09-07: four hunks over root + rules, all applied. one invoke,
 read the report, apply by hand. (dima's fold, 2026-09-07)
+
+🎯 **the Fable 5 delete-test** — Anthropic: skills written for older models «are often too
+prescriptive … consider removing older instructions if default performance is better». for each
+prescriptive line (CAPS, «ALWAYS», a list of cases a short sentence covers, a step the model does
+anyway): run the skill's real ask in a fresh session without the line, compare with a run with it,
+keep the line only if the run without it is worse. lines are tested in groups per skill, never one
+run per line; a line with a written incident behind it is kept unless the run proves it a no-op.
 
 ### step 2.5 · the merge pass — one subject per file
 
@@ -205,7 +229,13 @@ proven 2026-08-25:
   rule, a doc, or memory?). paired skills need **symmetric descriptions** — a pair-pointer inside
   an unloaded body fires after the decision it was meant to steer.
 - **a description edit is proven by `claude plugin eval`, never by reading it** — the case
-  shape, the grader and the cost live in [skill-nurture-hillclimb](skill-nurture-hillclimb.md).
+  shape, the grader and the cost live in [nurture-skills-hillclimb](nurture-skills-hillclimb.md).
+- **the structure checks** (the research file's rules 2, 5, 6, 8): every step tagged by how much
+  freedom it needs — a fragile step is a script, not prose; every reference file linked straight
+  from `SKILL.md`; a contents list on any on-demand file over 100 lines; an ordered skill carries a
+  copyable checklist and a «return to step N» line on its verify step
+- **Claude B**: after a skill changes, a fresh session runs one real ask with it; its transcript is
+  read for files never opened, links not followed and steps skipped — a miss goes back to the edit
 - the authoring stack for any edit: `writing-for-agents` (craft, load first) →
   `rules/authoring-memory-and-skills.md` (router + vertical map) → `docs/knowledge/authoring-*.md`
   (mechanics, on demand).
@@ -217,6 +247,12 @@ proven 2026-08-25:
   description from the listing budget) · investigation history moves to a doc, the skill keeps
   conclusions + pointer · a trigger whose firing is doubted gets a TRACER — the injected rule
   tells the reader to name which door fired (see `rules/guide-skill-trigger.md`).
+
+### step 4.8 · the self-correction rule
+
+a flaw seen twice becomes a check, a script or a hook — never a third line of prose. attention runs
+out; a validator does not (`method-silent-failures`). the flawlog flush at each halt names the
+repeats; the sweep turns each into its mechanism.
 
 ### step 5 · the human gate
 
@@ -277,3 +313,16 @@ review-specific craft on top:
    docs, symlinked plugins (`plugin-x-cw`) all carry edges. re-probe the barrel after.
 4. **commit per cluster** with explicit pathspecs; count and report unpushed.
 5. dedupe across LAYERS (rule vs leaf vs skill), one home per moral, siblings point.
+
+## the cw field — the last step when a synced master changed
+
+cw gets cc memory only through dima's hand: sections under a `<!-- sync: cw -->` line in root
+`CLAUDE.md` and `rules/*.md` render into his claude.ai `account / profile / instructions` field.
+(this replaced the `memory-bridge-refresh-cw` recipe, retired 2026-10-02 — dima: «it is manual now
+and no longer automated».)
+
+- the want, his words: «cc is the source of truth, generally. cw memory is a derived view, never the
+  origin.» · «i dont want a mess there» · «memory must be pretty» · «no poems!»
+- when the run changed any synced section: `pnpm memory-sync:map` (what reaches cw, chars vs the
+  field's cap) → `pnpm memory-sync:copy` → dima pastes into settings › account › profile ›
+  instructions for claude → a new cw thread runs `/x-cw:memory-update check`

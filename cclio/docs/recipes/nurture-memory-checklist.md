@@ -1,10 +1,15 @@
-# memory-nurture — the run checklist
+# nurture-memory — the run checklist
 
-the complementary checklist of the [memory-nurture recipe](memory-nurture.md): a nurture run
+the complementary checklist of the [nurture-memory recipe](nurture-memory.md): a nurture run
 may span sessions or days (run #1 took four), so its state lives here, not in chat. this copy
 carries run #1's map and verdicts — a new run resets the checklist, keeps the shape.
 **dima's plan lives here**, moved out of [DOT-73](https://linear.app/x-com/issue/DOT-73)'s body so a
 ticket body is not a granular plan.
+
+📌 **run #2 ([FRM-267](https://linear.app/x-com/issue/FRM-267)) starts from the checklist at the
+end of `docs/research/skill-authoring-best-practices.md`** — copy it into the run's first reply and
+tick it. everything below is run #1's record: its map, its verdicts, its working rules, which
+still bind unless dima changes them.
 
 📌 standing sweep line, every run: **`docs/research/` — anything past its `dies-when`?** delete
 or flag; the frontmatter contract lives in the frame `CLAUDE.md` research bullet.
@@ -341,7 +346,7 @@ the evidence). dima's vertical map landed in `rules/authoring-memory-and-skills.
 
 ## 🔁 the reusable recipe — moved out
 
-it lives at `cclio/docs/recipes/memory-nurture.md`, because it outlives this run. **this file is one
+it lives at `cclio/docs/recipes/nurture-memory.md`, because it outlives this run. **this file is one
 execution of it.**
 
 ## phase 4 · the system checkup — runs in parallel, from the start

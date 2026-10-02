@@ -15,6 +15,9 @@ skills, the detector lanes. First instance of the recipe entity ([spec](_spec.md
 - if skill not found, hunt clever techniques to create home-baked skill
 - best (ideally free) llm-has-written-this-message tools; free tiers and apis first
 - (added 2026-08-27) has harshaneel/humanize moved — new levers, new tells, new references?
+- (added 2026-10-02) published style guides as rule sources: ASD-STE100 Simplified Technical
+  English, Google's developer documentation style guide, Apple's style guide — which of their
+  rules sharpen the skill, above all for ui text (labels, captions, empty states)
 
 ## analysis vectors (local evidence — the running agent is the instrument)
 

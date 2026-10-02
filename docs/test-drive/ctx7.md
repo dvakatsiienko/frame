@@ -22,6 +22,8 @@ fetches.
 
 ## log — date · coder session · library · door (ctx7 / mcp / web / none) · useful y/n
 
+- 2026-10-02 · `pnpm crew:audit --days 7`, 20 real coder sessions (7 scratch/probe sessions left out) · — · ctx7 in 2 sessions (3f2a7658 BYT-116: 3, 7e4c1126: 1), the context7 mcp in 0, web in 1 (3f2a7658), none in 18 · useful: not judged by the audit — 18 of 20 coders looked up no docs at all, so «docs first» is not firing, whichever door wins
+
 ## verdict
 
 _(2026-10-07)_

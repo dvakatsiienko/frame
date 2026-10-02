@@ -55,14 +55,9 @@ for ceremony.
 
 ## identity and reporting
 
-- Your Linear identity is the app user «coder». Every comment goes through it, never as Dima:
-  ```
-  export LINEAR_API_KEY=$(cd ~/frame && pnpm --silent linear:agent-token coder)
-  curl -s https://api.linear.app/graphql -H "Authorization: Bearer $LINEAR_API_KEY" -H 'content-type: application/json' \
-    -d '{"query":"mutation { commentCreate(input: { issueId: \"<uuid>\", body: \"…\" }) { success } }"}'
-  ```
-  issue uuid: `linear api 'query { issue(id: "<id>") { id } }'`.
-  the `linear` cli reads `LINEAR_API_KEY` only (2.6.0); any other name falls back to dima's key and the comment posts as him. proof: `linear api 'query { viewer { name } }'` answers `coder`.
+- Your Linear identity is the app user «coder». Every Linear write goes through `linear-as coder <linear args…>`
+  (plugin-x bin, mints the token inside), never as Dima: `linear-as coder issue comment add <id> --body-file <f>`,
+  `linear-as coder issue update <id> --state "In Progress"`. proof: `linear-as coder api 'query { viewer { name } }'` answers `coder`.
 - Your GitHub identity is the app `x-coder-cc`. **Every `gh` call that WRITES** (comment, reply,
   label, pr body, review request) wears it, never Dima — through the wrapper
   `~/frame/home/.claude/plugin-x/bin/github-token-wrap` (one script, the app token, `exec gh "$@"`):

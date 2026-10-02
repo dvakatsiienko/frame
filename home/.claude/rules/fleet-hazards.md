@@ -39,9 +39,10 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   2026-08-30). in frame it is AUTOMATED: the `EnterWorktree` hook
   (`shelf/hooks/worktree-seed.sh`, user scope) runs it in every bg coder's fresh worktree; manual
   `CI=1 pnpm install` is needed only for a hand-made `git worktree add`. inline env for that
-  one command only, never global. 📌 **to re-measure on pnpm 12:** two sessions on #53 (2026-10-01) saw
-  `CI=1 pnpm install` still print «sync hooks» and point the shims at the worktree — trust the guard
-  only after a fresh probe
+  one command only, never global. 📌 **on pnpm 12 the `CI=1` guard does not hold:** `CI=1 pnpm install` still prints «sync hooks» and
+  points the shims at the worktree (two sessions on #53, 2026-10-01; the FRM-278 coder, 2026-10-02). the
+  shims stay harmless to gating; after a worktree is removed, `pnpm exec lefthook install` in the
+  main checkout points them home (a plain `pnpm install` answers «already up to date» and leaves them)
 - `rebase.updateRefs` is on since the git overhaul (2026-09-03): a safety BRANCH made before a
   rebase is dragged forward with the rewrite and stops being a recovery point — a tag or the
   reflog is the net (a coder lost its net on a reword, 2026-09-05)

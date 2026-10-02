@@ -2,7 +2,7 @@
 
 A **recipe** is a repeatable flow — a maintenance run with research vectors, or a plain execution script (`docs/knowledge/impeccable-refine.md` is one; it lives outside `cclio/` because coders read it), run from time to time, owned jointly: Dima
 owns the want and the research vectors, agents own the execution. Born 2026-08-27 from noticing
-that the writing-for-humans research, the memory-nurture flow, the gazette, and the model-kb
+that the writing-for-humans research, the nurture-memory flow, the gazette, and the model-kb
 refresh all share one skeleton.
 
 ## the fields, and who owns them

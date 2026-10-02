@@ -130,6 +130,29 @@ describe('x lane', () => {
         });
     });
 
+    it('reads the paths from the tree root when run from a subdir', () => {
+        const repo = fixtureRepo();
+        mkdirSync(join(repo, 'sub'));
+        writeFileSync(join(repo, 'readme.txt'), 'from a subdir\n');
+
+        const run = x(
+            [
+                'lane',
+                'commit',
+                '--apply',
+                '--json',
+                messageFile(),
+                '--',
+                'readme.txt',
+            ],
+            join(repo, 'sub'),
+            { CLAUDECODE: '1' },
+        );
+
+        expect(run.code).toBe(0);
+        expect(git(repo, 'status', '--porcelain')).toBe('');
+    });
+
     it('commits only the named paths on the --repo main, from another tree', () => {
         const repo = fixtureRepo();
         writeFileSync(join(repo, 'readme.txt'), 'two\n');

@@ -22,7 +22,10 @@ word. skipping a step happens only on his word, named out loud.
    for whom, what is missing, what should go.
 3. **prior art** — does it exist already, and can we use it instead of building?
    `advise-project-approach` for a plan or a stack; the research lanes (`habit-research-lanes`) for
-   the market. done when the build-or-reuse call is written with its reason.
+   the market. then the lib search: per part of the build (a waveform, a hotkey, a pan/zoom surface),
+   the solid, maintained libraries that already solve it — dima thinks in frontend, so the under-the-hood
+   parts are the ones to hunt (2026-10-02). done when the build-or-reuse call and the lib per part are
+   written with their reasons.
 4. **sharpen** — `neuroarxiv` when the question is an architecture or a method; `adhd` for a name
    or a fork with no clear answer. only where one applies; say which ran and what it changed.
 5. **the cut** — the smallest version worth using, and a written «out» list of what it is not.

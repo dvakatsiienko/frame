@@ -1,11 +1,26 @@
 ---
 researched: 2026-08-23
-sources-current-as-of: cc 2.1.241 · code.claude.com/docs/en/skills · mattpocock-skills 1.2.3 · theo t3 breakdown transcript · bytemonk claude.md transcript
-refresh-when: the skill listing budget mechanics change, or `writing-for-agents` ships a new version — diff `~/.claude/plugins/cache/claude-plugins-official/mattpocock-skills/`
+sources-current-as-of: cc 2.1.241 · code.claude.com/docs/en/skills · mattpocock-skills 1.2.3 · theo t3 breakdown transcript · bytemonk claude.md transcript · anthropic skill best practices + prompting fable 5 (snapshots 2026-10-02, `docs/research/skill-authoring-best-practices/`)
+refresh-when: the skill listing budget mechanics change, or `writing-for-agents` ships a new version — diff `~/.claude/plugins/cache/claude-plugins-official/mattpocock-skills/`; or the anthropic snapshot diff (nurture-memory, research vectors) shows a delta
 ticket: DOT-216
 ---
 
 # skill authoring — the full reference
+
+## contents
+
+- read matt's skill first
+- frontmatter
+- writing the description
+- the skill listing budget (cc only)
+- invocation control
+- what belongs in a skill rather than a memfile
+- splitting: by trigger, not by topic
+- give the model a stop point
+- completion criteria
+- anthropic's structure rules — what we adopt
+- do we still need `skillsmith`? — no
+- argument placeholders
 
 conventions for the skills in `home/.claude/plugin-x/skills/`. `cw` reads the same files —
 `home/.claude/plugin-x-cw/` symlinks into them and ships as the `x-cw` plugin, so a
@@ -233,6 +248,42 @@ for a skill that keeps doing one step too many.
 
 **[inferred]** this is the strongest thing in matt's skill that none of our skills currently do.
 worth a pass over `plugin-x/skills/` on its own.
+
+## anthropic's structure rules — what we adopt
+
+**[read]** [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
+and the [Fable 5 guide](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5),
+both snapshotted 2026-10-02. the full check against us, with numbers, is
+`docs/research/skill-authoring-best-practices.md`; these are the rules a new or edited skill meets.
+
+- **freedom matches fragility** — a step with many valid paths is plain prose (high); a preferred
+  shape is a template with knobs (medium); a fragile or destructive step is an exact script with
+  few or no flags (low). one skill mixes levels. the test per step: «what happens if Claude does it
+  differently?» — nothing much → loosen it; something consequential → script it
+- **`SKILL.md` under 500 lines; every reference file linked straight from it** — a file reached only
+  through another file may be previewed with `head -100` instead of read whole
+- **a contents list on top of any on-demand file over 100 lines**, so a partial read still shows the
+  whole scope. resident memory loads whole and does not need one
+- **an ordered workflow carries a checklist the model copies into its reply and ticks**, and its
+  verify step says where to go back to («if X fails, return to step 3») — that line is what stops a
+  failed step being ticked. no checklist where order does not matter
+- **a quality-critical step runs a validator loop**: check → fix → check again, and proceed only on a
+  pass. the validator can be a script or a file read and compared (a style guide)
+- **plan → validate → execute** for batch, destructive or high-stakes work: the plan is a file, a
+  script checks it, only then it runs. our `x lane` plan + `--apply` is this pattern
+- **say «run X» or «see X»** — whether a bundled script is executed or read as reference
+- **scripts solve, they do not defer**: they handle their errors with a message that names the fix,
+  and every constant says why it is that value
+- **packages are named, never assumed** — matters for skills a cloud or cw session runs
+- **prescriptive skills hurt Fable 5** — CAPS, «ALWAYS» and enumerated cases written for older
+  models; the delete-test in `nurture-memory` decides what stays
+- **never ask the model to reproduce its reasoning in the reply** — on Fable 5 it can trigger the
+  `reasoning_extraction` refusal; ask for a short summary of the answer instead
+
+⚠️ **two anthropic rules we do not adopt** (local wins, fleet-identity #9): third-person descriptions
+that say *what* the skill does (ours say only *when*, `authoring-memory-and-skills`), and gerund
+names (`processing-pdfs`; ours are entity-first). and one open conflict for the sweep: our
+`intended-models` frontmatter above vs `nurture-memory`'s «drop `intended-models` on touch».
 
 ## do we still need `skillsmith`? — no. settled, DOT-132 closed
 

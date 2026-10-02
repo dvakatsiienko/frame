@@ -34,6 +34,9 @@ guides (`guide-react`) sit on top of this one.
   says what to look at, never how it is computed, in one short line; «hours played against completion ·
   log scale · mark size is the trophy count · titles with no trophy earned are hidden» was the tell
   (trophy-sys, dima, 2026-09-30)
+- **text a person may read, copy or have read aloud stays selectable** — a sentence is plain text;
+  the link or drag handle is a separate, smaller target (a header line, an icon), never a wrapper
+  around the words. dima selects lines to read them aloud with F4 (design-loupe, 2026-10-02)
 - **a control that opens a list gets a single-key shortcut, its hint shown on the control** like
   its keyed siblings — a picker is reached as fast as the actions beside it (dima, 2026-09-30:
   atelier's pieces list)

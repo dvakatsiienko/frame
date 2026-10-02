@@ -26,7 +26,8 @@ export const laneVerbs = [
                 name: 'msg-file',
             },
             {
-                description: 'paths that go into the commit, after --',
+                description:
+                    'paths that go into the commit, read from the tree root, after --',
                 isVariadic: true,
                 name: 'paths',
             },
@@ -104,6 +105,8 @@ function commit(args: string[], flags: Flags) {
     if (typeof flags.repo === 'string') enterMain(flags.repo);
 
     const tree = top();
+    // paths are written from the root; a cwd that drifted into a subdir would miss them
+    process.chdir(tree);
     assertUnlocked(tree);
 
     // a path gone from both the tree and the index (the old side of a mv) kills `add`,
