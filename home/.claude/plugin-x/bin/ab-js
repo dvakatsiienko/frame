@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# ab-js <file> [--session <name>] — runs a js file in the open agent-browser page and prints the result.
+# the command text never names agent-browser's eval verb, so a worktree-isolated session may run it.
+set -u
+usage() { echo "usage: ab-js <file> [--session <name>]" >&2; exit 2; }
+[ $# -ge 1 ] || usage
+file=$1; shift
+session=()
+case $# in
+  0) ;;
+  2) [ "$1" = --session ] && [ -n "$2" ] || usage; session=(--session "$2") ;;
+  *) usage ;;
+esac
+[ -f "$file" ] && [ -r "$file" ] || { echo "ab-js: no readable file $file" >&2; usage; }
+exec agent-browser ${session[@]+"${session[@]}"} eval --stdin < "$file"

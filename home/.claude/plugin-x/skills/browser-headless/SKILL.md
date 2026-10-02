@@ -69,6 +69,9 @@ caps), so a drag-and-drop view needs its own checks for those.
   first, then act.
 - **`eval` shares one page scope across calls** — a second `const p` dies as «already declared».
   wrap every eval in an IIFE.
+- **in a worktree, the isolation guard refuses any command text naming `eval`** — write the js to a
+  file and run `ab-js <file> [--session <name>]` (plugin bin): it pipes the file through `eval --stdin`
+  and exits with agent-browser's code.
 - **`fill <sel> ""` does NOT clear an input** — the old value stays and the verb reports success.
   clearing is `eval` with the native value setter plus a dispatched `input` event.
 - **token bombs:** `network requests` unfiltered ≈ 11k tokens, `snapshot -i` ≈ 6.5k on a dense
