@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -38,7 +38,8 @@ if (values.help || !values.ftr || !takes) {
     console.log(usage);
     process.exit(values.help ? 0 : 2);
 }
-if (!existsSync(values.ftr)) fail(`no ftr at ${values.ftr}`);
+if (!statSync(values.ftr, { throwIfNoEntry: false })?.isFile())
+    fail(`no ftr file at ${values.ftr}`);
 if (!statSync(takes, { throwIfNoEntry: false })?.isDirectory())
     fail(`no takes dir at ${takes}`);
 
@@ -62,9 +63,9 @@ const boards = readdirSync(takes)
     .filter((path) => path.endsWith('.html'))
     .sort()
     .map((path) => {
-        const marks = readFileSync(join(takes, path), 'utf8').matchAll(
-            /<[a-z][^>]*?\sdata-states\s*=\s*(["'])(.*?)\1/gi,
-        );
+        const marks = readFileSync(join(takes, path), 'utf8')
+            .replace(/<!--[\s\S]*?-->/g, '')
+            .matchAll(/<[a-z][^>]*?\sdata-states\s*=\s*(["'])(.*?)\1/gi);
         const states = [...marks].flatMap((mark) =>
             (mark[2] ?? '').split(',').map(keyOf),
         );
