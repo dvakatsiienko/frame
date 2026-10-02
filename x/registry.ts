@@ -54,10 +54,14 @@ export function usage(verb: Verb) {
         const name = `<${arg.name}${arg.isVariadic ? '…' : ''}>`;
         return arg.isOptional ? `[${name}]` : name;
     });
+    const flags = Object.entries(verb.flags ?? {}).map(([name, spec]) =>
+        spec.type === 'string' ? `[--${name} <${spec.value}>]` : `[--${name}]`,
+    );
     return [
         'x',
         verb.name,
         ...(verb.needsApply ? ['[--apply]'] : []),
+        ...flags,
         ...args,
     ].join(' ');
 }
@@ -65,7 +69,7 @@ export function usage(verb: Verb) {
 export const toSchema = (verb: Verb) => ({
     args: verb.args,
     exits: exitCodes,
-    flags: globalFlags,
+    flags: { ...globalFlags, ...verb.flags },
     name: verb.name,
     needsApply: verb.needsApply,
     purpose: verb.purpose,

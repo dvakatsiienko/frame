@@ -9,7 +9,7 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-import type { Verb } from './verb.ts';
+import type { Flags, Verb } from './verb.ts';
 import { Fail } from './verb.ts';
 
 const cryptMagic = Buffer.from('\0GITCRYPT\0');
@@ -31,10 +31,18 @@ export const laneVerbs = [
                 name: 'paths',
             },
         ],
+        flags: {
+            repo: {
+                description:
+                    'commit in that repo instead, only on its main; paths are relative to it',
+                type: 'string',
+                value: 'path',
+            },
+        },
         name: 'lane commit',
         needsApply: false,
         purpose:
-            'commit only the named paths from this tree and print the new sha; mid-merge it concludes the merge',
+            "commit only the named paths, print the new sha; mid-merge concludes it; --repo <path> commits on that repo's main",
         run: commit,
     },
     {
@@ -77,7 +85,7 @@ export const laneVerbs = [
 ] as const satisfies readonly Verb[];
 
 /* Verbs */
-function commit(args: string[]) {
+function commit(args: string[], flags: Flags) {
     const [msgFile, ...paths] = args;
     if (!(msgFile && existsSync(msgFile)))
         throw new Fail(
@@ -91,6 +99,9 @@ function commit(args: string[]) {
             `x lane commit ${msgFile} -- <paths…>`,
             true,
         );
+
+    const message = resolve(msgFile);
+    if (typeof flags.repo === 'string') enterMain(flags.repo);
 
     const tree = top();
     assertUnlocked(tree);
@@ -117,8 +128,8 @@ function commit(args: string[]) {
 
     const committed = git(
         isMerging
-            ? ['commit', '-F', msgFile]
-            : ['commit', '-F', msgFile, '--', ...paths],
+            ? ['commit', '-F', message]
+            : ['commit', '-F', message, '--', ...paths],
     );
     if (!committed.isOk) {
         process.stderr.write(`${committed.log}\n`);
@@ -299,6 +310,25 @@ function unlock() {
 }
 
 /* Git */
+// a worktree coder's other-repo half lands on that repo's main and nowhere else
+function enterMain(repo: string) {
+    const root = git(['rev-parse', '--show-toplevel'], repo);
+    if (!root.isOk)
+        throw new Fail(
+            `${repo} is not a git repo`,
+            'x lane commit --repo <git repo on main> <msg-file> -- <paths…>',
+            true,
+        );
+
+    const name = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], root.out);
+    if (name.out !== 'main')
+        throw new Fail(
+            `${root.out} is on ${name.out || 'a detached HEAD'}, not main`,
+            `switch ${root.out} to main, then rerun`,
+        );
+    process.chdir(root.out);
+}
+
 function assertUnlocked(tree: string) {
     const locked = lockedPaths(tree);
     if (locked.length > 0)

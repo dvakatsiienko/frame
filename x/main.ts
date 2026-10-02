@@ -73,12 +73,13 @@ function dispatch(
     rest: string[],
     print: Print,
 ): Outcome | undefined {
+    const options = { ...globalFlags, ...verb.flags };
     let parsed: ReturnType<typeof parseArgs>;
     try {
         parsed = parseArgs({
             allowPositionals: true,
             args: rest,
-            options: globalFlags,
+            options,
             strict: true,
         });
     } catch (error) {
@@ -103,7 +104,7 @@ function dispatch(
                 ...verb.args.map(
                     (arg) => `  <${arg.name}>  ${dim(arg.description)}`,
                 ),
-                ...Object.entries(globalFlags).map(
+                ...Object.entries(options).map(
                     ([flag, spec]) => `  --${flag}  ${dim(spec.description)}`,
                 ),
             ].join('\n'),
@@ -126,7 +127,7 @@ function dispatch(
 
     if (verb.needsApply && parsed.values.apply !== true)
         return { plan: verb.plan(args), status: 'confirm' };
-    return { data: verb.run(args), status: 'ok' };
+    return { data: verb.run(args, parsed.values), status: 'ok' };
 }
 
 // drops the verb's own words, wherever a flag before them put them

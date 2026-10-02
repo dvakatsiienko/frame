@@ -127,7 +127,7 @@ for ceremony.
 
 - **`x lane` commits, pushes, opens the pr and merges main in a worktree** (bare `x` lists the verbs;
   publishing ones want `--apply`) — the guard refuses command text holding «git», `x` holds none; a
-  frame worktree's `x lane push` goes through the main checkout.
+  frame worktree's `x lane push` goes through the main checkout. a cross-repo half: `x lane commit --repo <path>`, on its main.
 - **a test needing a new tool ships its ci install step in the same commit** (#53: exit 127 on ci).
 - **remote state comes from `git ls-remote`, never `@{u}`** — a worktree that cannot push asserted
   «pushed» twice from a stale upstream ref.

@@ -15,7 +15,14 @@ export class Fail extends Error {
 /* Types */
 export type Data = Record<string, unknown>;
 
-export type FlagSpec = { type: 'boolean' | 'string'; description: string };
+export type FlagSpec =
+    | { type: 'boolean'; description: string }
+    | { type: 'string'; value: string; description: string };
+
+export type Flags = Record<
+    string,
+    string | boolean | (string | boolean)[] | undefined
+>;
 
 export type ArgSpec = {
     name: string;
@@ -30,7 +37,8 @@ export type Verb = {
     name: string;
     purpose: string;
     args: readonly ArgSpec[];
-    run: (args: string[]) => Data;
+    flags?: Record<string, FlagSpec>;
+    run: (args: string[], flags: Flags) => Data;
 } & (
     | { needsApply: false }
     | { needsApply: true; plan: (args: string[]) => Data }

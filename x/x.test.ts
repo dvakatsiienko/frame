@@ -130,6 +130,79 @@ describe('x lane', () => {
         });
     });
 
+    it('commits only the named paths on the --repo main, from another tree', () => {
+        const repo = fixtureRepo();
+        writeFileSync(join(repo, 'readme.txt'), 'two\n');
+        writeFileSync(join(repo, 'other.txt'), 'untouched\n');
+
+        const run = x(
+            [
+                'lane',
+                'commit',
+                '--repo',
+                repo,
+                messageFile(),
+                '--',
+                'readme.txt',
+            ],
+            fixtureRepo(),
+        );
+
+        expect(run.code).toBe(0);
+        expect(run.envelope().data.sha).toBe(git(repo, 'rev-parse', 'HEAD'));
+        expect(git(repo, 'status', '--porcelain')).toBe('?? other.txt');
+    });
+
+    it('refuses a --repo that is not a git repo', () => {
+        const run = x(
+            [
+                'lane',
+                'commit',
+                '--repo',
+                scratch('x-plain-'),
+                messageFile(),
+                '--',
+                'readme.txt',
+            ],
+            fixtureRepo(),
+        );
+
+        expect(run.code).toBe(2);
+    });
+
+    it('refuses a --repo whose branch is not main, committing nothing', () => {
+        const repo = fixtureRepo();
+        git(repo, 'switch', '-q', '-c', 'side');
+        writeFileSync(join(repo, 'readme.txt'), 'two\n');
+        const before = git(repo, 'rev-parse', 'HEAD');
+
+        const run = x(
+            [
+                'lane',
+                'commit',
+                '--repo',
+                repo,
+                messageFile(),
+                '--',
+                'readme.txt',
+            ],
+            fixtureRepo(),
+        );
+
+        expect(run.code).toBe(1);
+        expect(git(repo, 'rev-parse', 'HEAD')).toBe(before);
+    });
+
+    it('bare x lane lists the --repo form of commit', () => {
+        const commit = x(['lane'], fixtureRepo())
+            .envelope()
+            .data.groups.lane.find(
+                (verb: { name: string }) => verb.name === 'lane commit',
+            );
+
+        expect(commit.purpose).toContain('--repo <path>');
+    });
+
     it('exits 4 on a publishing verb without --apply, naming the confirm command', () => {
         const run = x(['lane', 'push'], fixtureRepo());
 

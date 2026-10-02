@@ -11,6 +11,7 @@ it runs the checkout the shim lives in.
 - `needsApply: true` for a verb that publishes or destroys, with a `plan(args)`: dispatch calls the
   plan and exits 4 with the exact confirm command until `--apply`; `run` never checks the flag.
   nothing else asks.
+- a verb's own flags sit in its entry's `flags`, beside the global ones; `run` gets them parsed.
 - a failure throws `Fail(message, next)`: `next` is the command that moves the caller forward.
 - the purpose line is what an agent picks a verb by; `x.test.ts` runs `lintPurpose` over every verb.
 - verbs use node apis only (`node:child_process`, `node:util`), never `Bun.*`, so vitest runs the
