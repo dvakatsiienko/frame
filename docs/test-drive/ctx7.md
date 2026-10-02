@@ -22,7 +22,7 @@ fetches.
 
 ## log — date · coder session · library · door (ctx7 / mcp / web / none) · useful y/n
 
-- 2026-10-02 · `pnpm crew:audit --days 7`, 20 real coder sessions (7 scratch/probe sessions left out) · — · ctx7 in 2 sessions (3f2a7658 BYT-116: 3, 7e4c1126: 1), the context7 mcp in 0, web in 1 (3f2a7658), none in 18 · useful: not judged by the audit — 18 of 20 coders looked up no docs at all, so «docs first» is not firing, whichever door wins
+- 2026-10-02 · `pnpm crew:audit --days 7`, 20 real coder sessions (7 scratch/probe sessions left out) · — · ctx7 in 2 sessions (3f2a7658 BYT-116: 3, 7e4c1126: 1), the context7 mcp in 0, web in 1 (3f2a7658), none in 18 · useful: not judged by the audit. ⚠️ correction (same night): the «docs first» line entered `how-you-work.md` on 2026-09-30, and 16 of the 20 sessions started before it; of the 4 coders that had the line, 2 used ctx7 (3 and 1 lookups) and 2 looked up nothing — those two built bash/ts tooling with no library to look up (FRM-278, a probe). the window must start at the line's date; re-count at the verdict with `--days` set from 09-30
 
 ## verdict
 
