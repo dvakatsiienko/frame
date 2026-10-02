@@ -51,7 +51,8 @@ their head.
 - **A red-proof edits the existing line.** Prove a test by mutating the line it reads, never by adding a sibling
   key — biome sorts keys on save and the original silently wins, so the test reads «hollow» when it is not.
   `red-proof <file> <anchor> <replacement> <test>` (plugin bin) does the swap, runs the vitest file, and
-  restores byte-for-byte; exit 0 only on red-then-green.
+  restores byte-for-byte; exit 0 only on red-then-green. Many lines at once: `red-proof --pairs <pairs> <file> <test>`,
+  one `anchor<TAB>replacement` per line, each swapped alone.
 
 ## traps that cost hours
 
