@@ -152,6 +152,93 @@ refuses a direct fetch (402); `parallel-cli extract` read it.
 
 patch branch now: 2 commits, 12 files, +173 −42.
 
+## arm B — HyperFrames on the same video (2026-10-02, opus 5.5)
+
+[heygen-com/hyperframes](https://github.com/heygen-com/hyperframes), Apache-2.0, cli `hyperframes` 0.8.104 (pnpm
+resolved it; npm says 0.8.111 is latest), workflow `talking-head-recut`. work dir
+`~/Movies/motion-broll/hf/videos/speak-promo`. the same levers: a style frame first, scene variety (the zone changes
+on every card), the same CC0 sounds, GSAP, the real screenshot in 2.5D. the brief opened with the prompt frame («you
+are an incredible motion designer… go all out», `BRIEF.md`).
+
+### fleet fit, measured
+- install: `pnpm add hyperframes` in the work folder took 5 s, nothing global. its skills say `npx`; `pnpm exec`
+  works as the swap.
+- 📌 **telemetry is on by default.** the opt-out is `HYPERFRAMES_NO_TELEMETRY=1` + `DO_NOT_TRACK=1` per run. the first
+  `doctor` ran before I knew, so one ping may have gone out.
+- `doctor` found the system Chrome, ffmpeg and whisper-cli; Docker is optional
+- the source repo is 1.4 GB with LFS; the npm package unpacks to 33 MB
+
+### what its tooling caught
+- `lint` reported 4 errors: `left`/`top` tweens that stutter under frame capture. its own talking-head template
+  tweens `#video-wrap` exactly that way; fixed to x/y/scale.
+- `lint` also caught overlapping sfx on one audio track
+- `snapshot --at …` writes a 9-frame contact sheet in **10 s**: the style frame came free, and three framing bugs
+  showed up before any render (a pip hidden under a card, a headline over the headphones, a lockup over the face)
+
+### numbers
+- wall: ~10 min from reading the skill to the side-by-side, including one snapshot fix round
+- render: **76 s wall for the full 66.9 s at 1080p30** (5 workers, hardware GPU; capture 40 s, encode 22 s), no
+  motion-blur subframes
+  - round 2 took 199 s for its 41 s of clips at 720p with 4 subframes
+- sound: the bed is carved under the voice group by its own mixer
+  - silences: -42.5 / -37.8 dB (round 2: -38.8 / -37.5)
+  - voice: -28.6 dB
+  - loudness: -24.8 LUFS, not normalised (round 2 is -24.3)
+- tokens since round 2 (they include the Motion Studio diff and the commit): output ~50k, cache read ~21.4M, cache
+  write ~107k ≈ **$6.10**
+
+### the difference that matters
+- motion-broll cuts **away** from the speaker for every clip; HyperFrames' recut **layers cards over** the playing
+  video and moves it (side panel, pip, hidden only for the fullscreen split). you stay on screen in 5 of 7 cards.
+- the look is the same author's in both arms (the speak kit, the same scenes), so the compare mostly judges the
+  engine and the workflow, not taste
+- side by side: `hf/videos/speak-promo/r2-vs-hf.mp4` (round 2 left, HyperFrames right, HyperFrames audio)
+
+### dima's pick (relayed by cclio)
+- **HyperFrames is the engine.** motion-broll's scenes (GSAP cutaways, the bans, the rhythm, the sound) port into it as
+  templates, after **one** ported scene proves the port works
+- each segment gets a **treatment** dima picks at the plan step:
+  - face only
+  - overlay: cards over him
+  - head-to-corner: he shrinks into a frame and the app takes the screen
+  - full cutaway: the app only
+- his likes: the «most used feature» overlay, the pill over him, the head-to-corner move over the admin, the title
+  overlay
+- telemetry: off for every lint, snapshot and render. the first unflagged `--version` counted once
+  (`~/.hyperframes/config.json`: `commandCount: 1`, `telemetryEnabled: true`). 📌 the cli writes `~/.hyperframes/`
+  (config + an anonymous id) even from a local install; `hyperframes telemetry disable` flips it for good, and is
+  offered to dima, not applied.
+
+## the port proof — one motion-broll scene inside HyperFrames
+
+the scene: round 2's select → F4 → pill morph (closed-form springs, a cursor drag, the one-shape morph), treatment
+**head-to-corner**, in a copy of arm B: `hf/videos/speak-port`.
+
+### how it hosts
+- probe, measured: under HyperFrames seeking, a GSAP `onUpdate` fires on every seek, and so does the `hf-seek` event,
+  with no Three.js adapter involved. so `motion.js` needs no rewrite.
+- `motion.js` gains a hosted mode: with `window.MOTION_HOSTED`, it skips its own preview loop and page styling
+- the new `scripts/hf_port.py` turns a built clip into a host fragment: CSS scoped under one id, the stage markup,
+  a hosted `motion.js` with the preview code cut out (HyperFrames' static lint rejects `performance.now` and
+  `requestAnimationFrame`, even in dead code), and the clip's own script
+- the master timeline drives the scene with one proxy tween:
+  `tl.to(p, {t: T, duration: T, ease: 'none', onUpdate: () => window.seek(p.t)}, start)`
+- the treatment is HyperFrames-side: `#video-wrap` goes to the corner (`x/y/scale`, `zIndex` above the card) and back
+- the host page renames the ids it shares with motion.js (`#stage` → `#hf-root`, `#grain` → `#hf-grain`)
+- lint: 0 errors. the snapshots show the drag selection, the keycap press, the pill going live, the pip in the
+  corner, and cards 1 and 3 untouched.
+
+- render: **66 s wall for the full 66.9 s at 1080p**, the same speed as arm B. the hosted scene costs nothing visible.
+  output: `hf/videos/speak-port/output.mp4`
+- **verdict: the port works.** motion-broll scenes can become HyperFrames templates as-is, through `hf_port.py`.
+
+### limits found
+- one hosted scene per page: `motion.js` owns `window.seek` and its stage ids. a second port needs namespacing
+  (`M.scene` already returns its own seek, so only the ids need prefixing).
+- no motion blur on the ported scene: HyperFrames' CLI exposes no `motionBlur` render flag in 0.8.104 (its docs name
+  an engine option); round 2 rendered 4 subframes. inferred: the per-element `motion-blur` registry component is the
+  route to try.
+
 ## evaluation for vendoring
 
 dima liked round 1 and wants motion-broll as a global, user-only skill we maintain. upstream state: one commit
