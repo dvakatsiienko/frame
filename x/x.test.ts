@@ -193,6 +193,32 @@ describe('x lane', () => {
         expect(git(repo, 'rev-parse', 'HEAD')).toBe(before);
     });
 
+    it('refuses a --repo that is mid-merge, committing nothing', () => {
+        const repo = fixtureRepo();
+        const before = git(repo, 'rev-parse', 'HEAD');
+        writeFileSync(
+            join(repo, git(repo, 'rev-parse', '--git-path', 'MERGE_HEAD')),
+            `${before}\n`,
+        );
+        writeFileSync(join(repo, 'readme.txt'), 'two\n');
+
+        const run = x(
+            [
+                'lane',
+                'commit',
+                '--repo',
+                repo,
+                messageFile(),
+                '--',
+                'readme.txt',
+            ],
+            fixtureRepo(),
+        );
+
+        expect(run.code).toBe(1);
+        expect(git(repo, 'rev-parse', 'HEAD')).toBe(before);
+    });
+
     it('bare x lane lists the --repo form of commit', () => {
         const commit = x(['lane'], fixtureRepo())
             .envelope()

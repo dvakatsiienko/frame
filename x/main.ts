@@ -1,7 +1,7 @@
 import { parseArgs } from 'node:util';
 
 import { findVerb, globalFlags, usage, verbsUnder } from './registry.ts';
-import type { Data, Verb } from './verb.ts';
+import type { Data, FlagSpec, Verb } from './verb.ts';
 import { Fail, exitCodes } from './verb.ts';
 
 const bold = (text: string) => `\x1b[1m${text}\x1b[22m`;
@@ -73,7 +73,10 @@ function dispatch(
     rest: string[],
     print: Print,
 ): Outcome | undefined {
-    const options = { ...globalFlags, ...verb.flags };
+    const options: Record<string, FlagSpec> = {
+        ...globalFlags,
+        ...verb.flags,
+    };
     let parsed: ReturnType<typeof parseArgs>;
     try {
         parsed = parseArgs({
@@ -105,7 +108,8 @@ function dispatch(
                     (arg) => `  <${arg.name}>  ${dim(arg.description)}`,
                 ),
                 ...Object.entries(options).map(
-                    ([flag, spec]) => `  --${flag}  ${dim(spec.description)}`,
+                    ([flag, spec]) =>
+                        `  --${flag}${spec.type === 'string' ? ` <${spec.value}>` : ''}  ${dim(spec.description)}`,
                 ),
             ].join('\n'),
         );

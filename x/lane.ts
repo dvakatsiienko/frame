@@ -34,7 +34,7 @@ export const laneVerbs = [
         flags: {
             repo: {
                 description:
-                    'commit in that repo instead, only on its main; paths are relative to it',
+                    'commit in that repo instead, only on its main and never mid-merge; paths are relative to its root',
                 type: 'string',
                 value: 'path',
             },
@@ -325,6 +325,14 @@ function enterMain(repo: string) {
         throw new Fail(
             `${root.out} is on ${name.out || 'a detached HEAD'}, not main`,
             `switch ${root.out} to main, then rerun`,
+        );
+
+    // the bare mid-merge commit would conclude someone else's merge under this message
+    const mergeHead = git(['rev-parse', '--git-path', 'MERGE_HEAD'], root.out);
+    if (existsSync(resolve(root.out, mergeHead.out)))
+        throw new Fail(
+            `${root.out} is mid-merge — not committing into someone else's merge`,
+            `finish the merge in ${root.out}, then rerun`,
         );
     process.chdir(root.out);
 }
