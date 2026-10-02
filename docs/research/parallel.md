@@ -1,5 +1,5 @@
 ---
-dies-when: the parallel test-drive verdict (2026-10-01)
+dies-when: the parallel test-drive verdict (2026-10-06)
 ---
 
 Ticket: none

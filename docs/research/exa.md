@@ -1,5 +1,5 @@
 ---
-dies-when: the parallel test-drive verdict (2026-10-01) settles exa as a lane or drops it
+dies-when: the parallel test-drive verdict (2026-10-06) settles exa as a lane or drops it
 ---
 
 Ticket: none

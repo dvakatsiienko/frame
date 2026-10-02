@@ -89,7 +89,8 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   `plistlib.dumps` rewrote all 984 lines of the iterm prefs for one spacing value (2026-10-01)
 - an `sd` replacement never carries a `$` — inside a double-quoted argument the shell expands
   `$dir` / `$line` to nothing and the line ships hollow (three sightings, 2026-09-17/18). that
-  edit goes through the Edit tool or a python literal
+  edit goes through the Edit tool or a python literal; and a find string that starts with `-` needs `--`
+  before it, or `sd` reads it as a flag and edits nothing (2026-10-02)
 - **after a `git mv`, stage only the new paths** — the old path in a pathspec kills the whole `git add` («did not match any files»), and a commit then carries the moves without the edits (twice, 2026-09-28)
 - **vendored code gets its biome exclusion in the same commit that adds it** — the commit hook formats staged files only, ci runs `biome ci` over the repo, so a vendored skill turned main red after a green commit (2026-09-28)
 - **a push is read by `git ls-remote`, never by grepping its output** — a `grep -E` with `->` in the pattern hit the ugrep alias, the pipe died, and the push never ran behind a quiet screen (2026-09-28)
