@@ -7,6 +7,7 @@
         "chords:dev": "pnpm --filter chords dev",
         "chords:build": "pnpm --filter chords build",
         "badges:sync": "node ./script/badges-sync.ts",
+        "profile:redraw": "gh workflow run redraw.yml -R dvakatsiienko/dvakatsiienko && echo 'redraw dispatched → https://github.com/dvakatsiienko/dvakatsiienko/actions/workflows/redraw.yml'",
         "frame:link": "node ./script/frame-link.ts",
         "frame:seed": "sh ./script/seed.sh",
         "toolchain:sync": "node script/toolchain-sync.ts",
