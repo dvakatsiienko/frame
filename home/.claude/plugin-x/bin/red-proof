@@ -19,6 +19,7 @@ if [ "${1-}" = --pairs ]; then
     n=$((n + 1))
     case $line in '' | '#'*) continue ;; esac
     case $line in *$'\t'*) ;; *) echo "red-proof: $pairs:$n has no tab between anchor and replacement" >&2; exit 2 ;; esac
+    [ -n "${line%%$'\t'*}" ] || { echo "red-proof: $pairs:$n has an empty anchor" >&2; exit 2; }
     anchors+=("${line%%$'\t'*}") replacements+=("${line#*$'\t'}")
   done < "$pairs"
   [ ${#anchors[@]} -gt 0 ] || { echo "red-proof: $pairs holds no pairs" >&2; exit 2; }
@@ -35,7 +36,8 @@ done
 backup=$(mktemp)
 cp -p "$file" "$backup"
 restore() { cp -p "$backup" "$file"; }
-trap 'restore; rm -f "$backup"' EXIT INT TERM
+trap 'restore; rm -f "$backup"' EXIT
+trap 'exit 130' INT TERM
 
 all_red=1
 for i in "${!anchors[@]}"; do
