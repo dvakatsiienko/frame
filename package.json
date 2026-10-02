@@ -31,6 +31,7 @@
         "design:diff": "node ./design/diff.ts",
         "design:palette": "node ./design/palette.ts",
         "design:scale": "node ./design/scale.ts",
+        "design:states": "node ./design/states.ts",
         "design:tokens": "node ./design/tokens.ts",
         "hotkeys:audit": "node ./hotkeys/macos-audit.ts",
         "hotkeys:map": "open http://localhost:7373",
