@@ -66,7 +66,10 @@ same session it was found. a recipe written up afterwards is a memory of a recip
 has to be the thing that was actually run.
 
 📌 **a skill candidate, not a skill yet.** it earns a trigger once it has run twice and the steps
-stop changing. until then it is a doc, reached by a pointer.
+stop changing. until then it is a doc, reached by a pointer. **decided (dima, 2026-10-02): after
+run #2 it becomes `cclio:nurture`, user-invoked only, with this recipe and its checklist inside the
+skill dir.** `docs/knowledge/authoring-*.md` stay where they are — every session that edits a skill
+or memory reads them, coders included, and a cclio-only skill dir would hide them from that audience.
 
 📌 **executor: a cclio-booted agent, from the cclio dir** — the checkup is vertical by design
 (placement is half the job, steps 3 + leaf-review 2), and only the coordinator holds the whole
@@ -253,6 +256,15 @@ proven 2026-08-25:
 a flaw seen twice becomes a check, a script or a hook — never a third line of prose. attention runs
 out; a validator does not (`method-silent-failures`). the flawlog flush at each halt names the
 repeats; the sweep turns each into its mechanism.
+
+**a check that fires often is a root to fix, not a gate to add** (dima, 2026-10-02: «if it triggers
+too much on a repeating answer, it essentially forces you to do additional turns … if a certain
+assert repeats a lot, then it needs to be fixed instead»). the reply check
+(`shelf/hooks/reply-check.py`, log-only) is read with `pnpm reply-check:report`: a rule near the top
+gets its cause fixed (a sharper positive rule, a template, a tool that writes the shape for me);
+blocking is only for a rule that stays rare and costly. the format rules keep their positive target
+(«every id is a link»); the enforcement prose around them («the mechanical scan before sending»)
+is cut once the log shows the rule holds.
 
 ### step 5 · the human gate
 

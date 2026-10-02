@@ -166,16 +166,15 @@ His question: «how to properly fold it for yourself, so it always works?»
   something that runs, finds the issue, and the model fixes and runs it again. Attention runs out;
   a validator does not (`method-silent-failures`: «the fix is always a different invocation, never a
   firmer intention»).
-- the proposal for the sweep: a **reply validator as a `Stop` hook** (none exists; the `Stop` slot
-  holds only `notification-host-reply.sh`). It reads the last reply and blocks the stop with a reason
-  when it finds:
-  - a ticket id outside a link (`FRM-`, `BYT-`, `DOT-` not inside `](https://linear.app/`)
-  - a markdown table
-  - a `·` inside a sentence, a ①②③ run
-  - a commit hash
-  - an open ⏳ ask from an earlier reply missing from the bucket
-  The model fixes and stops again: validator → fix → repeat, and it holds on a tired night as well
-  as a fresh morning. The rules it checks then shrink in `fleet-output-format` to one line each.
+- ✅ built 2026-10-02, **log-only**: `home/.claude/shelf/hooks/reply-check.py` (Stop hook, user scope,
+  ~40 ms, never blocks) logs bare ticket ids, tables, `·` chains, ①②③ and commit hashes in prose to
+  `~/.local/state/reply-check.tsv`; `pnpm reply-check:report [--days N]` counts per rule
+- dima's correction to the plan: a validator that fires often only adds turns; a rule that repeats
+  gets its root fixed instead. so the log decides per rule — fix the cause (a sharper positive rule,
+  a template, a tool that writes the shape), and block only what stays rare and costly. the jev
+  `reply-shape` flow (a dropped ⏳ ask, verdict first) waits until the regex log shows whether it is needed
+- the «disallow» lines in memory: the positive target stays («every id is a link»); the enforcement
+  prose («the mechanical scan before sending») is cut once the log shows the rule holds
 - the second half is the doc's «suggest a new rule at the end of the run»: our flawlog flush already
   is that. The sweep keeps it and adds one rule: a flaw that repeats twice becomes a validator check
   or a script, never a third prose line.
@@ -207,7 +206,7 @@ Sweep progress:
 - [ ] 5. the Fable 5 cut: delete-test every CAPS/ALWAYS/enumerated rule; keep only what a run proves
 - [ ] 6. skills: rules 2, 5, 6, 8, 12, 18 above; the reasoning-extraction grep
 - [ ] 7. scripts: rules 16, 21 above
-- [ ] 8. the reply validator (Stop hook), then shrink fleet-output-format to what it does not check
+- [ ] 8. read `pnpm reply-check:report --days 14`: fix the root of each frequent rule, then shrink fleet-output-format to the positive targets
 - [ ] 9. Claude B: a fresh session per changed skill runs one real ask; read its transcript
          (if it skipped a file or a step, return to step 6)
 - [ ] 10. size budget per memory file written down; fleet-hazards split (FRM-267 scope)
