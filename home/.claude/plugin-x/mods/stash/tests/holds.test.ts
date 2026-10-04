@@ -25,7 +25,18 @@ function world(on: On) {
     const clock = mock.clock(on, { now: 1_000_000 });
     const files = new Map<string, GitState>();
     const dead = new Set<number>();
+    const links = new Map<string, string>();
     const logs: string[] = [];
+    // one-shot hooks into the middle of a claim: inside git rev-parse, inside the tool itself
+    const during: {
+        revParse?: () => Promise<void>;
+        tool?: () => Promise<void>;
+    } = {};
+    const fire = async (k: keyof typeof during) => {
+        const f = during[k];
+        during[k] = undefined;
+        await f?.();
+    };
     let sid = A;
     on('session.id', () => ({ value: sid }));
     on('session.repo', () => ({
@@ -43,18 +54,18 @@ function world(on: On) {
             isLink: false,
             kind: 'file' as const,
             mtimeMs: 0,
-            realPath: e.path,
+            realPath: links.get(e.path) ?? e.path,
             size: 1,
         },
     }));
-    on('process.run', (_$, e) => {
+    on('process.run', async (_$, e) => {
         const [cmd, ...args] = e.argv;
-        const out = (stdout: string, exitCode = 0) => ({
+        const out = (stdout: string, exitCode = 0, stderr = '') => ({
             value: {
                 exitCode,
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
-                stderr: '',
+                stderr,
                 stdout,
             },
         });
@@ -66,10 +77,14 @@ function world(on: On) {
                 dead.has(pid) ? 1 : 0,
             );
         }
-        if (args[0] === 'rev-parse')
+        if (args[0] === 'rev-parse') {
+            await fire('revParse');
             return out(
                 e.init?.cwd?.startsWith(WORKTREE) ? `${WORKTREE}\n` : '/repo\n',
             );
+        }
+        if (!e.init?.cwd?.startsWith('/repo'))
+            return out('', 128, 'fatal: not a git repository');
         const file = String(args.at(-1));
         const state = files.get(file);
         if (args[0] === 'status')
@@ -79,7 +94,10 @@ function world(on: On) {
         // git diff never sees an untracked file
         return out('', state === 'modified' ? 1 : 0);
     });
-    on('tool.call', () => ({ result: {}, text: 'done' }));
+    on('tool.call', async () => {
+        await fire('tool');
+        return { result: {}, text: 'done' };
+    });
     on('turn.complete', () => ({ text: '' }));
     return {
         as: async ($: Engine, who: string, cwd = '/repo') => {
@@ -90,9 +108,14 @@ function world(on: On) {
                 surface: 'terminal',
             });
         },
+        be: (who: string) => {
+            sid = who;
+        },
         clock,
         dead,
+        during,
         files,
+        links,
         logs,
     };
 }
@@ -110,7 +133,8 @@ async function edit(
         old_string: 'a',
         tool: 'Edit',
     });
-    if (r.deny === undefined) w.files.set(file, w.files.get(file) ?? state);
+    const real = w.links.get(file) ?? file;
+    if (r.deny === undefined) w.files.set(real, w.files.get(real) ?? state);
     return r;
 }
 
@@ -216,6 +240,49 @@ test('one winner when two sessions take a new file in the same second', async ($
     await w.as($, B);
     const second = await edit($, w, '/repo/new.ts', 'untracked');
     expect([first.deny, second.deny].filter(Boolean)).toHaveLength(1);
+});
+
+test('one winner when a rival writes while the claim is in flight', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    let second: Awaited<ReturnType<typeof edit>> | undefined;
+    await w.as($, A);
+    // B takes the file a second later, between A's read and A's write
+    w.during.revParse = async () => {
+        await w.clock.advance(1000);
+        await w.as($, B);
+        second = await edit($, w, '/repo/new.ts', 'untracked');
+        w.be(A);
+    };
+    const first = await edit($, w, '/repo/new.ts', 'untracked');
+    expect([first.deny, second?.deny].filter(Boolean)).toHaveLength(1);
+});
+
+test('a hold whose edit has not landed stays held on a clean file', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    let rival: Awaited<ReturnType<typeof edit>> | undefined;
+    await w.as($, A);
+    // B edits while A's edit waits on its permission prompt
+    w.during.tool = async () => {
+        await w.as($, B);
+        rival = await edit($, w, '/repo/x.ts');
+        w.be(A);
+    };
+    await edit($, w, '/repo/x.ts');
+    expect(rival?.deny).toBeDefined();
+});
+
+test('a file reached through a symlink stays held', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    w.links.set('/home/.claude/CLAUDE.md', '/repo/home/.claude/CLAUDE.md');
+    await w.as($, A);
+    await edit($, w, '/home/.claude/CLAUDE.md');
+    await w.as($, B);
+    expect(
+        (await edit($, w, '/repo/home/.claude/CLAUDE.md')).deny,
+    ).toBeDefined();
 });
 
 test('a broken store never blocks an edit', async ($, on) => {

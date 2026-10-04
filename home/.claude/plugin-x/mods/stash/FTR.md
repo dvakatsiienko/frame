@@ -50,7 +50,8 @@ two sessions, A and B, in one checkout.
   - then B is refused, and the message names A and when A took the hold
   - decision: no override in v0 — the deny names who to ask
   - decision: the holder is named by the first 8 characters of its session id; every session in one checkout shares the repo name
-  - decision: the path is lowercased on every platform — APFS is case-insensitive and a mod cannot ask which os it runs on
+  - decision: the hold keeps the real path in its own case and git runs on it, so a symlinked leaf (`~/.claude/CLAUDE.md`) is held like its target
+  - decision: the key is lowercased on every platform — APFS is case-insensitive and a mod cannot ask which os it runs on
 - ✅ the holder keeps editing
   - given A holds `x.ts`
   - when A edits it again
@@ -63,6 +64,7 @@ two sessions, A and B, in one checkout.
   - given A committed `x.ts`
   - when B edits it
   - then the edit goes through and A's hold is gone
+  - decision: clean releases only a hold whose edit landed — while A's permission prompt is open the file is clean and still A's
 - ✅ a new file stays held until committed
   - given A created a new file and left it uncommitted
   - when B edits it
@@ -79,8 +81,8 @@ two sessions, A and B, in one checkout.
   - decision: 30 min — prior art ranged 5–120, and 5 min dropped long turns
 - ✅ one winner in a race
   - given A and B edit the same new file in the same second
-  - then exactly one of them holds it
-  - 📌 tested one after the other in the same millisecond; two processes writing between each other's read and write are settled by earliest `at`, then session id — unmeasured
+  - then never both of them hold it
+  - decision: no compare-and-set, so after its write a claim that sees any rival yields; a true tie refuses both and the next try settles it — earliest `at` let both win when one session's write landed late (verifier round 1)
 - ✅ a broken store never blocks work
   - given the store file is unreadable
   - when B edits

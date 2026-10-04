@@ -42,7 +42,9 @@ const basename = (path: string) =>
 // holds: a session's first edit of a file holds it; another session's edit of it is refused.
 // $.store has no compare-and-set, so each session writes only its own keys and the earliest claim wins.
 
-type Hold = { at: number; file: string; top: string };
+// file is the real path in its own case, for git; landed once the edit went through
+type Hold = { at: number; file: string; top: string; landed?: boolean };
+type Claim = { deny?: string; key?: string };
 type Holder = { pid?: number; start?: string; idleSince: number | null };
 type Refusal = { at: number; by: string; path: string };
 type Proc = { pid: number; start: string };
@@ -65,7 +67,7 @@ function parseHoldKey(key: string) {
         : { path: key.slice(cut + 1), sid: key.slice(HOLD.length, cut) };
 }
 
-// lowercased on every platform: APFS is case-insensitive and the mod cannot ask which os it runs on
+// the key is lowercased on every platform: APFS is case-insensitive and the mod cannot ask which os it runs on
 async function realPath($: EngineInterface, file: string) {
     const resolve = (p: string) =>
         $.fs.stat(p, { resolve: true }).then(
@@ -73,7 +75,7 @@ async function realPath($: EngineInterface, file: string) {
             () => undefined,
         );
     const direct = await resolve(file);
-    if (direct) return direct.toLowerCase();
+    if (direct) return { file: direct, key: direct.toLowerCase() };
     // a new file has no real path yet; its nearest existing folder does
     let dir = dirname(file);
     let real = await resolve(dir);
@@ -81,7 +83,8 @@ async function realPath($: EngineInterface, file: string) {
         dir = dirname(dir);
         real = await resolve(dir);
     }
-    return `${real ?? dir}${file.slice(dir.length)}`.toLowerCase();
+    const full = `${real ?? dir}${file.slice(dir.length)}`;
+    return { file: full, key: full.toLowerCase() };
 }
 
 async function procOf($: EngineInterface): Promise<Proc | undefined> {
@@ -149,7 +152,9 @@ async function isReleased(
     now: number,
 ) {
     const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
-    return (await isGone($, holder, now)) || isClean($, hold.file);
+    if (await isGone($, holder, now)) return true;
+    // a hold whose edit has not landed yet (a permission prompt open) is clean and still held
+    return hold.landed === true && isClean($, hold.file);
 }
 
 // a holder that crashed or went idle never settles its own keys
@@ -179,10 +184,14 @@ function refusal(file: string, sid: string, hold: Hold, now: number) {
     return `stash: ${file} is held by session ${short(sid)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
 }
 
-// the deny text when another session holds the file, else undefined after taking the hold
-async function claim($: EngineInterface, file: string, proc: Proc | undefined) {
+// a deny when another session holds the file; the key when this call took a new hold
+async function claim(
+    $: EngineInterface,
+    file: string,
+    proc: Proc | undefined,
+): Promise<Claim> {
     const sid = await $.session.id();
-    const path = await realPath($, file);
+    const { key: path, file: real } = await realPath($, file);
     const now = await $.clock.now();
     for (const c of await claimsOn($, path)) {
         if (c.sid === sid) continue;
@@ -191,25 +200,28 @@ async function claim($: EngineInterface, file: string, proc: Proc | undefined) {
             continue;
         }
         await $.store.set(REFUSED + c.sid, { at: now, by: sid, path });
-        return refusal(file, c.sid, c.hold, now);
+        return { deny: refusal(file, c.sid, c.hold, now) };
     }
     const mine = holdKey(sid, path);
-    if (await $.store.get(mine)) return undefined;
+    if (await $.store.get(mine)) return {};
     // the holder first: a rival reading the hold without it would take it for released
     if (!(await $.store.get(HOLDER + sid)))
         await $.store.set(HOLDER + sid, { ...proc, idleSince: null });
     await $.store.set(mine, {
         at: now,
-        file,
-        top: await topOf($, dirname(file)),
+        file: real,
+        top: await topOf($, dirname(real)),
     });
-    // a rival who wrote between the read and the write: earliest at wins, ties by sid
-    const [first] = (await claimsOn($, path)).sort(
-        (a, b) => a.hold.at - b.hold.at || a.sid.localeCompare(b.sid),
-    );
-    if (!first || first.sid === sid) return undefined;
+    // no compare-and-set: a rival that wrote meanwhile refuses this claim; a true tie refuses both, the next try settles it
+    const rival = (await claimsOn($, path)).find((c) => c.sid !== sid);
+    if (!rival) return { key: mine };
     await $.store.delete(mine);
-    return refusal(file, first.sid, first.hold, now);
+    return { deny: refusal(file, rival.sid, rival.hold, now) };
+}
+
+async function land($: EngineInterface, key: string) {
+    const hold = (await $.store.get(key)) as Hold | undefined;
+    if (hold) await $.store.set(key, { ...hold, landed: true });
 }
 
 async function markBusy($: EngineInterface) {
@@ -273,15 +285,15 @@ async function chip($: EngineInterface, sid: string, root: string) {
 
 // fail-open: a store or git error lets the edit through, with a line in the transcript
 // the tool input is the model's: a path that is not a string is not guarded
-async function guard($: EngineInterface, file: unknown) {
-    if (typeof file !== 'string') return undefined;
+async function guard($: EngineInterface, file: unknown): Promise<Claim> {
+    if (typeof file !== 'string') return {};
     try {
         return await claim($, file, proc);
     } catch (err) {
         $.ui.log(
             `stash holds: ${err instanceof Error ? err.message : String(err)}; the edit went through unguarded`,
         );
-        return undefined;
+        return {};
     }
 }
 
@@ -399,18 +411,25 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    on('tool.call', { tool: 'Edit' }, async ($, e, next) => {
-        const deny = await guard($, e.file_path);
-        return deny ? { deny } : next(e);
-    });
-    on('tool.call', { tool: 'Write' }, async ($, e, next) => {
-        const deny = await guard($, e.file_path);
-        return deny ? { deny } : next(e);
-    });
-    on('tool.call', { tool: 'NotebookEdit' }, async ($, e, next) => {
-        const deny = await guard($, e.notebook_path);
-        return deny ? { deny } : next(e);
-    });
+    on(
+        'tool.call',
+        { tool: /^(Edit|Write|NotebookEdit)$/ },
+        async ($, e, next) => {
+            const g = await guard(
+                $,
+                'notebook_path' in e
+                    ? e.notebook_path
+                    : 'file_path' in e
+                      ? e.file_path
+                      : undefined,
+            );
+            if (g.deny) return { deny: g.deny };
+            const r = await next(e);
+            if (g.key && r.deny === undefined && !r.isError)
+                await land($, g.key).catch(() => undefined);
+            return r;
+        },
+    );
 
     // afk flipped mid-turn: the next tool result carries the new state once
     on('tool.call', async (_$, e, next) => {
