@@ -203,7 +203,9 @@ async function claim(
         return { deny: refusal(file, c.sid, c.hold, now) };
     }
     const mine = holdKey(sid, path);
-    if (await $.store.get(mine)) return {};
+    const held = (await $.store.get(mine)) as Hold | undefined;
+    // a first edit that failed left the hold unlanded; the next one that goes through lands it
+    if (held) return held.landed ? {} : { key: mine };
     // the holder first: a rival reading the hold without it would take it for released
     if (!(await $.store.get(HOLDER + sid)))
         await $.store.set(HOLDER + sid, { ...proc, idleSince: null });

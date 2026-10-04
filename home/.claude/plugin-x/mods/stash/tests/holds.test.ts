@@ -28,6 +28,7 @@ function world(on: On) {
     const links = new Map<string, string>();
     const logs: string[] = [];
     // one-shot hooks into the middle of a claim: inside git rev-parse, inside the tool itself
+    const fails = { next: false };
     const during: {
         revParse?: () => Promise<void>;
         tool?: () => Promise<void>;
@@ -96,7 +97,13 @@ function world(on: On) {
     });
     on('tool.call', async () => {
         await fire('tool');
-        return { result: {}, text: 'done' };
+        if (!fails.next) return { result: {}, text: 'done' };
+        fails.next = false;
+        return {
+            isError: true as const,
+            result: 'old_string not found',
+            text: 'old_string not found',
+        };
     });
     on('turn.complete', () => ({ text: '' }));
     return {
@@ -114,6 +121,7 @@ function world(on: On) {
         clock,
         dead,
         during,
+        fails,
         files,
         links,
         logs,
@@ -134,7 +142,8 @@ async function edit(
         tool: 'Edit',
     });
     const real = w.links.get(file) ?? file;
-    if (r.deny === undefined) w.files.set(real, w.files.get(real) ?? state);
+    if (r.deny === undefined && !r.isError)
+        w.files.set(real, w.files.get(real) ?? state);
     return r;
 }
 
@@ -189,6 +198,18 @@ test("a commit releases the holder's file", async ($, on) => {
     // A's hold is gone: the file is B's now
     await w.as($, A);
     expect((await edit($, w, '/repo/x.ts')).deny).toContain(B.slice(0, 8));
+});
+
+test('a commit releases a hold whose first edit failed', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    await w.as($, A);
+    w.fails.next = true;
+    await edit($, w, '/repo/x.ts');
+    await edit($, w, '/repo/x.ts');
+    w.files.delete('/repo/x.ts');
+    await w.as($, B);
+    expect((await edit($, w, '/repo/x.ts')).deny).toBeUndefined();
 });
 
 test('a new file stays held until committed', async ($, on) => {
