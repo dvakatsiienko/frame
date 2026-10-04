@@ -24,7 +24,8 @@
   - when dima flips afk
   - then the session's next tool call carries a one-line note with the new afk state
   - decision: once per flip; the note rides the tool result as context, the model reads it and dima does not see it
-- ✅ keep-hot switch: `🔥 hot` in the row between `📋 copy all` and afk, off by default, accent background when on
+- 🐞 keep-hot switch: `🔥 hot` in the row between `📋 copy all` and afk, off by default, accent background when on
+  - 🐞 dima, 2026-10-04 live test: the ping fired at the mark, then 🔥 went unticked — it must stay on until dima switches it off (a keep-alive, not a one-shot)
   - decision: one switch per session, never shared — a ping wakes only the session it keeps warm
 - ✅ a hot session is pinged while idle
   - given 🔥 is on and the session's last turn ended 50 minutes ago
