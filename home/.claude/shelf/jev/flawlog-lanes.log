@@ -29,3 +29,4 @@
 2026-10-01T00:17:28.130Z	ok	lane=memory not-reproduced + ➡️-sizing lines laned memory, matched the flush
 2026-10-01T19:52:27.434Z	miss	lane=ticket Linear renumbering a list was laned ticket; linear was missing from the rule criterion's tool list — added, RUNS=3 now rule 62
 2026-10-02T16:45:31.818Z	miss	lane=memory verifier retro BYT-116 carried 4 destinations (kit verbs, a seed, a ci note, a recipe gap); jev said memory 25, the flush made it a ticket — a multi-destination retro line is split before laning
+2026-10-04T18:56:21.798Z	miss	lanes said rule for 3 lines already carried elsewhere (a ticket item, the x lane commit guard, the reply-check verdict) — a line whose fix exists is drop
