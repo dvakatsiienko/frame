@@ -32,4 +32,6 @@ https://github.com/tamaratran/fast-jev-compaction»
 
 ## log — date · session · before → after (chars or tokens) · seconds · fallback y/n · open asks kept (n/n) · note
 
+- 2026-10-04 · cclio-29 (terminal, checkpoint → /compact 19:17) · ? → ? (no /context taken) · ? · ? (jev vs built-in not visible to the session; the «kept N/M» toast is the tell) · 3/3 · quiz 10/10 with no tools, q10 trap held; dima: pass. round half-measured: next one takes /context before and after
+
 ## verdict
