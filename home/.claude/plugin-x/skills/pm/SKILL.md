@@ -16,9 +16,10 @@ the first mention.
 
 **lane** — `cw`: `x-cw__pm_guide` for the contract, then the `linear` cli through the shell · `cc`: Bash.
 
-📌 The always-loaded `rules/linear-flow.md` already holds what must be true whenever a ticket is
-touched at all — where tickets live, In Progress the moment work starts, never inventing an id.
-On `cw` nothing auto-loads it: read it at
+📌 `rules-lazy/linear-flow.md` holds what must be true whenever a ticket is touched at all — where
+tickets live, In Progress the moment work starts, never inventing an id. On `cc` the
+`memory-load-rule-lazy` hook loads it before the first ticket id or `linear` call. On `cw` nothing
+loads it: read it at
 [`../../rules/linear-flow.md`](../../rules/linear-flow.md) in the plugin root, or take it inlined
 from `x-cw__pm_guide`. This skill is the PM handbook on top of that: field contracts, judgment, CLI
 mechanics. Do not restate the rule file here; when the two overlap, edit the rule file.
@@ -96,7 +97,7 @@ Role, priority and estimate are **always filled and current** — monitoring the
 - **Kind second.** Alongside the role, every ticket carries one kind — `bug` / `feature` /
   `improvement` (see [references/workspace.md](references/workspace.md)). Role says who does it,
   kind says what it is; both are yours to keep current.
-- **State and assignee floor** — `rules/linear-flow.md` binds with or without this skill: state
+- **State and assignee floor** — `rules-lazy/linear-flow.md` binds with or without this skill: state
   tracks reality, never pass `--assignee`. On top of it: assigned-to-Dima means strictly his —
   never resolve, start, or reassign it; the `human` label says a human does the work, not *which*
   human (importance is priority's job).
@@ -228,7 +229,7 @@ Body = current state: keep it sanitized and updated, mutate without fear; a clos
 true from the body alone. Agent context that does not fit the shape goes to a comment —
 deliberately, when it covers a real ctx gap, never as flood. Comments = trail (logs, stamps,
 provenance) plus that gap. The closing word on every close is the floor's rule
-(`rules/linear-flow.md`).
+(`rules-lazy/linear-flow.md`).
 
 **A `standing` ticket carries no comments at all** — it never closes, so its trail would only grow and
 go stale (dima, 2026-09-30, BYT-105). a coder round on it opens a child ticket: the child gets the

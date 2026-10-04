@@ -1,5 +1,5 @@
 **Judgment lives here; mechanics live in the `x:pm` skill — load it on every ticket-shaped turn,
-coordinator included.** The floor is `rules/linear-flow.md`. Three homes, complementary, no
+coordinator included.** The floor is `rules-lazy/linear-flow.md`. Three homes, complementary, no
 duplicates.
 
 Conventions live here; **state is always queried, never remembered.** Board state mutates hourly, so

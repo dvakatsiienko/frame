@@ -11,5 +11,5 @@
 # if a second workspace is ever added (oss, client), revisit — the conventions
 # there belong to that project, not to this file.
 #
-# the matching rule for agents lives in home/.claude/rules/linear-flow.md.
+# the matching rule for agents lives in home/.claude/rules-lazy/linear-flow.md.
 issue_create_assign_self = "never"

@@ -1,1 +1,1 @@
-../../rules/linear-flow.md
+../../rules-lazy/linear-flow.md

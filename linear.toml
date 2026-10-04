@@ -7,5 +7,5 @@
 #      different behaviour, this is already the place to change it.
 # precedence: ./linear.toml > <repo-root>/linear.toml > ~/.config/linear/.
 #
-# the matching rule for agents lives in home/.claude/rules/linear-flow.md.
+# the matching rule for agents lives in home/.claude/rules-lazy/linear-flow.md.
 issue_create_assign_self = "never"

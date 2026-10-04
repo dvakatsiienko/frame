@@ -87,7 +87,7 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
 
 ## docs and tracker
 
-- GitHub issues are retired; everything tracker-shaped lives in Linear per `rules/linear-flow.md`.
+- GitHub issues are retired; everything tracker-shaped lives in Linear per `rules-lazy/linear-flow.md`.
 - **Multi-context layout** — `CONTEXT-FTR.md` at root. Repo context: `CONTEXT.md` + `docs/adr/`
   (ADR-nnnn). Tracker context: `docs/tracker/CONTEXT.md` + `docs/tracker/adr/` (TRK-nnnn).
   Glossary vocabulary is binding in outputs (titles, proposals, test names); an output
