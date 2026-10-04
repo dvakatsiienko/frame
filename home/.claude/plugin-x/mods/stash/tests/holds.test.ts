@@ -16,7 +16,9 @@ const MIN = 60 * 1000;
 // B sorts before A, so a tie broken by session id alone would hand B the file
 const A = 'b1b1b1b1-aaaa';
 const B = 'a2a2a2a2-bbbb';
-const PIDS: Record<string, number> = { [A]: 100, [B]: 200 };
+const C = 'c3c3c3c3-cccc';
+const PIDS: Record<string, number> = { [A]: 100, [B]: 200, [C]: 300 };
+const WORKTREE = '/repo/.claude/worktrees/w1';
 
 // two sessions in one checkout at /repo, with a git that answers like the real one
 function world(on: On) {
@@ -64,6 +66,10 @@ function world(on: On) {
                 dead.has(pid) ? 1 : 0,
             );
         }
+        if (args[0] === 'rev-parse')
+            return out(
+                e.init?.cwd?.startsWith(WORKTREE) ? `${WORKTREE}\n` : '/repo\n',
+            );
         const file = String(args.at(-1));
         const state = files.get(file);
         if (args[0] === 'status')
@@ -76,10 +82,10 @@ function world(on: On) {
     on('tool.call', () => ({ result: {}, text: 'done' }));
     on('turn.complete', () => ({ text: '' }));
     return {
-        as: async ($: Engine, who: string) => {
+        as: async ($: Engine, who: string, cwd = '/repo') => {
             sid = who;
             await $.session.start({
-                cwd: '/repo',
+                cwd,
                 isInteractive: true,
                 surface: 'terminal',
             });
@@ -243,6 +249,39 @@ for (const surface of ['terminal', 'desktop'] as const) {
         );
     });
 }
+
+test("a worktree's holds stay out of the main checkout's chip", async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    await w.as($, A, WORKTREE);
+    await edit($, w, `${WORKTREE}/x.ts`);
+    await w.as($, B);
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'stash',
+        props: PROPS,
+        surface: 'terminal',
+    });
+    expect(await ui.find({ text: /🔒/, type: 'Text' })).toBeUndefined();
+});
+
+test("a dead holder's holds leave the chip once a turn ends", async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    w.dead.add(PIDS[A] ?? 0);
+    await w.as($, C);
+    await endTurn($);
+    await w.as($, B);
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'stash',
+        props: PROPS,
+        surface: 'terminal',
+    });
+    expect(await ui.find({ text: /🔒/, type: 'Text' })).toBeUndefined();
+});
 
 test('the holds chip is hidden when nobody else holds a file', async ($, on) => {
     mock.store(on);

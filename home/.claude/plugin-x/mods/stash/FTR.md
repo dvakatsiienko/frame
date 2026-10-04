@@ -28,6 +28,8 @@
   - given session A holds 2 files in this repo
   - when session B's row draws
   - then B shows `🔒 2`; at zero the chip is hidden
+  - decision: «this repo» is this working tree — a worktree's holds never collide with the main checkout's, so they stay out of its chip
+  - decision: a holder idle 30 min drops out at once; a dead one at the next turn end of any session
 - ✅ holder warning: the holder's chip turns ⚠ after someone was refused
   - given A holds `x.ts`
   - when B's edit of `x.ts` is refused

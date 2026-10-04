@@ -42,7 +42,7 @@ const basename = (path: string) =>
 // holds: a session's first edit of a file holds it; another session's edit of it is refused.
 // $.store has no compare-and-set, so each session writes only its own keys and the earliest claim wins.
 
-type Hold = { at: number; file: string };
+type Hold = { at: number; file: string; top: string };
 type Holder = { pid?: number; start?: string; idleSince: number | null };
 type Refusal = { at: number; by: string; path: string };
 type Proc = { pid: number; start: string };
@@ -74,9 +74,14 @@ async function realPath($: EngineInterface, file: string) {
         );
     const direct = await resolve(file);
     if (direct) return direct.toLowerCase();
-    // a new file has no real path yet; its folder does
-    const dir = dirname(file);
-    return `${(await resolve(dir)) ?? dir}/${file.slice(dir.length + 1)}`.toLowerCase();
+    // a new file has no real path yet; its nearest existing folder does
+    let dir = dirname(file);
+    let real = await resolve(dir);
+    while (!real && dir !== '/') {
+        dir = dirname(dir);
+        real = await resolve(dir);
+    }
+    return `${real ?? dir}${file.slice(dir.length)}`.toLowerCase();
 }
 
 async function procOf($: EngineInterface): Promise<Proc | undefined> {
@@ -91,11 +96,22 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
         : undefined;
 }
 
+// the working tree a path sits in, lowercased; '' outside git
+async function topOf($: EngineInterface, cwd: string) {
+    const r = await $.process
+        .run(['git', 'rev-parse', '--show-toplevel'], { cwd })
+        .catch(() => null);
+    return r?.exitCode === 0 ? r.stdout.trim().toLowerCase() : '';
+}
+
 async function isClean($: EngineInterface, file: string) {
-    const r = await $.process.run(
-        ['git', 'status', '--porcelain', '--', file],
-        { cwd: dirname(file) },
-    );
+    const r = await $.process
+        .run(['git', 'status', '--porcelain', '--', file], {
+            cwd: dirname(file),
+        })
+        .catch(() => null);
+    // the folder is gone, and the file with it
+    if (!r) return true;
     if (r.exitCode === 0) return r.stdout.trim() === '';
     // outside a repo nothing can be committed, so nothing is held
     if (!/not a git repository/i.test(r.stderr))
@@ -103,13 +119,12 @@ async function isClean($: EngineInterface, file: string) {
     return true;
 }
 
-async function isReleased(
+// a holder that ended, went idle or died holds nothing
+async function isGone(
     $: EngineInterface,
-    sid: string,
-    hold: Hold,
+    holder: Holder | undefined,
     now: number,
 ) {
-    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
     if (!holder) return true;
     if (holder.idleSince !== null && now - holder.idleSince >= IDLE_MS)
         return true;
@@ -124,7 +139,28 @@ async function isReleased(
         // a reused pid starts at another time
         if (ps.stdout.trim() !== holder.start) return true;
     }
-    return isClean($, hold.file);
+    return false;
+}
+
+async function isReleased(
+    $: EngineInterface,
+    sid: string,
+    hold: Hold,
+    now: number,
+) {
+    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
+    return (await isGone($, holder, now)) || isClean($, hold.file);
+}
+
+// a holder that crashed or went idle never settles its own keys
+async function sweep($: EngineInterface, self: string) {
+    const now = await $.clock.now();
+    for (const key of await $.store.keys()) {
+        if (!key.startsWith(HOLDER) || key === HOLDER + self) continue;
+        const holder = (await $.store.get(key)) as Holder | undefined;
+        if (await isGone($, holder, now))
+            await dropAll($, key.slice(HOLDER.length));
+    }
 }
 
 async function claimsOn($: EngineInterface, path: string) {
@@ -159,9 +195,14 @@ async function claim($: EngineInterface, file: string, proc: Proc | undefined) {
     }
     const mine = holdKey(sid, path);
     if (await $.store.get(mine)) return undefined;
-    await $.store.set(mine, { at: now, file });
+    // the holder first: a rival reading the hold without it would take it for released
     if (!(await $.store.get(HOLDER + sid)))
         await $.store.set(HOLDER + sid, { ...proc, idleSince: null });
+    await $.store.set(mine, {
+        at: now,
+        file,
+        top: await topOf($, dirname(file)),
+    });
     // a rival who wrote between the read and the write: earliest at wins, ties by sid
     const [first] = (await claimsOn($, path)).sort(
         (a, b) => a.hold.at - b.hold.at || a.sid.localeCompare(b.sid),
@@ -181,6 +222,7 @@ async function markBusy($: EngineInterface) {
 // a turn ended: start the idle clock and drop the holds whose files are clean again
 async function settle($: EngineInterface) {
     const sid = await $.session.id();
+    await sweep($, sid);
     const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
     if (!holder) return;
     let left = 0;
@@ -208,21 +250,31 @@ async function dropAll($: EngineInterface, sid: string) {
     await $.store.delete(REFUSED + sid);
 }
 
-// what the row shows: other sessions' holds under this repo, and whether this session's hold was wanted
+// what the row shows: other live sessions' holds in this working tree, and whether this session's hold was wanted
 async function chip($: EngineInterface, sid: string, root: string) {
     const keys = await $.store.keys();
-    const others = keys
-        .map(parseHoldKey)
-        .filter(
-            (h) => h && h.sid !== sid && h.path.startsWith(`${root}/`),
-        ).length;
+    const now = await $.clock.now();
+    let others = 0;
+    for (const key of keys) {
+        const h = parseHoldKey(key);
+        if (!h || h.sid === sid) continue;
+        const hold = (await $.store.get(key)) as Hold | undefined;
+        const holder = (await $.store.get(HOLDER + h.sid)) as
+            | Holder
+            | undefined;
+        const idle =
+            holder?.idleSince != null && now - holder.idleSince >= IDLE_MS;
+        if (hold?.top === root && holder && !idle) others++;
+    }
     const refused = (await $.store.get(REFUSED + sid)) as Refusal | undefined;
     const warned = !!refused && keys.includes(holdKey(sid, refused.path));
     return { others, warned };
 }
 
 // fail-open: a store or git error lets the edit through, with a line in the transcript
-async function guard($: EngineInterface, file: string) {
+// the tool input is the model's: a path that is not a string is not guarded
+async function guard($: EngineInterface, file: unknown) {
+    if (typeof file !== 'string') return undefined;
     try {
         return await claim($, file, proc);
     } catch (err) {
@@ -263,6 +315,8 @@ async function load($: EngineInterface): Promise<boolean> {
     known = new Set(fresh);
     entries = next;
     const prevHolds = holds;
+    // after a /clear the process goes on under a new id, and no session.start fires
+    selfId = await $.session.id().catch(() => selfId);
     if (selfId) holds = await chip($, selfId, root);
     const holdsChanged =
         prevHolds.others !== holds.others || prevHolds.warned !== holds.warned;
@@ -276,7 +330,8 @@ export const register: Register = (on) => {
         selfId = await $.session.id();
         const top = (await $.session.repo())?.root ?? e.cwd;
         label = basename(top);
-        root = top.toLowerCase();
+        // the working tree, not the repo: a worktree's holds never collide with the main checkout's
+        root = (await topOf($, e.cwd)) || top.toLowerCase();
         proc = await procOf($).catch(() => {
             $.ui.log(
                 'stash holds: no pid for this session, a dead holder releases only by idle',
