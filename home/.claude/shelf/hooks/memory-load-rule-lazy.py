@@ -131,9 +131,11 @@ def last_turn(path):
 
 
 def load(event, session, rule, by, hit, why):
+    # read before marking: an unreadable rule must stay unloaded, so the next trigger tries again
+    text = rule_text(rule, why)
     mark(session, rule)
     log(event, f"load {rule} by {by}", hit)
-    return rule_text(rule, why)
+    return text
 
 
 def on_tool(event, session, fresh):
