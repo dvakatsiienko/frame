@@ -5,13 +5,14 @@ import { parseAsks } from './parse.ts';
 
 // Mirrors the ⏳ block of every live session's last reply into $.store (one key per session) and
 // draws all of them above the prompt: a quiet one-liner, opened by itself when a new ask lands.
-// The reply stays the source of truth; this band only shows it and carries answers back.
+// The reply stays the source of truth; this band only shows it and copies a thread's asks.
 
 type Entry = { label: string; asks: string[]; at: number };
 
 const PREFIX = 'asks:';
 const POLL_MS = 4000;
 const STALE_MS = 24 * 60 * 60 * 1000;
+const MACHINE_ORIGINS = ['peer', 'task-notification', 'scheduled-trigger'];
 const ACCENT = '#d97757';
 
 let selfId: string | undefined;
@@ -78,8 +79,11 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    on('turn.start', async (_$, e, next) => {
-        userTurn = e.text.trim().length > 0;
+    // a turn a peer, a task or a trigger woke is not dima's: its reply may drop the block
+    on('prompt.submit', async (_$, e, next) => {
+        userTurn =
+            e.text.trim().length > 0 &&
+            !MACHINE_ORIGINS.includes(e.origin.kind);
         return next(e);
     });
 
@@ -99,6 +103,7 @@ export const register: Register = (on) => {
             else await $.store.delete(key);
             if (await load($)) $.ui.invalidate('ui.render');
         }
+        userTurn = false;
         return r;
     });
 
@@ -114,7 +119,7 @@ export const register: Register = (on) => {
         );
         const total = groups.reduce((n, [, v]) => n + v.asks.length, 0);
         if (!total) return next(e);
-        const { Box, Text, Button, Input } = $.ui.resolve(e);
+        const { Box, Text, Button } = $.ui.resolve(e);
         const surface = e.surface;
         const counts = groups
             .map(
@@ -146,73 +151,32 @@ export const register: Register = (on) => {
                 </Box>
             );
 
-        const rows = groups.flatMap(([sid, v]) => {
-            const mine = sid === selfId;
-            return [
-                <Text bold key={`g:${sid}`}>
-                    {mine ? `${v.label} (here)` : v.label}
-                </Text>,
-                ...v.asks.map((ask, i) => {
-                    const n = i + 1;
-                    const copy = (
-                        <Button
-                            key={`copy:${sid}:${n}`}
-                            onPress={() =>
-                                void $.ui.copy({
-                                    surface,
-                                    text: `${n}. ${ask}`,
-                                })
-                            }
-                            plain>
-                            copy
-                        </Button>
-                    );
-                    if (mine)
-                        return (
-                            <Box
-                                flexDirection='row'
-                                gap={1}
-                                key={`a:${sid}:${n}`}>
-                                <Button
-                                    hotkey={n <= 9 ? String(n) : undefined}
-                                    key={`ans:${sid}:${n}`}
-                                    onPress={() =>
-                                        void $.prompt.fill({ text: `${n} ← ` })
-                                    }
-                                    plain>
-                                    {ask}
-                                </Button>
-                                {copy}
-                            </Box>
-                        );
-                    return (
-                        <Box flexDirection='column' key={`a:${sid}:${n}`}>
-                            <Box flexDirection='row' gap={1}>
-                                <Text>
-                                    {n}. {ask}
-                                </Text>
-                                {copy}
-                            </Box>
-                            <Input
-                                key={`in:${sid}:${n}`}
-                                onSubmit={(value) =>
-                                    void $.session
-                                        .send({
-                                            text: `dima, via stash: ${n} ← ${value}`,
-                                            to: { sessionId: sid },
-                                        })
-                                        .then(() =>
-                                            $.ui.toast(`sent to ${v.label}`),
-                                        )
-                                }
-                                placeholder={`answer ${v.label}…`}
-                                submitLabel='send'
-                            />
-                        </Box>
-                    );
-                }),
-            ];
-        });
+        const rows = groups.flatMap(([sid, v]) => [
+            <Box flexDirection='row' gap={1} key={`g:${sid}`}>
+                <Text bold>
+                    {sid === selfId ? `${v.label} (here)` : v.label}
+                </Text>
+                <Button
+                    key={`copy:${sid}`}
+                    onPress={() =>
+                        void $.ui.copy({
+                            surface,
+                            text: [
+                                'lane',
+                                ...v.asks.map((a, i) => `${i + 1}. ${a}`),
+                            ].join('\n'),
+                        })
+                    }
+                    plain>
+                    copy all
+                </Button>
+            </Box>,
+            ...v.asks.map((ask, i) => (
+                <Text key={`a:${sid}:${i + 1}`}>
+                    {i + 1}. {ask}
+                </Text>
+            )),
+        ]);
         const room = Math.max(1, e.props.maxRows - 1);
         const shown = rows.slice(0, room);
         return (
