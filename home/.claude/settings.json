@@ -183,13 +183,14 @@
     "context7@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": false,
-    "warp@claude-code-warp": true,
+    "warp@claude-code-warp": false,
     "mattpocock-skills@claude-plugins-official": true,
     "x@x": true,
     "linear-cli@linear-cli": false,
     "impeccable@impeccable": true,
     "typesafe@typesafe-ai": true,
-    "humanize@humanize": true
+    "humanize@humanize": true,
+    "cc-plugin-telemetry@builtin": false
   },
   "extraKnownMarketplaces": {
     "claude-code-warp": {

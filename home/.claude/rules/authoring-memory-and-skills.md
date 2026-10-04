@@ -1,4 +1,11 @@
 # authoring-memory-and-skills — maintenance tactics for our own memory and skills
+<!-- i'm in doubts. this doc is kinda useful to be a resident member, but:
+1. only you (cclio) do 98.5% of memory edits.
+2. the doc still looks a bit bloated - how to groom properly?
+3. worh to eject from resident memory? if yes — how? create a dedicated skill for your own cclio folder?
+4. if i ever want to edit memory i'd rather ask a coder to write a handoff for you to pickup when i'll be up and do the edit. otherwise, this file looks like a dead weight for all your spawns.
+propose.
+ -->
 
 internal rule picks for editing memory files, rules, and skills. emphases live here when a
 mechanism (a skill trigger, a hook) proves too weak on its own — the entry names the tool AND the
@@ -27,6 +34,7 @@ whose whole audience benefits. wrong-bucket placement is the mistake this map ki
   steps wants to be a skill.
 - **`docs/`** — read on demand: long, occasional, or a lookup.
 
+<!-- this part is good but blurry. pnpm example leaves no ref to where to write the memory if it is fleet-wide-useful. fleet-toolign? fleet-hazard? Do we even have a file that is kind of fleet hazards, but not about fleet-hazards, but about more specific tool tips and tricks, for example? -->
 📌 **the worked example — how the audience test runs:** pnpm FEELS coder-specific (topic: package
 management), so the reflex says `~/projects/AGENTS.md`. but ask who benefits: any session may run
 pnpm, even in non-coding projects like `~/frame` — so it parks in root. run every placement

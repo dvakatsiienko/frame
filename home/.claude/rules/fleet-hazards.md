@@ -1,5 +1,7 @@
 # fleet-hazards — well-known pitfalls, fleet-wide
 
+<!-- i think that fleet-hazards is useful overall. but it should dissolve with our fleet cli idea, and it keeps growing, not shrinking. how to solve? -->
+
 common traps any surface can hit. one section per subject; add a section only for a hazard
 that bites 2+ repos or every session — a hazard that bites one repo goes to that repo's
 `AGENTS.md`. this file is the source of truth; the vault section is copied by hand
@@ -31,6 +33,8 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 ## git hooks
 
+<!-- can automated cli solve this section? if yes-fold as one of the first todos for our fleet cli. -->
+
 - a gitignore pattern with a `/` in the middle is anchored to the ignore file's directory — `.impeccable/x.json` at a repo root never matches `apps/web/.impeccable/x.json`; `**/` in front makes it match at any depth (measured with `git check-ignore -v`, 2026-09-19)
 - worktrees share `.git/hooks`, and any pnpm run in one rewrites the shared lefthook shims to
   the worktree's path — including pnpm's own auto-install before ANY script, so the first gated
@@ -48,6 +52,8 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   reflog is the net (a coder lost its net on a reword, 2026-09-05)
 
 ## the shared working tree
+
+<!-- and this. or it is worth to keep resident? -->
 
 - **a parallel agent in a repo with a repo-wide commit gate writes to scratch until it compiles, then moves in** — per-path ownership does not hold against a per-repo typecheck hook: a coder's own subagent dropped a half-compiled `.ts` into the tree and blocked the coder's commits for two rounds (2026-09-22)
 
@@ -113,11 +119,12 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 ## app exports
 
+<!-- maybe keep this in x-ray agents.md? seem to apply only there. or no? -->
 - **an app export is a secrets container until decrypted or inspected** — a raycast `.rayconfig` held the whole clipboard history and every extension's stored keys behind the passphrase typed in the export dialog; a weak passphrase is plaintext. an export never enters a repo; it lives outside git and is read by a tool (2026-09-22: two exports sat in the public dotfiles repo for a week)
 
 ## declarative tools
 
-- **a tool that treats its config as the whole truth imports the live state before its first apply** — `gmailctl apply` deleted dima's two hand-made filters because `download` never ran first (2026-09-20). same shape: renovate's first run, `frame:link apply`, a launchd bootstrap. the first apply on a live account is preceded by the tool's own import verb
+- **a tool that treats its config as the whole truth imports the live state before its first apply** — `gmailctl apply` deleted dima's two hand-made filters because `download` never ran first (2026-09-20). same shape: renovate's first run, `frame:link apply`, a launchd bootstrap. the first apply on a live account is preceded by the tool's own import verb.
 
 ## ci runners
 
@@ -126,4 +133,3 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   that runs jq prints `jq --version` first
 - `sd` / `sed` silently drop `${{ … }}` from a workflow line — a workflow file is edited with the
   Edit tool only (two expressions eaten on #79, caught only by printing the result)
-

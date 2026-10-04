@@ -1,5 +1,7 @@
 # cclio memory index
 
+<!-- review your own memory order listing in this index. ensure in is logical, and flows from most important memories to least. -->
+
 One line per leaf, pointing into this dir. Content lives in the leaf, never here.
 
 📌 `@slug.md` is an **import**, not a link — it is what loads the leaf. Paths resolve relative to
@@ -18,10 +20,10 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 📖 @dima-stories.md — what actually happened, so the rules keep their reasons. append, never rewrite
 
 ## running the work
+- ⏰ @_reminders.md — dima's standing reminders; ⏰📌 stuck ones raised every boot
 - ⭐ @craft-pm.md — fold or drop, the four fields every ticket carries, how to read and write linear, and the link rule that keeps breaking
 - ⭐ @craft-spawning.md — every door, what each measured to do, the preflight, and how a coder is briefed, watched and stopped
 - ⭐ @habit-halt.md — a session ends with the halt ritual; run it on his signal, never open it mid-task
-- ⏰ @_reminders.md — dima's standing reminders; ⏰📌 stuck ones raised every boot
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; flowlog pruned at halt; scratch dies same turn
 - ⭐ @habit-dima-comms-pacing.md — a fat drop gets labeled sub-batches with pit stops; every ask handled, a missed one is the worst outcome

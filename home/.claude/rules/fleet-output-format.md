@@ -3,12 +3,12 @@
 
 **scope:** everything checkable without hearing a tone — links, typography, emoji, casing, copy
 fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every fleet member.
-**not here →** tone, register, manner, the voice stack: `rules/fleet-voice.md`. how to read dima's own
-messages: `rules/dima-signals.md`.
+**not here →** tone, register, manner, the voice stack: `rules/fleet-voice.md`. how to read dima's own messages: `rules/dima-signals.md`.
 
 <!-- boundary: swap the voice and this file still binds — a tone test parks fleet-voice.md only. -->
 
 ## the shapes that keep breaking
+<!-- mixed bans, encourages and confusing section name (the shapes that keep breaking). maybe colocate bans into dedicated section? -->
 
 - **answer first.** open with the verdict. never build up to it.
 - **tldr is default.** prefer compact responses that deliver all points clearly. expand when asked.
@@ -19,6 +19,7 @@ messages: `rules/dima-signals.md`.
 - **bullets are encouraged.** prose is the exception, never more than three lines.
   - a bullet is one sentence. more than that, and it nests: the bullet becomes a label, each fact
     a sub-bullet. never let a bullet wrap into a block.
+    <!-- · are banned but you still print them. maybe instead solve via mod, plugin or recent output validator you created? go print few ···· and see if automated approach worked, and remove or shrink the ···· section -->
   - 🚫 oneline lists are banned — «topic a · topic b · topic c» always becomes multiline. the
     `·` separator never appears inside a sentence at all: three things in a row are three
     bullets (dima on a «missed so far» paragraph, 2026-09-08: «ugly block»).
@@ -26,8 +27,6 @@ messages: `rules/dima-signals.md`.
   kind. his words on a reply packed with ids mid-sentence: *«so ugly… hard to read»*. reasoning
   stays prose; operations never do.
 - **next steps are plain separate lines.** never ①②③ glyph run-ons in one line.
-- **plain is not the goal.** flat output is *«a bit boring»*. structure **plus** colour. grey walls
-  and confetti are both wrong.
 
 ## typography
 
@@ -38,6 +37,7 @@ for colour, which the terminal cannot render.
   brand and product names (`linear`, `github`, `notion`), which stay lowercase; the backticks do the
   standing-out a capital used to do.
 - **bold** — key assertions, outcomes, decisions, numbers that matter.
+<!-- i actually do not like italics. only use backticks and bold. if you do not need italics yourself - delete the line -->
 - _italics_ — peer and agent names (_cc_, _cw_) and soft emphasis.
 
 highlight the load-bearing part of a sentence so it scans. never ship flat prose.
@@ -59,12 +59,12 @@ an emoji is a **line prefix**, never inline decoration.
 - mid-sentence emoji only when the emoji **is** the content.
 
 ## commit hashes — never in a reply to dima
+<!-- maybe merge into single «dont's» section? -->
 
-dima reads no commit hash, on any surface (2026-10-01: «I didn't use a commit hash you print … not even
-once»). a reply names what landed in words; a hash appears only when he asks for one. member-to-member
-traffic keeps them — a coder's «push <branch> <sha>» is what the coordinator pushes and verifies.
+dima reads no commit hash, on any surface (2026-10-01: «I didn't use a commit hash you print … not even once»). a reply names what landed in words; a hash appears only when he asks for one. member-to-member traffic keeps them — a coder's «push <branch> <sha>» is what the coordinator pushes and verifies.
 
 ## links and paths — one click, always
+<!-- i think it dupes with «Dima's hands first» in fleet-identity. or no? -->
 
 if a thing has a url, dima reaches it in one click. he never copies a bare url, never searches for
 a page you named, never navigates from a site root to the page you meant.
@@ -78,20 +78,8 @@ a page you named, never navigates from a site root to the page you meant.
   ticket in the app with his Hyper+G raycast command.
 - **an issue or pr from another repo is a full link** — `[vhs#787](https://github.com/charmbracelet/vhs/issues/787)`.
   a bare `#787` autolinks to the repo in view, and he lands on the wrong page (2026-09-25).
-- **file paths stay in backticks, never an editor-scheme link** — the Code tab and cw strip
-  `cursor://` too. in a chat reply, name the path so it can be found: repo-relative inside the
-  repo, absolute outside it.
   - **inside a repo file, a plain relative markdown link** — `[pm](pm.md)` — renders in every
     viewer; no scheme.
-
-🚨 **the check is mechanical, not attentional.** this rule has been broken with the rule in
-context — once ~20 bare ticket ids in one reply. an id feels
-like a word while you are writing it. **before sending, scan for `FRM-`, `DOT-`, `BYT-` and confirm
-each sits inside `](https://linear.app/`.** same scan, same
-bucket: **any chained sequence in one line** — ①②③ glyphs, `a → b → c` arrows, step chains,
-and every `·` between two things — becomes plain separate lines. the shape is the bug, not the
-glyph. 📌 the `·` habit is fed by our own memory files; a memory write uses bullets too, so the
-next boot stops re-teaching it (dima, 2026-09-08: «how to force you stop printing these»).
 
 ## copy-paste blocks get visible ends 📋
 
@@ -123,7 +111,6 @@ line renders the same in every pane:
 lowercase reads flatter and flows; a capital mid-line is a bump the eye clears.
 
 **on** — everything that is ours:
-
 - chat replies to dima in any frontend, any repo, ours or external — the reply is his channel and
   the surrounding repo never changes it
 - our linear, in full: ticket titles, bodies, comments
@@ -133,7 +120,6 @@ lowercase reads flatter and flows; a capital mid-line is a bump the eye clears.
 - commit subjects and bodies, in our own repos
 
 **off** — never lowercase:
-
 - contributions to projects we do not own — there our lowercasing is **undone**
 - job and recruiter mail
 - anything published under dima's name to an audience that is not dima
@@ -164,16 +150,19 @@ file he names.
 
 ## questions, options, and the ➡️ cta
 
-- **two options max** per question. give the context needed to choose fast, and no more.
-- **a questionnaire dima fills in holds one item per line**, numbered `1.` `2.` (never `1 ·`): the
-  item, the ➡️ recommendation, and the line's end free for his `←`. a filled row of `a · b · c`
-  reads badly to him while he answers, and to you when his answers come back as a prompt (dima,
-  2026-09-27).
 - every question round ends with a ➡️ recommendation.
 - **every reply ends with a ➡️ suggested next move** — driven by the roadmap and handoffs — so
   dima steers with one word instead of typing a long query.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
+<!-- another stray ····· ban. just ban it once somewhere on top, and let output validator handle recidives. the actual questionnare idea stays. -->
+- **a questionnaire dima fills in holds one item per line**, numbered `1.` `2.`: the
+  item, the ➡️ recommendation, and the line's end free for his `←`. a filled row of `a · b · c`
+  reads badly to him while he answers, and to you when his answers come back as a prompt (dima,
+  2026-09-27).
+<!-- two options max — do i really want to restrict you to two questions? not even sure. maybe drop the restriction entirely? -->
+- **two options max** per question. give the context needed to choose fast, and no more.
+<!-- blocked on something external — is important memory, but badly organize it. groop it. make clear, compact, functional. -->
 - **🔭 blocked on something external → the LAST line says so.** after the ➡️ and the ⏳ block,
   only while a review bot, ci, a background job or another agent genuinely holds the session:
   what is being waited on plus how the answer arrives — `🔭 waiting on the two pr bots — the
@@ -196,16 +185,19 @@ file he names.
     ask leaves only when he verdicts it. a new ask joins the bucket, it never starts a second,
     partial block — he copies the newest block and must never miss an older ask (dima,
     2026-09-30: a 2-item and a 3-item block printed 15 minutes apart).
+    <!-- i think «his thread is the lane; member traffic stays out of it» only applies to cclio thread? or no? i only lose track of a thread in cclio thread, and only when we multiprocess - swapn replies + research/reports arrive. -->
   - **his thread is the lane; member traffic stays out of it** (dima, 2026-09-30: coder replies
     buried the reports he came back for). a turn woken by a peer, a monitor or an idle notice
     prints **nothing** when the news is progress. a decision, a question, a doubt or a find he
     would want gets one line — `🔔 <member>: <what> → ⏳ <n>` — and the whole bucket follows it.
   - **a coder's report reaches dima once** — a digest of ≤5 lines in the turn it lands; later
     turns point at it by name and never reprint it.
+    <!-- i feel like «one reply per round» appears at least in multiple places, i read in 4th or 5th time already -->
   - **one reply per round, written whole** — a fan-out, a research, a plan lands as one message he
     could read alone, so a reprint is a copy, never a rebuild.
   - **a line under the block's fence points at the last report**: `📄 last report: **<topic>** · <HH:MM>` — the name bold so it scans.
     his **`rewind`** reprints that report in full plus the block; `rewind <topic>` an older one.
+    <!-- shift lanes happens not daily at all. maybe move to a «skill» or contract out of a resident memory? or better keep it? think critically -->
   - **while a shift runs, the block is suspended:** a shift decides, logs and parks instead of
     asking, and its report carries the decisions (`cclio:shift`, dima 2026-09-28).
   - the header sits OUTSIDE the fence as a plain line; the fence holds only what he answers, so
@@ -267,17 +259,3 @@ file he names.
   of the label**: a message quotes the version the title shows, never its own count — «canvas v10»
   in a reply while the title still read «spread v1» sent dima looking for a page that was right
   there (2026-09-30)
-- 🃏 a one-line lowercase haiku at session wrap
-
-## a multi-item drop gets restated
-
-when his message carries several separate items, open with a short parsed list of what you read
-out of it, then act. he corrects a misread before it becomes work. **mark the observation-only
-ones** — those are what a wrong read turns into unwanted work; his markers are in
-`rules/dima-signals.md`.
-
-👀 parsed:
-1. rename the mcp verbs
-2. seed the milestones
-3. answer the naming question
-4. (observation, no action) ctx cost

@@ -2,6 +2,8 @@
 **scope:** the comms model between fleet members. the per-member contracts stay in their briefs
 (`x:crew-coder`, `x:crew-verifier`, `craft-spawning`); this file is the map they hang on.
 
+<!-- remove ugly · across everywhere and stop producing these -->
+
 ## the loop
 
 dima steers cclio. cclio does the small nonblocking bits herself and delegates the rest, research
