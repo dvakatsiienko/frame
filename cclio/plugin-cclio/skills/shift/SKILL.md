@@ -63,5 +63,12 @@ In the plan file, then one chat message:
 - stated plainly: **an unanswered item counts as accepted**
 - the spend, the steer log, what the next plan changes
 
-Retros in, members stopped, the plan's `status:` flipped to `done`, the ⏳ block back on. **Done** = the report is in the file and the
-chat, every member is stopped or carried on purpose, and nothing parked is lost.
+Retros in, members stopped, the plan's `status:` flipped to `done`, the ⏳ block back on.
+
+Then the hand-over, because dima returns to a cold cache: his first question to a long shift thread re-writes the whole context at the 1h write price.
+
+- the full report goes out as an Artifact — he reads it on any device for free
+- a CST (`x:handoff`) carries the open asks and names this thread's transcript path (`~/.claude/projects/<project>/<session id>.jsonl`) for the tricky questions
+- the chat message ends on one line: «questions → a fresh cclio, `/cclio:init /x:handoff-ingest <slug>`»
+
+**Done** = the report is in the file, the artifact and the chat, the CST is in the store, every member is stopped or carried on purpose, and nothing parked is lost.
