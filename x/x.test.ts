@@ -5,6 +5,7 @@ import {
     mkdtempSync,
     readFileSync,
     realpathSync,
+    symlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -240,6 +241,22 @@ describe('x lane', () => {
 
         expect(run.code).toBe(1);
         expect(git(repo, 'rev-parse', 'HEAD')).toBe(before);
+    });
+
+    it('commit formats the named paths with the repo biome before staging', () => {
+        const repo = fixtureRepo();
+        writeFileSync(join(repo, 'biome.json'), '{}\n');
+        mkdirSync(join(repo, 'node_modules/.bin'), { recursive: true });
+        symlinkSync(
+            join(import.meta.dirname, '../node_modules/.bin/biome'),
+            join(repo, 'node_modules/.bin/biome'),
+        );
+        writeFileSync(join(repo, 'a.ts'), 'const  a = {b:1}\n');
+
+        const run = x(['lane', 'commit', messageFile(), '--', 'a.ts'], repo);
+
+        expect(run.code).toBe(0);
+        expect(git(repo, 'show', 'HEAD:a.ts')).toBe('const a = { b: 1 };');
     });
 
     it('bare x lane lists the --repo form of commit', () => {

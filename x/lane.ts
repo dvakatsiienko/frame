@@ -116,6 +116,10 @@ function commit(args: string[], flags: Flags) {
             existsSync(path) ||
             git(['ls-files', '--error-unmatch', '--', path]).isOk,
     );
+    format(
+        tree,
+        present.filter((path) => existsSync(path)),
+    );
     if (present.length > 0) mustGit(['add', '-A', '--', ...present], 'add');
 
     const isMerging = existsSync(
@@ -147,6 +151,27 @@ function commit(args: string[], flags: Flags) {
         sha: head(),
         tree,
     };
+}
+
+// the commit hook only reports (lefthook must never rewrite files it holds aside), so the
+// format runs here, before staging, on the named paths alone; a failure is left for the hook to name
+function format(tree: string, paths: string[]) {
+    const biome = join(tree, 'node_modules/.bin/biome');
+    const hasConfig =
+        existsSync(join(tree, 'biome.json')) ||
+        existsSync(join(tree, 'biome.jsonc'));
+    if (paths.length === 0 || !hasConfig || !existsSync(biome)) return;
+    run(
+        biome,
+        [
+            'format',
+            '--write',
+            '--no-errors-on-unmatched',
+            '--files-ignore-unknown=true',
+            ...paths,
+        ],
+        tree,
+    );
 }
 
 function pushPlan() {

@@ -219,3 +219,6 @@ body's ticket-id-pattern hits are counted and each one is intended. Say the hash
   `HEAD`: a peer's commit landed 18 s before a push and went out unchecked (2026-09-26).
 - stage the paths the plan names, never `git add -A`, and commit with a pathspec
   (`git commit -F msg.txt -- <paths>`): a shared tree holds other sessions' work.
+- in a biome repo (frame, bytes) commit through `x lane commit msg.txt -- <paths>`: it formats
+  exactly those paths with the repo's biome before staging, so a Bash-written file never meets
+  the hook's format refusal (19 flawlog sightings by 2026-10-04); the hook itself never writes.

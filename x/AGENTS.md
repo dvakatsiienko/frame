@@ -34,3 +34,4 @@ it runs the checkout the shim lives in.
   frame tree `git-crypt unlock` decrypts by itself; in a fresh fixture it leaves the ciphertext (git
   sees the files as unchanged). so the locked set is read again after it, and each file still locked
   is removed and checked out, only while its raw bytes equal its index blob.
+- `lane commit` formats the named paths with the repo's biome before staging — the commit hook only reports, so this is the one place a format writes
