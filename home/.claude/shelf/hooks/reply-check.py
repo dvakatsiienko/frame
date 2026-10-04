@@ -52,9 +52,6 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("bare-ticket", m.group(0)) for m in TICKET.finditer(unlinked)]
     found += [("table", m.group(0).strip()[:40]) for m in TABLE_SEPARATOR.finditer(prose)]
     for line in prose.split("\n"):
-        # the ⏳ block's own footer is the one line the format rule writes with a middot
-        if line.lstrip().startswith("📄"):
-            continue
         found += [("middot", m.group(0)[:40]) for m in MIDDOT.finditer(line)]
     found += [("circled-digits", m.group(0)) for m in CIRCLED.finditer(prose)]
     found += [("commit-hash", m.group(0)) for m in HASH.finditer(URL.sub("", prose))]
@@ -63,10 +60,14 @@ def findings(reply: str) -> list[tuple[str, str]]:
 
 def main() -> None:
     event = json.load(sys.stdin)
-    path = event.get("transcript_path")
-    if not path or not os.path.exists(path):
-        return
-    hits = findings(last_reply(path))
+    # the transcript can lag the stop by one text block; the event's own field cannot
+    reply = event.get("last_assistant_message")
+    if not isinstance(reply, str):
+        path = event.get("transcript_path")
+        if not path or not os.path.exists(path):
+            return
+        reply = last_reply(path)
+    hits = findings(reply)
     if not hits:
         return
     os.makedirs(os.path.dirname(LOG), exist_ok=True)

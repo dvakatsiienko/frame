@@ -280,8 +280,8 @@ both snapshotted 2026-10-02. the full check against us, with numbers, is
 - **never ask the model to reproduce its reasoning in the reply** — on Fable 5 it can trigger the
   `reasoning_extraction` refusal; ask for a short summary of the answer instead
 
-⚠️ **two anthropic rules we do not adopt** (local wins, fleet-identity #9): third-person descriptions
-that say *what* the skill does (ours say only *when*, `authoring-memory-and-skills`), and gerund
+⚠️ **two anthropic rules we do not adopt** (local wins, the invariant #9 in root CLAUDE.md): third-person descriptions
+that say *what* the skill does (ours say only *when*, `authoring-memory.md`), and gerund
 names (`processing-pdfs`; ours are entity-first). and one open conflict for the sweep: our
 `intended-models` frontmatter above vs `nurture-memory`'s «drop `intended-models` on touch».
 

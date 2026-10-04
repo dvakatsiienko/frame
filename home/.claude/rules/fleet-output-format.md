@@ -7,26 +7,26 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 
 <!-- boundary: swap the voice and this file still binds — a tone test parks fleet-voice.md only. -->
 
-## the shapes that keep breaking
-<!-- mixed bans, encourages and confusing section name (the shapes that keep breaking). maybe colocate bans into dedicated section? -->
+## 🚫 bans — the shapes that keep breaking
+
+- **md tables, everywhere** — replies, tickets, docs. a table renders broken in his terminals and
+  burns tokens on pipes; bullets carry it as `- key — value`. one exception: dima asks for a table.
+- **the `·` separator and one-line lists.** three things in a row are three bullets; `·` never
+  sits inside a sentence. the reply-check hook logs every recidive.
+- **commit hashes in a reply to dima.** he reads none; a reply names what landed in words. member
+  traffic keeps them — a coder's «push <branch> <sha>» is what the coordinator verifies.
+- **trailing emoji** — an emoji leads its line, see emoji below.
+- **glyph run-ons** like ①②③ in one line — next steps are plain separate lines.
+
+## shapes
 
 - **answer first.** open with the verdict. never build up to it.
-- **tldr is default.** prefer compact responses that deliver all points clearly. expand when asked.
-- 🚫 **md tables are banned everywhere — replies, tickets, docs.** bullets carry it:
-  `- key — value`. a table renders broken in his terminals and editors and burns tokens on
-  pipes. print one only when dima asks for a table, or for a genuine 3+ column matrix he
-  approved.
-- **bullets are encouraged.** prose is the exception, never more than three lines.
+- **tldr is default.** compact replies that deliver every point; expand when asked.
+- **bullets over prose.** prose is the exception, never more than three lines.
   - a bullet is one sentence. more than that, and it nests: the bullet becomes a label, each fact
-    a sub-bullet. never let a bullet wrap into a block.
-    <!-- · are banned but you still print them. maybe instead solve via mod, plugin or recent output validator you created? go print few ···· and see if automated approach worked, and remove or shrink the ···· section -->
-  - 🚫 oneline lists are banned — «topic a · topic b · topic c» always becomes multiline. the
-    `·` separator never appears inside a sentence at all: three things in a row are three
-    bullets (dima on a «missed so far» paragraph, 2026-09-08: «ugly block»).
-- **operations get list shape, never prose.** one op per line, `FRM-N → what happened`, grouped by
-  kind. his words on a reply packed with ids mid-sentence: *«so ugly… hard to read»*. reasoning
-  stays prose; operations never do.
-- **next steps are plain separate lines.** never ①②③ glyph run-ons in one line.
+    a sub-bullet.
+- **operations get list shape.** one op per line, `FRM-N → what happened`, grouped by kind;
+  reasoning stays prose.
 
 ## typography
 
@@ -36,9 +36,8 @@ for colour, which the terminal cannot render.
 - `backticks` — system entities: files, paths, skills, commands, stores, code identifiers. also
   brand and product names (`linear`, `github`, `notion`), which stay lowercase; the backticks do the
   standing-out a capital used to do.
-- **bold** — key assertions, outcomes, decisions, numbers that matter.
-<!-- i actually do not like italics. only use backticks and bold. if you do not need italics yourself - delete the line -->
-- _italics_ — peer and agent names (_cc_, _cw_) and soft emphasis.
+- **bold** — key assertions, outcomes, decisions, numbers that matter, and peer and agent names.
+- no italics.
 
 highlight the load-bearing part of a sentence so it scans. never ship flat prose.
 
@@ -58,20 +57,15 @@ an emoji is a **line prefix**, never inline decoration.
   spending it on ordinary caveats is what made it invisible.
 - mid-sentence emoji only when the emoji **is** the content.
 
-## commit hashes — never in a reply to dima
-<!-- maybe merge into single «dont's» section? -->
-
-dima reads no commit hash, on any surface (2026-10-01: «I didn't use a commit hash you print … not even once»). a reply names what landed in words; a hash appears only when he asks for one. member-to-member traffic keeps them — a coder's «push <branch> <sha>» is what the coordinator pushes and verifies.
-
 ## links and paths — one click, always
-<!-- i think it dupes with «Dima's hands first» in fleet-identity. or no? -->
 
 if a thing has a url, dima reaches it in one click. he never copies a bare url, never searches for
 a page you named, never navigates from a site root to the page you meant.
 
 - **every web resource you name is a markdown link.** label it and link it.
-- **strictest when you ask him to do something.** deep-link to the destination so the click *is*
-  the action.
+- **strictest when you ask him to do something** — grab an api key, flip a setting, re-grant a
+  permission: deep-link the exact page or pane so the click IS the action, never «go find X».
+  before asking at all, look for the door that does it for him (a `defaults write`, a script).
 - **ticket ids are always an https link plus a short tldr**, never bare — including inside
   lists: `[FRM-3](https://linear.app/x-com/issue/FRM-3): setup audit — in progress`. https is the
   one form every surface renders (the desktop Code tab and cw strip custom schemes); dima opens a
@@ -155,58 +149,30 @@ file he names.
   dima steers with one word instead of typing a long query.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
-<!-- another stray ····· ban. just ban it once somewhere on top, and let output validator handle recidives. the actual questionnare idea stays. -->
-- **a questionnaire dima fills in holds one item per line**, numbered `1.` `2.`: the
-  item, the ➡️ recommendation, and the line's end free for his `←`. a filled row of `a · b · c`
-  reads badly to him while he answers, and to you when his answers come back as a prompt (dima,
-  2026-09-27).
-<!-- two options max — do i really want to restrict you to two questions? not even sure. maybe drop the restriction entirely? -->
-- **two options max** per question. give the context needed to choose fast, and no more.
-<!-- blocked on something external — is important memory, but badly organize it. groop it. make clear, compact, functional. -->
-- **🔭 blocked on something external → the LAST line says so.** after the ➡️ and the ⏳ block,
-  only while a review bot, ci, a background job or another agent genuinely holds the session:
-  what is being waited on plus how the answer arrives — `🔭 waiting on the two pr bots — the
-  pr watcher wakes me when either posts`. **the waited thing is a link when it has a page, with an emoji and a short word as its label, and several waited things go one per line** (dima, 2026-09-28) — a
-  pr, a ci run, a deploy: `🔭 waiting on the bots on [#70](https://github.com/…/pull/70)`; a
-  coder or an agent needs no link, dima sees it in his tab. **a member is named bold with its role
-  emoji**, so it scans — `🔭 waiting on **🔧 coder** speak` (dima, 2026-09-30):
-  - **🦉 cclio**, **🔧 coder**, **🔎 verifier**, **🎨 designer**
-  - **🔬 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**
+- **a questionnaire dima fills in holds one item per line**, numbered `1.` `2.`: the item, the ➡️
+  recommendation, and the line's end free for his `←`.
+- give the context needed to choose fast, and no more.
 
-  dima peeks into a quiet thread and cannot tell
-  «blocked, correctly idle» from «stalled»; ➡️ says what comes next, not what holds now. a reply
-  that is not blocked carries no 🔭 line, or the marker rots into decoration. (dima's ask,
-  2026-09-11, relayed from a coder session.)
-- **open asks ride a «⏳ waiting on your word:» block at the very end of the reply** — the final
-  cta of every turn, repeated in every following reply to HIS message until he verdicts each. an
-  ask that only appeared once is an ask he never saw. (this is for asks awaiting a decision; a
-  skipped question in an answered round is still an accept.)
-  - **the block is ONE live bucket.** every print carries every open ask, renumbered from 1; an
-    ask leaves only when he verdicts it. a new ask joins the bucket, it never starts a second,
-    partial block — he copies the newest block and must never miss an older ask (dima,
-    2026-09-30: a 2-item and a 3-item block printed 15 minutes apart).
-    <!-- i think «his thread is the lane; member traffic stays out of it» only applies to cclio thread? or no? i only lose track of a thread in cclio thread, and only when we multiprocess - swapn replies + research/reports arrive. -->
-  - **his thread is the lane; member traffic stays out of it** (dima, 2026-09-30: coder replies
-    buried the reports he came back for). a turn woken by a peer, a monitor or an idle notice
-    prints **nothing** when the news is progress. a decision, a question, a doubt or a find he
-    would want gets one line — `🔔 <member>: <what> → ⏳ <n>` — and the whole bucket follows it.
-  - **a coder's report reaches dima once** — a digest of ≤5 lines in the turn it lands; later
-    turns point at it by name and never reprint it.
-    <!-- i feel like «one reply per round» appears at least in multiple places, i read in 4th or 5th time already -->
-  - **one reply per round, written whole** — a fan-out, a research, a plan lands as one message he
-    could read alone, so a reprint is a copy, never a rebuild.
-  - **a line under the block's fence points at the last report**: `📄 last report: **<topic>** · <HH:MM>` — the name bold so it scans.
-    his **`rewind`** reprints that report in full plus the block; `rewind <topic>` an older one.
-    <!-- shift lanes happens not daily at all. maybe move to a «skill» or contract out of a resident memory? or better keep it? think critically -->
-  - **while a shift runs, the block is suspended:** a shift decides, logs and parks instead of
-    asking, and its report carries the decisions (`cclio:shift`, dima 2026-09-28).
-  - the header sits OUTSIDE the fence as a plain line; the fence holds only what he answers, so
-    what he copies is exactly what he answers (dima, 2026-09-14: cw rendered the in-fence header
-    as a thing to delete after every paste).
-  - **ONE fence, one copy** (dima, 2026-10-01): the asks sit under a bare `lane` line; Wispr
-    dictionary adds (`rules/dima-signals.md`) sit in the same fence under `wispr adds`, after a
-    blank line, each pre-ticked ✓ — he unticks a wrong one, and a kept ✓ is his yes. no adds, no
-    section:
+### 🔭 blocked on something external
+- **when**: only while a review bot, ci, a background job or another agent genuinely holds the
+  session. not blocked → no 🔭 line, or the marker rots into decoration.
+- **where**: the LAST line, after the ➡️ and the ⏳ block. ➡️ says what comes next; 🔭 says what holds now,
+  so dima can tell «correctly idle» from «stalled».
+- **shape**: what is waited on + how the answer arrives — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70) — the pr watcher wakes me`.
+  - a thing with a page is a link labelled with an emoji and a short word; several things, one per line
+  - a member is bold with its role emoji, no link: **🦉 cclio**, **🔧 coder**, **🔎 verifier**,
+    **🎨 designer**, **🔬 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**
+
+### ⏳ open asks
+- **open asks ride a «⏳ waiting on your word:» block at the very end of the reply**, repeated in
+  every following reply to HIS message until he verdicts each. an ask that appeared once is an ask
+  he never saw.
+- **ONE live bucket.** every print carries every open ask, renumbered from 1; an ask leaves only on
+  his verdict. a new ask joins the bucket, never a second partial block.
+- the header sits OUTSIDE the fence as a plain line; the fence holds only what he answers.
+- **one fence, one copy**: the asks under a bare `lane` line; Wispr adds (`rules/dima-signals.md`)
+  in the same fence under `wispr adds`, after a blank line, each pre-ticked ✓. no adds, no section.
+- a line under the fence points at the last report, the name bold; his **`rewind`** reprints it.
 
       ⏳ waiting on your word:
 
@@ -219,7 +185,7 @@ file he names.
       1. <heard> → <meant> ✓
       ```
 
-      📄 last report: **<topic>** · <HH:MM>
+      📄 last report: **<topic>**, <HH:MM>
 
 ## reply skeletons
 
@@ -249,7 +215,7 @@ file he names.
 ## the output kit
 
 - 📊 mini scoreboard for session wrap-ups (created / done / touched / routed) — bullet lines, not a table
-- 🚦 fleet reports as one line per session, fixed order: 🟢 done-idle · 🟡 working · 🔴 blocked.
+- 🚦 fleet reports as one line per session, in fixed order — 🟢 done-idle, then 🟡 working, then 🔴 blocked;
   naming is type-first — «ccli batch-1», «cwrk research-x»
 - 🧾 diff-shaped state changes: `field: old → new`
 - 🏷️ incremental art or product work (a diorama set, an mvp growing round by round) → every

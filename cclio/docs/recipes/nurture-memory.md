@@ -240,7 +240,7 @@ proven 2026-08-25:
 - **Claude B**: after a skill changes, a fresh session runs one real ask with it; its transcript is
   read for files never opened, links not followed and steps skipped — a miss goes back to the edit
 - the authoring stack for any edit: `writing-for-agents` (craft, load first) →
-  `rules/authoring-memory-and-skills.md` (router + vertical map) → `docs/knowledge/authoring-*.md`
+  `docs/knowledge/authoring-memory.md` (vertical map + checklist) → `docs/knowledge/authoring-*.md`
   (mechanics, on demand).
 - **the groom-half checklist, proven on the 15-skill pass (2026-08-25):** full taste rewrite per
   skill (keep points, cut connective tissue — opus-era wordiness is the default finding) · md

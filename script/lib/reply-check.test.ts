@@ -9,7 +9,7 @@ const hook = join(
     '../../home/.claude/shelf/hooks/reply-check.py',
 );
 
-function check(reply: string) {
+function check(reply: string, lastMessage?: string) {
     const dir = mkdtempSync(join(tmpdir(), 'reply-check-'));
     const transcript = join(dir, 'session.jsonl');
     const log = join(dir, 'log.tsv');
@@ -30,6 +30,7 @@ function check(reply: string) {
     spawnSync('python3', [hook], {
         env: { ...process.env, REPLY_CHECK_LOG: log },
         input: JSON.stringify({
+            last_assistant_message: lastMessage,
             session_id: 'test',
             transcript_path: transcript,
         }),
@@ -60,8 +61,14 @@ describe('reply-check', () => {
         expect(check('topic a · topic b · topic c')).toContain('middot');
     });
 
-    it('passes the last-report footer middot', () => {
-        expect(check('📄 last report: **x** · 18:30')).toEqual([]);
+    it('passes the last-report footer', () => {
+        expect(check('📄 last report: **x**, 18:30')).toEqual([]);
+    });
+
+    it('reads the stop event message over a lagging transcript', () => {
+        expect(check('an earlier clean block', 'topic a · topic b')).toEqual([
+            'middot',
+        ]);
     });
 
     it('logs a commit hash in prose', () => {

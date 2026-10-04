@@ -115,7 +115,7 @@ Scanned 2026-10-02: 38 skills in plugin-x + plugin-cclio.
       needs it; a condition date gets rewritten or deleted
 11. **consistent terminology** — us: `fleet-voice` «one name per concept» · action: none
 12. **description: third person, what + when** — ⚠️ conflicts with our rule «the description is ONLY
-    the load trigger» (`authoring-memory-and-skills`). Local wins (fleet-identity #9), said out loud
+    the load trigger» (`docs/knowledge/authoring-memory.md`). Local wins (the invariant #9), said out loud
     here. Third person is free to adopt; «what it does» stays out by our rule
     - action: check descriptions read in third person; no «I can help»
 13. **naming: gerund form** (`processing-pdfs`) — ⚠️ conflicts with our entity-first naming; local wins

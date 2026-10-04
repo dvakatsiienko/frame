@@ -43,7 +43,7 @@ reminders, the monitor is the trigger.
 Working artifacts die the turn their job is done: processed flowlog buckets, scratchpad files,
 `/tmp` dumps from CLI heredocs.
 
-- 🚫 never destroy pending or ambiguous content (`rules/fleet-identity.md`, invariant 6) — in doubt, mark done and
+- 🚫 never destroy pending or ambiguous content (root `CLAUDE.md`, the invariant #8) — in doubt, mark done and
   ask at the halt.
 - **exemption:** `docs/research/*` is kept — deletion there is his manual call; the duty is
   linkage (`Ticket: FRM-N` at the top), not removal.

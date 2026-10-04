@@ -327,7 +327,7 @@ filling it is a bucketing place in its own right.
 ✅ **surveyed 2026-08-25:** all outer `~/projects/*/CLAUDE.md` files collated (4 files) — no
 orphan rules waiting to move up; every repeat already owned by a higher layer. the stub stays a
 stub until the coder-behavior decision ([DOT-73](https://linear.app/x-com/issue/DOT-73) comment holds
-the evidence). dima's vertical map landed in `rules/authoring-memory-and-skills.md`.
+the evidence). dima's vertical map lives in `docs/knowledge/authoring-memory.md`.
 
 ❓ **the part dima explicitly does not know how to solve** — `guide-react`, `guide-typescript`,
 `guide-code`. his words:
@@ -507,7 +507,7 @@ the hour. find a mechanism and **test it in a dedicated session** rather than re
 ### 2. work out how `authoring-memory.md` and `authoring-skill.md` get used at all
 
 ✅ **closed 2026-08-26.** the route exists on two rungs: `authoring-trigger.md` fires on read and
-names both docs; `rules/authoring-memory-and-skills.md` (resident router) points at them for the
+names both docs; `docs/knowledge/authoring-memory.md` holds the router for the
 deep cases. remaining honesty: the html-comment / two-draft / checklist interventions still depend
 on the docs being opened — watch whether they surface in real edits before calling the content
 reachable.

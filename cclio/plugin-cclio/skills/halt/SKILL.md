@@ -1,65 +1,15 @@
 ---
-description: load when dima means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop» — or types the command; «that's it for now from my side» mid-flow closes a list or a batch, not the session. add `stop` when he leaves NOW («i have to go»). Not for a question or a doubt about ending.
+description: load when dima means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop» — or types the command; «that's it for now from my side» mid-flow closes a list or a batch, not the session. Not for a question or a doubt about ending.
 ---
 
 # /cclio:halt
 
-**one ritual, two speeds.** `stop` is an argument, not a sibling command.
-
-- `/cclio:halt` — dima is finishing up and there is time to do it properly. plan it,
-  land what lands, wrap properly. 🚨 **invoking it IS the go — never ask for confirmation.**
-- `/cclio:halt stop` — dima has to leave the mac NOW. same ritual, one pass, no
-  conversation, under a minute.
-
-dima's frame: *«if halt means calm halt, halt with stop arg is also halt — non-destructive,
-don't drop things out of your hands, but prefers the quickest start.»*
-**both are graceful, and `stop` is not the careless one.** it is still a halt: nothing is dropped
-out of your hands, nothing is left half-applied, nothing is forced. it just prefers the quickest
-safe finish over the best one. never trade safety for speed — a rushed exit leaving a half-written
-file or a half-applied migration costs far more than the minute it saved.
-
+🚨 **invoking it IS the go — never ask for confirmation.** plan it, land what lands, wrap properly.
 loads on `/cclio:halt`, `/halt`, `/wrap`, or when dima says to finish the day.
-`stop` also fires on `/halt stop`, `/bail`, or «i have to go».
 
 📌 **never open the halt plan unprompted mid-task.** if dima has not asked to finish, do not
 suggest it unless the session is genuinely at a natural boundary. reading the room beats running
 the ritual.
-
-## the stop lane — read this first when `stop` is passed
-
-skip phases 0, 2, 3a, 3b and 7 entirely. do this, in order, **without asking**:
-
-1. **freeze the dangerous things first.** any write in flight — finish it or revert it, never
-   leave it half-applied. any spawned session — let it run, note its id. never kill a running job
-   to save time; an interrupted agent is worse than an unattended one.
-2. **land only what is already one step from done.** one command, one file save, one commit.
-   needs a decision → it does not qualify. do not start anything.
-3. **push if commits are clean and hooks pass.** hooks fail → force NOTHING. leave the commits
-   local and say so.
-4. **inbox reset from `inbox-template.md`** (phase 1.5, same rule, no ask).
-4b. **park notes where the work lives** — ticket comment, flowlog line, `/queue`. not in chat.
-   one line each: what state it is in, and the single next action. **this is the part that must
-   not be skipped**, because it is the part that pays for itself tomorrow.
-5. **phase 3.5 still runs** — a stale milestone misinforms the next boot, and refreshing it is
-   seconds.
-6. **the gazette runs, wire auto-yes** — `/cclio:gazette` writes the tweet AND fires the wire
-   without asking; this lane's default is yes so dima can just leave.
-7. **CST, slug `<runid-topic>-stop`.** terse is fine; state beats prose.
-
-then report in under 10 lines: what landed · what is parked and where the note is · anything left
-genuinely unsafe, named plainly and never softened · the CST slug.
-
-🚫 **in the stop lane, do not:** start work however small it looks · refactor or clean up on the
-way out · batch a decision to dima and act on the assumed answer · spend the minute writing a
-pretty summary instead of park notes.
-
-**the tell:** «this is quick, i will just finish it» — that thought IS the failure mode. park it
-and go.
-
-📌 a later full halt on the same run **picks up the stop lane's debt** — the sweep and the flawlog
-flush it skipped.
-
-## the full lane — phases below
 
 ## phase 0 — the halt plan, printed then executed
 
@@ -124,6 +74,7 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 `pnpm jev:flawlog` first: jev lanes every line (memory / rule / story / ticket / drop) and the
 proposal starts from its lanes, not from a blank read. then cluster, ONE batched proposal, ONE
 approval, execute and commit. see `/cclio:flawlog`.
+**retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody (dima, 2026-10-04).
 🚨 **the flush is the one stop in a full halt, whatever the args** (`wire+` included): print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before
 the reason — those go to `memory/dima-stories.md` as appends (the leaf's own rule), not to the

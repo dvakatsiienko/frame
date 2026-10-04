@@ -25,7 +25,7 @@ def main() -> None:
         return
     reason = (
         f"`{path.rsplit('/', 1)[-1]}` is read by agents. load `mattpocock-skills:writing-for-agents` "
-        "first (the craft authority, rules/authoring-memory-and-skills.md), then retry the write."
+        "first (the craft authority, docs/knowledge/authoring-memory.md), then retry the write."
     )
     json.dump(
         {

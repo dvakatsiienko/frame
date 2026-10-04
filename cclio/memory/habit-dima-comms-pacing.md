@@ -17,7 +17,13 @@ every item a line with status and lane — then resolve paced, after his word on
 loss dies at the parse, not at the resolve: an item with a checklist line cannot vanish. **An
 item's url travels verbatim into its flowlog line** — a link is payload, never decoration.
 
-**A fan-out answers once.** When a round depends on parallel lanes (researchers, coders, probes),
+**His thread is the lane; member traffic stays out of it** (dima, 2026-09-30: coder replies buried
+the reports he came back for). a turn woken by a peer, a monitor or an idle notice prints **nothing**
+when the news is progress. a decision, a question, a doubt or a find he would want gets one line —
+`🔔 <member>: <what> → ⏳ <n>` — and the whole ⏳ bucket follows it. **a coder's report reaches him
+once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name.
+
+**A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel lanes (researchers, coders, probes),
 their results land at different times — hold them and print ONE unified reply when the picture
 is whole. A lane arriving early gets a one-line «N of M in» at most, never its findings. Dima
 reads the thread cold from another window; findings staggered across turns are findings he has

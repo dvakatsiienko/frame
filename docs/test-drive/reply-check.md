@@ -22,3 +22,4 @@ added only if the regex log shows the gap.
 ## verdict
 
 _(2026-10-16)_
+- 2026-10-04 · live probe · the hook fires live (one bare-ticket line logged this session), but a deliberate «alpha · beta» in the final reply of a turn was never logged · guess, unproven: at Stop the final text block is not yet in the transcript, so the hook reads an earlier block of the turn · fix candidate: read the Stop input's last-message field if cc passes one, else re-read the transcript after a short settle

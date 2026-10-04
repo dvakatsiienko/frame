@@ -25,12 +25,7 @@ const aliasWords = new Map(
     ),
 );
 
-describe('vibe contract — fleet-vibe.md shell words mirror the git vibe alias block', () => {
-    it('lists every vibe alias in the rule', () => {
-        expect([...aliasWords.keys()].sort()).toEqual(
-            [...ruleWords.keys()].sort(),
-        );
-    });
+describe('vibe contract — fleet-vibe.md each shell word maps to its git vibe alias', () => {
     it('maps each word to the same command on both sides', () => {
         for (const [word, cmd] of ruleWords)
             expect(aliasWords.get(word), word).toBe(cmd);

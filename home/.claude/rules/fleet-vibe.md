@@ -2,6 +2,23 @@
 
 Adopted words. Recognize them from Dima, use them back sparingly.
 
+## entities — what we handle
+<!-- sync: cw -->
+
+- **CST** — a handoff transcript, the thing that carries a thread to its successor.
+- **`inbox`** — `_hq/inbox.md` in the obsidian vault: dima's drop point and cclio's plan source. cclio
+  edits it; anyone else reads, and edits only on his ask, fixing obvious errors, never his phrasing.
+- **granular** — an area or ticket where every agent change needs Dima's weighted approve, step
+  by step, with adoption notes for anything his own fingers will use (aliases, gitconfig, nvim,
+  the vault). A Linear label and a chat word. Day-to-day areas (deps, docs, freebies) stay free.
+- **mil** — a Linear milestone: the unit we plan and retire in, always opened with a sorting phase so it starts ordered.
+- **run id** — the thread of one continuous piece of work, continued across sessions, never minted
+  mid-story.
+- **lane / shift** — a lane is our usual day: dima present, he steers, his asks fold in place. a
+  shift runs from a written plan with dima `near` (a y/n ping only for a real decision) or `away`
+  (no pings, decisions logged and parked); `cclio:shift` is the contract. a session name leads with
+  its mode — `☕️` lane, `🎯` shift — then the role: `🎯 🔧 sys code: gremlins`.
+
 ## fleet words — how he steers an agent
 <!-- sync: cw -->
 
@@ -9,34 +26,18 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **freebie** = a ticket/action executable without Dima's approval (pre-approved or approval-free by contract). «do the freebies» → run them unprompted.
 - **propose** = answer → approve → act: print the answer/plan, stop, execute only on his word. Prefixes any ask.
 - **rewind** = reprint the last report (the `📄` line in the ⏳ block) in full, plus the block; `rewind <topic>` reprints an older one. for when member traffic pushed it out of view.
-<!-- i simplified this line (look git diff), simply your halt instead. i never used «halt stop» ever once. remove «stop» from halt skill. -->
 - **pause** = hold off, stop what you are doing, i will steer.
 
-## shell words — his git aliases, the same vocabulary
+## shell words — the few git aliases that are fleet vocabulary
 
-<!-- are you sure we want this entire section? from my cross-zsh-alias overlap i use only «slay» when talk to you. keep only: slay, camp/decamp. suggest what other common vibe word we use if i missed one. otherwise let's keep my vibe aliases for me, and only gradually grow the list if i decide to add it to our comms. currently it continas an almost full list if my vibe words, which is a dead weight. we only use onces i printed above. -->
+each line is also a shell alias in `home/.config/zsh-custom/aliases.zsh`; `script/lib/vibe-contract.test.ts`
+fails the commit when a listed word drifts from its alias. his other aliases are his fingers, not
+a language; a word joins this list only when he starts using it with the fleet.
 
-Each line here IS a shell alias in `home/.config/zsh-custom/aliases.zsh`; `script/lib/vibe-contract.test.ts` fails the commit when the two drift. Only these words are fleet vocabulary; his other shortcuts (`gs`, `gprune`, …) are his fingers, not a language.
+**a word is meaning, never permission** — the agent's own rules still apply to the ask. `decamp`
+removes a worktree: one line naming the target, then his word.
 
-**A word is meaning, never permission.** When Dima says one of these, it is the ask for that command, in one syllable, and the agent's own rules still apply to the ask. The plain words (`grab`, `sup`, `peek`, `lore`, `warp`, `loot`, `scout`, `onward`, `camp`) are one-to-one, no ceremony. The irreversible ones (`slayer`, `yolo`, `oops`, `reforge`, `decamp`) get one line naming the target, then his word — and an agent never reaches for one of them on its own. Words compose with skills: `/cmt y slay` = commit without the message confirm, then push. Agents may use the words back when talking to him.
-
-- `grab` — `git add .`
-- `mana` — `git commit`
-- `vibe` — `git commit -m`
-- `vibetune` — `git commit --amend`
 - `slay` — `git push`
-- `slayer` — `git push --force`
-- `yolo` — `git push --force-with-lease`
 - `sup` — `git sup`
-- `warp` — `git switch`
-- `spawn` — `git switch -c`
-- `loot` — `git pull`
-- `scout` — `gprune -d`
-- `onward` — `git rebase --continue`
-- `oops` — `git reset --soft HEAD~1`
-- `lore` — `git --no-pager lg -20`
-- `peek` — `git diff`
-- `peeked` — `git diff --staged`
 - `camp` — `git worktree add`
 - `decamp` — `git worktree remove`
-- `reforge` — `git rebase -i $(git merge-base HEAD main)`
