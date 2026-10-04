@@ -16,6 +16,15 @@
             "command": "/Users/dima/frame/cclio/.claude/hooks/boot-prefetch.sh"
           }
         ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/shift-recompact.sh"
+          }
+        ]
       }
     ]
   },

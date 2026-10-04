@@ -73,7 +73,8 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "check": "biome check --write",
-        "crew:audit": "node ./script/crew-audit.ts"
+        "crew:audit": "node ./script/crew-audit.ts",
+        "shift:checkup": "node ./script/shift-checkup.ts"
     },
     "dependencies": {
         "zx": "8.8.5"

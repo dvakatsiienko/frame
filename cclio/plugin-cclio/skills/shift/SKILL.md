@@ -26,13 +26,16 @@ Members are named `🎯 🔧 <shift> code: …`, `🎯 🔎 <shift> verify: …`
 
 state lives on disk, never only in context: after **every** step, the plan file's `## log` gets
 the current step, the decisions and the open asks. after a compaction, re-read the plan file
-before the next action. 📌 the first shift forces one `/compact` mid-run and checks that the step
-and the decisions survive; a compaction hook that re-reads the active plan is the next build.
+before the next action. the `SessionStart:compact` hook (`.claude/hooks/shift-recompact.sh`) enforces
+it: a plan whose header says `status: running` makes the compacted cclio Read the plan and this skill
+first, with the log's tail printed. 📌 the next shift forces one `/compact` mid-run and checks that the
+step and the decisions survive.
 
 ## 1 · start — the last chat message
 
-- preflight per `craft-spawning`: spare age, the app passes `apps:essentials`, `📡 pr-watch` is live
-- write `presence:` (near/away), the budget line (a % of the week) and the members into the plan file
+- `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 pr-watch`, each with its why; any 🔴 = no shift
+- the app passes `apps:essentials`
+- write `status: running`, `presence:` (near/away), the budget line (a % of the week) and the members into the plan file
 - one message to dima: mode, members, budget, when the report lands. **from here the shift is on.**
 
 ## 2 · run — no asks
@@ -60,5 +63,5 @@ In the plan file, then one chat message:
 - stated plainly: **an unanswered item counts as accepted**
 - the spend, the steer log, what the next plan changes
 
-Retros in, members stopped, the ⏳ block back on. **Done** = the report is in the file and the
+Retros in, members stopped, the plan's `status:` flipped to `done`, the ⏳ block back on. **Done** = the report is in the file and the
 chat, every member is stopped or carried on purpose, and nothing parked is lost.
