@@ -39,10 +39,11 @@
 
 two sessions, A and B, in one checkout.
 
-- 🧭 holds run in a Code-tab session
+- ✅ holds run in a Code-tab session
   - given a Code-tab session
   - when holds checks a file's git state
   - then the check returns; if it cannot, the build stops before any other line
+  - proven live by cclio, 2026-10-04: a `--bg` session held `.holds-probe.txt`, a Code-tab Write of the same path was refused «held by session 75f531d4, which took it 2 min ago» — a deny means the git check through `$.process` returned, since fail-open would have let it through
 - ✅ a first edit takes the hold
   - given A edited `x.ts`
   - when B edits `x.ts`
