@@ -53,6 +53,7 @@
         "macos:setup": "node ./script/macos-setup.ts",
         "mcp:build": "pnpm --filter mcp-x-cw build",
         "mods:test": "for m in home/.claude/plugin-x/mods/*/; do claude plugin test \"$m\" || exit 1; done",
+        "memory-load:replay": "python3 ./script/memory-load-replay.py",
         "memory-sync:map": "node ./script/memory-sync-map.ts",
         "memory-sync:copy": "node ./script/memory-sync-copy.ts",
         "plugin:release": "node ./script/plugin-release.ts",

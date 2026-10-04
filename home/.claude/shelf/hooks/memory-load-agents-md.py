@@ -38,7 +38,7 @@ while within(here, home) and here != home:
         dirs.append(here)
     here = os.path.dirname(here)
 
-state_dir = os.path.join(tempfile.gettempdir(), "cc-agents-travel")
+state_dir = os.path.join(tempfile.gettempdir(), "cc-memory-load-agents-md")
 os.makedirs(state_dir, exist_ok=True)
 state = os.path.join(state_dir, event.get("session_id", "none"))
 seen = set(open(state).read().split("\n")) if os.path.exists(state) else set()
@@ -71,7 +71,7 @@ with open(state, "a") as f:
 
 head = (
     f"memory for {os.path.dirname(fresh[0])} — outside this session's project, so cc did not load it. "
-    "binding for any work under that path (agents-travel, once per session)"
+    "binding for any work under that path (memory-load-agents-md, once per session)"
 )
 parts = [f"{head}:"] + [f"\n=== {p} ===\n{body(p)}" for p in fresh]
 # the harness moves a big additionalContext to a file and shows a 2 kB preview (29 kB measured, 2026-09-28)

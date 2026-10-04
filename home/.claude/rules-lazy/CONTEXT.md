@@ -9,7 +9,7 @@ A rule file that is not resident; it enters a session only when one of its trigg
 _Avoid_: on-demand rule, optional rule
 
 **Trigger**:
-A pattern in dima's prompt or in a command the session runs that says a lazy rule's work has started.
+A pattern in dima's prompt, in a command the session runs, or in the directory the session starts in, that says a lazy rule's work has started.
 _Avoid_: matcher, hook (the hook is the mechanism, the trigger is the pattern)
 
 **Load**:

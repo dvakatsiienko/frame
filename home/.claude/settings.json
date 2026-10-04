@@ -54,7 +54,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/shelf/hooks/agents-travel.py"
+            "command": "python3 ~/.claude/shelf/hooks/memory-load-agents-md.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/shelf/hooks/memory-load-rule-lazy.py"
           }
         ]
       },
@@ -82,6 +91,10 @@
           {
             "type": "command",
             "command": "bash ~/.claude/shelf/hooks/skill-route.sh"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/shelf/hooks/memory-load-rule-lazy.py"
           }
         ]
       }
@@ -96,6 +109,10 @@
           {
             "type": "command",
             "command": "python3 ~/.claude/shelf/hooks/reply-check.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/shelf/hooks/memory-load-rule-lazy.py"
           }
         ]
       }
@@ -136,6 +153,10 @@
           {
             "type": "command",
             "command": "bash ~/.claude/shelf/hooks/opus-register-capture.sh"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/shelf/hooks/memory-load-rule-lazy.py"
           }
         ]
       },

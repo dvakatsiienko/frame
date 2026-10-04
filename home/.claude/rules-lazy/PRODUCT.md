@@ -9,7 +9,7 @@ dima, 2026-10-04: «if we keep it, it must work very well and always load correc
 ## decided (grill, 2026-10-04)
 
 - a classic hook, a sibling of the path loader, never a mod — nothing to show, and hook context injection is proven
-- the hook family is `memory-load-*`: `agents-travel` becomes `memory-load-agents-md`, the new hook is `memory-load-rule-lazy`
+- the hook family is `memory-load-*`: the path loader becomes `memory-load-agents-md`, the new hook is `memory-load-rule-lazy`
 - triggers for linear-flow: a `FRM-N` / `BYT-N` id in dima's prompt; a Bash call running `linear`, `git commit` or `gh pr create`
 - the first tool trigger of a session is refused once with the rule attached — the only way the rule lands before the action
 - a miss is traced, never silent: a Stop hook scans each turn for linear signals and logs `miss` when the rule never loaded
@@ -24,6 +24,6 @@ dima, 2026-10-04: «if we keep it, it must work very well and always load correc
 - compaction: `SessionStart:compact` clears the loaded marks for both `memory-load-*` hooks — the path loader never reloaded an `AGENTS.md` after a compaction
 - `pnpm memory-load:replay --days 14` — the detector over real transcripts, the hit rate printed
 - cw: the path constant in `mcp-x-cw/src/pm.ts`, rebuilt
-- the rename `agents-travel` → `memory-load-agents-md` on every layer: file, `settings.json`, log strings, docs
+- the path loader's rename to `memory-load-agents-md` on every layer: file, `settings.json`, log strings, docs
 
 **out:** `fleet-hazards` and every rule besides linear-flow until the verdict · jev · any ui · a separate load for subagents (they carry the parent's context)
