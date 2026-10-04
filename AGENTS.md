@@ -121,6 +121,7 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
 
 ## hazards that bite this repo
 
+- **a pre-commit `test` red in under 1 s on the first commit after staging is the known flake** — vitest needs ~2.5 s, and the identical retry went green both times (2026-10-04); retry once, a second red is real. guard: none, cause unknown
 - **frame's lefthook stashes unstaged changes only for PARTIALLY staged files** — a fully-unstaged wip file stays live during `pnpm test` and can fail the gate (the cw `/profile.md#fleet` size check, 2026-09-23); wrap the commit in a path-limited `git stash push -- <files>`
 - a git worktree of `frame` cannot push (the `mirror` gate reads `~` symlinks that point at
   the main checkout)

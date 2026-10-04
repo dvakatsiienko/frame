@@ -24,7 +24,8 @@ counts, repos vs origin, the settings symlink, the flawlog tail. **one shell rou
 - a `🚨 FAIL ·` line → report it FIRST, before any work. a check that could not run prints FAIL, never
   nothing — `=== all checks green ===` is the only green.
 - barrel probe, no shell: name one fact that lives ONLY in a leaf body (the commit hash `d03f3da` in
-  `sys-settings-drift` — it appears in no barrel line). cannot name it → 🚨 the import chain broke;
+  `sys-settings-drift` — it appears in no barrel line), silently: the board says «barrel probe ok»,
+  never the hash, which the output rules ban in a reply. cannot name it → 🚨 the import chain broke;
   say so and read `memory/_MEMORY.md` by hand for this session.
 - a new always-wanted check lands in the script, never in this file.
 
