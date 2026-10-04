@@ -85,10 +85,7 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 - ✅ **`claude --bg '<prompt>'` RUNS the prompt** (re-verified 2.1.258; it came up idle on 2.1.239).
   `SendMessage` is still how you brief it later, and the only way to attach `notify_when_idle`.
 - ⚠️ **a peer answering in plain prose reaches nobody** — only a message call travels; say so
-  in any brief expecting an answer. Code-tab sessions have no cc `SendMessage`; their channel is
-  `mcp__ccd_session_mgmt__send_message` (load via ToolSearch), one-way per call, delivered as a
-  user turn — a two-way needs both sides to load it and to know the other's `session_id`
-  (`get_session self`). **both, always:** the ping for timing, the transcript (`list_events`)
+  in any brief expecting an answer. a Code-tab-born session has cc `SendMessage` + `ListAgents` too (probed 2026-10-04 on cc 2.1.289: a desktop-born sonnet answered cclio's message through its own `SendMessage`, deferred until loaded); the desktop's `mcp__ccd_session_mgmt__send_message` is a second, one-way door. **both, always:** the ping for timing, the transcript (`list_events`)
   for the picture — dima also steers the coder in its own chat, and only the transcript shows that.
 - 🚨 **a hang is mine to break** (dima 2026-09-20, after a whole loop stood still — coder, verifier and coordinator all idle): the coordinator is the only member that sees every session, so it is the detector. every member is subscribed (`notify_when_idle`, re-armed on every send); an idle notice with an open assignment → ping the idle member in the same turn with the next concrete step; no reply within ~5 min (a `Monitor` on the registry status, deadline stated) → ping dima if he is around, otherwise re-brief from the member's CST or respawn; a stall is reported the moment it is seen, never folded into a later summary
 - 🚨 **a step a member waits on is announced to it in the same turn** (2026-10-02): i re-labeled #120 for its review and told no one; the coder said «the re-label is your call» and waited while i waited on the review. the action and its `SendMessage` go out in one tool batch.

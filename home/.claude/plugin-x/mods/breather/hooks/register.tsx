@@ -1,4 +1,6 @@
 /* @jsx h */
+import { exerciseOf } from './breath/exercises.ts';
+import { orbSvg } from './orb.ts';
 import type { Register } from 'claude-code';
 
 import {
@@ -114,6 +116,23 @@ export const register: Register = (on) => {
             });
         const elapsedMs = now - running.startedAt;
         if (elapsedMs < config.delay * 1000) return next(e);
+        if (e.surface === 'desktop') {
+            // the desktop refuses a Client module (10 s, csp); an Svg's own SMIL clock needs no host tick
+            const { Box, Svg } = $.ui.resolve(e);
+            const exercise = exerciseOf(config.exercise);
+            return (
+                <Box flexDirection='column'>
+                    <Svg
+                        alt={`breathing guide: ${exercise.name}, ${exercise.pattern}`}
+                        height={124}
+                        isInteractive
+                        key={`orb:${running.startedAt}:${config.exercise}`}
+                        source={orbSvg(exercise)}
+                    />
+                    {await next(e)}
+                </Box>
+            );
+        }
         const { Box, Client } = $.ui.resolve(e);
         const rows = Math.min(BAND_ROWS, e.props.maxRows);
         if (rows < 1) return next(e);
