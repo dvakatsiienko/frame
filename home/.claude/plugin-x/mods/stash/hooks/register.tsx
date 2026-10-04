@@ -1,11 +1,12 @@
 /* @jsx h */
-import type { Register } from 'claude-code';
+import type { EngineInterface, Register } from 'claude-code';
 
 import { parseAsks } from './parse.ts';
 
-// stash: dima's command center above the prompt, one folded row with two features.
+// stash: dima's command center above the prompt, one folded row with three features.
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
-// afk: one switch every session polls; while it is on, every prompt carries an away note.
+// afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
+// holds: a session's first edit of a file holds it; another session's edit is refused
 // The reply stays the source of truth for asks; this band only shows and copies them.
 
 type Entry = { label: string; asks: string[]; at: number };
@@ -14,6 +15,8 @@ const PREFIX = 'asks:';
 const AFK_KEY = 'afk';
 const AWAY_NOTE =
     'dima is afk: nothing waits on him. take reversible steps and log them, park every ask for his return, send no ⏳ block and no ping.';
+const BACK_NOTE =
+    'dima is back from afk: asks and the ⏳ block reach him again.';
 const POLL_MS = 4000;
 const STALE_MS = 24 * 60 * 60 * 1000;
 const MACHINE_ORIGINS = ['peer', 'task-notification', 'scheduled-trigger'];
@@ -27,18 +30,210 @@ let open = false;
 let userTurn = false;
 let polling = false;
 let afk = false;
+let turnAfk: boolean | undefined;
+let proc: Proc | undefined;
+let root = '';
+let holds = { others: 0, warned: false };
 
 const fp = (sid: string, ask: string) => `${sid}\u0000${ask}`;
 const basename = (path: string) =>
     path.split('/').filter(Boolean).pop() ?? path;
 
-type Store = {
-    keys: () => Promise<string[]>;
-    get: (k: string) => Promise<unknown>;
-};
-type Clock = { now: () => Promise<number> };
+// holds: a session's first edit of a file holds it; another session's edit of it is refused.
+// $.store has no compare-and-set, so each session writes only its own keys and the earliest claim wins.
 
-async function load($: { store: Store; clock: Clock }): Promise<boolean> {
+type Hold = { at: number; file: string };
+type Holder = { pid?: number; start?: string; idleSince: number | null };
+type Refusal = { at: number; by: string; path: string };
+type Proc = { pid: number; start: string };
+
+const HOLD = 'hold:';
+const HOLDER = 'holder:';
+const REFUSED = 'refused:';
+const IDLE_MS = 30 * 60 * 1000;
+
+const holdKey = (sid: string, path: string) => `${HOLD}${sid}:${path}`;
+const short = (sid: string) => sid.slice(0, 8);
+const dirname = (file: string) => file.slice(0, file.lastIndexOf('/')) || '/';
+
+// a session id carries no ':', so the first one after the prefix ends it
+function parseHoldKey(key: string) {
+    if (!key.startsWith(HOLD)) return null;
+    const cut = key.indexOf(':', HOLD.length);
+    return cut < 0
+        ? null
+        : { path: key.slice(cut + 1), sid: key.slice(HOLD.length, cut) };
+}
+
+// lowercased on every platform: APFS is case-insensitive and the mod cannot ask which os it runs on
+async function realPath($: EngineInterface, file: string) {
+    const resolve = (p: string) =>
+        $.fs.stat(p, { resolve: true }).then(
+            (s) => s.realPath,
+            () => undefined,
+        );
+    const direct = await resolve(file);
+    if (direct) return direct.toLowerCase();
+    // a new file has no real path yet; its folder does
+    const dir = dirname(file);
+    return `${(await resolve(dir)) ?? dir}/${file.slice(dir.length + 1)}`.toLowerCase();
+}
+
+async function procOf($: EngineInterface): Promise<Proc | undefined> {
+    const r = await $.process.run([
+        'sh',
+        '-c',
+        'echo $PPID; ps -o lstart= -p $PPID',
+    ]);
+    const [pid, start] = r.stdout.split('\n').map((s) => s.trim());
+    return r.exitCode === 0 && pid && start
+        ? { pid: Number(pid), start }
+        : undefined;
+}
+
+async function isClean($: EngineInterface, file: string) {
+    const r = await $.process.run(
+        ['git', 'status', '--porcelain', '--', file],
+        { cwd: dirname(file) },
+    );
+    if (r.exitCode === 0) return r.stdout.trim() === '';
+    // outside a repo nothing can be committed, so nothing is held
+    if (!/not a git repository/i.test(r.stderr))
+        $.ui.log(`stash holds: git status failed on ${file}, hold released`);
+    return true;
+}
+
+async function isReleased(
+    $: EngineInterface,
+    sid: string,
+    hold: Hold,
+    now: number,
+) {
+    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
+    if (!holder) return true;
+    if (holder.idleSince !== null && now - holder.idleSince >= IDLE_MS)
+        return true;
+    if (holder.pid && holder.start) {
+        const ps = await $.process.run([
+            'ps',
+            '-o',
+            'lstart=',
+            '-p',
+            String(holder.pid),
+        ]);
+        // a reused pid starts at another time
+        if (ps.stdout.trim() !== holder.start) return true;
+    }
+    return isClean($, hold.file);
+}
+
+async function claimsOn($: EngineInterface, path: string) {
+    const claims: { sid: string; key: string; hold: Hold }[] = [];
+    for (const key of await $.store.keys()) {
+        const parsed = parseHoldKey(key);
+        if (parsed?.path !== path) continue;
+        const hold = (await $.store.get(key)) as Hold | undefined;
+        if (hold) claims.push({ hold, key, sid: parsed.sid });
+    }
+    return claims;
+}
+
+function refusal(file: string, sid: string, hold: Hold, now: number) {
+    const mins = Math.round((now - hold.at) / 60000);
+    return `stash: ${file} is held by session ${short(sid)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
+}
+
+// the deny text when another session holds the file, else undefined after taking the hold
+async function claim($: EngineInterface, file: string, proc: Proc | undefined) {
+    const sid = await $.session.id();
+    const path = await realPath($, file);
+    const now = await $.clock.now();
+    for (const c of await claimsOn($, path)) {
+        if (c.sid === sid) continue;
+        if (await isReleased($, c.sid, c.hold, now)) {
+            await $.store.delete(c.key);
+            continue;
+        }
+        await $.store.set(REFUSED + c.sid, { at: now, by: sid, path });
+        return refusal(file, c.sid, c.hold, now);
+    }
+    const mine = holdKey(sid, path);
+    if (await $.store.get(mine)) return undefined;
+    await $.store.set(mine, { at: now, file });
+    if (!(await $.store.get(HOLDER + sid)))
+        await $.store.set(HOLDER + sid, { ...proc, idleSince: null });
+    // a rival who wrote between the read and the write: earliest at wins, ties by sid
+    const [first] = (await claimsOn($, path)).sort(
+        (a, b) => a.hold.at - b.hold.at || a.sid.localeCompare(b.sid),
+    );
+    if (!first || first.sid === sid) return undefined;
+    await $.store.delete(mine);
+    return refusal(file, first.sid, first.hold, now);
+}
+
+async function markBusy($: EngineInterface) {
+    const sid = await $.session.id();
+    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
+    if (holder?.idleSince != null)
+        await $.store.set(HOLDER + sid, { ...holder, idleSince: null });
+}
+
+// a turn ended: start the idle clock and drop the holds whose files are clean again
+async function settle($: EngineInterface) {
+    const sid = await $.session.id();
+    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
+    if (!holder) return;
+    let left = 0;
+    for (const key of await $.store.keys()) {
+        if (parseHoldKey(key)?.sid !== sid) continue;
+        const hold = (await $.store.get(key)) as Hold | undefined;
+        if (!hold || (await isClean($, hold.file))) await $.store.delete(key);
+        else left++;
+    }
+    if (left) {
+        await $.store.set(HOLDER + sid, {
+            ...holder,
+            idleSince: await $.clock.now(),
+        });
+        return;
+    }
+    await $.store.delete(HOLDER + sid);
+    await $.store.delete(REFUSED + sid);
+}
+
+async function dropAll($: EngineInterface, sid: string) {
+    for (const key of await $.store.keys())
+        if (parseHoldKey(key)?.sid === sid) await $.store.delete(key);
+    await $.store.delete(HOLDER + sid);
+    await $.store.delete(REFUSED + sid);
+}
+
+// what the row shows: other sessions' holds under this repo, and whether this session's hold was wanted
+async function chip($: EngineInterface, sid: string, root: string) {
+    const keys = await $.store.keys();
+    const others = keys
+        .map(parseHoldKey)
+        .filter(
+            (h) => h && h.sid !== sid && h.path.startsWith(`${root}/`),
+        ).length;
+    const refused = (await $.store.get(REFUSED + sid)) as Refusal | undefined;
+    const warned = !!refused && keys.includes(holdKey(sid, refused.path));
+    return { others, warned };
+}
+
+// fail-open: a store or git error lets the edit through, with a line in the transcript
+async function guard($: EngineInterface, file: string) {
+    try {
+        return await claim($, file, proc);
+    } catch (err) {
+        $.ui.log(
+            `stash holds: ${err instanceof Error ? err.message : String(err)}; the edit went through unguarded`,
+        );
+        return undefined;
+    }
+}
+
+async function load($: EngineInterface): Promise<boolean> {
     const now = await $.clock.now();
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
     const afkChanged = (flag?.on === true) !== afk;
@@ -67,7 +262,11 @@ async function load($: { store: Store; clock: Clock }): Promise<boolean> {
     if (fresh.some((f) => !known.has(f))) open = true;
     known = new Set(fresh);
     entries = next;
-    return afkChanged || before !== after;
+    const prevHolds = holds;
+    if (selfId) holds = await chip($, selfId, root);
+    const holdsChanged =
+        prevHolds.others !== holds.others || prevHolds.warned !== holds.warned;
+    return afkChanged || holdsChanged || before !== after;
 }
 
 export const register: Register = (on) => {
@@ -75,7 +274,15 @@ export const register: Register = (on) => {
     on('session.start', async ($, e, next) => {
         // the repo root, not the cwd: a cd in the shell must not rename the thread
         selfId = await $.session.id();
-        label = basename((await $.session.repo())?.root ?? e.cwd);
+        const top = (await $.session.repo())?.root ?? e.cwd;
+        label = basename(top);
+        root = top.toLowerCase();
+        proc = await procOf($).catch(() => {
+            $.ui.log(
+                'stash holds: no pid for this session, a dead holder releases only by idle',
+            );
+            return undefined;
+        });
         await load($);
         if (!polling) {
             polling = true;
@@ -95,6 +302,8 @@ export const register: Register = (on) => {
             e.text.trim().length > 0 &&
             !MACHINE_ORIGINS.includes(e.origin?.kind);
         await load($);
+        turnAfk = afk;
+        await markBusy($).catch(() => undefined);
         if (!afk) return next(e);
         return next({ ...e, context: [...(e.context ?? []), AWAY_NOTE] });
     });
@@ -118,9 +327,46 @@ export const register: Register = (on) => {
         return r;
     });
 
+    on('turn.complete', async ($, e, next) => {
+        const r = await next(e);
+        // a subagent's turn ending is not the session going idle
+        if (e.agentId) return r;
+        await settle($).catch(() =>
+            $.ui.log("stash holds: could not settle this turn's holds"),
+        );
+        if (await load($)) $.ui.invalidate('ui.render');
+        return r;
+    });
+
     on('session.end', async ($, e, next) => {
         await $.store.delete(PREFIX + e.sessionId);
+        await dropAll($, e.sessionId).catch(() => undefined);
         return next(e);
+    });
+
+    on('tool.call', { tool: 'Edit' }, async ($, e, next) => {
+        const deny = await guard($, e.file_path);
+        return deny ? { deny } : next(e);
+    });
+    on('tool.call', { tool: 'Write' }, async ($, e, next) => {
+        const deny = await guard($, e.file_path);
+        return deny ? { deny } : next(e);
+    });
+    on('tool.call', { tool: 'NotebookEdit' }, async ($, e, next) => {
+        const deny = await guard($, e.notebook_path);
+        return deny ? { deny } : next(e);
+    });
+
+    // afk flipped mid-turn: the next tool result carries the new state once
+    on('tool.call', async (_$, e, next) => {
+        const r = await next(e);
+        if (turnAfk === undefined || turnAfk === afk || r.deny !== undefined)
+            return r;
+        turnAfk = afk;
+        return {
+            ...r,
+            context: [...(r.context ?? []), afk ? AWAY_NOTE : BACK_NOTE],
+        };
     });
 
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
@@ -164,18 +410,40 @@ export const register: Register = (on) => {
         );
         const [first] = groups;
         const many = groups.length > 1;
+        // other sessions' holds in this repo; ⚠ when a session was refused one of this session's files
+        const holdsChip =
+            holds.others || holds.warned ? (
+                <Text color={holds.warned ? ACCENT : undefined}>
+                    {[
+                        holds.warned ? '⚠' : '',
+                        holds.others ? `🔒 ${holds.others}` : '',
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
+                </Text>
+            ) : null;
 
+        // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there
         const head = (
-            <Box flexDirection='row' justifyContent='space-between'>
+            <Box
+                flexDirection='row'
+                justifyContent='space-between'
+                marginBottom={
+                    open && total && surface === 'desktop' ? 0.25 : 0
+                }>
                 {first ? (
                     <Box flexDirection='row' gap={1}>
                         <Text bold color={ACCENT}>
                             ⏳ {total} open
                         </Text>
                         {many ? <Text dimColor>{counts}</Text> : null}
+                        {holdsChip}
                     </Box>
                 ) : (
-                    <Text dimColor>no open asks</Text>
+                    <Box flexDirection='row' gap={1}>
+                        <Text dimColor>no open asks</Text>
+                        {holdsChip}
+                    </Box>
                 )}
                 <Box flexDirection='row' gap={1}>
                     {first ? copyButton(first[0], first[1].asks) : null}

@@ -1,5 +1,5 @@
 {
     "name": "stash",
-    "version": "0.3.0",
-    "description": "dima's command center above the prompt, one folded row with two features: asks (every live session's open ⏳ asks, copy all per thread) and afk (one switch every session obeys)"
+    "version": "0.4.0",
+    "description": "dima's command center above the prompt, one folded row with three features: asks (every live session's open ⏳ asks, copy all per thread), afk (one switch every session obeys) and holds (no two sessions write the same file)"
 }

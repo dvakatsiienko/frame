@@ -8,6 +8,7 @@
 ## the row
 
 - 🔎 one row: the open count on the left; `📋 copy all`, `afk` and `show`/`hide` on the right
+  - decision: a quarter cell (~4px) under the row on desktop while the asks show — dima: «too tight»; none in the terminal, where a cell is a whole line
   - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
 - 🔎 asks: every live session's open asks, «no open asks» when empty
 - ✅ `📋 copy all` in the row copies the first thread's asks as a `lane` block; every other thread keeps its own beside its name
@@ -18,11 +19,16 @@
   - decision: a real button, not plain text — dima could not tell it was pressable; the mod api has no cursor prop, so the pointer is the surface's own
   - decision: ask lines are not selectable — the mod api has no selection control and `Markdown` did not help either (dima, 2026-10-04); copy all is the door
 - 🔎 afk switch: only the emoji changes (☕ / 🌙), accent background when on
-- 🧭 holds chip: `🔒 n` counts other sessions' holds in this repo
+- ✅ afk reaches a running turn
+  - given a session is mid-turn
+  - when dima flips afk
+  - then the session's next tool call carries a one-line note with the new afk state
+  - decision: once per flip; the note rides the tool result as context, the model reads it and dima does not see it
+- ✅ holds chip: `🔒 n` counts other sessions' holds in this repo
   - given session A holds 2 files in this repo
   - when session B's row draws
   - then B shows `🔒 2`; at zero the chip is hidden
-- 🧭 holder warning: the holder's chip turns ⚠ after someone was refused
+- ✅ holder warning: the holder's chip turns ⚠ after someone was refused
   - given A holds `x.ts`
   - when B's edit of `x.ts` is refused
   - then A's chip shows ⚠, and A gets no message
@@ -35,40 +41,44 @@ two sessions, A and B, in one checkout.
   - given a Code-tab session
   - when holds checks a file's git state
   - then the check returns; if it cannot, the build stops before any other line
-- 🧭 a first edit takes the hold
+- ✅ a first edit takes the hold
   - given A edited `x.ts`
   - when B edits `x.ts`
   - then B is refused, and the message names A and when A took the hold
   - decision: no override in v0 — the deny names who to ask
-- 🧭 the holder keeps editing
+  - decision: the holder is named by the first 8 characters of its session id; every session in one checkout shares the repo name
+  - decision: the path is lowercased on every platform — APFS is case-insensitive and a mod cannot ask which os it runs on
+- ✅ the holder keeps editing
   - given A holds `x.ts`
   - when A edits it again
   - then the edit goes through
-- 🧭 other files stay free
+- ✅ other files stay free
   - given A holds `x.ts`
   - when B edits `y.ts`
   - then the edit goes through
-- 🧭 a commit releases
+- ✅ a commit releases
   - given A committed `x.ts`
   - when B edits it
   - then the edit goes through and A's hold is gone
-- 🧭 a new file stays held until committed
+- ✅ a new file stays held until committed
   - given A created a new file and left it uncommitted
   - when B edits it
   - then B is refused
-- 🧭 a dead holder releases
+- ✅ a dead holder releases
   - given A's process was killed
   - when B edits A's file
   - then the edit goes through
-- 🧭 an idle holder releases
+  - decision: the pid is the `$PPID` a mod's child sees (measured: the `claude` process), kept with its start time, so a reused pid reads as dead
+- ✅ an idle holder releases
   - given A's last turn ended over 30 minutes ago
   - when B edits A's file
   - then the edit goes through
   - decision: 30 min — prior art ranged 5–120, and 5 min dropped long turns
-- 🧭 one winner in a race
+- ✅ one winner in a race
   - given A and B edit the same new file in the same second
   - then exactly one of them holds it
-- 🧭 a broken store never blocks work
+  - 📌 tested one after the other in the same millisecond; two processes writing between each other's read and write are settled by earliest `at`, then session id — unmeasured
+- ✅ a broken store never blocks work
   - given the store file is unreadable
   - when B edits
   - then the edit goes through and the error is logged
