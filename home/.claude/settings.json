@@ -7,7 +7,7 @@
     "EDITOR": "nvim",
     "CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT": "0",
     "CLAUDE_CODE_SUBAGENT_MODEL": "opus",
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/frame/home/.claude/plugin-x/mods/breather:~/frame/home/.claude/plugin-x/mods/stash:~/frame/home/.claude/plugin-x/mods/afk",
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/frame/home/.claude/plugin-x/mods/breather:~/frame/home/.claude/plugin-x/mods/stash",
     "CLAUDE_CODE_PLUGIN_DIR_WATCH": "1"
   },
   "attribution": {
@@ -191,8 +191,7 @@
     "humanize@humanize": true,
     "cc-plugin-telemetry@builtin": false,
     "mindful-claude@mindful-claude": false,
-    "breather@x": false,
-    "stash@x": false
+    "breather@x": false
   },
   "extraKnownMarketplaces": {
     "claude-code-warp": {
