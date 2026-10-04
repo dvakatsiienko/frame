@@ -7,11 +7,17 @@
 
 ## the row
 
-- 🔎 one row: asks on the left, the afk switch on the right
+- 🔎 one row: the open count on the left; `📋 copy all`, `afk` and `show`/`hide` on the right
+  - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
 - 🔎 asks: every live session's open asks, «no open asks» when empty
-- 🔎 copy all, per thread
+- ✅ `📋 copy all` in the row copies the first thread's asks as a `lane` block; every other thread keeps its own beside its name
+  - given a reply left open asks
+  - when dima presses `📋 copy all` in the row
+  - then the clipboard holds `lane` and the numbered asks
   - decision: no per-item copy, no prompt injection — injection destroyed dima's typed prompt
-- ⬜ afk switch: only the emoji changes (☕ / 🌙), accent background when on
+  - decision: a real button, not plain text — dima could not tell it was pressable; the mod api has no cursor prop, so the pointer is the surface's own
+  - decision: ask lines are not selectable — the mod api has no selection control and `Markdown` did not help either (dima, 2026-10-04); copy all is the door
+- 🔎 afk switch: only the emoji changes (☕ / 🌙), accent background when on
 - 🧭 holds chip: `🔒 n` counts other sessions' holds in this repo
   - given session A holds 2 files in this repo
   - when session B's row draws

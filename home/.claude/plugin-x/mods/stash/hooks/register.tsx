@@ -73,7 +73,9 @@ async function load($: { store: Store; clock: Clock }): Promise<boolean> {
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
-        label = basename(e.cwd);
+        // the repo root, not the cwd: a cd in the shell must not rename the thread
+        selfId = await $.session.id();
+        label = basename((await $.session.repo())?.root ?? e.cwd);
         await load($);
         if (!polling) {
             polling = true;
@@ -99,7 +101,6 @@ export const register: Register = (on) => {
 
     on('classic.Stop', async ($, e, next) => {
         const r = await next(e);
-        selfId ??= e.session_id;
         const asks = parseAsks(e.last_assistant_message ?? '');
         // a reply to dima with no block means nothing is open; a reply woken by a peer keeps the old list
         if (asks !== null || userTurn) {
@@ -108,7 +109,7 @@ export const register: Register = (on) => {
                 await $.store.set(key, {
                     asks,
                     at: await $.clock.now(),
-                    label: basename(e.cwd) || label,
+                    label,
                 });
             else await $.store.delete(key);
             if (await load($)) $.ui.invalidate('ui.render');
@@ -145,25 +146,48 @@ export const register: Register = (on) => {
             await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
             $.ui.invalidate('ui.render');
         };
-        const afkButton = (
+        const copyButton = (sid: string, asks: string[]) => (
             <Button
-                key='afk'
-                onPress={() => void flipAfk()}
-                {...(afk
-                    ? { variant: 'primary' as const }
-                    : { plain: true as const })}>
-                {afk ? '🌙 afk' : '☕ afk'}
+                key={`copy:${sid}`}
+                onPress={() =>
+                    void $.ui.copy({
+                        surface,
+                        text: [
+                            'lane',
+                            ...asks.map((a, i) => `${i + 1}. ${a}`),
+                        ].join('\n'),
+                    })
+                }
+                variant='secondary'>
+                📋 copy all
             </Button>
         );
+        const [first] = groups;
+        const many = groups.length > 1;
 
         const head = (
             <Box flexDirection='row' justifyContent='space-between'>
-                {total ? (
+                {first ? (
                     <Box flexDirection='row' gap={1}>
                         <Text bold color={ACCENT}>
                             ⏳ {total} open
                         </Text>
-                        <Text dimColor>{counts}</Text>
+                        {many ? <Text dimColor>{counts}</Text> : null}
+                    </Box>
+                ) : (
+                    <Text dimColor>no open asks</Text>
+                )}
+                <Box flexDirection='row' gap={1}>
+                    {first ? copyButton(first[0], first[1].asks) : null}
+                    <Button
+                        key='afk'
+                        onPress={() => void flipAfk()}
+                        {...(afk
+                            ? { variant: 'primary' as const }
+                            : { plain: true as const })}>
+                        {afk ? '🌙 afk' : '☕ afk'}
+                    </Button>
+                    {first ? (
                         <Button
                             hotkey='o'
                             key='asks-toggle'
@@ -171,11 +195,8 @@ export const register: Register = (on) => {
                             plain>
                             {open ? 'hide' : 'show'}
                         </Button>
-                    </Box>
-                ) : (
-                    <Text dimColor>no open asks</Text>
-                )}
-                {afkButton}
+                    ) : null}
+                </Box>
             </Box>
         );
         if (!open || !total)
@@ -186,26 +207,18 @@ export const register: Register = (on) => {
                 </Box>
             );
 
-        const rows = groups.flatMap(([sid, v]) => [
-            <Box flexDirection='row' gap={1} key={`g:${sid}`}>
-                <Text bold>
-                    {sid === selfId ? `${v.label} (here)` : v.label}
-                </Text>
-                <Button
-                    key={`copy:${sid}`}
-                    onPress={() =>
-                        void $.ui.copy({
-                            surface,
-                            text: [
-                                'lane',
-                                ...v.asks.map((a, i) => `${i + 1}. ${a}`),
-                            ].join('\n'),
-                        })
-                    }
-                    plain>
-                    copy all
-                </Button>
-            </Box>,
+        // one thread needs no name; with several, the head copies the first and each other one copies beside its name
+        const rows = groups.flatMap(([sid, v], g) => [
+            ...(many
+                ? [
+                      <Box flexDirection='row' gap={1} key={`g:${sid}`}>
+                          <Text bold>
+                              {sid === selfId ? `${v.label} (here)` : v.label}
+                          </Text>
+                          {g > 0 ? copyButton(sid, v.asks) : null}
+                      </Box>,
+                  ]
+                : []),
             ...v.asks.map((ask, i) => (
                 <Text key={`a:${sid}:${i + 1}`}>
                     {i + 1}. {ask}
