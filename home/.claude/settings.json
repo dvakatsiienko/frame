@@ -181,16 +181,16 @@
   },
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": false,
-    "warp@claude-code-warp": false,
     "mattpocock-skills@claude-plugins-official": true,
     "x@x": true,
-    "linear-cli@linear-cli": false,
     "impeccable@impeccable": true,
     "typesafe@typesafe-ai": true,
     "humanize@humanize": true,
-    "cc-plugin-telemetry@builtin": false
+    "cc-plugin-telemetry@builtin": false,
+    "mindful-claude@mindful-claude": false,
+    "breather@x": true,
+    "stash@x": true
   },
   "extraKnownMarketplaces": {
     "claude-code-warp": {
@@ -242,6 +242,12 @@
       "source": {
         "source": "github",
         "repo": "tamaratran/fast-jev-compaction"
+      }
+    },
+    "mindful-claude": {
+      "source": {
+        "source": "github",
+        "repo": "halluton/Mindful-Claude"
       }
     }
   },

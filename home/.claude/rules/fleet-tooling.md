@@ -18,6 +18,7 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 - **himalaya** — the mail cli (`himalaya envelope list`, `message read <id>`, `message delete`, `message reply`); one gmail account, app password from 1password `gmail-himalaya-golden`, config in `home/.config/himalaya/`. filters are not its job — those are `gmailctl` over `gmail/blocklist.json`
 - **slk** — slack cli (package `slkcli`; binary is `slk`, auth rides the slack desktop session; `slk --help` is the whole api)
 - **jq** — prefer it for JSON parsing, filtering, and transformation
+- **code examples across public github → `grep-mcp` first** (regex over ~1M repos, deferred, ~0 resident cost); `gh search code` only for one known repo — no cli exists for grep.app
 - **rg** (ripgrep, `brew "ripgrep"`) — the regex search over files; the Grep tool runs it too. 65 docs search in ~15 ms, so a doc is findable the moment it exists (2026-09-30)
 - **yq** — yaml/toml read-write (`settings.toml`, lefthook)
 - **sd** — in-place text replace without sed's macos `-i ''` traps

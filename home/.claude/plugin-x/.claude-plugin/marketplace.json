@@ -9,6 +9,16 @@
       "name": "x",
       "source": "./",
       "description": "Dima's own skills — CST session handoff, RL task authoring, prompt review, agentic loops"
+    },
+    {
+      "name": "breather",
+      "source": "./mods/breather",
+      "description": "a breathing band above the prompt while claude works, terminal + desktop"
+    },
+    {
+      "name": "stash",
+      "source": "./mods/stash",
+      "description": "every open ⏳ ask from every live session in one band above the prompt"
     }
   ],
   "description": "Dima's personal skills marketplace"

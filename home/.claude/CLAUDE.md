@@ -153,6 +153,7 @@ on partly done, flatten an exact string into prose casing.
 - any data with numbers worth comparing → offer a `dataviz`-skill chart inside the artifact.
 - once published, the chat hands over the link, not the content.
 - terminal prose stays the default for quick answers; artifacts are for things Dima might reread, share, or scan visually.
+- a repeated ask a cc mod could absorb (a band, a pane, a hook on a prompt or a tool) → one line: «💡 mod idea: …». the mods live in plugin `x`'s marketplace, `plugin-x/mods/<name>`.
 
 ## byproducts and cleaning habits
 

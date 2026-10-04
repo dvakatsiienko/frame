@@ -13,6 +13,7 @@
       "!**/public/**/*",
       "!home/.claude/skills/quicksilver", // vendored upstream skill, on vet — never reformatted
       "!home/.claude/plugin-x/lsp/typescript-native", // vendored ts 7 lsp proxy, pinned sha — never reformatted
+      "!home/.claude/plugin-x/mods/breather", // a fork of mindful-claude 2.0.0 (MIT), kept near upstream until our own loader replaces it
       "!.claude/worktrees", // coder worktrees carry their own biome.jsonc — a nested root otherwise
       "!assets", // generated readme art: mac.svg keeps ascii spacing under xml:space, a reformat breaks it
       "!home/.claude/sline/showcase/sline.svg", // rendered by render-svg.ts, never hand-edited
@@ -71,6 +72,13 @@
   },
 
   "overrides": [
+    {
+      // cc mods import `claude-code` (and `claude-code/testing`), a module the engine provides at load; no manifest can declare it.
+      "includes": ["home/.claude/plugin-x/mods/**"],
+      "linter": {
+        "rules": { "correctness": { "noUndeclaredDependencies": "off" } }
+      }
+    },
     {
       // Two shapes the dependency rule cannot see.
       //
