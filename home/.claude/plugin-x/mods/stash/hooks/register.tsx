@@ -3,13 +3,17 @@ import type { Register } from 'claude-code';
 
 import { parseAsks } from './parse.ts';
 
-// Mirrors the ⏳ block of every live session's last reply into $.store (one key per session) and
-// draws all of them above the prompt: a quiet one-liner, opened by itself when a new ask lands.
-// The reply stays the source of truth; this band only shows it and copies a thread's asks.
+// stash: dima's command center above the prompt, one folded row with two features.
+// asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
+// afk: one switch every session polls; while it is on, every prompt carries an away note.
+// The reply stays the source of truth for asks; this band only shows and copies them.
 
 type Entry = { label: string; asks: string[]; at: number };
 
 const PREFIX = 'asks:';
+const AFK_KEY = 'afk';
+const AWAY_NOTE =
+    'dima is afk: nothing waits on him. take reversible steps and log them, park every ask for his return, send no ⏳ block and no ping.';
 const POLL_MS = 4000;
 const STALE_MS = 24 * 60 * 60 * 1000;
 const MACHINE_ORIGINS = ['peer', 'task-notification', 'scheduled-trigger'];
@@ -22,6 +26,7 @@ let known = new Set<string>();
 let open = false;
 let userTurn = false;
 let polling = false;
+let afk = false;
 
 const fp = (sid: string, ask: string) => `${sid}\u0000${ask}`;
 const basename = (path: string) =>
@@ -35,6 +40,9 @@ type Clock = { now: () => Promise<number> };
 
 async function load($: { store: Store; clock: Clock }): Promise<boolean> {
     const now = await $.clock.now();
+    const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
+    const afkChanged = (flag?.on === true) !== afk;
+    afk = flag?.on === true;
     const next: Record<string, Entry> = {};
     for (const key of await $.store.keys()) {
         if (!key.startsWith(PREFIX)) continue;
@@ -59,13 +67,12 @@ async function load($: { store: Store; clock: Clock }): Promise<boolean> {
     if (fresh.some((f) => !known.has(f))) open = true;
     known = new Set(fresh);
     entries = next;
-    return before !== after;
+    return afkChanged || before !== after;
 }
 
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
-        selfId = await $.session.id();
         label = basename(e.cwd);
         await load($);
         if (!polling) {
@@ -81,11 +88,13 @@ export const register: Register = (on) => {
     });
 
     // a turn a peer, a task or a trigger woke is not dima's: its reply may drop the block
-    on('prompt.submit', async (_$, e, next) => {
+    on('prompt.submit', async ($, e, next) => {
         userTurn =
             e.text.trim().length > 0 &&
-            !MACHINE_ORIGINS.includes(e.origin.kind);
-        return next(e);
+            !MACHINE_ORIGINS.includes(e.origin?.kind);
+        await load($);
+        if (!afk) return next(e);
+        return next({ ...e, context: [...(e.context ?? []), AWAY_NOTE] });
     });
 
     on('classic.Stop', async ($, e, next) => {
@@ -119,7 +128,6 @@ export const register: Register = (on) => {
             a === selfId ? -1 : b === selfId ? 1 : 0,
         );
         const total = groups.reduce((n, [, v]) => n + v.asks.length, 0);
-        if (!total) return next(e);
         const { Box, Text, Button } = $.ui.resolve(e);
         const surface = e.surface;
         const counts = groups
@@ -132,19 +140,45 @@ export const register: Register = (on) => {
             open = !open;
             $.ui.invalidate('ui.render');
         };
+        const flipAfk = async () => {
+            afk = !afk;
+            await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
+            $.ui.invalidate('ui.render');
+        };
+        const afkButton = (
+            <Button
+                key='afk'
+                onPress={() => void flipAfk()}
+                {...(afk
+                    ? { variant: 'primary' as const }
+                    : { plain: true as const })}>
+                {afk ? '🌙 afk' : '☕ afk'}
+            </Button>
+        );
 
         const head = (
-            <Box flexDirection='row' gap={1}>
-                <Text bold color={ACCENT}>
-                    ⏳ {total} open
-                </Text>
-                <Text dimColor>{counts}</Text>
-                <Button hotkey='o' key='stash-toggle' onPress={toggle} plain>
-                    {open ? 'hide' : 'show'}
-                </Button>
+            <Box flexDirection='row' justifyContent='space-between'>
+                {total ? (
+                    <Box flexDirection='row' gap={1}>
+                        <Text bold color={ACCENT}>
+                            ⏳ {total} open
+                        </Text>
+                        <Text dimColor>{counts}</Text>
+                        <Button
+                            hotkey='o'
+                            key='asks-toggle'
+                            onPress={toggle}
+                            plain>
+                            {open ? 'hide' : 'show'}
+                        </Button>
+                    </Box>
+                ) : (
+                    <Text dimColor>no open asks</Text>
+                )}
+                {afkButton}
             </Box>
         );
-        if (!open)
+        if (!open || !total)
             return (
                 <Box flexDirection='column'>
                     {head}

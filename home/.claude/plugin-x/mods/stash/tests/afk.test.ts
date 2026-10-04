@@ -18,13 +18,14 @@ for (const surface of ['terminal', 'desktop'] as const) {
         await $.session.start({ cwd: '/tmp', isInteractive: true, surface });
         const ui = await $.ui.mount({
             component: 'AbovePrompt',
-            plugin: 'afk',
+            plugin: 'stash',
             props,
             surface,
         });
-        expect((await ui.find({ key: 'afk' }))?.text).toContain('☕');
+        expect((await ui.find({ key: 'afk' }))?.text).toContain('☕ afk');
         await ui.press({ key: 'afk' });
-        expect((await ui.find({ key: 'afk' }))?.text).toContain('🌙');
+        expect((await ui.find({ key: 'afk' }))?.text).toContain('🌙 afk');
+        expect((await ui.find({ key: 'afk' }))?.text).not.toContain('away');
     });
 }
 
@@ -45,7 +46,7 @@ test('a prompt carries the away note only while afk is on', async ($, on) => {
     });
     const ui = await $.ui.mount({
         component: 'AbovePrompt',
-        plugin: 'afk',
+        plugin: 'stash',
         props,
         surface: 'terminal',
     });

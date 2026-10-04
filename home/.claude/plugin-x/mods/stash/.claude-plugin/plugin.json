@@ -1,1 +1,5 @@
-{ "name": "stash", "version": "0.2.1", "description": "every open ⏳ ask from every live session in one band above the prompt — copy all per thread" }
+{
+    "name": "stash",
+    "version": "0.3.0",
+    "description": "dima's command center above the prompt, one folded row with two features: asks (every live session's open ⏳ asks, copy all per thread) and afk (one switch every session obeys)"
+}
