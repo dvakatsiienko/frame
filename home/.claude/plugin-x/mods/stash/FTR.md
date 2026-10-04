@@ -24,6 +24,16 @@
   - when dima flips afk
   - then the session's next tool call carries a one-line note with the new afk state
   - decision: once per flip; the note rides the tool result as context, the model reads it and dima does not see it
+- ✅ keep-hot switch: `🔥 hot` in the row between `📋 copy all` and afk, off by default, accent background when on
+  - decision: one switch per session, never shared — a ping wakes only the session it keeps warm
+- ✅ a hot session is pinged while idle
+  - given 🔥 is on and the session's last turn ended 50 minutes ago
+  - when no turn has started since
+  - then stash submits one short ping that asks for a one-character reply, and the ping is logged
+  - decision: the ping's origin is `plugin`, a machine origin, so its reply never clears the asks
+- ✅ a busy session is never pinged
+  - given 🔥 is on and a turn is running at the 50-minute mark
+  - then no ping is sent, and the clock restarts when that turn ends
 - ✅ holds chip: `🔒 n` counts other sessions' holds in this repo
   - given session A holds 2 files in this repo
   - when session B's row draws

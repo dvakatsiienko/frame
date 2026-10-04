@@ -7,6 +7,7 @@ import { parseAsks } from './parse.ts';
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
 // holds: a session's first edit of a file holds it; another session's edit is refused
+// keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm
 // The reply stays the source of truth for asks; this band only shows and copies them.
 
 type Entry = { label: string; asks: string[]; at: number };
@@ -19,7 +20,14 @@ const BACK_NOTE =
     'dima is back from afk: asks and the ⏳ block reach him again.';
 const POLL_MS = 4000;
 const STALE_MS = 24 * 60 * 60 * 1000;
-const MACHINE_ORIGINS = ['peer', 'task-notification', 'scheduled-trigger'];
+const MACHINE_ORIGINS = [
+    'peer',
+    'task-notification',
+    'scheduled-trigger',
+    'plugin',
+];
+const HOT_MS = 50 * 60 * 1000;
+const PING = 'stash keep-hot ping: answer with one character, nothing else.';
 const ACCENT = '#d97757';
 
 let selfId: string | undefined;
@@ -34,6 +42,10 @@ let turnAfk: boolean | undefined;
 let proc: Proc | undefined;
 let root = '';
 let holds = { others: 0, warned: false };
+let hot = false;
+let busy = false;
+// a turn start or a flip bumps it, so a ping armed before either never fires
+let hotGen = 0;
 
 const fp = (sid: string, ask: string) => `${sid}\u0000${ask}`;
 const basename = (path: string) =>
@@ -337,6 +349,16 @@ async function load($: EngineInterface): Promise<boolean> {
     return afkChanged || holdsChanged || before !== after;
 }
 
+function armHot($: EngineInterface) {
+    const mine = ++hotGen;
+    if (!hot || busy) return;
+    $.clock.after(HOT_MS, async () => {
+        if (!hot || busy || mine !== hotGen) return;
+        $.ui.log('stash keep-hot: pinged the idle session');
+        await $.prompt.submit({ text: PING });
+    });
+}
+
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
@@ -370,6 +392,8 @@ export const register: Register = (on) => {
         userTurn =
             e.text.trim().length > 0 &&
             !MACHINE_ORIGINS.includes(e.origin?.kind);
+        busy = true;
+        hotGen++;
         await load($);
         turnAfk = afk;
         await markBusy($).catch(() => undefined);
@@ -400,6 +424,8 @@ export const register: Register = (on) => {
         const r = await next(e);
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
+        busy = false;
+        armHot($);
         await settle($).catch(() =>
             $.ui.log("stash holds: could not settle this turn's holds"),
         );
@@ -468,6 +494,11 @@ export const register: Register = (on) => {
             await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
             $.ui.invalidate('ui.render');
         };
+        const flipHot = () => {
+            hot = !hot;
+            armHot($);
+            $.ui.invalidate('ui.render');
+        };
         const copyButton = (sid: string, asks: string[]) => (
             <Button
                 key={`copy:${sid}`}
@@ -523,6 +554,14 @@ export const register: Register = (on) => {
                 )}
                 <Box flexDirection='row' gap={1}>
                     {first ? copyButton(first[0], first[1].asks) : null}
+                    <Button
+                        key='hot'
+                        onPress={flipHot}
+                        {...(hot
+                            ? { variant: 'primary' as const }
+                            : { plain: true as const })}>
+                        🔥 hot
+                    </Button>
                     <Button
                         key='afk'
                         onPress={() => void flipAfk()}

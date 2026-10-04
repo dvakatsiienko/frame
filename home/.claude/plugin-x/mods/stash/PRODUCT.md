@@ -77,3 +77,13 @@ step 4 skipped on dima's word: lock design is well-trodden ground, and there is 
 - sessions started before the `CLAUDE_CODE_PLUGIN_DIRS` change — they run `stash@x` with its own store
 
 📌 unproven: `$.process` is marked «CLI only»; the done test probes a Code-tab session first
+
+## keep-hot — the want (2026-10-04, shaped in the thread, short)
+
+> sometimes i accidentally spent too much of 5-h window and few % left but there is like ~3-4 hrs before reset. so i need a «keep-session-hot» feature, likely via minimal autoping each ~50m.
+
+- why: a cold cache makes the first prompt after the reset re-write the whole context at the 1h price (2×); a warm ping reads it at 0.05× — four pings over a 3.5 h wait cost about a tenth of one cold write (pricing from the claude-api skill; how the 5h meter counts cache reads is unmeasured)
+- the cut: a 🔥 switch in the row, off by default; while on and the session idle, a one-line ping 50 min after the last turn ended, `$.prompt.submit` with the plugin origin
+- later: the switch suggests itself (🔥? dimmed) when the 5h window is ≥ 90 % used and its reset is over 60 min away; it turns itself off after the 5h reset
+- out: pinging a busy session, auto-on without dima's click, any other window than the 5h one
+- a ping reply carries no ⏳ block, so `plugin` joins the machine origins that never clear asks; the full allow-list of dima's own turns is FRM-301
