@@ -3,11 +3,27 @@
 # must go red; restore byte-for-byte, it must go green again. exit 0 only on red-then-green.
 # red-proof --pairs <pairs> <file> <test> — the same for many anchors, each swapped alone; exit 0 only
 # when every pair went red and the restored file went green.
+# --cmd first, then `-- <command…>` in place of <test>: runs any command (`claude plugin test <mod>`) instead of vitest.
 set -u
 usage() {
   echo "usage: red-proof <file> <anchor> <replacement> <test>" >&2
   echo "       red-proof --pairs <pairs> <file> <test>   (pairs: one 'anchor<TAB>replacement' per line, # and blank lines skipped)" >&2
+  echo "       red-proof --cmd <file> <anchor> <replacement> -- <command…>" >&2
+  echo "       red-proof --cmd --pairs <pairs> <file> -- <command…>" >&2
   exit 2
+}
+cmd=()
+if [ "${1-}" = --cmd ]; then
+  shift
+  args=()
+  while [ $# -gt 0 ] && [ "$1" != -- ]; do args+=("$1"); shift; done
+  [ "${1-}" = -- ] && [ $# -gt 1 ] && [ ${#args[@]} -gt 0 ] || usage
+  shift
+  cmd=("$@")
+  set -- "${args[@]}" "${cmd[*]}"
+fi
+run() {
+  if [ ${#cmd[@]} -gt 0 ]; then "${cmd[@]}"; else npx vitest run "$test"; fi >/dev/null 2>&1
 }
 anchors=() replacements=()
 if [ "${1-}" = --pairs ]; then
@@ -42,13 +58,13 @@ trap 'exit 130' INT TERM
 all_red=1
 for i in "${!anchors[@]}"; do
   ANCHOR="${anchors[$i]}" REPL="${replacements[$i]}" python3 -c 'import os,sys; p=sys.argv[1]; s=open(p).read(); open(p,"w").write(s.replace(os.environ["ANCHOR"],os.environ["REPL"],1))' "$file"
-  if npx vitest run "$test" >/dev/null 2>&1; then red=0; else red=1; fi
+  if run; then red=0; else red=1; fi
   restore
   label="mutated"
   [ "${1-}" = --pairs ] && label="«${anchors[$i]}»"
   [ $red = 1 ] && echo "RED   ${label}: the test failed, as it should" || { echo "✗     ${label}: the test still passed — it does not read this line"; all_red=0; }
 done
 cmp -s "$backup" "$file" || { echo "✗     restore: $file differs from its original" >&2; exit 1; }
-if npx vitest run "$test" >/dev/null 2>&1; then green=1; else green=0; fi
+if run; then green=1; else green=0; fi
 [ $green = 1 ] && echo "GREEN restored: the test passes again" || echo "✗     restored: the test fails on the original too"
 [ $all_red = 1 ] && [ $green = 1 ]

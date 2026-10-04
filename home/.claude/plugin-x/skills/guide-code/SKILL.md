@@ -52,7 +52,8 @@ their head.
   key — biome sorts keys on save and the original silently wins, so the test reads «hollow» when it is not.
   `red-proof <file> <anchor> <replacement> <test>` (plugin bin) does the swap, runs the vitest file, and
   restores byte-for-byte; exit 0 only on red-then-green. Many lines at once: `red-proof --pairs <pairs> <file> <test>`,
-  one `anchor<TAB>replacement` per line, each swapped alone.
+  one `anchor<TAB>replacement` per line, each swapped alone. Any other runner: `--cmd` first and `-- <command…>`
+  in place of `<test>` — `red-proof --cmd <file> <anchor> <replacement> -- claude plugin test home/.claude/plugin-x/mods/<mod>`.
 
 ## traps that cost hours
 
