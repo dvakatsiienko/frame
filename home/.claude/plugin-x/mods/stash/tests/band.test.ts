@@ -7,10 +7,10 @@ for (const surface of ['terminal', 'desktop'] as const) {
     test(`a reply's open asks show in the band on ${surface}`, async ($, on) => {
         mock.clock(on);
         mock.store(on);
-        on('classic.SessionStart', () => ({}));
+        on('session.start', (_$, e) => ({ cwd: e.cwd }));
         on('classic.Stop', () => ({}));
         on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
-        await $.classic.SessionStart({ source: 'startup' });
+        await $.session.start({ cwd: '/tmp', isInteractive: true, surface });
         await $.classic.Stop({
             last_assistant_message: block,
             stop_hook_active: false,

@@ -63,8 +63,9 @@ async function load($: { store: Store; clock: Clock }): Promise<boolean> {
 }
 
 export const register: Register = (on) => {
-    on('classic.SessionStart', async ($, e, next) => {
-        selfId = e.session_id;
+    // session.start fires at startup and again on every hot reload; the classic event only at startup
+    on('session.start', async ($, e, next) => {
+        selfId = await $.session.id();
         label = basename(e.cwd);
         await load($);
         if (!polling) {
