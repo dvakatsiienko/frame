@@ -27,3 +27,7 @@ _Avoid_: owner, locker
 **Release**:
 The end of a hold: the file is clean in git, the holder is dead, or the holder sat idle 30 minutes since its last turn.
 _Avoid_: unlock, expiry
+
+**Board**:
+The `/board` pane: every live session, busy or idle, and when it last sent a message.
+_Avoid_: dock, roster, dashboard

@@ -20,6 +20,10 @@ const AWAY_NOTE =
 const BACK_NOTE =
     'dima is back from afk: asks and the ⏳ block reach him again.';
 const POLL_MS = 4000;
+// the fleet board: each session's stash writes its own busy state and the time of its last message out
+const BOARD = 'fleet-board';
+const STATE = 'state:';
+const SENT = 'sent:';
 const STALE_MS = 24 * 60 * 60 * 1000;
 // dima at the prompt, typing into a background job, on his phone or the web
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
@@ -44,6 +48,7 @@ let holds = { others: 0, warned: false };
 let hot: { since: number; until?: number } | undefined;
 let fiveHour: { resetsAt?: number } | undefined;
 let busy = false;
+let boardOpen = false;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
 
@@ -442,6 +447,70 @@ async function armHot($: EngineInterface) {
     });
 }
 
+async function markState($: EngineInterface, isBusy: boolean) {
+    const sid = selfId ?? (await $.session.id().catch(() => undefined));
+    if (sid)
+        await $.store.set(STATE + sid, {
+            at: await $.clock.now(),
+            busy: isBusy,
+        });
+}
+
+type Member = { sid: string; name: string; busy?: boolean; sent?: number };
+
+// live sessions from the registry, each with what its own stash wrote; a registry file mid-write is skipped
+async function members($: EngineInterface): Promise<Member[]> {
+    const dir = `${await $.env.get('HOME')}/.claude/sessions`;
+    const rows: { pid: number; sid: string; name: string }[] = [];
+    for (const f of await $.fs.list(dir)) {
+        if (!f.name.endsWith('.json')) continue;
+        try {
+            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as {
+                pid?: unknown;
+                sessionId?: unknown;
+                name?: unknown;
+            };
+            if (typeof v.pid !== 'number' || typeof v.sessionId !== 'string')
+                continue;
+            const name =
+                typeof v.name === 'string' && v.name
+                    ? v.name
+                    : short(v.sessionId);
+            rows.push({ name, pid: v.pid, sid: v.sessionId });
+        } catch {}
+    }
+    if (!rows.length) return [];
+    // ps prints the pids still alive and skips the rest
+    const ps = await $.process.run([
+        'ps',
+        '-o',
+        'pid=',
+        '-p',
+        rows.map((r) => r.pid).join(','),
+    ]);
+    const alive = new Set(
+        ps.stdout
+            .split('\n')
+            .map((s) => Number(s.trim()))
+            .filter(Boolean),
+    );
+    const out: Member[] = [];
+    for (const r of rows.filter((r) => alive.has(r.pid))) {
+        const state = (await $.store.get(STATE + r.sid)) as
+            | { busy: boolean }
+            | undefined;
+        const sent = (await $.store.get(SENT + r.sid)) as number | undefined;
+        out.push({ busy: state?.busy, name: r.name, sent, sid: r.sid });
+    }
+    return out.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+const ago = (ms: number) => {
+    const m = Math.floor(ms / 60000);
+    if (m < 1) return 'just now';
+    return m < 60 ? `${m}m ago` : `${Math.floor(m / 60)}h ${m % 60}m ago`;
+};
+
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
@@ -460,11 +529,20 @@ export const register: Register = (on) => {
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
         await load($);
         await armHot($);
+        await $.command
+            .register({
+                description:
+                    'open the fleet board: every live session, busy or idle, its last message',
+                name: 'board',
+            })
+            .catch(() => $.ui.log('stash: /board was not registered'));
         if (!polling) {
             polling = true;
             const tick = () =>
                 $.clock.after(POLL_MS, async () => {
-                    if (await load($)) $.ui.invalidate('ui.render');
+                    // an open board redraws each tick: its «ago» times move on their own
+                    if ((await load($)) || boardOpen)
+                        $.ui.invalidate('ui.render');
                     tick();
                 });
             tick();
@@ -482,6 +560,7 @@ export const register: Register = (on) => {
         await load($);
         turnAfk = afk;
         await markBusy($).catch(() => undefined);
+        await markState($, true).catch(() => undefined);
         if (!afk) return next(e);
         return next({ ...e, context: [...(e.context ?? []), AWAY_NOTE] });
     });
@@ -511,6 +590,7 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         busy = false;
+        await markState($, false).catch(() => undefined);
         const step = nextStep(e.answer);
         if (step)
             await $.prompt
@@ -539,9 +619,70 @@ export const register: Register = (on) => {
         return next(e);
     });
 
+    on('session.send', async ($, e, next) => {
+        const sid = selfId ?? (await $.session.id().catch(() => undefined));
+        if (sid)
+            await $.store
+                .set(SENT + sid, await $.clock.now())
+                .catch(() => undefined);
+        return next(e);
+    });
+
+    on('command.run', { command: 'board' }, async ($) => {
+        boardOpen = true;
+        await $.ui.open({
+            closeOnEscape: true,
+            id: BOARD,
+            title: 'fleet board',
+        });
+        return { text: 'fleet board opened' };
+    });
+
+    on('ui.close', async (_$, e, next) => {
+        if (e.id === BOARD) boardOpen = false;
+        return next(e);
+    });
+
+    on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
+        const { Box, Text } = $.ui.resolve(e);
+        const now = await $.clock.now();
+        const me = await $.session.id().catch(() => selfId);
+        const list = await members($).catch(() => null);
+        if (!list)
+            return <Text dimColor>the session registry is unreadable</Text>;
+        if (!list.length) return <Text dimColor>no live sessions</Text>;
+        return (
+            <Box flexDirection='column'>
+                {list.map((m) => (
+                    <Box flexDirection='row' gap={1} key={`m:${m.sid}`}>
+                        <Text bold={m.sid === me}>
+                            {m.sid === me ? `${m.name} (here)` : m.name}
+                        </Text>
+                        <Text
+                            color={m.busy ? ACCENT : undefined}
+                            dimColor={!m.busy}>
+                            {m.busy === undefined
+                                ? '?'
+                                : m.busy
+                                  ? 'busy'
+                                  : 'idle'}
+                        </Text>
+                        <Text dimColor>
+                            {m.sent
+                                ? `sent ${ago(now - m.sent)}`
+                                : 'no message yet'}
+                        </Text>
+                    </Box>
+                ))}
+            </Box>
+        );
+    });
+
     on('session.end', async ($, e, next) => {
         await $.store.delete(PREFIX + e.sessionId);
         await $.store.delete(HOT + e.sessionId);
+        await $.store.delete(STATE + e.sessionId);
+        await $.store.delete(SENT + e.sessionId);
         await dropAll($, e.sessionId).catch(() => undefined);
         return next(e);
     });

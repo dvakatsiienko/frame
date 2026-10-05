@@ -159,6 +159,19 @@ two sessions, A and B, in one checkout.
   - when B's command writes through a variable, `cd` into a subshell, or any shape the parser misses
   - then the command runs — a parse miss fails open, like a broken store
 
+## /board — the fleet board
+
+- ⬜ `/board` opens a pane listing every live session
+  - the harness proves the rows; `/board` in a live session is unchecked
+  - given cclio, two coders and a verifier are live
+  - when dima types `/board`
+  - then a pane lists each by its session name, with busy or idle and the time since its last message to another session
+  - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid; busy/idle and the last message are written by each session's own stash, so a session without stash reads «?»
+- ⬜ the board stays current
+  - given the board is open
+  - when a member starts or ends a turn, or sends a message
+  - then its row changes within a few seconds
+
 ## scripts
 
 - ✅ `pnpm mods:writes [days]` counts the fleet's file writes by channel — Edit/Write against each Bash shape — across `~/.claude/projects` transcripts, and how many Bash writes the holds veto can read, so the gap can be measured again
