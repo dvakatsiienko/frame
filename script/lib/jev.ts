@@ -10,13 +10,14 @@ export const model = 'jev-1.13.0';
 
 // the spend gate (FRM-308): dima runs jev on the free credit only, $5 a month from the 18th.
 // input tokens are the whole bill (docs.typesafe.ai/models); a model bump without its price
-// here fails the typecheck. the cap leaves $0.50 of slack
+// here fails the typecheck. the cap leaves $1 for quicksilver and fast-jev-compaction, which
+// call typesafe outside judge() (dima, 2026-10-05)
 const usdPerMtok = { 'jev-1.13.0': 0.042 } as const satisfies Record<
     string,
     number
 >;
 export const usdPerToken = usdPerMtok[model] / 1_000_000;
-export const CAP_USD = 4.5;
+export const CAP_USD = 4;
 const CYCLE_DAY = 18;
 // one line per paid call: `ts · input tokens · usd`; JEV_SPEND_LOG points tests and probes elsewhere
 const spendLog = () =>

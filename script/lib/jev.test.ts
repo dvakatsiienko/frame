@@ -56,7 +56,7 @@ describe('judge', () => {
     test('over the cap, no request leaves', async () => {
         vi.stubEnv(
             'JEV_SPEND_LOG',
-            log([`${new Date().toISOString()}\t1\t4.500000`]),
+            log([`${new Date().toISOString()}\t1\t4.000000`]),
         );
         const { judge, JevBudgetError } = await import('./jev.ts');
         await expect(judge({}, {})).rejects.toBeInstanceOf(JevBudgetError);
@@ -125,7 +125,7 @@ describe('judge', () => {
     test('a paid call counts toward the cap within the same run', async () => {
         vi.stubEnv(
             'JEV_SPEND_LOG',
-            log([`${new Date().toISOString()}\t1\t4.480000`]),
+            log([`${new Date().toISOString()}\t1\t3.980000`]),
         );
         fetchMock.mockResolvedValue(Response.json(ok));
         const { judge } = await import('./jev.ts');
