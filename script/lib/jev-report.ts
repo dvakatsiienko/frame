@@ -228,8 +228,11 @@ export const reportLines = (
         .map(([f]) => f)
         .filter((f) => !verdicts.some((v) => v.flow === f));
     const ok = (isOk: boolean) => (isOk ? 'ok' : 'FAIL');
+    const probe = health.budget
+        ? `${health.budget} (api not probed)`
+        : `api ${ok(health.api)}, key ${ok(health.key)}, fixture probe ${ok(health.fixture)}`;
     lines.push(
-        `🚦 **health** — api ${ok(health.api)}, key ${ok(health.key)}, fixture probe ${ok(health.fixture)}, verdicts missing: ${missing.join(', ') || 'none'}, ${health.router}`,
+        `🚦 **health** — ${probe}, verdicts missing: ${missing.join(', ') || 'none'}, ${health.router}`,
     );
     return lines;
 };
@@ -254,6 +257,8 @@ export type Health = {
     key: boolean;
     fixture: boolean;
     router: string;
+    /** the spend gate refused the probe: the api went unasked, which is not a failure */
+    budget?: string;
 };
 export type RouteRow = {
     ts: string;

@@ -50,6 +50,7 @@ describe('judge', () => {
     afterEach(() => {
         vi.unstubAllEnvs();
         vi.unstubAllGlobals();
+        vi.restoreAllMocks();
     });
 
     test('over the cap, no request leaves', async () => {
@@ -89,5 +90,36 @@ describe('judge', () => {
         const { judge } = await import('./jev.ts');
         await judge({}, {});
         expect(readFileSync(path, 'utf8')).toMatch(/\t1000000\t0\.042000\n$/);
+    });
+
+    test('an unwritable spend log keeps the paid answer', async () => {
+        // a log path under a regular file: mkdir fails with ENOTDIR
+        vi.stubEnv('JEV_SPEND_LOG', join(log([]), 'spend.log'));
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        fetchMock.mockResolvedValue(Response.json(ok));
+        const { judge } = await import('./jev.ts');
+        await expect(judge({}, {})).resolves.toMatchObject(ok);
+    });
+
+    test('after an unwritable spend log, a later call sends nothing', async () => {
+        vi.stubEnv('JEV_SPEND_LOG', join(log([]), 'spend.log'));
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        fetchMock.mockResolvedValue(Response.json(ok));
+        const { judge } = await import('./jev.ts');
+        await judge({}, {});
+        await judge({}, {}).catch(() => undefined);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    test('a paid call counts toward the cap within the same run', async () => {
+        vi.stubEnv(
+            'JEV_SPEND_LOG',
+            log([`${new Date().toISOString()}\t1\t4.480000`]),
+        );
+        fetchMock.mockResolvedValue(Response.json(ok));
+        const { judge } = await import('./jev.ts');
+        await judge({}, {});
+        await judge({}, {}).catch(() => undefined);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 });

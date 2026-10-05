@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /* Instruments */
-import { judge } from './lib/jev.ts';
+import { JevBudgetError, judge } from './lib/jev.ts';
 import { inboxQuestions } from './lib/jev-questions.ts';
 import {
     isRouterOff,
@@ -55,6 +55,14 @@ const probe = async () => {
                 : `fixture laned ${res.answers.lane.choice}, want ${fx.expect}`,
         };
     } catch (e) {
+        if (e instanceof JevBudgetError)
+            return {
+                api: false,
+                budget: e.message,
+                fixture: false,
+                key,
+                why: e.message,
+            };
         return {
             api: false,
             fixture: false,
@@ -67,9 +75,15 @@ const probe = async () => {
 const router = routerHealth(isRouterOff(), latencyStats(routeRead(today)));
 const health = { ...(await probe()), router };
 if (process.argv.includes('--health')) {
-    const isOk = health.api && health.key && health.fixture;
+    // a spent budget is a known state until the 18th, not a broken api
+    const isOk =
+        Boolean(health.budget) || (health.api && health.key && health.fixture);
     console.log(
-        isOk ? `api ok, key ok, fixture probe ok, ${router}` : health.why,
+        health.budget
+            ? `${health.budget} (api not probed), ${router}`
+            : isOk
+              ? `api ok, key ok, fixture probe ok, ${router}`
+              : health.why,
     );
     process.exit(isOk ? 0 : 1);
 }

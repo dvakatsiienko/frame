@@ -58,22 +58,29 @@ const prompts =
         ? missPrompts(verdictsOf('skill-router'), count)
         : nearMisses(routeRead(), count).map((r) => r.prompt);
 const rows: string[][] = [];
+// a refusal mid-replay keeps the rows already scored, then exits 2
+let refused: string | undefined;
 for (const prompt of prompts) {
-    const { loads, trace } = await suggest({
+    const got = await suggest({
         prompt,
         recentContext: '',
         seen: new Set(),
     }).catch((e: unknown) => {
         if (!(e instanceof JevBudgetError)) throw e;
-        console.error(e.message);
-        process.exit(2);
+        refused = e.message;
+        return undefined;
     });
+    if (!got) break;
     rows.push([
         prompt.slice(0, 70),
         dim('got'),
-        loads.length
-            ? bold(loadLine(loads) ?? '')
-            : dim(`none (${trace.join(' · ')})`),
+        got.loads.length
+            ? bold(loadLine(got.loads) ?? '')
+            : dim(`none (${got.trace.join(' · ')})`),
     ]);
 }
 printTable(rows);
+if (refused) {
+    console.error(refused);
+    process.exit(2);
+}

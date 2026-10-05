@@ -9,8 +9,13 @@ const endpoint = 'https://api.typesafe.ai/v1/systemone';
 export const model = 'jev-1.13.0';
 
 // the spend gate (FRM-308): dima runs jev on the free credit only, $5 a month from the 18th.
-// input tokens are the whole bill (docs.typesafe.ai/models); the cap leaves $0.50 of slack
-const USD_PER_TOKEN = 0.042 / 1_000_000;
+// input tokens are the whole bill (docs.typesafe.ai/models); a model bump without its price
+// here fails the typecheck. the cap leaves $0.50 of slack
+const usdPerMtok = { 'jev-1.13.0': 0.042 } as const satisfies Record<
+    string,
+    number
+>;
+export const usdPerToken = usdPerMtok[model] / 1_000_000;
 export const CAP_USD = 4.5;
 const CYCLE_DAY = 18;
 // one line per paid call: `ts · input tokens · usd`; JEV_SPEND_LOG points tests and probes elsewhere
@@ -21,8 +26,12 @@ const spendLog = () =>
 /** a refused call: the cycle is over its cap, or typesafe answered 402 — callers fail soft on it */
 export class JevBudgetError extends Error {}
 
-// a 402 means the account is empty: no later call in this process tries again
-let isRefused = false;
+// once set, no later call in this process tries: a 402 (the account is empty), or a spend log
+// that cannot be written (a call nobody counts would slip past the cap)
+let refusal: string | undefined;
+// the log is read once per process and per cycle, then each paid call adds to it — a replay
+// makes ~5k calls and would re-read the growing file for every one
+let tally: { since: number; usd: number } | undefined;
 
 export async function judge<Q extends Record<string, Question>>(
     state: unknown,
@@ -33,9 +42,13 @@ export async function judge<Q extends Record<string, Question>>(
         throw new Error(
             'TYPESAFE_API_KEY missing — run through script/op-run.sh',
         );
-    if (isRefused)
-        throw new JevBudgetError('jev refused earlier in this run (402)');
-    const spent = cycleSpend(new Date());
+    if (refusal) throw new JevBudgetError(refusal);
+    const now = new Date();
+    const since = cycleStart(now).getTime();
+    if (tally?.since !== since) tally = { since, usd: cycleSpend(now) };
+    const cycle = tally;
+    const spent = cycle.usd;
+    // checked before each call: a pool of 4 in flight can pass the cap by three calls (~$0.003)
     if (spent >= CAP_USD)
         throw new JevBudgetError(
             // sv-SE prints the local date as yyyy-mm-dd; toISOString shifts it into UTC
@@ -54,16 +67,23 @@ export async function judge<Q extends Record<string, Question>>(
         if (res.ok) {
             const out = (await res.json()) as JevResponse<Q>;
             const tokens = out.usage.input_tokens;
-            // the call is paid already: a missing log dir must not lose its answer
-            mkdirSync(dirname(spendLog()), { recursive: true });
-            appendFileSync(
-                spendLog(),
-                `${new Date().toISOString()}\t${tokens}\t${(tokens * USD_PER_TOKEN).toFixed(6)}\n`,
-            );
+            const usd = tokens * usdPerToken;
+            cycle.usd += usd;
+            // the call is paid already: a log that cannot be written never loses its answer
+            try {
+                mkdirSync(dirname(spendLog()), { recursive: true });
+                appendFileSync(
+                    spendLog(),
+                    `${new Date().toISOString()}\t${tokens}\t${usd.toFixed(6)}\n`,
+                );
+            } catch (e) {
+                refusal = `the jev spend log cannot be written (${e instanceof Error ? e.message : String(e)}) — no call until it can`;
+                console.error(refusal);
+            }
             return out;
         }
         if (res.status === 402) {
-            isRefused = true;
+            refusal = 'jev refused earlier in this run (402)';
             throw new JevBudgetError(`jev 402: ${await res.text()}`);
         }
         if ((res.status === 429 || res.status === 529) && attempt < 3) {

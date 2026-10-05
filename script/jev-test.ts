@@ -15,7 +15,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 /* Instruments */
 import type { HaikuRaw } from './lib/haiku-router.ts';
 import { haikuRoute } from './lib/haiku-router.ts';
-import { JevBudgetError, judge } from './lib/jev.ts';
+import { JevBudgetError, judge, usdPerToken } from './lib/jev.ts';
 import { laneCells, printTable } from './lib/jev-print.ts';
 import type { RouterSkill } from './lib/jev-questions.ts';
 import { flawlogQuestions, inboxQuestions } from './lib/jev-questions.ts';
@@ -44,8 +44,6 @@ const armNames = [
     '+roster+memory',
     '+gate+need',
 ] as const;
-// jev-1.13.0 bills input tokens only (docs.typesafe.ai/models)
-const JEV_USD_PER_TOKEN = 0.042 / 1_000_000;
 
 const flows = {
     'flawlog-lanes': { answer: 'lane', questions: flawlogQuestions },
@@ -249,7 +247,7 @@ async function routerTest() {
     // shipped with; haiku has no threshold to sweep
     const jevLine = (arm: ArmName, label: string, t = defaultThresholds) => ({
         cost: (run: number, i: number) =>
-            (raws[arm][run]?.[i]?.tokens ?? 0) * JEV_USD_PER_TOKEN,
+            (raws[arm][run]?.[i]?.tokens ?? 0) * usdPerToken,
         hasMemory: arms[arm].hasMemory,
         label,
         ms: raws[arm].flat().map((r) => r.ms),
