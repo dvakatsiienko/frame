@@ -2,7 +2,7 @@
 // usage: script/op-run.sh node script/inbox-triage.ts
 import { readFileSync } from 'node:fs';
 
-import { judge } from './lib/jev.ts';
+import { JevBudgetError, judge } from './lib/jev.ts';
 import { laneCells, printTable, tailLine } from './lib/jev-print.ts';
 import { inboxQuestions, verdictBand } from './lib/jev-questions.ts';
 import type { Pick } from './lib/jev-report.ts';
@@ -42,10 +42,18 @@ const rows: string[][] = [];
 const picks: Pick[] = [];
 for (const item of items) {
     for (let run = 0; run < runs; run++) {
+        // over the budget or a 402: the item stays unlaned, cclio lanes it by hand
         const res = await judge(
             { item: `${item.title}: ${item.text}`, section: item.section },
             inboxQuestions,
-        );
+        ).catch((e: unknown) => {
+            if (e instanceof JevBudgetError) return undefined;
+            throw e;
+        });
+        if (!res) {
+            rows.push(['unlaned', '', '', item.title]);
+            break;
+        }
         tokens += res.usage.input_tokens;
         const { lane, needsVerdict } = res.answers;
         picks.push({ conf: lane.confidence, name: lane.choice });
