@@ -25,6 +25,7 @@ export function sessionRead(path: string | undefined): Session {
         // most lines are tool output; parse only the shapes read below
         if (
             !line.includes('"skill_listing"') &&
+            !line.includes('"compact_boundary"') &&
             !line.includes('"type":"user"') &&
             !line.includes('"type":"assistant"') &&
             !line.includes('jev router')
@@ -33,6 +34,9 @@ export function sessionRead(path: string | undefined): Session {
         const entry = parse(line);
         if (!entry) continue;
         const at = entry.attachment;
+        // a compaction drops every loaded skill body from context, so none counts as in play
+        if (entry.type === 'system' && entry.subtype === 'compact_boundary')
+            seen.clear();
         if (entry.type === 'attachment' && at?.type === 'skill_listing')
             for (const [name, description] of listingParse(
                 at.content ?? '',
@@ -129,6 +133,7 @@ type Block = {
 };
 type Entry = {
     type: string;
+    subtype?: string;
     isMeta?: boolean;
     message?: { content?: unknown };
     attachment?: {

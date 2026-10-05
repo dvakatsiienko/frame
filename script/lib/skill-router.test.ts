@@ -26,6 +26,7 @@ describe('loadLine', () => {
 
 describe('decide', () => {
     const raw = (over: Partial<Raw>): Raw => ({
+        blocked: [],
         gate: {},
         ms: 0,
         none: 0.1,
@@ -65,10 +66,22 @@ describe('decide', () => {
         expect(s.loads).toEqual([]);
     });
 
-    test('a low needs_skill drops the stage-2 pick and names itself', () => {
+    test('a low needs_skill drops the stage-2 pick', () => {
+        const s = decide(
+            raw({ rerank: { fits: 0.9, need: 0.2, winner: 'x:pm' } }),
+        );
+        expect(s.loads).toEqual([]);
+    });
+
+    test('a dropped pick names the stage that dropped it', () => {
         const s = decide(
             raw({ rerank: { fits: 0.9, need: 0.2, winner: 'x:pm' } }),
         );
         expect(s.trace).toEqual(['need 0.20 < 0.5']);
+    });
+
+    test('a skill already in the session is ranked but never loaded', () => {
+        const s = decide(raw({ blocked: ['x:pm'] }));
+        expect(s.loads).toEqual([]);
     });
 });

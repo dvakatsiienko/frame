@@ -141,15 +141,26 @@ async function routerTest() {
     );
 
     // raws[arm][run][fixture]
+    // raws sit by fixture index: a file made from other fixtures would score the wrong prompts
     const saved = process.env.REPLAY_RAW;
-    const raws: Record<ArmName, Raw[][]> =
+    const prompts = fixtures.map((fx) => fx.state.prompt);
+    const file =
         saved && existsSync(saved)
-            ? (JSON.parse(readFileSync(saved, 'utf8')) as Record<
-                  ArmName,
-                  Raw[][]
-              >)
-            : await replay();
-    if (saved && !existsSync(saved)) writeFileSync(saved, JSON.stringify(raws));
+            ? (JSON.parse(readFileSync(saved, 'utf8')) as SavedReplay)
+            : undefined;
+    if (file && JSON.stringify(file.prompts) !== JSON.stringify(prompts)) {
+        console.error(
+            `REPLAY_RAW ${saved} was made from other fixtures — delete it or point at a new file`,
+        );
+        process.exit(2);
+    }
+    const raws = file?.raws ?? (await replay());
+    if (saved && !file)
+        writeFileSync(
+            saved,
+            JSON.stringify({ prompts, raws } satisfies SavedReplay),
+        );
+    type SavedReplay = { prompts: string[]; raws: Record<ArmName, Raw[][]> };
 
     async function replay() {
         const out = {} as Record<ArmName, Raw[][]>;
@@ -179,15 +190,20 @@ async function routerTest() {
         ['held', held],
         [
             'held · verdict',
-            at((fx) => isHeld(fx.state.prompt) && isVerdict(fx.state.prompt)),
+            at((fx) => isHeld(fx.state.prompt) && isVerdict(fx)),
         ],
         [
             'held · substantive',
-            at((fx) => isHeld(fx.state.prompt) && !isVerdict(fx.state.prompt)),
+            at((fx) => isHeld(fx.state.prompt) && !isVerdict(fx)),
         ],
         [
             'all · single-skill',
             at((fx) => [fx.expect].flat().length === 1 && fx.expect !== 'none'),
+        ],
+        // 132 of 221 lines are synthetic: this row is the one no description-written prompt reaches
+        [
+            'held · real prompts',
+            at((fx) => isHeld(fx.state.prompt) && fx.label !== 'synthetic'),
         ],
         ['all · multi-skill', at((fx) => [fx.expect].flat().length > 1)],
         ['all', fixtures.map((_, i) => i)],

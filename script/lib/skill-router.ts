@@ -12,13 +12,14 @@ import { sessionRead } from './session-read.ts';
 // the cookbook's shortlist and excerpt (3 / 700); FRM-268 set FITS 0.30 → 0.50 on the vet misses
 const SHORTLIST = 3;
 const EXCERPT = 700;
+// an ack or a later-only prompt loads nothing; the one threshold no sweep moves
+const VETO = 0.6;
 // `margin` is how far `none` must lead the top skill to stop stage 1: 0 is FRM-268's rule
 export const defaultThresholds: Thresholds = {
     fits: 0.5,
     gate: 0.5,
     margin: 0,
     need: 0.5,
-    veto: 0.6,
 };
 
 // a pick of these never auto-trusts, green router or not (memory/sys-jev.md)
@@ -76,8 +77,10 @@ export const treeRoster: readonly RouterSkill[] = Object.entries(
 export function rosterFrom(listing: ReadonlyMap<string, string>) {
     const own = new Set(treeRoster.map((s) => s.name));
     // `x-cw:<s>` is cowork's copy of `x:<s>`: two names for one procedure split the Choice
+    const asTree = (name: string) => name.replace(/^x-cw:/, 'x:');
     const isTwin = (name: string) =>
-        own.has(name.replace(/^x-cw:/, 'x:')) || /^(x|cclio):/.test(name);
+        own.has(asTree(name)) || /^(x|cclio):/.test(name);
+    const listed = new Set([...listing.keys()].map(asTree));
     const others = [...listing]
         .filter(([name]) => !isTwin(name))
         .map(([name, description]) => ({
@@ -85,7 +88,8 @@ export function rosterFrom(listing: ReadonlyMap<string, string>) {
             excerpt: excerptOf(name),
             name,
         }));
-    return [...treeRoster, ...others];
+    // a tree skill the session was not shown (cclio's in a coder session) cannot be loaded there
+    return [...treeRoster.filter((s) => listed.has(s.name)), ...others];
 }
 
 /** the replay's roster: the newest coordinator transcript that carries a listing */
@@ -94,6 +98,7 @@ export function rosterLatest() {
         process.env.HOME ?? '',
         '.claude/projects/-Users-dima-frame-cclio',
     );
+    if (!existsSync(dir)) return { path: '-', roster: treeRoster };
     const newest = readdirSync(dir)
         .filter((f) => f.endsWith('.jsonl'))
         .map((f) => join(dir, f))
@@ -126,8 +131,9 @@ export async function score(input: RouteInput, arm: RouterArm): Promise<Raw> {
         ...(arm.hasContext &&
             input.recentContext && { recent_context: input.recentContext }),
     };
-    const isOpen = (name: string) => !(arm.hasMemory && input.seen.has(name));
-    const roster = arm.roster.filter((s) => isOpen(s.name));
+    // a skill already in the session keeps competing in the Choice — dropped from it, a near
+    // neighbour took its probability and loaded instead; `decide` drops it from the loads
+    const roster = arm.roster;
     const gate = arm.hasGate
         ? roster.filter((s) => mustNotMiss.includes(s.name))
         : [];
@@ -137,6 +143,9 @@ export async function score(input: RouteInput, arm: RouterArm): Promise<Raw> {
         .filter(([name]) => name !== 'none')
         .sort((a, b) => b[1] - a[1]);
     const raw: Raw = {
+        blocked: arm.hasMemory
+            ? roster.flatMap((s) => (input.seen.has(s.name) ? [s.name] : []))
+            : [],
         gate: Object.fromEntries(
             gate.map((s) => [s.name, noulOf(wide, `must:${s.name}`)]),
         ),
@@ -150,9 +159,7 @@ export async function score(input: RouteInput, arm: RouterArm): Promise<Raw> {
     };
     // only a veto skips stage 2: `none` beating the top skill is a margin `decide` sweeps, since
     // a verdict («go», «2 yes») ranks the right skill first yet loses to `none` (FRM-305 replay)
-    const isVetoed = Object.values(raw.vetoes).some(
-        (p) => p >= defaultThresholds.veto,
-    );
+    const isVetoed = Object.values(raw.vetoes).some((p) => p >= VETO);
     if (!isVetoed) {
         const byName = new Map(roster.map((s) => [s.name, s]));
         const shortlist = raw.ranked.flatMap(
@@ -189,7 +196,8 @@ export function decide(
     t: Thresholds = defaultThresholds,
 ): Suggestion {
     const top = { name: raw.ranked[0]?.[0] ?? '-', p: raw.ranked[0]?.[1] ?? 0 };
-    const veto = Object.entries(raw.vetoes).find(([, p]) => p >= t.veto);
+    const veto = Object.entries(raw.vetoes).find(([, p]) => p >= VETO);
+    const blocked = new Set(raw.blocked);
     const trace: string[] = [];
     let pick: Pick | undefined;
     if (veto) trace.push(`veto ${veto[0]} ${veto[1].toFixed(2)}`);
@@ -203,6 +211,8 @@ export function decide(
             trace.push(`need ${need.toFixed(2)} < ${t.need}`);
         else if (fits < t.fits)
             trace.push(`fits ${winner} ${fits.toFixed(2)} < ${t.fits}`);
+        else if (blocked.has(winner))
+            trace.push(`seen ${winner} — already in the session`);
         else {
             pick = { name: winner, p: fits };
             trace.push(`load ${winner} ${fits.toFixed(2)}`);
@@ -218,6 +228,7 @@ export function decide(
                   ([name, p]) =>
                       p >= t.gate &&
                       shortlisted.has(name) &&
+                      !blocked.has(name) &&
                       name !== pick?.name,
               )
               .map(([name, p]) => ({ name, p }));
@@ -233,10 +244,10 @@ export function decide(
     };
 }
 
-// the hook runs the one replay arm that met the bar to turn on (held precision ≥ 90 %, wrong
-// ≤ 5 %): full roster + last reply + memory at fits 0.75 — 94 % / 2 % on FRM-305's r3. the gate
-// and needs_skill lift critical recall 33 → 78 % but drop precision to 78 %, so they stay in
-// the replay until dima picks recall over precision
+// the hook runs full roster + last reply + memory at fits 0.75: 94 % / 2 % precision / wrong on
+// FRM-305's held split, but 67 % / 7 % on its 32 real prompts — the synthetic lines carry the
+// headline, and no arm meets the bar to turn on (≥ 90 % / ≤ 5 %) on real prompts. the full
+// roster stays because it is the only way a non-x skill loads; the gate stays in the replay
 const live = {
     parts: {
         hasContext: true,
@@ -275,19 +286,19 @@ function choiceOf(
 }
 
 // a plugin skill's SKILL.md sits under the plugin's install path; a user skill under ~/.claude/skills
+const home = process.env.HOME ?? '';
+const installedPath = join(home, '.claude/plugins/installed_plugins.json');
+// read once per process: every listed skill looks its plugin up here
+const installed: Installed = existsSync(installedPath)
+    ? (JSON.parse(readFileSync(installedPath, 'utf8')) as Installed)
+    : { plugins: {} };
+
 function excerptOf(name: string) {
-    const home = process.env.HOME ?? '';
     const [plugin, skill] = name.includes(':')
         ? name.split(':')
         : [undefined, name];
-    const installed = join(home, '.claude/plugins/installed_plugins.json');
     const roots = plugin
-        ? Object.entries(
-              (existsSync(installed)
-                  ? (JSON.parse(readFileSync(installed, 'utf8')) as Installed)
-                  : { plugins: {} }
-              ).plugins,
-          ).flatMap(([id, installs]) =>
+        ? Object.entries(installed.plugins).flatMap(([id, installs]) =>
               id.startsWith(`${plugin}@`)
                   ? installs.map((i) => join(i.installPath, 'skills'))
                   : [],
@@ -333,7 +344,6 @@ export type Thresholds = {
     gate: number;
     margin: number;
     need: number;
-    veto: number;
 };
 /** which v2 parts one replay arm switches on — FRM-268's router is all four off */
 export type RouterArm = {
@@ -350,6 +360,8 @@ export type RouteInput = {
 };
 /** every number the two calls returned; `rerank` is absent when stage 1 stopped */
 export type Raw = {
+    /** skills already in the session (memory arms): ranked as usual, never emitted */
+    blocked: string[];
     vetoes: Record<string, number>;
     none: number;
     ranked: [string, number][];

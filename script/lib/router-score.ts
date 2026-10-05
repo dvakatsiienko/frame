@@ -6,10 +6,14 @@ import { decide, defaultThresholds, mustNotMiss } from './skill-router.ts';
 export const isHeld = (prompt: string) =>
     [...prompt].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % 3 === 0;
 
-/** a verdict answers the reply before it — a numbered list, or a handful of words */
-export const isVerdict = (prompt: string) =>
-    /^\s*(lane\s+)?\d+\.\s/.test(prompt) ||
-    prompt.trim().split(/\s+/).length <= 6;
+/**
+ * a verdict answers the reply before it — a numbered answer list, or a handful of words that
+ * have a reply to answer («boot» with no reply before it is a command, not a verdict)
+ */
+export const isVerdict = (fx: RouterFixture) =>
+    /^\s*(lane\s+)?\d+\.\s/.test(fx.state.prompt) ||
+    (Boolean(fx.state.recent_context) &&
+        fx.state.prompt.trim().split(/\s+/).length <= 6);
 
 /** the skills a fixture wants loaded; with memory on, one already in the session is not owed */
 export function owed(fx: RouterFixture, hasMemory: boolean) {
