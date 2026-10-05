@@ -7,7 +7,7 @@
 
 ## the row
 
-- 🔎 one row: the open count on the left; `📋`, `🔥`, `☕`/`🌙` and the fold folder on the right
+- 🔎 one row: the open count on the left; `📋`, `🔥`, `🚶` and the fold folder on the right
   - decision: a quarter cell (~4px) under the row on desktop while the asks show — dima: «too tight»; none in the terminal, where a cell is a whole line
   - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
   - decision: with several threads the head reads only `here N, parallel M`; the per-session names and counts wait in its hover card — full names took too much room (dima, 2026-10-05)
@@ -18,9 +18,9 @@
   - decision: no `o` hotkey — the desktop drew its key badge as the button and left the icon outside it
 - 🔎 every control in the row names itself on hover: a dim card beside it
   - given the row draws
-  - when dima hovers `📋`, `🔥`, `☕`, the fold folder or the holds chip
+  - when dima hovers `📋`, `🔥`, `🚶`, the fold folder or the holds chip
   - then a dim line beside it says what a press does: «copy this thread's asks», «keep this session's cache hot: ping every 50 min», «afk: tell fleet that dima is away», «fold/unfold»
-  - dima, 2026-10-05: seen in the desktop Code tab and in Warp; iTerm2 unchecked
+  - dima, 2026-10-05: seen in the desktop Code tab and in Warp
 - 🔎 asks: every live session's open asks, «no open asks» when empty
 - ✅ only dima's own prompts clear asks
   - given a reply left open asks
@@ -51,7 +51,8 @@
   - decision: no per-item copy, no prompt injection — injection destroyed dima's typed prompt
   - decision: a real button, not plain text — dima could not tell it was pressable; the mod api has no cursor prop, so the pointer is the surface's own
   - decision: ask lines are not selectable — the mod api has no selection control and `Markdown` did not help either (dima, 2026-10-04); copy all is the door
-- 🔎 afk switch: only the emoji changes (☕ / 🌙), accent background when on
+- ⬜ afk switch: one icon, `🚶`; the accent background alone says it is on
+  - decision: one icon, the background tells the state — dima, 2026-10-05; `🚶` reads «stepped away» (alternatives offered: 💤, 🏝️, 🚪)
 - ✅ afk reaches a running turn
   - given a session is mid-turn
   - when dima flips afk
@@ -82,7 +83,7 @@
   - when session B's row draws
   - then B shows `🔒 2`; at zero the chip is hidden
 - 🔎 the holds chip names itself on hover
-  - dima, 2026-10-05: the desktop Code tab draws the card as a bubble above the chip, and Warp shows it; iTerm2 unchecked
+  - dima, 2026-10-05: the desktop Code tab draws the card as a bubble above the chip, and Warp shows it
   - given another session holds 2 files in this repo
   - when dima hovers the chip, on desktop or in a terminal that reports the pointer
   - then «2 files held by other sessions» shows beside it, dimmed

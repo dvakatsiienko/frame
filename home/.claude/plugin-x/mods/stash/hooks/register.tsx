@@ -707,7 +707,8 @@ export const register: Register = (on) => {
             : null;
         // icons only; each card says what a press does (dima)
         const hotLabel = '🔥';
-        const afkLabel = afk ? '🌙' : '☕';
+        // one icon; the accent background says afk is on (dima)
+        const afkLabel = '🚶';
         const foldLabel = open ? '📂' : '📁';
 
         // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there

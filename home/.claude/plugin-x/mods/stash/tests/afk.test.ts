@@ -22,9 +22,11 @@ for (const surface of ['terminal', 'desktop'] as const) {
             props,
             surface,
         });
-        expect((await ui.find({ key: 'afk' }))?.text).toBe('☕');
+        // one icon either way; the accent (primary) background is the state
+        const before = (await ui.find({ key: 'afk' }))?.props.variant;
         await ui.press({ key: 'afk' });
-        expect((await ui.find({ key: 'afk' }))?.text).toBe('🌙');
+        const after = (await ui.find({ key: 'afk' }))?.props.variant;
+        expect([before, after]).toEqual([undefined, 'primary']);
     });
 }
 
