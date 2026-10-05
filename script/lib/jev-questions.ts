@@ -81,7 +81,27 @@ export const routerVetoes = {
 const routerBoundary =
     'The prompt does not ask for this work in this turn. A no when: the prompt only shares a word or a topic with the skill while its task is something else (a 1Password «vault» is not a notes vault; a line in AGENTS.md is agent docs, not source code; announcing a fleet rule is not a message to a person); it asks a question about the tool or how it works; the message goes to an agent session, which is not a human; the work is set for a later moment; it only acknowledges; or it asks another session to do the work.';
 
-export const routerWide = (roster: readonly RouterSkill[]) =>
+// v2 (FRM-305): a verdict list («1. yes 2. later») names its work only through the reply it
+// answers, so state may carry `recent_context`; the sentence below keeps a topic that lives only
+// in that reply from routing on its own
+const contextNote =
+    ' `recent_context`, when present, is the agent reply `prompt` answers: read what a short or numbered verdict refers to through it, but route only on work `prompt` itself asks for — a topic only `recent_context` mentions asks for nothing.';
+
+const fitsQuestion = (s: RouterSkill, hasContext: boolean) =>
+    ({
+        criteria: {
+            false: routerBoundary,
+            true: `The prompt asks, for this turn, for the work this skill does: ${s.description}`,
+        },
+        instructions: `Carrying out what \`prompt\` asks for now needs the procedure of the skill \`${s.name}\`.${hasContext ? contextNote : ''}`,
+        type: 'noul',
+    }) satisfies Question;
+
+export const routerWide = (
+    roster: readonly RouterSkill[],
+    hasContext: boolean,
+    gate: readonly RouterSkill[] = [],
+) =>
     ({
         ...routerVetoes,
         skill: {
@@ -91,13 +111,21 @@ export const routerWide = (roster: readonly RouterSkill[]) =>
                 ),
                 none: 'No skill fits what the prompt asks to be done now: a question, an opinion, an acknowledgement, a relay to another session, or work none of these skills covers.',
             },
-            instructions:
-                'Which of these skills, if any, is the right one to load for what `prompt` asks to be done now?',
+            instructions: `Which of these skills, if any, is the right one to load for what \`prompt\` asks to be done now?${hasContext ? contextNote : ''}`,
             type: 'choice',
         },
+        // the must-not-miss gate rides the same request: one noul per critical skill, judged alone,
+        // so a near neighbour in the Choice cannot take its probability
+        ...Object.fromEntries(
+            gate.map((s) => [`must:${s.name}`, fitsQuestion(s, hasContext)]),
+        ),
     }) satisfies Record<string, Question>;
 
-export const routerRerank = (shortlist: readonly RouterSkill[]) =>
+export const routerRerank = (
+    shortlist: readonly RouterSkill[],
+    hasContext: boolean,
+    hasNeed: boolean,
+) =>
     ({
         skill: {
             criteria: Object.fromEntries(
@@ -113,36 +141,21 @@ export const routerRerank = (shortlist: readonly RouterSkill[]) =>
         ...Object.fromEntries(
             shortlist.map((s) => [
                 `fits:${s.name}`,
-                {
-                    criteria: {
-                        false: routerBoundary,
-                        true: `The prompt asks, for this turn, for the work this skill does: ${s.description}`,
-                    },
-                    instructions: `Carrying out what \`prompt\` asks for now needs the procedure of the skill \`${s.name}\`.`,
-                    type: 'noul',
-                } satisfies Question,
+                fitsQuestion(s, hasContext),
             ]),
         ),
-    }) satisfies Record<string, Question>;
-
-// the old shape, one noul per skill — the baseline `jev:test skill-router` measures against,
-// kept until the router's vet goes green on the new one
-export const routerNouls = (roster: readonly RouterSkill[]) =>
-    ({
-        ...routerVetoes,
-        ...Object.fromEntries(
-            roster.map((s) => [
-                s.name,
-                {
-                    criteria: {
-                        false: 'Carrying out the prompt needs none of that procedure. A prompt that only shares a word or a topic with the description while its actual task is something else is a no, and so is a question about the tool itself.',
-                        true: s.description,
-                    },
-                    instructions: `Carrying out \`prompt\` needs the procedure of the skill \`${s.name}\`.`,
-                    type: 'noul',
-                } satisfies Question,
-            ]),
-        ),
+        // hermes-jev-skills' stage-2 noul: one «any skill at all» judgment over the finalists,
+        // which `state.skills` carries since a noul cannot see a Choice's options
+        ...(hasNeed && {
+            needsSkill: {
+                criteria: {
+                    false: 'A capable agent does what `prompt` asks well from general knowledge: a reply, a question answered, an acknowledgement, a relay, or work set for later. None of `skills` adds steps it would otherwise miss.',
+                    true: 'Doing what `prompt` asks now, well, requires the specialised instructions of one of `skills` — its procedure, conventions or commands, not only its topic.',
+                },
+                instructions: `Doing what \`prompt\` asks now requires the specialised instructions of one of \`skills\`.${hasContext ? contextNote : ''}`,
+                type: 'noul',
+            } satisfies Question,
+        }),
     }) satisfies Record<string, Question>;
 
 /* Types */
