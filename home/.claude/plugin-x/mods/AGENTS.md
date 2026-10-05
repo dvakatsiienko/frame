@@ -20,14 +20,23 @@
 - the validator follows `$` only into functions declared in the same file, never across an import — a hook's `$`-using code lives in `register.tsx` (holds had to fold `holds.ts` back in, FRM-299)
 - test-harness traps (FRM-299, ~6 debug rounds): `$.tool.call` answers a refusal as `{ deny }`, not `isError`; a `Text` drops its `key` — find it by text + type; an op hook (`ui.copy`) answers `{ value }`; the engine regenerates `.claude-plugin/types/` on reload, sometimes without the tool types, so tool inputs go `unknown` — narrow from `unknown`
 - a fail-open guard's «goes through» test also asserts the log holds no error line — with an unmocked store the guard fails open and the test passes for the wrong reason (two holds tests did, FRM-303)
-- from the 2.1.289 reference, read by the 2026-10-05 research lanes, not yet probed here — check the types before leaning on one:
-  - state by lifetime: a module variable resets on every reload · `$.state` survives a reload, resets on `/clear` `/resume` `/branch` · `$.store` persists across sessions on this mac (4 MiB total), and its cross-session writes are not atomic — per-item keys, re-read right before a write (the fleet board's rows)
-  - limits: one hook 10 s, `prompt.edit` only 50 ms, a `.catch` 1 s, `$.process.run` 30 s by default, ui invalidations coalesced to 10/s
-  - a rewritten event replaces the old one, never patches it — pass `next({ ...e, field })`; a partial event drops its siblings (a reported `command`-only rewrite lost `timeout`)
-  - a hook that throws or times out is skipped and the chain goes on — fail-open by default; a guard meant to fail closed attaches `.catch` and denies
-  - `AbovePrompt` is shared: put `{await next(e)}` in your tree or the next mod's band vanishes (stash and breather both do)
-  - doors worth knowing before building: `agent.offer` withholds an agent type before a spawn and `agent.spawn` can deny one; `$.model.classify` exists (weigh it beside jev, `refresh-branch-classification`); `$.ui.selection`; `session.send`/`session.receive` for messages between sessions
-  - hooks run in the terminal, the desktop Code tab, headless `claude -p`, remote control (on the host) and cloud; drawings only in the terminal and the desktop
+- engine facts at 2.1.289, probed 2026-10-05 (FRM-319); `index.d.ts:<n>` is the types file, a «harness» proof is a throwaway mod under `claude plugin test`, a «live» one a headless `claude -p --plugin-dir <probe>`:
+  - state by lifetime:
+    - a module variable resets on every reload — live: keep-hot lost 🔥 on reload until it moved to `$.store` (stash, 2026-10-04)
+    - `$.state` survives a hot reload — types: index.d.ts:3276; that it resets on `/clear` `/resume` `/branch` is unprobed — set a value, run `/clear` in a live session, read it back
+    - `$.store` persists across sessions on this mac — live: the fleet board reads other sessions' keys; 4 MiB in all — types: index.d.ts:3262; cross-session writes are not atomic: per-item keys, re-read right before a write
+  - limits:
+    - a hook runs 10 s, then is skipped and the call goes on — live: the probe logged «tool.call hook skipped: ran past its 10s budget»; types: index.d.ts:4936; a `$` call's own time does not count (index.d.ts:5961)
+    - a `.catch` gets 1 s, then is absent and the hook beneath runs — harness, ≈1018 ms; types: index.d.ts:4944
+    - `$.process.run` 30 s by default, ten minutes at most — types: index.d.ts:3407, :7683
+    - ui invalidations: ten a second at most, thirty in the terminal for its shown pane, expanded band and prompt hint — types: index.d.ts:2268–2270
+    - `prompt.edit` has no shorter budget than any hook — no 50 ms in the types or the binary, and a 120 ms hook still rewrote in the harness
+  - a rewritten event replaces the old one, never patches it — harness: `next({ command, tool, tool_use_id })` reached the hook beneath without `description` and `timeout`; pass `next({ ...e, field })`. a rewrite that drops a pinned key (`tool`, `tool_use_id`, `agentId`) gets the whole hook skipped
+  - a hook that throws is skipped and the chain goes on (fail-open) — harness: «hook was skipped: HooksError: boom»; types: index.d.ts:3834. a guard meant to fail closed attaches `.catch` and answers `{ deny }` — harness: «hook failed closed … its .catch answered»
+  - `AbovePrompt` is shared: put `{await next(e)}` in your tree or the next mod's band vanishes — harness: a band without it hid the one beneath (stash and breather both carry it)
+  - doors worth knowing before building, all types-only: `agent.offer` `{ isOffered: false }` withholds an agent type (index.d.ts:3957–3963); `agent.spawn` answers `{ deny }`; `$.model.classify` (index.d.ts:2554 — weigh it beside jev); `$.ui.selection`, `undefined` with fullscreen off, in `-p` and on a surface that reports none (index.d.ts:2478–2484); `session.send` / `session.receive` (index.d.ts:4219, :4195)
+  - hooks run in the terminal, the desktop Code tab and headless `claude -p` (live: the budget probe); on the host under remote control, unprobed; in a cloud session where the build allows one (types: index.d.ts:489)
+  - drawings: `RenderSurface` is `terminal | desktop | mobile | vscode` (index.d.ts:9837) — the terminal draws the whole tree, the others where they have a slot; a `--remote-control` view draws nothing (measured, claude-code#99217)
 - fleet state starts at the registry: `~/.claude/sessions/<pid>.json` carries `status` (busy · shell · idle · waiting · blocked · needs_input), `statusUpdatedAt`, `hostSessionId`, `bridgeSessionId` for every session — read it before writing any state of your own (it killed the board's idle bug, FRM-306)
 - no hover cards in a `Pane`: an absolute card in a narrow row wraps and draws over its neighbours; the hover recipe above holds on the one-row band only (two rounds, FRM-306)
 - a `Markdown` link draws in the surface's blue and a mod cannot restyle it; a `Button` label cannot be bold — a bold name with a `↗` beside it is the shape that works (FRM-306)

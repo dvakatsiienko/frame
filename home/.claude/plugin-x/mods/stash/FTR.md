@@ -15,6 +15,7 @@
   - decision: half a cell above each thread after the first on desktop, so two lists read apart (dima, 2026-10-05); none in the terminal, where it costs a row
   - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
   - decision: the fold control is a folder, `📂` open and `📁` folded — dima asked for a more interesting state than `▼`/`▲`
+  - 🐞 the fold state lives in a module variable, so every reload — any save of a mod file — refolds the asks; it belongs in `$.state` (FRM-319 state audit)
   - decision: an «on» toggle (`🔥`, `💨`, `🚦`) draws as the light `secondary` chip, an «off» one plain — the desktop drew `primary` black, which read badly (dima, 2026-10-05)
   - decision: `c` copies the head's asks, `b` folds or unfolds the board, `f` folds the asks; the key rides the hover card, never the icon — the card is a dim `Button` with the key and the same press, so the surface draws its own key badge there (desktop) or `c: copy …` (terminal) (dima, 2026-10-05: «hkeys not present in button text, only in tooltip»)
   - 📌 a key fires only while the band holds focus (a click, or ctrl+x tab), never from the prompt; whether a key bound inside a hidden card fires is dima's press
@@ -37,6 +38,7 @@
   - when dima answers it from the desktop, and the reply has no ⏳ block
   - then the asks leave the band
   - 🐞 2026-10-05: a `composer`-only list kept answered asks in this coder's own background session
+  - measured 2026-10-05 (FRM-319): in a background coder's transcript dima's prompts carry `promptSource: queued` and a peer's `system` — `sdk` never appears; the session's asks key was gone after dima answered, which fits a clear but does not name the origin. the check: log `e.origin.kind` in `prompt.submit` for one answer in a background session
 - ✅ each thread is named by its session
   - given two sessions in the frame repo have open asks
   - when the band lists them
@@ -69,6 +71,7 @@
   - when that reset passes
   - then 🔥 is unticked and no more pings go out
   - decision: one switch per session, never shared — a ping wakes only the session it keeps warm
+  - 🐞 the 5h reset lives in a module variable: after a reload it is unknown until the next `session.measure`, so 🔥 switched on in that gap never turns itself off (FRM-319 state audit) — the fix keeps it in `$.state`
 - ✅ a hot session is pinged while idle
   - given 🔥 is on and the session's last turn ended 50 minutes ago
   - when no turn has started since

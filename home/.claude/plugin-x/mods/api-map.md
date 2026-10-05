@@ -2,74 +2,75 @@
 
 read from `.claude-plugin/types/claude-code/index.d.ts` at cc 2.1.289; the types file wins on any
 conflict; re-read at a cc bump. line ranges point into that file (any mod's copy; the engine
-regenerates it on reload). the events live in `EngineEventOf` (3660–4135); a hook may also answer
+regenerates it on reload). the events live in `EngineEventOf` (3838–4320); a hook may also answer
 an op (`store.get`, `session.id`, `ui.copy` …), listed at the end.
 
 ## ui — drawing and input
 
-- `ui.render` — the engine is about to draw a component (`AbovePrompt` band, `Pane`, …); return the tree (3684–3692)
-- `ui.resolve` — once per surface, component and plugin at load (not per draw); `e` names the surface and component, never the props (3693–3701)
-- `ui.press` — a `Button` a render hook drew was pressed; `element` is its `key` (3702–3710)
-- `ui.input` — an `Input` changed or was submitted (3711–3719)
-- `ui.select` — a `Select` was picked from (3720–3728)
-- `ui.message` — a `Client` this plugin drew posted from its surface module (3729–3737)
-- `ui.scroll` — a site's window is about to move: wheel or scroll keys on a `Pane` or the band (3738–3749)
-- `ui.focus` — a site's focus ring is about to move: Tab, arrows, a click, an `autoFocus` (3750–3761)
+- `ui.render` — the engine is about to draw a component; return the tree (3871–3879). the sites (`RenderComponent`, 8841): `AbovePrompt` (the band) and `Pane`, plus the engine's own rows a mod may redraw — `AskUserQuestion` `UserMessage` `AssistantMessage` `ToolUse` `ToolResult` `ToolGroup` `ToolProgress` `CommandOutput` `Spinner` `TurnDuration` `InfoNotice` `SessionMode` `PromptHint`
+- `ui.resolve` — once per surface, component and plugin at load (not per draw); `e` names the surface and component, never the props (3880–3888)
+- `ui.press` — a `Button` a render hook drew was pressed; `element` is its `key` (3889–3897)
+- `ui.input` — an `Input` changed or was submitted (3898–3906)
+- `ui.select` — a `Select` was picked from (3907–3915)
+- `ui.message` — a `Client` this plugin drew posted from its surface module (3916–3929)
+- `ui.fault` — a `Client` this plugin drew failed on a surface (did not load, failed to draw, or threw after); observe only, the engine redraws the site, so fall back by leaving the `Client` out (3930–3941)
+- `ui.scroll` — a site's window is about to move: wheel or scroll keys on a `Pane` or the band (3942–3953)
+- `ui.focus` — a site's focus ring is about to move: Tab, arrows, a click, an `autoFocus` (3954–3964)
 
 ## tools and agents
 
-- `tool.call` — a tool is about to run; return `{ deny }` to refuse, or rewrite the result and add `context` (3660–3671)
-- `tool.check` — the engine decides whether a call may run, after `tool.call` and PreToolUse, before the mode settles an ask (3672–3683)
-- `tool.describe` — once per tool, when its schema is first rendered; rewrite the description or defer it (3875–3888)
-- `agent.offer` — an agent type is offered to the model, in the listing and at dispatch; `next(e)` resolves `{ isOffered: true }` (3762–3772)
-- `agent.spawn` — the Agent tool is about to start a subagent, everything decided, its model not resolved yet (3773–3781)
+- `tool.call` — a tool is about to run; return `{ deny }` to refuse, or rewrite the result and add `context` (3847–3858)
+- `tool.check` — the engine decides whether a call may run, after `tool.call` and PreToolUse, before the mode settles an ask (3859–3870)
+- `tool.describe` — once per tool, when its schema is first rendered; rewrite the description or defer it (4078–4089)
+- `agent.offer` — an agent type is offered to the model, in the listing and at dispatch; `next(e)` resolves `{ isOffered: true }` (3965–3973)
+- `agent.spawn` — the Agent tool is about to start a subagent, everything decided, its model not resolved yet (3974–3982)
 
 ## the prompt box and the prompt
 
-- `prompt.submit` — a prompt is submitted, before the turn starts; `e.origin.kind` says who sent it (3782–3790)
-- `prompt.fill` — a text is about to go into the prompt box as the person's draft (3791–3802)
-- `prompt.suggest` — a dim Tab-to-take suggestion is about to show: the engine's guess or a plugin's `$.prompt.suggest` (3803–3814)
-- `prompt.edit` — the person edits the prompt box: a key or a paste (3815–3826)
-- `prompt.section` — once per named system-prompt section; rewrite its text (3827–3838)
-- `prompt.context` — once per conversation, the context blocks the first user message carries (3839–3850)
-- `prompt.compose` — the whole system prompt as `{ sections }`, in send order (3851–3862)
-- `prompt.attachment` — a message the engine injects on its own: a reminder, a mode change, a mentioned file (3863–3874)
-- `skill.prompt` — a skill's prompt is expanded for the model (`/name`, the Skill tool, a preload) (3960–3970)
-- `attribution.text` — a git text the model is told to write (`commit`, `pr`, …) is composed (3971–3981)
+- `prompt.submit` — a prompt is submitted, before the turn starts; `e.origin.kind` says who sent it (3983–3994)
+- `prompt.fill` — a text is about to go into the prompt box as the person's draft (3995–4006)
+- `prompt.suggest` — a dim Tab-to-take suggestion is about to show: the engine's guess or a plugin's `$.prompt.suggest` (4007–4018)
+- `prompt.edit` — the person edits the prompt box: a key or a paste (4019–4030)
+- `prompt.section` — once per named system-prompt section; rewrite its text (4031–4042)
+- `prompt.context` — once per conversation, the context blocks the first user message carries (4043–4051)
+- `prompt.compose` — the whole system prompt as `{ sections }`, in send order (4052–4063)
+- `prompt.attachment` — a message the engine injects on its own: a reminder, a mode change, a mentioned file (4064–4077)
+- `skill.prompt` — a skill's prompt is expanded for the model (`/name`, the Skill tool, a preload) (4160–4170)
+- `attribution.text` — a git text the model is told to write (`commit`, `pr`, …) is composed (4171–4182)
 
 ## commands and config
 
-- `command.run` — a slash command is about to run (3889–3900)
-- `command.describe` — a command is listed for the typeahead and `/help` (3901–3912)
-- `config.set` — a `/config` row is about to change (3913–3924)
-- `config.describe` — a `/config` row is listed (3925–3936)
+- `command.run` — a slash command is about to run (4090–4101)
+- `command.describe` — a command is listed for the typeahead and `/help` (4102–4113)
+- `config.set` — a `/config` row is about to change (4114–4125)
+- `config.describe` — a `/config` row is listed (4126–4137)
 
 ## the session
 
-- `session.start` — once per process per plugin, then again on every reload, worker respawn or enable; init here (3982–3993)
-- `session.receive` — a delivery reaches the session (a peer's message, a relay event, a Remote Control prompt), before it is queued (3994–4005)
-- `session.append` — every row the conversation keeps (prompt, response block, tool result, notice), before it is stored (4006–4017)
-- `session.send` — a plain-text message is about to leave for another agent or session (SendMessage, `$.session.send`) (4018–4029)
-- `session.compact` — the conversation is about to be compacted; resolves `{ messages }` (4030–4041)
-- `session.attach` — a remote client joins the roster of surfaces (4042–4053)
-- `session.detach` — a client leaves the roster (4054–4061)
-- `session.measure` — after each main-thread turn and on a whole-point rate-limit move: context fill, `rateLimits` (`five_hour`, `seven_day`), cost (4062–4073)
-- `session.end` — once when the session ends: exit, /clear, resume, logout, signal (4074–4085)
+- `session.start` — once per process per plugin, then again on every reload, worker respawn or enable; init here (4183–4194)
+- `session.receive` — a delivery reaches the session (a peer's message, a relay event, a Remote Control prompt), before it is queued (4195–4206)
+- `session.append` — every row the conversation keeps (prompt, response block, tool result, notice), before it is stored (4207–4218)
+- `session.send` — a plain-text message is about to leave for another agent or session (SendMessage, `$.session.send`) (4219–4230)
+- `session.compact` — the conversation is about to be compacted; resolves `{ messages }` (4231–4242)
+- `session.attach` — a remote client joins the roster of surfaces (4243–4250)
+- `session.detach` — a client leaves the roster (4251–4262)
+- `session.measure` — after each main-thread turn and on a whole-point rate-limit move: context fill, `rateLimits` (`five_hour`, `seven_day`), cost (4263–4274)
+- `session.end` — once when the session ends: exit, /clear, resume, logout, signal (4275–4286)
 
 ## turns
 
-- `turn.start` — a model turn begins, before its first model call (4098–4102)
-- `turn.step` — a model request of a turn is about to go out, main's or a subagent's (4103–4111)
-- `turn.complete` — a model turn ended; `e.agentId` set for a subagent's (4112–4120)
+- `turn.start` — a model turn begins, before its first model call (4292–4300)
+- `turn.step` — a model request of a turn is about to go out, main's or a subagent's (4301–4309)
+- `turn.complete` — a model turn ended; `e.agentId` set for a subagent's (4310–4318)
 
 ## the plugin itself and telemetry
 
-- `plugin.register` — a hooks module is about to join the chain, at load and at reload (4086–4097)
-- `engine.create` — `$` is being built, before any other hook of this plugin (4121–4129)
-- `telemetry.log` — a record is about to be logged (3937–3948)
-- `telemetry.mark` — one use of a feature is marked (3949–3959)
+- `plugin.register` — a hooks module is about to join the chain, at load and at reload (4287–4291)
+- `engine.create` — `$` is being built, before any other hook of this plugin (4319–4320)
+- `telemetry.log` — a record is about to be logged (4138–4148)
+- `telemetry.mark` — one use of a feature is marked (4149–4159)
 
-## ops a hook can answer (`OpValueOf`, 6618 on; inputs ~6380–6670)
+## ops a hook can answer (`OpValueOf`, 6869 on; inputs 6530 on)
 
 the `$.<noun>.<verb>` calls; the test harness answers them with `on('<op>', …)` mocks.
 
@@ -80,22 +81,23 @@ the `$.<noun>.<verb>` calls; the test harness answers them with `on('<op>', …)
 - env: `env.get` `env.set`
 - fs: `fs.read` `fs.write` `fs.stat` `fs.exists` `fs.list` `fs.ancestors`
 - net and processes: `http.fetch` `mcp.call` `mcp.connect` `process.run` `process.spawn`
-- model: `model.complete` `model.classify` `model.fork`
+- model: `model.complete` `model.classify` (2554 — weigh it beside jev) `model.fork`
 - prompt and turn: `prompt.read` `turn.abort`
 - session: `session.id` `session.cwd` `session.root` `session.repo` `session.model` `session.messages` `session.turns` `session.usage` `session.surface` `session.surfaces` `session.version` `session.authorize`
 - state and store: `state.get` `state.set` `store.get` `store.set` `store.delete` `store.keys`
 - tools: `tool.list` `tool.register`
-- ui: `ui.open` `ui.close` `ui.panes` `ui.toast` `ui.notice` `ui.status` `ui.copy` `ui.log` `ui.invalidate` `ui.blit`
+- ui: `ui.open` `ui.close` `ui.panes` `ui.toast` `ui.notice` `ui.status` `ui.copy` `ui.log` `ui.invalidate` `ui.blit` `ui.selection` (2478 — `undefined` with fullscreen off, in `-p`, and on a surface that reports none)
 
 ## fleet ideas — candidates, none built (2026-10-05)
 
 cclio folds dima's picks into a ticket; a built idea leaves this list.
 
-- holds sees Bash writes — `tool.check` (or `tool.call` on `Bash`) parses the common write shapes (heredoc `>`, `sd`, `sed -i`, python `open(…,'w')`) and takes or refuses the hold; closes the 37 % gap measured in `docs/test-drive/mods.md`
 - context toast — `session.measure` crosses 85 % context → `$.ui.toast` «offer a handoff»; the same hook already feeds keep-hot's 5h window
 - a coder ping you can hear — `session.receive` sees a peer message from a coder → `$.audio.speak` reads its first line while dima is away from the screen
-- the fleet board — `session.receive` and `session.send` log every member message into the stash store, and the band draws one row per member (FRM-303 item 4)
-- spawn gating — `agent.spawn` refuses or reroutes a spawn the fleet rules forbid (a subagent for a one-pass job, a mechanical job not on `chore-helper`)
+- a reset on `/clear` and `/resume` — `command.run { command: ['clear','resume'] }` as the one point stash and redact drop per-session state; today stash notices a new `$.session.id()` at its next poll (borrowed from Charlie0113-T/claude-agent-flow `hooks/register.ts`, FRM-319)
+- a «while you were away» digest — when `💨` turns off, each session's «needs you first, then done» (from augbastos/afkswitch's README, FRM-319)
+- a pr + ci column on the board — one `gh api graphql` query per pr on a 60 s `$.clock.every`, pr urls caught from prompts, replies and `gh pr create` output (from sezaakgun/cc-pr-tracker `hooks/register.tsx`, FRM-319); its cost is the per-tick `gh` call stash's FTR already names
+- parked: spawn gating — `agent.spawn` refusing or rerouting a spawn the fleet rules forbid; the warn-only hints it grew from were dropped: «0 for 1 on its first real fire, and a toast never reaches the session it corrects» (dima, 2026-10-05)
 
 ## undocumented doors (may break on an app bump)
 
