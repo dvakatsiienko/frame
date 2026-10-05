@@ -36,13 +36,13 @@
   - when a peer's SendMessage wakes the session and its reply has no ⏳ block
   - then the asks stay
   - decision: an allow-list of dima's own hands — `composer` (typed at the prompt), `sdk` (his typing into a background job, which the transcript stamps `promptSource: sdk`) and `bridge` (his phone or web client); the old deny-list missed `peer-send-message`, and every new origin the engine adds would have cleared asks too
-- ⬜ dima's answer in a background session clears its asks
-  - the test passes with origin `sdk`; that a background session's hook really sees `sdk` is unchecked — the transcript says `promptSource: sdk`
+- ✅ dima's answer in a background session clears its asks
   - given a background session's reply left open asks
   - when dima answers it from the desktop, and the reply has no ⏳ block
   - then the asks leave the band
-  - 🐞 2026-10-05: a `composer`-only list kept answered asks in this coder's own background session
-  - measured 2026-10-05 (FRM-319): in a background coder's transcript dima's prompts carry `promptSource: queued` and a peer's `system` — `sdk` never appears; the session's asks key was gone after dima answered, which fits a clear but does not name the origin. the check: log `e.origin.kind` in `prompt.submit` for one answer in a background session
+  - proven live 2026-10-05 (FRM-320): a background coder's reply left one ask; the stash store held `asks:<its session>`; dima answered in its chat, and the key was gone 4 s after that reply ended. a peer's turn never clears asks, so his typing there reached the hook with an origin on the list
+  - decision: the transcript cannot name that origin — it writes its own vocabulary (`origin: human`, `promptSource: queued`), which the hook never receives; the store is the check
+  - the old 🐞 (a `composer`-only list kept answered asks, 2026-10-05) was fixed by the allow-list above
 - ✅ each thread is named by its session
   - given two sessions in the frame repo have open asks
   - when the band lists them
