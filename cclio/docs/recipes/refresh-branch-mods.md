@@ -57,14 +57,13 @@ at every cc minor that touches mods, at the test-drive verdict (2026-10-19), or 
 
 ## next run — the leads still open (written 2026-10-05, hot)
 
-- re-read the types against `mods/api-map.md` for: `agent.offer` (withhold an agent type), `$.model.classify` (beside jev), `$.ui.selection` (speak's selection reads?), `session.send`/`receive` (the board), `prompt.suggest` ownership rules (we dropped ours for the built-in), any new render site (a mod quieting `InfoNotice`, the «stash reloaded» line, would close a 10-05 limit)
-- probe the «unprobed» block in `mods/AGENTS.md` (state lifetimes, limits, rewrite = replacement, fail-closed `.catch`) — each probed line loses its «unprobed» tag or dies
-- the surface matrix (vector 7) on every mod: terminal · desktop · Warp · a remote-control view ([claude-code#99217](https://github.com/anthropics/claude-code/issues/99217) still open on 10-05)
+- the three engine facts `mods/AGENTS.md` marks for a live session: `$.state` reset on `/clear` `/resume` `/branch`, hooks on the host under remote control, and the rest of that block's «unprobed» lines
+- the surface matrix (vector 7) — the checklist waits in `docs/test-drive/mods.md` for one sitting with dima ([claude-code#99217](https://github.com/anthropics/claude-code/issues/99217) still open on 10-05)
 - what a mod still cannot reach: the `queue-operation` record (redact), the desktop's own prompt suggestion, the `InfoNotice` line — re-check each at a bump
-- borrow candidates not yet read in source: `cctop`, `agent-flow`, `cc-pr-tracker`, `AFKSwitch` (return summary vs our afk), `claude-queue`, `pii-guard` (outbound-tool policy beside redact)
 - parked builds: asks moving into stash as a tool (needs dima's word: it changes the ⏳ rule) · `mods:live`, a pty harness for reload and hover checks (only on a third need)
 - the test drive verdict 10-19 (`docs/test-drive/mods.md`): spawn hints were dropped 10-05 (0 for 1, a toast never reaches the session it corrects); the board, redact, holds + the Bash veto, asks, afk, keep-hot each get a real-use line
 
 ## last run
 
+- 2026-10-05, the leads round ([FRM-319](https://linear.app/x-com/issue/FRM-319), a coder, no paid lanes) — the engine facts probed (two claims corrected: no 50 ms `prompt.edit` budget; drawings reach mobile and vscode too), `api-map.md` regenerated from the 2.1.289 types (~190 lines of drift), the state audit found two stash 🐞 ([FRM-320](https://linear.app/x-com/issue/FRM-320)). the borrow read, file per line in `docs/test-drive/mods.md`: borrow `agent-flow`'s `/clear`+`/resume` reset point and `AFKSwitch`'s «while you were away» digest · maybe `cc-pr-tracker`'s pr + ci board column · skip `cctop` (the board covers it), `claude-queue` (polls claude.ai internals against the terms), `pii-guard` (redact closes its holes)
 - 2026-10-05 — lanes exa (138 s, $0.10) + parallel (227 s); distilled into `mods/AGENTS.md` («from the 2.1.289 reference» + «what a mod cannot reach»); both mods already compose `AbovePrompt` correctly. essential and done: holds + the Bash veto, asks, afk, keep-hot, /board, spawn hints, redact. useful and left: reversible redaction (a key pasted for the model still works), the board's fuller pane (FRM-306, in flight)

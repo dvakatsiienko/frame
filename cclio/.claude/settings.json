@@ -32,7 +32,7 @@
     "cclio@cclio": true,
     "neuroarxiv@neuroarxiv": true,
     "adhd@adhd": true,
-    "fast-jev-compaction@fast-jev-compaction": true
+    "fast-jev-compaction@fast-jev-compaction": false
   },
   "extraKnownMarketplaces": {
     "cclio": {
