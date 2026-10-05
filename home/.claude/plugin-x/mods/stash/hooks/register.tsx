@@ -582,22 +582,31 @@ function hoverTip(
     words: string,
     control: RenderElement,
     place: { left: number } | { right: number },
-    hotkey?: string,
+    press?: { hotkey: string; onPress: () => void },
 ) {
-    const { Box, Text } = ui;
+    const { Box, Text, Button } = ui;
     return (
         <Box key={`tip:${key}`}>
             {control}
             <Box
                 display='none'
-                gap={1}
                 hover={{ display: 'flex' }}
                 position='absolute'
                 top={0}
                 {...place}>
-                <Text dimColor>{words}</Text>
-                {/* a keycap on one row: a border would take three, and the band has one */}
-                {hotkey ? <Text inverse> {hotkey} </Text> : null}
+                {/* the key rides the card, not the icon: the surface draws its own key badge beside a Button with a hotkey */}
+                {press ? (
+                    <Button
+                        dimColor
+                        hotkey={press.hotkey}
+                        key={`key:${key}`}
+                        onPress={press.onPress}
+                        plain>
+                        {words}
+                    </Button>
+                ) : (
+                    <Text dimColor>{words}</Text>
+                )}
             </Box>
         </Box>
     );
@@ -934,8 +943,8 @@ export const register: Register = (on) => {
             words: string,
             control: RenderElement,
             place: { left: number } | { right: number },
-            hotkey?: string,
-        ) => hoverTip(ui, key, words, control, place, hotkey);
+            press?: { hotkey: string; onPress: () => void },
+        ) => hoverTip(ui, key, words, control, place, press);
         const boardOpen = await isBoardOpen($);
         const flipBoard = async () => {
             if (await isBoardOpen($)) await $.ui.close({ id: BOARD });
@@ -947,31 +956,25 @@ export const register: Register = (on) => {
             right: [...label].length + (chrome ? 4 : 0) + 1,
         });
         // only the head's copy takes `c`: two Buttons on one key clash, and the later wins
-        const copyButton = (sid: string, asks: string[], hotkey?: string) =>
-            tip(
+        const copyButton = (sid: string, asks: string[], hotkey?: string) => {
+            const copy = () =>
+                void $.ui.copy({
+                    surface,
+                    text: [
+                        'lane',
+                        ...asks.map((a, i) => `${i + 1}. ${a}`),
+                    ].join('\n'),
+                });
+            return tip(
                 `copy:${sid}`,
                 "copy this thread's asks",
-                copyControl(sid, asks, hotkey),
+                <Button key={`copy:${sid}`} onPress={copy} variant='secondary'>
+                    📋
+                </Button>,
                 leftOf('📋', true),
-                hotkey,
+                hotkey ? { hotkey, onPress: copy } : undefined,
             );
-        const copyControl = (sid: string, asks: string[], hotkey?: string) => (
-            <Button
-                hotkey={hotkey}
-                key={`copy:${sid}`}
-                onPress={() =>
-                    void $.ui.copy({
-                        surface,
-                        text: [
-                            'lane',
-                            ...asks.map((a, i) => `${i + 1}. ${a}`),
-                        ].join('\n'),
-                    })
-                }
-                variant='secondary'>
-                📋
-            </Button>
-        );
+        };
         const [first] = groups;
         const many = groups.length > 1;
         // other sessions' holds in this repo; ⚠ when a session was refused one of this session's files
@@ -1085,16 +1088,11 @@ export const register: Register = (on) => {
                         ? tip(
                               'asks-toggle',
                               open ? 'fold' : 'unfold',
-                              <Button
-                                  hotkey='o'
-                                  key='asks-toggle'
-                                  onPress={toggle}
-                                  plain>
+                              <Button key='asks-toggle' onPress={toggle} plain>
                                   {foldLabel}
                               </Button>,
-                              // a terminal draws a plain Button with a hotkey as `o: label`
-                              { right: [...foldLabel].length + 4 },
-                              'o',
+                              leftOf(foldLabel, false),
+                              { hotkey: 'o', onPress: toggle },
                           )
                         : null}
                 </Box>

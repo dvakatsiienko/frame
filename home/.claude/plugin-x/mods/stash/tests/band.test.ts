@@ -139,14 +139,41 @@ test('every control in the row carries a hover card that names it', async ($, on
     const cards = (await ui.findAll({ type: 'Box' }))
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
-    // a card with a hotkey ends in its keycap, ` c `
-    expect(cards.map((c) => c?.trimEnd())).toEqual([
-        "copy this thread's asks c",
+    expect(cards).toEqual([
+        "copy this thread's asks",
         "keep this session's cache hot: ping every 50 min",
         'afk: tell fleet that dima is away',
         'unfold fleet board',
-        'fold o',
+        'fold',
     ]);
+});
+
+test('the keys ride the hover cards, never the icons', async ($, on) => {
+    mock.clock(on);
+    mock.store(on);
+    on('classic.Stop', () => ({}));
+    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    await $.classic.Stop({
+        last_assistant_message: block,
+        stop_hook_active: false,
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'stash',
+        props: {
+            bodyColumns: 100,
+            hasSurvey: false,
+            isWorking: false,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface: 'desktop',
+    });
+    const keyed = (await ui.findAll({ type: 'Button' }))
+        .filter((n) => n.props.hotkey)
+        .map((n) => `${n.key?.split(':')[1]} ${n.props.hotkey}`);
+    expect(keyed).toEqual(['copy c', 'asks-toggle o']);
 });
 
 test("a toggle's hover card names what the next press does", async ($, on) => {
@@ -176,9 +203,9 @@ test("a toggle's hover card names what the next press does", async ($, on) => {
     const cards = (await ui.findAll({ type: 'Box' }))
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
-    expect(cards.slice(-3).map((c) => c?.trimEnd())).toEqual([
+    expect(cards.slice(-3)).toEqual([
         'back: tell fleet that dima is here',
         'unfold fleet board',
-        'unfold o',
+        'unfold',
     ]);
 });
