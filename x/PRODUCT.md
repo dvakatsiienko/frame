@@ -37,4 +37,13 @@ a verb lives in x only when all three hold:
 
 after a frame → bytes merge, x is one workspace package beside turbo: turbo owns the graph, x owns the procedures.
 
-the shape is in progress (`x:shape-idea`, 2026-10-05): grill → the cut → the done test. prior art: `docs/research/cli-agent-facing.md`.
+## the cut — v1 (2026-10-05)
+
+- `lane` (shipped in v0) · `handoffs` (list, peek, ingest — the store `x-cw` uses) · `x schema` at two detail levels
+- the resident index: a SessionStart hook prints the verb names + purposes, generated from the registry
+- the look: the FRM-284 a/b/c winner, built to the T2 design
+- every new verb passes the admission rule first
+
+**out of v1:** pm / notes / scheduling / evergreen verbs (each through the admission rule later) · interactive driving · an MCP mirror (decided: none; `x-cw` stays until the cw-door probe) · package lifecycle (turbo / pnpm)
+
+the done test is `FTR.md`; the words are `CONTEXT.md`. prior art: `docs/research/cli-agent-facing.md`.
