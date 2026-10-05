@@ -57,11 +57,12 @@
   - given session A holds 2 files in this repo
   - when session B's row draws
   - then B shows `🔒 2`; at zero the chip is hidden
-- ✅ the holds chip names itself on hover
+- ⬜ the holds chip names itself on hover
   - given another session holds 2 files in this repo
-  - when dima hovers the chip on desktop
-  - then it reads «2 files held by other sessions», and that is also its accessible name
-  - decision: an interactive `Svg` with a `<title>` on desktop — a mod `Button` or `Text` has no tooltip; the terminal has no hover and keeps the plain `🔒 2`
+  - when dima hovers the chip, on desktop or in a terminal that reports the pointer
+  - then «2 files held by other sessions» shows beside it, dimmed
+  - decision: a hidden `Box` card revealed by the chip's hover — the `Svg` `<title>` route showed nothing on desktop (dima, 2026-10-05); the card sits on the chip's row because a one-row band clips anything above or below
+  - the test harness cannot hover: it checks the hidden card and its words, the reveal is dima's look
   - decision: «this repo» is this working tree — a worktree's holds never collide with the main checkout's, so they stay out of its chip
   - decision: a holder idle 30 min drops out at once; a dead one at the next turn end of any session
 - ✅ holder warning: the holder's chip turns ⚠ after someone was refused

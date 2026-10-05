@@ -338,16 +338,16 @@ test("the holds chip counts other sessions' holds", async ($, on) => {
     expect((await ui.find({ text: '🔒', type: 'Text' }))?.text).toBe('🔒 2');
 });
 
-test('the holds chip names itself on hover on desktop', async ($, on) => {
-    const ui = await chipFor($, on, 'desktop');
-    const svg = await ui.find({ type: 'Svg' });
-    expect([svg?.props.alt, svg?.props.source]).toEqual([
-        '2 files held by other sessions',
-        expect.stringContaining(
-            '<title>2 files held by other sessions</title>',
-        ),
-    ]);
-});
+for (const surface of ['terminal', 'desktop'] as const) {
+    test(`the holds chip names itself on hover on ${surface}`, async ($, on) => {
+        const ui = await chipFor($, on, surface);
+        const card = (await ui.findAll({ type: 'Box' })).find(
+            (n) => n.text === '2 files held by other sessions',
+        );
+        // the harness keeps `hover` out of props, so the reveal itself is the surface's
+        expect(card?.props.display).toBe('none');
+    });
+}
 
 test("a worktree's holds stay out of the main checkout's chip", async ($, on) => {
     mock.store(on);

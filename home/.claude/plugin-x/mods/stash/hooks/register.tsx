@@ -393,16 +393,6 @@ async function armHot($: EngineInterface) {
     });
 }
 
-// the text and the title are built from counts and fixed words, never from input, so nothing needs escaping
-const chipWidth = (text: string) => 8 + [...text].length * 9;
-
-function chipSvg(text: string, title: string, warned: boolean) {
-    const ink = (light: string, dark: string) =>
-        `text{fill:${warned ? ACCENT : light}}@media (prefers-color-scheme:dark){text{fill:${warned ? ACCENT : dark}}}`;
-    const width = chipWidth(text);
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="18"><title>${title}</title><style>text{font:13px -apple-system,system-ui,sans-serif}${ink('#3d3d3a', '#e8e6dc')}</style><text x="0" y="13">${text}</text></svg>`;
-}
-
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
@@ -536,8 +526,7 @@ export const register: Register = (on) => {
             a === selfId ? -1 : b === selfId ? 1 : 0,
         );
         const total = groups.reduce((n, [, v]) => n + v.asks.length, 0);
-        const kit = $.ui.resolve(e);
-        const { Box, Text, Button } = kit;
+        const { Box, Text, Button } = $.ui.resolve(e);
         const surface = e.surface;
         const counts = groups
             .map(
@@ -593,7 +582,6 @@ export const register: Register = (on) => {
         ]
             .filter(Boolean)
             .join(' ');
-        // a desktop Svg is the one element with a hover tooltip; the terminal has no hover
         const chipName = [
             holds.warned
                 ? 'a session was refused a file this session holds'
@@ -604,18 +592,22 @@ export const register: Register = (on) => {
         ]
             .filter(Boolean)
             .join('; ');
-        const holdsChip = !chipText ? null : surface === 'desktop' &&
-          'Svg' in kit ? (
-            <kit.Svg
-                alt={chipName}
-                height={18}
-                isInteractive
-                source={chipSvg(chipText, chipName, holds.warned)}
-                width={chipWidth(chipText)}
-            />
-        ) : (
-            <Text color={holds.warned ? ACCENT : undefined}>{chipText}</Text>
-        );
+        // the card sits on the chip's own row: a one-row band clips anything above or below it
+        const holdsChip = chipText ? (
+            <Box key='holds-chip'>
+                <Text color={holds.warned ? ACCENT : undefined}>
+                    {chipText}
+                </Text>
+                <Box
+                    display='none'
+                    hover={{ display: 'flex' }}
+                    left={[...chipText].length + 1}
+                    position='absolute'
+                    top={0}>
+                    <Text dimColor>{chipName}</Text>
+                </Box>
+            </Box>
+        ) : null;
 
         // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there
         const head = (
