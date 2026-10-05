@@ -7,6 +7,7 @@ door live in `rules/fleet-tooling.md` (cc) and the cw leaf named on the line.
 
 ## doors
 
+- fleet ops (commit, push, pr, merge, unlock, …) → `x`, the fleet cli; bare `x` lists every verb · cc only, cw has no shell
 - gmail → `himalaya`, no mcp exists · cw leaf `/areas/tooling.md`
 - slack → `slk`, no mcp exists · cw leaf `/areas/tooling.md`
 - notion → `ntn`, never the connector · cw leaf `/areas/tooling.md`
