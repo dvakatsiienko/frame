@@ -63,6 +63,17 @@ describe('judge', () => {
         expect(fetchMock).not.toHaveBeenCalled();
     });
 
+    test('an amount that is not a number keeps the gate shut', async () => {
+        const now = new Date().toISOString();
+        vi.stubEnv(
+            'JEV_SPEND_LOG',
+            log([`${now}\t1\t0.100000`, `${now}\t1\tx`]),
+        );
+        const { judge, JevBudgetError } = await import('./jev.ts');
+        await expect(judge({}, {})).rejects.toBeInstanceOf(JevBudgetError);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     test('a 402 refuses as a budget error', async () => {
         vi.stubEnv('JEV_SPEND_LOG', log([]));
         fetchMock.mockResolvedValue(

@@ -48,6 +48,11 @@ export async function judge<Q extends Record<string, Question>>(
     if (tally?.since !== since) tally = { since, usd: cycleSpend(now) };
     const cycle = tally;
     const spent = cycle.usd;
+    // a hand-edited or foreign line makes the total NaN, and `NaN >= cap` is false: fail closed
+    if (!Number.isFinite(spent))
+        throw new JevBudgetError(
+            `the jev spend log holds an amount that is not a number (${spendLog()}) — no call until it is fixed`,
+        );
     // checked before each call: a pool of 4 in flight can pass the cap by three calls (~$0.003)
     if (spent >= CAP_USD)
         throw new JevBudgetError(
