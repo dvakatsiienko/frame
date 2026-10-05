@@ -68,10 +68,19 @@ test('a busy session is never pinged', async ($, on) => {
     expect(s.pings).toEqual([]);
 });
 
-// a session whose stash store already holds 🔥, as a reload or a respawn finds it
-async function started($: Engine, on: On, store: Record<string, unknown> = {}) {
+// a session whose stash store, and `$.state` when given, already hold what a reload or a respawn finds
+async function started(
+    $: Engine,
+    on: On,
+    store: Record<string, unknown> = {},
+    state?: Record<string, unknown>,
+) {
     const clock = mock.clock(on, { now: NOW });
     mock.store(on, store);
+    if (state)
+        on('state.get', (_$, e) => ({
+            value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+        }));
     const pings: string[] = [];
     on('session.id', () => ({ value: SID }));
     on('session.repo', () => ({
@@ -146,5 +155,64 @@ test('🔥 turns itself off after the 5h window resets', async ($, on) => {
     expect([(await s.button())?.props.variant, s.pings]).toEqual([
         undefined,
         [],
+    ]);
+});
+
+test('🔥 switched on right after a reload still turns itself off at the reset', async ($, on) => {
+    const s = await started(
+        $,
+        on,
+        {},
+        {
+            fiveHour: { resetsAt: NOW + 30 * MIN },
+        },
+    );
+    await s.ui.press({ key: 'hot' });
+    await endTurn($);
+    await s.clock.advance(50 * MIN);
+    expect([(await s.button())?.props.variant, s.pings]).toEqual([
+        undefined,
+        [],
+    ]);
+});
+
+test('a folded asks list stays folded across a reload', async ($, on) => {
+    const s = await started(
+        $,
+        on,
+        { [`asks:${SID}`]: { asks: ['ship it'], at: NOW, label: 'frame' } },
+        { open: false },
+    );
+    expect(await s.ui.find({ text: /ship it/, type: 'Text' })).toBe(undefined);
+});
+
+// what a reload will read back, recorded as it is written
+function stateWrites(on: On) {
+    const writes: [string, unknown][] = [];
+    on('state.set', (_$, e) => {
+        writes.push([e.key, e.value]);
+        return { value: { isSet: true, version: 1 } };
+    });
+    return writes;
+}
+
+test('folding the asks writes the fold to $.state', async ($, on) => {
+    const writes = stateWrites(on);
+    const s = await started($, on, {
+        [`asks:${SID}`]: { asks: ['ship it'], at: NOW, label: 'frame' },
+    });
+    await s.ui.press({ key: 'asks-toggle' });
+    expect(writes.filter(([key]) => key === 'open').at(-1)).toEqual([
+        'open',
+        false,
+    ]);
+});
+
+test('a measure writes the 5h reset to $.state', async ($, on) => {
+    const writes = stateWrites(on);
+    await started($, on);
+    await measure($, 50, 30 * MIN);
+    expect(writes.filter(([key]) => key === 'fiveHour')).toEqual([
+        ['fiveHour', { resetsAt: NOW + 30 * MIN }],
     ]);
 });

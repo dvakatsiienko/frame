@@ -40,6 +40,9 @@ const STALE_MS = 24 * 60 * 60 * 1000;
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
 const HOT_MS = 50 * 60 * 1000;
 const HOT = 'hot:';
+// a reload keeps `$.state` and resets the module: what must outlive a mod save lives here (FRM-320)
+const OPEN = { key: 'open', plugin: 'stash' } as const;
+const FIVE_HOUR = { key: 'fiveHour', plugin: 'stash' } as const;
 const PING = 'stash keep-hot ping: answer with one character, nothing else.';
 const ACCENT = '#d97757';
 
@@ -412,7 +415,10 @@ async function load($: EngineInterface): Promise<boolean> {
     const after = JSON.stringify(
         Object.entries(next).map(([k, v]) => [k, v.asks]),
     );
-    if (fresh.some((f) => !known.has(f))) open = true;
+    if (fresh.some((f) => !known.has(f))) {
+        open = true;
+        await $.state.set(OPEN, true).catch(() => undefined);
+    }
     known = new Set(fresh);
     entries = next;
     const cool = await cooled($);
@@ -642,7 +648,11 @@ export const register: Register = (on) => {
             return undefined;
         });
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
+        fiveHour = (await $.state.get(FIVE_HOUR).catch(() => undefined))?.value;
         await load($);
+        // after the first load: a reload sees every ask as new, which would unfold what dima folded
+        const fold = (await $.state.get(OPEN).catch(() => undefined))?.value;
+        if (fold !== undefined) open = fold;
         await armHot($);
         await $.command
             .register({
@@ -729,6 +739,8 @@ export const register: Register = (on) => {
         fiveHour = w && {
             resetsAt: w.resetsAt ? Date.parse(w.resetsAt) : undefined,
         };
+        if (fiveHour)
+            await $.state.set(FIVE_HOUR, fiveHour).catch(() => undefined);
         const sid = selfId ?? (await $.session.id().catch(() => undefined));
         if (sid && e.context.percent !== undefined)
             await $.store
@@ -944,6 +956,7 @@ export const register: Register = (on) => {
             .join(', ');
         const toggle = () => {
             open = !open;
+            void $.state.set(OPEN, open).catch(() => undefined);
             $.ui.invalidate('ui.render');
         };
         const flipAfk = async () => {
