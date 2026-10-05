@@ -6,6 +6,7 @@
 // the labelled fixtures, every arm: script/op-run.sh node script/jev-test.ts skill-router
 import { appendFileSync, mkdirSync } from 'node:fs';
 
+import { JevBudgetError } from './lib/jev.ts';
 import { printTable } from './lib/jev-print.ts';
 import {
     missPrompts,
@@ -29,9 +30,13 @@ if (!mode) {
 
 if (mode !== '--from-log' && mode !== '--misses') {
     const started = performance.now();
+    // over the budget or a 402: the hook prints nothing, the built-in router still runs
     const { loads, tokens, top, trace } = await suggest(
         routeInput(mode, process.env.JEV_TRANSCRIPT),
-    );
+    ).catch((e: unknown) => {
+        if (e instanceof JevBudgetError) process.exit(0);
+        throw e;
+    });
     const ms = Math.round(performance.now() - started);
     // the whole prompt, one line: a vet miss filed with `--last` is a label source
     appendFileSync(
@@ -53,18 +58,29 @@ const prompts =
         ? missPrompts(verdictsOf('skill-router'), count)
         : nearMisses(routeRead(), count).map((r) => r.prompt);
 const rows: string[][] = [];
+// a refusal mid-replay keeps the rows already scored, then exits 2
+let refused: string | undefined;
 for (const prompt of prompts) {
-    const { loads, trace } = await suggest({
+    const got = await suggest({
         prompt,
         recentContext: '',
         seen: new Set(),
+    }).catch((e: unknown) => {
+        if (!(e instanceof JevBudgetError)) throw e;
+        refused = e.message;
+        return undefined;
     });
+    if (!got) break;
     rows.push([
         prompt.slice(0, 70),
         dim('got'),
-        loads.length
-            ? bold(loadLine(loads) ?? '')
-            : dim(`none (${trace.join(' · ')})`),
+        got.loads.length
+            ? bold(loadLine(got.loads) ?? '')
+            : dim(`none (${got.trace.join(' · ')})`),
     ]);
 }
 printTable(rows);
+if (refused) {
+    console.error(refused);
+    process.exit(2);
+}

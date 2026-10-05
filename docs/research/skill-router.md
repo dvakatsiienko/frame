@@ -30,7 +30,9 @@ held-out third (71 prompts, 32 of them real).
   prompts against jev's $0.22.
 - **one full jev replay costs ~5,060 requests, ~27M input tokens, ~$1.13** (4 arms × 221 × 3,
   two calls each). four of them took the typesafe balance below zero on 10-05; the free credit is
-  $5 a month, so the next run must fit it — [FRM-308](https://linear.app/x-com/issue/FRM-308) gates it.
+  $5 a month, so the next run must fit it — [FRM-308](https://linear.app/x-com/issue/FRM-308) gates it:
+  every paid call lands in `~/.claude/shelf/jev/spend.log`, and past $4.00 since the 18th (or on a
+  402) `judge()` sends nothing and every caller fails soft. `JEV_SPEND_LOG` points a probe elsewhere.
 
 ## what the lanes agreed on
 

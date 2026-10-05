@@ -15,7 +15,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 /* Instruments */
 import type { HaikuRaw } from './lib/haiku-router.ts';
 import { haikuRoute } from './lib/haiku-router.ts';
-import { judge } from './lib/jev.ts';
+import { JevBudgetError, judge, usdPerToken } from './lib/jev.ts';
 import { laneCells, printTable } from './lib/jev-print.ts';
 import type { RouterSkill } from './lib/jev-questions.ts';
 import { flawlogQuestions, inboxQuestions } from './lib/jev-questions.ts';
@@ -44,8 +44,6 @@ const armNames = [
     '+roster+memory',
     '+gate+need',
 ] as const;
-// jev-1.13.0 bills input tokens only (docs.typesafe.ai/models)
-const JEV_USD_PER_TOKEN = 0.042 / 1_000_000;
 
 const flows = {
     'flawlog-lanes': { answer: 'lane', questions: flawlogQuestions },
@@ -75,7 +73,7 @@ for (const name of names) {
     console.log(`\n${bold(name)} ${dim(`· ${fixtures.length} fixtures`)}`);
     const rows: string[][] = [];
     for (const fx of fixtures) {
-        const res = await judge(fx.state, flow.questions);
+        const res = await judge(fx.state, flow.questions).catch(budgetExit);
         const lane = res.answers[flow.answer];
         const hit = lane.choice === fx.expect;
         const tally = byLane[fx.expect] ?? { hit: 0, total: 0 };
@@ -105,8 +103,15 @@ for (const name of names) {
     console.log(`${paint(bold(`${hits}/${total}`))}  ${dim(perLane)}`);
     if (hits < total) failed = true;
 }
-if (isRouter && !(await routerTest())) failed = true;
+if (isRouter && !(await routerTest().catch(budgetExit))) failed = true;
 process.exit(failed ? 1 : 0);
+
+// over the budget or a 402: one line and exit 2, never a replay dying halfway in a stack trace
+function budgetExit(e: unknown): never {
+    if (!(e instanceof JevBudgetError)) throw e;
+    console.error(e.message);
+    process.exit(2);
+}
 
 function readFixtures<T>(name: string) {
     return readFileSync(new URL(`${name}.jsonl`, FIXTURES), 'utf8')
@@ -242,7 +247,7 @@ async function routerTest() {
     // shipped with; haiku has no threshold to sweep
     const jevLine = (arm: ArmName, label: string, t = defaultThresholds) => ({
         cost: (run: number, i: number) =>
-            (raws[arm][run]?.[i]?.tokens ?? 0) * JEV_USD_PER_TOKEN,
+            (raws[arm][run]?.[i]?.tokens ?? 0) * usdPerToken,
         hasMemory: arms[arm].hasMemory,
         label,
         ms: raws[arm].flat().map((r) => r.ms),
