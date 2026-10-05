@@ -20,3 +20,19 @@
 - the validator follows `$` only into functions declared in the same file, never across an import — a hook's `$`-using code lives in `register.tsx` (holds had to fold `holds.ts` back in, FRM-299)
 - test-harness traps (FRM-299, ~6 debug rounds): `$.tool.call` answers a refusal as `{ deny }`, not `isError`; a `Text` drops its `key` — find it by text + type; an op hook (`ui.copy`) answers `{ value }`; the engine regenerates `.claude-plugin/types/` on reload, sometimes without the tool types, so tool inputs go `unknown` — narrow from `unknown`
 - a fail-open guard's «goes through» test also asserts the log holds no error line — with an unmocked store the guard fails open and the test passes for the wrong reason (two holds tests did, FRM-303)
+- from the 2.1.289 reference, read by the 2026-10-05 research lanes, not yet probed here — check the types before leaning on one:
+  - state by lifetime: a module variable resets on every reload · `$.state` survives a reload, resets on `/clear` `/resume` `/branch` · `$.store` persists across sessions on this mac (4 MiB total), and its cross-session writes are not atomic — per-item keys, re-read right before a write (the fleet board's rows)
+  - limits: one hook 10 s, `prompt.edit` only 50 ms, a `.catch` 1 s, `$.process.run` 30 s by default, ui invalidations coalesced to 10/s
+  - a rewritten event replaces the old one, never patches it — pass `next({ ...e, field })`; a partial event drops its siblings (a reported `command`-only rewrite lost `timeout`)
+  - a hook that throws or times out is skipped and the chain goes on — fail-open by default; a guard meant to fail closed attaches `.catch` and denies
+  - `AbovePrompt` is shared: put `{await next(e)}` in your tree or the next mod's band vanishes (stash and breather both do)
+  - doors worth knowing before building: `agent.offer` withholds an agent type before a spawn and `agent.spawn` can deny one; `$.model.classify` exists (weigh it beside jev, `refresh-branch-classification`); `$.ui.selection`; `session.send`/`session.receive` for messages between sessions
+  - hooks run in the terminal, the desktop Code tab, headless `claude -p`, remote control (on the host) and cloud; drawings only in the terminal and the desktop
+- fleet state starts at the registry: `~/.claude/sessions/<pid>.json` carries `status` (busy · shell · idle · waiting · blocked · needs_input), `statusUpdatedAt`, `hostSessionId`, `bridgeSessionId` for every session — read it before writing any state of your own (it killed the board's idle bug, FRM-306)
+- no hover cards in a `Pane`: an absolute card in a narrow row wraps and draws over its neighbours; the hover recipe above holds on the one-row band only (two rounds, FRM-306)
+- a `Markdown` link draws in the surface's blue and a mod cannot restyle it; a `Button` label cannot be bold — a bold name with a `↗` beside it is the shape that works (FRM-306)
+- a transcript-scrubbing mod redacts in `tool.call` as well as `session.append`: the engine stores a tool's own result (`toolUseResult`) beside the row, and `session.append` never sees it (redact, FRM-307)
+- a live redactor masks your own view and restores placeholders inside your own tool calls — tests build fake keys by concatenation, never as one literal (FRM-307)
+- a throwing op mock is skipped by the harness, never thrown — test a failure by forcing the real failing path (FRM-307)
+- a declaration a mod needs (a vault, a store shape) sits in a `types` contract the manifest names, never inline — `claude plugin validate` goes red otherwise; stop on that red before committing (FRM-307)
+- what a mod cannot reach (measured, so nobody retries it): the queued-prompt `queue-operation` record is written before any hook (redact); the «stash reloaded (n hooks)» line is the terminal's `InfoNotice`, not a mod site; the desktop draws cc's own prompt suggestion, so a mod suggestion races it (dropped, FRM-303)

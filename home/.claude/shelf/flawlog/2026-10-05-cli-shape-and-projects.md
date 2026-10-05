@@ -6,3 +6,36 @@
 - re-armed `notify_when_idle` on a coder idle on its own timer three times — each re-arm fired at once; a coder waiting on a timer is idle, its report message is the signal
 - told dima «/cclio:init expands to the built-in» before reading the composer source; the real cause was the two-chip refusal (2.19675) — the fix (rename) stood, the stated cause had to be corrected
 - keep-hot brief led with the reload theory unchecked against timestamps; the coder disproved it in 2 min after a 15-min probe → craft-spawning line
+- spawned the FRM-268 verifier with the exit lines only in the coder's brief, never in the ticket — the verifier stopped before round 1; the spawn step copies the approved exit lines into the ticket body, same batch
+- FRM-303 retro: a UI bug («hover never shows») was briefed before asking «did the viewer reload?» — the repro detour cost a round
+- FRM-303 retro: the holds tests passed while failing open with no store mocked; a fail-open guard's test asserts the side log is empty, or «goes through» proves nothing
+- FRM-303 retro: the coder used one `sed -i` right after the hand-edit rule landed (self-reported)
+- FRM-268 verifier retro: a coder spawn could refuse a ticket with no `## exit` section (guard candidate in `x:crew-coder`)
+- FRM-268 verifier retro: the hook has an 8 s timeout, the new router makes 2 sequential calls (~1.5 s measured, 5 live calls) — no exit line named latency; a «fits the hook timeout» line belongs in the jev verify recipe, beside «unit test + red-proof + one live suggest()» for the ⚠ line
+- FRM-268 verifier retro, automation: `jev-test skill-router --check` (fixture integrity: dupes, names in the roster) and `--one '<prompt>'` (a dry live call that skips route.log) — both were hand-repeated
+- FRM-268 verifier retro: the verifier's `git worktree add` died on git-crypt in frame — `x:crew-verifier` needs the `-c filter.git-crypt.*` flags + `x lane unlock`, or one seed verb; frame has no `pnpm worktree:seed`
+- FRM-268 coder retro: a multi-stage jev flow ships its per-stage reason (`stage` field) in the first build — the gate cost a full RUNS=3 round before the field named it
+- FRM-268 coder retro: transcripts are a weak label source (233/506 picks already loaded earlier in the session); vet miss lines should always carry the full prompt (half carry ≤ 80 chars) — and «25 misses of 34» is no rate, misses log singly and hits in batches
+- FRM-268 coder retro: my brief named `cclio/memory/sys-jev.md`, which frame's AGENTS.md bans for a non-cclio session — a brief pastes the cclio section it needs
+- FRM-268 coder retro: the pr-body draft carried the harness session-url trailer (banned by `x:github-contrib`) — one extra edit
+- FRM-268 coder retro: a `cd` to the main checkout stuck the worktree shell (every command refused until EnterWorktree); computed paths are refused, literal only
+- FRM-303 final retro: the round-1 `composer`-only origin allow-list silently broke asks in every bg session (`sdk` origin) — built from cclio's one probe on an interactive session; an origin allow-list needs one probe per session kind
+- FRM-303 final retro: harness traps cost ~6 runs (fail-open tests with no store mocked, `find` matching a wrapper's text incl. its card) — candidate 2 lines in `mods/AGENTS.md`; automation candidate `mods:live` (pty-drive `claude` + debug file for reload/hover checks), build only on a third need
+- my FRM-306 brief sent a main-lane mod coder without `bgIsolation` off — craft-spawning already says to name it; the coder edited scratch copies and synced them back (~15 extra calls). the mod hot-reloads only from main, so a worktree is no fix either. automation candidate: `edit-batch` «mirror» mode
+- FRM-305 verifier retro: my exit line 2 set «critical recall ≥ 95 %» with no minimum n — the held-out set had 9 critical prompts, so the bar meant 9 of 9; a rate bar names its minimum n
+- FRM-305 verifier retro: my exit line 4 never named its surface (the live hook or the replay) — the +context switch exposed it; same shape as #96. an exit line names where it is checked
+- FRM-305 verifier retro: a verify with jev down worked from saved raws — copy the raws, stub `claude` first on PATH, unset the jev key (for the jev verify recipe); automation candidate `x lane ci-wait <sha>` (CI watched by head sha twice by hand, `gh run list --branch` returned nothing)
+- FRM-307 retro: the first commit landed while `claude plugin validate` was red — automation candidate: `x lane commit` runs `claude plugin validate` for any path under `mods/`
+- FRM-307 retro, automation: `pnpm mods:probe-redact` — a fake key in a headless prompt, then raw vs placeholder rows counted in the jsonl; reusable for every redact change
+- FRM-306 retro: a local code-review fork found 2 real defects the 69 → 90 tests missed — keep it on main-lane jobs
+- FRM-268 coder retro, automation: `jev:test skill-router` at the halt whenever a rubric or a skill description changes · next build `recent_context` (last assistant turn from `transcript_path`) for verdict-list prompts · a «not for agent peers» line on `x:writing-for-humans` (2 of 3 remaining needless loads)
+- FRM-308 verifier retro: a fetch-stub preload (`NODE_OPTIONS=--import`, every request logged to a file) proves «0 requests» across scripts and vitest workers — for the jev verify recipe; inbox-triage wants a fixture inbox path flag (a temp HOME was needed)
+- `x lane ci-wait <sha>` hand-run a 3rd time (two prs) — it is FRM-313's question, the wayfinder ticket «one watcher»
+- FRM-305 final retro: my router brief named no jev budget and the coder never asked the balance — four replays drained the $5 credit; a brief that may run a paid api names the budget (now in sys-jev; the FRM-308 gate enforces it)
+- FRM-305 final retro: a replay whose fixtures are mostly synthetic prints the real-only slice first (94 % → 67 % on real) · a sweep constraint no candidate can meet fails loud, never evens out the scores (cost a full replay)
+- FRM-305 final retro: `claude -p` as a model baseline leaks ~17k tokens of CLAUDE.md and thinks 8 s — `--settings '{"disableAllHooks":true,"alwaysThinkingEnabled":false,"claudeMdExcludes":["**/*"]}'` → 2 s, clean context (a docs/knowledge line at the flush)
+- FRM-305 final retro: «~90 skills» is per surface (cli ~60, desktop 106–113); a transcript's `skill_listing` attachment is the exact roster, built-ins included
+- FRM-305 final retro: each review layer earned its place — matt 3 unique on #57, coderabbit 1 unique major on #58, the verifier the NaN fail-open and the live arm's 0/5 critical
+- automation from FRM-305: the transcript miner → FRM-317 (skill-router-label, the halt's fixture feeder)
+- FRM-318 retro: pnpm 12 has no `-s` (I hit «unexpected argument '-s'» myself today, `--silent` works) — a red-proof over `pnpm -s …` read the usage error (exit 2) as RED; a red-proof checks the failure is the probe's own. hazard-line candidate at the flush
+- FRM-318 retro: `sd` with a dash-led find string bit again despite the hazards line (two FTR flips no-op'd, a commit carried 🧭) — the guard is in the file, not in the hands; candidate: an `sd` wrapper (or a PreToolUse check) refusing a dash-led find without `--`

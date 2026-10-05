@@ -96,3 +96,7 @@ cclio folds dima's picks into a ticket; a built idea leaves this list.
 - a coder ping you can hear — `session.receive` sees a peer message from a coder → `$.audio.speak` reads its first line while dima is away from the screen
 - the fleet board — `session.receive` and `session.send` log every member message into the stash store, and the band draws one row per member (FRM-303 item 4)
 - spawn gating — `agent.spawn` refuses or reroutes a spawn the fleet rules forbid (a subagent for a one-pass job, a mechanical job not on `chore-helper`)
+
+## undocumented doors (may break on an app bump)
+
+- desktop deep link to a session, found in Claude.app's asar, in no doc (FRM-306, 2026-10-05): `claude://code/continue?session=local_…` for a desktop-born session, `claude://code/session_…` for a bridged bg one; an unbridged bg job has no door — copy `claude attach <jobId>`. re-check at every desktop bump
