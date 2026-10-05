@@ -139,3 +139,6 @@ import/raycast/backups/*.rayconfig
 .vitest/
 home/.claude/shelf/parallel-monitor-seen.txt
 home/.claude/shelf/gh-watch-seen.tsv
+
+# cc writes a tsconfig.json into each mod on load; it extends the engine-ignored .claude-plugin/types
+home/.claude/plugin-x/mods/*/tsconfig.json

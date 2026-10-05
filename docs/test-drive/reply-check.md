@@ -23,3 +23,4 @@ added only if the regex log shows the gap.
 
 _(2026-10-16)_
 - 2026-10-04 · live probe · the hook fires live (one bare-ticket line logged this session), but a deliberate «alpha · beta» in the final reply of a turn was never logged · guess, unproven: at Stop the final text block is not yet in the transcript, so the hook reads an earlier block of the turn · fix candidate: read the Stop input's last-message field if cc passes one, else re-read the transcript after a short settle
+- 2026-10-04 evening · 8 live hits today, so the hook fires · false positives: commit-hash fires on job ids (d848735b) and on the barrel-probe hash d03f3da at session resumes (the resume turn, not a reply of mine) · fix candidate: skip hex in a `job`/`probe` context, skip resume turns

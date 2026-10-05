@@ -27,24 +27,25 @@ Ticket: [FRM-303](https://linear.app/x-com/issue/FRM-303)
 the coder cannot see a surface; dima walks each, ticks what holds, notes what does not. open one session per surface on frame, `/board` in each.
 
 - **terminal (iTerm2 or Ghostty, pointer reporting on)**
-  - [ ] the band draws one row: `⏳ n open`, `📋` `🔥` `💨` `🚦` and the folder
-  - [ ] hovering each control shows its card on the row, the toggles naming their next press
-  - [ ] a click on the band, then `c` copies the asks, `b` folds the board, `f` folds the asks
-  - [ ] the board pane: cclio pinned and bold, aligned columns, `⏳ 0` dimmed, a 🔭 line under a waiting thread
-  - [ ] breather's band shows during a long turn and leaves when it ends
+  - [x] the band draws one row: `⏳ n open`, `📋` `🔥` `💨` `🚦` and the folder
+  - [x] hovering each control shows its card on the row, the toggles naming their next press
+  - [x] a click on the band, then `c` copies the asks, `b` folds the board, `f` folds the asks
+  - [x] the board pane: cclio pinned and bold, aligned columns, `⏳ 0` dimmed, a 🔭 line under a waiting thread
+  - [x] breather's band shows during a long turn and leaves when it ends
 - **desktop Code tab**
-  - [ ] the same band, the on-state toggles as a light chip, never black
-  - [ ] the key badges sit in the hover cards, none on the icons
-  - [ ] a press on a board name (or cclio's `↗`) opens that session in the desktop
-  - [ ] a ticket link opens linear; `FRM-306` stays on one line
+  - [x] the same band, the on-state toggles as a light chip, never black
+  - [x] the key badges sit in the hover cards, none on the icons
+  - [x] a press on a board name (or cclio's `↗`) opens that session in the desktop
+  - [x] a ticket link opens linear; `FRM-306` stays on one line
 - **Warp**
-  - [ ] the band draws and its hover cards show (Warp reported the pointer on 10-05)
-  - [ ] the board pane opens from `🚦`, or name what Warp draws instead
+  - [x] the band draws and its hover cards show (Warp reported the pointer on 10-05)
+  - [x] the board pane opens from `🚦`, or name what Warp draws instead
+  - dima, 2026-10-05: «some parts are off in warp but that's fine i rarely open it» — no fix wanted
 - **a `--remote-control` view (phone or web)**
-  - [ ] nothing a mod draws shows — expected ([claude-code#99217](https://github.com/anthropics/claude-code/issues/99217)); note if that changed
-  - [ ] a prompt typed there clears the host session's asks (`bridge` origin)
+  - [x] nothing a mod draws shows — expected ([claude-code#99217](https://github.com/anthropics/claude-code/issues/99217)); note if that changed
+  - [x] a prompt typed there clears the host session's asks (`bridge` origin)
 - **redact, any surface**
-  - [ ] `pnpm mods:probe-redact` exits 0 on this mac
+  - [x] `pnpm mods:probe-redact` exits 0 on this mac
 
 ## borrow read — the 6 candidates (FRM-319, 2026-10-05; for cclio to fold into the recipe's «last run»)
 
@@ -63,3 +64,4 @@ the coder cannot see a surface; dima walks each, ticks what holds, notes what do
 - 2026-10-05 · coder FRM-303 · holds · blind-spot count · last 7 days of fleet file writes (2026-09-28 → 10-05): **2414 Edit/Write/NotebookEdit vs 1438 through Bash** — python `open(…,'w')`/`.write(` 774 · heredoc/`cat >`/`tee` 389 · `sed -i` 143 · `sd` 110 · `edit-anchored`/`edit-batch` 22 — so ~37 % of writes take no hold. counted: every `tool_use` in the 362 `~/.claude/projects/**/*.jsonl` touched in 8 days with a timestamp from 09-28, Bash commands classed by regex (`writes.jq`); rough both ways — `.write(` and `tee` also catch non-file writes, a redirect like `> file` without heredoc is missed
 - 2026-10-05 · cclio · stash spawn hints · first real fire, a false positive · «a mechanical job belongs on chore-helper» on «Wayfinder research: one watcher» — a judgment job (source reading, a design call), not mechanical; dima saw the toast and asked «useful call?». count for the 10-19 verdict: 1 fire, 0 right
 - 2026-10-05 · coder FRM-319 · all three · the recipe's open leads closed · the «not yet probed» block in `mods/AGENTS.md` probed (11 proven or types-backed, 2 corrected: no 50 ms `prompt.edit` budget, drawings reach mobile and vscode too; 3 need a live session); api-map regenerated from the types (its ranges had drifted ~190 lines), `ui.fault` and `ui.selection` added; state audit: redact keeps its vault in `$.state`, breather's module state may reset, stash's fold state and 5h reset should not (🐞 in its FTR)
+- 2026-10-05 · dima's matrix sitting · stash, breather, redact · terminal, desktop, remote-control rows all hold; Warp passes with small visual misses he accepts · the matrix closes for 2.1.289
