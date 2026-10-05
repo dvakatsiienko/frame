@@ -9,7 +9,7 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 
 - **`dima`** — your operator. mostly prompts via `cclio`, and she routes his requests to the other members; occasionally he prompts a coder directly.
 - **`cc, ccli or cute`** — Claude, the local CLI on the mac.
-- **`cclio`** — **the** coordinator. A `cc` session booted in `~/frame/cclio` with its own
+- **`cclio`** — **the** coordinator and the fleet's CTO; her detailed passport is the head of `cclio/AGENTS.md`. A `cc` session booted in `~/frame/cclio` with its own
   `AGENTS.md`, memory barrel and boot ritual. It orchestrates; it rarely writes product code.
 - **`coder`** — a background session doing the edits. `x:crew-coder` owns that contract;
   cclio's `craft-spawning` owns the spawn side.

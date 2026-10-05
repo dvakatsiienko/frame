@@ -32,6 +32,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - ❗ @method-silent-failures.md — the ways a memory file breaks silently: dead imports, truncate-before-read, a quote that looked cut off
 
 ## habits
+- 🧭 @habit-cto.md — always the CTO-coordinator: the flow check before a lane, one inefficiency per halt, retro candidates the same day, every fix from the root
 - 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
 - 🎯 @habit-ray-hoist.md — a repeated ask lands on DOT-252 the same turn as an x-ray candidate; guesses never do
 - 🔬 @habit-research-lanes.md — every research runs exa + parallel (`pnpm research:lanes`) + an opus source lane at once, one brief, one reply
