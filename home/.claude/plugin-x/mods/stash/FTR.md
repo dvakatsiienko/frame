@@ -16,6 +16,7 @@
   - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
   - decision: the fold control is a folder, `📂` open and `📁` folded — dima asked for a more interesting state than `▼`/`▲`
   - decision: no `o` hotkey — the desktop drew its key badge as the button and left the icon outside it
+  - decision: no ➡️ prompt suggestion — the built-in suggestion writes a good prompt; one suggestion, no race (dima, 2026-10-05)
 - 🔎 every control in the row names itself on hover: a dim card beside it
   - given the row draws
   - when dima hovers `📋`, `🔥`, `💨`, the fold folder or the holds chip

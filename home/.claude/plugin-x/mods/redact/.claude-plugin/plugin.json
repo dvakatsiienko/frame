@@ -1,0 +1,1 @@
+{ "name": "redact", "version": "0.1.0", "description": "keeps secrets out of every transcript: api keys, tokens and private keys in any kept row are masked before they are stored or sent" }

@@ -15,7 +15,8 @@
   - the test harness keeps `hover` out of `FoundElement.props` and cannot hover — test the hidden card and its words; the reveal is a look on the surface
   - `ui.find({ text })` matches a wrapper `Box` too, whose text joins its card's — add `type: 'Text'` to reach the label alone (FRM-303)
 - `api-map.md` — every hook event with its line in the types file, and the fleet ideas; re-read the types at a cc bump
-- `stash/FTR.md` + `stash/CONTEXT.md` — read your section before changing what stash does
+- `stash/FTR.md` + `stash/CONTEXT.md` — read your section before changing what stash does; the same pair in `redact/` for the secret masker
+- a mod outside `CLAUDE_CODE_PLUGIN_DIRS` is probed live with `claude -p "<prompt>" --plugin-dir <mod> --allowedTools=Bash` — an env var on the command line loses to the one in `settings.json`, and `--allowedTools` without `=` eats the prompt (redact probe, 2026-10-05)
 - the validator follows `$` only into functions declared in the same file, never across an import — a hook's `$`-using code lives in `register.tsx` (holds had to fold `holds.ts` back in, FRM-299)
 - test-harness traps (FRM-299, ~6 debug rounds): `$.tool.call` answers a refusal as `{ deny }`, not `isError`; a `Text` drops its `key` — find it by text + type; an op hook (`ui.copy`) answers `{ value }`; the engine regenerates `.claude-plugin/types/` on reload, sometimes without the tool types, so tool inputs go `unknown` — narrow from `unknown`
 - a fail-open guard's «goes through» test also asserts the log holds no error line — with an unmocked store the guard fails open and the test passes for the wrong reason (two holds tests did, FRM-303)
