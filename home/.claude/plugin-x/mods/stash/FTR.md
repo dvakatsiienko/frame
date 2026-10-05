@@ -10,6 +10,7 @@
 - 🔎 one row: the open count on the left; `📋`, `🔥`, `☕`/`🌙` and the fold folder on the right
   - decision: a quarter cell (~4px) under the row on desktop while the asks show — dima: «too tight»; none in the terminal, where a cell is a whole line
   - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
+  - decision: a thread's own `📋` sits at the right end of its name row, in line with the head's (dima, 2026-10-05)
   - decision: half a cell above each thread after the first on desktop, so two lists read apart (dima, 2026-10-05); none in the terminal, where it costs a row
   - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
   - decision: the fold control is a folder, `📂` open and `📁` folded — dima asked for a more interesting state than `▼`/`▲`

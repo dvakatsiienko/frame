@@ -785,6 +785,7 @@ export const register: Register = (on) => {
                       <Box
                           flexDirection='row'
                           gap={1}
+                          justifyContent='space-between'
                           key={`g:${sid}`}
                           marginTop={g > 0 && surface === 'desktop' ? 0.5 : 0}>
                           <Text bold>
