@@ -1,486 +1,206 @@
 # Claude fleet: capabilities, memory, who can operate whom
 
-📌 Naming: **"harness" is reserved** for the home-baked-harness thread (DOT-43). Never use it for
-the fleet, or the three-way term collision that was just cleaned up comes back.
-
-📌 **Do not delete — core coordinator knowledge.** The detailed capability reference behind
+📌 **Do not delete — core coordinator knowledge.** The capability reference behind
 `home/.claude/rules/fleet-identity.md`, which keeps only the lean charter and points here.
 
-⚠️ **Fragile knowledge. Edit carefully.** There is little to no official source for most of this.
-It was assembled from self-inspection and Dima's own observations, and some of it contradicts the
-published docs. **Add verified or trusted information only** — a plausible guess written here is
-worse than a gap, because the next session cannot tell them apart.
+📌 Naming: **"harness" is reserved** for the home-baked-harness thread (FRM-43). Never use it for the
+fleet.
 
-Claim tags: **[verified]** executed, not read · **[docs]** asserted by Anthropic documentation
-only · **[observed]** seen by Dima in the UI · **[?]** unknown.
+⚠️ **Fragile knowledge. Edit carefully.** Little of this has an official source; it comes from
+probes and Dima's observations, and some of it contradicts the docs. **Add verified or trusted
+information only** — a plausible guess here is worse than a gap.
 
-Probed 2026-08-15 from a Cowork session in this repo's project; fleet sections added 2026-08-17.
-This file supersedes the earlier assumption that cw is always a detached cloud sandbox.
+Claim tags: **[verified]** executed, not read · **[docs]** Anthropic docs only · **[observed]** seen
+by Dima in the UI · **[?]** unknown. A dated tag is a probe on that day; anything older than the
+surface's last big change says so.
 
-## 🚫 `CLAUDE_CONFIG_DIR` is REJECTED — do not re-propose it as an isolation mechanism
+Rewritten 2026-10-05: the cw-era (2026-08) probe sections were cut to what still holds; Cowork and
+chat merged into one Claude app on 2026-09-16, so every cw-sandbox fact below is dated and unchecked
+since.
 
-Evaluated during the coordinator migration and rejected. It is undocumented and it leaks four ways:
+## The surfaces
 
-- `CLAUDE.md` loads from **both** the custom dir and real `~/.claude/` at once
-- plugin state stays pinned to `~/.claude/plugins/` regardless
-- a `.claude/` at or above the cwd overrides the profile
-- credential paths are inconsistent
-
-What replaced it: **ccli walks arbitrary ancestor dirs** (tested with a marker, not assumed), so
-directory layering does the isolation with no env var at all. The precedence chain lives in root
-`CLAUDE.md`.
-
-## The desktop skill store is a MANAGED CACHE
-
-`~/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/<uuid>/<uuid>/skills/`,
-manifest `{"name": "anthropic-skills", …}`. It is uuid-keyed per install and its mtime moves when the
-app runs, so it is materialised from the account side rather than being a source of truth. **Writing
-files there cannot automate the upload** — Dima drags and drops by hand until an account-side channel
-exists ([DOT-77](https://linear.app/x-com/issue/DOT-77)).
-
-📌 The «regenerated» read is **inferred from the mtime and the manifest name**, never from an
-overwrite test.
-
-### What loads where
-
-- `cc` cli — everything: `CLAUDE.md`, all `rules/`, `plugin-x` skills, project `CLAUDE.md`, memory.
-- `cclio` — the same, plus `cclio/CLAUDE.md` and its own `memory/` barrel and boot ritual.
-- `cc cloud` — no `~/.claude` config, no `plugin-x`, no Desktop Commander. Project `CLAUDE.md` only.
-- `cw` — the `x-cw` plugin, whose skills are symlinks into `plugin-x`. No `rules/`
-  mechanism, so what `plugin-x` defers to a rules file reaches it another way: `linear-flow.md`
-  is symlinked into the plugin root, and `x-cw__pm_guide` inlines it on demand.
-## Claude on disk — the durable facts (distilled from the DOT-157 survey, 2026-08-19)
-
-Two homes, not variants of one thing: `~/.claude` + `~/.claude.json` belong to the **cli**;
-`~/Library/Application Support/Claude/` is the **desktop/cowork** tree. The desktop app embeds a
-copy of the cli, so a desktop-launched session writes into both at once.
-
-- **slug rule**: a `projects/` dir is the cwd with `/` AND `.` → `-`. So **resume is
-  cwd-sensitive** — `claude --resume <uuid>` finds a session only from a directory that slugifies
-  to its home. The transcript is appended per turn, on disk before exit: kill-and-reattach is safe.
-- `~/.claude.json` is **state, not config** — the cli holds it in memory and rewrites it whole;
-  hand-edits mid-session get clobbered. `~/.claude/.claude.json` is a symlink back to it.
-- cc **refuses to write through a symlink** — resolve with `readlink -f`, edit the real file under
-  `~/frame/home/.claude/`.
-- `daemon/` is the reattach machinery (roster, control key, socket) — live, never sweep.
-  `focus/` is ours (sline pin). Deleting from `projects/` is safe but **permanent** — that
-  conversation and its `--resume` are gone.
-- growth-only stores to check first when `~/.claude` gets fat: `session-env/`, `file-history/`,
-  `projects/`, `paste-cache/`, `focus/`. Everything except `plugins/` + `projects/` is ~12 MiB.
-- cowork tree: `local-agent-mode-sessions/<account>/<install>/` — `spaces.json` (mounted folders),
-  `agent/memory/` (the desktop agent's memory), `local_<uuid>/` per chat with its own **private `.claude`**;
-  a folderless chat's whole world is its own `local_<uuid>/` dir.
-- 🚨 security habit from the 2026-08-19 finding (plaintext github token, world-readable, in a stray
-  mcp config): tool-written files under `~/.claude` can be world-readable —
-  `grep -rn "ghp_\|sk-\|AKIA" ~/.claude` occasionally.
-- macos frame: `Caches` is disposable, `Application Support` is not; `com.apple.*` folders
-  self-clean — never our business (except: `com.apple.TCC` = privacy grants, `com.apple.wallpaper`
-  holds the actual wallpapers; both look like junk and are not).
+- **`cc`** — the cli on the mac. Loads everything: root `CLAUDE.md`, `rules/` (lazy ones via
+  `memory-load-rule-lazy`), `plugin-x` skills, the project `AGENTS.md`, hooks, output style.
+- **`cclio`** — a `cc` session booted in `~/frame/cclio`: the same, plus its `AGENTS.md`, the memory
+  barrel and the boot ritual (`/cclio:boot <slug>`).
+- **Code-tab sessions** — `cc` born in the desktop Code tab. Same stack, plus the desktop-only MCP
+  servers (Browser pane, Chrome bridge, scheduled-tasks, mcp-registry), injected **once at creation**,
+  never for terminal-born, `--bg` or `--remote-control` sessions, not on resume **[verified
+  2026-09-03]** ([docs](https://code.claude.com/docs/en/desktop.md),
+  [claude-code#37284](https://github.com/anthropics/claude-code/issues/37284)). A local thread follows
+  the desktop's bundled cc, which can lag the terminal's (2.1.286 vs 2.1.289 on 2026-10-05).
+- **`cc cloud`** — `claude --cloud` on an Anthropic VM: no `~/.claude`, no `plugin-x`, the repo's
+  `AGENTS.md` only. Procedure: `x:crew-cloud`.
+- **Claude Code Projects** — a coordinator plus threads; see [Projects](#projects).
+- **`cw`** — the Claude app's cowork side (merged with chat 2026-09-16). Gets the `x-cw` plugin, whose
+  skills are symlinks into `plugin-x`; no `rules/`, no hooks, no output styles, no root `CLAUDE.md`
+  **[verified 2026-08-15]**. What `plugin-x` defers to a rules file reaches it another way:
+  `linear-flow.md` is symlinked into the plugin root and `x-cw__pm_guide` inlines it.
+  - from iOS/iPadOS, every thread type reaches the `x` skills even with the desktop app closed;
+    `--remote-control` sessions are usable from the phone **[verified by Dima, 2026-08-26]**
 
 ## Memory, per surface
 
-| surface | mechanism | location | who can edit |
-| --- | --- | --- | --- |
-| `cc` | file-based `memory/` + `MEMORY.md` index | `~/.claude/projects/<slug>/memory/` | agent + Dima |
-| `cw` | **30 fixed cells** in desktop-app settings | app settings, not the filesystem | **Dima only** |
-| `cc cloud` | none of its own | — | — |
-
-📌 `cw`'s 30 cells are a hard cap and Dima-editable only, so anything `cw` should retain must be
-handed to him to enter. This is why `cw` context arrives through handoff CSTs instead.
+- `cc` — file-based: `~/.claude/projects/<slug>/memory/` + `MEMORY.md`; cclio's barrel lives in
+  `~/frame/cclio/memory/`. Agent + Dima edit.
+- `cw` — global memory entries the agent writes through `memory_write` / `memory_str_replace` /
+  `memory_append` / `memory_delete`; every write goes through `x-cw:memory-update` **[docs: the
+  skill]**. Larger context still arrives through handoff CSTs.
+- `cc cloud` — none of its own.
+- Projects — a file mount (`/tmp/claude/memory/team/silo`, `MEMORY.md` index) read by cloud threads
+  only; a local thread never sees it **[verified 2026-10-05]**.
 
 ## Who can spawn or operate whom
 
-| spawner | can spawn | cannot |
-| --- | --- | --- |
-| Dima | anything, incl. cloud `cc` via CLI flag or the desktop app | — |
-| `cc` | local sessions, worktrees | cloud `cc` |
-| `cw` | nothing | local `cc`, cloud `cc` |
-
-⚠️ **Nobody in the fleet can spawn a cloud `cc`.** Not `cw`, not `cc`. Only Dima,
-by CLI flag or from the desktop app. **[verified]**
-
-Scope note: this file is about **Cowork**. The Claude Code cloud session is a different product
-with a different VM — see [The two VMs](#the-two-vms-do-not-confuse-them). Conflating them was the
-single biggest source of wrong conclusions in this repo's history.
-
-## The core correction
-
-A Cowork session started from the desktop app runs **locally** — session id prefix `local_…`
-**[verified]** via `session_info.list_sessions`. Within one such session there are two execution
-surfaces, and they are **not** two disjoint filesystems:
-
-| Surface | Runs on | Sees |
-|---|---|---|
-| `Read` / `Write` / `Edit` file tools | the Mac, natively | real `~/projects/...` paths |
-| `workspace.bash` | Ubuntu 22.04 aarch64 VM | `/sessions/<name>/mnt/*` bind-mounts of the same folders |
-| Desktop Commander MCP | the Mac, zsh, full shell | everything, as `dima` |
-
-A file written from the sandbox at `mnt/dotfiles/x` is immediately readable on the Mac at
-`~/frame/x` **[verified]**. The mounts are a view of the real folder, not a copy.
-
-The genuinely detached, Mac-independent surface is Claude Code's `--cloud` session, not this.
-
-## Sandbox facts [verified]
-
-- Ubuntu 22.04.5, aarch64, 4 vCPU, 3.8 GiB RAM, 9.6 GiB root + 9.8 GiB `/sessions`.
-- `/sessions` **persists across bash calls**; only cwd and env do not carry over.
-- Preinstalled: node 22.22.3, npm 10.9.8, python 3.10.12, git 2.34.1, jq, ripgrep, curl.
-- **Missing: pnpm, gh, go, rust, deno, bun, fd, docker.**
-- Node is **22**, this repo's `engines` floor is **>=24**. `pnpm test` / `frame-link` cannot be
-  validated from the sandbox — run them through Desktop Commander (Mac node is 24.12.0).
-  `node --experimental-strip-types` does work under 22, so single files still run.
-
-### Mount permission quirk
-
-The mounts are **create/write/append/truncate — but not unlink**. `rm` and `rmdir` return
-`Operation not permitted` **[verified]**. An agent can therefore make a mess in the sandbox that
-it cannot clean up from the sandbox. Delete via Desktop Commander (real Mac shell) instead.
-
-### Network is a proxy allowlist, not open egress [verified]
-
-All traffic goes through `HTTP_PROXY` / `ALL_PROXY` on `localhost`. Reachable: `registry.npmjs.org`,
-`github.com`, `pypi.org`, `claude.com`. Blocked (`000`): `api.github.com`, `example.com`,
-`cdn.jsdelivr.net`. So `npm install` works, arbitrary HTTP does not.
-
-Git over **SSH** fails from the sandbox — `Host key verification failed`, no keys, no known_hosts.
-
-### Git from the sandbox: read yes, write no [verified 2026-08-15]
-
-Tested end to end against `dvakatsiienko/frame`:
-
-| Step | Result |
-|---|---|
-| `git clone https://github.com/dvakatsiienko/frame.git` | **OK** — public repo, anonymous, no auth needed |
-| `git commit` | **OK** — the sandbox git has **no `commit.gpgsign`**, so the 1Password Touch ID wall that blocks Mac-side commits does not exist here |
-| `git push` | **fails**: `could not read Username for 'https://github.com'` |
-
-The push failure is **no credentials at all** — not a 403, not a token scope. There is no
-`GH_TOKEN`/`GITHUB_TOKEN` in this session's env and no proxy injecting one. Nothing the user can
-toggle in the Claude Code cloud-environment dialog changes this, because that dialog configures a
-different sandbox (see below). Treat sandbox git as read-only, permanently.
-
-## The two VMs — do not confuse them
-
-Two separate Linux sandboxes exist and they are constantly mixed up. Almost every "why can't you
-just clone and work" question comes from attributing the Code VM's capabilities to the Cowork VM.
-
-| | **Cowork VM** (this doc) | **Claude Code cloud session VM** |
-|---|---|---|
-| OS / arch | Ubuntu 22.04, aarch64 | Ubuntu 24.04, x86_64 |
-| Resources | 4 vCPU, 3.8 GB RAM, ~10 GB disk | 4 vCPU, **16 GB RAM, 30 GB disk** |
-| Toolchains | node 22, npm, python, git, jq, rg | Python, Node 20/21/22 **+ pnpm**, Ruby, PHP, Java, Go, Rust, C/C++, **Docker**, PostgreSQL, Redis |
-| Network | fixed proxy allowlist, **not configurable** | **None / Trusted / Full / Custom**, user-configurable |
-| Git write | impossible — no credentials | works, via a credential proxy that keeps the real token outside the VM |
-| Setup script | none | Bash, runs as root before Claude starts, snapshot-cached |
-| Purpose | scratchpad for a chat assistant | a real coding agent environment |
-
-**Consequence:** route anything that needs to clone-build-commit-push to a Claude Code cloud
-session, never to the Cowork sandbox. The Cowork VM is for parsing a file, running a throwaway
-script, testing a regex.
-
-Two gotchas in the Code VM worth carrying: **`gh` is not preinstalled** there either, and there is
-**no secrets store** — Anthropic's own docs say "cloud environments have no dedicated secrets
-store, so don't add API keys or other credentials" to environment variables.
-
-### The GitHub proxy is a separate gate from the allowlist [docs]
-
-In Code cloud sessions, GitHub traffic bypasses the network allowlist entirely and goes through a
-dedicated credential proxy — which enforces its own rule: "GitHub API and release-asset requests
-reach only repositories attached to the session, so a setup script that downloads release assets
-from an unattached repository gets a **403**."
-
-This is why installing `fnm` there fails with 403 while `nvm` largely works: `fnm` pulls a GitHub
-**release asset** from an unattached repo; `nvm`'s installer is a committed file served from
-`raw.githubusercontent.com`. Raising the network level to Full does **not** fix it — wrong gate.
-
-Diagnostic, from inside a Code cloud session:
-`curl -sS "$HTTPS_PROXY/__agentproxy/status"` returns the proxy config plus recent denials with
-timestamps and hosts. Also: the allowlist **reloads live** — a policy change applies to an
-already-running container, despite the dialog's "applies to new sessions" wording.
-
-## Artifacts [verified]
-
-Persisted HTML pages in the sidebar that survive across sessions and re-fetch on open. A probe
-artifact (`cw-bridge-probe`) confirmed all three bridge APIs:
-
-- `window.cowork.callMcpTool(name, args)` — **works**, ~650 ms against the Linear MCP.
-  Returns `{content:[{type:'text',text}], isError}`. **`structuredContent` was absent** — always
-  parse `r.structuredContent ?? JSON.parse(r.content[0].text)`.
-- `window.cowork.askClaude(prompt, data[])` — **works**, ~6 s (Haiku). Returns an **object, not a
-  string**; stringify before rendering.
-- `localStorage` — **works** and persists.
-
-Only tools listed in `mcp_tools` at creation are callable. Page network is blocked except three
-exact pinned CDN URLs (Chart.js 4.5.0, Grid.js 5.0.2, Mermaid 11.15.0) — everything else inline.
-`verify_artifact` returns a debug log with `resultShape` summaries, which is the fastest way to
-learn an MCP tool's real output shape.
+- **Dima** — anything.
+- **`cc` / cclio** — local sessions and worktrees; `claude --bg` coders (take model and effort, survive
+  a coordinator reset); `/fork`; **cloud sessions** via `claude --cloud` wrapped in `script` (it refuses
+  a non-tty) **[verified, `x:crew-cloud`]**; subagents through `Agent` (no effort flag — an agent file's
+  `effort:` pins it, e.g. `home/.claude/agents/chore-helper.md`).
+  - messaging: `SendMessage` reaches local, `--bg` and Code-tab sessions both ways; a cloud session
+    takes a steer only as `claude -p "<msg>" --cloud <id>` and cannot message back.
+- **a Projects coordinator** — threads only (cloud, or «Work locally» on the mac); it cannot reach the
+  mac itself.
+- **`cw`** — some sessions expose `start_code_task` (a local `cc` with worktree isolation), others do
+  not **[verified 2026-08-15]**; never assume a capability from another session's report.
 
 ## Projects
 
-📌 **two products share the name since 2026-09-17** (three research lanes agreed, 2026-10-05; evidence and links in `docs/research/claude-code-projects.md`):
+📌 **two products share the name since 2026-09-17** (evidence: `docs/research/claude-code-projects.md`).
 
 - **Claude Code Projects (redesigned, public beta, Pro/Max, gradual)** — one coordinator conversation
   (opus, low effort) splits a goal into threads (opus, high effort); each thread is a full cc session
-  on its own branch, cloud by default. Lives in claude.ai/code, the desktop Code tab and mobile — never
-  the CLI. File-based project memory (`MEMORY.md` index) read by cloud threads; 200 new threads a day;
-  plan limits. Rollout started with accounts holding no chat/Cowork projects (those keep the legacy
-  experience below until migrated); dima has the redesigned one (2026-10-05). his read: the threads
-  look like Cowork threads, not cc sessions — the docs say full cc cloud sessions; open until a
-  coordinator's own system report settles it.
-- **no bridge to our fleet:** a session you start yourself (terminal, `--bg`, desktop local) cannot be
-  added to a project; a cloud session can. A «Work locally» thread runs as a Remote Control session in a
-  connected folder (cc ≥ 2.1.280) and gets the mac's MCP servers and hooks, not the project memory. No
-  public api to spawn or message threads.
-- **Desktop Commander does not reach a project** — by design, not a bug: the coordinator has no MCP at
-  all, cloud threads get only claude.ai connectors (+ a single repo's `.mcp.json`). DC itself is healthy
-  on the mac (`localMcpBridge` advertises its 26 tools). Doors: a «Work locally» thread, or DC's remote
-  MCP mode as a connector (threads only, untested).
+  on its own branch, cloud by default. claude.ai/code, the desktop Code tab, mobile — never the CLI.
+  200 new threads a day; plan limits. Dima has it (2026-10-05).
+- **probed from inside** (the «engineering» project's own system report, 2026-10-05):
+  - coordinator and cloud threads are **real cc 2.1.289** in an Anthropic Firecracker VM (Ubuntu 24.04,
+    4 vCPU, 15 GiB, root, opus 5.5 1m, medium, auto mode)
+  - a «Work locally» thread is the desktop's bundled cc on the mac as `dima` in `~/frame`: boots our
+    whole stack and runs `x`, `linear`, `gh`, `op` natively; no project memory
+  - the harness differs: plain text reaches nobody, only `mcp__hearthbot__*` calls travel (a stop hook
+    enforces it); the coordinator has no Bash/Read/Write and works through subagents; threads cannot
+    start threads
+- **who reaches the mac:** a cloud thread does, through the desktop device bridge —
+  `mcp__remote-devices__plugin_desktop-commander_…__start_process` ran zsh as `dima` (the app must be
+  open). the coordinator does not: its only Desktop Commander is a second copy inside the VM (same tool
+  names, no `remote-devices` prefix — the name trap). cloud egress is an allowlist (github, npm, pypi;
+  example.com 403).
+- ⚠️ **the mac's Desktop Commander is a shell for every cloud thread.** `allowedDirectories` was narrowed
+  to `~/frame`, `~/projects`, `~/.claude` and the vault (2026-10-05), but DC's own README says it
+  restricts file tools only — `start_process` still runs anything not in `blockedCommands`.
+- a session you start yourself (terminal, `--bg`, desktop local) cannot be added to a project; a cloud
+  session can be moved in. Remote Control sessions do not show in the Code-tab sidebar.
+- **the fleet cli in a project:** no MCP mirror (decided 2026-10-05) — a cloud thread runs `x` through
+  the `remote-devices` DC shell, a local thread runs it natively, the coordinator routes to a thread.
 
-### Cowork projects (legacy)
+### Cowork and chat projects (legacy)
 
-A Cowork project bundles six things: description, folders,
-standing instructions, reference links, linked claude.ai projects, and a **project-scoped memory
-store that persists across sessions**. Three creation paths: from scratch, import a claude.ai
-project, or point at an existing folder — this repo's project is the third.
+[docs + verified 2026-08-15, unchecked since the 09-16 merge]
 
-Quirks worth knowing:
+- a Cowork project bundles a description, folders, standing instructions, reference links, linked
+  claude.ai projects and a project-scoped memory; **archiving deletes that memory** (folders on disk
+  stay)
+- a Cowork project and a chat project overlap partially: Cowork holds local folders and project memory,
+  chat holds a RAG knowledge base shareable on Team/Enterprise; a chat project can be linked into a
+  Cowork project
+- a dragged file is copied into the first folder, a dragged folder is mounted; reads cap at 50 MB
+- projects sync across mac and iOS despite the docs saying «stored locally» **[verified by Dima]**;
+  the attached local folders stay mac-only
 
-- Dragging in a **file** copies it into the project's first folder; dragging in a **folder** mounts
-  it as an additional project folder. Individual file reads cap at 50 MB.
-- **Archiving deletes the project's memory** along with its name, instructions and links. The
-  attached folders on disk are untouched. There is no "archive but keep memory".
+## Desktop Commander
 
-### Cowork project vs claude.ai Chat project
+- installed as the synced plugin `desktop-commander@synced` (not a desktop extension); the app's
+  `localMcpBridge` advertises its 26 tools and `x-cw`'s 13 to the device bridge **[verified
+  2026-10-05]**
+- config: `~/.claude-server-commander/config.json`, read and written by DC's own `get_config` /
+  `set_config_value`; the README says to change it from a separate chat, because an agent blocked by
+  a restriction may try to lift it
+- `allowedDirectories: []` means the whole file system
 
-They are **not** subset and superset — they overlap partially, and each does something the other
-cannot. Cowork holds local folders and project memory; Chat holds a RAG-backed knowledge base and
-can be shared on Team/Enterprise. A claude.ai project can be *linked* into a Cowork project for
-knowledge without merging.
+## The two cloud VMs — do not confuse them
 
-Practical rule for this setup: **folder-bound work → Cowork project; conversation-and-connector
-work with uploaded reference material → Chat project.**
+[verified 2026-08-15 unless dated]
 
-⚠️ **Docs are wrong about sync.** The docs claim "Projects are desktop-only and stored locally.
-There's no cloud sync for project data at this time." **Dima observes projects syncing across his
-Mac and iOS/iPadOS devices [verified by user, 2026-08-15].** Trust the observation; the page is
-stale. The *attached local folders* are still Mac-only, which is a different claim and does hold —
-"Projects tied to a local folder support Cowork sessions on desktop only."
+- **the cw sandbox** — Ubuntu 22.04 aarch64, 4 vCPU, 3.8 GiB; node 22, npm, python 3.10, git, jq, rg;
+  no pnpm, gh, docker. `/sessions` persists across bash calls. folders are bind-mounted from the mac
+  (a write is instantly visible on the mac) and are create/write but **not unlink** — delete through
+  Desktop Commander. network: a fixed proxy allowlist (npm, github.com, pypi; api.github.com blocked);
+  git clone yes, push never (no credentials). a scratchpad, not a coding environment.
+- **the Claude Code cloud VM** (cloud sessions and Projects threads) — Ubuntu 24.04 x86_64, 4 vCPU,
+  15–16 GiB, root; many toolchains incl. pnpm and docker; network levels None / Trusted / Full / Custom;
+  git push works through a credential proxy. **`gh` is not preinstalled**; no secrets store (the docs
+  say never to put keys in env vars).
+  - the GitHub credential proxy is a separate gate from the allowlist: API and release-asset requests
+    reach only repos attached to the session — `fnm`'s installer 403s, `nvm`'s works, and Full network
+    does not help **[docs]**
+  - from inside: `curl -sS "$HTTPS_PROXY/__agentproxy/status"` prints the proxy config and recent
+    denials; the allowlist reloads live
+- route clone-build-commit-push to a cc cloud session or a Projects thread, never to the cw sandbox
 
-### Cowork execution mode: local vs cloud [docs, contested]
+## Claude on disk
 
-Cowork cloud execution exists — "Cowork sessions run in the cloud by default… Cloud execution is in
-beta and rolling out gradually across plans." But two Anthropic pages disagree on whether Pro has
-it yet, and this account currently sees **only Local**. Most likely a combination of the staged
-rollout and the project being folder-bound. Not a tier you can buy your way out of.
+[distilled from the DOT-157 survey, 2026-08-19]
 
-**Retracted:** an earlier version of this repo's notes described a "Run new tasks in the cloud"
-setting and a per-task "Run this task" picker. Neither could be sourced in any documentation.
-Treat as non-existent until seen in the UI.
+- two homes: `~/.claude` + `~/.claude.json` belong to the **cli**; `~/Library/Application
+  Support/Claude/` is the **desktop**. The desktop embeds a cli, so a desktop-launched session writes
+  into both.
+- **slug rule**: a `projects/` dir is the cwd with `/` and `.` → `-`, so `claude --resume <uuid>` finds
+  a session only from a directory that slugifies to its home. transcripts append per turn: kill and
+  reattach is safe.
+- `~/.claude.json` is **state, not config** — rewritten whole from memory; hand edits mid-session get
+  clobbered.
+- cc **refuses to write through a symlink** — resolve with `readlink -f`, edit the real file under
+  `~/frame/home/.claude/`.
+- `daemon/` is the reattach machinery (roster, control key, socket), never swept; deleting from
+  `projects/` is permanent — that conversation and its `--resume` are gone. growth-only stores:
+  `session-env/`, `file-history/`, `projects/`, `paste-cache/`.
+- 🚨 tool-written files under `~/.claude` can be world-readable (a plaintext github token sat in a stray
+  mcp config, 2026-08-19): `grep -rn "ghp_\|sk-\|AKIA" ~/.claude` now and then.
+- macos: `Caches` is disposable, `Application Support` is not; `com.apple.*` self-cleans, except
+  `com.apple.TCC` (privacy grants) and `com.apple.wallpaper` (the wallpapers).
+- **the desktop skill store is a managed cache** —
+  `~/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/<uuid>/<uuid>/skills/`,
+  manifest `anthropic-skills`, uuid-keyed and re-materialised by the app; writing there cannot automate
+  an upload, Dima drags skills in by hand ([FRM-77](https://linear.app/x-com/issue/FRM-77)). the
+  «regenerated» read is inferred from mtime and manifest, never an overwrite test.
 
-Source: <https://claude.com/docs/cowork/guide/projects>
+## 🚫 `CLAUDE_CONFIG_DIR` is rejected — never re-propose it for isolation
 
-### Mobile (iOS/iPadOS) reach [verified by user, 2026-08-26]
+Undocumented, and it leaks four ways: `CLAUDE.md` loads from both the custom dir and the real
+`~/.claude/`; plugin state stays in `~/.claude/plugins/`; a `.claude/` at or above the cwd overrides
+the profile; credential paths are inconsistent. Isolation comes from the cli walking ancestor dirs
+(tested with a marker) — directory layering, no env var.
 
-- **All thread types from iOS — chat, cowork — reach the x-plugin skill set, even with the
-  desktop app closed.** An earlier
-  thread claiming otherwise predated the plugin install.
-- **`cc --remote-control` sessions are reachable and usable from mobile** — Dima runs the
-  coordinator via RC and prints from his phone routinely.
+## Scheduling
 
-## Spawning cloud sessions — nothing agent-side can do it [verified 2026-08-15]
+- **built-in `CronCreate` / `CronList` / `CronDelete`** — local scheduled sessions; listed in
+  `permissions.deny` in `home/.claude/settings.json` **by Dima's choice** (still there, 2026-10-05).
+- **`RemoteTrigger` + the `schedule` skill** — cloud routines on cron and webhook triggers; survive a
+  closed laptop.
+- **desktop scheduled tasks** — `{taskId}/SKILL.md` under `~/Claude/Scheduled/` (two exist on
+  2026-10-05: `dispatch-notes-to-draft-tickets`, `weekly-health-updates`). cron in **local time**; each
+  run starts with no memory, so the prompt is self-contained; runs only while the app is open, a missed
+  one fires on next launch; `ended_reason` is authoritative over a stale `next_run_at`.
+  - a device-bound task (`requires_local_device`) is UI-create-only: `create_trigger` fails with
+    `no_signed_approval` **[verified 2026-08-28]** — a thread hands Dima the prompt in a copy fence.
+- **plain `cron` + `claude -p`** — the transparent fallback, same self-contained-prompt rule.
 
-Neither `cw` nor `cc` can start a Claude Code cloud session programmatically. `cc` tested it and
-the CLI refuses outright:
+## Power — why a bridge drops
 
-```
---cloud cannot be combined with --print. Cloud sessions are interactive only.
-```
-
-An agent only has non-interactive shell, so `claude --cloud` is closed to it, and `/tasks` is an
-interactive slash command rather than something callable. The only ways to start a cloud session
-are a human at a terminal, the Desktop **Code** tab, the Claude mobile app, or claude.ai/code.
-
-Related commands, easily confused:
-
-| Command | Direction | Notes |
-|---|---|---|
-| `claude --cloud "<task>"` | local → new cloud session | clones the **GitHub remote at the current branch, not the local checkout** — push first |
-| `claude -p "<msg>" --cloud <id>` | any machine → running cloud session | queues and exits; works where full `--cloud` does not |
-| `claude --teleport <id>` | cloud → local terminal | needs a clean working tree; the local copy does not flow back |
-| `claude remote-control` | local session → viewable from web/phone | runs on the Mac; sleep pauses it, it resumes on wake |
-
-## Session capability varies [verified 2026-08-15]
-
-Two Cowork sessions on the same machine do **not** necessarily expose the same tools. One session
-reported having `start_code_task` (spawns a real local `cc` session with worktree isolation, which
-appears in the Code tab); this session did not have that tool at all. Never assume a capability
-from another session's report — check the current tool list.
-
-## The desktop Browser pane is Code-tab-born only [verified 2026-09-03]
-
-The desktop app injects its built-in mcp servers (Browser pane `mcp__Claude_Browser__*`:
-preview_start / navigate / computer / read_page / read_console_messages / preview_logs, plus the
-Chrome bridge, scheduled-tasks, mcp-registry) via `--mcp-config` **once, at session creation, only
-for sessions the Code tab itself spawns**. Terminal-born sessions — plain `claude`, `--bg`,
-`--remote-control` — never get them: not on resume in the Code tab, not via `/exit` + `--continue`;
-no flag or setting exists, and `claude mcp add` cannot recreate a desktop-only surface. Measured: a
-terminal-RC session viewed in the Code tab had zero browser tools; a fresh Code-tab session drove a
-whole app (login, forms, screenshots, console). Sources: https://code.claude.com/docs/en/desktop.md ·
-https://github.com/anthropics/claude-code/issues/37284. `.claude/launch.json` per repo defines the
-dev servers `preview_start` can launch. Consequence: a browser-needing coder is a handoff Dima opens
-in a fresh Code-tab session; cli-born coders verify with headless chromium + playwright instead.
-
-## Scheduled tasks [verified: none currently exist]
-
-Stored as `{taskId}/SKILL.md` under `~/Claude/Scheduled/` — the directory does not exist until the
-first task is created **[verified]**. Cron is evaluated in **local time, not
-UTC**. Each run starts with **no memory of the originating conversation** — the prompt must be
-fully self-contained. Tasks only run while the desktop app is open; a task due while it is closed
-fires on next launch. A fired one-shot still reports a stale future `next_run_at` — `ended_reason`
-is authoritative.
-
-## Power model — why the bridge drops [verified 2026-08-15, live sampling]
-
-An earlier version of this file claimed "the Mac never idle-sleeps while the Claude desktop app is
-open". **That is wrong**, and it is why the bridge-drop question stayed open so long. The Mac sleeps
-constantly. Measured on this machine: **201 sleep events in the log** — 188 `Maintenance Sleep`,
-13 `Software Sleep pid=396`.
-
-### The five layers, in the order they bite
-
-| # | Layer | This machine | Effect on the bridge |
-|---|---|---|---|
-| 1 | `displaysleep` | 20 min AC / **5 min battery** | Monitors off, machine awake. Bridge fine — but **Touch ID prompts become invisible**, which is the 1Password commit-signing hang. |
-| 2 | `sleep` (system idle) | **1 min, on BOTH AC and battery** | **The root cause.** Once every wake assertion clears, the Mac sleeps in 60 seconds. |
-| 3 | Wake assertions | Claude, Chrome, coreaudiod, powerd, sharingd | The only thing holding the machine up. Load-bearing and accidental. |
-| 4 | `loginwindow` (pid 396) | 13 explicit sleeps | Lid close, Apple menu → Sleep, or lock. Instant, ignores everything above. |
-| 5 | Power Nap + `tcpkeepalive` + `standby`/`hibernatemode 3` | all on | Produces the `Sleep → DarkWake 45s → Maintenance Sleep` churn seen every few minutes overnight. Explains why the bridge sometimes *reappears* on its own. |
-
-### The actual finding: `sleep 1`
-
-```
-AC Power:      sleep 1     displaysleep 20
-Battery Power: sleep 1     displaysleep 5
-```
-
-**A one-minute system sleep timer on AC is the whole problem.** It is not a macOS default. The Mac
-stays up only while something holds an assertion, and the moment the last one drops there is a
-60-second fuse. That is exactly the "bridge goes online and offline randomly" behaviour — it tracks
-assertion churn, not anything Claude does.
-
-Critically, one of the biggest assertion holders is **`powerd — "Prevent sleep while display is
-on"`**. So the machine is really being kept awake *by the display being awake*. When `displaysleep`
-fires at 20 minutes, that assertion drops, and everything then rests on whatever apps happen to be
-holding one. Chrome playing audio counts. That is not a foundation.
-
-### Assertion holders are accidental, not designed
-
-Sampled live: `Google Chrome ("Playing audio")`, `Claude ("Electron")`, `coreaudiod`, `powerd`,
-`sharingd ("Handoff")`, plus transient `caffeinate` processes. **Claude is one of several.**
-
-Two consequences worth stating plainly:
-
-- Observing "the Mac stayed awake" is **not** evidence that Claude was running.
-- Quitting Claude does **not** guarantee sleep, and keeping Claude open does **not** guarantee wake.
-
-### Fix
-
-Set the AC system-sleep timer to never. Display sleep can stay as it is — it does not affect the
-bridge, only Touch ID visibility.
-
-```bash
-sudo pmset -c sleep 0        # AC only; leaves battery behaviour untouched
-```
-
-GUI equivalent: Settings → Lock Screen / Battery → Options → *Prevent automatic sleeping on power
-adapter when the display is off*.
-
-Leave the **battery** profile alone (`sleep 1`, `displaysleep 5`) — on battery, sleeping fast is the
-correct behaviour and the cloud path covers unattended work.
-
-`caffeinate -d -t 1200` remains the ad-hoc escape hatch for a single long task, but it is a
-workaround for a misconfigured timer, not a fix.
-
-### Battery cost of staying awake — near zero, on AC
-
-Current state: **40 cycles, 96% maximum capacity, Condition Normal**, charge limit 80%, and on AC
-the battery reads *"80%; AC attached; not charging"*.
-
-Two mechanisms age a lithium-ion cell: **cycling** (charge/discharge) and **calendar aging**
-(sitting at a given state-of-charge and temperature). Keeping the Mac awake **on AC** touches
-neither meaningfully:
-
-- **Cycle count does not grow.** The battery is held at 80% and not discharging, so staying awake
-  adds no cycles. This is the single biggest lever and it is already handled by the 80% limit.
-- **Calendar aging is dominated by state-of-charge and temperature, not by whether the CPU is
-  idle-awake.** Sitting at 80% rather than 100% is the meaningful mitigation, and that is already
-  in place.
-- **Heat is the remaining variable**, and it is small here: an idle-awake M4 Pro with the display
-  off draws very little. `pmset -g therm` records no thermal or performance warnings on this
-  machine, ever.
-
-So the real costs of `sleep 0` on AC are **electricity and a marginal amount of heat**, not battery
-health. The 80% charge limit is doing the work that actually matters.
-
-⚠️ This applies to **AC only**. On battery, staying awake drains the pack and *does* burn cycles —
-which is why the battery profile should keep its aggressive timers.
-
-Note the diagnostics that matter, for re-checking later:
-
-```bash
-pmset -g custom       # per-power-source settings — the source of truth
-pmset -g assertions   # who is holding the machine awake right now
-pmset -g log | grep "Entering Sleep state due to"   # what actually happened
-system_profiler SPPowerDataType | sed -n '1,40p'    # cycles, max capacity, condition
-```
-
-## What cw does and does not get [verified 2026-08-15]
-
-A Cowork session in a project **does** receive the project's `CLAUDE.md` and standing instructions.
-It does **not** receive `home/.claude/CLAUDE.md` — the global cc memory carrying codenames and
-global defaults — nor `hooks/`, `output-styles/`, or `rules/`.
-
-Consequence: repo-scoped conventions transfer, machine-global ones do not. Mechanical style drift
-is bounded anyway because `biome.jsonc`, `.editorconfig` and lefthook enforce it at commit; what
-actually drifts is taste-level convention that lives only in the global file.
-
-⚠️ Do **not** generalise this to Claude Code cloud sessions. Whether *those* get the global
-`CLAUDE.md` is unsettled — one cloud session had it injected at start (content present, file
-absent on disk) and another did not. Owned by DOT-55; do not build on either answer yet.
-
-## Practical routing
-
-- Repo work needing pnpm / node 24 / real git → **Desktop Commander**, or Claude Code.
-- Throwaway compute, parsing, scratch scripts → **sandbox bash**.
-- Clone-build-commit-push, or anything that must survive a closed laptop → **Claude Code cloud
-  session**, started by a human. Not Cowork.
-- Recurring reports over connector data → **artifact** + **scheduled task**.
-- Deleting anything in the repo from the sandbox → impossible; use Desktop Commander.
+- the root cause was a **1-minute system sleep on AC**; fixed: `pmset -g custom` reads AC `sleep 0`,
+  battery `sleep 1` / `displaysleep 5` (checked 2026-10-05). keep the battery profile aggressive.
+- the mac stays up only while something holds an assertion (Claude, Chrome audio, coreaudiod,
+  `powerd` «display is on»); «the mac stayed awake» is never evidence that Claude ran.
+- display sleep does not drop the bridge, but it hides Touch ID prompts — the 1Password signing hang.
+- staying awake on AC costs no battery health (held at the 80 % limit, not cycling; 41 cycles, 96 %,
+  2026-10-05). on battery it does.
+- diagnostics: `pmset -g custom` · `pmset -g assertions` · `pmset -g log | grep "Entering Sleep state due to"`
+- `caffeinate -d -t 1200` is the one-off escape hatch.
 
 ## Open questions
 
-- Whether a Cowork session started from phone/browser exposes the same `mnt/` bind-mounts (it has
-  no Mac to mount) — untested.
-- Whether the mount unlink restriction is configurable.
-- Why `start_code_task` is present in some Cowork sessions and absent in others.
-- Whether dynamic workflows run in the Cowork tab at all — undocumented, and Cowork does not read
-  the CLI's `~/.claude` directory, so probably not. Tracked in DOT-56.
-
-## Scheduling from `cc` — three routes
-
-Three routes exist, in order of preference:
-
-1. **built-in `CronCreate` / `CronList` / `CronDelete`** — local scheduled sessions, first-class
-   cli tools. They are currently listed in `permissions.deny` in
-   `home/.claude/settings.json` **by Dima's own choice** — removing three strings from that array
-   turns them back on. **[verified]**
-2. **`RemoteTrigger` + the `schedule` skill** — cloud routines on a cron schedule, and webhook
-   triggers. Never disabled. Survives a closed laptop, which the desktop MCP does not. **[verified]**
-3. **plain `cron` + `claude -p "<prompt>"`** — the fallback. Viable, and the most transparent of
-   the three, but each run starts with no session context, so the prompt must be fully
-   self-contained. Same constraint the desktop scheduled tasks already carry. **[verified]**
-
-📌 **Device-bound scheduled tasks (claude.ai/cw side) are UI-create-only.** `create_trigger` with
-`requires_local_device: true` fails with `no_signed_approval`, and the `Require this computer`
-toggle cannot be added after creation — Dima must create the task by hand in the desktop UI, so a
-cw thread needing one hands him the prompt in a copy-fence instead. **[verified 2026-08-28, cwrk]**
+- whether the cloud-thread device bridge survives the desktop's device toggle being off
+- the cloud tool-count cap (`{toolLimit}`) against Desktop Commander's 26 tools
+- whether a Projects coordinator can ever be tied to a device
+- why `start_code_task` is present in some cw sessions and absent in others
