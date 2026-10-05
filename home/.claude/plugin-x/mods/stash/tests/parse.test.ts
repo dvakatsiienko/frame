@@ -22,6 +22,12 @@ test('several 🔭 lines read as one wait', () => {
     ).toBe('🔎 ci — the watcher; 🦉 cclio — a ping');
 });
 
+test('a 🔭 line quoted before the end is not a wait', () => {
+    expect(
+        parseWait('the shape:\n```\n🔭 waiting on ci — a ping\n```\ndone.'),
+    ).toBe(undefined);
+});
+
 test("a reply's lead skips the model greeting", () => {
     expect(parseLead('hey Opus 5.5 here 🕹️\n\n**verdict**')).toBe('verdict');
 });

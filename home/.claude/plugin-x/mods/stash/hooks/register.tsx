@@ -5,6 +5,7 @@ import {
     type Door,
     FLEET_NAME,
     doorOf,
+    escapeMarkdown,
     parseAsks,
     parseLead,
     parseWait,
@@ -36,6 +37,8 @@ const BOARD = 'fleet-board';
 const REPLY = 'reply:';
 const CONTEXT = 'context:';
 const SENT = 'sent:';
+// a markdown link must be https to draw as one; the board answers its press itself, so this is never opened by a plain click
+const DOOR_HREF = 'https://claude.ai/code';
 const STALE_MS = 24 * 60 * 60 * 1000;
 // dima at the prompt, typing into a background job, on his phone or the web
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
@@ -63,6 +66,10 @@ let fiveHour: { resetsAt?: number } | undefined;
 let busy = false;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
+
+// a thread's asks show while it has any and they are under a day old
+const isLive = (v: Entry | undefined, now: number): v is Entry =>
+    !!v && Array.isArray(v.asks) && v.asks.length > 0 && now - v.at < STALE_MS;
 
 const fp = (sid: string, ask: string) => `${sid}\u0000${ask}`;
 const basename = (path: string) =>
@@ -398,13 +405,7 @@ async function load($: EngineInterface): Promise<boolean> {
     for (const key of await $.store.keys()) {
         if (!key.startsWith(PREFIX)) continue;
         const v = (await $.store.get(key)) as Entry | undefined;
-        if (
-            v &&
-            Array.isArray(v.asks) &&
-            v.asks.length &&
-            now - v.at < STALE_MS
-        )
-            next[key.slice(PREFIX.length)] = v;
+        if (isLive(v, now)) next[key.slice(PREFIX.length)] = v;
     }
     const fresh = Object.entries(next).flatMap(([sid, v]) =>
         v.asks.map((a) => fp(sid, a)),
@@ -530,6 +531,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             .filter(Boolean),
     );
     const out: Member[] = [];
+    const now = await $.clock.now();
     for (const { bg, base: r } of rows.filter((r) => alive.has(r.pid))) {
         const reply = (await $.store.get(REPLY + r.sid)) as
             | { wait?: string; lead?: string }
@@ -537,7 +539,7 @@ async function members($: EngineInterface): Promise<Member[]> {
         const asks = (await $.store.get(PREFIX + r.sid)) as Entry | undefined;
         out.push({
             ...r,
-            asks: asks?.asks.length ?? 0,
+            asks: isLive(asks, now) ? asks.asks.length : 0,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
             lead: reply?.lead,
             offPattern: bg && !FLEET_NAME.test(r.name),
@@ -749,7 +751,7 @@ export const register: Register = (on) => {
 
     on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
         const ui = $.ui.resolve(e);
-        const { Box, Text, Button, Link } = ui;
+        const { Box, Text, Link, Markdown } = ui;
         const now = await $.clock.now();
         const me = await $.session.id().catch(() => selfId);
         const list = await members($).catch(() => null);
@@ -761,6 +763,7 @@ export const register: Register = (on) => {
             const isBusy = state === 'busy';
             const ticket = ticketOf(m.name);
             const door = m.door;
+            const name = m.sid === me ? `${m.name} (here)` : m.name;
             const line = m.wait ? `🔭 ${m.wait}` : m.lead;
             return (
                 <Box
@@ -772,28 +775,19 @@ export const register: Register = (on) => {
                         gap={1}
                         justifyContent='space-between'>
                         <Box flexDirection='row' flexShrink={1} gap={1}>
-                            <Text bold wrap='truncate-end'>
-                                {m.sid === me ? `${m.name} (here)` : m.name}
-                            </Text>
-                            {door
-                                ? hoverTip(
-                                      ui,
-                                      `door:${m.sid}`,
-                                      door.kind === 'open'
-                                          ? 'open this session in the desktop'
-                                          : `copy «${door.text}»`,
-                                      <Button
-                                          dimColor
-                                          key={`door:${m.sid}`}
-                                          onPress={(p) =>
-                                              void pressDoor($, door, p.surface)
-                                          }
-                                          plain>
-                                          {door.kind === 'open' ? '↗' : '📋'}
-                                      </Button>,
-                                      { left: 3 },
-                                  )
-                                : null}
+                            {door ? (
+                                <Markdown
+                                    key={`door:${m.sid}`}
+                                    onLinkPress={(_link, p) =>
+                                        void pressDoor($, door, p.surface)
+                                    }
+                                    text={`**[${escapeMarkdown(name)}](${DOOR_HREF})**`}
+                                />
+                            ) : (
+                                <Text bold wrap='truncate-end'>
+                                    {name}
+                                </Text>
+                            )}
                             {m.offPattern
                                 ? hoverTip(
                                       ui,

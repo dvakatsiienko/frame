@@ -29,15 +29,20 @@ function plain(line: string) {
         .trim();
 }
 
-// What a reply says its session waits on: its 🔭 lines, joined; undefined when it has none.
+// What a reply says its session waits on: the 🔭 lines that end it, joined; a 🔭 quoted earlier, or in a fence, is not one.
 export function parseWait(reply: string): string | undefined {
-    const waits = reply
-        .split('\n')
-        .map((l) => l.trim())
-        .filter((l) => l.startsWith('🔭'))
-        .map((l) => plain(l.slice('🔭'.length)));
+    const waits: string[] = [];
+    for (const line of reply.trimEnd().split('\n').reverse()) {
+        const l = line.trim();
+        if (!l) continue;
+        if (!l.startsWith('🔭')) break;
+        waits.unshift(plain(l.slice('🔭'.length)));
+    }
     return waits.length ? waits.join('; ') : undefined;
 }
+
+export const escapeMarkdown = (text: string) =>
+    text.replace(/[\\`*_[\]()<>#|~]/g, '\\$&');
 
 // The reply's first line of prose — its verdict line — skipping fences and the model greeting.
 export function parseLead(reply: string): string | undefined {

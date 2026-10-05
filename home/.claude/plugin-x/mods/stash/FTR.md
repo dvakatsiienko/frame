@@ -182,19 +182,20 @@ two sessions, A and B, in one checkout.
   - given the last reply has no `🔭` line
   - then the second line reads the reply's first line, dimmed: what the session last said
   - source: the session's own last reply, kept by its stash at each reply end
-- ⬜ `↗` beside a session's name opens it in the desktop
+- ⬜ a press on a session's name opens it in the desktop
   - the harness proves the `open <url>` it runs; that the desktop then shows the session is dima's click
   - given a desktop-born session (the registry carries `hostSessionId: local_…`)
-  - when dima presses `↗`
+  - when dima presses its name
   - then the desktop opens that session through `claude://code/continue?session=local_…`
   - given a background session bridged to claude.ai (`bridgeSessionId: session_…`)
   - then the press opens `claude://code/session_…`
-  - given a background session with neither, the control is `📋`
+  - given a background session with neither
   - then the press copies `claude attach <jobId>`, the terminal door
   - given a terminal session with neither
-  - then no control shows: nothing opens it
+  - then the name is plain bold text: nothing opens it
   - decision: the mod api has no door to a session; the desktop's own `claude://` url handler has one (read from its 2.1.289 bundle), and the press runs `open <url>` on this mac rather than a `Link`, whose click the pane's sandbox decides
-  - decision: a small control beside the name, not the name itself — a `Button` label cannot be bold, and the name stays readable text
+  - decision: the whole name is the link, drawn as a bold `Markdown` link the board answers itself — a `Button` label cannot be bold, and a `Markdown` link must be `https:` to draw, so its href is `https://claude.ai/code` and never what a plain click opens (dima, 2026-10-05)
+  - decision: no hover card on the name — it wrapped and clipped in a narrow row (dima, 2026-10-05)
 - ✅ each row carries its facts beside the state
   - given a session has open asks, a context reading, a ticket in its name, or sent a message
   - when the board draws

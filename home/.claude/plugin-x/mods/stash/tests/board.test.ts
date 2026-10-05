@@ -125,15 +125,27 @@ const stop = ($: Engine, reply: string) =>
         stop_hook_active: false,
     });
 
-test('every session name on the board is bold', async ($, on) => {
+// a session name with a door is a markdown link; its press is the board's own
+const pressName = async ($: Engine, sid: string) =>
+    (await board($)).press({
+        key: `door:${sid}`,
+        link: { href: 'https://claude.ai/code' },
+    });
+
+test('a session name with no door is bold text', async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const names = await Promise.all(
-        ['🦉 cclio (here)', '☕️ 🔧 FRM-1 code: x'].map((text) =>
-            ui.find({ text, type: 'Text' }),
-        ),
+    const name = await ui.find({ text: '☕️ 🔧 FRM-1 code: x', type: 'Text' });
+    expect(name?.props.bold).toBe(true);
+});
+
+test('a session name with a door is a bold link', async ($, on) => {
+    fleet(on);
+    const ui = await board($);
+    const name = await ui.find({ type: 'Markdown' });
+    expect(name?.props.text).toBe(
+        '**[🦉 cclio \\(here\\)](https://claude.ai/code)**',
     );
-    expect(names.map((n) => n?.props.bold)).toEqual([true, true]);
 });
 
 test('a session inside a long shell command reads busy', async ($, on) => {
@@ -178,40 +190,44 @@ test("a keep-hot ping's reply keeps what the session last said", async ($, on) =
     expect(await row($, HERE)).toContain('the real verdict');
 });
 
-test("pressing a desktop session's ↗ opens it in the desktop", async ($, on) => {
+test("pressing a desktop session's name opens it in the desktop", async ($, on) => {
     const { runs } = fleet(on);
-    const ui = await board($);
-    await ui.press({ key: `door:${HERE}` });
+    await pressName($, HERE);
     expect(runs.filter(([cmd]) => cmd === 'open')).toEqual([
         ['open', 'claude://code/continue?session=local_abc-1'],
     ]);
 });
 
-test("pressing a bridged background session's ↗ opens its claude.ai session", async ($, on) => {
+test("pressing a bridged background session's name opens its claude.ai session", async ($, on) => {
     const { runs } = fleet(
         on,
         {},
         { bg: [2], patch: { 2: { bridgeSessionId: 'session_01YZ' } } },
     );
-    const ui = await board($);
-    await ui.press({ key: `door:${PEER}` });
+    await pressName($, PEER);
     expect(runs.filter(([cmd]) => cmd === 'open')).toEqual([
         ['open', 'claude://code/session_01YZ'],
     ]);
 });
 
-test("pressing an unbridged background session's 📋 copies its attach command", async ($, on) => {
+test("pressing an unbridged background session's name copies its attach command", async ($, on) => {
     const { copied } = fleet(on, {}, { bg: [2] });
-    const ui = await board($);
-    await ui.press({ key: `door:${PEER}` });
+    await pressName($, PEER);
     expect(copied).toEqual(['claude attach fef31d31']);
 });
 
 test('a terminal session with no door has nothing to press', async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const doors = (await ui.findAll({ type: 'Button' })).map((n) => n.key);
+    const doors = (await ui.findAll({ type: 'Markdown' })).map((n) => n.key);
     expect(doors).toEqual([`door:${HERE}`]);
+});
+
+test('asks over a day old are not counted on the board', async ($, on) => {
+    fleet(on, {
+        [`asks:${PEER}`]: { asks: ['a'], at: NOW - 25 * 60 * MIN, label: 'x' },
+    });
+    expect(await row($, PEER)).not.toContain('⏳');
 });
 
 test("a row counts its session's open asks", async ($, on) => {
