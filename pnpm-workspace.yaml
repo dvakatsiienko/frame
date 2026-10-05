@@ -13,6 +13,9 @@ allowBuilds:
   '@vgpu/adapter-node': false
   esbuild: true
   lefthook: true
+  # mods:live loads node-pty's own darwin-arm64 prebuild, so no node-gyp build; the script sets
+  # the prebuilt spawn-helper's exec bit, which the tarball drops
+  node-pty: false
   webgpu: false
 
 minimumReleaseAgeExclude:

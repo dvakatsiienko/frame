@@ -4,6 +4,12 @@
 - a background session edits a mod in the main checkout through `scratch-edit` (plugin bin): `pull <paths…>` prints scratch copies, `Edit`/`Write` those, `push` writes them back and refuses any file the repo changed since its pull — the bg isolation guard blocks a direct edit, and a worktree would hide the change from the mod's hot reload (the guard has no per-path exemption, only `bgIsolation: none` for the whole repo)
 - tests run through `claude plugin test`, never vitest: `pnpm mods:test`; cc's bundled `plugin-authoring` skill + its per-build types are the authoring docs
 - a mod test is proven red with `red-proof --cmd <file> <anchor> <replacement> -- claude plugin test home/.claude/plugin-x/mods/<mod>` (plugin bin; `--pairs` for many lines), never a hand swap
+- `pnpm mods:live <mod dir>` is the reload and hover check for every mod round — what `claude plugin test` cannot reach (FRM-322, proven 2026-10-05):
+  - it runs a real cc session in a pty (`node-pty` + `@xterm/headless`) with the mod on `--plugin-dir`, named `mods-live: <mod>` on the board; run it in the background
+  - each save prints `reload ok: <the engine's load line>` or the error — `claude plugin validate`'s parse error, or no load in 8 s with the engine's last word (a name clash reads «another plugin of that name loads first») — and writes a text frame of the screen to `$TMPDIR/mods-live/<mod>/` (`latest.txt` is the newest)
+  - the load lines come from the session's `--debug-file`, never the screen: cc draws on the alternate screen, which keeps no scrollback
+  - `pnpm mods:live <mod dir> hover <label>` moves the pointer onto the label's first cell (an SGR motion event) and prints the frame with its hover card
+  - stop it with `kill $(cat $TMPDIR/mods-live/<mod>/server.pid)`; the session goes with it
 - the desktop refuses a `Client` module (10 s, csp) — draw desktop art with `Svg` + `isInteractive` (SMIL runs in its sandboxed frame); mods draw only on the host surface, never in a `--remote-control` view ([claude-code#99217](https://github.com/anthropics/claude-code/issues/99217))
 - a mod initialises on `session.start`, never `classic.SessionStart` — a hot reload fires only the first, so a classic-only init reloads empty and draws nothing (stash 0.2.0, 2026-10-04)
 - every interactive element in a mod names itself on hover (dima, 2026-10-05) — the hover traps:
@@ -13,7 +19,7 @@
   - the card clips at its site's edge — a one-row band clips anything above or below, so place it on the same row
   - terminal hover needs pointer reporting: kitty, Ghostty, iTerm2 and WezTerm send it, tmux does not
   - an `Svg` `<title>` (`isInteractive`) does not show in the desktop (stash holds chip, 2026-10-05)
-  - the test harness keeps `hover` out of `FoundElement.props` and cannot hover — test the hidden card and its words; the reveal is a look on the surface
+  - the test harness keeps `hover` out of `FoundElement.props` and cannot hover — test the hidden card and its words; the reveal is checked with `pnpm mods:live <mod dir> hover <label>`
   - `ui.find({ text })` matches a wrapper `Box` too, whose text joins its card's — add `type: 'Text'` to reach the label alone (FRM-303)
 - `api-map.md` — every hook event with its line in the types file, and the fleet ideas; re-read the types at a cc bump
 - `stash/FTR.md` + `stash/CONTEXT.md` — read your section before changing what stash does; the same pair in `redact/` for the secret masker, and in `guard/` for the Bash floor
