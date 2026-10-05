@@ -1,5 +1,5 @@
 ---
-dies-when: the test drive closes with adopted or dropped (by 2026-10-14)
+dies-when: the test drive closes with adopted or dropped (by 2026-10-28 — frozen with the jev credit 10-05 → ~10-18, dima)
 ---
 
 # quicksilver — test drive
