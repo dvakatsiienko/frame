@@ -394,10 +394,12 @@ async function armHot($: EngineInterface) {
 }
 
 // the text and the title are built from counts and fixed words, never from input, so nothing needs escaping
+const chipWidth = (text: string) => 8 + [...text].length * 9;
+
 function chipSvg(text: string, title: string, warned: boolean) {
     const ink = (light: string, dark: string) =>
         `text{fill:${warned ? ACCENT : light}}@media (prefers-color-scheme:dark){text{fill:${warned ? ACCENT : dark}}}`;
-    const width = 8 + [...text].length * 9;
+    const width = chipWidth(text);
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="18"><title>${title}</title><style>text{font:13px -apple-system,system-ui,sans-serif}${ink('#3d3d3a', '#e8e6dc')}</style><text x="0" y="13">${text}</text></svg>`;
 }
 
@@ -606,8 +608,10 @@ export const register: Register = (on) => {
           'Svg' in kit ? (
             <kit.Svg
                 alt={chipName}
+                height={18}
                 isInteractive
                 source={chipSvg(chipText, chipName, holds.warned)}
+                width={chipWidth(chipText)}
             />
         ) : (
             <Text color={holds.warned ? ACCENT : undefined}>{chipText}</Text>
