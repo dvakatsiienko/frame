@@ -173,7 +173,7 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
     const widths = (await ui.findAll({ type: 'Box' }))
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
-    expect(widths).toEqual([4, 8, 8, 16, 12, 4, 8, 8, 16, 12]);
+    expect(widths).toEqual([4, 8, 8, 13, 10, 4, 8, 8, 13, 10]);
 });
 
 test('a session inside a long shell command reads busy', async ($, on) => {

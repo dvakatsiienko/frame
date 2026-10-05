@@ -560,12 +560,12 @@ const span = (ms: number) => {
 };
 const ago = (ms: number) => (ms < 60000 ? 'just now' : `${span(ms)} ago`);
 
-// each fact column's width in cells, sized to its widest usual reading: `⏳ 12`, `ctx 100%`, `BYT-1234`, `sent 12h 59m ago`, `idle 12h 59m`
+// each fact column's width in cells, sized to its widest usual reading: `⏳ 12`, `ctx 100%`, `BYT-1234`, `sent just now`, `idle 1h 5m`; a longer one is cut at its end
 const COLUMNS = {
     asks: 4,
     context: 8,
-    sent: 16,
-    state: 12,
+    sent: 13,
+    state: 10,
     ticket: 8,
 } as const;
 
@@ -841,7 +841,10 @@ export const register: Register = (on) => {
                             ) : null}
                         </Box>
                         {/* one fixed-width, right-aligned cell per fact, drawn empty when it has no reading, so the columns line up across rows (dima, 2026-10-05) */}
-                        <Box flexDirection='row' flexShrink={0} gap={1}>
+                        <Box
+                            flexDirection='row'
+                            flexShrink={0}
+                            gap={e.surface === 'desktop' ? 0.5 : 1}>
                             <Box justifyContent='flex-end' width={COLUMNS.asks}>
                                 {m.asks ? (
                                     <Text color={ACCENT}>⏳ {m.asks}</Text>
