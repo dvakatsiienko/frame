@@ -2,12 +2,6 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import { type Vault, mapStrings, redactText, restoreText } from './mask.ts';
 
-declare module 'claude-code' {
-    interface PluginState {
-        redact: { vault: Vault };
-    }
-}
-
 // the vault survives a hot reload and dies with the session; never `$.store`, which every session shares
 const VAULT = { key: 'vault', plugin: 'redact' } as const;
 
