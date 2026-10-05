@@ -217,6 +217,27 @@ learn an MCP tool's real output shape.
 
 ## Projects
 
+📌 **two products share the name since 2026-09-17** (three research lanes agreed, 2026-10-05; evidence and links in `docs/research/claude-code-projects.md`):
+
+- **Claude Code Projects (redesigned, public beta, Pro/Max, gradual)** — one coordinator conversation
+  (opus, low effort) splits a goal into threads (opus, high effort); each thread is a full cc session
+  on its own branch, cloud by default. Lives in claude.ai/code, the desktop Code tab and mobile — never
+  the CLI. File-based project memory (`MEMORY.md` index) read by cloud threads; 200 new threads a day;
+  plan limits. Rollout started with accounts holding no chat/Cowork projects (those keep the legacy
+  experience below until migrated); dima has the redesigned one (2026-10-05). his read: the threads
+  look like Cowork threads, not cc sessions — the docs say full cc cloud sessions; open until a
+  coordinator's own system report settles it.
+- **no bridge to our fleet:** a session you start yourself (terminal, `--bg`, desktop local) cannot be
+  added to a project; a cloud session can. A «Work locally» thread runs as a Remote Control session in a
+  connected folder (cc ≥ 2.1.280) and gets the mac's MCP servers and hooks, not the project memory. No
+  public api to spawn or message threads.
+- **Desktop Commander does not reach a project** — by design, not a bug: the coordinator has no MCP at
+  all, cloud threads get only claude.ai connectors (+ a single repo's `.mcp.json`). DC itself is healthy
+  on the mac (`localMcpBridge` advertises its 26 tools). Doors: a «Work locally» thread, or DC's remote
+  MCP mode as a connector (threads only, untested).
+
+### Cowork projects (legacy)
+
 A Cowork project bundles six things: description, folders,
 standing instructions, reference links, linked claude.ai projects, and a **project-scoped memory
 store that persists across sessions**. Three creation paths: from scratch, import a claude.ai
