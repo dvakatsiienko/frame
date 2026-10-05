@@ -1,5 +1,5 @@
 ---
-dies-when: the test drive closes with adopted or dropped (by 2026-10-12)
+dies-when: the test drive closes with adopted or dropped (by 2026-10-14)
 ---
 
 # quicksilver — test drive
