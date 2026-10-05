@@ -30,11 +30,10 @@ const AWAY_NOTE =
 const BACK_NOTE =
     'dima is back from afk: asks and the ⏳ block reach him again.';
 const POLL_MS = 4000;
-// the fleet board: cc's registry gives each session's state; each session's stash adds its last reply, context fill and last message out
+// the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
 const BOARD = 'fleet-board';
 const REPLY = 'reply:';
 const CONTEXT = 'context:';
-const SENT = 'sent:';
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
 const STALE_MS = 24 * 60 * 60 * 1000;
@@ -467,7 +466,6 @@ type Member = {
     wait?: string;
     asks: number;
     context?: number;
-    sent?: number;
     offPattern: boolean;
 };
 
@@ -542,7 +540,6 @@ async function members($: EngineInterface): Promise<Member[]> {
             asks: isLive(asks, now) ? asks.asks.length : 0,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
             offPattern: bg && !FLEET_NAME.test(r.name),
-            sent: (await $.store.get(SENT + r.sid)) as number | undefined,
             wait: reply?.wait,
         });
     }
@@ -558,15 +555,13 @@ const span = (ms: number) => {
     const m = Math.floor(ms / 60000);
     return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 };
-const ago = (ms: number) => (ms < 60000 ? 'just now' : `${span(ms)} ago`);
 
-// each fact column's width in cells, sized to its widest usual reading: `⏳ 12`, `ctx 100%`, `BYT-1234`, `sent just now`, `idle 1h 5m`; a longer one is cut at its end
+// each fact column's width in cells, sized to its usual reading — `⏳ 12`, `FRM-306`, `ctx 54%`, `idle 12m` — so little slack shows between columns; a longer one is cut at its end
 const COLUMNS = {
     asks: 4,
-    context: 8,
-    sent: 13,
-    state: 10,
-    ticket: 8,
+    context: 7,
+    state: 9,
+    ticket: 7,
 } as const;
 
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
@@ -743,15 +738,6 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    on('session.send', async ($, e, next) => {
-        const sid = selfId ?? (await $.session.id().catch(() => undefined));
-        if (sid)
-            await $.store
-                .set(SENT + sid, await $.clock.now())
-                .catch(() => undefined);
-        return next(e);
-    });
-
     // warns only: a toast for dima and a log line, and the spawn goes ahead
     on('agent.spawn', async ($, e, next) => {
         for (const hint of spawnHints(e)) {
@@ -850,13 +836,6 @@ export const register: Register = (on) => {
                                     <Text color={ACCENT}>⏳ {m.asks}</Text>
                                 ) : null}
                             </Box>
-                            <Box
-                                justifyContent='flex-end'
-                                width={COLUMNS.context}>
-                                {m.context === undefined ? null : (
-                                    <Text dimColor>ctx {m.context}%</Text>
-                                )}
-                            </Box>
                             {/* no hover card in the pane: an absolute card in a narrow row wraps and clips (dima, 2026-10-05) */}
                             <Box
                                 justifyContent='flex-end'
@@ -870,12 +849,12 @@ export const register: Register = (on) => {
                                     </Text>
                                 ) : null}
                             </Box>
-                            <Box justifyContent='flex-end' width={COLUMNS.sent}>
-                                {m.sent ? (
-                                    <Text dimColor>
-                                        sent {ago(now - m.sent)}
-                                    </Text>
-                                ) : null}
+                            <Box
+                                justifyContent='flex-end'
+                                width={COLUMNS.context}>
+                                {m.context === undefined ? null : (
+                                    <Text dimColor>ctx {m.context}%</Text>
+                                )}
                             </Box>
                             <Box
                                 justifyContent='flex-end'
@@ -904,7 +883,6 @@ export const register: Register = (on) => {
         await $.store.delete(HOT + e.sessionId);
         await $.store.delete(REPLY + e.sessionId);
         await $.store.delete(CONTEXT + e.sessionId);
-        await $.store.delete(SENT + e.sessionId);
         await dropAll($, e.sessionId).catch(() => undefined);
         return next(e);
     });

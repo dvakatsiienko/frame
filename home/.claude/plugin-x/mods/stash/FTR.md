@@ -203,12 +203,14 @@ two sessions, A and B, in one checkout.
   - decision: cclio's name is bold text with its own `↗` beside it, since a bold name cannot be a `Button` label
   - decision: no hover cards anywhere in the pane — an absolute card in a narrow row wrapped, clipped and drew over its neighbours (dima, 2026-10-05)
 - ✅ each row carries its facts beside the state
-  - given a session has open asks, a context reading, a ticket in its name, or sent a message
+  - given a session has open asks, a context reading or a ticket in its name
   - when the board draws
-  - then its row shows `⏳ n`, `ctx n%`, the ticket as a link to linear, «sent 4m ago» and its state, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
+  - then its row shows `⏳ n`, the ticket as a link to linear, `ctx n%` and its state, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
   - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
+  - decision: each column is sized to its usual reading, so little slack shows between columns (dima asked for ~8px gaps, 2026-10-05)
   - decision: the name side gives way and clips, so a long name never pushes a row's columns out of line (dima saw one drift, 2026-10-05)
-  - source: `⏳ n` the stash asks store · `ctx n%` the session's `session.measure`, kept by its stash · the ticket from the session name · «sent» the session's `session.send`, kept by its stash
+  - decision: no «sent» column — the time since a session last messaged another one; dima reads the state's idle time instead (2026-10-05)
+  - source: `⏳ n` the stash asks store · the ticket from the session name · `ctx n%` the session's `session.measure`, kept by its stash
   - decision: no pr, ci, cost or model yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306
 - ⬜ the board stays current
   - given the board is open
