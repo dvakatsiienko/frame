@@ -1,0 +1,55 @@
+#!/usr/bin/env node
+/**
+ * ? scratch-edit — edit the shared checkout from a background session that may not write it.
+ * ?
+ * ?   scratch-edit pull <paths…>   copy each repo path into scratch; edit the printed copies with Edit/Write
+ * ?   scratch-edit status          list the scratch files edited since their pull
+ * ?   scratch-edit push            write every edited copy back; any file the repo changed since its pull
+ * ?                                is refused and nothing is written
+ * ?
+ * ? The scratch root is $CLAUDE_JOB_DIR/tmp/scratch-edit/<repo>, else the os tmp dir. A hot-reloading mod,
+ * ? or any file read live from the main checkout, is edited this way: a worktree would hide the edit.
+ * ? Exit codes: 0 done, 1 a push refused, 2 the arguments or the cwd are wrong.
+ */
+
+/* Core */
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { basename, isAbsolute, join, relative } from 'node:path';
+
+/* Instruments */
+import { changed, pull, push } from '../../../../script/lib/scratch-edit.ts';
+
+const [verb, ...rest] = process.argv.slice(2);
+
+let repo;
+try {
+    repo = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+        encoding: 'utf8',
+    }).trim();
+} catch {
+    console.error('scratch-edit: run it inside a git checkout');
+    process.exit(2);
+}
+const scratch = join(
+    process.env.CLAUDE_JOB_DIR ? join(process.env.CLAUDE_JOB_DIR, 'tmp') : tmpdir(),
+    'scratch-edit',
+    basename(repo),
+);
+
+if (verb === 'pull' && rest.length > 0) {
+    const paths = rest.map((p) =>
+        relative(repo, isAbsolute(p) ? p : join(process.cwd(), p)),
+    );
+    for (const p of pull(repo, scratch, paths)) console.log(p.scratch);
+} else if (verb === 'status') {
+    for (const p of changed(scratch)) console.log(p);
+} else if (verb === 'push') {
+    const result = push(repo, scratch);
+    for (const p of result)
+        console.log(`${p.outcome} ${p.path}${p.reason ? ` — ${p.reason}` : ''}`);
+    if (result.some((p) => p.outcome === 'refused')) process.exit(1);
+} else {
+    console.error('usage: scratch-edit pull <paths…> | status | push');
+    process.exit(2);
+}
