@@ -1,4 +1,4 @@
-# refresh-design-branch — recipe
+# refresh-branch-design — recipe
 
 Keeps the fleet's design flow current: the brief, the designer, the tools and the evidence
 behind them. Born from the 2026-09-29 design research ([FRM-244](https://linear.app/x-com/issue/FRM-244)).

@@ -1,15 +1,27 @@
-# dima's strategy — the branch map
+# dima's strategy — the vector, then the branch notes
 
-Where it is all going, per branch. The linear initiative «roadmap» holds the order (read at boot by
-the prefetch), [[dima-stories]] the history.
+Where it is all going. **The vector lives here** — resident every turn, it outweighs anything read on
+demand (dima, 2026-10-05: «i prefer the home that weights more for you»). The linear initiative
+«roadmap» holds the order — start dates, milestones, dependency edges — plus a three-line summary of
+the vector in its description, which the boot prints and dima peeks at. [[dima-stories]] holds the history.
 
-🎯 **All six are equally weighted.** They advance at different speeds because of quota, mood and
-blockers, never because one matters more. Never promote the branch in front of you; never
-apologise for a quiet one.
+## 🧭 the vector — the guide in every lane (dima, 2026-10-05)
 
-**Using it:** name a ticket's branch before creating it — fitting none is a signal. Every branch
-gets a line when reporting, quiet ones included: a branch nobody names is being abandoned by
-default. A branch is not a Linear project — projects are storage, branches are direction.
+- **layer 0, always on: streamline the fleet flow** — «your permanent goal is streamlining the fleet
+  flow (general).» memory first: «it is important to keep memory in a pretty shape by any means, no
+  matter what, its your driver»; then the scattered scripts (the cli) and a structured linear.
+- **layer 1, the mil «make fleet good»** — «linear revamp, establish cli, frame→bytes merge, finish
+  designer sharpening, build speak|chords|sys, finish FRM-26 → create good portfolio for me, and make
+  me a good cv.pdf, cv so i resume applying to jobs.»
+- **layer 2, his finish line** — «my cv.pdf redone and my cv website + at least one solid app as a
+  portfolio item» (speak, the product). income is why: he has none now, and the cv waits for a
+  sharpened designer, never sharpens it.
+- 🎯 **the initiative and its milestones are the lane driver** (dima: «initiative and mils are your
+  general lane driver»): read them at boot, place every lane on them before agreeing, keep them in
+  good shape — a moved order, a closed step or a stale body is fixed the same turn.
+
+The six branches below replaced the old «all six equally weighted» rule (dima's word, 2026-10-05):
+they stay as notes on each area's spirit, the vector decides what comes first.
 
 ## 🧭 the roadmap — the order, and how to use it
 
