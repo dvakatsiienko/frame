@@ -31,8 +31,11 @@ def prompt_text(entry):
     return None
 
 
-def replay(path, rule):
+def replay(path, rule, subagent=False):
+    # a subagent gets no SessionStart and no UserPromptSubmit: only its own tool calls load a rule
     loaded, role, cwd, seen, signals, misses = False, None, None, set(), {"text": 0, "tool_use": 0}, []
+    if subagent:
+        role = "subagent"
     for raw in open(path, encoding="utf-8", errors="replace"):
         try:
             entry = json.loads(raw)
@@ -45,7 +48,7 @@ def replay(path, rule):
         seen.add(uuid)
         if cwd is None and entry.get("cwd"):
             cwd = entry["cwd"]
-            loaded = loaded or bool(hook.project_trigger(rule, cwd))
+            loaded = loaded or (not subagent and bool(hook.project_trigger(rule, cwd)))
         if entry.get("type") == "system" and entry.get("subtype") == "compact_boundary":
             # the hook reloads at a compaction what was loaded before it
             loaded = loaded or bool(cwd and hook.project_trigger(rule, cwd))
@@ -53,7 +56,7 @@ def replay(path, rule):
         prompt = prompt_text(entry)
         if prompt is not None:
             role = role or ("coder" if CODER in prompt else "other")
-            loaded = loaded or bool(hook.prompt_trigger(rule, prompt))
+            loaded = loaded or (not subagent and bool(hook.prompt_trigger(rule, prompt)))
             continue
         if entry.get("type") != "assistant":
             continue
@@ -72,7 +75,7 @@ def replay(path, rule):
                 signals[block["type"]] += 1
                 if not loaded:
                     misses.append((entry.get("timestamp", "")[:16], block.get("type"), hit))
-    if os.path.basename(os.path.dirname(path)).endswith("-cclio"):
+    if not subagent and os.path.basename(os.path.dirname(path)).endswith("-cclio"):
         role = "cclio"
     return role or "other", signals, misses
 
@@ -88,12 +91,13 @@ def main():
     since = time.time() - args.days * 86400
     paths = [
         p
-        for p in glob.glob(os.path.expanduser("~/.claude/projects/*/*.jsonl"))
+        for pattern in ("*/*.jsonl", "*/*/subagents/*.jsonl")
+        for p in glob.glob(os.path.expanduser(f"~/.claude/projects/{pattern}"))
         if os.path.getmtime(p) >= since
     ]
     totals, missed = {}, []
     for path in sorted(paths):
-        role, signals, misses = replay(path, args.rule)
+        role, signals, misses = replay(path, args.rule, subagent="/subagents/" in path)
         total = totals.setdefault(role, {"sessions": 0, "text": 0, "tool_use": 0})
         total["sessions"] += 1
         for kind in signals:
@@ -101,7 +105,7 @@ def main():
         missed += [(role, os.path.basename(path)[:8], *m) for m in misses]
     print(f"{args.rule} — {len(paths)} sessions, last {args.days} days")
     # a tool signal is also a tool trigger, so it hits by construction; replies are the real measure
-    for role in ("cclio", "coder", "other"):
+    for role in ("cclio", "coder", "subagent", "other"):
         total = totals.get(role, {"sessions": 0, "text": 0, "tool_use": 0})
         lost = sum(1 for m in missed if m[0] == role)
         count = total["text"] + total["tool_use"]
@@ -113,7 +117,8 @@ def main():
     print(f"misses: {len(missed)}")
     for role, session, stamp, kind, hit in missed:
         print(f"- {role} {session} {stamp} {kind}: {hit}")
-    gated = [m for m in missed if m[0] != "other"]
+    # a subagent's prompt loads nothing by design, so its rate is reported, not gated
+    gated = [m for m in missed if m[0] in ("cclio", "coder")]
     print(f"gate (cclio + coder at 100 %): {'red' if gated else 'green'}")
     sys.exit(1 if gated else 0)
 
