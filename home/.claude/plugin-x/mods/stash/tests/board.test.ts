@@ -341,31 +341,3 @@ test('🚦 in the row closes an open board', async ($, on) => {
     await ui.press({ key: 'board' });
     expect(calls).toEqual(['close fleet-board']);
 });
-
-test('a spawn that breaks a fleet rule shows a toast and goes ahead', async ($, on) => {
-    mock.clock(on);
-    mock.store(on);
-    const toasts: string[] = [];
-    on('ui.toast', (_$, e) => {
-        toasts.push(e.text);
-        return { value: undefined };
-    });
-    on('ui.log', () => ({ value: undefined }));
-    on('agent.spawn', () => ({ model: 'claude-opus-5-5' }));
-    const r = await $.agent.spawn({
-        background: false,
-        description: 'bulk rename',
-        fork: false,
-        parentModel: 'claude-opus-5-5',
-        prompt: 'x'.repeat(500),
-        provider: { plugin: 'engine', tier: 'core' },
-        subagentType: 'Explore',
-        tool_use_id: 'tu1',
-    });
-    expect([toasts, r.deny]).toEqual([
-        [
-            'spawn hint: a mechanical job belongs on chore-helper («bulk rename»)',
-        ],
-        undefined,
-    ]);
-});

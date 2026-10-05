@@ -7,7 +7,6 @@ import {
     doorOf,
     parseAsks,
     parseWait,
-    spawnHints,
     stateWord,
     ticketOf,
     writeTargets,
@@ -735,17 +734,6 @@ export const register: Register = (on) => {
             await $.store
                 .set(CONTEXT + sid, e.context.percent)
                 .catch(() => undefined);
-        return next(e);
-    });
-
-    // warns only: a toast for dima and a log line, and the spawn goes ahead
-    on('agent.spawn', async ($, e, next) => {
-        for (const hint of spawnHints(e)) {
-            $.ui.toast(`spawn hint: ${hint} («${e.description}»)`);
-            $.ui.log(
-                `stash spawn hint: ${hint} — ${e.subagentType}, «${e.description}»`,
-            );
-        }
         return next(e);
     });
 

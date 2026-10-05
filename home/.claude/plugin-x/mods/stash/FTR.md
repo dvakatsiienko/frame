@@ -217,16 +217,9 @@ two sessions, A and B, in one checkout.
   - when a member starts or ends a turn, or sends a message
   - then its row changes within a few seconds
 
-## spawn hints — warn, never refuse
+## spawn hints — the board's name flag only
 
-- ⬜ a mechanical subagent job off `chore-helper` warns
-  - given the model spawns a subagent whose task reads mechanical (a rename, a bulk replace, a date shift, a string swap)
-  - when its type is not `chore-helper`
-  - then a toast names the rule and the spawn goes ahead; the hint is logged
-- ⬜ a short general-purpose spawn warns it may be a one-pass job
-  - given the model spawns a `general-purpose` subagent with a prompt under 400 characters
-  - then a toast says a short brief is often one pass for the session itself, and the spawn goes ahead
-  - decision: both checks are heuristics on the words and the length — refusing is dima's word later (cclio, 2026-10-05)
+- decision: no spawn-time hints — the chore-helper word match and the short general-purpose brief warning are gone, with their `agent.spawn` toast: 0 for 1 on its first real fire, and a toast never reaches the session it corrects (dima, 2026-10-05)
 - ⬜ the board marks a background session named off the fleet pattern
   - given a background session's name is not `<mode> <role emoji> <ticket> <role word>: <what>` («☕️ 🔧 FRM-303 code: stash keep-hot»)
   - when the board lists it

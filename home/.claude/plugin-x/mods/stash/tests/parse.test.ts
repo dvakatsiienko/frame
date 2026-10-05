@@ -5,7 +5,6 @@ import {
     doorOf,
     parseAsks,
     parseWait,
-    spawnHints,
     writeTargets,
 } from '../hooks/parse.ts';
 
@@ -81,28 +80,6 @@ for (const [shape, command] of reads)
     test(`finds no write in ${shape}`, () => {
         expect(writeTargets(command)).toEqual([]);
     });
-
-const spawn = (subagentType: string, description: string, prompt: string) => ({
-    description,
-    prompt,
-    subagentType,
-});
-
-test('a mechanical job off chore-helper is hinted', () => {
-    expect(
-        spawnHints(spawn('Explore', 'bulk rename', 'x'.repeat(500))),
-    ).toEqual(['a mechanical job belongs on chore-helper']);
-});
-
-test('a mechanical job on chore-helper is not hinted', () => {
-    expect(spawnHints(spawn('chore-helper', 'bulk rename', 'x'))).toEqual([]);
-});
-
-test('a short general-purpose brief is hinted as a possible one-pass job', () => {
-    expect(spawnHints(spawn('general-purpose', 'look', 'find it'))).toEqual([
-        'a short brief is often one pass for this session itself',
-    ]);
-});
 
 for (const [name, fits] of [
     ['☕️ 🔧 FRM-303 code: stash keep-hot', true],
