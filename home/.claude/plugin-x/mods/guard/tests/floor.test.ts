@@ -136,6 +136,11 @@ const SLIPS = [
     ['npm --location=global', 'npm install --location=global x', 'pnpm add -g'],
     ['git config user.name', 'git config user.name bot', 'without the flag'],
     ['a command after arithmetic', 'echo $((1<<2))\nrm x', 'trash'],
+    [
+        'python -m pip install',
+        'python3 -m pip install requests',
+        'uv pip install',
+    ],
 ] as const;
 
 for (const [shape, command, door] of SLIPS)
@@ -153,6 +158,7 @@ const NEAR = [
     ['a host and a path', 'scp f $HOST:/tmp'],
     ['a host and a port', 'curl http://$HOST:8080/'],
     ['arithmetic with a shift', 'echo $((1<<2))'],
+    ['a pip that only lists', 'python3 -m pip list'],
     [
         'a heredoc commit message in a substitution',
         'git commit -F "$(cat <<\'EOF\'\nfix $PATH:x and rm -rf docs\nEOF\n)" -- a.ts',
@@ -165,6 +171,20 @@ for (const [shape, command] of NEAR)
         world(on);
         expect((await bash($, command)).deny).toBeUndefined();
     });
+
+test('a multi-line refusal is kept on one line', async ($, on) => {
+    const store = new Map<string, unknown>();
+    on('store.set', (_$, e) => {
+        store.set(e.key, e.value);
+        return { value: undefined };
+    });
+    on('store.keys', () => ({ value: [...store.keys()] }));
+    world(on);
+    await bash($, 'cd build &&\n  rm -rf out');
+    expect([...store.values()][0]).toMatchObject({
+        command: 'cd build && rm -rf out',
+    });
+});
 
 test('a refusal is kept as a guard event', async ($, on) => {
     const store = new Map<string, unknown>();

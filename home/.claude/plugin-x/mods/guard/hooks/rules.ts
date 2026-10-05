@@ -252,9 +252,13 @@ function floor(c: Command): Refusal | undefined {
             why: 'npm -g is not used here',
         };
     const isPip = /^pip\d*(\.\d+)?$/.test(c.name) && ops[0] === 'install';
+    const pipAt = c.args.findIndex(
+        (w, i) => w.text === '-m' && c.args[i + 1]?.text === 'pip',
+    );
     const isPyPip =
         /^python\d*(\.\d+)?$/.test(c.name) &&
-        c.args.some((w, i) => w.text === '-m' && c.args[i + 1]?.text === 'pip');
+        pipAt >= 0 &&
+        operands(c.args.slice(pipAt + 2))[0] === 'install';
     if (isPip || isPyPip)
         return {
             door: 'uv pip install',

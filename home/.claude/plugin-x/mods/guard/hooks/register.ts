@@ -52,13 +52,12 @@ async function record(
 ) {
     const sid = await $.session.id();
     const at = await $.clock.now();
+    // one line on the band, whatever the command's shape
+    const line = event.command.replace(/\s+/g, ' ').trim();
     const value: GuardEvent = {
         ...event,
         at,
-        command:
-            event.command.length > SHOWN
-                ? `${event.command.slice(0, SHOWN)}…`
-                : event.command,
+        command: line.length > SHOWN ? `${line.slice(0, SHOWN)}…` : line,
         name: await sessionName($, sid),
         sid,
     };
