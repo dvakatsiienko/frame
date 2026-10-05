@@ -435,3 +435,31 @@ test('an afk flip mid-turn reaches the next tool call once', async ($, on) => {
     );
     expect((await bash()).context ?? []).toHaveLength(0);
 });
+
+function bash($: Engine, command: string) {
+    return $.tool.call({ command, tool: 'Bash' });
+}
+
+test("a Bash write to another session's held file is refused with the holder named", async ($, on) => {
+    mock.store(on);
+    on('session.cwd', () => ({ value: '/repo' }));
+    on('env.get', () => ({ value: '/home' }));
+    const w = world(on);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    expect((await bash($, "sd 'a' 'b' x.ts")).deny).toContain(
+        'held by session b1b1b1b1',
+    );
+});
+
+test('a Bash command holds cannot read goes through', async ($, on) => {
+    mock.store(on);
+    on('session.cwd', () => ({ value: '/repo' }));
+    on('env.get', () => ({ value: '/home' }));
+    const w = world(on);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    expect((await bash($, 'f=x.ts; echo hi > "$f"')).deny).toBeUndefined();
+});

@@ -139,3 +139,17 @@ two sessions, A and B, in one checkout.
   - given the store file is unreadable
   - when B edits
   - then the edit goes through and the error is logged
+- ✅ a Bash write to a held file is refused
+  - given A holds `x.ts`
+  - when B runs a Bash command that writes `x.ts` — `sd`, `sed -i`, `> x.ts`, `>> x.ts`, `cat > x.ts <<EOF`, `tee`, python `open('x.ts', 'w')`
+  - then the command is refused, and the message names A, as an Edit's would be
+  - decision: refuse only — a Bash write takes no hold, since nothing tells a command that wrote from one that failed
+  - decision: `tool.call` on `Bash`, the same seat as the Edit/Write guard, so it fires in bypass mode too
+- ✅ a Bash command holds cannot read goes through
+  - given A holds `x.ts`
+  - when B's command writes through a variable, `cd` into a subshell, or any shape the parser misses
+  - then the command runs — a parse miss fails open, like a broken store
+
+## scripts
+
+- 🧭 `pnpm mods:writes [days]` counts the fleet's file writes by channel — Edit/Write against each Bash shape — across `~/.claude/projects` transcripts, so the holds gap can be measured again

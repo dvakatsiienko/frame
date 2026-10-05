@@ -1,7 +1,7 @@
 /* @jsx h */
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
-import { parseAsks } from './parse.ts';
+import { parseAsks, writeTargets } from './parse.ts';
 
 // stash: dima's command center above the prompt, one folded row with three features.
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
@@ -215,6 +215,26 @@ function refusal(file: string, sid: string, hold: Hold, now: number) {
     return `stash: ${file} is held by session ${short(sid)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
 }
 
+// the refusal when another live session holds the path; a released hold is cleared on the way
+async function heldBy(
+    $: EngineInterface,
+    sid: string,
+    file: string,
+    path: string,
+    now: number,
+) {
+    for (const c of await claimsOn($, path)) {
+        if (c.sid === sid) continue;
+        if (await isReleased($, c.sid, c.hold, now)) {
+            await $.store.delete(c.key);
+            continue;
+        }
+        await $.store.set(REFUSED + c.sid, { at: now, by: sid, path });
+        return refusal(file, c.sid, c.hold, now);
+    }
+    return undefined;
+}
+
 // a deny when another session holds the file; the key when this call took a new hold
 async function claim(
     $: EngineInterface,
@@ -224,15 +244,8 @@ async function claim(
     const sid = await $.session.id();
     const { key: path, file: real } = await realPath($, file);
     const now = await $.clock.now();
-    for (const c of await claimsOn($, path)) {
-        if (c.sid === sid) continue;
-        if (await isReleased($, c.sid, c.hold, now)) {
-            await $.store.delete(c.key);
-            continue;
-        }
-        await $.store.set(REFUSED + c.sid, { at: now, by: sid, path });
-        return { deny: refusal(file, c.sid, c.hold, now) };
-    }
+    const deny = await heldBy($, sid, file, path, now);
+    if (deny) return { deny };
     const mine = holdKey(sid, path);
     const held = (await $.store.get(mine)) as Hold | undefined;
     // a first edit that failed left the hold unlanded; the next one that goes through lands it
@@ -328,6 +341,38 @@ async function guard($: EngineInterface, file: unknown): Promise<Claim> {
         );
         return {};
     }
+}
+
+// a Bash write is refused on a held file and takes no hold; an unread command, or an error, goes through
+async function bashGuard($: EngineInterface, command: unknown) {
+    if (typeof command !== 'string') return undefined;
+    try {
+        const targets = writeTargets(command);
+        if (!targets.length) return undefined;
+        const lead = command.match(/^\s*cd\s+([^\s;&|]+)\s*&&/)?.[1];
+        const cwd = await $.session.cwd();
+        const home = (await $.env.get('HOME')) ?? '';
+        const absolute = (p: string, from: string) =>
+            p.startsWith('/')
+                ? p
+                : p.startsWith('~/')
+                  ? `${home}${p.slice(1)}`
+                  : `${from}/${p}`;
+        const dir = lead ? absolute(lead, cwd) : cwd;
+        const sid = await $.session.id();
+        const now = await $.clock.now();
+        for (const target of targets) {
+            const file = absolute(target, dir);
+            const { key } = await realPath($, file);
+            const deny = await heldBy($, sid, file, key, now);
+            if (deny) return deny;
+        }
+    } catch (err) {
+        $.ui.log(
+            `stash holds: ${err instanceof Error ? err.message : String(err)}; the command went through unguarded`,
+        );
+    }
+    return undefined;
 }
 
 async function load($: EngineInterface): Promise<boolean> {
@@ -529,6 +574,11 @@ export const register: Register = (on) => {
             return r;
         },
     );
+
+    on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
+        const deny = await bashGuard($, 'command' in e ? e.command : undefined);
+        return deny ? { deny } : next(e);
+    });
 
     // afk flipped mid-turn: the next tool result carries the new state once
     on('tool.call', async (_$, e, next) => {
