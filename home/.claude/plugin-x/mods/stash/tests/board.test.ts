@@ -162,6 +162,11 @@ test('the coordinator is pinned to the top of the board', async ($, on) => {
     expect(order).toEqual([`m:${HERE}`, `m:${PEER}`]);
 });
 
+test('a headless run named t-<hex> gets no row', async ($, on) => {
+    fleet(on, {}, { alive: [1, 2, 3], patch: { 3: { name: 't-70' } } });
+    expect(Object.keys(await rowsBySid($))).toEqual([HERE, PEER]);
+});
+
 test('every row draws the same fact columns, empty ones included', async ($, on) => {
     fleet(on, { [`context:${HERE}`]: 43 });
     const ui = await board($);

@@ -35,6 +35,8 @@ const BOARD = 'fleet-board';
 const REPLY = 'reply:';
 const CONTEXT = 'context:';
 const SENT = 'sent:';
+// the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
+const HEADLESS = /^t-[0-9a-f]+$/;
 const STALE_MS = 24 * 60 * 60 * 1000;
 // dima at the prompt, typing into a background job, on his phone or the web
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
@@ -527,7 +529,10 @@ async function members($: EngineInterface): Promise<Member[]> {
     );
     const out: Member[] = [];
     const now = await $.clock.now();
-    for (const { bg, base: r } of rows.filter((r) => alive.has(r.pid))) {
+    const shown = rows.filter(
+        (r) => alive.has(r.pid) && !HEADLESS.test(r.base.name),
+    );
+    for (const { bg, base: r } of shown) {
         const reply = (await $.store.get(REPLY + r.sid)) as
             | { wait?: string }
             | undefined;
@@ -796,7 +801,14 @@ export const register: Register = (on) => {
                         flexDirection='row'
                         gap={1}
                         justifyContent='space-between'>
-                        <Box flexDirection='row' flexShrink={1} gap={1}>
+                        {/* the name side gives way, clipped, so a long name never pushes the fact columns out of line */}
+                        <Box
+                            flexDirection='row'
+                            flexGrow={1}
+                            flexShrink={1}
+                            gap={1}
+                            minWidth={0}
+                            overflow='hidden'>
                             {/* the whole name is the control; the coordinator's name stays bold text, since a Button label takes no weight */}
                             {door && !isCoordinator(m.name) ? (
                                 <Button

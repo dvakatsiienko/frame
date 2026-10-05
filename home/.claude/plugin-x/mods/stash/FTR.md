@@ -167,6 +167,7 @@ two sessions, A and B, in one checkout.
   - then a pane lists each by its session name, its state on the right, a full empty row between members
   - decision: cclio is pinned to the top, its name always bold; the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
+  - decision: a session named `t-` + hex (`t-70`) gets no row — dima, 2026-10-05; that these are short-lived headless `claude -p` runs is an inference, no cc source names them
   - decision: a full row between members on every surface, no rule — the pane has room the one-row band does not (dima, 2026-10-05)
 - ✅ `🚦` in the row shows and hides the board
   - given the row draws
@@ -206,6 +207,7 @@ two sessions, A and B, in one checkout.
   - when the board draws
   - then its row shows `⏳ n`, `ctx n%`, the ticket as a link to linear, «sent 4m ago» and its state, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
   - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
+  - decision: the name side gives way and clips, so a long name never pushes a row's columns out of line (dima saw one drift, 2026-10-05)
   - source: `⏳ n` the stash asks store · `ctx n%` the session's `session.measure`, kept by its stash · the ticket from the session name · «sent» the session's `session.send`, kept by its stash
   - decision: no pr, ci, cost or model yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306
 - ⬜ the board stays current
