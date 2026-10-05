@@ -64,7 +64,7 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   the command text passes (4 coders lost ~1 h before it existed, 2026-09-28); a frame worktree's
   `x lane push` pushes through the main checkout
 - anything else whose text names git or `eval` (a jq path like `.git.x`, `gh --jq`, an
-  agent-browser `eval`) goes into a scratch script and runs by path; never override `HOME`
+  agent-browser `eval`) goes into a scratch script and runs by path
 
 ## node
 
@@ -72,30 +72,18 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 ## the bash tool
 
+- **the `guard` cc mod refuses the Bash shapes that used to be listed here** — `sd` with a `$`, a dash-led `sd` find, an unbraced `$var` before `:` or non-ascii, a trailing `&`, a gate piped to `head`/`grep`, a grepped push, `sd`/`sed` on a workflow, a `HOME=` override, plus the floor commands; its refusal names the fix, `plugin-x/mods/guard/FTR.md` lists them. guard: `guard` itself
 - **a hand edit goes through `Edit`/`Write`; a bulk transform may script** — the tools fire the hooks (biome format, the stash holds lock, read-before-write) and fail loud; a script sees no hook and fails silent. a change across many files (a rename, a date shift, 40 files) stays one script call, never 40 Edits (dima, 2026-10-05) — 37 % of a week's fleet writes went through Bash and took no hold (`docs/test-drive/mods.md`). guard: the stash cc mod's holds veto refuses a Bash write to a held file; a Bash write still takes no hold and fires no format hook
 - **biome's format-on-save deletes an import that is not used yet** — two Edits that add an import, then its use, ship a runtime ReferenceError; add the use first, then the import (2026-09-28)
-- a trailing `&` inside a Bash tool call is safe only when something after it keeps the shell
-  alive (`wait`, a `sleep`) — the wrapper exits and kills the child, exit 0, empty log, and it
-  reads as «feature broken» (twice in one day, 2026-09-14). in a `run_in_background` call the
-  wrapper IS the backgrounding
 - renaming a `.gitignore` path un-ignores whatever the OLD path still holds — `git add -A`
   staged a compiled binary right after a rename (2026-09-14); read the staged list before the
   commit
 - **`CI=1 pnpm install` is frozen-lockfile** (pnpm's own CI detection) — a dep add or removal takes `--no-frozen-lockfile` beside it, or the lockfile never moves and the commit ships half; and pnpm 12 reads `overrides` from `pnpm-workspace.yaml` only, the `package.json#pnpm` field is ignored with a warning (2026-09-21)
 - **a delete names the file the grep proved, never its dir** — «TriangleSvg has no users» was true, `trash src/elements/icons` took the live `ExternalLinkSvg.tsx` with it (2026-09-21); the unit of a delete is the path the evidence named
-- **`${var}` before any non-ascii character** — bash reads `«$var»` as a variable named `var»` and dies
-  on «unbound variable» under `set -u` (twice in one session, 2026-09-26); brace every variable that
-  touches a guillemet, an emoji or a dash glyph — and every variable before a colon: zsh reads
-  `$SHA:refs/heads/main` as the `:r` modifier on `$SHA`, and the push refspec lost its sha (2026-10-01)
 - **a hand-kept plist or json changed for one value gets a one-line edit, never a re-serialize** —
   `plistlib.dumps` rewrote all 984 lines of the iterm prefs for one spacing value (2026-10-01)
-- an `sd` replacement never carries a `$` — inside a double-quoted argument the shell expands
-  `$dir` / `$line` to nothing and the line ships hollow (three sightings, 2026-09-17/18). that
-  edit goes through the Edit tool or a python literal; and a find string that starts with `-` needs `--`
-  before it, or `sd` reads it as a flag and edits nothing (2026-10-02)
 - **after a `git mv`, stage only the new paths** — the old path in a pathspec kills the whole `git add` («did not match any files»), and a commit then carries the moves without the edits (twice, 2026-09-28)
 - **vendored code gets its biome exclusion in the same commit that adds it** — the commit hook formats staged files only, ci runs `biome ci` over the repo, so a vendored skill turned main red after a green commit (2026-09-28)
-- **a push is read by `git ls-remote`, never by grepping its output** — a `grep -E` with `->` in the pattern hit the ugrep alias, the pipe died, and the push never ran behind a quiet screen (2026-09-28)
 - **`op run` masks secrets in its child's stdout** — a script that reads a key back from an `op-run` child gets `<concealed by 1Password>`; the child sets `OP_RUN_NO_MASKING=true` and keeps the key in memory only (speak's daemon, 15 min, 2026-09-29)
 
 ## green statuses
@@ -109,7 +97,6 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   prints a short calm list and nothing is red. before trusting a quiet pr, ask «was a RUN
   created for this head», never «is a check green» (bytes #84, 2026-09-12: a commit body that
   quoted the skip marker; the guard is a `commit-msg` hook in both repos)
-- **a gate is read by its exit code, never by grepping its output** — `pnpm --silent --filter chords typecheck | head` printed nothing on 4 type errors and the commit hook caught them a minute later (2026-09-22); `--silent`, a pipe, or a `grep` for «error» all turn red into quiet
 - **a green typecheck answers «did the configured files pass», never «are my files configured»** — `hotkeys/*.ts` sat in no tsconfig for a week and a reverted interface field left the gate green (2026-09-20). a new dir of `.ts` is proven by planting a type error and watching `pnpm typecheck` go red
 - **github's `Deploy · success` is the hook trigger, never the build** — three production builds were red for 20 minutes behind a green Actions page (2026-09-21); the build state lives only in `vercel inspect <deploy url>` (`status ● Error`), and `vercel ls <project> --prod` names the newest one
 
@@ -126,5 +113,3 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 - a jq program is proven when ci compiles it — ubuntu runners ship jq 1.7, the mac 1.8; `a + b`
   as a bare object value parses locally and fails on the runner (bytes #79, 2026-09-12). a job
   that runs jq prints `jq --version` first
-- `sd` / `sed` silently drop `${{ … }}` from a workflow line — a workflow file is edited with the
-  Edit tool only (two expressions eaten on #79, caught only by printing the result)
