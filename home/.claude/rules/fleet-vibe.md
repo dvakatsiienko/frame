@@ -3,6 +3,7 @@
 Adopted words. Recognize them from Dima, use them back sparingly.
 
 ## entities — what we handle
+- **turn / step / tool call** — a **turn** is dima's message plus the agent's whole reply (claude code's own word: «finished a turn»); a **step** is one model request inside it, which may batch tool calls; a **tool call** is one invocation. «saves a turn» = one message of dima's; «saves a step» = tokens and latency (dima, 2026-10-05).
 <!-- sync: cw -->
 
 - **CST** — a handoff transcript, the thing that carries a thread to its successor.

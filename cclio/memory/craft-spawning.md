@@ -196,7 +196,7 @@ long-context number exists for the 5 family, the last measured knee (opus 4.6) s
 90k boot on a warm 1h cache is ~2 cents a turn. what does cost: a cache gone cold after a >1h gap.
 the probe (10-needle recall + one edit at 100k / 400k / 800k) rides `refresh-spawn-mechanics` at
 every model bump — the curve is per-release.
-📌 **the top of the cost curve is measured, not capped**: a coder at 250–460k context, 638 turns in 75 min, took ~85 % of a 5-hour window (2026-09-12). dima's call: no ceiling, no auto-compact below the max — a coder that compacts mid-task forgets the task. cases log in `docs/test-drive/ctx-burn.md`; dig in when the pattern repeats.
+📌 **the top of the cost curve is measured, not capped**: a coder at 250–460k context, 638 steps in 75 min, took ~85 % of a 5-hour window (2026-09-12). dima's call: no ceiling, no auto-compact below the max — a coder that compacts mid-task forgets the task. cases log in `docs/test-drive/ctx-burn.md`; dig in when the pattern repeats.
 
 **Cost of a reading agent = bodies × size, never agents × a flat number** — the board-sweep
 workflow was guessed at ~150k and spent 1.27M for 82 ticket bodies + comments.
