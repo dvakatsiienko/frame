@@ -160,7 +160,7 @@ two sessions, A and B, in one checkout.
 
 ## /board — the fleet board
 
-- ⬜ `/board` opens a pane listing every live session
+- 🔎 `/board` opens a pane listing every live session
   - the harness proves the rows; the spacing is dima's look
   - given cclio, two coders and a verifier are live
   - when dima types `/board`
@@ -179,7 +179,7 @@ two sessions, A and B, in one checkout.
   - then its row reads `busy` and for how long, not `idle`
   - source: the registry's `status` and `statusUpdatedAt`, written by cc for every session; `busy` and `shell` read `busy`, any other word (`idle`, `waiting`, `blocked`, `needs_input`) shows as cc wrote it
   - decision: the registry over a flag each stash wrote — that flag read idle through FRM-305's long `shell` (2026-10-05)
-- ✅ each row says what its session waits on
+- 🔎 each row says what its session waits on
   - given a session's last reply ends with a `🔭` line
   - when the board draws
   - then the row's second line reads that line, links reduced to their labels
@@ -202,7 +202,7 @@ two sessions, A and B, in one checkout.
   - decision: the whole name is a plain `Button`, normal weight; the surface's own hover background marks it, no bold on hover — a `Button` label takes no weight, and a whole-name `Markdown` link drew in the surface's blue (dima, 2026-10-05)
   - decision: cclio's name is bold text with its own `↗` beside it, since a bold name cannot be a `Button` label
   - decision: no hover cards anywhere in the pane — an absolute card in a narrow row wrapped, clipped and drew over its neighbours (dima, 2026-10-05)
-- ✅ each row carries its facts beside the state
+- 🔎 each row carries its facts beside the state
   - given a session has open asks, a context reading or a ticket in its name
   - when the board draws
   - then its row shows the ticket as a link to linear, `ctx n%`, its state and `⏳ n`, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
