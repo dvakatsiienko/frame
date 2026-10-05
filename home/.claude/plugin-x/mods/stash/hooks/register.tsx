@@ -779,26 +779,26 @@ export const register: Register = (on) => {
                 <Box
                     flexDirection='column'
                     key={`m:${m.sid}`}
-                    marginTop={i > 0 && e.surface === 'desktop' ? 0.5 : 0}>
+                    marginTop={i > 0 ? 1 : 0}>
                     <Box
                         flexDirection='row'
                         gap={1}
                         justifyContent='space-between'>
                         <Box flexDirection='row' flexShrink={1} gap={1}>
-                            <Text bold wrap='truncate-end'>
-                                {name}
-                            </Text>
+                            {/* the whole name is the control: a Button label takes no weight, so bold shows under the pointer only (dima, 2026-10-05) */}
                             {door ? (
                                 <Button
-                                    dimColor
+                                    hover={{ bold: true }}
                                     key={`door:${m.sid}`}
                                     onPress={(p) =>
                                         void pressDoor($, door, p.surface)
                                     }
                                     plain>
-                                    {door.kind === 'open' ? '↗' : '📋'}
+                                    {`${name} ${door.kind === 'open' ? '↗' : '📋'}`}
                                 </Button>
-                            ) : null}
+                            ) : (
+                                <Text wrap='truncate-end'>{name}</Text>
+                            )}
                             {m.offPattern ? (
                                 <Text color={ACCENT}>⚠</Text>
                             ) : null}
@@ -1050,7 +1050,7 @@ export const register: Register = (on) => {
                             key='hot'
                             onPress={() => void flipHot()}
                             {...(hot
-                                ? { variant: 'primary' as const }
+                                ? { variant: 'secondary' as const }
                                 : { plain: true as const })}>
                             {hotLabel}
                         </Button>,
@@ -1065,7 +1065,7 @@ export const register: Register = (on) => {
                             key='afk'
                             onPress={() => void flipAfk()}
                             {...(afk
-                                ? { variant: 'primary' as const }
+                                ? { variant: 'secondary' as const }
                                 : { plain: true as const })}>
                             {afkLabel}
                         </Button>,
@@ -1078,11 +1078,12 @@ export const register: Register = (on) => {
                             key='board'
                             onPress={() => void flipBoard()}
                             {...(boardOpen
-                                ? { variant: 'primary' as const }
+                                ? { variant: 'secondary' as const }
                                 : { plain: true as const })}>
                             🚦
                         </Button>,
                         leftOf('🚦', boardOpen),
+                        { hotkey: 'b', onPress: () => void flipBoard() },
                     )}
                     {first
                         ? tip(

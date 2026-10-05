@@ -15,13 +15,14 @@
   - decision: half a cell above each thread after the first on desktop, so two lists read apart (dima, 2026-10-05); none in the terminal, where it costs a row
   - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
   - decision: the fold control is a folder, `📂` open and `📁` folded — dima asked for a more interesting state than `▼`/`▲`
-  - decision: `c` copies the head's asks, `o` folds; the key rides the hover card, never the icon — the card is a dim `Button` with the key and the same press, so the surface draws its own key badge there (desktop) or `c: copy …` (terminal) (dima, 2026-10-05: «hkeys not present in button text, only in tooltip»)
+  - decision: an «on» toggle (`🔥`, `💨`, `🚦`) draws as the light `secondary` chip, an «off» one plain — the desktop drew `primary` black, which read badly (dima, 2026-10-05)
+  - decision: `c` copies the head's asks, `b` folds or unfolds the board, `o` folds the asks; the key rides the hover card, never the icon — the card is a dim `Button` with the key and the same press, so the surface draws its own key badge there (desktop) or `c: copy …` (terminal) (dima, 2026-10-05: «hkeys not present in button text, only in tooltip»)
   - 📌 a key fires only while the band holds focus (a click, or ctrl+x tab), never from the prompt; whether a key bound inside a hidden card fires is dima's press
   - decision: no ➡️ prompt suggestion — the built-in suggestion writes a good prompt; one suggestion, no race (dima, 2026-10-05)
 - 🔎 every control in the row names itself on hover: a dim card beside it
   - given the row draws
   - when dima hovers `📋`, `🔥`, `💨`, `🚦`, the fold folder or the holds chip
-  - then a dim line beside it says what a press does now: «copy this thread's asks» with its `c` badge, «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board», «fold» or «unfold» with its `o` badge
+  - then a dim line beside it says what a press does now: «copy this thread's asks» with its `c` badge, «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge, «fold» or «unfold» with its `o` badge
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
   - dima, 2026-10-05: seen in the desktop Code tab and in Warp
 - 🔎 asks: every live session's open asks, «no open asks» when empty
@@ -49,14 +50,14 @@
   - decision: a real button, not plain text — dima could not tell it was pressable; the mod api has no cursor prop, so the pointer is the surface's own
   - decision: ask lines are not selectable — the mod api has no selection control and `Markdown` did not help either (dima, 2026-10-04); copy all is the door
   - decision: no read-aloud button — dima uses F4 on a selected phrase, F4 does not read the clipboard, and a «read all» is not useful (2026-10-05); selectable band text would need an api cc does not have yet
-- ⬜ afk switch: one icon, `💨`; the accent background alone says it is on
-  - decision: one icon, the background tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
+- ⬜ afk switch: one icon, `💨`; the `secondary` chip alone says it is on
+  - decision: one icon, the chip tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
 - ✅ afk reaches a running turn
   - given a session is mid-turn
   - when dima flips afk
   - then the session's next tool call carries a one-line note with the new afk state
   - decision: once per flip; the note rides the tool result as context, the model reads it and dima does not see it
-- ✅ keep-hot switch: `🔥 hot` in the row between `📋 copy all` and afk, off by default, accent background when on
+- ✅ keep-hot switch: `🔥 hot` in the row between `📋 copy all` and afk, off by default, the `secondary` chip when on
   - decision: a keep-alive, not a one-shot — on dima's 2026-10-04 live test the ping fired, then 🔥 went unticked; it stays on until dima switches it off
   - decision: 🔥 lives in the stash store under the session's id, not in the mod's memory — a reload or a worker respawn wipes that memory and cancels its timers, and nothing else in the code ever turns 🔥 off
 - ✅ 🔥 stays on across pings and reloads
@@ -160,16 +161,16 @@ two sessions, A and B, in one checkout.
 ## /board — the fleet board
 
 - ⬜ `/board` opens a pane listing every live session
-  - the harness proves the rows; the bold names and the spacing are dima's look
+  - the harness proves the rows; the spacing is dima's look
   - given cclio, two coders and a verifier are live
   - when dima types `/board`
-  - then a pane lists each by its session name, always bold, its state on the right
+  - then a pane lists each by its session name, its state on the right, a full empty row between members
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
-  - decision: on desktop half a cell between members, so rows read apart; none in the terminal, where it costs a row (dima, 2026-10-05)
+  - decision: a full row between members on every surface, no rule — the pane has room the one-row band does not (dima, 2026-10-05)
 - ✅ `🚦` in the row shows and hides the board
   - given the row draws
   - when dima presses `🚦`, left of the fold folder
-  - then the board opens; pressed again, it closes; the accent background says it is open
+  - then the board opens; pressed again, it closes; the `secondary` chip says it is open, and `b` does the same while the row holds focus
 - ✅ each row's state is cc's own
   - given a coder runs a long shell command inside a turn
   - when the board draws
@@ -183,19 +184,19 @@ two sessions, A and B, in one checkout.
   - given the last reply has no `🔭` line
   - then the second line reads the reply's first line, dimmed: what the session last said
   - source: the session's own last reply, kept by its stash at each reply end
-- ⬜ `↗` right of a session's name opens it in the desktop
+- ⬜ a press on a session's name opens it in the desktop
   - the harness proves the `open <url>` it runs; that the desktop then shows the session is dima's click
   - given a desktop-born session (the registry carries `hostSessionId: local_…`)
-  - when dima presses `↗`
+  - when dima presses its name, which ends in `↗`
   - then the desktop opens that session through `claude://code/continue?session=local_…`
   - given a background session bridged to claude.ai (`bridgeSessionId: session_…`)
   - then the press opens `claude://code/session_…`
-  - given a background session with neither, the control is `📋`
+  - given a background session with neither, the name ends in `📋`
   - then the press copies `claude attach <jobId>`, the terminal door
   - given a terminal session with neither
-  - then no control shows: nothing opens it
+  - then the name is plain text: nothing opens it
   - decision: the mod api has no door to a session; the desktop's own `claude://` url handler has one (read from its 2.1.289 bundle), and the press runs `open <url>` on this mac rather than a `Link`, whose click the pane's sandbox decides
-  - decision: the name stays bold plain text with `↗` beside it — a whole-name `Markdown` link drew in the surface's blue, which a mod cannot restyle (dima, 2026-10-05)
+  - decision: the whole name is a plain `Button`, normal weight, bold under the pointer — a `Button` label takes no weight, and a whole-name `Markdown` link drew in the surface's blue (dima, 2026-10-05: pick a)
   - decision: no hover cards anywhere in the pane — an absolute card in a narrow row wrapped, clipped and drew over its neighbours (dima, 2026-10-05)
 - ✅ each row carries its facts beside the state
   - given a session has open asks, a context reading, a ticket in its name, or sent a message

@@ -132,15 +132,11 @@ const stop = ($: Engine, reply: string) =>
 const pressName = async ($: Engine, sid: string) =>
     (await board($)).press({ key: `door:${sid}` });
 
-test('every session name on the board is bold', async ($, on) => {
+test('a session with a door is pressed by its whole name', async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const names = await Promise.all(
-        ['🦉 cclio (here)', '☕️ 🔧 FRM-1 code: x'].map((text) =>
-            ui.find({ text, type: 'Text' }),
-        ),
-    );
-    expect(names.map((n) => n?.props.bold)).toEqual([true, true]);
+    const name = await ui.find({ key: `door:${HERE}` });
+    expect(name?.text).toBe('🦉 cclio (here) ↗');
 });
 
 test('a session inside a long shell command reads busy', async ($, on) => {

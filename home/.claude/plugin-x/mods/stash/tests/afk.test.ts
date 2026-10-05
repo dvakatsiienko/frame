@@ -22,11 +22,11 @@ for (const surface of ['terminal', 'desktop'] as const) {
             props,
             surface,
         });
-        // one icon either way; the accent (primary) background is the state
+        // one icon either way; the secondary chip is the state
         const before = (await ui.find({ key: 'afk' }))?.props.variant;
         await ui.press({ key: 'afk' });
         const after = (await ui.find({ key: 'afk' }))?.props.variant;
-        expect([before, after]).toEqual([undefined, 'primary']);
+        expect([before, after]).toEqual([undefined, 'secondary']);
     });
 }
 

@@ -124,7 +124,7 @@ test('🔥 stays ticked after two pings', async ($, on) => {
     await s.clock.advance(50 * MIN);
     expect([s.pings.length, (await s.button())?.props.variant]).toEqual([
         2,
-        'primary',
+        'secondary',
     ]);
 });
 
@@ -132,7 +132,7 @@ test('🔥 survives a reload', async ($, on) => {
     const s = await started($, on, { [`hot:${SID}`]: { since: NOW } });
     await s.clock.advance(50 * MIN);
     expect([(await s.button())?.props.variant, s.pings.length]).toEqual([
-        'primary',
+        'secondary',
         1,
     ]);
 });
