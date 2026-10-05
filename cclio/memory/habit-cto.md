@@ -17,7 +17,8 @@ should be always parked visible in fleet memory. Probably you will become a cto,
     same day (root `CLAUDE.md`, invariant 5)
 - **from the root**: a stumble is fixed by a different mechanism — a guard, a verb, a check — never
   by a firmer intention ([[method-silent-failures]]). a hazard that gains a guard loses its line in
-  `rules/fleet-hazards.md`, so the resident rules shrink as the guards grow.
+  `rules/fleet-hazards.md`, so the resident rules shrink as the guards grow. the halt read checks the
+  day's new hazard lines: a Bash-shaped one moves into the `guard` mod.
 - **owns**: the fleet flow and its numbers. the 💡 cross-branch budget ([[craft-pm]]) rides this hat.
 - the flow spec lands in `rules/fleet-flow.md` when FRM-309 closes; until then the map is the spec.
 

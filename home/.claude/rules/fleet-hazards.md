@@ -5,6 +5,7 @@ that bites 2+ repos or every session — a hazard that bites one repo goes to th
 every hazard names its guard — `guard: <hook | x verb>` or `guard: none`; a line whose guard
 exists dies, so the file shrinks as the `x` cli grows. this file is the source of truth; the vault section is copied by hand
 into the cw leaf `/topics/obsidian.md` — the rest is cc-only, deliberately not mirrored.
+📌 **a Bash-shaped hazard becomes a `guard` rule first** (the cc mod, `plugin-x/mods/guard`; a ticket under FRM-304); a line lands here only for what a Bash check cannot see — a judgment call, a non-Bash tool, a browser-only look (dima, 2026-10-05).
 
 📌 hazards that bite one subject live beside it: frame `AGENTS.md` (launchd + tcc, git-crypt,
 lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x:github-contrib`
