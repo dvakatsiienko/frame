@@ -1,0 +1,79 @@
+{"expect": "x:cmt", "label": "synthetic", "note": "probe", "state": {"prompt": "commit this and slay"}}
+{"expect": "x:cmt", "label": "observed", "note": "same-turn load", "state": {"prompt": "1. commit my frame edits now, pathspec only (cclio init, vet files, reminders, ☕️ rule, op.env keys) ➡️ yes 2. then open the atelier docs sharpen lane ➡️ yes"}}
+{"expect": "x:cmt", "label": "observed", "note": "same-turn load", "state": {"prompt": "1. typescript-lsp — 10-min probe (brew install + one test) or uninstall now ➡️ probe 2. commit the guide + x bump ➡️ yes"}}
+{"expect": "x:cmt", "label": "observed", "note": "same-turn load", "state": {"prompt": "1. commit the 37 paths as one commit ➡️ yes after your review"}}
+{"expect": "x:cmt", "label": "inferred", "note": "slay is a cmt trigger word", "state": {"prompt": "nice. slay to bytes this hero. both version - light and dark."}}
+{"expect": "x:walkthrough", "label": "synthetic", "note": "probe", "state": {"prompt": "walk me through the rubric on real inbox lines"}}
+{"expect": "x:pm", "label": "synthetic", "note": "probe", "state": {"prompt": "read BYT-41 and fold today’s state into the body"}}
+{"expect": "x:pm", "label": "inferred", "note": "ticket edit", "state": {"prompt": "linear://linear.app/issue/BYT-105 Only you should be an assignee here"}}
+{"expect": "x:pm", "label": "inferred", "note": "ticket close", "state": {"prompt": "1. close FRM-39 (FRM-26 detached, closing word written) ➡️ yes"}}
+{"expect": "x:pm", "label": "synthetic", "note": "ticketify", "state": {"prompt": "save this idea as a ticket: the router should see the last assistant message"}}
+{"expect": "x:browser-headless", "label": "synthetic", "note": "probe", "state": {"prompt": "does the chart render at mobile width?"}}
+{"expect": "x:browser-headless", "label": "observed", "note": "same-turn load", "state": {"prompt": "the gap became smaller, still does not touch, can you use agents-browser to inspect? phone solved i approve."}}
+{"expect": "x:browser-headless", "label": "inferred", "note": "a browser check asked by name", "state": {"prompt": "use agents-browser"}}
+{"expect": "x:notes", "label": "synthetic", "note": "probe", "state": {"prompt": "append to inbox: try windscribe as the vpn fallback"}}
+{"expect": "x:notes", "label": "inferred", "note": "a vault read", "state": {"prompt": "Use the Read tool to read the file \"/Users/dima/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/cooking/cutlets.md\". Then quote the first heading line of any vault AGENTS.md now in your memory, or say NONE."}}
+{"expect": "cclio:flawlog", "label": "synthetic", "note": "probe", "state": {"prompt": "1. flawlog flush, four lines ➡️ yes"}}
+{"expect": "cclio:checkpoint", "label": "synthetic", "note": "probe", "state": {"prompt": "park the rule for the week, then checkpoint"}}
+{"expect": "cclio:checkpoint", "label": "observed", "note": "same-turn load", "state": {"prompt": "can we checkpoint while tart is running? it's long and we can paralelize"}}
+{"expect": "cclio:report", "label": "synthetic", "note": "probe", "state": {"prompt": "sup, where are we"}}
+{"expect": "cclio:report", "label": "inferred", "note": "the session board", "state": {"prompt": "okay. let's review today sess. what i missed? what else small stuff we can do today?"}}
+{"expect": "x:handoff-ingest", "label": "synthetic", "note": "probe", "state": {"prompt": "grab the handoff diorama-checkpoint-1"}}
+{"expect": "x:art-kit", "label": "synthetic", "note": "probe", "state": {"prompt": "draw a paper diorama hero for the bytes readme"}}
+{"expect": "x:art-kit", "label": "observed", "note": "same-turn load", "state": {"prompt": "nice. add pretty favicon for voice app."}}
+{"expect": "x:art-kit", "label": "synthetic", "note": "gif ask", "state": {"prompt": "make a gif out of this clip, 00:12 to 00:18, with captions"}}
+{"expect": "x:guide-code", "label": "synthetic", "note": "probe", "state": {"prompt": "refactor usageSave in sline to take the path as an argument"}}
+{"expect": "x:guide-code", "label": "synthetic", "note": "code edit", "state": {"prompt": "do yourself, not via coder: add a --json flag to script/jev-report.ts"}}
+{"expect": "x:writing-for-humans", "label": "synthetic", "note": "probe", "state": {"prompt": "write the recruiter a short reply declining the call"}}
+{"expect": "x:guide-ui-ux", "label": "observed", "note": "same-turn load", "state": {"prompt": "try make top color gruvbox themed. not too loud."}}
+{"expect": "x:guide-ui-ux", "label": "observed", "note": "same-turn load", "state": {"prompt": "nice! create some solid and nice art directed style for text"}}
+{"expect": "x:guide-ui-ux", "label": "inferred", "note": "a rendered element", "state": {"prompt": "possible to make rounded corners for a hero?"}}
+{"expect": "x:yt-transcript", "label": "synthetic", "note": "a youtube link", "state": {"prompt": "https://youtu.be/2nc_QMuNp18 what are the use cases in this video?"}}
+{"expect": "x:shape-idea", "label": "synthetic", "note": "a new app", "state": {"prompt": "i want to build a small app that tracks my weekly cc usage window"}}
+{"expect": "x:step-by-step", "label": "observed", "note": "same-turn load", "state": {"prompt": "1. slay frame (2 commits) ➡️ yes 2. next: obsidian step-by-step ➡️ go"}}
+{"expect": "x:queue", "label": "inferred", "note": "after this = in-session queue", "state": {"prompt": "better but elements are tiny. possible to make them bigger? 3. FRM-259 notification round (the four questions above) ➡️ after this"}}
+{"expect": "x:crew-cloud", "label": "synthetic", "note": "a cloud spawn", "state": {"prompt": "run it in the cloud: the readme badge refresh, open a pr when done"}}
+{"expect": "cclio:halt", "label": "synthetic", "note": "session end", "state": {"prompt": "let's wrap, that's it for today"}}
+{"expect": "cclio:evergreen", "label": "synthetic", "note": "the evergreen ask", "state": {"prompt": "updates? anything to merge from renovate?"}}
+{"expect": "x:github-contrib", "label": "synthetic", "note": "babysit a pr", "state": {"prompt": "watch pr 112 until it merges and answer the review threads"}}
+{"expect": "x:crew-designer-interview", "label": "synthetic", "note": "a design job", "state": {"prompt": "let's design a new look for atelier"}}
+{"expect": "x:ftr", "label": "synthetic", "note": "an ftr write", "state": {"prompt": "draft the ftr for chords"}}
+{"expect": "x:app-essentials", "label": "synthetic", "note": "a new app", "state": {"prompt": "scaffold a new app in bytes called ledger and wire it up"}}
+{"expect": "none", "label": "synthetic", "note": "probe", "state": {"prompt": "what entry options do i have in 1p?"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:notes on «vault»", "state": {"prompt": "create a 1p entry in dev vault (look for the shape in other entires)"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:guide-code on agents.md", "state": {"prompt": "Maybe print a line into frame's agents.md?"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:writing-for-humans on «announce»", "state": {"prompt": "announce Cloud sessions, as official members of our fleet, are under vet"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:guide-code on an ack", "state": {"prompt": "📋 copy → «cloud base» setup script 📋 ✓"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:cmt on a later push", "state": {"prompt": "push the 7 commits at session end"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:cmt + cclio:halt on a later push", "state": {"prompt": "just slay at session halt"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:queue on next session", "state": {"prompt": "app logo - ... Plan to draw a cool logo for atelier, maybe next session"}}
+{"expect": "none", "label": "observed", "note": "vet miss: cclio:halt mid-session", "state": {"prompt": "and thats it for now from my side."}}
+{"expect": "none", "label": "observed", "note": "vet miss: a question about a tool", "state": {"prompt": "how do I install humanize from its upstream marketplace?"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:handoff-ingest on a peer question", "state": {"prompt": "ask the coder session whether it already pushed"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:writing-for-humans on a question", "state": {"prompt": "So, after a quick test, Leva is much worse for me … Why, then, did you suggest even trying it?"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:notes; claude-api loaded, outside the roster", "state": {"prompt": "Go spin some research about the latest data to refresh models.md. We probably have somewhere a skill or a recipe for that"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:writing-for-humans; «her» is cclio; 80-char log prefix", "state": {"prompt": "and reply to her. no commits yet. And how do you think, in a stats app, logos wo"}}
+{"expect": "none", "label": "observed", "note": "vet miss: x:writing-for-humans on a message to cclio; 80-char log prefix", "state": {"prompt": "Cleo will ask you about your opinion on recent artkit skill usage and the TypeSc"}}
+{"expect": "none", "label": "inferred", "note": "a question", "state": {"prompt": "can voice app be permanently running same as chords and atelier?"}}
+{"expect": "x:cmt", "label": "inferred", "note": "slay now", "state": {"prompt": "1. push 38291676 ➡️ slay"}}
+{"expect": "x:cmt", "label": "inferred", "note": "slay now", "state": {"prompt": "1. unlock 1password, then slay 29a3933f + 0b9be656 ➡️ slay"}}
+{"expect": "x:guide-code", "label": "inferred", "note": "a code edit in the speak app", "state": {"prompt": "and make pill icon live - play/puuse"}}
+{"expect": "none", "label": "inferred", "note": "a question, no message drafted", "state": {"prompt": "🔮 Frontend and Software engineering | building top-notch tools from the future ← whats wrong with my bio?"}}
+{"expect": "none", "label": "inferred", "note": "later-only", "state": {"prompt": "a probe for later: load plugin x in the cloud from frame through a git-subdir marketplace, which the docs support. Unproven for a private repo. ← probe!"}}
+{"expect": "none", "label": "inferred", "note": "a relay to a coder, the coordinator writes no code", "state": {"prompt": "ask coder to make a pass across all app avatars and «center» the drawing inside of a jar"}}
+{"expect": "none", "label": "inferred", "note": "ack", "state": {"prompt": "i go cook"}}
+{"expect": "none", "label": "inferred", "note": "ack", "state": {"prompt": "done, proceed"}}
+{"expect": "none", "label": "inferred", "note": "ack", "state": {"prompt": "yes good"}}
+{"expect": "none", "label": "inferred", "note": "ack", "state": {"prompt": "go"}}
+{"expect": "none", "label": "inferred", "note": "status question", "state": {"prompt": "did you stuck?"}}
+{"expect": "none", "label": "inferred", "note": "naming question about 1password", "state": {"prompt": "Hey, how to name one password field?"}}
+{"expect": "none", "label": "inferred", "note": "a diagnosis question", "state": {"prompt": "vhs 0.12 records the frames fine, but its hand-off to ffmpeg 9 fails without an error ← why? vhs bug or lack of correct ffpeg package? maybe just install?"}}
+{"expect": "none", "label": "inferred", "note": "a question about a tool", "state": {"prompt": "can a skill be used in «only-ai-check-mode»?"}}
+{"expect": "none", "label": "inferred", "note": "status question", "state": {"prompt": "did coder run coder reviewers? local and CI?"}}
+{"expect": "none", "label": "inferred", "note": "a relay; slay is B's, not this turn's", "state": {"prompt": "tell B to work directly on main, and slay in place, no branch"}}
+{"expect": "none", "label": "inferred", "note": "a word question", "state": {"prompt": "waived means do not do?"}}
+{"expect": "none", "label": "inferred", "note": "a question", "state": {"prompt": "x-speak re-added. i keep re-adding these things manually each time. can this be automated?"}}
+{"expect": "none", "label": "inferred", "note": "a plan question", "state": {"prompt": "whats the plan for designer and after?"}}
+{"expect": "none", "label": "inferred", "note": "a question", "state": {"prompt": "This render is a kind of build. It is needed to be rendered after each change, or what?"}}
+{"expect": "none", "label": "inferred", "note": "a question about the flawlog, no flush asked", "state": {"prompt": "Did we process a full Flawlog, and nothing gets transferred to next CST?"}}
+{"expect": "none", "label": "inferred", "note": "a question about a skill", "state": {"prompt": "So when I type \"writing-for-humans\", first `ai-check` happens, and then `humanize` happens, right?"}}
