@@ -41,6 +41,12 @@ This emptied `_MEMORY.md` (9,408 bytes → 0) and the verification passed — a 
 passes trivially on an empty file. 🎯 **Never verify a deletion with a check an empty file also
 passes; assert what must REMAIN** — pointer count, byte count, a known-good line.
 
+## ❗ a bulk edit verified by its own filter
+
+the +2 date shift ran on reminders and two files and passed its own check, while 8 window and
+`dies-when` lines inside test-drive files kept the old dates (2026-10-05). **verify a bulk edit by
+grepping every old value across the repo**, never by the filter that chose the targets.
+
 ## ❗ zsh eats unquoted `=word` args
 
 `echo ===DIVIDER===` in a chained command aborts the WHOLE chain — zsh equals-expansion tries to

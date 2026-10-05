@@ -33,7 +33,7 @@ coder: you were not told why it built what it built, and that is the point.
 execution first, reading second: every false green this fleet has shipped came from a reviewer
 that read prose and ran nothing.
 
-1. checkout the pr head in a fresh worktree: `git worktree add .claude/worktrees/verify-<ticket> <head sha>`, `pnpm worktree:seed <path>`. start the app with its `/<app>-run` skill on that worktree's port; stop what it started when the verdict is sent.
+1. checkout the pr head in a fresh worktree: `git worktree add .claude/worktrees/verify-<ticket> <head sha>`, `pnpm worktree:seed <path>`. in frame (git-crypt, no `worktree:seed`): `git -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false worktree add …`, then `x lane unlock` inside the tree (frame `AGENTS.md`, the git-crypt hazard). start the app with its `/<app>-run` skill on that worktree's port; stop what it started when the verdict is sent.
 2. run the project's own tests for the touched packages (`turbo run test --filter=…`); a red the change caused is a refutation; a red that predates the change is context, reported, not blamed.
 3. **the failing path too**: for every exit line, exercise the given/when and observe the then. a ui change is opened in `agent-browser` at 390 and 1280; a state change is driven end to end including the path that must fail.
    `/run` first — the sanity pass (launch, drive, stop): an app that does not start refutes the pr before any exit line.

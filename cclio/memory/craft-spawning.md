@@ -92,6 +92,7 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 - 🚨 **an idle notice is a check, never a «nothing new»** (dima 2026-09-20, after a coder stalled twice within minutes): on every idle notice run `git -C <worktree> status --short` + `git log -1` against the coder's last ping; a dirty tree, an unpinged commit or an open assignment → nudge in the same turn. the stall then lasts seconds, unattended
 - ⚠️ **`notify_when_idle` subscriptions die on a coordinator restart, silently** — re-subscribe
   after every restart; an empty `SendMessage` costs nothing.
+- ⏱️ **a coder idle on its own timer needs no re-arm** — its report message is the signal; three re-arms fired at once on 10-05
 - ⏱️ **the idle notice is QUEUED, not immediate** — it drains at your next tool round, so it can
   land after the session it reports was stopped. read the timestamp it carries, never its arrival
   time (2.1.251).
@@ -122,7 +123,7 @@ archaeology. Subscribe, never poll. Budget three round trips — more means the 
 **A research pick is checked against the spec's own rules and dima's past verdicts before it enters a ticket or a reply** — leva was a research lane's default r3f panel and broke «every control is a kit component»; the coder caught it, dima's A/B killed it. a research brief carries `decided against: …` lines for what he already rejected (2026-09-26: a ci lane re-proposed builds on github actions, rejected two weeks earlier, and it reached him as a recommendation).
 **A taste reference dima names goes into the ticket as a link the same day** — the rzpp demo he liked was missing, so the spec's «plain scroll pans» fought it for a decision round.
 **Exit lines are checked against main at planning time, claim cross-view things as equalities, and name a dependency on another pr** — «ignoreBuildErrors gone» was already true on main; «the count is the headline everywhere» became checkable only as «the same number on every view», and that is where the bug was; an exit line that holds only after #111 merged never said so (2026-09-28). **A brief that points at files fetches main first** — two briefs named files that lived only on an open pr.
-**The spawn ask's exit lines state rules, name surfaces, and cover every list item** — one example string, «any bake», and a standing list with no lines each cost a round (BYT-103/104/105).
+**A rate bar in an exit line names its minimum n** — «critical recall ≥ 95 %» on 9 critical prompts meant 9 of 9 (FRM-305). **The spawn ask's exit lines state rules, name surfaces, and cover every list item** — one example string, «any bake», and a standing list with no lines each cost a round (BYT-103/104/105).
 **A visual spec names the artifact to match, never the recipe** — «22 % corner mask» cost three probe rounds; «match `handoffs.png`» would have been right and cheaper (2026-09-22).
 **A ui-shaped ask gets its data measured before anything is drawn** — «the history view reads them as one chain» named a view that did not exist; dima's real rows (7, 5 zero-length) shrank it to a writer seam (2026-09-22).
 **A script that narrows a shared file to HEAD reads HEAD at write time, never before the work** — a coder's package.json reset read HEAD before cclio's rename landed and shipped the pre-rename key (2026-09-22).

@@ -51,6 +51,15 @@ else exists. Born 2026-10-05 from the skill-router research round. Recipe entity
 4. **resolve** — with dima: a rubric change ships as a commit with `RUNS=3` numbers in its body; noop is fine
 5. **a model bump** — before re-pinning `jev-1.13.0`, every flow's fixtures replay on the new model; a drop blocks the pin
 
+## verify — what a jev change's verifier runs (the 10-05 retros)
+
+- unit test + `red-proof` + one live `suggest()` for every ⚠ line; an exit line names the hook timeout the flow must fit (the router hook: 8 s, two sequential calls ~1.5 s)
+- a multi-stage flow ships its per-stage reason (`stage` field) in the first build
+- jev down or out of credit: verify from saved raws — copy the raws, put a stub `claude` first on PATH, unset the jev key
+- «0 requests» is proven by a fetch-stub preload (`NODE_OPTIONS=--import`, every request logged to a file), across scripts and vitest workers
+- a model baseline through `claude -p` runs lean: `--settings '{"disableAllHooks":true,"alwaysThinkingEnabled":false,"claudeMdExcludes":["**/*"]}'` (~17k tokens and 8 s → clean context and 2 s)
+- a replay on mostly synthetic fixtures prints its real-only slice first (94 % → 67 % on real); a vet miss line carries the full prompt
+
 ## cadence
 
 monthly, or at a jev model bump, or when a flow's vet streak breaks twice in a week.

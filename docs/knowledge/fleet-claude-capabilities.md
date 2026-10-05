@@ -205,3 +205,4 @@ the profile; credential paths are inconsistent. Isolation comes from the cli wal
 - the cloud tool-count cap (`{toolLimit}`) against Desktop Commander's 26 tools
 - whether a Projects coordinator can ever be tied to a device
 - why `start_code_task` is present in some cw sessions and absent in others
+- the skill count is per surface: about 60 in the cli, 106–113 in the desktop (2026-10-05, FRM-305); a transcript's `skill_listing` attachment is the exact roster, built-ins included
