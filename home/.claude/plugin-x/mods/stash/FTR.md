@@ -57,7 +57,8 @@
   - given session A holds 2 files in this repo
   - when session B's row draws
   - then B shows `🔒 2`; at zero the chip is hidden
-- ⬜ the holds chip names itself on hover
+- 🐞 the holds chip names itself on hover
+  - 🐞 dima, 2026-10-05: the card never shows, in iTerm2 or in the desktop Code tab
   - given another session holds 2 files in this repo
   - when dima hovers the chip, on desktop or in a terminal that reports the pointer
   - then «2 files held by other sessions» shows beside it, dimmed
