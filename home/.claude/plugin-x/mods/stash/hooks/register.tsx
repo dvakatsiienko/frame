@@ -1,7 +1,13 @@
 /* @jsx h */
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
-import { nextStep, parseAsks, writeTargets } from './parse.ts';
+import {
+    FLEET_NAME,
+    nextStep,
+    parseAsks,
+    spawnHints,
+    writeTargets,
+} from './parse.ts';
 
 // stash: dima's command center above the prompt, one folded row with three features.
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
@@ -456,12 +462,18 @@ async function markState($: EngineInterface, isBusy: boolean) {
         });
 }
 
-type Member = { sid: string; name: string; busy?: boolean; sent?: number };
+type Member = {
+    sid: string;
+    name: string;
+    busy?: boolean;
+    sent?: number;
+    offPattern: boolean;
+};
 
 // live sessions from the registry, each with what its own stash wrote; a registry file mid-write is skipped
 async function members($: EngineInterface): Promise<Member[]> {
     const dir = `${await $.env.get('HOME')}/.claude/sessions`;
-    const rows: { pid: number; sid: string; name: string }[] = [];
+    const rows: { pid: number; sid: string; name: string; bg: boolean }[] = [];
     for (const f of await $.fs.list(dir)) {
         if (!f.name.endsWith('.json')) continue;
         try {
@@ -469,6 +481,7 @@ async function members($: EngineInterface): Promise<Member[]> {
                 pid?: unknown;
                 sessionId?: unknown;
                 name?: unknown;
+                kind?: unknown;
             };
             if (typeof v.pid !== 'number' || typeof v.sessionId !== 'string')
                 continue;
@@ -476,7 +489,12 @@ async function members($: EngineInterface): Promise<Member[]> {
                 typeof v.name === 'string' && v.name
                     ? v.name
                     : short(v.sessionId);
-            rows.push({ name, pid: v.pid, sid: v.sessionId });
+            rows.push({
+                bg: v.kind === 'bg',
+                name,
+                pid: v.pid,
+                sid: v.sessionId,
+            });
         } catch {}
     }
     if (!rows.length) return [];
@@ -500,7 +518,13 @@ async function members($: EngineInterface): Promise<Member[]> {
             | { busy: boolean }
             | undefined;
         const sent = (await $.store.get(SENT + r.sid)) as number | undefined;
-        out.push({ busy: state?.busy, name: r.name, sent, sid: r.sid });
+        out.push({
+            busy: state?.busy,
+            name: r.name,
+            offPattern: r.bg && !FLEET_NAME.test(r.name),
+            sent,
+            sid: r.sid,
+        });
     }
     return out.sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -628,6 +652,17 @@ export const register: Register = (on) => {
         return next(e);
     });
 
+    // warns only: a toast for dima and a log line, and the spawn goes ahead
+    on('agent.spawn', async ($, e, next) => {
+        for (const hint of spawnHints(e)) {
+            $.ui.toast(`spawn hint: ${hint} («${e.description}»)`);
+            $.ui.log(
+                `stash spawn hint: ${hint} — ${e.subagentType}, «${e.description}»`,
+            );
+        }
+        return next(e);
+    });
+
     on('command.run', { command: 'board' }, async ($) => {
         boardOpen = true;
         await $.ui.open({
@@ -672,6 +707,22 @@ export const register: Register = (on) => {
                                 ? `sent ${ago(now - m.sent)}`
                                 : 'no message yet'}
                         </Text>
+                        {m.offPattern ? (
+                            <Box key={`off:${m.sid}`}>
+                                <Text color={ACCENT}>⚠</Text>
+                                <Box
+                                    display='none'
+                                    hover={{ display: 'flex' }}
+                                    left={2}
+                                    position='absolute'
+                                    top={0}>
+                                    <Text dimColor>
+                                        name off the fleet pattern: «☕️ 🔧 FRM-N
+                                        code: what»
+                                    </Text>
+                                </Box>
+                            </Box>
+                        ) : null}
                     </Box>
                 ))}
             </Box>
@@ -849,7 +900,7 @@ export const register: Register = (on) => {
         // icons only; each card says what a press does (dima)
         const hotLabel = '🔥';
         // one icon; the accent background says afk is on (dima)
-        const afkLabel = '🚶';
+        const afkLabel = '💨';
         const foldLabel = open ? '📂' : '📁';
 
         // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there

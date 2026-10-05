@@ -36,6 +36,29 @@ export function nextStep(reply: string): string | null {
     return step || null;
 }
 
+const MECHANICAL =
+    /\b(rename|bulk|replace|swap|date shift|reformat|codemod|find and replace|mechanical)\b/i;
+
+// The fleet rules a subagent spawn may break, as one-line hints; heuristics on its words and length.
+export function spawnHints(spawn: {
+    subagentType: string;
+    description: string;
+    prompt: string;
+}): string[] {
+    const hints: string[] = [];
+    if (
+        spawn.subagentType !== 'chore-helper' &&
+        MECHANICAL.test(`${spawn.description} ${spawn.prompt}`)
+    )
+        hints.push('a mechanical job belongs on chore-helper');
+    if (spawn.subagentType === 'general-purpose' && spawn.prompt.length < 400)
+        hints.push('a short brief is often one pass for this session itself');
+    return hints;
+}
+
+// `<mode> <role emoji> <ticket> <role word>: <what>` — «☕️ 🔧 FRM-303 code: stash keep-hot»
+export const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
+
 type Word = { text: string; quoted: boolean };
 
 // a heredoc body is data, never redirects; the rest of its opening line stays (`cat <<EOF > out`)

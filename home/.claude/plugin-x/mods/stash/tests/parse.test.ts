@@ -1,6 +1,12 @@
 import { expect, test } from 'claude-code/testing';
 
-import { nextStep, parseAsks, writeTargets } from '../hooks/parse.ts';
+import {
+    FLEET_NAME,
+    nextStep,
+    parseAsks,
+    spawnHints,
+    writeTargets,
+} from '../hooks/parse.ts';
 
 const reply = (fence: string) =>
     `report\n\n⏳ waiting on your word:\n\n\`\`\`\n${fence}\n\`\`\`\n\n📄 last report: **x**, 18:30`;
@@ -62,3 +68,35 @@ test("reads the reply's last ➡️ line as the next step", () => {
 test('a reply without a ➡️ line has no next step', () => {
     expect(nextStep('just an answer')).toBe(null);
 });
+
+const spawn = (subagentType: string, description: string, prompt: string) => ({
+    description,
+    prompt,
+    subagentType,
+});
+
+test('a mechanical job off chore-helper is hinted', () => {
+    expect(
+        spawnHints(spawn('Explore', 'bulk rename', 'x'.repeat(500))),
+    ).toEqual(['a mechanical job belongs on chore-helper']);
+});
+
+test('a mechanical job on chore-helper is not hinted', () => {
+    expect(spawnHints(spawn('chore-helper', 'bulk rename', 'x'))).toEqual([]);
+});
+
+test('a short general-purpose brief is hinted as a possible one-pass job', () => {
+    expect(spawnHints(spawn('general-purpose', 'look', 'find it'))).toEqual([
+        'a short brief is often one pass for this session itself',
+    ]);
+});
+
+for (const [name, fits] of [
+    ['☕️ 🔧 FRM-303 code: stash keep-hot', true],
+    ['🎯 🔎 BYT-12 verify: atelier', true],
+    ['🔎 verify: FRM-268', false],
+    ['reply message handler', false],
+] as const)
+    test(`the fleet name pattern ${fits ? 'fits' : 'rejects'} «${name}»`, () => {
+        expect(FLEET_NAME.test(name)).toBe(fits);
+    });

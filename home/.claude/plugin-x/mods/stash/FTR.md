@@ -7,7 +7,7 @@
 
 ## the row
 
-- 🔎 one row: the open count on the left; `📋`, `🔥`, `🚶` and the fold folder on the right
+- 🔎 one row: the open count on the left; `📋`, `🔥`, `💨` and the fold folder on the right
   - decision: a quarter cell (~4px) under the row on desktop while the asks show — dima: «too tight»; none in the terminal, where a cell is a whole line
   - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
   - decision: with several threads the head reads only `here N, parallel M`; the per-session names and counts wait in its hover card — full names took too much room (dima, 2026-10-05)
@@ -18,7 +18,7 @@
   - decision: no `o` hotkey — the desktop drew its key badge as the button and left the icon outside it
 - 🔎 every control in the row names itself on hover: a dim card beside it
   - given the row draws
-  - when dima hovers `📋`, `🔥`, `🚶`, the fold folder or the holds chip
+  - when dima hovers `📋`, `🔥`, `💨`, the fold folder or the holds chip
   - then a dim line beside it says what a press does: «copy this thread's asks», «keep this session's cache hot: ping every 50 min», «afk: tell fleet that dima is away», «fold/unfold»
   - dima, 2026-10-05: seen in the desktop Code tab and in Warp
 - 🔎 asks: every live session's open asks, «no open asks» when empty
@@ -51,8 +51,8 @@
   - decision: no per-item copy, no prompt injection — injection destroyed dima's typed prompt
   - decision: a real button, not plain text — dima could not tell it was pressable; the mod api has no cursor prop, so the pointer is the surface's own
   - decision: ask lines are not selectable — the mod api has no selection control and `Markdown` did not help either (dima, 2026-10-04); copy all is the door
-- ⬜ afk switch: one icon, `🚶`; the accent background alone says it is on
-  - decision: one icon, the background tells the state — dima, 2026-10-05; `🚶` reads «stepped away» (alternatives offered: 💤, 🏝️, 🚪)
+- ⬜ afk switch: one icon, `💨`; the accent background alone says it is on
+  - decision: one icon, the background tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
 - ✅ afk reaches a running turn
   - given a session is mid-turn
   - when dima flips afk
@@ -171,6 +171,22 @@ two sessions, A and B, in one checkout.
   - given the board is open
   - when a member starts or ends a turn, or sends a message
   - then its row changes within a few seconds
+
+## spawn hints — warn, never refuse
+
+- ⬜ a mechanical subagent job off `chore-helper` warns
+  - given the model spawns a subagent whose task reads mechanical (a rename, a bulk replace, a date shift, a string swap)
+  - when its type is not `chore-helper`
+  - then a toast names the rule and the spawn goes ahead; the hint is logged
+- ⬜ a short general-purpose spawn warns it may be a one-pass job
+  - given the model spawns a `general-purpose` subagent with a prompt under 400 characters
+  - then a toast says a short brief is often one pass for the session itself, and the spawn goes ahead
+  - decision: both checks are heuristics on the words and the length — refusing is dima's word later (cclio, 2026-10-05)
+- ⬜ the board marks a background session named off the fleet pattern
+  - given a background session's name is not `<mode> <role emoji> <ticket> <role word>: <what>` («☕️ 🔧 FRM-303 code: stash keep-hot»)
+  - when the board lists it
+  - then its row carries ⚠ with the pattern on hover
+  - decision: on the board, not at spawn — a `--bg` coder starts through Bash, and `agent.spawn` sees only Agent-tool subagents
 
 ## scripts
 
