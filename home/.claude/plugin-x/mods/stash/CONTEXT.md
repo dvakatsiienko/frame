@@ -33,5 +33,5 @@ The `/board` pane: every live session, its state as cc wrote it, what it waits o
 _Avoid_: dock, roster, dashboard
 
 **Wait**:
-What a session is blocked on, from the `🔭` line that ends its last reply; on the board it stands in for the session's last words.
+What a session is blocked on, from the `🔭` line that ends its last reply; on the board it is a row's second line, absent when the reply has none.
 _Avoid_: blocker, status, watch

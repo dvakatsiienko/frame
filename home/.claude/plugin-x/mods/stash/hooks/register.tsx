@@ -6,7 +6,6 @@ import {
     FLEET_NAME,
     doorOf,
     parseAsks,
-    parseLead,
     parseWait,
     spawnHints,
     stateWord,
@@ -464,7 +463,6 @@ type Member = {
     statusSince?: number;
     door?: Door;
     wait?: string;
-    lead?: string;
     asks: number;
     context?: number;
     sent?: number;
@@ -531,14 +529,13 @@ async function members($: EngineInterface): Promise<Member[]> {
     const now = await $.clock.now();
     for (const { bg, base: r } of rows.filter((r) => alive.has(r.pid))) {
         const reply = (await $.store.get(REPLY + r.sid)) as
-            | { wait?: string; lead?: string }
+            | { wait?: string }
             | undefined;
         const asks = (await $.store.get(PREFIX + r.sid)) as Entry | undefined;
         out.push({
             ...r,
             asks: isLive(asks, now) ? asks.asks.length : 0,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
-            lead: reply?.lead,
             offPattern: bg && !FLEET_NAME.test(r.name),
             sent: (await $.store.get(SENT + r.sid)) as number | undefined,
             wait: reply?.wait,
@@ -678,13 +675,10 @@ export const register: Register = (on) => {
     on('classic.Stop', async ($, e, next) => {
         const r = await next(e);
         const reply = e.last_assistant_message ?? '';
-        // a keep-hot ping's one-character reply is not what the session last said
+        // a keep-hot ping's one-character reply never clears what the session waits on
         if (!pinged)
             await $.store
-                .set(REPLY + e.session_id, {
-                    lead: parseLead(reply),
-                    wait: parseWait(reply),
-                })
+                .set(REPLY + e.session_id, { wait: parseWait(reply) })
                 .catch(() => undefined);
         const asks = parseAsks(reply);
         // a reply to dima with no block means nothing is open; a reply woken by a peer keeps the old list
@@ -783,7 +777,7 @@ export const register: Register = (on) => {
             const ticket = ticketOf(m.name);
             const door = m.door;
             const name = m.sid === me ? `${m.name} (here)` : m.name;
-            const line = m.wait ? `🔭 ${m.wait}` : m.lead;
+            const line = m.wait && `🔭 ${m.wait}`;
             return (
                 <Box
                     flexDirection='column'
@@ -854,11 +848,7 @@ export const register: Register = (on) => {
                             </Text>
                         </Box>
                     </Box>
-                    {line ? (
-                        <Text dimColor={!m.wait} wrap='truncate-end'>
-                            {line}
-                        </Text>
-                    ) : null}
+                    {line ? <Text wrap='truncate-end'>{line}</Text> : null}
                 </Box>
             );
         };

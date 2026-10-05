@@ -183,7 +183,8 @@ two sessions, A and B, in one checkout.
   - when the board draws
   - then the row's second line reads that line, links reduced to their labels
   - given the last reply has no `🔭` line
-  - then the second line reads the reply's first line, dimmed: what the session last said
+  - then the row has no second line
+  - decision: only a `🔭` line, never a fallback — the reply's first line read as noise beside the waits (dima, 2026-10-05)
   - source: the session's own last reply, kept by its stash at each reply end
 - ⬜ a press on a session's name opens it in the desktop
   - the harness proves the `open <url>` it runs; that the desktop then shows the session is dima's click

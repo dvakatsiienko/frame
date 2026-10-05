@@ -184,24 +184,16 @@ test("a reply's 🔭 line shows on its session's row", async ($, on) => {
     );
 });
 
-test('a reply with no 🔭 line shows its first line dimmed', async ($, on) => {
+test("a keep-hot ping's reply keeps what the session waits on", async ($, on) => {
     fleet(on);
-    await stop($, '**the board ships**\n\n- one\n- two');
-    const ui = await board($);
-    const lead = await ui.find({ text: 'the board ships', type: 'Text' });
-    expect(lead?.props.dimColor).toBe(true);
-});
-
-test("a keep-hot ping's reply keeps what the session last said", async ($, on) => {
-    fleet(on);
-    await stop($, 'the real verdict');
+    await stop($, 'done.\n\n🔭 waiting on ci — a ping');
     await $.prompt.submit({
         origin: { kind: 'plugin', name: 'stash' },
         text: PING,
         wait: false,
     });
     await stop($, '.');
-    expect(await row($, HERE)).toContain('the real verdict');
+    expect(await row($, HERE)).toContain('🔭 waiting on ci — a ping');
 });
 
 test("pressing a desktop session's name opens it in the desktop", async ($, on) => {

@@ -20,7 +20,7 @@ export function parseAsks(reply: string): string[] | null {
     return asks;
 }
 
-// a reply line as a person reads it: links reduced to their labels, no bold or code marks, no list or heading lead
+// a reply line as a person reads it: links reduced to their labels, no bold or code marks, no list or heading marker
 function plain(line: string) {
     return line
         .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
@@ -39,21 +39,6 @@ export function parseWait(reply: string): string | undefined {
         waits.unshift(plain(l.slice('🔭'.length)));
     }
     return waits.length ? waits.join('; ') : undefined;
-}
-
-// The reply's first line of prose — its verdict line — skipping fences and the model greeting.
-export function parseLead(reply: string): string | undefined {
-    let fenced = false;
-    for (const line of reply.split('\n')) {
-        if (line.trim().startsWith('```')) {
-            fenced = !fenced;
-            continue;
-        }
-        const text = plain(line);
-        if (fenced || !text || /^hey\b.*\bhere\b/i.test(text)) continue;
-        return text;
-    }
-    return undefined;
 }
 
 // cc's own status word; `shell` is a long command inside a turn, so it reads busy
