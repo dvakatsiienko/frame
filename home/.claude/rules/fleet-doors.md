@@ -7,7 +7,8 @@ door live in `rules/fleet-tooling.md` (cc) and the cw leaf named on the line.
 
 ## doors
 
-- fleet ops (commit, push, pr, merge, unlock, …) → `x`, the fleet cli; bare `x` lists every verb · cc only, cw has no shell
+- fleet ops (commit, push, pr, merge, unlock, …) → `x`, the fleet cli on dima's mac; bare `x` lists every verb · cc runs it natively; a cw or project cloud thread runs `~/.local/bin/x` through the mac's Desktop Commander; a project coordinator cannot reach the mac — it routes the job to a thread
+- dima's mac (shell, files, local clis) from cw or a project → Desktop Commander under the `mcp__remote-devices__` prefix, present whenever the desktop app is open; a Desktop Commander without that prefix runs inside the cloud VM, not the mac · a «no Desktop Commander» answer means the prefixed list was not searched
 - gmail → `himalaya`, no mcp exists · cw leaf `/areas/tooling.md`
 - slack → `slk`, no mcp exists · cw leaf `/areas/tooling.md`
 - notion → `ntn`, never the connector · cw leaf `/areas/tooling.md`
