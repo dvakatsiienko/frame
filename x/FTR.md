@@ -41,7 +41,7 @@
 ## lane — git
 
 - ⬜ `x lane commit` commits only the named paths and prints the new sha
-- 🧭 `x lane commit` refuses a mod that fails `claude plugin validate`
+- ✅ `x lane commit` refuses a mod that fails `claude plugin validate`
   - given a named path sits under `home/.claude/plugin-x/mods/<mod>/`
   - when `claude plugin validate` on that mod's dir fails
   - then the commit is refused with the validator's output, nothing is staged, and HEAD does not move

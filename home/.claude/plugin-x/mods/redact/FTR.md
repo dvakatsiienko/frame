@@ -41,7 +41,7 @@
 
 ## scripts
 
-- 🧭 `pnpm mods:probe-redact` proves redact live, end to end
+- ✅ `pnpm mods:probe-redact` proves redact live, end to end
   - given redact is loaded (`CLAUDE_CODE_PLUGIN_DIRS`)
   - when the probe runs: a headless `claude -p` gets a planted fake key in its prompt and must `printf` it through `tee` into a file
   - then it exits 0 when the file holds the real value, the session's jsonl holds the value only in its `queue-operation` record, and at least one row reads the placeholder; else it exits 1 and names which check failed
