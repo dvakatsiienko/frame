@@ -41,6 +41,12 @@
 ## lane — git
 
 - ⬜ `x lane commit` commits only the named paths and prints the new sha
+- 🧭 `x lane commit` refuses a mod that fails `claude plugin validate`
+  - given a named path sits under `home/.claude/plugin-x/mods/<mod>/`
+  - when `claude plugin validate` on that mod's dir fails
+  - then the commit is refused with the validator's output, nothing is staged, and HEAD does not move
+  - given the validate passes, then the commit goes through as before
+  - decision: in the commit verb, not a lefthook job — a mod round chained `validate && commit` by hand and still committed past a red (FRM-307's first commit, 2026-10-05)
 - ⬜ `x lane push` pushes HEAD's sha and reads the remote back
 - ⬜ `x lane pr-open` opens a pr as the coder app
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list

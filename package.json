@@ -52,6 +52,7 @@
         "linear:read": "node ./script/linear-read.ts",
         "macos:setup": "node ./script/macos-setup.ts",
         "mcp:build": "pnpm --filter mcp-x-cw build",
+        "mods:probe-redact": "node ./home/.claude/plugin-x/mods/probe-redact.ts",
         "mods:test": "for m in home/.claude/plugin-x/mods/*/; do claude plugin test \"$m\" || exit 1; done",
         "mods:writes": "node ./home/.claude/plugin-x/mods/writes.ts",
         "memory-load:replay": "python3 ./script/memory-load-replay.py",

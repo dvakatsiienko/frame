@@ -61,6 +61,28 @@ function fixtureRepo() {
     return repo;
 }
 
+// a fixture repo holding one mod, with a changed file in it
+function modRepo() {
+    const repo = fixtureRepo();
+    const mod = join(repo, 'home/.claude/plugin-x/mods/m');
+    mkdirSync(join(mod, '.claude-plugin'), { recursive: true });
+    writeFileSync(join(mod, '.claude-plugin/plugin.json'), '{ "name": "m" }\n');
+    writeFileSync(join(mod, 'hooks.ts'), 'export {};\n');
+    return { path: 'home/.claude/plugin-x/mods/m/hooks.ts', repo };
+}
+
+// a `claude` on PATH that logs its arguments and passes or fails its validate as told
+function fakeClaude(isValid: boolean) {
+    const bin = scratch('x-bin-');
+    const log = join(bin, 'calls.log');
+    writeFileSync(
+        join(bin, 'claude'),
+        `#!/bin/sh\necho "$@" >> "${log}"\n${isValid ? 'exit 0' : 'echo "✘ Validation failed"; exit 1'}\n`,
+        { mode: 0o755 },
+    );
+    return { env: { PATH: `${bin}:${cleanEnv.PATH ?? ''}` }, log };
+}
+
 function messageFile() {
     const path = join(scratch('x-msg-'), 'msg.txt');
     writeFileSync(path, 'fixture commit\n');
@@ -257,6 +279,39 @@ describe('x lane', () => {
 
         expect(run.code).toBe(0);
         expect(git(repo, 'show', 'HEAD:a.ts')).toBe('const a = { b: 1 };');
+    });
+
+    it('commit refuses a mod that fails plugin validate, staging nothing', () => {
+        const { repo, path } = modRepo();
+        const before = git(repo, 'rev-parse', 'HEAD');
+
+        const run = x(
+            ['lane', 'commit', messageFile(), '--', path],
+            repo,
+            fakeClaude(false).env,
+        );
+
+        expect([
+            run.code,
+            git(repo, 'rev-parse', 'HEAD'),
+            git(repo, 'diff', '--cached', '--name-only'),
+        ]).toEqual([1, before, '']);
+    });
+
+    it('commit validates the mod a named path sits in, then commits', () => {
+        const { repo, path } = modRepo();
+        const claude = fakeClaude(true);
+
+        const run = x(
+            ['lane', 'commit', messageFile(), '--', path],
+            repo,
+            claude.env,
+        );
+
+        expect([run.code, readFileSync(claude.log, 'utf8').trim()]).toEqual([
+            0,
+            'plugin validate home/.claude/plugin-x/mods/m',
+        ]);
     });
 
     it('bare x lane lists the --repo form of commit', () => {

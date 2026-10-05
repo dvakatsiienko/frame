@@ -7,12 +7,13 @@ import {
     readSync,
     unlinkSync,
 } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 
 import type { Flags, Verb } from './verb.ts';
 import { Fail } from './verb.ts';
 
 const cryptMagic = Buffer.from('\0GITCRYPT\0');
+const MOD_DIR = /^home\/\.claude\/plugin-x\/mods\/[^/]+(?=\/)/;
 const wrapPath = join(
     import.meta.dirname,
     '../home/.claude/plugin-x/bin/github-token-wrap',
@@ -120,6 +121,7 @@ function commit(args: string[], flags: Flags) {
         tree,
         present.filter((path) => existsSync(path)),
     );
+    validateMods(tree, present);
     if (present.length > 0) mustGit(['add', '-A', '--', ...present], 'add');
 
     const isMerging = existsSync(
@@ -172,6 +174,26 @@ function format(tree: string, paths: string[]) {
         ],
         tree,
     );
+}
+
+// a mod a named path sits in must pass the engine's own validator, checked before anything is staged:
+// a mod round chained `validate && commit` by hand and still committed past a red (FRM-307)
+function validateMods(tree: string, paths: string[]) {
+    const mods = new Set<string>();
+    for (const path of paths) {
+        const dir = relative(tree, resolve(path)).match(MOD_DIR)?.[0];
+        if (dir && existsSync(join(tree, dir, '.claude-plugin/plugin.json')))
+            mods.add(dir);
+    }
+    for (const dir of mods) {
+        const checked = run('claude', ['plugin', 'validate', dir], tree);
+        if (checked.isOk) continue;
+        process.stderr.write(`${checked.log}\n`);
+        throw new Fail(
+            `claude plugin validate refused ${dir} — its output is above; nothing was staged`,
+            `claude plugin validate ${dir}`,
+        );
+    }
 }
 
 function pushPlan() {

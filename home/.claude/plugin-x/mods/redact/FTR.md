@@ -38,3 +38,13 @@
   - when a row or a tool result carries a secret
   - then it is masked one way — its first six characters and `…‹redacted›` — and the error is logged; the row is never blocked
   - decision: fail to the mask, not to the raw row — the old one-way mask could not fail, so the placeholder must not open a hole it closed
+
+## scripts
+
+- 🧭 `pnpm mods:probe-redact` proves redact live, end to end
+  - given redact is loaded (`CLAUDE_CODE_PLUGIN_DIRS`)
+  - when the probe runs: a headless `claude -p` gets a planted fake key in its prompt and must `printf` it through `tee` into a file
+  - then it exits 0 when the file holds the real value, the session's jsonl holds the value only in its `queue-operation` record, and at least one row reads the placeholder; else it exits 1 and names which check failed
+  - makes: one transcript under `~/.claude/projects/` holding the fake only, named by the probe's `--session-id`, printed in its output
+  - decision: the fake is built by concatenation, so no source line reads as a secret to a live redactor
+  - proven red 2026-10-05: with redact's tool-result step removed, the probe exits 1; restored, it exits 0
