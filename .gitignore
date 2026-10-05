@@ -48,6 +48,7 @@ home/.claude/shelf/pr-watch-seen.json
 home/.claude/shelf/jev/route.log
 home/.claude/shelf/jev/runs.log
 home/.claude/shelf/jev/router.off
+home/.claude/shelf/jev/replays/
 home/.claude/shelf/barrel-probe.log
 
 # Runtime state written by scheduled jobs, not source. The cowork gazette heartbeat

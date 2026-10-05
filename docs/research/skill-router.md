@@ -120,3 +120,6 @@ held-out third (71 prompts, 32 of them real).
 - the critical list is the ticket's nine. per-skill gate spread says `x:guide-ui-ux` (wanted
   median 0.25) and `x:ftr` (0.37) are where the gate is weakest.
 - multi-skill has 4 fixtures; its rows are noise until more land.
+- the raws behind every number here sit at `~/.claude/shelf/jev/replays/skill-router-2026-10-05.json`
+  (local, gitignored): `REPLAY_RAW=<a copy> node script/jev-test.ts skill-router` re-scores all
+  five arms with zero calls; a changed fixture file refuses it.
