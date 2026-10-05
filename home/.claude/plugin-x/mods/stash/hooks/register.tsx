@@ -1,13 +1,7 @@
 /* @jsx h */
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
-import {
-    FLEET_NAME,
-    nextStep,
-    parseAsks,
-    spawnHints,
-    writeTargets,
-} from './parse.ts';
+import { FLEET_NAME, parseAsks, spawnHints, writeTargets } from './parse.ts';
 
 // stash: dima's command center above the prompt, one folded row with three features.
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
@@ -615,13 +609,6 @@ export const register: Register = (on) => {
         if (e.agentId) return r;
         busy = false;
         await markState($, false).catch(() => undefined);
-        const step = nextStep(e.answer);
-        if (step)
-            await $.prompt
-                .suggest({ text: step })
-                .catch(() =>
-                    $.ui.log('stash: the next step was not suggested'),
-                );
         if (hot) {
             hot = { ...hot, since: await $.clock.now() };
             await saveHot($);

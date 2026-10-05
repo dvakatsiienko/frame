@@ -92,7 +92,6 @@ the `$.<noun>.<verb>` calls; the test harness answers them with `on('<op>', …)
 cclio folds dima's picks into a ticket; a built idea leaves this list.
 
 - holds sees Bash writes — `tool.check` (or `tool.call` on `Bash`) parses the common write shapes (heredoc `>`, `sd`, `sed -i`, python `open(…,'w')`) and takes or refuses the hold; closes the 37 % gap measured in `docs/test-drive/mods.md`
-- the next ➡️ as a suggestion — `turn.complete` reads the reply's ➡️ line, `$.prompt.suggest` puts it in the box dim, Tab takes it; one key instead of typing «go»
 - context toast — `session.measure` crosses 85 % context → `$.ui.toast` «offer a handoff»; the same hook already feeds keep-hot's 5h window
 - a coder ping you can hear — `session.receive` sees a peer message from a coder → `$.audio.speak` reads its first line while dima is away from the screen
 - the fleet board — `session.receive` and `session.send` log every member message into the stash store, and the band draws one row per member (FRM-303 item 4)

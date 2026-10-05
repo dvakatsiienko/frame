@@ -2,7 +2,6 @@ import { expect, test } from 'claude-code/testing';
 
 import {
     FLEET_NAME,
-    nextStep,
     parseAsks,
     spawnHints,
     writeTargets,
@@ -56,18 +55,6 @@ for (const [shape, command] of reads)
     test(`finds no write in ${shape}`, () => {
         expect(writeTargets(command)).toEqual([]);
     });
-
-test("reads the reply's last ➡️ line as the next step", () => {
-    expect(
-        nextStep(
-            '➡️ first\n\ntext\n\n➡️ **next:** build the cards\n\n⏳ waiting',
-        ),
-    ).toBe('build the cards');
-});
-
-test('a reply without a ➡️ line has no next step', () => {
-    expect(nextStep('just an answer')).toBe(null);
-});
 
 const spawn = (subagentType: string, description: string, prompt: string) => ({
     description,

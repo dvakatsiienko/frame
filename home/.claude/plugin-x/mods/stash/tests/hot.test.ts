@@ -148,22 +148,3 @@ test('🔥 turns itself off after the 5h window resets', async ($, on) => {
         [],
     ]);
 });
-
-test("a turn's ➡️ line is proposed in the prompt box", async ($, on) => {
-    mock.clock(on);
-    mock.store(on);
-    const proposed: string[] = [];
-    on('turn.complete', () => ({ text: '' }));
-    on('prompt.suggest', (_$, e) => {
-        proposed.push(e.text);
-        return { isShown: true };
-    });
-    await $.turn.complete({
-        answer: 'done\n\n➡️ next: push it',
-        durationMs: 1,
-        isAborted: false,
-        reason: 'answer',
-        turnId: 't',
-    });
-    expect(proposed).toEqual(['push it']);
-});

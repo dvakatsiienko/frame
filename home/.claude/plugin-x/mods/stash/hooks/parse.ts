@@ -20,22 +20,6 @@ export function parseAsks(reply: string): string[] | null {
     return asks;
 }
 
-// The reply's last ➡️ line as a prompt draft, without the arrow, a bold or a «next:» label; null when none.
-export function nextStep(reply: string): string | null {
-    const line = reply
-        .split('\n')
-        .map((l) => l.trim().replace(/^[-*]\s+/, ''))
-        .filter((l) => l.startsWith('➡️'))
-        .pop();
-    if (!line) return null;
-    const step = line
-        .slice('➡️'.length)
-        .replace(/\*\*/g, '')
-        .replace(/^\s*next( step)?:\s*/i, '')
-        .trim();
-    return step || null;
-}
-
 const MECHANICAL =
     /\b(rename|bulk|replace|swap|date shift|reformat|codemod|find and replace|mechanical)\b/i;
 
