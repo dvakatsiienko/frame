@@ -7,7 +7,7 @@ import { parseAsks } from './parse.ts';
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
 // holds: a session's first edit of a file holds it; another session's edit is refused
-// keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm
+// keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm; the switch lives in $.store, so a reload keeps it
 // The reply stays the source of truth for asks; this band only shows and copies them.
 
 type Entry = { label: string; asks: string[]; at: number };
@@ -20,13 +20,10 @@ const BACK_NOTE =
     'dima is back from afk: asks and the ⏳ block reach him again.';
 const POLL_MS = 4000;
 const STALE_MS = 24 * 60 * 60 * 1000;
-const MACHINE_ORIGINS = [
-    'peer',
-    'task-notification',
-    'scheduled-trigger',
-    'plugin',
-];
 const HOT_MS = 50 * 60 * 1000;
+const HOT = 'hot:';
+const SUGGEST_PCT = 90;
+const SUGGEST_MS = 60 * 60 * 1000;
 const PING = 'stash keep-hot ping: answer with one character, nothing else.';
 const ACCENT = '#d97757';
 
@@ -42,7 +39,10 @@ let turnAfk: boolean | undefined;
 let proc: Proc | undefined;
 let root = '';
 let holds = { others: 0, warned: false };
-let hot = false;
+// since: the turn end the next ping counts from; until: the 5h reset that turns it off
+let hot: { since: number; until?: number } | undefined;
+let fiveHour: { used: number; resetsAt?: number } | undefined;
+let suggest = false;
 let busy = false;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
@@ -340,23 +340,65 @@ async function load($: EngineInterface): Promise<boolean> {
     if (fresh.some((f) => !known.has(f))) open = true;
     known = new Set(fresh);
     entries = next;
+    const cool = await cooled($);
+    const prevSuggest = suggest;
+    suggest =
+        !hot &&
+        !!fiveHour?.resetsAt &&
+        fiveHour.used >= SUGGEST_PCT &&
+        fiveHour.resetsAt - now > SUGGEST_MS;
     const prevHolds = holds;
     // after a /clear the process goes on under a new id, and no session.start fires
     selfId = await $.session.id().catch(() => selfId);
     if (selfId) holds = await chip($, selfId, root);
     const holdsChanged =
         prevHolds.others !== holds.others || prevHolds.warned !== holds.warned;
-    return afkChanged || holdsChanged || before !== after;
+    return (
+        afkChanged ||
+        holdsChanged ||
+        cool ||
+        prevSuggest !== suggest ||
+        before !== after
+    );
 }
 
-function armHot($: EngineInterface) {
+async function saveHot($: EngineInterface) {
+    const sid = selfId ?? (await $.session.id().catch(() => undefined));
+    if (!sid) return;
+    if (hot) await $.store.set(HOT + sid, hot);
+    else await $.store.delete(HOT + sid);
+}
+
+// past the 5h reset 🔥 has nothing left to keep warm
+async function cooled($: EngineInterface) {
+    if (!hot?.until || (await $.clock.now()) < hot.until) return false;
+    hot = undefined;
+    hotGen++;
+    await saveHot($);
+    return true;
+}
+
+async function armHot($: EngineInterface) {
     const mine = ++hotGen;
     if (!hot || busy) return;
-    $.clock.after(HOT_MS, async () => {
+    const wait = hot.since + HOT_MS - (await $.clock.now());
+    $.clock.after(Math.max(0, wait), async () => {
         if (!hot || busy || mine !== hotGen) return;
+        if (await cooled($)) {
+            $.ui.invalidate('ui.render');
+            return;
+        }
         $.ui.log('stash keep-hot: pinged the idle session');
         await $.prompt.submit({ text: PING });
     });
+}
+
+// the text and the title are built from counts and fixed words, never from input, so nothing needs escaping
+function chipSvg(text: string, title: string, warned: boolean) {
+    const ink = (light: string, dark: string) =>
+        `text{fill:${warned ? ACCENT : light}}@media (prefers-color-scheme:dark){text{fill:${warned ? ACCENT : dark}}}`;
+    const width = 8 + [...text].length * 9;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="18"><title>${title}</title><style>text{font:13px -apple-system,system-ui,sans-serif}${ink('#3d3d3a', '#e8e6dc')}</style><text x="0" y="13">${text}</text></svg>`;
 }
 
 export const register: Register = (on) => {
@@ -374,7 +416,9 @@ export const register: Register = (on) => {
             );
             return undefined;
         });
+        hot = (await $.store.get(HOT + selfId)) as typeof hot;
         await load($);
+        await armHot($);
         if (!polling) {
             polling = true;
             const tick = () =>
@@ -387,11 +431,9 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    // a turn a peer, a task or a trigger woke is not dima's: its reply may drop the block
+    // only dima's typed prompt is his turn; a reply to any other origin may drop the block
     on('prompt.submit', async ($, e, next) => {
-        userTurn =
-            e.text.trim().length > 0 &&
-            !MACHINE_ORIGINS.includes(e.origin?.kind);
+        userTurn = e.text.trim().length > 0 && e.origin?.kind === 'composer';
         busy = true;
         hotGen++;
         await load($);
@@ -425,7 +467,11 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         busy = false;
-        armHot($);
+        if (hot) {
+            hot = { ...hot, since: await $.clock.now() };
+            await saveHot($);
+        }
+        await armHot($);
         await settle($).catch(() =>
             $.ui.log("stash holds: could not settle this turn's holds"),
         );
@@ -433,8 +479,19 @@ export const register: Register = (on) => {
         return r;
     });
 
+    on('session.measure', async ($, e, next) => {
+        const w = e.rateLimits.find((r) => r.kind === 'five_hour');
+        fiveHour = w && {
+            resetsAt: w.resetsAt ? Date.parse(w.resetsAt) : undefined,
+            used: w.percentUsed,
+        };
+        if (await load($)) $.ui.invalidate('ui.render');
+        return next(e);
+    });
+
     on('session.end', async ($, e, next) => {
         await $.store.delete(PREFIX + e.sessionId);
+        await $.store.delete(HOT + e.sessionId);
         await dropAll($, e.sessionId).catch(() => undefined);
         return next(e);
     });
@@ -477,7 +534,8 @@ export const register: Register = (on) => {
             a === selfId ? -1 : b === selfId ? 1 : 0,
         );
         const total = groups.reduce((n, [, v]) => n + v.asks.length, 0);
-        const { Box, Text, Button } = $.ui.resolve(e);
+        const kit = $.ui.resolve(e);
+        const { Box, Text, Button } = kit;
         const surface = e.surface;
         const counts = groups
             .map(
@@ -494,9 +552,18 @@ export const register: Register = (on) => {
             await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
             $.ui.invalidate('ui.render');
         };
-        const flipHot = () => {
-            hot = !hot;
-            armHot($);
+        const flipHot = async () => {
+            const now = await $.clock.now();
+            const reset = fiveHour?.resetsAt;
+            hot = hot
+                ? undefined
+                : {
+                      since: now,
+                      until: reset && reset > now ? reset : undefined,
+                  };
+            suggest = false;
+            await saveHot($);
+            await armHot($);
             $.ui.invalidate('ui.render');
         };
         const copyButton = (sid: string, asks: string[]) => (
@@ -518,17 +585,33 @@ export const register: Register = (on) => {
         const [first] = groups;
         const many = groups.length > 1;
         // other sessions' holds in this repo; ⚠ when a session was refused one of this session's files
-        const holdsChip =
-            holds.others || holds.warned ? (
-                <Text color={holds.warned ? ACCENT : undefined}>
-                    {[
-                        holds.warned ? '⚠' : '',
-                        holds.others ? `🔒 ${holds.others}` : '',
-                    ]
-                        .filter(Boolean)
-                        .join(' ')}
-                </Text>
-            ) : null;
+        const chipText = [
+            holds.warned ? '⚠' : '',
+            holds.others ? `🔒 ${holds.others}` : '',
+        ]
+            .filter(Boolean)
+            .join(' ');
+        // a desktop Svg is the one element with a hover tooltip; the terminal has no hover
+        const chipName = [
+            holds.warned
+                ? 'a session was refused a file this session holds'
+                : '',
+            holds.others
+                ? `${holds.others} ${holds.others === 1 ? 'file' : 'files'} held by other sessions`
+                : '',
+        ]
+            .filter(Boolean)
+            .join('; ');
+        const holdsChip = !chipText ? null : surface === 'desktop' &&
+          'Svg' in kit ? (
+            <kit.Svg
+                alt={chipName}
+                isInteractive
+                source={chipSvg(chipText, chipName, holds.warned)}
+            />
+        ) : (
+            <Text color={holds.warned ? ACCENT : undefined}>{chipText}</Text>
+        );
 
         // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there
         const head = (
@@ -556,11 +639,11 @@ export const register: Register = (on) => {
                     {first ? copyButton(first[0], first[1].asks) : null}
                     <Button
                         key='hot'
-                        onPress={flipHot}
+                        onPress={() => void flipHot()}
                         {...(hot
                             ? { variant: 'primary' as const }
-                            : { plain: true as const })}>
-                        🔥 hot
+                            : { dimColor: suggest, plain: true as const })}>
+                        {suggest ? '🔥? hot' : '🔥 hot'}
                     </Button>
                     <Button
                         key='afk'

@@ -71,3 +71,44 @@ test("the head's copy all copies this thread's asks as a lane block", async ($, 
     await ui.press({ key: copy?.key ?? 'missing' });
     expect(copied).toEqual(['lane\n1. ship it ➡️ yes\n2. rename ➡️ no']);
 });
+
+test("a peer's message leaves the asks open", async ($, on) => {
+    mock.clock(on);
+    mock.store(on);
+    on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('prompt.submit', (_$, e) => ({ text: e.text }));
+    on('classic.Stop', () => ({}));
+    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'desktop',
+    });
+    await $.classic.Stop({
+        last_assistant_message: block,
+        stop_hook_active: false,
+    });
+    await $.prompt.submit({
+        origin: { kind: 'peer-send-message' },
+        text: 'a note from a peer',
+        wait: false,
+    });
+    await $.classic.Stop({
+        last_assistant_message: 'noted',
+        stop_hook_active: false,
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'stash',
+        props: {
+            bodyColumns: 100,
+            hasSurvey: false,
+            isWorking: false,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface: 'desktop',
+    });
+    expect((await ui.find({ text: /open/ }))?.text).toContain('2 open');
+});

@@ -10,6 +10,8 @@ const props = {
     view: {},
 };
 const MIN = 60 * 1000;
+const NOW = 1_000_000;
+const SID = 'h0t0h0t0-aaaa';
 
 async function hotSession($: Engine, on: On) {
     const clock = mock.clock(on);
@@ -64,4 +66,92 @@ test('a busy session is never pinged', async ($, on) => {
     });
     await s.clock.advance(40 * MIN);
     expect(s.pings).toEqual([]);
+});
+
+// a session whose stash store already holds 🔥, as a reload or a respawn finds it
+async function started($: Engine, on: On, store: Record<string, unknown> = {}) {
+    const clock = mock.clock(on, { now: NOW });
+    mock.store(on, store);
+    const pings: string[] = [];
+    on('session.id', () => ({ value: SID }));
+    on('session.repo', () => ({
+        value: { internal: false, name: null, remote: null, root: '/tmp' },
+    }));
+    on('session.measure', (_$, e) => ({ changed: e.changed }));
+    on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    on('turn.complete', () => ({ text: '' }));
+    on('prompt.submit', (_$, e) => {
+        if (e.origin?.kind === 'plugin') pings.push(e.text);
+        return { text: e.text };
+    });
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'desktop',
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'stash',
+        props,
+        surface: 'desktop',
+    });
+    const button = async () =>
+        (await ui.findAll({ type: 'Button' })).find((n) => n.key === 'hot');
+    return { button, clock, pings, ui };
+}
+
+function measure($: Engine, percentUsed: number, resetsInMs: number) {
+    return $.session.measure({
+        changed: ['rateLimits'],
+        context: { window: 200_000 },
+        rateLimits: [
+            {
+                kind: 'five_hour',
+                percentUsed,
+                resetsAt: new Date(NOW + resetsInMs).toISOString(),
+            },
+        ],
+    });
+}
+
+test('🔥 stays ticked after two pings', async ($, on) => {
+    const s = await started($, on);
+    await s.ui.press({ key: 'hot' });
+    await endTurn($);
+    await s.clock.advance(50 * MIN);
+    await endTurn($);
+    await s.clock.advance(50 * MIN);
+    expect([s.pings.length, (await s.button())?.props.variant]).toEqual([
+        2,
+        'primary',
+    ]);
+});
+
+test('🔥 survives a reload', async ($, on) => {
+    const s = await started($, on, { [`hot:${SID}`]: { since: NOW } });
+    await s.clock.advance(50 * MIN);
+    expect([(await s.button())?.props.variant, s.pings.length]).toEqual([
+        'primary',
+        1,
+    ]);
+});
+
+test('🔥 suggests itself when the 5h window is nearly spent', async ($, on) => {
+    const s = await started($, on);
+    await measure($, 92, 120 * MIN);
+    const b = await s.button();
+    expect([b?.text, b?.props.dimColor]).toEqual(['🔥? hot', true]);
+});
+
+test('🔥 turns itself off after the 5h window resets', async ($, on) => {
+    const s = await started($, on);
+    await measure($, 50, 30 * MIN);
+    await s.ui.press({ key: 'hot' });
+    await endTurn($);
+    await s.clock.advance(50 * MIN);
+    expect([(await s.button())?.props.variant, s.pings]).toEqual([
+        undefined,
+        [],
+    ]);
 });

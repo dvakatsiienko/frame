@@ -318,25 +318,36 @@ test('a broken store never blocks an edit', async ($, on) => {
     expect(w.logs).toContainEqual(expect.stringContaining('store unreadable'));
 });
 
-for (const surface of ['terminal', 'desktop'] as const) {
-    test(`the holds chip counts other sessions' holds on ${surface}`, async ($, on) => {
-        mock.store(on);
-        const w = world(on);
-        await w.as($, A);
-        await edit($, w, '/repo/x.ts');
-        await edit($, w, '/repo/y.ts');
-        await w.as($, B);
-        const ui = await $.ui.mount({
-            component: 'AbovePrompt',
-            plugin: 'stash',
-            props: PROPS,
-            surface,
-        });
-        expect((await ui.find({ text: '🔒', type: 'Text' }))?.text).toBe(
-            '🔒 2',
-        );
+async function chipFor($: Engine, on: On, surface: 'terminal' | 'desktop') {
+    mock.store(on);
+    const w = world(on);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await edit($, w, '/repo/y.ts');
+    await w.as($, B);
+    return $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'stash',
+        props: PROPS,
+        surface,
     });
 }
+
+test("the holds chip counts other sessions' holds", async ($, on) => {
+    const ui = await chipFor($, on, 'terminal');
+    expect((await ui.find({ text: '🔒', type: 'Text' }))?.text).toBe('🔒 2');
+});
+
+test('the holds chip names itself on hover on desktop', async ($, on) => {
+    const ui = await chipFor($, on, 'desktop');
+    const svg = await ui.find({ type: 'Svg' });
+    expect([svg?.props.alt, svg?.props.source]).toEqual([
+        '2 files held by other sessions',
+        expect.stringContaining(
+            '<title>2 files held by other sessions</title>',
+        ),
+    ]);
+});
 
 test("a worktree's holds stay out of the main checkout's chip", async ($, on) => {
     mock.store(on);

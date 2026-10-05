@@ -11,6 +11,11 @@
   - decision: a quarter cell (~4px) under the row on desktop while the asks show — dima: «too tight»; none in the terminal, where a cell is a whole line
   - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
 - 🔎 asks: every live session's open asks, «no open asks» when empty
+- ✅ only dima's own prompts clear asks
+  - given a reply left open asks
+  - when a peer's SendMessage wakes the session and its reply has no ⏳ block
+  - then the asks stay
+  - decision: an allow-list of one origin, `composer` (dima's typed prompt, probed 2026-10-04) — the old deny-list missed `peer-send-message`, and every new origin the engine adds would have cleared asks too
 - ✅ `📋 copy all` in the row copies the first thread's asks as a `lane` block; every other thread keeps its own beside its name
   - given a reply left open asks
   - when dima presses `📋 copy all` in the row
@@ -24,14 +29,27 @@
   - when dima flips afk
   - then the session's next tool call carries a one-line note with the new afk state
   - decision: once per flip; the note rides the tool result as context, the model reads it and dima does not see it
-- 🐞 keep-hot switch: `🔥 hot` in the row between `📋 copy all` and afk, off by default, accent background when on
-  - 🐞 dima, 2026-10-04 live test: the ping fired at the mark, then 🔥 went unticked — it must stay on until dima switches it off (a keep-alive, not a one-shot)
+- ✅ keep-hot switch: `🔥 hot` in the row between `📋 copy all` and afk, off by default, accent background when on
+  - decision: a keep-alive, not a one-shot — on dima's 2026-10-04 live test the ping fired, then 🔥 went unticked; it stays on until dima switches it off
+  - decision: 🔥 lives in the stash store under the session's id, not in the mod's memory — a reload or a worker respawn wipes that memory and cancels its timers, and nothing else in the code ever turns 🔥 off
+- ✅ 🔥 stays on across pings and reloads
+  - given 🔥 is on
+  - when two pings fire, or the mod reloads in between
+  - then 🔥 is still ticked, and the next ping comes 50 minutes after the last turn ended
+- ✅ 🔥? suggests itself near the limit: the button reads `🔥? hot`, dimmed
+  - given 🔥 is off
+  - when the 5h window is at least 90 % used and resets more than 60 minutes from now
+  - then the button reads `🔥? hot`, dimmed; pressing it turns 🔥 on
+- ✅ 🔥 turns itself off after the 5h window resets
+  - given 🔥 was turned on while the 5h window's reset was known
+  - when that reset passes
+  - then 🔥 is unticked and no more pings go out
   - decision: one switch per session, never shared — a ping wakes only the session it keeps warm
 - ✅ a hot session is pinged while idle
   - given 🔥 is on and the session's last turn ended 50 minutes ago
   - when no turn has started since
   - then stash submits one short ping that asks for a one-character reply, and the ping is logged
-  - decision: the ping's origin is `plugin`, a machine origin, so its reply never clears the asks
+  - decision: the ping's origin is `plugin`, not `composer`, so its reply never clears the asks
 - ✅ a busy session is never pinged
   - given 🔥 is on and a turn is running at the 50-minute mark
   - then no ping is sent, and the clock restarts when that turn ends
@@ -39,6 +57,11 @@
   - given session A holds 2 files in this repo
   - when session B's row draws
   - then B shows `🔒 2`; at zero the chip is hidden
+- ✅ the holds chip names itself on hover
+  - given another session holds 2 files in this repo
+  - when dima hovers the chip on desktop
+  - then it reads «2 files held by other sessions», and that is also its accessible name
+  - decision: an interactive `Svg` with a `<title>` on desktop — a mod `Button` or `Text` has no tooltip; the terminal has no hover and keeps the plain `🔒 2`
   - decision: «this repo» is this working tree — a worktree's holds never collide with the main checkout's, so they stay out of its chip
   - decision: a holder idle 30 min drops out at once; a dead one at the next turn end of any session
 - ✅ holder warning: the holder's chip turns ⚠ after someone was refused
