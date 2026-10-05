@@ -16,13 +16,13 @@
   - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
   - decision: the fold control is a folder, `📂` open and `📁` folded — dima asked for a more interesting state than `▼`/`▲`
   - decision: an «on» toggle (`🔥`, `💨`, `🚦`) draws as the light `secondary` chip, an «off» one plain — the desktop drew `primary` black, which read badly (dima, 2026-10-05)
-  - decision: `c` copies the head's asks, `b` folds or unfolds the board, `o` folds the asks; the key rides the hover card, never the icon — the card is a dim `Button` with the key and the same press, so the surface draws its own key badge there (desktop) or `c: copy …` (terminal) (dima, 2026-10-05: «hkeys not present in button text, only in tooltip»)
+  - decision: `c` copies the head's asks, `b` folds or unfolds the board, `f` folds the asks; the key rides the hover card, never the icon — the card is a dim `Button` with the key and the same press, so the surface draws its own key badge there (desktop) or `c: copy …` (terminal) (dima, 2026-10-05: «hkeys not present in button text, only in tooltip»)
   - 📌 a key fires only while the band holds focus (a click, or ctrl+x tab), never from the prompt; whether a key bound inside a hidden card fires is dima's press
   - decision: no ➡️ prompt suggestion — the built-in suggestion writes a good prompt; one suggestion, no race (dima, 2026-10-05)
 - 🔎 every control in the row names itself on hover: a dim card beside it
   - given the row draws
   - when dima hovers `📋`, `🔥`, `💨`, `🚦`, the fold folder or the holds chip
-  - then a dim line beside it says what a press does now: «copy this thread's asks» with its `c` badge, «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge, «fold» or «unfold» with its `o` badge
+  - then a dim line beside it says what a press does now: «copy this thread's asks» with its `c` badge, «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge, «fold» or «unfold» with its `f` badge
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
   - dima, 2026-10-05: seen in the desktop Code tab and in Warp
 - 🔎 asks: every live session's open asks, «no open asks» when empty

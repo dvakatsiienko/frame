@@ -1105,7 +1105,7 @@ export const register: Register = (on) => {
                                   {foldLabel}
                               </Button>,
                               leftOf(foldLabel, false),
-                              { hotkey: 'o', onPress: toggle },
+                              { hotkey: 'f', onPress: toggle },
                           )
                         : null}
                 </Box>

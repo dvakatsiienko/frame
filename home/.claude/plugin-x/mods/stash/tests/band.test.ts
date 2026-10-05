@@ -173,7 +173,7 @@ test('the keys ride the hover cards, never the icons', async ($, on) => {
     const keyed = (await ui.findAll({ type: 'Button' }))
         .filter((n) => n.props.hotkey)
         .map((n) => `${n.key?.split(':')[1]} ${n.props.hotkey}`);
-    expect(keyed).toEqual(['copy c', 'board b', 'asks-toggle o']);
+    expect(keyed).toEqual(['copy c', 'board b', 'asks-toggle f']);
 });
 
 test("a toggle's hover card names what the next press does", async ($, on) => {
