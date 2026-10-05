@@ -143,6 +143,41 @@ test('every control in the row carries a hover card that names it', async ($, on
         "copy this thread's asks",
         "keep this session's cache hot: ping every 50 min",
         'afk: tell fleet that dima is away',
-        'fold/unfold',
+        'unfold fleet board',
+        'fold',
+    ]);
+});
+
+test("a toggle's hover card names what the next press does", async ($, on) => {
+    mock.clock(on);
+    mock.store(on);
+    on('classic.Stop', () => ({}));
+    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    await $.classic.Stop({
+        last_assistant_message: block,
+        stop_hook_active: false,
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'stash',
+        props: {
+            bodyColumns: 100,
+            hasSurvey: false,
+            isWorking: false,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface: 'terminal',
+    });
+    await ui.press({ key: 'asks-toggle' });
+    await ui.press({ key: 'afk' });
+    const cards = (await ui.findAll({ type: 'Box' }))
+        .filter((n) => n.props.display === 'none')
+        .map((n) => n.text);
+    expect(cards.slice(-3)).toEqual([
+        'back: tell fleet that dima is here',
+        'unfold fleet board',
+        'unfold',
     ]);
 });

@@ -20,6 +20,74 @@ export function parseAsks(reply: string): string[] | null {
     return asks;
 }
 
+// a reply line as a person reads it: links reduced to their labels, no bold or code marks, no list or heading lead
+function plain(line: string) {
+    return line
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+        .replace(/\*\*|`/g, '')
+        .replace(/^\s*(?:[-*]|#+)\s+/, '')
+        .trim();
+}
+
+// What a reply says its session waits on: its 🔭 lines, joined; undefined when it has none.
+export function parseWait(reply: string): string | undefined {
+    const waits = reply
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l.startsWith('🔭'))
+        .map((l) => plain(l.slice('🔭'.length)));
+    return waits.length ? waits.join('; ') : undefined;
+}
+
+// The reply's first line of prose — its verdict line — skipping fences and the model greeting.
+export function parseLead(reply: string): string | undefined {
+    let fenced = false;
+    for (const line of reply.split('\n')) {
+        if (line.trim().startsWith('```')) {
+            fenced = !fenced;
+            continue;
+        }
+        const text = plain(line);
+        if (fenced || !text || /^hey\b.*\bhere\b/i.test(text)) continue;
+        return text;
+    }
+    return undefined;
+}
+
+// cc's own status word; `shell` is a long command inside a turn, so it reads busy
+export const stateWord = (status: string | undefined) =>
+    status === 'shell' ? 'busy' : (status ?? '?');
+
+export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
+
+// the desktop's url handler accepts only these id shapes (Claude.app 2.1.289)
+const LOCAL_ID = /^local_[A-Za-z0-9-]{1,64}$/;
+const BRIDGE_ID = /^session_[A-Za-z0-9_-]+$/;
+const JOB_ID = /^[A-Za-z0-9-]+$/;
+
+export type Door =
+    | { kind: 'open'; url: string }
+    | { kind: 'copy'; text: string };
+
+// How a press reaches a session: its desktop deep link, else the terminal's attach command for a background job.
+export function doorOf(entry: {
+    hostSessionId?: string;
+    bridgeSessionId?: string;
+    jobId?: string;
+    bg: boolean;
+}): Door | undefined {
+    if (entry.hostSessionId && LOCAL_ID.test(entry.hostSessionId))
+        return {
+            kind: 'open',
+            url: `claude://code/continue?session=${entry.hostSessionId}`,
+        };
+    if (entry.bridgeSessionId && BRIDGE_ID.test(entry.bridgeSessionId))
+        return { kind: 'open', url: `claude://code/${entry.bridgeSessionId}` };
+    if (entry.bg && entry.jobId && JOB_ID.test(entry.jobId))
+        return { kind: 'copy', text: `claude attach ${entry.jobId}` };
+    return undefined;
+}
+
 const MECHANICAL =
     /\b(rename|bulk|replace|swap|date shift|reformat|codemod|find and replace|mechanical)\b/i;
 

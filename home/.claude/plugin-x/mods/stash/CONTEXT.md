@@ -29,5 +29,9 @@ The end of a hold: the file is clean in git, the holder is dead, or the holder s
 _Avoid_: unlock, expiry
 
 **Board**:
-The `/board` pane: every live session, busy or idle, and when it last sent a message.
+The `/board` pane: every live session, its state as cc wrote it, what it waits on, and its facts.
 _Avoid_: dock, roster, dashboard
+
+**Wait**:
+What a session is blocked on, from the `🔭` line that ends its last reply; on the board it stands in for the session's last words.
+_Avoid_: blocker, status, watch

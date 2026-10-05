@@ -2,10 +2,39 @@ import { expect, test } from 'claude-code/testing';
 
 import {
     FLEET_NAME,
+    doorOf,
     parseAsks,
+    parseLead,
+    parseWait,
     spawnHints,
     writeTargets,
 } from '../hooks/parse.ts';
+
+test('a reply without a 🔭 line waits on nothing', () => {
+    expect(parseWait('done.\n\n➡️ next')).toBe(undefined);
+});
+
+test('several 🔭 lines read as one wait', () => {
+    expect(
+        parseWait(
+            'x\n🔭 [🔎 ci](https://a) — the watcher\n🔭 **🦉 cclio** — a ping',
+        ),
+    ).toBe('🔎 ci — the watcher; 🦉 cclio — a ping');
+});
+
+test("a reply's lead skips the model greeting", () => {
+    expect(parseLead('hey Opus 5.5 here 🕹️\n\n**verdict**')).toBe('verdict');
+});
+
+test("a reply's lead skips a fenced block", () => {
+    expect(parseLead('```\ncode\n```\n- the point')).toBe('the point');
+});
+
+test('a host id the desktop would refuse opens nothing', () => {
+    expect(doorOf({ bg: false, hostSessionId: 'local_x&evil=1' })).toBe(
+        undefined,
+    );
+});
 
 const reply = (fence: string) =>
     `report\n\n⏳ waiting on your word:\n\n\`\`\`\n${fence}\n\`\`\`\n\n📄 last report: **x**, 18:30`;

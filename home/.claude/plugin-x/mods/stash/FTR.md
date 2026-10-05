@@ -19,8 +19,9 @@
   - decision: no ➡️ prompt suggestion — the built-in suggestion writes a good prompt; one suggestion, no race (dima, 2026-10-05)
 - 🔎 every control in the row names itself on hover: a dim card beside it
   - given the row draws
-  - when dima hovers `📋`, `🔥`, `💨`, the fold folder or the holds chip
-  - then a dim line beside it says what a press does: «copy this thread's asks», «keep this session's cache hot: ping every 50 min», «afk: tell fleet that dima is away», «fold/unfold»
+  - when dima hovers `📋`, `🔥`, `💨`, `🚦`, the fold folder or the holds chip
+  - then a dim line beside it says what a press does now: «copy this thread's asks», «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board», «fold» or «unfold»
+  - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
   - dima, 2026-10-05: seen in the desktop Code tab and in Warp
 - 🔎 asks: every live session's open asks, «no open asks» when empty
 - ✅ only dima's own prompts clear asks
@@ -158,11 +159,48 @@ two sessions, A and B, in one checkout.
 ## /board — the fleet board
 
 - ⬜ `/board` opens a pane listing every live session
-  - the harness proves the rows; `/board` in a live session is unchecked
+  - the harness proves the rows; the bold names and the spacing are dima's look
   - given cclio, two coders and a verifier are live
   - when dima types `/board`
-  - then a pane lists each by its session name, with busy or idle and the time since its last message to another session
-  - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid; busy/idle and the last message are written by each session's own stash, so a session without stash reads «?»
+  - then a pane lists each by its session name, always bold, its state on the right
+  - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
+  - decision: on desktop half a cell between members, so rows read apart; none in the terminal, where it costs a row (dima, 2026-10-05)
+- ✅ `🚦` in the row shows and hides the board
+  - given the row draws
+  - when dima presses `🚦`, left of the fold folder
+  - then the board opens; pressed again, it closes; the accent background says it is open
+- ✅ each row's state is cc's own
+  - given a coder runs a long shell command inside a turn
+  - when the board draws
+  - then its row reads `busy` and for how long, not `idle`
+  - source: the registry's `status` and `statusUpdatedAt`, written by cc for every session; `busy` and `shell` read `busy`, any other word (`idle`, `waiting`, `blocked`, `needs_input`) shows as cc wrote it
+  - decision: the registry over a flag each stash wrote — that flag read idle through FRM-305's long `shell` (2026-10-05)
+- ✅ each row says what its session waits on
+  - given a session's last reply ends with a `🔭` line
+  - when the board draws
+  - then the row's second line reads that line, links reduced to their labels
+  - given the last reply has no `🔭` line
+  - then the second line reads the reply's first line, dimmed: what the session last said
+  - source: the session's own last reply, kept by its stash at each reply end
+- ⬜ `↗` beside a session's name opens it in the desktop
+  - the harness proves the `open <url>` it runs; that the desktop then shows the session is dima's click
+  - given a desktop-born session (the registry carries `hostSessionId: local_…`)
+  - when dima presses `↗`
+  - then the desktop opens that session through `claude://code/continue?session=local_…`
+  - given a background session bridged to claude.ai (`bridgeSessionId: session_…`)
+  - then the press opens `claude://code/session_…`
+  - given a background session with neither, the control is `📋`
+  - then the press copies `claude attach <jobId>`, the terminal door
+  - given a terminal session with neither
+  - then no control shows: nothing opens it
+  - decision: the mod api has no door to a session; the desktop's own `claude://` url handler has one (read from its 2.1.289 bundle), and the press runs `open <url>` on this mac rather than a `Link`, whose click the pane's sandbox decides
+  - decision: a small control beside the name, not the name itself — a `Button` label cannot be bold, and the name stays readable text
+- ✅ each row carries its facts beside the state
+  - given a session has open asks, a context reading, a ticket in its name, or sent a message
+  - when the board draws
+  - then its row shows `⏳ n`, `ctx n%`, the ticket as a link to linear, and «sent 4m ago»; a fact with no reading is left out
+  - source: `⏳ n` the stash asks store · `ctx n%` the session's `session.measure`, kept by its stash · the ticket from the session name · «sent» the session's `session.send`, kept by its stash
+  - decision: no pr, ci, cost or model yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306
 - ⬜ the board stays current
   - given the board is open
   - when a member starts or ends a turn, or sends a message

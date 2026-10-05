@@ -1,7 +1,18 @@
 /* @jsx h */
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
-import { FLEET_NAME, parseAsks, spawnHints, writeTargets } from './parse.ts';
+import {
+    type Door,
+    FLEET_NAME,
+    doorOf,
+    parseAsks,
+    parseLead,
+    parseWait,
+    spawnHints,
+    stateWord,
+    ticketOf,
+    writeTargets,
+} from './parse.ts';
 
 // stash: dima's command center above the prompt, one folded row with three features.
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
@@ -20,9 +31,10 @@ const AWAY_NOTE =
 const BACK_NOTE =
     'dima is back from afk: asks and the ⏳ block reach him again.';
 const POLL_MS = 4000;
-// the fleet board: each session's stash writes its own busy state and the time of its last message out
+// the fleet board: cc's registry gives each session's state; each session's stash adds its last reply, context fill and last message out
 const BOARD = 'fleet-board';
-const STATE = 'state:';
+const REPLY = 'reply:';
+const CONTEXT = 'context:';
 const SENT = 'sent:';
 const STALE_MS = 24 * 60 * 60 * 1000;
 // dima at the prompt, typing into a background job, on his phone or the web
@@ -38,6 +50,7 @@ let entries: Record<string, Entry> = {};
 let known = new Set<string>();
 let open = false;
 let userTurn = false;
+let pinged = false;
 let polling = false;
 let afk = false;
 let turnAfk: boolean | undefined;
@@ -48,7 +61,6 @@ let holds = { others: 0, warned: false };
 let hot: { since: number; until?: number } | undefined;
 let fiveHour: { resetsAt?: number } | undefined;
 let busy = false;
-let boardOpen = false;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
 
@@ -447,47 +459,58 @@ async function armHot($: EngineInterface) {
     });
 }
 
-async function markState($: EngineInterface, isBusy: boolean) {
-    const sid = selfId ?? (await $.session.id().catch(() => undefined));
-    if (sid)
-        await $.store.set(STATE + sid, {
-            at: await $.clock.now(),
-            busy: isBusy,
-        });
-}
-
 type Member = {
     sid: string;
     name: string;
-    busy?: boolean;
+    status?: string;
+    statusSince?: number;
+    door?: Door;
+    wait?: string;
+    lead?: string;
+    asks: number;
+    context?: number;
     sent?: number;
     offPattern: boolean;
 };
 
+const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
+
 // live sessions from the registry, each with what its own stash wrote; a registry file mid-write is skipped
 async function members($: EngineInterface): Promise<Member[]> {
     const dir = `${await $.env.get('HOME')}/.claude/sessions`;
-    const rows: { pid: number; sid: string; name: string; bg: boolean }[] = [];
+    const rows: {
+        pid: number;
+        bg: boolean;
+        base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince' | 'door'>;
+    }[] = [];
     for (const f of await $.fs.list(dir)) {
         if (!f.name.endsWith('.json')) continue;
         try {
-            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as {
-                pid?: unknown;
-                sessionId?: unknown;
-                name?: unknown;
-                kind?: unknown;
-            };
+            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as Record<
+                string,
+                unknown
+            >;
             if (typeof v.pid !== 'number' || typeof v.sessionId !== 'string')
                 continue;
-            const name =
-                typeof v.name === 'string' && v.name
-                    ? v.name
-                    : short(v.sessionId);
+            const bg = v.kind === 'bg';
             rows.push({
-                bg: v.kind === 'bg',
-                name,
+                base: {
+                    door: doorOf({
+                        bg,
+                        bridgeSessionId: text(v.bridgeSessionId),
+                        hostSessionId: text(v.hostSessionId),
+                        jobId: text(v.jobId),
+                    }),
+                    name: text(v.name) ?? short(v.sessionId),
+                    sid: v.sessionId,
+                    status: text(v.status),
+                    statusSince:
+                        typeof v.statusUpdatedAt === 'number'
+                            ? v.statusUpdatedAt
+                            : undefined,
+                },
+                bg,
                 pid: v.pid,
-                sid: v.sessionId,
             });
         } catch {}
     }
@@ -507,27 +530,75 @@ async function members($: EngineInterface): Promise<Member[]> {
             .filter(Boolean),
     );
     const out: Member[] = [];
-    for (const r of rows.filter((r) => alive.has(r.pid))) {
-        const state = (await $.store.get(STATE + r.sid)) as
-            | { busy: boolean }
+    for (const { bg, base: r } of rows.filter((r) => alive.has(r.pid))) {
+        const reply = (await $.store.get(REPLY + r.sid)) as
+            | { wait?: string; lead?: string }
             | undefined;
-        const sent = (await $.store.get(SENT + r.sid)) as number | undefined;
+        const asks = (await $.store.get(PREFIX + r.sid)) as Entry | undefined;
         out.push({
-            busy: state?.busy,
-            name: r.name,
-            offPattern: r.bg && !FLEET_NAME.test(r.name),
-            sent,
-            sid: r.sid,
+            ...r,
+            asks: asks?.asks.length ?? 0,
+            context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
+            lead: reply?.lead,
+            offPattern: bg && !FLEET_NAME.test(r.name),
+            sent: (await $.store.get(SENT + r.sid)) as number | undefined,
+            wait: reply?.wait,
         });
     }
     return out.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-const ago = (ms: number) => {
+const span = (ms: number) => {
     const m = Math.floor(ms / 60000);
-    if (m < 1) return 'just now';
-    return m < 60 ? `${m}m ago` : `${Math.floor(m / 60)}h ${m % 60}m ago`;
+    return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 };
+const ago = (ms: number) => (ms < 60000 ? 'just now' : `${span(ms)} ago`);
+
+async function isBoardOpen($: EngineInterface) {
+    const panes = await $.ui.panes().catch(() => []);
+    return panes.some((p) => p.id === BOARD);
+}
+
+async function openBoard($: EngineInterface) {
+    await $.ui.open({ closeOnEscape: true, id: BOARD, title: 'fleet board' });
+}
+
+async function pressDoor(
+    $: EngineInterface,
+    door: Door,
+    surface: Parameters<EngineInterface['ui']['copy']>[0]['surface'],
+) {
+    if (door.kind === 'copy') {
+        await $.ui.copy({ surface, text: door.text });
+        return;
+    }
+    const r = await $.process.run(['open', door.url]).catch(() => null);
+    if (r?.exitCode !== 0) $.ui.log(`stash board: could not open ${door.url}`);
+}
+
+// every control names itself on hover; the card stays on the control's row, since a one-row site clips the rest
+function hoverTip(
+    ui: ReturnType<EngineInterface['ui']['resolve']>,
+    key: string,
+    words: string,
+    control: RenderElement,
+    place: { left: number } | { right: number },
+) {
+    const { Box, Text } = ui;
+    return (
+        <Box key={`tip:${key}`}>
+            {control}
+            <Box
+                display='none'
+                hover={{ display: 'flex' }}
+                position='absolute'
+                top={0}
+                {...place}>
+                <Text dimColor>{words}</Text>
+            </Box>
+        </Box>
+    );
+}
 
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
@@ -559,7 +630,7 @@ export const register: Register = (on) => {
             const tick = () =>
                 $.clock.after(POLL_MS, async () => {
                     // an open board redraws each tick: its «ago» times move on their own
-                    if ((await load($)) || boardOpen)
+                    if ((await load($)) || (await isBoardOpen($)))
                         $.ui.invalidate('ui.render');
                     tick();
                 });
@@ -573,19 +644,28 @@ export const register: Register = (on) => {
         userTurn =
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
+        pinged = e.text === PING;
         busy = true;
         hotGen++;
         await load($);
         turnAfk = afk;
         await markBusy($).catch(() => undefined);
-        await markState($, true).catch(() => undefined);
         if (!afk) return next(e);
         return next({ ...e, context: [...(e.context ?? []), AWAY_NOTE] });
     });
 
     on('classic.Stop', async ($, e, next) => {
         const r = await next(e);
-        const asks = parseAsks(e.last_assistant_message ?? '');
+        const reply = e.last_assistant_message ?? '';
+        // a keep-hot ping's one-character reply is not what the session last said
+        if (!pinged)
+            await $.store
+                .set(REPLY + e.session_id, {
+                    lead: parseLead(reply),
+                    wait: parseWait(reply),
+                })
+                .catch(() => undefined);
+        const asks = parseAsks(reply);
         // a reply to dima with no block means nothing is open; a reply woken by a peer keeps the old list
         if (asks !== null || userTurn) {
             const key = PREFIX + e.session_id;
@@ -608,7 +688,6 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         busy = false;
-        await markState($, false).catch(() => undefined);
         if (hot) {
             hot = { ...hot, since: await $.clock.now() };
             await saveHot($);
@@ -621,12 +700,17 @@ export const register: Register = (on) => {
         return r;
     });
 
-    // the 5h reset 🔥 turns itself off at; nothing on screen reads it
-    on('session.measure', async (_$, e, next) => {
+    // the 5h reset 🔥 turns itself off at; the context fill the board shows
+    on('session.measure', async ($, e, next) => {
         const w = e.rateLimits.find((r) => r.kind === 'five_hour');
         fiveHour = w && {
             resetsAt: w.resetsAt ? Date.parse(w.resetsAt) : undefined,
         };
+        const sid = selfId ?? (await $.session.id().catch(() => undefined));
+        if (sid && e.context.percent !== undefined)
+            await $.store
+                .set(CONTEXT + sid, e.context.percent)
+                .catch(() => undefined);
         return next(e);
     });
 
@@ -651,75 +735,125 @@ export const register: Register = (on) => {
     });
 
     on('command.run', { command: 'board' }, async ($) => {
-        boardOpen = true;
-        await $.ui.open({
-            closeOnEscape: true,
-            id: BOARD,
-            title: 'fleet board',
-        });
+        await openBoard($);
+        $.ui.invalidate('ui.render');
         return { text: 'fleet board opened' };
     });
 
-    on('ui.close', async (_$, e, next) => {
-        if (e.id === BOARD) boardOpen = false;
-        return next(e);
+    // the row's 🚦 shows whether the board is open
+    on('ui.close', async ($, e, next) => {
+        const r = await next(e);
+        if (e.id === BOARD) $.ui.invalidate('ui.render');
+        return r;
     });
 
     on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
-        const { Box, Text } = $.ui.resolve(e);
+        const ui = $.ui.resolve(e);
+        const { Box, Text, Button, Link } = ui;
         const now = await $.clock.now();
         const me = await $.session.id().catch(() => selfId);
         const list = await members($).catch(() => null);
         if (!list)
             return <Text dimColor>the session registry is unreadable</Text>;
         if (!list.length) return <Text dimColor>no live sessions</Text>;
-        return (
-            <Box flexDirection='column'>
-                {list.map((m) => (
-                    <Box flexDirection='row' gap={1} key={`m:${m.sid}`}>
-                        <Text bold={m.sid === me}>
-                            {m.sid === me ? `${m.name} (here)` : m.name}
-                        </Text>
-                        <Text
-                            color={m.busy ? ACCENT : undefined}
-                            dimColor={!m.busy}>
-                            {m.busy === undefined
-                                ? '?'
-                                : m.busy
-                                  ? 'busy'
-                                  : 'idle'}
-                        </Text>
-                        <Text dimColor>
-                            {m.sent
-                                ? `sent ${ago(now - m.sent)}`
-                                : 'no message yet'}
-                        </Text>
-                        {m.offPattern ? (
-                            <Box key={`off:${m.sid}`}>
-                                <Text color={ACCENT}>⚠</Text>
-                                <Box
-                                    display='none'
-                                    hover={{ display: 'flex' }}
-                                    left={2}
-                                    position='absolute'
-                                    top={0}>
-                                    <Text dimColor>
-                                        name off the fleet pattern: «☕️ 🔧 FRM-N
-                                        code: what»
-                                    </Text>
-                                </Box>
-                            </Box>
-                        ) : null}
+        const row = (m: Member, i: number) => {
+            const state = stateWord(m.status);
+            const isBusy = state === 'busy';
+            const ticket = ticketOf(m.name);
+            const door = m.door;
+            const line = m.wait ? `🔭 ${m.wait}` : m.lead;
+            return (
+                <Box
+                    flexDirection='column'
+                    key={`m:${m.sid}`}
+                    marginTop={i > 0 && e.surface === 'desktop' ? 0.5 : 0}>
+                    <Box
+                        flexDirection='row'
+                        gap={1}
+                        justifyContent='space-between'>
+                        <Box flexDirection='row' flexShrink={1} gap={1}>
+                            <Text bold wrap='truncate-end'>
+                                {m.sid === me ? `${m.name} (here)` : m.name}
+                            </Text>
+                            {door
+                                ? hoverTip(
+                                      ui,
+                                      `door:${m.sid}`,
+                                      door.kind === 'open'
+                                          ? 'open this session in the desktop'
+                                          : `copy «${door.text}»`,
+                                      <Button
+                                          dimColor
+                                          key={`door:${m.sid}`}
+                                          onPress={(p) =>
+                                              void pressDoor($, door, p.surface)
+                                          }
+                                          plain>
+                                          {door.kind === 'open' ? '↗' : '📋'}
+                                      </Button>,
+                                      { left: 3 },
+                                  )
+                                : null}
+                            {m.offPattern
+                                ? hoverTip(
+                                      ui,
+                                      `off:${m.sid}`,
+                                      'name off the fleet pattern: «☕️ 🔧 FRM-N code: what»',
+                                      <Text color={ACCENT}>⚠</Text>,
+                                      { left: 2 },
+                                  )
+                                : null}
+                        </Box>
+                        <Box flexDirection='row' flexShrink={0} gap={1}>
+                            {m.asks ? (
+                                <Text color={ACCENT}>⏳ {m.asks}</Text>
+                            ) : null}
+                            {m.context === undefined ? null : (
+                                <Text dimColor>ctx {m.context}%</Text>
+                            )}
+                            {ticket
+                                ? hoverTip(
+                                      ui,
+                                      `ticket:${m.sid}`,
+                                      `open ${ticket} in linear`,
+                                      <Text dimColor>
+                                          <Link
+                                              href={`https://linear.app/x-com/issue/${ticket}`}>
+                                              {ticket}
+                                          </Link>
+                                      </Text>,
+                                      { right: ticket.length + 1 },
+                                  )
+                                : null}
+                            {m.sent ? (
+                                <Text dimColor>sent {ago(now - m.sent)}</Text>
+                            ) : null}
+                            <Text
+                                bold={isBusy}
+                                color={isBusy ? ACCENT : undefined}
+                                dimColor={state === 'idle'}>
+                                {m.statusSince
+                                    ? `${state} ${span(now - m.statusSince)}`
+                                    : state}
+                            </Text>
+                        </Box>
                     </Box>
-                ))}
-            </Box>
-        );
+                    {line ? (
+                        <Text dimColor={!m.wait} wrap='truncate-end'>
+                            {line}
+                        </Text>
+                    ) : null}
+                </Box>
+            );
+        };
+        return <Box flexDirection='column'>{list.map(row)}</Box>;
     });
 
     on('session.end', async ($, e, next) => {
         await $.store.delete(PREFIX + e.sessionId);
         await $.store.delete(HOT + e.sessionId);
-        await $.store.delete(STATE + e.sessionId);
+        await $.store.delete(REPLY + e.sessionId);
+        await $.store.delete(CONTEXT + e.sessionId);
         await $.store.delete(SENT + e.sessionId);
         await dropAll($, e.sessionId).catch(() => undefined);
         return next(e);
@@ -768,7 +902,8 @@ export const register: Register = (on) => {
             a === selfId ? -1 : b === selfId ? 1 : 0,
         );
         const total = groups.reduce((n, [, v]) => n + v.asks.length, 0);
-        const { Box, Text, Button } = $.ui.resolve(e);
+        const ui = $.ui.resolve(e);
+        const { Box, Text, Button } = ui;
         const surface = e.surface;
         // a thread reads its session name; the repo joins only when two sessions share one
         const title = (v: Entry) => {
@@ -809,25 +944,18 @@ export const register: Register = (on) => {
             await armHot($);
             $.ui.invalidate('ui.render');
         };
-        // every control names itself on hover; the card stays on the control's row, since a one-row band clips the rest
         const tip = (
             key: string,
             words: string,
             control: RenderElement,
             place: { left: number } | { right: number },
-        ) => (
-            <Box key={`tip:${key}`}>
-                {control}
-                <Box
-                    display='none'
-                    hover={{ display: 'flex' }}
-                    position='absolute'
-                    top={0}
-                    {...place}>
-                    <Text dimColor>{words}</Text>
-                </Box>
-            </Box>
-        );
+        ) => hoverTip(ui, key, words, control, place);
+        const boardOpen = await isBoardOpen($);
+        const flipBoard = async () => {
+            if (await isBoardOpen($)) await $.ui.close({ id: BOARD });
+            else await openBoard($);
+            $.ui.invalidate('ui.render');
+        };
         // a terminal draws a chromed Button as `[ label ]`
         const leftOf = (label: string, chrome: boolean) => ({
             right: [...label].length + (chrome ? 4 : 0) + 1,
@@ -923,7 +1051,9 @@ export const register: Register = (on) => {
                     {first ? copyButton(first[0], first[1].asks) : null}
                     {tip(
                         'hot',
-                        "keep this session's cache hot: ping every 50 min",
+                        hot
+                            ? "stop keeping this session's cache hot"
+                            : "keep this session's cache hot: ping every 50 min",
                         <Button
                             key='hot'
                             onPress={() => void flipHot()}
@@ -936,7 +1066,9 @@ export const register: Register = (on) => {
                     )}
                     {tip(
                         'afk',
-                        'afk: tell fleet that dima is away',
+                        afk
+                            ? 'back: tell fleet that dima is here'
+                            : 'afk: tell fleet that dima is away',
                         <Button
                             key='afk'
                             onPress={() => void flipAfk()}
@@ -947,10 +1079,23 @@ export const register: Register = (on) => {
                         </Button>,
                         leftOf(afkLabel, afk),
                     )}
+                    {tip(
+                        'board',
+                        boardOpen ? 'fold fleet board' : 'unfold fleet board',
+                        <Button
+                            key='board'
+                            onPress={() => void flipBoard()}
+                            {...(boardOpen
+                                ? { variant: 'primary' as const }
+                                : { plain: true as const })}>
+                            🚦
+                        </Button>,
+                        leftOf('🚦', boardOpen),
+                    )}
                     {first
                         ? tip(
                               'asks-toggle',
-                              'fold/unfold',
+                              open ? 'fold' : 'unfold',
                               <Button key='asks-toggle' onPress={toggle} plain>
                                   {foldLabel}
                               </Button>,
