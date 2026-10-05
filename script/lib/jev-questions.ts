@@ -48,3 +48,106 @@ export const flawlogQuestions = {
 
 // bands from the self-consistency cookbook: below → act, between → dima's ⏳ block, above → act
 export const verdictBand = { high: 0.7, low: 0.3 } as const;
+
+// the skill router, docs.typesafe.ai/cookbooks/skill_suggestion: call 1 ranks the roster in one
+// Choice beside the two vetoes, call 2 re-reads the top 3 against their SKILL.md
+// and each may say no. 09-24 → 10-01 vet misses were a shared word tipping a load («vault»,
+// «announce», «slay at halt»), so the boundary below names those shapes.
+
+// the «needs a skill at all» gate: one condition per noul (docs.typesafe.ai/primitives/noul), a
+// veto each — an ack or a later-only prompt loads nothing, whatever a skill scored. the cookbook's
+// «acts now» nouls were cut: on our fixtures they dropped 5 right picks (report, yt-transcript —
+// skills whose work is talking) to stop 1 needless load the `none` option did not
+export const routerVetoes = {
+    _ack: {
+        criteria: {
+            false: 'The prompt asks for new work, asks a question, or gives a steer. A verdict on something proposed — «➡️ yes», «approve», «go», «do it», a numbered list of answers — is NOT an acknowledgement: it asks for that work to happen.',
+            true: 'The prompt only acknowledges, confirms or reports something already done — a ✓, «ok», «done», «connected», «stopped» — and asks for nothing new.',
+        },
+        instructions: '`prompt` only acknowledges or reports, with no new ask.',
+        type: 'noul',
+    },
+    _later: {
+        criteria: {
+            false: 'At least one thing in the prompt is asked to happen now, in this turn.',
+            true: 'Every action the prompt names is placed at a later moment — next session, session end, the halt, tomorrow — and nothing is asked to happen now.',
+        },
+        instructions:
+            'Everything `prompt` asks for is set for a later moment, none of it for now.',
+        type: 'noul',
+    },
+} as const satisfies Record<string, Question>;
+
+const routerBoundary =
+    'The prompt does not ask for this work in this turn. A no when: the prompt only shares a word or a topic with the skill while its task is something else (a 1Password «vault» is not a notes vault; a line in AGENTS.md is agent docs, not source code; announcing a fleet rule is not a message to a person); it asks a question about the tool or how it works; the message goes to an agent session, which is not a human; the work is set for a later moment; it only acknowledges; or it asks another session to do the work.';
+
+export const routerWide = (roster: readonly RouterSkill[]) =>
+    ({
+        ...routerVetoes,
+        skill: {
+            criteria: {
+                ...Object.fromEntries(
+                    roster.map((s) => [s.name, s.description]),
+                ),
+                none: 'No skill fits what the prompt asks to be done now: a question, an opinion, an acknowledgement, a relay to another session, or work none of these skills covers.',
+            },
+            instructions:
+                'Which of these skills, if any, is the right one to load for what `prompt` asks to be done now?',
+            type: 'choice',
+        },
+    }) satisfies Record<string, Question>;
+
+export const routerRerank = (shortlist: readonly RouterSkill[]) =>
+    ({
+        skill: {
+            criteria: Object.fromEntries(
+                shortlist.map((s) => [
+                    s.name,
+                    `${s.description} — ${s.excerpt}`,
+                ]),
+            ),
+            instructions:
+                'Exactly one of these skills is the right one to load for `prompt`. Which one? Read what each actually does, not just its name.',
+            type: 'choice',
+        },
+        ...Object.fromEntries(
+            shortlist.map((s) => [
+                `fits:${s.name}`,
+                {
+                    criteria: {
+                        false: routerBoundary,
+                        true: `The prompt asks, for this turn, for the work this skill does: ${s.description}`,
+                    },
+                    instructions: `Carrying out what \`prompt\` asks for now needs the procedure of the skill \`${s.name}\`.`,
+                    type: 'noul',
+                } satisfies Question,
+            ]),
+        ),
+    }) satisfies Record<string, Question>;
+
+// the old shape, one noul per skill — the baseline `jev:test skill-router` measures against,
+// kept until the router's vet goes green on the new one
+export const routerNouls = (roster: readonly RouterSkill[]) =>
+    ({
+        ...routerVetoes,
+        ...Object.fromEntries(
+            roster.map((s) => [
+                s.name,
+                {
+                    criteria: {
+                        false: 'Carrying out the prompt needs none of that procedure. A prompt that only shares a word or a topic with the description while its actual task is something else is a no, and so is a question about the tool itself.',
+                        true: s.description,
+                    },
+                    instructions: `Carrying out \`prompt\` needs the procedure of the skill \`${s.name}\`.`,
+                    type: 'noul',
+                } satisfies Question,
+            ]),
+        ),
+    }) satisfies Record<string, Question>;
+
+/* Types */
+export type RouterSkill = {
+    name: string;
+    description: string;
+    excerpt: string;
+};
