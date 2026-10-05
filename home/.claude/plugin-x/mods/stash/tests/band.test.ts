@@ -112,3 +112,37 @@ test("a peer's message leaves the asks open", async ($, on) => {
     });
     expect((await ui.find({ text: /open/ }))?.text).toContain('2 open');
 });
+
+test('every control in the row carries a hover card that names it', async ($, on) => {
+    mock.clock(on);
+    mock.store(on);
+    on('classic.Stop', () => ({}));
+    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    await $.classic.Stop({
+        last_assistant_message: block,
+        stop_hook_active: false,
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'stash',
+        props: {
+            bodyColumns: 100,
+            hasSurvey: false,
+            isWorking: false,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface: 'terminal',
+    });
+    // the harness keeps `hover` out of props, so a card is a hidden Box with words
+    const cards = (await ui.findAll({ type: 'Box' }))
+        .filter((n) => n.props.display === 'none')
+        .map((n) => n.text);
+    expect(cards).toEqual([
+        "copy this thread's asks as a lane block",
+        "keep this session's cache warm with a ping every 50 min idle",
+        'tell every session dima is away',
+        'fold the asks list',
+    ]);
+});

@@ -1,5 +1,5 @@
 /* @jsx h */
-import type { EngineInterface, Register } from 'claude-code';
+import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
 import { parseAsks } from './parse.ts';
 
@@ -557,7 +557,37 @@ export const register: Register = (on) => {
             await armHot($);
             $.ui.invalidate('ui.render');
         };
-        const copyButton = (sid: string, asks: string[]) => (
+        // every control names itself on hover; the card stays on the control's row, since a one-row band clips the rest
+        const tip = (
+            key: string,
+            words: string,
+            control: RenderElement,
+            place: { left: number } | { right: number },
+        ) => (
+            <Box key={`tip:${key}`}>
+                {control}
+                <Box
+                    display='none'
+                    hover={{ display: 'flex' }}
+                    position='absolute'
+                    top={0}
+                    {...place}>
+                    <Text dimColor>{words}</Text>
+                </Box>
+            </Box>
+        );
+        // a terminal draws a chromed Button as `[ label ]`
+        const leftOf = (label: string, chrome: boolean) => ({
+            right: [...label].length + (chrome ? 4 : 0) + 1,
+        });
+        const copyButton = (sid: string, asks: string[]) =>
+            tip(
+                `copy:${sid}`,
+                "copy this thread's asks as a lane block",
+                copyControl(sid, asks),
+                leftOf('📋 copy all', true),
+            );
+        const copyControl = (sid: string, asks: string[]) => (
             <Button
                 key={`copy:${sid}`}
                 onPress={() =>
@@ -592,22 +622,20 @@ export const register: Register = (on) => {
         ]
             .filter(Boolean)
             .join('; ');
-        // the card sits on the chip's own row: a one-row band clips anything above or below it
-        const holdsChip = chipText ? (
-            <Box key='holds-chip'>
-                <Text color={holds.warned ? ACCENT : undefined}>
-                    {chipText}
-                </Text>
-                <Box
-                    display='none'
-                    hover={{ display: 'flex' }}
-                    left={[...chipText].length + 1}
-                    position='absolute'
-                    top={0}>
-                    <Text dimColor>{chipName}</Text>
-                </Box>
-            </Box>
-        ) : null;
+        const holdsChip = chipText
+            ? tip(
+                  'holds',
+                  chipName,
+                  <Text color={holds.warned ? ACCENT : undefined}>
+                      {chipText}
+                  </Text>,
+                  { left: [...chipText].length + 1 },
+              )
+            : null;
+        const hotLabel = suggest ? '🔥? hot' : '🔥 hot';
+        const afkLabel = afk ? '🌙 afk' : '☕ afk';
+        // a disclosure triangle: ▾ the list is open, ▸ it is folded
+        const foldLabel = open ? '▾' : '▸';
 
         // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there
         const head = (
@@ -633,31 +661,52 @@ export const register: Register = (on) => {
                 )}
                 <Box flexDirection='row' gap={1}>
                     {first ? copyButton(first[0], first[1].asks) : null}
-                    <Button
-                        key='hot'
-                        onPress={() => void flipHot()}
-                        {...(hot
-                            ? { variant: 'primary' as const }
-                            : { dimColor: suggest, plain: true as const })}>
-                        {suggest ? '🔥? hot' : '🔥 hot'}
-                    </Button>
-                    <Button
-                        key='afk'
-                        onPress={() => void flipAfk()}
-                        {...(afk
-                            ? { variant: 'primary' as const }
-                            : { plain: true as const })}>
-                        {afk ? '🌙 afk' : '☕ afk'}
-                    </Button>
-                    {first ? (
+                    {tip(
+                        'hot',
+                        hot
+                            ? 'stop the keep-warm ping'
+                            : "keep this session's cache warm with a ping every 50 min idle",
                         <Button
-                            hotkey='o'
-                            key='asks-toggle'
-                            onPress={toggle}
-                            plain>
-                            {open ? 'hide' : 'show'}
-                        </Button>
-                    ) : null}
+                            key='hot'
+                            onPress={() => void flipHot()}
+                            {...(hot
+                                ? { variant: 'primary' as const }
+                                : { dimColor: suggest, plain: true as const })}>
+                            {hotLabel}
+                        </Button>,
+                        leftOf(hotLabel, !!hot),
+                    )}
+                    {tip(
+                        'afk',
+                        afk
+                            ? 'tell every session dima is back'
+                            : 'tell every session dima is away',
+                        <Button
+                            key='afk'
+                            onPress={() => void flipAfk()}
+                            {...(afk
+                                ? { variant: 'primary' as const }
+                                : { plain: true as const })}>
+                            {afkLabel}
+                        </Button>,
+                        leftOf(afkLabel, afk),
+                    )}
+                    {first
+                        ? tip(
+                              'asks-toggle',
+                              open
+                                  ? 'fold the asks list'
+                                  : 'unfold the asks list',
+                              <Button
+                                  hotkey='o'
+                                  key='asks-toggle'
+                                  onPress={toggle}
+                                  plain>
+                                  {foldLabel}
+                              </Button>,
+                              leftOf(foldLabel, false),
+                          )
+                        : null}
                 </Box>
             </Box>
         );

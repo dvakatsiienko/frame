@@ -7,7 +7,12 @@
 
 ## the row
 
-- 🔎 one row: the open count on the left; `📋 copy all`, `afk` and `show`/`hide` on the right
+- 🔎 one row: the open count on the left; `📋 copy all`, `🔥 hot`, `afk` and the fold triangle on the right
+  - decision: the fold control is a one-glyph disclosure triangle, `▾` open and `▸` folded, no word — dima wanted the icon to say what it does (2026-10-05)
+- ⬜ every control in the row names itself on hover: a dim card beside it, worded by its current state
+  - given the row draws
+  - when dima hovers `📋 copy all`, `🔥 hot`, `afk`, the fold triangle or the holds chip
+  - then a dim line beside it says what a press does («fold the asks list», «tell every session dima is away», …)
   - decision: a quarter cell (~4px) under the row on desktop while the asks show — dima: «too tight»; none in the terminal, where a cell is a whole line
   - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
 - 🔎 asks: every live session's open asks, «no open asks» when empty
@@ -57,8 +62,8 @@
   - given session A holds 2 files in this repo
   - when session B's row draws
   - then B shows `🔒 2`; at zero the chip is hidden
-- 🐞 the holds chip names itself on hover
-  - 🐞 dima, 2026-10-05: the card never shows, in iTerm2 or in the desktop Code tab
+- ⬜ the holds chip names itself on hover
+  - dima, 2026-10-05: the desktop Code tab shows the card, drawn as a bubble above the chip; the terminal is unchecked — an earlier «never shows» came before his session reloaded the card
   - given another session holds 2 files in this repo
   - when dima hovers the chip, on desktop or in a terminal that reports the pointer
   - then «2 files held by other sessions» shows beside it, dimmed
