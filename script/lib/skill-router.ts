@@ -110,17 +110,14 @@ export function rosterLatest() {
     return { path: '-', roster: treeRoster };
 }
 
-/** the live hook: one transcript read gives the roster, the last reply and the skills in play */
+/** the live hook: one transcript read gives the last reply and the skills in play */
 export function routeInput(prompt: string, transcriptPath?: string) {
     const session = sessionRead(transcriptPath);
     return {
-        input: {
-            prompt,
-            recentContext: session.recentContext,
-            seen: session.seen,
-        },
-        roster: session.listing.size ? rosterFrom(session.listing) : treeRoster,
-    };
+        prompt,
+        recentContext: session.recentContext,
+        seen: session.seen,
+    } satisfies RouteInput;
 }
 
 /** the two jev calls; every number they return is kept, so a threshold sweep needs no new call */
@@ -244,25 +241,23 @@ export function decide(
     };
 }
 
-// the hook runs full roster + last reply + memory at fits 0.75: 94 % / 2 % precision / wrong on
-// FRM-305's held split, but 67 % / 7 % on its 32 real prompts — the synthetic lines carry the
-// headline, and no arm meets the bar to turn on (≥ 90 % / ≤ 5 %) on real prompts. the full
-// roster stays because it is the only way a non-x skill loads; the gate stays in the replay
+// the hook runs `+context` (dima's pick, FRM-305): x + cclio plus the last reply, at the
+// thresholds r4 swept for it — the best arm on the 32 real held-out prompts (75 % precision,
+// 15 % wrong, 71 % critical recall). no arm meets the bar to turn on (≥ 90 % / ≤ 5 %) there,
+// so the router stays off until it is re-measured on real labels
 const live = {
-    parts: {
+    arm: {
         hasContext: true,
         hasGate: false,
-        hasMemory: true,
+        hasMemory: false,
         hasNeed: false,
+        roster: treeRoster,
     },
-    thresholds: { ...defaultThresholds, fits: 0.75 },
-};
+    thresholds: { ...defaultThresholds, fits: 0.3, margin: 0.4 },
+} satisfies { arm: RouterArm; thresholds: Thresholds };
 
-export async function suggest(
-    input: RouteInput,
-    roster: readonly RouterSkill[],
-) {
-    const raw = await score(input, { ...live.parts, roster });
+export async function suggest(input: RouteInput) {
+    const raw = await score(input, live.arm);
     return { ...decide(raw, live.thresholds), ms: raw.ms };
 }
 

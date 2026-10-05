@@ -20,8 +20,17 @@ held-out third (71 prompts, 32 of them real).
 - **on the whole held third, full roster + memory reads 94 % / 2 %** — but 132 of 221 fixtures are
   synthetic, written from skill descriptions, and they carry that number. on real prompts the
   same arm reads 67 % precision with 73 % of wanted loads missed.
-- **the router stays OFF.** the live hook runs full roster + context + memory, because the full
-  roster is the only way a non-x skill loads; the turn-on call waits for more real labels.
+- **the router stays OFF.** the live hook runs `+context` (dima's pick): x + cclio plus the last
+  reply, at fits 0.3 / margin 0.4. the full roster, memory and the gate ship in the replay; the
+  turn-on call waits for a re-measure on ~100 real prompts.
+- **jev is the right tool, not haiku** (arm 5: `claude -p --model haiku`, a json schema, the same
+  roster, context and memory). on real held-out prompts haiku reads 27 % precision / 53 % wrong
+  loads against `+context`'s 75 % / 15 %; it misses less (14 % vs 61 % on all) because it loads
+  more (needless 29 %). p50 6.6 s / p95 9.6 s — past the hook's 8 s timeout — and $10.37 per 1k
+  prompts against jev's $0.22.
+- **one full jev replay costs ~5,060 requests, ~27M input tokens, ~$1.13** (4 arms × 221 × 3,
+  two calls each). four of them took the typesafe balance below zero on 10-05; the free credit is
+  $5 a month, so the next run must fit it — [FRM-308](https://linear.app/x-com/issue/FRM-308) gates it.
 
 ## what the lanes agreed on
 
@@ -81,19 +90,22 @@ held-out third (71 prompts, 32 of them real).
 
 ## the exit lines
 
-- 4-arm table per slice: printed (held, verdict, substantive, real prompts, single, multi, all),
-  FRM-268 shown both swept and as shipped.
+- the table per slice: printed (held, verdict, substantive, real prompts, single, multi, all) for
+  four jev arms and haiku, FRM-268 shown both swept and as shipped; `REPLAY_RAW` re-scores a saved
+  run, roster pinned, with no call.
 - critical recall ≥ 95 %: **not met.** best held 78 % (gate arm); the gate noul's own spread is
   the limit — at 0.3 it reaches 78 % with 7 false fires a run (r2 raws). 9 critical positives
   held out, 5 of them real.
 - router OFF: `node script/jev-router.ts status` prints `router: OFF`; the bar is not met on
   real prompts.
-- a non-x skill can be picked: «do a grill about the raycast setup» → `mattpocock-skills:grilling` 0.96.
+- a non-x skill can be picked by the full-roster arms: «do a grill about the raycast setup» →
+  `mattpocock-skills:grilling` 0.96. the live `+context` arm routes x + cclio only.
 - the four side-effect skills keep «⚠ read first» (`loadLine`, unit-tested).
 
 ## latency (the hook's budget is 8 s)
 
-- both jev calls, 4 in flight: FRM-268 p50 546 / p95 658 ms; v2 p50 630–655 / p95 722–769 ms.
+- both jev calls, 4 in flight: FRM-268 p50 546 / p95 658 ms; the live `+context` 557 / 688 ms;
+  the full-roster arms 630–655 / 722–769 ms. haiku through `claude -p`: 6,577 / 9,576 ms.
 - fixed cost before any call: ~900 ms, of which `op-run` (the 1Password read) is ~750 ms, node
   start 20 ms, router import + reading a 30 MB transcript ~150 ms.
 - so a v2 prompt costs ~1.7 s at p95 — inside the budget. `op-run` is the cost to cut, in v1 too.
@@ -104,7 +116,7 @@ held-out third (71 prompts, 32 of them real).
   replay's `held · real prompts` row is the one to read. 32 real held-out prompts is too few to
   pick thresholds on.
 - recall vs precision, once real numbers exist: the gate lifts critical recall, at a cost in
-  wrong loads. the code for both ships; the hook runs without the gate.
+  wrong loads. the code ships in the replay; the hook runs `+context`, without it.
 - the critical list is the ticket's nine. per-skill gate spread says `x:guide-ui-ux` (wanted
   median 0.25) and `x:ftr` (0.37) are where the gate is weakest.
 - multi-skill has 4 fixtures; its rows are noise until more land.

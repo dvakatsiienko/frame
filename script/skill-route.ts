@@ -2,8 +2,8 @@
 // usage: script/op-run.sh node script/skill-route.ts '<prompt>'        → live: prints the load, logs the pick + ms
 //        script/op-run.sh node script/skill-route.ts --from-log [n]  → replay the last n near-misses from route.log
 //        script/op-run.sh node script/skill-route.ts --misses [n]     → replay the last n prompts cclio verdicted a miss
-// live mode reads `JEV_TRANSCRIPT` (the hook's transcript_path): the roster, the last reply, the skills in play
-// the labelled fixtures, four arms: script/op-run.sh node script/jev-test.ts skill-router
+// live mode reads `JEV_TRANSCRIPT` (the hook's transcript_path) for the last reply
+// the labelled fixtures, every arm: script/op-run.sh node script/jev-test.ts skill-router
 import { appendFileSync, mkdirSync } from 'node:fs';
 
 import { printTable } from './lib/jev-print.ts';
@@ -15,12 +15,7 @@ import {
     verdictsOf,
 } from './lib/jev-report.ts';
 import { bold, dim } from './lib/print.ts';
-import {
-    loadLine,
-    rosterLatest,
-    routeInput,
-    suggest,
-} from './lib/skill-router.ts';
+import { loadLine, routeInput, suggest } from './lib/skill-router.ts';
 
 const logDir = `${process.env.HOME}/.claude/shelf/jev`;
 mkdirSync(logDir, { recursive: true });
@@ -34,8 +29,9 @@ if (!mode) {
 
 if (mode !== '--from-log' && mode !== '--misses') {
     const started = performance.now();
-    const { input, roster } = routeInput(mode, process.env.JEV_TRANSCRIPT);
-    const { loads, tokens, top, trace } = await suggest(input, roster);
+    const { loads, tokens, top, trace } = await suggest(
+        routeInput(mode, process.env.JEV_TRANSCRIPT),
+    );
     const ms = Math.round(performance.now() - started);
     // the whole prompt, one line: a vet miss filed with `--last` is a label source
     appendFileSync(
@@ -50,19 +46,19 @@ if (mode !== '--from-log' && mode !== '--misses') {
 
 // --from-log: real near-misses; --misses: the prompts cclio already called wrong
 // (`jev:vet miss skill-router …`) — a confident wrong pick never enters the band.
-// no transcript here: the newest coordinator listing stands in, with no reply and no memory
+// no transcript here: the prompt replays with no reply before it
 const count = Number(countArg ?? 10);
 const prompts =
     mode === '--misses'
         ? missPrompts(verdictsOf('skill-router'), count)
         : nearMisses(routeRead(), count).map((r) => r.prompt);
-const { roster } = rosterLatest();
 const rows: string[][] = [];
 for (const prompt of prompts) {
-    const { loads, trace } = await suggest(
-        { prompt, recentContext: '', seen: new Set() },
-        roster,
-    );
+    const { loads, trace } = await suggest({
+        prompt,
+        recentContext: '',
+        seen: new Set(),
+    });
     rows.push([
         prompt.slice(0, 70),
         dim('got'),

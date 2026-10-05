@@ -2,23 +2,27 @@
  * jev:test — the fixture suite of every jev flow. one jsonl per flow in `shelf/jev/fixtures/`,
  * a line = the state jev sees + the lane cclio gave. run before a criterion changes and at the
  * halt; a criterion edit that lowers a flow's precision is refused. `skill-router` runs only when
- * named: four arms (FRM-268's router, then v2's parts added one at a time) `RUNS` times
- * (default 3), thresholds swept on the tune split, every rate printed on the held-out split;
- * exit 1 when v2's held precision is below FRM-268's. `REPLAY_RAW=<file>` keeps the raw jev
- * answers — a file that exists is re-scored with no call. usage: pnpm jev:test [flow…]
+ * named: four jev arms (FRM-268's router, then v2's parts added one at a time) and a haiku
+ * baseline, `RUNS` times (default 3), jev thresholds swept on the tune split, every rate printed
+ * on the held-out split; exit 1 when v2's held precision is below FRM-268's. `REPLAY_RAW=<file>`
+ * keeps the raw answers and the roster they ran on — a part the file holds is re-scored with no
+ * call, a missing part is run and written back. usage: pnpm jev:test [flow…]
  */
 
 /* Core */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 /* Instruments */
+import type { HaikuRaw } from './lib/haiku-router.ts';
+import { haikuRoute } from './lib/haiku-router.ts';
 import { judge } from './lib/jev.ts';
 import { laneCells, printTable } from './lib/jev-print.ts';
+import type { RouterSkill } from './lib/jev-questions.ts';
 import { flawlogQuestions, inboxQuestions } from './lib/jev-questions.ts';
 import { bold, dim, gb, rb } from './lib/print.ts';
 import type { Metrics, RouterFixture } from './lib/router-score.ts';
 import { isHeld, isVerdict, metrics, sweep } from './lib/router-score.ts';
-import type { Raw, RouterArm, Thresholds } from './lib/skill-router.ts';
+import type { Raw, RouterArm, Suggestion } from './lib/skill-router.ts';
 import {
     decide,
     defaultThresholds,
@@ -33,13 +37,22 @@ const FIXTURES = new URL(
     import.meta.url,
 );
 const RUNS = Number(process.env.RUNS ?? 3);
+// print order lives in an array: biome sorts object keys
+const armNames = [
+    'frm-268',
+    '+context',
+    '+roster+memory',
+    '+gate+need',
+] as const;
+// jev-1.13.0 bills input tokens only (docs.typesafe.ai/models)
+const JEV_USD_PER_TOKEN = 0.042 / 1_000_000;
 
 const flows = {
     'flawlog-lanes': { answer: 'lane', questions: flawlogQuestions },
     'inbox-lanes': { answer: 'lane', questions: inboxQuestions },
 } as const;
 
-// the router runs only when named: RUNS × 4 arms × ~220 prompts is minutes, too long for every halt
+// the router runs only when named: RUNS × 5 arms × ~220 prompts is minutes, too long for every halt
 const routerFlow = 'skill-router';
 const args = process.argv.slice(2);
 const unknown = args.filter((a) => !(a in flows) && a !== routerFlow);
@@ -104,7 +117,36 @@ function readFixtures<T>(name: string) {
 
 async function routerTest() {
     const fixtures = readFixtures<RouterFixture>(routerFlow);
-    const latest = rosterLatest();
+    const prompts = fixtures.map((fx) => fx.state.prompt);
+    const inputOf = (fx: RouterFixture) => ({
+        prompt: fx.state.prompt,
+        recentContext: fx.state.recent_context ?? '',
+        seen: new Set(fx.seen),
+    });
+
+    // raws sit by fixture index, and arms 3–5 ran on one roster: a file made from other fixtures
+    // would score the wrong prompts, one made before the roster was pinned cannot say which ran
+    const saved = process.env.REPLAY_RAW;
+    const file =
+        saved && existsSync(saved)
+            ? (JSON.parse(readFileSync(saved, 'utf8')) as Partial<SavedReplay>)
+            : undefined;
+    if (file && JSON.stringify(file.prompts) !== JSON.stringify(prompts)) {
+        console.error(
+            `REPLAY_RAW ${saved} was made from other fixtures — delete it or point at a new file`,
+        );
+        process.exit(2);
+    }
+    if (file && !file.roster) {
+        console.error(
+            `REPLAY_RAW ${saved} holds no roster — made before rosters were pinned; point at a new file`,
+        );
+        process.exit(2);
+    }
+    const latest = file?.roster
+        ? { path: file.rosterPath ?? '-', roster: file.roster }
+        : rosterLatest();
+
     const off = {
         hasContext: false,
         hasGate: false,
@@ -127,58 +169,45 @@ async function routerTest() {
             roster: latest.roster,
         },
         'frm-268': { ...off, roster: treeRoster },
-    } satisfies Record<string, RouterArm>;
-    type ArmName = keyof typeof arms;
-    // print order lives in an array: biome sorts object keys
-    const armNames = [
-        'frm-268',
-        '+context',
-        '+roster+memory',
-        '+gate+need',
-    ] as const satisfies readonly ArmName[];
+    } satisfies Record<ArmName, RouterArm>;
     console.log(
         `\n${bold(routerFlow)} ${dim(`· ${fixtures.length} fixtures, ${fixtures.filter((f) => isHeld(f.state.prompt)).length} held out · RUNS=${RUNS} · roster ${treeRoster.length} → ${latest.roster.length} (${latest.path.split('/').at(-1)})`)}`,
     );
 
-    // raws[arm][run][fixture]
-    // raws sit by fixture index: a file made from other fixtures would score the wrong prompts
-    const saved = process.env.REPLAY_RAW;
-    const prompts = fixtures.map((fx) => fx.state.prompt);
-    const file =
-        saved && existsSync(saved)
-            ? (JSON.parse(readFileSync(saved, 'utf8')) as SavedReplay)
-            : undefined;
-    if (file && JSON.stringify(file.prompts) !== JSON.stringify(prompts)) {
-        console.error(
-            `REPLAY_RAW ${saved} was made from other fixtures — delete it or point at a new file`,
-        );
-        process.exit(2);
-    }
-    const raws = file?.raws ?? (await replay());
-    if (saved && !file)
+    // raws[arm][run][fixture], haiku[run][fixture]
+    const raws = file?.raws ?? (await replayJev());
+    const haiku = file?.haiku ?? (await replayHaiku());
+    if (saved && (!file?.raws || !file.haiku))
         writeFileSync(
             saved,
-            JSON.stringify({ prompts, raws } satisfies SavedReplay),
+            JSON.stringify({
+                haiku,
+                prompts,
+                raws,
+                roster: [...latest.roster],
+                rosterPath: latest.path,
+            } satisfies SavedReplay),
         );
-    type SavedReplay = { prompts: string[]; raws: Record<ArmName, Raw[][]> };
 
-    async function replay() {
+    async function replayJev() {
         const out = {} as Record<ArmName, Raw[][]>;
         for (const arm of armNames) out[arm] = [];
         for (let run = 0; run < RUNS; run++)
             for (const arm of armNames)
                 out[arm].push(
-                    await pool(fixtures, (fx) =>
-                        score(
-                            {
-                                prompt: fx.state.prompt,
-                                recentContext: fx.state.recent_context ?? '',
-                                seen: new Set(fx.seen),
-                            },
-                            arms[arm],
-                        ),
-                    ),
+                    await pool(fixtures, (fx) => score(inputOf(fx), arms[arm])),
                 );
+        return out;
+    }
+
+    async function replayHaiku() {
+        const out: HaikuRaw[][] = [];
+        for (let run = 0; run < RUNS; run++)
+            out.push(
+                await pool(fixtures, (fx) =>
+                    haikuRoute(inputOf(fx), latest.roster),
+                ),
+            );
         return out;
     }
 
@@ -196,43 +225,72 @@ async function routerTest() {
             'held · substantive',
             at((fx) => isHeld(fx.state.prompt) && !isVerdict(fx)),
         ],
-        [
-            'all · single-skill',
-            at((fx) => [fx.expect].flat().length === 1 && fx.expect !== 'none'),
-        ],
         // 132 of 221 lines are synthetic: this row is the one no description-written prompt reaches
         [
             'held · real prompts',
             at((fx) => isHeld(fx.state.prompt) && fx.label !== 'synthetic'),
         ],
+        [
+            'all · single-skill',
+            at((fx) => [fx.expect].flat().length === 1 && fx.expect !== 'none'),
+        ],
         ['all · multi-skill', at((fx) => [fx.expect].flat().length > 1)],
         ['all', fixtures.map((_, i) => i)],
     ];
 
-    // every arm swept on the same tune split; FRM-268 also printed at the thresholds it shipped with
-    const lines = [
-        { arm: 'frm-268', label: 'frm-268 shipped', t: defaultThresholds },
-        ...armNames.map((arm) => ({
-            arm,
-            label: arm,
-            t: sweep(
-                tune.map((i) => ({
-                    fx: fixtures[i] as RouterFixture,
-                    raws: raws[arm].map((run) => run[i] as Raw),
-                })),
-                arms[arm],
+    // every jev arm swept on the same tune split; FRM-268 also printed at the thresholds it
+    // shipped with; haiku has no threshold to sweep
+    const jevLine = (arm: ArmName, label: string, t = defaultThresholds) => ({
+        cost: (run: number, i: number) =>
+            (raws[arm][run]?.[i]?.tokens ?? 0) * JEV_USD_PER_TOKEN,
+        hasMemory: arms[arm].hasMemory,
+        label,
+        ms: raws[arm].flat().map((r) => r.ms),
+        runs: raws[arm].map((run) => run.map((r) => decide(r, t))),
+        t: `fits ${t.fits} · margin ${t.margin} · need ${t.need} · gate ${t.gate}`,
+    });
+    const lines: Line[] = [
+        jevLine('frm-268', 'frm-268 shipped'),
+        ...armNames.map((arm) =>
+            jevLine(
+                arm,
+                arm,
+                sweep(
+                    tune.map((i) => ({
+                        fx: fixtures[i] as RouterFixture,
+                        raws: raws[arm].map((run) => run[i] as Raw),
+                    })),
+                    arms[arm],
+                ),
             ),
-        })),
-    ] satisfies { arm: ArmName; label: string; t: Thresholds }[];
+        ),
+        {
+            cost: (run, i) => haiku[run]?.[i]?.cost ?? 0,
+            hasMemory: true,
+            label: 'haiku 4.5',
+            ms: haiku.flat().map((h) => h.ms),
+            runs: haiku.map((run) =>
+                run.map(
+                    (h): Suggestion => ({
+                        loads: h.loads.map((name) => ({ name, p: 1 })),
+                        tokens: 0,
+                        top: { name: h.loads[0] ?? '-', p: 1 },
+                        trace: ['haiku'],
+                    }),
+                ),
+            ),
+            t: 'claude -p, schema, full roster + context + memory',
+        },
+    ];
 
     const avgOver = (line: Line, idx: readonly number[]) => {
-        const per = raws[line.arm].map((run) =>
+        const per = line.runs.map((run) =>
             metrics(
                 idx.map((i) => ({
                     fx: fixtures[i] as RouterFixture,
-                    s: decide(run[i] as Raw, line.t),
+                    s: run[i] as Suggestion,
                 })),
-                arms[line.arm].hasMemory,
+                line.hasMemory,
             ),
         );
         const avg = (f: (m: Metrics) => number) =>
@@ -262,31 +320,32 @@ async function routerTest() {
     }
 
     console.log(
-        `\n${bold('latency per prompt')} ${dim('· both calls, 4 in flight, no node start or transcript read')}`,
+        `\n${bold('latency and cost per prompt')} ${dim('· 4 in flight · jev: both calls, no node start or transcript read · haiku: the whole `claude -p` process')}`,
     );
     printTable(
-        lines.map(({ arm, label, t }) => {
-            const ms = raws[arm]
-                .flat()
-                .map((r) => r.ms)
-                .sort((a, b) => a - b);
+        lines.map((line) => {
+            const ms = [...line.ms].sort((a, b) => a - b);
             const q = (p: number) =>
                 ms[Math.min(ms.length - 1, Math.floor(ms.length * p))] ?? 0;
+            const usd =
+                line.runs
+                    .flatMap((run, r) => run.map((_, i) => line.cost(r, i)))
+                    .reduce((n, c) => n + c, 0) /
+                (line.runs.length * fixtures.length);
             return [
-                bold(label),
+                bold(line.label),
                 `p50 ${q(0.5)} ms`,
                 `p95 ${q(0.95)} ms`,
-                dim(
-                    `fits ${t.fits} · margin ${t.margin} · need ${t.need} · gate ${t.gate}`,
-                ),
+                `$${(usd * 1000).toFixed(2)} / 1k prompts`,
+                dim(line.t),
             ];
         }),
     );
 
     // the v2 misses on the last run, each with the reason every stage gave
-    const v2 = lines.at(-1) as Line;
+    const v2 = lines[armNames.length] as Line;
     const misses = fixtures.flatMap((fx, i) => {
-        const s = decide(raws[v2.arm].at(-1)?.[i] as Raw, v2.t);
+        const s = v2.runs.at(-1)?.[i] as Suggestion;
         const m = metrics([{ fx, s }], true);
         const isMiss = m.wrong || m.missed || m.needless;
         return isMiss
@@ -306,7 +365,7 @@ async function routerTest() {
             : [];
     });
     console.log(
-        `\n${bold('+gate+need misses, last run')} ${dim(`· ${misses.length} · want · got · trace · prompt`)}`,
+        `\n${bold(`${v2.label} misses, last run`)} ${dim(`· ${misses.length} · want · got · trace · prompt`)}`,
     );
     printTable(misses);
 
@@ -319,8 +378,6 @@ async function routerTest() {
             : rb(bold('v2 held precision < frm-268 shipped — refused')),
     );
     return isKept;
-
-    type Line = (typeof lines)[number];
 }
 
 // four in flight: a run stays near a minute and far under the 1,200 req/min account limit
@@ -343,7 +400,24 @@ function pct(x: number) {
 
 /* Types */
 type FlowName = keyof typeof flows;
+type ArmName = (typeof armNames)[number];
+type SavedReplay = {
+    prompts: string[];
+    roster: RouterSkill[];
+    rosterPath: string;
+    raws: Record<ArmName, Raw[][]>;
+    haiku: HaikuRaw[][];
+};
 type Fixture = {
     state: Record<string, string>;
     expect: string;
+};
+/** one printed row: its suggestions per run, and what each prompt cost */
+type Line = {
+    label: string;
+    hasMemory: boolean;
+    runs: Suggestion[][];
+    ms: number[];
+    cost: (run: number, i: number) => number;
+    t: string;
 };
