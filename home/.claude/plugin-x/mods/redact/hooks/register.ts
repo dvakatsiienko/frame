@@ -1,6 +1,12 @@
 import type { EngineInterface, Register } from 'claude-code';
 
-import { type Vault, mapStrings, redactText, restoreText } from './mask.ts';
+import {
+    type Vault,
+    mapStrings,
+    maskText,
+    redactText,
+    restoreText,
+} from './mask.ts';
 
 // the vault survives a hot reload and dies with the session; never `$.store`, which every session shares
 const VAULT = { key: 'vault', plugin: 'redact' } as const;
@@ -19,32 +25,43 @@ async function redactRow<T>($: EngineInterface, content: T) {
     throw new Error('the vault kept changing under three writes');
 }
 
-// redact: every row a session keeps reads secrets as placeholders before it is stored and sent; a tool call's input gets the secrets back.
-// fail-open: an error keeps the row or the call as it came, with a line in the log.
+// a vault error never lets a secret through: the value is masked one way instead, with a line in the log
+async function redactOrMask<T>($: EngineInterface, value: T) {
+    try {
+        return await redactRow($, value);
+    } catch (err) {
+        $.ui.log(
+            `redact: ${err instanceof Error ? err.message : String(err)}; masked one way instead`,
+        );
+        return mapStrings(value, maskText);
+    }
+}
+
+// redact: every row a session keeps, and every tool result, reads secrets as placeholders before it is stored and sent;
+// a Bash command gets the secrets back. Only Bash: a Write or an Edit quoting a placeholder would put the live key into a file.
 export const register: Register = (on) => {
     on('session.append', async ($, e, next) => {
-        try {
-            const content = await redactRow($, e.message.content);
-            if (content === e.message.content) return next(e);
-            return next({ ...e, message: { ...e.message, content } });
-        } catch (err) {
-            $.ui.log(
-                `redact: ${err instanceof Error ? err.message : String(err)}; the row was kept unredacted`,
-            );
-            return next(e);
-        }
+        const content = await redactOrMask($, e.message.content);
+        if (content === e.message.content) return next(e);
+        return next({ ...e, message: { ...e.message, content } });
     });
 
     on('tool.call', async ($, e, next) => {
-        try {
-            const { value: vault } = await $.state.get(VAULT);
-            if (!vault) return next(e);
-            return next(mapStrings(e, (text) => restoreText(text, vault)));
-        } catch (err) {
-            $.ui.log(
-                `redact: ${err instanceof Error ? err.message : String(err)}; the call ran with its placeholders`,
-            );
-            return next(e);
+        let input = e;
+        if (e.tool === 'Bash') {
+            const { value: vault } = await $.state
+                .get(VAULT)
+                .catch(() => ({ value: undefined }));
+            if (vault)
+                input = mapStrings(e, (text) => restoreText(text, vault));
         }
+        const r = await next(input);
+        if (r.deny !== undefined) return r;
+        // the engine keeps the tool's own result beside the row (`toolUseResult`), which `session.append` never sees
+        const result = await redactOrMask($, r.result);
+        const text =
+            r.text === undefined ? undefined : await redactOrMask($, r.text);
+        if (result === r.result && text === r.text) return r;
+        return { ...r, result, ...(text === undefined ? {} : { text }) };
     });
 };

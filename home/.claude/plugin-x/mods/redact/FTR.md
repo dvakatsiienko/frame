@@ -23,15 +23,18 @@
   - given dima pastes a fake key in a prompt
   - when the model runs a Bash command that names its placeholder
   - then the command receives the real value, and the transcript keeps the placeholder — in the command row and in its output
-  - proven live 2026-10-05: a headless `claude -p` run got a planted `sk-ant-…` fake in its prompt; the model wrote `printf %s ‹sk-ant…› > file`, the file held the real value, the transcript held it only in the `queue-operation` record, 6 rows read the placeholder
-  - decision: `tool.call` swaps placeholders back in the call's input just before it runs; nothing else ever sees the value again (borrowed from ray-amjad/awesome-claude-code-function-hooks `plugins/secret-redactor`)
+  - proven live 2026-10-05: a headless `claude -p` run got a planted `sk-ant-…` fake in its prompt; the model wrote `printf %s ‹sk-ant…› | tee file`, the file held the real value, the transcript held it only in the `queue-operation` record, 8 rows read the placeholder, `toolUseResult` included
+  - decision: `tool.call` swaps placeholders back in a Bash call's input just before it runs; nothing else ever sees the value again (borrowed from ray-amjad/awesome-claude-code-function-hooks `plugins/secret-redactor`)
+  - decision: Bash only — a `Write` or an `Edit` quoting a placeholder (a doc, a test, a config) keeps it as written, so a live key never lands in a file the model wrote, and from there in git (the local review, 2026-10-05)
+  - decision: `tool.call` also redacts the tool's own result — the engine keeps it beside the row as `toolUseResult`, which `session.append` never sees; the first probe printed nothing to stdout and missed it
   - decision: the vault (placeholder → value) lives in `$.state`: it survives a hot reload and dies with the session — never on disk, never in `$.store`, which every session shares
   - 📌 after `/clear` or `/resume` the vault is empty: an old placeholder then reaches the tool as written
   - 📌 trust: any tool call naming a placeholder gets the value — a command a prompt injection writes included; the model had the same reach before redaction
 - ✅ a 1Password reference stays readable
   - given a row holds `op://dev/<item>/credential`
   - then it is kept as written — a reference is the safe form the fleet rules ask for, not a secret
-- ⬜ a redactor error never blocks a row
-  - rows reach the hook as plain JSON, so the harness cannot make masking throw; the guard is a try around the rewrite
-  - given masking a row throws
-  - then the row is kept as it came, and the error is logged
+- ✅ a vault error never lets a secret through
+  - given the vault cannot be written (three version checks lost to parallel rows, or `$.state` failing)
+  - when a row or a tool result carries a secret
+  - then it is masked one way — its first six characters and `…‹redacted›` — and the error is logged; the row is never blocked
+  - decision: fail to the mask, not to the raw row — the old one-way mask could not fail, so the placeholder must not open a hole it closed

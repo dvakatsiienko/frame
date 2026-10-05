@@ -84,3 +84,51 @@ test('a tool call naming the placeholder runs with the real value', async ($, on
     await $.tool.call({ command: `echo ${placeholderOf(FAKE)}`, tool: 'Bash' });
     expect(ran).toEqual([`echo ${FAKE}`]);
 });
+
+test("a tool's own result keeps the placeholder, not the value", async ($, on) => {
+    on('ui.log', () => ({ value: undefined }));
+    on('tool.call', () => ({
+        result: { stdout: `x ${FAKE}` },
+        text: `x ${FAKE}`,
+    }));
+    const r = await $.tool.call({ command: 'cat .env', tool: 'Bash' });
+    expect(JSON.stringify(r)).not.toContain(FAKE);
+});
+
+test('a Write quoting a placeholder writes the placeholder', async ($, on) => {
+    const written: unknown[] = [];
+    on('ui.log', () => ({ value: undefined }));
+    on('session.append', (_$, e, next) => next(e));
+    on('tool.call', (_$, e) => {
+        written.push('content' in e ? e.content : undefined);
+        return { result: {}, text: 'ok' };
+    });
+    await $.session.append(prompt(`use ${FAKE}`)).catch(() => undefined);
+    await $.tool.call({
+        content: `key: ${placeholderOf(FAKE)}`,
+        file_path: '/tmp/x',
+        tool: 'Write',
+    });
+    expect(written).toEqual([`key: ${placeholderOf(FAKE)}`]);
+});
+
+test('a vault error masks the row one way and logs it', async ($, on) => {
+    const stored: unknown[] = [];
+    const logs: string[] = [];
+    on('ui.log', (_$, e) => {
+        logs.push(e.text);
+        return { value: undefined };
+    });
+    // every write loses its version check, as under a storm of parallel rows
+    on('state.get', () => ({ value: { value: undefined, version: 0 } }));
+    on('state.set', () => ({ value: { isSet: false, version: 1 } }));
+    on('session.append', (_$, e, next) => {
+        stored.push(e.message.content);
+        return next(e);
+    });
+    await $.session.append(prompt(`use ${FAKE}`)).catch(() => undefined);
+    expect([JSON.stringify(stored).includes(FAKE), logs.length]).toEqual([
+        false,
+        1,
+    ]);
+});
