@@ -7,15 +7,18 @@
 
 ## the row
 
-- 🔎 one row: the open count on the left; `📋 copy all`, `🔥 hot`, `afk` and the fold triangle on the right
-  - decision: the fold control is a one-glyph triangle, `▼` open and `▲` folded, no word — dima wanted the icon to say what it does, and a folded list points up (2026-10-05)
-  - decision: no `o` hotkey — the desktop drew its key badge as the button and left the arrow outside it
-- ⬜ every control in the row names itself on hover: a dim card beside it, worded by its current state
-  - given the row draws
-  - when dima hovers `📋 copy all`, `🔥 hot`, `afk`, the fold triangle or the holds chip
-  - then a dim line beside it says what a press does («fold the asks list», «tell every session dima is away», …)
+- 🔎 one row: the open count on the left; `📋`, `🔥`, `☕`/`🌙` and the fold folder on the right
   - decision: a quarter cell (~4px) under the row on desktop while the asks show — dima: «too tight»; none in the terminal, where a cell is a whole line
   - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
+  - decision: half a cell above each thread after the first on desktop, so two lists read apart (dima, 2026-10-05); none in the terminal, where it costs a row
+  - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
+  - decision: the fold control is a folder, `📂` open and `📁` folded — dima asked for a more interesting state than `▼`/`▲`
+  - decision: no `o` hotkey — the desktop drew its key badge as the button and left the icon outside it
+- 🔎 every control in the row names itself on hover: a dim card beside it
+  - given the row draws
+  - when dima hovers `📋`, `🔥`, `☕`, the fold folder or the holds chip
+  - then a dim line beside it says what a press does: «copy this thread's asks», «keep this session's cache hot: ping every 50 min», «afk: tell fleet that dima is away», «fold/unfold»
+  - dima, 2026-10-05: seen in the desktop Code tab and in Warp; iTerm2 unchecked
 - 🔎 asks: every live session's open asks, «no open asks» when empty
 - ✅ only dima's own prompts clear asks
   - given a reply left open asks
@@ -59,10 +62,6 @@
   - given 🔥 is on
   - when two pings fire, or the mod reloads in between
   - then 🔥 is still ticked, and the next ping comes 50 minutes after the last turn ended
-- ✅ 🔥? suggests itself near the limit: the button reads `🔥? hot`, dimmed
-  - given 🔥 is off
-  - when the 5h window is at least 90 % used and resets more than 60 minutes from now
-  - then the button reads `🔥? hot`, dimmed; pressing it turns 🔥 on
 - ✅ 🔥 turns itself off after the 5h window resets
   - given 🔥 was turned on while the 5h window's reset was known
   - when that reset passes
@@ -80,8 +79,8 @@
   - given session A holds 2 files in this repo
   - when session B's row draws
   - then B shows `🔒 2`; at zero the chip is hidden
-- ⬜ the holds chip names itself on hover
-  - dima, 2026-10-05: the desktop Code tab shows the card, drawn as a bubble above the chip; the terminal is unchecked — an earlier «never shows» came before his session reloaded the card
+- 🔎 the holds chip names itself on hover
+  - dima, 2026-10-05: the desktop Code tab draws the card as a bubble above the chip, and Warp shows it; iTerm2 unchecked
   - given another session holds 2 files in this repo
   - when dima hovers the chip, on desktop or in a terminal that reports the pointer
   - then «2 files held by other sessions» shows beside it, dimmed

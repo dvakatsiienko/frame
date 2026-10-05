@@ -25,8 +25,6 @@ const STALE_MS = 24 * 60 * 60 * 1000;
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
 const HOT_MS = 50 * 60 * 1000;
 const HOT = 'hot:';
-const SUGGEST_PCT = 90;
-const SUGGEST_MS = 60 * 60 * 1000;
 const PING = 'stash keep-hot ping: answer with one character, nothing else.';
 const ACCENT = '#d97757';
 
@@ -44,8 +42,7 @@ let root = '';
 let holds = { others: 0, warned: false };
 // since: the turn end the next ping counts from; until: the 5h reset that turns it off
 let hot: { since: number; until?: number } | undefined;
-let fiveHour: { used: number; resetsAt?: number } | undefined;
-let suggest = false;
+let fiveHour: { resetsAt?: number } | undefined;
 let busy = false;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
@@ -405,25 +402,13 @@ async function load($: EngineInterface): Promise<boolean> {
     known = new Set(fresh);
     entries = next;
     const cool = await cooled($);
-    const prevSuggest = suggest;
-    suggest =
-        !hot &&
-        !!fiveHour?.resetsAt &&
-        fiveHour.used >= SUGGEST_PCT &&
-        fiveHour.resetsAt - now > SUGGEST_MS;
     const prevHolds = holds;
     // after a /clear the process goes on under a new id, and no session.start fires
     selfId = await $.session.id().catch(() => selfId);
     if (selfId) holds = await chip($, selfId, root);
     const holdsChanged =
         prevHolds.others !== holds.others || prevHolds.warned !== holds.warned;
-    return (
-        afkChanged ||
-        holdsChanged ||
-        cool ||
-        prevSuggest !== suggest ||
-        before !== after
-    );
+    return afkChanged || holdsChanged || cool || before !== after;
 }
 
 async function saveHot($: EngineInterface) {
@@ -545,13 +530,12 @@ export const register: Register = (on) => {
         return r;
     });
 
-    on('session.measure', async ($, e, next) => {
+    // the 5h reset 🔥 turns itself off at; nothing on screen reads it
+    on('session.measure', async (_$, e, next) => {
         const w = e.rateLimits.find((r) => r.kind === 'five_hour');
         fiveHour = w && {
             resetsAt: w.resetsAt ? Date.parse(w.resetsAt) : undefined,
-            used: w.percentUsed,
         };
-        if (await load($)) $.ui.invalidate('ui.render');
         return next(e);
     });
 
@@ -639,7 +623,6 @@ export const register: Register = (on) => {
                       since: now,
                       until: reset && reset > now ? reset : undefined,
                   };
-            suggest = false;
             await saveHot($);
             await armHot($);
             $.ui.invalidate('ui.render');
@@ -670,9 +653,9 @@ export const register: Register = (on) => {
         const copyButton = (sid: string, asks: string[]) =>
             tip(
                 `copy:${sid}`,
-                "copy this thread's asks as a lane block",
+                "copy this thread's asks",
                 copyControl(sid, asks),
-                leftOf('📋 copy all', true),
+                leftOf('📋', true),
             );
         const copyControl = (sid: string, asks: string[]) => (
             <Button
@@ -687,7 +670,7 @@ export const register: Register = (on) => {
                     })
                 }
                 variant='secondary'>
-                📋 copy all
+                📋
             </Button>
         );
         const [first] = groups;
@@ -719,10 +702,10 @@ export const register: Register = (on) => {
                   { left: [...chipText].length + 1 },
               )
             : null;
-        const hotLabel = suggest ? '🔥? hot' : '🔥 hot';
-        const afkLabel = afk ? '🌙 afk' : '☕ afk';
-        // ▼ the list is open, ▲ it is folded (dima)
-        const foldLabel = open ? '▼' : '▲';
+        // icons only; each card says what a press does (dima)
+        const hotLabel = '🔥';
+        const afkLabel = afk ? '🌙' : '☕';
+        const foldLabel = open ? '📂' : '📁';
 
         // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there
         const head = (
@@ -750,24 +733,20 @@ export const register: Register = (on) => {
                     {first ? copyButton(first[0], first[1].asks) : null}
                     {tip(
                         'hot',
-                        hot
-                            ? 'stop the keep-warm ping'
-                            : "keep this session's cache warm with a ping every 50 min idle",
+                        "keep this session's cache hot: ping every 50 min",
                         <Button
                             key='hot'
                             onPress={() => void flipHot()}
                             {...(hot
                                 ? { variant: 'primary' as const }
-                                : { dimColor: suggest, plain: true as const })}>
+                                : { plain: true as const })}>
                             {hotLabel}
                         </Button>,
                         leftOf(hotLabel, !!hot),
                     )}
                     {tip(
                         'afk',
-                        afk
-                            ? 'tell every session dima is back'
-                            : 'tell every session dima is away',
+                        'afk: tell fleet that dima is away',
                         <Button
                             key='afk'
                             onPress={() => void flipAfk()}
@@ -781,9 +760,7 @@ export const register: Register = (on) => {
                     {first
                         ? tip(
                               'asks-toggle',
-                              open
-                                  ? 'fold the asks list'
-                                  : 'unfold the asks list',
+                              'fold/unfold',
                               <Button key='asks-toggle' onPress={toggle} plain>
                                   {foldLabel}
                               </Button>,
@@ -805,7 +782,11 @@ export const register: Register = (on) => {
         const rows = groups.flatMap(([sid, v], g) => [
             ...(many
                 ? [
-                      <Box flexDirection='row' gap={1} key={`g:${sid}`}>
+                      <Box
+                          flexDirection='row'
+                          gap={1}
+                          key={`g:${sid}`}
+                          marginTop={g > 0 && surface === 'desktop' ? 0.5 : 0}>
                           <Text bold>
                               {sid === selfId ? `${title(v)} (here)` : title(v)}
                           </Text>

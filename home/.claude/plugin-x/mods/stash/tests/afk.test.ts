@@ -22,10 +22,9 @@ for (const surface of ['terminal', 'desktop'] as const) {
             props,
             surface,
         });
-        expect((await ui.find({ key: 'afk' }))?.text).toContain('☕ afk');
+        expect((await ui.find({ key: 'afk' }))?.text).toBe('☕');
         await ui.press({ key: 'afk' });
-        expect((await ui.find({ key: 'afk' }))?.text).toContain('🌙 afk');
-        expect((await ui.find({ key: 'afk' }))?.text).not.toContain('away');
+        expect((await ui.find({ key: 'afk' }))?.text).toBe('🌙');
     });
 }
 

@@ -137,13 +137,6 @@ test('🔥 survives a reload', async ($, on) => {
     ]);
 });
 
-test('🔥 suggests itself when the 5h window is nearly spent', async ($, on) => {
-    const s = await started($, on);
-    await measure($, 92, 120 * MIN);
-    const b = await s.button();
-    expect([b?.text, b?.props.dimColor]).toEqual(['🔥? hot', true]);
-});
-
 test('🔥 turns itself off after the 5h window resets', async ($, on) => {
     const s = await started($, on);
     await measure($, 50, 30 * MIN);

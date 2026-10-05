@@ -140,9 +140,9 @@ test('every control in the row carries a hover card that names it', async ($, on
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
     expect(cards).toEqual([
-        "copy this thread's asks as a lane block",
-        "keep this session's cache warm with a ping every 50 min idle",
-        'tell every session dima is away',
-        'fold the asks list',
+        "copy this thread's asks",
+        "keep this session's cache hot: ping every 50 min",
+        'afk: tell fleet that dima is away',
+        'fold/unfold',
     ]);
 });
