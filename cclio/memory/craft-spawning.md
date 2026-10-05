@@ -44,7 +44,7 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 - **haiku-4.5** — retrieval, classification, extraction, bulk transforms. 📌 its benchmarks
   compare against 4.x, never the 5s.
 - Full cards and prices: `docs/knowledge/models.md`, on demand.
-- 🧰 **the delegate list — chores for a fresh sonnet `medium` agent, never a persistent helper** (dima, 2026-10-04: try this before an always-on helper): the stale research-doc scan, transcript audits (`crew:audit`), test-drive log lines, the flawlog pre-sort. it absorbs the big reads; only its short answer enters this context.
+- 🧰 **the delegate list — chores go to the `chore-helper` agent** (`home/.claude/agents/chore-helper.md`: sonnet 5.5, `effort: medium` pinned — a bare `Agent` inherits the session's effort, the evergreen run went out at `high`, 2026-10-05), never a persistent helper (dima, 2026-10-04): the evergreen apps report, the stale research-doc scan, transcript audits (`crew:audit`), test-drive log lines, the flawlog pre-sort, and **mechanical edits whose every change the brief spells out** (a rename, a date shift — dima 2026-10-05: «delegate more dumb work to sonnet»). it absorbs the big reads; only its short answer enters this context, and its diff is read before anything lands.
 
 ## preflight, five checks, every spawn
 
