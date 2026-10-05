@@ -42,7 +42,7 @@
   - then the asks leave the band
   - proven live 2026-10-05 (FRM-320): a background coder's reply left one ask; the stash store held `asks:<its session>`; dima answered in its chat, and the key was gone 4 s after that reply ended. a peer's turn never clears asks, so his typing there reached the hook with an origin on the list
   - decision: the transcript cannot name that origin — it writes its own vocabulary (`origin: human`, `promptSource: queued`), which the hook never receives; the store is the check
-  - the old 🐞 (a `composer`-only list kept answered asks, 2026-10-05) was fixed by the allow-list above
+  - the old bug — a `composer`-only list kept answered asks (2026-10-05) — was fixed by the allow-list above
 - ✅ each thread is named by its session
   - given two sessions in the frame repo have open asks
   - when the band lists them
