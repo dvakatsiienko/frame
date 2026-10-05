@@ -714,8 +714,8 @@ export const register: Register = (on) => {
             : null;
         const hotLabel = suggest ? '🔥? hot' : '🔥 hot';
         const afkLabel = afk ? '🌙 afk' : '☕ afk';
-        // a disclosure triangle: ▾ the list is open, ▸ it is folded
-        const foldLabel = open ? '▾' : '▸';
+        // ▼ the list is open, ▲ it is folded (dima)
+        const foldLabel = open ? '▼' : '▲';
 
         // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there
         const head = (
@@ -777,11 +777,7 @@ export const register: Register = (on) => {
                               open
                                   ? 'fold the asks list'
                                   : 'unfold the asks list',
-                              <Button
-                                  hotkey='o'
-                                  key='asks-toggle'
-                                  onPress={toggle}
-                                  plain>
+                              <Button key='asks-toggle' onPress={toggle} plain>
                                   {foldLabel}
                               </Button>,
                               leftOf(foldLabel, false),

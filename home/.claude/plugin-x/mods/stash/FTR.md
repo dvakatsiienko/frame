@@ -8,7 +8,8 @@
 ## the row
 
 - 🔎 one row: the open count on the left; `📋 copy all`, `🔥 hot`, `afk` and the fold triangle on the right
-  - decision: the fold control is a one-glyph disclosure triangle, `▾` open and `▸` folded, no word — dima wanted the icon to say what it does (2026-10-05)
+  - decision: the fold control is a one-glyph triangle, `▼` open and `▲` folded, no word — dima wanted the icon to say what it does, and a folded list points up (2026-10-05)
+  - decision: no `o` hotkey — the desktop drew its key badge as the button and left the arrow outside it
 - ⬜ every control in the row names itself on hover: a dim card beside it, worded by its current state
   - given the row draws
   - when dima hovers `📋 copy all`, `🔥 hot`, `afk`, the fold triangle or the holds chip
