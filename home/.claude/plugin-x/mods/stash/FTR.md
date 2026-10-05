@@ -33,6 +33,12 @@
   - when the band lists them
   - then each group reads its session name («🦉 cclio», «☕️ 🔧 FRM-303 code: …»), «(here)» after the current one; the repo joins a name only when two sessions share it
   - decision: the name comes from the session registry, `~/.claude/sessions/<pid>.json`, read at each reply — no mod api names a session
+- ⬜ the next step waits in the prompt box — a try, dima judges
+  - the harness proves the proposal; a suggestion «cannot [show] while … a turn runs», so whether `turn.complete` is late enough is dima's look
+  - given a reply ends with a `➡️ next: …` line
+  - when the turn ends
+  - then the empty prompt box shows that step dim, and Tab takes it as a draft
+  - decision: built behind no switch — kept or cut on dima's word after use
 - ✅ `📋 copy all` in the row copies the first thread's asks as a `lane` block; every other thread keeps its own beside its name
   - given a reply left open asks
   - when dima presses `📋 copy all` in the row
