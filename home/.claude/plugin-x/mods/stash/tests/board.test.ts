@@ -172,8 +172,8 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
     const widths = (await ui.findAll({ type: 'Box' }))
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
-    // asks, ticket, ctx, state
-    expect(widths).toEqual([4, 7, 7, 9, 4, 7, 7, 9]);
+    // ticket, ctx, state, asks
+    expect(widths).toEqual([8, 7, 9, 4, 8, 7, 9, 4]);
 });
 
 test('a session inside a long shell command reads busy', async ($, on) => {
@@ -247,7 +247,7 @@ test('asks over a day old are not counted on the board', async ($, on) => {
     fleet(on, {
         [`asks:${PEER}`]: { asks: ['a'], at: NOW - 25 * 60 * MIN, label: 'x' },
     });
-    expect(await row($, PEER)).not.toContain('⏳');
+    expect(await row($, PEER)).toContain('⏳ 0');
 });
 
 test("a row counts its session's open asks", async ($, on) => {

@@ -560,7 +560,7 @@ const COLUMNS = {
     asks: 4,
     context: 7,
     state: 9,
-    ticket: 7,
+    ticket: 8,
 } as const;
 
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
@@ -819,11 +819,6 @@ export const register: Register = (on) => {
                             flexDirection='row'
                             flexShrink={0}
                             gap={e.surface === 'desktop' ? 0.5 : 1}>
-                            <Box justifyContent='flex-end' width={COLUMNS.asks}>
-                                {m.asks ? (
-                                    <Text color={ACCENT}>⏳ {m.asks}</Text>
-                                ) : null}
-                            </Box>
                             {/* no hover card in the pane: an absolute card in a narrow row wraps and clips (dima, 2026-10-05) */}
                             <Box
                                 justifyContent='flex-end'
@@ -855,6 +850,14 @@ export const register: Register = (on) => {
                                     {m.statusSince
                                         ? `${state} ${span(now - m.statusSince)}`
                                         : state}
+                                </Text>
+                            </Box>
+                            {/* the asks close the row, always drawn: `⏳ 0` dimmed when none (dima, 2026-10-05) */}
+                            <Box justifyContent='flex-end' width={COLUMNS.asks}>
+                                <Text
+                                    color={m.asks ? ACCENT : undefined}
+                                    dimColor={!m.asks}>
+                                    ⏳ {m.asks}
                                 </Text>
                             </Box>
                         </Box>

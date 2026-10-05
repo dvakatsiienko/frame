@@ -205,7 +205,8 @@ two sessions, A and B, in one checkout.
 - ✅ each row carries its facts beside the state
   - given a session has open asks, a context reading or a ticket in its name
   - when the board draws
-  - then its row shows `⏳ n`, the ticket as a link to linear, `ctx n%` and its state, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
+  - then its row shows the ticket as a link to linear, `ctx n%`, its state and `⏳ n`, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
+  - decision: `⏳ n` closes the row and is always drawn, `⏳ 0` dimmed — dima reads it first, at the far right (2026-10-05)
   - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
   - decision: each column is sized to its usual reading, so little slack shows between columns (dima asked for ~8px gaps, 2026-10-05)
   - decision: the name side gives way and clips, so a long name never pushes a row's columns out of line (dima saw one drift, 2026-10-05)
