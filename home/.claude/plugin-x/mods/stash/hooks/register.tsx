@@ -66,6 +66,25 @@ let busy = false;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
 
+// guard's refusals and escapes: each plugin's $.store is its own file, so the band reads guard's file directly
+type GuardLine = {
+    key: string;
+    sid: string;
+    name?: string;
+    command: string;
+    kind: 'refused' | 'escaped';
+    door: string;
+    target: string;
+    at: number;
+};
+const GUARD_FILE = /^guard_.*\.json$/;
+const GUARD_EVENT = 'event:';
+const DISMISSED = 'guard-dismissed';
+const GUARD_ROWS = 3;
+let guards: GuardLine[] = [];
+// every event key guard holds, dismissed or not: the dismissed list is pruned against it
+let guardKeys = new Set<string>();
+
 // a thread's asks show while it has any and they are under a day old
 const isLive = (v: Entry | undefined, now: number): v is Entry =>
     !!v && Array.isArray(v.asks) && v.asks.length > 0 && now - v.at < STALE_MS;
@@ -349,6 +368,42 @@ async function chip($: EngineInterface, sid: string, root: string) {
     return { others, warned };
 }
 
+// every guard event not yet dismissed, newest first; a file mid-write is skipped until the next poll
+async function guardLines($: EngineInterface): Promise<GuardLine[]> {
+    const dir = `${await $.env.get('HOME')}/.claude/plugins/store`;
+    const held = await $.store.get(DISMISSED);
+    const dismissed = new Set(Array.isArray(held) ? held : []);
+    const out: GuardLine[] = [];
+    const keys = new Set<string>();
+    for (const f of await $.fs.list(dir).catch(() => [])) {
+        if (!GUARD_FILE.test(f.name)) continue;
+        try {
+            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as Record<
+                string,
+                Omit<GuardLine, 'key'>
+            >;
+            for (const [key, event] of Object.entries(v)) {
+                if (!key.startsWith(GUARD_EVENT)) continue;
+                keys.add(key);
+                if (!dismissed.has(key)) out.push({ ...event, key });
+            }
+        } catch {}
+    }
+    guardKeys = keys;
+    return out.sort((a, b) => b.at - a.at);
+}
+
+// dismissing keeps only keys guard still holds, so the list never outgrows guard's own
+async function dismissGuard($: EngineInterface, key: string) {
+    const held = await $.store.get(DISMISSED);
+    await $.store.set(DISMISSED, [
+        ...(Array.isArray(held) ? held : []).filter((k) => guardKeys.has(k)),
+        key,
+    ]);
+    guards = guards.filter((g) => g.key !== key);
+    $.ui.invalidate('ui.render');
+}
+
 // fail-open: a store or git error lets the edit through, with a line in the transcript
 // the tool input is the model's: a path that is not a string is not guarded
 async function guard($: EngineInterface, file: unknown): Promise<Claim> {
@@ -428,7 +483,12 @@ async function load($: EngineInterface): Promise<boolean> {
     if (selfId) holds = await chip($, selfId, root);
     const holdsChanged =
         prevHolds.others !== holds.others || prevHolds.warned !== holds.warned;
-    return afkChanged || holdsChanged || cool || before !== after;
+    const prevGuards = guards.map((g) => g.key).join();
+    guards = await guardLines($).catch(() => guards);
+    const guardsChanged = prevGuards !== guards.map((g) => g.key).join();
+    return (
+        afkChanged || holdsChanged || guardsChanged || cool || before !== after
+    );
 }
 
 async function saveHot($: EngineInterface) {
@@ -1138,10 +1198,44 @@ export const register: Register = (on) => {
                 </Box>
             </Box>
         );
+        // guard's lines show folded or not: each is a command stopped or let through, until dima dismisses it
+        const guardRows = guards.slice(0, GUARD_ROWS).map((g) => (
+            <Box
+                flexDirection='row'
+                gap={1}
+                justifyContent='space-between'
+                key={`guard:${g.key}`}>
+                <Text wrap='truncate-end'>
+                    {`🛡️ ${g.name ?? short(g.sid)} — ${g.command} → ${g.kind === 'escaped' ? `ran on dima-ok: ${g.target}` : g.door}`}
+                </Text>
+                {tip(
+                    `dismiss:${g.key}`,
+                    'dismiss this guard line',
+                    <Button
+                        key={`dismiss:${g.key}`}
+                        onPress={() => void dismissGuard($, g.key)}
+                        plain>
+                        ✕
+                    </Button>,
+                    leftOf('✕', false),
+                )}
+            </Box>
+        ));
+        const shields = [
+            ...guardRows,
+            ...(guards.length > GUARD_ROWS
+                ? [
+                      <Text dimColor key='guard:more'>
+                          +{guards.length - GUARD_ROWS} more guard lines
+                      </Text>,
+                  ]
+                : []),
+        ];
         if (!open || !total)
             return (
                 <Box flexDirection='column'>
                     {head}
+                    {shields}
                     {await next(e)}
                 </Box>
             );
@@ -1169,11 +1263,12 @@ export const register: Register = (on) => {
                 </Text>
             )),
         ]);
-        const room = Math.max(1, e.props.maxRows - 1);
+        const room = Math.max(1, e.props.maxRows - 1 - shields.length);
         const shown = rows.slice(0, room);
         return (
             <Box flexDirection='column'>
                 {head}
+                {shields}
                 {shown}
                 {rows.length > shown.length ? (
                     <Text dimColor>+{rows.length - shown.length} more</Text>

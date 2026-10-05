@@ -105,6 +105,13 @@
   - given A holds `x.ts`
   - when B's edit of `x.ts` is refused
   - then A's chip shows ⚠, and A gets no message
+- ✅ guard lines: every command guard stopped or let through shows as a 🛡️ line until dismissed
+  - given guard refused a command in any session, or ran one on a `# dima-ok:` escape
+  - when any session's band draws, folded or not
+  - then a line reads `🛡️ <session> — <command> → <door>` (an escape: `→ ran on dima-ok: <target>`), newest first, three at most and `+n more guard lines` past that
+  - when dima presses its `✕` (hover: «dismiss this guard line»)
+  - then the line is gone from every session's band
+  - decision: the band reads guard's own store file (`~/.claude/plugins/store/guard_*.json`) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the dismissed list lives in stash's store and keeps only keys guard still holds
 
 ## edits — holds
 
