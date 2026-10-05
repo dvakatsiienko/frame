@@ -153,4 +153,4 @@ two sessions, A and B, in one checkout.
 
 ## scripts
 
-- 🧭 `pnpm mods:writes [days]` counts the fleet's file writes by channel — Edit/Write against each Bash shape — across `~/.claude/projects` transcripts, so the holds gap can be measured again
+- ✅ `pnpm mods:writes [days]` counts the fleet's file writes by channel — Edit/Write against each Bash shape — across `~/.claude/projects` transcripts, and how many Bash writes the holds veto can read, so the gap can be measured again
