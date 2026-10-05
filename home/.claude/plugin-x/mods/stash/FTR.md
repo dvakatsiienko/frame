@@ -204,7 +204,8 @@ two sessions, A and B, in one checkout.
 - ✅ each row carries its facts beside the state
   - given a session has open asks, a context reading, a ticket in its name, or sent a message
   - when the board draws
-  - then its row shows `⏳ n`, `ctx n%`, the ticket as a link to linear, and «sent 4m ago»; a fact with no reading is left out
+  - then its row shows `⏳ n`, `ctx n%`, the ticket as a link to linear, «sent 4m ago» and its state, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
+  - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
   - source: `⏳ n` the stash asks store · `ctx n%` the session's `session.measure`, kept by its stash · the ticket from the session name · «sent» the session's `session.send`, kept by its stash
   - decision: no pr, ci, cost or model yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306
 - ⬜ the board stays current

@@ -162,6 +162,15 @@ test('the coordinator is pinned to the top of the board', async ($, on) => {
     expect(order).toEqual([`m:${HERE}`, `m:${PEER}`]);
 });
 
+test('every row draws the same fact columns, empty ones included', async ($, on) => {
+    fleet(on, { [`context:${HERE}`]: 43 });
+    const ui = await board($);
+    const widths = (await ui.findAll({ type: 'Box' }))
+        .map((n) => n.props.width)
+        .filter((w) => w !== undefined);
+    expect(widths).toEqual([4, 8, 8, 16, 12, 4, 8, 8, 16, 12]);
+});
+
 test('a session inside a long shell command reads busy', async ($, on) => {
     fleet(on, {}, { patch: { 2: { status: 'shell' } } });
     expect(await row($, PEER)).toContain('busy 12m');

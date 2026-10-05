@@ -555,6 +555,15 @@ const span = (ms: number) => {
 };
 const ago = (ms: number) => (ms < 60000 ? 'just now' : `${span(ms)} ago`);
 
+// each fact column's width in cells, sized to its widest usual reading: `⏳ 12`, `ctx 100%`, `BYT-1234`, `sent 12h 59m ago`, `idle 12h 59m`
+const COLUMNS = {
+    asks: 4,
+    context: 8,
+    sent: 16,
+    state: 12,
+    ticket: 8,
+} as const;
+
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
 const isCoordinator = (name: string) => /\bcclio\b/.test(name);
 const doorGlyph = (door: Door) => (door.kind === 'open' ? '↗' : '📋');
@@ -819,33 +828,53 @@ export const register: Register = (on) => {
                                 <Text color={ACCENT}>⚠</Text>
                             ) : null}
                         </Box>
+                        {/* one fixed-width, right-aligned cell per fact, drawn empty when it has no reading, so the columns line up across rows (dima, 2026-10-05) */}
                         <Box flexDirection='row' flexShrink={0} gap={1}>
-                            {m.asks ? (
-                                <Text color={ACCENT}>⏳ {m.asks}</Text>
-                            ) : null}
-                            {m.context === undefined ? null : (
-                                <Text dimColor>ctx {m.context}%</Text>
-                            )}
+                            <Box justifyContent='flex-end' width={COLUMNS.asks}>
+                                {m.asks ? (
+                                    <Text color={ACCENT}>⏳ {m.asks}</Text>
+                                ) : null}
+                            </Box>
+                            <Box
+                                justifyContent='flex-end'
+                                width={COLUMNS.context}>
+                                {m.context === undefined ? null : (
+                                    <Text dimColor>ctx {m.context}%</Text>
+                                )}
+                            </Box>
                             {/* no hover card in the pane: an absolute card in a narrow row wraps and clips (dima, 2026-10-05) */}
-                            {ticket ? (
-                                <Text dimColor>
-                                    <Link
-                                        href={`https://linear.app/x-com/issue/${ticket}`}>
-                                        {ticket}
-                                    </Link>
+                            <Box
+                                justifyContent='flex-end'
+                                width={COLUMNS.ticket}>
+                                {ticket ? (
+                                    <Text dimColor>
+                                        <Link
+                                            href={`https://linear.app/x-com/issue/${ticket}`}>
+                                            {ticket}
+                                        </Link>
+                                    </Text>
+                                ) : null}
+                            </Box>
+                            <Box justifyContent='flex-end' width={COLUMNS.sent}>
+                                {m.sent ? (
+                                    <Text dimColor>
+                                        sent {ago(now - m.sent)}
+                                    </Text>
+                                ) : null}
+                            </Box>
+                            <Box
+                                justifyContent='flex-end'
+                                width={COLUMNS.state}>
+                                <Text
+                                    bold={isBusy}
+                                    color={isBusy ? ACCENT : undefined}
+                                    dimColor={state === 'idle'}
+                                    wrap='truncate-end'>
+                                    {m.statusSince
+                                        ? `${state} ${span(now - m.statusSince)}`
+                                        : state}
                                 </Text>
-                            ) : null}
-                            {m.sent ? (
-                                <Text dimColor>sent {ago(now - m.sent)}</Text>
-                            ) : null}
-                            <Text
-                                bold={isBusy}
-                                color={isBusy ? ACCENT : undefined}
-                                dimColor={state === 'idle'}>
-                                {m.statusSince
-                                    ? `${state} ${span(now - m.statusSince)}`
-                                    : state}
-                            </Text>
+                            </Box>
                         </Box>
                     </Box>
                     {line ? <Text wrap='truncate-end'>{line}</Text> : null}
