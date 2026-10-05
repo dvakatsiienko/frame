@@ -233,9 +233,26 @@ export function decide(
     };
 }
 
-export async function suggest(input: RouteInput, arm: RouterArm) {
-    const raw = await score(input, arm);
-    return { ...decide(raw), ms: raw.ms };
+// the hook runs the one replay arm that met the bar to turn on (held precision ≥ 90 %, wrong
+// ≤ 5 %): full roster + last reply + memory at fits 0.75 — 94 % / 2 % on FRM-305's r3. the gate
+// and needs_skill lift critical recall 33 → 78 % but drop precision to 78 %, so they stay in
+// the replay until dima picks recall over precision
+const live = {
+    parts: {
+        hasContext: true,
+        hasGate: false,
+        hasMemory: true,
+        hasNeed: false,
+    },
+    thresholds: { ...defaultThresholds, fits: 0.75 },
+};
+
+export async function suggest(
+    input: RouteInput,
+    roster: readonly RouterSkill[],
+) {
+    const raw = await score(input, { ...live.parts, roster });
+    return { ...decide(raw, live.thresholds), ms: raw.ms };
 }
 
 /** the hook's line: `skills (jev router): x:cmt 0.84 ⚠ read first` */

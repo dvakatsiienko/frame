@@ -24,13 +24,6 @@ import {
 
 const logDir = `${process.env.HOME}/.claude/shelf/jev`;
 mkdirSync(logDir, { recursive: true });
-const parts = {
-    hasContext: true,
-    hasGate: true,
-    hasMemory: true,
-    hasNeed: true,
-};
-
 const [mode, countArg] = process.argv.slice(2);
 if (!mode) {
     console.error(
@@ -42,10 +35,7 @@ if (!mode) {
 if (mode !== '--from-log' && mode !== '--misses') {
     const started = performance.now();
     const { input, roster } = routeInput(mode, process.env.JEV_TRANSCRIPT);
-    const { loads, tokens, top, trace } = await suggest(input, {
-        ...parts,
-        roster,
-    });
+    const { loads, tokens, top, trace } = await suggest(input, roster);
     const ms = Math.round(performance.now() - started);
     // the whole prompt, one line: a vet miss filed with `--last` is a label source
     appendFileSync(
@@ -71,7 +61,7 @@ const rows: string[][] = [];
 for (const prompt of prompts) {
     const { loads, trace } = await suggest(
         { prompt, recentContext: '', seen: new Set() },
-        { ...parts, roster },
+        roster,
     );
     rows.push([
         prompt.slice(0, 70),
