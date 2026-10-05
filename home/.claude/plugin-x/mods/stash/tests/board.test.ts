@@ -173,7 +173,7 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
     // ticket, ctx, state, asks
-    expect(widths).toEqual([8, 7, 9, 4, 8, 7, 9, 4]);
+    expect(widths).toEqual([9, 7, 9, 4, 9, 7, 9, 4]);
 });
 
 test('a session inside a long shell command reads busy', async ($, on) => {

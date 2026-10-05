@@ -560,7 +560,7 @@ const COLUMNS = {
     asks: 4,
     context: 7,
     state: 9,
-    ticket: 8,
+    ticket: 9,
 } as const;
 
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
@@ -824,7 +824,8 @@ export const register: Register = (on) => {
                                 justifyContent='flex-end'
                                 width={COLUMNS.ticket}>
                                 {ticket ? (
-                                    <Text dimColor>
+                                    // never wraps: `FRM-306` broke at its hyphen in the desktop font
+                                    <Text dimColor wrap='truncate-end'>
                                         <Link
                                             href={`https://linear.app/x-com/issue/${ticket}`}>
                                             {ticket}
