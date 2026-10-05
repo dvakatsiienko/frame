@@ -10,7 +10,8 @@ import { parseAsks } from './parse.ts';
 // keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm; the switch lives in $.store, so a reload keeps it
 // The reply stays the source of truth for asks; this band only shows and copies them.
 
-type Entry = { label: string; asks: string[]; at: number };
+// label: the repo; name: the session's registry name, when it has one
+type Entry = { label: string; name?: string; asks: string[]; at: number };
 
 const PREFIX = 'asks:';
 const AFK_KEY = 'afk';
@@ -20,6 +21,8 @@ const BACK_NOTE =
     'dima is back from afk: asks and the ⏳ block reach him again.';
 const POLL_MS = 4000;
 const STALE_MS = 24 * 60 * 60 * 1000;
+// dima at the prompt, typing into a background job, on his phone or the web
+const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
 const HOT_MS = 50 * 60 * 1000;
 const HOT = 'hot:';
 const SUGGEST_PCT = 90;
@@ -97,6 +100,22 @@ async function realPath($: EngineInterface, file: string) {
     }
     const full = `${real ?? dir}${file.slice(dir.length)}`;
     return { file: full, key: full.toLowerCase() };
+}
+
+// the name ListAgents shows lives in the session registry, keyed by the claude process id
+async function sessionName($: EngineInterface) {
+    if (!proc) return undefined;
+    const home = await $.env.get('HOME');
+    const raw = await $.fs
+        .read(`${home}/.claude/sessions/${proc.pid}.json`)
+        .catch(() => undefined);
+    if (!raw) return undefined;
+    try {
+        const { name } = JSON.parse(raw) as { name?: unknown };
+        return typeof name === 'string' && name ? name : undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 async function procOf($: EngineInterface): Promise<Proc | undefined> {
@@ -423,9 +442,11 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    // only dima's typed prompt is his turn; a reply to any other origin may drop the block
+    // only dima's own hands make his turn; a reply to any other origin may drop the block
     on('prompt.submit', async ($, e, next) => {
-        userTurn = e.text.trim().length > 0 && e.origin?.kind === 'composer';
+        userTurn =
+            e.text.trim().length > 0 &&
+            (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
         busy = true;
         hotGen++;
         await load($);
@@ -446,6 +467,7 @@ export const register: Register = (on) => {
                     asks,
                     at: await $.clock.now(),
                     label,
+                    name: await sessionName($),
                 });
             else await $.store.delete(key);
             if (await load($)) $.ui.invalidate('ui.render');
@@ -528,10 +550,18 @@ export const register: Register = (on) => {
         const total = groups.reduce((n, [, v]) => n + v.asks.length, 0);
         const { Box, Text, Button } = $.ui.resolve(e);
         const surface = e.surface;
+        // a thread reads its session name; the repo joins only when two sessions share one
+        const title = (v: Entry) => {
+            const base = v.name ?? v.label;
+            const shared = groups.filter(
+                ([, o]) => (o.name ?? o.label) === base,
+            ).length;
+            return shared > 1 && v.name ? `${base} · ${v.label}` : base;
+        };
         const counts = groups
             .map(
                 ([sid, v]) =>
-                    `${sid === selfId ? 'here' : v.label} ${v.asks.length}`,
+                    `${sid === selfId ? 'here' : title(v)} ${v.asks.length}`,
             )
             .join(', ');
         const toggle = () => {
@@ -724,7 +754,7 @@ export const register: Register = (on) => {
                 ? [
                       <Box flexDirection='row' gap={1} key={`g:${sid}`}>
                           <Text bold>
-                              {sid === selfId ? `${v.label} (here)` : v.label}
+                              {sid === selfId ? `${title(v)} (here)` : title(v)}
                           </Text>
                           {g > 0 ? copyButton(sid, v.asks) : null}
                       </Box>,

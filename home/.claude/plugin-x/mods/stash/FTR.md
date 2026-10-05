@@ -20,7 +20,18 @@
   - given a reply left open asks
   - when a peer's SendMessage wakes the session and its reply has no ⏳ block
   - then the asks stay
-  - decision: an allow-list of one origin, `composer` (dima's typed prompt, probed 2026-10-04) — the old deny-list missed `peer-send-message`, and every new origin the engine adds would have cleared asks too
+  - decision: an allow-list of dima's own hands — `composer` (typed at the prompt), `sdk` (his typing into a background job, which the transcript stamps `promptSource: sdk`) and `bridge` (his phone or web client); the old deny-list missed `peer-send-message`, and every new origin the engine adds would have cleared asks too
+- ⬜ dima's answer in a background session clears its asks
+  - the test passes with origin `sdk`; that a background session's hook really sees `sdk` is unchecked — the transcript says `promptSource: sdk`
+  - given a background session's reply left open asks
+  - when dima answers it from the desktop, and the reply has no ⏳ block
+  - then the asks leave the band
+  - 🐞 2026-10-05: a `composer`-only list kept answered asks in this coder's own background session
+- ✅ each thread is named by its session
+  - given two sessions in the frame repo have open asks
+  - when the band lists them
+  - then each group reads its session name («🦉 cclio», «☕️ 🔧 FRM-303 code: …»), «(here)» after the current one; the repo joins a name only when two sessions share it
+  - decision: the name comes from the session registry, `~/.claude/sessions/<pid>.json`, read at each reply — no mod api names a session
 - ✅ `📋 copy all` in the row copies the first thread's asks as a `lane` block; every other thread keeps its own beside its name
   - given a reply left open asks
   - when dima presses `📋 copy all` in the row
