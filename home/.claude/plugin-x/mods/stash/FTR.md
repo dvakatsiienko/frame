@@ -10,6 +10,7 @@
 - 🔎 one row: the open count on the left; `📋`, `🔥`, `☕`/`🌙` and the fold folder on the right
   - decision: a quarter cell (~4px) under the row on desktop while the asks show — dima: «too tight»; none in the terminal, where a cell is a whole line
   - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
+  - decision: with several threads the head reads only `here N, parallel M`; the per-session names and counts wait in its hover card — full names took too much room (dima, 2026-10-05)
   - decision: a thread's own `📋` sits at the right end of its name row, in line with the head's (dima, 2026-10-05)
   - decision: half a cell above each thread after the first on desktop, so two lists read apart (dima, 2026-10-05); none in the terminal, where it costs a row
   - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
@@ -37,8 +38,8 @@
   - when the band lists them
   - then each group reads its session name («🦉 cclio», «☕️ 🔧 FRM-303 code: …»), «(here)» after the current one; the repo joins a name only when two sessions share it
   - decision: the name comes from the session registry, `~/.claude/sessions/<pid>.json`, read at each reply — no mod api names a session
-- ⬜ the next step waits in the prompt box — a try, dima judges
-  - the harness proves the proposal; a suggestion «cannot [show] while … a turn runs», so whether `turn.complete` is late enough is dima's look
+- 🔎 the next step waits in the prompt box
+  - dima, 2026-10-05, in Warp: «it works correctly as autosuggest, but only oneline» — a suggestion is one line, so a multi-line ➡️ step shows its first line only; the desktop Code tab is untested
   - given a reply ends with a `➡️ next: …` line
   - when the turn ends
   - then the empty prompt box shows that step dim, and Tab takes it as a draft

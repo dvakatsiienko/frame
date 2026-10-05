@@ -117,3 +117,19 @@ test("dima's answer typed into a background session clears its asks", async ($, 
         'no open asks',
     );
 });
+
+test('the head counts here and parallel, the names wait in its hover card', async ($, on) => {
+    await session($, on, '🦉 cclio', {
+        [`asks:${HERE}`]: entry('🦉 cclio'),
+        [`asks:${PEER}`]: entry('☕️ coder'),
+    });
+    const ui = await mount($);
+    const head = await ui.find({ text: /^here /, type: 'Text' });
+    const card = (await ui.findAll({ type: 'Box' })).find(
+        (n) => n.props.display === 'none' && n.text.includes('☕️ coder'),
+    );
+    expect([head?.text, card?.text]).toEqual([
+        'here 1, parallel 1',
+        '🦉 cclio (here) 1, ☕️ coder 1',
+    ]);
+});

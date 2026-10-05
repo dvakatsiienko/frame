@@ -599,10 +599,13 @@ export const register: Register = (on) => {
             ).length;
             return shared > 1 && v.name ? `${base} · ${v.label}` : base;
         };
-        const counts = groups
+        // the head stays short; the per-session breakdown lives in its hover card
+        const here = entries[selfId ?? '']?.asks.length ?? 0;
+        const counts = `here ${here}, parallel ${total - here}`;
+        const breakdown = groups
             .map(
                 ([sid, v]) =>
-                    `${sid === selfId ? 'here' : title(v)} ${v.asks.length}`,
+                    `${sid === selfId ? `${title(v)} (here)` : title(v)} ${v.asks.length}`,
             )
             .join(', ');
         const toggle = () => {
@@ -720,7 +723,14 @@ export const register: Register = (on) => {
                         <Text bold color={ACCENT}>
                             ⏳ {total} open
                         </Text>
-                        {many ? <Text dimColor>{counts}</Text> : null}
+                        {many
+                            ? tip(
+                                  'counts',
+                                  breakdown,
+                                  <Text dimColor>{counts}</Text>,
+                                  { left: counts.length + 1 },
+                              )
+                            : null}
                         {holdsChip}
                     </Box>
                 ) : (
