@@ -19,7 +19,12 @@ const EVENT = 'event:';
 const KEEP = 50;
 const SHOWN = 160;
 const FAILED =
-    'guard: the check failed or ran out of time, so the command is refused (fail closed). retry it once; if it repeats, tell cclio';
+    'guard: the check failed or ran out of time, so this call is refused (fail closed). retry it once; if it repeats, tell cclio';
+// a fork carries the whole parent context; the line says what of it the fork needs
+const WHY_FORK = /^\s*why-fork:\s*\S/m;
+const FORK_DOOR =
+    'a fresh agent with a self-contained brief, or chore-helper for a mechanical job';
+const FORK_REFUSED = `guard stopped this fork. instead: ${FORK_DOOR}. why: a fork carries the whole parent context (~220k tokens). a fork that truly needs that context says so in a prompt line: why-fork: <what parent context it needs>`;
 
 // the name ListAgents shows, from cc's session registry
 async function sessionName($: EngineInterface, sid: string) {
@@ -88,5 +93,16 @@ export const register: Register = (on) => {
         });
         $.ui.log(`guard: ran on dima-ok: ${verdict.targets.join(', ')}`);
         return next(e);
+    }).catch(() => ({ deny: FAILED }));
+
+    on('agent.spawn', async ($, e, next) => {
+        if (!e.fork || WHY_FORK.test(e.prompt)) return next(e);
+        await record($, {
+            command: `fork: ${e.description}`,
+            door: FORK_DOOR,
+            kind: 'refused',
+            target: 'why-fork',
+        });
+        return { deny: FORK_REFUSED };
     }).catch(() => ({ deny: FAILED }));
 };

@@ -34,3 +34,14 @@
   - makes: one `event:<at>:<session>` key in guard's `$.store` (`~/.claude/plugins/store/guard_*.json`): session, its registry name, the command cut to 160 characters, refused or escaped, door, target; the newest 50 kept
   - then stash's band shows it as a 🛡️ line until dismissed — stash's `FTR.md`, «guard lines»
   - 📌 only the Bash tool is read: a command started by `Monitor` or a `!` line in the prompt goes through unread
+
+## every Agent spawn
+
+- ✅ a fork must say why it needs the parent context
+  - given an `Agent` spawn of type `fork` whose prompt has no `why-fork: <what parent context it needs>` line
+  - when guard reads the spawn
+  - then it is refused, and the reason opens with the door: a fresh agent with a self-contained brief, or `chore-helper` for a mechanical job
+  - given the same fork with a `why-fork:` line, then it runs; any other agent type is left alone
+  - then the refusal shows in stash's band as a 🛡️ line (`fork: <description>`), like a Bash refusal
+  - decision: a required line, never a guess at «mechanical» — a keyword guess was unreliable (51 loose hits, most of them real research); a fork carries the whole parent context, ~220k (FRM-323)
+  - 📌 harness-proven only: a headless `claude -p` offers no `fork` type («Agent type 'fork' not found»), so the live check is a fork from an interactive session

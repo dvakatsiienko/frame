@@ -1,6 +1,6 @@
 # guard
 
-reads every Bash call before it runs and stops the one command that matches the floor or a known hazard shape, naming the safe way instead.
+reads every Bash call and every fork spawn before it runs, and stops the one call that matches the floor or a known hazard shape, naming the safe way instead.
 
 ## Language
 
@@ -25,8 +25,12 @@ What a refused command acts on — its paths, its pattern, its branch; the rule'
 _Avoid_: argument, operand
 
 **Escape**:
-A `# dima-ok: <target>` comment that lets one refused command run, written only after dima's word; it must name the command's own target, and it is logged.
+A `# dima-ok: <targets>` comment that lets one refused command run, written only after dima's word; it must name every target the refusal named, and it is logged.
 _Avoid_: override, bypass, allow
+
+**Why-fork line**:
+A `why-fork: <what parent context it needs>` line in a fork's prompt; a fork without one is refused.
+_Avoid_: fork reason, justification
 
 **Guard event**:
 One refusal or escape kept in guard's store, shown as a 🛡️ line in stash's band until dismissed.
