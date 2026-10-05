@@ -165,6 +165,7 @@ two sessions, A and B, in one checkout.
   - given cclio, two coders and a verifier are live
   - when dima types `/board`
   - then a pane lists each by its session name, its state on the right, a full empty row between members
+  - decision: cclio is pinned to the top, its name always bold; the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
   - decision: a full row between members on every surface, no rule — the pane has room the one-row band does not (dima, 2026-10-05)
 - ✅ `🚦` in the row shows and hides the board
@@ -196,7 +197,8 @@ two sessions, A and B, in one checkout.
   - given a terminal session with neither
   - then the name is plain text: nothing opens it
   - decision: the mod api has no door to a session; the desktop's own `claude://` url handler has one (read from its 2.1.289 bundle), and the press runs `open <url>` on this mac rather than a `Link`, whose click the pane's sandbox decides
-  - decision: the whole name is a plain `Button`, normal weight, bold under the pointer — a `Button` label takes no weight, and a whole-name `Markdown` link drew in the surface's blue (dima, 2026-10-05: pick a)
+  - decision: the whole name is a plain `Button`, normal weight; the surface's own hover background marks it, no bold on hover — a `Button` label takes no weight, and a whole-name `Markdown` link drew in the surface's blue (dima, 2026-10-05)
+  - decision: cclio's name is bold text with its own `↗` beside it, since a bold name cannot be a `Button` label
   - decision: no hover cards anywhere in the pane — an absolute card in a narrow row wrapped, clipped and drew over its neighbours (dima, 2026-10-05)
 - ✅ each row carries its facts beside the state
   - given a session has open asks, a context reading, a ticket in its name, or sent a message

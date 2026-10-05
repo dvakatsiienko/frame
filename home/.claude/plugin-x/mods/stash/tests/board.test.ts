@@ -133,10 +133,33 @@ const pressName = async ($: Engine, sid: string) =>
     (await board($)).press({ key: `door:${sid}` });
 
 test('a session with a door is pressed by its whole name', async ($, on) => {
+    fleet(
+        on,
+        {},
+        { bg: [2], patch: { 2: { bridgeSessionId: 'session_01YZ' } } },
+    );
+    const ui = await board($);
+    const name = await ui.find({ key: `door:${PEER}` });
+    expect(name?.text).toBe('☕️ 🔧 FRM-1 code: x ↗');
+});
+
+test("the coordinator's name is bold text beside its own ↗", async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const name = await ui.find({ key: `door:${HERE}` });
-    expect(name?.text).toBe('🦉 cclio (here) ↗');
+    const [name, door] = await Promise.all([
+        ui.find({ text: '🦉 cclio (here)', type: 'Text' }),
+        ui.find({ key: `door:${HERE}` }),
+    ]);
+    expect([name?.props.bold, door?.text]).toEqual([true, '↗']);
+});
+
+test('the coordinator is pinned to the top of the board', async ($, on) => {
+    fleet(on);
+    const ui = await board($);
+    const order = (await ui.findAll({ type: 'Box' }))
+        .filter((n) => n.key?.startsWith('m:'))
+        .map((n) => n.key);
+    expect(order).toEqual([`m:${HERE}`, `m:${PEER}`]);
 });
 
 test('a session inside a long shell command reads busy', async ($, on) => {

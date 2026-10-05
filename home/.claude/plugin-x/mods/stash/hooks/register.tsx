@@ -544,7 +544,12 @@ async function members($: EngineInterface): Promise<Member[]> {
             wait: reply?.wait,
         });
     }
-    return out.sort((a, b) => a.name.localeCompare(b.name));
+    // the coordinator first, the rest by name
+    return out.sort(
+        (a, b) =>
+            Number(isCoordinator(b.name)) - Number(isCoordinator(a.name)) ||
+            a.name.localeCompare(b.name),
+    );
 }
 
 const span = (ms: number) => {
@@ -552,6 +557,10 @@ const span = (ms: number) => {
     return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 };
 const ago = (ms: number) => (ms < 60000 ? 'just now' : `${span(ms)} ago`);
+
+// the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
+const isCoordinator = (name: string) => /\bcclio\b/.test(name);
+const doorGlyph = (door: Door) => (door.kind === 'open' ? '↗' : '📋');
 
 async function isBoardOpen($: EngineInterface) {
     const panes = await $.ui.panes().catch(() => []);
@@ -785,20 +794,33 @@ export const register: Register = (on) => {
                         gap={1}
                         justifyContent='space-between'>
                         <Box flexDirection='row' flexShrink={1} gap={1}>
-                            {/* the whole name is the control: a Button label takes no weight, so bold shows under the pointer only (dima, 2026-10-05) */}
-                            {door ? (
+                            {/* the whole name is the control; the coordinator's name stays bold text, since a Button label takes no weight */}
+                            {door && !isCoordinator(m.name) ? (
                                 <Button
-                                    hover={{ bold: true }}
                                     key={`door:${m.sid}`}
                                     onPress={(p) =>
                                         void pressDoor($, door, p.surface)
                                     }
                                     plain>
-                                    {`${name} ${door.kind === 'open' ? '↗' : '📋'}`}
+                                    {`${name} ${doorGlyph(door)}`}
                                 </Button>
                             ) : (
-                                <Text wrap='truncate-end'>{name}</Text>
+                                <Text
+                                    bold={isCoordinator(m.name)}
+                                    wrap='truncate-end'>
+                                    {name}
+                                </Text>
                             )}
+                            {door && isCoordinator(m.name) ? (
+                                <Button
+                                    key={`door:${m.sid}`}
+                                    onPress={(p) =>
+                                        void pressDoor($, door, p.surface)
+                                    }
+                                    plain>
+                                    {doorGlyph(door)}
+                                </Button>
+                            ) : null}
                             {m.offPattern ? (
                                 <Text color={ACCENT}>⚠</Text>
                             ) : null}
