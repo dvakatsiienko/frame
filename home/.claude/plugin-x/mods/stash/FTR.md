@@ -45,6 +45,7 @@
   - decision: no per-item copy, no prompt injection — injection destroyed dima's typed prompt
   - decision: a real button, not plain text — dima could not tell it was pressable; the mod api has no cursor prop, so the pointer is the surface's own
   - decision: ask lines are not selectable — the mod api has no selection control and `Markdown` did not help either (dima, 2026-10-04); copy all is the door
+  - decision: no read-aloud button — dima uses F4 on a selected phrase, F4 does not read the clipboard, and a «read all» is not useful (2026-10-05); selectable band text would need an api cc does not have yet
 - ⬜ afk switch: one icon, `💨`; the accent background alone says it is on
   - decision: one icon, the background tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
 - ✅ afk reaches a running turn
