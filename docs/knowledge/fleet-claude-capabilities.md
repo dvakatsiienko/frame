@@ -67,7 +67,7 @@ since.
 
 ## Projects
 
-📌 **two products share the name since 2026-09-17** (evidence: `docs/research/claude-code-projects.md`).
+📌 **two products share the name since 2026-09-17** (sources: [projects docs](https://code.claude.com/docs/en/claude-projects), [launch post](https://claude.com/blog/projects-redesigned); reported traps: [claude-code#98059](https://github.com/anthropics/claude-code/issues/98059) `create_session` missing from Remote Control sessions, [claude-code#97924](https://github.com/anthropics/claude-code/issues/97924) threads merged on red ci and ignored `AGENTS.md`).
 
 - **Claude Code Projects (redesigned, public beta, Pro/Max, gradual)** — one coordinator conversation
   (opus, low effort) splits a goal into threads (opus, high effort); each thread is a full cc session

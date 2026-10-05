@@ -59,7 +59,7 @@ on partly done, flatten an exact string into prose casing.
 - edit only the AGENTS.md matching the current working scope: project dir → project AGENTS.md, `~/.claude` → this file
 - spot a memory improvement → propose it in one line; this file and `rules/` change only on his word
 - two layers in genuine conflict is a defect to report and fix, never a puzzle to resolve quietly at read time
-- 📌 capabilities, the per-surface table, what loads where and who can spawn whom: `docs/knowledge/claude-fleet-capabilities.md`, read on demand
+- 📌 capabilities, the per-surface table, what loads where and who can spawn whom: `docs/knowledge/fleet-claude-capabilities.md`, read on demand
 
 ## coding preferences — general
 

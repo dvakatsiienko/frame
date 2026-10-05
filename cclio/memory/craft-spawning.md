@@ -97,7 +97,7 @@ The split is **disposable-vs-watchable**, not research-vs-code.
   time (2.1.251).
 - 🚨 **remote control has ONE owner per session** (loser prints 4090). Start in the terminal, treat
   the desktop Code tab as join-only. 📌 handover direction untested — assert no cause.
-- 🚫 **the desktop Browser pane (`mcp__Claude_Browser__*`) exists ONLY in a session the Code tab itself created** — injected via `--mcp-config` at creation, never on resume, never for `claude --bg` or remote-control (sources in `docs/knowledge/claude-fleet-capabilities.md`). a browser-needing coder is a handoff dima opens in a fresh Code-tab session; a terminal-born cclio has no pane. `x:browser-headless` works from either.
+- 🚫 **the desktop Browser pane (`mcp__Claude_Browser__*`) exists ONLY in a session the Code tab itself created** — injected via `--mcp-config` at creation, never on resume, never for `claude --bg` or remote-control (sources in `docs/knowledge/fleet-claude-capabilities.md`). a browser-needing coder is a handoff dima opens in a fresh Code-tab session; a terminal-born cclio has no pane. `x:browser-headless` works from either.
 
 ## briefing and watching — write freely, read on a leash
 

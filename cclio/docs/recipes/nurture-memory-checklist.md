@@ -178,7 +178,7 @@ place on the first run — isolation is not a verdict on its own, but it is wher
 - 🚨 **a leaf deferred to a deleted rule.** the mobile leaf named `rules/mobile.md` as «the binding
   copy… if they ever disagree, the rule wins». that file died the day before. **deleted at dima's
   call**, after confirming its one unique fact (DOT-91) already lives in
-  `docs/knowledge/claude-fleet-capabilities.md`. barrel line and inbound wikilink removed with it.
+  `docs/knowledge/fleet-claude-capabilities.md`. barrel line and inbound wikilink removed with it.
 - ✅ **the precedence chain is now written down** — one block in root `CLAUDE.md`, and the same
   chain in `docs/knowledge/authoring-memory.md`. it had zero occurrences before.
 - ✅ **the placement decision table ALREADY EXISTED** — phase 0 built it in `authoring-memory.md`.
