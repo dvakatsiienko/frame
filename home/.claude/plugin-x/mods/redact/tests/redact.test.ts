@@ -65,5 +65,5 @@ test('a kept tool result is stored masked', async ($, on) => {
             uuid: 'u1',
         })
         .catch(() => undefined);
-    expect(JSON.stringify(stored)).toContain('sk-ant…‹redacted›');
+    expect(JSON.stringify(stored)).toMatch(/key: ‹sk-ant…[0-9a-f]{8}›/);
 });
