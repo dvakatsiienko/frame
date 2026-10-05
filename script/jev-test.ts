@@ -1,9 +1,9 @@
 /**
  * jev:test — the fixture suite of every jev flow. one jsonl per flow in `shelf/jev/fixtures/`,
  * a line = the state jev sees + the lane cclio gave. run before a criterion changes and at the
- * halt; a criterion edit that lowers a flow's precision is refused. `skill-router` runs the old
- * shape beside the new one, `RUNS` times (default 3), and exits 1 when the new precision is lower.
- * usage: pnpm jev:test [flow…]
+ * halt; a criterion edit that lowers a flow's precision is refused. `skill-router` runs only when
+ * named: the old shape beside the new one, `RUNS` times (default 3), exit 1 when the new
+ * precision is lower. usage: pnpm jev:test [flow…]
  */
 
 /* Core */
@@ -29,13 +29,20 @@ const flows = {
     'inbox-lanes': { answer: 'lane', questions: inboxQuestions },
 } as const;
 
+// the router runs only when named: RUNS × 79 × 3 calls is minutes, too long for every halt
 const routerFlow = 'skill-router';
-const picked = process.argv.slice(2).filter((a) => a in flows);
+const args = process.argv.slice(2);
+const unknown = args.filter((a) => !(a in flows) && a !== routerFlow);
+if (unknown.length) {
+    console.error(
+        `unknown flow: ${unknown.join(', ')} — flows: ${[...Object.keys(flows), routerFlow].join(', ')}`,
+    );
+    process.exit(2);
+}
+const isRouter = args.includes(routerFlow);
 const names = (
-    picked.length || process.argv.length > 2 ? picked : Object.keys(flows)
+    args.length ? args.filter((a) => a in flows) : Object.keys(flows)
 ) as FlowName[];
-const isRouter =
-    process.argv.length <= 2 || process.argv.slice(2).includes(routerFlow);
 
 let failed = false;
 for (const name of names) {
@@ -148,7 +155,7 @@ async function routerTest() {
         };
         return {
             avg,
-            text: `${shape}  wrong ${span((s) => s.wrong)}  needless ${span((s) => s.needless)}  precision ${span((s) => s.precision)}  ${dim(`${Math.round(avg((s) => s.ms))} ms/prompt`)}`,
+            text: `${shape}  wrong ${span((s) => s.wrong)}  needless ${span((s) => s.needless)}  precision ${span((s) => s.precision)}  ${dim(`${Math.round(avg((s) => s.ms))} ms/prompt wall, 4 in flight — not latency`)}`,
         };
     };
     const [old, next] = [line('old'), line('new')];
@@ -178,9 +185,10 @@ function score(
         ms,
         needless:
             uncovered.filter((p) => p.s.loads.length).length / uncovered.length,
+        // a router that loads nothing has no precision to keep, and must not pass the refusal
         precision: loads.length
             ? loads.filter(Boolean).length / loads.length
-            : 1,
+            : 0,
         wrong:
             covered.filter((p) => p.s.loads[0]?.name !== p.fx.expect).length /
             covered.length,

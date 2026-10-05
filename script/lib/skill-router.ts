@@ -83,17 +83,12 @@ export async function suggest(prompt: string): Promise<Suggestion> {
     const fits = winner ? noulOf(narrow, `fits:${winner}`) : 0;
     const tokens = wide.usage.input_tokens + narrow.usage.input_tokens;
     return winner && fits >= FITS
-        ? {
-              loads: [{ name: winner, p: fits }],
-              stage: 'load',
-              tokens,
-              top: { name: winner, p: fits },
-          }
+        ? { loads: [{ name: winner, p: fits }], stage: 'load', tokens, top }
         : {
               loads: [],
-              stage: 'fits',
+              stage: `fits ${winner ?? '-'} ${fits.toFixed(2)}`,
               tokens,
-              top: { name: winner ?? top.name, p: fits },
+              top,
           };
 }
 
@@ -155,7 +150,10 @@ function readBody(md: string) {
 
 /* Types */
 type Pick = { name: string; p: number };
-/** `stage` names the check that decided: veto · none · fits · load (old: veto · nouls) */
+/**
+ * `top` is the wide Choice's best skill, one scale for route.log's band; a load carries its fits.
+ * `stage` names the check that decided: veto · none · fits · load (old: veto · nouls)
+ */
 export type Suggestion = {
     loads: Pick[];
     stage: string;

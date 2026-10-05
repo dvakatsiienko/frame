@@ -50,7 +50,7 @@ export const flawlogQuestions = {
 export const verdictBand = { high: 0.7, low: 0.3 } as const;
 
 // the skill router, docs.typesafe.ai/cookbooks/skill_suggestion: call 1 ranks the roster in one
-// Choice beside the «needs a skill at all» gates, call 2 re-reads the top 3 against their SKILL.md
+// Choice beside the two vetoes, call 2 re-reads the top 3 against their SKILL.md
 // and each may say no. 09-24 → 10-01 vet misses were a shared word tipping a load («vault»,
 // «announce», «slay at halt»), so the boundary below names those shapes.
 
