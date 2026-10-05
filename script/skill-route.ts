@@ -1,8 +1,9 @@
-// the skill router: at most one skill a prompt should load, from the skill-suggestion shape
+// the skill router: the skills a prompt should load, from the skill-suggestion shape (v2, FRM-305)
 // usage: script/op-run.sh node script/skill-route.ts '<prompt>'        → live: prints the load, logs the pick + ms
 //        script/op-run.sh node script/skill-route.ts --from-log [n]  → replay the last n near-misses from route.log
 //        script/op-run.sh node script/skill-route.ts --misses [n]     → replay the last n prompts cclio verdicted a miss
-// the labelled fixtures, old shape beside new: script/op-run.sh node script/jev-test.ts skill-router
+// live mode reads `JEV_TRANSCRIPT` (the hook's transcript_path) for the last reply
+// the labelled fixtures, every arm: script/op-run.sh node script/jev-test.ts skill-router
 import { appendFileSync, mkdirSync } from 'node:fs';
 
 import { printTable } from './lib/jev-print.ts';
@@ -14,11 +15,10 @@ import {
     verdictsOf,
 } from './lib/jev-report.ts';
 import { bold, dim } from './lib/print.ts';
-import { loadLine, suggest } from './lib/skill-router.ts';
+import { loadLine, routeInput, suggest } from './lib/skill-router.ts';
 
 const logDir = `${process.env.HOME}/.claude/shelf/jev`;
 mkdirSync(logDir, { recursive: true });
-
 const [mode, countArg] = process.argv.slice(2);
 if (!mode) {
     console.error(
@@ -29,11 +29,14 @@ if (!mode) {
 
 if (mode !== '--from-log' && mode !== '--misses') {
     const started = performance.now();
-    const { loads, tokens, top } = await suggest(mode);
+    const { loads, tokens, top, trace } = await suggest(
+        routeInput(mode, process.env.JEV_TRANSCRIPT),
+    );
     const ms = Math.round(performance.now() - started);
+    // the whole prompt, one line: a vet miss filed with `--last` is a label source
     appendFileSync(
         `${logDir}/route.log`,
-        `${new Date().toISOString()}\t${top.name} ${top.p.toFixed(2)}\t${loads.map((s) => s.name).join(',') || '-'}\t${mode.slice(0, 80).replace(/\s+/g, ' ')}\t${ms}\t${process.env.JEV_SESSION ?? '-'}\n`,
+        `${new Date().toISOString()}\t${top.name} ${top.p.toFixed(2)}\t${loads.map((s) => s.name).join(',') || '-'}\t${mode.replace(/\s+/g, ' ').trim()}\t${ms}\t${process.env.JEV_SESSION ?? '-'}\t${trace.join(' · ')}\n`,
     );
     const line = loadLine(loads);
     if (line) console.log(line);
@@ -42,7 +45,8 @@ if (mode !== '--from-log' && mode !== '--misses') {
 }
 
 // --from-log: real near-misses; --misses: the prompts cclio already called wrong
-// (`jev:vet miss skill-router …`) — a confident wrong pick never enters the band
+// (`jev:vet miss skill-router …`) — a confident wrong pick never enters the band.
+// no transcript here: the prompt replays with no reply before it
 const count = Number(countArg ?? 10);
 const prompts =
     mode === '--misses'
@@ -50,13 +54,17 @@ const prompts =
         : nearMisses(routeRead(), count).map((r) => r.prompt);
 const rows: string[][] = [];
 for (const prompt of prompts) {
-    const { loads, top } = await suggest(prompt);
+    const { loads, trace } = await suggest({
+        prompt,
+        recentContext: '',
+        seen: new Set(),
+    });
     rows.push([
         prompt.slice(0, 70),
         dim('got'),
         loads.length
             ? bold(loadLine(loads) ?? '')
-            : dim(`none (${top.name} ${top.p.toFixed(2)})`),
+            : dim(`none (${trace.join(' · ')})`),
     ]);
 }
 printTable(rows);
