@@ -109,14 +109,17 @@ function board($: Engine) {
     });
 }
 
-// a member's whole row as one string, its hover cards included
-async function row($: Engine, sid: string) {
+// each member's whole row as one string, from one mount
+async function rowsBySid($: Engine) {
     const ui = await board($);
-    const box = (await ui.findAll({ type: 'Box' })).find(
-        (n) => n.key === `m:${sid}`,
-    );
-    return box?.text ?? 'no row';
+    const rows: Record<string, string> = {};
+    for (const n of await ui.findAll({ type: 'Box' }))
+        if (n.key?.startsWith('m:')) rows[n.key.slice(2)] = n.text ?? '';
+    return rows;
 }
+
+const row = async ($: Engine, sid: string) =>
+    (await rowsBySid($))[sid] ?? 'no row';
 
 const stop = ($: Engine, reply: string) =>
     $.classic.Stop({
@@ -125,27 +128,19 @@ const stop = ($: Engine, reply: string) =>
         stop_hook_active: false,
     });
 
-// a session name with a door is a markdown link; its press is the board's own
+// the control right of a session's name
 const pressName = async ($: Engine, sid: string) =>
-    (await board($)).press({
-        key: `door:${sid}`,
-        link: { href: 'https://claude.ai/code' },
-    });
+    (await board($)).press({ key: `door:${sid}` });
 
-test('a session name with no door is bold text', async ($, on) => {
+test('every session name on the board is bold', async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const name = await ui.find({ text: '☕️ 🔧 FRM-1 code: x', type: 'Text' });
-    expect(name?.props.bold).toBe(true);
-});
-
-test('a session name with a door is a bold link', async ($, on) => {
-    fleet(on);
-    const ui = await board($);
-    const name = await ui.find({ type: 'Markdown' });
-    expect(name?.props.text).toBe(
-        '**[🦉 cclio \\(here\\)](https://claude.ai/code)**',
+    const names = await Promise.all(
+        ['🦉 cclio (here)', '☕️ 🔧 FRM-1 code: x'].map((text) =>
+            ui.find({ text, type: 'Text' }),
+        ),
     );
+    expect(names.map((n) => n?.props.bold)).toEqual([true, true]);
 });
 
 test('a session inside a long shell command reads busy', async ($, on) => {
@@ -219,7 +214,7 @@ test("pressing an unbridged background session's name copies its attach command"
 test('a terminal session with no door has nothing to press', async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const doors = (await ui.findAll({ type: 'Markdown' })).map((n) => n.key);
+    const doors = (await ui.findAll({ type: 'Button' })).map((n) => n.key);
     expect(doors).toEqual([`door:${HERE}`]);
 });
 
@@ -262,11 +257,11 @@ test("a session's message out shows on the board", async ($, on) => {
 
 test('the board marks a background session named off the fleet pattern', async ($, on) => {
     fleet(on, {}, { alive: [1, 2, 3], bg: [2, 3] });
-    const ui = await board($);
-    const marked = (await ui.findAll({ type: 'Box' }))
-        .filter((n) => n.key?.startsWith('tip:off:'))
-        .map((n) => n.key);
-    expect(marked).toEqual([`tip:off:${GONE}`]);
+    const rows = await rowsBySid($);
+    expect([rows[GONE]?.includes('⚠'), rows[PEER]?.includes('⚠')]).toEqual([
+        true,
+        false,
+    ]);
 });
 
 function band($: Engine) {

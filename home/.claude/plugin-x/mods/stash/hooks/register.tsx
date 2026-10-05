@@ -5,7 +5,6 @@ import {
     type Door,
     FLEET_NAME,
     doorOf,
-    escapeMarkdown,
     parseAsks,
     parseLead,
     parseWait,
@@ -37,8 +36,6 @@ const BOARD = 'fleet-board';
 const REPLY = 'reply:';
 const CONTEXT = 'context:';
 const SENT = 'sent:';
-// a markdown link must be https to draw as one; the board answers its press itself, so this is never opened by a plain click
-const DOOR_HREF = 'https://claude.ai/code';
 const STALE_MS = 24 * 60 * 60 * 1000;
 // dima at the prompt, typing into a background job, on his phone or the web
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
@@ -585,6 +582,7 @@ function hoverTip(
     words: string,
     control: RenderElement,
     place: { left: number } | { right: number },
+    hotkey?: string,
 ) {
     const { Box, Text } = ui;
     return (
@@ -592,11 +590,14 @@ function hoverTip(
             {control}
             <Box
                 display='none'
+                gap={1}
                 hover={{ display: 'flex' }}
                 position='absolute'
                 top={0}
                 {...place}>
                 <Text dimColor>{words}</Text>
+                {/* a keycap on one row: a border would take three, and the band has one */}
+                {hotkey ? <Text inverse> {hotkey} </Text> : null}
             </Box>
         </Box>
     );
@@ -751,7 +752,7 @@ export const register: Register = (on) => {
 
     on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
         const ui = $.ui.resolve(e);
-        const { Box, Text, Link, Markdown } = ui;
+        const { Box, Text, Button, Link } = ui;
         const now = await $.clock.now();
         const me = await $.session.id().catch(() => selfId);
         const list = await members($).catch(() => null);
@@ -775,28 +776,23 @@ export const register: Register = (on) => {
                         gap={1}
                         justifyContent='space-between'>
                         <Box flexDirection='row' flexShrink={1} gap={1}>
+                            <Text bold wrap='truncate-end'>
+                                {name}
+                            </Text>
                             {door ? (
-                                <Markdown
+                                <Button
+                                    dimColor
                                     key={`door:${m.sid}`}
-                                    onLinkPress={(_link, p) =>
+                                    onPress={(p) =>
                                         void pressDoor($, door, p.surface)
                                     }
-                                    text={`**[${escapeMarkdown(name)}](${DOOR_HREF})**`}
-                                />
-                            ) : (
-                                <Text bold wrap='truncate-end'>
-                                    {name}
-                                </Text>
-                            )}
-                            {m.offPattern
-                                ? hoverTip(
-                                      ui,
-                                      `off:${m.sid}`,
-                                      'name off the fleet pattern: «☕️ 🔧 FRM-N code: what»',
-                                      <Text color={ACCENT}>⚠</Text>,
-                                      { left: 2 },
-                                  )
-                                : null}
+                                    plain>
+                                    {door.kind === 'open' ? '↗' : '📋'}
+                                </Button>
+                            ) : null}
+                            {m.offPattern ? (
+                                <Text color={ACCENT}>⚠</Text>
+                            ) : null}
                         </Box>
                         <Box flexDirection='row' flexShrink={0} gap={1}>
                             {m.asks ? (
@@ -805,20 +801,15 @@ export const register: Register = (on) => {
                             {m.context === undefined ? null : (
                                 <Text dimColor>ctx {m.context}%</Text>
                             )}
-                            {ticket
-                                ? hoverTip(
-                                      ui,
-                                      `ticket:${m.sid}`,
-                                      `open ${ticket} in linear`,
-                                      <Text dimColor>
-                                          <Link
-                                              href={`https://linear.app/x-com/issue/${ticket}`}>
-                                              {ticket}
-                                          </Link>
-                                      </Text>,
-                                      { right: ticket.length + 1 },
-                                  )
-                                : null}
+                            {/* no hover card in the pane: an absolute card in a narrow row wraps and clips (dima, 2026-10-05) */}
+                            {ticket ? (
+                                <Text dimColor>
+                                    <Link
+                                        href={`https://linear.app/x-com/issue/${ticket}`}>
+                                        {ticket}
+                                    </Link>
+                                </Text>
+                            ) : null}
                             {m.sent ? (
                                 <Text dimColor>sent {ago(now - m.sent)}</Text>
                             ) : null}
@@ -943,7 +934,8 @@ export const register: Register = (on) => {
             words: string,
             control: RenderElement,
             place: { left: number } | { right: number },
-        ) => hoverTip(ui, key, words, control, place);
+            hotkey?: string,
+        ) => hoverTip(ui, key, words, control, place, hotkey);
         const boardOpen = await isBoardOpen($);
         const flipBoard = async () => {
             if (await isBoardOpen($)) await $.ui.close({ id: BOARD });
@@ -954,15 +946,18 @@ export const register: Register = (on) => {
         const leftOf = (label: string, chrome: boolean) => ({
             right: [...label].length + (chrome ? 4 : 0) + 1,
         });
-        const copyButton = (sid: string, asks: string[]) =>
+        // only the head's copy takes `c`: two Buttons on one key clash, and the later wins
+        const copyButton = (sid: string, asks: string[], hotkey?: string) =>
             tip(
                 `copy:${sid}`,
                 "copy this thread's asks",
-                copyControl(sid, asks),
+                copyControl(sid, asks, hotkey),
                 leftOf('📋', true),
+                hotkey,
             );
-        const copyControl = (sid: string, asks: string[]) => (
+        const copyControl = (sid: string, asks: string[], hotkey?: string) => (
             <Button
+                hotkey={hotkey}
                 key={`copy:${sid}`}
                 onPress={() =>
                     void $.ui.copy({
@@ -1042,7 +1037,7 @@ export const register: Register = (on) => {
                     </Box>
                 )}
                 <Box flexDirection='row' gap={1}>
-                    {first ? copyButton(first[0], first[1].asks) : null}
+                    {first ? copyButton(first[0], first[1].asks, 'c') : null}
                     {tip(
                         'hot',
                         hot
@@ -1090,10 +1085,16 @@ export const register: Register = (on) => {
                         ? tip(
                               'asks-toggle',
                               open ? 'fold' : 'unfold',
-                              <Button key='asks-toggle' onPress={toggle} plain>
+                              <Button
+                                  hotkey='o'
+                                  key='asks-toggle'
+                                  onPress={toggle}
+                                  plain>
                                   {foldLabel}
                               </Button>,
-                              leftOf(foldLabel, false),
+                              // a terminal draws a plain Button with a hotkey as `o: label`
+                              { right: [...foldLabel].length + 4 },
+                              'o',
                           )
                         : null}
                 </Box>

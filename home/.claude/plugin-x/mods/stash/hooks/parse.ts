@@ -41,9 +41,6 @@ export function parseWait(reply: string): string | undefined {
     return waits.length ? waits.join('; ') : undefined;
 }
 
-export const escapeMarkdown = (text: string) =>
-    text.replace(/[\\`*_[\]()<>#|~]/g, '\\$&');
-
 // The reply's first line of prose — its verdict line — skipping fences and the model greeting.
 export function parseLead(reply: string): string | undefined {
     let fenced = false;

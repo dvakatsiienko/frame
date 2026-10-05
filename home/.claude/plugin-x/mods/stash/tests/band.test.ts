@@ -139,12 +139,13 @@ test('every control in the row carries a hover card that names it', async ($, on
     const cards = (await ui.findAll({ type: 'Box' }))
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
-    expect(cards).toEqual([
-        "copy this thread's asks",
+    // a card with a hotkey ends in its keycap, ` c `
+    expect(cards.map((c) => c?.trimEnd())).toEqual([
+        "copy this thread's asks c",
         "keep this session's cache hot: ping every 50 min",
         'afk: tell fleet that dima is away',
         'unfold fleet board',
-        'fold',
+        'fold o',
     ]);
 });
 
@@ -175,9 +176,9 @@ test("a toggle's hover card names what the next press does", async ($, on) => {
     const cards = (await ui.findAll({ type: 'Box' }))
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
-    expect(cards.slice(-3)).toEqual([
+    expect(cards.slice(-3).map((c) => c?.trimEnd())).toEqual([
         'back: tell fleet that dima is here',
         'unfold fleet board',
-        'unfold',
+        'unfold o',
     ]);
 });

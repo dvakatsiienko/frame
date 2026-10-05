@@ -15,12 +15,13 @@
   - decision: half a cell above each thread after the first on desktop, so two lists read apart (dima, 2026-10-05); none in the terminal, where it costs a row
   - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
   - decision: the fold control is a folder, `📂` open and `📁` folded — dima asked for a more interesting state than `▼`/`▲`
-  - decision: no `o` hotkey — the desktop drew its key badge as the button and left the icon outside it
+  - decision: `c` presses the head's `📋`, `o` the fold folder, each shown in its hover card as an inverse keycap ` c ` — a bordered key costs two more rows, and the band has one (dima, 2026-10-05)
+  - 📌 a key fires only while the band holds focus (a click, or ctrl+x tab), never from the prompt; an earlier `o` was dropped because the desktop drew its key badge as the button and left the icon outside it — dima's look decides whether that still holds
   - decision: no ➡️ prompt suggestion — the built-in suggestion writes a good prompt; one suggestion, no race (dima, 2026-10-05)
 - 🔎 every control in the row names itself on hover: a dim card beside it
   - given the row draws
   - when dima hovers `📋`, `🔥`, `💨`, `🚦`, the fold folder or the holds chip
-  - then a dim line beside it says what a press does now: «copy this thread's asks», «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board», «fold» or «unfold»
+  - then a dim line beside it says what a press does now: «copy this thread's asks ` c `», «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board», «fold ` o `» or «unfold ` o `»
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
   - dima, 2026-10-05: seen in the desktop Code tab and in Warp
 - 🔎 asks: every live session's open asks, «no open asks» when empty
@@ -182,20 +183,20 @@ two sessions, A and B, in one checkout.
   - given the last reply has no `🔭` line
   - then the second line reads the reply's first line, dimmed: what the session last said
   - source: the session's own last reply, kept by its stash at each reply end
-- ⬜ a press on a session's name opens it in the desktop
+- ⬜ `↗` right of a session's name opens it in the desktop
   - the harness proves the `open <url>` it runs; that the desktop then shows the session is dima's click
   - given a desktop-born session (the registry carries `hostSessionId: local_…`)
-  - when dima presses its name
+  - when dima presses `↗`
   - then the desktop opens that session through `claude://code/continue?session=local_…`
   - given a background session bridged to claude.ai (`bridgeSessionId: session_…`)
   - then the press opens `claude://code/session_…`
-  - given a background session with neither
+  - given a background session with neither, the control is `📋`
   - then the press copies `claude attach <jobId>`, the terminal door
   - given a terminal session with neither
-  - then the name is plain bold text: nothing opens it
+  - then no control shows: nothing opens it
   - decision: the mod api has no door to a session; the desktop's own `claude://` url handler has one (read from its 2.1.289 bundle), and the press runs `open <url>` on this mac rather than a `Link`, whose click the pane's sandbox decides
-  - decision: the whole name is the link, drawn as a bold `Markdown` link the board answers itself — a `Button` label cannot be bold, and a `Markdown` link must be `https:` to draw, so its href is `https://claude.ai/code` and never what a plain click opens (dima, 2026-10-05)
-  - decision: no hover card on the name — it wrapped and clipped in a narrow row (dima, 2026-10-05)
+  - decision: the name stays bold plain text with `↗` beside it — a whole-name `Markdown` link drew in the surface's blue, which a mod cannot restyle (dima, 2026-10-05)
+  - decision: no hover cards anywhere in the pane — an absolute card in a narrow row wrapped, clipped and drew over its neighbours (dima, 2026-10-05)
 - ✅ each row carries its facts beside the state
   - given a session has open asks, a context reading, a ticket in its name, or sent a message
   - when the board draws
@@ -220,7 +221,7 @@ two sessions, A and B, in one checkout.
 - ⬜ the board marks a background session named off the fleet pattern
   - given a background session's name is not `<mode> <role emoji> <ticket> <role word>: <what>` («☕️ 🔧 FRM-303 code: stash keep-hot»)
   - when the board lists it
-  - then its row carries ⚠ with the pattern on hover
+  - then its row carries ⚠ beside the name; the pattern lives here, since the pane draws no hover card
   - decision: on the board, not at spawn — a `--bg` coder starts through Bash, and `agent.spawn` sees only Agent-tool subagents
 
 ## scripts
