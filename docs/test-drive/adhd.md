@@ -1,5 +1,5 @@
 ---
-dies-when: adhd is adopted as a user-only skill or dropped after the test-drive week (2026-10-05)
+dies-when: adhd is adopted as a user-only skill or dropped after the test-drive week (2026-10-07)
 ---
 
 # adhd — parallel divergent ideation, on a test drive

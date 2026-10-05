@@ -1,5 +1,5 @@
 ---
-dies-when: the verdict line below is written (2026-10-15) — adopted as a door in rules/fleet-doors.md, or dropped
+dies-when: the verdict line below is written (2026-10-17) — adopted as a door in rules/fleet-doors.md, or dropped
 ---
 
 # vorssaint shelf — dima's drop box for more screenshots than a prompt holds

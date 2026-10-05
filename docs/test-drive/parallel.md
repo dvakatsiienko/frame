@@ -144,3 +144,4 @@ grading: per monitor — fired (y/n), latency from the real event, false positiv
 - 2026-10-04 · research core · same mods brief · 16.8k chars, zero repo links, generic · grade 1/5 vs exa 3, opus 5
 - 2026-10-04 · research core · same holds brief · hit: agent-coord as closest match with its exact TTLs and fail-open, Dibs (sqlite leases, pushed today), «SessionEnd is not cleanup» · 228 s · 13.0k chars · ¢ unsettled · grade 4/5 vs exa 4, opus 4 (opus: deepest api read, missed both deny hooks)
 - 2026-10-04 · research core · same hallmark brief · hit: the HN thread (gallery still looks AI-made), no releases page, verdict «trial on one low-stakes landing page» · 274 s · 7.3k chars · ¢ unsettled · grade 3.5/5 vs exa 4, opus 5
+- 2026-10-05 · research core · same projects brief · hit: the two-products split stated cleanest, cowork+chat merge 09-16 verified, MCP spec 2026-07-28, cloud session → project move · 183 s · 6.3k chars · ¢ unsettled · grade 4/5 vs exa 4, opus 5

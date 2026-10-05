@@ -1,7 +1,7 @@
 # coderabbit — the free local reviewer on trial
 
 Ticket: none
-dies-when: the verdict line below is written (2026-10-14) — kept as a lane, or cut from crew-coder's review chain
+dies-when: the verdict line below is written (2026-10-16) — kept as a lane, or cut from crew-coder's review chain
 
 dima, 2026-09-30: «move it into test drive for 2 weeks instead? it is not good that it does not finds anything but it
 have an unobvious plus — its a free code review still. and CR as a product is actually solid — one of the best code

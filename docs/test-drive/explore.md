@@ -1,7 +1,7 @@
 # explore — which model finds code best for the cost: opus, sonnet 5.5, or a jev ranking
 
 Ticket: none
-dies-when: the verdict line below is written (2026-10-08) — the winner stays as `home/.claude/agents/explore.md`, the losers leave
+dies-when: the verdict line below is written (2026-10-10) — the winner stays as `home/.claude/agents/explore.md`, the losers leave
 
 dima, 2026-10-01, approving the sonnet test drive: «yes, between steps today»; on adding jev: «maybe a/b test jev vs
 sonnet 5.5 explore? what if jev better at ranking? and it is essentially free. sonnet 5.5 still costs. worth to setup

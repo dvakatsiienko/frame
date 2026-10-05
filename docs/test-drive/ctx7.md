@@ -1,7 +1,7 @@
 # ctx7 — library docs from the cli, vs the context7 mcp
 
 Ticket: none
-dies-when: the verdict line below is written (2026-10-07) — the loser is uninstalled, the winner keeps its tooling line
+dies-when: the verdict line below is written (2026-10-09) — the loser is uninstalled, the winner keeps its tooling line
 
 dima, 2026-09-30: «i don't want both tools. if CTX7 CLI will prove better than MCP and coders will use it, then let's
 keep CLI. no need to have MCP for Context7, considering it is a dead weight currently. coders don't use it, but we have
