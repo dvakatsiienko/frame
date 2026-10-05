@@ -29,14 +29,16 @@ export const readHandoffBody = (path: string) => readFile(path, 'utf8');
 export const deleteHandoff = (handoff: Handoff) =>
     run('node', [storeCli, 'delete', handoff.fileName]);
 
-// `/x:handoff-ingest <topic>` picks this file out of the shelf; `/cclio:init` in front boots
-// the reading session as the coordinator first. Which one is wanted depends on the session
-// being pasted into, not on the file, so both lines are offered and the choice is the keypress.
+// `/x:handoff-ingest <topic>` picks this file out of the shelf; `/cclio:boot <topic>` boots
+// the reading session as the coordinator and ingests the same file. Which one is wanted depends
+// on the session being pasted into, not on the file, so both lines are offered and the choice is
+// the keypress. The boot line carries the topic as plain text, never a second slash command: the
+// desktop composer refuses a message holding two skill chips (Claude 2.19675).
 export const toIngestLine = (handoff: Handoff) =>
     `/x:handoff-ingest ${handoff.topic}`;
 
-export const toCclioInitLine = (handoff: Handoff) =>
-    `/cclio:init ${toIngestLine(handoff)}`;
+export const toCclioBootLine = (handoff: Handoff) =>
+    `/cclio:boot ${handoff.topic}`;
 
 export const toAge = (modifiedAt: number) => {
     const minutes = Math.max(0, Math.round((Date.now() - modifiedAt) / 60_000));

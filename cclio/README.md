@@ -11,13 +11,13 @@ whole repo (renamed from dotfiles to frame, 2026-09-23), not moving cclio back o
 ## boot
 ```
 cd ~/frame/cclio && claude
-/cclio:init
+/cclio:boot
 ```
 
 ## layout
 - `AGENTS.md` — the coordinator memfile
 - `memory/_MEMORY.md` — barrel index; leaves hold content
-- `plugin-cclio/skills/init/SKILL.md` — the `/cclio:init` boot ritual
+- `plugin-cclio/skills/boot/SKILL.md` — the `/cclio:boot` boot ritual
 - `.claude/x-queue.md` — `/queue`'s store · `ROLLBACK.md` — how to undo this
 
 ## reverse

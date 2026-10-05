@@ -1,6 +1,6 @@
 #!/bin/bash
 # cclio boot digest — every check the boot ritual needs, one run, one status line per check.
-# fires as the SessionStart hook AND by hand from /cclio:init when the last digest is stale.
+# fires as the SessionStart hook AND by hand from /cclio:boot when the last digest is stale.
 # list-only, with one write: a clean main that is only behind origin gets an ff-only pull + install.
 # never ingests, never deletes. a check that cannot run prints FAIL, never silence —
 # an agent reading a digest cannot tell a skipped check from a passed one.

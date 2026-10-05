@@ -1,12 +1,13 @@
 ---
-description: boot ritual for cclio — light by default; «mini» for a one-ask night, «board» / «full» for the tracker picture
-disable-model-invocation: true
+description: load when dima types /cclio:boot or «cclio:boot», «cclio:init», «boot» — the coordinator's session-opening ritual; «mini» for a one-ask night, «board» / «full» for the tracker picture, any other argument names the handoff to ingest.
 ---
 
-# /cclio:init
+# /cclio:boot
 
 light boot by default. an argument that loosely means the full picture — «board», «full», or
-similar — adds tracker orientation. run silently, report as ONE opening message.
+similar — adds tracker orientation; any other argument is a handoff topic, ingested at step 4
+(`/cclio:boot <slug>` is the whole opener — one skill per message is all the desktop box sends).
+run silently, report as ONE opening message.
 
 🎯 **the boot ORIENTS, it never resolves.** steps 1–8 are pure parse-and-assemble: no answers
 written, no tickets touched, no inbox item worked. the opening board ends with a proposed
@@ -44,7 +45,8 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 
 ## 4. continuity
-- 📬 **pending handoff addressed to you → PULL IT NOW** via `/x:handoff-ingest`. never `ls` the
+- 📬 **pending handoff addressed to you → PULL IT NOW** via `/x:handoff-ingest`; a topic
+  argument on the boot line (`/cclio:boot <slug>`) is that ingest's topic. never `ls` the
   store and read the file by hand — 🚨 **the skill DELETES on ingest, and that deletion is the
   point**; a CST read with `cat` stays pending and makes the store lie. one exception (the
   skill's): never ingest a CST addressed to another agent — report whose it is and leave it.
@@ -102,7 +104,7 @@ and habits live in `/cclio:flawlog`, which loads alongside this boot.
 
 ---
 
-## mini mode — `/cclio:init mini`
+## mini mode — `/cclio:boot mini`
 
 the late-night boot: dima has one or two surgical asks, not a session. same silence, one opening
 message, **no cst ingest, no flowlog** — the inbox stays his file.
@@ -122,7 +124,7 @@ stops.
 
 ---
 
-## board mode — `/cclio:init board`
+## board mode — `/cclio:boot board`
 
 adds tracker orientation to the boot. **state is queried, never remembered** — a stored board
 goes stale silently and gets read with confidence.

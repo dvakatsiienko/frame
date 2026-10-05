@@ -6,7 +6,7 @@ description: load on «flawlog», «flush the flawlog», «flaw», the moment a 
 
 **a flaw just happened → try to fix it NOW. log only what survives the attempt.**
 
-loads at boot alongside `/cclio:init`, whenever a mistake/friction/retry just happened, or when
+loads at boot alongside `/cclio:boot`, whenever a mistake/friction/retry just happened, or when
 dima asks «do you keep an eye on flawlog». coordinator-only, on purpose — do not generalise it
 into an `x:*` skill yet.
 

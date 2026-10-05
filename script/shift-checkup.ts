@@ -56,7 +56,7 @@ const checks: Check[] = [
                 !hookOut(crewHook, transcript('/x:crew-coder')).includes('STOP')
             )
                 return 'silent for a coder (green case)';
-            if (hookOut(crewHook, transcript('/cclio:init')).trim())
+            if (hookOut(crewHook, transcript('/cclio:boot')).trim())
                 return 'fires for a non-crew session (red case)';
             return true;
         },

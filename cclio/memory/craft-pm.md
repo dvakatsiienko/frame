@@ -3,7 +3,7 @@ coordinator included.** The floor is `rules-lazy/linear-flow.md`. Three homes, c
 duplicates.
 
 Conventions live here; **state is always queried, never remembered.** Board state mutates hourly, so
-a cached picture read with confidence is worse than a two-second query. `/cclio:init` step 4.5 pulls
+a cached picture read with confidence is worse than a two-second query. `/cclio:boot` step 4.5 pulls
 the skeleton — teams, projects, descriptions, open counts — every boot, so a session knows the shape
 of the board from turn one without storing it. Sline's status cache is render-only.
 

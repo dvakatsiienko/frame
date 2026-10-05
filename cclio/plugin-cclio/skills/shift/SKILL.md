@@ -69,6 +69,6 @@ Then the hand-over, because dima returns to a cold cache: his first question to 
 
 - the full report goes out as an Artifact — he reads it on any device for free
 - a CST (`x:handoff`) carries the open asks and names this thread's transcript path (`~/.claude/projects/<project>/<session id>.jsonl`) for the tricky questions
-- the chat message ends on one line: «questions → a fresh cclio, `/cclio:init /x:handoff-ingest <slug>`»
+- the chat message ends on one line: «questions → a fresh cclio, `/cclio:boot <slug>`»
 
 **Done** = the report is in the file, the artifact and the chat, the CST is in the store, every member is stopped or carried on purpose, and nothing parked is lost.

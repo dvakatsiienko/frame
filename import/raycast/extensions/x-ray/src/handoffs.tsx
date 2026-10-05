@@ -20,7 +20,7 @@ import {
     readHandoffBody,
     readHandoffList,
     toAge,
-    toCclioInitLine,
+    toCclioBootLine,
     toIngestLine,
 } from './lib/handoffs';
 
@@ -126,10 +126,10 @@ const HandoffShelfActions = (props: HandoffShelfActionsProps) => {
         <>
             <ActionPanel.Section>
                 <Action.Paste
-                    content={toCclioInitLine(props.handoff)}
+                    content={toCclioBootLine(props.handoff)}
                     icon={Icon.Terminal}
                     shortcut={{ key: 'return', modifiers: ['cmd'] }}
-                    title='paste cclio init line'
+                    title='paste cclio boot line'
                 />
                 <Action.Paste
                     content={toIngestLine(props.handoff)}
@@ -140,10 +140,10 @@ const HandoffShelfActions = (props: HandoffShelfActionsProps) => {
             </ActionPanel.Section>
             <ActionPanel.Section>
                 <Action.CopyToClipboard
-                    content={toCclioInitLine(props.handoff)}
+                    content={toCclioBootLine(props.handoff)}
                     icon={Icon.Clipboard}
                     shortcut={{ key: 'c', modifiers: ['cmd'] }}
-                    title='copy cclio init line'
+                    title='copy cclio boot line'
                 />
                 <Action.CopyToClipboard
                     content={toIngestLine(props.handoff)}

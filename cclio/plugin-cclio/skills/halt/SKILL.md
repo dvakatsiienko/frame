@@ -141,7 +141,7 @@ unapplied through a whole session when the next boot ingested a different CST, 2
 
 ## phase 6 — no boot prompt
 the halt reply prints NO boot block (dima, 2026-09-18: «i'll use the command now»). the x-ray
-`handoffs` command pastes `/cclio:init /x:handoff-ingest <slug>` on ⌘⏎, so everything the
+`handoffs` command pastes `/cclio:boot <slug>` on ⌘⏎, so everything the
 next session must know lives in the CST META first-acts — run id, the first moves, the pending
 decision. a steer that would have gone into the prompt goes into META instead. the reply names
 the CST slug once, nothing more.
