@@ -14,6 +14,7 @@ type Event = {
     sid: string;
     name?: string;
     target: string;
+    why?: string;
 };
 
 const refusal = (at: number, sid: string, command: string): Event => ({
@@ -23,6 +24,7 @@ const refusal = (at: number, sid: string, command: string): Event => ({
     kind: 'refused',
     sid,
     target: command.split(' ').pop() ?? '',
+    why: 'a recursive rm cannot be undone',
 });
 
 // x-mod-guard's store as the engine keeps it: one `event:<at>:<sid>` key per event
@@ -134,14 +136,28 @@ test('the counter row is gone 30 minutes after the last refusal', async ($, on) 
     expect(await b.lines()).toEqual([]);
 });
 
-test('a click on the counter row shows each refusal with its session and door', async ($, on) => {
+test('a click on the counter row shows each refusal with its session and reason', async ($, on) => {
     const b = await band($, on, 'terminal', FOUR);
     await b.ui.press({ key: 'guard-toggle' });
     expect(await b.lines()).toEqual([
         '🛡️ 4 refusals · 2 sessions',
-        'c3c3c3c3 — rm -rf tmp → trash <path>',
-        'c3c3c3c3 — rm -rf out → trash <path>',
+        'c3c3c3c3 — rm -rf tmp → a recursive rm cannot be undone',
+        'c3c3c3c3 — rm -rf out → a recursive rm cannot be undone',
+        'a1a1a1a1 — rm -rf dist → a recursive rm cannot be undone',
+        '☕️ 🔧 FRM-1 code: x — rm -rf build → a recursive rm cannot be undone',
+    ]);
+});
+
+test('a refusal kept before it carried a reason shows its door', async ($, on) => {
+    const { why: _, ...old } = refusal(
+        NOW - MIN,
+        'a1a1a1a1-0000',
+        'rm -rf dist',
+    );
+    const b = await band($, on, 'terminal', store([old]));
+    await b.ui.press({ key: 'guard-toggle' });
+    expect(await b.lines()).toEqual([
+        '🛡️ 1 refusal · 1 session',
         'a1a1a1a1 — rm -rf dist → trash <path>',
-        '☕️ 🔧 FRM-1 code: x — rm -rf build → trash <path>',
     ]);
 });

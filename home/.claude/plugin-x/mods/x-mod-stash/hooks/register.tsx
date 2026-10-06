@@ -88,6 +88,8 @@ type GuardLine = {
     door: string;
     target: string;
     at: number;
+    // why it was refused; an event kept before x-mod-guard wrote it has none, and shows its door
+    why?: string;
 };
 // the mod was `guard` before it was x-mod-guard: its old store file is read beside the new one
 const GUARD_FILE = /^(x-mod-)?guard_.*\.json$/;
@@ -1554,7 +1556,7 @@ export const register: Register = (on) => {
                                 dimColor
                                 key={`guard:${g.key}`}
                                 wrap='truncate-end'>
-                                {`${g.name ?? short(g.sid)} — ${g.command} → ${g.kind === 'escaped' ? `ran on dima-ok: ${g.target}` : g.door}`}
+                                {`${g.name ?? short(g.sid)} — ${g.command} → ${g.kind === 'escaped' ? `ran on dima-ok: ${g.target}` : (g.why ?? g.door)}`}
                             </Text>
                         ))
                       : []),

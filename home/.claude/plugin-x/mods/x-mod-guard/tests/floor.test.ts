@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { liveStore } from './store.ts';
+
 const SID = 'a1a1a1a1-0000';
 
 function world(on: On) {
@@ -206,6 +208,15 @@ test('a refusal is kept as a guard event', async ($, on) => {
         kind: 'refused',
         sid: SID,
         target: 'build',
+    });
+});
+
+test("a refusal's event keeps why it was refused", async ($, on) => {
+    const store = liveStore(on);
+    world(on);
+    await bash($, 'rm -rf build');
+    expect([...store.values()][0]).toMatchObject({
+        why: 'rm deletes for good',
     });
 });
 

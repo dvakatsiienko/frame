@@ -21,6 +21,8 @@ export type GuardEvent = {
     kind: 'refused' | 'escaped';
     door: string;
     target: string;
+    // why it was refused, the line x-mod-stash shows unfolded; an escape names every rule it stepped past
+    why: string;
 };
 
 export type DayCount = { refused: number; escaped: number };
@@ -36,7 +38,8 @@ const FAILED =
 const WHY_FORK = /^\s*why-fork:\s*\S/m;
 const FORK_DOOR =
     'a fresh agent with a self-contained brief, or chore-helper for a mechanical job';
-const FORK_REFUSED = `x-mod-guard stopped this fork. instead: ${FORK_DOOR}. why: a fork carries the whole parent context (~220k tokens). a fork that truly needs that context says so in a prompt line: why-fork: <what parent context it needs>`;
+const FORK_WHY = 'a fork carries the whole parent context (~220k tokens)';
+const FORK_REFUSED = `x-mod-guard stopped this fork. instead: ${FORK_DOOR}. why: ${FORK_WHY}. a fork that truly needs that context says so in a prompt line: why-fork: <what parent context it needs>`;
 
 // what x brief check stamps: sha256 over the file's raw bytes, under $X_STATE or ~/.local/state/x (x/go/brief.go)
 async function readBrief(
@@ -162,6 +165,7 @@ export const register: Register = (on) => {
                 door: refusal.door,
                 kind: 'refused',
                 target: refusal.targets[0] ?? '',
+                why: refusal.why,
             });
             return { deny: message(refusal) };
         }
@@ -170,6 +174,7 @@ export const register: Register = (on) => {
             door: verdict.refusals.map((r) => r.door).join('; '),
             kind: 'escaped',
             target: verdict.targets.join(', '),
+            why: verdict.refusals.map((r) => r.why).join('; '),
         });
         $.ui.log(`x-mod-guard: ran on dima-ok: ${verdict.targets.join(', ')}`);
         return next(e);
@@ -182,6 +187,7 @@ export const register: Register = (on) => {
             door: FORK_DOOR,
             kind: 'refused',
             target: 'why-fork',
+            why: FORK_WHY,
         });
         return { deny: FORK_REFUSED };
     }).catch(() => ({ deny: FAILED }));

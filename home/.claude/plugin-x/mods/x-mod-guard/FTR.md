@@ -41,7 +41,7 @@
   - then the command is refused with «x-mod-guard: the check failed or ran out of time … (fail closed)»
   - decision: `.catch` answers `{ deny }` — a hook without one is skipped and the command would run
 - ✅ every refusal and escape is kept as a guard event
-  - makes: one `event:<at>:<session>` key in x-mod-guard's `$.store` (`~/.claude/plugins/store/x-mod-guard_*.json`): session, its registry name, the command cut to 160 characters, refused or escaped, door, target; the newest 50 kept
+  - makes: one `event:<at>:<session>` key in x-mod-guard's `$.store` (`~/.claude/plugins/store/x-mod-guard_*.json`): session, its registry name, the command cut to 160 characters, refused or escaped, door, target, and why it was refused; the newest 50 kept
   - then x-mod-stash's band folds the run into one `🛡️ <n> refusals · <m> sessions` counter row that ages out 30 min after the last event, no dismiss — x-mod-stash's `FTR.md`, «guard counter»
 - ✅ every day's refusals and escapes are counted past the kept events
   - makes: one `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's `$.store`, `{ refused, escaped }`, the local day; counts older than 30 days are dropped

@@ -152,7 +152,7 @@
   - when any session's band draws, folded or not
   - then one row reads `🛡️ <n> refusals · <m> sessions` (escapes count beside: `· <k> escapes`)
   - when dima presses its `▸` (hover: «unfold guard refusals»)
-  - then each event shows under it, newest first: `<session> — <command> → <door>` (an escape: `→ ran on dima-ok: <target>`)
+  - then each event shows under it, newest first: `<session> — <command> → <why it was refused>` (an escape: `→ ran on dima-ok: <target>`; an event kept before x-mod-guard wrote a reason: `→ <door>`)
   - when 30 min pass with no new event
   - then the row is gone from every session's band
   - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`, and the `guard_*.json` it kept before the rename) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the band reads only the last 50 events x-mod-guard keeps there; a halt counts the day from the same file's per-day keys, `day:<yyyy-mm-dd>:<session>` with its refused and escaped counts (kept 30 days), never from the 50 events
