@@ -33,9 +33,25 @@ A `why-fork: <what parent context it needs>` line in a fork's prompt; a fork wit
 _Avoid_: fork reason, justification
 
 **Guard event**:
-One refusal or escape kept in x-mod-guard's store, shown as a 🛡️ line in x-mod-stash's band until dismissed.
+One refusal or escape kept in x-mod-guard's store, the newest 50; x-mod-stash's band folds a run of them into one 🛡️ counter row that ages out after 30 min.
 _Avoid_: log entry, alert
 
 **Job scratch**:
 A throwaway clone under the session's own `$CLAUDE_JOB_DIR/tmp`; its local git runs unrefused, a push or a gate bypass from it does not.
 _Avoid_: sandbox, temp repo
+
+**Day count**:
+One `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's store holding that session's refusals and escapes for the local day; a halt sums a day's keys.
+_Avoid_: tally, stats
+
+**Silent overwrite**:
+A command that empties or replaces a file already on disk with no prompt: a `>` redirect, `cp /dev/null`, an `mv` or a `cp -f` onto it.
+_Avoid_: clobber, truncation
+
+**Top dir**:
+`/`, `~`, a dir above it, a dir right under it, or the obsidian vault root; a `trash` of one takes everything under it at once.
+_Avoid_: root folder, home folder
+
+**Remote delete**:
+A delete on a service past any trash: `gh repo|release delete`, `vercel rm`, `op item delete`, `security delete-*`, a linear issue delete.
+_Avoid_: cloud delete

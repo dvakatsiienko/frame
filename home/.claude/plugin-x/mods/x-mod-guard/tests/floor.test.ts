@@ -9,6 +9,8 @@ function world(on: On) {
     const ran: string[] = [];
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: '/repo' }));
+    // an empty disk: nothing a command names exists yet
+    on('fs.exists', () => ({ value: false }));
     on('env.get', () => ({ value: '/home' }));
     on('ui.log', (_$, e) => {
         logs.push(e.text);

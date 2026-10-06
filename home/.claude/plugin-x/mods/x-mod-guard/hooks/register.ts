@@ -1,6 +1,12 @@
 import type { EngineInterface, Register } from 'claude-code';
 
-import { type Context, addedPaths, check, message } from './rules.ts';
+import {
+    type Context,
+    addedPaths,
+    check,
+    message,
+    overwrittenPaths,
+} from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
 // each refusal and each escape is kept in $.store as one `event:` key; x-mod-stash's band reads them as 🛡️ lines.
@@ -15,8 +21,12 @@ export type GuardEvent = {
     target: string;
 };
 
+export type DayCount = { refused: number; escaped: number };
+
 const EVENT = 'event:';
 const KEEP = 50;
+const DAY = 'day:';
+const DAYS = 30;
 const SHOWN = 160;
 const FAILED =
     'x-mod-guard: the check failed or ran out of time, so this call is refused (fail closed). retry it once; if it repeats, tell cclio';
@@ -62,9 +72,37 @@ async function record(
         sid,
     };
     await $.store.set(`${EVENT}${at}:${sid}`, value);
-    const keys = (await $.store.keys()).filter((k) => k.startsWith(EVENT));
-    for (const old of keys.slice(0, Math.max(0, keys.length - KEEP)))
+    const keys = await $.store.keys();
+    const events = keys.filter((k) => k.startsWith(EVENT));
+    for (const old of events.slice(0, Math.max(0, events.length - KEEP)))
         await $.store.delete(old);
+    await count($, keys, at, sid, event.kind).catch(() => undefined);
+}
+
+// the local day, `yyyy-mm-dd`
+function day(at: number) {
+    const d = new Date(at);
+    const two = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+}
+
+// one `day:<yyyy-mm-dd>:<session>` key per session a day, so a halt counts the whole day past the KEEP kept events; a count past DAYS is dropped
+async function count(
+    $: EngineInterface,
+    keys: string[],
+    at: number,
+    sid: string,
+    kind: GuardEvent['kind'],
+) {
+    const key = `${DAY}${day(at)}:${sid}`;
+    const was = (await $.store.get(key)) as DayCount | undefined;
+    await $.store.set(key, {
+        escaped: (was?.escaped ?? 0) + (kind === 'escaped' ? 1 : 0),
+        refused: (was?.refused ?? 0) + (kind === 'refused' ? 1 : 0),
+    } satisfies DayCount);
+    const oldest = `${DAY}${day(at - DAYS * 86_400_000)}`;
+    for (const old of keys)
+        if (old.startsWith(DAY) && old < oldest) await $.store.delete(old);
 }
 
 export const register: Register = (on) => {
@@ -80,7 +118,11 @@ export const register: Register = (on) => {
         const missing = new Set<string>();
         for (const path of addedPaths(command, cwd, ctx))
             if (!(await $.fs.exists(path))) missing.add(path);
-        const verdict = check(command, cwd, { ...ctx, missing });
+        const kinds: NonNullable<Context['kinds']> = new Map();
+        for (const path of overwrittenPaths(command, cwd, ctx))
+            if (await $.fs.exists(path))
+                kinds.set(path, (await $.fs.stat(path)).kind);
+        const verdict = check(command, cwd, { ...ctx, kinds, missing });
         if (verdict.kind === 'run') return next(e);
         if (verdict.kind === 'refused') {
             const { refusal } = verdict;

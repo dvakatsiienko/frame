@@ -42,8 +42,27 @@
   - decision: `.catch` answers `{ deny }` — a hook without one is skipped and the command would run
 - ✅ every refusal and escape is kept as a guard event
   - makes: one `event:<at>:<session>` key in x-mod-guard's `$.store` (`~/.claude/plugins/store/x-mod-guard_*.json`): session, its registry name, the command cut to 160 characters, refused or escaped, door, target; the newest 50 kept
-  - then x-mod-stash's band shows it as a 🛡️ line until dismissed — x-mod-stash's `FTR.md`, «guard lines»
+  - then x-mod-stash's band folds the run into one `🛡️ <n> refusals · <m> sessions` counter row that ages out 30 min after the last event, no dismiss — x-mod-stash's `FTR.md`, «guard counter»
+- ✅ every day's refusals and escapes are counted past the kept events
+  - makes: one `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's `$.store`, `{ refused, escaped }`, the local day; counts older than 30 days are dropped
+  - then a halt sums the day's keys for the whole day, however many events the newest-50 cut has dropped
+  - decision: one key per session a day — two sessions never write the same key, so a count is never lost to a race; a count that fails to write never changes the refusal
   - 📌 only the Bash tool is read: a command started by `Monitor` or a `!` line in the prompt goes through unread
+
+- ✅ a system, overwrite, prune or remote-delete command is refused with its door
+  - given a Bash call runs one of:
+    - system: `sudo` (or `doas`) ahead of any command; `diskutil erase*`; `dd of=/dev/<device>`; `mkfs*` / `newfs*`; `chmod -R` / `chown -R` on `~`, `$HOME` or a dir above it; `csrutil` past `status`; `spctl --master-disable|--global-disable`; `tccutil reset`
+    - silent overwrite: a `>` (or `2>`, `&>`) redirect onto a file that exists, `: > file` included; `cp /dev/null <file>`; `mv`, or `cp -f`, onto a file that exists, or into a dir that holds a file of that name
+    - history: `git filter-repo`, `git filter-branch`, `git gc --prune=now`
+    - prune: `brew cleanup`, `pnpm store prune`, `docker system prune`, `crontab -r`
+    - remote delete: `gh repo|release delete*`, `vercel rm|remove` and `vercel env rm`, `op <item|…> delete|rm|remove`, `security delete-*`, `linear issue delete`, an `issueDelete` mutation sent by `curl` or `linear`
+    - top dir: `trash` of `/`, `~`, a dir above it, a dir right under it (`~/Documents`) or the obsidian vault root; `defaults delete <domain>` with no key, or `-g` with none
+  - then it is refused, and the reason opens with the door: «ask cclio» for a disk, a device, history or a remote delete; «hand dima the step» for `csrutil`, `spctl` and `tccutil`; «hand dima the command» for `sudo`; «leave the prune to dima — name it in your report»; `>>`, a new path or the Write tool for a redirect; `mv -n` / `cp -n` or trash the old file first; «cancel it» for a linear issue; trash the files inside, by name; one `defaults` key
+  - then the nearest harmless form runs: `diskutil list`, `dd` onto a file, `chmod -R` inside `~`, `csrutil status`, a `>` onto a new file, `>>`, `> /dev/null 2>&1`, `mv` onto a new name or into a dir without that file, `git gc`, `crontab -l`, `gh release view`, `vercel env ls`, `linear issue view`, `trash` of a file in `~/Documents` or a note in the vault, `defaults delete <domain> <key>`
+  - then `sudo` ahead of a floor command keeps the floor's door (`sudo rm` → trash)
+  - then a history rewrite inside a job's own scratch clone runs, like the other local rewrites
+  - decision: an overwrite is refused only when the file is on disk — x-mod-guard looks each target up before the call; a plain `cp` onto a file is left alone, only `cp -f` and `cp /dev/null` are read (FRM-324's list)
+  - 📌 not read: an overwrite inside `bash -c` or `eval` (the lookup reads the top command only), `tee`, `truncate`, `rsync --delete`; a remote delete sent through `gh api` or a raw `curl` to any api but linear's
 
 ## every Agent spawn
 
@@ -52,6 +71,6 @@
   - when x-mod-guard reads the spawn
   - then it is refused, and the reason opens with the door: a fresh agent with a self-contained brief, or `chore-helper` for a mechanical job
   - given the same fork with a `why-fork:` line, then it runs; any other agent type is left alone
-  - then the refusal shows in x-mod-stash's band as a 🛡️ line (`fork: <description>`), like a Bash refusal
+  - then the refusal counts in x-mod-stash's 🛡️ counter row (`fork: <description>` when unfolded), like a Bash refusal
   - decision: a required line, never a guess at «mechanical» — a keyword guess was unreliable (51 loose hits, most of them real research); a fork carries the whole parent context, ~220k (FRM-323)
   - 📌 harness-proven only: a headless `claude -p` offers no `fork` type («Agent type 'fork' not found»), so the live check is a fork from an interactive session
