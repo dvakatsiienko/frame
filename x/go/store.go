@@ -79,7 +79,7 @@ func parseCurrent(stem string, shared bool) (name, bool) {
 
 func parseLegacy(stem string, shared bool) (name, bool) {
 	var parts []string
-	for _, part := range strings.Split(stem, "-") {
+	for part := range strings.SplitSeq(stem, "-") {
 		if part != "" {
 			parts = append(parts, part)
 		}

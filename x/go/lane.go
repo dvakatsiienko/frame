@@ -613,7 +613,7 @@ func firstLine(path string) string {
 
 func nonBlank(log string) []string {
 	var lines []string
-	for _, line := range strings.Split(log, "\n") {
+	for line := range strings.SplitSeq(log, "\n") {
 		if strings.TrimSpace(line) != "" {
 			lines = append(lines, line)
 		}

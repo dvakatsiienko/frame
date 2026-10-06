@@ -302,7 +302,7 @@ func finishFail(m mode, name string, r *Run, err error) int {
 	b := frame{width: frameWidth(), titleLeft: title, footLeft: ui.dim.Render("next") + " " + cmd(fail.Next), padRows: true}
 	head, rest, _ := strings.Cut(fail.Msg, "\n")
 	b.rows = append(b.rows, resultRow(b.inner(), ui.er.Bold(true).Render(status), clip(head, b.inner()-26), code))
-	for _, line := range strings.Split(rest, "\n") {
+	for line := range strings.SplitSeq(rest, "\n") {
 		if line != "" {
 			b.rows = append(b.rows, strings.Repeat(" ", 16)+ui.fg.Render(clip(line, b.inner()-16)))
 		}

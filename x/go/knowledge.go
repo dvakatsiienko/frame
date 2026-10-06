@@ -51,7 +51,7 @@ func readShelfFile(path string) (shelfFile, error) {
 	front := map[string]string{}
 	if rest, ok := strings.CutPrefix(body, "---\n"); ok {
 		if head, _, ok := strings.Cut(rest, "\n---"); ok {
-			for _, line := range strings.Split(head, "\n") {
+			for line := range strings.SplitSeq(head, "\n") {
 				if key, value, ok := strings.Cut(line, ":"); ok {
 					front[strings.TrimSpace(key)] = strings.TrimSpace(value)
 				}

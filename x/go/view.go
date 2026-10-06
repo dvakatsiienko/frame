@@ -196,7 +196,7 @@ func columns(widths []int, cells ...string) []string {
 	}
 	out := make([]string, height)
 	for row := range height {
-		line := ""
+		var line strings.Builder
 		for i := range cells {
 			text := ""
 			if row < len(wrapped[i]) {
@@ -205,9 +205,9 @@ func columns(widths []int, cells ...string) []string {
 			if i < len(cells)-1 {
 				text += strings.Repeat(" ", max(widths[i]-lipgloss.Width(text), 0))
 			}
-			line += text
+			line.WriteString(text)
 		}
-		out[row] = strings.TrimRight(line, " ")
+		out[row] = strings.TrimRight(line.String(), " ")
 	}
 	return out
 }
