@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -45,6 +46,11 @@ var impls = map[string]Impl{
 	"handoffs list":   {Run: handoffsList},
 	"handoffs peek":   {Run: handoffsPeek},
 	"handoffs ingest": {Run: handoffsIngest},
+	"brief check":     {Run: briefCheck, Undone: "nothing was stamped"},
+	"probe bare":      {Run: probeBare, Undone: "no answer came back"},
+	"probe session":   {Run: probeSession, Undone: "the session was not saved"},
+	"knowledge list":  {Run: knowledgeList},
+	"knowledge read":  {Run: knowledgeRead},
 	"schema":          {Run: schema},
 	"completion":      {Run: completion},
 }
@@ -164,23 +170,7 @@ func leaf(m mode, verb Verb) *cobra.Command {
 			c.Flags().String(own, "", spec.Description)
 		}
 	}
-	if slices.ContainsFunc(verb.Args, func(arg ArgSpec) bool { return arg.Name == "slug" }) {
-		c.ValidArgsFunction = func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
-			return pendingSlugs(), cobra.ShellCompDirectiveNoFileComp
-		}
-	}
-	if verb.Name == "completion" {
-		c.ValidArgs = []string{"zsh", "bash", "fish"}
-	}
-	if verb.Name == "schema" {
-		c.ValidArgsFunction = func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
-			return families(), cobra.ShellCompDirectiveNoFileComp
-		}
-		_ = c.RegisterFlagCompletionFunc("level", cobra.FixedCompletions([]string{"short", "full"}, cobra.ShellCompDirectiveNoFileComp))
-	}
-	if _, ok := verb.Flags["for"]; ok {
-		_ = c.RegisterFlagCompletionFunc("for", cobra.FixedCompletions([]string{"any", "ccli", "cclio", "cw"}, cobra.ShellCompDirectiveNoFileComp))
-	}
+	complete(c, verb)
 	return c
 }
 
@@ -293,8 +283,9 @@ func finishFail(m mode, name string, r *Run, err error) int {
 	}
 	code := fmt.Sprintf("exit %d", exits[status])
 	if r != nil && r.opened {
-		step := r.steps[max(r.ran-1, 0)]
-		r.close("failed", ui.er, step+"; "+impls[name].Undone, code, ui.dim.Render("fix, then")+" "+cmd(fail.Next))
+		// a step that failed names itself; a verb that fails after its steps passed names why
+		head, _, _ := strings.Cut(fail.Msg, "\n")
+		r.close("failed", ui.er, cmp.Or(r.failed, head)+"; "+impls[name].Undone, code, ui.dim.Render("fix, then")+" "+cmd(fail.Next))
 		return exits[status]
 	}
 	title := ui.bold.Render("x")

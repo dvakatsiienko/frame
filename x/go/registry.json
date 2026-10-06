@@ -11,6 +11,21 @@
             "name": "handoffs"
         },
         {
+            "example": "x brief check brief.md --repo ~/frame",
+            "gist": "a spawn brief checked against the repo it names",
+            "name": "brief"
+        },
+        {
+            "example": "x probe bare 'is it us or cc?'",
+            "gist": "claude sessions our setup cannot touch",
+            "name": "probe"
+        },
+        {
+            "example": "x knowledge read spawn-mechanics",
+            "gist": "the fleet reference shelf, docs/knowledge",
+            "name": "knowledge"
+        },
+        {
             "example": "x schema lane --level short",
             "gist": "the registry as json",
             "name": "schema"
@@ -35,6 +50,10 @@
                 }
             ],
             "flags": {
+                "hold-unstaged": {
+                    "description": "hold the unstaged and untracked files outside the named paths aside while the hooks run, then put them back byte for byte",
+                    "type": "boolean"
+                },
                 "repo": {
                     "description": "commit in that repo instead, only on its main and never mid-merge; paths are relative to its root",
                     "type": "string",
@@ -44,7 +63,15 @@
             "name": "lane commit",
             "needsApply": false,
             "purpose": "commit only the named paths, print the new sha; mid-merge concludes it; --repo <path> commits on that repo's main",
-            "steps": ["tree", "format", "mods", "stage", "commit"]
+            "steps": [
+                "tree",
+                "format",
+                "mods",
+                "stage",
+                "hold",
+                "commit",
+                "restore"
+            ]
         },
         {
             "name": "lane push",
@@ -122,6 +149,82 @@
             "name": "handoffs ingest",
             "needsApply": false,
             "purpose": "print one pending CST in full and delete its file, unless it is shared"
+        },
+        {
+            "args": [
+                {
+                    "description": "the brief file, markdown",
+                    "name": "brief"
+                }
+            ],
+            "flags": {
+                "repo": {
+                    "description": "the repo the brief targets; defaults to the repo of the cwd",
+                    "type": "string",
+                    "value": "path"
+                }
+            },
+            "name": "brief check",
+            "purpose": "check that every backticked path, script, verb and id in a brief exists, and lint its exit lines; a pass stamps it",
+            "steps": ["read", "exist", "lint", "stamp"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the prompt, one argument",
+                    "name": "prompt"
+                }
+            ],
+            "flags": {
+                "model": {
+                    "description": "the model, haiku by default",
+                    "type": "string",
+                    "value": "model"
+                }
+            },
+            "name": "probe bare",
+            "purpose": "ask a claude -p session with no CLAUDE.md, rules, plugins, hooks or MCP, from a temp dir; prints the answer and its cost",
+            "steps": ["ask"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the probe name; its scratch dir and session id live under ~/.local/state/x/probes/<name>",
+                    "name": "name"
+                },
+                {
+                    "description": "a settings json file, or inline json, for --settings",
+                    "name": "settings"
+                },
+                {
+                    "description": "the prompt, one argument",
+                    "name": "prompt"
+                }
+            ],
+            "flags": {
+                "model": {
+                    "description": "the model, haiku by default",
+                    "type": "string",
+                    "value": "model"
+                }
+            },
+            "name": "probe session",
+            "purpose": "run a named claude -p probe with a settings json from a scratch dir; the same name again resumes that session",
+            "steps": ["dir", "ask"]
+        },
+        {
+            "name": "knowledge list",
+            "purpose": "list the fleet reference shelf docs/knowledge: each file with its purpose and its verified-on stamp"
+        },
+        {
+            "args": [
+                {
+                    "description": "a word of the file name; completion offers them",
+                    "name": "name"
+                }
+            ],
+            "name": "knowledge read",
+            "purpose": "print one docs/knowledge file and log the read, so the shelf learns which files earn their place"
         },
         {
             "args": [

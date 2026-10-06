@@ -83,7 +83,7 @@ while IFS= read -r call; do
     height=900
     ((rows > 0)) && height=$((rows * 20 + 48))
     [[ $(jq -r '.stdin // empty' <<<"${call}") == none ]] && typed+=" </dev/null"
-    env_set=$(jq -r '(.env // {}) | to_entries | map("export \(.key)=\(.value|@sh)") | join("; ")' <<<"${call}")
+    env_set=$(jq -r --arg w "${world}" '(.env // {}) | to_entries | map("export \(.key)=\(.value | gsub("\\{world\\}"; $w) | @sh)") | join("; ")' <<<"${call}")
     has_keys=$(jq -r '(.keys // []) | length' <<<"${call}")
 
     tape=${out}/${id}.tape

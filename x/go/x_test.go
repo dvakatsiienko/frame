@@ -84,7 +84,7 @@ func command(bin, dir string, c call) *exec.Cmd {
 	cmd.Env = append(cleanEnv(), "HANDOFF_STORE_ROOT="+filepath.Join(dir, "store"), "X_TEST=1",
 		"X_KNOWLEDGE_ROOT="+filepath.Join(dir, "knowledge"), "X_STATE="+filepath.Join(dir, "state"))
 	for key, value := range c.Env {
-		cmd.Env = append(cmd.Env, key+"="+value)
+		cmd.Env = append(cmd.Env, key+"="+strings.ReplaceAll(value, "{world}", dir))
 	}
 	return cmd
 }

@@ -44,6 +44,41 @@ printf 'wip\n' >draft.txt
 printf '🔧 notes: add a second line\n\n- ticket: FRM-284\n' >"${world}/msg.txt"
 printf -- '- ticket: FRM-284\n' >"${world}/pr-body.md"
 
+cp -R "${here}/knowledge" "${world}/knowledge"
+
+# a fake claude: logs its argv and cwd, answers in claude -p's json; the session id is fixed
+mkdir "${world}/bin"
+cat >"${world}/bin/claude" <<EOF
+#!/bin/sh
+printf '%s\n' "\$(pwd) \$*" >>"${world}/claude.log"
+cat <<'JSON'
+{"type":"result","subtype":"success","is_error":false,"result":"**it is cc**, not us: the bare session shows the same \`ToolSearch\` miss.\n\n- reproduced with no CLAUDE.md, rules or hooks\n- next: file it upstream","session_id":"0c9f2ab2-5152-4e7b-8158-2e88a7fc83b5","duration_ms":1181,"total_cost_usd":0.0082,"num_turns":1,"usage":{"input_tokens":10,"output_tokens":55,"cache_read_input_tokens":0,"cache_creation_input_tokens":17997},"modelUsage":{"claude-haiku-4-5-20251001":{}}}
+JSON
+EOF
+chmod +x "${world}/bin/claude"
+printf '{"disableAllHooks":true}\n' >"${world}/probe-settings.json"
+
+# a brief with one miss of each kind, and a clean one
+cat >"${world}/brief.md" <<'EOF'
+# a brief
+
+read `notes.txt` and `docs/gone.md`, then run `x lane commit` and `x lane shove`.
+
+## exit lines
+
+- `x lane commit` passes in 95% of runs
+- the board looks right
+EOF
+cat >"${world}/brief-ok.md" <<'EOF'
+# a brief
+
+read `notes.txt`, then run `x lane commit`; a new `x lane tidy` (new) joins.
+
+## exit lines
+
+- `x lane commit msg.txt -- notes.txt` exits 0 in 20 of 20 runs
+EOF
+
 mkdir "${world}/store"
 for file in "${here}"/handoffs/*.md; do
     name=${file##*/}

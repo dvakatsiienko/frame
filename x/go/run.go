@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
+	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 )
@@ -33,6 +35,7 @@ type Run struct {
 	steps       []string
 	ran         int
 	started     time.Time
+	failed      string
 	result      string
 	next        string
 	output      string
@@ -52,8 +55,17 @@ func (r *Run) Open(right string) {
 
 const nameCell = 12
 
-// Step runs one unit of work; the human view shows it as a still ● until it ends, then ✓ or ✗
+// Step runs one unit of work; the human view spins in the family colour with the time so far while it
+// runs, then leaves one still line: ✓ or ✗
 func (r *Run) Step(name, doing string, work func() (string, error)) error {
+	err := r.step(name, doing, work)
+	if err != nil && r.failed == "" {
+		r.failed = name
+	}
+	return err
+}
+
+func (r *Run) step(name, doing string, work func() (string, error)) error {
 	if !r.human {
 		_, err := work()
 		r.ran++
@@ -62,11 +74,17 @@ func (r *Run) Step(name, doing string, work func() (string, error)) error {
 	if !r.opened {
 		r.Open("")
 	}
-	color := ui.familyColor(r.verb.Family())
-	running := r.stepLine(lipgloss.NewStyle().Foreground(color).Render("●"),
-		lipgloss.NewStyle().Foreground(color).Bold(true).Render(name), ui.fg.Render(doing), "")
-
-	model := stepModel{view: running, work: work}
+	accent := lipgloss.NewStyle().Foreground(ui.familyColor(r.verb.Family()))
+	model := stepModel{work: work, started: time.Now(),
+		spin: spinner.New(spinner.WithSpinner(spinner.MiniDot), spinner.WithStyle(accent))}
+	model.running = func(mark string, took time.Duration) string {
+		// under a second the clock is noise; after it, the wait is worth naming
+		clock := ""
+		if took >= time.Second {
+			clock = fmt.Sprintf("%.0fs", took.Seconds())
+		}
+		return r.stepLine(mark, accent.Bold(true).Render(name), ui.fg.Render(doing), clock)
+	}
 	model.finish = func(detail string, err error, took time.Duration) string {
 		if err == nil {
 			return r.stepLine(ui.ok.Render("✓"), ui.fg.Render(name), ui.dim.Render(detail), elapsed(took))
@@ -123,6 +141,23 @@ func clip(text string, width int) string {
 	return lipgloss.NewStyle().MaxWidth(width-1).Render(text) + "…"
 }
 
+// Show prints rows inside the open board, indented under the step names
+func (r *Run) Show(lines []string, indent int) {
+	if !r.human {
+		return
+	}
+	fmt.Println(r.board.row(""))
+	for _, line := range lines {
+		fmt.Println(r.board.row(strings.Repeat(" ", indent) + line))
+	}
+	fmt.Println(r.board.row(""))
+}
+
+// skip drops steps a flag turned off, so the board never lists them as not run
+func (r *Run) skip(names ...string) {
+	r.steps = slices.DeleteFunc(slices.Clone(r.steps), func(step string) bool { return slices.Contains(names, step) })
+}
+
 func (r *Run) Done(result, next string) { r.result, r.next = result, next }
 
 // Board sets a whole human view for a verb that draws no steps
@@ -154,28 +189,41 @@ type stepDone struct {
 }
 
 type stepModel struct {
-	view   string
-	line   string
-	work   func() (string, error)
-	finish func(string, error, time.Duration) string
-	err    error
+	spin    spinner.Model
+	started time.Time
+	running func(mark string, took time.Duration) string
+	line    string
+	done    bool
+	work    func() (string, error)
+	finish  func(string, error, time.Duration) string
+	err     error
 }
 
 func (m stepModel) Init() tea.Cmd {
-	return func() tea.Msg {
+	return tea.Batch(m.spin.Tick, func() tea.Msg {
 		start := time.Now()
 		detail, err := m.work()
 		return stepDone{detail, err, time.Since(start)}
-	}
+	})
 }
 
 func (m stepModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if done, ok := msg.(stepDone); ok {
-		m.line, m.err = m.finish(done.detail, done.err, done.took), done.err
-		m.view = ""
+	switch msg := msg.(type) {
+	case stepDone:
+		m.line, m.err, m.done = m.finish(msg.detail, msg.err, msg.took), msg.err, true
 		return m, tea.Quit
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.spin, cmd = m.spin.Update(msg)
+		return m, cmd
 	}
 	return m, nil
 }
 
-func (m stepModel) View() tea.View { return tea.NewView(m.view) }
+// the program ends on an empty view: the inline renderer erases its last frame on quit
+func (m stepModel) View() tea.View {
+	if m.done {
+		return tea.NewView("")
+	}
+	return tea.NewView(m.running(m.spin.View(), time.Since(m.started)))
+}

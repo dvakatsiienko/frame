@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -82,8 +83,29 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
+	hold := flags["hold-unstaged"] == true
+	if !hold {
+		r.skip("hold", "restore")
+	}
+	var aside *held
+	if hold {
+		if err := r.Step("hold", "moving the other changes aside", func() (string, error) {
+			taken, err := holdAside(tree, paths)
+			if err != nil {
+				if taken != nil {
+					err = errors.Join(err, taken.restore(tree))
+				}
+				return "", err
+			}
+			aside = taken
+			return plural(len(aside.files), "file") + " held in " + home(aside.dir), nil
+		}); err != nil {
+			return nil, err
+		}
+	}
+
 	var sha string
-	if err := r.Step("commit", "hooks, then the commit", func() (string, error) {
+	committed := r.Step("commit", "hooks, then the commit", func() (string, error) {
 		commitArgs := []string{"commit", "-F", message}
 		if !isMerging() {
 			commitArgs = append(append(commitArgs, "--"), paths...)
@@ -95,8 +117,17 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		}
 		sha, err = head()
 		return short(sha) + "  " + firstLine(message), err
-	}); err != nil {
-		return nil, err
+	})
+	// the held files come back whether the hooks passed or refused
+	if aside != nil {
+		if err := r.Step("restore", "putting the held files back", func() (string, error) {
+			return plural(len(aside.files), "file") + " back, byte for byte", aside.restore(tree)
+		}); err != nil {
+			return nil, err
+		}
+	}
+	if committed != nil {
+		return nil, committed
 	}
 	branch, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Done(fmt.Sprintf("%s on %s, %s", short(sha), branch.out, plural(len(present), "path")), "x lane push --apply")
@@ -542,6 +573,11 @@ func run(cwd string, env []string, input, command string, args ...string) (resul
 	if input != "" {
 		c.Stdin = strings.NewReader(input)
 	}
+	return runCmd(c)
+}
+
+func runCmd(c *exec.Cmd) (result, error) {
+	command, args := c.Path, c.Args[1:]
 	var stdout, stderr bytes.Buffer
 	c.Stdout, c.Stderr = &stdout, &stderr
 	err := c.Run()

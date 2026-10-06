@@ -364,26 +364,223 @@
             "mode": "pipe",
             "next": "x lane push --help",
             "status": "usage"
+        },
+        {
+            "argv": [
+                "lane",
+                "commit",
+                "--hold-unstaged",
+                "{world}/msg.txt",
+                "--",
+                "notes.txt"
+            ],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "env": {
+                "X_STATE": "{world}/state"
+            },
+            "exit": 0,
+            "id": "commit-hold-run",
+            "matrix": "v1.1: hold the other changes aside",
+            "mode": "tty",
+            "note": "draft.txt is held while the hooks run, then back; the board shows hold and restore"
+        },
+        {
+            "argv": [
+                "lane",
+                "commit",
+                "--hold-unstaged",
+                "{world}/msg.txt",
+                "--",
+                "notes.txt"
+            ],
+            "cwd": "{world}/repo",
+            "data": {
+                "branch": "coder/demo"
+            },
+            "exit": 0,
+            "id": "commit-hold-json",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["brief", "check", "{world}/brief.md"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 1,
+            "id": "brief-check-failed",
+            "matrix": "v1.1: a brief with misses",
+            "mode": "tty",
+            "note": "a missing path, an unknown verb, a rate with no n, an exit line with no surface"
+        },
+        {
+            "argv": ["brief", "check", "{world}/brief.md"],
+            "cwd": "{world}/repo",
+            "exit": 1,
+            "id": "brief-check-failed-json",
+            "mode": "pipe",
+            "status": "failed"
+        },
+        {
+            "argv": ["brief", "check", "{world}/brief-ok.md"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "env": {
+                "X_STATE": "{world}/state"
+            },
+            "exit": 0,
+            "id": "brief-check-ok",
+            "matrix": "v1.1: a clean brief, stamped",
+            "mode": "tty"
+        },
+        {
+            "argv": ["brief", "check", "{world}/brief-ok.md"],
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "brief-check-ok-json",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["probe", "bare", "is it us or cc?"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "env": {
+                "PATH": "{world}/bin:/usr/bin:/bin"
+            },
+            "exit": 0,
+            "id": "probe-bare",
+            "matrix": "v1.1: a bare probe",
+            "mode": "tty",
+            "note": "a spinner while claude answers, then the answer as markdown and its cost"
+        },
+        {
+            "argv": ["probe", "bare", "is it us or cc?"],
+            "cwd": "{world}/repo",
+            "data": {
+                "model": "claude-haiku-4-5-20251001"
+            },
+            "env": {
+                "PATH": "{world}/bin:/usr/bin:/bin"
+            },
+            "exit": 0,
+            "id": "probe-bare-json",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": [
+                "probe",
+                "session",
+                "canary",
+                "{world}/probe-settings.json",
+                "say hi"
+            ],
+            "cwd": "{world}/repo",
+            "data": {
+                "name": "canary",
+                "resumed": false
+            },
+            "env": {
+                "PATH": "{world}/bin:/usr/bin:/bin"
+            },
+            "exit": 0,
+            "id": "probe-session-json",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["probe", "session", "Bad Name", "{}", "say hi"],
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "probe-session-bad-name",
+            "mode": "pipe",
+            "next": "x probe session --help",
+            "status": "usage"
+        },
+        {
+            "argv": ["knowledge", "list"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "knowledge-list",
+            "matrix": "v1.1: the shelf",
+            "mode": "tty",
+            "note": "three files; macos-admin is unstamped and flagged"
+        },
+        {
+            "argv": ["knowledge", "list"],
+            "cols": 80,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "knowledge-list-80",
+            "mode": "tty"
+        },
+        {
+            "argv": ["knowledge", "list"],
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "knowledge-list-json",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["knowledge", "read", "spawn"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "knowledge-read",
+            "matrix": "v1.1: one shelf file as markdown",
+            "mode": "tty"
+        },
+        {
+            "argv": ["knowledge", "read", "spawn"],
+            "cwd": "{world}/repo",
+            "data": {
+                "name": "spawn-mechanics",
+                "verified": "2026-09-27"
+            },
+            "exit": 0,
+            "id": "knowledge-read-json",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["knowledge", "read", "m"],
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "knowledge-read-ambiguous",
+            "mode": "pipe",
+            "next": "x knowledge list",
+            "status": "usage"
         }
     ],
     "data": {
+        "brief check": "{ brief, checked, repo, sha256, stamp, unchecked } — on a miss: failed, the error lists each line, kind and name",
         "completion": "{ shell, script }",
         "handoffs ingest": "{ name, slug, kept, body } — the file is deleted unless shared (kept: true)",
         "handoffs list": "{ root, entries: [{ name, slug, audience, lane, author, shared, age, stale, bytes, runId }], others: [same] } — newest first; `others` holds what --for <audience> filtered out, [] without --for",
         "handoffs peek": "{ name, slug, age, bytes, meta } — meta is the META block as markdown, null when the CST has none",
+        "knowledge list": "{ files: [{ name, purpose, verified, refreshWhen, bytes }], root }",
+        "knowledge read": "{ body, name, path, verified } — the read is logged to $X_STATE/knowledge-reads.jsonl",
         "lane commit": "{ branch, sha, tree }",
+        "lane commit --hold-unstaged": "{ branch, sha, tree } — the files outside the paths are back byte for byte",
         "lane merge-main": "{ sha }",
         "lane pr-open plan": "{ branch, argv }",
         "lane push": "{ branch, sha, remote, from }",
         "lane push plan": "{ branch, sha, from, reason }",
         "lane unlock": "{ tree, unlocked }",
         "overview": "{ groups: { <family>: [{ name, purpose }] } }",
+        "probe bare": "{ answer, costUsd, cwd, model, ms, sessionId, tokens }",
+        "probe session": "{ answer, costUsd, dir, model, ms, name, resumed, sessionId, tokens, transcript? }",
         "schema": "{ verbs: [...] } — --level full (default): each verb's whole schema; --level short: [{ name, purpose }]"
     },
     "env": {
         "CLAUDECODE": "unset in every call except `json-by-agent-env`",
         "HANDOFF_STORE_ROOT": "{world}/store",
-        "NO_COLOR": "unset in tty calls, so colour shows"
+        "NO_COLOR": "unset in tty calls, so colour shows",
+        "X_KNOWLEDGE_ROOT": "{world}/knowledge in every call, so the shelf is the fixture's",
+        "X_STATE": "{world}/state in every call: stamps, probes and the read log stay in the world"
     },
     "envelope": {
         "keys": "key order is not contract: compare parsed json, never bytes",
