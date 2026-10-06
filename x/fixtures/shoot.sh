@@ -14,7 +14,9 @@ shift 2
 only=("$@")
 
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-calls=${here}/calls.json
+# CALLS swaps the call list (showcase.json shoots the look probes); XNAME is the name the prompt shows
+calls=${CALLS:-${here}/calls.json}
+xname=${XNAME:-x}
 out=${LOOKS_ROOT:-${HOME}/.local/state/looks/FRM-284}/${arm}/$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p "${out}/worlds"
 
@@ -76,7 +78,10 @@ while IFS= read -r call; do
 
     cols=$(jq -r '.cols // 120' <<<"${call}")
     args=$(argv_of "${call}" ..)
-    typed="x ${args}"
+    typed="${xname} ${args}"
+    rows=$(jq -r '.rows // 0' <<<"${call}")
+    height=900
+    ((rows > 0)) && height=$((rows * 20 + 48))
     [[ $(jq -r '.stdin // empty' <<<"${call}") == none ]] && typed+=" </dev/null"
     env_set=$(jq -r '(.env // {}) | to_entries | map("export \(.key)=\(.value|@sh)") | join("; ")' <<<"${call}")
     has_keys=$(jq -r '(.keys // []) | length' <<<"${call}")
@@ -85,11 +90,11 @@ while IFS= read -r call; do
     {
         printf 'Output %s\n' "\"${out}/${id}.gif\""
         printf 'Set Shell "bash"\nSet FontFamily "%s"\nSet FontSize 16\nSet LineHeight 1.0\n' "${font}"
-        printf 'Set Width %d\nSet Height 900\nSet Padding 24\nSet TypingSpeed 20ms\n' $((cols * cell + 48))
+        printf 'Set Width %d\nSet Height %d\nSet Padding 24\nSet TypingSpeed 20ms\n' $((cols * cell + 48)) "${height}"
         printf "Set Theme '%s'\n" "${theme}"
         printf 'Hide\n'
         # cc sessions export CLAUDECODE=1 and vhs inherits it: every view would render as json
-        printf 'Type %s\nEnter\n' "$(vhs_str "unset CLAUDECODE AI_AGENT; export HANDOFF_STORE_ROOT='${world}/store' PS1='\$ '; x() { ${xcmd} \"\$@\"; }; cd '${world}/repo'; ${env_set:-:}; clear")"
+        printf 'Type %s\nEnter\n' "$(vhs_str "unset CLAUDECODE AI_AGENT; export HANDOFF_STORE_ROOT='${world}/store' PS1='\$ '; ${xname}() { ${xcmd} \"\$@\"; }; cd '${world}/repo'; ${env_set:-:}; clear")"
         printf 'Sleep 500ms\nShow\n'
         printf 'Type %s\nSleep 300ms\nEnter\nSleep 2500ms\n' "$(vhs_str "${typed}")"
         # a still before every key: <id>.png is the open form or picker, -key<n>.png each step after,
@@ -125,7 +130,7 @@ while IFS= read -r call; do
         {
             printf 'unset CLAUDECODE AI_AGENT; export HANDOFF_STORE_ROOT=%q\n' "${fresh}/store"
             printf 'cd %q && stty cols %d rows 60; %s\n' "${fresh}/repo" "${cols}" "${env_set:-:}"
-            printf 'printf "\\033[1m$ x %%s\\033[0m\\n" %q\n' "$(argv_of "${call}" ..)"
+            printf 'printf "\\033[1m$ %s %%s\\033[0m\\n" %q\n' "${xname}" "$(argv_of "${call}" ..)"
             printf '%s %s%s\n' "${xcmd}" "$(argv_of "${call}" ..)" "${stdin}"
         } >"${runner}"
         timeout 60 script -q "${out}/${id}.pty" bash "${runner}" </dev/null >/dev/null 2>&1 || true
