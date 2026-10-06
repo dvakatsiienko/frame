@@ -2,7 +2,13 @@ package main
 
 import (
 	"bytes"
+	"cmp"
+	"sync"
+	"syscall"
+	"time"
+
 	"encoding/json"
+	"github.com/creack/pty"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,12 +20,15 @@ type call struct {
 	ID     string            `json:"id"`
 	Argv   []string          `json:"argv"`
 	Mode   string            `json:"mode"`
+	Cols   int               `json:"cols"`
 	Env    map[string]string `json:"env"`
 	Exit   int               `json:"exit"`
 	Status string            `json:"status"`
 	Next   string            `json:"next"`
 	Data   map[string]any    `json:"data"`
 	After  string            `json:"after"`
+	Keys   []string          `json:"keys"`
+	Stdin  string            `json:"stdin"`
 }
 
 func fixtures(t *testing.T) []call {
@@ -58,28 +67,120 @@ func world(t *testing.T) string {
 	return dir
 }
 
-func runCall(t *testing.T, bin, dir string, c call) (map[string]any, string, int) {
-	t.Helper()
+func command(bin, dir string, c call) *exec.Cmd {
 	argv := make([]string, len(c.Argv))
 	for i, arg := range c.Argv {
 		argv[i] = strings.ReplaceAll(arg, "{world}", dir)
 	}
 	cmd := exec.Command(bin, argv...)
 	cmd.Dir = filepath.Join(dir, "repo")
-	cmd.Env = append(filterEnv(os.Environ()), "HANDOFF_STORE_ROOT="+filepath.Join(dir, "store"), "VITEST=1")
+	cmd.Env = append(filterEnv(os.Environ()), "HANDOFF_STORE_ROOT="+filepath.Join(dir, "store"), "X_TEST=1", "VITEST=1",
+		"X_KNOWLEDGE_ROOT="+filepath.Join(dir, "knowledge"), "X_STATE="+filepath.Join(dir, "state"))
 	for key, value := range c.Env {
 		cmd.Env = append(cmd.Env, key+"="+value)
 	}
+	return cmd
+}
+
+func runCall(t *testing.T, bin, dir string, c call) (map[string]any, string, int) {
+	t.Helper()
+	if c.Mode == "tty" {
+		out, code := runTTY(t, bin, dir, c)
+		var envelope map[string]any
+		_ = json.Unmarshal([]byte(strings.TrimSpace(out)), &envelope)
+		return envelope, out, code
+	}
+	cmd := command(bin, dir, c)
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
-	err := cmd.Run()
-	code := 0
-	if exit, ok := err.(*exec.ExitError); ok {
-		code = exit.ExitCode()
-	}
+	code := exitOf(cmd.Run())
 	var envelope map[string]any
 	_ = json.Unmarshal(stdout.Bytes(), &envelope)
 	return envelope, stdout.String(), code
+}
+
+func exitOf(err error) int {
+	if exit, ok := err.(*exec.ExitError); ok {
+		return exit.ExitCode()
+	}
+	if err != nil {
+		return -1
+	}
+	return 0
+}
+
+var keyBytes = map[string]string{"Enter": "\r", "Down": "\x1b[B", "Up": "\x1b[A", "Tab": "\t", "Escape": "\x1b"}
+
+// a tty call runs on a pty sized to its cols; stdin is the pty too unless the call says `stdin: none`.
+// each key waits for the screen to settle first, so a form has drawn before it is answered
+func runTTY(t *testing.T, bin, dir string, c call) (string, int) {
+	t.Helper()
+	ptmx, tty, err := pty.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ptmx.Close()
+	_ = pty.Setsize(ptmx, &pty.Winsize{Rows: 50, Cols: uint16(cmp.Or(c.Cols, 120))})
+	cmd := command(bin, dir, c)
+	cmd.Env = append(cmd.Env, "X_THEME=dark", "TERM=xterm-256color")
+	cmd.Stdout, cmd.Stderr = tty, tty
+	if c.Stdin != "none" {
+		cmd.Stdin = tty
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true, Setctty: true}
+	}
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	tty.Close()
+
+	var mu sync.Mutex
+	var screen bytes.Buffer
+	last := time.Now()
+	go func() {
+		buf := make([]byte, 4096)
+		for {
+			n, err := ptmx.Read(buf)
+			mu.Lock()
+			screen.Write(buf[:n])
+			last = time.Now()
+			mu.Unlock()
+			if err != nil {
+				return
+			}
+		}
+	}()
+	settled := func() {
+		deadline := time.Now().Add(10 * time.Second)
+		for time.Now().Before(deadline) {
+			mu.Lock()
+			quiet := screen.Len() > 0 && time.Since(last) > 300*time.Millisecond
+			mu.Unlock()
+			if quiet {
+				return
+			}
+			time.Sleep(20 * time.Millisecond)
+		}
+	}
+	for _, key := range c.Keys {
+		settled()
+		mu.Lock()
+		last = time.Now()
+		mu.Unlock()
+		_, _ = ptmx.Write([]byte(cmp.Or(keyBytes[key], key)))
+	}
+
+	done := make(chan error, 1)
+	go func() { done <- cmd.Wait() }()
+	select {
+	case err = <-done:
+	case <-time.After(30 * time.Second):
+		_ = cmd.Process.Kill()
+		t.Fatalf("%s hung on the pty", c.ID)
+	}
+	time.Sleep(50 * time.Millisecond)
+	mu.Lock()
+	defer mu.Unlock()
+	return screen.String(), exitOf(err)
 }
 
 // the test runs as an agent would, so the agent markers it inherits are dropped
@@ -93,18 +194,18 @@ func filterEnv(env []string) []string {
 	return kept
 }
 
-func TestFixtureCallsSpeakTheEnvelope(t *testing.T) {
+// every call in calls.json is the contract: a pipe or an agent gets one envelope line, a terminal gets
+// the human view; both end on the call's exit code
+func TestFixtureCallsHoldTheContract(t *testing.T) {
 	bin := binary(t)
 	byID := map[string]call{}
 	for _, c := range fixtures(t) {
 		byID[c.ID] = c
 	}
 	for _, c := range fixtures(t) {
-		isAgentTTY := c.Mode == "tty" && c.Env["CLAUDECODE"] != ""
-		if c.Mode != "pipe" && !isAgentTTY {
-			continue
-		}
+		isAgent := c.Mode != "tty" || c.Env["CLAUDECODE"] != ""
 		t.Run(c.ID, func(t *testing.T) {
+			t.Parallel()
 			dir := world(t)
 			if prior, ok := byID[c.After]; ok {
 				runCall(t, bin, dir, prior)
@@ -113,9 +214,15 @@ func TestFixtureCallsSpeakTheEnvelope(t *testing.T) {
 			if code != c.Exit {
 				t.Errorf("exit %d, want %d\n%s", code, c.Exit, stdout)
 			}
-			if c.ID == "completion-zsh-pipe" {
-				if !strings.HasPrefix(stdout, "#compdef x") {
-					t.Errorf("want the raw zsh script on a pipe, got %.80q", stdout)
+			if strings.HasPrefix(c.ID, "completion-zsh") {
+				if !strings.HasPrefix(strings.TrimSpace(stdout), "#compdef x") {
+					t.Errorf("want the raw zsh script, got %.80q", stdout)
+				}
+				return
+			}
+			if !isAgent {
+				if envelope != nil || !strings.Contains(stdout, "╭") {
+					t.Errorf("want a framed human view on a terminal, got %.200q", stdout)
 				}
 				return
 			}
