@@ -19,6 +19,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 
 ## running the work
 - ⭐ @craft-pm.md — fold or drop, the four fields every ticket carries, how to read and write linear, and the link rule that keeps breaking
+- 🧭 @craft-fleet-flow.md — the path from idea to his hands: ten stages, five lanes, each stage's gate and owner, the done test
 - ⭐ @craft-spawning.md — every door, what each measured to do, the preflight, and how a coder is briefed, watched and stopped
 - ⭐ @habit-halt.md — a session ends with the halt ritual; run it on his signal, never open it mid-task
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first

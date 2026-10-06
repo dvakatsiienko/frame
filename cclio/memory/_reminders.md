@@ -98,7 +98,6 @@ Store contract: the `remind` skill. Both tiers die only when Dima drops them.
 
 ⏰ 🦉🔬 skill router re-measure, 2026-10-19 — v2 (FRM-305, #57) merged with the router OFF: on 32 real held-out prompts the best arm read 75 % precision / 15 % wrong, the turn-on bar is 90 % / 5 %. until then every halt adds ≥ 10 real prompts from the day's transcripts to `shelf/jev/fixtures/skill-router.jsonl`, labelled by what should have loaded (the living eval set, `refresh-branch-classification`). on 10-19: replay on ~100 real prompts beside the haiku baseline arm; turn on, rebuild, or drop the router. dima 2026-10-05: «a + b» — set 2026-10-05
 
-⏰📌 🦉📜 fleet flow v2, the wayfinder map [FRM-309](https://linear.app/x-com/issue/FRM-309) — at the start of every session take at least one frontier ticket (a grilling with dima, ~10 min, or the numbers task to a free coder), resolve it, add its line to the map's «Decisions so far». dies when the map has no open tickets and the spec lands in `rules/fleet-flow.md`. dima 2026-10-05: «let's balance this 309 story by processing at least one ticket (or few) at the start of each session, so we resolve it gradually» — set 2026-10-05
 
 ⏰ 🦉📜 refresh-branch-mods at every cc minor that touches mods — at each cc version bump read the changelog for mod/function-hook lines (new events, `$` methods, render sites, limits, surfaces); any hit → run `cclio/docs/recipes/refresh-branch-mods.md` (its «next run» list holds the hot leads from 10-05). dima 2026-10-05: «write it while your traces about mods are hot» — set 2026-10-05
 

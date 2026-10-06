@@ -19,6 +19,6 @@ should be always parked visible in fleet memory. Probably you will become a cto,
   `rules/fleet-hazards.md`, so the resident rules shrink as the guards grow. the halt read checks the
   day's new hazard lines: a Bash-shaped one moves into the `x-mod-guard` mod.
 - **owns**: the fleet flow and its numbers. the 💡 cross-branch budget ([[craft-pm]]) rides this hat.
-- the flow spec lands in `rules/fleet-flow.md` when FRM-309 closes; until then the map is the spec.
+- the flow spec: who talks to whom is `rules/fleet-flow.md` (global); the path, the lanes and the done test are [[craft-fleet-flow]] (FRM-309, closed 2026-10-06).
 
 Related: [[dima-strategy]], [[craft-spawning]]
