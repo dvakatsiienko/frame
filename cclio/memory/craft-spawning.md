@@ -128,7 +128,7 @@ cwd beats any message. Doneness is a **written marker** (final commit + report),
 archaeology. Subscribe, never poll. Budget three round trips — more means the brief was wrong.
 
 **Every «please test» carries the exact port link, and a screenshot's url is read before its report is relayed** — two rounds of #96 went to dima's reports from `:5180` (main, v1) while the pr lived on `:5190` (2026-09-25).
-**A pr cclio opens for a coder is opened as the coder app, never as dima** — a frame worktree cannot push, so cclio pushes and opens the pr: `GH_TOKEN=$(node script/github-agent-token.ts) gh pr create …` renders as `x-coder[bot]`; a plain `gh` made #50 dima's own pr (2026-09-28).
+**A pr cclio opens for a coder is opened as the coder app, never as dima** — a frame coder pushes itself with `x lane push` (it pushes through the main checkout) and opens its pr with `x lane pr-open`; when cclio opens one for it: `GH_TOKEN=$(node script/github-agent-token.ts) gh pr create …` renders as `x-coder[bot]`; a plain `gh` made #50 dima's own pr (2026-09-28).
 **A watch lives until its PR merges or closes, never until its coder stops, and a cloud launch arms a status watch in the same turn.** 2026-09-28: I stopped the #112 watch when the coder finished and asked for a 3rd review round with nothing to wake me; #112 sat green for 30 minutes, and the finished cloud Browserbase round sat unread beside it. the mechanism is `📡 pr-watch`, a session-long plugin monitor (`.claude/hooks/pr-watch.sh`): every open coder pr in frame + bytes wakes cclio on a new commit and once per head when all checks are green. a cloud session sends no idle notice and no cli lists it, so its brief ends by pushing its report to a `cloud/<slug>` branch, which the same monitor sees.
 **One coder with two prs in sequence gets one verifier that takes them in turn**, not one per pr — it keeps the context it built on the first (dima's question on #113/#114, 2026-09-28).
 **A pr-lane spawn arms a pr watch in the same turn** — a `Monitor` at the 30-min max, re-armed on every expiry notice (no watch outlives 30 min since cc 2.1.271; an unattended night goes blind without the re-arm), polling `gh pr list --search 'head:coder/<ticket>'` and the pr's commit count once a minute; it wakes me when the pr exists and when it gains commits, so the verifier spawns within a minute. the coder pings only when done or blocked: #102 opened silently and the verifier started an hour late, then idled on a pr whose commits were still local (2026-09-26).
@@ -188,8 +188,7 @@ double-runs the work.
 - Worktrees at ~5+ agents or genuine concurrent edits, not before. a worktree brief's step 0 is
   `CI=1 pnpm install` (inline, that command only) — kills the shared-hooks rewrite
   (`rules/fleet-hazards.md`, git hooks).
-- ⚠️ a frame worktree cannot push and must never run `pnpm` (`rules/fleet-hazards.md`, git
-  hooks) — the coordinator merges and pushes.
+- ⚠️ a frame worktree pushes only through `x lane push` (a plain `git push` dies on the mirror gate) and runs `pnpm` only as `CI=1 pnpm install` (`rules/fleet-hazards.md`, git hooks); dima or cclio merges. 📌 before a frame pr-lane spawn, push main first — a coder's `x lane merge-main` merges origin, and a local main ahead of origin stalled the v1.1 coder 17 min (retro run 1, 2026-10-06).
 
 ## lifetime and stopping
 

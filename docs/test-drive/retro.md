@@ -11,3 +11,4 @@ why (dima, 2026-10-06): «very-very useful». the question: does an outside read
 ## log
 
 one line per run: date · sessions read · retro findings · self-retro findings · overlap · kept by dima · tokens · note
+- 2026-10-06 · run 1 · 6 transcripts (go coder, verifier, quick-lane coder, 3 spec implementers) · 9 proposals · the brief said «cclio pushes» against crew-coder's `x lane push`, 4 push relays and a 17-min stall on unpushed main · retro-runner (opus) · 5
