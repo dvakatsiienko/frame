@@ -42,6 +42,27 @@ function check(reply: string, lastMessage?: string, now = '12:00') {
         .map((line) => line.split('\t')[3]);
 }
 
+function stop(reply: string, now: string, active = false) {
+    const dir = mkdtempSync(join(tmpdir(), 'reply-check-'));
+    const run = spawnSync('python3', [hook], {
+        encoding: 'utf8',
+        env: {
+            ...process.env,
+            REPLY_CHECK_LOG: join(dir, 'log.tsv'),
+            REPLY_CHECK_NOW: now,
+        },
+        input: JSON.stringify({
+            last_assistant_message: reply,
+            session_id: 'test',
+            stop_hook_active: active,
+        }),
+    });
+    const out = run.stdout.trim();
+    return out
+        ? (JSON.parse(out) as { decision: string; reason: string })
+        : undefined;
+}
+
 describe('reply-check', () => {
     it('logs a ticket id outside a linear link', () => {
         expect(check('closed FRM-12 today')).toEqual(['bare-ticket']);
@@ -98,6 +119,22 @@ describe('reply-check', () => {
         expect(
             check('📄 last report: **x**, 11:58', undefined, '12:05'),
         ).toEqual([]);
+    });
+
+    it('blocks the stop on a 📄 stamp later than the reply time', () => {
+        const out = stop('📄 last report: **x**, 12:40', '12:05');
+        expect(out?.decision).toBe('block');
+        expect(out?.reason).toContain('12:05');
+    });
+
+    it('lets the stop through when a block already ran this stop', () => {
+        expect(stop('📄 last report: **x**, 12:40', '12:05', true)).toBe(
+            undefined,
+        );
+    });
+
+    it('lets the stop through on a clean stamp', () => {
+        expect(stop('📄 last report: **x**, 11:58', '12:05')).toBe(undefined);
     });
 
     it('passes a 📄 stamp from before midnight after it', () => {
