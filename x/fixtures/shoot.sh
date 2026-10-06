@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shoots every tty call in calls.json for one FRM-284 arm, the same way for every arm:
 #   shoot.sh <arm> '<x-cmd>' [<call-id>…]
-#   <x-cmd> runs x, env prefix included: 'env X_VIEW=gum bun <tree>/x/main.ts', '<tree>/x/go/bin/x'
+#   <x-cmd> runs x, env prefix included: '<tree>/x/go/bin/x'
 # per call: a fresh world (setup.sh, the `after` call replayed first), a vhs tape + gif, a png.
 # a call with `keys` takes the vhs Screenshot as its png; the rest take a freeze --execute shot.
 # out: ~/.local/state/looks/FRM-284/<arm>/<utc stamp>/<call-id>.{tape,gif,png} — a fresh dir per

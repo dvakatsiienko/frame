@@ -64,6 +64,15 @@
   - given a pending handoff in the store
   - when `x handoffs list` runs
   - then it lists the same handoffs `x-cw`'s tools see — one store, two doors
+- 🧭 `x handoffs list` paints in under 20 ms
+  - given the live store
+  - when dima runs `x handoffs list` in a terminal
+  - then the board is drawn in under 20 ms (median of 40), node never starts
+  - decision: go reads the store itself; the node bridge cost 60 of 72 ms. both readers test `script/lib/handoff-names.json` (ADR 0002, amended)
+- 🧭 a CST's run id reads its value
+  - given a META line `**run marker** — run id: **cc·x**`
+  - when `x handoffs list` shows it
+  - then the run id column says `cc·x`
 - 🧭 a cloud thread reaches handoffs through the mac
   - given a cloud project thread
   - when it runs `~/.local/bin/x handoffs list` through the remote-devices Desktop Commander

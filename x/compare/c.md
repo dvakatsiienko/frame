@@ -1,5 +1,8 @@
 # arm c — go + full charm
 
+📌 a record of the probe as it ran. since v1.1 the registry lives in `x/go/registry.json` (go owns it)
+and `handoffs` reads the store in go: `x/fixtures/registry.json` and the `store.ts` bridge are gone.
+
 Ticket: FRM-284. The same `x` as arms a and b: the 9 v1 verbs plus `completion`, the one registry
 (`x/fixtures/registry.json`, embedded), the one envelope, the 35 calls in `x/fixtures/calls.json`.
 Source: `x/go/`. Shots: `~/.local/state/looks/FRM-284/c/20261006T131114Z/` (20 tty calls, each a

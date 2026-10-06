@@ -4,73 +4,68 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"path/filepath"
+	"os"
 	"slices"
 	"strings"
+	"time"
 )
 
-type entry struct {
-	Name     string  `json:"name"`
-	Slug     string  `json:"slug"`
-	Audience string  `json:"audience"`
-	Lane     string  `json:"lane"`
-	Author   string  `json:"author"`
-	Shared   bool    `json:"shared"`
+type row struct {
 	Age      string  `json:"age"`
-	Stale    bool    `json:"stale"`
-	Bytes    int     `json:"bytes"`
+	Audience string  `json:"audience"`
+	Author   string  `json:"author"`
+	Bytes    int64   `json:"bytes"`
+	Lane     string  `json:"lane"`
+	Name     string  `json:"name"`
 	RunID    *string `json:"runId"`
-	Meta     *string `json:"meta"`
-	Kept     bool    `json:"kept"`
-	Body     string  `json:"body"`
+	Shared   bool    `json:"shared"`
+	Slug     string  `json:"slug"`
+	Stale    bool    `json:"stale"`
 }
 
 type listing struct {
-	Root    string  `json:"root"`
-	Entries []entry `json:"entries"`
-	Others  []entry `json:"others"`
+	Entries []row  `json:"entries"`
+	Others  []row  `json:"others"`
+	Root    string `json:"root"`
 }
 
-// one store, many doors: the rules live in script/lib/handoff-store.ts, reached through store.ts
-func store(op string, args ...string) (json.RawMessage, error) {
-	script := filepath.Join(sourceDir(), "store.ts")
-	if !exists(script) {
-		return nil, &Fail{Msg: "no store bridge at " + script + " — this binary was moved away from the frame tree it was built in",
-			Next: "pnpm x-go:build"}
-	}
-	got, _ := run("", nil, "", "node", append([]string{script, op}, args...)...)
-	var answer struct {
-		Value json.RawMessage `json:"value"`
-		Error string          `json:"error"`
-		Usage bool            `json:"usage"`
-	}
-	if err := json.Unmarshal([]byte(got.out), &answer); err != nil {
-		return nil, &Fail{Msg: "the handoff store bridge did not answer: " + firstOf(got.log), Next: "node " + script + " list"}
-	}
-	if answer.Error != "" {
-		return nil, &Fail{Msg: answer.Error, Next: "x handoffs list", IsUsage: answer.Usage}
-	}
-	return answer.Value, nil
+func rowOf(e stored, now time.Time) row {
+	age := ageOf(e.mtime, now)
+	return row{age.label, e.Audience, e.Author, e.size, e.Lane, e.file, parseRunID(readMeta(e.path)), e.Shared, e.Slug, age.stale}
 }
 
-func forArgs(flags Flags) []string {
-	if audience, _ := flags["for"].(string); audience != "" {
-		return []string{"--for", audience}
+func readerOf(flags Flags) (string, error) {
+	reader, _ := flags["for"].(string)
+	if reader != "" && !slices.Contains(audiences, reader) {
+		return "", usageFail("unknown audience "+reader+" — any, ccli, cclio, cw", "x handoffs list --help")
 	}
-	return nil
+	return reader, nil
+}
+
+func list(reader string) listing {
+	root := storeRoot()
+	found := listing{Entries: []row{}, Others: []row{}, Root: root}
+	now := time.Now()
+	for _, e := range listStore(root) {
+		if reader == "" || readableBy(e.Audience, reader) {
+			found.Entries = append(found.Entries, rowOf(e, now))
+		} else {
+			found.Others = append(found.Others, rowOf(e, now))
+		}
+	}
+	return found
 }
 
 func handoffsList(r *Run, _ []string, flags Flags) (any, error) {
-	raw, err := store("list", forArgs(flags)...)
+	reader, err := readerOf(flags)
 	if err != nil {
 		return nil, err
 	}
+	found := list(reader)
 	if r.human {
-		var found listing
-		_ = json.Unmarshal(raw, &found)
 		r.Board(listBoard(found, flags))
 	}
-	return raw, nil
+	return found, nil
 }
 
 func listBoard(found listing, flags Flags) string {
@@ -125,77 +120,97 @@ func listBoard(found listing, flags Flags) string {
 }
 
 func handoffsPeek(r *Run, args []string, _ Flags) (any, error) {
-	raw, err := store("peek", args...)
+	picked, err := pickEntry(firstArg(args), listStore(storeRoot()))
 	if err != nil {
 		return nil, err
 	}
+	meta := readMeta(picked.path)
+	age := ageOf(picked.mtime, time.Now()).label
 	if r.human {
-		var e entry
-		_ = json.Unmarshal(raw, &e)
-		meta := "_no META block in this CST — ingest would still take it whole._"
-		if e.Meta != nil {
-			meta = *e.Meta
+		shown := "_no META block in this CST — ingest would still take it whole._"
+		if meta != nil {
+			shown = *meta
 		}
 		b := frame{width: frameWidth(), titleLeft: titleOf("handoffs peek"),
-			titleRight: ui.dim.Render(fmt.Sprintf("%s, %s old, %s", e.Slug, e.Age, size(e.Bytes))),
-			footLeft:   ui.dim.Render("take it with") + " " + cmd("x handoffs ingest "+e.Slug), footRight: ui.dim.Render("the file is untouched"), padRows: true}
-		b.rows = markdown(meta, b.inner())
+			titleRight: ui.dim.Render(fmt.Sprintf("%s, %s old, %s", picked.Slug, age, size(int(picked.size)))),
+			footLeft:   ui.dim.Render("take it with") + " " + cmd("x handoffs ingest "+picked.Slug), footRight: ui.dim.Render("the file is untouched"), padRows: true}
+		b.rows = markdown(shown, b.inner())
 		r.Board(b.String())
 	}
-	return raw, nil
+	return ordered{{"age", age}, {"bytes", picked.size}, {"meta", meta}, {"name", picked.file}, {"slug", picked.Slug}}, nil
 }
 
 func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
-	if len(args) == 0 && r.interactive {
-		raw, err := store("list", forArgs(flags)...)
-		if err != nil {
-			return nil, err
-		}
-		var found listing
-		_ = json.Unmarshal(raw, &found)
-		if len(found.Entries) > 1 {
-			items := make([]pickable, len(found.Entries))
-			for i, e := range found.Entries {
-				items[i] = pickable{e.Name, fmt.Sprintf("%-14s %s", e.Slug, ui.dim.Render(fmt.Sprintf("for %s, %s lane, by %s, %s old", e.Audience, e.Lane, e.Author, e.Age)))}
-			}
-			chosen, err := pick("handoffs", "which handoff continues here?", items)
-			if err != nil {
-				return nil, err
-			}
-			args = []string{chosen}
-		}
-	}
-	raw, err := store("ingest", append(args, forArgs(flags)...)...)
+	reader, err := readerOf(flags)
 	if err != nil {
 		return nil, err
 	}
+	all := listStore(storeRoot())
+	if len(all) == 0 {
+		return nil, usageFail("handoff store is clean — nothing pending.", "x handoffs list")
+	}
+	mine := all
+	if reader != "" {
+		mine = slices.DeleteFunc(slices.Clone(all), func(e stored) bool { return !readableBy(e.Audience, reader) })
+	}
+	slug := firstArg(args)
+	// naming a slug forces a foreign file: the caller said so out loud
+	candidates := mine
+	if slug != "" {
+		candidates = all
+	}
+	if len(candidates) == 0 {
+		others := slices.DeleteFunc(slices.Clone(all), func(e stored) bool { return readableBy(e.Audience, reader) })
+		return nil, usageFail(fmt.Sprintf("nothing pending for %s. %d handoff(s) are addressed to another agent and were left untouched:\n%s",
+			reader, len(others), describe(others)), "x handoffs list")
+	}
+	if slug == "" && len(candidates) > 1 && r.interactive {
+		now := time.Now()
+		items := make([]pickable, len(candidates))
+		for i, e := range candidates {
+			items[i] = pickable{e.file, fmt.Sprintf("%-14s %s", e.Slug, ui.dim.Render(fmt.Sprintf("for %s, %s lane, by %s, %s old", e.Audience, e.Lane, e.Author, ageOf(e.mtime, now).label)))}
+		}
+		if slug, err = pick("handoffs", "which handoff continues here?", items); err != nil {
+			return nil, err
+		}
+	}
+	picked, err := pickEntry(slug, candidates)
+	if err != nil {
+		return nil, err
+	}
+	body, err := os.ReadFile(picked.path)
+	if err != nil {
+		return nil, &Fail{Msg: picked.file + " vanished before it was read — another thread pulled it", Next: "x handoffs list"}
+	}
+	if !picked.Shared {
+		discard(picked.path)
+	}
 	if r.human {
-		var e entry
-		_ = json.Unmarshal(raw, &e)
 		foot := "the file was deleted on ingest"
-		if e.Kept {
+		if picked.Shared {
 			foot = "shared: the file stays for other pullers"
 		}
-		b := frame{width: frameWidth(), titleLeft: titleOf("handoffs ingest"), titleRight: ui.dim.Render(e.Slug),
+		b := frame{width: frameWidth(), titleLeft: titleOf("handoffs ingest"), titleRight: ui.dim.Render(picked.Slug),
 			footLeft: ui.dim.Render(foot), padRows: true}
-		b.rows = markdown(e.Body, b.inner())
+		b.rows = markdown(string(body), b.inner())
 		r.Board(b.String())
 	}
-	return raw, nil
+	return ordered{{"body", string(body)}, {"kept", picked.Shared}, {"name", picked.file}, {"slug", picked.Slug}}, nil
 }
 
 func pendingSlugs() []string {
-	raw, err := store("list")
-	if err != nil {
-		return nil
-	}
-	var found listing
-	_ = json.Unmarshal(raw, &found)
 	var slugs []string
-	for _, e := range found.Entries {
+	for _, e := range listStore(storeRoot()) {
 		slugs = append(slugs, e.Slug)
 	}
 	return slugs
+}
+
+func firstArg(args []string) string {
+	if len(args) == 0 {
+		return ""
+	}
+	return args[0]
 }
 
 /* schema */
@@ -265,9 +280,4 @@ func size(n int) string {
 		return fmt.Sprintf("%d B", n)
 	}
 	return fmt.Sprintf("%.1f kB", float64(n)/1024)
-}
-
-func firstOf(log string) string {
-	line, _, _ := strings.Cut(strings.TrimSpace(log), "\n")
-	return line
 }

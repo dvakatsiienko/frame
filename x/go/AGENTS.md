@@ -5,11 +5,11 @@ the [FRM-284](https://linear.app/x-com/issue/FRM-284) look probe. The probe's nu
 
 ## build, test, gate
 
-- `pnpm x-go:build` → `bin/x` (gitignored). It pins `srcDir` to this dir: the binary reads
-  `store.ts` and the frame tree from there, so a moved or `go install`ed copy without the pin
-  cannot reach the handoff store.
-- `pnpm x-go:test` — the gate. None of it runs in the frame hooks (biome, tsc, vitest), so run it
-  before every commit here. `staticcheck` through `go run honnef.co/go/tools/cmd/staticcheck@latest ./...`.
+- `pnpm x-go:build` → `bin/x` (gitignored); the shim `../bin/x` runs the same build itself when a
+  source file is newer. It pins `srcDir` to this dir: the binary finds the frame tree from there
+  (the token wrap for `pr-open`, the knowledge shelf), so a moved copy without the pin cannot.
+- `pnpm x-go:test` — the gate, run in ci; the frame commit hooks never run it, so run it before
+  every commit here. `x:guide-go` holds the go craft (gofmt, vet, staticcheck, table tests).
 
 ## the contract
 
@@ -17,8 +17,9 @@ the [FRM-284](https://linear.app/x-com/issue/FRM-284) look probe. The probe's nu
   into the binary, so the shim's rebuild picks up an edit to it.
 - `../fixtures/calls.json` is the contract: `x_test.go` runs every call, a pipe call checks the
   envelope, a tty call runs on a pty and checks the human view and the exit code.
-- the handoff store's rules live in `script/lib/handoff-store.ts`; go reaches them through
-  `store.ts` (node, ~60 ms), never a go port of the filename grammar.
+- the handoff store has two readers: `script/lib/handoff-store.ts` (its writer, and the x-cw door)
+  and `store.go`. both test every name in `script/lib/handoff-names.json`; a grammar change edits
+  that file first, and both suites go red until both readers follow.
 - every `Fail.Log` line goes to stderr in agent mode — the envelope says «the output is above».
 
 ## bubbletea v2 traps

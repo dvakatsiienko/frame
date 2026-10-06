@@ -174,7 +174,7 @@ func families() []string {
 	return names
 }
 
-// the same pattern as registry.ts, so both arms refuse the same purposes
+// a purpose is what an agent picks a verb by; a vague one is the top tool-description smell (arxiv 2602.14878)
 var vagueWord = regexp.MustCompile(`(?i)\b(todo|tbd|stuff|things|various|handles?|manages?)\b`)
 
 func lintPurpose(verb Verb) []string {
