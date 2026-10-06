@@ -1,18 +1,10 @@
 import { expect, mock, test } from 'claude-code/testing';
 
+import { liveStore } from './store.ts';
+
 test("a day's refusals and escapes are counted past the kept events", async ($, on) => {
     mock.clock(on, { now: new Date(2026, 9, 6, 12).getTime() });
-    const store = new Map<string, unknown>();
-    on('store.get', (_$, e) => ({ value: store.get(e.key) }));
-    on('store.set', (_$, e) => {
-        store.set(e.key, e.value);
-        return { value: undefined };
-    });
-    on('store.keys', () => ({ value: [...store.keys()] }));
-    on('store.delete', (_$, e) => {
-        store.delete(e.key);
-        return { value: undefined };
-    });
+    const store = liveStore(on);
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));

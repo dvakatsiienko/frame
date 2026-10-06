@@ -63,10 +63,6 @@ export function parseWait(reply: string): string | undefined {
     return waits.length ? waits.join('; ') : undefined;
 }
 
-// cc's own status word; `shell` is a long command inside a turn, so it reads busy
-export const stateWord = (status: string | undefined) =>
-    status === 'shell' ? 'busy' : (status ?? '?');
-
 export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
 
 // the desktop's url handler accepts only these id shapes (Claude.app 2.1.289)

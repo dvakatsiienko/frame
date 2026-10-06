@@ -117,29 +117,22 @@ function operands(args: Word[]) {
 // a `>` that truncates its target; `>>` appends and `>&` names a descriptor
 const TRUNCATE = /^\d*&?>$/;
 const TRUNCATE_JOINED = /^\d*&?>([^>&].*)$/;
-function writes(words: Word[]) {
-    const out: string[] = [];
-    words.forEach((w, i) => {
-        const to = TRUNCATE.test(w.text)
-            ? words[i + 1]?.text
-            : w.text.match(TRUNCATE_JOINED)?.[1];
-        if (to && !to.startsWith('/dev/')) out.push(to);
-    });
-    return out;
-}
-
 const READ = /^\d*<$/;
 const READ_JOINED = /^\d*<([^<&>].*)$/;
-function reads(words: Word[]) {
-    const out: string[] = [];
-    words.forEach((w, i) => {
-        const from = READ.test(w.text)
+// the paths a redirect names, apart (`> f`) or joined (`>f`)
+function redirected(words: Word[], apart: RegExp, joined: RegExp) {
+    return words.flatMap((w, i) => {
+        const path = apart.test(w.text)
             ? words[i + 1]?.text
-            : w.text.match(READ_JOINED)?.[1];
-        if (from) out.push(from);
+            : w.text.match(joined)?.[1];
+        return path ? [path] : [];
     });
-    return out;
 }
+const writes = (words: Word[]) =>
+    redirected(words, TRUNCATE, TRUNCATE_JOINED).filter(
+        (to) => !to.startsWith('/dev/'),
+    );
+const reads = (words: Word[]) => redirected(words, READ, READ_JOINED);
 
 function dropRedirects(words: Word[]) {
     const out: Word[] = [];

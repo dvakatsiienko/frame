@@ -8,7 +8,6 @@ import {
     nestedAsks,
     parseAsks,
     parseWait,
-    stateWord,
     ticketOf,
     writeTargets,
 } from './parse.ts';
@@ -506,7 +505,7 @@ async function guard($: EngineInterface, file: unknown): Promise<Claim> {
         return await claim($, file, proc);
     } catch (err) {
         $.ui.log(
-            `x-mod-stash holds: ${err instanceof Error ? err.message : String(err)}; the edit went through unguarded`,
+            `x-mod-stash holds: ${errorText(err)}; the edit went through unguarded`,
         );
         return {};
     }
@@ -538,7 +537,7 @@ async function bashGuard($: EngineInterface, command: unknown) {
         }
     } catch (err) {
         $.ui.log(
-            `x-mod-stash holds: ${err instanceof Error ? err.message : String(err)}; the command went through unguarded`,
+            `x-mod-stash holds: ${errorText(err)}; the command went through unguarded`,
         );
     }
     return undefined;
@@ -585,8 +584,13 @@ async function load($: EngineInterface): Promise<boolean> {
     );
 }
 
+// this session's id as session.start read it, else asked now; undefined when the engine cannot say
+async function currentId($: EngineInterface) {
+    return selfId ?? (await $.session.id().catch(() => undefined));
+}
+
 async function saveHot($: EngineInterface) {
-    const sid = selfId ?? (await $.session.id().catch(() => undefined));
+    const sid = await currentId($);
     if (!sid) return;
     if (hot) await $.store.set(HOT + sid, hot);
     else await $.store.delete(HOT + sid);
@@ -653,14 +657,22 @@ const FAMILY = {
 } as const satisfies Record<string, string>;
 const isFamily = (name: string): name is keyof typeof FAMILY =>
     Object.hasOwn(FAMILY, name);
-const stateTint = (state: string) =>
-    state === 'busy'
-        ? ACCENT
-        : state === 'idle'
-          ? TINT.grey
-          : state === 'blocked'
-            ? TINT.red
-            : TINT.amber;
+// cc's registry status: the word the board shows, and its tint with colour on. `shell` is a long command
+// inside a turn, so it reads busy; a status cc adds later reads as itself, amber
+const STATUS = {
+    blocked: { tint: TINT.red, word: 'blocked' },
+    busy: { tint: ACCENT, word: 'busy' },
+    idle: { tint: TINT.grey, word: 'idle' },
+    needs_input: { tint: TINT.amber, word: 'needs_input' },
+    shell: { tint: ACCENT, word: 'busy' },
+    waiting: { tint: TINT.amber, word: 'waiting' },
+} as const satisfies Record<string, { tint: string; word: string }>;
+const isStatus = (status: string): status is keyof typeof STATUS =>
+    Object.hasOwn(STATUS, status);
+const statusOf = (status: string | undefined) =>
+    status !== undefined && isStatus(status)
+        ? STATUS[status]
+        : { tint: TINT.amber, word: status ?? '?' };
 const contextTint = (percent: number) =>
     percent >= 80 ? TINT.red : percent >= 50 ? TINT.amber : TINT.green;
 
@@ -674,7 +686,7 @@ async function awayDigest($: EngineInterface, since: number): Promise<Digest> {
     const keys = await $.store.keys();
     const running = new Set(
         (await registry($).catch(() => []))
-            .filter((r) => r.isAlive && stateWord(r.base.status) === 'busy')
+            .filter((r) => r.isAlive && statusOf(r.base.status).word === 'busy')
             .map((r) => r.base.sid),
     );
     for (const key of keys) {
@@ -996,7 +1008,7 @@ export const register: Register = (on) => {
         isBusy = false;
         // the store is 🔥's truth: ccrow writes its key after session.start, and a deleted key turns it off
         const wasHot = Boolean(hot);
-        const sid = selfId ?? (await $.session.id().catch(() => undefined));
+        const sid = await currentId($);
         if (sid)
             hot = (await $.store.get(HOT + sid).catch(() => hot)) as typeof hot;
         if (hot) {
@@ -1020,7 +1032,7 @@ export const register: Register = (on) => {
         };
         if (fiveHour)
             await $.state.set(FIVE_HOUR, fiveHour).catch(() => undefined);
-        const sid = selfId ?? (await $.session.id().catch(() => undefined));
+        const sid = await currentId($);
         if (sid && e.context.percent !== undefined)
             await $.store
                 .set(CONTEXT + sid, e.context.percent)
@@ -1031,7 +1043,7 @@ export const register: Register = (on) => {
     // the board shows each session's model and effort as its main loop's last request named them; a subagent's step never counts
     on('turn.step', async function* ($, e, next) {
         if (!e.agentId) {
-            const sid = selfId ?? (await $.session.id().catch(() => undefined));
+            const sid = await currentId($);
             const said = modelLabel(e.model, e.effort);
             if (sid && modelSeen !== `${sid}\u0000${said}`) {
                 modelSeen = `${sid}\u0000${said}`;
@@ -1073,7 +1085,7 @@ export const register: Register = (on) => {
         const isColour =
             (await $.store.get(COLOUR).catch(() => false)) === true;
         const row = (m: Member, i: number) => {
-            const state = stateWord(m.status);
+            const { tint: stateTint, word: state } = statusOf(m.status);
             const isMemberBusy = state === 'busy';
             const ticket = ticketOf(m.name);
             const door = m.door;
@@ -1101,9 +1113,7 @@ export const register: Register = (on) => {
                             {/* the state dot leads the row, the reference's cue; tinted only with colour on, the state word says the same */}
                             <Box flexShrink={0}>
                                 <Text
-                                    color={
-                                        isColour ? stateTint(state) : undefined
-                                    }
+                                    color={isColour ? stateTint : undefined}
                                     dimColor={!isColour}>
                                     ●
                                 </Text>
@@ -1223,7 +1233,7 @@ export const register: Register = (on) => {
             );
         };
         const busyCount = list.filter(
-            (m) => stateWord(m.status) === 'busy',
+            (m) => statusOf(m.status).word === 'busy',
         ).length;
         return (
             <Box flexDirection='column'>
@@ -1264,7 +1274,7 @@ export const register: Register = (on) => {
     // `/clear` and `/resume` leave the conversation: its asks and holds go now, not at the next poll
     on('command.run', async ($, e, next) => {
         if (e.command !== 'clear' && e.command !== 'resume') return next(e);
-        const left = selfId ?? (await $.session.id().catch(() => undefined));
+        const left = await currentId($);
         const r = await next(e);
         if (left) await forget($, left).catch(() => undefined);
         if (await load($)) $.ui.invalidate('ui.render');

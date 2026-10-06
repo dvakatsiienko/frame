@@ -1,18 +1,11 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { liveStore } from './store.ts';
+
 function world(on: On) {
     mock.clock(on, { now: 1_000_000 });
-    const store = new Map<string, unknown>();
-    on('store.set', (_$, e) => {
-        store.set(e.key, e.value);
-        return { value: undefined };
-    });
-    on('store.keys', () => ({ value: [...store.keys()] }));
-    on('store.delete', (_$, e) => {
-        store.delete(e.key);
-        return { value: undefined };
-    });
+    const store = liveStore(on);
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('env.get', () => ({ value: '/home' }));
     on('agent.spawn', () => ({ agentId: 'sub-1', model: 'claude-opus-5-5' }));

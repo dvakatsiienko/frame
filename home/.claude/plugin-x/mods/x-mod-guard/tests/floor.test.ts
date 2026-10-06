@@ -177,12 +177,7 @@ for (const [shape, command] of NEAR)
     });
 
 test('a multi-line refusal is kept on one line', async ($, on) => {
-    const store = new Map<string, unknown>();
-    on('store.set', (_$, e) => {
-        store.set(e.key, e.value);
-        return { value: undefined };
-    });
-    on('store.keys', () => ({ value: [...store.keys()] }));
+    const store = liveStore(on);
     world(on);
     await bash($, 'cd build &&\n  rm -rf out');
     expect([...store.values()][0]).toMatchObject({
@@ -191,16 +186,7 @@ test('a multi-line refusal is kept on one line', async ($, on) => {
 });
 
 test('a refusal is kept as a guard event', async ($, on) => {
-    const store = new Map<string, unknown>();
-    on('store.set', (_$, e) => {
-        store.set(e.key, e.value);
-        return { value: undefined };
-    });
-    on('store.keys', () => ({ value: [...store.keys()] }));
-    on('store.delete', (_$, e) => {
-        store.delete(e.key);
-        return { value: undefined };
-    });
+    const store = liveStore(on);
     world(on);
     await bash($, 'rm -rf build');
     expect([...store.values()][0]).toMatchObject({
