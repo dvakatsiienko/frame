@@ -61,9 +61,9 @@ let label = 'session';
 let entries: Record<string, Entry> = {};
 let known = new Set<string>();
 let open = false;
-let userTurn = false;
+let isUserTurn = false;
 let pinged = false;
-let polling = false;
+let isPolling = false;
 let afk = false;
 let turnAfk: boolean | undefined;
 let proc: Proc | undefined;
@@ -72,7 +72,7 @@ let holds = { others: 0, warned: false };
 // since: the turn end the next ping counts from; until: the 5h reset that turns it off
 let hot: { since: number; until?: number } | undefined;
 let fiveHour: { resetsAt?: number } | undefined;
-let busy = false;
+let isBusy = false;
 // the model label last written for this session, so a step writes the store only when it changes
 let modelSeen: string | undefined;
 // a turn start or a flip bumps it, so a ping armed before either never fires
@@ -97,7 +97,7 @@ const GUARD_EVENT = 'event:';
 // the counter row ages out after this long with no new event
 const GUARD_AGE_MS = 30 * 60_000;
 let guards: GuardLine[] = [];
-let guardsOpen = false;
+let areGuardsOpen = false;
 
 // what the fleet did while dima was afk, shown in the band where he turned 💨 off until his next prompt
 type Digest = {
@@ -603,10 +603,10 @@ async function cooled($: EngineInterface) {
 
 async function armHot($: EngineInterface) {
     const mine = ++hotGen;
-    if (!hot || busy) return;
+    if (!hot || isBusy) return;
     const wait = hot.since + HOT_MS - (await $.clock.now());
     $.clock.after(Math.max(0, wait), async () => {
-        if (!hot || busy || mine !== hotGen) return;
+        if (!hot || isBusy || mine !== hotGen) return;
         if (await cooled($)) {
             $.ui.invalidate('ui.render');
             return;
@@ -645,12 +645,14 @@ const TINT = {
     grey: '#8a8f98',
     red: '#e06c6c',
 } as const;
-const FAMILY: Record<string, string> = {
+const FAMILY = {
     fable: '#d98fb0',
     haiku: TINT.green,
     opus: '#b495d6',
     sonnet: '#79a8d6',
-};
+} as const satisfies Record<string, string>;
+const isFamily = (name: string): name is keyof typeof FAMILY =>
+    Object.hasOwn(FAMILY, name);
 const stateTint = (state: string) =>
     state === 'busy'
         ? ACCENT
@@ -913,8 +915,8 @@ export const register: Register = (on) => {
                 name: 'board',
             })
             .catch(() => $.ui.log('x-mod-stash: /board was not registered'));
-        if (!polling) {
-            polling = true;
+        if (!isPolling) {
+            isPolling = true;
             const tick = () =>
                 $.clock.after(POLL_MS, async () => {
                     // an open board redraws each tick: its «ago» times move on their own
@@ -929,16 +931,16 @@ export const register: Register = (on) => {
 
     // only dima's own hands make his turn; a reply to any other origin may drop the block
     on('prompt.submit', async ($, e, next) => {
-        userTurn =
+        isUserTurn =
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
         pinged = e.text === PING;
         // dima read the away digest once he types again
-        if (userTurn && digest) {
+        if (isUserTurn && digest) {
             digest = undefined;
             $.ui.invalidate('ui.render');
         }
-        busy = true;
+        isBusy = true;
         hotGen++;
         await load($);
         turnAfk = afk;
@@ -961,7 +963,7 @@ export const register: Register = (on) => {
                 .catch(() => undefined);
         const asks = parseAsks(reply);
         // a reply to dima with no block means nothing is open; a reply woken by a peer keeps the old list
-        if (asks !== null || userTurn) {
+        if (asks !== null || isUserTurn) {
             const key = PREFIX + e.session_id;
             if (asks?.length)
                 await $.store.set(key, {
@@ -973,7 +975,7 @@ export const register: Register = (on) => {
             else await $.store.delete(key);
             if (await load($)) $.ui.invalidate('ui.render');
         }
-        userTurn = false;
+        isUserTurn = false;
         // warn, never block: the note reaches the model with the event
         const nested = nestedAsks(reply);
         if (!nested.length) return r;
@@ -991,7 +993,7 @@ export const register: Register = (on) => {
         const r = await next(e);
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
-        busy = false;
+        isBusy = false;
         // the store is 🔥's truth: ccrow writes its key after session.start, and a deleted key turns it off
         const wasHot = Boolean(hot);
         const sid = selfId ?? (await $.session.id().catch(() => undefined));
@@ -1041,11 +1043,12 @@ export const register: Register = (on) => {
 
     // `/board colour` flips the colour MVP for every session's board, and opens it to look
     on('command.run', { command: 'board' }, async ($, e) => {
-        const colour = /^colou?r$/.test(e.args.trim());
-        if (colour) await $.store.set(COLOUR, !(await $.store.get(COLOUR)));
+        const isColourFlip = /^colou?r$/.test(e.args.trim());
+        if (isColourFlip)
+            await $.store.set(COLOUR, !(await $.store.get(COLOUR)));
         await openBoard($);
         $.ui.invalidate('ui.render');
-        if (!colour) return { text: 'fleet board opened' };
+        if (!isColourFlip) return { text: 'fleet board opened' };
         return {
             text: `fleet board colour ${(await $.store.get(COLOUR)) ? 'on' : 'off'}`,
         };
@@ -1067,15 +1070,17 @@ export const register: Register = (on) => {
         if (!list)
             return <Text dimColor>the session registry is unreadable</Text>;
         if (!list.length) return <Text dimColor>no live sessions</Text>;
-        const colour = (await $.store.get(COLOUR).catch(() => false)) === true;
+        const isColour =
+            (await $.store.get(COLOUR).catch(() => false)) === true;
         const row = (m: Member, i: number) => {
             const state = stateWord(m.status);
-            const isBusy = state === 'busy';
+            const isMemberBusy = state === 'busy';
             const ticket = ticketOf(m.name);
             const door = m.door;
             const name = m.sid === me ? `${m.name} (here)` : m.name;
             const line = m.wait && `🔭 ${m.wait}`;
             const family = m.model?.split(' ')[0] ?? '';
+            const familyTint = isFamily(family) ? FAMILY[family] : undefined;
             return (
                 <Box
                     flexDirection='column'
@@ -1097,9 +1102,9 @@ export const register: Register = (on) => {
                             <Box flexShrink={0}>
                                 <Text
                                     color={
-                                        colour ? stateTint(state) : undefined
+                                        isColour ? stateTint(state) : undefined
                                     }
-                                    dimColor={!colour}>
+                                    dimColor={!isColour}>
                                     ●
                                 </Text>
                             </Box>
@@ -1159,11 +1164,11 @@ export const register: Register = (on) => {
                                 {m.context === undefined ? null : (
                                     <Text
                                         color={
-                                            colour
+                                            isColour
                                                 ? contextTint(m.context)
                                                 : undefined
                                         }
-                                        dimColor={!colour}>
+                                        dimColor={!isColour}>
                                         ctx {m.context}%
                                     </Text>
                                 )}
@@ -1172,8 +1177,8 @@ export const register: Register = (on) => {
                                 justifyContent='flex-end'
                                 width={COLUMNS.state}>
                                 <Text
-                                    bold={isBusy}
-                                    color={isBusy ? ACCENT : undefined}
+                                    bold={isMemberBusy}
+                                    color={isMemberBusy ? ACCENT : undefined}
                                     dimColor={state === 'idle'}
                                     wrap='truncate-end'>
                                     {m.statusSince
@@ -1198,9 +1203,9 @@ export const register: Register = (on) => {
                                 <Box flexShrink={0}>
                                     <Text
                                         color={
-                                            colour ? FAMILY[family] : undefined
+                                            isColour ? familyTint : undefined
                                         }
-                                        dimColor={!(colour && FAMILY[family])}>
+                                        dimColor={!(isColour && familyTint)}>
                                         {m.model}
                                     </Text>
                                 </Box>
@@ -1329,12 +1334,12 @@ export const register: Register = (on) => {
                     `${sid === selfId ? `${title(v)} (here)` : title(v)} ${v.asks.length}`,
             )
             .join(', ');
-        const toggle = () => {
+        const handleFoldToggle = () => {
             open = !open;
             void $.state.set(OPEN, open).catch(() => undefined);
             $.ui.invalidate('ui.render');
         };
-        const flipAfk = async () => {
+        const handleAfkFlip = async () => {
             const was = (await $.store.get(AFK_KEY)) as
                 | { at?: number; on?: boolean }
                 | undefined;
@@ -1346,7 +1351,7 @@ export const register: Register = (on) => {
             await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
             $.ui.invalidate('ui.render');
         };
-        const flipHot = async () => {
+        const handleHotFlip = async () => {
             const now = await $.clock.now();
             const reset = fiveHour?.resetsAt;
             hot = hot
@@ -1367,7 +1372,7 @@ export const register: Register = (on) => {
             press?: { hotkey: string; onPress: () => void },
         ) => hoverTip(ui, key, words, control, place, press);
         const boardOpen = await isBoardOpen($);
-        const flipBoard = async () => {
+        const handleBoardFlip = async () => {
             if (await isBoardOpen($)) await $.ui.close({ id: BOARD });
             else await openBoard($);
             $.ui.invalidate('ui.render');
@@ -1378,7 +1383,7 @@ export const register: Register = (on) => {
         });
         // only the head's copy takes `c`: two Buttons on one key clash, and the later wins
         const copyButton = (sid: string, asks: string[], hotkey?: string) => {
-            const copy = () =>
+            const handleCopy = () =>
                 void $.ui.copy({
                     surface,
                     text: [
@@ -1389,11 +1394,14 @@ export const register: Register = (on) => {
             return tip(
                 `copy:${sid}`,
                 "copy this thread's asks",
-                <Button key={`copy:${sid}`} onPress={copy} variant='secondary'>
+                <Button
+                    key={`copy:${sid}`}
+                    onPress={handleCopy}
+                    variant='secondary'>
                     📋
                 </Button>,
                 leftOf('📋', true),
-                hotkey ? { hotkey, onPress: copy } : undefined,
+                hotkey ? { hotkey, onPress: handleCopy } : undefined,
             );
         };
         const [first] = groups;
@@ -1469,7 +1477,7 @@ export const register: Register = (on) => {
                             : "keep this session's cache hot: ping every 50 min",
                         <Button
                             key='hot'
-                            onPress={() => void flipHot()}
+                            onPress={() => void handleHotFlip()}
                             {...(hot
                                 ? { variant: 'secondary' as const }
                                 : { plain: true as const })}>
@@ -1484,7 +1492,7 @@ export const register: Register = (on) => {
                             : 'afk: tell fleet that dima is away',
                         <Button
                             key='afk'
-                            onPress={() => void flipAfk()}
+                            onPress={() => void handleAfkFlip()}
                             {...(afk
                                 ? { variant: 'secondary' as const }
                                 : { plain: true as const })}>
@@ -1497,24 +1505,27 @@ export const register: Register = (on) => {
                         boardOpen ? 'fold fleet board' : 'unfold fleet board',
                         <Button
                             key='board'
-                            onPress={() => void flipBoard()}
+                            onPress={() => void handleBoardFlip()}
                             {...(boardOpen
                                 ? { variant: 'secondary' as const }
                                 : { plain: true as const })}>
                             🚦
                         </Button>,
                         leftOf('🚦', boardOpen),
-                        { hotkey: 'b', onPress: () => void flipBoard() },
+                        { hotkey: 'b', onPress: () => void handleBoardFlip() },
                     )}
                     {first
                         ? tip(
                               'asks-toggle',
                               open ? 'fold' : 'unfold',
-                              <Button key='asks-toggle' onPress={toggle} plain>
+                              <Button
+                                  key='asks-toggle'
+                                  onPress={handleFoldToggle}
+                                  plain>
                                   {foldLabel}
                               </Button>,
                               leftOf(foldLabel, false),
-                              { hotkey: 'f', onPress: toggle },
+                              { hotkey: 'f', onPress: handleFoldToggle },
                           )
                         : null}
                 </Box>
@@ -1530,27 +1541,30 @@ export const register: Register = (on) => {
             ...(escaped ? [plural(escaped, 'escape')] : []),
             plural(new Set(guards.map((g) => g.sid)).size, 'session'),
         ].join(' · ');
-        const flipGuards = () => {
-            guardsOpen = !guardsOpen;
+        const handleGuardsFlip = () => {
+            areGuardsOpen = !areGuardsOpen;
             $.ui.invalidate('ui.render');
         };
-        const guardLabel = guardsOpen ? '▾' : '▸';
+        const guardLabel = areGuardsOpen ? '▾' : '▸';
         const shields = guards.length
             ? [
                   <Box flexDirection='row' gap={1} key='guard'>
                       <Text>🛡️ {counter}</Text>
                       {tip(
                           'guard-toggle',
-                          guardsOpen
+                          areGuardsOpen
                               ? 'fold guard refusals'
                               : 'unfold guard refusals',
-                          <Button key='guard-toggle' onPress={flipGuards} plain>
+                          <Button
+                              key='guard-toggle'
+                              onPress={handleGuardsFlip}
+                              plain>
                               {guardLabel}
                           </Button>,
                           leftOf(guardLabel, false),
                       )}
                   </Box>,
-                  ...(guardsOpen
+                  ...(areGuardsOpen
                       ? guards.map((g) => (
                             <Text
                                 dimColor

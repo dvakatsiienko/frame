@@ -752,9 +752,9 @@ function brief(c: Command, ctx: Context): Refusal | undefined {
     const spawn = spawnBrief(c, ctx);
     if (!spawn) return undefined;
     const { dir, file } = spawn;
-    const named = c.args.some((w) => w.text.includes(CODER));
+    const isNamed = c.args.some((w) => w.text.includes(CODER));
     if (!file)
-        return named
+        return isNamed
             ? {
                   door: `write the brief to a file, run x brief check <path> --repo ${dir}, then spawn with "$(cat <path>)"`,
                   rule: 'brief',
@@ -763,7 +763,7 @@ function brief(c: Command, ctx: Context): Refusal | undefined {
               }
             : undefined;
     const found = ctx.briefs?.get(file.path);
-    if (!(named || found?.isCoder) || found?.isStamped) return undefined;
+    if (!(isNamed || found?.isCoder) || found?.isStamped) return undefined;
     return {
         door: `x brief check ${file.path} --repo ${dir}, fix what it names, then spawn again`,
         rule: 'brief',
