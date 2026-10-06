@@ -48,7 +48,9 @@ brew "schpet/tap/linear"         # Linear CLI — the pm skill runs on this
 brew "fnm"                       # Node version manager
 brew "pnpm"                      # the package manager for every JS project here
 brew "oven-sh/bun/bun"           # Bun runtime
-brew "go"                        # sline is written in Go
+brew "go"                        # sline and x are written in Go
+brew "govulncheck"               # go dependency vulnerability scan (pnpm x-go:vuln)
+brew "delve"                     # dlv, the go debugger — on a test drive (2026-10-06)
 brew "uv"                        # the only approved Python package manager
 brew "typescript"                # global tsc/tsserver; the pnpm global shim died in the
                                  # brew move. no global `turbo` on purpose — it has no
