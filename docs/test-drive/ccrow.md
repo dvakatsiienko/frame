@@ -4,7 +4,7 @@ window: 2026-10-06 → 2026-10-20 (two weeks from the first live wake). ticket: 
 
 ## the arms
 
-opus 5.5 medium vs fable 5.1 medium. days 1–3 silent: notes are logged, not sent, and the other arm answers the same packet as a `claude -p` one-shot (a paired, blind comparison). days 4–14 live, alternating by day; `wake` prints the restart line when the running arm is the wrong one.
+opus 5.5 medium vs fable 5.1 medium. live from day 1 since 2026-10-06 (dima: «enable it live, continue measures») — the paired silent phase ran day 1 only: notes were logged, not sent, and the other arm answers the same packet as a `claude -p` one-shot (a paired, blind comparison). days 4–14 live, alternating by day; `wake` prints the restart line when the running arm is the wrong one.
 
 ## what each run logs (`~/.local/state/ccrow/notes.jsonl`)
 
@@ -27,3 +27,4 @@ arm, the exact model id from the transcript, effort, tokens in/out, seconds, mod
 ## log
 
 one line per day: date · arm · wakes · notes / none · ok / miss · tokens · note
+- 2026-10-06 · day 1 silent, paired · 16 notes; 4 graded ok (the uncommitted pile before implement-spec, flagged from 17:46, ahead of cclio; .scratch absent in worktrees) · dima: «i also think it is very useful and worth sharpening» → live from day 2, a fleet member

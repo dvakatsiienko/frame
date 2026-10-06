@@ -17,7 +17,7 @@ export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');
 export const VERDICTS_PATH = join(STATE_DIR, 'verdicts.jsonl');
 export const WAKE_GAP_MS = 30 * 60_000;
 export const MIN_STEPS = 10;
-export const SILENT_DAYS = 3;
+export const SILENT_DAYS = 0; // dima 2026-10-06: live from day 1 — the silent notes were worth reading live
 const DELTA_MAX_CHARS = 60_000;
 const SESSIONS_DIR = join(homedir(), '.claude/sessions');
 

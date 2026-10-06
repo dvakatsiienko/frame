@@ -12,7 +12,7 @@ or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
   (no `~/.local/state/ccrow/paused` file — cclio's checkpoint holds it; 30 min since the last wake, ≥10 cclio steps; `--precompact` waives the steps), copies the
   leaves named in `~/.local/state/ccrow/leaves.txt` plus the transcript delta into
   `packets/<id>/`, writes one line to ccrow's inbox socket, and leaves a detached `harvest.ts`
-  to log the note. days 1–3 after the first wake are silent: the other arm answers the same
+  to log the note. live from day 1 (dima, 2026-10-06; the 3 silent days were cut after day 1 proved the notes worth reading live); a silent phase would have the other arm answer the same
   packet as a `claude -p` one-shot. live days alternate the arm (day 4 opus, day 5 fable, …);
   `wake` prints the restart line when the running arm is the wrong one, it never restarts ccrow.
 - `pnpm ccrow:vet ok|miss <note-id> <why>` — appends the verdict to `verdicts.jsonl`, keyed by
