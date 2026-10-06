@@ -61,6 +61,13 @@
   - decision: a real button, not plain text — dima could not tell it was pressable; the mod api has no cursor prop, so the pointer is the surface's own
   - decision: ask lines are not selectable — the mod api has no selection control and `Markdown` did not help either (dima, 2026-10-04); copy all is the door
   - decision: no read-aloud button — dima uses F4 on a selected phrase, F4 does not read the clipboard, and a «read all» is not useful (2026-10-05); selectable band text would need an api cc does not have yet
+- ⬜ a ⏳ item with nested lines draws a warning at Stop, so `c` always copies the whole item
+  - given a reply's ⏳ fence holds an item with lines under it (item 2 has an indented `- …`)
+  - when the reply ends
+  - then the Stop hands the model a warning that names `item 2` and the one-line rule
+  - given every item is one line, `wispr adds` included
+  - then no warning
+  - decision: warn, never block — the warning rides the Stop's `additionalContext`, so it reaches the session it corrects, where a toast would not (FRM-325)
 - ⬜ afk switch: one icon, `💨`; the `secondary` chip alone says it is on
   - decision: one icon, the chip tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
 - ⬜ an away digest when 💨 turns off: what needs dima first, then what finished

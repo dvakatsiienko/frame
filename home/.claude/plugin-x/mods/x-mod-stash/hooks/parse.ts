@@ -20,6 +20,28 @@ export function parseAsks(reply: string): string[] | null {
     return asks;
 }
 
+// The numbers of the ⏳ asks that carry lines under them; the rule is one line per item, so «c» copies it whole.
+export function nestedAsks(reply: string): string[] {
+    const start = reply.search(HEADER);
+    if (start < 0) return [];
+    const fence = reply.indexOf('```', start);
+    if (fence < 0) return [];
+    const end = reply.indexOf('```', fence + 3);
+    const body = reply.slice(
+        reply.indexOf('\n', fence) + 1,
+        end < 0 ? undefined : end,
+    );
+    const nested = new Set<string>();
+    let item: string | undefined;
+    for (const line of body.split('\n')) {
+        if (/^\s*wispr adds\s*$/i.test(line)) break;
+        const m = line.match(/^\s*(\d+)\.\s+\S/);
+        if (m?.[1]) item = m[1];
+        else if (line.trim() && item) nested.add(item);
+    }
+    return [...nested];
+}
+
 // a reply line as a person reads it: links reduced to their labels, no bold or code marks, no list or heading marker
 function plain(line: string) {
     return line

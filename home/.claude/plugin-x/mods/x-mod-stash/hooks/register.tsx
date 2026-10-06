@@ -5,6 +5,7 @@ import {
     type Door,
     FLEET_NAME,
     doorOf,
+    nestedAsks,
     parseAsks,
     parseWait,
     stateWord,
@@ -860,7 +861,17 @@ export const register: Register = (on) => {
             if (await load($)) $.ui.invalidate('ui.render');
         }
         userTurn = false;
-        return r;
+        // warn, never block: the note reaches the model with the event
+        const nested = nestedAsks(reply);
+        if (!nested.length) return r;
+        const items = nested.map((n) => `item ${n}`).join(', ');
+        return {
+            ...r,
+            additionalContext: [
+                ...(r.additionalContext ?? []),
+                `x-mod-stash: the ⏳ block's ${items} carries nested lines — one line per item (rules/fleet-output-format.md, ⏳ open asks), so «c» copies it whole; fold the detail into the line or move it above the block`,
+            ],
+        };
     });
 
     on('turn.complete', async ($, e, next) => {
