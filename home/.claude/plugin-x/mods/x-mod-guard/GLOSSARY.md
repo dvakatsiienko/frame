@@ -55,3 +55,7 @@ _Avoid_: root folder, home folder
 **Remote delete**:
 A delete on a service past any trash: `gh repo|release delete`, `vercel rm`, `op item delete`, `security delete-*`, a linear issue delete.
 _Avoid_: cloud delete
+
+**Brief stamp**:
+The file `x brief check` writes on a clean pass, keyed by the sha256 of the brief's bytes; a coder spawn runs only when its brief file has one.
+_Avoid_: brief approval, check mark

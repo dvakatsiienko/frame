@@ -14,19 +14,23 @@ export type Context = {
     home?: string;
     missing?: Set<string>;
     kinds?: Map<string, 'file' | 'dir' | 'other'>;
+    briefs?: Map<string, Brief>;
 };
+// a spawn's brief file as found on disk: whether it names the coder skill, and whether x brief check stamped its bytes
+export type Brief = { isCoder: boolean; isStamped: boolean };
 export type Verdict =
     | { kind: 'run' }
     | { kind: 'refused'; refusal: Refusal }
     | { kind: 'escaped'; refusals: Refusal[]; targets: string[] };
 
-// wrappers: the peeled heads (`sudo`, `env`); writes: the targets of its `>` redirects
+// wrappers: the peeled heads (`sudo`, `env`); writes: the targets of its `>` redirects; reads: of its `<`
 type Peeled = {
     name: string;
     args: Word[];
     assigns: string[];
     wrappers: string[];
     writes: string[];
+    reads: string[];
 };
 // feeders: the commands whose output reaches this one, through `$( … )` or a pipe
 type Command = Peeled & { sep: Sep; dir: string; feeders: Peeled[] };
@@ -124,6 +128,19 @@ function writes(words: Word[]) {
     return out;
 }
 
+const READ = /^\d*<$/;
+const READ_JOINED = /^\d*<([^<&>].*)$/;
+function reads(words: Word[]) {
+    const out: string[] = [];
+    words.forEach((w, i) => {
+        const from = READ.test(w.text)
+            ? words[i + 1]?.text
+            : w.text.match(READ_JOINED)?.[1];
+        if (from) out.push(from);
+    });
+    return out;
+}
+
 function dropRedirects(words: Word[]) {
     const out: Word[] = [];
     for (let i = 0; i < words.length; i++) {
@@ -166,6 +183,7 @@ function peel(raw: Word[]): Peeled {
         args,
         assigns,
         name: first ? basename(first.text) : '',
+        reads: reads(raw),
         wrappers,
         writes: writes(raw),
     };
@@ -706,6 +724,56 @@ function hazard(c: Command, ctx: Context): Refusal | undefined {
     return undefined;
 }
 
+const CODER = '/x:crew-coder';
+const INLINE = 'inline-brief';
+
+// a `claude --bg` call's brief file: the one `$(cat <path>)`, `cat <path> |` or `< <path>` reads
+function spawnBrief(c: Command, ctx: Context) {
+    if (c.name !== 'claude' || !c.args.some((w) => w.text === '--bg'))
+        return undefined;
+    const dir = resolve(c.dir, '/', ctx);
+    const text =
+        c.feeders.flatMap((f) =>
+            f.name === 'cat' ? operands(f.args) : [],
+        )[0] ?? c.reads[0];
+    return { dir, file: text && { path: resolve(text, dir, ctx), text } };
+}
+
+// the brief files every coder spawn in the command reads, for the caller to hash and look up
+export function briefPaths(command: string, cwd: string, ctx: Context = {}) {
+    return commands(parse(command), cwd).flatMap((c) => {
+        const path = spawnBrief(c, ctx)?.file?.path;
+        return path ? [path] : [];
+    });
+}
+
+// a coder spawn runs only on a brief whose bytes passed x brief check
+function brief(c: Command, ctx: Context): Refusal | undefined {
+    const spawn = spawnBrief(c, ctx);
+    if (!spawn) return undefined;
+    const { dir, file } = spawn;
+    const named = c.args.some((w) => w.text.includes(CODER));
+    if (!file)
+        return named
+            ? {
+                  door: `write the brief to a file, run x brief check <path> --repo ${dir}, then spawn with "$(cat <path>)"`,
+                  rule: 'brief',
+                  targets: [INLINE],
+                  why: 'guard can check a brief only in a file, and a coder brief must pass x brief check',
+              }
+            : undefined;
+    const found = ctx.briefs?.get(file.path);
+    if (!(named || found?.isCoder) || found?.isStamped) return undefined;
+    return {
+        door: `x brief check ${file.path} --repo ${dir}, fix what it names, then spawn again`,
+        rule: 'brief',
+        targets: [file.text],
+        why: found
+            ? 'the brief has no clean x brief check stamp for its current bytes'
+            : 'the brief file is missing',
+    };
+}
+
 function lint(c: Command, next: Command | undefined): Refusal | undefined {
     const ops = operands(c.args);
     const pipedTo =
@@ -849,7 +917,8 @@ export function refusals(
             hazard(c, ctx) ??
             overwrite(c, ctx) ??
             lint(c, list[i + 1]) ??
-            missingAdd(c, ctx);
+            missingAdd(c, ctx) ??
+            brief(c, ctx);
         if (found && !isJobScratch(c, found, ctx)) out.push(found);
         // a nested shell's script is a command too
         // `-c` alone or in a cluster: `bash -lc`

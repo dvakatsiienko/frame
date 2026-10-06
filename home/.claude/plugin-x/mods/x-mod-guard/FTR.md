@@ -64,6 +64,15 @@
   - decision: an overwrite is refused only when the file is on disk — x-mod-guard looks each target up before the call; a plain `cp` onto a file is left alone, only `cp -f` and `cp /dev/null` are read (FRM-324's list)
   - 📌 not read: an overwrite inside `bash -c` or `eval` (the lookup reads the top command only), `tee`, `truncate`, `rsync --delete`; a remote delete sent through `gh api` or a raw `curl` to any api but linear's
 
+- ✅ a coder spawn runs only on a brief that passed `x brief check`
+  - given a `claude --bg` call whose prompt carries `/x:crew-coder` — in the command, or in the brief file it reads through `"$(cat <path>)"`, `cat <path> |` or `< <path>`, resolved from the dir its `cd` left
+  - when the brief file's sha256 (its raw bytes) has a stamp at `$X_STATE/briefs/<sha256>.json`, else `~/.local/state/x/briefs/<sha256>.json` — what a clean `x brief check` writes (x/go/brief.go)
+  - then it runs; one byte changed after the check, or no file on disk, and it is refused with the door `x brief check <path> --repo <dir>`
+  - given the brief inline in the command, then it is refused with «write the brief to a file, run x brief check …», target `inline-brief`
+  - given a `claude --bg` without `/x:crew-coder` (a probe, ccrow), then it runs; `# dima-ok: <target>` lets a refused one run, as in every rule
+  - decision: x-mod-guard sees the command before the shell runs it, so it cannot hash an expanded `$(cat …)` — it reads the named file itself (FRM-311)
+  - 📌 harness-proven only; a live spawn through the gate is unprobed until x v1.1 lands on main
+
 ## every Agent spawn
 
 - ✅ a fork must say why it needs the parent context
