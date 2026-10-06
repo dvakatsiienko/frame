@@ -1,17 +1,21 @@
-// the fleet-flow done test (FRM-309): tagged flawlog lines and the pr open → merge median per repo.
+// the fleet-flow done test (FRM-309): tagged flawlog lines, bare cc runs, crew-skill loads, and the pr open → merge median per repo.
 // usage: pnpm flow:report [--days 14]
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 import type { MergedPr } from './lib/flow-report.ts';
-import { flawlogCounts, medianMinutes } from './lib/flow-report.ts';
+import {
+    flawlogCounts,
+    medianMinutes,
+    transcriptCounts,
+} from './lib/flow-report.ts';
 
 // the one-off counts before tagging began (FRM-316), and the pr medians in minutes
 const TAG_BASELINE = { '#brief': 47, '#dima-caught': 23 };
 const REPOS = [
-    { baseline: 25, name: 'frame' },
-    { baseline: 36, name: 'bytes' },
+    { baseline: 36, name: 'frame' },
+    { baseline: 25, name: 'bytes' },
 ] as const;
 
 const { values } = parseArgs({
@@ -24,6 +28,7 @@ if (!Number.isInteger(days) || days < 1) {
 // flawlog files are named by local date; today counts as day 1 of the window
 const start = new Date();
 start.setDate(start.getDate() - (days - 1));
+start.setHours(0, 0, 0, 0);
 const since = start.toLocaleDateString('en-CA');
 const flawlogDir = `${process.env.HOME}/.claude/shelf/flawlog`;
 if (!existsSync(flawlogDir)) fail(`no flawlog dir at ${flawlogDir}`);
@@ -32,6 +37,17 @@ console.log(`flow report — last ${days} days, since ${since}`);
 for (const { count, tag } of flawlogCounts(flawlogDir, since)) {
     console.log(`- ${tag}: ${count} (baseline ${TAG_BASELINE[tag]})`);
 }
+
+const transcripts = transcriptCounts(
+    `${process.env.HOME}/.claude/projects`,
+    start,
+);
+console.log(
+    `- bare runs: ${transcripts.bareRuns} over ${transcripts.bareSessions} sessions (\`claude … --safe-mode\` in a Bash call)`,
+);
+console.log(
+    `- crew-skill loads: ${transcripts.briefLed + transcripts.falseFires} — brief-led ${transcripts.briefLed}, false fires ${transcripts.falseFires}`,
+);
 
 // renovate auto-merges in seconds and is not the flow being measured
 console.log('- pr open → merge median, renovate excluded:');

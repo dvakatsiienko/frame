@@ -1,9 +1,39 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { flawlogCounts, medianMinutes } from './flow-report.ts';
+import {
+    flawlogCounts,
+    medianMinutes,
+    transcriptCounts,
+} from './flow-report.ts';
+
+const START = new Date('2026-10-01T00:00:00');
+const AT = '2026-10-05T10:00:00.000Z';
+
+// one session transcript in a fresh `<projects>/<project>/` dir
+const countsFor = (...lines: object[]) => {
+    const dir = mkdtempSync(join(tmpdir(), 'flow-transcripts-'));
+    mkdirSync(join(dir, '-Users-dima-frame'));
+    writeFileSync(
+        join(dir, '-Users-dima-frame', 'session.jsonl'),
+        lines.map((l) => JSON.stringify(l)).join('\n'),
+    );
+    return transcriptCounts(dir, START);
+};
+const said = (text: string) => ({
+    message: { content: text },
+    timestamp: AT,
+    type: 'user',
+});
+const called = (name: string, input: object, timestamp = AT) => ({
+    message: { content: [{ input, name, type: 'tool_use' }] },
+    timestamp,
+    type: 'assistant',
+});
+const bash = (command: string) => called('Bash', { command });
+const crewLoad = called('Skill', { skill: 'x:crew-coder' });
 
 const countOf = (dir: string, since: string, tag: string) =>
     flawlogCounts(dir, since).find((c) => c.tag === tag)?.count;
@@ -52,5 +82,44 @@ describe('medianMinutes', () => {
 
     it('answers undefined for no prs', () => {
         expect(medianMinutes([])).toBeUndefined();
+    });
+});
+
+describe('transcriptCounts', () => {
+    it('counts a bare cc run', () => {
+        const probe = "claude -p --model haiku --safe-mode 'hi'";
+        expect(countsFor(bash(probe)).bareRuns).toBe(1);
+    });
+
+    it('counts no bare run once the flag is gone', () => {
+        expect(countsFor(bash("claude -p --model haiku 'hi'")).bareRuns).toBe(
+            0,
+        );
+    });
+
+    it('counts a search for the flag as no bare run', () => {
+        expect(countsFor(bash('rg -- --safe-mode docs')).bareRuns).toBe(0);
+    });
+
+    it('skips a bare run from before the window', () => {
+        const old = called(
+            'Bash',
+            { command: 'claude -p --safe-mode x' },
+            '2026-09-20T10:00:00.000Z',
+        );
+        expect(countsFor(old).bareRuns).toBe(0);
+    });
+
+    it('marks a crew load brief-led when an earlier message names the skill', () => {
+        expect(
+            countsFor(said('load `x:crew-coder` first'), crewLoad),
+        ).toMatchObject({ briefLed: 1, falseFires: 0 });
+    });
+
+    it('marks a crew load with no naming message a false fire', () => {
+        expect(countsFor(said('fix the typo'), crewLoad)).toMatchObject({
+            briefLed: 0,
+            falseFires: 1,
+        });
     });
 });
