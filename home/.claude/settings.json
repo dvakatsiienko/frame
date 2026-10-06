@@ -7,7 +7,7 @@
     "EDITOR": "nvim",
     "CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT": "0",
     "CLAUDE_CODE_SUBAGENT_MODEL": "opus",
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/frame/home/.claude/plugin-x/mods/breather:~/frame/home/.claude/plugin-x/mods/stash:~/frame/home/.claude/plugin-x/mods/redact:~/frame/home/.claude/plugin-x/mods/guard",
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/frame/home/.claude/plugin-x/mods/x-mod-breather:~/frame/home/.claude/plugin-x/mods/x-mod-stash:~/frame/home/.claude/plugin-x/mods/x-mod-redact:~/frame/home/.claude/plugin-x/mods/x-mod-guard",
     "CLAUDE_CODE_PLUGIN_DIR_WATCH": "1",
     "CLAUDE_CODE_FORK_SUBAGENT": "1"
   },

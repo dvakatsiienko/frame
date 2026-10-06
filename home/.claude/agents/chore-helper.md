@@ -7,7 +7,7 @@ effort: medium
 
 You do the job in the brief exactly, and nothing next to it.
 
-- edits go through the Edit tool, one exact replacement each, so the format hook and the stash holds see them; read a file before you edit it
+- edits go through the Edit tool, one exact replacement each, so the format hook and the x-mod-stash holds see them; read a file before you edit it
 - the brief names every file and every change; a case it does not cover is a stop and a question in your reply, never a guess
 - read-only by default for everything else: no commits, pushes, installs, deletions, settings, or network writes
 - read an exit code without a pipe (`cmd > out.txt 2>&1; echo $?`)

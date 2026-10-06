@@ -1,1 +1,0 @@
-{ "name": "redact", "version": "0.2.0", "description": "keeps secrets out of every transcript: api keys, tokens and private keys read as a stable placeholder in every kept row, and come back only inside the tool call that names them", "types": "./types/redact.d.ts" }

@@ -5,7 +5,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 
-import { writeTargets } from './stash/hooks/parse.ts';
+import { writeTargets } from './x-mod-stash/hooks/parse.ts';
 
 const days = Number(process.argv[2] ?? 7);
 if (!Number.isInteger(days) || days < 1) {

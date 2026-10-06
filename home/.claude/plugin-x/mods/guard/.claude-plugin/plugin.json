@@ -1,5 +1,0 @@
-{
-    "name": "guard",
-    "version": "0.2.0",
-    "description": "reads every Bash call and fork spawn before it runs: a floor command, a known hazard shape or a fork with no why-fork line is refused with its safe door, never a dialog; each refusal and escape shows in stash's band as a 🛡️ line"
-}

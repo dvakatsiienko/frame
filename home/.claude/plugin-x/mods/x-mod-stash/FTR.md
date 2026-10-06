@@ -1,0 +1,250 @@
+# x-mod-stash — features
+
+- 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
+- given/when/then lines are the verifier's exit lines
+- makes: lines name what a feature leaves behind — a file, a take, a clipboard item
+- decision: lines record a choice and its reason
+
+## the row
+
+- 🔎 one row: the open count on the left; `📋`, `🔥`, `💨` and the fold folder on the right
+  - decision: a quarter cell (~4px) under the row on desktop while the asks show — dima: «too tight»; none in the terminal, where a cell is a whole line
+  - decision: one thread draws no name and no per-thread counts — dima read «stash 5» + «stash» as dupes
+  - decision: with several threads the head reads only `here N, parallel M`; the per-session names and counts wait in its hover card — full names took too much room (dima, 2026-10-05)
+  - decision: a thread's own `📋` sits at the right end of its name row, in line with the head's (dima, 2026-10-05)
+  - decision: half a cell above each thread after the first on desktop, so two lists read apart (dima, 2026-10-05); none in the terminal, where it costs a row
+  - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
+  - decision: the fold control is a folder, `📂` open and `📁` folded — dima asked for a more interesting state than `▼`/`▲`
+- ✅ the fold survives a reload
+  - given dima folded the asks
+  - when a mod file is saved and x-mod-stash reloads
+  - then the asks stay folded
+  - decision: the fold lives in `$.state` (survives a reload, dies with the session) and is read back after the first asks load, since a reload sees every ask as new (FRM-319 audit, FRM-320)
+  - decision: an «on» toggle (`🔥`, `💨`, `🚦`) draws as the light `secondary` chip, an «off» one plain — the desktop drew `primary` black, which read badly (dima, 2026-10-05)
+  - decision: `c` copies the head's asks, `b` folds or unfolds the board, `f` folds the asks; the key rides the hover card, never the icon — the card is a dim `Button` with the key and the same press, so the surface draws its own key badge there (desktop) or `c: copy …` (terminal) (dima, 2026-10-05: «hkeys not present in button text, only in tooltip»)
+  - 📌 a key fires only while the band holds focus (a click, or ctrl+x tab), never from the prompt; whether a key bound inside a hidden card fires is dima's press
+  - decision: no ➡️ prompt suggestion — the built-in suggestion writes a good prompt; one suggestion, no race (dima, 2026-10-05)
+- 🔎 every control in the row names itself on hover: a dim card beside it
+  - given the row draws
+  - when dima hovers `📋`, `🔥`, `💨`, `🚦`, the fold folder or the holds chip
+  - then a dim line beside it says what a press does now: «copy this thread's asks» with its `c` badge, «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge, «fold» or «unfold» with its `f` badge
+  - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
+  - dima, 2026-10-05: seen in the desktop Code tab and in Warp
+- 🔎 asks: every live session's open asks, «no open asks» when empty
+- ✅ only dima's own prompts clear asks
+  - given a reply left open asks
+  - when a peer's SendMessage wakes the session and its reply has no ⏳ block
+  - then the asks stay
+  - decision: an allow-list of dima's own hands — `composer` (typed at the prompt), `sdk` (his typing into a background job, which the transcript stamps `promptSource: sdk`) and `bridge` (his phone or web client); the old deny-list missed `peer-send-message`, and every new origin the engine adds would have cleared asks too
+- ✅ dima's answer in a background session clears its asks
+  - given a background session's reply left open asks
+  - when dima answers it from the desktop, and the reply has no ⏳ block
+  - then the asks leave the band
+  - proven live 2026-10-05 (FRM-320): a background coder's reply left one ask; the x-mod-stash store held `asks:<its session>`; dima answered in its chat, and the key was gone 4 s after that reply ended. a peer's turn never clears asks, so his typing there reached the hook with an origin on the list
+  - decision: the transcript cannot name that origin — it writes its own vocabulary (`origin: human`, `promptSource: queued`), which the hook never receives; the store is the check
+  - the old bug — a `composer`-only list kept answered asks (2026-10-05) — was fixed by the allow-list above
+- ✅ each thread is named by its session
+  - given two sessions in the frame repo have open asks
+  - when the band lists them
+  - then each group reads its session name («🦉 cclio», «☕️ 🔧 FRM-303 code: …»), «(here)» after the current one; the repo joins a name only when two sessions share it
+  - decision: the name comes from the session registry, `~/.claude/sessions/<pid>.json`, read at each reply — no mod api names a session
+- ✅ `📋 copy all` in the row copies the first thread's asks as a `lane` block; every other thread keeps its own beside its name
+  - given a reply left open asks
+  - when dima presses `📋 copy all` in the row
+  - then the clipboard holds `lane` and the numbered asks
+  - decision: no per-item copy, no prompt injection — injection destroyed dima's typed prompt
+  - decision: a real button, not plain text — dima could not tell it was pressable; the mod api has no cursor prop, so the pointer is the surface's own
+  - decision: ask lines are not selectable — the mod api has no selection control and `Markdown` did not help either (dima, 2026-10-04); copy all is the door
+  - decision: no read-aloud button — dima uses F4 on a selected phrase, F4 does not read the clipboard, and a «read all» is not useful (2026-10-05); selectable band text would need an api cc does not have yet
+- ⬜ afk switch: one icon, `💨`; the `secondary` chip alone says it is on
+  - decision: one icon, the chip tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
+- ✅ afk reaches a running turn
+  - given a session is mid-turn
+  - when dima flips afk
+  - then the session's next tool call carries a one-line note with the new afk state
+  - decision: once per flip; the note rides the tool result as context, the model reads it and dima does not see it
+- ✅ keep-hot switch: `🔥 hot` in the row between `📋 copy all` and afk, off by default, the `secondary` chip when on
+  - decision: a keep-alive, not a one-shot — on dima's 2026-10-04 live test the ping fired, then 🔥 went unticked; it stays on until dima switches it off
+  - decision: 🔥 lives in the x-mod-stash store under the session's id, not in the mod's memory — a reload or a worker respawn wipes that memory and cancels its timers, and nothing else in the code ever turns 🔥 off
+- ✅ 🔥 stays on across pings and reloads
+  - given 🔥 is on
+  - when two pings fire, or the mod reloads in between
+  - then 🔥 is still ticked, and the next ping comes 50 minutes after the last turn ended
+- ✅ 🔥 turns itself off after the 5h window resets
+  - given 🔥 was turned on while the 5h window's reset was known
+  - when that reset passes
+  - then 🔥 is unticked and no more pings go out
+  - decision: one switch per session, never shared — a ping wakes only the session it keeps warm
+- ✅ 🔥 still turns itself off when switched on right after a reload
+  - given the 5h reset was known before a reload
+  - when dima switches 🔥 on before the next `session.measure`
+  - then 🔥 turns itself off at that reset
+  - decision: the 5h reset lives in `$.state`, written at each `session.measure` and read back at start (FRM-319 audit, FRM-320)
+- ✅ a hot session is pinged while idle
+  - given 🔥 is on and the session's last turn ended 50 minutes ago
+  - when no turn has started since
+  - then x-mod-stash submits one short ping that asks for a one-character reply, and the ping is logged
+  - decision: the ping's origin is `plugin`, not `composer`, so its reply never clears the asks
+- ✅ a busy session is never pinged
+  - given 🔥 is on and a turn is running at the 50-minute mark
+  - then no ping is sent, and the clock restarts when that turn ends
+- ✅ holds chip: `🔒 n` counts other sessions' holds in this repo
+  - given session A holds 2 files in this repo
+  - when session B's row draws
+  - then B shows `🔒 2`; at zero the chip is hidden
+- 🔎 the holds chip names itself on hover
+  - dima, 2026-10-05: the desktop Code tab draws the card as a bubble above the chip, and Warp shows it
+  - given another session holds 2 files in this repo
+  - when dima hovers the chip, on desktop or in a terminal that reports the pointer
+  - then «2 files held by other sessions» shows beside it, dimmed
+  - decision: a hidden `Box` card revealed by the chip's hover — the `Svg` `<title>` route showed nothing on desktop (dima, 2026-10-05); the card sits on the chip's row because a one-row band clips anything above or below
+  - the test harness cannot hover: it checks the hidden card and its words, the reveal is dima's look
+  - decision: «this repo» is this working tree — a worktree's holds never collide with the main checkout's, so they stay out of its chip
+  - decision: a holder idle 30 min drops out at once; a dead one at the next turn end of any session
+- ✅ holder warning: the holder's chip turns ⚠ after someone was refused
+  - given A holds `x.ts`
+  - when B's edit of `x.ts` is refused
+  - then A's chip shows ⚠, and A gets no message
+- ✅ guard lines: every command x-mod-guard stopped or let through shows as a 🛡️ line until dismissed
+  - given x-mod-guard refused a command in any session, or ran one on a `# dima-ok:` escape
+  - when any session's band draws, folded or not
+  - then a line reads `🛡️ <session> — <command> → <door>` (an escape: `→ ran on dima-ok: <target>`), newest first, three at most and `+n more guard lines` past that
+  - when dima presses its `✕` (hover: «dismiss this guard line»)
+  - then the line is gone from every session's band
+  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the dismissed list lives in x-mod-stash's store and keeps only keys x-mod-guard still holds
+
+## edits — holds
+
+two sessions, A and B, in one checkout.
+
+- ✅ holds run in a Code-tab session
+  - given a Code-tab session
+  - when holds checks a file's git state
+  - then the check returns; if it cannot, the build stops before any other line
+  - proven live by cclio, 2026-10-04: a `--bg` session held `.holds-probe.txt`, a Code-tab Write of the same path was refused «held by session 75f531d4, which took it 2 min ago» — a deny means the git check through `$.process` returned, since fail-open would have let it through
+- ✅ a first edit takes the hold
+  - given A edited `x.ts`
+  - when B edits `x.ts`
+  - then B is refused, and the message names A and when A took the hold
+  - decision: no override in v0 — the deny names who to ask
+  - decision: the holder is named by the first 8 characters of its session id; every session in one checkout shares the repo name
+  - decision: the hold keeps the real path in its own case and git runs on it, so a symlinked leaf (`~/.claude/CLAUDE.md`) is held like its target
+  - decision: the key is lowercased on every platform — APFS is case-insensitive and a mod cannot ask which os it runs on
+- ✅ the holder keeps editing
+  - given A holds `x.ts`
+  - when A edits it again
+  - then the edit goes through
+- ✅ other files stay free
+  - given A holds `x.ts`
+  - when B edits `y.ts`
+  - then the edit goes through
+- ✅ a commit releases
+  - given A committed `x.ts`
+  - when B edits it
+  - then the edit goes through and A's hold is gone
+  - decision: clean releases only a hold whose edit landed — while A's permission prompt is open the file is clean and still A's
+- ✅ a new file stays held until committed
+  - given A created a new file and left it uncommitted
+  - when B edits it
+  - then B is refused
+- ✅ a dead holder releases
+  - given A's process was killed
+  - when B edits A's file
+  - then the edit goes through
+  - decision: the pid is the `$PPID` a mod's child sees (measured: the `claude` process), kept with its start time, so a reused pid reads as dead
+- ✅ an idle holder releases
+  - given A's last turn ended over 30 minutes ago
+  - when B edits A's file
+  - then the edit goes through
+  - decision: 30 min — prior art ranged 5–120, and 5 min dropped long turns
+- ✅ one winner in a race
+  - given A and B edit the same new file in the same second
+  - then never both of them hold it
+  - decision: no compare-and-set, so after its write a claim that sees any rival yields; a true tie refuses both and the next try settles it — earliest `at` let both win when one session's write landed late (verifier round 1)
+- ✅ a broken store never blocks work
+  - given the store file is unreadable
+  - when B edits
+  - then the edit goes through and the error is logged
+- ✅ a Bash write to a held file is refused
+  - given A holds `x.ts`
+  - when B runs a Bash command that writes `x.ts` — `sd`, `sed -i`, `> x.ts`, `>> x.ts`, `cat > x.ts <<EOF`, `tee`, python `open('x.ts', 'w')`
+  - then the command is refused, and the message names A, as an Edit's would be
+  - decision: refuse only — a Bash write takes no hold, since nothing tells a command that wrote from one that failed
+  - decision: `tool.call` on `Bash`, the same seat as the Edit/Write guard, so it fires in bypass mode too
+- ✅ a Bash command holds cannot read goes through
+  - given A holds `x.ts`
+  - when B's command writes through a variable, `cd` into a subshell, or any shape the parser misses
+  - then the command runs — a parse miss fails open, like a broken store
+
+## /board — the fleet board
+
+- 🔎 `/board` opens a pane listing every live session
+  - the harness proves the rows; the spacing is dima's look
+  - given cclio, two coders and a verifier are live
+  - when dima types `/board`
+  - then a pane lists each by its session name, its state on the right, a full empty row between members
+  - decision: cclio is pinned to the top, its name always bold; the rest follow by name (dima, 2026-10-05)
+  - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
+  - decision: a session named `t-` + hex (`t-70`) gets no row — dima, 2026-10-05; that these are short-lived headless `claude -p` runs is an inference, no cc source names them
+  - decision: a full row between members on every surface, no rule — the pane has room the one-row band does not (dima, 2026-10-05)
+- ✅ `🚦` in the row shows and hides the board
+  - given the row draws
+  - when dima presses `🚦`, left of the fold folder
+  - then the board opens; pressed again, it closes; the `secondary` chip says it is open, and `b` does the same while the row holds focus
+- ✅ each row's state is cc's own
+  - given a coder runs a long shell command inside a turn
+  - when the board draws
+  - then its row reads `busy` and for how long, not `idle`
+  - source: the registry's `status` and `statusUpdatedAt`, written by cc for every session; `busy` and `shell` read `busy`, any other word (`idle`, `waiting`, `blocked`, `needs_input`) shows as cc wrote it
+  - decision: the registry over a flag each x-mod-stash wrote — that flag read idle through FRM-305's long `shell` (2026-10-05)
+- 🔎 each row says what its session waits on
+  - given a session's last reply ends with a `🔭` line
+  - when the board draws
+  - then the row's second line reads that line, links reduced to their labels
+  - given the last reply has no `🔭` line
+  - then the row has no second line
+  - decision: only a `🔭` line, never a fallback — the reply's first line read as noise beside the waits (dima, 2026-10-05)
+  - source: the session's own last reply, kept by its x-mod-stash at each reply end
+- ⬜ a press on a session's name opens it in the desktop
+  - the harness proves the `open <url>` it runs; that the desktop then shows the session is dima's click
+  - given a desktop-born session (the registry carries `hostSessionId: local_…`)
+  - when dima presses its name, which ends in `↗`
+  - then the desktop opens that session through `claude://code/continue?session=local_…`
+  - given a background session bridged to claude.ai (`bridgeSessionId: session_…`)
+  - then the press opens `claude://code/session_…`
+  - given a background session with neither, the name ends in `📋`
+  - then the press copies `claude attach <jobId>`, the terminal door
+  - given a terminal session with neither
+  - then the name is plain text: nothing opens it
+  - decision: the mod api has no door to a session; the desktop's own `claude://` url handler has one (read from its 2.1.289 bundle), and the press runs `open <url>` on this mac rather than a `Link`, whose click the pane's sandbox decides
+  - decision: the whole name is a plain `Button`, normal weight; the surface's own hover background marks it, no bold on hover — a `Button` label takes no weight, and a whole-name `Markdown` link drew in the surface's blue (dima, 2026-10-05)
+  - decision: cclio's name is bold text with its own `↗` beside it, since a bold name cannot be a `Button` label
+  - decision: no hover cards anywhere in the pane — an absolute card in a narrow row wrapped, clipped and drew over its neighbours (dima, 2026-10-05)
+- 🔎 each row carries its facts beside the state
+  - given a session has open asks, a context reading or a ticket in its name
+  - when the board draws
+  - then its row shows the ticket as a link to linear, `ctx n%`, its state and `⏳ n`, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
+  - decision: `⏳ n` closes the row and is always drawn, `⏳ 0` dimmed — dima reads it first, at the far right (2026-10-05)
+  - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
+  - decision: each column is sized to its usual reading, so little slack shows between columns (dima asked for ~8px gaps, 2026-10-05)
+  - decision: the name side gives way and clips, so a long name never pushes a row's columns out of line (dima saw one drift, 2026-10-05)
+  - decision: no «sent» column — the time since a session last messaged another one; dima reads the state's idle time instead (2026-10-05)
+  - source: `⏳ n` the x-mod-stash asks store · the ticket from the session name · `ctx n%` the session's `session.measure`, kept by its x-mod-stash
+  - decision: no pr, ci, cost or model yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306
+- ⬜ the board stays current
+  - given the board is open
+  - when a member starts or ends a turn, or sends a message
+  - then its row changes within a few seconds
+
+## spawn hints — the board's name flag only
+
+- decision: no spawn-time hints — the chore-helper word match and the short general-purpose brief warning are gone, with their `agent.spawn` toast: 0 for 1 on its first real fire, and a toast never reaches the session it corrects (dima, 2026-10-05)
+- ⬜ the board marks a background session named off the fleet pattern
+  - given a background session's name is not `<mode> <role emoji> <ticket> <role word>: <what>` («☕️ 🔧 FRM-303 code: stash keep-hot»)
+  - when the board lists it
+  - then its row carries ⚠ beside the name; the pattern lives here, since the pane draws no hover card
+  - decision: on the board, not at spawn — a `--bg` coder starts through Bash, and `agent.spawn` sees only Agent-tool subagents
+
+## scripts
+
+- ✅ `pnpm mods:writes [days]` counts the fleet's file writes by channel — Edit/Write against each Bash shape — across `~/.claude/projects` transcripts, and how many Bash writes the holds veto can read, so the gap can be measured again

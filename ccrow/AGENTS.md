@@ -27,7 +27,7 @@ or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
   2.1.291: the control logged «Held peer message … not delivered»).
 - **hooks and mods are off via `--settings`**: `disableAllHooks` plus an empty
   `CLAUDE_CODE_PLUGIN_DIRS` env, because the mods load from that env in the user settings. probed:
-  `true &` runs where `guard` refuses it elsewhere.
+  `true &` runs where `x-mod-guard` refuses it elsewhere.
 - **the registry stores the name with its zero-width joiner as a space** («🐦 ⬛ ccrow»), so
   `findSession` matches a bare name or the saved `jobId`.
 - **the harvester polls ccrow's transcript** for the `turn_duration` after the wake line (5 s,
