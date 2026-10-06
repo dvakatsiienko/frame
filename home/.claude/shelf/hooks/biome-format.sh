@@ -21,12 +21,18 @@ case "${path##*.}" in
 esac
 
 dir=$(cd "$(dirname "$path")" 2>/dev/null && pwd) || exit 0
+path="$dir/$(basename "$path")"
+
+# A nested `"root": false` config only extends the root one; biome resolves it itself once it
+# runs from the root, so the walk skips it.
 root=""
 while [ -n "$dir" ]; do
-    if [ -f "$dir/biome.json" ] || [ -f "$dir/biome.jsonc" ]; then
+    for cfg in "$dir/biome.json" "$dir/biome.jsonc"; do
+        [ -f "$cfg" ] || continue
+        grep -Eq '"root"[[:space:]]*:[[:space:]]*false' "$cfg" && continue
         root=$dir
-        break
-    fi
+        break 2
+    done
     [ "$dir" = "/" ] && break
     dir=$(dirname "$dir")
 done
@@ -35,5 +41,8 @@ done
 biome="$root/node_modules/.bin/biome"
 [ -x "$biome" ] || exit 0
 
+# biome reads its config from the cwd, never from the file's location — run anywhere else and
+# it formats with its defaults (tabs, double quotes) or panics on a path outside its root.
+cd "$root" || exit 0
 "$biome" check --write --no-errors-on-unmatched --files-ignore-unknown=true "$path" >/dev/null 2>&1
 exit 0
