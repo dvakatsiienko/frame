@@ -36,6 +36,10 @@ _Avoid_: unlock, expiry
 The `/board` pane: every live session, its state as cc wrote it, what it waits on, and its facts.
 _Avoid_: dock, roster, dashboard
 
+**Board colour**:
+The colour MVP on the board, flipped by `/board colour`, off by default; it tints only what a word already says.
+_Avoid_: theme, palette mode
+
 **Wait**:
 What a session is blocked on, from the `🔭` line that ends its last reply; on the board it is a row's second line, absent when the reply has none.
 _Avoid_: blocker, status, watch

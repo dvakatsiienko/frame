@@ -261,7 +261,24 @@ two sessions, A and B, in one checkout.
   - decision: the name side gives way and clips, so a long name never pushes a row's columns out of line (dima saw one drift, 2026-10-05)
   - decision: no «sent» column — the time since a session last messaged another one; dima reads the state's idle time instead (2026-10-05)
   - source: `⏳ n` the x-mod-stash asks store · the ticket from the session name · `ctx n%` the session's `session.measure`, kept by its x-mod-stash
-  - decision: no pr, ci, cost or model yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306
+  - decision: no pr, ci or cost yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306
+- ⬜ each row names its session's model, version and effort
+  - given a session's main loop sent a model request on `claude-opus-5-5` at `medium`
+  - when the board draws
+  - then the row's second line opens with `opus 5.5 · medium`, before its `🔭` wait; a dated id drops its date, a model with no effort shows the model alone
+  - source: `turn.step`'s `model` and `effort`, kept by the session's own x-mod-stash; a subagent's step never counts
+  - decision: on the second line, not beside the name — in the narrow pane a long name wrapped to three lines or cut the model (the live look, FRM-329)
+- ⬜ the board borrows the reference's look (dima's dark screenshot on FRM-329)
+  - given the board draws
+  - then a head reads `◆ sessions on this mac · n` with `n busy` on its right, each row leads with a `●` state dot, the second line sits under the name and is dim, and a dim footer says what a press does
+  - decision: no new controls — the reference's run buttons stay out (dima: «no need functionality buttons»)
+  - decision: the full row between members stays, dima's call of 2026-10-05, though the reference packs its rows
+- ⬜ `/board colour` tries colour as an MVP
+  - given colour is off, the default
+  - when dima types `/board colour`
+  - then every session's board tints the state dot by state (busy accent, idle grey, blocked red, the rest amber), the model by family, `ctx n%` by fill (green under 50, amber under 80, red above); typed again, it goes back
+  - decision: a tint always sits beside a word that says the same — the state, the model, the number — never alone
+  - decision: one fleet-wide switch in the store, so dima compares on his own board; the verdict is his eye (FRM-329)
 - ⬜ the board stays current
   - given the board is open
   - when a member starts or ends a turn, or sends a message

@@ -34,6 +34,10 @@ const POLL_MS = 4000;
 const BOARD = 'fleet-board';
 const REPLY = 'reply:';
 const CONTEXT = 'context:';
+// the model and effort of a session's main loop, as its last model request named them
+const MODEL = 'model:';
+// the board's colour MVP: one fleet-wide switch, `/board colour`, off by default (FRM-329)
+const COLOUR = 'board-colour';
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
 // a session younger than this, counted from the registry's `startedAt`, is a probe: it gets no row until it outlives it
@@ -67,6 +71,8 @@ let holds = { others: 0, warned: false };
 let hot: { since: number; until?: number } | undefined;
 let fiveHour: { resetsAt?: number } | undefined;
 let busy = false;
+// the model label last written for this session, so a step writes the store only when it changes
+let modelSeen: string | undefined;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
 
@@ -366,6 +372,7 @@ async function forget($: EngineInterface, sid: string) {
     await $.store.delete(HOT + sid);
     await $.store.delete(REPLY + sid);
     await $.store.delete(CONTEXT + sid);
+    await $.store.delete(MODEL + sid);
     await dropAll($, sid).catch(() => undefined);
 }
 
@@ -567,8 +574,42 @@ type Member = {
     wait?: string;
     asks: number;
     context?: number;
+    model?: string;
     offPattern: boolean;
 };
+
+// `claude-opus-5-5` + `medium` reads «opus 5.5 · medium»; a dated or `[1m]` id drops its tail, an id off the pattern shows as written
+function modelLabel(model: string, effort?: string | number) {
+    const m = model.match(
+        /^claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?=$|-\d{8}|\[)/,
+    );
+    const name = m ? `${m[1]} ${m[2]}${m[3] ? `.${m[3]}` : ''}` : model;
+    return effort === undefined ? name : `${name} · ${effort}`;
+}
+
+// the colour MVP's tints, each beside a word or glyph that already says the same, never alone
+const TINT = {
+    amber: '#e0b45c',
+    green: '#8fbf7f',
+    grey: '#8a8f98',
+    red: '#e06c6c',
+} as const;
+const FAMILY: Record<string, string> = {
+    fable: '#d98fb0',
+    haiku: TINT.green,
+    opus: '#b495d6',
+    sonnet: '#79a8d6',
+};
+const stateTint = (state: string) =>
+    state === 'busy'
+        ? ACCENT
+        : state === 'idle'
+          ? TINT.grey
+          : state === 'blocked'
+            ? TINT.red
+            : TINT.amber;
+const contextTint = (percent: number) =>
+    percent >= 80 ? TINT.red : percent >= 50 ? TINT.amber : TINT.green;
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
@@ -677,6 +718,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             ...r,
             asks: isLive(asks, now) ? asks.asks.length : 0,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
+            model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !FLEET_NAME.test(r.name),
             wait: reply?.wait,
         });
@@ -690,7 +732,8 @@ async function members($: EngineInterface): Promise<Member[]> {
 }
 
 const span = (ms: number) => {
-    const m = Math.floor(ms / 60000);
+    // a status stamped a moment ahead of this clock reads 0m, never -1m
+    const m = Math.max(0, Math.floor(ms / 60000));
     return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 };
 
@@ -796,7 +839,7 @@ export const register: Register = (on) => {
         await $.command
             .register({
                 description:
-                    'open the fleet board: every live session, busy or idle, its last message',
+                    'open the fleet board: every live session, busy or idle, its last message; `/board colour` flips its colour',
                 name: 'board',
             })
             .catch(() => $.ui.log('x-mod-stash: /board was not registered'));
@@ -907,10 +950,29 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    on('command.run', { command: 'board' }, async ($) => {
+    // the board shows each session's model and effort as its main loop's last request named them; a subagent's step never counts
+    on('turn.step', async function* ($, e, next) {
+        if (!e.agentId) {
+            const sid = selfId ?? (await $.session.id().catch(() => undefined));
+            const said = modelLabel(e.model, e.effort);
+            if (sid && modelSeen !== `${sid}\u0000${said}`) {
+                modelSeen = `${sid}\u0000${said}`;
+                await $.store.set(MODEL + sid, said).catch(() => undefined);
+            }
+        }
+        return yield* next(e);
+    });
+
+    // `/board colour` flips the colour MVP for every session's board, and opens it to look
+    on('command.run', { command: 'board' }, async ($, e) => {
+        const colour = /^colou?r$/.test(e.args.trim());
+        if (colour) await $.store.set(COLOUR, !(await $.store.get(COLOUR)));
         await openBoard($);
         $.ui.invalidate('ui.render');
-        return { text: 'fleet board opened' };
+        if (!colour) return { text: 'fleet board opened' };
+        return {
+            text: `fleet board colour ${(await $.store.get(COLOUR)) ? 'on' : 'off'}`,
+        };
     });
 
     // the row's 🚦 shows whether the board is open
@@ -929,6 +991,7 @@ export const register: Register = (on) => {
         if (!list)
             return <Text dimColor>the session registry is unreadable</Text>;
         if (!list.length) return <Text dimColor>no live sessions</Text>;
+        const colour = (await $.store.get(COLOUR).catch(() => false)) === true;
         const row = (m: Member, i: number) => {
             const state = stateWord(m.status);
             const isBusy = state === 'busy';
@@ -936,6 +999,7 @@ export const register: Register = (on) => {
             const door = m.door;
             const name = m.sid === me ? `${m.name} (here)` : m.name;
             const line = m.wait && `🔭 ${m.wait}`;
+            const family = m.model?.split(' ')[0] ?? '';
             return (
                 <Box
                     flexDirection='column'
@@ -953,6 +1017,16 @@ export const register: Register = (on) => {
                             gap={1}
                             minWidth={0}
                             overflow='hidden'>
+                            {/* the state dot leads the row, the reference's cue; tinted only with colour on, the state word says the same */}
+                            <Box flexShrink={0}>
+                                <Text
+                                    color={
+                                        colour ? stateTint(state) : undefined
+                                    }
+                                    dimColor={!colour}>
+                                    ●
+                                </Text>
+                            </Box>
                             {/* the whole name is the control; the coordinator's name stays bold text, since a Button label takes no weight */}
                             {door && !isCoordinator(m.name) ? (
                                 <Button
@@ -1007,7 +1081,15 @@ export const register: Register = (on) => {
                                 justifyContent='flex-end'
                                 width={COLUMNS.context}>
                                 {m.context === undefined ? null : (
-                                    <Text dimColor>ctx {m.context}%</Text>
+                                    <Text
+                                        color={
+                                            colour
+                                                ? contextTint(m.context)
+                                                : undefined
+                                        }
+                                        dimColor={!colour}>
+                                        ctx {m.context}%
+                                    </Text>
                                 )}
                             </Box>
                             <Box
@@ -1033,11 +1115,61 @@ export const register: Register = (on) => {
                             </Box>
                         </Box>
                     </Box>
-                    {line ? <Text wrap='truncate-end'>{line}</Text> : null}
+                    {/* the second line sits under the name, past the dot, dim — the reference's: the model first, kept whole and tinted by family with colour on, then the wait, cut at its end */}
+                    {m.model || line ? (
+                        <Box flexDirection='row' gap={2} paddingLeft={2}>
+                            {m.model ? (
+                                <Box flexShrink={0}>
+                                    <Text
+                                        color={
+                                            colour ? FAMILY[family] : undefined
+                                        }
+                                        dimColor={!(colour && FAMILY[family])}>
+                                        {m.model}
+                                    </Text>
+                                </Box>
+                            ) : null}
+                            {line ? (
+                                <Box flexShrink={1} minWidth={0}>
+                                    <Text dimColor wrap='truncate-end'>
+                                        {line}
+                                    </Text>
+                                </Box>
+                            ) : null}
+                        </Box>
+                    ) : null}
                 </Box>
             );
         };
-        return <Box flexDirection='column'>{list.map(row)}</Box>;
+        const busyCount = list.filter(
+            (m) => stateWord(m.status) === 'busy',
+        ).length;
+        return (
+            <Box flexDirection='column'>
+                {/* the head: what the pane holds on the left, how many work right now on the right */}
+                <Box
+                    flexDirection='row'
+                    justifyContent='space-between'
+                    marginBottom={1}>
+                    <Box flexDirection='row' gap={1}>
+                        <Text color={ACCENT}>◆</Text>
+                        <Text bold>sessions</Text>
+                        <Text dimColor>on this mac · {list.length}</Text>
+                    </Box>
+                    <Text
+                        color={busyCount ? ACCENT : undefined}
+                        dimColor={!busyCount}>
+                        {busyCount} busy
+                    </Text>
+                </Box>
+                {list.map(row)}
+                <Box marginTop={1}>
+                    <Text dimColor wrap='truncate-end'>
+                        a name opens its session · /board colour flips colour
+                    </Text>
+                </Box>
+            </Box>
+        );
     });
 
     on('session.end', async ($, e, next) => {
@@ -1400,6 +1532,7 @@ export const register: Register = (on) => {
                   ]
                 : []),
             ...v.asks.map((ask, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: an ask's number is its identity in the numbered ⏳ list
                 <Text key={`a:${sid}:${i + 1}`}>
                     {i + 1}. {ask}
                 </Text>

@@ -352,3 +352,77 @@ test('🚦 in the row closes an open board', async ($, on) => {
     await ui.press({ key: 'board' });
     expect(calls).toEqual(['close fleet-board']);
 });
+
+// the model answers every request with nothing; `step` sends one of this session's main loop, or of a subagent's when `agentId` is given
+function steps($: Engine, on: On) {
+    // biome-ignore lint/correctness/useYield: the model's empty answer streams no chunk, only its result
+    on('turn.step', async function* (_$, e) {
+        return {
+            answer: '',
+            index: e.index,
+            stopReason: null,
+            toolUses: [],
+            turnId: e.turnId,
+            usage: null,
+        };
+    });
+    // the stream runs only as it is read, so the request is read to its end
+    return async (
+        model: string,
+        effort?: 'medium' | 'high',
+        agentId?: string,
+    ) => {
+        const stream = $.turn.step({
+            agentId,
+            effort,
+            index: 0,
+            messageCount: 1,
+            model,
+            turnId: 't1',
+        });
+        for await (const _ of stream);
+        return stream.result;
+    };
+}
+
+test("a row shows its session's model with version and effort", async ($, on) => {
+    fleet(on);
+    await steps($, on)('claude-opus-5-5', 'medium');
+    expect(await row($, HERE)).toContain('opus 5.5 · medium');
+});
+
+test('a dated model id with no effort shows family and version alone', async ($, on) => {
+    fleet(on);
+    await steps($, on)('claude-haiku-4-5-20251001');
+    expect(await row($, HERE)).toMatch(/haiku 4\.5(?! ·)/);
+});
+
+test("a subagent's model never replaces its session's", async ($, on) => {
+    fleet(on);
+    const step = steps($, on);
+    await step('claude-opus-5-5', 'medium');
+    await step('claude-haiku-4-5', 'high', 'sub-1');
+    expect(await row($, HERE)).toContain('opus 5.5 · medium');
+});
+
+// the colour of the state dot that leads the coordinator's row, the board's first
+async function dotColour($: Engine) {
+    const ui = await board($);
+    const dots = await ui.findAll({ text: '●', type: 'Text' });
+    const dot = dots[0];
+    if (!dot) return 'no dot';
+    return typeof dot.props.color === 'string' ? dot.props.color : 'none';
+}
+
+test('the board draws its state dots without colour by default', async ($, on) => {
+    fleet(on);
+    expect(await dotColour($)).toBe('none');
+});
+
+test('/board colour turns the board colour on', async ($, on) => {
+    fleet(on);
+    panes(on, true);
+    on('command.run', () => ({ text: '' }));
+    await $.command.run({ args: 'colour', command: 'board' });
+    expect(await dotColour($)).toMatch(/^#/);
+});
