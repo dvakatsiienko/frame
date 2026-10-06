@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
     copyFileSync,
     globSync,
@@ -34,12 +34,16 @@ export const armModels = {
 } as const satisfies Record<Arm, string>;
 
 // no user settings source: no user hooks, plugins or mods; disableAllHooks would block the mods in `pluginDirs` too (probed 2026-10-06)
-export function claudeArgs(arm: Arm, pluginDirs = '') {
+export function claudeArgs(
+    arm: Arm,
+    pluginDirs = '',
+    effort: Effort = 'medium',
+) {
     return [
         '--model',
         armModels[arm],
         '--effort',
-        'medium',
+        effort,
         '--setting-sources',
         'project,local',
         '--settings',
@@ -400,14 +404,214 @@ export function sendLine(socketPath: string, text: string) {
     });
 }
 
-export function appendJsonl(path: string, value: Note | Verdict) {
+export function appendJsonl(path: string, value: Note | PlanNote | Verdict) {
     mkdirSync(STATE_DIR, { recursive: true });
     writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
+}
+
+export function tokensIn(usage: Usage) {
+    return (
+        (usage.input_tokens ?? 0) +
+        (usage.cache_read_input_tokens ?? 0) +
+        (usage.cache_creation_input_tokens ?? 0)
+    );
+}
+
+// a -p transcript has no turn_duration line; its assistant entries still name the model
+export function oneShotModel(cwd: string, sessionId: string) {
+    let model: string | null = null;
+    for (const line of readLines(transcriptPathOf(cwd, sessionId))) {
+        model = parseEntry(line)?.message?.model ?? model;
+    }
+    return model;
+}
+
+export const ONE_SHOT_DEADLINE_MS = 15 * 60_000;
+
+export async function runOneShot(
+    args: string[],
+    prompt: string,
+    cwd: string,
+): Promise<{ result: OneShotResult } | { error: string }> {
+    const child = spawn(
+        'claude',
+        ['-p', ...args, '--output-format', 'json', prompt],
+        { cwd },
+    );
+    const timer = setTimeout(() => child.kill(), ONE_SHOT_DEADLINE_MS);
+    let stdout = '';
+    child.stdout.on('data', (chunk) => {
+        stdout += chunk;
+    });
+    const exit = await new Promise<string>((resolve) => {
+        child.on('error', (error) => resolve(error.message));
+        child.on('close', (code, signal) => resolve(`exit ${code ?? signal}`));
+    });
+    clearTimeout(timer);
+    let result: OneShotResult;
+    try {
+        result = JSON.parse(stdout);
+    } catch {
+        return { error: `no json (${exit}): ${stdout.slice(0, 200)}` };
+    }
+    if (result.is_error)
+        return { error: `is_error: ${String(result.result).slice(0, 200)}` };
+    return { result };
+}
+
+const blindHeading = /\b(want|constraints?|done test|not)\b/i;
+
+// pass 1 sees only the sections that say what is wanted, never how
+export function blindSections(plan: string) {
+    const kept: string[] = [];
+    let level = 0;
+    let keep = false;
+    let fenced = false;
+    for (const line of plan.split('\n')) {
+        if (/^\s*(```|~~~)/.test(line)) fenced = !fenced;
+        const heading = fenced ? null : /^(#{1,6})\s+(.*)$/.exec(line);
+        const depth = heading?.[1]?.length ?? 0;
+        if (heading && (!keep || depth <= level)) {
+            keep = blindHeading.test(heading[2] ?? '');
+            level = depth;
+        }
+        if (keep) kept.push(line);
+    }
+    return kept.join('\n').trim();
+}
+
+export function blindPrompt(sections: string) {
+    return `you are an outside adviser. someone wants the thing below built; no plan exists yet. you see the want, the constraints and the done test only.
+
+give, in under 300 words:
+- your top 3 approaches, one line each with its main tradeoff
+- the 5 likeliest ways any approach to this fails
+
+do not read files and do not ask questions; answer from the text.
+
+${sections}`;
+}
+
+export const PLAN_FINDINGS_MAX = 5;
+
+export function planPrompt(plan: string, blindTake: string) {
+    const blind = blindTake
+        ? `\n## your own take, written before you saw the plan\n\n${blindTake}\n`
+        : '';
+    return `you are an outside adviser arguing with a plan before anything is built. you were not in the room; the plan is all you get: do not read files and do not ask questions; answer from the text.
+
+work through this template, in order:
+1. predict the 3–5 likeliest problem areas before reading in detail
+2. a pre-mortem: assume this plan was executed exactly as written and failed — 5 concrete failure scenarios
+3. the strongest argument against each decision, and the alternative that was likely rejected
+4. what is missing
+5. the fragile assumptions, each rated high, medium or low
+6. a self-audit per finding: could the author refute it with context you lack? if yes, it moves to the open questions instead
+7. at most ${PLAN_FINDINGS_MAX} findings, each quoting the exact plan line it targets (copied verbatim, one line), with a cheap test that would confirm it
+8. a verdict: proceed, revise, investigate or reject. «no material objection» is an allowed answer — then findings may be empty
+${blind}
+## the plan
+
+${plan}`;
+}
+
+const strings = { items: { type: 'string' }, type: 'array' };
+const rated = { enum: ['high', 'medium', 'low'] };
+export const planSchema = {
+    additionalProperties: false,
+    properties: {
+        againstDecisions: {
+            items: {
+                additionalProperties: false,
+                properties: {
+                    alternative: { type: 'string' },
+                    argument: { type: 'string' },
+                    decision: { type: 'string' },
+                },
+                required: ['decision', 'argument', 'alternative'],
+                type: 'object',
+            },
+            type: 'array',
+        },
+        findings: {
+            items: {
+                additionalProperties: false,
+                properties: {
+                    problem: { type: 'string' },
+                    quote: { type: 'string' },
+                    severity: rated,
+                    test: { type: 'string' },
+                },
+                required: ['quote', 'problem', 'severity', 'test'],
+                type: 'object',
+            },
+            maxItems: PLAN_FINDINGS_MAX,
+            type: 'array',
+        },
+        fragileAssumptions: {
+            items: {
+                additionalProperties: false,
+                properties: {
+                    assumption: { type: 'string' },
+                    rating: rated,
+                },
+                required: ['assumption', 'rating'],
+                type: 'object',
+            },
+            type: 'array',
+        },
+        missing: strings,
+        noMaterialObjection: { type: 'boolean' },
+        openQuestions: strings,
+        preMortem: strings,
+        problemAreas: strings,
+        verdict: { enum: ['proceed', 'revise', 'investigate', 'reject'] },
+    },
+    required: [
+        'problemAreas',
+        'preMortem',
+        'againstDecisions',
+        'missing',
+        'fragileAssumptions',
+        'openQuestions',
+        'findings',
+        'verdict',
+        'noMaterialObjection',
+    ],
+    type: 'object',
+};
+
+const squash = (text: string) => text.replaceAll(/\s+/g, ' ').trim();
+
+// a finding counts as located only when its quote is really in the plan
+export function isLocated(plan: string, quote: string) {
+    const needle = squash(quote.replace(/^[\s>*-]+/, ''));
+    return needle.length > 0 && squash(plan).includes(needle);
+}
+
+export function planNotes(run: PlanRun, review: PlanReview): PlanNote[] {
+    const { planText, ...base } = run;
+    const shared = {
+        ...base,
+        channel: 'plan' as const,
+        noMaterialObjection: review.noMaterialObjection,
+        verdict: review.verdict,
+    };
+    // the schema caps findings, but the model's json is still untrusted input
+    const findings = review.findings.slice(0, PLAN_FINDINGS_MAX);
+    if (findings.length === 0)
+        return [{ ...shared, finding: null, id: `plan-${run.runId}-0` }];
+    return findings.map((finding, index) => ({
+        ...shared,
+        finding: { ...finding, located: isLocated(planText, finding.quote) },
+        id: `plan-${run.runId}-${index + 1}`,
+    }));
 }
 
 /* Types */
 
 export type Arm = (typeof armList)[number];
+export type Effort = 'medium' | 'high';
 export type Mode = (typeof modeList)[number];
 export type Phase = 'silent' | 'live';
 
@@ -487,4 +691,62 @@ export interface Verdict {
     value: 'ok' | 'miss';
     why: string;
     at: string;
+}
+
+export interface OneShotResult {
+    is_error?: boolean;
+    result?: string;
+    structured_output?: PlanReview;
+    session_id?: string;
+    duration_ms?: number;
+    total_cost_usd?: number;
+    usage?: Usage;
+}
+
+type Rating = 'high' | 'medium' | 'low';
+
+export interface PlanFinding {
+    quote: string;
+    problem: string;
+    severity: Rating;
+    test: string;
+}
+
+export interface PlanReview {
+    problemAreas: string[];
+    preMortem: string[];
+    againstDecisions: {
+        decision: string;
+        argument: string;
+        alternative: string;
+    }[];
+    missing: string[];
+    fragileAssumptions: { assumption: string; rating: Rating }[];
+    openQuestions: string[];
+    findings: PlanFinding[];
+    verdict: 'proceed' | 'revise' | 'investigate' | 'reject';
+    noMaterialObjection: boolean;
+}
+
+export interface PlanRun {
+    runId: string;
+    arm: Arm;
+    model: string | null;
+    effort: Effort;
+    plan: string;
+    planText: string;
+    costUsd: number;
+    tokensIn: number;
+    tokensOut: number;
+    seconds: number;
+    at: string;
+}
+
+// one line per finding; accepted is a `ccrow:vet` verdict on its id, never a field here
+export interface PlanNote extends Omit<PlanRun, 'planText'> {
+    id: string;
+    channel: 'plan';
+    verdict: PlanReview['verdict'];
+    noMaterialObjection: boolean;
+    finding: (PlanFinding & { located: boolean }) | null;
 }

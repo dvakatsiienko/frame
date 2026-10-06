@@ -24,6 +24,16 @@ or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
   to log the note. live from day 1 (dima, 2026-10-06; the 3 silent days were cut after day 1 proved the notes worth reading live); a silent phase would have the other arm answer the same
   packet as a `claude -p` one-shot. live days alternate the arm (day 4 opus, day 5 fable, …);
   `wake` prints the restart line when the running arm is the wrong one, it never restarts ccrow.
+- `pnpm ccrow:plan <plan file>` — the plan review at `x:shape-idea` step 4 (FRM-336, the
+  FRM-287 template from `docs/research/plan-adviser.md`). never ccrow's own session, which has read
+  cclio's thread: two fresh `claude -p` one-shots on the day's arm (the `ccrow:ensure` pick),
+  effort high, cwd a fresh `plans/<run>/` in the home. pass 1 gets only the sections whose heading
+  says want, constraints, not or done test; pass 2 gets the whole plan plus pass 1's take and a
+  `--json-schema` for the template. both run with `--tools ''`: a one-shot that can read reaches
+  cclio's transcripts and the earlier verdicts through the `~` extra dir. each finding is one
+  `channel: plan` line in `notes.jsonl` (id `plan-<run>-<n>`, `-0` for a clean run) with the arm,
+  the model, the run's cost, and `located` — whether its quote is really in the plan. accepted is a
+  `ccrow:vet` on that id; the full review sits in `plans/<run>/review.json`.
 - `pnpm ccrow:vet ok|miss <note-id> <why>` — appends the verdict to `verdicts.jsonl`, keyed by
   note id; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
 - `leaves.txt`: one glob per line, `{today}` → `YYYY-MM-DD`, a `latest ` prefix keeps the newest
@@ -56,6 +66,9 @@ or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
 - **the harvester polls ccrow's transcript** for the `turn_duration` after the wake line (5 s,
   15 min deadline, a `timeout` note past it); `harvest.log` in the home records each run.
 - **a `claude -p` transcript has no `turn_duration`**: the one-shot's model id is read from its
-  assistant entries, found by the run's `session_id`.
+  assistant entries, found by the run's `session_id`. `runOneShot` and `oneShotModel` in
+  `lib.ts` are the one path for both the silent arm and `ccrow:plan`.
+- **`claude -p --json-schema` answers in `structured_output`** beside `result` in the json output
+  (haiku probe, 2026-10-06); `total_cost_usd` is there too.
 - dates (`{today}`, the wake id) are local time; `wake.lock` keeps two hooks firing in one second
   from both passing the 30-min gate.

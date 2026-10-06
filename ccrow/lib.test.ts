@@ -11,7 +11,13 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
+    type PlanReview,
+    blindPrompt,
+    blindSections,
     buildPacket,
+    isLocated,
+    planNotes,
+    planPrompt,
     readLines,
     resolveLeaves,
     setHot,
@@ -164,5 +170,140 @@ describe('setHot', () => {
             afk: false,
             'hot:abc': { since: 5 },
         });
+    });
+});
+
+const plan = readFileSync(join(fixtures, 'plan.md'), 'utf8');
+
+describe('plan prompts', () => {
+    test('carry no line of cclio’s transcript and no earlier verdict', () => {
+        const earlier = [
+            'the rename finding was right, dima took it',
+            'store writes race under two shells',
+        ];
+        const prompts = [
+            blindPrompt(blindSections(plan)),
+            planPrompt(plan, 'a blind take'),
+        ].join('\n');
+        const transcriptLines = transcriptDelta(lines, 0)
+            .text.split('\n')
+            .filter((line) => line.trim() && !line.startsWith('## '));
+        expect(transcriptLines.length).toBeGreaterThan(0);
+        expect(
+            [...transcriptLines, ...earlier].filter((line) =>
+                prompts.includes(line),
+            ),
+        ).toEqual([]);
+    });
+});
+
+describe('blindSections', () => {
+    test('keeps every want, not and done-test section', () => {
+        const blind = blindSections(plan);
+        expect(
+            [
+                'one keystroke per count',
+                'not a habit tracker',
+                'then it prints 4',
+            ].filter((line) => !blind.includes(line)),
+        ).toEqual([]);
+    });
+
+    test('drops the build sections, their subsections too', () => {
+        const blind = blindSections(plan);
+        expect(
+            ['a go binary', 'temp file and a rename'].filter((line) =>
+                blind.includes(line),
+            ),
+        ).toEqual([]);
+    });
+
+    test('reads a # line inside a code fence as text, never a heading', () => {
+        const fenced =
+            '## the want\n\n```sh\n# the build\n```\n\nstill the want';
+        expect(blindSections(fenced)).toContain('still the want');
+    });
+});
+
+describe('isLocated', () => {
+    test('finds a quote copied with its bullet and new spacing', () => {
+        expect(
+            isLocated(plan, '- writes go  through a temp file and a rename'),
+        ).toBe(true);
+    });
+
+    test('rejects a quote the plan does not hold', () => {
+        expect(isLocated(plan, 'writes go straight to the file')).toBe(false);
+    });
+});
+
+describe('planNotes', () => {
+    const run = {
+        arm: 'fable',
+        at: '2026-10-06T20:00:00.000Z',
+        costUsd: 0.4,
+        effort: 'high',
+        model: 'claude-fable-5-1',
+        plan: '/p/plan.md',
+        planText: plan,
+        runId: '202610062000',
+        seconds: 90,
+        tokensIn: 10,
+        tokensOut: 5,
+    } as const;
+    const review = {
+        againstDecisions: [],
+        findings: [],
+        fragileAssumptions: [],
+        missing: [],
+        noMaterialObjection: true,
+        openQuestions: [],
+        preMortem: [],
+        problemAreas: [],
+        verdict: 'proceed',
+    } satisfies PlanReview;
+
+    test('logs a clean run as one line with no finding', () => {
+        expect(planNotes(run, { ...review, findings: [] })).toMatchObject([
+            { channel: 'plan', finding: null, id: 'plan-202610062000-0' },
+        ]);
+    });
+
+    test('logs one line per finding, each with its arm and cost', () => {
+        const finding = {
+            problem: 'p',
+            severity: 'high',
+            test: 't',
+        } as const;
+        const notes = planNotes(run, {
+            ...review,
+            findings: [
+                { ...finding, quote: 'a go binary, state in one json file' },
+                { ...finding, quote: 'an invented line' },
+            ],
+            noMaterialObjection: false,
+            verdict: 'revise',
+        });
+        expect(
+            notes.map(({ arm, costUsd, finding: f, id }) => ({
+                arm,
+                costUsd,
+                id,
+                located: f?.located,
+            })),
+        ).toEqual([
+            {
+                arm: 'fable',
+                costUsd: 0.4,
+                id: 'plan-202610062000-1',
+                located: true,
+            },
+            {
+                arm: 'fable',
+                costUsd: 0.4,
+                id: 'plan-202610062000-2',
+                located: false,
+            },
+        ]);
     });
 });

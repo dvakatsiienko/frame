@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -15,10 +14,13 @@ import {
     claudeArgs,
     findSession,
     isMode,
+    oneShotModel,
     parseEntry,
     readCharter,
     readLines,
     readState,
+    runOneShot,
+    tokensIn,
     transcriptPathOf,
     wakeLine,
 } from './lib.ts';
@@ -53,14 +55,6 @@ function noteOf(
         wakeId: wake.id,
         ...run,
     };
-}
-
-function tokensIn(usage: Usage) {
-    return (
-        (usage.input_tokens ?? 0) +
-        (usage.cache_read_input_tokens ?? 0) +
-        (usage.cache_creation_input_tokens ?? 0)
-    );
 }
 
 function readTurn(path: string, marker: string): Run | undefined {
@@ -134,36 +128,12 @@ async function harvestSession(wake: Wake, arm: Arm) {
 
 async function harvestOneShot(wake: Wake, arm: Arm) {
     const prompt = `${readCharter()}\n\nskip the boot section; this is a one-shot run. the wake line:\n${wakeLine(wake)}`;
-    const child = spawn(
-        'claude',
-        ['-p', ...claudeArgs(arm), '--output-format', 'json', prompt],
-        { cwd: STATE_DIR },
-    );
-    const timer = setTimeout(() => child.kill(), DEADLINE_MS);
-    let stdout = '';
-    child.stdout.on('data', (chunk) => {
-        stdout += chunk;
-    });
-    const exit = await new Promise<string>((resolve) => {
-        child.on('error', (error) => resolve(error.message));
-        child.on('close', (code, signal) => resolve(`exit ${code ?? signal}`));
-    });
-    clearTimeout(timer);
-    let run: OneShotResult;
-    try {
-        run = JSON.parse(stdout);
-    } catch {
-        return log(
-            `one-shot ${arm}: no json (${exit}): ${stdout.slice(0, 200)}`,
-        );
-    }
-    // a -p transcript has no turn_duration line; its assistant entries still name the model
+    const oneShot = await runOneShot(claudeArgs(arm), prompt, STATE_DIR);
+    if ('error' in oneShot) return log(`one-shot ${arm}: ${oneShot.error}`);
+    const run = oneShot.result;
     let model: string | null = null;
     try {
-        const path = transcriptPathOf(STATE_DIR, run.session_id ?? '');
-        for (const line of readLines(path)) {
-            model = parseEntry(line)?.message?.model ?? model;
-        }
+        model = oneShotModel(STATE_DIR, run.session_id ?? '');
     } catch {
         log(`one-shot ${arm}: transcript unreadable, model left null`);
     }
@@ -208,11 +178,4 @@ interface Run {
     seconds: number;
     tokensIn: number;
     tokensOut: number;
-}
-
-interface OneShotResult {
-    result?: string;
-    session_id?: string;
-    duration_ms?: number;
-    usage?: Usage;
 }
