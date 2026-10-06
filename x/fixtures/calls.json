@@ -1,0 +1,413 @@
+{
+    "about": "the one fixture-call list every FRM-284 arm runs. build the world with `x/fixtures/setup.sh <empty dir>`, then run each call with {world} replaced by that dir. a call runs against a FRESH world unless it names `after` — then it runs in the world the named call left. agents must not tell the arms apart: in json mode only `x` (the source dir) and the fields listed in `volatile` may differ between arms.",
+    "calls": [
+        {
+            "argv": [],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "overview-120",
+            "matrix": "bare x overview board",
+            "mode": "tty"
+        },
+        {
+            "argv": [],
+            "cols": 80,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "overview-80",
+            "matrix": "the 80-col fold",
+            "mode": "tty",
+            "note": "under 100 cols the takes/purpose column folds under the name"
+        },
+        {
+            "argv": [],
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "overview-json",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["handoffs", "list"],
+            "cwd": "{world}/repo",
+            "env": {
+                "CLAUDECODE": "1"
+            },
+            "exit": 0,
+            "id": "json-by-agent-env",
+            "matrix": "json mode",
+            "mode": "tty",
+            "note": "CLAUDECODE or AI_AGENT set → the envelope, even on a tty",
+            "status": "ok"
+        },
+        {
+            "argv": ["lane"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "family-help-lane",
+            "matrix": "family help",
+            "mode": "tty"
+        },
+        {
+            "argv": ["lane"],
+            "cols": 80,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "family-help-lane-80",
+            "matrix": "the 80-col fold",
+            "mode": "tty"
+        },
+        {
+            "argv": ["lane", "commit", "--help"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "verb-help",
+            "matrix": "family help",
+            "mode": "tty"
+        },
+        {
+            "argv": ["lane", "commit", "{world}/msg.txt", "--", "notes.txt"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "commit-run",
+            "matrix": "a run view with step states",
+            "mode": "tty",
+            "note": "each step prints once as a still ● when it ends; nothing repaints"
+        },
+        {
+            "argv": ["lane", "commit", "{world}/msg.txt", "--", "notes.txt"],
+            "cwd": "{world}/repo",
+            "data": {
+                "branch": "coder/demo"
+            },
+            "exit": 0,
+            "id": "commit-run-json",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["lane", "commit", "{world}/msg.txt", "--", "readme.txt"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 1,
+            "id": "commit-failed",
+            "matrix": "failed state",
+            "mode": "tty",
+            "note": "readme.txt is unchanged: empty diff, no commit; the footer names the next command"
+        },
+        {
+            "argv": ["lane", "commit", "{world}/msg.txt", "--", "readme.txt"],
+            "cwd": "{world}/repo",
+            "exit": 1,
+            "id": "commit-failed-json",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "status": "failed"
+        },
+        {
+            "argv": ["lane", "push"],
+            "cwd": "{world}/repo",
+            "exit": 4,
+            "id": "push-dry-run",
+            "matrix": "dry-run state",
+            "mode": "pipe",
+            "next": "x lane push --apply",
+            "status": "confirm"
+        },
+        {
+            "argv": ["lane", "push"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 4,
+            "id": "push-dry-run-tty",
+            "matrix": "dry-run state",
+            "mode": "tty",
+            "note": "a terminal stdout with stdin not a terminal: the plan board, exit 4, no prompt",
+            "stdin": "none"
+        },
+        {
+            "argv": ["lane", "push"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "push-confirm-form",
+            "keys": ["y", "Enter"],
+            "matrix": "a form (approve an ask)",
+            "mode": "tty",
+            "note": "stdin and stdout a terminal, no --apply: the plan, then a yes/no confirm; yes runs it"
+        },
+        {
+            "after": "commit-run",
+            "argv": ["lane", "push", "--apply"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "push-apply",
+            "matrix": "a run view with step states",
+            "mode": "tty"
+        },
+        {
+            "argv": ["lane", "pr-open"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 4,
+            "id": "pr-open-form",
+            "keys": [
+                "🔧 notes: a second line",
+                "Enter",
+                "{world}/pr-body.md",
+                "Enter",
+                "n",
+                "Enter"
+            ],
+            "matrix": "a form (approve an ask)",
+            "mode": "tty",
+            "note": "missing required args on a tty become form fields; the final confirm answered no → exit 4 printing the exact --apply command. never answer yes here: it would open a real pr"
+        },
+        {
+            "argv": ["lane", "pr-open"],
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "pr-open-missing-args-json",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "next": "x lane pr-open --help",
+            "status": "usage"
+        },
+        {
+            "argv": ["lane", "merge-main"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "merge-main",
+            "matrix": "a run view with step states",
+            "mode": "tty"
+        },
+        {
+            "argv": ["lane", "unlock"],
+            "cwd": "{world}/repo",
+            "data": {
+                "unlocked": 0
+            },
+            "exit": 0,
+            "id": "unlock-nothing",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["handoffs", "list"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "handoffs-list",
+            "matrix": "bare x overview board",
+            "mode": "tty",
+            "note": "three entries, newest first; charm-gum is over 7 days old and is flagged, never deleted"
+        },
+        {
+            "argv": ["handoffs", "list", "--for", "cw"],
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "handoffs-list-for",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "note": "entries: cli-arms, charm-gum; others: board-sort (for cclio)",
+            "status": "ok"
+        },
+        {
+            "argv": ["handoffs", "peek", "cli-arms"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "handoffs-peek",
+            "matrix": "a markdown report view",
+            "mode": "tty",
+            "note": "the META block rendered as markdown; the file is untouched"
+        },
+        {
+            "argv": ["handoffs", "peek", "cli-arms"],
+            "cols": 80,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "handoffs-peek-80",
+            "matrix": "the 80-col fold",
+            "mode": "tty"
+        },
+        {
+            "argv": ["handoffs", "peek", "board-sort"],
+            "cwd": "{world}/repo",
+            "data": {
+                "slug": "board-sort"
+            },
+            "exit": 0,
+            "id": "handoffs-peek-json",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["handoffs", "peek"],
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "handoffs-peek-ambiguous",
+            "matrix": "failed state",
+            "mode": "pipe",
+            "note": "three pending, no slug: the error lists the slugs",
+            "status": "usage"
+        },
+        {
+            "argv": ["handoffs", "ingest"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "handoffs-ingest-picker",
+            "keys": ["Down", "Enter"],
+            "matrix": "a picker (choose a handoff)",
+            "mode": "tty",
+            "note": "several pending, no slug, a terminal: a picker over the slugs, newest first; Down + Enter takes board-sort and prints its CST"
+        },
+        {
+            "argv": ["handoffs", "ingest", "board-sort"],
+            "cwd": "{world}/repo",
+            "data": {
+                "kept": false,
+                "slug": "board-sort"
+            },
+            "exit": 0,
+            "id": "handoffs-ingest-json",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["handoffs", "ingest", "charm-gum"],
+            "cwd": "{world}/repo",
+            "data": {
+                "kept": true,
+                "slug": "charm-gum"
+            },
+            "exit": 0,
+            "id": "handoffs-ingest-shared",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["schema", "lane", "--level", "short"],
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "schema-short",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["schema", "lane", "push"],
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "schema-full",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": ["schema", "handoffs", "--level", "short"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "schema-tty",
+            "matrix": "family help",
+            "mode": "tty"
+        },
+        {
+            "argv": ["completion", "zsh"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "completion-zsh",
+            "matrix": "completion",
+            "mode": "tty",
+            "note": "prints a zsh completion script generated from the registry; `source <(x completion zsh)` then `x la<Tab>` → lane, `x lane <Tab>` → the five verbs, `x handoffs peek <Tab>` → the pending slugs"
+        },
+        {
+            "argv": ["completion", "zsh"],
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "completion-zsh-pipe",
+            "matrix": "completion",
+            "mode": "pipe",
+            "note": "a raw-text view stays raw on a pipe, so `source <(x completion zsh)` works; only --json or CLAUDECODE/AI_AGENT give the { script, shell } envelope"
+        },
+        {
+            "argv": ["lane", "shove"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "unknown-verb",
+            "matrix": "failed state",
+            "mode": "tty",
+            "note": "the error lists the verbs of the lane family"
+        },
+        {
+            "argv": ["lane", "push", "--force"],
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "unknown-flag-json",
+            "matrix": "json mode",
+            "mode": "pipe",
+            "next": "x lane push --help",
+            "status": "usage"
+        }
+    ],
+    "data": {
+        "completion": "{ shell, script }",
+        "handoffs ingest": "{ name, slug, kept, body } — the file is deleted unless shared (kept: true)",
+        "handoffs list": "{ root, entries: [{ name, slug, audience, lane, author, shared, age, stale, bytes, runId }], others: [same] } — newest first; `others` holds what --for <audience> filtered out, [] without --for",
+        "handoffs peek": "{ name, slug, age, bytes, meta } — meta is the META block as markdown, null when the CST has none",
+        "lane commit": "{ branch, sha, tree }",
+        "lane merge-main": "{ sha }",
+        "lane pr-open plan": "{ branch, argv }",
+        "lane push": "{ branch, sha, remote, from }",
+        "lane push plan": "{ branch, sha, from, reason }",
+        "lane unlock": "{ tree, unlocked }",
+        "overview": "{ groups: { <family>: [{ name, purpose }] } }",
+        "schema": "{ verbs: [...] } — --level full (default): each verb's whole schema; --level short: [{ name, purpose }]"
+    },
+    "env": {
+        "CLAUDECODE": "unset in every call except `json-by-agent-env`",
+        "HANDOFF_STORE_ROOT": "{world}/store",
+        "NO_COLOR": "unset in tty calls, so colour shows"
+    },
+    "envelope": {
+        "keys": "key order is not contract: compare parsed json, never bytes",
+        "next": "on failed, usage and confirm: the one command that moves the caller forward",
+        "raw": "a verb whose human view is raw text (completion) prints it raw on a pipe; --json or CLAUDECODE/AI_AGENT still give the envelope",
+        "shape": "{ verb, x, ok, status, data | plan | error, next? } — one line of json on stdout, nothing else on stdout",
+        "status": "ok → exit 0 · failed → exit 1 · usage → exit 2 · confirm → exit 4"
+    },
+    "modes": {
+        "json": "a terminal, with --json in argv; the json envelope, no prompt ever",
+        "pipe": "stdout is a pipe, stdin is /dev/null; the json envelope, no prompt ever",
+        "tty": "stdin and stdout are a terminal (vhs, or a pty); the human view"
+    },
+    "volatile": [
+        "x",
+        "data.sha",
+        "data.remote",
+        "data.tree",
+        "data.from",
+        "data.root",
+        "data.entries[].age",
+        "data.entries[].stale",
+        "data.age",
+        "plan.sha",
+        "plan.from"
+    ]
+}
