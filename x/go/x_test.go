@@ -22,6 +22,7 @@ type call struct {
 	Argv   []string          `json:"argv"`
 	Mode   string            `json:"mode"`
 	Cols   int               `json:"cols"`
+	Rows   int               `json:"rows"`
 	Env    map[string]string `json:"env"`
 	Exit   int               `json:"exit"`
 	Status string            `json:"status"`
@@ -127,7 +128,7 @@ func runTTY(t *testing.T, bin, dir string, c call) (string, int) {
 		t.Fatal(err)
 	}
 	defer ptmx.Close()
-	_ = pty.Setsize(ptmx, &pty.Winsize{Rows: 50, Cols: uint16(cmp.Or(c.Cols, 120))})
+	_ = pty.Setsize(ptmx, &pty.Winsize{Rows: uint16(cmp.Or(c.Rows, 50)), Cols: uint16(cmp.Or(c.Cols, 120))})
 	cmd := command(bin, dir, c)
 	cmd.Env = append(cmd.Env, "X_THEME=dark", "TERM=xterm-256color")
 	cmd.Stdout, cmd.Stderr = tty, tty

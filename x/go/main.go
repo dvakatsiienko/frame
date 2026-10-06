@@ -247,6 +247,13 @@ func finishOK(m mode, name string, r *Run, data any) int {
 			footer = ui.dim.Render("next") + " " + cmd(r.next)
 		}
 		r.close("done", ui.ok, r.result, elapsed(time.Since(r.started)), footer)
+	case r.long != nil:
+		// the pager leaves the alt screen; the rules stay behind as a still of what was read
+		if err := page(*r.long); err != nil {
+			fmt.Println(r.output)
+		} else {
+			fmt.Println(r.long.top() + "\n" + r.long.bottom())
+		}
 	case r.output != "":
 		fmt.Println(r.output)
 	}

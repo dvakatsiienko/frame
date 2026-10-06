@@ -39,6 +39,7 @@ type Run struct {
 	result      string
 	next        string
 	output      string
+	long        *frame
 }
 
 // Open starts the run board; its steps are the registry entry's, the same names every arm draws

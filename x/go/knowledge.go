@@ -177,7 +177,7 @@ func knowledgeRead(r *Run, args []string, _ Flags) (any, error) {
 			b.footRight = ui.dim.Render("refresh when: " + clip(*f.RefreshWhen, 40))
 		}
 		b.rows = markdown(stripFront(f.body), b.inner())
-		r.Board(b.String())
+		r.Page(b)
 	}
 	return ordered{{"body", f.body}, {"name", f.Name}, {"path", f.path}, {"verified", f.Verified}}, nil
 }

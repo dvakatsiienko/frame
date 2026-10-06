@@ -135,7 +135,7 @@ func handoffsPeek(r *Run, args []string, _ Flags) (any, error) {
 			titleRight: ui.dim.Render(fmt.Sprintf("%s, %s old, %s", picked.Slug, age, size(int(picked.size)))),
 			footLeft:   ui.dim.Render("take it with") + " " + cmd("x handoffs ingest "+picked.Slug), footRight: ui.dim.Render("the file is untouched"), padRows: true}
 		b.rows = markdown(shown, b.inner())
-		r.Board(b.String())
+		r.Page(b)
 	}
 	return ordered{{"age", age}, {"bytes", picked.size}, {"meta", meta}, {"name", picked.file}, {"slug", picked.Slug}}, nil
 }
@@ -193,7 +193,7 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 		b := frame{width: frameWidth(), titleLeft: titleOf("handoffs ingest"), titleRight: ui.dim.Render(picked.Slug),
 			footLeft: ui.dim.Render(foot), padRows: true}
 		b.rows = markdown(string(body), b.inner())
-		r.Board(b.String())
+		r.Page(b)
 	}
 	return ordered{{"body", string(body)}, {"kept", picked.Shared}, {"name", picked.file}, {"slug", picked.Slug}}, nil
 }
@@ -248,7 +248,7 @@ func schema(r *Run, args []string, flags Flags) (any, error) {
 			_ = json.Indent(&pretty, []byte(marshal(list)), "", "  ")
 			b.rows = markdown("```json\n"+pretty.String()+"\n```", b.inner())
 		}
-		r.Board(b.String())
+		r.Page(b)
 	}
 	return ordered{{"verbs", list}}, nil
 }

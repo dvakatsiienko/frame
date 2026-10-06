@@ -144,6 +144,21 @@ func TestBriefCheckNamesAMissingPath(t *testing.T) {
 	}
 }
 
+func TestALongReadOpensAPagerThatQQuits(t *testing.T) {
+	dir := world(t)
+	read := call{ID: "pager", Mode: "tty", Argv: []string{"knowledge", "read", "spawn"}, Rows: 12, Keys: []string{"j", "q"}}
+
+	out, code := runTTY(t, xbin, dir, read)
+
+	if code != 0 || !strings.Contains(out, "\x1b[?1049h") || !strings.Contains(out, " quits") {
+		t.Fatalf("exit %d, want the alt-screen pager: %.300q", code, out)
+	}
+	tall := call{ID: "no-pager", Mode: "tty", Argv: []string{"knowledge", "read", "spawn"}, Rows: 60}
+	if out, _ := runTTY(t, xbin, dir, tall); strings.Contains(out, "\x1b[?1049h") {
+		t.Error("a board that fits opened the pager anyway")
+	}
+}
+
 // the fixture world's fake claude logs `<cwd> <argv>` per call
 func claudeCalls(t *testing.T, dir string) []string {
 	return strings.Split(strings.TrimSpace(read(t, filepath.Join(dir, "claude.log"))), "\n")
