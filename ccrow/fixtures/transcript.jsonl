@@ -1,0 +1,10 @@
+{"type":"user","origin":{"kind":"human"},"message":{"content":"old ask before the last wake"}}
+{"type":"assistant","message":{"id":"m0","content":[{"type":"text","text":"old reply"}]}}
+{"type":"user","origin":{"kind":"human"},"message":{"content":"ship the ccrow build"}}
+{"type":"assistant","message":{"id":"m1","content":[{"type":"text","text":"on it"}]}}
+{"type":"assistant","message":{"id":"m1","content":[{"type":"tool_use","name":"Bash","input":{"command":"ls"}}]}}
+{"type":"user","message":{"content":[{"type":"tool_result","content":"a.ts b.ts"}]}}
+{"type":"user","isMeta":true,"message":{"content":"<system-reminder>meta</system-reminder>"}}
+{"type":"user","isMeta":true,"origin":{"kind":"peer"},"message":{"content":"coder: done, pr #9"}}
+{"type":"assistant","message":{"id":"m2","content":[{"type":"text","text":"done, all green"}]}}
+not json, a half-written line
