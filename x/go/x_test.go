@@ -264,7 +264,7 @@ func TestRefusedCommitHandsTheHookOutputToAnAgent(t *testing.T) {
 	}
 	cmd := exec.Command(bin, "lane", "commit", filepath.Join(dir, "msg.txt"), "--", "notes.txt")
 	cmd.Dir = filepath.Join(dir, "repo")
-	cmd.Env = filterEnv(os.Environ())
+	cmd.Env = cleanEnv()
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &stdout, &stderr
 	_ = cmd.Run()
