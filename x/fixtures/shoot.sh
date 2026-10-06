@@ -14,9 +14,8 @@ shift 2
 only=("$@")
 
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-# CALLS swaps the call list (showcase.json shoots the look probes); XNAME is the name the prompt shows
-calls=${CALLS:-${here}/calls.json}
-xname=${XNAME:-x}
+calls=${here}/calls.json
+xname=x
 out=${LOOKS_ROOT:-${HOME}/.local/state/looks/FRM-284}/${arm}/$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p "${out}/worlds"
 
