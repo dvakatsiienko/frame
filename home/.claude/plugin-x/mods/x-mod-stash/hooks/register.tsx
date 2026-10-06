@@ -22,6 +22,8 @@ import {
 
 // label: the repo; name: the session's registry name, when it has one
 type Entry = { label: string; name?: string; asks: string[]; at: number };
+// a session's last reply: when it ended, its 🔭 wait; `ended` once the session itself exited
+type Reply = { at: number; name?: string; wait?: string; ended?: number };
 
 const PREFIX = 'asks:';
 const AFK_KEY = 'afk';
@@ -379,6 +381,28 @@ async function forget($: EngineInterface, sid: string) {
     await dropAll($, sid).catch(() => undefined);
 }
 
+// a session that exited keeps only its last reply, marked ended, so an away digest still counts it as done
+async function retire($: EngineInterface, sid: string) {
+    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    await forget($, sid);
+    if (reply)
+        await $.store.set(REPLY + sid, {
+            ...reply,
+            ended: await $.clock.now(),
+        } satisfies Reply);
+}
+
+// an ended session's reply is dropped a day after it ended
+async function pruneEnded($: EngineInterface) {
+    const now = await $.clock.now();
+    for (const key of await $.store.keys()) {
+        if (!key.startsWith(REPLY)) continue;
+        const v = (await $.store.get(key)) as Reply | undefined;
+        if (v?.ended !== undefined && now - v.ended >= STALE_MS)
+            await $.store.delete(key);
+    }
+}
+
 // what the row shows: other live sessions' holds in this working tree, and whether this session's hold was wanted
 async function chip($: EngineInterface, sid: string, root: string) {
     const keys = await $.store.keys();
@@ -638,11 +662,17 @@ const contextTint = (percent: number) =>
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
-// every session whose reply ended since `since`: those that left asks first, then those that finished
+// every session whose reply ended since `since`: those that left asks first, then those that finished —
+// a session the registry still shows busy has not finished; one that exited meanwhile has
 async function awayDigest($: EngineInterface, since: number): Promise<Digest> {
     const needs: Digest['needs'] = [];
     const done: Digest['done'] = [];
     const keys = await $.store.keys();
+    const running = new Set(
+        (await registry($).catch(() => []))
+            .filter((r) => r.isAlive && stateWord(r.base.status) === 'busy')
+            .map((r) => r.base.sid),
+    );
     for (const key of keys) {
         if (!key.startsWith(PREFIX)) continue;
         const v = (await $.store.get(key)) as Entry | undefined;
@@ -653,12 +683,11 @@ async function awayDigest($: EngineInterface, since: number): Promise<Digest> {
     for (const key of keys) {
         if (!key.startsWith(REPLY)) continue;
         const sid = key.slice(REPLY.length);
-        const v = (await $.store.get(key)) as
-            | { at?: number; name?: string }
-            | undefined;
+        const v = (await $.store.get(key)) as Partial<Reply> | undefined;
         if (
             v?.at === undefined ||
             v.at < since ||
+            running.has(sid) ||
             needs.some((n) => n.sid === sid)
         )
             continue;
@@ -669,15 +698,18 @@ async function awayDigest($: EngineInterface, since: number): Promise<Digest> {
     return { done: done.sort(byName), needs: needs.sort(byName) };
 }
 
-// live sessions from the registry, each with what its own stash wrote; a registry file mid-write is skipped
-async function members($: EngineInterface): Promise<Member[]> {
+type Registered = {
+    pid: number;
+    bg: boolean;
+    isAlive: boolean;
+    startedAt?: number;
+    base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince' | 'door'>;
+};
+
+// every session in cc's registry and whether its process still runs; a registry file mid-write is skipped
+async function registry($: EngineInterface): Promise<Registered[]> {
     const dir = `${await $.env.get('HOME')}/.claude/sessions`;
-    const rows: {
-        pid: number;
-        bg: boolean;
-        startedAt?: number;
-        base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince' | 'door'>;
-    }[] = [];
+    const rows: Omit<Registered, 'isAlive'>[] = [];
     for (const f of await $.fs.list(dir)) {
         if (!f.name.endsWith('.json')) continue;
         try {
@@ -726,17 +758,22 @@ async function members($: EngineInterface): Promise<Member[]> {
             .map((s) => Number(s.trim()))
             .filter(Boolean),
     );
+    return rows.map((r) => ({ ...r, isAlive: alive.has(r.pid) }));
+}
+
+// live sessions from the registry, each with what its own stash wrote
+async function members($: EngineInterface): Promise<Member[]> {
     const out: Member[] = [];
     const now = await $.clock.now();
-    const shown = rows.filter(
+    const shown = (await registry($)).filter(
         (r) =>
-            alive.has(r.pid) &&
+            r.isAlive &&
             !HEADLESS.test(r.base.name) &&
             !(r.startedAt !== undefined && now - r.startedAt < SHORT_MS),
     );
     for (const { bg, base: r } of shown) {
         const reply = (await $.store.get(REPLY + r.sid)) as
-            | { wait?: string }
+            | Partial<Reply>
             | undefined;
         const asks = (await $.store.get(PREFIX + r.sid)) as Entry | undefined;
         out.push({
@@ -860,6 +897,7 @@ export const register: Register = (on) => {
             );
             return { fiveHour: undefined, open: undefined };
         });
+        await pruneEnded($).catch(() => undefined);
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
         fiveHour = kept.fiveHour;
         await load($);
@@ -917,7 +955,7 @@ export const register: Register = (on) => {
                     at: await $.clock.now(),
                     name: await sessionName($),
                     wait: parseWait(reply),
-                })
+                } satisfies Reply)
                 .catch(() => undefined);
         const asks = parseAsks(reply);
         // a reply to dima with no block means nothing is open; a reply woken by a peer keeps the old list
@@ -1208,8 +1246,11 @@ export const register: Register = (on) => {
         );
     });
 
+    // a /clear or a resume leaves the conversation behind; an exit leaves its last reply for the away digest
     on('session.end', async ($, e, next) => {
-        await forget($, e.sessionId);
+        if (e.reason === 'clear' || e.reason === 'resume')
+            await forget($, e.sessionId);
+        else await retire($, e.sessionId);
         return next(e);
     });
 

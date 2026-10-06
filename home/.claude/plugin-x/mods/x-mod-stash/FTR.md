@@ -75,10 +75,13 @@
   - when dima turns 💨 off
   - then the band he pressed it in shows «while you were away», a `needs you · <session> · ⏳ n` line per session with asks, then a `done · <session>` line per session that only finished
   - and a reply that ended before afk went on stays out
+  - and a session the registry shows busy when 💨 turns off is not done yet, so it stays out
+  - and a session that ended its reply, then exited, while afk was on is listed as done
   - when dima sends his next prompt
   - then the digest is gone
   - decision: built from what each session's x-mod-stash already keeps — its asks and its last reply, now stamped with the reply's time and session name (FRM-325)
   - decision: only the band where 💨 went off shows it; every other band just sees afk end
+  - decision: an exit (any `session.end` but `/clear` and a resume) keeps the session's last reply, marked ended, and drops the rest of its keys; a start drops ended replies a day old
 - ✅ afk reaches a running turn
   - given a session is mid-turn
   - when dima flips afk
