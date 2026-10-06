@@ -16,6 +16,10 @@ _Avoid_: question, todo, pending
 Dima's away switch; while on, every session's prompt carries an away note.
 _Avoid_: away mode, shift presence
 
+**Away digest**:
+The lines the band shows when dima turns afk off: the sessions that left him asks, then the ones that finished, since afk went on.
+_Avoid_: summary, recap, catch-up
+
 **Hold**:
 A session's claim on one file, taken by its first edit of that file; other sessions' edits of it are refused.
 _Avoid_: lock, lease, claim, reservation

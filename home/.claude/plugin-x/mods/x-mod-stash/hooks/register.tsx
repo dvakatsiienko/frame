@@ -35,6 +35,8 @@ const REPLY = 'reply:';
 const CONTEXT = 'context:';
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
+// a session younger than this, counted from the registry's `startedAt`, is a probe: it gets no row until it outlives it
+const SHORT_MS = 60_000;
 const STALE_MS = 24 * 60 * 60 * 1000;
 // dima at the prompt, typing into a background job, on his phone or the web
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
@@ -85,6 +87,13 @@ const GUARD_EVENT = 'event:';
 const GUARD_AGE_MS = 30 * 60_000;
 let guards: GuardLine[] = [];
 let guardsOpen = false;
+
+// what the fleet did while dima was afk, shown in the band where he turned 💨 off until his next prompt
+type Digest = {
+    needs: { sid: string; name: string; asks: number }[];
+    done: { sid: string; name: string }[];
+};
+let digest: Digest | undefined;
 
 // a thread's asks show while it has any and they are under a day old
 const isLive = (v: Entry | undefined, now: number): v is Entry =>
@@ -562,12 +571,44 @@ type Member = {
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
+// every session whose reply ended since `since`: those that left asks first, then those that finished
+async function awayDigest($: EngineInterface, since: number): Promise<Digest> {
+    const needs: Digest['needs'] = [];
+    const done: Digest['done'] = [];
+    const keys = await $.store.keys();
+    for (const key of keys) {
+        if (!key.startsWith(PREFIX)) continue;
+        const v = (await $.store.get(key)) as Entry | undefined;
+        if (!v || v.at < since || !v.asks.length) continue;
+        const sid = key.slice(PREFIX.length);
+        needs.push({ asks: v.asks.length, name: v.name ?? short(sid), sid });
+    }
+    for (const key of keys) {
+        if (!key.startsWith(REPLY)) continue;
+        const sid = key.slice(REPLY.length);
+        const v = (await $.store.get(key)) as
+            | { at?: number; name?: string }
+            | undefined;
+        if (
+            v?.at === undefined ||
+            v.at < since ||
+            needs.some((n) => n.sid === sid)
+        )
+            continue;
+        done.push({ name: v.name ?? short(sid), sid });
+    }
+    const byName = (a: { name: string }, b: { name: string }) =>
+        a.name.localeCompare(b.name);
+    return { done: done.sort(byName), needs: needs.sort(byName) };
+}
+
 // live sessions from the registry, each with what its own stash wrote; a registry file mid-write is skipped
 async function members($: EngineInterface): Promise<Member[]> {
     const dir = `${await $.env.get('HOME')}/.claude/sessions`;
     const rows: {
         pid: number;
         bg: boolean;
+        startedAt?: number;
         base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince' | 'door'>;
     }[] = [];
     for (const f of await $.fs.list(dir)) {
@@ -598,6 +639,8 @@ async function members($: EngineInterface): Promise<Member[]> {
                 },
                 bg,
                 pid: v.pid,
+                startedAt:
+                    typeof v.startedAt === 'number' ? v.startedAt : undefined,
             });
         } catch {}
     }
@@ -619,7 +662,10 @@ async function members($: EngineInterface): Promise<Member[]> {
     const out: Member[] = [];
     const now = await $.clock.now();
     const shown = rows.filter(
-        (r) => alive.has(r.pid) && !HEADLESS.test(r.base.name),
+        (r) =>
+            alive.has(r.pid) &&
+            !HEADLESS.test(r.base.name) &&
+            !(r.startedAt !== undefined && now - r.startedAt < SHORT_MS),
     );
     for (const { bg, base: r } of shown) {
         const reply = (await $.store.get(REPLY + r.sid)) as
@@ -773,6 +819,11 @@ export const register: Register = (on) => {
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
         pinged = e.text === PING;
+        // dima read the away digest once he types again
+        if (userTurn && digest) {
+            digest = undefined;
+            $.ui.invalidate('ui.render');
+        }
         busy = true;
         hotGen++;
         await load($);
@@ -788,7 +839,11 @@ export const register: Register = (on) => {
         // a keep-hot ping's one-character reply never clears what the session waits on
         if (!pinged)
             await $.store
-                .set(REPLY + e.session_id, { wait: parseWait(reply) })
+                .set(REPLY + e.session_id, {
+                    at: await $.clock.now(),
+                    name: await sessionName($),
+                    wait: parseWait(reply),
+                })
                 .catch(() => undefined);
         const asks = parseAsks(reply);
         // a reply to dima with no block means nothing is open; a reply woken by a peer keeps the old list
@@ -1058,7 +1113,14 @@ export const register: Register = (on) => {
             $.ui.invalidate('ui.render');
         };
         const flipAfk = async () => {
+            const was = (await $.store.get(AFK_KEY)) as
+                | { at?: number; on?: boolean }
+                | undefined;
             afk = !afk;
+            digest =
+                !afk && was?.on && was.at !== undefined
+                    ? await awayDigest($, was.at)
+                    : undefined;
             await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
             $.ui.invalidate('ui.render');
         };
@@ -1278,11 +1340,33 @@ export const register: Register = (on) => {
                       : []),
               ]
             : [];
+        const away =
+            digest && (digest.needs.length || digest.done.length)
+                ? [
+                      <Text dimColor key='away'>
+                          while you were away
+                      </Text>,
+                      ...digest.needs.map((n) => (
+                          <Text key={`away:n:${n.sid}`} wrap='truncate-end'>
+                              {`needs you · ${n.name} · ⏳ ${n.asks}`}
+                          </Text>
+                      )),
+                      ...digest.done.map((d) => (
+                          <Text
+                              dimColor
+                              key={`away:d:${d.sid}`}
+                              wrap='truncate-end'>
+                              {`done · ${d.name}`}
+                          </Text>
+                      )),
+                  ]
+                : [];
         if (!open || !total)
             return (
                 <Box flexDirection='column'>
                     {head}
                     {shields}
+                    {away}
                     {await next(e)}
                 </Box>
             );
@@ -1310,12 +1394,16 @@ export const register: Register = (on) => {
                 </Text>
             )),
         ]);
-        const room = Math.max(1, e.props.maxRows - 1 - shields.length);
+        const room = Math.max(
+            1,
+            e.props.maxRows - 1 - shields.length - away.length,
+        );
         const shown = rows.slice(0, room);
         return (
             <Box flexDirection='column'>
                 {head}
                 {shields}
+                {away}
                 {shown}
                 {rows.length > shown.length ? (
                     <Text dimColor>+{rows.length - shown.length} more</Text>

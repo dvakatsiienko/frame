@@ -63,6 +63,15 @@
   - decision: no read-aloud button — dima uses F4 on a selected phrase, F4 does not read the clipboard, and a «read all» is not useful (2026-10-05); selectable band text would need an api cc does not have yet
 - ⬜ afk switch: one icon, `💨`; the `secondary` chip alone says it is on
   - decision: one icon, the chip tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
+- ⬜ an away digest when 💨 turns off: what needs dima first, then what finished
+  - given afk is on and two sessions end a reply, one with a ⏳ block and one without
+  - when dima turns 💨 off
+  - then the band he pressed it in shows «while you were away», a `needs you · <session> · ⏳ n` line per session with asks, then a `done · <session>` line per session that only finished
+  - and a reply that ended before afk went on stays out
+  - when dima sends his next prompt
+  - then the digest is gone
+  - decision: built from what each session's x-mod-stash already keeps — its asks and its last reply, now stamped with the reply's time and session name (FRM-325)
+  - decision: only the band where 💨 went off shows it; every other band just sees afk end
 - ✅ afk reaches a running turn
   - given a session is mid-turn
   - when dima flips afk
@@ -199,6 +208,7 @@ two sessions, A and B, in one checkout.
   - then a pane lists each by its session name, its state on the right, a full empty row between members
   - decision: cclio is pinned to the top, its name always bold; the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
+  - decision: a session younger than a minute, counted from the registry's `startedAt`, gets no row — a probe that exits within a minute never shows; one that lives on gets its row once it is a minute old (FRM-325)
   - decision: a session named `t-` + hex (`t-70`) gets no row — dima, 2026-10-05; that these are short-lived headless `claude -p` runs is an inference, no cc source names them
   - decision: a full row between members on every surface, no rule — the pane has room the one-row band does not (dima, 2026-10-05)
 - ✅ `🚦` in the row shows and hides the board

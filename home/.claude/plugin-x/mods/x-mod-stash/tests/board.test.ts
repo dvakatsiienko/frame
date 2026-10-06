@@ -167,6 +167,16 @@ test('a headless run named t-<hex> gets no row', async ($, on) => {
     expect(Object.keys(await rowsBySid($))).toEqual([HERE, PEER]);
 });
 
+test('a session started under a minute ago gets no row', async ($, on) => {
+    fleet(on, {}, { patch: { 2: { startedAt: NOW - 59_000 } } });
+    expect(Object.keys(await rowsBySid($))).toEqual([HERE]);
+});
+
+test('a session that has lived a minute gets its row', async ($, on) => {
+    fleet(on, {}, { patch: { 2: { startedAt: NOW - MIN } } });
+    expect(Object.keys(await rowsBySid($))).toEqual([HERE, PEER]);
+});
+
 test('every row draws the same fact columns, empty ones included', async ($, on) => {
     fleet(on, { [`context:${HERE}`]: 43 });
     const ui = await board($);
