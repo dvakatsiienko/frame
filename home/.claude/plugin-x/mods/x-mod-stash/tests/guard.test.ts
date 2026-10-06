@@ -2,29 +2,44 @@ import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 const STORE = '/home/.claude/plugins/store';
-const REFUSED = 'event:1000:a1a1a1a1-0000';
-const ESCAPED = 'event:2000:a1a1a1a1-0000';
-const EVENTS = {
-    [ESCAPED]: {
-        at: 2000,
-        command: 'rm -rf dist # dima-ok: dist',
-        door: 'trash <path>',
-        kind: 'escaped',
-        sid: 'a1a1a1a1-0000',
-        target: 'dist',
-    },
-    [REFUSED]: {
-        at: 1000,
-        command: 'rm -rf build',
-        door: 'trash <path>',
-        kind: 'refused',
-        name: '☕️ 🔧 FRM-1 code: x',
-        sid: 'a1a1a1a1-0000',
-        target: 'build',
-    },
+const MIN = 60_000;
+// the clock starts here, so every event below sits a few minutes in the past
+const NOW = 100 * MIN;
+
+type Event = {
+    at: number;
+    command: string;
+    door: string;
+    kind: 'refused' | 'escaped';
+    sid: string;
+    name?: string;
+    target: string;
 };
 
-// a session whose band reads x-mod-guard's own store file, as the engine keeps it
+const refusal = (at: number, sid: string, command: string): Event => ({
+    at,
+    command,
+    door: 'trash <path>',
+    kind: 'refused',
+    sid,
+    target: command.split(' ').pop() ?? '',
+});
+
+// x-mod-guard's store as the engine keeps it: one `event:<at>:<sid>` key per event
+const store = (events: Event[]) =>
+    Object.fromEntries(events.map((v) => [`event:${v.at}:${v.sid}`, v]));
+
+const FOUR = store([
+    {
+        ...refusal(NOW - 4 * MIN, 'a1a1a1a1-0000', 'rm -rf build'),
+        name: '☕️ 🔧 FRM-1 code: x',
+    },
+    refusal(NOW - 3 * MIN, 'a1a1a1a1-0000', 'rm -rf dist'),
+    refusal(NOW - 2 * MIN, 'c3c3c3c3-0000', 'rm -rf out'),
+    refusal(NOW - 1 * MIN, 'c3c3c3c3-0000', 'rm -rf tmp'),
+]);
+
+// a session whose band reads x-mod-guard's own store file
 async function band(
     $: Engine,
     on: On,
@@ -33,6 +48,7 @@ async function band(
     file = 'x-mod-guard_inline-abc.json',
 ) {
     const clock = mock.clock(on);
+    await clock.advance(NOW);
     mock.store(on);
     on('env.get', () => ({ value: '/home' }));
     on('fs.list', (_$, e) => ({
@@ -71,44 +87,61 @@ async function band(
         surface,
     });
     const lines = async () =>
-        (await ui.findAll({ text: /🛡️/, type: 'Text' })).map((n) => n.text);
+        (await ui.findAll({ text: /🛡️|→/, type: 'Text' })).map((n) => n.text);
     return { clock, lines, ui };
 }
 
 for (const surface of ['terminal', 'desktop'] as const)
-    test(`a guard refusal shows as a 🛡️ line until dismissed on ${surface}`, async ($, on) => {
-        const b = await band($, on, surface, { [REFUSED]: EVENTS[REFUSED] });
-        expect(await b.lines()).toEqual([
-            '🛡️ ☕️ 🔧 FRM-1 code: x — rm -rf build → trash <path>',
-        ]);
-        await b.ui.press({ key: `dismiss:${REFUSED}` });
-        expect(await b.lines()).toEqual([]);
+    test(`four refusals from two sessions show as one counter row on ${surface}`, async ($, on) => {
+        const b = await band($, on, surface, FOUR);
+        expect(await b.lines()).toEqual(['🛡️ 4 refusals · 2 sessions']);
     });
 
-test('an escape shows what it ran on', async ($, on) => {
-    const b = await band($, on, 'terminal', { [ESCAPED]: EVENTS[ESCAPED] });
+test('an escape counts beside the refusals and shows what it ran on', async ($, on) => {
+    const escaped: Event = {
+        at: NOW - MIN,
+        command: 'rm -rf dist # dima-ok: dist',
+        door: 'trash <path>',
+        kind: 'escaped',
+        sid: 'a1a1a1a1-0000',
+        target: 'dist',
+    };
+    const b = await band($, on, 'terminal', store([escaped]));
+    await b.ui.press({ key: 'guard-toggle' });
     expect(await b.lines()).toEqual([
-        '🛡️ a1a1a1a1 — rm -rf dist # dima-ok: dist → ran on dima-ok: dist',
+        '🛡️ 1 escape · 1 session',
+        'a1a1a1a1 — rm -rf dist # dima-ok: dist → ran on dima-ok: dist',
     ]);
 });
 
-test('a guard line kept under the old guard name still shows after the rename', async ($, on) => {
-    const b = await band(
-        $,
-        on,
-        'terminal',
-        { [REFUSED]: EVENTS[REFUSED] },
-        'guard_inline-0ld0ld.json',
-    );
-    expect(await b.lines()).toEqual([
-        '🛡️ ☕️ 🔧 FRM-1 code: x — rm -rf build → trash <path>',
-    ]);
+test('refusals kept under the old guard name still count after the rename', async ($, on) => {
+    const b = await band($, on, 'terminal', FOUR, 'guard_inline-0ld0ld.json');
+    expect(await b.lines()).toEqual(['🛡️ 4 refusals · 2 sessions']);
 });
 
-test('two dismissed lines stay gone after the next poll', async ($, on) => {
-    const b = await band($, on, 'terminal', EVENTS);
-    await b.ui.press({ key: `dismiss:${ESCAPED}` });
-    await b.ui.press({ key: `dismiss:${REFUSED}` });
-    await b.clock.advance(5000);
+test("the counter row's hover card names what the next press does", async ($, on) => {
+    const b = await band($, on, 'terminal', FOUR);
+    await b.ui.press({ key: 'guard-toggle' });
+    const cards = (await b.ui.findAll({ type: 'Box' }))
+        .filter((n) => n.props.display === 'none')
+        .map((n) => n.text);
+    expect(cards).toContain('fold guard refusals');
+});
+
+test('the counter row is gone 30 minutes after the last refusal', async ($, on) => {
+    const b = await band($, on, 'terminal', FOUR);
+    await b.clock.advance(29 * MIN);
     expect(await b.lines()).toEqual([]);
+});
+
+test('a click on the counter row shows each refusal with its session and door', async ($, on) => {
+    const b = await band($, on, 'terminal', FOUR);
+    await b.ui.press({ key: 'guard-toggle' });
+    expect(await b.lines()).toEqual([
+        '🛡️ 4 refusals · 2 sessions',
+        'c3c3c3c3 — rm -rf tmp → trash <path>',
+        'c3c3c3c3 — rm -rf out → trash <path>',
+        'a1a1a1a1 — rm -rf dist → trash <path>',
+        '☕️ 🔧 FRM-1 code: x — rm -rf build → trash <path>',
+    ]);
 });

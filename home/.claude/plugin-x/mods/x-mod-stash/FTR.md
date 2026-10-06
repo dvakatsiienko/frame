@@ -112,13 +112,15 @@
   - given A holds `x.ts`
   - when B's edit of `x.ts` is refused
   - then A's chip shows ⚠, and A gets no message
-- ✅ guard lines: every command x-mod-guard stopped or let through shows as a 🛡️ line until dismissed
-  - given x-mod-guard refused a command in any session, or ran one on a `# dima-ok:` escape
+- ✅ guard counter: x-mod-guard's run of refusals folds into one 🛡️ counter row, gone on its own — no crosses to clear
+  - given x-mod-guard refused commands in any session, or ran one on a `# dima-ok:` escape, each under 30 min after the one before
   - when any session's band draws, folded or not
-  - then a line reads `🛡️ <session> — <command> → <door>` (an escape: `→ ran on dima-ok: <target>`), newest first, three at most and `+n more guard lines` past that
-  - when dima presses its `✕` (hover: «dismiss this guard line»)
-  - then the line is gone from every session's band
-  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`, and the `guard_*.json` it kept before the rename) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the dismissed list lives in x-mod-stash's store and keeps only keys x-mod-guard still holds
+  - then one row reads `🛡️ <n> refusals · <m> sessions` (escapes count beside: `· <k> escapes`)
+  - when dima presses its `▸` (hover: «unfold guard refusals»)
+  - then each event shows under it, newest first: `<session> — <command> → <door>` (an escape: `→ ran on dima-ok: <target>`)
+  - when 30 min pass with no new event
+  - then the row is gone from every session's band
+  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`, and the `guard_*.json` it kept before the rename) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the trace stays there (x-mod-guard keeps its last 50), so a halt counts the day from that file
 
 ## edits — holds
 

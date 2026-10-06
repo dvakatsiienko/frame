@@ -81,11 +81,10 @@ type GuardLine = {
 // the mod was `guard` before it was x-mod-guard: its old store file is read beside the new one
 const GUARD_FILE = /^(x-mod-)?guard_.*\.json$/;
 const GUARD_EVENT = 'event:';
-const DISMISSED = 'guard-dismissed';
-const GUARD_ROWS = 3;
+// the counter row ages out after this long with no new event
+const GUARD_AGE_MS = 30 * 60_000;
 let guards: GuardLine[] = [];
-// every event key guard holds, dismissed or not: the dismissed list is pruned against it
-let guardKeys = new Set<string>();
+let guardsOpen = false;
 
 // a thread's asks show while it has any and they are under a day old
 const isLive = (v: Entry | undefined, now: number): v is Entry =>
@@ -372,13 +371,11 @@ async function chip($: EngineInterface, sid: string, root: string) {
     return { others, warned };
 }
 
-// every guard event not yet dismissed, newest first; a file mid-write is skipped until the next poll
+// the current run of guard events, newest first: each one under GUARD_AGE_MS after the next, the newest under it
+// before now. a file mid-write is skipped until the next poll
 async function guardLines($: EngineInterface): Promise<GuardLine[]> {
     const dir = `${await $.env.get('HOME')}/.claude/plugins/store`;
-    const held = await $.store.get(DISMISSED);
-    const dismissed = new Set(Array.isArray(held) ? held : []);
-    const out: GuardLine[] = [];
-    const keys = new Set<string>();
+    const all: GuardLine[] = [];
     for (const f of await $.fs.list(dir).catch(() => [])) {
         if (!GUARD_FILE.test(f.name)) continue;
         try {
@@ -386,15 +383,19 @@ async function guardLines($: EngineInterface): Promise<GuardLine[]> {
                 string,
                 Omit<GuardLine, 'key'>
             >;
-            for (const [key, event] of Object.entries(v)) {
-                if (!key.startsWith(GUARD_EVENT)) continue;
-                keys.add(key);
-                if (!dismissed.has(key)) out.push({ ...event, key });
-            }
+            for (const [key, event] of Object.entries(v))
+                if (key.startsWith(GUARD_EVENT)) all.push({ ...event, key });
         } catch {}
     }
-    guardKeys = keys;
-    return out.sort((a, b) => b.at - a.at);
+    all.sort((a, b) => b.at - a.at);
+    let since = await $.clock.now();
+    const run: GuardLine[] = [];
+    for (const g of all) {
+        if (since - g.at >= GUARD_AGE_MS) break;
+        run.push(g);
+        since = g.at;
+    }
+    return run;
 }
 
 // the mod was `stash` before it was x-mod-stash, and $.store is one file per plugin name: a start copies every
@@ -418,17 +419,6 @@ async function adoptOldStore($: EngineInterface) {
             await $.store.set(key, value);
     }
     await $.store.set(ADOPTED, newest);
-}
-
-// dismissing keeps only keys guard still holds, so the list never outgrows guard's own
-async function dismissGuard($: EngineInterface, key: string) {
-    const held = await $.store.get(DISMISSED);
-    await $.store.set(DISMISSED, [
-        ...(Array.isArray(held) ? held : []).filter((k) => guardKeys.has(k)),
-        key,
-    ]);
-    guards = guards.filter((g) => g.key !== key);
-    $.ui.invalidate('ui.render');
 }
 
 // fail-open: a store or git error lets the edit through, with a line in the transcript
@@ -1231,39 +1221,48 @@ export const register: Register = (on) => {
                 </Box>
             </Box>
         );
-        // guard's lines show folded or not: each is a command stopped or let through, until dima dismisses it
-        const guardRows = guards.slice(0, GUARD_ROWS).map((g) => (
-            <Box
-                flexDirection='row'
-                gap={1}
-                justifyContent='space-between'
-                key={`guard:${g.key}`}>
-                <Text wrap='truncate-end'>
-                    {`🛡️ ${g.name ?? short(g.sid)} — ${g.command} → ${g.kind === 'escaped' ? `ran on dima-ok: ${g.target}` : g.door}`}
-                </Text>
-                {tip(
-                    `dismiss:${g.key}`,
-                    'dismiss this guard line',
-                    <Button
-                        key={`dismiss:${g.key}`}
-                        onPress={() => void dismissGuard($, g.key)}
-                        plain>
-                        ✕
-                    </Button>,
-                    leftOf('✕', false),
-                )}
-            </Box>
-        ));
-        const shields = [
-            ...guardRows,
-            ...(guards.length > GUARD_ROWS
-                ? [
-                      <Text dimColor key='guard:more'>
-                          +{guards.length - GUARD_ROWS} more guard lines
-                      </Text>,
-                  ]
-                : []),
-        ];
+        // guard's run folds into one counter row, shown folded or not, gone once guard has been quiet a while
+        const plural = (n: number, word: string) =>
+            `${n} ${word}${n === 1 ? '' : 's'}`;
+        const refused = guards.filter((g) => g.kind === 'refused').length;
+        const escaped = guards.length - refused;
+        const counter = [
+            ...(refused ? [plural(refused, 'refusal')] : []),
+            ...(escaped ? [plural(escaped, 'escape')] : []),
+            plural(new Set(guards.map((g) => g.sid)).size, 'session'),
+        ].join(' · ');
+        const flipGuards = () => {
+            guardsOpen = !guardsOpen;
+            $.ui.invalidate('ui.render');
+        };
+        const guardLabel = guardsOpen ? '▾' : '▸';
+        const shields = guards.length
+            ? [
+                  <Box flexDirection='row' gap={1} key='guard'>
+                      <Text>🛡️ {counter}</Text>
+                      {tip(
+                          'guard-toggle',
+                          guardsOpen
+                              ? 'fold guard refusals'
+                              : 'unfold guard refusals',
+                          <Button key='guard-toggle' onPress={flipGuards} plain>
+                              {guardLabel}
+                          </Button>,
+                          leftOf(guardLabel, false),
+                      )}
+                  </Box>,
+                  ...(guardsOpen
+                      ? guards.map((g) => (
+                            <Text
+                                dimColor
+                                key={`guard:${g.key}`}
+                                wrap='truncate-end'>
+                                {`${g.name ?? short(g.sid)} — ${g.command} → ${g.kind === 'escaped' ? `ran on dima-ok: ${g.target}` : g.door}`}
+                            </Text>
+                        ))
+                      : []),
+              ]
+            : [];
         if (!open || !total)
             return (
                 <Box flexDirection='column'>
