@@ -1,0 +1,84 @@
+{
+    "about": "the handoff filename grammar, as cases: handoff-store.test.ts and x/go/store_test.go both read every one, so the TS writer and the go reader cannot drift apart. `parsed: null` = not a handoff.",
+    "cases": [
+        {
+            "file": "cclio--pm--pm-overhaul--by-ccli--20260831T120000Z.md",
+            "parsed": {
+                "audience": "cclio",
+                "author": "ccli",
+                "lane": "pm",
+                "shared": false,
+                "slug": "pm-overhaul",
+                "ts": "20260831T120000Z"
+            }
+        },
+        {
+            "file": "any--probe--sline-probe--by-cw--20260831T120000Z-shared.md",
+            "parsed": {
+                "audience": "any",
+                "author": "cw",
+                "lane": "probe",
+                "shared": true,
+                "slug": "sline-probe",
+                "ts": "20260831T120000Z"
+            }
+        },
+        {
+            "file": "cclio-cclio-memory-bridge-halt16-20260912T215406Z.md",
+            "parsed": {
+                "audience": "cclio",
+                "author": "any",
+                "lane": "any",
+                "shared": false,
+                "slug": "cclio-memory-bridge-halt16",
+                "ts": "20260912T215406Z"
+            }
+        },
+        {
+            "file": "20260831T120000Z-cw-old-thread.md",
+            "parsed": {
+                "audience": "cw",
+                "author": "any",
+                "lane": "any",
+                "shared": false,
+                "slug": "old-thread",
+                "ts": "20260831T120000Z"
+            }
+        },
+        {
+            "file": "sline-20260831T120000Z.md",
+            "parsed": {
+                "audience": "any",
+                "author": "any",
+                "lane": "any",
+                "shared": false,
+                "slug": "sline",
+                "ts": "20260831T120000Z"
+            }
+        },
+        {
+            "file": "bytes-cache-probe-20260831T120000Z.md",
+            "parsed": {
+                "audience": "any",
+                "author": "any",
+                "lane": "any",
+                "shared": false,
+                "slug": "bytes-cache-probe",
+                "ts": "20260831T120000Z"
+            }
+        },
+        {
+            "file": "notes.md",
+            "parsed": {
+                "audience": "any",
+                "author": "any",
+                "lane": "any",
+                "shared": false,
+                "slug": "notes",
+                "ts": ""
+            }
+        },
+        { "file": ".DS_Store", "parsed": null },
+        { "file": "superseded", "parsed": null }
+    ]
+}

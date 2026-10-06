@@ -6,6 +6,7 @@ todo.md
 # Build artifacts
 home/.claude/mcp-x-cw/dist
 home/.claude/sline/bin
+x/go/bin
 home/.claude/sline/sline
 home/.claude/sline/sline-state.json
 schedule/jobs/x-monitor-hotkey-stats/bin

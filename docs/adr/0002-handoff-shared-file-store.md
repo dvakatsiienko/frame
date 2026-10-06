@@ -15,6 +15,11 @@ multiple pullers). CSTs therefore flow in every direction
 > retired: nothing auto-deletes; `list` age-flags files older than ~7d and deletion is
 > always a human-said thing. Upmerge exists as `write --replaces <slug>`. The shared-store
 > decision itself stands unchanged.
+>
+> **Amended 2026-10-06 (FRM-284):** the store has a second reader — `x handoffs` reads it in go
+> (`x/go/store.go`), because a node bridge cost 60 of its 72 ms. The writer stays one executable,
+> `script/skill-handoff-store.ts`. The two readers test the same names, `script/lib/handoff-names.json`,
+> so the grammar is still defined once.
 
 ## Considered Options
 

@@ -20,6 +20,9 @@ zsh_completion_cached() {     # $1 = binary, rest = the command that prints a #c
 zsh_completion_cached mo     mo completion zsh
 zsh_completion_cached linear linear completions zsh
 zsh_completion_cached ntn    ntn completions zsh
+# x prints json to an agent, and an agent's shell may source this file; the script itself asks
+# `x __complete` live, so a new verb needs no refresh
+zsh_completion_cached x      env -u CLAUDECODE -u AI_AGENT x completion zsh
 
 fpath=($ZSH_INIT_CACHE_DIR/completions $fpath)
 autoload -Uz compinit
