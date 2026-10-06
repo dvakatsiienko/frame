@@ -10,9 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «a run skill would pick up run-atelier and hang» · 2026-09-27
-The built-in `run` and the generated `run-<app>` skills had just been adopted, and `run-atelier` said «leave the server running» so dima could watch a coder's tree. He asked: «if a built-in run skill is designed to only do a sanity check … then a skill like run-atelier would interfere with it … or am I getting something wrong?» He was right: `run` defers to any project skill whose description says it launches the app, so every sanity pass would have left a server behind — the same shape as the orphan vite a coder had left on `:5173` the day before. The fix split the two jobs: `run-<app>` stays neutral (start, drive, stop) and the keep-alive moved into the coder's contract. His felt sense read the two skills as one system before either of us had run them together. → `crew-coder`, `run-atelier`, `run-chords`
-
 ## «you closed the pr, not merged it» · 2026-09-28
 The auto-archive probe had closed its pr and watched the card stay; my verdict went out as «auto-archive does nothing for our sessions». He read it and said the close was a different event from a merge — it might archive on merge alone. The merge round kept the verdict for our `--bg` and `--cloud` sessions, and then his own two desktop-made probes showed the real line: a desktop-made local session is archived and stopped at its merge. His question split one event I had treated as two into the two it was, and the second probe he set up found the case my first one could not reach. → `craft-spawning`, the auto-archive line
 
@@ -69,3 +66,7 @@ mid-session he pictured the end of a shift: he comes back to the keyboard, asks 
 
 ## «then it looks useful! why park it?» · 2026-10-05
 `mods:live` sat parked behind the third-need rule: a pty harness for reload and hover checks, two needs counted, build on the third. he read my one-line description and answered with his own frame: «from my understanding, this `mods:live` command is similar to a dev server for web applications». the rule had counted it as a rare check, needed when a hover bug hit; his analogy showed a dev loop every mods coder runs all day, the way vite runs for a web app. it was built that night and worked on the first probe. his felt sense saw the category before my counter did. → FRM-322, `pnpm mods:live`
+
+## «the second run actually showed what I wanted» · 2026-10-06
+he asked the cli a/b/c to answer one thing: does go + bubbletea look better than TS? the first round built the whole cli three times, every verb in every stack, for about two and a half hours, and the arms came out looking nearly the same. I read their numbers and picked TS. he then asked for «cheapest effort, but widest UI representation» — one throwaway showcase screen per arm — and it took half an hour. the go screen was a level above, and the pick flipped. his note after it: «the initial build didn't answer a question that I asked … we could make a wrong choice by going with TypeScript». his felt sense knew what the comparison was for before the brief did. → the flawlog line on comparison briefs, `x:shape-idea`
+

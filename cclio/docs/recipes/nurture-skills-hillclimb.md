@@ -9,6 +9,9 @@ measures whether a skill fires and is followed, and improves it against the meas
 
 ## the proposed shape
 
+- **step 1, the census** — `/skill-doctor` (cc 2.1.291): per skill, how often it fires, when it
+  last fired, its token cost; `/skills` then `T` sorts the list by tokens. a skill nobody fires
+  and that costs context is a prune candidate before any hillclimb (dima's yes, 2026-10-06)
 - **trigger** — a skill miss shows up: a flawlog «skill not loaded» line, or a `jev` router
   near-miss (0.30–0.70) on a prompt that should have loaded it.
 - **cases** — dima's real prompts for that skill as `plugin-x/evals/<skill>-*` cases, split into a

@@ -9,7 +9,7 @@ const hook = join(
     '../../home/.claude/shelf/hooks/reply-check.py',
 );
 
-function check(reply: string, lastMessage?: string) {
+function check(reply: string, lastMessage?: string, now = '12:00') {
     const dir = mkdtempSync(join(tmpdir(), 'reply-check-'));
     const transcript = join(dir, 'session.jsonl');
     const log = join(dir, 'log.tsv');
@@ -28,7 +28,7 @@ function check(reply: string, lastMessage?: string) {
         lines.map((line) => JSON.stringify(line)).join('\n'),
     );
     spawnSync('python3', [hook], {
-        env: { ...process.env, REPLY_CHECK_LOG: log },
+        env: { ...process.env, REPLY_CHECK_LOG: log, REPLY_CHECK_NOW: now },
         input: JSON.stringify({
             last_assistant_message: lastMessage,
             session_id: 'test',
@@ -62,7 +62,9 @@ describe('reply-check', () => {
     });
 
     it('passes the last-report footer', () => {
-        expect(check('📄 last report: **x**, 18:30')).toEqual([]);
+        expect(
+            check('📄 last report: **x**, 18:30', undefined, '18:45'),
+        ).toEqual([]);
     });
 
     it('reads the stop event message over a lagging transcript', () => {
@@ -84,5 +86,23 @@ describe('reply-check', () => {
             'circled-digits',
             'circled-digits',
         ]);
+    });
+
+    it('logs a 📄 stamp later than the reply time', () => {
+        expect(
+            check('📄 last report: **x**, 12:40', undefined, '12:05'),
+        ).toEqual(['future-stamp']);
+    });
+
+    it('passes a 📄 stamp at or before the reply time', () => {
+        expect(
+            check('📄 last report: **x**, 11:58', undefined, '12:05'),
+        ).toEqual([]);
+    });
+
+    it('passes a 📄 stamp from before midnight after it', () => {
+        expect(
+            check('📄 last report: **x**, 23:50', undefined, '00:10'),
+        ).toEqual([]);
     });
 });

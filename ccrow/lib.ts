@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import {
     copyFileSync,
     globSync,
@@ -10,14 +11,17 @@ import {
 import { connect } from 'node:net';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 
 export const SESSION_NAME = '🐦‍⬛ ccrow';
 export const STATE_DIR = join(homedir(), '.local/state/ccrow');
+const STORE_DIR = join(homedir(), '.claude/plugins/store');
+const HOT = 'hot:';
 export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');
 export const VERDICTS_PATH = join(STATE_DIR, 'verdicts.jsonl');
 export const WAKE_GAP_MS = 30 * 60_000;
 export const MIN_STEPS = 10;
-export const SILENT_DAYS = 3;
+export const SILENT_DAYS = 0; // dima 2026-10-06: live from day 1 — the silent notes were worth reading live
 const DELTA_MAX_CHARS = 60_000;
 const SESSIONS_DIR = join(homedir(), '.claude/sessions');
 
@@ -29,22 +33,67 @@ export const armModels = {
     opus: 'claude-opus-5-5',
 } as const satisfies Record<Arm, string>;
 
-// mods load from CLAUDE_CODE_PLUGIN_DIRS in the user settings env; an empty value turns them off
-const CCROW_SETTINGS = JSON.stringify({
-    crossSessionInbound: 'accept',
-    disableAllHooks: true,
-    env: { CLAUDE_CODE_PLUGIN_DIRS: '' },
-});
-
-export function claudeArgs(arm: Arm) {
+// no user settings source: no user hooks, plugins or mods; disableAllHooks would block the mods in `pluginDirs` too (probed 2026-10-06)
+export function claudeArgs(arm: Arm, pluginDirs = '') {
     return [
         '--model',
         armModels[arm],
         '--effort',
         'medium',
+        '--setting-sources',
+        'project,local',
         '--settings',
-        CCROW_SETTINGS,
+        JSON.stringify({
+            crossSessionInbound: 'accept',
+            env: { CLAUDE_CODE_PLUGIN_DIRS: pluginDirs },
+            permissions: {
+                additionalDirectories: ['~'],
+                defaultMode: 'bypassPermissions',
+            },
+            skipDangerousModePermissionPrompt: true,
+        }),
     ];
+}
+
+// the stash mod is found by its plugin name, never its dir: the dir gets renamed
+export function stashModOf(pluginDirs: string, home = homedir()) {
+    for (const entry of pluginDirs.split(':')) {
+        const dir = entry.replace(/^~(?=\/)/, home);
+        try {
+            const { name } = JSON.parse(
+                readFileSync(join(dir, '.claude-plugin/plugin.json'), 'utf8'),
+            );
+            if (typeof name === 'string' && /(^|-)stash$/.test(name))
+                return { dir, name };
+        } catch {}
+    }
+}
+
+export function userPluginDirs() {
+    const settings = JSON.parse(
+        readFileSync(join(homedir(), '.claude/settings.json'), 'utf8'),
+    );
+    return String(settings.env?.CLAUDE_CODE_PLUGIN_DIRS ?? '');
+}
+
+// $.store is one json file per plugin, shared by every session running it; the hash in its name is cc's
+export function storeOf(pluginName: string, storeDir = STORE_DIR) {
+    return globSync(`${pluginName}_inline-*.json`, { cwd: storeDir })
+        .map((f) => join(storeDir, f))
+        .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
+}
+
+// stash's 🔥 keep-hot reads `hot:<sessionId>` at session.start; no `until`, so it never cools
+export function setHot(storePath: string, sessionId: string, now: number) {
+    const store = JSON.parse(readFileSync(storePath, 'utf8'));
+    store[HOT + sessionId] = { since: now };
+    writeFileSync(storePath, JSON.stringify(store));
+}
+
+export function clearHot(storePath: string, sessionId: string) {
+    const store = JSON.parse(readFileSync(storePath, 'utf8'));
+    delete store[HOT + sessionId];
+    writeFileSync(storePath, JSON.stringify(store));
 }
 
 export function readCharter() {
@@ -86,7 +135,7 @@ export function writeState(state: State) {
 // the registry stores the name with its zero-width joiner turned into a space: «🐦 ⬛ ccrow»
 const bareName = (name: string) => name.replaceAll(/[\s‍]/g, '');
 
-function isAlive(pid: number) {
+export function isAlive(pid: number) {
     try {
         process.kill(pid, 0);
         return true;
@@ -125,6 +174,69 @@ export function findSession(): LiveSession | undefined {
         } catch {}
     }
 }
+
+// with the user settings source off, the global rules/ dir is not read; a project rules dir is, but
+// only real files (a symlinked dir or file and an @-import outside the project load nothing, probed 2026-10-06)
+function copyRules() {
+    const from = join(homedir(), '.claude/rules');
+    const to = join(STATE_DIR, '.claude/rules');
+    mkdirSync(to, { recursive: true });
+    for (const name of readdirSync(from).filter((f) => f.endsWith('.md'))) {
+        writeFileSync(join(to, name), readFileSync(join(from, name)));
+    }
+}
+
+export async function startCcrow(arm: Arm) {
+    mkdirSync(STATE_DIR, { recursive: true });
+    copyRules();
+    const stash = stashModOf(userPluginDirs());
+    const result = spawnSync(
+        'claude',
+        [
+            '--bg',
+            '-n',
+            SESSION_NAME,
+            ...claudeArgs(arm, stash?.dir),
+            '--remote-control',
+            SESSION_NAME,
+            readCharter(),
+        ],
+        { cwd: STATE_DIR, encoding: 'utf8' },
+    );
+    if (result.error) fail(`cannot run claude: ${result.error.message}`);
+    const jobId = /backgrounded · (\S+)/.exec(
+        stripVTControlCharacters(result.stdout),
+    )?.[1];
+    if (result.status !== 0 || !jobId) {
+        fail(`claude --bg failed: ${(result.stderr || result.stdout).trim()}`);
+    }
+    writeState({ ...readState(), arm, jobId, startedAt: Date.now() });
+    console.log(
+        `ccrow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}`,
+    );
+
+    const store = stash && storeOf(stash.name);
+    if (!stash || !store) {
+        console.log('🔥 off: no stash mod or store file');
+        return;
+    }
+    // --bg ignores --session-id, so the id is known only once the registry lists ccrow
+    let live = findSession();
+    for (let i = 0; i < 30 && !live; i++) {
+        await sleep(1000);
+        live = findSession();
+    }
+    if (!live) {
+        console.log('🔥 off: ccrow not in the registry after 30 s');
+        return;
+    }
+    setHot(store, live.sessionId, Date.now());
+    console.log(
+        `🔥 key hot:${live.sessionId} written; stash reads it at session.start only, so ccrow's 🔥 waits on a stash change`,
+    );
+}
+
+const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
 
 export function transcriptPathOf(cwd: string, sessionId: string) {
     return join(

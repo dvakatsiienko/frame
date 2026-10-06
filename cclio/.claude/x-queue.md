@@ -3,5 +3,5 @@
 soon only: «after X and Y, do Z». ideally empty — a line that is not soon moves to reminders, the flowlog, or a ticket (`habit-shared-files`).
 
 ## queue
-- 2026-10-06, the cli lane first (dima: «cli lane is not today. it is for tmrw»): dima reads `x/PRODUCT.md` and says «shaped» → the verb freeze → the [FRM-284](https://linear.app/x-com/issue/FRM-284) a/b/c, the TS and go coders **in parallel** (dima: «for this case you can spawn in paralel, it is an exception, but report only when all done, so less distractions»)
-- 2026-10-06 boot: the FRM-323 live check — one fork from this interactive session without a `why-fork:` line must be refused by `guard` (and one with it must run); then close [FRM-323](https://linear.app/x-com/issue/FRM-323) (dima: «close after tomorrow's live fork check at boot»)
+- 2026-10-06, the next frame quick-lane coder: `flow:report` counts reads per `docs/knowledge/` file in the window (Read calls from the transcripts; `x knowledge read` logs join it once v1.1 ships) — dima's yes 15:22
+- 2026-10-06, after the FRM-284 go arm reports: print why the go arm took noticeably longer than the ts arms (dima 16:00)

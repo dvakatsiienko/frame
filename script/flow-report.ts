@@ -1,7 +1,7 @@
-// the fleet-flow done test (FRM-309): tagged flawlog lines, bare cc runs, crew-skill loads, and the pr open → merge median per repo.
+// the fleet-flow done test (FRM-309): tagged flawlog lines, bare cc runs, crew-skill loads, the pr open → merge median per repo, and Reads per docs/knowledge file.
 // usage: pnpm flow:report [--days 14]
 import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 import type { MergedPr } from './lib/flow-report.ts';
@@ -38,9 +38,14 @@ for (const { count, tag } of flawlogCounts(flawlogDir, since)) {
     console.log(`- ${tag}: ${count} (baseline ${TAG_BASELINE[tag]})`);
 }
 
+const knowledgeDir = new URL('../docs/knowledge/', import.meta.url);
+const knowledge = readdirSync(knowledgeDir, { recursive: true })
+    .map(String)
+    .filter((f) => f.endsWith('.md'));
 const transcripts = transcriptCounts(
     `${process.env.HOME}/.claude/projects`,
     start,
+    knowledge,
 );
 console.log(
     `- bare runs: ${transcripts.bareRuns} over ${transcripts.bareSessions} sessions (\`claude … --safe-mode\` in a Bash call)`,
@@ -58,6 +63,11 @@ for (const repo of REPOS) {
     console.log(
         `  - ${repo.name}: ${shown} over ${prs.length} prs (baseline ${repo.baseline} min)`,
     );
+}
+
+console.log('- docs/knowledge Reads, most-read first:');
+for (const { count, file } of transcripts.knowledgeReads) {
+    console.log(`  - ${file}: ${count}`);
 }
 
 function mergedPrs(repo: string): MergedPr[] {

@@ -21,7 +21,7 @@ item's url travels verbatim into its flowlog line** — a link is payload, never
 the reports he came back for). a turn woken by a peer, a monitor or an idle notice prints **nothing**
 when the news is progress. a decision, a question, a doubt or a find he would want gets one line —
 `🔔 <member>: <what> → ⏳ <n>` — and the whole ⏳ bucket follows it. **a coder's report reaches him
-once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name.
+once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name. the digest IS the coder's look card (what · where · try · proven · not checked, FRM-315), and its screenshot goes to him by `SendUserFile` in the same turn.
 
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel lanes (researchers, coders, probes),
 their results land at different times — hold them and print ONE unified reply when the picture

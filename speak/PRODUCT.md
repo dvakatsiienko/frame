@@ -49,7 +49,7 @@ change before saving it. success: the next F4 sounds the way dima wants, without
 - female voices only; no emoji read aloud.
 - a preview uses the card's unsaved settings; a ♥ saves at once; save writes config.json through biome.
 - an engine out of quota is skipped by the chain and shown as such until its next success.
-- the glossary is `CONTEXT.md`; the feature map is `FTR.md`.
+- the glossary is `GLOSSARY.md`; the feature map is `FTR.md`.
 - the cut (the 2026-09-30 re-shape). in: the keys, the pill's volume and speed controls, the pill's word highlight,
   the admin redesign with expressive provider cards, an in-app highlight as an experiment. out: highlight in
   terminals and pdfs, chrome by default, new engines, dropping any provider — every engine stays, they are dima's

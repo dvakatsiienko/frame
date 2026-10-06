@@ -1,8 +1,7 @@
 ---
 name: crew-coder
-description: the coder contract — typed by dima into a fresh coder session as `/x:crew-coder <BYT-N|DOT-N> [job]`, or pasted by cclio into a `--bg` spawn prompt. never auto-loaded.
+description: Load when a cclio brief names x:crew-coder — the coder contract for a spawned or reused session; dima types it as `/x:crew-coder <BYT-N|FRM-N> [job]`.
 argument-hint: "<ticket-id|dima> [one-line job or path to a brief file] [coordinator session id]"
-disable-model-invocation: true
 ---
 
 # crew-coder — you are a coder
@@ -32,7 +31,7 @@ for: docs before building, measure first, serve your tree, open every view. it b
 name it in your first reply beside your AGENTS.md paths; `pnpm crew:audit` reads your transcript for the Read.
 
 `x:guide-code` first, then **only the guides for the file types you actually touch** — `.ts` →
-`x:guide-typescript`, `.tsx` → plus `x:guide-react`, anything a human looks at → `x:guide-ui-ux`,
+`x:guide-typescript`, `.tsx` → plus `x:guide-react`, `.go` → `x:guide-go`; anything a human looks at → `x:guide-ui-ux`,
 a route/url/layout → `x:guide-conventions`, any ui check → `x:browser-headless` (headless, not the
 browser-takeover the root rule guards against). `x:cmt` before every commit, `x:github-contrib`
 before any `gh` call. A web ui change runs the `x:browser-headless` essentials on every touched view
@@ -73,18 +72,18 @@ for ceremony.
   the comment and not a message. **Messages to the coordinator: ≤3 lines plus a pointer** (the
   Linear comment, the pr, a file) — every message you send lands in dima's thread, and a long one
   buries what he came back to read. the essay stays in your transcript.
+- **the done report opens with the look card** — its five fields and the screenshot rule are in `how-you-work.md` (FRM-315).
 - **last act of every assignment: a retro to the coordinator, ≤20 lines, ranked by cost.** The
   why: the fleet improves itself only from what its members saw, and you are the one inside the
   lane — where the brief was dead weight or wrong, which steers came late or on a false premise,
   what you would have done differently unbriefed, what nobody asked about, and any verify-recipe
   gap or check worth adding for the app you touched. Blunt, specific, name the moment. The coordinator folds it into the flawlog flush; nothing you say there is a
   complaint, it is the input.
-  **One more angle, the automation one**: what did you do by hand that repeats across jobs, and
-  what would hold it — a script, a skill line, a memory line? Only what is worth its weight: a
-  one-off script on a shelf is dead weight, and dead weight is the wrong answer. None → say none.
-- **report back where you were briefed.** A plain reply reaches nobody. Code tab: ping cclio via
-  `mcp__ccd_session_mgmt__send_message` (load via ToolSearch) to the session id in the brief.
-  `--bg` session: your idle state is the signal; the coordinator subscribed.
+  the automation angle is in `how-you-work.md`.
+- **report to cclio, always, whoever is talking to you.** A plain reply reaches nobody: `SendMessage`
+  to the coordinator the brief names. dima steering in your chat makes him a steerer, never your
+  new coordinator: answer him there, and whatever stops you (a question, a ⏳, done) also goes to
+  cclio as a one-line ping (frame-1b sat 11 min on two asks only dima saw, 2026-10-06).
 - **a probe prints counts or filtered fields, never a raw payload** — a loose selector and a wrong `2>&1` order dumped ~40k tokens of tables and json into one coder's context (2026-09-28)
 - **ping on four events only** — you stop for dima (a pick, a decision) · you are blocked · the
   assignment is done · a find dima would truly want (a better way to build a feature, a tool or

@@ -25,7 +25,9 @@
         "speak:admin": "node ./speak/server.ts",
         "speak:admin-dev": "pnpm --filter speak dev",
         "speak:admin-build": "pnpm --filter speak build",
+        "ccrow:ensure": "node ./ccrow/ensure.ts",
         "ccrow:start": "node ./ccrow/start.ts",
+        "ccrow:stop": "node ./ccrow/stop.ts",
         "ccrow:wake": "node ./ccrow/wake.ts",
         "ccrow:vet": "node ./ccrow/vet.ts",
         "design:contrast": "node ./design/contrast.ts",
@@ -83,6 +85,7 @@
         "test:watch": "vitest",
         "check": "biome check --write",
         "crew:audit": "node ./script/crew-audit.ts",
+        "fleet-hazards:check": "node ./script/fleet-hazards-check.ts",
         "flow:report": "node ./script/flow-report.ts",
         "shift:checkup": "node ./script/shift-checkup.ts"
     },

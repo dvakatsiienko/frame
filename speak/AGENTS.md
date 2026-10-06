@@ -6,7 +6,7 @@ with its api by `server.ts` on 127.0.0.1:7386 — always on through the launchd 
 `pnpm speak:admin-build`; a `server.ts` change needs `pnpm schedule:restart x-speak-admin`.
 not deployed anywhere: it edits this mac's config.json and talks to this mac's daemon.
 
-**`FTR.md` + `CONTEXT.md`** — read your section before changing what the app does.
+**`FTR.md` + `GLOSSARY.md`** — read your section before changing what the app does.
 
 📌 `PRODUCT.md` (impeccable `init`, 2026-09-29) is the product record — read it before changing what the app
 does. `DESIGN.md` is a stub until `document` runs. both are impeccable's files: change them through it, never by

@@ -17,7 +17,9 @@ word. skipping a step happens only on his word, named out loud.
 
 1. **the want** — his idea in his words, quoted, into `PRODUCT.md`'s opening. done when he agrees the
    quote says what he means.
-2. **grill** — `mattpocock-skills:grilling`, one question at a time, until the open decisions are
+2. **grill** — `mattpocock-skills:grilling` + `mattpocock-skills:domain-modeling` together (what
+   matt's user-only `grill-with-docs` does), so every term the grill settles lands in `GLOSSARY.md`
+   and every hard decision in an ADR as it happens; one question at a time, until the open decisions are
    settled or parked by name. always; skipped only on his word. a re-shape grills what exists: why,
    for whom, what is missing, what should go.
 3. **prior art** — does it exist already, and can we use it instead of building?
@@ -29,9 +31,14 @@ word. skipping a step happens only on his word, named out loud.
 4. **sharpen** — `neuroarxiv` when the question is an architecture or a method; `adhd` for a name
    or a fork with no clear answer. only where one applies; say which ran and what it changed.
 5. **the cut** — the smallest version worth using, and a written «out» list of what it is not.
+   it names the **polish tier**: an internal tool stops at «works and clear»; a showcase app
+   (the portfolio, speak, sys) gets the designer's polish phase — the last 10 % is where the
+   look comes from, and a reviewer who sees a generic look clicks away.
 6. **the done test** — how we will know it works, as given/when/then lines.
 7. **the outputs** — `PRODUCT.md` (why, who, the cut), an `FTR.md` draft from the done test (`x:ftr`),
-   `CONTEXT.md` words (`domain-modeling`). a new app scaffolds through `x:app-essentials`.
+   `GLOSSARY.md` words (`domain-modeling`). a new app scaffolds through `x:app-essentials`. a
+   re-shape of an existing app runs `domain-modeling` over its current code too, so the redesign
+   starts from the real terms (dima, 2026-10-06: every app goes through it, on its next touch).
 
 **completion criterion:** the three outputs exist in the app, dima said «shaped», and only then does
 design start (`x:crew-designer-interview`) or code (`x:crew-coder`). a design brief is written from

@@ -22,7 +22,7 @@
   - the test harness keeps `hover` out of `FoundElement.props` and cannot hover — test the hidden card and its words; the reveal is checked with `pnpm mods:live <mod dir> hover <label>`
   - `ui.find({ text })` matches a wrapper `Box` too, whose text joins its card's — add `type: 'Text'` to reach the label alone (FRM-303)
 - `api-map.md` — every hook event with its line in the types file, and the fleet ideas; re-read the types at a cc bump
-- `stash/FTR.md` + `stash/CONTEXT.md` — read your section before changing what stash does; the same pair in `redact/` for the secret masker, and in `guard/` for the Bash floor
+- `stash/FTR.md` + `stash/GLOSSARY.md` — read your section before changing what stash does; the same pair in `redact/` for the secret masker, and in `guard/` for the Bash floor
 - `$.store` is one file per plugin (`~/.claude/plugins/store/<plugin>_<source>-<hash>.json`, plain json) — two mods never share keys; a mod reads another's events from that file with `$.fs` (stash reads guard's, FRM-321)
 - the bundled `plugin-authoring` skill says to write a mod under `~/.claude/dev-mods/<session>/`; here a mod lives in `plugin-x/mods/<mod>`, and local wins
 - a mod outside `CLAUDE_CODE_PLUGIN_DIRS` is probed live with `claude -p "<prompt>" --plugin-dir <mod> --allowedTools=Bash` — an env var on the command line loses to the one in `settings.json`, and `--allowedTools` without `=` eats the prompt (redact probe, 2026-10-05)

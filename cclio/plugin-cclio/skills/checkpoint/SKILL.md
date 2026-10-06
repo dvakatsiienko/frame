@@ -17,7 +17,8 @@ me a compact prompt upfront, saving a turn».
 every live member (`ListAgents`) gets one `SendMessage`: «pause — cclio is checkpointing, hold every
 message to me until «resume»; finish and commit what you are on». a message that lands mid-compact
 arrives in a thinned thread and its detail is lost (dima, 2026-09-30). the roster with each paused
-member goes into the CST.
+member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/state/ccrow/paused`
+— its wake skips while the file exists.
 
 ## 1. the keep/drop list — decided, never asked
 
@@ -68,8 +69,8 @@ member goes into the CST.
 ✂️ **end** ✂️
 
 the first thins the thread with the hint as the steer; the second restores the precise state on
-top of what the compact kept. **then resume every paused member** — one «resume» each, named from the CST roster — and
-read whatever they held. **after the ingest, before anything else: re-read `inbox.md` and
+top of what the compact kept. **then resume every paused member** — one «resume» each, named from the CST roster, and
+`trash ~/.local/state/ccrow/paused` for ccrow — and read whatever they held. **after the ingest, before anything else: re-read `inbox.md` and
 diff it against the flowlog** — every inbox item must carry the `✅` mark AND a flowlog line with
 its details; an unmarked or detail-less one is restored from the inbox on the spot, out loud. the prefetch hook re-runs on compact by itself (queue, roadmap,
 handoffs, reminders).

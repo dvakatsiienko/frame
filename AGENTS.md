@@ -88,11 +88,11 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
 ## docs and tracker
 
 - GitHub issues are retired; everything tracker-shaped lives in Linear per `rules-lazy/linear-flow.md`.
-- **Multi-context layout** — `CONTEXT-FTR.md` at root. Repo context: `CONTEXT.md` + `docs/adr/`
-  (ADR-nnnn). Tracker context: `docs/tracker/CONTEXT.md` + `docs/tracker/adr/` (TRK-nnnn).
+- **Multi-context layout** — `GLOSSARY-MAP.md` at root. Repo context: `GLOSSARY.md` + `docs/adr/`
+  (ADR-nnnn). Tracker context: `docs/tracker/GLOSSARY.md` + `docs/tracker/adr/` (TRK-nnnn).
   Glossary vocabulary is binding in outputs (titles, proposals, test names); an output
   contradicting an ADR surfaces the conflict, never silently overrides.
-- **an app with `FTR.md` updates its ftr line, and any new domain word its `CONTEXT.md`
+- **an app with `FTR.md` updates its ftr line, and any new domain word its `GLOSSARY.md`
   entry, in the same commit as the code** (`x:ftr`).
 - **Research** — `docs/research/<subject>.md`, subject-first filename, never a ticket-id prefix, so
   a doc survives the ticket that prompted it. `Ticket: FRM-N` on its own line at the top, mandatory — a doc no ticket owns writes `Ticket: none`. **Every research doc carries `dies-when:` frontmatter at creation** — the condition that
@@ -102,6 +102,20 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
   `ctx-burn`, `notes-stack/` with its bench scripts). A test drive is a running measurement any session
   may append a round to, so it lives here and never under `cclio/`; it closes with a verdict line
   (adopted / dropped) and stays as the record. A research doc answers once; a test drive accumulates.
+
+## Agent skills
+
+### Issue tracker
+
+matt's skills (to-spec, to-tickets, implement-spec, triage) use local markdown in `.scratch/<feature>/`, gitignored — a lane's plan; linear stays the record. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+the five default roles as `Status:` strings, mapped to our linear labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+multi-context: `GLOSSARY-MAP.md` lists every `GLOSSARY.md`. See `docs/agents/domain.md`.
 
 ## the other homes at root
 

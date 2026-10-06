@@ -66,7 +66,7 @@ an svg ships in an app. Born from the 2026-09-30 svg round (three lanes, graded 
 - `home/.claude/plugin-x/skills/art-kit/` — `SKILL.md`, `logos.md`, `gifs.md`, `clips.md`,
   `illustration.md`, `scripts/logo.ts`
 - `~/frame/gifs/AGENTS.md` — the gif store contract
-- bytes `apps/atelier` docs (`FTR.md`, `CONTEXT.md`) — only when vector 9 or 10 changes the studio
+- bytes `apps/atelier` docs (`FTR.md`, `GLOSSARY.md`) — only when vector 9 or 10 changes the studio
 
 ## the run
 

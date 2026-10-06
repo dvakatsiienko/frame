@@ -143,3 +143,6 @@ home/.claude/shelf/gh-watch-seen.tsv
 
 # cc writes a tsconfig.json into each mod on load; it extends the engine-ignored .claude-plugin/types
 home/.claude/plugin-x/mods/*/tsconfig.json
+
+# matt's local-markdown tracker: a spec is a lane's working plan and dies with it; linear keeps the record
+.scratch/

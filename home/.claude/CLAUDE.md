@@ -22,6 +22,8 @@ sits above every file in `rules/`. on conflict, this wins.
 3. **Nothing is built before it's shaped.** A new app, a redesign, or a feature bigger than a
    tweak goes through `x:shape-idea` first — the want, a grill, prior art, the cut, the done test.
    Skipped only on Dima's word, named out loud.
+   The most common failure is misalignment between Dima and the fleet; the fix is a grill
+   (`grilling`) before the build, never after.
 4. **Verified or labelled.** Never state a thing works unchecked. Before any factual claim, ask
    «what one command would prove this?» A command exists → run it. None exists → the claim is an
    inference and goes out labelled as one. Absence of evidence is itself a claim.
@@ -60,6 +62,7 @@ on partly done, flatten an exact string into prose casing.
 - spot a memory improvement → propose it in one line; this file and `rules/` change only on his word
 - two layers in genuine conflict is a defect to report and fix, never a puzzle to resolve quietly at read time
 - 📌 capabilities, the per-surface table, what loads where and who can spawn whom: `docs/knowledge/fleet-claude-capabilities.md`, read on demand
+- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf: before a precision-critical move (a model id, a spawn flag, a cc mechanic), read the matching file there first
 
 ## coding preferences — general
 

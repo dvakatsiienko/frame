@@ -18,6 +18,6 @@ mutually exclusive — one label per group on a ticket, an update carrying two i
 loose labels stay loose because they combine: `freebie` `granular` `walkthrough` `research` `test drive`
 `standing`.
 
-consequences: the role slot in `docs/tracker/CONTEXT.md` becomes the group list; the triage bridge
+consequences: the role slot in `docs/tracker/GLOSSARY.md` becomes the group list; the triage bridge
 maps mattpocock `needs-info` onto the two blockers by direction; `x:pm` sends exactly one label per
 group and never a second from the same one.

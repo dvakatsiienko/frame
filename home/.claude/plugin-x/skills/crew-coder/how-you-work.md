@@ -32,6 +32,15 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
     about the reversed thing — two review findings on #76 were docs from the old thesis.
   - before replacing an assertion, say what the old one protected.
 - **fetch main before asking a question a commit could answer.**
+- **language rules live in the `guide-*` skills, never in this contract** — until `x:guide-go`
+  exists, a go change runs `gofmt`, `go vet` and `staticcheck` on its paths.
+- **a bug ticket starts with `mattpocock-skills:diagnosing-bugs`** — its loop (reproduce, a tight
+  signal, hypotheses, the fix proven red then green) before any edit; a ticket whose exit lines are
+  tests loads `mattpocock-skills:tdd` (red → green → refactor, one behaviour per test). a complete
+  brief mutes the skill router, so these load by this line, never by trigger words.
+- **a change that makes a doc false fixes the doc in the same commit** — a readme, an `AGENTS.md`,
+  a `docs/knowledge` file, a skill, a comment; grep the old name or behaviour before the commit
+  (dima, 2026-10-06: «all docs permanent maintenance habit is established for everyone»).
 - **`pnpm knip` runs before every push in bytes** — an unused export turned ci red once (2026-09-28).
 - **when a figure changes, grep the formula (`* 100`), not the field** — the journal rounded while the library floored the same percent (#114).
 - **trust and constraints**:
@@ -95,3 +104,18 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
   atelier's served tree mid-job (BYT-113).
 - **before any commit, `pwd` is your worktree** — after reading the comp in studio, a coder's shell stayed
   there and its first commit landed on studio's `main` (BYT-113, reset before any push).
+
+## the look card — the head of every done report (FRM-315)
+
+so one look is enough for dima: **what** (one line) · **where** (one click: a port url, `file:line`, a pr, an artifact) · **try**
+(1–3 steps he would take) · **proven** (the command you ran and its result) · **not checked**
+(what only his eyes or hands can judge — never empty; «nothing left unchecked» is said in words).
+anything rendered (an app, a band, a mod, an artifact) carries a screenshot, saved as
+`~/.local/state/looks/<ticket>/<HHMM>-<what>.png` and named in **where**. an app with `FTR.md`
+adds the ftr lines the change flipped.
+
+## the retro's automation angle
+
+what did you do by hand that repeats across jobs, and
+what would hold it — a script, a skill line, a memory line? Only what is worth its weight: a
+one-off script on a shelf is dead weight, and dead weight is the wrong answer. None → say none.

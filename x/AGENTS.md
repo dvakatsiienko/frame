@@ -38,4 +38,4 @@ source file is newer.
   is removed and checked out, only while its raw bytes equal its index blob.
 - `lane commit` formats the named paths with the repo's biome before staging — the commit hook only reports, so this is the one place a format writes
 
-`PRODUCT.md` (the want, what x is not) · `FTR.md` + `CONTEXT.md` — read your section before changing what x does.
+`PRODUCT.md` (the want, what x is not) · `FTR.md` + `GLOSSARY.md` — read your section before changing what x does.

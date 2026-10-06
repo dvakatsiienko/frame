@@ -15,7 +15,7 @@ exit lines a verifier checks.
 - `PRODUCT.md` — impeccable's: character, users, purpose, principles. Hand edits are allowed. Never
   put features here: every impeccable session loads the whole file.
 - `FTR.md` — ours, never read by impeccable. The feature ledger.
-- `CONTEXT.md` — ours, the app's glossary: every domain word the ftr uses, defined once. Written
+- `GLOSSARY.md` — ours, the app's glossary: every domain word the ftr uses, defined once. Written
   with matt's `domain-modeling` skill; the ftr, the ui labels and the code use its words.
 
 `DESIGN.md` stays impeccable's own (`document` writes it after a build, and its sidecar json
@@ -76,14 +76,14 @@ losing variant's line is deleted.
    - more → one wall-of-text review, dima verdicts inline
 3. Write the given/when/then lines for what he kept. Run each check in the app's verify recipe:
    ✅ passes, 🐞 fails, ⬜ not run yet (a destructive path waiting for a scratch server).
-4. Pull the domain words the lines use into `CONTEXT.md` through `domain-modeling`, and align the
+4. Pull the domain words the lines use into `GLOSSARY.md` through `domain-modeling`, and align the
    lines to its words. A new app runs this order the other way: the glossary first, then the ftr.
-5. Commit `FTR.md`, `CONTEXT.md`, the app's `CONTEXT-FTR.md` entry when the repo has one,
+5. Commit `FTR.md`, `GLOSSARY.md`, the app's `GLOSSARY-MAP.md` entry when the repo has one,
    and two lines — the bridge is resident in every session in the repo:
    - the repo's root `AGENTS.md` carries the rule once (add it if missing): «an app with
-     `FTR.md` updates its ftr line, and any new domain word its `CONTEXT.md` entry, in the
+     `FTR.md` updates its ftr line, and any new domain word its `GLOSSARY.md` entry, in the
      same commit as the code (`x:ftr`)»
-   - the app's `AGENTS.md` carries only the pointer: `FTR.md` + `CONTEXT.md` — read your
+   - the app's `AGENTS.md` carries only the pointer: `FTR.md` + `GLOSSARY.md` — read your
      section before changing what the app does
 6. Report the cost: minutes and a rough token count for the draft. The pilot measures this.
 
@@ -99,9 +99,9 @@ losing variant's line is deleted.
 
 ## update — every change to what the app does
 
-- lines and `CONTEXT.md` words change in the same pr as the code (on main: the same commit): a new
+- lines and `GLOSSARY.md` words change in the same pr as the code (on main: the same commit): a new
   feature adds its 🧭 line, a changed behaviour edits its given/when/then, a removed feature
-  deletes its line, a new or shifted domain word updates its `CONTEXT.md` entry.
+  deletes its line, a new or shifted domain word updates its `GLOSSARY.md` entry.
 - status flips once, in the pr's last commit: each line whose check now passes in the verify
   recipe goes to ✅, a line that fails goes to 🐞. flipping per step forces partial staging.
 - ✅ → 🔎 when dima says a feature holds after using it (a screenshot, «works», «✓») — cclio flips
@@ -125,4 +125,4 @@ losing variant's line is deleted.
 
 Every feature the change touched has a line whose status matches the verify recipe, and no
 code change in the diff lacks its ftr line, and every domain word the touched lines use has its
-`CONTEXT.md` entry.
+`GLOSSARY.md` entry.

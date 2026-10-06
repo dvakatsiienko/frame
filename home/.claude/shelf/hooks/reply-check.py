@@ -18,6 +18,23 @@ TABLE_SEPARATOR = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$
 MIDDOT = re.compile(r"\w[^\n·]*\s·\s[^\n·]*\w")
 CIRCLED = re.compile(r"[①-⑳]")
 HASH = re.compile(r"(?<![\w/.-])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}(?![\w/.-])")
+REPORT_STAMP = re.compile(r"📄[^\n]*?\b(\d{1,2}):(\d{2})\b")
+
+
+def minutes_now() -> int:
+    hours, minutes = os.environ.get("REPLY_CHECK_NOW", time.strftime("%H:%M")).split(":")
+    return int(hours) * 60 + int(minutes)
+
+
+def future_stamps(prose: str) -> list[str]:
+    now = minutes_now()
+    late: list[str] = []
+    for m in REPORT_STAMP.finditer(prose):
+        ahead = (int(m.group(1)) * 60 + int(m.group(2)) - now) % 1440
+        # over 12 h «ahead» is a stamp from before midnight; one minute of slack for the clock tick
+        if 1 < ahead < 720:
+            late.append(f"{m.group(1)}:{m.group(2)}")
+    return late
 
 
 def last_reply(path: str) -> str:
@@ -55,6 +72,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
         found += [("middot", m.group(0)[:40]) for m in MIDDOT.finditer(line)]
     found += [("circled-digits", m.group(0)) for m in CIRCLED.finditer(prose)]
     found += [("commit-hash", m.group(0)) for m in HASH.finditer(URL.sub("", prose))]
+    found += [("future-stamp", stamp) for stamp in future_stamps(prose)]
     return found
 
 

@@ -39,7 +39,7 @@ fix: a renewed npsso reaches every instance on its next request, and the client 
 - BYT-88: `npssoDeathRecord` behind `isAutoWriteSafe`
 - BYT-87: the error boundary logs · the login throttle moves to a kv counter · the chart-layout invariant test (headless, every x-axis chart ends the same distance above its panel)
 - BYT-85: the 3-day warning before the grant ends · the dead `ignoreBuildErrors` removed (proven by a local `pnpm --filter trophy-sys build`)
-- `CONTEXT.md` (the domain words: npsso, grant, the gaming day, hidden set, …) + `docs/adr/` with ADR-0001 (the stack) and one ADR per hard decision the prd `cclio/docs/trophy-sys-prd-2026-09-10.md` names — the [BYT-111](https://linear.app/x-com/issue/BYT-111) essentials, no `FTR.md`
+- `GLOSSARY.md` (the domain words: npsso, grant, the gaming day, hidden set, …) + `docs/adr/` with ADR-0001 (the stack) and one ADR per hard decision the prd `cclio/docs/trophy-sys-prd-2026-09-10.md` names — the [BYT-111](https://linear.app/x-com/issue/BYT-111) essentials, no `FTR.md`
 
 ## 3 · the visual asks — default build, flagged for dima's eye
 
@@ -68,7 +68,7 @@ all four go into `dima-review.md` in the pr, one recommendation each.
 - given the grant ends in ≤ 3 days, when `/console` opens, then the warning shows
 - given the trophy-sys build, when `ignoreBuildErrors` is gone, then `pnpm --filter trophy-sys build` passes
 - given `/journal` at 1280, when a day row renders, then the progress text comes first and the bar sits at the right edge
-- given `CONTEXT.md` and `docs/adr/`, when read, then the domain words have entries and ADR-0001 names the stack
+- given `GLOSSARY.md` and `docs/adr/`, when read, then the domain words have entries and ADR-0001 names the stack
 - given `dima-review.md`, when read, then every parked and flagged item has options and a recommendation
 
 ## stop rules
@@ -93,7 +93,7 @@ _(cclio, one line per event: time · who · what · evidence)_
 - 19:2x · verify · round 1 (step 1, npsso hot swap, 0d14afa5): clean · 0 high/medium, 1 low
 - 19:3x · code · commits 5–6 on #111 (watch) — error boundary logs, 3-day grant warning
 - 19:4x · code · commits 7–8: dead-token errors stop retrying (a find), the chromium chart-axis test
-- 19:5x · code · commit 9 on #111 (watch) — CONTEXT.md + six ADRs
+- 19:5x · code · commit 9 on #111 (watch) — GLOSSARY.md + six ADRs
 - 20:0x · code · commits 10–11 on #111 (watch) — journal rows text-first + day band, now-playing mark on /campaign
 - 20:1x · code · commit 12 on #111 (watch) — dima-review.md
 - 20:1x · cclio · spotted + fixed: dima's ssh into seed-3 refused `admin` twice — the 1Password agent's keys burn the auth tries; `-o PubkeyAuthentication=no` (the prep coder's find, an inference)
@@ -109,7 +109,7 @@ _(cclio, one line per event: time · who · what · evidence)_
 
 **done** — [bytes#111](https://github.com/dvakatsiienko/bytes/pull/111), 16 commits, ci green, verifier clean after 3 rounds (8/8 exit lines), ci reviewer 2/2 clean; ~18:50 → 19:40, ~50 min
 - step 1: the npsso bug was the client — the layout `profile` query latched NPSSO_INVALID across route switches; the server was fine (the plan's guess was wrong, the evidence-first line caught it)
-- step 2: death-record guard · kv login throttle · error boundary logs · 3-day grant warning · the chromium chart-axis test · dead-token errors stop retrying (a coder find) · CONTEXT.md + 6 ADRs
+- step 2: death-record guard · kv login throttle · error boundary logs · 3-day grant warning · the chromium chart-axis test · dead-token errors stop retrying (a coder find) · GLOSSARY.md + 6 ADRs
 - step 3: journal rows text-first + the day band · now-playing on /campaign — shots: https://claude.ai/artifact/S6ZVdwCAGaBQhHaZw4bSLK
 - step 4: four research answers in `apps/trophy-sys/dima-review.md`
 

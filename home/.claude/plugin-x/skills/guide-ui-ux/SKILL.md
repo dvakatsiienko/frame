@@ -54,6 +54,9 @@ guides (`guide-react`) sit on top of this one.
 - **state never by colour alone** — pair with weight, underline, border. `:focus-visible` ring
   ≥2px, never removed
 - **honour `prefers-reduced-motion` and `prefers-color-scheme`** — both palettes as tokens
+- **every action gets a visible reaction, sized to the app's kind** — a daily tool (chords, an
+  admin) reacts quietly and fast; a showcase page earns more motion. a reaction that delays the
+  next action is wrong at any size (dima's video fold, 2026-10-06)
 - **leaving a view stops what it started** — autoplay, animation loops, audio, polling: a route
   change or a closed panel halts them, and coming back resumes from a still frame, never mid-play
   (dima, 2026-09-26)

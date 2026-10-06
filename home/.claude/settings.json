@@ -8,7 +8,8 @@
     "CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT": "0",
     "CLAUDE_CODE_SUBAGENT_MODEL": "opus",
     "CLAUDE_CODE_PLUGIN_DIRS": "~/frame/home/.claude/plugin-x/mods/breather:~/frame/home/.claude/plugin-x/mods/stash:~/frame/home/.claude/plugin-x/mods/redact:~/frame/home/.claude/plugin-x/mods/guard",
-    "CLAUDE_CODE_PLUGIN_DIR_WATCH": "1"
+    "CLAUDE_CODE_PLUGIN_DIR_WATCH": "1",
+    "CLAUDE_CODE_FORK_SUBAGENT": "1"
   },
   "attribution": {
     "commit": "",
@@ -205,14 +206,15 @@
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": false,
-    "mattpocock-skills@claude-plugins-official": true,
     "x@x": true,
     "impeccable@impeccable": true,
     "typesafe@typesafe-ai": true,
     "humanize@humanize": true,
     "cc-plugin-telemetry@builtin": false,
     "mindful-claude@mindful-claude": false,
-    "breather@x": false
+    "cc-plugin-you-should-know@builtin": true,
+    "show-me@skills": true,
+    "mattpocock-skills@mattpocock": true
   },
   "extraKnownMarketplaces": {
     "claude-code-warp": {
@@ -271,6 +273,20 @@
         "source": "github",
         "repo": "halluton/Mindful-Claude"
       }
+    },
+    "skills": {
+      "source": {
+        "source": "github",
+        "repo": "humanlayer/skills"
+      },
+      "autoUpdate": true
+    },
+    "mattpocock": {
+      "source": {
+        "source": "github",
+        "repo": "mattpocock/skills"
+      },
+      "autoUpdate": true
     }
   },
   "outputStyle": "output-fun",
