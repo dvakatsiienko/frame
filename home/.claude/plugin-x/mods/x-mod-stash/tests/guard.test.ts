@@ -108,6 +108,17 @@ const ESCAPED: Event = {
     target: 'dist',
 };
 
+test('the counter row stays one folded line when new refusals arrive', async ($, on) => {
+    const events = { ...FOUR };
+    const b = await band($, on, 'terminal', events);
+    Object.assign(
+        events,
+        store([refusal(NOW + MIN, 'c3c3c3c3-0000', 'rm -rf cache')]),
+    );
+    await b.clock.advance(MIN);
+    expect(await b.lines()).toEqual(['🛡️ 5 refusals · 2 sessions']);
+});
+
 test('an escape counts beside the refusals', async ($, on) => {
     const b = await band($, on, 'terminal', { ...FOUR, ...store([ESCAPED]) });
     expect(await b.lines()).toEqual(['🛡️ 4 refusals · 1 escape · 2 sessions']);

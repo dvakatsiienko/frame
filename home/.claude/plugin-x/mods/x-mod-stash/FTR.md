@@ -19,7 +19,15 @@
   - given dima folded the asks
   - when a mod file is saved and x-mod-stash reloads
   - then the asks stay folded
-  - decision: the fold lives in `$.state` (survives a reload, dies with the session) and is read back after the first asks load, since a reload sees every ask as new (FRM-319 audit, FRM-320)
+  - decision: the fold lives in `$.state` (survives a reload, dies with the session) and is read back before the first asks load (FRM-319 audit, FRM-320)
+- ✅ the fold is dima's: only his click changes it
+  - given the ⏳ list folded
+  - when a reply brings new asks, or every ask clears and a new one arrives later
+  - then it stays folded and the count updates
+  - given the list unfolded by a click
+  - when new asks arrive
+  - then it stays unfolded
+  - decision: a session starts unfolded; new asks never unfold a folded list — they did, and dima's folded list opened itself on every new batch (FRM-325)
   - decision: an «on» toggle (`🔥`, `💨`, `🚦`) draws as the light `secondary` chip, an «off» one plain — the desktop drew `primary` black, which read badly (dima, 2026-10-05)
   - decision: `c` copies the head's asks, `b` folds or unfolds the board, `f` folds the asks; the key rides the hover card, never the icon — the card is a dim `Button` with the key and the same press, so the surface draws its own key badge there (desktop) or `c: copy …` (terminal) (dima, 2026-10-05: «hkeys not present in button text, only in tooltip»)
   - 📌 a key fires only while the band holds focus (a click, or ctrl+x tab), never from the prompt; whether a key bound inside a hidden card fires is dima's press
@@ -151,6 +159,8 @@
   - given x-mod-guard refused commands in any session, or ran one on a `# dima-ok:` escape, each under 30 min after the one before
   - when any session's band draws, folded or not
   - then one row reads `🛡️ <n> refusals · <m> sessions` (escapes count beside: `· <k> escapes`)
+  - when new refusals arrive
+  - then the row stays one folded line, its counts updated — refusals never take the band
   - when dima presses its `▸` (hover: «unfold guard refusals»)
   - then each event shows under it, newest first: `<session> — <command> → <why it was refused>` (an escape: `→ ran on dima-ok: <target>`; an event kept before x-mod-guard wrote a reason: `→ <door>`)
   - when 30 min pass with no new event
@@ -229,6 +239,7 @@ two sessions, A and B, in one checkout.
   - then a pane lists each by its session name, its state on the right, a full empty row between members
   - decision: cclio is pinned to the top, its name always bold; the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
+  - decision: cc's registry stores «🐦‍⬛ ccrow» with the zero-width joiner as a space, so the board puts the joiner back for that one sequence — a plain string fix, no emoji parser (FRM-325)
   - decision: a session younger than a minute, counted from the registry's `startedAt`, gets no row — a probe that exits within a minute never shows; one that lives on gets its row once it is a minute old (FRM-325)
   - decision: a session named `t-` + hex (`t-70`) gets no row — dima, 2026-10-05; that these are short-lived headless `claude -p` runs is an inference, no cc source names them
   - decision: a full row between members on every surface, no rule — the pane has room the one-row band does not (dima, 2026-10-05)

@@ -285,6 +285,12 @@ test("a row links the ticket in its session's name", async ($, on) => {
     expect(link?.props.href).toBe('https://linear.app/x-com/issue/FRM-1');
 });
 
+// cc's registry keeps «🐦‍⬛ ccrow» with its zero-width joiner turned into a space
+test("ccrow's black bird keeps its joiner on the board", async ($, on) => {
+    fleet(on, {}, { patch: { 2: { name: '\u{1F426} \u{2B1B} ccrow' } } });
+    expect(await row($, PEER)).toContain('\u{1F426}\u{200D}\u{2B1B} ccrow');
+});
+
 test('the board marks a background session named off the fleet pattern', async ($, on) => {
     fleet(on, {}, { alive: [1, 2, 3], bg: [2, 3] });
     const rows = await rowsBySid($);

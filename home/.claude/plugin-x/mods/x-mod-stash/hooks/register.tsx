@@ -58,8 +58,8 @@ const ACCENT = '#d97757';
 let selfId: string | undefined;
 let label = 'session';
 let entries: Record<string, Entry> = {};
-let known = new Set<string>();
-let open = false;
+// the asks list's fold: only dima's click changes it — new asks, cleared asks and a new turn never do
+let open = true;
 let isUserTurn = false;
 let pinged = false;
 let isPolling = false;
@@ -112,7 +112,6 @@ const isLive = (v: Entry | undefined, now: number): v is Entry =>
 const errorText = (err: unknown) =>
     err instanceof Error ? err.message : String(err);
 
-const fp = (sid: string, ask: string) => `${sid}\u0000${ask}`;
 const basename = (path: string) =>
     path.split('/').filter(Boolean).pop() ?? path;
 
@@ -554,20 +553,12 @@ async function load($: EngineInterface): Promise<boolean> {
         const v = (await $.store.get(key)) as Entry | undefined;
         if (isLive(v, now)) next[key.slice(PREFIX.length)] = v;
     }
-    const fresh = Object.entries(next).flatMap(([sid, v]) =>
-        v.asks.map((a) => fp(sid, a)),
-    );
     const before = JSON.stringify(
         Object.entries(entries).map(([k, v]) => [k, v.asks]),
     );
     const after = JSON.stringify(
         Object.entries(next).map(([k, v]) => [k, v.asks]),
     );
-    if (fresh.some((f) => !known.has(f))) {
-        open = true;
-        await $.state.set(OPEN, true).catch(() => undefined);
-    }
-    known = new Set(fresh);
     entries = next;
     const cool = await cooled($);
     const prevHolds = holds;
@@ -722,6 +713,10 @@ type Registered = {
     base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince' | 'door'>;
 };
 
+// cc's registry stores the black bird's zero-width joiner as a space: «🐦 ⬛ ccrow» for «🐦‍⬛ ccrow»
+const SPLIT_CROW = '\u{1F426} \u{2B1B}';
+const CROW = '\u{1F426}\u{200D}\u{2B1B}';
+
 // every session in cc's registry and whether its process still runs; a registry file mid-write is skipped
 async function registry($: EngineInterface): Promise<Registered[]> {
     const dir = `${await $.env.get('HOME')}/.claude/sessions`;
@@ -744,7 +739,9 @@ async function registry($: EngineInterface): Promise<Registered[]> {
                         hostSessionId: text(v.hostSessionId),
                         jobId: text(v.jobId),
                     }),
-                    name: text(v.name) ?? short(v.sessionId),
+                    name:
+                        text(v.name)?.replaceAll(SPLIT_CROW, CROW) ??
+                        short(v.sessionId),
                     sid: v.sessionId,
                     status: text(v.status),
                     statusSince:
@@ -916,9 +913,8 @@ export const register: Register = (on) => {
         await pruneEnded($).catch(() => undefined);
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
         fiveHour = kept.fiveHour;
-        await load($);
-        // after the first load: a reload sees every ask as new, which would unfold what dima folded
         if (kept.open !== undefined) open = kept.open;
+        await load($);
         await armHot($);
         await $.command
             .register({
