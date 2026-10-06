@@ -260,8 +260,10 @@ func missing(token, repo string, files []string) (kind, why string) {
 	return "term", "appears nowhere in the repo"
 }
 
+// `brief.go:37` and `FTR.md#brief` name a file, so the line or the anchor comes off first
 func isPathLike(token string) bool {
-	return !strings.Contains(token, " ") && (strings.Contains(token, "/") || fileLike.MatchString(token))
+	bare := lineRef.ReplaceAllString(token, "")
+	return !strings.Contains(bare, " ") && (strings.Contains(bare, "/") || fileLike.MatchString(bare))
 }
 
 func pathMissing(token, repo string, files []string) (string, string) {

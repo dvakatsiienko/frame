@@ -141,6 +141,49 @@ func TestBriefCheckSkipsAnEmptyCodeSpan(t *testing.T) {
 	}
 }
 
+func TestBriefCheckReadsAFileNamedWithALineOrAnAnchor(t *testing.T) {
+	dir := repo(t)
+	write(t, filepath.Join(dir, "src/brief.go"), "package main\n")
+	write(t, filepath.Join(dir, "FTR.md"), "# map\n")
+	files := []string{"src/brief.go", "FTR.md"}
+	for _, token := range []string{"brief.go:37", "src/brief.go:3-9", "FTR.md#brief"} {
+		if kind, why := missing(token, dir, files); kind != "" {
+			t.Errorf("%q: %s %s", token, kind, why)
+		}
+	}
+}
+
+func TestHoldUnstagedHoldsANestedRepo(t *testing.T) {
+	dir, _ := gatedRepo(t, "test -e sub && exit 1; exit 0")
+	write(t, filepath.Join(dir, "sub/inner.txt"), "nested\n")
+	gitT(t, filepath.Join(dir, "sub"), "init", "-q")
+
+	got := xIn(t, dir, nil, "lane", "commit", "--hold-unstaged", message(t), "--", "readme.txt")
+
+	if got.code != 0 || read(t, filepath.Join(dir, "sub/inner.txt")) != "nested\n" || !exists(filepath.Join(dir, "sub/.git")) {
+		t.Fatalf("exit %d: %s", got.code, got.stdout)
+	}
+}
+
+func TestHoldUnstagedKeepsADeletionDeleted(t *testing.T) {
+	dir, seen := gatedRepo(t, "test -e gone.txt || exit 1; exit 0")
+	write(t, filepath.Join(dir, "gone.txt"), "tracked\n")
+	gitT(t, dir, "add", "gone.txt")
+	gitT(t, dir, "commit", "-q", "-m", "gone")
+	if err := os.Remove(filepath.Join(dir, "gone.txt")); err != nil {
+		t.Fatal(err)
+	}
+
+	got := xIn(t, dir, nil, "lane", "commit", "--hold-unstaged", message(t), "--", "readme.txt")
+
+	if got.code != 0 || read(t, seen) == "" {
+		t.Fatalf("the hooks should see gone.txt's index version: exit %d", got.code)
+	}
+	if exists(filepath.Join(dir, "gone.txt")) {
+		t.Error("the deletion came back undone")
+	}
+}
+
 func TestBriefLintRules(t *testing.T) {
 	cases := []struct {
 		name, brief string

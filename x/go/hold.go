@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -141,13 +142,29 @@ func (h *held) restore(tree string) error {
 	return nil
 }
 
-// a symlink's sum is its target, so a held link is checked as a link
+// a symlink's sum is its target, so a held link is checked as a link; a dir (git lists a nested repo
+// as one) sums every name, size and mode under it
 func checksum(path string) (string, error) {
 	info, err := os.Lstat(path)
 	if err != nil {
 		return "", err
 	}
 	sum := sha256.New()
+	if info.IsDir() {
+		err := filepath.WalkDir(path, func(at string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			inner, err := entry.Info()
+			if err != nil {
+				return err
+			}
+			rel, _ := filepath.Rel(path, at)
+			fmt.Fprintf(sum, "%s %d %o\n", rel, inner.Size(), inner.Mode())
+			return nil
+		})
+		return fmt.Sprintf("dir %x", sum.Sum(nil)), err
+	}
 	if info.Mode()&os.ModeSymlink != 0 {
 		target, err := os.Readlink(path)
 		if err != nil {
