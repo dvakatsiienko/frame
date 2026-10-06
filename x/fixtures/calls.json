@@ -161,7 +161,7 @@
             "keys": [
                 "🔧 notes: a second line",
                 "Enter",
-                "{world}/pr-body.md",
+                "../pr-body.md",
                 "Enter",
                 "n",
                 "Enter"

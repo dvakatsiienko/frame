@@ -35,6 +35,7 @@
         "home/.claude/plugin-x/skills/*/scripts/*.ts",
         "home/.claude/plugin-x/mods/*.ts",
         "logos/*.ts",
-        "x/*.ts"
+        "x/*.ts",
+        "x/go/*.ts"
     ]
 }

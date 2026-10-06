@@ -34,7 +34,9 @@ type theme struct {
 	fg, dim, line, ok, er, bold, label lipgloss.Style
 }
 
-var ui = newTheme()
+// set by execute for the human view only: asking the terminal for its background is a round trip
+// an agent call never needs
+var ui theme
 
 func newTheme() theme {
 	p := dark

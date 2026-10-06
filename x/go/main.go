@@ -82,6 +82,9 @@ func detect(argv []string) mode {
 
 func execute(argv []string) int {
 	m := detect(argv)
+	if !m.json {
+		ui = newTheme()
+	}
 	options := optionsOf(argv)
 	if slices.Contains(options, "--help") || slices.Contains(options, "-h") {
 		return help(m, wordsOf(argv))

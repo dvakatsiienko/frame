@@ -98,17 +98,16 @@ func listBoard(found listing, flags Flags) string {
 		if e.Stale {
 			age = ui.er.Render(e.Age + " stale")
 		}
-		slug := ui.verb("handoffs", e.Slug)
-		if e.Shared {
-			slug += ui.dim.Render(" ⇄")
-		}
-		cells := []string{slug, ui.fg.Render(e.Audience), ui.fg.Render(e.Author), age}
+		cells := []string{ui.verb("handoffs", e.Slug), ui.fg.Render(e.Audience), ui.fg.Render(e.Author), age}
 		if !narrow {
-			lane := ui.dim.Render(e.Lane)
-			if e.RunID != nil {
-				lane += ui.dim.Render(" · " + *e.RunID)
+			lane := e.Lane
+			if e.Shared {
+				lane += ", shared"
 			}
-			cells = append(cells, lane)
+			if e.RunID != nil {
+				lane += " · " + *e.RunID
+			}
+			cells = append(cells, ui.dim.Render(lane))
 		}
 		b.rows = append(b.rows, columns(widths, cells...)...)
 	}

@@ -92,18 +92,26 @@ while IFS= read -r call; do
         printf 'Type %s\nEnter\n' "$(vhs_str "unset CLAUDECODE AI_AGENT; export HANDOFF_STORE_ROOT='${world}/store' PS1='\$ '; x() { ${xcmd} \"\$@\"; }; cd '${world}/repo'; ${env_set:-:}; clear")"
         printf 'Sleep 500ms\nShow\n'
         printf 'Type %s\nSleep 300ms\nEnter\nSleep 2500ms\n' "$(vhs_str "${typed}")"
+        # a still before every key: <id>.png is the open form or picker, -key<n>.png each step after,
+        # -vhs.png the end state (a y/n key submits by itself, so «just before the last key» is too late)
+        i=0
         while IFS= read -r key; do
-            [[ -z ${key} ]] && continue
+            i=$((i + 1))
+            if ((i == 1)); then
+                printf 'Screenshot %s\n' "\"${out}/${id}.png\""
+            else
+                printf 'Screenshot %s\n' "\"${out}/${id}-key${i}.png\""
+            fi
+            # vhs takes the still on a later frame; a key sent at once lands in it
+            printf 'Sleep 600ms\n'
             vhs_key "${key}"
             printf 'Sleep 700ms\n'
-        done < <(jq -r '(.keys // [])[]' <<<"${call}")
+        done < <(jq -r '(.keys // [])[] | gsub("\\{world\\}"; "..")' <<<"${call}")
         printf 'Sleep 2s\nScreenshot %s\nSleep 1s\n' "\"${out}/${id}-vhs.png\""
     } >"${tape}"
     timeout 180 vhs "${tape}" >"${out}/${id}.vhs.log" 2>&1 || echo "shoot.sh: vhs failed on ${id}, see ${id}.vhs.log" >&2
 
-    if ((has_keys > 0)); then
-        cp "${out}/${id}-vhs.png" "${out}/${id}.png" 2>/dev/null || true
-    else
+    if ((has_keys == 0)); then
         # a fresh world again: the vhs run above already spent this one (a commit, an ingest)
         fresh=${out}/worlds/${id}-freeze
         "${here}/setup.sh" "${fresh}" >/dev/null
