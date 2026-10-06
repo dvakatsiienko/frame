@@ -46,6 +46,18 @@ export const register: Register = (on) => {
         return next({ ...e, message: { ...e.message, content } });
     });
 
+    // `/clear` and `/resume` leave the conversation: its placeholders stop meaning anything at once
+    on('command.run', async ($, e, next) => {
+        const r = await next(e);
+        if (e.command === 'clear' || e.command === 'resume')
+            await $.state
+                .set(VAULT, {})
+                .catch(() =>
+                    $.ui.log(`x-mod-redact: the vault outlived /${e.command}`),
+                );
+        return r;
+    });
+
     on('tool.call', async ($, e, next) => {
         let input = e;
         if (e.tool === 'Bash') {

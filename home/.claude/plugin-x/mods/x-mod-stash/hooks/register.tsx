@@ -350,6 +350,15 @@ async function dropAll($: EngineInterface, sid: string) {
     await $.store.delete(REFUSED + sid);
 }
 
+// everything this mod keeps for one conversation
+async function forget($: EngineInterface, sid: string) {
+    await $.store.delete(PREFIX + sid);
+    await $.store.delete(HOT + sid);
+    await $.store.delete(REPLY + sid);
+    await $.store.delete(CONTEXT + sid);
+    await dropAll($, sid).catch(() => undefined);
+}
+
 // what the row shows: other live sessions' holds in this working tree, and whether this session's hold was wanted
 async function chip($: EngineInterface, sid: string, root: string) {
     const keys = await $.store.keys();
@@ -966,12 +975,18 @@ export const register: Register = (on) => {
     });
 
     on('session.end', async ($, e, next) => {
-        await $.store.delete(PREFIX + e.sessionId);
-        await $.store.delete(HOT + e.sessionId);
-        await $.store.delete(REPLY + e.sessionId);
-        await $.store.delete(CONTEXT + e.sessionId);
-        await dropAll($, e.sessionId).catch(() => undefined);
+        await forget($, e.sessionId);
         return next(e);
+    });
+
+    // `/clear` and `/resume` leave the conversation: its asks and holds go now, not at the next poll
+    on('command.run', async ($, e, next) => {
+        if (e.command !== 'clear' && e.command !== 'resume') return next(e);
+        const left = selfId ?? (await $.session.id().catch(() => undefined));
+        const r = await next(e);
+        if (left) await forget($, left).catch(() => undefined);
+        if (await load($)) $.ui.invalidate('ui.render');
+        return r;
     });
 
     on(

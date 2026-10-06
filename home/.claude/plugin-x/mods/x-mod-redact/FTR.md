@@ -29,6 +29,7 @@
   - decision: `tool.call` also redacts the tool's own result — the engine keeps it beside the row as `toolUseResult`, which `session.append` never sees; the first probe printed nothing to stdout and missed it
   - decision: the vault (placeholder → value) lives in `$.state`: it survives a hot reload and dies with the session — never on disk, never in `$.store`, which every session shares
   - 📌 after `/clear` or `/resume` the vault is empty: an old placeholder then reaches the tool as written
+  - decision: a `command.run` hook empties the vault on `/clear` and `/resume` itself, never trusting `$.state` to reset there (unprobed, FRM-325)
   - 📌 trust: any tool call naming a placeholder gets the value — a command a prompt injection writes included; the model had the same reach before redaction
 - ✅ a 1Password reference stays readable
   - given a row holds `op://dev/<item>/credential`

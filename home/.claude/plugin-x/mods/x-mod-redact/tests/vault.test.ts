@@ -132,3 +132,22 @@ test('a vault error masks the row one way and logs it', async ($, on) => {
         1,
     ]);
 });
+
+for (const command of ['clear', 'resume'] as const)
+    test(`after /${command} an old placeholder reaches the tool as written`, async ($, on) => {
+        const ran: unknown[] = [];
+        on('ui.log', () => ({ value: undefined }));
+        on('session.append', (_$, e, next) => next(e));
+        on('command.run', () => ({ text: '' }));
+        on('tool.call', (_$, e) => {
+            ran.push('command' in e ? e.command : undefined);
+            return { result: {}, text: 'ok' };
+        });
+        await $.session.append(prompt(`use ${FAKE}`)).catch(() => undefined);
+        await $.command.run({ args: '', command });
+        await $.tool.call({
+            command: `echo ${placeholderOf(FAKE)}`,
+            tool: 'Bash',
+        });
+        expect(ran).toEqual([`echo ${placeholderOf(FAKE)}`]);
+    });
