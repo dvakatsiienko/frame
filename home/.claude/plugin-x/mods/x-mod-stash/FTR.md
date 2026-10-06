@@ -91,6 +91,12 @@
   - given 🔥 is on
   - when two pings fire, or the mod reloads in between
   - then 🔥 is still ticked, and the next ping comes 50 minutes after the last turn ended
+- ✅ 🔥 follows its store key at every turn end
+  - given another process writes or deletes `hot:<session id>` after `session.start` (ccrow's start script learns its id from the registry, FRM-335)
+  - when the session's turn ends
+  - then 🔥 ticks and the 50-minute ping is armed, or unticks and no ping is armed
+  - given dima switched 🔥 off on the band
+  - then the key is gone from the store, so the re-read never switches it back on
 - ✅ the store kept under the old name survives the rename
   - given the mod ran as `stash` and its store file is `stash_*.json`
   - when it first starts as x-mod-stash

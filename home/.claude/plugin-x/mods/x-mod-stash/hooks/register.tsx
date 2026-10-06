@@ -922,11 +922,17 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         busy = false;
+        // the store is 🔥's truth: ccrow writes its key after session.start, and a deleted key turns it off
+        const wasHot = Boolean(hot);
+        const sid = selfId ?? (await $.session.id().catch(() => undefined));
+        if (sid)
+            hot = (await $.store.get(HOT + sid).catch(() => hot)) as typeof hot;
         if (hot) {
             hot = { ...hot, since: await $.clock.now() };
             await saveHot($);
         }
         await armHot($);
+        if (wasHot !== Boolean(hot)) $.ui.invalidate('ui.render');
         await settle($).catch(() =>
             $.ui.log("x-mod-stash holds: could not settle this turn's holds"),
         );
