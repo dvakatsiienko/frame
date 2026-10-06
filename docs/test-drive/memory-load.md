@@ -9,3 +9,4 @@
 ## log — date · session · loads · misses · note
 
 - 2026-10-04 · build day · replay 14 d: cclio 1648/1648, coder 284/284, other 345/346 (the one miss is a worktree path from `ps`, not linear work) · the hook fired live in cclio on a prompt naming FRM-300
+- 2026-10-06 · 3 misses from retro run 1: `linear-flow` (3.7k) loaded into implementers that never touch linear — t01 on an `x lane commit` (15:28), t08 on a `linear` word (16:07), the review fix on a Write of a commit message (16:43); each load cost a refused call. trigger fix at the 10-20 verdict: drop `x lane commit` and commit-message writes from the trigger
