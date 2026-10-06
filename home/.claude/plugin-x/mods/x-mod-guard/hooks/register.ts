@@ -1,6 +1,6 @@
 import type { EngineInterface, Register } from 'claude-code';
 
-import { check, message } from './rules.ts';
+import { type Context, addedPaths, check, message } from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
 // each refusal and each escape is kept in $.store as one `event:` key; x-mod-stash's band reads them as 🛡️ lines.
@@ -72,7 +72,15 @@ export const register: Register = (on) => {
         // the input is the model's: a command that is not a string is the tool's to refuse
         const command = 'command' in e ? e.command : undefined;
         if (typeof command !== 'string') return next(e);
-        const verdict = check(command, await $.session.cwd());
+        const cwd = await $.session.cwd();
+        const ctx: Context = {
+            home: await $.env.get('HOME'),
+            jobDir: await $.env.get('CLAUDE_JOB_DIR'),
+        };
+        const missing = new Set<string>();
+        for (const path of addedPaths(command, cwd, ctx))
+            if (!(await $.fs.exists(path))) missing.add(path);
+        const verdict = check(command, cwd, { ...ctx, missing });
         if (verdict.kind === 'run') return next(e);
         if (verdict.kind === 'refused') {
             const { refusal } = verdict;

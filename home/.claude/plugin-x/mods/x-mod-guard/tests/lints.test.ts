@@ -79,6 +79,7 @@ function world(on: On) {
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
+    on('fs.exists', () => ({ value: true }));
     on('tool.call', () => ({ result: {}, text: 'ran' }));
 }
 
