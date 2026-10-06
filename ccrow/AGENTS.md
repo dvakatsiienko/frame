@@ -9,7 +9,7 @@ or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
   medium. that home is outside frame, so the global `CLAUDE.md` + `rules/` load and frame
   `AGENTS.md` does not.
 - `pnpm ccrow:wake --transcript <cclio jsonl> [--mode day|systematic] [--precompact]` — gates
-  (30 min since the last wake, ≥10 cclio steps; `--precompact` waives the steps), copies the
+  (no `~/.local/state/ccrow/paused` file — cclio's checkpoint holds it; 30 min since the last wake, ≥10 cclio steps; `--precompact` waives the steps), copies the
   leaves named in `~/.local/state/ccrow/leaves.txt` plus the transcript delta into
   `packets/<id>/`, writes one line to ccrow's inbox socket, and leaves a detached `harvest.ts`
   to log the note. days 1–3 after the first wake are silent: the other arm answers the same

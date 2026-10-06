@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import {
     closeSync,
+    existsSync,
     openSync,
     readFileSync,
     statSync,
@@ -37,7 +38,7 @@ const usage = `ccrow:wake --transcript <jsonl> [--mode ${modeList.join('|')}] [-
 
   builds a packet from cclio's transcript delta and the leaves in ${join(STATE_DIR, 'leaves.txt')},
   copies it into ccrow's home and sends ccrow one wake line. skips (exit 0, one line) when
-  ccrow is not running, the last wake is under 30 min old, or fewer than 10 cclio steps
+  ${join(STATE_DIR, 'paused')} exists, ccrow is not running, the last wake is under 30 min old, or fewer than 10 cclio steps
   passed (--precompact waives the step count). mode defaults to day.`;
 
 const { values } = parseArgs({
@@ -83,6 +84,9 @@ await wake(transcript, mode);
 
 async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     const now = new Date();
+    if (existsSync(join(STATE_DIR, 'paused'))) {
+        skip(`paused (${join(STATE_DIR, 'paused')} exists)`);
+    }
     const state = readState();
     const session = findSession();
     if (!session) skip('ccrow is not running (pnpm ccrow:start opus|fable)');

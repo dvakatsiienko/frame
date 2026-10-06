@@ -26,6 +26,28 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {}",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {} --precompact",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
