@@ -58,6 +58,7 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
   status; busy → wait a tick, retry): a merge that races the coder's tail push had its worktree
   removed under a live push twice on 2026-09-08. dima merges, cclio cleans; the monitor dies
   with the session.
+- 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:ensure` — it starts ccrow (today's arm, stash-only, 🔥 on) when none is live and answers «ccrow live» otherwise, so a second cclio never starts a second one.
 - the x-queue head is in the digest — offer the top item; it never surfaces on its own. long-lived
   items are tickets, not park lines.
 - 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or the apps lane

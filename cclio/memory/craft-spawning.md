@@ -21,7 +21,19 @@ The split is **disposable-vs-watchable**, not research-vs-code.
   grill's outcome → the build); `--bg` when it needs a clean one. dima may say «fork it»; cclio
   suggests it when the brief would be longer than the context it replaces. unmeasured yet:
   whether the fork inherits the Code-tab pane and the desktop channel — probe on first use.
-`isolation: "worktree"` gives a real git worktree — expensive, only when agents would collide.
+`isolation: "worktree"` gives a real git worktree — expensive, only when agents would collide. 📌 its tree starts from an old commit (the remote's default, a3a6862b on 2026-10-06, 4 of 4 times), never from the branch you work on: a brief says «check `git log -1`, else branch fresh from <base> with the git-crypt filters off».
+
+**spawn or reuse — the grid** (dima, 2026-10-06: «pre-plan these breakpoints … reuse existing sessions, or spawn a new one?»):
+- measured 2026-10-06 on 8 implementers: a fresh agent's first request reads ~35k warm (tools + the fixed system prompt, the same bytes in every session) and writes ~102k cold (memory + per-session bits); every later step reads the whole context back. the halt re-measures the base (first-request `cache_read` / `cache_creation` of the day's agents).
+- prices, [pricing](https://platform.claude.com/docs/en/about-claude/pricing) read 2026-10-06, per MTok: opus 5.5 in $4 · 1h write $8 · hit $0.20 (0.05×) · out $20; sonnet 5.5 $2 · $4 · $0.20 (0.1×) · $10; fable 5.1 $10 · $20 · $0.25 (0.025×) · $50; haiku 4.5 $1 · $2 · $0.10 · $5. the 1M window bills at standard rates.
+- **reuse a warm session when its extra context (above the ~137k base) < spawn write ÷ (hit price × steps)**: opus 4.1M ÷ steps · sonnet 2.0M ÷ steps · fable 8.2M ÷ steps. on opus: ≤10 steps → reuse up to ~550k · ~50 steps (a ticket) → under ~220k · 100+ (a feature) → under ~180k, or spawn fresh. effort changes the steps, never the prices.
+- idle over 1h → the cache is cold, a reuse rewrites the whole context at the write price → spawn fresh, unless its knowledge is the job.
+- the taxonomy, by cost: cclio (one long session, its context is the job) · `--bg` coder (watchable) · implement-spec subagents (bulk) · fork (pays the parent's whole context) · `chore-helper` (sonnet, mechanical) · bare probe (`claude -p --safe-mode`, almost no base) · ccrow (resident, 🔥 keeps it warm).
+
+**the spec-run balance** (dima, 2026-10-06: «plain --bg coder is better for granular work, where i'd like to see the results in place. and implement-spec looks very good of under the hood work»):
+- a `--bg` coder for granular work dima watches: UI, pr lanes, anything he steers in place
+- `implement-spec` subagents for bulk work under the hood; each ticket picks its model — sonnet 5.5 for a mechanical ticket, opus for judgment; cclio runs a run of ≤10 tickets, a `--bg` runner takes it when dima wants to watch
+- a `--bg` coder hands its big reads and mechanical edits to subagents, so its own context stays lean (`x:crew-coder`)
 
 ## picking the model — Dima's contract, never re-derived
 

@@ -106,6 +106,7 @@ the open files in `docs/test-drive/` (a file without a verdict line is open), th
 `memory/_reminders.md`, and the model/effort trials (`docs/knowledge/models.md`, the spawn defaults in
 `craft-spawning`). ⏰ leads any line due within 3 days; an item with no evidence today still gets its
 line — a trial nobody names is being dropped by default.
+**then the spawn base:** the first-request `cache_read_input_tokens` / `cache_creation_input_tokens` of the day's fresh agents (their transcripts' first assistant `usage`) — a base that moved re-sizes the grid in `craft-spawning`.
 
 ## phase 3.5 — milestones, before the board
 
@@ -140,6 +141,7 @@ auto-save via the handoff store (`/x:handoff` writes, `/x:handoff-ingest` reads)
 before writing, whether the work continues here or in a fresh thread — a CST followed by more
 work in the same thread is wasted tokens and a stale file. slug `<runid-topic>-halt`. a previous
 CST marked FROZEN is never superseded — save alongside and say which is which.
+🐦‍⬛ **after the CST, `pnpm -C ~/frame ccrow:stop`** — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`).
 a first-act that is a memory line is applied now, by this halt — never left for a boot (two sat
 unapplied through a whole session when the next boot ingested a different CST, 2026-09-19).
 

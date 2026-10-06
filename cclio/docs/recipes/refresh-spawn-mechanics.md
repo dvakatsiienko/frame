@@ -21,6 +21,12 @@ Keeps the spawn evidence base true against the current claude code build. Recipe
   or die
 - ✂️ closed at this groom: worktree-safety (the `EnterWorktree` hook automated the guard,
   proven live) · earlier cuts stand: cloud row · `claude attach` · `notify_when_idle`
+- **the spawn doors:** which door (Agent tool, agent file, fork, Workflow `agent()`,
+  `claude --bg`) can set model AND effort on the current cc version; what the built-in subagents
+  (Explore, Plan) run on.
+- the spawn base and the grid: a fresh agent's first-request warm / cold split (`cache_read` vs
+  `cache_creation`, measured 35k / 102k on 2026-10-06), times the prices in `docs/knowledge/models.md`
+  → the spawn-or-reuse grid in `craft-spawning`, recomputed every run
 - dima's standing word: cclio doing the spawning is fine for now
 
 ## analysis vectors (local evidence — the running agent is the instrument)

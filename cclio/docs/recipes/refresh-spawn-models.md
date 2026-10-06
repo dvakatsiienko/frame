@@ -1,4 +1,4 @@
-# refresh-model-knowledge — recipe
+# refresh-spawn-models — recipe
 
 Keeps the model knowledge current across the fleet: which model does what best, at what price,
 spawned how. Lands what [DOT-130](https://linear.app/x-com/issue/DOT-130) asked for. Recipe
@@ -17,20 +17,21 @@ entity per [_spec.md](_spec.md).
 - **scope rule: the latest anthropic version of each line plus one generation back** — opus,
   fable, sonnet, haiku, e.g. fable 5.1 + fable 5, opus 5.5 + opus 5. plus any
   announced-but-unshipped successor. (dima, 2026-10-01)
-- capabilities, benchmarks, price (cache reads included), latency (tok/s, TTFT), context,
-  lifecycle — per model in scope.
+- capabilities, benchmarks, price, latency (tok/s, TTFT), context, lifecycle — per model in scope.
+  price is read from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing)
+  (`curl -sL <url>.md`): input, 5m and 1h cache writes, the cache-hit multiplier per model (it
+  differs: 0.025× fable 5.1, 0.05× opus 5.5, 0.1× the rest on 2026-10-06), output, long-context
+  billing. a moved price re-sizes the spawn-or-reuse grid in `craft-spawning`, same run.
 - **effort levels per model:** the supported levels, the vendor default per surface (API vs
   Claude Code), the vendor's starting points per task type, the lowest-reasoning setting (can
   thinking be turned off?), and any independent effort-vs-score and effort-vs-cost curve.
 - **helper-lane fit for every non-default model:** one verdict each, with evidence, for codebase
   exploration, mechanical edits under opus review, a verifier's second pair of eyes, research
   lanes — plus what it must NOT be used for.
-- **the spawn doors:** which door (Agent tool, agent file, fork, Workflow `agent()`,
-  `claude --bg`) can set model AND effort on the current cc version; what the built-in subagents
-  (Explore, Plan) run on.
 - best-fit per research activity type — which model for which research genre
 - bake the model-split reasoning against real data; verify assumptions → fact-based
   model-spawn strategy map per task type
+- the spawn doors (which door sets model and effort) live in `refresh-spawn-mechanics`; both recipes feed the one spawn-or-reuse grid in `craft-spawning`
 
 ## analysis vectors (local evidence — the running agent is the instrument)
 

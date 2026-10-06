@@ -10,7 +10,7 @@ ticket: DOT-130
 lives in `cclio/memory/craft-spawning.md`; the two must agree line by line.
 
 📌 This file stays evergreen — [DOT-130](https://linear.app/x-com/issue/DOT-130) owns that, the
-`refresh-model-knowledge` recipe (`cclio/docs/recipes/`) runs it. Add measurements and Dima's live
+`refresh-spawn-models` recipe (`cclio/docs/recipes/`) runs it. Add measurements and Dima's live
 calls; never delete a claim tag. Sources of the 2026-09-28 run: the bundled `claude-api` skill
 (Anthropic's own model tables and migration guides) + one `parallel-cli` research lane
 (`docs/research/` holds no copy — this file is the distillate).
