@@ -134,7 +134,7 @@
   - then each event shows under it, newest first: `<session> — <command> → <door>` (an escape: `→ ran on dima-ok: <target>`)
   - when 30 min pass with no new event
   - then the row is gone from every session's band
-  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`, and the `guard_*.json` it kept before the rename) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the trace stays there (x-mod-guard keeps its last 50), so a halt counts the day from that file
+  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`, and the `guard_*.json` it kept before the rename) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the band reads only the last 50 events x-mod-guard keeps there; a halt counts the day from the same file's per-day keys, `day:<yyyy-mm-dd>:<session>` with its refused and escaped counts (kept 30 days), never from the 50 events
 
 ## edits — holds
 
