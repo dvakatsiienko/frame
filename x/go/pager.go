@@ -31,17 +31,19 @@ type pager struct {
 }
 
 func page(b frame) error {
-	rows := make([]string, 0, len(b.rows)+2)
-	pad := b.row("")
-	rows = append(rows, pad)
-	for _, row := range b.rows {
-		rows = append(rows, b.row(row))
-	}
-	rows = append(rows, pad)
 	view := viewport.New(viewport.WithWidth(b.width), viewport.WithHeight(termRows()-2))
-	view.SetContentLines(rows)
+	view.SetContentLines(boardRows(b))
 	_, err := tea.NewProgram(pager{b, view}).Run()
 	return err
+}
+
+// the rows inside the side rules; a row wider than a narrowed window is clipped, never wrapped
+func boardRows(b frame) []string {
+	rows := []string{b.row("")}
+	for _, row := range b.rows {
+		rows = append(rows, b.row(clip(row, b.inner())))
+	}
+	return append(rows, b.row(""))
 }
 
 func (p pager) Init() tea.Cmd { return nil }
@@ -55,6 +57,9 @@ func (p pager) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.WindowSizeMsg:
 		p.view.SetHeight(msg.Height - 2)
+		p.board.width = min(msg.Width, 112)
+		p.view.SetWidth(p.board.width)
+		p.view.SetContentLines(boardRows(p.board))
 	}
 	var cmd tea.Cmd
 	p.view, cmd = p.view.Update(msg)

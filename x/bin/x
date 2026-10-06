@@ -21,9 +21,10 @@ for file in "${go}"/*.go "${go}"/registry.json "${go}"/go.mod "${go}"/go.sum; do
     [[ ${file} -nt ${bin} ]] && stale=1
 done
 if ((stale)); then
-    echo "x: building from ${go}" >&2
+    gobin=$(command -v go || echo /opt/homebrew/bin/go)
+    echo "x: building from ${go} with ${gobin}" >&2
     # a temp file then a rename: two shells building at once never run a half-written binary
-    if (cd "${go}" && go build -trimpath -ldflags "-s -w -X main.srcDir=${go}" -o "bin/.x.$$" . && mv -f "bin/.x.$$" bin/x) >&2; then
+    if (cd "${go}" && "${gobin}" build -trimpath -ldflags "-s -w -X main.srcDir=${go}" -o "bin/.x.$$" . && mv -f "bin/.x.$$" bin/x) >&2; then
         :
     elif [[ -x ${bin} ]]; then
         echo "x: the build failed — running the last binary" >&2

@@ -87,7 +87,7 @@ func probeBare(r *Run, args []string, flags Flags) (any, error) {
 	// an empty dir of ours; a session that wrote into it keeps its files
 	defer os.Remove(dir)
 	r.Open("no setup, " + model)
-	got, err := ask(r, dir, model, []string{"--safe-mode", "--strict-mcp-config", "--no-session-persistence", args[0]})
+	got, err := ask(r, dir, model, []string{"--safe-mode", "--strict-mcp-config", "--no-session-persistence", "--", args[0]})
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func probeSession(r *Run, args []string, flags Flags) (any, error) {
 	if resumed {
 		session = []string{"--resume", saved.SessionID}
 	}
-	got, err := ask(r, dir, model, append(append([]string{"--setting-sources", "project", "--settings", settings}, session...), prompt))
+	got, err := ask(r, dir, model, append(append([]string{"--setting-sources", "project", "--settings", settings}, session...), "--", prompt))
 	if err != nil {
 		return nil, err
 	}

@@ -233,10 +233,12 @@ func readMeta(path string) *string {
 }
 
 // a pulled CST goes to the macos trash, so it stays recoverable; a test run never fills the trash
-func discard(path string) {
+func discard(path string) error {
 	if os.Getenv("X_TEST") != "" {
-		_ = os.Remove(path)
-		return
+		return os.Remove(path)
 	}
-	_ = exec.Command("trash", path).Run()
+	if out, err := exec.Command("trash", path).CombinedOutput(); err != nil {
+		return fmt.Errorf("trash %s: %v %s", path, err, strings.TrimSpace(string(out)))
+	}
+	return nil
 }

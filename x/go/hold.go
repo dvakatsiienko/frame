@@ -29,16 +29,19 @@ type heldFile struct {
 }
 
 func holdAside(tree string, named []string) (*held, error) {
-	status, err := mustGitIn(tree, "status", "status", "--porcelain=v1", "-z", "--untracked-files=all")
+	// raw, never trimmed: an unstaged edit that sorts first opens the output with its status space
+	raw, err := cmdIn(tree, "git", "status", "--porcelain=v1", "-z", "--untracked-files=all").Output()
 	if err != nil {
-		return nil, err
+		return nil, &Fail{Msg: "git status failed: " + err.Error(), Next: "git status"}
 	}
+	status := string(raw)
 	gitDir, err := mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
 	if err != nil {
 		return nil, err
 	}
 	h := &held{dir: filepath.Join(gitDir, "x-held", time.Now().UTC().Format("20060102T150405Z")+fmt.Sprintf("-%d", os.Getpid()))}
 
+	var pending []heldFile
 	fields := strings.Split(status, "\x00")
 	for i := 0; i < len(fields); i++ {
 		entry := fields[i]
@@ -55,15 +58,21 @@ func holdAside(tree string, named []string) (*held, error) {
 		}
 		switch {
 		case code == "??":
-			h.files = append(h.files, heldFile{path: path})
+			pending = append(pending, heldFile{path: path})
 		case code[1] == 'D':
-			h.files = append(h.files, heldFile{path: path, tracked: true, deleted: true})
+			pending = append(pending, heldFile{path: path, tracked: true, deleted: true})
 		case code[1] != ' ':
-			h.files = append(h.files, heldFile{path: path, tracked: true})
+			pending = append(pending, heldFile{path: path, tracked: true})
 		}
 	}
-	for i := range h.files {
-		if err := h.take(tree, &h.files[i]); err != nil {
+	// a file joins the restore list the moment its tree state changed, never before: restore removes
+	// a tracked file's index copy, and an untaken one would lose the work still in it
+	for _, f := range pending {
+		moved, err := h.take(tree, &f)
+		if moved {
+			h.files = append(h.files, f)
+		}
+		if err != nil {
 			return h, err
 		}
 	}
@@ -77,25 +86,26 @@ func isNamed(path string, named []string) bool {
 	})
 }
 
-func (h *held) take(tree string, f *heldFile) error {
+// take reports whether the tree changed, so a failure halfway still restores what moved
+func (h *held) take(tree string, f *heldFile) (bool, error) {
 	if !f.deleted {
 		sum, err := checksum(filepath.Join(tree, f.path))
 		if err != nil {
-			return err
+			return false, err
 		}
 		f.sum = sum
 		if err := os.MkdirAll(filepath.Dir(filepath.Join(h.dir, f.path)), 0o700); err != nil {
-			return err
+			return false, err
 		}
 		if err := os.Rename(filepath.Join(tree, f.path), filepath.Join(h.dir, f.path)); err != nil {
-			return err
+			return false, err
 		}
 	}
 	if f.tracked {
 		_, err := mustGitIn(tree, "checkout", "checkout", "--", f.path)
-		return err
+		return true, err
 	}
-	return nil
+	return true, nil
 }
 
 // restore puts every held file back and reads each one again; any difference is a failure that

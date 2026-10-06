@@ -183,7 +183,10 @@ func verbBoard(verb Verb) string {
 	}
 	var flags [][2]string
 	for _, name := range append(verb.OwnFlags(), globalFlagNames...) {
-		spec := verb.Flags[name]
+		spec, ok := verb.Flags[name]
+		if !ok {
+			continue
+		}
 		label := "--" + name
 		if spec.Type == "string" {
 			label += " <" + spec.Value + ">"

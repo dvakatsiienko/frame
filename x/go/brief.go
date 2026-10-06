@@ -29,6 +29,8 @@ type briefLine struct {
 	n    int
 	text string
 	exit bool
+	// an exit line with its indented given/when/then children, checked as one
+	group string
 }
 
 var (
@@ -74,7 +76,7 @@ func briefCheck(r *Run, args []string, flags Flags) (any, error) {
 		for _, line := range lines {
 			for _, at := range codeSpan.FindAllStringSubmatchIndex(line.text, -1) {
 				token := strings.TrimSpace(line.text[at[2]:at[3]])
-				if newMark.MatchString(line.text[at[1]:]) {
+				if token == "" || newMark.MatchString(line.text[at[1]:]) {
 					continue
 				}
 				if _, seen := tokens[token]; !seen {
@@ -178,7 +180,7 @@ func repoRoot(flags Flags) (string, error) {
 // fenced blocks are code, not names; a list item under a heading that says exit is an exit line
 func briefLines(text string) []briefLine {
 	var lines []briefLine
-	fenced, inExit := false, false
+	fenced, inExit, exitAt := false, false, -1
 	for i, line := range strings.Split(text, "\n") {
 		if strings.HasPrefix(strings.TrimSpace(line), "```") {
 			fenced = !fenced
@@ -191,7 +193,17 @@ func briefLines(text string) []briefLine {
 			inExit = strings.Contains(strings.ToLower(line), "exit")
 			continue
 		}
-		lines = append(lines, briefLine{i + 1, line, inExit && listItem.MatchString(line)})
+		indented := strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t")
+		if inExit && indented && exitAt >= 0 {
+			lines[exitAt].group += "\n" + line
+			lines = append(lines, briefLine{n: i + 1, text: line})
+			continue
+		}
+		isExit := inExit && !indented && listItem.MatchString(line)
+		if isExit {
+			exitAt = len(lines)
+		}
+		lines = append(lines, briefLine{i + 1, line, isExit, line})
 	}
 	return lines
 }
@@ -226,7 +238,7 @@ func missing(token, repo string, files []string) (kind, why string) {
 		return "", ""
 	case strings.HasPrefix(token, "x "):
 		words := wordsOf(strings.Fields(token)[1:])
-		if _, _, ok := findVerb(words); ok || (len(words) == 1 && slices.Contains(families(), words[0])) {
+		if _, _, ok := findVerb(words); ok || len(words) == 0 || (len(words) == 1 && slices.Contains(families(), words[0])) {
 			return "", ""
 		}
 		return "verb", "no such x verb (x --help lists them)"
@@ -275,6 +287,10 @@ func pathMissing(token, repo string, files []string) (string, string) {
 func pnpmMissing(token, repo string) (string, string) {
 	match := pnpmScript.FindStringSubmatch(token)
 	if match == nil || slices.Contains(pnpmBuiltins, match[2]) {
+		return "", ""
+	}
+	// pnpm runs a package's bin by name as well as a script
+	if exists(filepath.Join(repo, match[1], "node_modules/.bin", match[2])) {
 		return "", ""
 	}
 	manifest := filepath.Join(repo, match[1], "package.json")
@@ -340,10 +356,10 @@ func lint(lines []briefLine) []finding {
 		if rate.MatchString(text) && !sampleSize.MatchString(text) {
 			found = append(found, finding{line.n, "lint", strings.TrimSpace(rate.FindString(text)), "a rate names its minimum n"})
 		}
-		if line.exit && !surface.MatchString(text) {
+		if line.exit && !surface.MatchString(line.group) {
 			found = append(found, finding{line.n, "lint", "exit line", "names no surface: a file, a port or a command in backticks"})
 		}
-		if line.exit && strings.Contains(text, "cclio/") {
+		if line.exit && strings.Contains(line.group, "cclio/") {
 			found = append(found, finding{line.n, "lint", "cclio/", "a coder's exit line never points into cclio/"})
 		}
 		if relayed.MatchString(text) && !stampTime.MatchString(text) {

@@ -75,6 +75,10 @@ func loadRegistry(raw []byte) ([]Family, []Verb) {
 		own := verb.Flags
 		verb.Flags = maps.Clone(globalFlags)
 		maps.Copy(verb.Flags, own)
+		// --apply means «publish or destroy»; a verb that does neither never offers it
+		if !verb.NeedsApply {
+			delete(verb.Flags, "apply")
+		}
 		verb.Usage = usageOf(*verb)
 	}
 	return source.Families, source.Verbs

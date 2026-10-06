@@ -121,7 +121,6 @@ func buildRoot(m mode) *cobra.Command {
 		CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
 	}
 	root.SetHelpCommand(&cobra.Command{Hidden: true})
-	root.PersistentFlags().Bool("apply", false, "run a verb that publishes or destroys")
 	root.PersistentFlags().Bool("json", false, "json on stdout even on a tty")
 	root.SetFlagErrorFunc(func(c *cobra.Command, err error) error {
 		return usageFail(flagMessage(c, err), strings.TrimSpace(c.CommandPath()+" --help"))
@@ -161,6 +160,9 @@ func leaf(m mode, verb Verb) *cobra.Command {
 			exitCode = dispatch(m, verb, args, flags)
 			return nil
 		},
+	}
+	if verb.NeedsApply {
+		c.Flags().Bool("apply", false, verb.Flags["apply"].Description)
 	}
 	for _, own := range verb.OwnFlags() {
 		spec := verb.Flags[own]

@@ -182,20 +182,25 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, &Fail{Msg: picked.file + " vanished before it was read — another thread pulled it", Next: "x handoffs list"}
 	}
-	if !picked.Shared {
-		discard(picked.path)
+	// a file that could not be trashed stays for the next puller, and the envelope says so
+	kept := picked.Shared
+	if !kept {
+		if err := discard(picked.path); err != nil {
+			fmt.Fprintln(os.Stderr, "x: "+err.Error()+" — the CST stays in the store")
+			kept = true
+		}
 	}
 	if r.human {
 		foot := "the file was deleted on ingest"
-		if picked.Shared {
-			foot = "shared: the file stays for other pullers"
+		if kept {
+			foot = "the file stays in the store"
 		}
 		b := frame{width: frameWidth(), titleLeft: titleOf("handoffs ingest"), titleRight: ui.dim.Render(picked.Slug),
 			footLeft: ui.dim.Render(foot), padRows: true}
 		b.rows = markdown(string(body), b.inner())
 		r.Page(b)
 	}
-	return ordered{{"body", string(body)}, {"kept", picked.Shared}, {"name", picked.file}, {"slug", picked.Slug}}, nil
+	return ordered{{"body", string(body)}, {"kept", kept}, {"name", picked.file}, {"slug", picked.Slug}}, nil
 }
 
 func pendingSlugs() []string {

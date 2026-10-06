@@ -19,6 +19,11 @@ func TestEveryVerbHasHelpAndSchema(t *testing.T) {
 		listed, _ := schema.data["verbs"].([]any)
 		if schema.code != 0 || len(listed) == 0 || listed[0].(map[string]any)["name"] != verb.Name {
 			t.Errorf("schema %s: exit %d, %d entries", verb.Name, schema.code, len(listed))
+			continue
+		}
+		flags, _ := listed[0].(map[string]any)["flags"].(map[string]any)
+		if _, offers := flags["apply"]; offers != verb.NeedsApply {
+			t.Errorf("schema %s offers --apply: %v, but it publishes: %v", verb.Name, offers, verb.NeedsApply)
 		}
 	}
 }
@@ -83,6 +88,59 @@ func TestHoldUnstagedPutsFilesBackWhenTheHookRefuses(t *testing.T) {
 	}
 }
 
+// git status lists paths sorted; an unstaged edit that sorts first starts the output with a space
+func TestHoldUnstagedReadsAnEditThatSortsFirst(t *testing.T) {
+	dir, _ := gatedRepo(t, "grep -q wip a-first.txt && exit 1; exit 0")
+	write(t, filepath.Join(dir, "a-first.txt"), "committed\n")
+	gitT(t, dir, "add", "a-first.txt")
+	gitT(t, dir, "commit", "-q", "-m", "first")
+	write(t, filepath.Join(dir, "a-first.txt"), "wip edit\n")
+
+	got := xIn(t, dir, nil, "lane", "commit", "--hold-unstaged", message(t), "--", "readme.txt")
+
+	if got.code != 0 || read(t, filepath.Join(dir, "a-first.txt")) != "wip edit\n" {
+		t.Fatalf("exit %d: %s", got.code, got.stdout)
+	}
+}
+
+func TestHoldThatFailsMidwayLeavesUntakenFilesAlone(t *testing.T) {
+	dir, _ := gatedRepo(t, "exit 0")
+	// porcelain lists tracked edits first, sorted: tracked.txt is taken, m/locked.txt cannot move (its dir is
+	// read-only), and zz-later.txt is never taken
+	for _, name := range []string{"m/locked.txt", "zz-later.txt"} {
+		write(t, filepath.Join(dir, name), "committed\n")
+	}
+	gitT(t, dir, "add", "m/locked.txt", "zz-later.txt")
+	gitT(t, dir, "commit", "-q", "-m", "two more")
+	write(t, filepath.Join(dir, "zz-later.txt"), "wip that must survive\n")
+	write(t, filepath.Join(dir, "m/locked.txt"), "locked wip\n")
+	if err := os.Chmod(filepath.Join(dir, "m"), 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(filepath.Join(dir, "m"), 0o755) })
+
+	got := xIn(t, dir, nil, "lane", "commit", "--hold-unstaged", message(t), "--", "readme.txt")
+
+	if got.code == 0 {
+		t.Fatalf("the hold should fail on an unreadable file: %s", got.stdout)
+	}
+	if body, err := os.ReadFile(filepath.Join(dir, "zz-later.txt")); err != nil || string(body) != "wip that must survive\n" {
+		t.Fatalf("an untaken file was touched: %q, %v", body, err)
+	}
+	if read(t, filepath.Join(dir, "tracked.txt")) != "wip edit\n" {
+		t.Error("a taken file did not come back")
+	}
+}
+
+func TestBriefCheckSkipsAnEmptyCodeSpan(t *testing.T) {
+	brief := filepath.Join(t.TempDir(), "brief.md")
+	write(t, brief, "a blank ` ` span, then `readme.txt`\n")
+
+	if got := xIn(t, repo(t), []string{"X_STATE=" + t.TempDir()}, "brief", "check", brief); got.code != 0 {
+		t.Fatalf("exit %d: %s", got.code, got.stdout)
+	}
+}
+
 func TestBriefLintRules(t *testing.T) {
 	cases := []struct {
 		name, brief string
@@ -94,6 +152,7 @@ func TestBriefLintRules(t *testing.T) {
 		{"an exit line naming a file", "## exit\n\n- the board in `x/go/boards.go` looks right\n", false},
 		{"an exit line naming a port", "## exit lines\n\n- localhost:7373 serves the map\n", false},
 		{"an exit line into cclio", "## exit\n\n- `cclio/docs/recipes/x.md` holds it\n", true},
+		{"an ftr exit line whose surface sits in a child", "## exit\n\n- the hold keeps work out\n  - given wip\n  - then `x lane commit` passes\n", false},
 		{"a prose line into cclio", "the recipe sits in `cclio/docs`\n", false},
 		{"a relayed approval with no time", "dima approved the cut\n", true},
 		{"a relayed approval with its time", "dima approved the cut at 14:59\n", false},
@@ -130,6 +189,38 @@ func TestBriefCheckStampsAPass(t *testing.T) {
 
 	if stamp, _ := got.data["stamp"].(string); got.code != 0 || !strings.HasPrefix(stamp, state) || read(t, stamp) == "" {
 		t.Fatalf("exit %d, data %v", got.code, got.data)
+	}
+}
+
+func TestBriefCheckPassesWhatExistsInOtherShapes(t *testing.T) {
+	dir := repo(t)
+	write(t, filepath.Join(dir, "package.json"), `{"scripts":{"test":"vitest"}}`)
+	write(t, filepath.Join(dir, "node_modules/.bin/vitest"), "#!/bin/sh\n")
+	for _, token := range []string{"pnpm vitest run x", "pnpm test", "x --help", "x lane", "x lane commit msg.txt -- a.txt"} {
+		if kind, why := missing(token, dir, nil); kind != "" {
+			t.Errorf("%q: %s %s", token, kind, why)
+		}
+	}
+}
+
+func TestApplyIsRefusedWhereItMeansNothing(t *testing.T) {
+	if got := xIn(t, repo(t), nil, "knowledge", "list", "--apply"); got.code != 2 {
+		t.Fatalf("exit %d, want a usage error", got.code)
+	}
+}
+
+func TestIngestThatCannotTrashKeepsTheFile(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, "any-probe-20260831T120000Z.md"), "# META\n")
+	if err := os.Chmod(root, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(root, 0o700) })
+
+	got := xIn(t, repo(t), []string{"HANDOFF_STORE_ROOT=" + root}, "handoffs", "ingest", "probe")
+
+	if got.code != 0 || got.data["kept"] != true || len(listStore(root)) != 1 {
+		t.Fatalf("exit %d, kept %v, files %d", got.code, got.data["kept"], len(listStore(root)))
 	}
 }
 
@@ -174,7 +265,7 @@ func TestProbeBareAsksWithNoSetupFromOutsideAnyRepo(t *testing.T) {
 
 	call := claudeCalls(t, dir)[0]
 	cwd, argv, _ := strings.Cut(call, " ")
-	for _, flag := range []string{"-p", "--model haiku", "--safe-mode", "--strict-mcp-config", "--no-session-persistence", "is it us?"} {
+	for _, flag := range []string{"-p", "--model haiku", "--safe-mode", "--strict-mcp-config", "--no-session-persistence", "-- is it us?"} {
 		if !strings.Contains(argv, flag) {
 			t.Errorf("claude ran without %s: %s", flag, argv)
 		}

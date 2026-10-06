@@ -123,6 +123,14 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		if err := r.Step("restore", "putting the held files back", func() (string, error) {
 			return plural(len(aside.files), "file") + " back, byte for byte", aside.restore(tree)
 		}); err != nil {
+			// both failed: the hook's words and the held dir are each the caller's next move
+			if refused, ok := errors.AsType[*Fail](committed); ok {
+				both := &Fail{Msg: refused.Msg + "; and " + err.Error(), Log: refused.Log}
+				if lost, ok := errors.AsType[*Fail](err); ok {
+					both.Next = lost.Next
+				}
+				return nil, both
+			}
 			return nil, err
 		}
 	}
