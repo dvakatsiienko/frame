@@ -99,21 +99,26 @@ for (const surface of ['terminal', 'desktop'] as const)
         expect(await b.lines()).toEqual(['🛡️ 4 refusals · 2 sessions']);
     });
 
-test('an escape counts beside the refusals and shows what it ran on', async ($, on) => {
-    const escaped: Event = {
-        at: NOW - MIN,
-        command: 'rm -rf dist # dima-ok: dist',
-        door: 'trash <path>',
-        kind: 'escaped',
-        sid: 'a1a1a1a1-0000',
-        target: 'dist',
-    };
-    const b = await band($, on, 'terminal', store([escaped]));
+const ESCAPED: Event = {
+    at: NOW - MIN / 2,
+    command: 'rm -rf dist # dima-ok: dist',
+    door: 'trash <path>',
+    kind: 'escaped',
+    sid: 'a1a1a1a1-0000',
+    target: 'dist',
+};
+
+test('an escape counts beside the refusals', async ($, on) => {
+    const b = await band($, on, 'terminal', { ...FOUR, ...store([ESCAPED]) });
+    expect(await b.lines()).toEqual(['🛡️ 4 refusals · 1 escape · 2 sessions']);
+});
+
+test('an unfolded escape shows what it ran on', async ($, on) => {
+    const b = await band($, on, 'terminal', store([ESCAPED]));
     await b.ui.press({ key: 'guard-toggle' });
-    expect(await b.lines()).toEqual([
-        '🛡️ 1 escape · 1 session',
+    expect((await b.lines())[1]).toBe(
         'a1a1a1a1 — rm -rf dist # dima-ok: dist → ran on dima-ok: dist',
-    ]);
+    );
 });
 
 test('refusals kept under the old guard name still count after the rename', async ($, on) => {
