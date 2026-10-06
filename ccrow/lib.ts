@@ -1,3 +1,5 @@
+import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import {
     copyFileSync,
     globSync,
@@ -13,6 +15,8 @@ import { basename, join } from 'node:path';
 
 export const SESSION_NAME = '🐦‍⬛ ccrow';
 export const STATE_DIR = join(homedir(), '.local/state/ccrow');
+const STORE_DIR = join(homedir(), '.claude/plugins/store');
+const HOT = 'hot:';
 export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');
 export const VERDICTS_PATH = join(STATE_DIR, 'verdicts.jsonl');
 export const WAKE_GAP_MS = 30 * 60_000;
@@ -29,22 +33,71 @@ export const armModels = {
     opus: 'claude-opus-5-5',
 } as const satisfies Record<Arm, string>;
 
-// mods load from CLAUDE_CODE_PLUGIN_DIRS in the user settings env; an empty value turns them off
-const CCROW_SETTINGS = JSON.stringify({
-    crossSessionInbound: 'accept',
-    disableAllHooks: true,
-    env: { CLAUDE_CODE_PLUGIN_DIRS: '' },
-});
-
-export function claudeArgs(arm: Arm) {
+// no user settings source: no user hooks, plugins or mods; disableAllHooks would block the mods in `pluginDirs` too (probed 2026-10-06)
+export function claudeArgs(arm: Arm, pluginDirs = '') {
     return [
         '--model',
         armModels[arm],
         '--effort',
         'medium',
+        '--setting-sources',
+        'project,local',
         '--settings',
-        CCROW_SETTINGS,
+        JSON.stringify({
+            crossSessionInbound: 'accept',
+            env: { CLAUDE_CODE_PLUGIN_DIRS: pluginDirs },
+            permissions: {
+                additionalDirectories: ['~'],
+                defaultMode: 'bypassPermissions',
+            },
+            skipDangerousModePermissionPrompt: true,
+        }),
     ];
+}
+
+// the stash mod is found by its plugin name, never its dir: the dir gets renamed
+export function stashModOf(pluginDirs: string, home = homedir()) {
+    for (const entry of pluginDirs.split(':')) {
+        const dir = entry.replace(/^~(?=\/)/, home);
+        try {
+            const { name } = JSON.parse(
+                readFileSync(join(dir, '.claude-plugin/plugin.json'), 'utf8'),
+            );
+            if (typeof name === 'string' && /(^|-)stash$/.test(name))
+                return { dir, name };
+        } catch {}
+    }
+}
+
+export function userPluginDirs() {
+    const settings = JSON.parse(
+        readFileSync(join(homedir(), '.claude/settings.json'), 'utf8'),
+    );
+    return String(settings.env?.CLAUDE_CODE_PLUGIN_DIRS ?? '');
+}
+
+// $.store is one json file per plugin, shared by every session running it; the hash in its name is cc's
+export function storeOf(pluginName: string, storeDir = STORE_DIR) {
+    return globSync(`${pluginName}_inline-*.json`, { cwd: storeDir })
+        .map((f) => join(storeDir, f))
+        .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
+}
+
+// stash's 🔥 keep-hot reads `hot:<sessionId>` at session.start; no `until`, so it never cools
+export function setHot(storePath: string, sessionId: string, now: number) {
+    const store = JSON.parse(readFileSync(storePath, 'utf8'));
+    store[HOT + sessionId] = { since: now };
+    writeFileSync(storePath, JSON.stringify(store));
+}
+
+export function clearHot(storePath: string, sessionId: string) {
+    const store = JSON.parse(readFileSync(storePath, 'utf8'));
+    delete store[HOT + sessionId];
+    writeFileSync(storePath, JSON.stringify(store));
+}
+
+export function isHot(storePath: string, sessionId: string) {
+    return HOT + sessionId in JSON.parse(readFileSync(storePath, 'utf8'));
 }
 
 export function readCharter() {
@@ -125,6 +178,59 @@ export function findSession(): LiveSession | undefined {
         } catch {}
     }
 }
+
+// the 🔥 key is written before the spawn: stash reads it once, at session.start, under an id we pick
+export async function startCcrow(arm: Arm) {
+    mkdirSync(STATE_DIR, { recursive: true });
+    const stash = stashModOf(userPluginDirs());
+    const store = stash && storeOf(stash.name);
+    const sessionId = randomUUID();
+    if (store) setHot(store, sessionId, Date.now());
+
+    const result = spawnSync(
+        'claude',
+        [
+            '--bg',
+            '-n',
+            SESSION_NAME,
+            '--session-id',
+            sessionId,
+            ...claudeArgs(arm, stash?.dir),
+            '--remote-control',
+            SESSION_NAME,
+            readCharter(),
+        ],
+        { cwd: STATE_DIR, encoding: 'utf8' },
+    );
+    if (result.error) fail(`cannot run claude: ${result.error.message}`);
+    const jobId = /backgrounded · (\S+)/.exec(result.stdout)?.[1];
+    if (result.status !== 0 || !jobId) {
+        if (store) clearHot(store, sessionId);
+        fail(`claude --bg failed: ${(result.stderr || result.stdout).trim()}`);
+    }
+    writeState({ ...readState(), arm, jobId, startedAt: Date.now() });
+    console.log(
+        `ccrow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}, session ${sessionId}`,
+    );
+
+    if (!stash) {
+        console.log('🔥 off: no stash mod in CLAUDE_CODE_PLUGIN_DIRS');
+        return;
+    }
+    if (!store) {
+        console.log(`🔥 off: no store file for ${stash.name} yet`);
+        return;
+    }
+    // a stash instance writing the shared store at the same moment could drop the key: read it back once ccrow is up
+    for (let i = 0; i < 30 && !findSession(); i++) await sleep(1000);
+    console.log(
+        isHot(store, sessionId)
+            ? `🔥 on: ${stash.name} pings ccrow 50 min after its last turn`
+            : `🔥 lost: hot:${sessionId} is gone from ${store}`,
+    );
+}
+
+const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
 
 export function transcriptPathOf(cwd: string, sessionId: string) {
     return join(

@@ -13,6 +13,9 @@ file first on every boot and every wake — an arm switch restarts this session,
 2. run the Bash command `true &` once and quote the first line of its result.
 3. then wait. you act only on a wake line.
 
+a message «stash keep-hot ping: answer with one character, nothing else.» keeps your cache warm.
+it is not a wake: answer `.` and do nothing else.
+
 ## a wake
 
 a wake line arrives as a peer message from `ccrow:wake`:
