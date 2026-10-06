@@ -91,6 +91,31 @@ function parseLine(raw: string): TranscriptLine | undefined {
     }
 }
 
+// x-mod-guard's store files under `~/.claude/plugins/store`, and the one it kept as `guard` before the rename
+const GUARD_STORE = /^(x-mod-)?guard_.*\.json$/;
+
+/** one day's refusals and escapes, summed from x-mod-guard's `day:<yyyy-mm-dd>:<session>` keys; a file mid-write is skipped */
+export const guardDay = (dir: string, day: string) => {
+    const prefix = `day:${day}:`;
+    const sessions = new Set<string>();
+    const counts = { escaped: 0, refused: 0 };
+    for (const name of readdirSync(dir).filter((f) => GUARD_STORE.test(f))) {
+        let store: Record<string, Partial<GuardDayCount>>;
+        try {
+            store = JSON.parse(readFileSync(join(dir, name), 'utf8'));
+        } catch {
+            continue;
+        }
+        for (const [key, count] of Object.entries(store)) {
+            if (!key.startsWith(prefix)) continue;
+            sessions.add(key.slice(prefix.length));
+            counts.refused += count.refused ?? 0;
+            counts.escaped += count.escaped ?? 0;
+        }
+    }
+    return { ...counts, sessions: sessions.size };
+};
+
 export const medianMinutes = (prs: MergedPr[]) => {
     const mins = prs
         .map((p) => (Date.parse(p.mergedAt) - Date.parse(p.createdAt)) / 60_000)
@@ -104,6 +129,7 @@ export const medianMinutes = (prs: MergedPr[]) => {
 
 /* Types */
 export type MergedPr = { createdAt: string; mergedAt: string };
+type GuardDayCount = { refused: number; escaped: number };
 type ContentBlock =
     | { type: 'text'; text: string }
     | {

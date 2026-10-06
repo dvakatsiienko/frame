@@ -1,4 +1,4 @@
-// the fleet-flow done test (FRM-309): tagged flawlog lines, bare cc runs, crew-skill loads, and the pr open → merge median per repo.
+// the fleet-flow done test (FRM-309): tagged flawlog lines, bare cc runs, crew-skill loads, today's x-mod-guard counts, and the pr open → merge median per repo.
 // usage: pnpm flow:report [--days 14]
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -7,6 +7,7 @@ import { parseArgs } from 'node:util';
 import type { MergedPr } from './lib/flow-report.ts';
 import {
     flawlogCounts,
+    guardDay,
     medianMinutes,
     transcriptCounts,
 } from './lib/flow-report.ts';
@@ -48,6 +49,17 @@ console.log(
 console.log(
     `- crew-skill loads: ${transcripts.briefLed + transcripts.falseFires} — brief-led ${transcripts.briefLed}, false fires ${transcripts.falseFires}`,
 );
+
+// x-mod-guard's per-day keys, read from its own store file the way x-mod-stash reads its events
+const guardStore = `${process.env.HOME}/.claude/plugins/store`;
+if (existsSync(guardStore)) {
+    const today = guardDay(guardStore, new Date().toLocaleDateString('en-CA'));
+    console.log(
+        `- guard: ${today.refused} refusals · ${today.escaped} escapes today, ${today.sessions} sessions`,
+    );
+} else {
+    console.log(`- guard: no plugin store at ${guardStore}`);
+}
 
 // renovate auto-merges in seconds and is not the flow being measured
 console.log('- pr open → merge median, renovate excluded:');

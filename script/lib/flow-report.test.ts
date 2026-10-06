@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
     flawlogCounts,
+    guardDay,
     medianMinutes,
     transcriptCounts,
 } from './flow-report.ts';
@@ -120,6 +121,38 @@ describe('transcriptCounts', () => {
         expect(countsFor(said('fix the typo'), crewLoad)).toMatchObject({
             briefLed: 0,
             falseFires: 1,
+        });
+    });
+});
+
+describe('guardDay', () => {
+    it("sums the day's keys of x-mod-guard's store files, the old guard name included", () => {
+        const dir = mkdtempSync(join(tmpdir(), 'flow-guard-'));
+        const day = (refused: number, escaped: number) => ({
+            escaped,
+            refused,
+        });
+        writeFileSync(
+            join(dir, 'x-mod-guard_inline-abc.json'),
+            JSON.stringify({
+                'day:2026-10-05:a1': day(9, 9),
+                'day:2026-10-06:a1': day(2, 1),
+                'day:2026-10-06:b2': day(1, 0),
+                'event:1:a1': { kind: 'refused' },
+            }),
+        );
+        writeFileSync(
+            join(dir, 'guard_inline-0ld.json'),
+            JSON.stringify({ 'day:2026-10-06:c3': day(1, 0) }),
+        );
+        writeFileSync(
+            join(dir, 'x-mod-stash_inline-def.json'),
+            JSON.stringify({ 'day:2026-10-06:d4': day(5, 5) }),
+        );
+        expect(guardDay(dir, '2026-10-06')).toEqual({
+            escaped: 1,
+            refused: 4,
+            sessions: 3,
         });
     });
 });
