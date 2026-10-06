@@ -759,7 +759,7 @@ function brief(c: Command, ctx: Context): Refusal | undefined {
                   door: `write the brief to a file, run x brief check <path> --repo ${dir}, then spawn with "$(cat <path>)"`,
                   rule: 'brief',
                   targets: [INLINE],
-                  why: 'guard can check a brief only in a file, and a coder brief must pass x brief check',
+                  why: 'x-mod-guard can check a brief only in a file, and a coder brief must pass x brief check',
               }
             : undefined;
     const found = ctx.briefs?.get(file.path);

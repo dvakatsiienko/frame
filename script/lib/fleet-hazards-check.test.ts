@@ -29,7 +29,9 @@ describe('hazardRefusals', () => {
     });
 
     it('passes an added hazard that names its guard', () => {
-        expect(stage('- a new trap', '  guard: the `guard` mod')).toEqual([]);
+        expect(stage('- a new trap', '  guard: the `x-mod-guard` mod')).toEqual(
+            [],
+        );
     });
 
     it('refuses `guard: none` with no ticket after it', () => {
