@@ -132,10 +132,11 @@ func briefCheck(r *Run, args []string, flags Flags) (any, error) {
 	if len(found) > 0 {
 		r.skip("stamp")
 		r.Show(findingRows(found, r.board.inner()-nameCell-2), nameCell+2)
-		msg := []string{fmt.Sprintf("%s — fix them, or mark a thing the brief asks to build with (new)", plural(len(found), "problem"))}
+		msg := []string{plural(len(found), "problem") + " in the brief"}
 		for _, f := range found {
 			msg = append(msg, fmt.Sprintf("line %d: %s %s — %s", f.Line, f.Kind, f.What, f.Why))
 		}
+		msg = append(msg, "a thing the brief asks to build passes with (new) right after it")
 		return nil, &Fail{Msg: strings.Join(msg, "\n"), Next: strings.TrimSpace("x brief check " + quote(path) + " " + repoFlag(flags))}
 	}
 

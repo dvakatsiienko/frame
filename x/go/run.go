@@ -179,6 +179,8 @@ func (r *Run) close(word string, wordStyle lipgloss.Style, text, right, footer s
 }
 
 func resultRow(width int, word, text, right string) string {
+	// the result is one row: a long text gives up its tail, never the frame its right edge
+	text = clip(text, max(width-16-lipgloss.Width(right)-2, 8))
 	left := word + strings.Repeat(" ", max(16-lipgloss.Width(word), 1)) + ui.fg.Render(text)
 	return left + strings.Repeat(" ", max(width-lipgloss.Width(left)-lipgloss.Width(right), 1)) + ui.bold.Render(right)
 }
