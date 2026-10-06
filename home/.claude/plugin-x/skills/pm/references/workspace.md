@@ -1,11 +1,11 @@
 # linear workspace — x-com — operating map
 
-recipes only. **vocabulary is normative elsewhere**: `~/frame/docs/tracker/CONTEXT.md`
+recipes only. **vocabulary is normative elsewhere**: `~/frame/docs/tracker/GLOSSARY.md`
 (glossary) + `~/frame/docs/tracker/adr/` (`TRK-nnnn` decisions). read the glossary
 before the first write of a session — team, project, story, ticket, label, assignee, priority,
 estimate are all defined there and are never restated here.
 
-📌 the split is deliberate (`CONTEXT-FTR.md`): if a definition here disagrees with the tracker
+📌 the split is deliberate (`GLOSSARY-MAP.md`): if a definition here disagrees with the tracker
 context, the tracker context wins and this file is the bug.
 
 single tracker since 2026-08-13; gh issues retired (closed history with pointer comments).

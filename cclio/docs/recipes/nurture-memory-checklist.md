@@ -399,7 +399,7 @@ checks this today, and drift is invisible.
 - how to seed test data from wherever the real data lives
 - 🚨 **how not to kill the server the human is already using.** no rule of this class exists at
   all. same shape as the destructive-ops guard, aimed at *processes*
-- a **glossary** per project — the domain-modeling `CONTEXT.md` shape already agreed
+- a **glossary** per project — the domain-modeling `GLOSSARY.md` shape already agreed
 
 **method worth stealing: write TWO alternative drafts and pick, rather than editing in place.**
 dima's standing rule for visual work already says exactly this, and it fits bucketing better than

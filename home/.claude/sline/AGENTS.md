@@ -2,7 +2,7 @@
 
 Sline is this repo's implementation of the official Claude Code «statusline»
 feature: a stdlib-only Go binary rendering directory, model, versions, git,
-session, quota, and context segments. Vocabulary lives in [CONTEXT.md](../../../CONTEXT.md);
+session, quota, and context segments. Vocabulary lives in [GLOSSARY.md](../../../GLOSSARY.md);
 design invariants in `docs/adr/` at the repo root.
 
 - **Source**: `home/.claude/sline/` · **Build**: `pnpm sline:build` · **Test**: `pnpm sline:test`

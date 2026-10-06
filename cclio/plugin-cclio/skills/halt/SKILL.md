@@ -74,7 +74,7 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 `pnpm jev:flawlog` first: jev lanes every line (memory / rule / story / ticket / drop) and the
 proposal starts from its lanes, not from a blank read. then cluster, ONE batched proposal, ONE
 approval, execute and commit. see `/cclio:flawlog`.
-**retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody (dima, 2026-10-04).
+**retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody (dima, 2026-10-04). the same for look-card shots: `find ~/.local/state/looks -type f -mtime +14 -exec trash {} +` (FRM-315).
 🚨 **the flush is the one stop in a full halt, whatever the args** (`wire+` included): print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before
 the reason — those go to `memory/dima-stories.md` as appends (the leaf's own rule), not to the
@@ -82,6 +82,10 @@ flawlog's drop pile. skipped for two weeks once (2026-09-05).
 **verify recipes, in the flush:** a retro line naming a verify-recipe gap or a check worth adding is
 placed by cclio into that app's `.claude/skills/verify/SKILL.md` in the flush — coders and
 verifiers only suggest; the recipe stays short (commands that worked, flows worth driving, gotchas).
+**second sighting = teeth (FRM-314):** before a lesson enters the proposal, `rg -i '<its key words>' ~/.claude/shelf/flawlog/` over the last 30 days; a hit makes it a repeat, and a repeat leaves the flush as a guard, a verb, a check or a ticket, never a memory line. a stopgap memory line is written with `until: <ticket>`.
+**notes expire:** `rg -n 'until: (FRM|BYT)-[0-9]+' ~/frame/cclio/memory ~/.claude/rules` and check each id's state; a line whose ticket closed goes into the proposal for deletion.
+**the flow numbers, before the proposal:** `pnpm flow:report --days 14` in `~/frame` — the
+`habit-cto` halt read; name one inefficiency from it, fixed in place or ticketed in the flush.
 **the self-grill, with the log still open:** with the day's log still open, name the ONE weakest part of cclio
 as coordinator or pm, with the fix — `🥊 <issue>` + `➡️ <approach>`, one line each — and write the
 pair into the CST META. the next boot prints it and reads no flawlog. grounded in this log or

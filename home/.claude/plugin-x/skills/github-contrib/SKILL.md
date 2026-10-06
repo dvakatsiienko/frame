@@ -12,8 +12,10 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
 
 - titles follow the target repo's conventions — simple, clear; conventional-commit style where
   the repo uses it: `fix(web): new threads no longer spike CPU`.
-- descriptions: the problem in a sentence or two, then how you solved it. end with a blurb
-  naming the model and harness that did the work.
+- descriptions: the target repo's own pr template or `CONTRIBUTING.md` shape wins; with none,
+  the body follows `mattpocock-skills:pr` (summary diagram, before/after evidence, merge danger:
+  door + blast radius). in our repos the squash-merge message is still `x:cmt`-shaped — a diagram
+  stays in the pr body, never in git history. end with a blurb naming the model and harness.
 - **one concern per PR** — if the description says «also», split it.
 - **never a draft.** a PR opens real at the first push and stays the review surface while the
   work continues; review bots and dima read it as it grows.
@@ -60,8 +62,9 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   a pull alone left atelier's `:5180` on a vite «failed to resolve import» overlay for half an hour
   (bytes #102, 2026-09-26); vite keeps a failed resolution until it restarts
   then `/run` on every app the merge touched — the sanity pass that would have caught #102's dead import in a minute.
-- **the pr body is the squash-merge commit message** — it describes what landed, never the plan,
-  and carries no session-url trailer (the commit contract bans it; the harness's pr-body ask would
+- **the squash-merge commit message is written `x:cmt`-style at merge** (`--subject` + `--body` on
+  `gh pr merge`), never the pr body pasted in — it describes what landed, never the plan, and
+  carries no session-url trailer (the commit contract bans it; the harness's pr-body ask would
   smuggle it in through the squash)
 - **a push to main after a pr opened does not refresh that pr's base** — the diff keeps showing the
   coordinator's commits (#42: 46 files for a 7-file change) until `gh api -X PATCH repos/<o>/<r>/pulls/<n>

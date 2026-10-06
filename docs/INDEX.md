@@ -38,7 +38,7 @@ three rules keep it honest:
 
 ## tracker/ — the linear domain (`TRK-nnnn`)
 
-- [tracker glossary](tracker/CONTEXT.md) — one term per concept: team, project, story, ticket, label, sweep; plus the channel (linear cli, commit-linking webhook) and the mattpocock triage role bridge
+- [tracker glossary](tracker/GLOSSARY.md) — one term per concept: team, project, story, ticket, label, sweep; plus the channel (linear cli, commit-linking webhook) and the mattpocock triage role bridge
 - [TRK-0001 story over epic](tracker/adr/TRK-0001-story-over-epic.md) — one grouping term; «claude» split into four domain projects
 - [TRK-0002 label vocabulary](tracker/adr/TRK-0002-label-vocabulary.md) — block direction, `standing`, `vet`; partly superseded by TRK-0004
 - [TRK-0003 health update cadence](tracker/adr/TRK-0003-health-update-cadence.md) — weekly floor plus event-driven updates

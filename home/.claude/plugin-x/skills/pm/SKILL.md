@@ -28,7 +28,7 @@ You are the PM for the duration of the request. One tracker: **Linear**, workspa
 
 Two files, and the split matters:
 
-- **vocabulary is normative in the repo** — `~/frame/docs/tracker/CONTEXT.md` (glossary)
+- **vocabulary is normative in the repo** — `~/frame/docs/tracker/GLOSSARY.md` (glossary)
   and `~/frame/docs/tracker/adr/` (`TRK-nnnn` decisions). what a team, project, story,
   label or assignee *means* is settled there. never restate it, never contradict it.
 - **recipes are here** — [references/workspace.md](references/workspace.md): current projects,
@@ -81,7 +81,7 @@ call and is always cheaper than a wrong guess.
 
 Matt Pocock's pipeline (`grilling` → `domain-modeling` → `to-spec` → `to-tickets` → `triage` →
 `implement` → `code-review`) is the spine; the role mapping onto our linear lives in
-`~/frame/docs/tracker/CONTEXT.md` — absolute on purpose, the tracker is ONE domain from any
+`~/frame/docs/tracker/GLOSSARY.md` — absolute on purpose, the tracker is ONE domain from any
 repo. Reach for his skills by name when a stage's depth is needed.
 
 ## The two jobs
@@ -117,7 +117,7 @@ Role, priority and estimate are **always filled and current** — monitoring the
   reorder in the same turn, and verify the project's milestone order before reporting done.
 - On any scope change to an existing ticket: re-eval both, propose the delta.
 - **Structural tracker change** (project born/dissolved, term decided, label vocabulary shift) →
-  `~/frame/docs/tracker/CONTEXT.md` / TRK adr updated **in the same batch**, never later.
+  `~/frame/docs/tracker/GLOSSARY.md` / TRK adr updated **in the same batch**, never later.
 - Approval is **batched and diff-shaped**: one bullet list per edit batch, one `field: old → new` line per change, one approve — never N sequential confirms. Silence on a line in Dima's reply = accepted.
 
 ## The assumption gate — run before every estimate

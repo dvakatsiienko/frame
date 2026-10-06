@@ -21,7 +21,7 @@ script**: `bytes/script/apps-essentials.ts` (BYT-111). Read its data, never a co
 
 1. `AGENTS.md`: what the app is, how it runs, its hazards. The repo's root `AGENTS.md` gets its registry row.
 2. `x:ftr` drafts `FTR.md` from the running app. Every line starts ⬜ until its check runs.
-3. matt's `domain-modeling` writes `CONTEXT.md` and `docs/adr/0001-*.md`, with the stack pick as ADR-0001.
+3. matt's `domain-modeling` writes `GLOSSARY.md` and `docs/adr/0001-*.md`, with the stack pick as ADR-0001.
 4. `/run-skill-generator <app>` makes `<app>-run`. It is user-invoked, so dima types it, or cclio
    spawns a one-shot session whose prompt is that command. Then write `<app>-verify` from it.
 5. A ui app: impeccable `init` for `PRODUCT.md`, and `document` for `DESIGN.md` after the first build.
@@ -41,4 +41,4 @@ home and both call it. the steps expected to repeat, each with its likely home:
 - prove the store is local before any write → a `health` contract every app's api answers
 - state backup and restore, admin login → a shared `verify-kit` lib that each app's kit sources — **second sighting 2026-09-29**: speak's admin needed a config snapshot + restore (cp, then cmp) around every write test, so the step moves to the shared lib on the next kit touched
 
-**Done** = the checker prints ✅ for the app, and its root README and `CONTEXT-MAP.md` rows exist.
+**Done** = the checker prints ✅ for the app, and its root README and `GLOSSARY-MAP.md` rows exist.

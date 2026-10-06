@@ -25,7 +25,9 @@ dima's words:
 
 - pretty by default, read-first: boards and status views dima reads, one-shot verbs with a clean confirm
 - interactive driving (pickers, arrow-key browsing) only when dima starts driving x — then it grows those elements; not before
-- the bet: TypeScript + charm's binaries (`gum`, `glow`) for the look; go + bubbletea stays the FRM-284 night-shift comparison
+- ~~the bet: TypeScript + charm's binaries (`gum`, `glow`) for the look~~ → **decided 2026-10-06 (FRM-284 look probe): go + charm** — bubbletea, bubbles, lipgloss, huh, glamour, harmonica. the look won on the side-by-side shots
+- the look is a product requirement, not polish: «cli must look pretty and look prod grade. and use all bubbletea components when applicable — spinners, loaders, huh and other components. and don't forget that i sometimes will use cli too. it should be agents and user friendly» (dima, 2026-10-06)
+- it is a showcase piece too: «btw my fleet has its own brand cli» — a clip or a shot of it can sit on the visit card (BYT-119)
 
 ## what x is not — the admission rule (grill Q1, 2026-10-05)
 
@@ -46,4 +48,4 @@ after a frame → bytes merge, x is one workspace package beside turbo: turbo ow
 
 **out of v1:** pm / notes / scheduling / evergreen verbs (each through the admission rule later) · interactive driving · an MCP mirror (decided: none; `x-cw` stays until the cw-door probe) · package lifecycle (turbo / pnpm)
 
-the done test is `FTR.md`; the words are `CONTEXT.md`. prior art: `docs/research/cli-agent-facing.md`.
+the done test is `FTR.md`; the words are `GLOSSARY.md`. prior art: `docs/research/cli-agent-facing.md`.

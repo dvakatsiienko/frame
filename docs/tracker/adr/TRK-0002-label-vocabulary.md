@@ -19,4 +19,4 @@ decision — one entity per id:
 - **L5 `vet`** — 🧪 trial. examine an idea before committing to it. mutates into `investigate` if the shorter name does not survive use; delete the label rather than keep a dead one.
 - **L6 label language** — no hyphens in label names, ever. workspace-level labels only, never team-level: one vocabulary across DOT and BYT.
 
-consequences: L6 is what retires the `needs-info` spelling as much as L1/L2 do. the role slot in `docs/tracker/CONTEXT.md` becomes `agent · human · needs human · needs agent`. the triage role bridge in `docs/tracker/CONTEXT.md` remaps the mattpocock `needs-info` role onto L1/L2 by direction. L5 is under test — revisit before treating it as settled.
+consequences: L6 is what retires the `needs-info` spelling as much as L1/L2 do. the role slot in `docs/tracker/GLOSSARY.md` becomes `agent · human · needs human · needs agent`. the triage role bridge in `docs/tracker/GLOSSARY.md` remaps the mattpocock `needs-info` role onto L1/L2 by direction. L5 is under test — revisit before treating it as settled.

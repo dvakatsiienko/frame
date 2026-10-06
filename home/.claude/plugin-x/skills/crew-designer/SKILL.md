@@ -122,7 +122,7 @@ middle take tends to win because it is in the middle, so dima picks the corner h
      as a/b boards; one designer draws ONE merged take from it
   4. tally the «best» tags per arm in the design-run ledger — the model and effort stats
 - **the designer asks dima only through design-loupe** (`~/projects/bytes/apps/design-loupe`, read its
-  `CONTEXT.md`): a round of asks in `jobs/<app>/asks.json`, each pinned with `id="ask-N"` on the element
+  `GLOSSARY.md`): a round of asks in `jobs/<app>/asks.json`, each pinned with `id="ask-N"` on the element
   it is about, a recommendation and why on every ask, ~7 asks a round at most. he opens each by a link,
   answers in place, and hands the round over; act once per handover, never per answer — mark each
   seen, then applied, and take the id off when applied. his own canvas comments still reach you
