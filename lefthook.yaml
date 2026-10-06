@@ -74,7 +74,7 @@ commit-msg:
       # `Agent:` trailer is the fingerprint — and `attribution.commit: ""` in
       # settings.json does not cover it. {1} is the message file; this is the
       # one hook that edits, and it edits only that file.
-      run: sed -i '' -e '/^Claude-Session:/d' {1}
+      run: perl -i -ne 'print unless /^Claude-Session:/' {1}
     no-ci-skip-marker:
       # GitHub honours a CI-skip marker anywhere in a commit message, body
       # included, and creates no push or pull_request run for that head — the
