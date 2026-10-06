@@ -11,13 +11,12 @@ or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
   - `pnpm ccrow:start opus|fable` — the same start on a named arm; refuses while one is live.
   - `pnpm ccrow:stop` — `claude stop <jobId>`, switches 🔥 off, waits until the process is gone.
     it harvests nothing; the halt reads `notes.jsonl` and `verdicts.jsonl` itself.
-- a start is `--bg --remote-control` from `~/.local/state/ccrow/`, effort medium, under a session
-  id it picks. that home is outside frame, so the global `CLAUDE.md` + `rules/` load and frame
-  `AGENTS.md` does not.
-- 🔥 keep-hot is stash's own: the start writes `hot:<sessionId>` into stash's store file before the
-  spawn (stash reads it once, at `session.start`), so stash pings ccrow 50 min after its last
-  turn and the cache stays warm. the start reads the key back once ccrow is up and prints
-  `🔥 on` or `🔥 lost`.
+- a start is `--bg --remote-control` from `~/.local/state/ccrow/`, effort medium. that home is
+  outside frame, so the global `CLAUDE.md` loads and frame `AGENTS.md` does not; the global
+  `rules/` are copied into the home's `.claude/rules/` at each start (see facts that bite).
+- 🔥 keep-hot is stash's own: once the registry lists ccrow, the start writes `hot:<sessionId>`
+  into stash's store file. 📌 stash reads that key only at `session.start`, which has already
+  run by then, so 🔥 stays off until stash reads the key later too (FRM-335 open).
 - `pnpm ccrow:wake --transcript <cclio jsonl> [--mode day|systematic] [--precompact]` — gates
   (no `~/.local/state/ccrow/paused` file — cclio's checkpoint holds it; 30 min since the last wake, ≥10 cclio steps; `--precompact` waives the steps), copies the
   leaves named in `~/.local/state/ccrow/leaves.txt` plus the transcript delta into
@@ -37,10 +36,18 @@ or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
   2.1.291: the control logged «Held peer message … not delivered»).
 - **`disableAllHooks` blocks mods too** — cc answers «hooks module not loaded: only managed
   plugins and built-in plugins run» (haiku probe, 2026-10-06). so ccrow starts with
-  `--setting-sources project,local`: no user hooks, plugins or mods, while the global `CLAUDE.md`
-  and `rules/` still load. `--settings` adds back what ccrow needs: the bypass mode and `~` as an
+  `--setting-sources project,local`: no user hooks, plugins or mods. the global `CLAUDE.md`
+  still loads, the global `rules/` do not. `--settings` adds back what ccrow needs: the bypass mode and `~` as an
   extra dir (without them Bash is denied), `crossSessionInbound`, and `CLAUDE_CODE_PLUGIN_DIRS`
   holding the stash mod only. `true &` still runs, because `guard` is not loaded.
+- **`--settings` hooks merge with the user hooks** — `{"hooks":{}}` blanks nothing, so the user
+  source must go to shed them (probed 2026-10-06).
+- **a project `.claude/rules/` loads only real files** — a symlinked dir, symlinked files and
+  `@`-imports from outside the project all loaded nothing, so the start copies the rules in.
+  a rule deleted upstream lingers there until removed by hand.
+- **`claude --bg` ignores `--session-id`** — the session id is known only from the registry
+  after the spawn. its stdout also colours the job id, so the parse strips ansi first.
+- **the registry entry goes ~2 s before the process** — `ccrow:stop` waits on the pid.
 - **the stash mod is found by its plugin name** (`stash` or `x-mod-stash`) in the user
   `CLAUDE_CODE_PLUGIN_DIRS`, never by its dir. its store is `~/.claude/plugins/store/<name>_inline-<hash>.json`,
   one file shared by every session running stash; the hash is cc's own, so the newest matching file wins.

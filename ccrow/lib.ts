@@ -1,5 +1,4 @@
 import { spawnSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
 import {
     copyFileSync,
     globSync,
@@ -12,6 +11,7 @@ import {
 import { connect } from 'node:net';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 
 export const SESSION_NAME = '🐦‍⬛ ccrow';
 export const STATE_DIR = join(homedir(), '.local/state/ccrow');
@@ -96,10 +96,6 @@ export function clearHot(storePath: string, sessionId: string) {
     writeFileSync(storePath, JSON.stringify(store));
 }
 
-export function isHot(storePath: string, sessionId: string) {
-    return HOT + sessionId in JSON.parse(readFileSync(storePath, 'utf8'));
-}
-
 export function readCharter() {
     return readFileSync(new URL('charter.md', import.meta.url), 'utf8');
 }
@@ -139,7 +135,7 @@ export function writeState(state: State) {
 // the registry stores the name with its zero-width joiner turned into a space: «🐦 ⬛ ccrow»
 const bareName = (name: string) => name.replaceAll(/[\s‍]/g, '');
 
-function isAlive(pid: number) {
+export function isAlive(pid: number) {
     try {
         process.kill(pid, 0);
         return true;
@@ -179,22 +175,27 @@ export function findSession(): LiveSession | undefined {
     }
 }
 
-// the 🔥 key is written before the spawn: stash reads it once, at session.start, under an id we pick
+// with the user settings source off, the global rules/ dir is not read; a project rules dir is, but
+// only real files (a symlinked dir or file and an @-import outside the project load nothing, probed 2026-10-06)
+function copyRules() {
+    const from = join(homedir(), '.claude/rules');
+    const to = join(STATE_DIR, '.claude/rules');
+    mkdirSync(to, { recursive: true });
+    for (const name of readdirSync(from).filter((f) => f.endsWith('.md'))) {
+        writeFileSync(join(to, name), readFileSync(join(from, name)));
+    }
+}
+
 export async function startCcrow(arm: Arm) {
     mkdirSync(STATE_DIR, { recursive: true });
+    copyRules();
     const stash = stashModOf(userPluginDirs());
-    const store = stash && storeOf(stash.name);
-    const sessionId = randomUUID();
-    if (store) setHot(store, sessionId, Date.now());
-
     const result = spawnSync(
         'claude',
         [
             '--bg',
             '-n',
             SESSION_NAME,
-            '--session-id',
-            sessionId,
             ...claudeArgs(arm, stash?.dir),
             '--remote-control',
             SESSION_NAME,
@@ -203,30 +204,35 @@ export async function startCcrow(arm: Arm) {
         { cwd: STATE_DIR, encoding: 'utf8' },
     );
     if (result.error) fail(`cannot run claude: ${result.error.message}`);
-    const jobId = /backgrounded · (\S+)/.exec(result.stdout)?.[1];
+    const jobId = /backgrounded · (\S+)/.exec(
+        stripVTControlCharacters(result.stdout),
+    )?.[1];
     if (result.status !== 0 || !jobId) {
-        if (store) clearHot(store, sessionId);
         fail(`claude --bg failed: ${(result.stderr || result.stdout).trim()}`);
     }
     writeState({ ...readState(), arm, jobId, startedAt: Date.now() });
     console.log(
-        `ccrow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}, session ${sessionId}`,
+        `ccrow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}`,
     );
 
-    if (!stash) {
-        console.log('🔥 off: no stash mod in CLAUDE_CODE_PLUGIN_DIRS');
+    const store = stash && storeOf(stash.name);
+    if (!stash || !store) {
+        console.log('🔥 off: no stash mod or store file');
         return;
     }
-    if (!store) {
-        console.log(`🔥 off: no store file for ${stash.name} yet`);
+    // --bg ignores --session-id, so the id is known only once the registry lists ccrow
+    let live = findSession();
+    for (let i = 0; i < 30 && !live; i++) {
+        await sleep(1000);
+        live = findSession();
+    }
+    if (!live) {
+        console.log('🔥 off: ccrow not in the registry after 30 s');
         return;
     }
-    // a stash instance writing the shared store at the same moment could drop the key: read it back once ccrow is up
-    for (let i = 0; i < 30 && !findSession(); i++) await sleep(1000);
+    setHot(store, live.sessionId, Date.now());
     console.log(
-        isHot(store, sessionId)
-            ? `🔥 on: ${stash.name} pings ccrow 50 min after its last turn`
-            : `🔥 lost: hot:${sessionId} is gone from ${store}`,
+        `🔥 key hot:${live.sessionId} written; stash reads it at session.start only, so ccrow's 🔥 waits on a stash change`,
     );
 }
 

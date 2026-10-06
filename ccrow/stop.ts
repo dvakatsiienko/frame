@@ -4,6 +4,7 @@ import {
     clearHot,
     fail,
     findSession,
+    isAlive,
     readState,
     stashModOf,
     storeOf,
@@ -36,9 +37,13 @@ const store = stash && storeOf(stash.name);
 if (store) clearHot(store, running.sessionId);
 writeState({ ...readState(), jobId: undefined });
 
-// claude stop returns before the process is gone
-for (let i = 0; i < 20 && findSession(); i++) {
+// the registry entry goes before the process does (measured: ~2 s)
+for (let i = 0; i < 20 && isAlive(running.pid); i++) {
     await new Promise((done) => setTimeout(done, 500));
 }
-if (findSession()) fail(`ccrow still live 10 s after claude stop ${handle}`);
+if (isAlive(running.pid)) {
+    fail(
+        `ccrow pid ${running.pid} still alive 10 s after claude stop ${handle}`,
+    );
+}
 console.log(`ccrow stopped (job ${handle})`);
