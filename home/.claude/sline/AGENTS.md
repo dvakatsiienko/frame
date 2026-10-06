@@ -6,6 +6,7 @@ session, quota, and context segments. Vocabulary lives in [CONTEXT.md](../../../
 design invariants in `docs/adr/` at the repo root.
 
 - **Source**: `home/.claude/sline/` · **Build**: `pnpm sline:build` · **Test**: `pnpm sline:test`
+- **Go craft**: `x:guide-go` — the gate (gofmt, vet, staticcheck, `go fix -diff`), errors, table tests
 - **Wired via** `statusLine` in settings.json → `~/.claude/sline/bin`
 - **State**: `sline-state.json` — disposable cache, gitignored
 - **Invariant**: every displayed number is server-provided (ADR 0001)
