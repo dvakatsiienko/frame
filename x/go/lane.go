@@ -418,8 +418,9 @@ func enterMain(repo string) error {
 			Next: "switch " + root.out + " to main, then rerun"}
 	}
 	// the bare mid-merge commit would conclude someone else's merge under this message
-	mergeHead, _ := gitIn(root.out, "rev-parse", "--git-path", "MERGE_HEAD")
-	if exists(filepath.Join(root.out, mergeHead.out)) {
+	// absolute: in a linked worktree --git-path already answers absolute, and joining it to root breaks
+	mergeHead, _ := gitIn(root.out, "rev-parse", "--path-format=absolute", "--git-path", "MERGE_HEAD")
+	if mergeHead.ok && exists(mergeHead.out) {
 		return &Fail{Msg: root.out + " is mid-merge — not committing into someone else's merge",
 			Next: "finish the merge in " + root.out + ", then rerun"}
 	}
@@ -427,9 +428,8 @@ func enterMain(repo string) error {
 }
 
 func isMerging() bool {
-	path, _ := git("rev-parse", "--git-path", "MERGE_HEAD")
-	abs, _ := filepath.Abs(path.out)
-	return exists(abs)
+	path, _ := git("rev-parse", "--path-format=absolute", "--git-path", "MERGE_HEAD")
+	return path.ok && exists(path.out)
 }
 
 func assertUnlocked(tree string) error {
