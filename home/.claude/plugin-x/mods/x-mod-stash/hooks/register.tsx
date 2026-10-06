@@ -78,7 +78,8 @@ type GuardLine = {
     target: string;
     at: number;
 };
-const GUARD_FILE = /^x-mod-guard_.*\.json$/;
+// the mod was `guard` before it was x-mod-guard: its old store file is read beside the new one
+const GUARD_FILE = /^(x-mod-)?guard_.*\.json$/;
 const GUARD_EVENT = 'event:';
 const DISMISSED = 'guard-dismissed';
 const GUARD_ROWS = 3;
@@ -396,6 +397,29 @@ async function guardLines($: EngineInterface): Promise<GuardLine[]> {
     return out.sort((a, b) => b.at - a.at);
 }
 
+// the mod was `stash` before it was x-mod-stash, and $.store is one file per plugin name: a start copies every
+// key of the old file over, and marks the store with the old file's mtime. the old file is the truth until the
+// cutover, so one written after the mark (an early probe under the new name) is copied again
+const OLD_STORE = /^stash_.*\.json$/;
+const ADOPTED = 'adopted:stash';
+async function adoptOldStore($: EngineInterface) {
+    const dir = `${await $.env.get('HOME')}/.claude/plugins/store`;
+    const olds = (await $.fs.list(dir)).filter((f) => OLD_STORE.test(f.name));
+    if (!olds.length) return;
+    const newest = Math.max(...olds.map((f) => f.mtimeMs));
+    const mark = await $.store.get(ADOPTED);
+    if (typeof mark === 'number' && mark >= newest) return;
+    for (const f of olds) {
+        const old = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as Record<
+            string,
+            unknown
+        >;
+        for (const [key, value] of Object.entries(old))
+            await $.store.set(key, value);
+    }
+    await $.store.set(ADOPTED, newest);
+}
+
 // dismissing keeps only keys guard still holds, so the list never outgrows guard's own
 async function dismissGuard($: EngineInterface, key: string) {
     const held = await $.store.get(DISMISSED);
@@ -711,6 +735,11 @@ export const register: Register = (on) => {
             );
             return undefined;
         });
+        await adoptOldStore($).catch((err) =>
+            $.ui.log(
+                `x-mod-stash: the old stash store was not adopted: ${err instanceof Error ? err.message : String(err)}`,
+            ),
+        );
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
         fiveHour = (await $.state.get(FIVE_HOUR).catch(() => undefined))?.value;
         await load($);

@@ -24,12 +24,13 @@ const EVENTS = {
     },
 };
 
-// a session whose band reads guard's own store file, as the engine keeps it
+// a session whose band reads x-mod-guard's own store file, as the engine keeps it
 async function band(
     $: Engine,
     on: On,
     surface: 'terminal' | 'desktop',
     events: Record<string, unknown>,
+    file = 'x-mod-guard_inline-abc.json',
 ) {
     const clock = mock.clock(on);
     mock.store(on);
@@ -42,16 +43,14 @@ async function band(
                           isLink: false,
                           kind: 'file' as const,
                           mtimeMs: 0,
-                          name: 'x-mod-guard_inline-abc.json',
+                          name: file,
                           size: 1,
                       },
                   ]
                 : [],
     }));
     on('fs.read', (_$, e) => ({
-        value: JSON.stringify(
-            e.path === `${STORE}/x-mod-guard_inline-abc.json` ? events : {},
-        ),
+        value: JSON.stringify(e.path === `${STORE}/${file}` ? events : {}),
     }));
     on('session.id', () => ({ value: 'b2b2b2b2-0000' }));
     on('session.repo', () => ({ value: null }));
@@ -90,6 +89,19 @@ test('an escape shows what it ran on', async ($, on) => {
     const b = await band($, on, 'terminal', { [ESCAPED]: EVENTS[ESCAPED] });
     expect(await b.lines()).toEqual([
         '🛡️ a1a1a1a1 — rm -rf dist # dima-ok: dist → ran on dima-ok: dist',
+    ]);
+});
+
+test('a guard line kept under the old guard name still shows after the rename', async ($, on) => {
+    const b = await band(
+        $,
+        on,
+        'terminal',
+        { [REFUSED]: EVENTS[REFUSED] },
+        'guard_inline-0ld0ld.json',
+    );
+    expect(await b.lines()).toEqual([
+        '🛡️ ☕️ 🔧 FRM-1 code: x — rm -rf build → trash <path>',
     ]);
 });
 

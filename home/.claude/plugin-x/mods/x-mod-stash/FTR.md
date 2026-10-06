@@ -70,6 +70,13 @@
   - given 🔥 is on
   - when two pings fire, or the mod reloads in between
   - then 🔥 is still ticked, and the next ping comes 50 minutes after the last turn ended
+- ✅ the store kept under the old name survives the rename
+  - given the mod ran as `stash` and its store file is `stash_*.json`
+  - when it first starts as x-mod-stash
+  - then every key of the old store is copied over — asks, holds, 🔥, afk, the board's per-session state — and the store is marked `adopted:stash` with the old file's mtime
+  - when the old file is written after that mark (a probe ran the new name before the cutover)
+  - then the next start copies it again; an unchanged old file is never copied twice
+  - decision: the old file is the truth until the cutover — before it, only test sessions run the new name
 - ✅ 🔥 turns itself off after the 5h window resets
   - given 🔥 was turned on while the 5h window's reset was known
   - when that reset passes
@@ -111,7 +118,7 @@
   - then a line reads `🛡️ <session> — <command> → <door>` (an escape: `→ ran on dima-ok: <target>`), newest first, three at most and `+n more guard lines` past that
   - when dima presses its `✕` (hover: «dismiss this guard line»)
   - then the line is gone from every session's band
-  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the dismissed list lives in x-mod-stash's store and keeps only keys x-mod-guard still holds
+  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`, and the `guard_*.json` it kept before the rename) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the dismissed list lives in x-mod-stash's store and keeps only keys x-mod-guard still holds
 
 ## edits — holds
 
