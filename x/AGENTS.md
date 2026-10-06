@@ -1,28 +1,30 @@
 # AGENTS.md: x
 
-`x` — the agent-first cli. TS on bun, run from source by `bin/x`, no build step. The shim runs the
-`x/main.ts` of the nearest directory above the cwd, so a worktree runs its own edits; anywhere else
-it runs the checkout the shim lives in.
+`x` — the agent-first cli, in go + charm (`go/`, its build and traps in `go/AGENTS.md`). `bin/x` is the
+shim on the PATH: it runs the go binary of the nearest frame tree above the cwd, so a worktree runs its
+own edits; anywhere else it runs the checkout the shim lives in. It rebuilds the binary first when a
+source file is newer.
 
 ## a verb is one registry entry
 
-- an entry (`Verb` in `verb.ts`) drives dispatch, `--help`, `x schema <verb>` and the purpose lint —
-  never a second list. a group is the first word of the name (`lane commit` → `lane`).
-- `needsApply: true` for a verb that publishes or destroys, with a `plan(args)`: dispatch calls the
-  plan and exits 4 with the exact confirm command until `--apply`; `run` never checks the flag.
-  nothing else asks.
-- a verb's own flags sit in its entry's `flags`, beside the global ones; `run` gets them parsed.
-- a failure throws `Fail(message, next)`: `next` is the command that moves the caller forward.
-- the purpose line is what an agent picks a verb by; `x.test.ts` runs `lintPurpose` over every verb.
-- verbs use node apis only (`node:child_process`, `node:util`), never `Bun.*`, so vitest runs the
-  same code under node.
+- an entry in `go/registry.json` drives dispatch, `--help`, `x schema <verb>`, completion and the
+  purpose lint — never a second list. a family is the first word of the name (`lane commit` → `lane`);
+  the families sit in the same file, their order is their colour.
+- the entry holds only what a human writes: name, purpose, args, the verb's own flags, its steps. the
+  global flags, the exit codes and the usage line are derived (`go/registry.go`).
+- its run binds by name in `impls` (`go/main.go`); a verb in one and not the other fails a test.
+- `needsApply: true` for a verb that publishes or destroys: it splits into `Plan` and `Apply`; dispatch
+  exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal.
+- a failure returns a `*Fail` with `Next`: the command that moves the caller forward.
+- the purpose line is what an agent picks a verb by; a test runs `lintPurpose` over every verb.
 
 ## output
 
 - agent mode (`CLAUDECODE` / `AI_AGENT` set, a pipe, or `--json`): one json envelope on stdout,
   `{ verb, x, ok, status, data | plan | error, next }`; `x` names the source dir that ran.
-- tty: plain lines, dim/bold only. progress and hook output go to stderr in both modes.
+- tty: the T2 boards (`PRODUCT.md`'s look rule). tool output goes to stderr in both modes.
 - exits: 0 ok · 1 failed · 2 usage · 4 needs `--apply`.
+- `fixtures/calls.json` is the contract; `go test` runs every call in it, tty ones on a pty.
 
 ## lane
 

@@ -7,6 +7,12 @@
 
 ## x — the overview
 
+- 🧭 `x` on the PATH runs the go binary of the nearest frame tree
+  - given a cwd inside a frame tree (main or a worktree), or anywhere else
+  - when `x` runs
+  - then that tree's `x/go/bin/x` runs, or the checkout the shim lives in when no tree is above the cwd
+  - given a go source file newer than the binary, then the shim rebuilds it first, and a failed build runs the last binary with one stderr line
+  - decision: go + charm, picked on the FRM-284 look probe (2026-10-06); the TS arm and its bun shim retire
 - 🧭 bare `x` draws the T2 overview
   - given dima runs bare `x` in a terminal at 80 and at 120 cols
   - when it renders

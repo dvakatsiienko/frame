@@ -4,13 +4,14 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"regexp"
 	"slices"
 	"strings"
 )
 
-// the TS arm generates registry.json from its own registry (x schema --level full); go embeds the
-// same bytes, so `x schema` is identical across arms and only the run funcs live here
+// registry.json holds what only a human can write — names, purposes, args, a verb's own flags, its
+// steps; the global flags, the exit codes and the usage line are derived here, so they never drift
 //
 //go:embed registry.json
 var registryJSON []byte
@@ -18,13 +19,13 @@ var registryJSON []byte
 type ArgSpec struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	IsOptional  bool   `json:"isOptional"`
-	IsVariadic  bool   `json:"isVariadic"`
+	IsOptional  bool   `json:"isOptional,omitempty"`
+	IsVariadic  bool   `json:"isVariadic,omitempty"`
 }
 
 type FlagSpec struct {
 	Type        string `json:"type"`
-	Value       string `json:"value"`
+	Value       string `json:"value,omitempty"`
 	Description string `json:"description"`
 }
 
@@ -34,30 +35,90 @@ type Verb struct {
 	Args       []ArgSpec           `json:"args"`
 	Flags      map[string]FlagSpec `json:"flags"`
 	NeedsApply bool                `json:"needsApply"`
-	Usage      string              `json:"usage"`
 	Steps      []string            `json:"steps"`
-	Raw        json.RawMessage     `json:"-"`
+	Usage      string              `json:"usage"`
+}
+
+// a family owns a colour (its place in this list), a one-line gist and the example its help shows
+type Family struct {
+	Name    string `json:"name"`
+	Gist    string `json:"gist"`
+	Example string `json:"example"`
+}
+
+var globalFlags = map[string]FlagSpec{
+	"apply": {Type: "boolean", Description: "run a verb that publishes or destroys; without it the verb prints its plan and exits 4"},
+	"help":  {Type: "boolean", Description: "print the verb help"},
+	"json":  {Type: "boolean", Description: "json on stdout even on a tty"},
 }
 
 var globalFlagNames = []string{"apply", "help", "json"}
 
-var verbs = loadRegistry(registryJSON)
+var familyList, verbs = loadRegistry(registryJSON)
 
-func loadRegistry(raw []byte) []Verb {
-	var entries []json.RawMessage
-	if err := json.Unmarshal(raw, &entries); err != nil {
+func loadRegistry(raw []byte) ([]Family, []Verb) {
+	var source struct {
+		Families []Family `json:"families"`
+		Verbs    []Verb   `json:"verbs"`
+	}
+	if err := json.Unmarshal(raw, &source); err != nil {
 		panic(fmt.Sprintf("registry.json: %v", err))
 	}
-	loaded := make([]Verb, 0, len(entries))
-	for _, entry := range entries {
-		var verb Verb
-		if err := json.Unmarshal(entry, &verb); err != nil {
-			panic(fmt.Sprintf("registry.json: %v", err))
+	for i := range source.Verbs {
+		verb := &source.Verbs[i]
+		if verb.Args == nil {
+			verb.Args = []ArgSpec{}
 		}
-		verb.Raw = entry
-		loaded = append(loaded, verb)
+		if verb.Steps == nil {
+			verb.Steps = []string{}
+		}
+		own := verb.Flags
+		verb.Flags = maps.Clone(globalFlags)
+		maps.Copy(verb.Flags, own)
+		verb.Usage = usageOf(*verb)
 	}
-	return loaded
+	return source.Families, source.Verbs
+}
+
+func usageOf(verb Verb) string {
+	parts := []string{"x", verb.Name}
+	if verb.NeedsApply {
+		parts = append(parts, "[--apply]")
+	}
+	for _, own := range verb.OwnFlags() {
+		if spec := verb.Flags[own]; spec.Type == "string" {
+			parts = append(parts, fmt.Sprintf("[--%s <%s>]", own, spec.Value))
+		} else {
+			parts = append(parts, "[--"+own+"]")
+		}
+	}
+	for _, arg := range verb.Args {
+		name := "<" + arg.Name + ">"
+		if arg.IsVariadic {
+			name = "<" + arg.Name + "…>"
+		}
+		if arg.IsOptional {
+			name = "[" + name + "]"
+		}
+		parts = append(parts, name)
+	}
+	return strings.Join(parts, " ")
+}
+
+// the whole schema of a verb, the shape `x schema` prints
+func (v Verb) Schema() ordered {
+	return ordered{{"args", v.Args}, {"exits", ordered{{"confirm", 4}, {"failed", 1}, {"ok", 0}, {"usage", 2}}},
+		{"flags", v.Flags}, {"name", v.Name}, {"needsApply", v.NeedsApply}, {"purpose", v.Purpose},
+		{"steps", v.Steps}, {"usage", v.Usage}}
+}
+
+func familyOf(name string) Family {
+	for _, family := range familyList {
+		if family.Name == name {
+			return family
+		}
+	}
+	return Family{Name: name}
 }
 
 func (v Verb) Family() string { return strings.Fields(v.Name)[0] }
@@ -106,11 +167,9 @@ func verbsUnder(prefix string) []Verb {
 }
 
 func families() []string {
-	var names []string
-	for _, verb := range verbs {
-		if !slices.Contains(names, verb.Family()) {
-			names = append(names, verb.Family())
-		}
+	names := make([]string, len(familyList))
+	for i, family := range familyList {
+		names[i] = family.Name
 	}
 	return names
 }

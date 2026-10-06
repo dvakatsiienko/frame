@@ -1,6 +1,5 @@
 import { spawnSync } from 'node:child_process';
 import {
-    copyFileSync,
     mkdirSync,
     mkdtempSync,
     readFileSync,
@@ -117,14 +116,6 @@ function lockedWorktree() {
         'side',
     );
     return realpathSync(tree);
-}
-
-function xTree() {
-    const tree = scratch('x-tree-');
-    mkdirSync(join(tree, 'x/bin'), { recursive: true });
-    mkdirSync(join(tree, 'deep'));
-    writeFileSync(join(tree, 'x/main.ts'), "console.log('tree-local');\n");
-    return tree;
 }
 
 describe('x lane', () => {
@@ -359,18 +350,6 @@ describe('x lane', () => {
 });
 
 describe('x', () => {
-    it('runs the x source of the nearest checkout above the cwd', () => {
-        const tree = xTree();
-        writeFileSync(join(tree, 'x/registry.ts'), '');
-        copyFileSync(shim, join(tree, 'x/bin/x'));
-
-        expect(x([], join(tree, 'deep')).stdout).toBe('tree-local\n');
-    });
-
-    it('ignores an x/main.ts that is not an x checkout', () => {
-        expect(x([], join(xTree(), 'deep')).stdout).not.toBe('tree-local\n');
-    });
-
     it('prints ansi-free json when stdout is a pipe', () => {
         const cwd = fixtureRepo();
         const outputs = [[], ['lane'], ['lane', 'push'], ['nope']].map(

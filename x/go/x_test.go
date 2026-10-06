@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"encoding/json"
+	"fmt"
 	"github.com/creack/pty"
 	"os"
 	"os/exec"
@@ -46,16 +47,22 @@ func fixtures(t *testing.T) []call {
 	return file.Calls
 }
 
-// the binary under test, built once with its source dir pinned so store.ts is found
-func binary(t *testing.T) string {
-	t.Helper()
-	src, _ := filepath.Abs(".")
-	bin := filepath.Join(t.TempDir(), "x")
-	build := exec.Command("go", "build", "-ldflags", "-X main.srcDir="+src, "-o", bin, ".")
-	if out, err := build.CombinedOutput(); err != nil {
-		t.Fatalf("build: %v\n%s", err, out)
+// the binary under test, built once per run with its source dir pinned
+var xbin string
+
+func TestMain(m *testing.M) {
+	dir, err := os.MkdirTemp("", "x-test-")
+	if err != nil {
+		panic(err)
 	}
-	return bin
+	src, _ := filepath.Abs(".")
+	xbin = filepath.Join(dir, "x")
+	if out, err := exec.Command("go", "build", "-ldflags", "-X main.srcDir="+src, "-o", xbin, ".").CombinedOutput(); err != nil {
+		panic(fmt.Sprintf("build: %v\n%s", err, out))
+	}
+	code := m.Run()
+	_ = os.RemoveAll(dir)
+	os.Exit(code)
 }
 
 func world(t *testing.T) string {
@@ -197,7 +204,7 @@ func filterEnv(env []string) []string {
 // every call in calls.json is the contract: a pipe or an agent gets one envelope line, a terminal gets
 // the human view; both end on the call's exit code
 func TestFixtureCallsHoldTheContract(t *testing.T) {
-	bin := binary(t)
+	bin := xbin
 	byID := map[string]call{}
 	for _, c := range fixtures(t) {
 		byID[c.ID] = c
@@ -249,7 +256,7 @@ func TestFixtureCallsHoldTheContract(t *testing.T) {
 }
 
 func TestRefusedCommitHandsTheHookOutputToAnAgent(t *testing.T) {
-	bin, dir := binary(t), world(t)
+	bin, dir := xbin, world(t)
 	hook := filepath.Join(dir, "repo/.git/hooks/pre-commit")
 	if err := os.WriteFile(hook, []byte("#!/bin/sh\necho 'hook says: line 131 is too wide'\nexit 1\n"), 0o755); err != nil {
 		t.Fatal(err)
@@ -268,13 +275,11 @@ func TestRefusedCommitHandsTheHookOutputToAnAgent(t *testing.T) {
 	}
 }
 
-func TestEmbeddedRegistryIsTheSharedOne(t *testing.T) {
-	shared, err := os.ReadFile("../fixtures/registry.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !bytes.Equal(shared, registryJSON) {
-		t.Fatal("x/go/registry.json drifted from x/fixtures/registry.json — copy it over")
+func TestEveryVerbBelongsToAListedFamily(t *testing.T) {
+	for _, verb := range verbs {
+		if family := familyOf(verb.Family()); family.Gist == "" || family.Example == "" {
+			t.Errorf("%s: family %s has no gist or example in registry.json", verb.Name, verb.Family())
+		}
 	}
 }
 

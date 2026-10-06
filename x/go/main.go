@@ -128,7 +128,7 @@ func buildRoot(m mode) *cobra.Command {
 			family := verb.Family()
 			if groups[family] == nil {
 				groups[family] = &cobra.Command{
-					Use: family, Short: familyGist(family), Args: cobra.ArbitraryArgs,
+					Use: family, Short: familyOf(family).Gist, Args: cobra.ArbitraryArgs,
 					RunE: func(_ *cobra.Command, args []string) error {
 						return overview(m, append([]string{family}, args...))
 					},

@@ -218,7 +218,7 @@ func schema(r *Run, args []string, flags Flags) (any, error) {
 		if level == "short" {
 			list = append(list, ordered{{"name", verb.Name}, {"purpose", verb.Purpose}})
 		} else {
-			list = append(list, verb.Raw)
+			list = append(list, verb.Schema())
 		}
 	}
 	if r.human {

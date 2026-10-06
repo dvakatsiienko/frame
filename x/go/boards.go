@@ -10,16 +10,6 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-// the registry names verbs, never families; a family's one-line gist lives here until it does
-var familyGists = map[string]string{
-	"lane":       "git through the worktree gate",
-	"handoffs":   "the shared CST store, one door for cc and cw",
-	"schema":     "the registry as json",
-	"completion": "shell completion from the registry",
-}
-
-func familyGist(family string) string { return familyGists[family] }
-
 // under 100 cols the takes column folds away and help becomes one column
 func isNarrow() bool { return termCols() < 100 }
 
@@ -81,7 +71,7 @@ func overviewBoard() string {
 }
 
 func familyBoard(family string, members []Verb) string {
-	b := frame{width: frameWidth(), titleLeft: ui.bold.Render("x") + " " + ui.chip(family) + "  " + ui.dim.Render(familyGist(family)),
+	b := frame{width: frameWidth(), titleLeft: ui.bold.Render("x") + " " + ui.chip(family) + "  " + ui.dim.Render(familyOf(family).Gist),
 		footLeft: ui.dim.Render("x " + family + " <verb> --help"), padRows: true}
 	label := func(text string) string { return ui.label.Render(text) }
 	left := []string{}
@@ -123,7 +113,7 @@ func familyBoard(family string, members []Verb) string {
 	if isNarrow() {
 		add("exits", exitRows)
 	}
-	example := examples[family]
+	example := familyOf(family).Example
 	add("example", [][2]string{{example, ""}})
 	left = left[:len(left)-1]
 
@@ -136,13 +126,6 @@ func familyBoard(family string, members []Verb) string {
 		right = append(right, row[0]+"   "+row[1])
 	}
 	return splitBoard(b, left, right)
-}
-
-var examples = map[string]string{
-	"lane":       "x lane commit msg.txt -- notes.txt",
-	"handoffs":   "x handoffs peek cli-arms",
-	"schema":     "x schema lane --level short",
-	"completion": "source <(x completion zsh)",
 }
 
 func exitLines() [][2]string {

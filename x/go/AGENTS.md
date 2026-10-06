@@ -1,8 +1,7 @@
 # AGENTS.md: x/go
 
-Arm c of [FRM-284](https://linear.app/x-com/issue/FRM-284): the same `x` in go + charm (bubbletea, bubbles, lipgloss, huh,
-glamour, log, fang). A comparison build; what lands is decided after the verdict. The numbers and
-the hard parts: `../compare/c.md`.
+`x` in go + charm (bubbletea, bubbles, lipgloss, huh, glamour, log, fang) — the arm dima picked on
+the [FRM-284](https://linear.app/x-com/issue/FRM-284) look probe. The probe's numbers and hard parts: `../compare/c.md`.
 
 ## build, test, gate
 
@@ -12,11 +11,12 @@ the hard parts: `../compare/c.md`.
 - `pnpm x-go:test` — the gate. None of it runs in the frame hooks (biome, tsc, vitest), so run it
   before every commit here. `staticcheck` through `go run honnef.co/go/tools/cmd/staticcheck@latest ./...`.
 
-## the contract is shared, never copied by hand
+## the contract
 
-- `registry.json` is a byte copy of `../fixtures/registry.json`, which the TS arm generates;
-  `go:embed` cannot reach outside the module, and a test fails on drift. a verb's run lives in
-  `impls` (`main.go`); a verb in one and not the other fails a test.
+- `registry.json` is the source of every verb (`../AGENTS.md` has the rules); `go:embed` bakes it
+  into the binary, so the shim's rebuild picks up an edit to it.
+- `../fixtures/calls.json` is the contract: `x_test.go` runs every call, a pipe call checks the
+  envelope, a tty call runs on a pty and checks the human view and the exit code.
 - the handoff store's rules live in `script/lib/handoff-store.ts`; go reaches them through
   `store.ts` (node, ~60 ms), never a go port of the filename grammar.
 - every `Fail.Log` line goes to stderr in agent mode — the envelope says «the output is above».

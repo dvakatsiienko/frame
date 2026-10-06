@@ -1,13 +1,34 @@
 #!/usr/bin/env bash
-# x — runs the x cli from source on bun. the nearest directory above the cwd that holds
-# x/main.ts wins, so a worktree runs its own edits; anywhere else (bytes, ~) runs the
-# checkout this shim lives in.
+# x — runs the go binary of the nearest frame tree above the cwd, so a worktree runs its own edits;
+# anywhere else (bytes, ~) it runs the checkout this shim lives in. the binary is rebuilt first when
+# it is missing or older than any of its source files, so a merge or an edit never runs stale code.
 dir=${PWD}
-while [[ ${dir} != / ]]; do
-    [[ -f ${dir}/x/main.ts && -f ${dir}/x/registry.ts && -x ${dir}/x/bin/x ]] &&
-        exec bun "${dir}/x/main.ts" "$@"
+while [[ ${dir} != / && ! (-f ${dir}/x/go/go.mod && -x ${dir}/x/bin/x) ]]; do
     dir=${dir%/*}
     [[ -z ${dir} ]] && dir=/
 done
-here=$(realpath "${BASH_SOURCE[0]}")
-exec bun "${here%/bin/x}/main.ts" "$@"
+if [[ ${dir} == / ]]; then
+    here=$(realpath "${BASH_SOURCE[0]}")
+    dir=${here%/x/bin/x}
+fi
+go=${dir}/x/go
+bin=${go}/bin/x
+
+stale=0
+[[ -x ${bin} ]] || stale=1
+for file in "${go}"/*.go "${go}"/registry.json "${go}"/go.mod "${go}"/go.sum; do
+    ((stale)) && break
+    [[ ${file} -nt ${bin} ]] && stale=1
+done
+if ((stale)); then
+    echo "x: building from ${go}" >&2
+    # a temp file then a rename: two shells building at once never run a half-written binary
+    if (cd "${go}" && go build -trimpath -ldflags "-s -w -X main.srcDir=${go}" -o "bin/.x.$$" . && mv -f "bin/.x.$$" bin/x) >&2; then
+        :
+    elif [[ -x ${bin} ]]; then
+        echo "x: the build failed — running the last binary" >&2
+    else
+        exit 1
+    fi
+fi
+exec "${bin}" "$@"
