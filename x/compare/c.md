@@ -2,7 +2,7 @@
 
 Ticket: FRM-284. The same `x` as arms a and b: the 9 v1 verbs plus `completion`, the one registry
 (`x/fixtures/registry.json`, embedded), the one envelope, the 35 calls in `x/fixtures/calls.json`.
-Source: `x/go/`. Shots: `~/.local/state/looks/FRM-284/c/20261006T125600Z/` (20 tty calls, each a
+Source: `x/go/`. Shots: `~/.local/state/looks/FRM-284/c/20261006T131114Z/` (20 tty calls, each a
 `.tape`, a `.gif` and a `.png`; a keyed call adds `-keyN.png` per step and `-vhs.png` for the end).
 
 ## numbers
