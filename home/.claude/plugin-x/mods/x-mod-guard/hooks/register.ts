@@ -1,8 +1,10 @@
 import type { EngineInterface, Register } from 'claude-code';
 
 import {
+    type Brief,
     type Context,
     addedPaths,
+    briefPaths,
     check,
     message,
     overwrittenPaths,
@@ -35,6 +37,26 @@ const WHY_FORK = /^\s*why-fork:\s*\S/m;
 const FORK_DOOR =
     'a fresh agent with a self-contained brief, or chore-helper for a mechanical job';
 const FORK_REFUSED = `x-mod-guard stopped this fork. instead: ${FORK_DOOR}. why: a fork carries the whole parent context (~220k tokens). a fork that truly needs that context says so in a prompt line: why-fork: <what parent context it needs>`;
+
+// what x brief check stamps: sha256 over the file's raw bytes, under $X_STATE or ~/.local/state/x (x/go/brief.go)
+async function readBrief(
+    $: EngineInterface,
+    path: string,
+    home: string | undefined,
+): Promise<Brief> {
+    const { base64 } = await $.fs.read(path, { as: 'bytes' });
+    const bytes = Uint8Array.from(atob(base64), (ch) => ch.charCodeAt(0));
+    const sum = [
+        ...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
+    ]
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+    const state = (await $.env.get('X_STATE')) || `${home}/.local/state/x`;
+    return {
+        isCoder: new TextDecoder().decode(bytes).includes('/x:crew-coder'),
+        isStamped: await $.fs.exists(`${state}/briefs/${sum}.json`),
+    };
+}
 
 // the name ListAgents shows, from cc's session registry
 async function sessionName($: EngineInterface, sid: string) {
@@ -122,7 +144,16 @@ export const register: Register = (on) => {
         for (const path of overwrittenPaths(command, cwd, ctx))
             if (await $.fs.exists(path))
                 kinds.set(path, (await $.fs.stat(path)).kind);
-        const verdict = check(command, cwd, { ...ctx, kinds, missing });
+        const briefs = new Map<string, Brief>();
+        for (const path of briefPaths(command, cwd, ctx))
+            if (await $.fs.exists(path))
+                briefs.set(path, await readBrief($, path, ctx.home));
+        const verdict = check(command, cwd, {
+            ...ctx,
+            briefs,
+            kinds,
+            missing,
+        });
         if (verdict.kind === 'run') return next(e);
         if (verdict.kind === 'refused') {
             const { refusal } = verdict;
