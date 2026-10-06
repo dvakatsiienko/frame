@@ -15,6 +15,12 @@ dima's words:
 > «let's be mindful about what we fold into a CLI: not just blindly pull everything there, but only have the verbs and operations that truly deserve to reside in a CLI interface» (chat, 2026-10-05)
 >
 > dima likes charm's tools and style — «the look judged on my own terminal» (FRM-284)
+>
+> «we shouldn't migrate scripts one-to-one from pnpm to CLI. Since we are rebuilding CLI from scratch, we can rethink the architecture … Everything, everywhere, essentially, was created in a random way … now we have an opportunity to properly rearchitect everything from scratch in an efficient way.» (chat, 2026-10-06)
+>
+> «How to actually properly architect a CLI so it would be top-notch, perform very well, and actually streamline Fleet Flow?» (chat, 2026-10-06)
+>
+> «a telemetry (tracing) for cli is also worth to bake in from start. for stats, and tracing what is used and what is a dead weight … infographics, i'd maybe would want in hq app.» (chat, 2026-10-06)
 
 - **who:** the fleet first — every agent on every surface — and dima second
 - **job:** a fleet procedure becomes one verb, so every member uses the same door instead of re-deriving the steps
@@ -49,3 +55,22 @@ after a frame → bytes merge, x is one workspace package beside turbo: turbo ow
 **out of v1:** pm / notes / scheduling / evergreen verbs (each through the admission rule later) · interactive driving · an MCP mirror (decided: none; `x-cw` stays until the cw-door probe) · package lifecycle (turbo / pnpm)
 
 the done test is `FTR.md`; the words are `GLOSSARY.md`. prior art: `docs/research/cli-agent-facing.md`.
+
+## the rebuild — grill round 1 (2026-10-06)
+
+the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name prefixes; the top three by calls are `linear:read` 148, the handoff store 145, `linear:agent-token` 125 (agent calls only — dima's own terminal is invisible to transcripts).
+
+- **what x owns:** every fleet op. app dev (`dev`, `build`, `test` per app) stays with `pnpm` / `turbo`, one door per app.
+- **the shape:** entity-first groups (`x linear read`, `x handoff ingest`, `x lane commit`), ~12 groups, each verb declared once in the registry. not a port: each script is re-thought into its group or dropped.
+- **go native or adapter:** the hot paths go native first (linear, the handoff store, lanes); a cold verb may call its TS script through an adapter until telemetry says it lives.
+- **telemetry from day one:** one json line per call in `~/.local/state/x/trace/<date>.jsonl`, written at exit, no network — when, verb, flag names (never values), caller (a terminal, or an agent session + member), repo, duration, exit and error kind, each step's time, x version. OpenTelemetry-shaped names. `X_TRACE=0` turns it off. `x stats` reads it (most used, dead for 30 days, slowest p95, failure rate, agents vs dima); `flow:report`, the halt board and the hq app read the same files. each `pnpm` shim left during the move writes a trace line too.
+- **where x runs:** the mac (cc, cw through Desktop Commander). a cloud session gets the repo, not x.
+- **the move is done when:** the root `package.json` holds only app dev scripts, every fleet op is a verb with a contract-test line, and `x stats` shows no verb dead for 30 days.
+
+## the rebuild — grill round 2 (2026-10-06)
+
+- **the groups (draft, each re-thought when built):** `linear` (read, token, as, push) · `handoff` (store, ingest, peek) · `lane` (commit, push, pr, merge-main, unlock, worktree seed) · `mods` (test, live) · `design` (contrast, palette, cvd, scale, tokens, diff) · `jev` (vet, report, route, flawlog) · `research` (lanes) · `flow` (report, crew audit, memory-load, reply-check) · `app` (essentials, badges) · `frame` (link, toolchain sync, macos setup) · `tool` (dima's hotkeys, speak, schedule, monitor) · `x` (schema, stats, completion)
+- **the order:** telemetry first (it decides the rest) → `linear` + `handoff` (the hottest) → `flow` (feeds the memory sweep) → the rest in the order telemetry ranks them
+- **who builds:** one go `--bg` coder per group, reused while under the spawn grid's ~220k; mechanical ports go to `implement-spec` subagents on sonnet
+- **the old scripts:** a ported script dies in its verb's commit; a thin `pnpm` shim stays only for a name dima types himself, and goes after 14 days of zero calls in telemetry
+- **the memory sweep pairs with it:** each memory line the sweep touches gets a fourth verdict, «→ x verb» or «→ guard rule», collected into this group map
