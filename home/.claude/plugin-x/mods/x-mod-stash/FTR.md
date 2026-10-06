@@ -104,6 +104,11 @@
   - when the old file is written after that mark (a probe ran the new name before the cutover)
   - then the next start copies it again; an unchanged old file is never copied twice
   - decision: the old file is the truth until the cutover — before it, only test sessions run the new name
+- ✅ the fold and the 5h reset kept under the old name survive the rename
+  - given the session's `$.state` holds `open` or `fiveHour` under the old plugin name `stash`, and nothing under `x-mod-stash`
+  - when x-mod-stash starts
+  - then each value is copied to the new name once and used — a folded band stays folded
+  - decision: a value already written under the new name wins; the old one is never read again
 - ✅ 🔥 turns itself off after the 5h window resets
   - given 🔥 was turned on while the 5h window's reset was known
   - when that reset passes

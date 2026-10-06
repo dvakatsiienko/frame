@@ -106,6 +106,9 @@ let digest: Digest | undefined;
 const isLive = (v: Entry | undefined, now: number): v is Entry =>
     !!v && Array.isArray(v.asks) && v.asks.length > 0 && now - v.at < STALE_MS;
 
+const errorText = (err: unknown) =>
+    err instanceof Error ? err.message : String(err);
+
 const fp = (sid: string, ask: string) => `${sid}\u0000${ask}`;
 const basename = (path: string) =>
     path.split('/').filter(Boolean).pop() ?? path;
@@ -445,6 +448,28 @@ async function adoptOldStore($: EngineInterface) {
             await $.store.set(key, value);
     }
     await $.store.set(ADOPTED, newest);
+}
+
+// what a reload finds in `$.state`. it is keyed by plugin name too: a value never written under the new name
+// takes the old one's, once. returned, never re-read: every get of one dispatch reads the moment it began
+const OLD_OPEN = { key: 'open', plugin: 'stash' } as const;
+const OLD_FIVE_HOUR = { key: 'fiveHour', plugin: 'stash' } as const;
+async function keptState($: EngineInterface) {
+    const was = {
+        fiveHour: await $.state.get(FIVE_HOUR),
+        open: await $.state.get(OPEN),
+    };
+    const kept = { fiveHour: was.fiveHour.value, open: was.open.value };
+    if (was.open.version === 0) {
+        kept.open = (await $.state.get(OLD_OPEN)).value;
+        if (kept.open !== undefined) await $.state.set(OPEN, kept.open);
+    }
+    if (was.fiveHour.version === 0) {
+        kept.fiveHour = (await $.state.get(OLD_FIVE_HOUR)).value;
+        if (kept.fiveHour !== undefined)
+            await $.state.set(FIVE_HOUR, kept.fiveHour);
+    }
+    return kept;
 }
 
 // fail-open: a store or git error lets the edit through, with a line in the transcript
@@ -826,15 +851,20 @@ export const register: Register = (on) => {
         });
         await adoptOldStore($).catch((err) =>
             $.ui.log(
-                `x-mod-stash: the old stash store was not adopted: ${err instanceof Error ? err.message : String(err)}`,
+                `x-mod-stash: the old stash store was not adopted: ${errorText(err)}`,
             ),
         );
+        const kept = await keptState($).catch((err) => {
+            $.ui.log(
+                `x-mod-stash: the kept state was not read: ${errorText(err)}`,
+            );
+            return { fiveHour: undefined, open: undefined };
+        });
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
-        fiveHour = (await $.state.get(FIVE_HOUR).catch(() => undefined))?.value;
+        fiveHour = kept.fiveHour;
         await load($);
         // after the first load: a reload sees every ask as new, which would unfold what dima folded
-        const fold = (await $.state.get(OPEN).catch(() => undefined))?.value;
-        if (fold !== undefined) open = fold;
+        if (kept.open !== undefined) open = kept.open;
         await armHot($);
         await $.command
             .register({

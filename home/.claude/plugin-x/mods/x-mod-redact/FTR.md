@@ -31,6 +31,7 @@
   - 📌 after `/clear` or `/resume` the vault is empty: an old placeholder then reaches the tool as written
   - decision: a `command.run` hook empties the vault on `/clear` and `/resume` itself, never trusting `$.state` to reset there (unprobed, FRM-325)
   - 📌 trust: any tool call naming a placeholder gets the value — a command a prompt injection writes included; the model had the same reach before redaction
+  - decision: a vault kept under the old plugin name `redact` is copied to `x-mod-redact` once at start, while the new name has never been written, so a placeholder from before the rename still restores
 - ✅ a 1Password reference stays readable
   - given a row holds `op://dev/<item>/credential`
   - then it is kept as written — a reference is the safe form the fleet rules ask for, not a secret

@@ -133,6 +133,34 @@ test('a vault error masks the row one way and logs it', async ($, on) => {
     ]);
 });
 
+test('a placeholder kept under the old redact name still restores', async ($, on) => {
+    const ran: unknown[] = [];
+    const values: Record<string, unknown> = {
+        'redact.vault': { [placeholderOf(FAKE)]: FAKE },
+    };
+    on('ui.log', () => ({ value: undefined }));
+    on('state.get', (_$, e) => {
+        const at = `${e.plugin}.${e.key}`;
+        return { value: { value: values[at], version: at in values ? 1 : 0 } };
+    });
+    on('state.set', (_$, e) => {
+        values[`${e.plugin}.${e.key}`] = e.value;
+        return { value: { isSet: true, version: 1 } };
+    });
+    on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('tool.call', (_$, e) => {
+        ran.push('command' in e ? e.command : undefined);
+        return { result: {}, text: 'ok' };
+    });
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'terminal',
+    });
+    await $.tool.call({ command: `echo ${placeholderOf(FAKE)}`, tool: 'Bash' });
+    expect(ran).toEqual([`echo ${FAKE}`]);
+});
+
 for (const command of ['clear', 'resume'] as const)
     test(`after /${command} an old placeholder reaches the tool as written`, async ($, on) => {
         const ran: unknown[] = [];
