@@ -79,7 +79,8 @@ function world(on: On) {
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
-    on('fs.exists', () => ({ value: true }));
+    // every path a command names exists, but the fresh file a near miss writes to
+    on('fs.exists', (_$, e) => ({ value: e.path !== '/repo/out.txt' }));
     on('tool.call', () => ({ result: {}, text: 'ran' }));
 }
 

@@ -49,6 +49,10 @@ const SCRATCH = [
     ['git checkout --', `cd ${JOB}/tmp/clone && git checkout -- a.ts`],
     ['git reset --hard', 'cd "$CLAUDE_JOB_DIR/tmp/clone" && git reset --hard'],
     ['git -C', 'git -C ${CLAUDE_JOB_DIR}/tmp/clone clean -fd'],
+    [
+        'git filter-branch',
+        `cd ${JOB}/tmp/clone && git filter-branch --tree-filter x`,
+    ],
 ] as const;
 
 for (const [shape, command] of SCRATCH)

@@ -8,13 +8,26 @@ export type Refusal = {
     targets: string[];
 };
 // what the rules read off the machine: the job's own dir, home, and the added paths found missing
-export type Context = { jobDir?: string; home?: string; missing?: Set<string> };
+// kinds: what each written-over path found on disk is
+export type Context = {
+    jobDir?: string;
+    home?: string;
+    missing?: Set<string>;
+    kinds?: Map<string, 'file' | 'dir' | 'other'>;
+};
 export type Verdict =
     | { kind: 'run' }
     | { kind: 'refused'; refusal: Refusal }
     | { kind: 'escaped'; refusals: Refusal[]; targets: string[] };
 
-type Peeled = { name: string; args: Word[]; assigns: string[] };
+// wrappers: the peeled heads (`sudo`, `env`); writes: the targets of its `>` redirects
+type Peeled = {
+    name: string;
+    args: Word[];
+    assigns: string[];
+    wrappers: string[];
+    writes: string[];
+};
 // feeders: the commands whose output reaches this one, through `$( … )` or a pipe
 type Command = Peeled & { sep: Sep; dir: string; feeders: Peeled[] };
 
@@ -97,6 +110,20 @@ function operands(args: Word[]) {
     return out;
 }
 
+// a `>` that truncates its target; `>>` appends and `>&` names a descriptor
+const TRUNCATE = /^\d*&?>$/;
+const TRUNCATE_JOINED = /^\d*&?>([^>&].*)$/;
+function writes(words: Word[]) {
+    const out: string[] = [];
+    words.forEach((w, i) => {
+        const to = TRUNCATE.test(w.text)
+            ? words[i + 1]?.text
+            : w.text.match(TRUNCATE_JOINED)?.[1];
+        if (to && !to.startsWith('/dev/')) out.push(to);
+    });
+    return out;
+}
+
 function dropRedirects(words: Word[]) {
     const out: Word[] = [];
     for (let i = 0; i < words.length; i++) {
@@ -111,6 +138,7 @@ function dropRedirects(words: Word[]) {
 function peel(raw: Word[]): Peeled {
     let words = dropRedirects(raw);
     const assigns: string[] = [];
+    const wrappers: string[] = [];
     for (;;) {
         const head = words[0]?.text ?? '';
         if (KEYWORDS.has(head)) {
@@ -124,6 +152,7 @@ function peel(raw: Word[]): Peeled {
         }
         const values = WRAPPERS.get(basename(head));
         if (!values) break;
+        wrappers.push(basename(head));
         words = words.slice(1);
         while (isFlag(words[0]?.text ?? '')) {
             const flag = words[0]?.text ?? '';
@@ -133,7 +162,13 @@ function peel(raw: Word[]): Peeled {
         if (basename(head) === 'timeout') words = words.slice(1);
     }
     const [first, ...args] = words;
-    return { args, assigns, name: first ? basename(first.text) : '' };
+    return {
+        args,
+        assigns,
+        name: first ? basename(first.text) : '',
+        wrappers,
+        writes: writes(raw),
+    };
 }
 
 // each segment as the command it runs, `cd` followed
@@ -194,7 +229,7 @@ function resolve(path: string, dir: string, ctx: Context) {
             /^\$\{?CLAUDE_JOB_DIR\}?(?=\/|$)/,
             ctx.jobDir ?? '$CLAUDE_JOB_DIR',
         )
-        .replace(/^~(?=\/|$)/, ctx.home ?? '~');
+        .replace(/^(~|\$\{?HOME\}?)(?=\/|$)/, ctx.home ?? '~');
     const whole = filled.startsWith('/') ? filled : `${dir}/${filled}`;
     const out: string[] = [];
     for (const part of whole.split('/')) {
@@ -444,10 +479,230 @@ function floor(c: Command): Refusal | undefined {
                 hasFlag(subArgs, ['--force'], 'f')))
     )
         return rewrite(subOps, 'git branch -D');
+    if (sub === 'filter-repo' || sub === 'filter-branch')
+        return rewrite([sub], `git ${sub}`);
+    if (sub === 'gc' && hasFlag(subArgs, ['--prune=now']))
+        return rewrite(['--prune=now'], 'git gc --prune=now');
     if (sub === 'worktree' && subOps[0] === 'prune')
         return rewrite(['prune'], 'git worktree prune');
     if (sub === 'worktree' && subOps[0] === 'remove')
         return rewrite(or(subOps.slice(1), 'remove'), 'git worktree remove');
+    return undefined;
+}
+
+const ROOT_STEP = 'hand dima the step — these are his, in System Settings';
+const PRUNE = 'leave the prune to dima — name it in your report';
+const LINEAR = 'linear closes, never deletes — cancel it (state Canceled)';
+const DELETE = new Set(['delete', 'rm', 'remove']);
+
+// `~`, a dir above it, a dir right under it, or the obsidian vault root and above
+function isTopDir(path: string, ctx: Context) {
+    const home = ctx.home;
+    if (path === '/' || !home) return path === '/';
+    if (path === home || home.startsWith(`${path}/`)) return true;
+    if (path.slice(0, path.lastIndexOf('/')) === home) return true;
+    const parts = path.split('/');
+    const at = parts.indexOf(VAULT);
+    return at >= 0 && parts.length - at <= 3;
+}
+
+// an mv or cp's dest, then the file each source lands on when that dest is a dir
+function landings(c: Command, ctx: Context) {
+    const ops = operands(c.args);
+    const dest = ops.at(-1);
+    if (ops.length < 2 || dest === undefined) return [];
+    const to = resolve(dest, resolve(c.dir, '/', ctx), ctx);
+    return [
+        { path: to, text: dest },
+        ...ops
+            .slice(0, -1)
+            .map((src) => ({ path: `${to}/${basename(src)}`, text: dest })),
+    ];
+}
+
+// the paths a command may write over, for the caller to look up on disk
+export function overwrittenPaths(
+    command: string,
+    cwd: string,
+    ctx: Context = {},
+) {
+    return commands(parse(command), cwd).flatMap((c) => {
+        const dir = resolve(c.dir, '/', ctx);
+        const moved =
+            c.name === 'mv' || c.name === 'cp'
+                ? landings(c, ctx).map((l) => l.path)
+                : [];
+        return [...c.writes.map((w) => resolve(w, dir, ctx)), ...moved];
+    });
+}
+
+// the file a `>`, an mv, a cp -f or a cp /dev/null would empty or replace
+function overwrite(c: Command, ctx: Context): Refusal | undefined {
+    const dir = resolve(c.dir, '/', ctx);
+    const isFile = (p: string) => ctx.kinds?.get(p) === 'file';
+    const written = c.writes.filter((w) => isFile(resolve(w, dir, ctx)));
+    if (written.length)
+        return {
+            door: '>> to append, a new path, or the Write tool after reading the file',
+            rule: 'overwrite',
+            targets: written,
+            why: 'a > redirect empties the file before the command runs',
+        };
+    const isNull = c.name === 'cp' && operands(c.args)[0] === '/dev/null';
+    const isForced =
+        c.name === 'mv' ||
+        (c.name === 'cp' && hasFlag(c.args, ['--force'], 'f'));
+    const isKept = hasFlag(c.args, ['--no-clobber'], 'ni');
+    if (!(isNull || isForced) || isKept) return undefined;
+    const [to, ...into] = landings(c, ctx);
+    if (!to) return undefined;
+    const kind = ctx.kinds?.get(to.path);
+    if (
+        kind !== 'file' &&
+        !(kind === 'dir' && into.some((l) => isFile(l.path)))
+    )
+        return undefined;
+    if (isNull)
+        return {
+            door: 'the Write tool after reading the file',
+            rule: 'overwrite',
+            targets: [to.text],
+            why: 'cp /dev/null empties the file',
+        };
+    return {
+        door: `${c.name} -n, or trash the old file first`,
+        rule: 'overwrite',
+        targets: [to.text],
+        why: `${c.name} replaces the file already there, silently`,
+    };
+}
+
+// past the floor: system state, prunes, remote deletes, a top dir or a whole defaults domain, and sudo
+function hazard(c: Command, ctx: Context): Refusal | undefined {
+    const ops = operands(c.args);
+    const dir = resolve(c.dir, '/', ctx);
+    const system = (what: string, targets: string[], door = ASK): Refusal => ({
+        door,
+        rule: 'system',
+        targets,
+        why: `${what} changes the machine past undoing`,
+    });
+    if (c.name === 'diskutil' && /^erase/i.test(ops[0] ?? ''))
+        return system(`diskutil ${ops[0]}`, or(ops.slice(1), 'diskutil'));
+    const device = c.args.find(
+        (w) =>
+            w.text.startsWith('of=/dev/') &&
+            !/^of=\/dev\/(null|std)/.test(w.text),
+    );
+    if (c.name === 'dd' && device)
+        return system('dd onto a device', [device.text.slice(3)]);
+    if (/^(mkfs|newfs)/.test(c.name)) return system(c.name, or(ops, c.name));
+    if (
+        (c.name === 'chmod' || c.name === 'chown') &&
+        hasFlag(c.args, ['--recursive'], 'R')
+    ) {
+        const home = ops.filter((o) => {
+            const p = resolve(o, dir, ctx);
+            return (
+                p === '/' || p === ctx.home || !!ctx.home?.startsWith(`${p}/`)
+            );
+        });
+        if (home.length)
+            return system(
+                `${c.name} -R over home`,
+                home,
+                `${c.name} the one path you mean, never -R over ~`,
+            );
+    }
+    if (c.name === 'csrutil' && ops[0] && ops[0] !== 'status')
+        return system(`csrutil ${ops[0]}`, [ops[0]], ROOT_STEP);
+    const gatekeeper = c.args.find(
+        (w) => w.text === '--master-disable' || w.text === '--global-disable',
+    );
+    if (c.name === 'spctl' && gatekeeper)
+        return system('spctl', [gatekeeper.text], ROOT_STEP);
+    if (c.name === 'tccutil' && ops[0] === 'reset')
+        return system('tccutil reset', or(ops.slice(1), 'reset'), ROOT_STEP);
+
+    const prune = (what: string, target: string): Refusal => ({
+        door: PRUNE,
+        rule: 'prune',
+        targets: [target],
+        why: `${what} drops what dima may still want`,
+    });
+    if (c.name === 'brew' && ops[0] === 'cleanup')
+        return prune('brew cleanup', 'cleanup');
+    if (c.name === 'pnpm' && ops[0] === 'store' && ops[1] === 'prune')
+        return prune('pnpm store prune', 'prune');
+    if (c.name === 'docker' && ops[0] === 'system' && ops[1] === 'prune')
+        return prune('docker system prune', 'prune');
+    if (c.name === 'crontab' && hasFlag(c.args, [], 'r'))
+        return prune('crontab -r', '-r');
+
+    const remote = (what: string, targets: string[], door = ASK): Refusal => ({
+        door,
+        rule: 'remote-delete',
+        targets,
+        why: `${what} deletes on the remote, past any trash`,
+    });
+    if (
+        c.name === 'gh' &&
+        (ops[0] === 'repo' || ops[0] === 'release') &&
+        /^delete/.test(ops[1] ?? '')
+    )
+        return remote(`gh ${ops[0]} ${ops[1]}`, or(ops.slice(2), ops[0]));
+    const vercelAt = ops.slice(0, 2).findIndex((o) => DELETE.has(o));
+    if (c.name === 'vercel' && vercelAt >= 0)
+        return remote(
+            `vercel ${ops.slice(0, vercelAt + 1).join(' ')}`,
+            or(ops.slice(vercelAt + 1), 'vercel'),
+        );
+    if (c.name === 'op' && DELETE.has(ops[1] ?? ''))
+        return remote(`op ${ops[0]} ${ops[1]}`, or(ops.slice(2), 'op'));
+    if (c.name === 'security' && /^delete-/.test(ops[0] ?? ''))
+        return remote(`security ${ops[0]}`, [ops[0] ?? 'security']);
+    if (c.name === 'linear' && ops[0] === 'issue' && DELETE.has(ops[1] ?? ''))
+        return remote('linear issue delete', or(ops.slice(2), 'issue'), LINEAR);
+    if (
+        ['curl', 'linear', 'xh', 'http'].includes(c.name) &&
+        c.args.some((w) => /\bissueDelete\b/.test(w.text))
+    )
+        return remote('an issueDelete mutation', ['issueDelete'], LINEAR);
+
+    const top =
+        c.name === 'trash'
+            ? ops.filter(
+                  (o) =>
+                      !o.includes('$') && isTopDir(resolve(o, dir, ctx), ctx),
+              )
+            : [];
+    if (top.length)
+        return {
+            door: 'trash the files inside it, by name',
+            rule: 'top-dir',
+            targets: top,
+            why: 'trash of a top dir takes everything under it at once',
+        };
+    const isGlobal = hasFlag(c.args, ['-g', '-globalDomain']);
+    if (
+        c.name === 'defaults' &&
+        ops[0] === 'delete' &&
+        ops.length - 1 < (isGlobal ? 1 : 2)
+    )
+        return {
+            door: 'defaults delete <domain> <key> — one key, never the whole domain',
+            rule: 'top-dir',
+            targets: or(ops.slice(1), isGlobal ? '-g' : 'delete'),
+            why: 'defaults delete of a domain drops every preference the app has',
+        };
+    const root = c.wrappers.find((w) => w === 'sudo' || w === 'doas');
+    if (root)
+        return {
+            door: 'run it without sudo, or hand dima the command in a copy fence',
+            rule: 'sudo',
+            targets: [root],
+            why: `${root} changes system state as root`,
+        };
     return undefined;
 }
 
@@ -589,7 +844,12 @@ export function refusals(
     const list = commands(parsed, cwd);
     const out: Refusal[] = [];
     list.forEach((c, i) => {
-        const found = floor(c) ?? lint(c, list[i + 1]) ?? missingAdd(c, ctx);
+        const found =
+            floor(c) ??
+            hazard(c, ctx) ??
+            overwrite(c, ctx) ??
+            lint(c, list[i + 1]) ??
+            missingAdd(c, ctx);
         if (found && !isJobScratch(c, found, ctx)) out.push(found);
         // a nested shell's script is a command too
         // `-c` alone or in a cluster: `bash -lc`
