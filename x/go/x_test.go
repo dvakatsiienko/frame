@@ -141,6 +141,26 @@ func TestFixtureCallsSpeakTheEnvelope(t *testing.T) {
 	}
 }
 
+func TestRefusedCommitHandsTheHookOutputToAnAgent(t *testing.T) {
+	bin, dir := binary(t), world(t)
+	hook := filepath.Join(dir, "repo/.git/hooks/pre-commit")
+	if err := os.WriteFile(hook, []byte("#!/bin/sh\necho 'hook says: line 131 is too wide'\nexit 1\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command(bin, "lane", "commit", filepath.Join(dir, "msg.txt"), "--", "notes.txt")
+	cmd.Dir = filepath.Join(dir, "repo")
+	cmd.Env = filterEnv(os.Environ())
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	_ = cmd.Run()
+	if !strings.Contains(stdout.String(), `"status":"failed"`) {
+		t.Fatalf("want a failed envelope, got %s", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "hook says: line 131 is too wide") {
+		t.Errorf("the envelope says the hook output is above, but stderr holds %q", stderr.String())
+	}
+}
+
 func TestEmbeddedRegistryIsTheSharedOne(t *testing.T) {
 	shared, err := os.ReadFile("../fixtures/registry.json")
 	if err != nil {
@@ -167,6 +187,13 @@ func TestRegistryAndImplementationsMatch(t *testing.T) {
 		if !named[name] {
 			t.Errorf("%s is implemented but not in the registry", name)
 		}
+	}
+}
+
+func TestLintRefusesAVagueWordBesidePunctuation(t *testing.T) {
+	problems := lintPurpose(Verb{Name: "lane tidy", Purpose: "handles, then tidies the worktree before a push"})
+	if len(problems) == 0 {
+		t.Fatal("«handles,» passed the lint; the TS lint refuses it")
 	}
 }
 

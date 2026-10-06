@@ -74,7 +74,7 @@ func (r *Run) Step(name, doing string, work func() (string, error)) error {
 		lines := []string{r.stepLine(ui.er.Render("✗"), ui.er.Bold(true).Render(name), ui.fg.Render(err.Error()), elapsed(took))}
 		if fail, ok := err.(*Fail); ok && len(fail.Log) > 0 {
 			lines = append(lines, r.board.row(""))
-			for _, log := range fail.Log {
+			for _, log := range lastLines(fail.Log, 8) {
 				lines = append(lines, r.board.row(strings.Repeat(" ", nameCell+2)+ui.fg.Render(clip(log, r.board.inner()-nameCell-2))))
 			}
 			lines = append(lines, r.board.row(""))
@@ -112,6 +112,9 @@ func elapsed(took time.Duration) string {
 	}
 	return fmt.Sprintf("%.1fs", took.Seconds())
 }
+
+// the board shows a tool's last lines; the whole log is the Fail's, and agents get it on stderr
+func lastLines(lines []string, n int) []string { return lines[max(len(lines)-n, 0):] }
 
 func clip(text string, width int) string {
 	if lipgloss.Width(text) <= width {

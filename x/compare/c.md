@@ -20,13 +20,22 @@ Measured on this mac (M-series, macOS 27), median of 30–50 runs, stdin closed,
   pipe and `--json` never ask (inference: ~1 ms in iTerm, not measured there)
 - binary: **18.9 MB** (`go build`), **14.2 MB** stripped (`-trimpath -ldflags "-s -w"`)
   - the source lane's 3.4 MB was go + lipgloss alone; huh, glamour + chroma, cobra + fang make the rest
-- install: one static binary; the build pulls 48 modules (4.6 MB of charm sources in the module cache)
-- lines of code: **2 276** go across 8 files + **88** TS for the store bridge, **179** of go test
-  - `lane.go` 605 · `main.go` 488 · `handoffs.go` 270 · `boards.go` 249 · `view.go` 227 · `run.go` 178 · `registry.go` 137 · `forms.go` 122
+- install: one binary, but tied to the frame tree it was built in — `pnpm x-go:build` pins that
+  tree, because `handoffs` runs `store.ts` (node) and `lane pr-open` the token wrap from it; the
+  build pulls 48 modules (4.6 MB of charm sources in the module cache)
+- lines of code: **2 301** go across 8 files + **88** TS for the store bridge, **206** of go test
+  - `lane.go` 609 — the five lane verbs, ported line for line from `lane.ts`
+  - `main.go` 492 — mode, the cobra tree, dispatch, the envelope
+  - `handoffs.go` 273 — the store bridge calls, list / peek / ingest boards, schema, completion
+  - `boards.go` 249, `view.go` 227 — the T2 frame, overview and help
+  - `run.go` 181 — the bubbletea run board
+  - `registry.go` 138, `forms.go` 132
 
 ## test + lint story
 
-- `go test ./...` — 4 tests, 16 fixture calls among them, in 9 s
+- `go test ./...` (`pnpm x-go:test`) — 6 tests, 16 fixture calls among them, in 10 s
+  - a refused commit hands the hook's own output to an agent on stderr (red-proved)
+  - the vague-word lint refuses what the TS lint refuses (red-proved)
   - every pipe-mode call of `calls.json` (15) and the agent-env tty call runs against the built binary in a fresh `setup.sh` world:
     exit code, one json line, `ok`, `status`, `next`, the named `data` fields
   - the embedded registry is byte-equal to `x/fixtures/registry.json`
@@ -74,7 +83,9 @@ Measured on this mac (M-series, macOS 27), median of 30–50 runs, stdin closed,
 
 - **bubbletea v2's inline renderer erases its last frame on exit**, and leaves the upper lines of a
   view that shrinks to nothing; the run board printed blank rows until each step's still line
-  moved out of the program, and every huh form needs its residue wiped (`runForm`)
+  moved out of the program. a fixed-height huh form is wiped by hand (`runForm`); a form whose
+  height moves (inputs, a validation error) ghosted its own fields, so the args form takes the
+  alt screen (`runFullScreen`) — three tries, each proved or refuted in vhs
 - **two dependency surprises**: the runewidth init tax (13 ms), and staticcheck that cannot read
   the toolchain's export data
 - **no reuse with the TS lib**: the handoff store's rules are TS, so go reaches them through a node

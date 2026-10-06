@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2"
 	"charm.land/lipgloss/v2"
 )
@@ -46,6 +47,8 @@ func formFor(family string, groups ...*huh.Group) *huh.Form {
 
 // bubbletea v2's inline renderer erases only the last line when a view shrinks to nothing on
 // quit, so a finished form would leave its upper lines inside the board; they are wiped here
+// only a form of fixed height (a confirm, a picker) runs inline: one whose height moves while it
+// runs (inputs, validation errors) leaves rows the renderer lost track of, so it takes the alt screen
 func runForm(form *huh.Form) error {
 	form.Init()
 	height := lipgloss.Height(form.View())
@@ -54,6 +57,13 @@ func runForm(form *huh.Form) error {
 		fmt.Printf("\x1b[%dA\x1b[J", height-1)
 	}
 	return err
+}
+
+func runFullScreen(form *huh.Form) error {
+	return form.WithViewHook(func(view tea.View) tea.View {
+		view.AltScreen = true
+		return view
+	}).Run()
 }
 
 // on a terminal a missing required arg becomes a form field, never a usage error
@@ -84,7 +94,7 @@ func askArgs(verb Verb, args []string) ([]string, error) {
 			})
 		fields = append(fields, input)
 	}
-	if err := runForm(formFor(verb.Family(), huh.NewGroup(fields...))); err != nil {
+	if err := runFullScreen(formFor(verb.Family(), huh.NewGroup(fields...))); err != nil {
 		return nil, usageFail("the form was closed with no answer", "x "+verb.Name+" --help")
 	}
 	return append(args, values...), nil

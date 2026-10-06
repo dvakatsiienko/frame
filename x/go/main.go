@@ -284,6 +284,10 @@ func finishFail(m mode, name string, r *Run, err error) int {
 		status = "usage"
 	}
 	if m.json {
+		// "the hook output is above" must be true for an agent too: the tool's own words go to stderr
+		for _, line := range fail.Log {
+			fmt.Fprintln(os.Stderr, line)
+		}
 		emit(name, kv{"error", fail.Msg}, kv{"next", fail.Next}, kv{"ok", false}, kv{"status", status})
 		return exits[status]
 	}
@@ -305,7 +309,7 @@ func finishFail(m mode, name string, r *Run, err error) int {
 			b.rows = append(b.rows, strings.Repeat(" ", 16)+ui.fg.Render(clip(line, b.inner()-16)))
 		}
 	}
-	for _, line := range fail.Log {
+	for _, line := range lastLines(fail.Log, 8) {
 		b.rows = append(b.rows, strings.Repeat(" ", 16)+ui.dim.Render(line))
 	}
 	fmt.Fprintln(os.Stderr, b.String())

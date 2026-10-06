@@ -34,6 +34,10 @@ type listing struct {
 // one store, many doors: the rules live in script/lib/handoff-store.ts, reached through store.ts
 func store(op string, args ...string) (json.RawMessage, error) {
 	script := filepath.Join(sourceDir(), "store.ts")
+	if !exists(script) {
+		return nil, &Fail{Msg: "no store bridge at " + script + " — this binary was moved away from the frame tree it was built in",
+			Next: "pnpm x-go:build"}
+	}
 	got, _ := run("", nil, "", "node", append([]string{script, op}, args...)...)
 	var answer struct {
 		Value json.RawMessage `json:"value"`

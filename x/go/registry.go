@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 )
@@ -114,6 +115,9 @@ func families() []string {
 	return names
 }
 
+// the same pattern as registry.ts, so both arms refuse the same purposes
+var vagueWord = regexp.MustCompile(`(?i)\b(todo|tbd|stuff|things|various|handles?|manages?)\b`)
+
 func lintPurpose(verb Verb) []string {
 	var problems []string
 	words := strings.Fields(verb.Purpose)
@@ -127,11 +131,8 @@ func lintPurpose(verb Verb) []string {
 	if !slices.ContainsFunc(words, func(word string) bool { return !slices.Contains(nameWords, word) }) {
 		problems = append(problems, "purpose only restates the name")
 	}
-	for _, vague := range []string{"todo", "tbd", "stuff", "things", "various", "handle", "handles", "manage", "manages"} {
-		if slices.Contains(strings.Fields(strings.ToLower(verb.Purpose)), vague) {
-			problems = append(problems, "purpose uses a vague word — name the effect")
-			break
-		}
+	if vagueWord.MatchString(verb.Purpose) {
+		problems = append(problems, "purpose uses a vague word — name the effect")
 	}
 	return problems
 }

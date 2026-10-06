@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -90,7 +91,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		committed, _ := git(commitArgs...)
 		if !committed.ok {
 			return "", &Fail{Msg: "commit failed — the hook output is above",
-				Next: "x lane commit " + msgFile + " -- " + strings.Join(paths, " "), Log: tail(committed.log, 8)}
+				Next: "x lane commit " + msgFile + " -- " + strings.Join(paths, " "), Log: nonBlank(committed.log)}
 		}
 		sha, err = head()
 		return short(sha) + "  " + firstLine(message), err
@@ -127,10 +128,13 @@ func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
 		}
 		from, reason, err := pushHome()
 		target = pushTarget{name, sha, from, reason}
-		ahead, _ := git("rev-list", "--count", "origin/"+name+"..HEAD")
+		// counted from the remote's own sha: a local origin/<branch> ref can be stale
 		detail := fmt.Sprintf("%s to origin/%s", short(sha), name)
-		if ahead.ok {
-			detail = fmt.Sprintf("%s commits to origin/%s", ahead.out, name)
+		if remote, _ := remoteSha(name); remote != "" {
+			if ahead, _ := git("rev-list", "--count", remote+"..HEAD"); ahead.ok {
+				n, _ := strconv.Atoi(ahead.out)
+				detail = fmt.Sprintf("%s to origin/%s", plural(n, "commit"), name)
+			}
 		}
 		if from != tree {
 			detail += ", from " + home(from)
@@ -158,7 +162,7 @@ func push(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		pushed, _ := gitIn(from, "push", "-q", "origin", sha+":refs/heads/"+name)
 		if !pushed.ok {
 			return "", &Fail{Msg: "push failed — the git and hook output is above",
-				Next: "fix what the pre-push hooks name, then x lane push --apply", Log: tail(pushed.log, 8)}
+				Next: "fix what the pre-push hooks name, then x lane push --apply", Log: nonBlank(pushed.log)}
 		}
 		return "origin/" + name, nil
 	}); err != nil {
@@ -224,7 +228,7 @@ func prOpen(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	if err := r.Step("open", "gh pr create as x-coder-cc", func() (string, error) {
 		opened, _ := run("", nil, "", wrap, argv...)
 		if !opened.ok {
-			return "", &Fail{Msg: "gh pr create failed — its output is above", Next: "gh pr view", Log: tail(opened.log, 8)}
+			return "", &Fail{Msg: "gh pr create failed — its output is above", Next: "gh pr view", Log: nonBlank(opened.log)}
 		}
 		url = opened.out
 		return url, nil
@@ -253,7 +257,7 @@ func mergeMain(r *Run, _ []string, _ Flags) (any, error) {
 		if !merged.ok {
 			conflicts, _ := git("diff", "--name-only", "--diff-filter=U")
 			if conflicts.out == "" {
-				return "", &Fail{Msg: "merge failed without conflicts — its output is above", Next: "git status", Log: tail(merged.log, 8)}
+				return "", &Fail{Msg: "merge failed without conflicts — its output is above", Next: "git status", Log: nonBlank(merged.log)}
 			}
 			files := strings.Split(conflicts.out, "\n")
 			return "", &Fail{Msg: "conflicts: " + strings.Join(files, ", "),
@@ -324,7 +328,7 @@ func decrypt(tree string) error {
 		env := []string{"GIT_CONFIG_COUNT=2", "GIT_CONFIG_KEY_0=filter.git-crypt.clean", "GIT_CONFIG_VALUE_0=cat",
 			"GIT_CONFIG_KEY_1=filter.git-crypt.required", "GIT_CONFIG_VALUE_1=false"}
 		if unlocked, _ := run(tree, env, "", "git-crypt", "unlock", key); !unlocked.ok {
-			return &Fail{Msg: "git-crypt unlock failed — its output is above", Next: "git-crypt status", Log: tail(unlocked.log, 8)}
+			return &Fail{Msg: "git-crypt unlock failed — its output is above", Next: "git-crypt status", Log: nonBlank(unlocked.log)}
 		}
 	}
 
@@ -392,7 +396,7 @@ func validateMods(tree string, paths []string) (string, error) {
 		seen[dir] = true
 		if checked, _ := run(tree, nil, "", "claude", "plugin", "validate", dir); !checked.ok {
 			return "", &Fail{Msg: "claude plugin validate refused " + dir + " — its output is above; nothing was staged",
-				Next: "claude plugin validate " + dir, Log: tail(checked.log, 8)}
+				Next: "claude plugin validate " + dir, Log: nonBlank(checked.log)}
 		}
 	}
 	if len(seen) == 0 {
@@ -571,14 +575,14 @@ func firstLine(path string) string {
 	return line
 }
 
-func tail(log string, n int) []string {
+func nonBlank(log string) []string {
 	var lines []string
 	for _, line := range strings.Split(log, "\n") {
 		if strings.TrimSpace(line) != "" {
 			lines = append(lines, line)
 		}
 	}
-	return lines[max(len(lines)-n, 0):]
+	return lines
 }
 
 func short(sha string) string { return sha[:min(7, len(sha))] }

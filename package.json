@@ -75,6 +75,8 @@
         "skill:memory-sync-mirror": "node ./script/skill-memory-sync-mirror.ts",
         "sline:build": "cd ./home/.claude/sline && go build -trimpath -buildvcs=false -ldflags \"-s -w\" -o bin .",
         "sline:test": "cd ./home/.claude/sline && go test ./...",
+        "x-go:build": "cd ./x/go && go build -trimpath -ldflags \"-s -w -X main.srcDir=$PWD\" -o bin/x .",
+        "x-go:test": "cd ./x/go && go test ./...",
         "x-ray:icon-generate": "node ./script/x-ray-icon-generate.ts",
         "typecheck": "tsc --noEmit && pnpm -r typecheck",
         "test": "vitest run",
