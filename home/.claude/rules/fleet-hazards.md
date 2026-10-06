@@ -5,7 +5,7 @@ that bites 2+ repos or every session — a hazard that bites one repo goes to th
 every hazard names its guard — `guard: <hook | x verb>` or `guard: none`; a line whose guard
 exists dies, so the file shrinks as the `x` cli grows. this file is the source of truth; the vault section is copied by hand
 into the cw leaf `/topics/obsidian.md` — the rest is cc-only, deliberately not mirrored.
-📌 **a Bash-shaped hazard becomes a `guard` rule first** (the cc mod, `plugin-x/mods/guard`; a ticket under FRM-304); a line lands here only for what a Bash check cannot see — a judgment call, a non-Bash tool, a browser-only look (dima, 2026-10-05).
+📌 **a Bash-shaped hazard becomes an `x-mod-guard` rule first** (the cc mod, `plugin-x/mods/x-mod-guard`; a ticket under FRM-304); a line lands here only for what a Bash check cannot see — a judgment call, a non-Bash tool, a browser-only look (dima, 2026-10-05).
 
 📌 hazards that bite one subject live beside it: frame `AGENTS.md` (launchd + tcc, git-crypt,
 lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x:github-contrib`
@@ -73,7 +73,7 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 ## the bash tool
 
-- **the `guard` cc mod refuses the Bash shapes that used to be listed here** — `sd` with a `$`, a dash-led `sd` find, an unbraced `$var` before `:` or non-ascii, a trailing `&`, a gate piped to `head`/`grep`, a grepped push, `sd`/`sed` on a workflow, a `HOME=` override, plus the floor commands; its refusal names the fix, `plugin-x/mods/guard/FTR.md` lists them. guard: `guard` itself
+- **the `x-mod-guard` cc mod refuses the Bash shapes that used to be listed here** — `sd` with a `$`, a dash-led `sd` find, an unbraced `$var` before `:` or non-ascii, a trailing `&`, a gate piped to `head`/`grep`, a grepped push, `sd`/`sed` on a workflow, a `HOME=` override, plus the floor commands; its refusal names the fix, `plugin-x/mods/x-mod-guard/FTR.md` lists them. guard: `x-mod-guard` itself
 - **a hand edit goes through `Edit`/`Write`; a bulk transform may script** — the tools fire the hooks (biome format, the stash holds lock, read-before-write) and fail loud; a script sees no hook and fails silent. a change across many files (a rename, a date shift, 40 files) stays one script call, never 40 Edits (dima, 2026-10-05) — 37 % of a week's fleet writes went through Bash and took no hold (`docs/test-drive/mods.md`). guard: the stash cc mod's holds veto refuses a Bash write to a held file; a Bash write still takes no hold and fires no format hook
 - **biome's format-on-save deletes an import that is not used yet** — two Edits that add an import, then its use, ship a runtime ReferenceError; add the use first, then the import (2026-09-28)
 - renaming a `.gitignore` path un-ignores whatever the OLD path still holds — `git add -A`
@@ -83,7 +83,6 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 - **a delete names the file the grep proved, never its dir** — «TriangleSvg has no users» was true, `trash src/elements/icons` took the live `ExternalLinkSvg.tsx` with it (2026-09-21); the unit of a delete is the path the evidence named
 - **a hand-kept plist or json changed for one value gets a one-line edit, never a re-serialize** —
   `plistlib.dumps` rewrote all 984 lines of the iterm prefs for one spacing value (2026-10-01)
-- **after a `git mv`, stage only the new paths** — the old path in a pathspec kills the whole `git add` («did not match any files»), and a commit then carries the moves without the edits (twice, 2026-09-28)
 - **vendored code gets its biome exclusion in the same commit that adds it** — the commit hook formats staged files only, ci runs `biome ci` over the repo, so a vendored skill turned main red after a green commit (2026-09-28)
 - **`op run` masks secrets in its child's stdout** — a script that reads a key back from an `op-run` child gets `<concealed by 1Password>`; the child sets `OP_RUN_NO_MASKING=true` and keeps the key in memory only (speak's daemon, 15 min, 2026-09-29)
 
