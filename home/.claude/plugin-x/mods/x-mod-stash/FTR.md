@@ -43,6 +43,11 @@
   - proven live 2026-10-05 (FRM-320): a background coder's reply left one ask; the x-mod-stash store held `asks:<its session>`; dima answered in its chat, and the key was gone 4 s after that reply ended. a peer's turn never clears asks, so his typing there reached the hook with an origin on the list
   - decision: the transcript cannot name that origin — it writes its own vocabulary (`origin: human`, `promptSource: queued`), which the hook never receives; the store is the check
   - the old bug — a `composer`-only list kept answered asks (2026-10-05) — was fixed by the allow-list above
+- ✅ `/clear` and `/resume` empty the conversation's asks in the same turn
+  - given a reply left open asks on the band
+  - when dima runs `/clear` or `/resume`
+  - then the band shows «no open asks» at once, never waiting for the next poll; another conversation's asks stay
+  - decision: one `command.run` hook drops the conversation's asks, holds, 🔭 wait, context fill and keep-hot key — the same set `session.end` drops — and x-mod-redact empties its vault on the same command (FRM-325)
 - ✅ each thread is named by its session
   - given two sessions in the frame repo have open asks
   - when the band lists them
