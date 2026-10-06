@@ -19,6 +19,16 @@
 - ✅ a hazard shape is refused with its fix, and its near miss runs
   - given a Bash call holds: an `sd` replacement with `$` in double quotes; an `sd` find led by `-` with no `--`; an unbraced `$var` before `:<letter>` (a zsh modifier) or a non-ascii character; `sd`, or `sed -i`, on `.github/workflows/*`; a trailing `&` with no `wait` or `sleep` after it; a gate (`typecheck`, `test`, `check`, `tsc`, `vitest`, a `family:test` script) piped into `head` or `grep`; a `git push` piped into `grep`; a `git commit` with no `--` paths, `git add -A` / `--all` / `.`; `pnpm -s`
   - then it is refused with its fix; `$HOST:8080`, `$HOST:/tmp`, `pgrep -l x; kill <pid>`, `kill $(cat x.pid)` and a search for `--no-verify` run; the shape one step away (single quotes, `--`, `${var}`, `sed -n`, a `sleep` after the `&`, an unpiped gate, `git ls-remote`, `-- <paths>`, `--silent`) runs
+- ✅ a git add of a missing path is refused before git runs
+  - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left
+  - then it is refused, the reason names the missing path, and the door is «stage only paths that exist; a deleted file stages with git rm <path>»
+  - given every named path exists, then it runs; a glob, a `:(magic)` pathspec or a word holding a `$` is left to git
+  - decision: git aborts the whole add on one unmatched pathspec, and a commit after it lands partial — the old path after a `git mv` was the case (fleet-hazards, the bash tool)
+  - 📌 a tracked file already deleted is refused too; `git rm <path>` stages it. a `git add` inside `bash -c` or `eval` is not looked up
+- ✅ a job's own scratch clone runs its local git
+  - given a git discard, a local rewrite (`branch -D`, `worktree remove|prune`) or a sweep (`add -A`, a bare `commit`) whose dir and every path resolve under `$CLAUDE_JOB_DIR/tmp`, spelled out or as `$CLAUDE_JOB_DIR` / `${CLAUDE_JOB_DIR}`, through `cd` or `-C`
+  - then it runs; the same command anywhere else, in the job dir itself, in another job's tmp or climbing out with `..` is refused as before
+  - then a push, a gate bypass and every non-git floor command stay refused inside the tmp too — a push reaches a real remote, a bypass a real gate
 - ✅ an escape lets one refused command run
   - given dima said yes to a refused command
   - when the command ends with `# dima-ok: <targets>`, naming every target the refusal named (split by spaces or commas)

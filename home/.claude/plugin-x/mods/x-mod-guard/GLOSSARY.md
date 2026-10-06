@@ -35,3 +35,7 @@ _Avoid_: fork reason, justification
 **Guard event**:
 One refusal or escape kept in x-mod-guard's store, shown as a 🛡️ line in x-mod-stash's band until dismissed.
 _Avoid_: log entry, alert
+
+**Job scratch**:
+A throwaway clone under the session's own `$CLAUDE_JOB_DIR/tmp`; its local git runs unrefused, a push or a gate bypass from it does not.
+_Avoid_: sandbox, temp repo

@@ -7,6 +7,8 @@ export type Refusal = {
     door: string;
     targets: string[];
 };
+// what the rules read off the machine: the job's own dir, home, and the added paths found missing
+export type Context = { jobDir?: string; home?: string; missing?: Set<string> };
 export type Verdict =
     | { kind: 'run' }
     | { kind: 'refused'; refusal: Refusal }
@@ -147,8 +149,7 @@ function commands(parsed: Parsed, cwd: string): Command[] {
         const feeders = [...s.subst.map((x) => peel(x.words)), ...piped];
         if (c.name === 'cd') {
             const to = c.args[0]?.text ?? '~';
-            dir =
-                to.startsWith('/') || to.startsWith('~') ? to : `${dir}/${to}`;
+            dir = /^[/~$]/.test(to) ? to : `${dir}/${to}`;
         }
         out.push({ ...c, dir, feeders, sep: s.sep });
     });
@@ -158,14 +159,21 @@ function commands(parsed: Parsed, cwd: string): Command[] {
 // git's own options before the subcommand; `-c` values kept, since two of them are floor
 function gitParts(args: Word[]) {
     const configs: string[] = [];
+    let at: string | undefined;
     let i = 0;
     for (; i < args.length; i++) {
         const t = args[i]?.text ?? '';
         if (t === '-c') configs.push(args[++i]?.text ?? '');
-        else if (t === '-C' || t === '--git-dir' || t === '--work-tree') i++;
+        else if (t === '-C') at = args[++i]?.text;
+        else if (t === '--git-dir' || t === '--work-tree') i++;
         else if (!isFlag(t)) break;
     }
-    return { configs, sub: args[i]?.text ?? '', subArgs: args.slice(i + 1) };
+    return {
+        at,
+        configs,
+        sub: args[i]?.text ?? '',
+        subArgs: args.slice(i + 1),
+    };
 }
 
 const or = (list: string[], fallback: string) =>
@@ -178,6 +186,72 @@ const ASK = 'no safe door here — ask cclio, naming the target';
 const NEVER =
     'fix what the hook or the signer refused, then run it without the flag';
 const LANE = 'x lane commit — it commits named paths only';
+
+// a path as the shell would land it: the job dir and ~ filled in, `.` and `..` walked; a path still holding a `$` stays unresolved
+function resolve(path: string, dir: string, ctx: Context) {
+    const filled = path
+        .replace(
+            /^\$\{?CLAUDE_JOB_DIR\}?(?=\/|$)/,
+            ctx.jobDir ?? '$CLAUDE_JOB_DIR',
+        )
+        .replace(/^~(?=\/|$)/, ctx.home ?? '~');
+    const whole = filled.startsWith('/') ? filled : `${dir}/${filled}`;
+    const out: string[] = [];
+    for (const part of whole.split('/')) {
+        if (!part || part === '.') continue;
+        if (part === '..') out.pop();
+        else out.push(part);
+    }
+    return `/${out.join('/')}`;
+}
+
+// the dir a git command works in: its `-C`, else the dir its `cd`s left
+function gitDir(c: Command, ctx: Context) {
+    const dir = resolve(c.dir, '/', ctx);
+    const { at } = gitParts(c.args);
+    return at === undefined ? dir : resolve(at, dir, ctx);
+}
+
+// a git add's pathspecs as typed and where they land; globs, magic and unexpanded words are git's to read
+function adds(c: Command, ctx: Context) {
+    if (c.name !== 'git') return [];
+    const { sub, subArgs } = gitParts(c.args);
+    if (sub !== 'add') return [];
+    const dir = gitDir(c, ctx);
+    return operands(subArgs)
+        .filter((o) => !/[*?[$]/.test(o) && !o.startsWith(':'))
+        .map((text) => ({ path: resolve(text, dir, ctx), text }));
+}
+
+// the paths every git add in the command names, for the caller to look up on disk
+export function addedPaths(command: string, cwd: string, ctx: Context = {}) {
+    return commands(parse(command), cwd).flatMap((c) =>
+        adds(c, ctx).map((a) => a.path),
+    );
+}
+
+function missingAdd(c: Command, ctx: Context): Refusal | undefined {
+    const gone = adds(c, ctx).filter((a) => ctx.missing?.has(a.path));
+    if (!gone.length) return undefined;
+    return {
+        door: 'stage only paths that exist; a deleted file stages with git rm <path>',
+        rule: 'git-add-missing',
+        targets: gone.map((a) => a.text),
+        why: 'git add of a missing path stages nothing and the commit lands partial',
+    };
+}
+
+// a scratch clone under the job's own tmp: everything its local git does stays there; a push or a skipped hook does not
+const LOCAL_GIT = new Set(['git-discard', 'git-rewrite', 'git-sweep']);
+function isJobScratch(c: Command, r: Refusal, ctx: Context) {
+    if (!ctx.jobDir || c.name !== 'git' || !LOCAL_GIT.has(r.rule)) return false;
+    const { sub, subArgs } = gitParts(c.args);
+    if (sub === 'push') return false;
+    const tmp = resolve(`${ctx.jobDir}/tmp`, '/', ctx);
+    const dir = gitDir(c, ctx);
+    const paths = [dir, ...operands(subArgs).map((o) => resolve(o, dir, ctx))];
+    return paths.every((p) => p.startsWith(`${tmp}/`));
+}
 
 function floor(c: Command): Refusal | undefined {
     const ops = operands(c.args);
@@ -506,22 +580,28 @@ function background(list: Command[]): Refusal | undefined {
     };
 }
 
-export function refusals(command: string, cwd: string): Refusal[] {
+export function refusals(
+    command: string,
+    cwd: string,
+    ctx: Context = {},
+): Refusal[] {
     const parsed = parse(command);
     const list = commands(parsed, cwd);
     const out: Refusal[] = [];
     list.forEach((c, i) => {
-        const found = floor(c) ?? lint(c, list[i + 1]);
-        if (found) out.push(found);
+        const found = floor(c) ?? lint(c, list[i + 1]) ?? missingAdd(c, ctx);
+        if (found && !isJobScratch(c, found, ctx)) out.push(found);
         // a nested shell's script is a command too
         // `-c` alone or in a cluster: `bash -lc`
         const dashC = SHELLS.has(c.name)
             ? c.args.findIndex((w) => /^-[A-Za-z]*c[A-Za-z]*$/.test(w.text))
             : -1;
         const script = dashC >= 0 ? c.args[dashC + 1] : undefined;
-        if (script) out.push(...refusals(script.text, c.dir));
+        if (script) out.push(...refusals(script.text, c.dir, ctx));
         if (c.name === 'eval')
-            out.push(...refusals(c.args.map((w) => w.text).join(' '), c.dir));
+            out.push(
+                ...refusals(c.args.map((w) => w.text).join(' '), c.dir, ctx),
+            );
     });
     for (const r of [background(list), unbraced(parsed)]) if (r) out.push(r);
     // one line per rule and target: a lint seen on every command of a pipeline is one finding
@@ -540,8 +620,12 @@ export function markers(command: string) {
         .filter((t): t is string => !!t);
 }
 
-export function check(command: string, cwd: string): Verdict {
-    const found = refusals(command, cwd);
+export function check(
+    command: string,
+    cwd: string,
+    ctx: Context = {},
+): Verdict {
+    const found = refusals(command, cwd, ctx);
     if (!found.length) return { kind: 'run' };
     const marked = markers(command);
     // a marker names one target, or several split by spaces or commas; every target of a refusal must be named
