@@ -268,6 +268,16 @@ function textOf(content: TranscriptContent | undefined) {
         .join('\n');
 }
 
+function queuedText(prompt: TranscriptContent | undefined) {
+    if (typeof prompt === 'string') return prompt;
+    return (prompt ?? [])
+        .map((block) =>
+            block.type === 'image' ? '[image]' : (block.text ?? ''),
+        )
+        .filter(Boolean)
+        .join('\n');
+}
+
 export function transcriptDelta(lines: string[], fromLine: number) {
     const stepIds = new Set<string>();
     const parts: string[] = [];
@@ -276,6 +286,15 @@ export function transcriptDelta(lines: string[], fromLine: number) {
             if (entry.message?.id) stepIds.add(entry.message.id);
             const text = textOf(entry.message?.content).trim();
             if (text) parts.push(`## cclio\n${text}`);
+        }
+        // a message dima types while cclio is mid-turn lands as a queued_command attachment, never a user entry
+        if (
+            entry?.type === 'attachment' &&
+            entry.attachment?.type === 'queued_command'
+        ) {
+            const text = queuedText(entry.attachment.prompt).trim();
+            if (text && !text.includes('<cross-session-message'))
+                parts.push(`## dima\n${text}`);
         }
         if (entry?.type === 'user') {
             const text = textOf(entry.message?.content).trim();
@@ -431,6 +450,7 @@ export interface TranscriptEntry {
     durationMs?: number;
     isMeta?: boolean;
     origin?: { kind?: string };
+    attachment?: { type?: string; prompt?: TranscriptContent };
     message?: {
         id?: string;
         model?: string;

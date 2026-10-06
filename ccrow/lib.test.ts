@@ -35,6 +35,37 @@ describe('transcriptDelta', () => {
         );
     });
 
+    test('keeps a message dima typed mid-turn, its image as a marker', () => {
+        const queued = [
+            JSON.stringify({
+                attachment: {
+                    prompt: [
+                        { type: 'image' },
+                        { text: 'the fold bug', type: 'text' },
+                    ],
+                    type: 'queued_command',
+                },
+                type: 'attachment',
+            }),
+        ];
+        expect(transcriptDelta(queued, 0).text).toBe(
+            '## dima\n[image]\nthe fold bug',
+        );
+    });
+
+    test('leaves out a peer message queued mid-turn', () => {
+        const queued = [
+            JSON.stringify({
+                attachment: {
+                    prompt: '<cross-session-message from="x">hi</cross-session-message>',
+                    type: 'queued_command',
+                },
+                type: 'attachment',
+            }),
+        ];
+        expect(transcriptDelta(queued, 0).text).toBe('');
+    });
+
     test('counts one step per assistant message id', () => {
         expect(transcriptDelta(lines, 2).steps).toBe(2);
     });
