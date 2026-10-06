@@ -18,6 +18,9 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 - **`designer`** — a session in `~/projects/studio` that draws takes and comps on the Claude
   Design canvas and never edits an app's repo; impeccable builds the pick. `x:crew-designer`
   owns its contract, `x:crew-designer-interview` the brief cclio writes with dima.
+- **`ccrow`** — cclio's parked adviser: a pinned `--bg` session that reads her thread on a wake
+  (her Stop and PreCompact hooks) and sends one note or `none`. `ccrow/AGENTS.md` owns it; on a
+  test drive to 10-20 (`docs/test-drive/ccrow.md`).
 - **`classifier`** — jev (typesafe.ai): typed judgments over a state, no tools, no memory.
   ~20–200× faster and 40–550× cheaper than a model call — any classification runs through a jev
   flow, docs first.

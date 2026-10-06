@@ -64,12 +64,8 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      # x/x.test.ts runs the real `x` shim (bun) and a git-crypt fixture worktree,
-      # so both tools must exist here or the run fails with exit 127, not a skip
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.4.2
-
+      # x's go tests lock a git-crypt fixture worktree, so the tool must exist here
+      # or the run fails instead of skipping
       - name: Install git-crypt
         run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends git-crypt
 
@@ -88,6 +84,14 @@ jobs:
       # ~/.claude now skips itself instead of failing here.
       - name: Test sline
         run: pnpm sline:test
+
+      # x is go too, on a newer go than sline's; its tests run every calls.json call, tty ones on a pty
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: x/go/go.mod
+
+      - name: Test x
+        run: pnpm x-go:test
 
   # The readme's ci badge in the repo's own style, redrawn after every main run. It lives on an
   # orphan `badges` branch, one commit force-replaced each time, so a status never lands in

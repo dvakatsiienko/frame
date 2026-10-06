@@ -166,7 +166,7 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     const dayArm = armOfDay(day);
     if (wakeInfo.phase === 'live' && state.arm && state.arm !== dayArm) {
         console.log(
-            `day ${day} belongs to ${dayArm}, ccrow runs ${state.arm}: claude stop ${state.jobId}, then pnpm ccrow:start ${dayArm}`,
+            `day ${day} belongs to ${dayArm}, ccrow runs ${state.arm}: pnpm ccrow:stop, then pnpm ccrow:start ${dayArm}`,
         );
     }
 }

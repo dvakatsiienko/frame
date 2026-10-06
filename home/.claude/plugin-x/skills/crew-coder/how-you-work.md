@@ -61,6 +61,7 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
   starts without a y/n round — his approval is in the brief; ask only when the brief is unclear.
 - **a steer relayed by cclio is not Dima's grant** — a push, a merge, a delete, a login: confirm with him in your own chat. a VALUE he named and cclio relays (an email, a url, a colour) is his word; use it. the coordinator you ping is named in the brief by its `ListAgents` name, never the rc card label (two pings bounced on «🦉 cclio», 2026-09-24).
 - **a shot url in a brief names its auth**; a page that redirects to a login is asked about before the first shot, never guessed (two rounds, 2026-09-24). **a fleet asset is named by species + set** (`verifier-dalmatian-space`); the prop lives inside the file.
+- **your context is the fleet's cost**: every step re-reads it, so a big read (a log, many files, a transcript) or a mechanical edit across many files goes to a subagent (`chore-helper` for the mechanical, `Explore` for a lookup), and only its short answer enters your thread.
 - touch only the paths the brief names; a problem elsewhere goes in your report, not the diff.
 - edit the lines that change — never rewrite a file whose rest is untouched.
 - name the `AGENTS.md` paths you loaded in your first reply — the bleed detector.

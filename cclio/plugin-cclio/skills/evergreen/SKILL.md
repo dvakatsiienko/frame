@@ -188,6 +188,8 @@ same message («hold #61») subtract from the round.
   plugin, sit still (measured 2026-09-16: impeccable cached 4.2.1, upstream 4.3.1, disabled).
   `claude plugin marketplace update` then `claude plugin update <name>` for those; a bump is one
   digest line and binds next session.
+  - cw updates nothing by itself: when the `humanize` marketplace moved since the last run, the
+    digest carries «cw humanize: update it in cw» for dima.
 
 ## completion criterion
 

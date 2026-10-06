@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Stop hook, log-only: reads the reply that just ended and logs every shape the output-format rules
-# ban. it never blocks. the log measures which rules break, so a rule that fires often gets its root
+# Stop hook: reads the reply that just ended and logs every shape the output-format rules ban.
+# it blocks only a 📄 stamp later than the clock; every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
 # fixed instead of a validator stopping every reply. `pnpm reply-check:report` reads it.
 import json
 import os
@@ -96,6 +96,14 @@ def main() -> None:
         for rule, snippet in hits:
             clean = snippet.replace("\t", " ").replace("\n", " ")
             log.write(f"{stamp}\t{session}\t{where}\t{rule}\t{clean}\n")
+    late = [snippet for rule, snippet in hits if rule == "future-stamp"]
+    # the one blocking rule: 28 logged hits in a day changed nothing (dima, 2026-10-06); a second stop passes, so a block never loops
+    if late and not event.get("stop_hook_active"):
+        now = os.environ.get("REPLY_CHECK_NOW", time.strftime("%H:%M"))
+        print(json.dumps({
+            "decision": "block",
+            "reason": f"the 📄 stamp {', '.join(late)} is later than now ({now}). run `date` and reprint the 📄 line with the real time.",
+        }))
 
 
 if __name__ == "__main__":

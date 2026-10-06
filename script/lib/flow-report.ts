@@ -21,9 +21,16 @@ export const flawlogCounts = (dir: string, since: string) => {
 const CREW_SKILLS = ['x:crew-coder', 'x:crew-verifier'];
 const BARE_RUN = /\bclaude\b[^|;&\n]*--safe-mode/;
 
-/** bare cc runs and crew-skill loads in `<dir>/*\/*.jsonl`, counting tool calls from `start` on */
-export const transcriptCounts = (dir: string, start: Date) => {
+const KNOWLEDGE_PATH = /\/docs\/knowledge\/(.+)$/;
+
+/** bare cc runs, crew-skill loads and Reads of each `knowledge` file (a path under `docs/knowledge/`) in `<dir>/*\/*.jsonl`, counting tool calls from `start` on */
+export const transcriptCounts = (
+    dir: string,
+    start: Date,
+    knowledge: readonly string[],
+) => {
     const counts = { bareRuns: 0, bareSessions: 0, briefLed: 0, falseFires: 0 };
+    const reads = new Map(knowledge.map((f) => [f, 0]));
     for (const project of readdirSync(dir, { withFileTypes: true })) {
         if (!project.isDirectory()) continue;
         const projectDir = join(dir, project.name);
@@ -32,13 +39,22 @@ export const transcriptCounts = (dir: string, start: Date) => {
             if (!name.endsWith('.jsonl') || statSync(file).mtime < start)
                 continue;
             const text = readFileSync(file, 'utf8');
-            if (!text.includes('--safe-mode') && !text.includes('"Skill"'))
+            if (
+                !text.includes('--safe-mode') &&
+                !text.includes('"Skill"') &&
+                !text.includes('docs/knowledge/')
+            )
                 continue;
             const named = new Set<string>();
             let bare = 0;
             for (const raw of text.split('\n')) {
                 const isCrew = CREW_SKILLS.some((s) => raw.includes(s));
-                if (!isCrew && !raw.includes('--safe-mode')) continue;
+                if (
+                    !isCrew &&
+                    !raw.includes('--safe-mode') &&
+                    !raw.includes('docs/knowledge/')
+                )
+                    continue;
                 const line = parseLine(raw);
                 if (!line) continue;
                 const content = line.message?.content;
@@ -59,6 +75,12 @@ export const transcriptCounts = (dir: string, start: Date) => {
                     continue;
                 for (const b of content ?? []) {
                     if (b.type !== 'tool_use') continue;
+                    const read =
+                        b.name === 'Read'
+                            ? b.input.file_path?.match(KNOWLEDGE_PATH)?.[1]
+                            : undefined;
+                    if (read && reads.has(read))
+                        reads.set(read, (reads.get(read) ?? 0) + 1);
                     if (
                         b.name === 'Bash' &&
                         BARE_RUN.test(b.input.command ?? '')
@@ -79,7 +101,10 @@ export const transcriptCounts = (dir: string, start: Date) => {
             if (bare) counts.bareSessions++;
         }
     }
-    return counts;
+    const knowledgeReads = [...reads]
+        .map(([file, count]) => ({ count, file }))
+        .sort((a, b) => b.count - a.count || a.file.localeCompare(b.file));
+    return { ...counts, knowledgeReads };
 };
 
 // a live session's last line can be half-written
@@ -135,7 +160,7 @@ type ContentBlock =
     | {
           type: 'tool_use';
           name: string;
-          input: { command?: string; skill?: string };
+          input: { command?: string; file_path?: string; skill?: string };
       }
     | { type: 'tool_result' };
 type TranscriptLine = {

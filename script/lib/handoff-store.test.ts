@@ -44,7 +44,19 @@ afterEach(async () => {
     await fs.rm(root, { force: true, recursive: true });
 });
 
+// ? the go reader in x/ tests the same cases, so the two readers of one grammar cannot drift
+const shared = JSON.parse(
+    await fs.readFile(
+        path.join(import.meta.dirname, 'handoff-names.json'),
+        'utf8',
+    ),
+) as { cases: { file: string; parsed: ReturnType<typeof parseName> }[] };
+
 describe('the filename grammar', () => {
+    test.each(shared.cases)('$file parses as the shared cases say', (c) => {
+        expect(parseName(c.file)).toEqual(c.parsed);
+    });
+
     test('every field round-trips, and a topic keeps its own dashes', () => {
         const name = buildName({
             audience: 'cclio',

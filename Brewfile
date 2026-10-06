@@ -72,6 +72,7 @@ brew "yq"                        # jq-syntax for YAML/TOML — settings.toml, le
 brew "sd"                        # sed replacement without the macos -i '' quoting traps
 brew "ffmpeg"
 brew "vhs"                       # charm terminal recorder → gif from a .tape script
+brew "freeze"                    # charm code/terminal shots → png; FRM-284 shoots the cli arms with it
 brew "gifski"                    # high-quality gif encoder for browser recordings
 brew "yt-dlp"
 brew "whisper-cpp"               # local speech-to-text — mcp-x-cw transcripts pipeline calls it

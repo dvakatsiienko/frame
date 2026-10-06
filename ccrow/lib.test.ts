@@ -1,4 +1,5 @@
 import {
+    mkdirSync,
     mkdtempSync,
     readFileSync,
     readdirSync,
@@ -13,6 +14,8 @@ import {
     buildPacket,
     readLines,
     resolveLeaves,
+    setHot,
+    stashModOf,
     transcriptDelta,
 } from './lib.ts';
 
@@ -30,6 +33,37 @@ describe('transcriptDelta', () => {
                 '## cclio\ndone, all green',
             ].join('\n\n'),
         );
+    });
+
+    test('keeps a message dima typed mid-turn, its image as a marker', () => {
+        const queued = [
+            JSON.stringify({
+                attachment: {
+                    prompt: [
+                        { type: 'image' },
+                        { text: 'the fold bug', type: 'text' },
+                    ],
+                    type: 'queued_command',
+                },
+                type: 'attachment',
+            }),
+        ];
+        expect(transcriptDelta(queued, 0).text).toBe(
+            '## dima\n[image]\nthe fold bug',
+        );
+    });
+
+    test('leaves out a peer message queued mid-turn', () => {
+        const queued = [
+            JSON.stringify({
+                attachment: {
+                    prompt: '<cross-session-message from="x">hi</cross-session-message>',
+                    type: 'queued_command',
+                },
+                type: 'attachment',
+            }),
+        ];
+        expect(transcriptDelta(queued, 0).text).toBe('');
     });
 
     test('counts one step per assistant message id', () => {
@@ -95,5 +129,40 @@ describe('buildPacket', () => {
         expect(readFileSync(join(dir, 'strategy.md'), 'utf8')).toBe(
             'vector: ship the fleet\n',
         );
+    });
+});
+
+describe('stashModOf', () => {
+    test('picks the plugin dir named stash, whatever the dir is called', () => {
+        const home = mkdtempSync(join(tmpdir(), 'ccrow-mods-'));
+        for (const [dir, name] of [
+            ['breather', 'breather'],
+            ['renamed', 'x-mod-stash'],
+        ] as const) {
+            mkdirSync(join(home, dir, '.claude-plugin'), { recursive: true });
+            writeFileSync(
+                join(home, dir, '.claude-plugin/plugin.json'),
+                JSON.stringify({ name }),
+            );
+        }
+        expect(stashModOf('~/breather:~/renamed', home)).toEqual({
+            dir: join(home, 'renamed'),
+            name: 'x-mod-stash',
+        });
+    });
+});
+
+describe('setHot', () => {
+    test('adds the session hot key beside the keys already stored', () => {
+        const store = join(
+            mkdtempSync(join(tmpdir(), 'ccrow-store-')),
+            's.json',
+        );
+        writeFileSync(store, JSON.stringify({ afk: false }));
+        setHot(store, 'abc', 5);
+        expect(JSON.parse(readFileSync(store, 'utf8'))).toEqual({
+            afk: false,
+            'hot:abc': { since: 5 },
+        });
     });
 });

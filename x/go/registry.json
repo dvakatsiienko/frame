@@ -1,0 +1,261 @@
+{
+    "families": [
+        {
+            "example": "x lane commit msg.txt -- notes.txt",
+            "gist": "git through the worktree gate",
+            "name": "lane"
+        },
+        {
+            "example": "x handoffs peek cli-arms",
+            "gist": "the shared CST store, one door for cc and cw",
+            "name": "handoffs"
+        },
+        {
+            "example": "x brief check brief.md --repo ~/frame",
+            "gist": "a spawn brief checked against the repo it names",
+            "name": "brief"
+        },
+        {
+            "example": "x probe bare 'is it us or cc?'",
+            "gist": "claude sessions our setup cannot touch",
+            "name": "probe"
+        },
+        {
+            "example": "x knowledge read spawn-mechanics",
+            "gist": "the fleet reference shelf, docs/knowledge",
+            "name": "knowledge"
+        },
+        {
+            "example": "x schema lane --level short",
+            "gist": "the registry as json",
+            "name": "schema"
+        },
+        {
+            "example": "source <(x completion zsh)",
+            "gist": "shell completion from the registry",
+            "name": "completion"
+        }
+    ],
+    "verbs": [
+        {
+            "args": [
+                {
+                    "description": "file holding the commit message",
+                    "name": "msg-file"
+                },
+                {
+                    "description": "paths that go into the commit, read from the tree root, after --",
+                    "isVariadic": true,
+                    "name": "paths"
+                }
+            ],
+            "flags": {
+                "hold-unstaged": {
+                    "description": "hold the unstaged and untracked files outside the named paths aside while the hooks run, then put them back byte for byte",
+                    "type": "boolean"
+                },
+                "repo": {
+                    "description": "commit in that repo instead, only on its main and never mid-merge; paths are relative to its root",
+                    "type": "string",
+                    "value": "path"
+                }
+            },
+            "name": "lane commit",
+            "needsApply": false,
+            "purpose": "commit only the named paths, print the new sha; mid-merge concludes it; --repo <path> commits on that repo's main",
+            "steps": [
+                "tree",
+                "format",
+                "mods",
+                "stage",
+                "hold",
+                "commit",
+                "restore"
+            ]
+        },
+        {
+            "name": "lane push",
+            "needsApply": true,
+            "purpose": "push HEAD's sha to its branch and read the remote back; a frame worktree pushes from the main checkout",
+            "steps": ["tree", "plan", "push", "verify"]
+        },
+        {
+            "args": [
+                {
+                    "description": "pr title",
+                    "name": "title"
+                },
+                {
+                    "description": "file holding the pr body",
+                    "name": "body-file"
+                }
+            ],
+            "name": "lane pr-open",
+            "needsApply": true,
+            "purpose": "open a pr from the pushed branch onto main as the x-coder-cc app",
+            "steps": ["plan", "open"]
+        },
+        {
+            "name": "lane merge-main",
+            "needsApply": false,
+            "purpose": "fetch and merge origin/main into this branch; a conflict prints the files and stops",
+            "steps": ["fetch", "merge"]
+        },
+        {
+            "name": "lane unlock",
+            "needsApply": false,
+            "purpose": "decrypt the git-crypt files of a worktree that holds ciphertext, so staging stops dying",
+            "steps": ["scan", "decrypt", "verify"]
+        },
+        {
+            "flags": {
+                "for": {
+                    "description": "the reading agent, one of any, ccli, cclio, cw; files addressed to another agent are left alone",
+                    "type": "string",
+                    "value": "audience"
+                }
+            },
+            "name": "handoffs list",
+            "needsApply": false,
+            "purpose": "list the pending CSTs in the shared handoff store, newest first, without reading or deleting one"
+        },
+        {
+            "args": [
+                {
+                    "description": "a word of the handoff filename; omitted with several pending, a terminal shows a picker",
+                    "isOptional": true,
+                    "name": "slug"
+                }
+            ],
+            "name": "handoffs peek",
+            "needsApply": false,
+            "purpose": "print one pending CST's META block as markdown; the file stays untouched"
+        },
+        {
+            "args": [
+                {
+                    "description": "a word of the handoff filename; omitted with several pending, a terminal shows a picker",
+                    "isOptional": true,
+                    "name": "slug"
+                }
+            ],
+            "flags": {
+                "for": {
+                    "description": "the reading agent, one of any, ccli, cclio, cw; files addressed to another agent are left alone",
+                    "type": "string",
+                    "value": "audience"
+                }
+            },
+            "name": "handoffs ingest",
+            "needsApply": false,
+            "purpose": "print one pending CST in full and delete its file, unless it is shared"
+        },
+        {
+            "args": [
+                {
+                    "description": "the brief file, markdown",
+                    "name": "brief"
+                }
+            ],
+            "flags": {
+                "repo": {
+                    "description": "the repo the brief targets; defaults to the repo of the cwd",
+                    "type": "string",
+                    "value": "path"
+                }
+            },
+            "name": "brief check",
+            "purpose": "check that every backticked path, script, verb and id in a brief exists, and lint its exit lines; a pass stamps it",
+            "steps": ["read", "exist", "lint", "stamp"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the prompt, one argument",
+                    "name": "prompt"
+                }
+            ],
+            "flags": {
+                "model": {
+                    "description": "the model, haiku by default",
+                    "type": "string",
+                    "value": "model"
+                }
+            },
+            "name": "probe bare",
+            "purpose": "ask a claude -p session with no CLAUDE.md, rules, plugins, hooks or MCP, from a temp dir; prints the answer and its cost",
+            "steps": ["ask"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the probe name; its scratch dir and session id live under ~/.local/state/x/probes/<name>",
+                    "name": "name"
+                },
+                {
+                    "description": "a settings json file, or inline json, for --settings",
+                    "name": "settings"
+                },
+                {
+                    "description": "the prompt, one argument",
+                    "name": "prompt"
+                }
+            ],
+            "flags": {
+                "model": {
+                    "description": "the model, haiku by default",
+                    "type": "string",
+                    "value": "model"
+                }
+            },
+            "name": "probe session",
+            "purpose": "run a named claude -p probe with a settings json from a scratch dir; the same name again resumes that session",
+            "steps": ["dir", "ask"]
+        },
+        {
+            "name": "knowledge list",
+            "purpose": "list the fleet reference shelf docs/knowledge: each file with its purpose and its verified-on stamp"
+        },
+        {
+            "args": [
+                {
+                    "description": "a word of the file name; completion offers them",
+                    "name": "name"
+                }
+            ],
+            "name": "knowledge read",
+            "purpose": "print one docs/knowledge file and log the read, so the shelf learns which files earn their place"
+        },
+        {
+            "args": [
+                {
+                    "description": "a verb or a family, e.g. `lane` or `lane push`",
+                    "isOptional": true,
+                    "isVariadic": true,
+                    "name": "verb"
+                }
+            ],
+            "flags": {
+                "level": {
+                    "description": "short: names and purposes only; full (the default): the whole schema",
+                    "type": "string",
+                    "value": "short|full"
+                }
+            },
+            "name": "schema",
+            "needsApply": false,
+            "purpose": "print the json schema of a verb or a family — the same entry that dispatches it"
+        },
+        {
+            "args": [
+                {
+                    "description": "zsh",
+                    "name": "shell"
+                }
+            ],
+            "name": "completion",
+            "needsApply": false,
+            "purpose": "print a shell completion script generated from the registry, for `source <(x completion zsh)`"
+        }
+    ]
+}

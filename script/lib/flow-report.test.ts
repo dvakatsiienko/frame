@@ -21,7 +21,7 @@ const countsFor = (...lines: object[]) => {
         join(dir, '-Users-dima-frame', 'session.jsonl'),
         lines.map((l) => JSON.stringify(l)).join('\n'),
     );
-    return transcriptCounts(dir, START);
+    return transcriptCounts(dir, START, ['authoring-skill.md', 'models.md']);
 };
 const said = (text: string) => ({
     message: { content: text },
@@ -122,6 +122,16 @@ describe('transcriptCounts', () => {
             briefLed: 0,
             falseFires: 1,
         });
+    });
+
+    it('counts a Read of a docs/knowledge file', () => {
+        const read = called('Read', {
+            file_path: '/Users/dima/frame/docs/knowledge/models.md',
+        });
+        expect(countsFor(read).knowledgeReads).toEqual([
+            { count: 1, file: 'models.md' },
+            { count: 0, file: 'authoring-skill.md' },
+        ]);
     });
 });
 
