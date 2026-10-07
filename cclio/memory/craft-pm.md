@@ -176,7 +176,7 @@ reader. Lowercase register; emojis and ascii art welcome.
 📌 **every app write notifies dima** — Linear treats cclio and coder as other people (2026-09-28: 68 unread in two days, all ours). cclio comments when something waits on dima, or to stash info the fleet will need later; trail that the gazette or a pr already carries stays out. dima wants the notifications, just not the spam — marking them read for him is parked, his call.
 
 **permanent habit: cclio's comments and mutations go through the cclio app-actor token** —
-`pnpm linear:agent-token` mints/caches it (keychain holds the oauth pair; scope includes
+`x as cclio -- linear …` runs one command with it (keychain holds the oauth pair; scope includes
 `app:assignable`). the `linear` cli keeps dima's key — his prints stay his. proof: the api
 `viewer` answers `cclio, app: true`.
 
@@ -185,7 +185,7 @@ reader. Lowercase register; emojis and ascii art welcome.
   (`195a6ec0-ed0c-4519-9750-948eac4e5e00`, «coder»). delegate = who works it; assignee stays
   dima's commitment marker, never touched.
 - per-mutation stamps ride `createAsUser` («label (via cclio)») — demoed, kept for run-id trails.
-- the why and the recipe live in the header of `script/linear-agent-token.ts`; `coder` is the second app, same script with an arg.
+- `x as coder -- …` is the second app, same verb; `x schema as` prints the rest.
 
 ## reading relations — one hop, titles first, bodies on merit
 

@@ -120,7 +120,7 @@ the next session directly. before writing the CST:
   the linear initiative «roadmap» in the same pass (`memory/dima-strategy.md`, the roadmap section)
   rather than bending the milestones to fit
 - one line in the wrap: `milestone · done/total · what moved`
-- `pnpm linear:archive` (in `~/frame`) — archives closed tickets untouched for 14 days. linear's own
+- `x linear archive --apply` — archives closed tickets untouched for 14 days (`--days N`). linear's own
   auto-archive waits for the project to close, ours never do, and the free plan counts closed
   tickets toward its 250 (a create was refused at the cap, 2026-10-01). its count goes in the wrap line
 
