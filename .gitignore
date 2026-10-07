@@ -146,3 +146,6 @@ home/.claude/plugin-x/mods/*/tsconfig.json
 
 # matt's local-markdown tracker: a spec is a lane's working plan and dies with it; linear keeps the record
 .scratch/
+
+# a recipe run's raw output, overwritten each run, never kept
+recipes/*/last/
