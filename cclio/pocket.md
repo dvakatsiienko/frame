@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-30 (before the halt) · 22 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+30 (before the halt) · 35 (after #65 merges) · 22 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
@@ -114,6 +114,14 @@ dima 10-07: «do not delete specs we create, but move them into an archive somew
 `open · grilling` · blocked by 10
 
 dima 10-07: «instead of spawning a coder you spawn a squad leader (e.g., a coordinator). It is a mini coordinator … it essentially manages a coder and a verifier with the given task by you. It handles communication between the coder and verifier and only reports to you with positive results, issues and disputes, or design questions that I would be interested to answer. This way your thread will be filtered out of the noise». the sweep (ticket 05) cuts `craft-spawning` by trigger first; the squad leader is shaped with `x:shape-idea` from what that cut leaves. its skill name: `x:crew-lead` (dima 10-07 ✓, beside `crew-coder` / `crew-verifier`).
+
+### 35 · purge the plaintext job-market recipe from frame's history
+`open · approved` · blocked by frame#65's merge
+
+the recipes move (d1bddfb5, 10-07) left `recipes/refresh-job-market/recipe.md` unencrypted in the public repo: his target companies, the miltech branch in his words, a cv path with his email. re-encrypted at 3a310e81; history still holds the plaintext. dima 10-07: «yes» to filter-repo + force-push main after #65 merges.
+- steps: every coder pr merged or rebased-ready; `git filter-repo --path recipes/refresh-job-market --invert-paths` scoped to the plaintext commits only (the encrypted ones stay), or re-encrypt in place across history; force-push main (his word, named); every worktree and clone re-synced (`git worktree list`, `.claude/worktrees/`)
+- a force-push does not delete the blob from github: the old commits stay fetchable by sha and in cached pr/compare views until github support removes them (ccrow, 10-07 — read github's «removing sensitive data» doc before the run) → a support request naming d1bddfb5 and the commits after it that still carry the plaintext
+- done: `git log --all -p -- recipes/refresh-job-market` shows only GITCRYPT blobs, and github's support ticket is filed
 
 ## decisions so far
 
