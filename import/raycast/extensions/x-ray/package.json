@@ -34,8 +34,8 @@
             ]
         },
         {
-            "name": "handoffs",
-            "title": "handoffs",
+            "name": "handoff",
+            "title": "handoff",
             "subtitle": "x-ray",
             "description": "Read the handoff shelf, paste an ingest command, or open a transcript in Cursor.",
             "keywords": [
@@ -48,7 +48,7 @@
                 "transcript",
                 "x-com"
             ],
-            "icon": "handoffs.png",
+            "icon": "handoff.png",
             "mode": "view"
         },
         {
