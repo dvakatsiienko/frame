@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,7 +29,12 @@ func TestReplacedDoorsAreDead(t *testing.T) {
 			// the basename, because a caller may build the path in parts: join(frame, 'script', '<name>')
 			c := exec.Command("git", append([]string{"grep", "-l", "-F", "-e", filepath.Base(door), "--", "."}, notCallers...)...)
 			c.Dir, c.Env = root, cleanEnv()
-			if out, _ := c.Output(); len(out) > 0 {
+			out, err := c.Output()
+			// git grep exits 1 for «no match»; anything else is a broken search, never a pass
+			if exit, ok := errors.AsType[*exec.ExitError](err); err != nil && (!ok || exit.ExitCode() != 1) {
+				t.Fatalf("git grep %s: %v", door, err)
+			}
+			if len(out) > 0 {
 				t.Errorf("%s replaces %s, and these still call it:\n%s", verb.Name, door, out)
 			}
 		}

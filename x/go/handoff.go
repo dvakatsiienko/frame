@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -40,10 +41,10 @@ func rowOf(e stored, now time.Time) row {
 	return row{age.label, e.Audience, e.Author, e.size, e.Lane, e.file, parseRunID(readMeta(e.path)), e.Shared, e.Slug, age.stale}
 }
 
-func readerOf(flags Flags) (string, error) {
+func readerOf(r *Run, flags Flags) (string, error) {
 	reader, _ := flags["for"].(string)
 	if reader != "" && !slices.Contains(audiences, reader) {
-		return "", usageFail("unknown audience "+reader+" — any, ccli, cclio, cw", "x handoff list --help")
+		return "", usageFail("unknown audience "+reader+" — any, ccli, cclio, cw", "x "+r.verb.Name+" --help")
 	}
 	return reader, nil
 }
@@ -63,7 +64,7 @@ func list(reader string) listing {
 }
 
 func handoffList(r *Run, _ []string, flags Flags) (any, error) {
-	reader, err := readerOf(flags)
+	reader, err := readerOf(r, flags)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +148,7 @@ func handoffPeek(r *Run, args []string, _ Flags) (any, error) {
 }
 
 func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
-	reader, err := readerOf(flags)
+	reader, err := readerOf(r, flags)
 	if err != nil {
 		return nil, err
 	}
@@ -161,10 +162,7 @@ func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
 	if len(all) == 0 {
 		return nil, usageFail("handoff store is clean — nothing pending.", "x handoff list")
 	}
-	mine := all
-	if reader != "" {
-		mine = slices.DeleteFunc(slices.Clone(all), func(e stored) bool { return !readableBy(e.Audience, reader) })
-	}
+	mine := slices.DeleteFunc(slices.Clone(all), func(e stored) bool { return !readableBy(e.Audience, reader) })
 	// naming a slug forces a foreign file: the caller said so out loud
 	candidates := mine
 	if slug != "" {
@@ -251,7 +249,7 @@ func handoffWrite(r *Run, _ []string, flags Flags) (any, error) {
 	path := filepath.Join(root, file)
 	if err := r.Step("write", "writing "+file, func() (string, error) {
 		if err := os.MkdirAll(root, 0o700); err != nil {
-			return "", err
+			return "", &Fail{Msg: err.Error() + " — nothing was written", Next: "x handoff list"}
 		}
 		// remove first, write second: one live CST per thread, so the window this order risks is zero, never two
 		if replaced != nil {
@@ -259,10 +257,21 @@ func handoffWrite(r *Run, _ []string, flags Flags) (any, error) {
 				return "", &Fail{Msg: err.Error() + " — nothing was written, the old CST stays", Next: "x handoff list"}
 			}
 		}
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			return "", err
+		// exclusive: a CST of the same name written this second is another thread's, never truncated
+		out, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+		if errors.Is(err, fs.ErrExist) {
+			return "", &Fail{Msg: file + " is already pending — nothing was written; wait a second or pass --replaces", Next: "x handoff list"}
 		}
-		return file, os.Chmod(path, 0o600)
+		if err != nil {
+			return "", &Fail{Msg: err.Error(), Next: "x handoff list"}
+		}
+		if _, err := out.WriteString(body); err != nil {
+			return "", &Fail{Msg: errors.Join(err, out.Close()).Error(), Next: "x handoff list"}
+		}
+		if err := out.Close(); err != nil {
+			return "", &Fail{Msg: err.Error(), Next: "x handoff list"}
+		}
+		return file, nil
 	}); err != nil {
 		return nil, err
 	}
@@ -297,13 +306,14 @@ func handoffDelete(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	deleted := []ordered{}
+	deleted, gone := []ordered{}, []string{}
 	err := r.Step("delete", "moving to the trash", func() (string, error) {
 		for _, e := range doomed {
 			if err := discardIfThere(e.path); err != nil {
-				return "", &Fail{Msg: err.Error(), Next: "x handoff list"}
+				return "", &Fail{Msg: fmt.Sprintf("%s — %d deleted before it: %s", err, len(gone), strings.Join(gone, ", ")), Next: "x handoff list"}
 			}
 			deleted = append(deleted, ordered{{"name", e.file}, {"slug", e.Slug}})
+			gone = append(gone, e.Slug)
 		}
 		return fmt.Sprintf("%d deleted", len(deleted)), nil
 	})

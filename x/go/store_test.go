@@ -116,6 +116,26 @@ func TestWriteReplacesLeavesExactlyOneFile(t *testing.T) {
 	}
 }
 
+func TestWriteNeverOverwritesACSTOfTheSameName(t *testing.T) {
+	root := t.TempDir()
+	now := time.Now()
+	// the name carries the second it was written, so every second the write could land in is planted
+	for s := range 3 {
+		write(t, filepath.Join(root, buildName(name{Audience: "any", Slug: "same", TS: utcStamp(now.Add(time.Duration(s) * time.Second))})), "the first CST\n")
+	}
+
+	got := xStore(t, root, "the second CST\n", "handoff", "write", "--slug", "same")
+
+	if got.code != 1 {
+		t.Fatalf("a write onto a pending CST must refuse: exit %d", got.code)
+	}
+	for _, file := range storeFiles(root) {
+		if body := read(t, filepath.Join(root, file)); body != "the first CST\n" {
+			t.Errorf("%s was overwritten: %q", file, body)
+		}
+	}
+}
+
 func TestWriteReplacingNothingWritesNothing(t *testing.T) {
 	root := t.TempDir()
 	write(t, filepath.Join(root, "any--code--other--by-cw--20261001T120000Z.md"), "# META\n")

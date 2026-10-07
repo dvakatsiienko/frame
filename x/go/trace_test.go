@@ -126,6 +126,7 @@ func TestTheTraceKeepsIdsAndDropsText(t *testing.T) {
 		{"an id-shaped arg", []string{"knowledge", "read", "spawn-mechanics"}, []string{"spawn-mechanics"}},
 		{"a ticket inside free text", []string{"probe", "bare", "why does FRM-12 hang on BYT-3?"}, []string{"FRM-12", "BYT-3"}},
 		{"free text in an id-named arg", []string{"knowledge", "read", "why it hangs FRM-9"}, []string{"FRM-9"}},
+		{"id-named flags", []string{"handoff", "write", "--slug", "pm-overhaul", "--replaces", "why it hangs"}, []string{"pm-overhaul"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

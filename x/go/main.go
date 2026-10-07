@@ -211,7 +211,7 @@ func dispatch(m mode, verb Verb, args []string, flags Flags) int {
 		}
 		args = filled
 	}
-	traced.Ids = idsOf(verb, args)
+	traced.Ids = idsOf(verb, args, flags)
 	if err := checkArity(verb, args); err != nil {
 		return finishFail(m, verb.Name, r, err)
 	}
