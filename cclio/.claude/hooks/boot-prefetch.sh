@@ -62,10 +62,6 @@ echo "-- jev vet (pnpm jev:vet ok|miss <flow> <note> records a verdict; a miss r
 node "$HOME/frame/script/jev-vet.ts" 2>/dev/null || fail "jev vet registry unreadable"
 health=$(timeout 15 "$HOME/frame/script/op-run.sh" node "$HOME/frame/script/jev-report.ts" --health 2>&1) && echo "jev health: $health" || fail "jev: ${health:-probe did not run}"
 
-echo "-- x-queue head --"
-awk '/^## queue/{flag=1; next} flag && NF {print; count++} count==3{exit}' \
-  "$HOME/frame/cclio/.claude/x-queue.md" 2>/dev/null || fail "no x-queue file"
-
 "$HOME/frame/cclio/.claude/hooks/gazette-trail.sh"   # gazette rides the memory import, not stdout
 
 roadmap=$("$HOME/frame/cclio/.claude/hooks/roadmap-prefetch.sh")

@@ -64,7 +64,7 @@ const cclio = [
     join(CCLIO, 'AGENTS.md'),
     ...importWalk(join(CCLIO, 'memory/_MEMORY.md')),
 ];
-const live = [join(CCLIO, '.claude/x-queue.md')];
+const live = [join(CCLIO, 'pocket.md')];
 
 const board = (() => {
     try {

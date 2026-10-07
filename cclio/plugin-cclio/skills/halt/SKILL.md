@@ -59,8 +59,8 @@ and dima found six done lines at the next boot).
 mark done every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr: `gh api notifications`, then `PATCH /notifications/threads/<id>`. what stays is an open pr's review ask. dima's yes, 2026-09-28.
 
 ## phase 2 — missed sweep
-re-read the pocket, `.claude/x-queue.md`, and this thread for dropped asks and unanswered
-questions. queued items FIRE now. mid-turn messages from dima are the usual casualty — check
+re-read the pocket and this thread for dropped asks and unanswered
+questions. a pocket item marked «before the halt» FIRES now. mid-turn messages from dima are the usual casualty — check
 those specifically.
 
 **and the mirror half — what DIMA missed.** scan the session for questions he never answered,

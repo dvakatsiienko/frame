@@ -9,19 +9,26 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-19 → 25 → 26 → 11 → 18 → 27 → 01 → 02 → 07 → 06 → 08 → 22 → 23 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16
+27 → 01 → 02 → 07 → 06 → 08 → 22 → 23 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16
 
 ## decisions so far
 
+- 2026-10-07: 18 x-queue folded: cclio's `/queue` lines become pocket items; boot digest, boot + halt skills, README, the snapshot script and habit-shared-files repointed; the empty queue file trashed (cclio 0.3.107)
+- 2026-10-07: 25 done: 4 mod stubs trashed, 3 merged worktrees removed; `FRM-305-router-v2` kept until the jev refill ~10-18; [FRM-329](https://linear.app/x-com/issue/FRM-329) stays open (dima: the board look is not what he wants yet)
+- 2026-10-07: 11 pocket test drive started, to 10-21: baseline in `docs/test-drive/pocket.md` (linear 103 created / 97 closed in 14 days), a reminder, the habit list
+- 2026-10-07: 26 adhd and browserbase verdicts moved to 10-14 (reminders, test-drive files, habit list)
+- 2026-10-07: bytes main checkout back on main (off the dead cloud/knip-sweep), 2 unpushed 10-06 commits rebased on origin, motion 14: trophy-sys builds
 - 2026-10-07: 17 fixed: the stash asks list keeps only sessions the registry has alive, this session always (2 tests, both proven red); live: the dead cclio `91f2a33c`'s 6 asks drop at the next reload
 - 2026-10-07: 19 + 21 resolved in one thread: the linear body is the spec seed (want · why · stories · proposed · decided · open · exit · out · refs), the boundary is in time (linear until dispatch, the spec owns the run, the outcome folds back); dima's flow plan wide → pre-grill → to-spec → to-tickets → dispatch is spec-pipeline run 2, first case the cli plan, to-spec'd live with dima to judge whether the spec lives in linear; user-only skills are run by reading their SKILL.md; tickets stay local (`.scratch/`, gitignored in frame, missing in bytes), die on merge; issue filed: [claude-code#100193](https://github.com/anthropics/claude-code/issues/100193)
-- 2026-10-07: 03 no refs to protected.md anywhere. 04 bun = [FRM-148](https://linear.app/x-com/issue/FRM-148), oxlint = [BYT-38](https://linear.app/x-com/issue/BYT-38), both in monorepo m3 «the tool picks», roadmap step 9; `_hq/dima-roadmap.md` trashed, its two memory mentions gone
+- 2026-10-07: 03 no refs to protected.md anywhere. 04 bun = [FRM-148](https://linear.app/x-com/issue/FRM-148), oxlint = [BYT-38](https://linear.app/x-com/issue/BYT-38), both in monorepo m3 «the tool picks», roadmap step 9; `_hq/dima-roadmap.md` deleted via `obsidian delete path=` into the trash, its two memory mentions gone
 - 2026-10-07: 20 answered: a spec is one feature's decided plan (to-spec), tickets its build order (to-tickets); the pocket borrows the tickets shape but is not a spec. coder and verifier gain most, the designer barely. exit lines name behaviour + real commands/terms, never file paths
 - 2026-10-07: renovate merged: bytes#123 motion 14, frame#62 mcp sdk 1.31 (security)
 - 2026-10-07: ccrow stop is on the halt now (phase 5's last line, `ccrow:stop` after the CST); last night's was stopped at 03:20 by hand
 - 2026-10-07: flowlog → pocket, shaped as matt's local tracker (grill Q1–Q6). the old vault flowlog is archived at `_hq/flowlog-archive-2026-10-07.md`
 
 ## on linear, not here
+
+- [FRM-329](https://linear.app/x-com/issue/FRM-329): the fleet board look — open, dima's want still to ask
 
 - [FRM-293](https://linear.app/x-com/issue/FRM-293): designer sharpening, chords then trophy-sys, on the four phases + ballot
 - [FRM-303](https://linear.app/x-com/issue/FRM-303): mods round 5; the stash asks box parked until the mods verdict 10-19
@@ -45,8 +52,6 @@ matt's in-progress skill (`mattpocock-skills` 1.3.1, `skills/in-progress/chief-o
 `open · task`
 
 the pocket lives in git; dima wants it on his phone too. a symlink does not reach the phone (icloud syncs the link, not the files — inferred, untested). idea: a hook copies `pocket.md` → `_hq/pocket.md` on every write, one way. the phone copy is read-only: a phone edit there is overwritten on the next copy, so phone drops still go to the inbox (critic, 10-07). dima 10-07: «think how to have it for me too tmrw».
-
-
 
 ### 05 · x cli: a flashy but useful main view?
 `open · grilling` · [FRM-284](https://linear.app/x-com/issue/FRM-284)
@@ -78,11 +83,6 @@ dima 10-07: close yesterday's tails — the full cli plan, so a coder + verifier
 
 dima 10-07: `_hq/memory-sweep.md` holds his corrections. plan the steps first, broken into tasks, folded and ordered; then checkpoint or sweep by context size. think what goes to chore-helpers or cloud. the first real spec for the pocket.
 
-### 11 · test drive the pocket
-`open · test-drive`
-
-two weeks from 10-07. numbers: pocket items resolved vs linear tickets opened, dima's «what's next?» asks, items lost (target 0). log in `docs/test-drive/pocket.md`. day 0 prints the baseline first: «what's next?» asks and items resolved over the last 14 days (`pnpm flow:report --days 14` + a transcript count) — a number that cannot print today cannot move in two weeks (critic, 10-07). a lost-item detector: every inbox line at the halt has a pocket section or a decision line.
-
 ### 12 · a better vpn
 `open · research`
 
@@ -108,20 +108,6 @@ dima 10-02: test drive first (day-0 docs + users, a stress list, one real asset 
 
 dev.fast whiteboard, installed, cli-driven. first case: the cli a/b/c review. research: best practices, anti-patterns, pitfalls, built products last. log: `docs/test-drive/whiteboard.md`.
 
-
-### 18 · fold the x-queue into the pocket
-`open · task`
-
-dima 10-07: «fold». one fewer stash: `.claude/x-queue.md`'s «soon» lines become pocket items, its readers (boot digest, halt phase 2, `x:queue`, `habit-shared-files`) point at the pocket, then the queue file goes.
-
-
-### 19 · the linear body shape that feeds a spec
-`open · task`
-
-dima 10-07 (first actions): «what should linear ticket body shape be to be optimal for being then translated to spec and to tickets? … you are an author, your audience is mostly yourself». propose the body shape + the habit (where it lives: `x:pm` field contract, `craft-pm`).
-
-
-
 ### 22 · go deps on evergreen
 `open · task`
 
@@ -136,16 +122,6 @@ dima 10-06 opener: off `go install`, onto brew (install order rule).
 `open · test-drive`
 
 dima 10-06 opener: `docs/test-drive/delve.md`.
-
-### 25 · carried cleanups from 10-06
-`open · task`
-
-dima's yes 10-06: done 10-07: the 4 mod stubs trashed, worktrees `mods-round` + `agent-aeff4bdb65546b52d` removed. left: [FRM-329](https://linear.app/x-com/issue/FRM-329) stays open: dima 10-07 saw the live board, «looks not the way i want» — what he wants is still to ask. also seen: worktrees `agent-adae4efb0f50b2cba` (coder/11-stash-fold) + `FRM-305-router-v2` (coder/FRM-308-jev-budget) — status unknown, check before any word.
-
-### 26 · test-drive verdicts due
-`open · task`
-
-adhd → extend one week (dima: «outputs was meh»); browserbase → extend to 10-14. reminders + test-drive files updated.
 
 ### 27 · guard: an obsidian subcommand with --help runs the command
 `open · task`

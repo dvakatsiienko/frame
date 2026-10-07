@@ -18,7 +18,7 @@ cd ~/frame/cclio && claude
 - `AGENTS.md` — the coordinator memfile
 - `memory/_MEMORY.md` — barrel index; leaves hold content
 - `plugin-cclio/skills/boot/SKILL.md` — the `/cclio:boot` boot ritual
-- `.claude/x-queue.md` — `/queue`'s store · `ROLLBACK.md` — how to undo this
+- `pocket.md` — the work pool, `/queue` lines included · `ROLLBACK.md` — how to undo this
 
 ## reverse
 `git rm -r cclio/` inside frame, plus a revert of the fold commit. see `ROLLBACK.md`.

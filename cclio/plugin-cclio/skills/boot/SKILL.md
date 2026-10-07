@@ -18,7 +18,7 @@ up front. a query too fat for its pit stop → say so to dima instead of absorbi
 
 ## 1. healthcheck — the digest, not a ritual
 the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context: handoffs,
-inbox, x-queue head, the roadmap block, stuck reminders, live sessions · worktrees · coder prs, renovate
+inbox, the roadmap block, stuck reminders, live sessions · worktrees · coder prs, renovate
 counts, repos vs origin, the settings symlink, the flawlog tail. **one shell round at most:**
 - digest older than 30 min (its header time vs now — a `/clear` in the evening prints a digest that is
   stale by midday) or absent → re-run it: `BOOT_STRICT=1 ~/frame/cclio/.claude/hooks/boot-prefetch.sh`.
@@ -60,8 +60,6 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
   removed under a live push twice on 2026-09-08. dima merges, cclio cleans; the monitor dies
   with the session.
 - 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:ensure` — it starts ccrow (today's arm, stash-only, 🔥 on) when none is live and answers «ccrow live» otherwise, so a second cclio never starts a second one.
-- the x-queue head is in the digest — offer the top item; it never surfaces on its own. long-lived
-  items are tickets, not park lines.
 - 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or the apps lane
   says DUE → fire the `/cclio:evergreen` digest as a fork DURING the boot**, report-only, and say
   so on the board; the report lands as its own message and waits for his word. it never queues
@@ -115,7 +113,7 @@ message, **no cst ingest, no pocket parse** — the inbox stays his file.
 2. inbox: read only, propose the order of what he names; an item done in this session gets a ✅
    in place. nothing copied into the pocket, nothing folded
 3. merge monitor — only when a coder with an open `coder/*` pr is alive (step 4's monitor line)
-4. x-queue head + open renovate count (step 4's last two lines; the digest waits for his word)
+4. open renovate count (step 4's last line; the digest waits for his word)
 5. stuck reminders (step 5)
 6. self-grill (step 6)
 7. flawlog file for the day (step 8; `/cclio:flawlog` loads alongside, as in a full boot)
