@@ -122,6 +122,22 @@ final class Player {
             let spacing = Double(window) / buffer.format.sampleRate
             Task { @MainActor in self?.onLevels?(levels, spacing) }
         }
+        // an engine left on a gone output device makes every play() wait out a 5 s IO timeout on main (AirPods,
+        // 2026-10-07): a device switch stops it, and the next schedule starts it on the current default device
+        NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.release("engine configuration changed") }
+        }
+        var defaultOutput = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultOutputDevice, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+        AudioObjectAddPropertyListenerBlock(AudioObjectID(kAudioObjectSystemObject), &defaultOutput, .main) { [weak self] _, _ in
+            MainActor.assumeIsolated { self?.release("default output device changed") }
+        }
+    }
+
+    private func release(_ why: String) {
+        log("audio: \(why), engine released")
+        stop()
+        engine.stop()
     }
 
     // s16le mono 24 kHz → float, with the engine's gain and speed
