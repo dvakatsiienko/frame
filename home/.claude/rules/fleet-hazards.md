@@ -37,14 +37,10 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 - worktrees share `.git/hooks`, and any pnpm run in one rewrites the shared lefthook shims to
   the worktree's path — including pnpm's own auto-install before ANY script, so the first gated
   commit in a fresh worktree does it by itself. harmless to gating (the shim's repo-root
-  fallback rescues it) but dirty. **the guard: `CI=1 pnpm install`** — lefthook's postinstall exits early on `CI` (measured
-  2026-08-30). in frame it is AUTOMATED: the `EnterWorktree` hook
-  (`shelf/hooks/worktree-seed.sh`, user scope) runs it in every bg coder's fresh worktree; manual
-  `CI=1 pnpm install` is needed only for a hand-made `git worktree add`. inline env for that
-  one command only, never global. 📌 **on pnpm 12 the `CI=1` guard does not hold:** `CI=1 pnpm install` still prints «sync hooks» and
-  points the shims at the worktree (two sessions on #53, 2026-10-01; the FRM-278 coder, 2026-10-02). the
-  shims stay harmless to gating; after a worktree is removed, `pnpm exec lefthook install` in the
-  main checkout points them home (a plain `pnpm install` answers «already up to date» and leaves them)
+  fallback rescues it) but dirty. on pnpm 12 `CI=1 pnpm install` no longer stops it: it still prints
+  «sync hooks» and points the shims at the worktree (two sessions on #53, 2026-10-01; the FRM-278
+  coder, 2026-10-02). after a worktree is removed, `pnpm exec lefthook install` in the main checkout
+  points them home (a plain `pnpm install` answers «already up to date» and leaves them). guard: none · FRM-342
 - `rebase.updateRefs` is on since the git overhaul (2026-09-03): a safety BRANCH made before a
   rebase is dragged forward with the rewrite and stops being a recovery point — a tag or the
   reflog is the net (a coder lost its net on a reword, 2026-09-05)

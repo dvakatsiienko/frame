@@ -87,10 +87,6 @@
           },
           {
             "type": "command",
-            "command": "bash ~/.claude/shelf/hooks/opus-register.sh"
-          },
-          {
-            "type": "command",
             "command": "bash ~/.claude/shelf/hooks/skill-route.sh"
           },
           {
@@ -151,10 +147,6 @@
     "SessionStart": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/shelf/hooks/opus-register-capture.sh"
-          },
           {
             "type": "command",
             "command": "python3 ~/.claude/shelf/hooks/memory-load-rule-lazy.py"
