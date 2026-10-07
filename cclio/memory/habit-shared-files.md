@@ -18,7 +18,7 @@ one file, shaped after matt's local tracker: order · decisions so far · standi
 **checked and emptied before linear**; it holds ticketless by-hand work too. an item points at its
 linear ticket when one exists; a new ticket is made only when a coder takes the item. every inbox
 item lands here at parse time, before any resolution; resolved items leave one line in «decisions
-so far» and go at the halt.
+so far» (the file's end); the halt moves those lines into the day's gazette post and empties the section.
 
 ## the stash hierarchy — dima's, 2026-09-27
 
