@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-30 (before the halt) · 35 (after #65 merges) · 22 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+30 (before the halt) · 35 (after #65 merges) · 36 · 22 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
@@ -122,6 +122,15 @@ the recipes move (d1bddfb5, 10-07) left `recipes/refresh-job-market/recipe.md` u
 - steps: every coder pr merged or rebased-ready; `git filter-repo --path recipes/refresh-job-market --invert-paths` scoped to the plaintext commits only (the encrypted ones stay), or re-encrypt in place across history; force-push main (his word, named); every worktree and clone re-synced (`git worktree list`, `.claude/worktrees/`)
 - a force-push does not delete the blob from github: the old commits stay fetchable by sha and in cached pr/compare views until github support removes them (ccrow, 10-07 — read github's «removing sensitive data» doc before the run) → a support request naming d1bddfb5 and the commits after it that still carry the plaintext
 - done: `git log --all -p -- recipes/refresh-job-market` shows only GITCRYPT blobs, and github's support ticket is filed
+
+### 36 · ccrow's packet diet
+`open · approved` · tomorrow, after ccrow's own opinion
+
+ccrow's session read 625k chars on 10-07, ~all of it 22 `packets/<wake>/delta.md` files (30–63k each). dima 10-07: «the delta packet drops tool output ← let's try. but let's measure. ask ccrow herself if she wants it?» · «ccrow should survive your checkpoints, unless it grewen big» · on cold cache: «i sometimes go away from kb for ~30 mins, and crow can reach cold cache silently».
+- measure first: the tool_result share of a delta packet (one `jq` over today's packets)
+- then: the packet keeps dima's messages whole (`<command-args>` included), cclio's replies and peer messages whole, task-notification results capped at ~2k chars with the output_file path, tool-call names; tool_result bodies go. a/b one day of notes against today's
+- ccrow 10-07, asked: «yes, drop the tool_result bodies — none of today's catches used them»; the real loss was the 60000-char cut losing dima's lines at a packet's head, a slimmer packet fixes it; she writes each watch item into the note text so a halt restart drops nothing; a cold-cache guard is a keep-hot ping at ~50 min idle, default off, never a skipped wake
+- cold cache, measured 10-07: only the 09:20 start wrote cold; the 48-min pause stayed warm (1h ttl on a main session, per the refresh-coordinator researcher lane). a gap over 1h goes cold silently — a guard is ccrow's call
 
 ## decisions so far
 
