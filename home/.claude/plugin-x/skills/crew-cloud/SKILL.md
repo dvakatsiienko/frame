@@ -118,6 +118,12 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 
 ## step 5 — close
 
+- **a report is handled in place, the turn it lands** (dima, 2026-10-07: «what if reports have
+  something useful? … take care of them in place») — never parked for a halt or a boot. read
+  `REPORT.md`, act on what it says (a finding → a ticket line or a fix, a `?` → a question to dima),
+  then delete the `cloud/<slug>` branch (`git push origin --delete cloud/<slug>`) and archive the
+  card. the branch is the done signal: while it lives, every fresh session's pr-watch announces it
+  again (two handled reports re-fired at the 10-07 boot).
 - archive and delete are web-ui only (claude.ai/code sidebar or the session menu; docs
   `claude-code-on-the-web#archive-sessions`, read 2026-09-28) — no cli verb, no api. an idle
   session costs nothing, its VM is reclaimed; the archive is sidebar hygiene. the pr merged or
