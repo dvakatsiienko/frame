@@ -268,6 +268,14 @@ func TestTheZshHookRecordsTheTypedPnpmScripts(t *testing.T) {
 	}
 }
 
+func TestATabCompletionWritesNoTrace(t *testing.T) {
+	state := t.TempDir()
+	xIn(t, repo(t), tracing(state), "__complete", "lane", "")
+	if lines := traces(t, state); len(lines) != 0 {
+		t.Errorf("a tab press left %v", lines)
+	}
+}
+
 func TestTraceOffWritesNothing(t *testing.T) {
 	state := t.TempDir()
 	xIn(t, repo(t), tracing(state, "X_TRACE=0"), "schema", "lane")

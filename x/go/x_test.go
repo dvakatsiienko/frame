@@ -59,6 +59,8 @@ func TestMain(m *testing.M) {
 	}
 	src, _ := filepath.Abs(".")
 	xbin = filepath.Join(dir, "x")
+	// no child reads or writes dima's real ~/.local/state/x — a stats run there would trash real days
+	_ = os.Setenv("X_STATE", filepath.Join(dir, "state"))
 	if out, err := exec.Command("go", "build", "-tags", "xpanic", "-ldflags", "-X main.srcDir="+src, "-o", xbin, ".").CombinedOutput(); err != nil {
 		panic(fmt.Sprintf("build: %v\n%s", err, out))
 	}

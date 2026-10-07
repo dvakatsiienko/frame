@@ -92,6 +92,10 @@ func detect(argv []string) mode {
 // the dispatcher writes the trace, so a verb is traced without a line of telemetry in it
 func execute(argv []string) (code int) {
 	traced = newSpan(argv)
+	// cobra's tab completion runs on every Tab press; tracing it would bury the real calls
+	if len(argv) > 0 && strings.HasPrefix(argv[0], "__complete") {
+		traced.skip = true
+	}
 	defer func() {
 		// a panic is our bug: its stack goes to stderr, the caller still gets an ending and a non-zero exit
 		if p := recover(); p != nil {

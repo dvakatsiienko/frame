@@ -46,14 +46,10 @@ const keepDays = 90
 
 // day files older than keepDays go to the macos trash, never rm; a missing `trash` keeps them, silently
 func trashOld() []string {
-	last := time.Now().AddDate(0, 0, -keepDays).Format(time.DateOnly)
-	files, _ := filepath.Glob(filepath.Join(stateDir(), "traces", "*.jsonl"))
-	var old, names []string
-	for _, file := range files {
-		if strings.TrimSuffix(filepath.Base(file), ".jsonl") < last {
-			old = append(old, file)
-			names = append(names, filepath.Base(file))
-		}
+	old := dayFiles(-keepDays, true)
+	var names []string
+	for _, file := range old {
+		names = append(names, filepath.Base(file))
 	}
 	if len(old) == 0 || exec.Command("trash", old...).Run() != nil {
 		return []string{}
@@ -77,6 +73,9 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 		if err != nil || n < 1 {
 			return nil, usageFail("--days is a whole number of days, not "+value, "x stats --days 30")
 		}
+		if n > keepDays {
+			return nil, usageFail(fmt.Sprintf("the traces keep %d days, not %d", keepDays, n), fmt.Sprintf("x stats --days %d", keepDays))
+		}
 		days = n
 	}
 	trashed := trashOld()
@@ -87,7 +86,7 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 	byVerb := map[string]*verbCount{}
 	for _, line := range lines {
 		data.Callers[cmp.Or(line.Caller, "unknown")]++
-		byFamily[strings.Fields(line.Name + " x")[0]]++
+		byFamily[strings.Fields(line.Name)[0]]++
 		verb := byVerb[line.Name]
 		if verb == nil {
 			verb = &verbCount{Name: line.Name, Failures: map[string]int{}}
@@ -157,15 +156,19 @@ func statsBoard(data statsData) string {
 	return b.String()
 }
 
+// the day files dated before the day `offset` days from today, or from it on; the name is the date
+func dayFiles(offset int, before bool) []string {
+	cut := time.Now().AddDate(0, 0, offset).Format(time.DateOnly)
+	files, _ := filepath.Glob(filepath.Join(stateDir(), "traces", "*.jsonl"))
+	return slices.DeleteFunc(files, func(file string) bool {
+		return strings.TrimSuffix(filepath.Base(file), ".jsonl") < cut != before
+	})
+}
+
 // the trace lines of the last `days` local days, today included; a line that does not parse is skipped
 func readTraces(days int) []span {
-	first := time.Now().AddDate(0, 0, 1-days).Format(time.DateOnly)
-	files, _ := filepath.Glob(filepath.Join(stateDir(), "traces", "*.jsonl"))
 	var lines []span
-	for _, file := range files {
-		if strings.TrimSuffix(filepath.Base(file), ".jsonl") < first {
-			continue
-		}
+	for _, file := range dayFiles(1-days, false) {
 		f, err := os.Open(file)
 		if err != nil {
 			continue

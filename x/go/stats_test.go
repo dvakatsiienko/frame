@@ -81,6 +81,13 @@ func TestStatsTrashesDaysOlderThan90(t *testing.T) {
 	}
 }
 
+func TestStatsRefusesAWindowPastTheKeptDays(t *testing.T) {
+	got := xIn(t, repo(t), nil, "stats", "--days", "120")
+	if got.code != 2 || got.next != "x stats --days 90" {
+		t.Errorf("exit %d, next %q: %s", got.code, got.next, got.stdout)
+	}
+}
+
 func TestStatsCountsALineWithNoCallerAsUnknown(t *testing.T) {
 	state := t.TempDir()
 	plant(t, state, 0, planted{"schema", "", "", 3})

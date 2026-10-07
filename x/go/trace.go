@@ -26,9 +26,9 @@ type span struct {
 	Session  string    `json:"session.id,omitempty"`
 	Repo     string    `json:"vcs.repository.name,omitempty"`
 	Version  string    `json:"service.version"`
+	Exit     int       `json:"process.exit.code"`
+	Kind     string    `json:"error.type"`
 	skip     bool
-	Exit     int    `json:"process.exit.code"`
-	Kind     string `json:"error.type"`
 }
 
 type step struct {
@@ -125,9 +125,9 @@ func version() string {
 		return "v1-go"
 	}
 	if settings["vcs.modified"] == "true" {
-		return "v1-go+" + revision[:7] + "-dirty"
+		return "v1-go+" + short(revision) + "-dirty"
 	}
-	return "v1-go+" + revision[:7]
+	return "v1-go+" + short(revision)
 }
 
 // traceRecord writes the line for a command the zsh hook saw at dima's prompt; the dispatcher's own
