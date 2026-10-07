@@ -26,8 +26,26 @@ posted: {health: no}
 - pocket order: 01 chief-of-staff → 02 phone mirror → 18 queue fold → 07 tool-call retro → … → 09 cli plan ([FRM-284](https://linear.app/x-com/issue/FRM-284)) → 10 sweep plan ([FRM-267](https://linear.app/x-com/issue/FRM-267))
 - no coders · ccrow stopped
 
+⸻ upd 15:40 (checkpoint)
+
+**shipped**
+- spec flow: the linear body is a spec seed, the boundary is in time (linear until dispatch, the spec owns the run); user-only matt skills run by reading their SKILL.md; [claude-code#100193](https://github.com/anthropics/claude-code/issues/100193) asks for slash commands in SendMessage
+- x: a verb is done when its old door is dead; one resident line instead of a per-verb index; `x lane push` is the only door to main (guard)
+- stash: dead sessions' asks hidden; every prompt carries `now HH:MM`
+- guard: obsidian `--help` / target-less delete refused, refusals say «nothing ran», a delegate hint at cclio's 8th code edit
+- pocket: x-queue folded in, a read-only phone mirror with an icon, decisions at the end emptied into this post, a test drive to 10-21
+- agent-ops: 3 research lanes say chain length is the wrong target; `pnpm agent-ops:report` (cost per ticket median 30M tokens / 30 min, boot full 1.8M / 61 s), recipe + shelf file
+- tooling: gopls + staticcheck from brew, renovate gomodTidy; renovate merged motion 14 ([bytes#123](https://github.com/dvakatsiienko/bytes/pull/123)) and the mcp sdk security fix ([frame#62](https://github.com/dvakatsiienko/frame/pull/62)); bytes back on main
+- retro: first in-thread run; coders and verifiers self-retro, never a retro session
+
+**tricks gained**
+- `mcp__ccd_session_mgmt__get_usage` reads plan limits + context in a desktop session with no sline feed
+- a prompt runs one slash command, the rest is its args; `obsidian <verb> --help` runs the verb on the active note
+
+**state**: next is the cli plan (pocket 09) then the sweep plan (10), in the slimmed thread after `/compact`; no coders; ccrow paused for the checkpoint
+
 ## trail
 
-- shipped: flowlog → pocket (one file, matt-shaped, before linear) · skill arg hints · ccrow on the halt roster · two research docs retired
-- open: pocket 01 → 02 → 18 → 07, then the cli plan and the sweep plan · stash stale-asks bug (pocket 17)
-- state: frame pushed at the halt · cclio 0.3.106 · no coders
+- shipped: spec-seed ticket bodies · x done-rule + one resident line · stash clock + live-only asks · obsidian + push guards · pocket mirror · agent-ops:report + recipe · brew go tools
+- open: cli plan (09) → memory sweep plan (10), sweep run in a fresh session · eval parked (31) · govulncheck digest (32)
+- state: frame pushed · cclio 0.3.109 · x 0.11.223 · no coders · weekly 50 %
