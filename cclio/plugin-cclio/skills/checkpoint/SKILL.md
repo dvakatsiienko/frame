@@ -1,5 +1,6 @@
 ---
 description: load when dima types /cclio:checkpoint, says «checkpoint», or warns that we switch topic and he wants the thread thinned without losing state — the half-halt that ends in his /compact.
+argument-hint: "[what to drop, comma-separated]"
 ---
 
 # /cclio:checkpoint [drop …]

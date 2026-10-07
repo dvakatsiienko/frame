@@ -1,5 +1,6 @@
 ---
 description: load when dima types /cclio:boot or «cclio:boot», «cclio:init», «boot» — the coordinator's session-opening ritual; «mini» for a one-ask night, «board» / «full» for the tracker picture, any other argument names the handoff to ingest.
+argument-hint: "[mini | board | <handoff slug>]"
 ---
 
 # /cclio:boot

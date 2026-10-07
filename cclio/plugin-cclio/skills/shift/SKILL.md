@@ -1,5 +1,6 @@
 ---
 description: load when dima types /cclio:shift <plan>, says «start shift», «i go, run it», «i'm afk», or leaves a written plan to run without him — the mode that decides, logs and continues instead of asking.
+argument-hint: "<plan file>"
 ---
 
 # /cclio:shift <plan file>
