@@ -89,7 +89,7 @@ func detect(argv []string) mode {
 
 // the dispatcher writes the trace, so a verb is traced without a line of telemetry in it
 func execute(argv []string) (code int) {
-	traced = &span{Start: time.Now(), Name: traceName(wordsOf(argv)), Flags: flagNames(argv)}
+	traced = newSpan(argv)
 	defer func() {
 		// a panic is our bug: its stack goes to stderr, the caller still gets an ending and a non-zero exit
 		if p := recover(); p != nil {
@@ -206,6 +206,7 @@ func dispatch(m mode, verb Verb, args []string, flags Flags) int {
 		}
 		args = filled
 	}
+	traced.Ids = idsOf(verb, args)
 	if err := checkArity(verb, args); err != nil {
 		return finishFail(m, verb.Name, r, err)
 	}

@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -191,11 +192,12 @@ func runTTY(t *testing.T, bin, dir string, c call) (string, int) {
 	return screen.String(), exitOf(err)
 }
 
-// the test runs as an agent would, so the agent markers it inherits are dropped
+// the test runs as an agent would, so the agent and caller markers it inherits are dropped
 func filterEnv(env []string) []string {
 	var kept []string
 	for _, pair := range env {
-		if !strings.HasPrefix(pair, "CLAUDECODE=") && !strings.HasPrefix(pair, "AI_AGENT=") {
+		name, _, _ := strings.Cut(pair, "=")
+		if !slices.Contains([]string{"CLAUDECODE", "AI_AGENT", "CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_ROOT", "SSH_CONNECTION"}, name) {
 			kept = append(kept, pair)
 		}
 	}

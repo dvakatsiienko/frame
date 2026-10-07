@@ -71,7 +71,9 @@ const nameCell = 12
 // Step runs one unit of work; the human view spins in the family colour with the time so far while it
 // runs, then leaves one still line: ✓ or ✗
 func (r *Run) Step(name, doing string, work func() (string, error)) error {
+	started := time.Now()
 	err := r.step(name, doing, work)
+	traced.Steps = append(traced.Steps, step{name, time.Since(started).Milliseconds()})
 	if err != nil && r.failed == "" {
 		r.failed = name
 	}
