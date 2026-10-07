@@ -7,7 +7,7 @@ artifacts:
 script: none
 ---
 
-# refresh-branch-monorepo — recipe
+# refresh-monorepo — recipe
 
 Keeps the fleet's monorepo craft current: how bytes (pnpm + turborepo) is run by agents, what to do and what never to do, and how the frame → bytes merge proceeds. Born 2026-10-05. The cookbook it keeps fresh is `docs/research/monorepo-agents.md` (do / don't / easy wins).
 

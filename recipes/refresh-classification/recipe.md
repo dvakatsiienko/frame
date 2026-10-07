@@ -8,7 +8,7 @@ artifacts:
 script: jev:report
 ---
 
-# refresh-branch-classification — recipe
+# refresh-classification — recipe
 
 Keeps the fleet's classification branch sharp: our classifier — jev (typesafe.ai) today, the primary
 target of every run unless a better alternative wins — our flows, the craft of writing them, and what

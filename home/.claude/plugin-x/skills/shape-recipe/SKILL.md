@@ -58,12 +58,22 @@ shares the stem (`refresh-agent-ops` ↔ `pnpm agent-ops:report` ↔ `docs/knowl
 
 ## the shared vectors — every refresh run asks these on top of its own
 
-- **audience: agents** — how does the tool or practice reach its best agent use: what an agent should call, read or avoid
+skip one only by naming why it does not fit (a job-market run has no «agent use» of a tool).
+
+research, the outside world:
+- **the delta** — changelogs, release notes, new versions and rebrands since the last run's date
+- **audience: agents** — how the tool or practice reaches its best agent use: what an agent should call, read or avoid
 - **good and bad practices** — the do's and don'ts, with the reason
 - **pitfalls** — gotchas, tricky parts, known problem areas, open issues upstream
 - **prior art** — existing tools and solutions for what we do by hand
 - **alternatives** — better tools than ours, already working, so we don't build them; what we could borrow from one we don't adopt whole
 - **established patterns** — what is proven to work elsewhere and can be adopted as is
+- **cost** — price, free tier and quota changes for anything we pay or might pay for
+
+analysis, our own evidence:
+- **what broke for us** — the flawlog (`#dima-caught` first), coder and verifier retros, test-drive logs since the last run
+- **the artifact against reality** — every claim the artifacts hold re-checked on the current build, or marked stale
+- **drift** — vendored or copied files against their recorded upstream commit
 
 ## creating one
 
