@@ -77,6 +77,8 @@ function artifactExists(artifact: string) {
 test.each(recipes)('%s has the recipe shape', (name) => {
     const dir = path.join(recipesDir, name);
     const text = readFileSync(path.join(dir, 'recipe.md'), 'utf8');
+    // a git-crypt recipe is ciphertext wherever the key is absent (ci)
+    if (text.startsWith('\0GITCRYPT')) return;
     const fields = frontmatter(text);
     expect(fields, `${name}: recipe.md opens with frontmatter`).not.toBeNull();
     expect(['refresh', 'nurture', 'run']).toContain(fields?.kind);
