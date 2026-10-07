@@ -8,6 +8,7 @@ artifacts:
   - x/PRODUCT.md
   - x/FTR.md
 script: x-go:gate
+was: [refresh-go-knowledge]
 ---
 
 # refresh-guide-go

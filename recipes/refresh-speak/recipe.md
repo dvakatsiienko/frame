@@ -5,6 +5,7 @@ artifacts:
   - schedule/jobs/x-speak/
   - speak/
 script: none
+was: [refresh-read-aloud]
 ---
 
 # refresh-speak

@@ -9,7 +9,7 @@ artifacts:
 script: none
 ---
 
-# recipe — refresh-ccrow
+# refresh-ccrow
 
 ## the want (dima's)
 

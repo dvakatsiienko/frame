@@ -7,7 +7,7 @@ artifacts:
 script: none
 ---
 
-# refresh-writing-for-humans — recipe
+# refresh-writing-for-humans
 
 Keeps the human-voice toolchain fresh: the distilled knowledge doc, the borrowed humanize
 skills, the detector lanes.

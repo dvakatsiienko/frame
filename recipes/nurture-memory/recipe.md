@@ -37,6 +37,14 @@ run #1's finding: opus writes long by default, its own internals included; asked
 
 the enforceable ruleset: [DOT-127](https://linear.app/x-com/issue/DOT-127).
 
+his questions, run #1 (2026-08-23 → 08-26), each answered in `authoring-memory.md` — every run re-asks whether the answer still holds:
+
+> «what is the current target best practice of keeping the ctx size for an llm to perform well? previously it was ~120k tok — a number after which performance starts to lower. what is the number now? which number to hunt? your current boot ctx is 115k, and after first boot it becomes ~200k. 120k target is not realistic. **what do we do wrong?**»
+
+> «how do you teach agents to properly write and maintain skills and memory?» · «who is better at writing skills and mems — a human or an agent?» · «writing-for-agents most likely is only good for skills»
+
+his verdicts, run #1: proxying the research through `writing-for-agents` — no, make it fire first; `writing-for-agents` covers memory files AND skills; skillsmith not needed ([DOT-132](https://linear.app/x-com/issue/DOT-132) canceled).
+
 ## standing rules
 
 - 📌 **the run order is dima's plan** (written for run #1, moved out of [DOT-73](https://linear.app/x-com/issue/DOT-73)'s body): an agent may improve it, never replace it.

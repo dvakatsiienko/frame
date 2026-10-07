@@ -9,7 +9,7 @@ artifacts:
 script: none
 ---
 
-# refresh-art-kit — recipe
+# refresh-art-kit
 
 Keeps `x:art-kit` current in every branch: gifs, terminal clips, illustration, brand logos, and how
 an svg ships in an app. Born from the 2026-09-30 svg round (three lanes, graded in

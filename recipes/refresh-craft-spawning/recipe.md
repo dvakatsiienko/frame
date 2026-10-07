@@ -3,6 +3,7 @@ kind: refresh
 cadence: a cc minor version change, a new claude model or a major benchmark, or a spawn behaving against a [verified] row or a model card; no timer
 artifacts: [docs/knowledge/spawning-mechanics.md, docs/knowledge/models.md, cclio/memory/craft-spawning.md]
 script: none
+was: [refresh-spawn-mechanics, refresh-spawn-models]
 ---
 
 # refresh-craft-spawning

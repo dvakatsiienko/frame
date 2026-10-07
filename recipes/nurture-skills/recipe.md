@@ -4,6 +4,7 @@ kind: nurture
 cadence: on dima's word
 artifacts: []
 script: none
+was: [nurture-skills-hillclimb]
 ---
 
 # nurture-skills

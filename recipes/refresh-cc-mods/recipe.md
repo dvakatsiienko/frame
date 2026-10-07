@@ -6,9 +6,10 @@ artifacts:
   - home/.claude/plugin-x/mods/api-map.md
   - docs/test-drive/mods.md
 script: none
+was: [refresh-branch-mods, refresh-mods]
 ---
 
-# refresh-cc-mods — recipe
+# refresh-cc-mods
 
 Keeps the fleet's cc mods (function-hook plugins, `home/.claude/plugin-x/mods/`) worth their place:
 what the api can do now, what others built, and whether anything useful is left for us. Born

@@ -7,7 +7,7 @@ artifacts:
 script: agent-ops:report
 ---
 
-# recipe — refresh-agent-ops
+# refresh-agent-ops
 
 📌 on a test drive: the first runs are measured and the verdict decides whether the recipe stays.
 

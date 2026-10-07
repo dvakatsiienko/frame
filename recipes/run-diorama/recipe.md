@@ -5,6 +5,7 @@ artifacts:
   - ~/projects/bytes/apps/atelier/art/
   - ~/frame/home/.claude/plugin-x/skills/guide-ui-ux/SKILL.md
 script: none
+was: [diorama-draw]
 ---
 
 Contents: the want — dima's words · vectors · artifacts — where they live · the trace · cadence · log → log.md

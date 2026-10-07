@@ -1,4 +1,5 @@
 /* Core */
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -101,6 +102,11 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     const missing = artifacts.filter((artifact) => !artifactExists(artifact));
     expect(missing, `${name}: artifacts that do not exist`).toEqual([]);
 
+    expect(
+        text.match(/^# (.+)$/m)?.[1],
+        `${name}: the heading is the folder name`,
+    ).toBe(name);
+
     if (fields?.draft === 'true') return;
     const want = text.indexOf('\n## the want');
     const run = text.indexOf('\n## the run');
@@ -119,4 +125,40 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     ).toMatch(/«[^»]+»|^> \S/m);
 
     expect(existsSync(path.join(dir, 'log.md')), `${name}: log.md`).toBe(true);
+});
+
+const history = [
+    'cclio/gazette',
+    'home/.claude/shelf',
+    'docs/test-drive',
+    'docs/research',
+    'cclio/memory/dima-stories.md',
+    'recipes/*/log.md',
+    'recipes/*/recipe.md',
+];
+
+test('no live file names a recipe by its old name', () => {
+    const old = recipes.flatMap((name) => {
+        const text = readFileSync(
+            path.join(recipesDir, name, 'recipe.md'),
+            'utf8',
+        );
+        const was = frontmatter(text)?.was;
+        return Array.isArray(was) ? was : [];
+    });
+    if (old.length === 0) return;
+    const hits = spawnSync(
+        'git',
+        [
+            'grep',
+            '-n',
+            '-F',
+            ...old.flatMap((name) => ['-e', name]),
+            '--',
+            '.',
+            ...history.map((dir) => `:!${dir}`),
+        ],
+        { cwd: root, encoding: 'utf8' },
+    ).stdout.trim();
+    expect(hits, 'old recipe names in live files').toBe('');
 });

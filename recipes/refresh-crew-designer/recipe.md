@@ -8,9 +8,10 @@ artifacts:
   - ~/projects/studio/directions/
   - ~/projects/bytes/apps/design-loupe
 script: none
+was: [refresh-branch-design]
 ---
 
-# refresh-crew-designer — recipe
+# refresh-crew-designer
 
 Keeps the fleet's design flow current: the brief, the designer, the tools and the evidence
 behind them. Born from the 2026-09-29 design research ([FRM-244](https://linear.app/x-com/issue/FRM-244)).

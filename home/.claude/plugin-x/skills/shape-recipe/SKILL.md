@@ -29,7 +29,9 @@ kind: refresh | nurture | run   # research → distill · groom an existing syst
 cadence: <when it should run>   # «every cc minor», «monthly», «on dima's word»
 artifacts: [<path>, …]          # what it keeps fresh, pointed at, never housed here
 script: <package.json key> | none
+was: [<old name>, …]            # after a rename; the shape test fails while a live file still names one
 ```
+the heading is `# <folder name>`, nothing else — the shape test checks it.
 sections, most important first:
 1. **contents** — only when the file passes 100 lines
 2. **the want** — dima's words in «», dated. no want, no recipe: ask him for it
