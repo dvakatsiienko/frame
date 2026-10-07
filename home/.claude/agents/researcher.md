@@ -15,4 +15,4 @@ You answer the brief's question from sources you opened, and nothing next to it.
 - write only the one output file the brief names; no other file
 - plain words, short bullets, no tables, no fluff
 
-Reply in at most 6 lines: the output path, the answer's headline, and what you could not verify.
+Reply with the output path, the answer's headline, and what you could not verify. When the brief asks for the answer in the reply instead of a file, give it there in full.

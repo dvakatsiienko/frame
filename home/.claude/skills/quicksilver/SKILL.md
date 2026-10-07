@@ -3,7 +3,7 @@ name: quicksilver
 description: Offload bulk judgment calls to Jev (TypeSafe's fast System One model) so Claude doesn't read, and pay for, content it only needs a verdict on. Use this BEFORE reading many files, long logs, or big lists just to decide which parts matter. That covers finding which files relate to a feature or bug, filtering log lines for errors, triaging or labelling many items (tickets, test failures, commits, TODOs, search hits), ranking candidates by relevance, locating the right lines in a huge file, or a yes/no check on a large document. Also use when the user says quicksilver, jev, "save tokens", "delegate", or "cheaper/faster". Skip it for generation, editing, multi-step reasoning, math, counting, or date comparison, and when the input is small enough to just read.
 ---
 
-> 📌 fleet copy, vendored from github.com/UditAkhourii/quicksilver @ 5d6fe5c (2026-09-25), on a test drive to 2026-10-12 (`docs/test-drive/quicksilver.md`). the key lives in 1password, never in `~/.quicksilver`: every call runs as `~/frame/script/op-run.sh node ~/.claude/skills/quicksilver/scripts/qs.mjs <cmd> …` (op.env carries `TYPESAFE_API_KEY`, which qs reads). never run `qs setup`. everything you hand it leaves the mac for api.typesafe.ai (standard retention): never point it at `gmail/`, a git-crypt file, `.env*`, a token-bearing log, or the vault. the model is pinned by `QUICKSILVER_MODEL` in op.env.
+> 📌 fleet copy, vendored from github.com/UditAkhourii/quicksilver @ 5d6fe5c (2026-09-25), on a test drive (its end date lives in `docs/test-drive/quicksilver.md` only). the key lives in 1password, never in `~/.quicksilver`: every call runs as `~/frame/script/op-run.sh node ~/.claude/skills/quicksilver/scripts/qs.mjs <cmd> …` (op.env carries `TYPESAFE_API_KEY`, which qs reads). never run `qs setup`. everything you hand it leaves the mac for api.typesafe.ai (standard retention): never point it at `gmail/`, a git-crypt file, `.env*`, a token-bearing log, or the vault. the model is pinned by `QUICKSILVER_MODEL` in op.env.
 
 # Quicksilver: let Jev make the calls, Claude does the thinking
 
@@ -17,27 +17,16 @@ hundreds of items in parallel.
 In the commands below, `qs` stands for:
 
 ```bash
-node "<base directory of this skill>/scripts/qs.mjs"
+~/frame/script/op-run.sh node ~/.claude/skills/quicksilver/scripts/qs.mjs
 ```
 
 Needs Node 18+ (globs need Node 22+). There are no other dependencies.
 
-## First run: set the key once
+## The key
 
-Run `qs status` first.
-
-- `ready` means go straight to the task.
-- `not configured` means ask the user for their Jev API key, and point them to
-  **https://console.typesafe.ai** to create one. They can:
-  1. paste it in chat. Then run `qs setup <KEY>` (it verifies the key, then
-     saves it to `~/.quicksilver/config.json`, user-only permissions), **or**
-  2. keep it out of the chat by running `node "<skill dir>/scripts/qs.mjs" setup`
-     in their own terminal. It prompts for the key with hidden input.
-
-  `JEV_API_KEY` or `TYPESAFE_API_KEY` in the environment also works, and takes precedence.
-  After setup, carry on with the original task. Don't stop at "configured".
-
-Exit code 3 means a key problem: missing, or rejected by Jev. Re-run setup.
+Run `qs status` first. `ready` means go straight to the task. `not configured`, or exit
+code 3 on any command, means the 1password item behind `op.env` is missing or rejected:
+tell Dima and stop. The key never passes through chat and `qs setup` never runs.
 
 ## When to delegate
 

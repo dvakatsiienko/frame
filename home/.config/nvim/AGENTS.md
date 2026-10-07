@@ -29,11 +29,10 @@ LazyVim auto-loads exactly `config.options`, `config.keymaps`, `config.autocmds`
 - Owner is not a Lua/Vim expert — prefer well-known, high-leverage plugins over hand-rolled config, and explain non-obvious Vim motions/tricks when introducing them rather than assuming familiarity.
 - Intent is a lean, fluent editing setup, not a full IDE-in-Nvim. Default to LazyVim's extras and small, focused plugins already in `lua/plugins/`; avoid adding heavy/overlapping plugins unless they clearly earn their spot.
 
-## Resolved issues
+## Surround under Cursor
 
-- **Surround was broken under Cursor** (`ysiw"` etc. did nothing / dropped into flash.nvim's jump-label UI instead, or later just entered insert mode / jumped to line 1). Two separate bugs stacked on top of each other:
-  1. `nvim-surround` was disabled under `vim.g.vscode`, and `vim.g.vscode_surround_enable` (meant to cover the gap) is a VSCodeVim setting, not a vscode-neovim one — a no-op leftover from an older config. With no plugin owning `cs`/`ds`/`ys`, plain `c` fell back to Vim's built-in change operator, and `s` resolved to flash.nvim's operator-pending jump motion instead. Fix: enable `nvim-surround` unconditionally (it runs fine inside vscode-neovim's embedded real Neovim) and disable `flash.nvim` under `vim.g.vscode` instead (Cursor's own search/jump UI covers that need), freeing `s` back up for surround.
-  2. Even after that fix, `nvim-surround` still showed as **Disabled** in `:Lazy` under Cursor. Root cause: the `lazyvim.plugins.extras.vscode` extra (enabled via `lazyvim.json`) installs a global default `cond` for every plugin spec that doesn't set its own — an allowlist-by-plugin-name that only whitelists `mini.surround`, not `kylechui/nvim-surround`. `enabled` and `cond` are separate gates in lazy.nvim, so unconditionally setting `enabled = true` (bug 1's fix) didn't clear this. Fix: `cond = true` on the `nvim-surround` spec, explicitly overriding the extra's default.
+- `nvim-surround` owns `ys`/`cs`/`ds`/`S` in both modes and `flash.nvim` is disabled under `vim.g.vscode`, so `s` stays free for surround. `vim.g.vscode_surround_enable` is a VSCodeVim setting and does nothing here.
+- the `lazyvim.plugins.extras.vscode` extra installs a default `cond` that allowlists plugins by name (`mini.surround`, not `kylechui/nvim-surround`). `enabled` and `cond` are separate lazy.nvim gates, so the `nvim-surround` spec carries `cond = true`.
 
 ## Conventions
 
@@ -52,7 +51,7 @@ LazyVim auto-loads exactly `config.options`, `config.keymaps`, `config.autocmds`
 
 ## External dependencies
 
-- `tree-sitter` CLI (npm global) — required by nvim-treesitter `main` branch to compile parsers
+- `tree-sitter` CLI (brew `tree-sitter-cli`) — required by nvim-treesitter `main` branch to compile parsers
 - `stylua` (brew) — Lua formatting
 - node via fnm — mason package installs
 - Mason-managed: vtsls, tailwindcss-language-server, biome, prettier, lua-language-server

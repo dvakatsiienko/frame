@@ -37,10 +37,9 @@ file missing → the task is simply not set up and no row appears at all.
 
 ### the open decision
 
-dima was considering folding schedulers into a personal CLI. he built this raycast command with
-cclio today instead, because it answers "what runs, when, did it work" quickly and in a basic
-way. that is a first answer, not the final one — the CLI is still on the table. which is exactly
-why the state file must not live inside this extension: the reader never owns the data.
+this raycast command is a first answer to «what runs, when, did it work»; a `schedule` verb in the
+`x` cli is still on the table. so the state lives under `schedule/`, never inside this extension:
+the reader never owns the data.
 
 ## conventions — do not break these
 

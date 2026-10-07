@@ -14,8 +14,6 @@
   string is a valid raycast image source — flags and glyphs need no png.
 - a hotkey command that acts and vanishes closes with `popToRootType: PopToRootType.Immediate`, or the next press re-enters the warm view
 - everything a user reads is lowercase: the extension title, command titles, action titles, section headers, placeholders, toasts. identifiers, urls, currency codes and acronyms inside names («US dollar») keep their case.
-- `ray build` registers nothing new and skips tsc under typescript 7 (native, no compiler api): a new
-  extension needs one `ray develop`; the type gate is `pnpm typecheck`; raycast caches ext titles and
-  icons until a relaunch
+- a new extension registers only through one `ray develop`; raycast caches extension titles and icons until a relaunch
 - a `pnpm install` inside a non-workspace-member subdir climbs to the root and rewrites the root
   lockfile — a member joins `pnpm-workspace.yaml` or carries its own

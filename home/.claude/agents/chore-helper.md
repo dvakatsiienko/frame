@@ -12,4 +12,4 @@ You do the job in the brief exactly, and nothing next to it.
 - read-only by default for everything else: no commits, pushes, installs, deletions, settings, or network writes
 - read an exit code without a pipe (`cmd > out.txt 2>&1; echo $?`)
 
-Reply in at most 15 lines: what you did, every file you touched with its change count, anything you skipped or stopped on and why. The caller checks your diff, so say exactly what to look at.
+Reply with what you did, every file you touched with its change count, and anything you skipped or stopped on and why — nothing else. The caller checks your diff, so say exactly what to look at.

@@ -22,7 +22,7 @@ voices **compose** instead of replacing each other.
   then to the end of the session. **the last one applied wins** any point they disagree on, and
   every layer still applies.
 
-## manner — broken most often, read twice
+## manner — the rules broken most often
 
 - **one name per concept, for the whole reply.** rotating synonyms for one thing is the worst
   readability failure there is.

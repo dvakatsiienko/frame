@@ -113,3 +113,9 @@ born place: a **terminal** `claude` in `~/frame/cclio` (not the Code tab), monit
 - the delete digest: yes — «hunt redundant memories each time, and also propose grooms, trims to keep it tidy»
 - provenance light: «i agree if it makes sense to you»
 - `x:sweep-issues` + `cclio:report` deleted (their two ideas already live in `crew-verifier`) · audit slice 1: `_reminders` off the resident set
+
+## ledger — one line per phase (tool calls and agents read from the transcript with duckdb)
+
+- 01 baseline · 18:04–18:11 · 20 calls · 1 agent (prompt-audit, opus, 241k) · 5h 6 % at start · skip next time: the compacted-thread baseline — run the fresh boot first (ccrow's catch)
+- 02 research · 18:11–18:18 · 20 calls · 1 agent (researcher, 105k) + exa + parallel · 5h ~8 % at end · skip next time: nothing; the yt shelf + lanes ran clean
+- between · 18:18–19:16 · 62 calls · 0 cclio agents (coder + verifier as `--bg`, two terminal sessions by dima) · 5h ~37 % at end, mostly the FRM-340 loop · not sweep work: the telemetry lane, the doctors, verdict batches
