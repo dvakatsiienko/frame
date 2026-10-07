@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-30 (before the halt) · 22 → 24 → 05 → 28 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+30 (before the halt) · 22 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
@@ -90,11 +90,6 @@ dima 10-06 opener: renovate gomod + gomodTidy; `pnpm x-go:vuln` in ci or the dig
 
 dima 10-06 opener: `docs/test-drive/delve.md`.
 
-### 28 · finish the handoffs port, then make «done» mean migrated
-`open · task` · [FRM-338](https://linear.app/x-com/issue/FRM-338) · [FRM-284](https://linear.app/x-com/issue/FRM-284)
-
-10-07: `x handoffs` (list, peek, ingest) has zero callers; `x:handoff`, `x:handoff-ingest` and raycast `x-ray` still call `script/skill-handoff-store.ts`. port write + delete, switch every caller, the script dies in the same commit. the rename `handoffs` → `handoff` already sits in FRM-338. dima 10-07: «creating dead cli families and verbs is not about optimization» — the migration rule rides the cli plan (09).
-
 ### 30 · before the halt: dima types /mattpocock-skills:retro in this thread
 `open · task`
 
@@ -140,3 +135,4 @@ dima 10-07: «instead of spawning a coder you spawn a squad leader (e.g., a coor
 - 2026-10-07: 23 gopls + staticcheck come from brew now (go1.27.1 builds, first on PATH); the `go install` copies are in the trash; Brewfile + `x:guide-go` updated
 - 2026-10-07: 07 retargeted: chain length is the wrong target (3 lanes); the five activities and the numbers live in `docs/knowledge/agent-ops.md`, refreshed by `cclio/docs/recipes/refresh-agent-ops.md` (on a test drive)
 - 2026-10-07: 06 + 29 + 08 one measuring pass: `pnpm agent-ops:report` (0 model tokens): cost per ticket median 30.0M tokens / 30 min over 23 tickets; cclio code edits up to 18 in one session; boot full 1.8M tokens / 61 s, mini 1.2M / 43 s (n=1 each, tokens mostly cache reads)
+- 2026-10-07: 28 resolved — `x handoff` owns the whole store, every caller moved, the node script died ([FRM-343](https://linear.app/x-com/issue/FRM-343), frame#64)
