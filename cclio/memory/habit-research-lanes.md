@@ -9,7 +9,9 @@ ai are essentially free research tools).»
   - `pnpm research:lanes <brief.md> [out]` — the exa agent run + the parallel core run, side by
     side under `op-run`; one line per lane: status, seconds, chars, cost (~$0.10 exa, cents parallel)
   - **an opus lane** (a fresh agent, never a fork) on the same brief, pointed at what needs SOURCE
-    reading — code, skills, prompts, npm, real api probes
+    reading — code, skills, prompts, npm, real api probes. the door is the `researcher` agent
+    (`omitClaudeMd`, no fleet memory: its first request wrote 9.2k tokens against ~137k for a plain
+    agent, 2026-10-07), so the brief carries the whole question and the output shape
   - **neuroarxiv** when the question is an architecture or method one; **`advise-project-approach`**
     when a plan or a process is about to be chosen (adopted)
 - **the lanes disagree on purpose**: exa is broad and dated, parallel the most sceptical, the opus

@@ -6,6 +6,12 @@ verified-on: 2026-10-07 (a source-read base from the repos' `main`/`v2` branches
 
 every base line carries its source; «?» marks what was not verified. ground truth for what x uses: `x/go/go.mod` + `x/go/*.go`.
 
+## docs — three doors, in this order
+
+- `go doc` from `x/go`: `go doc charm.land/bubbletea/v2.Program`, `go doc -all charm.land/bubbles/v2/viewport` — the exact pinned version, offline, one call; the source is under `~/go/pkg/mod/charm.land/<module>@<version>/`
+- pkg.go.dev — the same docs as a page, but the latest version, not ours: [bubbletea](https://pkg.go.dev/charm.land/bubbletea/v2) · [bubbles](https://pkg.go.dev/charm.land/bubbles/v2) · [lipgloss](https://pkg.go.dev/charm.land/lipgloss/v2) · [huh](https://pkg.go.dev/charm.land/huh/v2) · [glamour](https://pkg.go.dev/charm.land/glamour/v2) · [log](https://pkg.go.dev/charm.land/log/v2) · [fang](https://pkg.go.dev/charm.land/fang/v2)
+- each repo's `UPGRADE_GUIDE_V2.md` and `examples/` — the v2 traps (§3) and the widget per view (§2)
+
 ## 1. the stack
 
 - `bubbletea` [github](https://github.com/charmbracelet/bubbletea) — the elm-style runtime under every interactive view (run steps, pager) — in go.mod `charm.land/bubbletea/v2 v2.0.10` (= latest, 2026-09-24)

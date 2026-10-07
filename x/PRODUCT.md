@@ -31,6 +31,8 @@ dima's words:
 
 - pretty by default, read-first: boards and status views dima reads, one-shot verbs with a clean confirm
 - interactive driving (pickers, arrow-key browsing) only when dima starts driving x — then it grows those elements; not before
+- **motion and colour wherever they fit** (dima, 2026-10-07): a spinner on every wait, a progress bar on every step with a length (the terminal-tab one too, OSC 9;4), harmonica springs where a view can move, emoji as line prefixes on the human view — the tty path only; an agent's envelope stays plain json. the widget per view is `docs/knowledge/charm.md` §2
+- prior art for the main view (pocket 05): [gh-dash](https://github.com/dlvhdr/gh-dash) — a sectioned bubbletea dashboard over github prs and issues, by the author of diffnav (where `bubbles/tree` came from)
 - ~~the bet: TypeScript + charm's binaries (`gum`, `glow`) for the look~~ → **decided 2026-10-06 (FRM-284 look probe): go + charm** — bubbletea, bubbles, lipgloss, huh, glamour, harmonica. the look won on the side-by-side shots
 - the look is a product requirement, not polish: «cli must look pretty and look prod grade. and use all bubbletea components when applicable — spinners, loaders, huh and other components. and don't forget that i sometimes will use cli too. it should be agents and user friendly» (dima, 2026-10-06)
 - it is a showcase piece too: «btw my fleet has its own brand cli» — a clip or a shot of it can sit on the visit card (BYT-119)
