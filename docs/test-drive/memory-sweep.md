@@ -119,3 +119,14 @@ born place: a **terminal** `claude` in `~/frame/cclio` (not the Code tab), monit
 - 01 baseline · 18:04–18:11 · 20 calls · 1 agent (prompt-audit, opus, 241k) · 5h 6 % at start · skip next time: the compacted-thread baseline — run the fresh boot first (ccrow's catch)
 - 02 research · 18:11–18:18 · 20 calls · 1 agent (researcher, 105k) + exa + parallel · 5h ~8 % at end · skip next time: nothing; the yt shelf + lanes ran clean
 - between · 18:18–19:16 · 62 calls · 0 cclio agents (coder + verifier as `--bg`, two terminal sessions by dima) · 5h ~37 % at end, mostly the FRM-340 loop · not sweep work: the telemetry lane, the doctors, verdict batches
+- 02 → 03 gap · 18:18–19:44 · **86 min** with phase 03 unopened while side asks shipped (a second cli coder, the doctor slice, hook and rule edits) — the number to beat next sweep; caught by ccrow. from here: coder pings get one line, new non-sweep asks go to the pocket unless dima says «now»
+
+### recipes as a feature · dima's verdicts · 2026-10-07 20:19
+
+- one engine skill `x:shape-recipe`, recipes stay data; a folder per recipe (recipe.md · log.md · scripts/ · last raw output); the feature moves to `~/frame/recipes/`; raw research stays in the folder, overwritten each run; the name «recipe» stays; kind-first names
+- names sit as close as possible to what they refresh: «if refresh-spawn recipe refreshes your craft-spawning.md then name should be the same. eg refresh-craft-spawning»
+- the common vectors every recipe carries (mostly research vectors): «audience - agents - how to sharpen each tool recipe to agents-best-case-use» · good/bad practices · do's and don'ts · «pitfalls, gotchas, tricky parts, known problem areas» · prior art, existing tools · «alternatives, better tools than we have — already working solutions so we don't build ourselves … what useful could we borrow into our system?» · «established working patterns — what already exists that proven to work so can be pulled, adopted, borrowed?»
+- cadence: «would be good but automated» → overdue recipes surface by themselves (`x recipe list`, a cli verb candidate)
+- scripts: «during an ongoing recipe run, let's find out and analyze if any recipes can be scriptified to reduce manual effort»
+- the runs: revamp first, settle the shape → then «one by one as we go, in parallel, while we memory sweep» → first review each recipe («they were all created nearly random, i never peeked inside»), research vectors matter most → once groomed, run it with the `researcher` agent + parallel/exa full fan-out; start today, run all of them
+- the shared crew skill: `x:crew-dna`
