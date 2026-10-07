@@ -44,8 +44,25 @@ posted: {health: no}
 
 **state**: next is the cli plan (pocket 09) then the sweep plan (10), in the slimmed thread after `/compact`; no coders; ccrow paused for the checkpoint
 
+⸻ upd 17:55
+
+**shipped**
+- cli plan: [FRM-284](https://linear.app/x-com/issue/FRM-284) closed (go + charm won, v1.1 shipped); five grill rounds wrote «the next lane» into `x/PRODUCT.md` — telemetry first, then handoff, linear, the stats board; four specs in `.scratch/` under [FRM-14](https://linear.app/x-com/issue/FRM-14), ccrow split telemetry from the board so the foundation ships alone
+- the linear family came from data: 981 raw `linear api` calls in 30 days, classified by operation → eight verbs, `x as` identity, a traced raw door
+- `docs/knowledge/charm.md`: the stack page, widget per view, v2 traps, three doc doors (a source lane + exa + parallel); sequin and duckdb in the `Brewfile`
+- the `researcher` agent: `omitClaudeMd`, first request 9.2k tokens against ~137k for a plain agent; a 19-call research took 33.6k
+- duckdb on a test drive: the 981-call classification in 0.26 s, against a helper's 115 s / 166k tokens
+- memory sweep plan ([FRM-267](https://linear.app/x-com/issue/FRM-267)): three grill rounds, a spec + nine phase tickets in `.scratch/memory-sweep/`, delete-first, four memory tiers, the log in `docs/test-drive/memory-sweep.md`
+
+**tricks gained**
+- a typed prompt expands one slash skill, the first; a second on the same line or the next is text (2.1.292), though the skills docs say six stack; the model still composes skills through the `Skill` tool
+- block html comments in `CLAUDE.md` cost zero tokens — cross-refs move there
+- a new agent file reaches a running session after a short delay
+
+**state**: checkpoint 2; the sweep starts in this thread after the compact (ticket 01, then 03 recipes); the telemetry coder spawns with it; ccrow paused
+
 ## trail
 
-- shipped: spec-seed ticket bodies · x done-rule + one resident line · stash clock + live-only asks · obsidian + push guards · pocket mirror · agent-ops:report + recipe · brew go tools
-- open: cli plan (09) → memory sweep plan (10), sweep run in a fresh session · eval parked (31) · govulncheck digest (32)
-- state: frame pushed · cclio 0.3.109 · x 0.11.223 · no coders · weekly 50 %
+- shipped: cli lane planned (4 specs, FRM-284 closed) · linear verbs from 981 calls · charm.md · researcher agent (9.2k base) · duckdb test drive · sweep plan (spec + 9 tickets)
+- open: the sweep run (01 → 03 today) · the telemetry coder · a cc issue on slash stacking · tool-scout ledger (asked) · govulncheck digest (32)
+- state: frame pushed · no coders · ccrow paused · weekly 51 %, 5h 4 %
