@@ -12,15 +12,27 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-// Fail carries the command that moves the caller forward; Log is tool output shown under the step
+// Fail carries the command that moves the caller forward; Log is tool output shown under the step.
+// Refused marks a hazard check that said no, so a trace never counts a guard as a broken tool
 type Fail struct {
 	Msg     string
 	Next    string
 	IsUsage bool
+	Refused bool
 	Log     []string
 }
 
 func (f *Fail) Error() string { return f.Msg }
+
+func (f *Fail) kind() string {
+	switch {
+	case f.IsUsage:
+		return "usage"
+	case f.Refused:
+		return "refused"
+	}
+	return "external"
+}
 
 func usageFail(msg, next string) *Fail { return &Fail{Msg: msg, Next: next, IsUsage: true} }
 

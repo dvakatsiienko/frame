@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime/debug"
 	"slices"
 	"sort"
 	"strings"
@@ -86,7 +87,22 @@ func detect(argv []string) mode {
 	return mode{json: isJSON, interactive: !isJSON && term.IsTerminal(os.Stdin.Fd())}
 }
 
-func execute(argv []string) int {
+// the dispatcher writes the trace, so a verb is traced without a line of telemetry in it
+func execute(argv []string) (code int) {
+	traced = &span{Start: time.Now(), Name: traceName(wordsOf(argv)), Flags: flagNames(argv)}
+	defer func() {
+		// a panic is our bug: its stack goes to stderr, the caller still gets an ending and a non-zero exit
+		if p := recover(); p != nil {
+			fmt.Fprintf(os.Stderr, "panic: %v\n%s", p, debug.Stack())
+			code = finishFail(detect(argv), traced.Name, nil, fmt.Errorf("panic: %v", p))
+		}
+		traced.Exit = code
+		traced.write()
+	}()
+	return dispatchArgv(argv)
+}
+
+func dispatchArgv(argv []string) int {
 	m := detect(argv)
 	if !m.json {
 		ui = newTheme()
@@ -179,6 +195,9 @@ func leaf(m mode, verb Verb) *cobra.Command {
 func dispatch(m mode, verb Verb, args []string, flags Flags) int {
 	r := &Run{verb: verb, human: !m.json, interactive: m.interactive}
 	impl := impls[verb.Name]
+	if os.Getenv("X_TEST") != "" && os.Getenv("X_PANIC") != "" {
+		panic("forced by X_PANIC")
+	}
 
 	if m.interactive {
 		filled, err := askArgs(verb, args)
@@ -277,6 +296,9 @@ func finishFail(m mode, name string, r *Run, err error) int {
 	if !errors.As(err, &fail) {
 		fail = &Fail{Msg: err.Error(), Next: "report it to cclio with the command you ran"}
 		logger.Error("unexpected", "err", err)
+		traced.Kind = "bug"
+	} else {
+		traced.Kind = fail.kind()
 	}
 	status := "failed"
 	if fail.IsUsage {
