@@ -119,6 +119,7 @@ func TestTheTraceKeepsIdsAndDropsText(t *testing.T) {
 	}{
 		{"an id-shaped arg", []string{"knowledge", "read", "spawn-mechanics"}, []string{"spawn-mechanics"}},
 		{"a ticket inside free text", []string{"probe", "bare", "why does FRM-12 hang on BYT-3?"}, []string{"FRM-12", "BYT-3"}},
+		{"free text in an id-named arg", []string{"knowledge", "read", "why it hangs FRM-9"}, []string{"FRM-9"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -131,7 +132,7 @@ func TestTheTraceKeepsIdsAndDropsText(t *testing.T) {
 			if got, want := marshal(lines[0]["x.ids"]), marshal(c.ids); got != want {
 				t.Errorf("ids %s, want %s", got, want)
 			}
-			if line := marshal(lines[0]); strings.Contains(line, "hang") {
+			if line := marshal(lines[0]); strings.Contains(line, "hang") || strings.Contains(line, "why") {
 				t.Errorf("free text reached the trace: %s", line)
 			}
 		})

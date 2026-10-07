@@ -54,6 +54,7 @@ var impls = map[string]Impl{
 	"knowledge read":  {Run: knowledgeRead},
 	"schema":          {Run: schema},
 	"completion":      {Run: completion},
+	"stats":           {Run: stats},
 }
 
 // set by -ldflags at build; a dev run falls back to the executable's own tree

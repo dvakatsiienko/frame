@@ -34,6 +34,11 @@
             "example": "source <(x completion zsh)",
             "gist": "shell completion from the registry",
             "name": "completion"
+        },
+        {
+            "example": "x stats --days 7",
+            "gist": "which verbs are used, by whom, how fast, how they fail",
+            "name": "stats"
         }
     ],
     "verbs": [
@@ -256,6 +261,18 @@
             "name": "completion",
             "needsApply": false,
             "purpose": "print a shell completion script generated from the registry, for `source <(x completion zsh)`"
+        },
+        {
+            "flags": {
+                "days": {
+                    "description": "the window, in local days back from today (default 30)",
+                    "type": "string",
+                    "value": "n"
+                }
+            },
+            "name": "stats",
+            "needsApply": false,
+            "purpose": "count x calls from the trace files: per family and verb, callers, p50/p95 time, failure kinds, unused verbs"
         }
     ]
 }

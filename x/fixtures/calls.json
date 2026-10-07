@@ -327,6 +327,26 @@
             "mode": "tty"
         },
         {
+            "argv": ["stats", "--days", "week"],
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "stats-days-bad",
+            "matrix": "telemetry",
+            "mode": "pipe",
+            "next": "x stats --days 30",
+            "status": "usage"
+        },
+        {
+            "argv": ["stats"],
+            "cols": 100,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "stats-tty",
+            "matrix": "telemetry",
+            "mode": "tty",
+            "note": "the plain summary until the x-stats-board spec lands"
+        },
+        {
             "argv": ["completion", "zsh"],
             "cols": 120,
             "cwd": "{world}/repo",
