@@ -90,6 +90,7 @@
         "crew:audit": "node ./script/crew-audit.ts",
         "fleet-hazards:check": "node ./script/fleet-hazards-check.ts",
         "flow:report": "node ./script/flow-report.ts",
+        "agent-ops:report": "node ./script/agent-ops.ts",
         "shift:checkup": "node ./script/shift-checkup.ts"
     },
     "dependencies": {

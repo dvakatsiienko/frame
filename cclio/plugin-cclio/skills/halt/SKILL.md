@@ -51,7 +51,7 @@ every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item h
 it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear (dima, 2026-09-28). the template
 is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
-the same pass prunes the pocket first: every resolved item leaves one line in `pocket.md`'s «decisions so far» and its section goes; the gazette post (phase 4.5) carries the day's decision lines, then the section empties; then the
+the same pass prunes the pocket first: every resolved item leaves one line in `pocket.md`'s «decisions so far» and its section goes; the gazette post (phase 4.5) carries the day's decision lines and the `pnpm agent-ops:report --days 1` numbers (cost per ticket, cclio code edits, boot cost), then the section empties; then the
 inbox clears — before the CST is written, every halt, both lanes (the 09-20 halt skipped the prune
 and dima found six done lines at the next boot).
 

@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-30 (before the halt) · 07 → 06 → 29 → 08 → 22 → 23 → 24 → 05 → 28 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31
+30 (before the halt) · 22 → 24 → 05 → 28 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
@@ -33,21 +33,6 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 dima 10-07: bare `x` prints help today; he wants a dashboard-like main view (bubbletea/lipgloss) if it is useful, leans conventional for now. answer: now vs later, and what it shows. screenshot: `_hq/attachments/CleanShot 2026-10-07 at 00.01.16.jpg`.
 
-### 06 · cheap fleet measuring
-`open · research`
-
-dima 10-07: measuring is asked often in test drives. how expensive, can haiku/sonnet measure (e.g. today's prompts)? cheap fleet stats for optimization; how to plan full fleet tracing, what first, test drive?
-
-### 07 · retro of long coder/verifier tool-call chains → retargeted, see `docs/research/agent-fleet-maintenance.md`
-`open · research`
-
-dima 10-07, an opener: coders run ~40 steps nonstop. read finished coder + verifier threads as evidence; name inefficiency patterns and the fix per pattern (hook, mod, cli verb, skill, memory steer). split by model and effort, cclio's own threads too. find threads by coder/verifier pair (or make that trivial). step 1 done 10-07: `scratchpad/chains/chains.ts` (no model, 1.4 s; candidate `pnpm flow:chains`): coders median 131 calls, longest silent run 19 (never 40), longest run without a human prompt median 70 / max 364; repeats ~0; verifiers ¼–⅓ of their coder; pairs group by ticket id from the session title. research done 10-07 (3 lanes agree: chain length is the wrong target; the five worth doing are in `docs/research/agent-fleet-maintenance.md`). fold into a recipe; test drive? also: the recipes need organizing and a maintenance habit.
-
-### 08 · measure the cclio boot
-`open · task`
-
-dima 10-07 (first actions): «measure cclio boot» — tokens and seconds of a boot, full and mini.
-
 ### 09 · finish the cli plan
 `open · task` · [FRM-284](https://linear.app/x-com/issue/FRM-284)
 
@@ -56,6 +41,11 @@ dima 10-07: close yesterday's tails — the full cli plan, so a coder + verifier
 ### 10 · plan the memory sweep
 `open · task` · [FRM-267](https://linear.app/x-com/issue/FRM-267) · blocked by 09
 
+sweep inputs added 10-07 (dima):
+- **one name per family of files**: a recipe, its script and its shelf file share one stem (`refresh-agent-ops` ↔ `agent-ops:report` ↔ `docs/knowledge/agent-ops.md`); decide the owner of the contract (the recipe `_spec.md`, a shape-recipe skill, or an `x` check) — «everything drifts too much»
+- **fold the scattered findings**: inventory `docs/research`, `docs/knowledge`, `docs/test-drive`, the recipes and the cw leaves; each finding gets one verdict: shelf, recipe, memory line, guard, or dies
+- **the boot weight**: dima measured 117k at boot (memory files 81.2k) and 188k after init (+51.8k message); «is everything you preload truly useful?»
+- **the usage door**: `mcp__ccd_session_mgmt__get_usage` reads plan limits + this session's context without sline (a desktop-born session has no statusline feed)
 first quick win (dima 10-07, yes): `_reminders.md` is 24 kB imported every turn, 29 of 41 lines are test-drive verdicts copied three times — verdict dates live only in each test-drive file, the boot prints the ones due in 2 days, reminders keep real date/condition hooks only.
 
 dima 10-07: `_hq/memory-sweep.md` holds his corrections. plan the steps first, broken into tasks, folded and ordered; then checkpoint or sweep by context size. think what goes to chore-helpers or cloud. the first real spec for the pocket.
@@ -90,11 +80,6 @@ dev.fast whiteboard, installed, cli-driven. first case: the cli a/b/c review. re
 
 dima 10-06 opener: renovate gomod + gomodTidy; `pnpm x-go:vuln` in ci or the digest.
 
-### 23 · gopls + staticcheck to brew
-`open · task`
-
-dima 10-06 opener: off `go install`, onto brew (install order rule).
-
 ### 24 · delve test drive
 `open · test-drive`
 
@@ -105,11 +90,6 @@ dima 10-06 opener: `docs/test-drive/delve.md`.
 
 10-07: `x handoffs` (list, peek, ingest) has zero callers; `x:handoff`, `x:handoff-ingest` and raycast `x-ray` still call `script/skill-handoff-store.ts`. port write + delete, switch every caller, the script dies in the same commit. the rename `handoffs` → `handoff` already sits in FRM-338. dima 10-07: «creating dead cli families and verbs is not about optimization» — the migration rule rides the cli plan (09).
 
-### 29 · count cclio's own code edits per session
-`open · task`
-
-matt's chief-of-staff: «all work should be done in subagents. protect your context window» (dima 10-07: «very useful»). 10-07 cclio wrote the stash fix, the guard rule and the x docs inline. `flow:report` and the halt read cclio's transcripts and print the code-file edits (`Edit`/`Write` on .ts/.tsx/.go/.sh/.py) per session; the number goes down when delegation works. rides 06 (cheap measuring).
-
 ### 30 · before the halt: dima types /mattpocock-skills:retro in this thread
 `open · task`
 
@@ -118,7 +98,12 @@ dima 10-07: «yes remind me». run before the CST, in the session it looks back 
 ### 31 · price a skill eval before running one
 `open · test-drive` · parked until the budget allows (dima 10-07: «maybe if i get a $200 anthropic plan»)
 
-`claude plugin eval` runs each case as a full session; 10 cases × 3 runs × 2 arms = 60 sessions. first step: one `x:cmt` case («commit this» in a temp repo), one run, `--max-cost-usd 1`, read the printed cost. tiers to decide then: the plugin alone (cheap, does the skill fire on its own phrasing) vs the full fleet context (the truth, the real competition between skills). source: `docs/research/agent-fleet-maintenance.md`.
+`claude plugin eval` runs each case as a full session; 10 cases × 3 runs × 2 arms = 60 sessions. first step: one `x:cmt` case («commit this» in a temp repo), one run, `--max-cost-usd 1`, read the printed cost. tiers to decide then: the plugin alone (cheap, does the skill fire on its own phrasing) vs the full fleet context (the truth, the real competition between skills). source: `docs/knowledge/agent-ops.md`.
+
+### 32 · govulncheck in the boot digest
+`open · task`
+
+dima 10-07: the digest, not CI. one line in `boot-prefetch.sh`: `pnpm x-go:vuln`, informational, a red names the module.
 
 ## decisions so far
 
@@ -137,3 +122,6 @@ dima 10-07: «yes remind me». run before the CST, in the session it looks back 
 - 2026-10-07: renovate merged: bytes#123 motion 14, frame#62 mcp sdk 1.31 (security)
 - 2026-10-07: ccrow stop is on the halt now (phase 5's last line, `ccrow:stop` after the CST); last night's was stopped at 03:20 by hand
 - 2026-10-07: flowlog → pocket, shaped as matt's local tracker (grill Q1–Q6). the old vault flowlog is archived at `_hq/flowlog-archive-2026-10-07.md`
+- 2026-10-07: 23 gopls + staticcheck come from brew now (go1.27.1 builds, first on PATH); the `go install` copies are in the trash; Brewfile + `x:guide-go` updated
+- 2026-10-07: 07 retargeted: chain length is the wrong target (3 lanes); the five activities and the numbers live in `docs/knowledge/agent-ops.md`, refreshed by `cclio/docs/recipes/refresh-agent-ops.md` (on a test drive)
+- 2026-10-07: 06 + 29 + 08 one measuring pass: `pnpm agent-ops:report` (0 model tokens): cost per ticket median 30.0M tokens / 30 min over 23 tickets; cclio code edits up to 18 in one session; boot full 1.8M tokens / 61 s, mini 1.2M / 43 s (n=1 each, tokens mostly cache reads)
