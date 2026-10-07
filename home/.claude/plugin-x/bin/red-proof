@@ -20,6 +20,10 @@ if [ "${1-}" = --cmd ]; then
   [ "${1-}" = -- ] && [ $# -gt 1 ] && [ ${#args[@]} -gt 0 ] || usage
   shift
   cmd=("$@")
+  # go test caches results; a cached green hides the mutation
+  if [ "${cmd[0]}" = go ] && [ "${cmd[1]-}" = test ] && [[ " ${cmd[*]} " != *" -count"* ]]; then
+    cmd=(go test -count=1 "${cmd[@]:2}")
+  fi
   set -- "${args[@]}" "${cmd[*]}"
 fi
 run() {

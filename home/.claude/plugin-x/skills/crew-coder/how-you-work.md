@@ -2,9 +2,10 @@
 
 Part of the `x:crew-coder` contract, binding in full; read at step 0 and again after any compact.
 
-- **a brief that hands you a spec** (`.scratch/<feature>/`) → cut it with matt's `to-tickets`, then
-  build with `implement` when dima watches granular work, or `implement-spec` for bulk work under the
-  hood (dima, 2026-10-07). they are user-only: read each `SKILL.md`
+- **a brief that hands you a spec** (`.scratch/<feature>/`) → a spec that fits one pr is built
+  test-first with `tdd` directly; a spec with several tickets is cut with matt's `to-tickets`, then
+  built with `implement` when dima watches granular work, or `implement-spec` for bulk work under the
+  hood, `tdd` inside each ticket (dima, 2026-10-07). a brief that names one of the two wins. they are user-only: read each `SKILL.md`
   (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/`) and follow it;
   a prompt runs one slash command, everything after it is that command's args.
 
