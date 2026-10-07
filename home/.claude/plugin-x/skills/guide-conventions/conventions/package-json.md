@@ -50,12 +50,12 @@ incomplete, not minimal.
 - **bare + variants** — a loop or repo-service verb stands alone and takes modifiers:
   `test`, `test:watch` · `build`, `build:api`.
 - **family only** — a script that serves one entity wears it as the prefix, and the family needs
-  no bare root: `linear:push`, `linear:agent-token` · `frame:link` · `sline:build` ·
+  no bare root: `github:agent-token` · `frame:link` · `sline:build` ·
   `mcp:build` · `plugin:release`.
 - **`skill:`** is the family for a script whose only caller is a skill, tail = the skill plus the
   artifact it produces: `skill:cclio-mode-snapshot`, `skill:memory-sync-mirror`.
 
-The file is the key with `:` → `-`, no table to maintain: `linear:push` ⇔ `script/linear-push.ts`,
+The file is the key with `:` → `-`, no table to maintain: `github:agent-token` ⇔ `script/github-agent-token.ts`,
 `skill:evergreen-apps` ⇔ `script/skill-evergreen-apps.ts`. Library modules under `script/lib/` are
 named for what they are, not for a key.
 

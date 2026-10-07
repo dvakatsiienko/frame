@@ -159,6 +159,95 @@
   - when it runs
   - then the file renders as markdown; a word matching several files lists them
 
+## as — identity
+
+- ✅ `x as <member> -- <command>` runs one command as a fleet member
+  - given a member (`cclio`, `coder`, `dima`) and a `linear` or `gh` command after `--`
+  - when it runs
+  - then the command runs with that member's token in its own env only (`LINEAR_API_KEY`, `GH_TOKEN`); its output and exit code are the call's, with no envelope
+  - then the trace line names the actor; no token reaches x's stdout, stderr or the trace
+  - given an unknown member, a tool x holds no token for, or no command, then exit 2 and one line
+  - decision: a top-level verb, not under `linear` — identity crosses families (linear, gh), the same reading as `schema` and `stats` (FRM-344)
+- ✅ an app token is minted once and reused until it nears expiry
+  - makes: a keychain item `x-token-<tool>-<app>` holding `<expiry>:<token>`
+  - given no cached token, or one with under 24 h (linear) or 10 min (gh) left
+  - when `x as` runs
+  - then a fresh token is minted from the member's oauth pair or app key and cached; else the cached one is used
+
+## linear — tickets
+
+- ✅ `x linear read <ids…>` reads tickets in one request
+  - given one or more `FRM-N`/`BYT-N` ids
+  - when it runs
+  - then one graphql request carries them all, and each ticket prints its title, state, body, labels, project, milestone, estimate, priority, parent and children, in the order asked
+  - given `--comments`, then the comments print oldest first with their authors; given `--relations`, then both sides print, the inverse one flipped («blocked by»)
+  - given a list that hit its page size, then the ticket lists it under `capped`, and the card marks it
+  - given an id linear cannot find, then exit 1 naming that id; a malformed id exits 2 before any request
+  - given a terminal, then each ticket is a card: the state in colour, label chips, the body as markdown; a spinner runs while linear answers
+- ✅ `x linear read --attachments <dir>` saves a ticket's files
+  - makes: each linear upload the ticket attaches or links in its body, saved once under `<dir>`, named by the link label or the attachment title (the url's last segment when neither has one)
+  - given a ticket with uploads
+  - when it runs
+  - then x downloads them with the actor's auth, so no key passes through the caller's shell; the envelope lists each file and its size
+  - then an attachment that links elsewhere (a pr, a page) is skipped, and a name never walks out of `<dir>`
+- ✅ `x linear list` finds tickets by name, in one request
+  - given `--team`, `--state`, `--label` (comma-separated, all must match), `--project`, `--milestone` — names, never ids
+  - when it runs
+  - then linear filters by those names in the same request, and each row prints id, state, title, labels, project, priority, estimate
+  - given no `--state`, then closed tickets stay out; given `--search <term>`, then linear's full-text search runs, closed tickets included
+  - given a page that hit 50, then the list says `capped` with its count
+  - given an empty list and a name linear does not know (a typo'd state, label, project, milestone or team), then exit 2 naming it
+  - decision: no default team — a bare list covers both teams (dima, 2026-10-07)
+- ✅ `x linear body` pulls a description to a file and writes it back safely
+  - makes: the body in `~/.local/state/x/linear/bodies/<id>.md` (or `--to <file>`), and the pull's `updatedAt` in `~/.local/state/x/linear/pulls.json`
+  - given a ticket
+  - when `x linear body <id>` runs, then its description lands in the file, byte for byte
+  - when `x linear body <id> --set <file>` runs after a pull and the ticket is unchanged, then the file becomes the description, and the envelope names the actor
+  - given the ticket changed since the pull (a peer's edit, dima's words), then nothing is written: exit 1, and `next` pulls theirs beside yours and diffs the two
+  - given no pull of that ticket, then nothing is written and `next` is the pull
+- ✅ `x linear set` updates a ticket by names, in one write
+  - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate coder|cclio`, `--add-label`, `--remove-label` — names, never ids
+  - when it runs
+  - then one lookup resolves every name and one `issueUpdate` lands them all; the envelope prints the actor and each change as `field: old → new`
+  - given `--add-label` or `--remove-label`, then only those labels move — the write carries the delta (`addedLabelIds`, `removedLabelIds`), so a label another writer adds in between survives
+  - decision: deltas over the spec's full set, for that race (dima, 2026-10-07)
+  - given a name the ticket's team or the workspace lacks, then exit 1 listing the valid names, and nothing is written; given no field at all, exit 2
+- ✅ `x linear link <id> blocks|related|duplicate <targets…>` relates tickets in one request
+  - given a ticket, a kind and one or more targets, all by `FRM-N`
+  - when it runs, then one request creates a relation per target, and the envelope names the actor
+  - given another kind, then exit 2 naming the three
+- ✅ `x linear comment <id> --body-file <f>` posts a comment
+  - given a markdown file with backticks, `$VAR` and quotes
+  - when it runs, then the comment holds the file byte for byte, and the envelope prints the actor and the comment's url
+- ✅ `x linear update <project|initiative> --body-file <f> --health <h>` posts a status update
+  - given a name that finds exactly one project or initiative, and `--health onTrack|atRisk|offTrack`
+  - when it runs, then the update lands on that one with its health; a name that finds none or several writes nothing
+- ✅ `x linear api '<graphql>'` is the raw door when no verb fits
+  - given any graphql, and `--vars '<json object>'`
+  - when it runs, then it goes out as the acting member, and linear's reply prints as it came — exit 1 when it holds errors
+  - given an `FRM-N` where linear wants a uuid (`id:`, `issueId:`, `relatedIssueId:`, `parentId:`, or an `…Id` variable), then x swaps in the uuid; `issue(id: "FRM-N")` and text inside a string stay as written
+  - then the trace keeps the query's shape (`mutation issueArchive`) and the ticket ids in it, never its text or a variable's value
+  - decision: ticket ids written in the query stay in the trace — traces keep entity ids (dima, 2026-10-07)
+  - decision: `--vars <json>` over the spec's `--var k=v` — one flag carries typed values (numbers, input objects) (dima, 2026-10-07)
+- ✅ `x stats` ranks what the raw doors carried
+  - given traces of raw-door calls
+  - when `x stats` runs, then each family lists its five most-carried shapes with counts — a shape seen three times is a verb candidate
+- ✅ `x schema linear` names the raw door and the identity behind every verb
+- ✅ `x linear push` is the pre-push hook: it links pushed commits and undoes linear's auto-assign
+  - makes: a line per write in `<repo>/.git/linear-push.log` (the common git dir, shared by worktrees)
+  - given a push from a repo under `github.com/dvakatsiienko` whose commits carry `- ticket: FRM-N`
+  - when lefthook's pre-push runs `x linear push {1} {2}`, then the hook half exits 0 at once, and a detached run half waits for the push to land, then attaches each commit to its ticket
+  - given a commit written with linear's own keyword (`ref FRM-2`), then the assignee and state the integration wrote after the push are undone; a closing keyword keeps its state move, a completed state is never reopened, anything stamped before the push is dima's and stays
+  - given another owner or host, then it stands down and says why; given a push that never lands, then nothing is written; given linear down, the push still succeeds
+  - decision: links and reverts go out as the cclio app — the old script wrote as dima (dima, 2026-10-07)
+- ✅ `x linear archive [--days 14]` retires closed tickets
+  - given closed tickets (completed or canceled) untouched for `--days`
+  - when it runs, then it prints the plan and exits 4; with `--apply`, one request archives them all and a capped page says «run again»
+- ✅ every `x linear` call acts as someone, and says who
+  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cw — anything without a terminal — then it acts as the cclio app; given dima's own terminal, as dima; `--as coder|cclio|dima` overrides
+  - given linear rejects a cached app token (401), then x mints it again and retries once
+  - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
+
 ## stats — telemetry
 
 - ✅ every `x` call leaves one trace line

@@ -5,7 +5,7 @@
 - **queues**
   - sort the `cli` project by estimate
 - **first-acts**
-  1. `pnpm --silent linear:read FRM-14`
+  1. `x linear read FRM-14`
 
 # G
 

@@ -17,6 +17,9 @@ source file is newer.
   exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal.
   the one exception: the `handoff` verbs delete without it — the store is disposable by contract
   (ADR-0002), every removal goes to the macos trash, and the envelope names each file it took.
+  the second: the `linear` writes (`body --set`, `set`, `link`, `comment`, `update`) go out in one call —
+  the hottest door stays one call, and the stale check, the printed actor and linear's own history guard
+  them; `linear archive` destroys from the board's view and keeps `--apply` (FRM-344, dima 2026-10-07)
 - a verb that took over a script names it in `replaces:`; `replaces_test.go` stays red while that
   file exists or any tracked file outside history names it. `touches:` names what the verb reads or
   writes outside the repo; `x schema` prints both.
@@ -33,6 +36,11 @@ source file is newer.
 - tests run with `X_TRACE=0` (`cleanEnv`), so no test writes to `~/.local/state/x`; a trace test
   sets `X_TRACE=1` and its own `X_STATE`. the forced panic lives behind the `xpanic` build tag,
   which only the test binary carries.
+
+## keys
+
+- `go/keys.go` is the one place a token comes from; each secret is read where it lives: dima's linear key in 1password (`op read`, the `x-fleet` service account — never `op run`, it masks stdout), the cclio/coder oauth pairs and the github app keys in the macos keychain. minted app tokens cache in the keychain, written through `security -i` on stdin so no value reaches argv; dima's key is never cached (his word, 2026-10-07).
+- tests: `X_KEYS` names a json fixture standing in for both stores (`keychain:<service>:<account>` or `op://…` → value); `X_LINEAR_URL` / `X_GITHUB_URL` point the mints at a fake server. under `X_TEST` a missing `X_KEYS` is an error, so no test reads the real keychain.
 
 ## verify
 

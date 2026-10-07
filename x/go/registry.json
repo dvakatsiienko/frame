@@ -11,6 +11,13 @@
             "name": "handoff"
         },
         {
+            "example": "x linear read FRM-1 FRM-2 --comments",
+            "gist": "tickets in native graphql: ids, states and labels resolve inside x",
+            "identity": "every verb acts as one member: an agent or a terminal-less caller as the cclio app, dima's terminal as dima, --as overrides; app tokens come from the keychain, dima's key from 1password (x as, keys.go)",
+            "name": "linear",
+            "rawDoor": "x linear api"
+        },
+        {
             "example": "x brief check brief.md --repo ~/frame",
             "gist": "a spawn brief checked against the repo it names",
             "name": "brief"
@@ -24,6 +31,11 @@
             "example": "x knowledge read spawning-mechanics",
             "gist": "the fleet reference shelf, docs/knowledge",
             "name": "knowledge"
+        },
+        {
+            "example": "x as coder -- gh pr comment 12 --body-file f.md",
+            "gist": "one command under a fleet member's identity",
+            "name": "as"
         },
         {
             "example": "x schema lane --level short",
@@ -276,6 +288,381 @@
             "name": "brief check",
             "purpose": "check that every backticked path, script, verb and id in a brief exists, and lint its exit lines; a pass stamps it",
             "steps": ["read", "exist", "lint", "stamp"]
+        },
+        {
+            "args": [
+                {
+                    "description": "a ticket id, FRM-N or BYT-N; several batch into one request",
+                    "isVariadic": true,
+                    "name": "id"
+                }
+            ],
+            "flags": {
+                "as": {
+                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "attachments": {
+                    "description": "save the tickets' linear uploads into this dir; x adds the auth itself",
+                    "type": "string",
+                    "value": "dir"
+                },
+                "comments": {
+                    "description": "add the comments, oldest first",
+                    "type": "boolean"
+                },
+                "relations": {
+                    "description": "add the relations, both sides: blocks and blocked by",
+                    "type": "boolean"
+                }
+            },
+            "name": "linear read",
+            "needsApply": false,
+            "purpose": "read tickets in one request: state, labels, body, parent, children; capped lists are marked",
+            "replaces": [
+                "script/linear-read.ts",
+                "script/lib/linear-read.ts",
+                "script/lib/linear-read.test.ts",
+                "linear:read"
+            ],
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "flags": {
+                "as": {
+                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "label": {
+                    "description": "a label name; several, comma-separated, must all be on the ticket",
+                    "type": "string",
+                    "value": "names"
+                },
+                "milestone": {
+                    "description": "a project milestone, by name",
+                    "type": "string",
+                    "value": "name"
+                },
+                "project": {
+                    "description": "a project, by name",
+                    "type": "string",
+                    "value": "name"
+                },
+                "search": {
+                    "description": "full-text search, closed tickets included",
+                    "type": "string",
+                    "value": "term"
+                },
+                "state": {
+                    "description": "a state by name; without it closed tickets stay out",
+                    "type": "string",
+                    "value": "name"
+                },
+                "team": {
+                    "description": "a team key: FRM or BYT",
+                    "type": "string",
+                    "value": "key"
+                }
+            },
+            "name": "linear list",
+            "needsApply": false,
+            "purpose": "list tickets filtered by team, state, label, project and milestone names, or by a search term",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the ticket id, FRM-N or BYT-N",
+                    "name": "id"
+                }
+            ],
+            "flags": {
+                "as": {
+                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "set": {
+                    "description": "write this file back as the body; refused when the ticket changed since the pull",
+                    "type": "string",
+                    "value": "file"
+                },
+                "to": {
+                    "description": "where the pull writes the body; default ~/.local/state/x/linear/bodies/<id>.md",
+                    "type": "string",
+                    "value": "file"
+                }
+            },
+            "name": "linear body",
+            "needsApply": false,
+            "purpose": "pull a ticket's description to a file, or write it back only if the ticket is unchanged since",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member",
+                "~/.local/state/x/linear/ — the pulled bodies and pulls.json, each pull's updatedAt ($X_STATE in tests)"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the ticket id, FRM-N or BYT-N",
+                    "name": "id"
+                }
+            ],
+            "flags": {
+                "add-label": {
+                    "description": "label names to add, comma-separated; every other label stays",
+                    "type": "string",
+                    "value": "names"
+                },
+                "as": {
+                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "delegate": {
+                    "description": "the member working it, by name: coder or cclio; the assignee stays dima's",
+                    "type": "string",
+                    "value": "name"
+                },
+                "estimate": {
+                    "description": "the estimate, a number",
+                    "type": "string",
+                    "value": "n"
+                },
+                "milestone": {
+                    "description": "a milestone of the ticket's project (or of --project), by name",
+                    "type": "string",
+                    "value": "name"
+                },
+                "parent": {
+                    "description": "the parent ticket, FRM-N or BYT-N",
+                    "type": "string",
+                    "value": "id"
+                },
+                "priority": {
+                    "description": "0 none, 1 urgent, 2 high, 3 medium, 4 low",
+                    "type": "string",
+                    "value": "0-4"
+                },
+                "project": {
+                    "description": "a project, by name",
+                    "type": "string",
+                    "value": "name"
+                },
+                "remove-label": {
+                    "description": "label names to remove, comma-separated",
+                    "type": "string",
+                    "value": "names"
+                },
+                "state": {
+                    "description": "a state of the ticket's team, by name",
+                    "type": "string",
+                    "value": "name"
+                }
+            },
+            "name": "linear set",
+            "needsApply": false,
+            "purpose": "update a ticket's state, labels, priority, estimate, parent, project, milestone or delegate by name",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the ticket the relation starts from, FRM-N or BYT-N",
+                    "name": "id"
+                },
+                {
+                    "description": "the relation: blocks, related or duplicate",
+                    "name": "kind"
+                },
+                {
+                    "description": "the tickets on the other end; several make one request",
+                    "isVariadic": true,
+                    "name": "target"
+                }
+            ],
+            "flags": {
+                "as": {
+                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                }
+            },
+            "name": "linear link",
+            "needsApply": false,
+            "purpose": "relate a ticket to others — blocks, related or duplicate — in one request, by FRM-N ids",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the ticket id, FRM-N or BYT-N",
+                    "name": "id"
+                }
+            ],
+            "flags": {
+                "as": {
+                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "body-file": {
+                    "description": "the comment, markdown, sent byte for byte",
+                    "type": "string",
+                    "value": "file"
+                }
+            },
+            "name": "linear comment",
+            "needsApply": false,
+            "purpose": "post a comment on a ticket from a markdown file, with no shell quoting in the way",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "a project or an initiative, by name; it must find exactly one",
+                    "name": "name"
+                }
+            ],
+            "flags": {
+                "as": {
+                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "body-file": {
+                    "description": "the update, markdown",
+                    "type": "string",
+                    "value": "file"
+                },
+                "health": {
+                    "description": "onTrack, atRisk or offTrack",
+                    "type": "string",
+                    "value": "health"
+                }
+            },
+            "name": "linear update",
+            "needsApply": false,
+            "purpose": "post a project or initiative status update with its health, from a markdown file",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the graphql, one argument; an FRM-N where an id goes becomes its uuid",
+                    "name": "query"
+                }
+            ],
+            "flags": {
+                "as": {
+                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "vars": {
+                    "description": "the variables, a json object",
+                    "type": "string",
+                    "value": "json"
+                }
+            },
+            "name": "linear api",
+            "needsApply": false,
+            "purpose": "the raw door: run any graphql as the acting member and print linear's reply as it came",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member; the trace keeps the query's shape, never its text"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the remote's name, from git's pre-push argv",
+                    "isOptional": true,
+                    "name": "remote-name"
+                },
+                {
+                    "description": "the remote's url, from git's pre-push argv",
+                    "isOptional": true,
+                    "name": "remote-url"
+                }
+            ],
+            "flags": {
+                "job": {
+                    "description": "the run half: the job file the hook half wrote",
+                    "type": "string",
+                    "value": "path"
+                }
+            },
+            "hidden": true,
+            "name": "linear push",
+            "needsApply": false,
+            "purpose": "the pre-push hook's door: link pushed commits to their `- ticket:` lines, undo linear's auto-assign",
+            "replaces": [
+                "script/linear-push.ts",
+                "script/lib/linear-push.ts",
+                "script/lib/linear-push.test.ts",
+                "linear:push"
+            ],
+            "touches": [
+                "linear's graphql api, as the cclio app (a hook has no terminal)",
+                "<repo>/.git/linear-push.log and the job file beside it, in the repo's common git dir"
+            ]
+        },
+        {
+            "flags": {
+                "as": {
+                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "days": {
+                    "description": "untouched for this many days (default 14)",
+                    "type": "string",
+                    "value": "n"
+                }
+            },
+            "name": "linear archive",
+            "needsApply": true,
+            "purpose": "archive closed tickets untouched for some days; the free plan caps live tickets at 250",
+            "replaces": ["script/linear-archive.ts", "linear:archive"],
+            "steps": ["find", "archive"],
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "who acts: cclio, coder or dima",
+                    "name": "member"
+                },
+                {
+                    "description": "the linear or gh command after --, run with the member's token in its env",
+                    "isVariadic": true,
+                    "name": "command"
+                }
+            ],
+            "name": "as",
+            "needsApply": false,
+            "purpose": "run a linear or gh command with a fleet member's app token in that child's env only",
+            "replaces": ["script/linear-agent-token.ts", "linear:agent-token"],
+            "touches": [
+                "the macos keychain — the oauth pairs, the github app keys, the minted-token cache ($X_KEYS in tests)",
+                "1password dev/linear-golden through the x-fleet service account — dima's linear key"
+            ]
         },
         {
             "args": [

@@ -80,10 +80,10 @@ admission rule in `x/PRODUCT.md`.
 - jev:report · `script/jev-report.ts` «how jev did today, one block per flow» · skill-router fixture only · app-dev · a report read at the halt (`cclio/`); one surface
 - jev:test · `script/jev-test.ts` «the fixture suite of every jev flow» · skill-route.ts, skill-router research doc · app-dev · a test suite
 - jev:vet · `script/jev-vet.ts` «the trial period of every jev flow» · home/.claude/CLAUDE.md (every session), crew-coder skill · keep → none yet (proposed `jev`) · the global CLAUDE.md sends every session to it
-- linear:agent-token · `script/linear-agent-token.ts` «prints a fresh linear app-actor token» · guide-conventions package-json.md (as a naming example) · keep → pm · the actor token every pm write needs
-- linear:archive · `script/linear-archive.ts` «archives closed tickets … as the cclio app» · none · ? · no caller outside `cclio/`; network, not run
-- linear:push · `script/linear-push.ts` «link a pushed commit to its ticket ourselves» · lefthook pre-push (by path), cmt skill, linear-flow rule · drop · the pnpm name has no caller; lefthook runs the file by path, and the file stays
-- linear:read · `script/linear-read.ts` «print one ticket's whole fetch contract» · pm skill, guard lints test · keep → pm · the pm skill's read door on every surface
+- the token script · ported to `x as <member>` (FRM-344) «prints a fresh linear app-actor token» · done · the keys package mints and caches it
+- the archive script · ported to `x linear archive` (FRM-344) «archives closed tickets … as the cclio app» · done
+- the push hook · ported to `x linear push` (FRM-344) «link a pushed commit to its ticket ourselves» · lefthook pre-push, cmt skill, linear-flow rule · done · the script, its lib and its pnpm name are gone
+- the read script · ported to `x linear read` (FRM-344) «print one ticket's whole fetch contract» · done · the pm skill reads through the verb
 - macos:setup · `script/macos-setup.ts` «bring a Mac up to this repo's baseline» · seed.sh, README.md, seed-tart test drive · keep → none yet (proposed `dotfiles`) · a sequence (brew bundle, defaults, duti, vim-plug) the seed and dima both call
 - mcp:build · `pnpm --filter mcp-x-cw build` · AGENTS.md, cclio-mode skill · app-dev · a package lifecycle (build)
 - mods:live · `home/.claude/plugin-x/mods/live.ts` «a dev server for a mod» · mods/AGENTS.md, fleet-flow rule · app-dev · a dev server
@@ -121,15 +121,15 @@ admission rule in `x/PRODUCT.md`.
 ## totals
 
 - keep — **17**
-  - pm: linear:agent-token, linear:read
+  - pm: the token and read scripts, since ported to `x as` and `x linear read`
   - scheduling: schedule:install, schedule:restart
   - evergreen: toolchain:sync, skill:evergreen-apps
   - handoff: the node store script, since ported to `x handoff` (FRM-343)
   - lane: github:agent-token
   - none yet: frame:link, macos:setup (`dotfiles`), wispr:add (`wispr`), jev:vet (`jev`), memory-sync:map, memory-sync:copy (`memory`), research:lanes (`research`), crew:audit (`crew`), flow:report (`flow`)
 - app-dev — **58**
-- drop — **2** (linear:push, fleet-hazards:check: the pnpm entry only, the file stays)
-- ? — **7** (profile:redraw, jev:inbox, jev:flawlog, linear:archive, plugin:release, repo:defaults, shift:checkup)
+- drop — **2** (the push hook — since ported to `x linear push` —, fleet-hazards:check: the pnpm entry only, the file stays)
+- ? — **7** (profile:redraw, jev:inbox, jev:flawlog, the archive script (since `x linear archive`), plugin:release, repo:defaults, shift:checkup)
 - all — **84**
 
 ## what the count says

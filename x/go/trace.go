@@ -23,13 +23,16 @@ type span struct {
 	Flags    []string  `json:"x.flags"`
 	Caller   string    `json:"x.caller"`
 	Ids      []string  `json:"x.ids,omitempty"`
-	Steps    []step    `json:"x.steps,omitempty"`
-	Session  string    `json:"session.id,omitempty"`
-	Repo     string    `json:"vcs.repository.name,omitempty"`
-	Version  string    `json:"service.version"`
-	Exit     int       `json:"process.exit.code"`
-	Kind     string    `json:"error.type"`
-	skip     bool
+	Actor    string    `json:"x.actor,omitempty"`
+	// a raw door's operation kind and top-level field names, never its text
+	Shape   string `json:"x.shape,omitempty"`
+	Steps   []step `json:"x.steps,omitempty"`
+	Session string `json:"session.id,omitempty"`
+	Repo    string `json:"vcs.repository.name,omitempty"`
+	Version string `json:"service.version"`
+	Exit    int    `json:"process.exit.code"`
+	Kind    string `json:"error.type"`
+	skip    bool
 }
 
 type step struct {

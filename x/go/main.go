@@ -50,6 +50,17 @@ var impls = map[string]Impl{
 	"handoff write":   {Run: handoffWrite, Undone: "nothing was written"},
 	"handoff delete":  {Run: handoffDelete, Undone: "nothing was deleted"},
 	"brief check":     {Run: briefCheck, Undone: "nothing was stamped"},
+	"as":              {Run: as, Undone: "the command did not run"},
+	"linear read":     {Run: linearRead},
+	"linear list":     {Run: linearList},
+	"linear body":     {Run: linearBody, Undone: "nothing was written"},
+	"linear set":      {Run: linearSet, Undone: "nothing was changed"},
+	"linear link":     {Run: linearLink, Undone: "no relation was made"},
+	"linear comment":  {Run: linearComment, Undone: "nothing was posted"},
+	"linear update":   {Run: linearUpdate, Undone: "nothing was posted"},
+	"linear api":      {Run: linearAPI},
+	"linear push":     {Run: linearPush},
+	"linear archive":  {Plan: archivePlanOf, Apply: archiveApply, Undone: "nothing was archived", Ask: askArchive},
 	"probe bare":      {Run: probeBare, Undone: "no answer came back"},
 	"probe session":   {Run: probeSession, Undone: "the session was not saved"},
 	"knowledge list":  {Run: knowledgeList},
@@ -263,6 +274,9 @@ func checkArity(verb Verb, args []string) error {
 
 /* Endings */
 func finishOK(m mode, name string, r *Run, data any) int {
+	if r.passthrough {
+		return r.code
+	}
 	if m.json {
 		emit(name, kv{"data", data}, kv{"ok", true}, kv{"status", "ok"})
 		return exits["ok"]

@@ -47,20 +47,19 @@ pre-push:
       run: pnpm frame:link
     linear-push:
       # Links a pushed commit to the ticket its body names, and reverses the
-      # writes Linear's own integration still makes. `bytes` runs this same
-      # script by absolute path — one implementation, two callers, and a path
-      # that rots fails LOUD: node exits non-zero on a missing file and lefthook
-      # fails the push.
+      # writes Linear's own integration still makes. `bytes` runs the same
+      # verb — one implementation, two callers, and an `x` missing from PATH
+      # fails LOUD: the shell exits 127 and lefthook fails the push.
       #
       # {1} and {2} are git's own pre-push argv — remote name and remote url —
       # and the url is the guard that keeps this off repos we do not own.
       # use_stdin hands this command git's ref lines; lefthook gives them to
       # this command alone, so `mirror` beside it is unaffected.
       #
-      # It must never fail a push for its own reasons: the script swallows
+      # It must never fail a push for its own reasons: the verb swallows
       # everything and exits 0.
       use_stdin: true
-      run: node ./script/linear-push.ts hook {1} {2}
+      run: x linear push {1} {2}
 
 commit-msg:
   commands:

@@ -49,6 +49,9 @@ type Family struct {
 	Name    string `json:"name"`
 	Gist    string `json:"gist"`
 	Example string `json:"example"`
+	// a proxying family's passthrough when no verb fits, and whose token its verbs act with
+	RawDoor  string `json:"rawDoor,omitempty"`
+	Identity string `json:"identity,omitempty"`
 }
 
 var globalFlags = map[string]FlagSpec{

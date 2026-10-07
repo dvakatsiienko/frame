@@ -67,7 +67,7 @@ the done test is `FTR.md`; the words are `GLOSSARY.md`. prior art: `docs/researc
 
 ## the rebuild — grill round 1 (2026-10-06)
 
-the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name prefixes; the top three by calls are `linear:read` 148, the handoff store 145, `linear:agent-token` 125 (agent calls only — dima's own terminal is invisible to transcripts).
+the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name prefixes; the top three by calls are the linear read script 148 (now `x linear read`), the handoff store 145, the linear token script 125 (now `x as`) (agent calls only — dima's own terminal is invisible to transcripts).
 
 - **what x owns:** every fleet op. app dev (`dev`, `build`, `test` per app) stays with `pnpm` / `turbo`, one door per app.
 - **the shape:** entity-first families (`x linear read`, `x handoff ingest`, `x lane commit`), ~12 families, each verb declared once in the registry. not a port: each script is re-thought into its family or dropped.

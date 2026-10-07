@@ -67,9 +67,9 @@ const LINTS = [
     ['git add -A', 'git add -A', 'x lane commit', 'git add a.ts'],
     [
         'pnpm -s',
-        'pnpm -s linear:read FRM-1',
+        'pnpm -s github:agent-token',
         '--silent',
-        'pnpm --silent linear:read FRM-1',
+        'pnpm --silent github:agent-token',
     ],
     [
         'an obsidian verb with --help',

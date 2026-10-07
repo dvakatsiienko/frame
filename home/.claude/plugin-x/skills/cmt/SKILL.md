@@ -90,7 +90,7 @@ revert, or bisect on its own.
 Commit under Dima's configured identity, no flags. GitHub cannot match `fleet@x-com.local` to
 an account, so the verified badge dies; Dima wants verified commits. The full investigation
 (and why the author field never drove the Linear assign) lives in
-the header of `~/frame/script/linear-push.ts`.
+the header of `~/frame/x/go/linear_push.go`.
 
 📌 **The agent fingerprint is a trailer, not the author field.** Every agent commit ends with
 an `Agent:` trailer (§4) and Dima's hand-typed commits do not, so `git log --grep='^Agent:'`
@@ -163,7 +163,7 @@ the moment it lands. `frame` deploys nothing — no watch.
 
 ### What a push actually does to the ticket
 
-- The pre-push hook (`script/linear-push.ts`, run as a `lefthook` pre-push job) waits for the
+- The pre-push hook (`x linear push`, run as a `lefthook` pre-push job) waits for the
   push to land, then attaches each commit. It logs to
   `.git/linear-push.log` and fires only in **`frame` and `bytes`** — the two repos whose
   `lefthook` config calls it; a third repo needs those lines copied from `bytes` first. Nothing

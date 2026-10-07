@@ -17,4 +17,6 @@
 - **error kind** — why a traced call failed: `usage` (exit 2), `refused` (x's own check stopped before acting), `external` (a tool ran and failed), `bug` (a panic or an unexpected error)
 - **old door** — a script or file a verb took over; its registry entry names it under `replaces`, and `replaces_test.go` stays red while it exists or anything tracked still names it
 - **touches** — what a verb reads or writes outside the repo (a store dir, the trash), named in its registry entry so `x schema` shows a fixer where the door leads
+- **actor** — the fleet member a call acts as on an outside service (`cclio`, `coder`, `dima`); `x as` picks its token, the trace names it, never the token
+- **shape** — what a raw-door query asks for, without a word of its text: the operation kind and its top-level field names (`mutation issueArchive`); the trace keeps it as `x.shape`, `x stats` ranks it
 - **raw door** — a family's traced passthrough to the tool underneath (`x linear api`), the fallback when no verb fits; what it carries ranks the next verbs

@@ -52,6 +52,9 @@ type Run struct {
 	next        string
 	output      string
 	long        *frame
+	// a passthrough verb's stdout is its child's: no envelope, no board, the child's exit code
+	passthrough bool
+	code        int
 }
 
 // Open starts the run board; its steps are the registry entry's, the same names every arm draws

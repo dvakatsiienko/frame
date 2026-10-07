@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
-# linear-as <member> <linear args…> — runs the linear cli as a fleet app (coder, cclio), never as dima.
-# the token is minted inside the script, so the command text carries no export for the worktree guard.
+# linear-as <member> <linear args…> — the old spelling of `x as <member> -- linear …`; kept for the skills that name it.
 set -u
-usage() { echo "usage: linear-as <coder|cclio> <linear args…>" >&2; exit 2; }
-[ $# -ge 2 ] || usage
+[ $# -ge 2 ] || { echo "usage: linear-as <coder|cclio> <linear args…>" >&2; exit 2; }
 member=$1; shift
-case $member in coder | cclio) ;; *) usage ;; esac
-token=$(node "$HOME/frame/script/linear-agent-token.ts" "$member") && [ -n "$token" ] ||
-  { echo "linear-as: no token for $member" >&2; exit 1; }
-LINEAR_API_KEY=$token exec linear "$@"
+exec x as "$member" -- linear "$@"

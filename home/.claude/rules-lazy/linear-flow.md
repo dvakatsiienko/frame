@@ -50,7 +50,7 @@ omitting the line is always correct.
 ⚠️ A commit body names its ticket as `- ticket: FRM-N`, and nothing else — Linear's own keywords
 (`ref`, `closes`, …) next to an id are banned, because its parser answers them by assigning Dima.
 The `cmt` skill owns that contract and loads on every commit; the pre-push hook
-(`script/linear-push.ts`) does the linking itself.
+(`x linear push`) does the linking itself.
 **Name the ticket you are about to close in your reply**, never close silently.
 
 ## Titles and bodies

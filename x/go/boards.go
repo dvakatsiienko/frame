@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"charm.land/glamour/v2"
@@ -229,7 +230,13 @@ func markdown(text string, width int) []string {
 	}
 	lines := strings.Split(strings.Trim(out, "\n"), "\n")
 	for i, line := range lines {
-		lines[i] = strings.TrimRight(line, " ")
+		// glamour pads each line to the wrap width with one styled space per cell
+		if trimmed := trailingPad.ReplaceAllString(line, ""); trimmed != line {
+			line = trimmed + "\x1b[m"
+		}
+		lines[i] = line
 	}
 	return lines
 }
+
+var trailingPad = regexp.MustCompile(`(?:\x1b\[[0-9;]*m| )+$`)

@@ -387,7 +387,11 @@ func schema(r *Run, args []string, flags Flags) (any, error) {
 		}
 		r.Page(b)
 	}
-	return ordered{{"verbs", list}}, nil
+	data := ordered{{"verbs", list}}
+	if family := familyOf(prefix); family.RawDoor != "" {
+		data = append(data, kv{"identity", family.Identity}, kv{"rawDoor", family.RawDoor})
+	}
+	return data, nil
 }
 
 /* completion */

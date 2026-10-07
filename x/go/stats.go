@@ -44,6 +44,17 @@ type statsData struct {
 
 const keepDays = 90
 
+// the five shapes a family's raw door carried most; a shape seen three times is a verb candidate
+func topShapes(counts map[string]int) []string {
+	names := slices.Collect(maps.Keys(counts))
+	slices.SortFunc(names, byCalls(func(s string) int { return counts[s] }, func(s string) string { return s }))
+	top := []string{}
+	for _, name := range names[:min(5, len(names))] {
+		top = append(top, fmt.Sprintf("%s ×%d", name, counts[name]))
+	}
+	return top
+}
+
 // day files older than keepDays go to the macos trash, never rm; a missing `trash` keeps them, silently
 func trashOld() []string {
 	old := dayFiles(-keepDays, true)
@@ -83,10 +94,18 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 	data := statsData{Days: days, Calls: len(lines), Callers: map[string]int{}, Failures: map[string]int{},
 		Families: []familyCount{}, Verbs: []*verbCount{}, Unused: []string{}, Trashed: trashed}
 	byFamily := map[string]int{}
+	shapes := map[string]map[string]int{}
 	byVerb := map[string]*verbCount{}
 	for _, line := range lines {
 		data.Callers[cmp.Or(line.Caller, "unknown")]++
-		byFamily[strings.Fields(line.Name)[0]]++
+		family := strings.Fields(line.Name)[0]
+		byFamily[family]++
+		if line.Shape != "" {
+			if shapes[family] == nil {
+				shapes[family] = map[string]int{}
+			}
+			shapes[family][line.Shape]++
+		}
 		verb := byVerb[line.Name]
 		if verb == nil {
 			verb = &verbCount{Name: line.Name, Failures: map[string]int{}}
@@ -101,7 +120,7 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 		}
 	}
 	for name, calls := range byFamily {
-		data.Families = append(data.Families, familyCount{Name: name, Calls: calls, Raw: []string{}})
+		data.Families = append(data.Families, familyCount{Name: name, Calls: calls, Raw: topShapes(shapes[name])})
 	}
 	for _, verb := range verbsUnder("") {
 		if byVerb[verb.Name] == nil {

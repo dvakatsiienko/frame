@@ -34,10 +34,11 @@ Two files, and the split matters:
 - **recipes are here** — [references/workspace.md](references/workspace.md): current projects,
   states, cli mechanics, quota ops. read it before the first write of a session.
 
-Channel: the `linear` CLI; `linear api '<graphql>'` for anything it lacks. **Pick by probing
-your own tool list, never by guessing the platform** — first match wins:
+Channel: `x linear` on the mac (`x schema linear` lists the verbs), the `linear` CLI for what x
+leaves to it (create, triage), `x linear api '<graphql>'` for anything neither covers. **Pick by
+probing your own tool list, never by guessing the platform** — first match wins:
 
-1. a shell tool (`Bash` on `cc`, Desktop Commander on `cw`) → the `linear` CLI through it.
+1. a shell tool (`Bash` on `cc`, Desktop Commander on `cw`) → `x linear`, then the `linear` CLI, through it.
 2. no shell tool at all (Claude iOS) → the Linear MCP connector — the one narrow exception to
    «never the Linear MCP».
 3. a shell but no `linear` binary or auth → say so and stop; never reach for the MCP to route
@@ -52,26 +53,25 @@ flags (`issue list --query`, `issue search`) came from citing recipes that sat u
 list is **what breaks**; for anything not on it, `linear <cmd> --help` confirms a flag in one
 call and is always cheaper than a wrong guess.
 
-- **listing** — `linear issue query --team FRM`. `issue list` shows only issues assigned to *you*,
-  and there is no `--query` flag on it.
+- **`x linear` first** — ids and names in, cclio app for an agent (`--as` switches), actor printed:
+  `read FRM-1 FRM-2 --comments --relations` · `list --team FRM --state <s> --label <l>` / `--search <w>` ·
+  `body FRM-N` then `--set <file>` · `set FRM-N --state <s> --add-label <l>` · `link FRM-N blocks FRM-M` ·
+  `comment FRM-N --body-file f` · `update <project> --body-file f --health onTrack`; no verb →
+  `x as coder -- linear issue create …`
 - **old ids resolve** — a team key change keeps every old identifier alive: `DOT-26` answers as `FRM-26` in `issue(id:)` and in search, so old ids in text never need a sweep.
-- **searching** — no `issue search` subcommand exists. Use `linear api` with `searchIssues`.
 - **multi-line bodies** — write a file, pass `--description-file f.md` (`issue create` /
   `issue update`) or `--body-file f.md` (`issue comment add` / `issue comment update` — there is no
   top-level `comment` command). Inline `--description "$(cat …)"` lets the shell mangle `$VAR` and
   backticks silently.
 - **Linear renumbers a list in a description** — an inline «2. … and 3. …» inside a list item is
   re-counted with the list; write list items without inline numbers.
-- **labels replace, never add** — `issue update --label` drops every label you omit, silently, with
-  a success message. Pass the full intended set (`--label agent --label improvement --label 'opus
-  5'`) and verify: `linear api 'query { issue(id: "FRM-N") { labels { nodes { name } } } }'`.
+- **the CLI's labels replace** — `issue update --label` silently drops every label you omit;
+  `x linear set --add-label` keeps them.
 - **state on create** — `issue create` with no `--state` lands in **Triage**, and that is the
   contract (dima's call 2026-08-31): agent-created tickets are BORN in Triage so he sees, trims
   and steers every one. Never pass `--state Todo` on create; promotion out of Triage is his word.
-- **reading fields back** — `issue view --json` exits 5, and `issue view` omits comments. Use
-  `linear api` GraphQL for any read that informs a decision, comments included.
-- **archiving** — no CLI verb. `linear api 'mutation { issueArchive(id: "<uuid>") { success } }'`,
-  uuid from `linear api 'query { issue(id: "DOT-3") { id } }'`.
+- **archiving** — `x linear archive [--days 14]` plans, `--apply` archives; one ticket by hand:
+  `x linear api 'mutation { issueArchive(id: "FRM-N") { success } }'` (x swaps in the uuid).
 - **hanging >15s** — likely a hidden keychain prompt. Tell Dima to check the screen.
 - **labels via the api**: names take no emoji (`Label names cannot contain emojis`); label and
   project descriptions cap at 255 characters — the pattern text lives in the ticket, the
@@ -260,10 +260,9 @@ GraphQL for any read that will inform a decision**, and filter the JSON so only 
 enter context. Always fetch: `labels { nodes { name description } }` · `parent` + `children` ·
 `comments` · `attachments` · state, project, priority, assignee.
 
-- **on `cc`, one call prints the whole contract: `pnpm linear:read FRM-N`** (in `~/frame`;
-  `--no-body` for a DOT-237-class body, `--no-comments`, `--json`). Reach for it on every
-  decision-informing read — comments included by default, both relation sides, `⚠️ capped` on any
-  paged list.
+- **on the mac, one call prints the whole contract: `x linear read FRM-N --comments --relations`**,
+  several ids batched into one request. Reach for it on every decision-informing read — both
+  relation sides, and any paged list hitting its cap is named under `capped`.
 
 - 🚨 **BOTH `relations` AND `inverseRelations`.** `relations` returns only the edges a ticket
   *declares* — a ticket that is **blocked by** something shows an empty list and looks unblocked.
