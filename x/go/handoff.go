@@ -2,12 +2,18 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/charmbracelet/x/term"
 )
 
 type row struct {
@@ -201,6 +207,117 @@ func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
 		r.Page(b)
 	}
 	return ordered{{"body", string(body)}, {"kept", kept}, {"name", picked.file}, {"slug", picked.Slug}}, nil
+}
+
+func handoffWrite(r *Run, _ []string, flags Flags) (any, error) {
+	audience := cmp.Or(flagString(flags, "audience"), "any")
+	if !slices.Contains(audiences, audience) {
+		return nil, usageFail("unknown audience "+audience+" — any, ccli, cclio, cw", "x handoff write --help")
+	}
+	if strings.TrimSpace(flagString(flags, "slug")) == "" {
+		return nil, usageFail("write needs --slug <topic>", "x handoff write --help")
+	}
+	body := readStdin()
+	if strings.TrimSpace(body) == "" {
+		return nil, usageFail("write takes the CST on stdin, and stdin was empty", "x handoff write --help")
+	}
+	n := name{Audience: audience, Author: flagString(flags, "author"), Lane: flagString(flags, "lane"),
+		Shared: flags["shared"] == true, Slug: flagString(flags, "slug"), TS: utcStamp(time.Now())}
+	root := storeRoot()
+
+	var replaced *stored
+	if err := r.Step("read", "reading the store", func() (string, error) {
+		replaces := flagString(flags, "replaces")
+		if replaces == "" {
+			return "a new thread", nil
+		}
+		target, err := pickEntry(replaces, listStore(root))
+		if fail, ok := errors.AsType[*Fail](err); ok {
+			return "", usageFail(fail.Msg+"\nnothing was replaced. drop --replaces to write this as a new handoff.", "x handoff list")
+		}
+		replaced = &target
+		n.Shared = n.Shared || target.Shared
+		return "replaces " + target.Slug, nil
+	}); err != nil {
+		return nil, err
+	}
+
+	file := buildName(n)
+	path := filepath.Join(root, file)
+	if err := r.Step("write", "writing "+file, func() (string, error) {
+		if err := os.MkdirAll(root, 0o700); err != nil {
+			return "", err
+		}
+		// remove first, write second: one live CST per thread, so the window this order risks is zero, never two
+		if replaced != nil {
+			if err := discardIfThere(replaced.path); err != nil {
+				return "", &Fail{Msg: err.Error() + " — nothing was written, the old CST stays", Next: "x handoff list"}
+			}
+		}
+		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+			return "", err
+		}
+		return file, os.Chmod(path, 0o600)
+	}); err != nil {
+		return nil, err
+	}
+
+	var replacedName any
+	if replaced != nil {
+		replacedName = replaced.file
+	}
+	r.Done("written "+file, "x handoff list")
+	return ordered{{"name", file}, {"path", path}, {"replaced", replacedName}, {"slug", sanitize(n.Slug)}}, nil
+}
+
+// an explicit delete takes -shared files too: the suffix means the file survives a pull, not a delete
+func handoffDelete(r *Run, args []string, flags Flags) (any, error) {
+	all, slug := flags["all"] == true, firstArg(args)
+	if all == (slug != "") {
+		return nil, usageFail("delete takes a slug or --all", "x handoff delete --help")
+	}
+	var doomed []stored
+	if err := r.Step("read", "reading the store", func() (string, error) {
+		doomed = listStore(storeRoot())
+		if all {
+			return fmt.Sprintf("%d pending", len(doomed)), nil
+		}
+		picked, err := pickEntry(slug, doomed)
+		if err != nil {
+			return "", err
+		}
+		doomed = []stored{picked}
+		return picked.Slug, nil
+	}); err != nil {
+		return nil, err
+	}
+
+	deleted := []ordered{}
+	err := r.Step("delete", "moving to the trash", func() (string, error) {
+		for _, e := range doomed {
+			if err := discardIfThere(e.path); err != nil {
+				return "", &Fail{Msg: err.Error(), Next: "x handoff list"}
+			}
+			deleted = append(deleted, ordered{{"name", e.file}, {"slug", e.Slug}})
+		}
+		return fmt.Sprintf("%d deleted", len(deleted)), nil
+	})
+	r.Done(fmt.Sprintf("%d deleted", len(deleted)), "x handoff list")
+	return ordered{{"deleted", deleted}}, err
+}
+
+func flagString(flags Flags, key string) string {
+	value, _ := flags[key].(string)
+	return value
+}
+
+// a terminal on stdin carries no CST; reading it would wait for a ^D nobody knows to type
+func readStdin() string {
+	if term.IsTerminal(os.Stdin.Fd()) {
+		return ""
+	}
+	body, _ := io.ReadAll(os.Stdin)
+	return string(body)
 }
 
 func pendingSlugs() []string {

@@ -578,9 +578,11 @@
     "data": {
         "brief check": "{ brief, checked, repo, sha256, stamp, unchecked } — on a miss: failed, the error lists each line, kind and name",
         "completion": "{ shell, script }",
+        "handoff delete": "{ deleted: [{ name, slug }] } — every file named, shared ones too, went to the macos trash",
         "handoff ingest": "{ name, slug, kept, body } — the file is deleted unless shared (kept: true)",
         "handoff list": "{ root, entries: [{ name, slug, audience, lane, author, shared, age, stale, bytes, runId }], others: [same] } — newest first; `others` holds what --for <audience> filtered out, [] without --for",
         "handoff peek": "{ name, slug, age, bytes, meta } — meta is the META block as markdown, null when the CST has none",
+        "handoff write": "{ name, path, replaced, slug } — the CST came on stdin; replaced is the file --replaces removed, null without it",
         "knowledge list": "{ files: [{ name, purpose, verified, refreshWhen, bytes }], root }",
         "knowledge read": "{ body, name, path, verified } — the read is logged to $X_STATE/knowledge-reads.jsonl",
         "lane commit": "{ branch, sha, tree }",

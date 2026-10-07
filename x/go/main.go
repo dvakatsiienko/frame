@@ -44,9 +44,11 @@ var impls = map[string]Impl{
 	"lane pr-open":    {Plan: prPlan, Apply: prOpen, Undone: "no pr was opened", Ask: askPR},
 	"lane merge-main": {Run: mergeMain, Undone: "nothing was merged"},
 	"lane unlock":     {Run: unlock, Undone: "nothing was decrypted"},
-	"handoff list":   {Run: handoffList},
-	"handoff peek":   {Run: handoffPeek},
-	"handoff ingest": {Run: handoffIngest},
+	"handoff list":    {Run: handoffList},
+	"handoff peek":    {Run: handoffPeek},
+	"handoff ingest":  {Run: handoffIngest},
+	"handoff write":   {Run: handoffWrite, Undone: "nothing was written"},
+	"handoff delete":  {Run: handoffDelete, Undone: "nothing was deleted"},
 	"brief check":     {Run: briefCheck, Undone: "nothing was stamped"},
 	"probe bare":      {Run: probeBare, Undone: "no answer came back"},
 	"probe session":   {Run: probeSession, Undone: "the session was not saved"},
@@ -457,6 +459,14 @@ func flagMessage(c *cobra.Command, err error) string {
 func overview(m mode, words []string) error {
 	prefix := strings.Join(words, " ")
 	matched := verbsUnder(prefix)
+	// a hidden family stays out of the overview and completion, yet its bare name still prints its help
+	if len(words) == 1 && len(matched) == 0 {
+		for _, verb := range verbs {
+			if verb.Family() == words[0] {
+				matched = append(matched, verb)
+			}
+		}
+	}
 	if len(words) > 0 && len(matched) == 0 {
 		family := verbsUnder(words[0])
 		if len(family) == 0 {
@@ -475,15 +485,15 @@ func overview(m mode, words []string) error {
 
 	if m.json {
 		groups := ordered{}
-		for _, family := range families() {
+		for _, family := range familyList {
 			var members []ordered
 			for _, verb := range matched {
-				if verb.Family() == family {
+				if verb.Family() == family.Name {
 					members = append(members, ordered{{"name", verb.Name}, {"purpose", verb.Purpose}})
 				}
 			}
 			if members != nil {
-				groups = append(groups, kv{family, members})
+				groups = append(groups, kv{family.Name, members})
 			}
 		}
 		emit(prefix, kv{"data", ordered{{"groups", groups}}}, kv{"ok", true}, kv{"status", "ok"})

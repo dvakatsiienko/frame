@@ -161,6 +161,62 @@
             "purpose": "print one pending CST in full and delete its file, unless it is shared"
         },
         {
+            "flags": {
+                "audience": {
+                    "description": "the agent the CST is for, one of any, ccli, cclio, cw; any (the default) is whoever pulls next",
+                    "type": "string",
+                    "value": "audience"
+                },
+                "author": {
+                    "description": "the agent that wrote it, named in the file as by-<author>; any by default",
+                    "type": "string",
+                    "value": "who"
+                },
+                "lane": {
+                    "description": "the work lane the thread ran in: pm, code, research, design; any by default",
+                    "type": "string",
+                    "value": "lane"
+                },
+                "replaces": {
+                    "description": "a pending handoff of the same thread, by slug: it is removed as this one lands, and its -shared carries over",
+                    "type": "string",
+                    "value": "slug"
+                },
+                "shared": {
+                    "description": "keep the file on ingest, for several pullers",
+                    "type": "boolean"
+                },
+                "slug": {
+                    "description": "the topic, kebab-cased into the file name",
+                    "type": "string",
+                    "value": "topic"
+                }
+            },
+            "name": "handoff write",
+            "needsApply": false,
+            "purpose": "save the CST on stdin to the shared store as one file; --replaces removes the sibling it supersedes",
+            "steps": ["read", "write"]
+        },
+        {
+            "args": [
+                {
+                    "description": "a word of the handoff filename; must match exactly one",
+                    "isOptional": true,
+                    "name": "slug"
+                }
+            ],
+            "flags": {
+                "all": {
+                    "description": "delete every pending CST instead of one",
+                    "type": "boolean"
+                }
+            },
+            "name": "handoff delete",
+            "needsApply": false,
+            "purpose": "remove one pending CST by slug, or every one with --all; shared files go too, to the macos trash",
+            "steps": ["read", "delete"]
+        },
+        {
             "args": [
                 {
                     "description": "the brief file, markdown",

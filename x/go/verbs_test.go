@@ -28,6 +28,16 @@ func TestEveryVerbHasHelpAndSchema(t *testing.T) {
 	}
 }
 
+func TestBareHiddenFamilyPrintsItsHelp(t *testing.T) {
+	got := xIn(t, t.TempDir(), nil, "trace")
+
+	groups, _ := got.data["groups"].(map[string]any)
+	listed, _ := groups["trace"].([]any)
+	if got.code != 0 || len(listed) != 1 || listed[0].(map[string]any)["name"] != "trace record" {
+		t.Fatalf("exit %d: %s", got.code, got.stdout)
+	}
+}
+
 // a repo whose pre-commit hook fails while the untracked wip file exists, and records what it saw
 func gatedRepo(t *testing.T, hook string) (dir, seen string) {
 	dir = repo(t)

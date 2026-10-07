@@ -36,6 +36,10 @@
   - when dima presses Tab after `x`, a family, a verb or a flag
   - then zsh offers the families, the verbs, the flags, and each value from where it lives: pending slugs, shelf names, probe names, models, audiences, `.md` briefs, `.json` settings, dirs for `--repo`
   - decision: the completers are keyed by the registry's arg and flag names, so a new verb that reuses a name completes with no edit
+- ⬜ a bare family prints its help
+  - given any family, a hidden one (`trace`) included
+  - when `x <family>` runs with no verb
+  - then it prints that family's verbs, the same as `x <family> --help`; a hidden family still stays out of the overview and completion
 - ✅ `x schema` at two detail levels
   - given a verb or a family name
   - when `x schema` runs with the short level
@@ -72,12 +76,31 @@
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ `x lane unlock` decrypts a worktree's git-crypt files
 
-## handoffs
+## handoff — the CST store
 
 - ✅ `x handoff` lists, peeks and ingests CSTs from the shared store
   - given a pending handoff in the store
   - when `x handoff list` runs
   - then it lists the same handoffs `x-cw`'s tools see — one store, two doors
+- ⬜ `x handoff write` saves a CST
+  - makes: `~/.claude/shelf/handoffs/<for>--<lane>--<topic>--by-<author>--<utc-ts>[-shared].md`, mode 600
+  - given a CST on stdin and `--slug`
+  - when `x handoff write --audience <a> --slug <s> --lane <l> --author <who>` runs
+  - then one file lands under that name; an empty stdin or no slug is exit 2 and writes nothing
+- ⬜ `x handoff write --replaces` folds a thread into one file
+  - given a pending handoff of the same thread
+  - when `write --replaces <slug>` runs
+  - then the sibling is gone, the new file stands alone and inherits its `-shared`; a slug matching nothing is exit 2 and writes nothing
+- ⬜ `x handoff delete` removes one CST or all of them
+  - given pending handoffs, shared ones among them
+  - when `x handoff delete <slug>` or `x handoff delete --all` runs
+  - then that one file, or every file, goes to the macos trash; a bare `delete` is exit 2 and touches nothing
+  - decision: no `--apply` — the store is disposable by contract (ADR-0002), and the envelope names what went
+- ⬜ every handoff caller goes through `x handoff`
+  - given the two plugin-x handoff skills, `CST-SPEC.md`, the `x-cw` handoff tools and the x-ray raycast command
+  - when they list, peek, ingest, write or delete
+  - then each one calls `x handoff … --json`; the node store script is gone
+  - decision: the raycast command keeps its name `handoffs`, its icon and its hotkey — dima's binding (cclio, 2026-10-07)
 - ✅ `x handoff list` paints in under 20 ms
   - given the live store
   - when dima runs `x handoff list` in a terminal

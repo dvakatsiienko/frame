@@ -1,12 +1,61 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 )
+
+// x with a CST on stdin, against its own store
+func xStore(t *testing.T, root, stdin string, args ...string) ran {
+	t.Helper()
+	c := exec.Command(xbin, args...)
+	c.Dir = t.TempDir()
+	c.Env = append(cleanEnv(), "X_TEST=1", "HANDOFF_STORE_ROOT="+root)
+	c.Stdin = strings.NewReader(stdin)
+	var stdout bytes.Buffer
+	c.Stdout = &stdout
+	code := exitOf(c.Run())
+	var envelope struct {
+		Data map[string]any `json:"data"`
+		Next string         `json:"next"`
+	}
+	_ = json.Unmarshal(stdout.Bytes(), &envelope)
+	return ran{code, stdout.String(), envelope.Data, envelope.Next}
+}
+
+func storeFiles(root string) []string {
+	var files []string
+	for _, e := range listStore(root) {
+		files = append(files, e.file)
+	}
+	return files
+}
+
+func TestWriteLandsOnePrivateFileUnderTheGrammarsName(t *testing.T) {
+	root := filepath.Join(t.TempDir(), "store")
+
+	got := xStore(t, root, "# META\n\nbody\n", "handoff", "write", "--audience", "cclio", "--slug", "Pm Overhaul!", "--lane", "pm", "--author", "ccli")
+
+	files := storeFiles(root)
+	if got.code != 0 || len(files) != 1 {
+		t.Fatalf("exit %d, files %v: %s", got.code, files, got.stdout)
+	}
+	parsed, _ := parseName(files[0])
+	if parsed.Audience != "cclio" || parsed.Lane != "pm" || parsed.Slug != "pm-overhaul" || parsed.Author != "ccli" || parsed.Shared {
+		t.Errorf("name %s parsed as %+v", files[0], parsed)
+	}
+	path := filepath.Join(root, files[0])
+	if info, _ := os.Stat(path); info.Mode().Perm() != 0o600 || read(t, path) != "# META\n\nbody\n" {
+		t.Errorf("mode %v, body %q", info.Mode().Perm(), read(t, path))
+	}
+}
 
 func TestParseNameReadsTheSharedGrammar(t *testing.T) {
 	raw, err := os.ReadFile("../../script/lib/handoff-names.json")
@@ -33,6 +82,73 @@ func TestParseNameReadsTheSharedGrammar(t *testing.T) {
 		if !ok || got != *c.Parsed {
 			t.Errorf("%s: got %+v, want %+v", c.File, got, *c.Parsed)
 		}
+	}
+}
+
+func TestWriteReplacesLeavesExactlyOneFile(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, "any--code--old-thread--by-cw--20261001T120000Z-shared.md"), "# META\nold\n")
+	write(t, filepath.Join(root, "any--code--other--by-cw--20261001T120000Z.md"), "# META\nother\n")
+
+	got := xStore(t, root, "# META\nnew\n", "handoff", "write", "--slug", "new-thread", "--replaces", "old-thread")
+
+	files := storeFiles(root)
+	if got.code != 0 || len(files) != 2 || got.data["replaced"] != "any--code--old-thread--by-cw--20261001T120000Z-shared.md" {
+		t.Fatalf("exit %d, files %v: %s", got.code, files, got.stdout)
+	}
+	if !slices.ContainsFunc(files, func(f string) bool {
+		return strings.HasPrefix(f, "any--any--new-thread--") && strings.HasSuffix(f, "-shared.md")
+	}) {
+		t.Errorf("the replacement must inherit -shared: %v", files)
+	}
+}
+
+func TestWriteReplacingNothingWritesNothing(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, "any--code--other--by-cw--20261001T120000Z.md"), "# META\n")
+
+	got := xStore(t, root, "# META\nnew\n", "handoff", "write", "--slug", "new", "--replaces", "missing")
+
+	if got.code != 2 || len(storeFiles(root)) != 1 {
+		t.Fatalf("a replace that matches nothing must refuse: exit %d, files %v", got.code, storeFiles(root))
+	}
+}
+
+func threeStored(t *testing.T) string {
+	root := t.TempDir()
+	for _, file := range []string{"any--code--one--by-cw--20261001T120000Z.md", "cclio--pm--two--by-cw--20261001T120000Z.md",
+		"any--code--three--by-cw--20261001T120000Z-shared.md"} {
+		write(t, filepath.Join(root, file), "# META\n")
+	}
+	return root
+}
+
+func TestDeleteAllTakesSharedFilesToo(t *testing.T) {
+	root := threeStored(t)
+
+	got := xStore(t, root, "", "handoff", "delete", "--all")
+
+	if got.code != 0 || len(storeFiles(root)) != 0 {
+		t.Fatalf("exit %d, left %v: %s", got.code, storeFiles(root), got.stdout)
+	}
+}
+
+func TestDeleteOneSlugLeavesTheRestAlone(t *testing.T) {
+	root := threeStored(t)
+
+	got := xStore(t, root, "", "handoff", "delete", "three")
+
+	if left := storeFiles(root); got.code != 0 || len(left) != 2 || slices.ContainsFunc(left, func(f string) bool { return strings.Contains(f, "three") }) {
+		t.Fatalf("exit %d, left %v: %s", got.code, left, got.stdout)
+	}
+}
+
+func TestDeleteWithNoTargetRefuses(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, "any--code--only--by-cw--20261001T120000Z.md"), "# META\n")
+
+	if got := xStore(t, root, "", "handoff", "delete"); got.code != 2 || len(storeFiles(root)) != 1 {
+		t.Fatalf("a bare delete must name a slug or --all: exit %d", got.code)
 	}
 }
 
