@@ -61,8 +61,23 @@ posted: {health: no}
 
 **state**: checkpoint 2; the sweep starts in this thread after the compact (ticket 01, then 03 recipes); the telemetry coder spawns with it; ccrow paused
 
+⸻ upd 20:43 (checkpoint 3)
+
+**shipped**
+- cli lane: [FRM-340](https://linear.app/x-com/issue/FRM-340) x telemetry (frame#63) and [FRM-343](https://linear.app/x-com/issue/FRM-343) x handoff (frame#64) merged, each after a verifier loop; [FRM-344](https://linear.app/x-com/issue/FRM-344) x linear is building (frame#65, 10 tickets, the first to-tickets cut)
+- recipes became a feature: `~/frame/recipes/<name>/`, the `x:shape-recipe` engine with shared research + analysis vectors, a shape test in the commit hook, nurture-memory 53.6 → 25.1 KB with its groom card
+- sweep phases 01–02: the baseline (fresh terminal boot 153k, the Code tab ~33k heavier), two prompt audits, the research on self-managed memory; the doctor slice fixed 13 stale facts and contradictions
+- fleet: the opus-register hook deleted; to-tickets for every spec; a step-0 «brief against the world» line in every crew skill; ccrow notes carry their vet id
+
+**tricks gained**
+- `/skill-doctor` moved into the plugin manager's Stats tab; `/doctor prompt-audit` runs only in a terminal claude
+- block html comments are stripped in imported leaves and `rules/` files too
+- `red-proof` needed `-count=1` for go and a touch on restore, or a cached build hides the mutation
+
+**state**: checkpoint 3; next is the recipe review and run, `refresh-craft-spawning` first; FRM-344 coder + verifier live; ccrow paused
+
 ## trail
 
-- shipped: cli lane planned (4 specs, FRM-284 closed) · linear verbs from 981 calls · charm.md · researcher agent (9.2k base) · duckdb test drive · sweep plan (spec + 9 tickets)
-- open: the sweep run (01 → 03 today) · the telemetry coder · a cc issue on slash stacking · tool-scout ledger (asked) · govulncheck digest (32)
-- state: frame pushed · no coders · ccrow paused · weekly 51 %, 5h 4 %
+- shipped: x telemetry + x handoff merged · recipes as a feature (x:shape-recipe, recipes/, shape test) · sweep 01–02 + the doctor slice · opus-register hook gone · to-tickets for every spec
+- open: the recipe runs (craft-spawning → nurture-memory → nurture-skills) · FRM-344 x linear · sweep phases 04–09 · the raycast run for x handoff (dima)
+- state: frame pushed · FRM-344 coder + verifier live · ccrow paused · weekly 62 %, 5h 74 %
