@@ -19,7 +19,7 @@ three rules keep it honest:
 - [authoring — memory](knowledge/authoring-memory.md) — where a fact goes, decided BEFORE it is written: the pre-write checklist, bucket tests, silent hazards
 - [authoring — project memfile](knowledge/authoring-memory-project.md) — how to write a project `AGENTS.md`
 - [models](knowledge/models.md) — the model cards and prices behind `rules/models.md`
-- [spawn mechanics](knowledge/spawn-mechanics.md) — what is actually true about subagents, `--bg` sessions and their inheritance, per cc build
+- [spawning mechanics](knowledge/spawning-mechanics.md) — what is actually true about subagents, `--bg` sessions and their inheritance, per cc build
 - [writing for humans](knowledge/writing-for-humans.md) — the distilled knowledge behind the `x:writing-for-humans` skill
 
 ## research/ — investigations, subject-first, one topic per file

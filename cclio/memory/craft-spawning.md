@@ -211,7 +211,7 @@ nearby; respawn when the work is unrelated or the context is polluted. **Always 
 **Context size is a cost, not a precision cliff — until our own probe says otherwise**: no
 long-context number exists for the 5 family, the last measured knee (opus 4.6) sits past 256k, a
 90k boot on a warm 1h cache is ~2 cents a turn. what does cost: a cache gone cold after a >1h gap.
-the probe (10-needle recall + one edit at 100k / 400k / 800k) rides `refresh-spawn-mechanics` at
+the probe (10-needle recall + one edit at 100k / 400k / 800k) rides `refresh-craft-spawning` at
 every model bump — the curve is per-release.
 📌 **the top of the cost curve is measured, not capped**: a coder at 250–460k context, 638 steps in 75 min, took ~85 % of a 5-hour window (2026-09-12). dima's call: no ceiling, no auto-compact below the max — a coder that compacts mid-task forgets the task. cases log in `docs/test-drive/ctx-burn.md`; dig in when the pattern repeats.
 
@@ -220,6 +220,6 @@ workflow was guessed at ~150k and spent 1.27M for 82 ticket bodies + comments.
 
 **a coder's last act is a retro** (dima, 2026-09-08, after a test that surfaced nine ranked findings): ≤20 lines to the coordinator, ranked by cost, with the WHY stated in the ask — the fleet improves itself only from what its members saw. the shape of the ask matters: name the angles (the brief, the steers, the lane, the reporting, what nobody asked), ask for blunt, name-the-moment specifics. cclio folds it into the flawlog flush. the contract line lives in `x:crew-coder`.
 
-Full evidence base: `docs/knowledge/spawn-mechanics.md`, on demand.
+Full evidence base: `docs/knowledge/spawning-mechanics.md`, on demand.
 
 Related: [method-report-verify](method-report-verify.md)

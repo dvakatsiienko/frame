@@ -9,7 +9,9 @@ script: none
 
 Contents: the want — dima's words · vectors · artifacts — where they live · the trace · cadence · log → log.md
 
-# diorama-draw — the art set for frame, the profile and bytes
+# run-diorama
+
+the art set for frame, the profile and bytes.
 
 📌 **status: draft trace.** we are still finding the recipe. every session that draws appends to
 the trace; nothing here is automated yet. the run section is written from the trace only once a

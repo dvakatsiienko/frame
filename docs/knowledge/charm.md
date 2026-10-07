@@ -1,6 +1,6 @@
 # charm — the stack x is built on
 
-read when picking a charm library or widget for `x` or another go cli, and before writing any v2 code: it names the widget per view and the v2 traps a v1-trained agent hits; dima browses the stack here in one click. maintained by the `refresh-go-knowledge` recipe (`recipes/refresh-guide-go/recipe.md`).
+read when picking a charm library or widget for `x` or another go cli, and before writing any v2 code: it names the widget per view and the v2 traps a v1-trained agent hits; dima browses the stack here in one click. maintained by the `refresh-guide-go` recipe (`recipes/refresh-guide-go/recipe.md`).
 
 verified-on: 2026-10-07 (a source-read base from the repos' `main`/`v2` branches, release notes and `go.mod` files via `gh api`; two web lanes, exa and parallel, merged in and tagged «(web lane)» — a tagged line was not source-read)
 

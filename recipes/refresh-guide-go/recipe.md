@@ -10,7 +10,7 @@ artifacts:
 script: x-go:gate
 ---
 
-# recipe — refresh-go-knowledge
+# refresh-guide-go
 
 ## the want (dima's, 2026-10-06)
 

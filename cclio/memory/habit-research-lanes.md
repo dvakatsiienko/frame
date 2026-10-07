@@ -19,8 +19,8 @@ ai are essentially free research tools).»
 - **grade every lane** in its test-drive file (`docs/test-drive/exa.md`, `docs/test-drive/parallel.md`): seconds, chars,
   cost, a 1–5 against the others.
 - **one reply** when all lanes land (habit-dima-comms-pacing), and **recipe-first** when the subject will be
-  researched again (habit-recipe-first).
+  researched again (`x:shape-recipe`).
 - **prior art is offered unprompted** whenever a build, a feature or an approach is about to be chosen: «others solved this how, and where did it break?» as one fan-out round before the build (dima, 2026-09-30, on the speak word-highlight Q12: «i want your prior art research suggestion always when matters»)
 - a one-fact lookup is not research: exa `/answer` (2 s, half a cent) or WebSearch, not the full fan-out.
 
-Related: [habit-test-drive](habit-test-drive.md), [habit-recipe-first](habit-recipe-first.md)
+Related: [habit-test-drive](habit-test-drive.md)

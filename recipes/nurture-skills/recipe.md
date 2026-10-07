@@ -6,7 +6,7 @@ artifacts: []
 script: none
 ---
 
-# nurture-skills-hillclimb — recipe (parked)
+# nurture-skills
 
 ⏸️ **parked, not a recipe yet.** written when there is a real run to do — until then this is the
 shape, nothing more. the `_spec.md` fields (the want, vectors, cadence, last run) are filled at

@@ -557,7 +557,7 @@
             "argv": ["knowledge", "read", "spawn"],
             "cwd": "{world}/repo",
             "data": {
-                "name": "spawn-mechanics",
+                "name": "spawning-mechanics",
                 "verified": "2026-09-27"
             },
             "exit": 0,

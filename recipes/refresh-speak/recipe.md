@@ -7,7 +7,7 @@ artifacts:
 script: none
 ---
 
-# refresh-read-aloud — recipe
+# refresh-speak
 
 Keeps `speak` — dima's F5 read-aloud — on the best voices, models and techniques. Born from
 [FRM-269](https://linear.app/x-com/issue/FRM-269) (2026-09-29).

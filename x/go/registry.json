@@ -21,7 +21,7 @@
             "name": "probe"
         },
         {
-            "example": "x knowledge read spawn-mechanics",
+            "example": "x knowledge read spawning-mechanics",
             "gist": "the fleet reference shelf, docs/knowledge",
             "name": "knowledge"
         },

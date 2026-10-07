@@ -67,7 +67,7 @@ func TestZshTabCompletesFromTheRegistry(t *testing.T) {
 	cases := []struct{ typed, want string }{
 		{"x la", "lane"},
 		{"x lane comm", "commit"},
-		{"x knowledge read spa", "spawn-mechanics"},
+		{"x knowledge read spa", "spawning-mechanics"},
 		{"x handoff peek cli-a", "cli-arms"},
 		{"x handoff write --audience an", "any"},
 		{"x handoff write --lane resea", "research"},

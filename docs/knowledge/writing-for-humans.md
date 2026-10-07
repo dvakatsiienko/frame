@@ -1,6 +1,6 @@
 # writing-for-humans — the distilled knowledge
 
-Ticket: DOT-223 · maintained by the `refresh-writing-for-humans` procedure (cclio/docs/recipes)
+Ticket: DOT-223 · maintained by the `refresh-writing-for-humans` recipe (`recipes/refresh-writing-for-humans/`)
 
 existing art, techniques, and the detector landscape behind the `x:writing-for-humans` skill.
 seeded 2026-08-27 from two parallel researcher runs (researcher-sourced, links carried).
