@@ -102,7 +102,7 @@ admission rule in `x/PRODUCT.md`.
 - schedule:restart · `schedule/restart.ts` «restart ONE job on the plist launchd already holds» · speak skills, speak/AGENTS.md, x-speak-admin plist · keep → scheduling · skills and dima both call it; the wait-until-running is a hidden hazard
 - skill:cclio-mode-snapshot · `script/skill-cclio-mode-snapshot.ts` «compiles the coordinator's whole brain into ONE file cw can read» · mcp-x-cw cclio.ts (by path), cclio-mode skill · app-dev · mcp-x-cw spawns the file by path; the pnpm name is a dev door
 - skill:evergreen-apps · `script/skill-evergreen-apps.ts` «the changelog delta of the self-updating apps» · none outside `cclio/` (a flawlog only) · keep → evergreen · PRODUCT.md names the evergreen family; its caller, `cclio:evergreen`, lives under `cclio/`
-- skill:handoff-store · `script/skill-handoff-store.ts` «the one door to the CST handoff store» · handoff and handoff-ingest skills, CST-SPEC.md, ADR-0002 (all by path) · keep → handoffs · `x handoffs list/peek/ingest` already port the read side (x/go/store.go); write and delete stay on the script
+- the node handoff store script «the one door to the CST handoff store» · handoff and handoff-ingest skills, CST-SPEC.md, ADR-0002 (all by path) · ported → `x handoff` (list, peek, ingest, write, delete), the script and its pnpm name deleted (FRM-343, 2026-10-07)
 - skill:memory-sync-mirror · `script/skill-memory-sync-mirror.ts` «renders the `sync: cw` sections of the cc masters into the paste block» · memory-update skill (by path), memory-sync-mirror lib · app-dev · its only caller is a skill (the `skill:` family rule)
 - sline:build · `go build` in `home/.claude/sline` · seed.sh, sline/AGENTS.md, seed-tart test drive · app-dev · a package lifecycle (build)
 - sline:test · `go test` in `home/.claude/sline` · ci.yml, sline/AGENTS.md · app-dev · a test suite (not run here: go too old)
@@ -124,7 +124,7 @@ admission rule in `x/PRODUCT.md`.
   - pm: linear:agent-token, linear:read
   - scheduling: schedule:install, schedule:restart
   - evergreen: toolchain:sync, skill:evergreen-apps
-  - handoffs: skill:handoff-store
+  - handoff: the node store script, since ported to `x handoff` (FRM-343)
   - lane: github:agent-token
   - none yet: frame:link, macos:setup (`dotfiles`), wispr:add (`wispr`), jev:vet (`jev`), memory-sync:map, memory-sync:copy (`memory`), research:lanes (`research`), crew:audit (`crew`), flow:report (`flow`)
 - app-dev — **58**

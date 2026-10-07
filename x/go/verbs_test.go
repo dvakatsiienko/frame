@@ -37,7 +37,7 @@ func TestSchemaNamesWhatAVerbTouchesAndReplaces(t *testing.T) {
 		t.Fatalf("exit %d: %s", got.code, got.stdout)
 	}
 	entry := listed[0].(map[string]any)
-	if !strings.Contains(fmt.Sprint(entry["touches"]), ".claude/shelf/handoffs") || !strings.Contains(fmt.Sprint(entry["replaces"]), "skill:handoff-store") || entry["source"] == "" {
+	if !strings.Contains(fmt.Sprint(entry["touches"]), ".claude/shelf/handoffs") || !strings.Contains(fmt.Sprint(entry["replaces"]), "handoff-store") || entry["source"] == "" {
 		t.Errorf("touches %v, replaces %v, source %v", entry["touches"], entry["replaces"], entry["source"])
 	}
 }

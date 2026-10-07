@@ -1,5 +1,5 @@
 {
-    "about": "the handoff filename grammar, as cases: handoff-store.test.ts and x/go/store_test.go both read every one, so the TS writer and the go reader cannot drift apart. `parsed: null` = not a handoff.",
+    "about": "the handoff filename grammar, as cases: x/go/store_test.go reads every one, so a grammar change starts here. `parsed: null` = not a handoff.",
     "cases": [
         {
             "file": "cclio--pm--pm-overhaul--by-ccli--20260831T120000Z.md",
