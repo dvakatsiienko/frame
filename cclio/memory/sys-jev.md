@@ -3,8 +3,8 @@
 `jev` (typesafe.ai) answers typed questions about a `state`: no tools, no memory, no generation.
 we pull, it judges, we write back. two lanes live, both from 2026-09-19:
 
-- **inbox lanes** — the boot digest prints every inbox item with a lane (ticket · fold · flowlog ·
-  answer · drop) and a `needsVerdict` band. it pre-sorts; the flowlog parse is still mine.
+- **inbox lanes** — the boot digest prints every inbox item with a lane (ticket · fold · pocket ·
+  answer · drop) and a `needsVerdict` band. it pre-sorts; the pocket parse is still mine.
 - **skill router** — a `UserPromptSubmit` hook at user scope (`home/.claude/settings.json`), so it runs in every fleet session, coders included prints `skills (jev router):
   x:pm 0.81, …` for every skill ≥ 0.6, score included. the built-in router still runs; jev stops
   the misses. 📌 the hook is synchronous — every prompt in cclio waits for it (~0.8–1.8 s measured
@@ -14,7 +14,7 @@ we pull, it judges, we write back. two lanes live, both from 2026-09-19:
 
 **the rules that came out of the first day**
 - the criteria ARE the prompt. jev knows no fleet word we do not define; `null` criteria gave
-  73 % ticket, defined ones 89 % flowlog on the same line. a skill's description is its routability.
+  73 % ticket, defined ones 89 % flowlog (now `pocket`) on the same line. a skill's description is its routability.
 - every rubric lives in `script/lib/jev-questions.ts`, model pinned to `jev-1.13.0`. sharpening
   is a commit with a diff, never an inline edit in a caller.
 - low confidence is the feature: a three-way split (hkeys, conf 25) is the item to hand dima, not

@@ -6,7 +6,7 @@ the coordinator's map (FRM-309, closed 2026-10-06; the picture: [Fleet Flow v2](
 
 each stage names its gate, its owner, its door and its wait budget.
 
-1. **drop** — gate: every item gets a flowlog line with a status and a lane; owner: cclio; door: `cclio:boot`; wait: the session it lands
+1. **drop** — gate: every item gets a pocket item with a status and a place in its order; owner: cclio; door: `cclio:boot`; wait: the session it lands
 2. **shape** — gate: dima says «shaped», skipped only on his word; owner: dima and cclio; door: `x:shape-idea`, `grilling`, `research:lanes`; wait: one session
 3. **design** — gate: dima's pick on the boards; owner: the designer; door: `x:crew-designer-interview`, `x:crew-designer`; wait: first in the day, on a fresh 5 h window
 4. **ticket** — gate: dima approves the exit lines, and no exit lines means no spawn; owner: cclio; door: `x:pm`; wait: the turn the work is agreed

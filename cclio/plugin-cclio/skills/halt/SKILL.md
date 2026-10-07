@@ -42,24 +42,24 @@ not a confirmation. Everything else proceeds.
 ## phase 1 — land the leaves
 execute the «can land now» list. small only — a halt is not the time to start work. bigger than
 it looked → stop, park it, say so.
-each park gets its resume note **where the work lives** (ticket comment, flowlog line, `/queue`),
+each park gets its resume note **where the work lives** (ticket comment, pocket item, `/queue`),
 not in the report. a park that only exists in a chat message is a strand.
 
 ## phase 1.5 — the inbox, cleared unasked 📬
 every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item has a home
-(a flowlog line, a ticket, an answer given, a fold), then reset it by copying his template over
+(a pocket item, a ticket, an answer given, a fold), then reset it by copying his template over
 it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear (dima, 2026-09-28). the template
-is his: read-only, never edited. an item without a home is not deleted: it gets its flowlog line first, then
+is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
-the same pass prunes `flowlog.md` first: every ✅ line goes, then any section left empty, then the
+the same pass prunes the pocket first: every resolved item leaves one line in `pocket.md`'s «decisions so far» and its section goes, then the
 inbox clears — before the CST is written, every halt, both lanes (the 09-20 halt skipped the prune
-and dima found six ✅ lines at the next boot).
+and dima found six done lines at the next boot).
 
 ## phase 1.7 — github notifications, cleared unasked
 mark done every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr: `gh api notifications`, then `PATCH /notifications/threads/<id>`. what stays is an open pr's review ask. dima's yes, 2026-09-28.
 
 ## phase 2 — missed sweep
-re-read the flowlog, `.claude/x-queue.md`, and this thread for dropped asks and unanswered
+re-read the pocket, `.claude/x-queue.md`, and this thread for dropped asks and unanswered
 questions. queued items FIRE now. mid-turn messages from dima are the usual casualty — check
 those specifically.
 

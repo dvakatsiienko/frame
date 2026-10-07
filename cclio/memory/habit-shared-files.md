@@ -1,4 +1,4 @@
-# shared-files hygiene — inbox, flowlog, scratch
+# shared-files hygiene — inbox, pocket, scratch
 
 Shared files are Dima's living space; leftovers cost him attention and blur what is pending.
 
@@ -7,16 +7,18 @@ Shared files are Dima's living space; leftovers cost him attention and blur what
 `/Users/dima/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq/`
 
 - `inbox.md` — his raw drops. **Check first thing every boot; it must always end empty of
-  CONTENT — his section headers stay**, they are his reprint-saving skeleton. Copy items into
-  `flowlog.md` with statuses (✅🚧❓⏸️🎫); **reset at every halt by copying `inbox-template.md` over
+  CONTENT — his section headers stay**, they are his reprint-saving skeleton. Every item becomes a
+  pocket item; **reset at every halt by copying `inbox-template.md` over
   it** (`/cclio:halt` phase 1.5) — the template is his, read-only.
-- `flowlog.md` — the processing journal AND the boot checklist: every inbox item lands here at
-  parse time with status + lane, before any resolution. **✅ items pruned at every halt, unasked**
-  — only carry-over survives. **carry-over admits only unticketable waits** (dima's hands, an
-  open decision): anything with a ticket id is the ticket's job and dies from the list; the BOOT
-  flags any ⏸️ older than ~3 sessions — mechanical, not halt-attention (2026-08-27, the rotted
-  8-line backlog).
-- `protected.md` — his own drop file, read-only, never ours to edit.
+- `flowlog-archive-2026-10-07.md` — the old journal, kept as written.
+
+## the pocket — cclio's local work pool (`~/frame/cclio/pocket.md`, dima 2026-10-07)
+
+one file, shaped after matt's local tracker: order · decisions so far · standing · one section per item; a spec-sized item gets its spec in the target repo's `.scratch/`.
+**checked and emptied before linear**; it holds ticketless by-hand work too. an item points at its
+linear ticket when one exists; a new ticket is made only when a coder takes the item. every inbox
+item lands here at parse time, before any resolution; resolved items leave one line in «decisions
+so far» and go at the halt.
 
 ## the stash hierarchy — dima's, 2026-09-27
 
@@ -27,10 +29,10 @@ line is in front of cclio every boot. The stashes stay even after the shift flow
 - **queue** (`.claude/x-queue.md`) — soon: «after X and Y, do Z». ideally empty.
 - **reminders** (`memory/_reminders.md`) — a date or a condition: «in 2 days», «before we halt»,
   «when cc ships X, test it with me».
-- **flowlog** (`_hq/flowlog.md`) — the main carry-over across sessions.
+- **pocket** (`~/frame/cclio/pocket.md`) — the main carry-over across sessions, checked before linear.
 - **Linear** — the folding place for work with a shape.
 
-❗ no data loss, the flowlog above all: a stash line moves or dies only on his word.
+❗ no data loss, the pocket above all: a stash line moves or dies only on his word.
 
 **no copies** (dima, 2026-09-27: «make sure that these stashes will not accumulate redundant stuff») — most
 of the 09-27 exhaust was copies: 11 of 17 flowlog lines and 5 of 14 reminders already lived in a ticket.
@@ -40,7 +42,7 @@ reminders, the monitor is the trigger.
 
 ## cleanup runs the same turn
 
-Working artifacts die the turn their job is done: processed flowlog buckets, scratchpad files,
+Working artifacts die the turn their job is done: resolved pocket items, scratchpad files,
 `/tmp` dumps from CLI heredocs.
 
 - 🚫 never destroy pending or ambiguous content (root `CLAUDE.md`, the invariant #8) — in doubt, mark done and

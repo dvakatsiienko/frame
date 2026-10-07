@@ -31,11 +31,11 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
 - the two verbs, his framing: `/compact` describes what to **keep**, `/checkpoint` describes
   what to **drop** — everything useful carries over, only fluff goes
 - always kept, unlisted: the boot ingest, the inbox items and their homes, every open ask in his
-  words, the coder roster, my own pending suggestions, the flowlog and queue state
+  words, the coder roster, my own pending suggestions, the pocket and queue state
 
 ## 2. land, same as a halt's middle
 
-- inbox: every item has a flowlog line — then it gets a `✅ ` prefix IN PLACE, text and headers
+- inbox: every item has a pocket item — then it gets a `✅ ` prefix IN PLACE, text and headers
   intact, nothing deleted (dima, 2026-09-11: the inbox survives a checkpoint so he can diff it;
   the halt clears only `✅` lines). the mark tells him what is handled; the resume diff below
   tells me what is missing
@@ -72,7 +72,7 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
 the first thins the thread with the hint as the steer; the second restores the precise state on
 top of what the compact kept. **then resume every paused member** — one «resume» each, named from the CST roster, and
 `trash ~/.local/state/ccrow/paused` for ccrow — and read whatever they held. **after the ingest, before anything else: re-read `inbox.md` and
-diff it against the flowlog** — every inbox item must carry the `✅` mark AND a flowlog line with
+diff it against the pocket** — every inbox item must carry the `✅` mark AND a pocket item with
 its details; an unmarked or detail-less one is restored from the inbox on the spot, out loud. the prefetch hook re-runs on compact by itself (queue, roadmap,
 handoffs, reminders).
 

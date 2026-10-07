@@ -58,5 +58,5 @@ without his approval.
 - batch the suggestions, ONE approval round, then flush — the craft-pm one-flush rule holds
 - **bold keys**, plain values, `backticks` for ids/files/commands
 - every ticket id a link plus a short tldr, in the `rules/fleet-output-format.md` form, never bare
-- counts come from real state (flowlog statuses, linear, git), never guessed
+- counts come from real state (pocket statuses, linear, git), never guessed
 - ≤16 lines. no history retelling.

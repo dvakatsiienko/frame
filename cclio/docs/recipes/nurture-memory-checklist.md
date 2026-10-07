@@ -20,7 +20,7 @@ three homes, and nothing crosses them:
 | -- | -- |
 | the linear board | deliverables that outlive the run |
 | **this file** | the ordered steps · the file map · per-file verdicts |
-| obsidian `flowlog.md` | cross-session carry-over only |
+| `cclio/pocket.md` | cross-session carry-over only |
 
 📌 **this file is dima's recipe, written by him.** an agent may improve it, never replace it.
 📌 it is also the seed of phase 4's reusable checkup. keep it evergreen from the first step.

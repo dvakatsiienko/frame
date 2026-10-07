@@ -12,10 +12,10 @@ an emergency. His steer, 2026-08-26:
 
 The working shape that fits: labeled sub-batches with a **pit stop** after each — dima looks at what is done, asks, steers, then the next batch runs. (a `checkpoint` is the context reset, `cclio:checkpoint` — a different thing.)
 
-**The inbox is a plan source, never a work order.** Parse it into a flowlog checklist first —
+**The inbox is a plan source, never a work order.** Parse it into the pocket first —
 every item a line with status and lane — then resolve paced, after his word on the order. Data
 loss dies at the parse, not at the resolve: an item with a checklist line cannot vanish. **An
-item's url travels verbatim into its flowlog line** — a link is payload, never decoration.
+item's url travels verbatim into its pocket item** — a link is payload, never decoration.
 
 **His thread is the lane; member traffic stays out of it** (dima, 2026-09-30: coder replies buried
 the reports he came back for). a turn woken by a peer, a monitor or an idle notice prints **nothing**

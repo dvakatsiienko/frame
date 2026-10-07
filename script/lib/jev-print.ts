@@ -8,9 +8,9 @@ import { bb, bold, dim, gb, mb, rb, yb } from './print.ts';
 const laneColor: Record<string, (text: string) => string> = {
     answer: gb,
     drop: dim,
-    flowlog: bb,
     fold: yb,
     memory: bb,
+    pocket: bb,
     rule: yb,
     story: mb,
     ticket: mb,

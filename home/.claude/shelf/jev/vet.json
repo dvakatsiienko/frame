@@ -6,7 +6,7 @@
             "state": "vetting",
             "verdicts": 6,
             "misses": 1,
-            "what": "the boot digest lanes every inbox item (ticket · fold · flowlog · answer · drop) before cclio parses it"
+            "what": "the boot digest lanes every inbox item (ticket · fold · pocket · answer · drop) before cclio parses it"
         },
         "skill-router": {
             "since": "2026-10-01",

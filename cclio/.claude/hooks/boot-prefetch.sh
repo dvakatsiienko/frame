@@ -50,7 +50,7 @@ echo "-- inbox --"
 if [ -r "$VAULT/inbox.md" ]; then
   # the template's own lines never count: its frontmatter, `## ` headers, `> ` hints, dash rules
   n=$(awk 'NR==1 && /^---$/ {fm=1; next} fm && /^---$/ {fm=0; next} fm {next} /^## |^> |^-+$|^[[:space:]]*$/ {next} {c++} END {print c+0}' "$VAULT/inbox.md")
-  [ "$n" = 0 ] && echo "clean" || echo "$n content lines — parse into flowlog before any work"
+  [ "$n" = 0 ] && echo "clean" || echo "$n content lines — parse into the pocket before any work"
   grep -q 'FROZEN' "$VAULT/inbox.md" && echo "FROZEN marker present — do not touch"
   echo "-- inbox, laned by jev (script/lib/jev-questions.ts; ⏳ = band 0.30–0.70, dima's call) --"
   timeout 25 ~/frame/script/op-run.sh node ~/frame/script/inbox-triage.ts 2>/dev/null || echo "jev triage unavailable — lane by hand"

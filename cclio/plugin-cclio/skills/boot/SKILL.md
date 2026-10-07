@@ -40,8 +40,8 @@ and the next ticket from it; never re-query what it already printed.
 ## 3. inbox sweep 📬
 _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq`
 - the digest says clean or «N content lines». non-empty → read `inbox.md` — cclio's personal email, **a plan source, never a work order.** EVERY item —
-  smallest aside included — gets a line in `flowlog.md` with a status (✅🚧❓⏸️🎫) and a lane:
-  answer-now / step-by-step / defer / observation-only. the checklist line is the completeness
+  smallest aside included — gets an item in the pocket (`~/frame/cclio/pocket.md`, its head says the format)
+  and a place in its «order». the checklist line is the completeness
   guarantee; resolution is paced later. **deletion happens at the halt, never here.**
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 
@@ -95,7 +95,7 @@ one message, short lines, **no queries here — pure assembly**:
 - inbox status · handoffs pending · queue depth + top item
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `⛽ pit stop` line placed where a topic boundary earns one (only when it helps; dima,
-  2026-09-11: «keep this habit») — the flowlog checklist, lanes marked, sub-batches labeled;
+  2026-09-11: «keep this habit») — the pocket's «order», lanes marked, sub-batches labeled;
   **the board ends here and waits for dima's word.** he corrects the parse before any work runs;
   a skipped question means the recommendation is accepted
 - 🥊 self-grill, last line (omit if nothing real)
@@ -109,11 +109,11 @@ and habits live in `/cclio:flawlog`, which loads alongside this boot.
 ## mini mode — `/cclio:boot mini`
 
 the late-night boot: dima has one or two surgical asks, not a session. same silence, one opening
-message, **no cst ingest, no flowlog** — the inbox stays his file.
+message, **no cst ingest, no pocket parse** — the inbox stays his file.
 
 1. healthcheck (step 1, unchanged)
 2. inbox: read only, propose the order of what he names; an item done in this session gets a ✅
-   in place. nothing copied into `flowlog.md`, nothing folded
+   in place. nothing copied into the pocket, nothing folded
 3. merge monitor — only when a coder with an open `coder/*` pr is alive (step 4's monitor line)
 4. x-queue head + open renovate count (step 4's last two lines; the digest waits for his word)
 5. stuck reminders (step 5)
