@@ -1,8 +1,8 @@
 ---
 date: 2026-10-07
 slug: the-pocket
-tickets: [FRM-303, FRM-336, FRM-284, FRM-267]
-posted: {health: no}
+tickets: [FRM-303, FRM-336, FRM-284, FRM-267, FRM-344, FRM-345, FRM-341, FRM-342]
+posted: {health: yes}
 ---
 
 # 🗞️ cclio's gazette · the pocket
@@ -76,8 +76,29 @@ posted: {health: no}
 
 **state**: checkpoint 3; next is the recipe review and run, `refresh-craft-spawning` first; FRM-344 coder + verifier live; ccrow paused
 
+⸻ upd 23:25 (halt)
+
+**shipped**
+- `x linear` lands: read, list, body, set, link, comment, api, push, archive, plus `x as <member>`; the four node linear scripts are gone, commits link to tickets as the cclio app on push in both repos — [FRM-344](https://linear.app/x-com/issue/FRM-344) (frame#65, bytes#124), verifier clean at round 9
+- `refresh-coordinator`: one recipe keeps the coordinator true, a tools half (spawning, models) and a craft half (coordination, crew, tickets, workflows); `x:shape-recipe` gains step 0 (vectors against the want) and the shape test proves a rename (`was:`, heading = folder)
+- the job-market recipe leak: the recipes move shipped it unencrypted to public main; re-encrypted, history purged with filter-repo, 20 commits re-signed, force-pushed, github's cached-views ticket filed
+- `spawn-mechanics.md` → `spawning-mechanics.md`; every recipe log trimmed to one line
+- the FRM-343/344 retro folds: the verifier verdict gains `pending` + `head`, 7 verify checks in `x/AGENTS.md`, six retro verbs in [FRM-345](https://linear.app/x-com/issue/FRM-345)
+
+**tricks gained**
+- ccrow's first retro, from her packets: it caught patterns across turns a transcript retro misses (an approved ask leaving the block, six reports ending «next: phase 03»)
+- a 5h window at 96 % pauses the fleet cleanly: members commit, hold, resume on a word
+- signing survives a history rewrite: `git rebase --exec 'git commit --amend --no-edit -S'` re-signs through the 1password agent headlessly
+- the guard is measured by its day counters (`flow:report`: 58 refusals, 21 escapes) — per-rule attribution is the gap ([FRM-341](https://linear.app/x-com/issue/FRM-341))
+- haiku 5.5 shipped 10-07, found by the researcher lane, missed by the parallel monitor
+
+**state**
+- frame + bytes pushed; no coders; ccrow stops after the CST
+- tomorrow: a mods coder on FRM-341 + 337 beside the cli grill, then the `refresh-coordinator` groom + recipe cull, then the memory sweep
+- waiting on github: the cached-views ticket; pocket 35 trashes the backup bundle after
+
 ## trail
 
-- shipped: x telemetry + x handoff merged · recipes as a feature (x:shape-recipe, recipes/, shape test) · sweep 01–02 + the doctor slice · opus-register hook gone · to-tickets for every spec
-- open: the recipe runs (craft-spawning → nurture-memory → nurture-skills) · FRM-344 x linear · sweep phases 04–09 · the raycast run for x handoff (dima)
-- state: frame pushed · FRM-344 coder + verifier live · ccrow paused · weekly 62 %, 5h 74 %
+- shipped: x linear (FRM-344, both repos) · refresh-coordinator, one recipe for the coordinator · the job-market leak purged and re-signed · retro folds + FRM-345 · ccrow's first retro
+- open: mods coder on FRM-341+337 beside the cli grill · refresh-coordinator groom + recipe cull · memory sweep 04–09 · github cached-views ticket (pocket 35)
+- state: frame + bytes pushed · no coders · ccrow stopping · x 0.11.233, cclio 0.3.115
