@@ -63,7 +63,7 @@ if a thing has a url, dima reaches it in one click. he never copies a bare url, 
 a page you named, never navigates from a site root to the page you meant.
 
 - **every web resource you name is a markdown link.** label it and link it.
-- **a generic filename prints with its parent dir** — `refresh-craft-spawning/recipe.md`, never a bare
+- **a generic filename prints with its parent dir** — `refresh-coordinator/recipe.md`, never a bare
   `recipe.md`, `log.md`, `SKILL.md` or `AGENTS.md`, so the name alone says which one (dima, 2026-10-07)
 - **strictest when you ask him to do something** — grab an api key, flip a setting, re-grant a
   permission: deep-link the exact page or pane so the click IS the action, never «go find X».

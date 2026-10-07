@@ -46,7 +46,7 @@ sections, most important first:
 ## names
 
 kind-first, then the main artifact it refreshes, so the recipe sits beside its target:
-`refresh-craft-spawning` → `craft-spawning.md`, `refresh-guide-go` → `x:guide-go`. a recipe's script
+`refresh-guide-go` → `x:guide-go`, `refresh-monorepo` → the monorepo research; a recipe that keeps one fleet member true is named after the member (`refresh-coordinator`). a recipe's script
 shares the stem (`refresh-agent-ops` ↔ `pnpm agent-ops:report` ↔ `docs/knowledge/agent-ops.md`).
 
 ## running one
