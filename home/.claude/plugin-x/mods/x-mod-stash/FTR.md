@@ -77,6 +77,11 @@
   - given every item is one line, `wispr adds` included
   - then no warning
   - decision: warn, never block — the warning rides the Stop's `additionalContext`, so it reaches the session it corrects, where a toast would not (FRM-325)
+- ✅ every prompt carries the local clock
+  - given dima's prompt, or a peer's
+  - when it reaches the model
+  - then its context holds `now HH:MM`, so a reply's 📄 stamp copies the clock
+  - decision: three 📄 stamps were guessed ahead of the clock on 10-07 and `reply-check` refused each one, a correction turn every time; ccrow named the fix, dima said yes
 - ⬜ afk switch: one icon, `💨`; the `secondary` chip alone says it is on
   - decision: one icon, the chip tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
 - ⬜ an away digest when 💨 turns off: what needs dima first, then what finished

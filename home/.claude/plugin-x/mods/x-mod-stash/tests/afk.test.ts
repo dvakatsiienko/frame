@@ -30,6 +30,24 @@ for (const surface of ['terminal', 'desktop'] as const) {
     });
 }
 
+test('every prompt carries the local clock', async ($, on) => {
+    mock.clock(on, { now: new Date(2026, 9, 7, 14, 5).getTime() });
+    mock.store(on);
+    const seen: (readonly string[] | undefined)[] = [];
+    on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('prompt.submit', (_$, e) => {
+        seen.push(e.context);
+        return { text: e.text };
+    });
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'terminal',
+    });
+    await $.prompt.submit({ text: 'hi' });
+    expect(seen[0]).toContainEqual('now 14:05');
+});
+
 test('a prompt carries the away note only while afk is on', async ($, on) => {
     mock.clock(on);
     mock.store(on);

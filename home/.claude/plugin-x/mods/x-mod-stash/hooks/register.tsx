@@ -967,8 +967,12 @@ export const register: Register = (on) => {
         await load($);
         turnAfk = afk;
         await markBusy($).catch(() => undefined);
-        if (!afk) return next(e);
-        return next({ ...e, context: [...(e.context ?? []), AWAY_NOTE] });
+        // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
+        const clock = `now ${new Date(await $.clock.now()).toTimeString().slice(0, 5)}`;
+        return next({
+            ...e,
+            context: [...(e.context ?? []), clock, ...(afk ? [AWAY_NOTE] : [])],
+        });
     });
 
     on('classic.Stop', async ($, e, next) => {
