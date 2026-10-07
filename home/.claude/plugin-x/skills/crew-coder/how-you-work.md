@@ -5,7 +5,8 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
 - **the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
 - **a brief that hands you a spec** (`.scratch/<feature>/`) → always cut it with matt's `to-tickets`
   first, even when it fits one pr: the tickets are the plan everyone can read and the part that
-  survives a compaction. build each ticket test-first with `tdd`, through `implement` when dima
+  survives a compaction. the cut copies each spec exit line, verbatim, into exactly one ticket's
+  checklist — a line no ticket owns is ambiguous until a verifier finds it (FRM-344, round 7). build each ticket test-first with `tdd`, through `implement` when dima
   watches granular work or `implement-spec` for bulk work under the hood; one pr unless the tickets
   say otherwise (dima, 2026-10-07: «let's try always to-tickets»). they are user-only: read each `SKILL.md`
   (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/`) and follow it;

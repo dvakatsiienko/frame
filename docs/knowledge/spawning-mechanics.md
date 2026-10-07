@@ -378,7 +378,9 @@ claude -p … --resume <uuid> 'no tools: what canary word do you see?'   # must 
 #   then trash ~/.claude/projects/<scratch-slug>/ — the probe writes auto-memory there
 
 # bundled skills — the names, gated ones included (a gated skill never shows in a session list)
-strings -n 6 ~/.local/share/claude/versions/<v> | …  # python: re.finditer(r'\bds\(\{name:', …)
+strings -n 6 ~/.local/share/claude/versions/<v> | …  # python: the registrar is the most common caller of
+#   re.findall(r'\b(\w{1,3})\(\{name:', s) — the minifier renames it per build (ds on 2.1.283, Ms on 2.1.292);
+#   a name that is a variable resolves through its X="…" assignment. 0 hits = a broken probe, never «no skills»
 
 # stopping — both work; verify by the registry file vanishing
 claude stop <jobId>

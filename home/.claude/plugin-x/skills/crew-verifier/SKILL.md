@@ -62,12 +62,16 @@ the verdict is a **shape**, so «clean» can never be inferred from silence:
 ```
 verdict: refuted | clean | not-checkable
 exit lines: <n checked> / <m total>   — each: ✅ held · ❌ refuted (file:line or command) · ⬜ not-checkable (why)
+pending: <exit lines waiting on tickets not built yet> | none
+head: <the sha every probe this round ran on>
 tests run: <verbatim commands> | none possible: <why>
 browser: <widths> | n/a
 essentials: <n> pass · <m> fail | n/a (no web ui) — x:browser-headless essentials on every touched view; each fail is a finding
-ci reviewer: <round n> — <k> findings, <confirmed>/<refuted>/<unconfirmed>
+ci reviewer: <round n> — <k> findings, <confirmed>/<refuted>/<unconfirmed> | n/a (the repo has no reviewer lane)
 diff: <paths reviewed, A/M/D>
 ```
+
+a `pending` line keeps the round honest while tickets are still being built: `refuted` or `clean so far`, never `clean` while it is non-empty. `head` is read with `git rev-parse HEAD` in the tree the probes ran in — a `cd` reset once ran a gate in the previous round's tree (FRM-344).
 
 `clean` requires every exit line ✅, tests run and green, every reviewer finding confirmed-fixed
 or refuted with evidence. one ⬜ makes the verdict `not-checkable`, never `clean`. **you fill the

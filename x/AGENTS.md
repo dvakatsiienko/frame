@@ -49,6 +49,13 @@ the checks the FRM-340 verifier built by hand; a verifier or coder on `x` starts
 - **the zsh hook** is proven in a real `zsh -i` on a pty (python `pty` + a temp `ZDOTDIR`) with another `precmd` registered first, so `$?` reaching the hook is checked — calling `_x_trace_preexec` by hand proves nothing about firing.
 - **`x stats`** runs over a planted trace dir under a temp `X_STATE`, with a fake `trash` on `PATH` for the 90-day move.
 - in a git-crypt worktree, go builds need `GOFLAGS=-buildvcs=false` until the test-hygiene ticket lands.
+- **a port** is proven against the old door run side by side before it dies: twin stores, one verb script through both.
+- **every repro in a verdict ran on the verdict's head**, with a fresh temp store or `X_STATE` per probe.
+- **a ts test that shells to `x`** resolves the shim beside itself, never `~/frame` (ci set up go after vitest once).
+- **a `replaces:` claim** is proven by planting a caller of the old name and watching `replaces_test.go` go red.
+- **a secret-shape check** plants every key form it claims: base64 pem, `OPENSSH`, `ghp_`.
+- **an actor rule** (tty vs agent) runs in a python pty with and without `CLAUDECODE`.
+- **a never-fail path** (`x linear push` in a hook) runs against a dead-port `X_LINEAR_URL`.
 
 ## output
 
