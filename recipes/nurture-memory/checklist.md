@@ -346,7 +346,7 @@ the evidence). dima's vertical map lives in `docs/knowledge/authoring-memory.md`
 
 ## 🔁 the reusable recipe — moved out
 
-it lives at `cclio/docs/recipes/nurture-memory.md`, because it outlives this run. **this file is one
+it lives at `recipes/nurture-memory/recipe.md`, because it outlives this run. **this file is one
 execution of it.**
 
 ## phase 4 · the system checkup — runs in parallel, from the start

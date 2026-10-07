@@ -37,7 +37,6 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
 - 🎯 @habit-ray-hoist.md — a repeated ask lands on DOT-252 the same turn as an x-ray candidate; guesses never do
 - 🔬 @habit-research-lanes.md — every research runs exa + parallel (`pnpm research:lanes`) + an opus source lane at once, one brief, one reply
-- 📐 @habit-recipe-first.md — a branch (design, voice) or a big research becomes a recipe the same session; the next refresh opens it
 - 🧪 @habit-test-drive.md — a tool on trial: docs research + stress list on day 0, reached first on every fitting ask, widest over deepest
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit
 
@@ -47,4 +46,4 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🧪 sys-jev.md (parked, NOT imported: jev is frozen until the credit refills ~10-18; re-add the `@` then) — jev lanes the inbox and routes skills; the criteria are the prompt, every rubric in one file, the sharpening loop runs at every halt
 - @sys-settings-drift.md — CC writes it at runtime; a real file where the symlink belongs is silent divergence
 
-- 📐 recipes (repeatable flows: a maintenance run with research vectors, or a plain execution script) live in `docs/recipes/` here — `_spec.md` is the contract: want = dima's, research vectors = his wording, artifacts pointed-at never housed. read it before creating or running one. (plain pointer, not an import)
+- 📐 recipes live in `~/frame/recipes/<name>/` (recipe.md · log.md · scripts/ · last/); the `x:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)
