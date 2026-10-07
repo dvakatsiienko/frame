@@ -41,17 +41,17 @@
   - when `x schema` runs with the short level
   - then it prints names and one-line purposes only; the full level prints the whole schema
 
-## the resident index
+## the resident line
 
-- 🧭 a session boots knowing every verb
-  - makes: the verb index (name + purpose) in the session's context, printed by a SessionStart hook
+- 🧭 a session knows x exists, and finds a verb on demand
+  - makes: one resident line, «`x` is the fleet cli; `x` lists families, `x schema <family>` the verbs» — never a per-verb index (dima, 2026-10-07: a per-verb index weighs ~1.5k tokens at 60 verbs, an mcp by another name)
   - given a fresh cc session
-  - when it boots
-  - then its context holds the index, and no `x` call was needed to learn it
-- 🧭 a new verb reaches the index by itself
-  - given a new verb lands in the registry
-  - when the next session boots
-  - then the index shows it, with no hand edit anywhere
+  - when it needs a fleet procedure
+  - then one `x` call lists the families, and no verb list sat in its context before
+- 🧭 a call to a replaced script points at its verb
+  - given a verb's registry entry names the script it `replaces:`
+  - when a Bash call runs that script
+  - then `x-mod-guard` answers with the verb to use
 
 ## lane — git
 

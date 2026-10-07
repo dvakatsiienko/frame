@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-27 → 01 → 02 → 07 → 06 → 08 → 22 → 23 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16
+27 → 01 → 02 → 07 → 06 → 08 → 22 → 23 → 24 → 05 → 28 → 09 → 10 → 12 → 13 → 14 → 15 → 16
 
 ## decisions so far
 
@@ -127,3 +127,8 @@ dima 10-06 opener: `docs/test-drive/delve.md`.
 `open · task`
 
 10-07: `obsidian delete --help` deleted the active note (`_hq/memory-sweep.md`) instead of printing help; restored from `~/Library/Mobile Documents/.Trash/`. an `x-mod-guard` rule: refuse `obsidian <verb> --help` for every verb, and `obsidian delete` without an explicit file argument; the refusal points at bare `obsidian --help`. goes with the next mods round beside 17.
+
+### 28 · finish the handoffs port, then make «done» mean migrated
+`open · task` · [FRM-338](https://linear.app/x-com/issue/FRM-338) · [FRM-284](https://linear.app/x-com/issue/FRM-284)
+
+10-07: `x handoffs` (list, peek, ingest) has zero callers; `x:handoff`, `x:handoff-ingest` and raycast `x-ray` still call `script/skill-handoff-store.ts`. port write + delete, switch every caller, the script dies in the same commit. the rename `handoffs` → `handoff` already sits in FRM-338. dima 10-07: «creating dead cli families and verbs is not about optimization» — the migration rule rides the cli plan (09).

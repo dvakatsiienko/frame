@@ -41,14 +41,21 @@ a verb lives in x only when all three hold:
 
 - **a fleet procedure, not a package's lifecycle** — build, dev, test, typecheck, lint, codegen, render stay turbo / pnpm scripts, cached and ordered by the task graph; x may call a turbo task, never re-implements one
 - **more than one surface calls it** — agents and dima, or cc and cloud threads; a one-off script stays a script
-- **it hides a hazard or a sequence** — a thin alias over one command is noise
+- **it hides a hazard, a sequence or a location** — where a thing lives, its format, its filter; a thin alias over one command is noise
+- **a thin verb lives while telemetry shows it used** — dima, 2026-10-07: «even if cli cmd is very basic and just a listing like x handoffs list — it is still good to have because it allows to see doors … not always for perf gains - for colocation purposes». colocation is the reason, `x stats` is the proof
+- **hiding is for the caller, never for the fixer** — `x schema <verb>` prints the verb's source dir, the stores and files it touches, and the script it replaced; `--help` stays the pretty day-to-day view
+
+## a verb is done when its old door is dead (2026-10-07)
+
+a ported verb names what it replaces (`replaces:` in its registry entry); a contract test stays red while that file exists or anything still calls it. `x handoffs` shipped without it and gained zero callers — dima: «creating dead cli families and verbs is not about optimization».
+<!-- this rule dies when the migration map below is empty: every planned port landed, nothing left to replace -->
 
 after a frame → bytes merge, x is one workspace package beside turbo: turbo owns the graph, x owns the procedures.
 
 ## the cut — v1 (2026-10-05)
 
 - `lane` (shipped in v0) · `handoffs` (list, peek, ingest — the store `x-cw` uses) · `x schema` at two detail levels
-- the resident index: a SessionStart hook prints the verb names + purposes, generated from the registry
+- one resident line, never a per-verb index: «`x` is the fleet cli; `x` lists families, `x schema <family>` the verbs» (~30 tokens, against ~1.5k for 60 verbs, dima 2026-10-07); an `x-mod-guard` hint answers a call to a replaced script with its verb
 - the look: the FRM-284 a/b/c winner, built to the T2 design
 - every new verb passes the admission rule first
 
@@ -61,7 +68,7 @@ the done test is `FTR.md`; the words are `GLOSSARY.md`. prior art: `docs/researc
 the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name prefixes; the top three by calls are `linear:read` 148, the handoff store 145, `linear:agent-token` 125 (agent calls only — dima's own terminal is invisible to transcripts).
 
 - **what x owns:** every fleet op. app dev (`dev`, `build`, `test` per app) stays with `pnpm` / `turbo`, one door per app.
-- **the shape:** entity-first groups (`x linear read`, `x handoff ingest`, `x lane commit`), ~12 groups, each verb declared once in the registry. not a port: each script is re-thought into its group or dropped.
+- **the shape:** entity-first families (`x linear read`, `x handoff ingest`, `x lane commit`), ~12 families, each verb declared once in the registry. not a port: each script is re-thought into its family or dropped.
 - **go native or adapter:** the hot paths go native first (linear, the handoff store, lanes); a cold verb may call its TS script through an adapter until telemetry says it lives.
 - **telemetry from day one:** one json line per call in `~/.local/state/x/trace/<date>.jsonl`, written at exit, no network — when, verb, flag names (never values), caller (a terminal, or an agent session + member), repo, duration, exit and error kind, each step's time, x version. OpenTelemetry-shaped names. `X_TRACE=0` turns it off. `x stats` reads it (most used, dead for 30 days, slowest p95, failure rate, agents vs dima); `flow:report`, the halt board and the hq app read the same files. each `pnpm` shim left during the move writes a trace line too.
 - **where x runs:** the mac (cc, cw through Desktop Commander). a cloud session gets the repo, not x.
@@ -69,8 +76,8 @@ the inventory: 119 scripts (82 frame, 37 bytes), 45 unused in 30 days, ~40 name 
 
 ## the rebuild — grill round 2 (2026-10-06)
 
-- **the groups (draft, each re-thought when built):** `linear` (read, token, as, push) · `handoff` (store, ingest, peek) · `lane` (commit, push, pr, merge-main, unlock, worktree seed) · `mods` (test, live) · `design` (contrast, palette, cvd, scale, tokens, diff) · `jev` (vet, report, route, flawlog) · `research` (lanes) · `flow` (report, crew audit, memory-load, reply-check) · `app` (essentials, badges) · `frame` (link, toolchain sync, macos setup) · `tool` (dima's hotkeys, speak, schedule, monitor) · `x` (schema, stats, completion)
+- **the families (draft, each re-thought when built):** `linear` (read, token, as, push) · `handoff` (store, ingest, peek) · `lane` (commit, push, pr, merge-main, unlock, worktree seed) · `mods` (test, live) · `design` (contrast, palette, cvd, scale, tokens, diff) · `jev` (vet, report, route, flawlog) · `research` (lanes) · `flow` (report, crew audit, memory-load, reply-check) · `app` (essentials, badges) · `frame` (link, toolchain sync, macos setup) · `tool` (dima's hotkeys, speak, schedule, monitor) · `x` (schema, stats, completion)
 - **the order:** telemetry first (it decides the rest) → `linear` + `handoff` (the hottest) → `flow` (feeds the memory sweep) → the rest in the order telemetry ranks them
-- **who builds:** one go `--bg` coder per group, reused while under the spawn grid's ~220k; mechanical ports go to `implement-spec` subagents on sonnet
+- **who builds:** one go `--bg` coder per family, reused while under the spawn grid's ~220k; mechanical ports go to `implement-spec` subagents on sonnet
 - **the old scripts:** a ported script dies in its verb's commit; a thin `pnpm` shim stays only for a name dima types himself, and goes after 14 days of zero calls in telemetry
-- **the memory sweep pairs with it:** each memory line the sweep touches gets a fourth verdict, «→ x verb» or «→ guard rule», collected into this group map
+- **the memory sweep pairs with it:** each memory line the sweep touches gets a fourth verdict, «→ x verb» or «→ guard rule», collected into this family map
