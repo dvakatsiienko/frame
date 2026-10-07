@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-01 → 02 → 07 → 03 → 04 → 08 → 09 → 10 → 05 → 06 → 11 → 12 → 13 → 14 → 15 → 16 → 17
+01 → 02 → 18 → 07 → 03 → 04 → 08 → 09 → 10 → 05 → 06 → 11 → 12 → 13 → 14 → 15 → 16 → 17
 
 ## decisions so far
 
@@ -114,4 +114,9 @@ dev.fast whiteboard, installed, cli-driven. first case: the cli a/b/c review. re
 `open · task` · [FRM-303](https://linear.app/x-com/issue/FRM-303)
 
 dima 10-07: the asks box listed yesterday's 6 asks under «cclio · frame» while the live `cclio_` session (born today, no open asks) sat beside this one. guess: a dead session's key stays in the store, or the asks get matched to a live session by name. read `x-mod-stash/hooks/register.tsx` (asks, one key per session) before a fix. a gremlin, so it goes first in the next mods round.
+
+### 18 · fold the x-queue into the pocket
+`open · task`
+
+dima 10-07: «fold». one fewer stash: `.claude/x-queue.md`'s «soon» lines become pocket items, its readers (boot digest, halt phase 2, `x:queue`, `habit-shared-files`) point at the pocket, then the queue file goes.
 

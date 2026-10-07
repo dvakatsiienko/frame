@@ -4,7 +4,7 @@ dies-when: FRM-287's verdict — the adviser lands in x:shape-idea (this log bec
 
 # plan adviser — three critics on one build plan
 
-Ticket: [FRM-287](https://linear.app/x-com/issue/FRM-287) · the research: `docs/research/plan-adviser.md`
+Ticket: [FRM-287](https://linear.app/x-com/issue/FRM-287)
 
 ## round 1 — 2026-10-01 · the speak build plan v1 (3 tickets: pill → admin → stats)
 

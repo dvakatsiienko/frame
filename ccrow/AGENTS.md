@@ -25,7 +25,7 @@ or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
   packet as a `claude -p` one-shot. live days alternate the arm (day 4 opus, day 5 fable, …);
   `wake` prints the restart line when the running arm is the wrong one, it never restarts ccrow.
 - `pnpm ccrow:plan <plan file>` — the plan review at `x:shape-idea` step 4 (FRM-336, the
-  FRM-287 template from `docs/research/plan-adviser.md`). never ccrow's own session, which has read
+  FRM-287 template). never ccrow's own session, which has read
   cclio's thread: two fresh `claude -p` one-shots on the day's arm (the `ccrow:ensure` pick),
   effort high, cwd a fresh `plans/<run>/` in the home. pass 1 gets only the sections whose heading
   says want, constraints, not or done test; pass 2 gets the whole plan plus pass 1's take and a

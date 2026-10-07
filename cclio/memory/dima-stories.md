@@ -10,9 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «you closed the pr, not merged it» · 2026-09-28
-The auto-archive probe had closed its pr and watched the card stay; my verdict went out as «auto-archive does nothing for our sessions». He read it and said the close was a different event from a merge — it might archive on merge alone. The merge round kept the verdict for our `--bg` and `--cloud` sessions, and then his own two desktop-made probes showed the real line: a desktop-made local session is archived and stopped at its merge. His question split one event I had treated as two into the two it was, and the second probe he set up found the case my first one could not reach. → `craft-spawning`, the auto-archive line
-
 ## «you were still asking me confirmation questions» · 2026-09-28
 He wrote the trophy-sys plan with me, said «start shift» and went to cook. I kept sending him ⏳ blocks between his steps at the stove, and he answered them. After dinner he named it: «you have memories that instruct you to use a turn-based approach … when paired with a shift, the boundary is blurry, so you try to do both.» No rule was broken; every habit was right for a lane and wrong for a shift. His felt sense saw two modes where I ran one with exceptions, and the first night shift needed exactly that line. → `cclio:shift`, the ⏳ exception in `fleet-output-format`
 
@@ -69,4 +66,7 @@ mid-session he pictured the end of a shift: he comes back to the keyboard, asks 
 
 ## «the second run actually showed what I wanted» · 2026-10-06
 he asked the cli a/b/c to answer one thing: does go + bubbletea look better than TS? the first round built the whole cli three times, every verb in every stack, for about two and a half hours, and the arms came out looking nearly the same. I read their numbers and picked TS. he then asked for «cheapest effort, but widest UI representation» — one throwaway showcase screen per arm — and it took half an hour. the go screen was a level above, and the pick flipped. his note after it: «the initial build didn't answer a question that I asked … we could make a wrong choice by going with TypeScript». his felt sense knew what the comparison was for before the brief did. → the flawlog line on comparison briefs, `x:shape-idea`
+
+## «is this shape efficient? 16 small 7-liner files?» · 2026-10-07
+past 3 a.m. we grilled the pocket, flowlog's successor, and he approved Q1 as written: one ordered file, a folder only when an item grows into a spec. then «go build», and I built 16 one-item files, because matt's local tracker keeps one file per ticket and I had just read it. he looked at the tree mid-build and asked one question. nothing was broken yet; each item cost a read, the boot would have paid sixteen, and the verdict he gave ten minutes earlier said one file. the merge took one script. his eye read the shape against his own answer before any cost showed. → the 10-07 self-grill (re-read the settled answers before the first file), `cclio/pocket.md`
 
