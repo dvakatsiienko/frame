@@ -23,6 +23,11 @@ the four vectors of the brief, as written there:
   - Bash writes: heredoc and python edits that skip `Edit`/`Write` and their hooks
   - re-reads: the same ticket or doc read again in one session (a context gap)
   - linear extras: comments by actor (each notifies dima), time in Triage, a read followed by a raw call on the same id
+  - guard refusals per rule: a hazard rule that never fires dies, one that fires daily earns a verb
+  - skill loads per session (`Skill` tool calls): a skill nobody loads in 30 days is a delete candidate; ground truth for jev's router
+  - dima's wait: from his prompt to the reply, per session and per kind of ask
+  - cost per member and per ticket from the usage fields, the `researcher` agent's saving included
+- the engine is `duckdb` on its test drive (`docs/test-drive/duckdb.md`): each measure is a saved `.sql` file, run in under a second over the transcripts
 
 ## artifacts (pointed at, never housed)
 

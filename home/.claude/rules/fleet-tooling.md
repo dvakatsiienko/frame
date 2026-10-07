@@ -28,6 +28,7 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 ## cc only
 
 - **a bare cc for clean runs** — `claude -p --model haiku --safe-mode --strict-mcp-config '<prompt>'` from a temp dir (`x probe` once the cli freezes it): no `CLAUDE.md`, rules, plugins, hooks, mods or MCP, only cc's built-ins. reach for it when our setup must not touch the answer: «is it us or cc?» probes, a model A/B, an upstream bug repro, a blind lane, the token weight of our memory (bare `/context` vs ours). `--bare` needs an API key, so it fails on our login (2026-10-06)
+- **duckdb** — SQL over jsonl, md and git where they lie, no import, no server: `duckdb -json -c "…"` or a saved `.sql`; the measuring engine for transcripts and x traces, on trial to 10-21 (`docs/test-drive/duckdb.md`)
 - **fnm** — node version manager, use if needed
 - **package.json** — exact pins, `npm view` before any version, script order and `family:name` keys: the whole shape is `x:guide-conventions` → `conventions/package-json.md`, read before printing or editing any manifest
 - **ctx7** — context7's docs cli, on trial vs the context7 mcp to 2026-10-07 (`docs/test-drive/ctx7.md`): `ctx7 library <name>` → id, `ctx7 docs <id> "<query>"`; a library it lacks → `WebSearch`

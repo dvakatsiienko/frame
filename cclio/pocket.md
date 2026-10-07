@@ -38,6 +38,8 @@ dima 10-07: bare `x` prints help today; he wants a dashboard-like main view (bub
 
 dima 10-07: close yesterday's tails — the full cli plan, so a coder + verifier run while the memory sweep goes. the sweep will steer it.
 
+planned 10-07: FRM-284 closed; four specs under FRM-14 in `.scratch/` — `x-telemetry` → `x-handoff` → `x-linear` → `x-stats-board`; decisions in `x/PRODUCT.md` «the next lane». next: the telemetry coder, spawned when the sweep session starts.
+
 ### 10 · plan the memory sweep
 `open · task` · [FRM-267](https://linear.app/x-com/issue/FRM-267) · blocked by 09
 
@@ -50,6 +52,8 @@ sweep inputs added 10-07 (dima):
 first quick win (dima 10-07, yes): `_reminders.md` is 24 kB imported every turn, 29 of 41 lines are test-drive verdicts copied three times — verdict dates live only in each test-drive file, the boot prints the ones due in 2 days, reminders keep real date/condition hooks only.
 
 dima 10-07: `_hq/memory-sweep.md` holds his corrections. plan the steps first, broken into tasks, folded and ordered; then checkpoint or sweep by context size. think what goes to chore-helpers or cloud. the first real spec for the pocket.
+
+planned 10-07: `.scratch/memory-sweep/` — the spec + nine phase tickets (01 baseline + audit → 09 global review); the grill log in `docs/test-drive/memory-sweep.md`. next: a fresh session runs 01.
 
 ### 12 · a better vpn
 `open · research`
@@ -105,6 +109,11 @@ dima 10-07: «yes remind me». run before the CST, in the session it looks back 
 `open · task`
 
 dima 10-07: the digest, not CI. one line in `boot-prefetch.sh`: `pnpm x-go:vuln`, informational, a red names the module.
+
+### 33 · shape the squad leader
+`open · grilling` · blocked by 10
+
+dima 10-07: «instead of spawning a coder you spawn a squad leader (e.g., a coordinator). It is a mini coordinator … it essentially manages a coder and a verifier with the given task by you. It handles communication between the coder and verifier and only reports to you with positive results, issues and disputes, or design questions that I would be interested to answer. This way your thread will be filtered out of the noise». the sweep (ticket 05) cuts `craft-spawning` by trigger first; the squad leader is shaped with `x:shape-idea` from what that cut leaves.
 
 ## decisions so far
 
