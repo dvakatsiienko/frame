@@ -51,3 +51,29 @@ his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 - **the order, amended twice by dima in round 1** (ccrow caught that it was never shown back whole): 0 baseline + prompt-audit scan · 1 research · 2 recipes, the full reshape · 3 dupes · 4 buckets · 5 leaf pass (audit findings applied) · 6 skills · 7 recipe runs · 8 global review
 - **recipe candidates join phase 2:** dima: «scan a system for more recipe candidates. what activities do we do what would like to want a recipe? (frequently do activity recipe missing). for example: guide-tests does not have a recipe. what are test writing best practices for agents? how to prevent agents from writing useless tests, and only have useful tests? and it should complement matt's tdd» — [FRM-270](https://linear.app/x-com/issue/FRM-270) moves in
 - **measures fold into `refresh-agent-ops`** (guard refusals per rule, skill loads, dima's wait, cost per member), duckdb as the engine; the baseline runs two of them
+
+## phase 01 · baseline · 2026-10-07 18:07
+
+born place: the desktop Code tab, cclio after `/compact` + the checkpoint-2 ingest (`get_usage` self, 18:05)
+- memory files 71.7k · messages 66.6k · system tools 28.5k · MCP tools 17.1k · skills 14.6k · system prompt 9.2k · total 210.9k / 1M
+- a bare-cc floor: not measured yet (`-p` has no `/context`)
+
+resident bytes, top 10: `craft-spawning` 43.1k · `_reminders` 24.0k · root `CLAUDE.md` 14.6k · `craft-pm` 13.9k · frame `AGENTS.md` 12.9k · `fleet-output-format` 11.9k · `fleet-hazards` 11.0k · `dima-stories` 10.6k · `sys-jev` 6.2k · `dima-strategy` 5.6k. the two biggest leaves are 31 % of the resident bytes
+
+block html comments: **stripped** in `CLAUDE.md`, in an `@`-imported leaf and in a `.claude/rules/` file — a haiku `-p` probe saw the plain-text controls (PROBE-C, PROBE-E) and none of the three comments, cc 2.1.292. cross-refs can move into comments everywhere
+
+duckdb, 30 days of transcripts (1,079 files, 1.7 GB, 1.4 s):
+- skill loads, top: `x:cmt` 128 · `x:pm` 91 · `x:guide-code` 90 · `writing-for-agents` 71 · `x:github-contrib` 60 · `x:browser-headless` 59 · `x:guide-typescript` 53 · `x:handoff` / `x:handoff-ingest` / `x:notes` 35 each; 40+ skills with ≥3 loads
+- guard refusals: ~21 real ones — gate piped (4), obsidian mv (4), pnpm without `--silent` (4), no safe door (3), zsh `$S:` (2), overwrite (2), staging a missing path (2)
+- lazy-rule loads and misses: in `docs/test-drive/memory-load.md` (`pnpm memory-load:replay`), not re-counted
+
+open: `/skill-doctor` + `/doctor prompt-audit` (typed in a terminal), the `claude-api` prompt-audit (an agent, → `.scratch/memory-sweep/prompt-audit.md`)
+- prompt-audit (`claude-api` procedure, an opus agent, 241k tokens, 4 min) → `.scratch/memory-sweep/prompt-audit.md`: ~105 KB of 206.5 KB resident can go (~−26k tokens, bytes ÷ 4); memory files −60 % → ~28k, still over the ≤25k bar. top: `craft-spawning` → a skill + stub (−37 KB) · `_reminders` off-resident, the boot prints the stuck ones (−24 KB) · `sys-jev` + root line describe the router as live while `router.off` exists (−5.4 KB) · `craft-pm` mechanics into `x:pm` (−6.4 KB) · `fleet-hazards` lines whose guard exists (−5.5 KB). contradictions: ctx7 trial end 10-07 vs 10-09 · «every reply ends with ➡️» vs «quick answer: no next step» · emoji «generously» vs «judiciously»
+- skill use, 30 days (`/skill-doctor` answers «not available on this connection» in the desktop; duckdb over the transcripts instead, model `Skill` loads + typed `/name`): zero use — `x:sweep-issues` (209 lines), `x:guide-go`, `cclio:report`, `x:pre`, `x:mobile-mode`; 1–2 uses — `cclio:shift`, `x:crew-cloud`, `x:crew-designer-interview`, `x:app-essentials`. descriptions over 300 chars (resident every turn): `guide-conventions` 388, `art-kit` 384, `guide-code` 337, `browser-headless` 330, `app-essentials` 307, `notes` 303. bodies over 200 lines: `x:pm` 279, `x:cmt` 224, `crew-coder` 210, `sweep-issues` 209, `cclio:evergreen` 200. typed counts miss `--bg` spawn prompts
+
+## phase 02 · research · 2026-10-07 18:17
+
+- lanes: exa (123 s, $0.10) · parallel (228 s) · `researcher` on the video rules vs our docs (265 s, 105k tokens) → `.scratch/memory-sweep/research/`
+- self-memory, the agreed core: a hard resident budget that fails visibly · stable provenance per line (source, verify, trigger, last use) · usage nominates, never deletes · one batched digest of ≤5 clusters, per-item yes / keep / later, no «approve all» · rejected proposals logged so they never resurface · the old text stays recoverable (git)
+- the split: exa leans on measured length/density losses; parallel found a 1,650-session study with no size effect for one simple rule — the cost is stacked constraints and irrelevant context, not line count itself
+- video rules: mostly folded already; the 100-line preview applies only to a file linked from a linked file; third person bans only «I…» / «you…», none of our 31 descriptions use them; resident files have 0 «think carefully» lines

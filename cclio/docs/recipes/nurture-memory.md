@@ -126,6 +126,8 @@ tracker rule duplicated a coordinator memory.
 
 ### step 2.2 · the cruft pass — `/doctor prompt-audit`, then `/claude-api prompt-audit`
 
+📌 **a terminal step**: `/doctor prompt-audit` and `/skill-doctor` run only in an interactive `claude` in a terminal — the desktop Code tab answers «not available on this connection» (2026-10-07); dima types them there, or the run falls back to the second door + a duckdb join of skill loads over the transcripts.
+
 first door since cc 2.1.280: `/doctor prompt-audit` (built in) audits CLAUDE.md, skills, agents
 and commands for prompting patterns written for older models, in one invoke — agents and commands
 are ground the older door never covered. apply its findings by hand. (? unprobed: whether a
