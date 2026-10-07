@@ -1,15 +1,25 @@
+import { execFileSync } from 'node:child_process';
 import { mkdtemp, readdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { beforeEach, describe, expect, test } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { registerHandoffTools } from './handoff.js';
 
 let root: string;
 let client: Client;
+
+// a fresh tree (ci) has no x binary yet: the shim's first call compiles it, far past a test's timeout
+beforeAll(() => {
+    execFileSync(
+        fileURLToPath(new URL('../../../../x/bin/x', import.meta.url)),
+        ['--json'],
+    );
+}, 180_000);
 
 // the tools as cw meets them: a real mcp client over an in-memory pair, a temp store under them
 beforeEach(async () => {
@@ -110,6 +120,18 @@ describe('the x-cw handoff tools', () => {
 
         expect(said).toContain('nothing pending for cw');
         expect(await files()).toHaveLength(1);
+    });
+
+    test("naming a topic takes another agent's file", async () => {
+        await plant(
+            'ccli--pm--theirs--by-cclio--20261001T120000Z.md',
+            '# META\n\nmeant for ccli\n',
+        );
+
+        const said = await call('handoff_ingest', { topic: 'theirs' });
+
+        expect(said).toContain('meant for ccli');
+        expect(await files()).toEqual([]);
     });
 
     test('delete takes one file and leaves the rest', async () => {

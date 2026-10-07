@@ -11,12 +11,12 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import {
     CLAUDE_HOME,
-    FRAME,
     completableString,
     promptMessage,
     readOrNull,
@@ -24,8 +24,9 @@ import {
     text,
 } from './shared.js';
 
-// the shim runs the go binary of the frame tree above the cwd, else this checkout's
-const X = join(FRAME, 'x', 'bin', 'x');
+// the shim of the frame tree this module sits in (src/ and dist/ are both four levels down); it
+// runs the go binary of the tree above the cwd, else this one's, and rebuilds it when stale
+const X = fileURLToPath(new URL('../../../../x/bin/x', import.meta.url));
 const SPEC_PATH = join(CLAUDE_HOME, 'plugin-x', 'CST-SPEC.md');
 
 /** Which agent this server reads for. The x-cw server is the desktop door. */
