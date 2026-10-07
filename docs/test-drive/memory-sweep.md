@@ -89,3 +89,27 @@ open: `/skill-doctor` + `/doctor prompt-audit` (typed in a terminal), the `claud
 - descriptions: «they also contain useful data … groom them, keep useful parts but reduce size»
 - memory shape: «you can handle large memory, it just needs to be written in a way so you apply it to yourself efficiently. good structure, good shape, and good vectors set for you via properly described sentences»
 - the doctors: «plan a run from CLI next time i boot you»
+
+### the fresh-boot baseline · 2026-10-07 ~18:55 (dima's terminal, Warp)
+
+born place: a **terminal** `claude` in `~/frame/cclio` (not the Code tab), monitors already armed
+- before `/cclio:boot`: 124.3k total — memory files **80.1k** · skills 8.2k · messages 7.6k · MCP tools 0 (loaded on demand) · custom agents 776 · system prompt 6.5k · system tools 20.8k
+- after `/cclio:boot`: **153.2k** — memory 80.1k · messages 36.5k (the boot ritual costs ~29k)
+- the Code tab (this thread, 18:05) for comparison: MCP tools 17.1k (resident there) · skills 14.6k · system tools 28.5k · system prompt 9.2k → the desktop born place costs **~33k more** at the same memory
+- 📌 memory 80.1k in the terminal vs 71.7k in the compacted Code-tab thread: unexplained yet (one ? to measure at phase 09 in the same born place)
+
+### `/skill-doctor` (now the plugin manager's Stats tab, cc 2.1.292) · 7 days
+
+- most tokens attributed: `x:cmt` 162m (236×) · `x:ftr` 117m (27×) · `x:github-contrib` 116m (65×) · `x:guide-code` 113m (123×) · `crew-coder` 80m (44×) · `x:pm` 76m (135×) · `writing-for-agents` 57m (107×)
+- heaviest listings (context every turn): `typesafe-ai` ~230 (4 uses) · `writing-for-humans` ~160 · `humanize` ~160 · `code-review` ~150 · `guide-conventions` ~130 · `guide-code` ~120 · `ai-check` ~120
+- plugins unused: `context7`, 15 days → feeds the ctx7 verdict (10-09)
+- 📌 «7d tokens» counts the whole session around a load, so `x:ftr` at 4.3m per load is likely context, not the skill itself (inference)
+
+### dima's verdicts · 19:02
+
+- emoji: «I just like emojis. Probably "generously" would be wrong, so let's use judiciously. i like emojies but not when confetti pops from everywhere» → `fleet-voice`
+- the squad skill: `x:crew-lead` ✓
+- specs are archived, never deleted → `docs/agents/issue-tracker.md`, pocket 34
+- the delete digest: yes — «hunt redundant memories each time, and also propose grooms, trims to keep it tidy»
+- provenance light: «i agree if it makes sense to you»
+- `x:sweep-issues` + `cclio:report` deleted (their two ideas already live in `crew-verifier`) · audit slice 1: `_reminders` off the resident set

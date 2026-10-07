@@ -25,7 +25,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn
 - ⭐ @habit-dima-comms-pacing.md — a fat drop gets labeled sub-batches with pit stops; every ask handled, a missed one is the worst outcome
-- ⏰ @_reminders.md — dima's standing reminders; ⏰📌 stuck ones raised every boot
+- ⏰ `_reminders.md` (plain pointer, not imported: the boot digest prints every ⏰📌 line, the halt reads the trial ones) — dima's standing reminders; ⏰📌 stuck ones raised every boot
 
 ## method — how a claim earns belief
 - ⭐ @method-rule-proof.md — a rule states the ONE command that proves it, or is labelled an inference

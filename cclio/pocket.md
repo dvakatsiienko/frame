@@ -110,10 +110,15 @@ dima 10-07: «yes remind me». run before the CST, in the session it looks back 
 
 dima 10-07: the digest, not CI. one line in `boot-prefetch.sh`: `pnpm x-go:vuln`, informational, a red names the module.
 
+### 34 · the spec ↔ linear body relation, from the archive
+`open · parked` · after enough spec runs
+
+dima 10-07: «do not delete specs we create, but move them into an archive somewhere, maybe in scratch. After some time, when we run enough specs and have an updated comparison, we would just open the archive, see what kind of specs we have, and see how to apply it to linear (e.g., move specs into linear from scratch, or just keep specs local or something). E.g., solve the linear ticket body/specs body relation question.» the archive is `.scratch/_archive/<feature>/` (`docs/agents/issue-tracker.md`).
+
 ### 33 · shape the squad leader
 `open · grilling` · blocked by 10
 
-dima 10-07: «instead of spawning a coder you spawn a squad leader (e.g., a coordinator). It is a mini coordinator … it essentially manages a coder and a verifier with the given task by you. It handles communication between the coder and verifier and only reports to you with positive results, issues and disputes, or design questions that I would be interested to answer. This way your thread will be filtered out of the noise». the sweep (ticket 05) cuts `craft-spawning` by trigger first; the squad leader is shaped with `x:shape-idea` from what that cut leaves.
+dima 10-07: «instead of spawning a coder you spawn a squad leader (e.g., a coordinator). It is a mini coordinator … it essentially manages a coder and a verifier with the given task by you. It handles communication between the coder and verifier and only reports to you with positive results, issues and disputes, or design questions that I would be interested to answer. This way your thread will be filtered out of the noise». the sweep (ticket 05) cuts `craft-spawning` by trigger first; the squad leader is shaped with `x:shape-idea` from what that cut leaves. its skill name: `x:crew-lead` (dima 10-07 ✓, beside `crew-coder` / `crew-verifier`).
 
 ## decisions so far
 
