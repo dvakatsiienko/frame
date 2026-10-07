@@ -64,6 +64,12 @@
   - decision: an overwrite is refused only when the file is on disk — x-mod-guard looks each target up before the call; a plain `cp` onto a file is left alone, only `cp -f` and `cp /dev/null` are read (FRM-324's list)
   - 📌 not read: an overwrite inside `bash -c` or `eval` (the lookup reads the top command only), `tee`, `truncate`, `rsync --delete`; a remote delete sent through `gh api` or a raw `curl` to any api but linear's
 
+- ✅ an obsidian cli call never acts on the active note by accident
+  - given `obsidian <verb> --help` (or `-h`), then it is refused with the door «obsidian --help, bare»: the cli runs the verb on the active note instead of printing help
+  - given `obsidian delete` with no `path=` or `file=`, then it is refused with the door `obsidian delete path=<vault path>`
+  - then a bare `obsidian --help` and `obsidian delete path=_hq/old.md` run
+  - decision: `obsidian delete --help` moved dima's `_hq/memory-sweep.md` into the trash on 2026-10-07, restored the same minute (pocket 27)
+
 - ✅ a coder spawn runs only on a brief that passed `x brief check`
   - given a `claude --bg` call whose prompt carries `/x:crew-coder` — in the command, or in the brief file it reads through `"$(cat <path>)"`, `cat <path> |` or `< <path>`, resolved from the dir its `cd` left
   - when the brief file's sha256 (its raw bytes) has a stamp at `$X_STATE/briefs/<sha256>.json`, else `~/.local/state/x/briefs/<sha256>.json` — what a clean `x brief check` writes (x/go/brief.go)

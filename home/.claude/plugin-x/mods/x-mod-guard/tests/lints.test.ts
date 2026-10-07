@@ -71,6 +71,18 @@ const LINTS = [
         '--silent',
         'pnpm --silent linear:read FRM-1',
     ],
+    [
+        'an obsidian verb with --help',
+        'obsidian delete --help',
+        'obsidian --help',
+        'obsidian --help',
+    ],
+    [
+        'obsidian delete with no file named',
+        'obsidian delete',
+        'path=',
+        'obsidian delete path=_hq/old.md',
+    ],
 ] as const;
 
 function world(on: On) {

@@ -9,10 +9,12 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-27 → 01 → 02 → 07 → 06 → 08 → 22 → 23 → 24 → 05 → 28 → 09 → 10 → 12 → 13 → 14 → 15 → 16
+02 → 07 → 06 → 29 → 08 → 22 → 23 → 24 → 05 → 28 → 09 → 10 → 12 → 13 → 14 → 15 → 16
 
 ## decisions so far
 
+- 2026-10-07: 27 guard: `obsidian <verb> --help` and a target-less `obsidian delete` are refused (x-mod-guard, 2 tests, proven red)
+- 2026-10-07: 01 matt's chief-of-staff (27 lines, in-progress) is cclio's own shape; two borrows proposed: context pointers in every brief, delegate edits by default
 - 2026-10-07: 18 x-queue folded: cclio's `/queue` lines become pocket items; boot digest, boot + halt skills, README, the snapshot script and habit-shared-files repointed; the empty queue file trashed (cclio 0.3.107)
 - 2026-10-07: 25 done: 4 mod stubs trashed, 3 merged worktrees removed; `FRM-305-router-v2` kept until the jev refill ~10-18; [FRM-329](https://linear.app/x-com/issue/FRM-329) stays open (dima: the board look is not what he wants yet)
 - 2026-10-07: 11 pocket test drive started, to 10-21: baseline in `docs/test-drive/pocket.md` (linear 103 created / 97 closed in 14 days), a reminder, the habit list
@@ -42,11 +44,6 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 - observation: dima has too many side asks and will pick fewer; design is wanted, he has no capacity for it alone
 
 ## items
-
-### 01 · peek matt's chief-of-staff skill
-`open · research`
-
-matt's in-progress skill (`mattpocock-skills` 1.3.1, `skills/in-progress/chief-of-staff/SKILL.md`): a long-running coordinator that works through subagents and passes context pointers. read it against cclio's own shape; name what to borrow. dima 10-07: first thing tomorrow.
 
 ### 02 · mirror the pocket into the vault, read-only
 `open · task`
@@ -123,12 +120,12 @@ dima 10-06 opener: off `go install`, onto brew (install order rule).
 
 dima 10-06 opener: `docs/test-drive/delve.md`.
 
-### 27 · guard: an obsidian subcommand with --help runs the command
-`open · task`
-
-10-07: `obsidian delete --help` deleted the active note (`_hq/memory-sweep.md`) instead of printing help; restored from `~/Library/Mobile Documents/.Trash/`. an `x-mod-guard` rule: refuse `obsidian <verb> --help` for every verb, and `obsidian delete` without an explicit file argument; the refusal points at bare `obsidian --help`. goes with the next mods round beside 17.
-
 ### 28 · finish the handoffs port, then make «done» mean migrated
 `open · task` · [FRM-338](https://linear.app/x-com/issue/FRM-338) · [FRM-284](https://linear.app/x-com/issue/FRM-284)
 
 10-07: `x handoffs` (list, peek, ingest) has zero callers; `x:handoff`, `x:handoff-ingest` and raycast `x-ray` still call `script/skill-handoff-store.ts`. port write + delete, switch every caller, the script dies in the same commit. the rename `handoffs` → `handoff` already sits in FRM-338. dima 10-07: «creating dead cli families and verbs is not about optimization» — the migration rule rides the cli plan (09).
+
+### 29 · count cclio's own code edits per session
+`open · task`
+
+matt's chief-of-staff: «all work should be done in subagents. protect your context window» (dima 10-07: «very useful»). 10-07 cclio wrote the stash fix, the guard rule and the x docs inline. `flow:report` and the halt read cclio's transcripts and print the code-file edits (`Edit`/`Write` on .ts/.tsx/.go/.sh/.py) per session; the number goes down when delegation works. rides 06 (cheap measuring).

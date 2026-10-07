@@ -808,6 +808,26 @@ function lint(c: Command, next: Command | undefined): Refusal | undefined {
                 why: 'sd drops ${{ … }} from a workflow line',
             };
     }
+    // the obsidian cli runs a verb on the active note: `delete --help` deleted memory-sweep.md (2026-10-07)
+    if (c.name === 'obsidian' && ops.length > 0) {
+        if (hasFlag(c.args, ['--help'], 'h'))
+            return {
+                door: 'obsidian --help, bare: it lists every verb with its options',
+                rule: 'obsidian-help',
+                targets: ['obsidian'],
+                why: `obsidian ${ops[0]} --help runs ${ops[0]} on the active note instead of printing help`,
+            };
+        if (
+            ops[0] === 'delete' &&
+            !ops.some((o) => o.startsWith('path=') || o.startsWith('file='))
+        )
+            return {
+                door: 'obsidian delete path=<vault path>',
+                rule: 'obsidian-delete-target',
+                targets: ['obsidian'],
+                why: 'a delete with no file named deletes the active note',
+            };
+    }
     if (
         (c.name === 'sed' || c.name === 'gsed') &&
         hasFlag(c.args, ['--in-place'], 'i') &&

@@ -124,6 +124,8 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 
 A research brief asks for a **structured summary, never a file dump** — paths with line ranges, who owns what, footguns, and «what is NOT in the area» (borrowed from g2i's spec skill, 2026-09-03). **A project-approach question (a stack, build-or-not, a vendor pick, a process design) runs `advise-project-approach` — adopted 2026-09-29, a standing habit**: reach for it whenever a plan is about to be chosen; it ran blind in a fresh agent, it caught the one trap every other lane missed (Claude Design's design-system import breaking the blinding). **An architecture question names `neuroarxiv` as a lane** (plugin `neuroarxiv@neuroarxiv`, cclio scope, auto-updated): a vendor-only research on the verifier missed the two papers that reshaped its spec (2026-09-18).
 
+🧭 **context pointers, never restatement** (borrowed from matt's chief-of-staff, dima's yes 2026-10-07: «both are very useful ideas»): a brief or a `SendMessage` names the spec (`.scratch/<feature>/`), the pocket item, the commit or the research doc, and adds only what none of them holds — «don't duplicate information already available via pointers». a restated ticket drifts from its source the moment either changes.
+
 Message the coder whenever; it answers **once** per assignment, blocked or done. `git diff` in its
 cwd beats any message. Doneness is a **written marker** (final commit + report), never transcript
 archaeology. Subscribe, never poll. Budget three round trips — more means the brief was wrong.
