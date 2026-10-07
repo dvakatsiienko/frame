@@ -9,10 +9,11 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-02 → 07 → 06 → 29 → 08 → 22 → 23 → 24 → 05 → 28 → 09 → 10 → 12 → 13 → 14 → 15 → 16
+07 → 06 → 29 → 08 → 22 → 23 → 24 → 05 → 28 → 09 → 10 → 12 → 13 → 14 → 15 → 16
 
 ## decisions so far
 
+- 2026-10-07: 02 the pocket mirrors to `_hq/pocket.md` after every cclio turn (a Stop hook, `cclio/.claude/hooks/pocket-mirror.sh`, one-way, a read-only banner on top, copies only on a change)
 - 2026-10-07: 27 guard: `obsidian <verb> --help` and a target-less `obsidian delete` are refused (x-mod-guard, 2 tests, proven red)
 - 2026-10-07: 01 matt's chief-of-staff (27 lines, in-progress) is cclio's own shape; two borrows proposed: context pointers in every brief, delegate edits by default
 - 2026-10-07: 18 x-queue folded: cclio's `/queue` lines become pocket items; boot digest, boot + halt skills, README, the snapshot script and habit-shared-files repointed; the empty queue file trashed (cclio 0.3.107)
@@ -44,11 +45,6 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 - observation: dima has too many side asks and will pick fewer; design is wanted, he has no capacity for it alone
 
 ## items
-
-### 02 · mirror the pocket into the vault, read-only
-`open · task`
-
-the pocket lives in git; dima wants it on his phone too. a symlink does not reach the phone (icloud syncs the link, not the files — inferred, untested). idea: a hook copies `pocket.md` → `_hq/pocket.md` on every write, one way. the phone copy is read-only: a phone edit there is overwritten on the next copy, so phone drops still go to the inbox (critic, 10-07). dima 10-07: «think how to have it for me too tmrw».
 
 ### 05 · x cli: a flashy but useful main view?
 `open · grilling` · [FRM-284](https://linear.app/x-com/issue/FRM-284)

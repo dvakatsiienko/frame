@@ -34,6 +34,11 @@
             "type": "command",
             "command": "jq -r .transcript_path | xargs -I{} pnpm -C /Users/dima/frame --silent ccrow:wake --transcript {}",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/pocket-mirror.sh",
+            "timeout": 10
           }
         ]
       }
