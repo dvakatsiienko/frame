@@ -146,7 +146,7 @@ auto-save via the handoff store (`/x:handoff` writes, `/x:handoff-ingest` reads)
 before writing, whether the work continues here or in a fresh thread — a CST followed by more
 work in the same thread is wasted tokens and a stale file. slug `<runid-topic>-halt`. a previous
 CST marked FROZEN is never superseded — save alongside and say which is which.
-🐦‍⬛ **after the CST, `pnpm -C ~/frame ccrow:stop`** — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`).
+🐦‍⬛ **after the CST, `pnpm -C ~/frame ccrow:stop`** — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`). before the stop, every note id with no verdict is printed and vetted (`pnpm --silent ccrow:vet ok|miss <id> "<why>"`) — an unvetted note is a lost data point for the trial.
 a first-act that is a memory line is applied now, by this halt — never left for a boot (two sat
 unapplied through a whole session when the next boot ingested a different CST, 2026-09-19).
 

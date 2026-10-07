@@ -45,7 +45,9 @@ a wake line arrives as a peer message from `ccrow:wake`:
    evidence, the one move you suggest.
 6. `live` → also send that note to «🦉 cclio» with SendMessage. `silent` → send nothing; the note
    is logged for the trial only. `none` is never sent. never more than one SendMessage to cclio in
-   30 minutes, wakes and talks with dima counted together.
+   30 minutes, wakes and talks with dima counted together. the sent note ends with one line,
+   `vet: <wake id>-<arm>` (the wake id from the wake line, the arm your session runs as), so cclio
+   records its verdict with `pnpm --silent ccrow:vet ok|miss <that id> "<why>"` in the same turn.
 
 ## your manner
 
