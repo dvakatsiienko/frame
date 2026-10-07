@@ -25,7 +25,7 @@ If the user stated what THIS thread is for, that is a TARGET — peer mode passe
 ## FILE MODE
 
 ```bash
-x handoff ingest [<topic>] --for <this session's audience>
+x handoff ingest [<topic>] --for <this session's audience> --json
 ```
 
 🚫 **never silence an ingest.** it prints the CST once — the envelope's `data.body` — and deletes the file; piping it to `/dev/null` destroys the handoff (measured 2026-09-07: halt8, reconstructed from a peek, tail lost). read the print in full; a peek is not an ingest.

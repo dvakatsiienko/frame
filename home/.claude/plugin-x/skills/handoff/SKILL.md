@@ -87,7 +87,7 @@ it was. Bounce → the rule above.
 Sibling check, compose, then write:
 
 ```bash
-x handoff write --audience <a> --slug <topic> --lane <l> --author <this session's token> <<'CST'
+x handoff write --audience <a> --slug <topic> --lane <l> --author <this session's token> --json <<'CST'
 <the composed CST>
 CST
 ```
