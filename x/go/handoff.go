@@ -153,8 +153,8 @@ func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
 	}
 	slug := firstArg(args)
 	// a pull that names no reader could take a file another agent waits for, and deletes it
-	if reader == "" && slug == "" {
-		return nil, usageFail("ingest names its reader — --for any, ccli, cclio or cw — or the slug of the file it takes", "x handoff ingest --for <audience>")
+	if reader == "" {
+		return nil, usageFail("ingest names its reader: --for any, ccli, cclio or cw", "x handoff ingest --for <audience>")
 	}
 	all := listStore(storeRoot())
 	if len(all) == 0 {

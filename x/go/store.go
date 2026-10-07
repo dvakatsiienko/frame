@@ -194,9 +194,9 @@ var (
 	metaHeading = regexp.MustCompile(`(?i)^#\s+META\b`)
 	topHeading  = regexp.MustCompile(`^#\s`)
 	// the label is plain, bold or backticked in the CSTs out there; the value is whatever reads as a run
-	// id after it (`<surface>·<date>·<slug>`), so «none» or prose after the label is no run id at all
+	// id after it (`<surface>·<date>·<slug>`, any ·-joined words), so «none» or prose is no run id at all
 	runIDLabel = regexp.MustCompile(`(?i)run\s*(?:id|marker)`)
-	runIDValue = regexp.MustCompile(`[\p{L}\p{N}_-]+(?:·[\p{L}\p{N}_-]+){2,}`)
+	runIDValue = regexp.MustCompile(`[\p{L}\p{N}_-]+(?:·[\p{L}\p{N}_-]+)+`)
 )
 
 func metaBlock(cst string) *string {

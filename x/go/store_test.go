@@ -89,10 +89,12 @@ func TestIngestWithNoReaderRefuses(t *testing.T) {
 	root := t.TempDir()
 	write(t, filepath.Join(root, "cw--pm--a--by-ccli--20261007T100000Z.md"), "# META\n")
 
-	got := xStore(t, root, "", "handoff", "ingest")
+	for _, argv := range [][]string{{"handoff", "ingest"}, {"handoff", "ingest", "a"}} {
+		got := xStore(t, root, "", argv...)
 
-	if got.code != 2 || len(storeFiles(root)) != 1 || !strings.Contains(got.next, "--for") {
-		t.Fatalf("an ingest that names no reader must refuse and keep the file: exit %d, next %q", got.code, got.next)
+		if got.code != 2 || len(storeFiles(root)) != 1 || !strings.Contains(got.next, "--for") {
+			t.Fatalf("%v names no reader, so it must refuse and keep the file: exit %d, next %q", argv, got.code, got.next)
+		}
 	}
 }
 
@@ -186,6 +188,7 @@ func TestAgeReadsMinutesThenHoursThenDays(t *testing.T) {
 func TestRunIDReadsTheValueNotTheMarkerLabel(t *testing.T) {
 	cases := map[string]string{
 		"# META\n\nrun id: cc·20261007·plain":                    "cc·20261007·plain",
+		"# META\n\n- **run marker** — run id: **cc·x**":          "cc·x",
 		"# META\n\nrun id: **cc·20260831·probe**":                "cc·20260831·probe",
 		"# META\n\n- **run marker** — run id: **cc·20261006·x**": "cc·20261006·x",
 		"# META\n\n- **run marker** — `cc·20261007·spec`":        "cc·20261007·spec",

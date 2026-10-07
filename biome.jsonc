@@ -101,6 +101,14 @@
       }
     },
     {
+      // vitest is the one runner, a workspace-root devDependency for the same reason as vite
+      // above; a workspace package's test imports it without declaring it.
+      "includes": ["home/.claude/mcp-x-cw/src/**/*.test.ts"],
+      "linter": {
+        "rules": { "correctness": { "noUndeclaredDependencies": "off" } }
+      }
+    },
+    {
       // Two raycast contracts the default rules read as mistakes: a command file is an entry
       // point raycast loads by default export, and react is supplied by the raycast runtime
       // rather than bundled, so the official extension template never declares it.
