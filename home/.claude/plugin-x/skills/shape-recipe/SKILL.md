@@ -51,6 +51,7 @@ shares the stem (`refresh-agent-ops` ↔ `pnpm agent-ops:report` ↔ `docs/knowl
 
 ## running one
 
+0. check the recipe against its want, before any lane: does every vector serve a want line, and does the want still say what dima wants? a gap is printed with the groom, never fixed in silence. done: each vector names the want line it serves, or is listed as orphaned
 1. read `recipe.md` and the last 5 lines of `log.md`. done: you can say what changed since the last run
 2. re-groom the vectors with dima: print them with the shared vectors below, he cuts and adds. done: his word on the list. (open)
 3. research, all lanes at once from one brief: the `researcher` agent (sources, code, docs) + `pnpm research:lanes <brief>` (exa + parallel). raw output → `last/`. done: every lane landed or failed out loud
