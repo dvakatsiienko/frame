@@ -63,10 +63,15 @@ function artifactExists(artifact: string) {
                 : 'cclio/plugin-cclio/skills';
         return existsSync(path.join(root, dir, skill.name, 'SKILL.md'));
     }
-    const resolved = artifact.startsWith('~/')
-        ? path.join(homedir(), artifact.slice(2))
-        : path.join(root, artifact);
-    return existsSync(resolved);
+    if (artifact.startsWith('~/frame/'))
+        return existsSync(path.join(root, artifact.slice(8)));
+    // other ~/ homes live only on dima's mac, never on a ci runner
+    if (artifact.startsWith('~/'))
+        return (
+            Boolean(process.env.CI) ||
+            existsSync(path.join(homedir(), artifact.slice(2)))
+        );
+    return existsSync(path.join(root, artifact));
 }
 
 test.each(recipes)('%s has the recipe shape', (name) => {
