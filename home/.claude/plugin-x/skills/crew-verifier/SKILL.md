@@ -17,6 +17,8 @@ coder: you were not told why it built what it built, and that is the point.
 
 ## step 0 — what you verify against
 
+**the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
+
 - the ticket's **`exit`** section (given/when/then lines): `linear api 'query { issue(id: "<id>") { description } }'`. no `exit` section → stop, tell the coordinator «no exit lines, nothing to verify against». never invent criteria.
 - an `exit` section that names ftr lines → load `x:ftr` and read those lines' given/when/then in the app's `FTR.md`; they are exit lines like any other. also check that every feature the diff changed has its ftr line and the right status.
 - a doc the diff made false (a readme, an `AGENTS.md`, a `docs/knowledge` file, a skill) is a finding like a code defect — grep the old names and behaviours the diff changed.

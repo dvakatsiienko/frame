@@ -28,6 +28,8 @@ an app with a direction: read, in order, and draw inside it — never invent a n
 
 ## 1. read the brief
 
+**the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
+
 - 🎯 full: `jobs/<app>/brief.md`. a blind brief adds `map.md`, and those two files are all you
   read about the app.
 - ⚡ quick: there may be no brief. pick your own two axes from the app's purpose and write a
@@ -160,6 +162,8 @@ date · app · brief version · mode · takes · artboards · tokens in/out · w
 window % before and after (`~/.claude/shelf/cc-usage-window.json`, read at the start and the
 end) · pick minutes · rounds. output tokens come from this session's own footer at the spread's
 end («↓68.4k tokens»); never write «not measurable».
+
+- **last act: a retro to the coordinator, ≤12 lines**, walked through matt's retro categories (read its SKILL.md): where the brief was wrong or thin, which steers came late, what the canvas or the tools cost, one automation candidate.
 
 ## completion criterion
 

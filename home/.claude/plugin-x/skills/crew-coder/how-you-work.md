@@ -2,6 +2,7 @@
 
 Part of the `x:crew-coder` contract, binding in full; read at step 0 and again after any compact.
 
+- **the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
 - **a brief that hands you a spec** (`.scratch/<feature>/`) → always cut it with matt's `to-tickets`
   first, even when it fits one pr: the tickets are the plan everyone can read and the part that
   survives a compaction. build each ticket test-first with `tdd`, through `implement` when dima
