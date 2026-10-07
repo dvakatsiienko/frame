@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -58,7 +59,9 @@ func TestMain(m *testing.M) {
 	}
 	src, _ := filepath.Abs(".")
 	xbin = filepath.Join(dir, "x")
-	if out, err := exec.Command("go", "build", "-ldflags", "-X main.srcDir="+src, "-o", xbin, ".").CombinedOutput(); err != nil {
+	// no child reads or writes dima's real ~/.local/state/x — a stats run there would trash real days
+	_ = os.Setenv("X_STATE", filepath.Join(dir, "state"))
+	if out, err := exec.Command("go", "build", "-tags", "xpanic", "-ldflags", "-X main.srcDir="+src, "-o", xbin, ".").CombinedOutput(); err != nil {
 		panic(fmt.Sprintf("build: %v\n%s", err, out))
 	}
 	code := m.Run()
@@ -191,11 +194,12 @@ func runTTY(t *testing.T, bin, dir string, c call) (string, int) {
 	return screen.String(), exitOf(err)
 }
 
-// the test runs as an agent would, so the agent markers it inherits are dropped
+// the test runs as an agent would, so the agent and caller markers it inherits are dropped
 func filterEnv(env []string) []string {
 	var kept []string
 	for _, pair := range env {
-		if !strings.HasPrefix(pair, "CLAUDECODE=") && !strings.HasPrefix(pair, "AI_AGENT=") {
+		name, _, _ := strings.Cut(pair, "=")
+		if !slices.Contains([]string{"CLAUDECODE", "AI_AGENT", "CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_ROOT", "SSH_CONNECTION", "CLAUDE_CODE_SESSION_ID"}, name) {
 			kept = append(kept, pair)
 		}
 	}

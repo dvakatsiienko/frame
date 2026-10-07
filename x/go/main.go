@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime/debug"
 	"slices"
 	"sort"
 	"strings"
@@ -53,6 +54,8 @@ var impls = map[string]Impl{
 	"knowledge read":  {Run: knowledgeRead},
 	"schema":          {Run: schema},
 	"completion":      {Run: completion},
+	"stats":           {Run: stats},
+	"trace record":    {Run: traceRecord},
 }
 
 // set by -ldflags at build; a dev run falls back to the executable's own tree
@@ -86,7 +89,26 @@ func detect(argv []string) mode {
 	return mode{json: isJSON, interactive: !isJSON && term.IsTerminal(os.Stdin.Fd())}
 }
 
-func execute(argv []string) int {
+// the dispatcher writes the trace, so a verb is traced without a line of telemetry in it
+func execute(argv []string) (code int) {
+	traced = newSpan(argv)
+	// cobra's tab completion runs on every Tab press; tracing it would bury the real calls
+	if len(argv) > 0 && strings.HasPrefix(argv[0], "__complete") {
+		traced.skip = true
+	}
+	defer func() {
+		// a panic is our bug: its stack goes to stderr, the caller still gets an ending and a non-zero exit
+		if p := recover(); p != nil {
+			fmt.Fprintf(os.Stderr, "panic: %v\n%s", p, debug.Stack())
+			code = finishFail(detect(argv), traced.Name, nil, fmt.Errorf("panic: %v", p))
+		}
+		traced.Exit = code
+		traced.write()
+	}()
+	return dispatchArgv(argv)
+}
+
+func dispatchArgv(argv []string) int {
 	m := detect(argv)
 	if !m.json {
 		ui = newTheme()
@@ -133,7 +155,7 @@ func buildRoot(m mode) *cobra.Command {
 			family := verb.Family()
 			if groups[family] == nil {
 				groups[family] = &cobra.Command{
-					Use: family, Short: familyOf(family).Gist, Args: cobra.ArbitraryArgs,
+					Use: family, Short: familyOf(family).Gist, Args: cobra.ArbitraryArgs, Hidden: !slices.Contains(families(), family),
 					RunE: func(_ *cobra.Command, args []string) error {
 						return overview(m, append([]string{family}, args...))
 					},
@@ -153,7 +175,7 @@ func leaf(m mode, verb Verb) *cobra.Command {
 		name = verb.Name
 	}
 	c := &cobra.Command{
-		Use: name, Short: gist(verb.Purpose), Args: cobra.ArbitraryArgs,
+		Use: name, Short: gist(verb.Purpose), Args: cobra.ArbitraryArgs, Hidden: verb.Hidden,
 		RunE: func(c *cobra.Command, args []string) error {
 			flags := Flags{}
 			c.Flags().VisitAll(func(f *pflag.Flag) { flags[f.Name] = flagValue(f) })
@@ -187,6 +209,7 @@ func dispatch(m mode, verb Verb, args []string, flags Flags) int {
 		}
 		args = filled
 	}
+	traced.Ids = idsOf(verb, args)
 	if err := checkArity(verb, args); err != nil {
 		return finishFail(m, verb.Name, r, err)
 	}
@@ -277,6 +300,9 @@ func finishFail(m mode, name string, r *Run, err error) int {
 	if !errors.As(err, &fail) {
 		fail = &Fail{Msg: err.Error(), Next: "report it to cclio with the command you ran"}
 		logger.Error("unexpected", "err", err)
+		traced.Kind = "bug"
+	} else {
+		traced.Kind = fail.kind()
 	}
 	status := "failed"
 	if fail.IsUsage {

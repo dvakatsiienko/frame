@@ -35,6 +35,7 @@ type Verb struct {
 	Args       []ArgSpec           `json:"args"`
 	Flags      map[string]FlagSpec `json:"flags"`
 	NeedsApply bool                `json:"needsApply"`
+	Hidden     bool                `json:"hidden,omitempty"`
 	Steps      []string            `json:"steps"`
 	Usage      string              `json:"usage"`
 }
@@ -160,20 +161,24 @@ func findVerb(words []string) (Verb, int, bool) {
 	return found, depth, depth > 0
 }
 
+// a hidden verb is listed only when named in full
 func verbsUnder(prefix string) []Verb {
 	var matched []Verb
 	for _, verb := range verbs {
-		if prefix == "" || verb.Name == prefix || strings.HasPrefix(verb.Name, prefix+" ") {
+		if verb.Name == prefix || !verb.Hidden && (prefix == "" || strings.HasPrefix(verb.Name, prefix+" ")) {
 			matched = append(matched, verb)
 		}
 	}
 	return matched
 }
 
+// the families with a verb anyone may list
 func families() []string {
-	names := make([]string, len(familyList))
-	for i, family := range familyList {
-		names[i] = family.Name
+	var names []string
+	for _, family := range familyList {
+		if len(verbsUnder(family.Name)) > 0 {
+			names = append(names, family.Name)
+		}
 	}
 	return names
 }

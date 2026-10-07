@@ -75,7 +75,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 			}
 		}
 		if !isMerging() && ok(git(append([]string{"diff", "--cached", "--quiet", "--"}, paths...)...)) {
-			return "", &Fail{Msg: "nothing staged under those paths — empty diff, no commit",
+			return "", &Fail{Refused: true, Msg: "nothing staged under those paths — empty diff, no commit",
 				Next: "x lane commit <msg-file> -- <paths that changed>"}
 		}
 		return fmt.Sprintf("%s: %s", plural(len(present), "path"), strings.Join(present, ", ")), nil
@@ -245,7 +245,7 @@ func prPlan(r *Run, args []string, _ Flags) (any, error) {
 			return "", err
 		}
 		if remote != sha {
-			return "", &Fail{Msg: "origin/" + name + " is not at HEAD", Next: "x lane push --apply"}
+			return "", &Fail{Refused: true, Msg: "origin/" + name + " is not at HEAD", Next: "x lane push --apply"}
 		}
 		argv = []string{"pr", "create", "--base", "main", "--head", name, "--title", title, "--body-file", bodyFile}
 		return fmt.Sprintf("%s → main: %s", name, title), nil
@@ -357,7 +357,7 @@ func decrypt(tree string) error {
 	}
 	key := filepath.Join(common, "git-crypt/keys/default")
 	if !exists(key) {
-		return &Fail{Msg: "no git-crypt key at " + key, Next: "run git-crypt unlock in the main checkout first"}
+		return &Fail{Refused: true, Msg: "no git-crypt key at " + key, Next: "run git-crypt unlock in the main checkout first"}
 	}
 	gitDir, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
 	if err != nil {
@@ -388,7 +388,7 @@ func decrypt(tree string) error {
 			return err
 		}
 		if fields := strings.Fields(staged); len(fields) < 2 || fields[1] != raw {
-			return &Fail{Msg: path + " differs from its index blob — not touching it",
+			return &Fail{Refused: true, Msg: path + " differs from its index blob — not touching it",
 				Next: "git -c filter.git-crypt.clean=cat diff -- " + path}
 		}
 		if err := os.Remove(filepath.Join(tree, path)); err != nil {
@@ -434,7 +434,7 @@ func validateMods(tree string, paths []string) (string, error) {
 		}
 		seen[dir] = true
 		if checked, _ := run(tree, nil, "", "claude", "plugin", "validate", dir); !checked.ok {
-			return "", &Fail{Msg: "claude plugin validate refused " + dir + " — its output is above; nothing was staged",
+			return "", &Fail{Refused: true, Msg: "claude plugin validate refused " + dir + " — its output is above; nothing was staged",
 				Next: "claude plugin validate " + dir, Log: nonBlank(checked.log)}
 		}
 	}
@@ -453,14 +453,14 @@ func enterMain(repo string) error {
 	}
 	name, _ := gitIn(root.out, "symbolic-ref", "--quiet", "--short", "HEAD")
 	if name.out != "main" {
-		return &Fail{Msg: fmt.Sprintf("%s is on %s, not main", root.out, or(name.out, "a detached HEAD")),
+		return &Fail{Refused: true, Msg: fmt.Sprintf("%s is on %s, not main", root.out, or(name.out, "a detached HEAD")),
 			Next: "switch " + root.out + " to main, then rerun"}
 	}
 	// the bare mid-merge commit would conclude someone else's merge under this message
 	// absolute: in a linked worktree --git-path already answers absolute, and joining it to root breaks
 	mergeHead, _ := gitIn(root.out, "rev-parse", "--path-format=absolute", "--git-path", "MERGE_HEAD")
 	if mergeHead.ok && exists(mergeHead.out) {
-		return &Fail{Msg: root.out + " is mid-merge — not committing into someone else's merge",
+		return &Fail{Refused: true, Msg: root.out + " is mid-merge — not committing into someone else's merge",
 			Next: "finish the merge in " + root.out + ", then rerun"}
 	}
 	return os.Chdir(root.out)
@@ -477,7 +477,7 @@ func assertUnlocked(tree string) error {
 		return err
 	}
 	if len(locked) > 0 {
-		return &Fail{Msg: fmt.Sprintf("git-crypt files hold ciphertext here (%s) — any add dies on the clean filter", strings.Join(locked, ", ")),
+		return &Fail{Refused: true, Msg: fmt.Sprintf("git-crypt files hold ciphertext here (%s) — any add dies on the clean filter", strings.Join(locked, ", ")),
 			Next: "x lane unlock"}
 	}
 	return nil
@@ -545,7 +545,7 @@ func head() (string, error) { return mustGit("rev-parse", "rev-parse", "HEAD") }
 func branch() (string, error) {
 	found, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	if !found.ok {
-		return "", &Fail{Msg: "detached HEAD", Next: "git switch -c <branch>"}
+		return "", &Fail{Refused: true, Msg: "detached HEAD", Next: "git switch -c <branch>"}
 	}
 	return found.out, nil
 }

@@ -137,7 +137,7 @@ func briefCheck(r *Run, args []string, flags Flags) (any, error) {
 			msg = append(msg, fmt.Sprintf("line %d: %s %s — %s", f.Line, f.Kind, f.What, f.Why))
 		}
 		msg = append(msg, "a thing the brief asks to build passes with (new) right after it")
-		return nil, &Fail{Msg: strings.Join(msg, "\n"), Next: strings.TrimSpace("x brief check " + quote(path) + " " + repoFlag(flags))}
+		return nil, &Fail{Refused: true, Msg: strings.Join(msg, "\n"), Next: strings.TrimSpace("x brief check " + quote(path) + " " + repoFlag(flags))}
 	}
 
 	stamp := filepath.Join(stateDir(), "briefs", sum+".json")

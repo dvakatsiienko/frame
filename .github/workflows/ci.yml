@@ -64,10 +64,10 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      # x's go tests lock a git-crypt fixture worktree, so the tool must exist here
-      # or the run fails instead of skipping
-      - name: Install git-crypt
-        run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends git-crypt
+      # x's go tests lock a git-crypt fixture worktree and source the zsh trace hook, so both
+      # tools must exist here or the run fails instead of skipping
+      - name: Install git-crypt and zsh
+        run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends git-crypt zsh
 
       - name: Test
         run: pnpm test

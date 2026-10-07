@@ -13,5 +13,6 @@
 - **shelf** — `docs/knowledge/`, the fleet's reference files; each file's verified date is its stamp, a file with none is unstamped
 - **held files** — the unstaged and untracked work outside a commit's paths, moved into the git dir while the hooks run, then put back byte for byte
 - **trace** — the one json line x writes when a call exits: the verb, flag names (never values), the caller, duration, exit and error kind; `x stats` reads them
-- **caller** — who ran a verb, one fixed value per trace line: `dima`, `cc`, `cw`, `ssh`, `hook`, `other`
+- **caller** — who ran a verb, one fixed value per trace line, read from the env: `hook` (`GIT_EXEC_PATH` from git, `CLAUDE_PROJECT_DIR` from a cc hook), `cc` (`CLAUDECODE`), `cw` (Cowork's Desktop Commander passes on a `CLAUDE_PLUGIN_ROOT` under `local-agent-mode-sessions/`), `ssh` (`SSH_CONNECTION`), `dima` (a tty), `other`
+- **error kind** — why a traced call failed: `usage` (exit 2), `refused` (x's own check stopped before acting), `external` (a tool ran and failed), `bug` (a panic or an unexpected error)
 - **raw door** — a family's traced passthrough to the tool underneath (`x linear api`), the fallback when no verb fits; what it carries ranks the next verbs

@@ -127,3 +127,31 @@
   - given a word of a file name
   - when it runs
   - then the file renders as markdown; a word matching several files lists them
+
+## stats — telemetry
+
+- ✅ every `x` call leaves one trace line
+  - makes: a json line in `~/.local/state/x/traces/<local day>.jsonl`
+  - given any verb, run by anyone
+  - when it exits — ok, usage, refused, external or a panic
+  - then the day's file holds one line: the verb, flag names, ids, caller, duration, step times, exit, error kind, x version — never a flag value or free text
+  - given `X_TRACE=0`, then nothing is written; given a trace dir that cannot be written, then the call ends as it would untraced
+  - decision: the dispatcher writes it at exit, so a new verb is traced with no telemetry code (spec, 2026-10-07)
+- ✅ the trace names its caller
+  - given `CLAUDECODE=1`, `SSH_CONNECTION`, a git or cc hook env, a Cowork Desktop Commander, or a plain tty
+  - when x runs
+  - then the caller reads `cc`, `ssh`, `hook`, `cw` or `dima`; anything else reads `other`
+- ✅ `x stats` reads the traces
+  - given a trace dir
+  - when `x stats --json --days 30` runs
+  - then it prints calls per family and verb, the caller split, p50/p95 per verb, failures by kind, and the verbs with no calls
+  - given a day file older than 90 days, then it moves to the macos trash
+  - given a terminal, then a plain summary board prints until the `x-stats-board` spec lands
+- ✅ dima's `pnpm <script>` calls are traced too
+  - given the zsh hook `home/.config/zsh-custom/x-trace.zsh`
+  - when dima types `pnpm <script>` at his prompt
+  - then `x trace record` writes the same line shape in the background, with the script's exit and time; an `x` call is not recorded twice
+  - then the name is `pnpm <script>` only for a script the nearest `package.json` defines, else plain `pnpm` — a flag's value or free text never becomes a name
+  - not traced: a line that does not start with `pnpm` — an env prefix (`FOO=1 pnpm dev`) or a compound (`cd app; pnpm dev`)
+  - decision: the hook skips `x` — the dispatcher already traces it as `dima` (cclio, 2026-10-07)
+  - decision: only lines that start with `pnpm`; the gap above is known and kept narrow (cclio, 2026-10-07)

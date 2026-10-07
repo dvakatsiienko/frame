@@ -34,6 +34,16 @@
             "example": "source <(x completion zsh)",
             "gist": "shell completion from the registry",
             "name": "completion"
+        },
+        {
+            "example": "x stats --days 7",
+            "gist": "which verbs are used, by whom, how fast, how they fail",
+            "name": "stats"
+        },
+        {
+            "example": "x trace record --exit 0 --duration 840 -- pnpm x-go:test",
+            "gist": "trace lines for commands x did not run",
+            "name": "trace"
         }
     ],
     "verbs": [
@@ -256,6 +266,43 @@
             "name": "completion",
             "needsApply": false,
             "purpose": "print a shell completion script generated from the registry, for `source <(x completion zsh)`"
+        },
+        {
+            "flags": {
+                "days": {
+                    "description": "the window, in local days back from today (default 30)",
+                    "type": "string",
+                    "value": "n"
+                }
+            },
+            "name": "stats",
+            "needsApply": false,
+            "purpose": "count x calls from the trace files: per family and verb, callers, p50/p95 time, failure kinds, unused verbs"
+        },
+        {
+            "args": [
+                {
+                    "description": "the command line as typed; only `pnpm <script>` is kept",
+                    "isVariadic": true,
+                    "name": "command"
+                }
+            ],
+            "flags": {
+                "duration": {
+                    "description": "how long the command ran, in ms",
+                    "type": "string",
+                    "value": "ms"
+                },
+                "exit": {
+                    "description": "the command's exit code",
+                    "type": "string",
+                    "value": "code"
+                }
+            },
+            "hidden": true,
+            "name": "trace record",
+            "needsApply": false,
+            "purpose": "write the trace line for a pnpm script dima typed; only the zsh hook calls it, so help hides it"
         }
     ]
 }

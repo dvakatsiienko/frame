@@ -12,15 +12,27 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-// Fail carries the command that moves the caller forward; Log is tool output shown under the step
+// Fail carries the command that moves the caller forward; Log is tool output shown under the step.
+// Refused marks a hazard check that said no, so a trace never counts a guard as a broken tool
 type Fail struct {
 	Msg     string
 	Next    string
 	IsUsage bool
+	Refused bool
 	Log     []string
 }
 
 func (f *Fail) Error() string { return f.Msg }
+
+func (f *Fail) kind() string {
+	switch {
+	case f.IsUsage:
+		return "usage"
+	case f.Refused:
+		return "refused"
+	}
+	return "external"
+}
 
 func usageFail(msg, next string) *Fail { return &Fail{Msg: msg, Next: next, IsUsage: true} }
 
@@ -59,7 +71,9 @@ const nameCell = 12
 // Step runs one unit of work; the human view spins in the family colour with the time so far while it
 // runs, then leaves one still line: ✓ or ✗
 func (r *Run) Step(name, doing string, work func() (string, error)) error {
+	started := time.Now()
 	err := r.step(name, doing, work)
+	traced.Steps = append(traced.Steps, step{name, time.Since(started).Milliseconds()})
 	if err != nil && r.failed == "" {
 		r.failed = name
 	}
