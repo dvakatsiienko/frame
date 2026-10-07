@@ -17,6 +17,7 @@ Capture is cheap for an agent and retirement is expensive for him, so the queue 
 and the heat never comes down.
 
 - a ticket must **earn existence**. If it dies when its parent dies, it was a body line.
+- **an item estimated 1 is solved now, unless dima says park** — a new ticket or pocket item at estimate 1 gets a «solve now?» line the turn it is born (dima's yes, 2026-10-07, after a day that filed `X_PAGER=0` and a one-`jq` measure as work for later)
 - **a sweep is not done until its own output is folded or dropped.** Closing the sweep and leaving
   the findings loose is the actual failure.
 - **one flush per session**, not per finding. Batch drafts, one approval, execute.

@@ -10,9 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «you were still asking me confirmation questions» · 2026-09-28
-He wrote the trophy-sys plan with me, said «start shift» and went to cook. I kept sending him ⏳ blocks between his steps at the stove, and he answered them. After dinner he named it: «you have memories that instruct you to use a turn-based approach … when paired with a shift, the boundary is blurry, so you try to do both.» No rule was broken; every habit was right for a lane and wrong for a shift. His felt sense saw two modes where I ran one with exceptions, and the first night shift needed exactly that line. → `cclio:shift`, the ⏳ exception in `fleet-output-format`
-
 ## «make it lightning fast» · 2026-09-29
 speak worked end to end on node: raycast → a script → op-run for the keys → ffplay, with a clean engine fallback. he listened and said: «system readaloud have slight .1s delay before speaking. i feel that with those fallbacks the latency also be present. make it fast.» no profiler, only the feel of F4 beside ours. the coder timed each stage: op-run 800 ms per press, a player spawn 250–360 ms, `say` 280 ms — over a second before any synthesis, against F4's already-running speech engine. the whole node design went; one resident swift daemon took its place, and his first F5 heard Sarah at 401 ms, warm ones at 189. his felt sense named the architecture before anyone measured it. → `schedule/jobs/x-speak`, the latency line in `craft-spawning`
 
@@ -69,4 +66,7 @@ he asked the cli a/b/c to answer one thing: does go + bubbletea look better than
 
 ## «is this shape efficient? 16 small 7-liner files?» · 2026-10-07
 past 3 a.m. we grilled the pocket, flowlog's successor, and he approved Q1 as written: one ordered file, a folder only when an item grows into a spec. then «go build», and I built 16 one-item files, because matt's local tracker keeps one file per ticket and I had just read it. he looked at the tree mid-build and asked one question. nothing was broken yet; each item cost a read, the boot would have paid sixteen, and the verdict he gave ten minutes earlier said one file. the merge took one script. his eye read the shape against his own answer before any cost showed. → the 10-07 self-grill (re-read the settled answers before the first file), `cclio/pocket.md`
+
+## «are you sure it researches what i want from you as coordinator?» · 2026-10-07
+he was grooming `refresh-craft-spawning`, the recipe that keeps my spawning true, and had just written a new want into it by hand: own the whole spawn lifecycle, pick the door deliberately, collect the retro. I had already launched its research lanes. he stopped and asked whether the recipe researched what he wanted from me as coordinator, then answered himself: our coordination is home-baked, the crew may lack roles, roles drift as models improve. the recipe researched doors and models — my tools, never my job. it became `refresh-coordinator`, one run with a tools half and a craft half. his felt sense read the gap between the recipe's name and its want before any vector was checked. → `recipes/refresh-coordinator/`, step 0 of `x:shape-recipe`
 

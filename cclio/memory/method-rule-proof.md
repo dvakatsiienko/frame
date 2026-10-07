@@ -24,6 +24,8 @@ when a rule is touched anyway.
 was a disabled command and «no confetti» read as a dead url scheme — a reinstall later, the app's own
 log said `No enabled command` (2026-09-16, second sighting of the shape). No positive control, no verdict.
 
+🎯 **An irreversible plan reads its gates before it promises a time** — the history purge was priced at «~15 min» and met branch protection at the push; `gh api …/branches/main/protection` was one call (2026-10-07).
+
 🎯 **A restart is proven by evidence stamped AFTER the process start, compared as numbers** — a coder read five chords from the log tail and called a rebuild verified; every one was stamped before the restart (2026-09-19). `stat` the process start, parse the evidence timestamp, compare.
 
 🎯 **A check that encodes a rule is proven red and green on every branch of that rule** — the

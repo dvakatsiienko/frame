@@ -156,6 +156,7 @@ archaeology. Subscribe, never poll. Budget three round trips — more means the 
 opens that repo's `AGENTS.md` first: «gitignore handler.js, the build regenerates it» was
 reasoned from `vercel.json` alone; the repo's own docs said vercel picks functions at clone time,
 and the coder held (2026-09-04).
+**A message stating a result goes after the command's output, never in the same batch** — «keychain item deleted» reached the coder while the guard was refusing the delete (2026-10-07).
 **A timeout is not proof of failure** — verify with `ListAgents` before respawning; a blind retry
 double-runs the work.
 

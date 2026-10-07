@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-30 (before the halt) · 35 (after #65 merges) · 36 · 22 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+30 (before the halt) · 35 (after #65 merges) · 36 · 37 · 22 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
@@ -121,7 +121,7 @@ dima 10-07: «instead of spawning a coder you spawn a squad leader (e.g., a coor
 `open · waiting on github` · history purged 10-07 23:05, support ticket filed 23:15
 
 - done 10-07: filter-repo --sensitive-data-removal on d1bddfb5^..main, 20 commits re-signed, recipe re-added encrypted, force-pushed main (c84402be → f3fc8352; protection opened by dima, restored to no-force), github virtual-assistant ticket filed: remove the commit references of #65, the cached views of d1bddfb5 ae681204 668962e4 32c12a41 ff1aeeb2 c636f2cf
-- left: github's «cleared» mail → `gh api repos/dvakatsiienko/frame/commits/d1bddfb5` answers 404 → trash the scratchpad backup bundle (it holds the plaintext)
+- left: github's «cleared» mail → `gh api repos/dvakatsiienko/frame/commits/d1bddfb5` answers 404 → trash the backup bundle `/private/tmp/claude-501/-Users-dima-frame-cclio/199ac617-3e2a-4366-b624-e67c8b7578d2/scratchpad/purge/frame-pre-purge.bundle` (it holds the plaintext; /tmp may clear it first, which is fine)
 
 the recipes move (d1bddfb5, 10-07) left `recipes/refresh-job-market/recipe.md` unencrypted in the public repo: his target companies, the miltech branch in his words, a cv path with his email. re-encrypted at 3a310e81; history still holds the plaintext. dima 10-07: «yes» to filter-repo + force-push main after #65 merges.
 - steps: every coder pr merged or rebased-ready; `git filter-repo --path recipes/refresh-job-market --invert-paths` scoped to the plaintext commits only (the encrypted ones stay), or re-encrypt in place across history; force-push main (his word, named); every worktree and clone re-synced (`git worktree list`, `.claude/worktrees/`)
@@ -136,6 +136,11 @@ ccrow's session read 625k chars on 10-07, ~all of it 22 `packets/<wake>/delta.md
 - then: the packet keeps dima's messages whole (`<command-args>` included), cclio's replies and peer messages whole, task-notification results capped at ~2k chars with the output_file path, tool-call names; tool_result bodies go. a/b one day of notes against today's
 - ccrow 10-07, asked: «yes, drop the tool_result bodies — none of today's catches used them»; the real loss was the 60000-char cut losing dima's lines at a packet's head, a slimmer packet fixes it; she writes each watch item into the note text so a halt restart drops nothing; a cold-cache guard is a keep-hot ping at ~50 min idle, default off, never a skipped wake
 - cold cache, measured 10-07: only the 09:20 start wrote cold; the 48-min pause stayed warm (1h ttl on a main session, per the refresh-coordinator researcher lane). a gap over 1h goes cold silently — a guard is ccrow's call
+
+### 37 · the roster marks dima's own sessions
+`open · task` · a second sighting (10-07)
+
+cclio twice proposed stopping a remote-control session dima had started himself that day (pid 69787, the night flawlog had already named it). the boot's fleet roster marks a session dima created (desktop-born or remote-control, born today, not in cclio's spawn list) as his, and the halt's stop list never names it.
 
 ## decisions so far
 
