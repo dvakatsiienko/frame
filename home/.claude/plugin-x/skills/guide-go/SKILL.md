@@ -21,8 +21,8 @@ go fix -diff ./...         # the modernizer: SplitSeq, errors.AsType, min/max, r
 go test -count=1 ./...
 ```
 
-- **staticcheck reads only the go it was built with.** `go version -m ~/go/bin/staticcheck` names
-  it; a module on a newer go needs `go install honnef.co/go/tools/cmd/staticcheck@latest` first
+- **staticcheck reads only the go it was built with.** it comes from brew (Brewfile), which rebuilds it per go
+  release; `go version -m $(which staticcheck)` names its go, and a module on a newer go needs `brew upgrade staticcheck`
   (go1.25's could not read go1.27, 2026-10-06).
 - `go fix ./...` applies what `-diff` shows; its fixes are safe by contract (`go tool fix help`).
 - `go doc <pkg>` answers a stdlib question in one call; a charm module's source sits under
