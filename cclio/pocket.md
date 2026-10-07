@@ -118,7 +118,10 @@ dima 10-07: «do not delete specs we create, but move them into an archive somew
 dima 10-07: «instead of spawning a coder you spawn a squad leader (e.g., a coordinator). It is a mini coordinator … it essentially manages a coder and a verifier with the given task by you. It handles communication between the coder and verifier and only reports to you with positive results, issues and disputes, or design questions that I would be interested to answer. This way your thread will be filtered out of the noise». the sweep (ticket 05) cuts `craft-spawning` by trigger first; the squad leader is shaped with `x:shape-idea` from what that cut leaves. its skill name: `x:crew-lead` (dima 10-07 ✓, beside `crew-coder` / `crew-verifier`).
 
 ### 35 · purge the plaintext job-market recipe from frame's history
-`open · approved` · blocked by frame#65's merge
+`open · waiting on github` · history purged 10-07 23:05, support ticket filed 23:15
+
+- done 10-07: filter-repo --sensitive-data-removal on d1bddfb5^..main, 20 commits re-signed, recipe re-added encrypted, force-pushed main (c84402be → f3fc8352; protection opened by dima, restored to no-force), github virtual-assistant ticket filed: remove the commit references of #65, the cached views of d1bddfb5 ae681204 668962e4 32c12a41 ff1aeeb2 c636f2cf
+- left: github's «cleared» mail → `gh api repos/dvakatsiienko/frame/commits/d1bddfb5` answers 404 → trash the scratchpad backup bundle (it holds the plaintext)
 
 the recipes move (d1bddfb5, 10-07) left `recipes/refresh-job-market/recipe.md` unencrypted in the public repo: his target companies, the miltech branch in his words, a cv path with his email. re-encrypted at 3a310e81; history still holds the plaintext. dima 10-07: «yes» to filter-repo + force-push main after #65 merges.
 - steps: every coder pr merged or rebased-ready; `git filter-repo --path recipes/refresh-job-market --invert-paths` scoped to the plaintext commits only (the encrypted ones stay), or re-encrypt in place across history; force-push main (his word, named); every worktree and clone re-synced (`git worktree list`, `.claude/worktrees/`)
