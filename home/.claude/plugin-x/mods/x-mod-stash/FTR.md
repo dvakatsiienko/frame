@@ -39,6 +39,7 @@
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
   - dima, 2026-10-05: seen in the desktop Code tab and in Warp
 - 🔎 asks: every live session's open asks, «no open asks» when empty
+  - decision: a session that dies without its exit hook keeps its asks in the store, so the list shows only sessions the registry has alive, and this session always (dima, 2026-10-07: «why i have double stash? i just spawned you»)
 - ✅ only dima's own prompts clear asks
   - given a reply left open asks
   - when a peer's SendMessage wakes the session and its reply has no ⏳ block

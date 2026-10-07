@@ -432,3 +432,77 @@ test('/board colour turns the board colour on', async ($, on) => {
     await $.command.run({ args: 'colour', command: 'board' });
     expect(await dotColour($)).toMatch(/^#/);
 });
+
+test("a dead session's asks leave the band", async ($, on) => {
+    const asks = (n: number) => ({
+        asks: Array.from({ length: n }, (_, i) => `${i + 1}. ask ➡️ yes`),
+        at: NOW - MIN,
+        label: 'frame',
+    });
+    fleet(on, { [`asks:${GONE}`]: asks(2), [`asks:${PEER}`]: asks(1) });
+    on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('session.repo', () => ({ value: null }));
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'desktop',
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 100,
+            hasSurvey: false,
+            isWorking: false,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface: 'desktop',
+    });
+    expect((await ui.find({ text: /open/, type: 'Text' }))?.text).toContain(
+        '1 open',
+    );
+});
+
+test("this session's asks stay when the registry misses it", async ($, on) => {
+    fleet(
+        on,
+        {
+            [`asks:${HERE}`]: {
+                asks: ['1. ask ➡️ yes'],
+                at: NOW - MIN,
+                label: 'frame',
+            },
+            [`asks:${PEER}`]: {
+                asks: ['1. ask ➡️ yes'],
+                at: NOW - MIN,
+                label: 'frame',
+            },
+        },
+        { alive: [2] },
+    );
+    on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('session.repo', () => ({ value: null }));
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'desktop',
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 100,
+            hasSurvey: false,
+            isWorking: false,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface: 'desktop',
+    });
+    expect((await ui.find({ text: /open/, type: 'Text' }))?.text).toContain(
+        '2 open',
+    );
+});

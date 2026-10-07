@@ -553,6 +553,22 @@ async function load($: EngineInterface): Promise<boolean> {
         const v = (await $.store.get(key)) as Entry | undefined;
         if (isLive(v, now)) next[key.slice(PREFIX.length)] = v;
     }
+    // after a /clear the process goes on under a new id, and no session.start fires
+    selfId = await $.session.id().catch(() => selfId);
+    // a session that died without its exit hook leaves its asks in the store: show only sessions still running
+    if (Object.keys(next).some((sid) => sid !== selfId)) {
+        const alive = await registry($)
+            .then(
+                (rows) =>
+                    new Set(
+                        rows.filter((r) => r.isAlive).map((r) => r.base.sid),
+                    ),
+            )
+            .catch(() => undefined);
+        if (alive)
+            for (const sid of Object.keys(next))
+                if (sid !== selfId && !alive.has(sid)) delete next[sid];
+    }
     const before = JSON.stringify(
         Object.entries(entries).map(([k, v]) => [k, v.asks]),
     );
@@ -562,8 +578,6 @@ async function load($: EngineInterface): Promise<boolean> {
     entries = next;
     const cool = await cooled($);
     const prevHolds = holds;
-    // after a /clear the process goes on under a new id, and no session.start fires
-    selfId = await $.session.id().catch(() => selfId);
     if (selfId) holds = await chip($, selfId, root);
     const holdsChanged =
         prevHolds.others !== holds.others || prevHolds.warned !== holds.warned;
