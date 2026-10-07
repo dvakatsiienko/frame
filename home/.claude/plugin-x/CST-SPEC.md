@@ -77,12 +77,13 @@ Compress the **language**, never the substance. Telegraphic fragments are fine. 
 
 ## Store contract (semantics)
 
-📌 **The mechanics live in one executable: `~/frame/script/skill-handoff-store.ts`.** Filename
-grammar, permissions, the audience gate, age flagging, the replace — it owns all of it, and every
-frontend calls it rather than re-deriving it: the `cc` `handoff` and `handoff-ingest` skills
-directly, `cw` through the `x-cw` mcp server's adapters. sline keeps its own read-only glob for
-the pending count. `--help` prints the verbs. This section says what the rules MEAN; the cli is
-what they ARE, and on a disagreement about mechanics the cli wins.
+📌 **The mechanics live in one door: `x handoff`** (`list`, `peek`, `ingest`, `write`, `delete`).
+Filename grammar, permissions, the audience gate, age flagging, the replace — it owns all of it,
+and every frontend calls it rather than re-deriving it: the `cc` `handoff` and `handoff-ingest`
+skills directly, `cw` through the `x-cw` mcp server's adapters, dima through the raycast `handoff`
+command. sline keeps its own read-only glob for the pending count. `x handoff <verb> --help`
+prints the flags. This section says what the rules MEAN; x is what they ARE, and on a
+disagreement about mechanics x wins.
 
 📌 **Where an `x-cw` tool exists for an act, it wins over a shell performing the same act.**
 📌 Skill prefixes follow the plugin name per surface — `x:` on `cc`, `x-cw:` on `cw`. Cross-refs
