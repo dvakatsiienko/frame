@@ -17,6 +17,17 @@ source file is newer.
   exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal.
 - a failure returns a `*Fail` with `Next`: the command that moves the caller forward.
 - the purpose line is what an agent picks a verb by; a test runs `lintPurpose` over every verb.
+- `hidden: true` keeps a verb out of the overview, completion and `x stats`' unused list; it still
+  dispatches, and its purpose says why it exists (`trace record`, the zsh hook's door).
+
+## trace
+
+- the dispatcher writes one trace line per call at exit (`go/trace.go`); a verb only runs its
+  steps through `Run.Step` and returns a `*Fail` — `Refused: true` when x's own check stopped it
+  (the **error kind** in `GLOSSARY.md`).
+- tests run with `X_TRACE=0` (`cleanEnv`), so no test writes to `~/.local/state/x`; a trace test
+  sets `X_TRACE=1` and its own `X_STATE`. the forced panic lives behind the `xpanic` build tag,
+  which only the test binary carries.
 
 ## output
 

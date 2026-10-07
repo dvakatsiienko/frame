@@ -2,9 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"maps"
+	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"strings"
 	"testing"
+	"time"
 )
 
 // traces reads every line x left under a state dir's traces/
@@ -184,6 +190,81 @@ func TestTheTraceNamesTheRepoOfAWorktreeByItsMainCheckout(t *testing.T) {
 	xIn(t, tree, tracing(state), "schema", "lane")
 	if lines := traces(t, state); len(lines) != 1 || lines[0]["vcs.repository.name"] != filepath.Base(dir) {
 		t.Errorf("traces %v, want repo %s", lines, filepath.Base(dir))
+	}
+}
+
+func TestTraceRecordWritesTheDispatchersLineShape(t *testing.T) {
+	state := t.TempDir()
+	got := xIn(t, repo(t), tracing(state), "trace", "record", "--exit", "1", "--duration", "1500", "--", "pnpm", "run", "x-go:test", "--watch", "my notes")
+	if got.code != 0 {
+		t.Fatalf("exit %d: %s", got.code, got.stdout)
+	}
+	lines := traces(t, state)
+	if len(lines) != 1 {
+		t.Fatalf("%d trace lines, want the recorded one only", len(lines))
+	}
+	trace := lines[0]
+	keys := slices.Sorted(maps.Keys(trace))
+	want := []string{"duration_ms", "error.type", "name", "process.exit.code", "service.version", "start_time", "vcs.repository.name", "x.caller", "x.flags"}
+	if !slices.Equal(keys, want) {
+		t.Errorf("keys %v, want %v", keys, want)
+	}
+	if trace["name"] != "pnpm x-go:test" || trace["process.exit.code"] != float64(1) || trace["error.type"] != "external" || trace["x.caller"] != "dima" {
+		t.Errorf("trace %v", trace)
+	}
+	if ms, _ := trace["duration_ms"].(float64); ms < 1500 || ms > 2500 {
+		t.Errorf("duration_ms %v, want about 1500", ms)
+	}
+}
+
+func TestTraceRecordStaysOutOfTheListings(t *testing.T) {
+	dir := repo(t)
+	overview := xIn(t, dir, nil, "--json")
+	stats := xIn(t, dir, nil, "stats")
+	if strings.Contains(overview.stdout, `"trace record"`) || strings.Contains(overview.stdout, `"trace":`) ||
+		strings.Contains(marshal(stats.data["unused"]), "trace record") {
+		t.Errorf("a hidden verb is listed:\n%s\n%s", overview.stdout, marshal(stats.data["unused"]))
+	}
+}
+
+// each case types a command the hook must skip, then `pnpm x-go:test` that fails with exit 3; the fake x
+// logs its argv, so exactly one recorded line proves the skip without waiting on a silence
+func TestTheZshHookRecordsTheTypedPnpmScripts(t *testing.T) {
+	hook, _ := filepath.Abs("../../home/.config/zsh-custom/x-trace.zsh")
+	cases := []struct{ name, skipped, env string }{
+		{"a command that is not pnpm", "ls -la", ""},
+		{"an x call, which the dispatcher traces itself", "x stats", ""},
+		{"X_TRACE=0", "pnpm build", "X_TRACE=0"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			bin := t.TempDir()
+			log := filepath.Join(bin, "calls.log")
+			write(t, filepath.Join(bin, "x"), "#!/bin/sh\necho \"$*\" >> "+log+"\n")
+			typed := func(line, code string) string {
+				return "_x_trace_preexec '" + line + "' '' '" + line + "'; (exit " + code + "); _x_trace_precmd; "
+			}
+			script := "source " + hook + "; " + c.env + "; " + typed(c.skipped, "0")
+			if c.env != "" {
+				script += "unset X_TRACE; "
+			}
+			script += typed("pnpm x-go:test --watch", "3")
+			cmd := exec.Command("zsh", "-f", "-c", script)
+			cmd.Env = append(cleanEnv(), "PATH="+bin+":/usr/bin:/bin", "X_TRACE=1")
+			if out, err := cmd.CombinedOutput(); err != nil {
+				t.Fatalf("zsh: %v\n%s", err, out)
+			}
+			var got string
+			for deadline := time.Now().Add(5 * time.Second); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+				if body, _ := os.ReadFile(log); len(body) > 0 {
+					got = string(body)
+					break
+				}
+			}
+			if !regexp.MustCompile(`^trace record --exit 3 --duration \d+ -- pnpm x-go:test --watch\n$`).MatchString(got) {
+				t.Errorf("x was called with %q", got)
+			}
+		})
 	}
 }
 

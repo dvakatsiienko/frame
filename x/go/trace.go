@@ -1,11 +1,13 @@
 package main
 
 import (
+	"cmp"
 	"os"
 	"path/filepath"
 	"regexp"
 	"runtime/debug"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,8 +26,9 @@ type span struct {
 	Session  string    `json:"session.id,omitempty"`
 	Repo     string    `json:"vcs.repository.name,omitempty"`
 	Version  string    `json:"service.version"`
-	Exit     int       `json:"process.exit.code"`
-	Kind     string    `json:"error.type"`
+	skip     bool
+	Exit     int    `json:"process.exit.code"`
+	Kind     string `json:"error.type"`
 }
 
 type step struct {
@@ -127,6 +130,42 @@ func version() string {
 	return "v1-go+" + revision[:7]
 }
 
+// traceRecord writes the line for a command the zsh hook saw at dima's prompt; the dispatcher's own
+// line for this call is skipped, so one typed command is one line
+func traceRecord(_ *Run, args []string, flags Flags) (any, error) {
+	exit, errExit := strconv.Atoi(cmp.Or(flags["exit"].(string), "0"))
+	took, errTook := strconv.Atoi(cmp.Or(flags["duration"].(string), "0"))
+	name := scriptOf(args)
+	if errExit != nil || errTook != nil || name == "" {
+		return nil, usageFail("expected --exit <code> --duration <ms> -- pnpm <script>", "x trace record --help")
+	}
+	recorded := &span{Start: time.Now().Add(-time.Duration(took) * time.Millisecond), Name: name, Flags: []string{},
+		Caller: callerOf(true), Repo: repoName(), Version: version(), Exit: exit}
+	if exit != 0 {
+		recorded.Kind = "external"
+	}
+	recorded.write()
+	traced.skip = true
+	return ordered{{"name", name}}, nil
+}
+
+// `pnpm [run] <script> …` → `pnpm <script>`; the script's own args are free text and stay out
+func scriptOf(words []string) string {
+	if len(words) == 0 || words[0] != "pnpm" {
+		return ""
+	}
+	valued := []string{"-C", "--dir", "-F", "--filter"}
+	for i := 1; i < len(words); i++ {
+		switch word := words[i]; {
+		case slices.Contains(valued, word):
+			i++
+		case word != "run" && !strings.HasPrefix(word, "-") && idShape.MatchString(word):
+			return "pnpm " + word
+		}
+	}
+	return "pnpm"
+}
+
 func traceOff() bool { return os.Getenv("X_TRACE") == "0" }
 
 // a flag's name only, and only a name the registry knows: a value, or a mistyped dash word, can be free text
@@ -150,7 +189,7 @@ func flagNames(argv []string) []string {
 
 // write appends the line to the local day's file; a trace that cannot be written never fails the call
 func (s *span) write() {
-	if traceOff() {
+	if traceOff() || s.skip {
 		return
 	}
 	s.Duration = time.Since(s.Start).Milliseconds()

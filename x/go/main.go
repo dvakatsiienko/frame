@@ -55,6 +55,7 @@ var impls = map[string]Impl{
 	"schema":          {Run: schema},
 	"completion":      {Run: completion},
 	"stats":           {Run: stats},
+	"trace record":    {Run: traceRecord},
 }
 
 // set by -ldflags at build; a dev run falls back to the executable's own tree
@@ -150,7 +151,7 @@ func buildRoot(m mode) *cobra.Command {
 			family := verb.Family()
 			if groups[family] == nil {
 				groups[family] = &cobra.Command{
-					Use: family, Short: familyOf(family).Gist, Args: cobra.ArbitraryArgs,
+					Use: family, Short: familyOf(family).Gist, Args: cobra.ArbitraryArgs, Hidden: !slices.Contains(families(), family),
 					RunE: func(_ *cobra.Command, args []string) error {
 						return overview(m, append([]string{family}, args...))
 					},
@@ -170,7 +171,7 @@ func leaf(m mode, verb Verb) *cobra.Command {
 		name = verb.Name
 	}
 	c := &cobra.Command{
-		Use: name, Short: gist(verb.Purpose), Args: cobra.ArbitraryArgs,
+		Use: name, Short: gist(verb.Purpose), Args: cobra.ArbitraryArgs, Hidden: verb.Hidden,
 		RunE: func(c *cobra.Command, args []string) error {
 			flags := Flags{}
 			c.Flags().VisitAll(func(f *pflag.Flag) { flags[f.Name] = flagValue(f) })

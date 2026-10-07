@@ -41,7 +41,7 @@ func takes(verb Verb) string {
 
 func overviewBoard() string {
 	b := frame{width: frameWidth(), titleLeft: ui.bold.Render("x"),
-		titleRight: ui.dim.Render(fmt.Sprintf("%d verbs, %d families", len(verbs), len(families()))),
+		titleRight: ui.dim.Render(fmt.Sprintf("%d verbs, %d families", len(verbsUnder("")), len(families()))),
 		footLeft:   ui.dim.Render("x <family> --help"), footRight: ui.dim.Render("json when piped, or with --json"), padRows: true}
 	narrow := isNarrow()
 	widths := []int{13, 13, b.inner() - 26}
