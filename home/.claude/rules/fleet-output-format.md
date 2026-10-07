@@ -145,7 +145,7 @@ file he names.
 ## questions, options, and the ➡️ cta
 
 - every question round ends with a ➡️ recommendation.
-- **every reply ends with a ➡️ suggested next move** — driven by the roadmap and handoffs — so
+- **every reply ends with a ➡️ suggested next move**, a quick answer excepted (see the skeletons) — driven by the roadmap and handoffs — so
   dima steers with one word instead of typing a long query.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.

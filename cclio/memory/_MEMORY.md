@@ -44,7 +44,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 ## the system itself
 - @sys-skills.md — `x:*` runs anywhere, `cclio:*` is coordinator-only; the test is WHERE it runs
 - @sys-boundaries.md — what stays separate: own memory only, no sync mechanisms, domains never merge
-- 🧪 @sys-jev.md — jev lanes the inbox and routes skills; the criteria are the prompt, every rubric in one file, the sharpening loop runs at every halt
+- 🧪 sys-jev.md (parked, NOT imported: jev is frozen until the credit refills ~10-18; re-add the `@` then) — jev lanes the inbox and routes skills; the criteria are the prompt, every rubric in one file, the sharpening loop runs at every halt
 - @sys-settings-drift.md — CC writes it at runtime; a real file where the symlink belongs is silent divergence
 
 - 📐 recipes (repeatable flows: a maintenance run with research vectors, or a plain execution script) live in `docs/recipes/` here — `_spec.md` is the contract: want = dima's, research vectors = his wording, artifacts pointed-at never housed. read it before creating or running one. (plain pointer, not an import)

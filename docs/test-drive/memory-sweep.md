@@ -77,3 +77,15 @@ open: `/skill-doctor` + `/doctor prompt-audit` (typed in a terminal), the `claud
 - self-memory, the agreed core: a hard resident budget that fails visibly · stable provenance per line (source, verify, trigger, last use) · usage nominates, never deletes · one batched digest of ≤5 clusters, per-item yes / keep / later, no «approve all» · rejected proposals logged so they never resurface · the old text stays recoverable (git)
 - the split: exa leans on measured length/density losses; parallel found a 1,650-session study with no size effect for one simple rule — the cost is stacked constraints and irrelevant context, not line count itself
 - video rules: mostly folded already; the 100-line preview applies only to a file linked from a linked file; third person bans only «I…» / «you…», none of our 31 descriptions use them; resident files have 0 «think carefully» lines
+
+### dima's verdicts · 2026-10-07 18:41
+
+- prompt-audit: «suggest the slice → i go read its part in prompt audit → process → clear that part up once done → file dissolves incrementally»
+- `craft-spawning` → a skill for «an independent coordinator for a squad (e.g., coordinator/coder/verifier)»; his name: crew-coordinator, asks for others
+- `sys-jev`: «disconnect it until jev is unfrozen» → the barrel line stays as a plain pointer, no `@`
+- ctx7 dates in two places: «only one trial period date place should be source of truth, do not scatter» → `fleet-tooling` drops its date, `_reminders` holds it
+- ➡️ vs a quick answer: «fix» → `fleet-output-format` names the exception
+- skills: `x:pre` deleted (his word); `x:mobile-mode`, `cclio:shift`, `x:crew-cloud` («$236 of $250 left, expires november 5»), `x:crew-designer-interview`, `x:app-essentials` kept; `x:sweep-issues` and `cclio:report` — «judge for yourself»
+- descriptions: «they also contain useful data … groom them, keep useful parts but reduce size»
+- memory shape: «you can handle large memory, it just needs to be written in a way so you apply it to yourself efficiently. good structure, good shape, and good vectors set for you via properly described sentences»
+- the doctors: «plan a run from CLI next time i boot you»

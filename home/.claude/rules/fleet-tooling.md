@@ -31,7 +31,7 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 - **duckdb** — SQL over jsonl, md and git where they lie, no import, no server: `duckdb -json -c "…"` or a saved `.sql`; the measuring engine for transcripts and x traces, on trial to 10-21 (`docs/test-drive/duckdb.md`)
 - **fnm** — node version manager, use if needed
 - **package.json** — exact pins, `npm view` before any version, script order and `family:name` keys: the whole shape is `x:guide-conventions` → `conventions/package-json.md`, read before printing or editing any manifest
-- **ctx7** — context7's docs cli, on trial vs the context7 mcp to 2026-10-07 (`docs/test-drive/ctx7.md`): `ctx7 library <name>` → id, `ctx7 docs <id> "<query>"`; a library it lacks → `WebSearch`
+- **ctx7** — context7's docs cli, on trial vs the context7 mcp (`docs/test-drive/ctx7.md`; the verdict date lives in `_reminders.md` only): `ctx7 library <name>` → id, `ctx7 docs <id> "<query>"`; a library it lacks → `WebSearch`
 - **archives → keka's bundled binaries**, `/Applications/Keka.app/Contents/MacOS/Keka --cli <bin>` — `7z` `7zz` `unar` `unrar` `tar` `xz` `zstd` `brotli` `lz4` `lzip` `pigz` and friends. macos ships no `unrar` and no 7z at all, so this is the only door to those; plain `zip`/`tar`/`ditto` still handle the ordinary cases
 - **big or tiny images → crop with pillow first.** a screenshot up to ~2000 px is read directly (≈3k tokens); a larger image, or a detail under ~20 px (a sprite, an icon, a chart tick), is cropped or zoomed with pillow (`from PIL import Image`, installed) and the crop is read (≈300 tokens) — the harness downscales big images and small text dies
 - **uv** — the Python package manager here; pip in any form is not used
