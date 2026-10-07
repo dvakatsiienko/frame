@@ -1,3 +1,14 @@
+---
+kind: run
+cadence: per art change, on dima's word
+artifacts:
+  - ~/projects/bytes/apps/atelier/art/
+  - ~/frame/home/.claude/plugin-x/skills/guide-ui-ux/SKILL.md
+script: none
+---
+
+Contents: the want — dima's words · vectors · artifacts — where they live · the trace · cadence · log → log.md
+
 # diorama-draw — the art set for frame, the profile and bytes
 
 📌 **status: draft trace.** we are still finding the recipe. every session that draws appends to
@@ -11,13 +22,6 @@ step repeats unchanged.
 - «i want an approximate, or even a higher, level of detail … so the design decision is
   consistent» across the profile, frame and bytes (2026-09-25)
 
-## analysis vectors — the questions each run answers from local evidence
-
-- does every image hold the bible (`bytes/apps/atelier/art/story.md`, `dino.md`, `palette.ts`)?
-- light = day and dark = night on every piece?
-- does the art direction stay quiet: few flowers, no cheer, Oles stern?
-- svg or raster: which one wins per piece, and what does each cost to render and ship?
-
 ## artifacts — where they live
 
 - `~/projects/bytes/apps/atelier/art/` — the bible (`story.md`, `dino.md`), `palette.ts`, the generators, `out/`
@@ -25,7 +29,7 @@ step repeats unchanged.
 - the studio artifact — https://claude.ai/artifact/4YAEdDqeH5SrSCUWnkB13h (source rebuilt by a
   scratch `build.ts`; move it into frame once the recipe settles)
 
-## the trace
+## the run — the trace of the first run
 
 ### 2026-09-25 · FRM-263 · opus 5.5 in cclio
 
@@ -101,10 +105,17 @@ step repeats unchanged.
   the moment it was
 - sky and far mountains must not receive shadows in the raster, or the edge pines paint the sky
 
+## vectors
+
+### analysis vectors — the questions each run answers from local evidence
+
+- does every image hold the bible (`bytes/apps/atelier/art/story.md`, `dino.md`, `palette.ts`)?
+- light = day and dark = night on every piece?
+- does the art direction stay quiet: few flowers, no cheer, Oles stern?
+- svg or raster: which one wins per piece, and what does each cost to render and ship?
+
 ## cadence
 
 per art change, on dima's word.
 
-## last run
-
-2026-09-25 night — stage 0.03: panel with fields + copy, tone mapping, scene picker (homestead, market), bakes from the stage, day/night/drift loops.
+## log → log.md

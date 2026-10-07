@@ -1,8 +1,19 @@
+---
+kind: refresh
+cadence: "when dima says «refresh the design branch», before a big design job after a quiet month, or when Claude Design / Cowork ships a major update"
+artifacts:
+  - home/.claude/plugin-x/skills/crew-designer-interview/SKILL.md
+  - home/.claude/plugin-x/skills/crew-designer/SKILL.md
+  - ~/projects/studio/AGENTS.md
+  - ~/projects/studio/directions/
+  - ~/projects/bytes/apps/design-loupe
+script: none
+---
+
 # refresh-branch-design — recipe
 
 Keeps the fleet's design flow current: the brief, the designer, the tools and the evidence
 behind them. Born from the 2026-09-29 design research ([FRM-244](https://linear.app/x-com/issue/FRM-244)).
-Recipe entity per [_spec.md](_spec.md).
 
 ## the want (dima's, 2026-09-29)
 
@@ -23,7 +34,18 @@ Recipe entity per [_spec.md](_spec.md).
 > there. … not use neobrutalism … i'm not really into all of these design directions, so hunt
 > for good research resources that would allow me to explore them and pick before prompting.
 
-## research vectors (dima's asks from the thread — re-groom each run)
+## the run
+
+1. re-groom the vectors with dima; add what changed in the tools since the last run
+2. spawn the lanes on one brief
+3. distill: clever-merge into the artifacts; raw lane output dies
+4. eval + findings: an overhaul proposal for dima — what changes in the brief, the designer,
+   the gallery, the scripts; noop is a valid outcome
+5. resolve with dima; log the run below
+
+## vectors
+
+### research vectors (dima's asks from the thread — re-groom each run)
 
 1. prod-grade design protos — how the top AI design tools work now (Claude Design, paper.design,
    v0, Stitch, Figma Make, Subframe, Magic Patterns, Lovable …) and which of their open parts
@@ -41,7 +63,7 @@ Recipe entity per [_spec.md](_spec.md).
 10. reference galleries — which public galleries are alive and good right now (godly, land-book, dribbble search, …) for the designer's after-the-pick references; paid doors (mobbin, refero) stay out (dima, 2026-09-30)
 11. the design comms loop — is there now a simpler door than design-loupe? dima, 2026-10-02: «we would monitor for simpler solutions than having a design loop and maintaining it, so maybe at some point we will find a simpler solution». the problem it exists for: the Claude Design canvas lets only a person open a comment, so a designer's asks had no home on the canvas — dima hunted stickies with ⌘F, hopped across canvases, spent 1.5 h juggling elements, and the design «half-landed» in his mind; his target: «you print a link and I click it. It directly opens your comment … and reply to you there … very close to me in the UI, like a Speak pill». check each run: can an agent open a pinned thread on the canvas now (`comments` capability, `composer_only`), does the editor read a url anchor or focus param, did Figma or another canvas ship agent-placed pins with a decision UI, does the Code-tab pane offer something native. the evidence so far: `~/frame/docs/research/design-review-comms.md`, `bytes/apps/design-loupe/PRODUCT.md`. a simpler door found → propose retiring design-loupe
 
-## analysis vectors (local evidence)
+### analysis vectors (local evidence)
 
 - the run ledger (`docs/test-drive/design-run.md`): tokens, minutes, usage-window % per spread, pick time,
   mash-up requests, rounds past 3 — did the recipe's rules hold?
@@ -63,20 +85,9 @@ exa agent (effort set explicitly) · parallel core · an opus lane that reads so
 prompts, npm) · neuroarxiv for the papers · `advise-project-approach` when the flow itself is in
 question. one shared brief file; the reply waits for all lanes (habit-dima-comms-pacing: a fan-out answers once).
 
-## the run
-
-1. re-groom the vectors with dima; add what changed in the tools since the last run
-2. spawn the lanes on one brief
-3. distill: clever-merge into the artifacts; raw lane output dies
-4. eval + findings: an overhaul proposal for dima — what changes in the brief, the designer,
-   the gallery, the scripts; noop is a valid outcome
-5. resolve with dima; log the run below
-
 ## cadence
 
 when dima says «refresh the design branch», before a big design job after a quiet month, or when
 Claude Design / Cowork ships a major update.
 
-## last run
-
-- 2026-09-29 — the founding research: five lanes, 12 vectors, plus a Cowork-vs-CC lane (`docs/research/design-process.md`, distilled into `x:crew-designer` and deleted 2026-10-01)
+## log → log.md

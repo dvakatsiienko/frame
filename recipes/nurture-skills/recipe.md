@@ -1,3 +1,11 @@
+---
+draft: true   # the want is owed by dima; the shape test skips want and run until it lands
+kind: nurture
+cadence: on dima's word
+artifacts: []
+script: none
+---
+
 # nurture-skills-hillclimb — recipe (parked)
 
 ⏸️ **parked, not a recipe yet.** written when there is a real run to do — until then this is the
@@ -7,7 +15,7 @@ that first run, the want in dima's words.
 sibling of [nurture-memory](nurture-memory.md): that one grooms what a skill says, this one
 measures whether a skill fires and is followed, and improves it against the measurement.
 
-## the proposed shape
+## the run — the proposed shape
 
 - **step 1, the census** — `/skill-doctor` (cc 2.1.291): per skill, how often it fires, when it
   last fired, its token cost; `/skills` then `T` sorts the list by tokens. 📌 terminal only: the desktop Code tab answers «not available on this connection»; the fallback is a duckdb join of `Skill` loads over the transcripts (2026-10-07). a skill nobody fires

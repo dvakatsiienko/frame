@@ -1,8 +1,18 @@
+---
+kind: refresh
+cadence: at every cc minor that touches mods, at the test-drive verdict (2026-10-19), or when dima asks
+artifacts:
+  - home/.claude/plugin-x/mods/AGENTS.md
+  - home/.claude/plugin-x/mods/api-map.md
+  - docs/test-drive/mods.md
+script: none
+---
+
 # refresh-branch-mods — recipe
 
 Keeps the fleet's cc mods (function-hook plugins, `home/.claude/plugin-x/mods/`) worth their place:
 what the api can do now, what others built, and whether anything useful is left for us. Born
-2026-10-05. Recipe entity per [_spec.md](_spec.md). The standing story is [FRM-304](https://linear.app/x-com/issue/FRM-304).
+2026-10-05. The standing story is [FRM-304](https://linear.app/x-com/issue/FRM-304).
 
 ## the want (dima's)
 
@@ -18,14 +28,23 @@ what the api can do now, what others built, and whether anything useful is left 
 
 his standing calls: session.measure «not yet, i don't need another ctx meter»; spoken pings «not yet … speak only when i press f4»; sline stays a statusline, not a mod; a mod-authoring skill → no, `mods/AGENTS.md` is the home.
 
-## research vectors (re-groom each run)
+## the run
+
+1. **research** — one brief from the vectors; `pnpm research:lanes <brief> <out>` + an opus lane when source must be read (vector 2)
+2. **distill** — merge into `mods/AGENTS.md` (claims marked unprobed until probed) and the FRM-304 open list; raw lane output dies here
+3. **eval + findings** — print dima: what is essential and not built, what to borrow, what to drop; grade the lanes in `docs/test-drive/{exa,parallel}.md`
+4. **resolve** — with dima; a build becomes a child of FRM-304; noop is fine
+
+## vectors
+
+### research vectors (re-groom each run)
 
 1. the official surface — the mods reference + changelog since the last run: new events, `$` methods, render sites, limits, surfaces; then the generated types in `.claude-plugin/types/` as the authority for our build
 2. **hunt already built to borrow** — published mods and hook plugins (the catalogue at mods.aidojo.si, claudemods.ai, ray-amjad/awesome-claude-code-function-hooks, anthropics/claude-code-playground mods): read the source of the ones near our needs, one «borrow» line each
 3. **hunt already built for inspo** — unusual or high-value uses we have not thought of (guards, dashboards, presence, cost, privacy)
 4. best practices and pitfalls — hot paths, state lifetimes, reload, composition with other mods and with cc built-ins, testing
 
-## analysis vectors (local evidence)
+### analysis vectors (local evidence)
 
 1. every mod's FTR against reality — a ✅ line still passes, a 🧭 line still wanted, a 🐞 still open
 2. the test drive log (`docs/test-drive/mods.md`) — which mod fired for real, what it saved or broke
@@ -44,13 +63,6 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 - `docs/test-drive/mods.md` — the running measurement, verdict 2026-10-19
 - [FRM-304](https://linear.app/x-com/issue/FRM-304) — the open list; every round of work is a child ticket
 
-## the run
-
-1. **research** — one brief from the vectors; `pnpm research:lanes <brief> <out>` + an opus lane when source must be read (vector 2)
-2. **distill** — merge into `mods/AGENTS.md` (claims marked unprobed until probed) and the FRM-304 open list; raw lane output dies here
-3. **eval + findings** — print dima: what is essential and not built, what to borrow, what to drop; grade the lanes in `docs/test-drive/{exa,parallel}.md`
-4. **resolve** — with dima; a build becomes a child of FRM-304; noop is fine
-
 ## cadence
 
 at every cc minor that touches mods, at the test-drive verdict (2026-10-19), or when dima asks.
@@ -63,7 +75,4 @@ at every cc minor that touches mods, at the test-drive verdict (2026-10-19), or 
 - parked builds: asks moving into stash as a tool (needs dima's word: it changes the ⏳ rule) · `mods:live`, a pty harness for reload and hover checks (only on a third need)
 - the test drive verdict 10-19 (`docs/test-drive/mods.md`): spawn hints were dropped 10-05 (0 for 1, a toast never reaches the session it corrects); the board, redact, holds + the Bash veto, asks, afk, keep-hot each get a real-use line
 
-## last run
-
-- 2026-10-05, the leads round ([FRM-319](https://linear.app/x-com/issue/FRM-319), a coder, no paid lanes) — the engine facts probed (two claims corrected: no 50 ms `prompt.edit` budget; drawings reach mobile and vscode too), `api-map.md` regenerated from the 2.1.289 types (~190 lines of drift), the state audit found two stash 🐞 ([FRM-320](https://linear.app/x-com/issue/FRM-320)). the borrow read, file per line in `docs/test-drive/mods.md`: borrow `agent-flow`'s `/clear`+`/resume` reset point and `AFKSwitch`'s «while you were away» digest · maybe `cc-pr-tracker`'s pr + ci board column · skip `cctop` (the board covers it), `claude-queue` (polls claude.ai internals against the terms), `pii-guard` (redact closes its holes)
-- 2026-10-05 — lanes exa (138 s, $0.10) + parallel (227 s); distilled into `mods/AGENTS.md` («from the 2.1.289 reference» + «what a mod cannot reach»); both mods already compose `AbovePrompt` correctly. essential and done: holds + the Bash veto, asks, afk, keep-hot, /board, spawn hints, redact. useful and left: reversible redaction (a key pasted for the model still works), the board's fuller pane (FRM-306, in flight)
+## log → log.md
