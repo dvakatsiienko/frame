@@ -156,7 +156,8 @@ func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
 	if reader == "" {
 		return nil, usageFail("ingest names its reader: --for any, ccli, cclio or cw", "x handoff ingest --for <audience>")
 	}
-	all := listStore(storeRoot())
+	var all []stored
+	r.Wait("reading the store", func() { all = listStore(storeRoot()) })
 	if len(all) == 0 {
 		return nil, usageFail("handoff store is clean — nothing pending.", "x handoff list")
 	}
