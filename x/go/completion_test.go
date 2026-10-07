@@ -68,7 +68,7 @@ func TestZshTabCompletesFromTheRegistry(t *testing.T) {
 		{"x la", "lane"},
 		{"x lane comm", "commit"},
 		{"x knowledge read spa", "spawn-mechanics"},
-		{"x handoffs peek cli-a", "cli-arms"},
+		{"x handoff peek cli-a", "cli-arms"},
 		{"x probe bare --mo", "--model"},
 		{"x probe bare --model hai", "haiku"},
 		{"x schema lane pu", "push"},

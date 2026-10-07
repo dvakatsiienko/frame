@@ -6,9 +6,9 @@
             "name": "lane"
         },
         {
-            "example": "x handoffs peek cli-arms",
+            "example": "x handoff peek cli-arms",
             "gist": "the shared CST store, one door for cc and cw",
-            "name": "handoffs"
+            "name": "handoff"
         },
         {
             "example": "x brief check brief.md --repo ~/frame",
@@ -125,7 +125,7 @@
                     "value": "audience"
                 }
             },
-            "name": "handoffs list",
+            "name": "handoff list",
             "needsApply": false,
             "purpose": "list the pending CSTs in the shared handoff store, newest first, without reading or deleting one"
         },
@@ -137,7 +137,7 @@
                     "name": "slug"
                 }
             ],
-            "name": "handoffs peek",
+            "name": "handoff peek",
             "needsApply": false,
             "purpose": "print one pending CST's META block as markdown; the file stays untouched"
         },
@@ -156,7 +156,7 @@
                     "value": "audience"
                 }
             },
-            "name": "handoffs ingest",
+            "name": "handoff ingest",
             "needsApply": false,
             "purpose": "print one pending CST in full and delete its file, unless it is shared"
         },

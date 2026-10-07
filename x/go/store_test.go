@@ -109,11 +109,11 @@ func TestIngestNeverTakesAnotherAgentsHandoffUnnamed(t *testing.T) {
 	write(t, filepath.Join(root, "cclio-theirs-20260831T120000Z.md"), "# META\n")
 	env := []string{"HANDOFF_STORE_ROOT=" + root}
 
-	refused := xIn(t, root, env, "handoffs", "ingest", "--for", "cw")
+	refused := xIn(t, root, env, "handoff", "ingest", "--for", "cw")
 	if refused.code != 2 || len(listStore(root)) != 1 {
 		t.Fatalf("a bare pull took a foreign file: exit %d", refused.code)
 	}
-	forced := xIn(t, root, env, "handoffs", "ingest", "--for", "cw", "theirs")
+	forced := xIn(t, root, env, "handoff", "ingest", "--for", "cw", "theirs")
 	if forced.code != 0 || len(listStore(root)) != 0 {
 		t.Fatalf("naming the slug must force it: exit %d", forced.code)
 	}

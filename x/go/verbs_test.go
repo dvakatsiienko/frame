@@ -260,7 +260,7 @@ func TestIngestThatCannotTrashKeepsTheFile(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.Chmod(root, 0o700) })
 
-	got := xIn(t, repo(t), []string{"HANDOFF_STORE_ROOT=" + root}, "handoffs", "ingest", "probe")
+	got := xIn(t, repo(t), []string{"HANDOFF_STORE_ROOT=" + root}, "handoff", "ingest", "probe")
 
 	if got.code != 0 || got.data["kept"] != true || len(listStore(root)) != 1 {
 		t.Fatalf("exit %d, kept %v, files %d", got.code, got.data["kept"], len(listStore(root)))

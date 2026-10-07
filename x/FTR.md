@@ -28,7 +28,7 @@
   - then the error lists the valid verbs or flags of that family
 - ✅ `x schema` prints a verb's schema — the same entry that dispatches it
 - ✅ a board taller than the terminal opens in a pager
-  - given `x knowledge read`, `x handoffs peek`, `x handoffs ingest` or `x schema` drawing more rows than the terminal holds
+  - given `x knowledge read`, `x handoff peek`, `x handoff ingest` or `x schema` drawing more rows than the terminal holds
   - when dima runs it in a terminal
   - then the board scrolls in a pager with its frame fixed, the footer shows the scroll and the keys, and q leaves; a pipe or a board that fits prints as before
 - ✅ zsh completes every verb, flag and value
@@ -74,22 +74,22 @@
 
 ## handoffs
 
-- ✅ `x handoffs` lists, peeks and ingests CSTs from the shared store
+- ✅ `x handoff` lists, peeks and ingests CSTs from the shared store
   - given a pending handoff in the store
-  - when `x handoffs list` runs
+  - when `x handoff list` runs
   - then it lists the same handoffs `x-cw`'s tools see — one store, two doors
-- ✅ `x handoffs list` paints in under 20 ms
+- ✅ `x handoff list` paints in under 20 ms
   - given the live store
-  - when dima runs `x handoffs list` in a terminal
+  - when dima runs `x handoff list` in a terminal
   - then the board is drawn in under 20 ms (median of 40), node never starts
   - decision: go reads the store itself; the node bridge cost 60 of 72 ms. both readers test `script/lib/handoff-names.json` (ADR 0002, amended)
 - ✅ a CST's run id reads its value
   - given a META line `**run marker** — run id: **cc·x**`
-  - when `x handoffs list` shows it
+  - when `x handoff list` shows it
   - then the run id column says `cc·x`
 - 🧭 a cloud thread reaches handoffs through the mac
   - given a cloud project thread
-  - when it runs `~/.local/bin/x handoffs list` through the remote-devices Desktop Commander
+  - when it runs `~/.local/bin/x handoff list` through the remote-devices Desktop Commander
   - then it gets the same envelope as on the mac
 
 ## brief

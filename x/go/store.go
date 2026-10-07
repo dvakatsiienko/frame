@@ -173,11 +173,11 @@ func pickEntry(slug string, entries []stored) (stored, error) {
 	case len(matches) == 1:
 		return matches[0], nil
 	case len(entries) == 0:
-		return stored{}, usageFail("handoff store is clean — nothing pending.", "x handoffs list")
+		return stored{}, usageFail("handoff store is clean — nothing pending.", "x handoff list")
 	case len(matches) == 0:
-		return stored{}, usageFail(fmt.Sprintf("no pending handoff matches %q. pending:\n%s", slug, describe(entries)), "x handoffs list")
+		return stored{}, usageFail(fmt.Sprintf("no pending handoff matches %q. pending:\n%s", slug, describe(entries)), "x handoff list")
 	}
-	return stored{}, usageFail("several pending handoffs match — pick one with a slug that is unique:\n"+describe(matches), "x handoffs list")
+	return stored{}, usageFail("several pending handoffs match — pick one with a slug that is unique:\n"+describe(matches), "x handoff list")
 }
 
 func describe(entries []stored) string {

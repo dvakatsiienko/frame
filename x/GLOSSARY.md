@@ -1,7 +1,7 @@
 # x — words
 
 - **verb** — one operation `x` runs, named `<family> <name>` (`lane commit`); the unit an agent calls
-- **family** — a group of verbs about one subject (`lane`, `handoffs`); owns a colour in the human view
+- **family** — a group of verbs about one subject (`lane`, `handoff`); owns a colour in the human view
 - **registry** — the one list of verbs and families in `x/go/registry.json`; dispatch, schema, help and completion all read it
 - **envelope** — the json every verb prints for a machine: `{verb, ok, status, data}`
 - **resident line** — the one line every session holds about x: it exists, `x` lists families, `x schema <family>` the verbs; a per-verb index was cut (2026-10-07)

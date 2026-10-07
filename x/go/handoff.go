@@ -37,7 +37,7 @@ func rowOf(e stored, now time.Time) row {
 func readerOf(flags Flags) (string, error) {
 	reader, _ := flags["for"].(string)
 	if reader != "" && !slices.Contains(audiences, reader) {
-		return "", usageFail("unknown audience "+reader+" — any, ccli, cclio, cw", "x handoffs list --help")
+		return "", usageFail("unknown audience "+reader+" — any, ccli, cclio, cw", "x handoff list --help")
 	}
 	return reader, nil
 }
@@ -56,7 +56,7 @@ func list(reader string) listing {
 	return found
 }
 
-func handoffsList(r *Run, _ []string, flags Flags) (any, error) {
+func handoffList(r *Run, _ []string, flags Flags) (any, error) {
 	reader, err := readerOf(flags)
 	if err != nil {
 		return nil, err
@@ -74,8 +74,8 @@ func listBoard(found listing, flags Flags) string {
 	if audience != "" {
 		right = fmt.Sprintf("%d pending for %s", len(found.Entries), audience)
 	}
-	b := frame{width: frameWidth(), titleLeft: titleOf("handoffs list"), titleRight: ui.dim.Render(right),
-		footLeft: ui.dim.Render("x handoffs peek <slug>"), footRight: ui.dim.Render("nothing is deleted by age"), padRows: true}
+	b := frame{width: frameWidth(), titleLeft: titleOf("handoff list"), titleRight: ui.dim.Render(right),
+		footLeft: ui.dim.Render("x handoff peek <slug>"), footRight: ui.dim.Render("nothing is deleted by age"), padRows: true}
 	narrow := isNarrow()
 	widths := []int{16, 8, 8, 12, b.inner() - 44}
 	head := []string{"slug", "for", "by", "age", "lane · run id"}
@@ -97,7 +97,7 @@ func listBoard(found listing, flags Flags) string {
 		if e.Stale {
 			age = ui.er.Render(e.Age + " stale")
 		}
-		cells := []string{ui.verb("handoffs", e.Slug), ui.fg.Render(e.Audience), ui.fg.Render(e.Author), age}
+		cells := []string{ui.verb("handoff", e.Slug), ui.fg.Render(e.Audience), ui.fg.Render(e.Author), age}
 		if !narrow {
 			lane := e.Lane
 			if e.Shared {
@@ -119,7 +119,7 @@ func listBoard(found listing, flags Flags) string {
 	return b.String()
 }
 
-func handoffsPeek(r *Run, args []string, _ Flags) (any, error) {
+func handoffPeek(r *Run, args []string, _ Flags) (any, error) {
 	picked, err := pickEntry(firstArg(args), listStore(storeRoot()))
 	if err != nil {
 		return nil, err
@@ -131,23 +131,23 @@ func handoffsPeek(r *Run, args []string, _ Flags) (any, error) {
 		if meta != nil {
 			shown = *meta
 		}
-		b := frame{width: frameWidth(), titleLeft: titleOf("handoffs peek"),
+		b := frame{width: frameWidth(), titleLeft: titleOf("handoff peek"),
 			titleRight: ui.dim.Render(fmt.Sprintf("%s, %s old, %s", picked.Slug, age, size(int(picked.size)))),
-			footLeft:   ui.dim.Render("take it with") + " " + cmd("x handoffs ingest "+picked.Slug), footRight: ui.dim.Render("the file is untouched"), padRows: true}
+			footLeft:   ui.dim.Render("take it with") + " " + cmd("x handoff ingest "+picked.Slug), footRight: ui.dim.Render("the file is untouched"), padRows: true}
 		b.rows = markdown(shown, b.inner())
 		r.Page(b)
 	}
 	return ordered{{"age", age}, {"bytes", picked.size}, {"meta", meta}, {"name", picked.file}, {"slug", picked.Slug}}, nil
 }
 
-func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
+func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
 	reader, err := readerOf(flags)
 	if err != nil {
 		return nil, err
 	}
 	all := listStore(storeRoot())
 	if len(all) == 0 {
-		return nil, usageFail("handoff store is clean — nothing pending.", "x handoffs list")
+		return nil, usageFail("handoff store is clean — nothing pending.", "x handoff list")
 	}
 	mine := all
 	if reader != "" {
@@ -162,7 +162,7 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 	if len(candidates) == 0 {
 		others := slices.DeleteFunc(slices.Clone(all), func(e stored) bool { return readableBy(e.Audience, reader) })
 		return nil, usageFail(fmt.Sprintf("nothing pending for %s. %d handoff(s) are addressed to another agent and were left untouched:\n%s",
-			reader, len(others), describe(others)), "x handoffs list")
+			reader, len(others), describe(others)), "x handoff list")
 	}
 	if slug == "" && len(candidates) > 1 && r.interactive {
 		now := time.Now()
@@ -170,7 +170,7 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 		for i, e := range candidates {
 			items[i] = pickable{e.file, fmt.Sprintf("%-14s %s", e.Slug, ui.dim.Render(fmt.Sprintf("for %s, %s lane, by %s, %s old", e.Audience, e.Lane, e.Author, ageOf(e.mtime, now).label)))}
 		}
-		if slug, err = pick("handoffs", "which handoff continues here?", items); err != nil {
+		if slug, err = pick("handoff", "which handoff continues here?", items); err != nil {
 			return nil, err
 		}
 	}
@@ -180,7 +180,7 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 	}
 	body, err := os.ReadFile(picked.path)
 	if err != nil {
-		return nil, &Fail{Msg: picked.file + " vanished before it was read — another thread pulled it", Next: "x handoffs list"}
+		return nil, &Fail{Msg: picked.file + " vanished before it was read — another thread pulled it", Next: "x handoff list"}
 	}
 	// a file that could not be trashed stays for the next puller, and the envelope says so
 	kept := picked.Shared
@@ -195,7 +195,7 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 		if kept {
 			foot = "the file stays in the store"
 		}
-		b := frame{width: frameWidth(), titleLeft: titleOf("handoffs ingest"), titleRight: ui.dim.Render(picked.Slug),
+		b := frame{width: frameWidth(), titleLeft: titleOf("handoff ingest"), titleRight: ui.dim.Render(picked.Slug),
 			footLeft: ui.dim.Render(foot), padRows: true}
 		b.rows = markdown(string(body), b.inner())
 		r.Page(b)

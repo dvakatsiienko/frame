@@ -30,7 +30,7 @@
             "status": "ok"
         },
         {
-            "argv": ["handoffs", "list"],
+            "argv": ["handoff", "list"],
             "cwd": "{world}/repo",
             "env": {
                 "CLAUDECODE": "1"
@@ -202,99 +202,99 @@
             "status": "ok"
         },
         {
-            "argv": ["handoffs", "list"],
+            "argv": ["handoff", "list"],
             "cols": 120,
             "cwd": "{world}/repo",
             "exit": 0,
-            "id": "handoffs-list",
+            "id": "handoff-list",
             "matrix": "bare x overview board",
             "mode": "tty",
             "note": "three entries, newest first; charm-gum is over 7 days old and is flagged, never deleted"
         },
         {
-            "argv": ["handoffs", "list", "--for", "cw"],
+            "argv": ["handoff", "list", "--for", "cw"],
             "cwd": "{world}/repo",
             "exit": 0,
-            "id": "handoffs-list-for",
+            "id": "handoff-list-for",
             "matrix": "json mode",
             "mode": "pipe",
             "note": "entries: cli-arms, charm-gum; others: board-sort (for cclio)",
             "status": "ok"
         },
         {
-            "argv": ["handoffs", "peek", "cli-arms"],
+            "argv": ["handoff", "peek", "cli-arms"],
             "cols": 120,
             "cwd": "{world}/repo",
             "exit": 0,
-            "id": "handoffs-peek",
+            "id": "handoff-peek",
             "matrix": "a markdown report view",
             "mode": "tty",
             "note": "the META block rendered as markdown; the file is untouched"
         },
         {
-            "argv": ["handoffs", "peek", "cli-arms"],
+            "argv": ["handoff", "peek", "cli-arms"],
             "cols": 80,
             "cwd": "{world}/repo",
             "exit": 0,
-            "id": "handoffs-peek-80",
+            "id": "handoff-peek-80",
             "matrix": "the 80-col fold",
             "mode": "tty"
         },
         {
-            "argv": ["handoffs", "peek", "board-sort"],
+            "argv": ["handoff", "peek", "board-sort"],
             "cwd": "{world}/repo",
             "data": {
                 "slug": "board-sort"
             },
             "exit": 0,
-            "id": "handoffs-peek-json",
+            "id": "handoff-peek-json",
             "matrix": "json mode",
             "mode": "pipe",
             "status": "ok"
         },
         {
-            "argv": ["handoffs", "peek"],
+            "argv": ["handoff", "peek"],
             "cwd": "{world}/repo",
             "exit": 2,
-            "id": "handoffs-peek-ambiguous",
+            "id": "handoff-peek-ambiguous",
             "matrix": "failed state",
             "mode": "pipe",
             "note": "three pending, no slug: the error lists the slugs",
             "status": "usage"
         },
         {
-            "argv": ["handoffs", "ingest"],
+            "argv": ["handoff", "ingest"],
             "cols": 120,
             "cwd": "{world}/repo",
             "exit": 0,
-            "id": "handoffs-ingest-picker",
+            "id": "handoff-ingest-picker",
             "keys": ["Down", "Enter"],
             "matrix": "a picker (choose a handoff)",
             "mode": "tty",
             "note": "several pending, no slug, a terminal: a picker over the slugs, newest first; Down + Enter takes board-sort and prints its CST"
         },
         {
-            "argv": ["handoffs", "ingest", "board-sort"],
+            "argv": ["handoff", "ingest", "board-sort"],
             "cwd": "{world}/repo",
             "data": {
                 "kept": false,
                 "slug": "board-sort"
             },
             "exit": 0,
-            "id": "handoffs-ingest-json",
+            "id": "handoff-ingest-json",
             "matrix": "json mode",
             "mode": "pipe",
             "status": "ok"
         },
         {
-            "argv": ["handoffs", "ingest", "charm-gum"],
+            "argv": ["handoff", "ingest", "charm-gum"],
             "cwd": "{world}/repo",
             "data": {
                 "kept": true,
                 "slug": "charm-gum"
             },
             "exit": 0,
-            "id": "handoffs-ingest-shared",
+            "id": "handoff-ingest-shared",
             "matrix": "json mode",
             "mode": "pipe",
             "status": "ok"
@@ -318,7 +318,7 @@
             "status": "ok"
         },
         {
-            "argv": ["schema", "handoffs", "--level", "short"],
+            "argv": ["schema", "handoff", "--level", "short"],
             "cols": 120,
             "cwd": "{world}/repo",
             "exit": 0,
@@ -354,7 +354,7 @@
             "id": "completion-zsh",
             "matrix": "completion",
             "mode": "tty",
-            "note": "prints a zsh completion script generated from the registry; `source <(x completion zsh)` then `x la<Tab>` → lane, `x lane <Tab>` → the five verbs, `x handoffs peek <Tab>` → the pending slugs"
+            "note": "prints a zsh completion script generated from the registry; `source <(x completion zsh)` then `x la<Tab>` → lane, `x lane <Tab>` → the five verbs, `x handoff peek <Tab>` → the pending slugs"
         },
         {
             "argv": ["completion", "zsh"],
@@ -578,9 +578,9 @@
     "data": {
         "brief check": "{ brief, checked, repo, sha256, stamp, unchecked } — on a miss: failed, the error lists each line, kind and name",
         "completion": "{ shell, script }",
-        "handoffs ingest": "{ name, slug, kept, body } — the file is deleted unless shared (kept: true)",
-        "handoffs list": "{ root, entries: [{ name, slug, audience, lane, author, shared, age, stale, bytes, runId }], others: [same] } — newest first; `others` holds what --for <audience> filtered out, [] without --for",
-        "handoffs peek": "{ name, slug, age, bytes, meta } — meta is the META block as markdown, null when the CST has none",
+        "handoff ingest": "{ name, slug, kept, body } — the file is deleted unless shared (kept: true)",
+        "handoff list": "{ root, entries: [{ name, slug, audience, lane, author, shared, age, stale, bytes, runId }], others: [same] } — newest first; `others` holds what --for <audience> filtered out, [] without --for",
+        "handoff peek": "{ name, slug, age, bytes, meta } — meta is the META block as markdown, null when the CST has none",
         "knowledge list": "{ files: [{ name, purpose, verified, refreshWhen, bytes }], root }",
         "knowledge read": "{ body, name, path, verified } — the read is logged to $X_STATE/knowledge-reads.jsonl",
         "lane commit": "{ branch, sha, tree }",
