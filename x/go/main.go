@@ -195,9 +195,6 @@ func leaf(m mode, verb Verb) *cobra.Command {
 func dispatch(m mode, verb Verb, args []string, flags Flags) int {
 	r := &Run{verb: verb, human: !m.json, interactive: m.interactive}
 	impl := impls[verb.Name]
-	if os.Getenv("X_TEST") != "" && os.Getenv("X_PANIC") != "" {
-		panic("forced by X_PANIC")
-	}
 
 	if m.interactive {
 		filled, err := askArgs(verb, args)

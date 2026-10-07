@@ -59,7 +59,7 @@ func TestMain(m *testing.M) {
 	}
 	src, _ := filepath.Abs(".")
 	xbin = filepath.Join(dir, "x")
-	if out, err := exec.Command("go", "build", "-ldflags", "-X main.srcDir="+src, "-o", xbin, ".").CombinedOutput(); err != nil {
+	if out, err := exec.Command("go", "build", "-tags", "xpanic", "-ldflags", "-X main.srcDir="+src, "-o", xbin, ".").CombinedOutput(); err != nil {
 		panic(fmt.Sprintf("build: %v\n%s", err, out))
 	}
 	code := m.Run()
@@ -197,7 +197,7 @@ func filterEnv(env []string) []string {
 	var kept []string
 	for _, pair := range env {
 		name, _, _ := strings.Cut(pair, "=")
-		if !slices.Contains([]string{"CLAUDECODE", "AI_AGENT", "CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_ROOT", "SSH_CONNECTION"}, name) {
+		if !slices.Contains([]string{"CLAUDECODE", "AI_AGENT", "CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_ROOT", "SSH_CONNECTION", "CLAUDE_CODE_SESSION_ID"}, name) {
 			kept = append(kept, pair)
 		}
 	}

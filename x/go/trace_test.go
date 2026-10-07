@@ -47,6 +47,10 @@ func TestACallLeavesOneTraceLine(t *testing.T) {
 			func(*testing.T) []string { return []string{"schema", "lane", "--level", "huge"} }},
 		{"external", "lane commit", "external", 1, []string{}, failingHook, commit},
 		{"refused", "lane commit", "refused", 1, []string{}, nil, commit},
+		{"refused precondition", "knowledge list", "refused", 1, []string{}, nil, func(t *testing.T) []string {
+			t.Setenv("X_KNOWLEDGE_ROOT", filepath.Join(t.TempDir(), "none"))
+			return []string{"knowledge", "list"}
+		}},
 		{"bug", "knowledge list", "bug", 1, []string{}, nil,
 			func(t *testing.T) []string { t.Setenv("X_PANIC", "1"); return []string{"knowledge", "list"} }},
 	}
@@ -153,6 +157,14 @@ func TestAVerbWithStepsTracesEachStepTime(t *testing.T) {
 	}
 	if strings.Join(names, ",") != "tree,format,mods,stage,commit" {
 		t.Errorf("steps %v", names)
+	}
+}
+
+func TestAnUnknownFlagStaysOutOfTheTrace(t *testing.T) {
+	state := t.TempDir()
+	xIn(t, repo(t), tracing(state), "schema", "lane", "-sekritvalue", "-", "--level=short")
+	if lines := traces(t, state); len(lines) != 1 || marshal(lines[0]["x.flags"]) != `["level"]` {
+		t.Errorf("traces %v, want only the known flag level", lines)
 	}
 }
 

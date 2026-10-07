@@ -129,12 +129,19 @@ func version() string {
 
 func traceOff() bool { return os.Getenv("X_TRACE") == "0" }
 
-// a flag's name only: its value can be a path or free text
+// a flag's name only, and only a name the registry knows: a value, or a mistyped dash word, can be free text
 func flagNames(argv []string) []string {
+	known := globalFlags
+	if verb, _, ok := findVerb(wordsOf(argv)); ok {
+		known = verb.Flags
+	}
 	names := []string{}
 	for _, arg := range optionsOf(argv) {
-		if name, ok := strings.CutPrefix(arg, "-"); ok {
-			name, _, _ = strings.Cut(strings.TrimLeft(name, "-"), "=")
+		name, _, _ := strings.Cut(strings.TrimLeft(arg, "-"), "=")
+		if name == "h" {
+			name = "help"
+		}
+		if _, ok := known[name]; ok && strings.HasPrefix(arg, "-") {
 			names = append(names, name)
 		}
 	}

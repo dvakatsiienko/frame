@@ -357,7 +357,7 @@ func decrypt(tree string) error {
 	}
 	key := filepath.Join(common, "git-crypt/keys/default")
 	if !exists(key) {
-		return &Fail{Msg: "no git-crypt key at " + key, Next: "run git-crypt unlock in the main checkout first"}
+		return &Fail{Refused: true, Msg: "no git-crypt key at " + key, Next: "run git-crypt unlock in the main checkout first"}
 	}
 	gitDir, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
 	if err != nil {

@@ -78,7 +78,7 @@ func readShelfFile(path string) (shelfFile, error) {
 func shelf() ([]shelfFile, error) {
 	paths, err := filepath.Glob(filepath.Join(knowledgeRoot(), "*.md"))
 	if err != nil || len(paths) == 0 {
-		return nil, &Fail{Msg: "no knowledge shelf at " + knowledgeRoot(), Next: "x knowledge list --help"}
+		return nil, &Fail{Refused: true, Msg: "no knowledge shelf at " + knowledgeRoot(), Next: "x knowledge list --help"}
 	}
 	files := make([]shelfFile, 0, len(paths))
 	for _, path := range paths {
