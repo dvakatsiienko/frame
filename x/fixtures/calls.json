@@ -263,7 +263,7 @@
             "status": "usage"
         },
         {
-            "argv": ["handoff", "ingest"],
+            "argv": ["handoff", "ingest", "--for", "cclio"],
             "cols": 120,
             "cwd": "{world}/repo",
             "exit": 0,

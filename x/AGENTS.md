@@ -15,6 +15,11 @@ source file is newer.
 - its run binds by name in `impls` (`go/main.go`); a verb in one and not the other fails a test.
 - `needsApply: true` for a verb that publishes or destroys: it splits into `Plan` and `Apply`; dispatch
   exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal.
+  the one exception: the `handoff` verbs delete without it — the store is disposable by contract
+  (ADR-0002), every removal goes to the macos trash, and the envelope names each file it took.
+- a verb that took over a script names it in `replaces:`; `replaces_test.go` stays red while that
+  file exists or any tracked file outside history names it. `touches:` names what the verb reads or
+  writes outside the repo; `x schema` prints both.
 - a failure returns a `*Fail` with `Next`: the command that moves the caller forward.
 - the purpose line is what an agent picks a verb by; a test runs `lintPurpose` over every verb.
 - `hidden: true` keeps a verb out of the overview, completion and `x stats`' unused list; it still

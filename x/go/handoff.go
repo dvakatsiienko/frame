@@ -151,6 +151,11 @@ func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	slug := firstArg(args)
+	// a pull that names no reader could take a file another agent waits for, and deletes it
+	if reader == "" && slug == "" {
+		return nil, usageFail("ingest names its reader — --for any, ccli, cclio or cw — or the slug of the file it takes", "x handoff ingest --for <audience>")
+	}
 	all := listStore(storeRoot())
 	if len(all) == 0 {
 		return nil, usageFail("handoff store is clean — nothing pending.", "x handoff list")
@@ -159,7 +164,6 @@ func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
 	if reader != "" {
 		mine = slices.DeleteFunc(slices.Clone(all), func(e stored) bool { return !readableBy(e.Audience, reader) })
 	}
-	slug := firstArg(args)
 	// naming a slug forces a foreign file: the caller said so out loud
 	candidates := mine
 	if slug != "" {

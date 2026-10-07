@@ -85,6 +85,17 @@ func TestParseNameReadsTheSharedGrammar(t *testing.T) {
 	}
 }
 
+func TestIngestWithNoReaderRefuses(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, "cw--pm--a--by-ccli--20261007T100000Z.md"), "# META\n")
+
+	got := xStore(t, root, "", "handoff", "ingest")
+
+	if got.code != 2 || len(storeFiles(root)) != 1 || !strings.Contains(got.next, "--for") {
+		t.Fatalf("an ingest that names no reader must refuse and keep the file: exit %d, next %q", got.code, got.next)
+	}
+}
+
 func TestWriteReplacesLeavesExactlyOneFile(t *testing.T) {
 	root := t.TempDir()
 	write(t, filepath.Join(root, "any--code--old-thread--by-cw--20261001T120000Z-shared.md"), "# META\nold\n")
