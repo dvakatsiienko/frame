@@ -27,8 +27,7 @@ they stay as notes on each area's spirit, the vector decides what comes first.
 
 The order lives in the linear initiative «roadmap»: nine steps in its body, every project attached,
 a project's status + start date mark where it sits, dependency edges say what unblocks what. The
-boot prefetch prints it; **that block answers «what's next».** The vault file
-`_hq/dima-roadmap.md` is dima's own copy, for him to read — never loaded, never ours to edit.
+boot prefetch prints it; **that block answers «what's next».**
 
 - know the step at boot; name it when reporting.
 - place proposed work on the order before agreeing. Ahead-of-step work is a freebie or a ticket,

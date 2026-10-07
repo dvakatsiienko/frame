@@ -220,8 +220,25 @@ is not captured, it is scattered.
 
 ## Body vs comments — the state contract
 
-**The body shape: what · why · how · notes · closing word — the ticket face, a reference.**
-Spec-shaped tickets add an optional sixth: acceptance/exit.
+**The body is a spec seed: `to-spec` runs on the body alone, no thread** (dima, 2026-10-07). in
+order, each feeding a section of matt's spec:
+- `lane: <name>` — the first line
+- **want** — dima's words, verbatim (his «dima notes») → problem + solution
+- **why** — what hurts today → problem
+- **stories** — 3–8 behaviours, «as dima, i …»; `to-spec` grows the long list
+- **proposed** — dima's vision of the solve, order included; open until a grill moves a line to decided
+- **decided** — each settled call with its source (dima, a grill, an ADR) → implementation decisions
+- **open** — `?` lines; **the gate: a ticket goes to `to-spec` only with this empty**
+- **exit** — given/when/then, 3–6 lines → testing decisions + acceptance criteria
+- **out** — out of scope and «decided against», so a coder never re-proposes a rejected idea
+- **refs** — research docs, designs, prior art, taste links
+- **closing word** — at close; a `.scratch` run's outcome folds back here
+
+the boundary is in time: the body is the source until dispatch; `to-spec` then snapshots it into
+`.scratch/<feature>/`, the spec owns the run (steers land there), and the outcome folds back into the
+closing word when the run lands — never two places edited at once. a small ticket fills only the lines it has; «how» is `to-tickets`' job, never the body's. an old
+body is reshaped when touched, never swept. the run check: «did `to-spec` need anything outside the
+body?» — logged in `docs/test-drive/spec-pipeline.md`.
 🚨 **Dima's words never go into a comment.** A want, a note, a verdict from him lands in the body
 under «dima notes» — a comment is read only by the GraphQL fetch, a body by every reader.
 Comments carry trail only: run stamps, «done, see commit», provenance.

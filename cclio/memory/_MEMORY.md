@@ -12,7 +12,7 @@ rethink, not a license for a bare name. (`_`-prefixed files are infrastructure, 
 The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗ marks a silent failure.
 
 ## direction — read before any pm decision
-- 🧭 the roadmap is the linear initiative «roadmap», printed by the boot prefetch — not a file. the vault copy is dima's own, never imported. rules for using it: `dima-strategy`
+- 🧭 the roadmap is the linear initiative «roadmap», printed by the boot prefetch — not a file. rules for using it: `dima-strategy`
 - 🧭 @dima-strategy.md — the vector (always: streamline the fleet · the mil: make fleet good · his finish line: cv + portfolio), the initiative + milestones as the lane driver, then the branch notes
 - 🗞️ @../gazette/_trail.md — 3 lines per post for the 5 freshest gazette days (shipped / open / state), regenerated at every post; the full posts sit in `gazette/`, read on demand
 - 📖 @dima-stories.md — what actually happened, so the rules keep their reasons. append, never rewrite

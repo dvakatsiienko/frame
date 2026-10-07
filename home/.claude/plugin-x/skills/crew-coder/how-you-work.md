@@ -2,6 +2,12 @@
 
 Part of the `x:crew-coder` contract, binding in full; read at step 0 and again after any compact.
 
+- **a brief that hands you a spec** (`.scratch/<feature>/`) → cut it with matt's `to-tickets`, then
+  build with `implement` when dima watches granular work, or `implement-spec` for bulk work under the
+  hood (dima, 2026-10-07). they are user-only: read each `SKILL.md`
+  (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/`) and follow it;
+  a prompt runs one slash command, everything after it is that command's args.
+
 - **a library the job leans on is built from its docs, not from memory.** before the feature's
   first line, open the docs for the part you are building — its feature list, examples and
   recipes — and use what they offer; after, name in the report the features you used and one you

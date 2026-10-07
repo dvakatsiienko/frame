@@ -13,5 +13,7 @@ cache, no mirror. 🎯 **Be proactive with them**: `grilling` when a plan has un
 `to-tickets` when a thread ripens into buildable work. Opus filled ADRs through those flows —
 respect them, do not re-litigate decided things.
 
+🔓 **a user-only skill is still plain text** (dima, 2026-10-07: «you could workaround any `disable-model-invocation` via direct read»): cclio and every coder run matt's `to-spec`, `to-tickets`, `implement`, `implement-spec`, `grill-with-docs` by reading the `SKILL.md` and following it, no typed command needed. a read skill is ordinary context, so after a compaction it may be gone (inference) — re-read it at the next step.
+
 📌 A skill whose premise was another surface does not get recreated here — the premise dies, not
 the want.

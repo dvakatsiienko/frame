@@ -15,6 +15,11 @@ the want (dima, 2026-10-06): linear is heavy and global; a lane or a shift wants
 - `setup-matt-pocock-skills` once per repo: tracker = local markdown, domain docs = GLOSSARY.md / GLOSSARY-MAP.md, docs/adr
 - `.scratch/` gitignored or kept? (a spec is the lane's plan, dies with the lane)
 
+## run 2 — the shape on trial (dima, 2026-10-07)
+
+plan wide → pre-grill (`grill-with-docs`) into the linear body → shape lanes → `to-spec` (cclio, a snapshot of the body plus code seams) → `to-tickets` (the coder, right after spawn) → dispatch in batches; `implement` for granular work dima watches, `implement-spec` for bulk. pre-grill only the next milestone's lanes. first case: the cli plan ([FRM-284](https://linear.app/x-com/issue/FRM-284)), to-spec'd live with dima. open question it answers: can the linear body hold the spec itself, killing `.scratch/spec`?
+numbers: dima's minutes per batch at dispatch · coder rounds · `#dima-caught` after dispatch · stale decisions caught at `to-spec` · «did to-spec need anything outside the body?»
+
 ## log
 
 one line per run: date · ticket · tickets in the graph · subagents · minutes · tokens · code-review findings · dima's verdict
