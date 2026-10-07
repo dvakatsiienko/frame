@@ -79,6 +79,15 @@
   - decision: x-mod-guard sees the command before the shell runs it, so it cannot hash an expanded `$(cat …)` — it reads the named file itself (FRM-311)
   - 📌 harness-proven only; a live spawn through the gate is unprobed until x v1.1 lands on main
 
+- ✅ a refusal says nothing in the command ran
+  - given a Bash call x-mod-guard refuses, a chained command included
+  - then the reason opens with «nothing in this command ran — », so no one assumes the first half ran
+  - decision: a chained command is refused whole; an agent once took its first half as run
+- ✅ a hand-typed push to main is refused with `x lane push`
+  - given a Bash `git push <remote> <sha-or-ref>:main` (or `:refs/heads/main`) run inside `~/frame` or `~/projects/bytes`, `cd` or `-C` included
+  - then it is refused with the door `x lane push` (it pushes HEAD's sha and reads the remote back); `# dima-ok: <refspec>` lets it run
+  - given a plain `git push`, or the same refspec outside those two repos, then it runs
+
 ## every Agent spawn
 
 - ✅ a fork must say why it needs the parent context
@@ -89,3 +98,12 @@
   - then the refusal counts in x-mod-stash's 🛡️ counter row (`fork: <description>` when unfolded), like a Bash refusal
   - decision: a required line, never a guess at «mechanical» — a keyword guess was unreliable (51 loose hits, most of them real research); a fork carries the whole parent context, ~220k (FRM-323)
   - 📌 harness-proven only: a headless `claude -p` offers no `fork` type («Agent type 'fork' not found»), so the live check is a fork from an interactive session
+
+## every Edit and Write
+
+- ✅ a cclio session gets one delegate hint at its 8th code edit
+  - given a session whose cwd is under `~/frame/cclio` makes its 8th `Edit`, `Write` or `MultiEdit` on a `.ts` `.tsx` `.go` `.sh` `.py` or `.swift` file
+  - then the call runs and the model gets one note: «x-mod-guard: 8 code edits in this cclio session — a bigger job goes to a helper (~137k base) instead of this thread's context»; later edits get none
+  - given other file types, or a session outside `~/frame/cclio`, then nothing is counted or said
+  - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
+  - makes: one `edits:<session>` count key in x-mod-guard's `$.store`

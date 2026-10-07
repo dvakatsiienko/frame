@@ -123,6 +123,8 @@ adds the ftr lines the change flipped.
 
 ## the retro's automation angle
 
+- before writing the retro, read matt's retro skill (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md`) and walk its categories (navigation, automated checks, coding standards, AGENTS.md size, tool economy, no-ops, information access) over your own session, from your own context — never a separate session, which would pay your whole transcript again (dima, 2026-10-07)
+
 what did you do by hand that repeats across jobs, and
 what would hold it — a script, a skill line, a memory line? Only what is worth its weight: a
 one-off script on a shelf is dead weight, and dead weight is the wrong answer. None → say none.

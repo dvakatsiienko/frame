@@ -299,7 +299,7 @@ function isJobScratch(c: Command, r: Refusal, ctx: Context) {
     return paths.every((p) => p.startsWith(`${tmp}/`));
 }
 
-function floor(c: Command): Refusal | undefined {
+function floor(c: Command, ctx: Context): Refusal | undefined {
     const ops = operands(c.args);
     if (c.name === 'rm' || c.name === 'unlink')
         return {
@@ -498,7 +498,25 @@ function floor(c: Command): Refusal | undefined {
         return rewrite(['prune'], 'git worktree prune');
     if (sub === 'worktree' && subOps[0] === 'remove')
         return rewrite(or(subOps.slice(1), 'remove'), 'git worktree remove');
+    const toMain = subOps
+        .slice(1)
+        .find((o) => /^[^+:][^:]*:(refs\/heads\/)?main$/.test(o));
+    if (sub === 'push' && toMain && isOwnRepo(gitDir(c, ctx), ctx))
+        return {
+            door: "x lane push — it pushes HEAD's sha and reads the remote back",
+            rule: 'push-lane',
+            targets: [toMain],
+            why: 'a hand-typed sha or ref pushed to main skips the read-back',
+        };
     return undefined;
+}
+
+// frame and bytes: the two repos `x lane push` serves
+function isOwnRepo(dir: string, ctx: Context) {
+    if (!ctx.home) return false;
+    return [`${ctx.home}/frame`, `${ctx.home}/projects/bytes`].some(
+        (r) => dir === r || dir.startsWith(`${r}/`),
+    );
 }
 
 const ROOT_STEP = 'hand dima the step — these are his, in System Settings';
@@ -926,7 +944,7 @@ export function refusals(
     const out: Refusal[] = [];
     list.forEach((c, i) => {
         const found =
-            floor(c) ??
+            floor(c, ctx) ??
             hazard(c, ctx) ??
             overwrite(c, ctx) ??
             lint(c, list[i + 1]) ??
@@ -978,5 +996,5 @@ export function check(
 }
 
 export function message(r: Refusal) {
-    return `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. only after dima's word, end the command with # dima-ok: ${r.targets.join(' ')}`;
+    return `nothing in this command ran — x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. only after dima's word, end the command with # dima-ok: ${r.targets.join(' ')}`;
 }

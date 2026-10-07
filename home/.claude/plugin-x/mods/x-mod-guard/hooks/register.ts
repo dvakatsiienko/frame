@@ -32,6 +32,12 @@ const KEEP = 50;
 const DAY = 'day:';
 const DAYS = 30;
 const SHOWN = 160;
+// a cclio session's own code edits: the 8th gets one note that a bigger job belongs to a helper
+const CODE_FILE = /\.(ts|tsx|go|sh|py|swift)$/;
+const EDITS = 'edits:';
+const EDIT_LIMIT = 8;
+const DELEGATE_NOTE =
+    "x-mod-guard: 8 code edits in this cclio session — a bigger job goes to a helper (~137k base) instead of this thread's context";
 const FAILED =
     'x-mod-guard: the check failed or ran out of time, so this call is refused (fail closed). retry it once; if it repeats, tell cclio';
 // a fork carries the whole parent context; the line says what of it the fork needs
@@ -179,6 +185,38 @@ export const register: Register = (on) => {
         $.ui.log(`x-mod-guard: ran on dima-ok: ${verdict.targets.join(', ')}`);
         return next(e);
     }).catch(() => ({ deny: FAILED }));
+
+    on(
+        'tool.call',
+        { tool: /^(Edit|Write|MultiEdit)$/ },
+        async ($, e, next) => {
+            const result = await next(e);
+            const path = 'file_path' in e ? e.file_path : undefined;
+            if (
+                result.deny !== undefined ||
+                typeof path !== 'string' ||
+                !CODE_FILE.test(path)
+            )
+                return result;
+            try {
+                const home = await $.env.get('HOME');
+                const cwd = await $.session.cwd();
+                const root = `${home}/frame/cclio`;
+                if (cwd !== root && !cwd.startsWith(`${root}/`)) return result;
+                const key = EDITS + (await $.session.id());
+                const n =
+                    (((await $.store.get(key)) as number | undefined) ?? 0) + 1;
+                await $.store.set(key, n);
+                if (n !== EDIT_LIMIT) return result;
+                return {
+                    ...result,
+                    context: [...(result.context ?? []), DELEGATE_NOTE],
+                };
+            } catch {
+                return result;
+            }
+        },
+    );
 
     on('agent.spawn', async ($, e, next) => {
         if (!e.fork || WHY_FORK.test(e.prompt)) return next(e);

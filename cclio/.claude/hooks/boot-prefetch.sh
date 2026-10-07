@@ -105,7 +105,8 @@ jq -r --argjson now "$(date +%s)" '
   | (if $r then (($now - ($r - 604800)) / 86400 * 100 / 7 | floor) else null end) as $pace
   | "weekly \(.rate_limits.seven_day.used_percentage // "?") % · pace \($pace // "?") % · resets in \(left($r // $now))"
   + " · 5h \(.rate_limits.five_hour.used_percentage // "?") %"
-  + " · read \((($now - .written_at) / 60 | floor)) min ago"' "$HOME/.claude/shelf/cc-usage-window.json" 2>/dev/null \
+  + " · read " + ((($now - .written_at) / 60 | floor) as $m | if $m < 60 then "\($m) min ago" else "\($m / 60 | floor) h ago" end)
+  + (if ($now - .written_at) > 1800 then " (sline mirror; a desktop session has no feed — `get_usage` is live)" else "" end)' "$HOME/.claude/shelf/cc-usage-window.json" 2>/dev/null \
   || fail "no usage file — sline has not rendered rate_limits yet (shelf/cc-usage-window.json)"
 
 echo "-- repos vs origin (behind-only on a clean main → pulled here; anything else → the reason it was not) --"

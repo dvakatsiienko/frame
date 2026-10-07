@@ -83,6 +83,18 @@ const LINTS = [
         'path=',
         'obsidian delete path=_hq/old.md',
     ],
+    [
+        'a sha pushed to main in frame',
+        'cd /home/frame && git push origin abc123:main',
+        'x lane push',
+        'cd /home/frame && git push',
+    ],
+    [
+        'a ref pushed to refs/heads/main in bytes',
+        'git -C /home/projects/bytes push origin HEAD:refs/heads/main',
+        'x lane push',
+        'cd /home/elsewhere && git push origin abc123:main',
+    ],
 ] as const;
 
 function world(on: On) {
@@ -111,3 +123,11 @@ for (const [lint, , , good] of LINTS)
             (await $.tool.call({ command: good, tool: 'Bash' })).deny,
         ).toBeUndefined();
     });
+
+test('a refusal says nothing in the command ran', async ($, on) => {
+    world(on);
+    expect(
+        (await $.tool.call({ command: 'pnpm -s x; echo hi', tool: 'Bash' }))
+            .deny,
+    ).toMatch(/^nothing in this command ran — /);
+});
