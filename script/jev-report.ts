@@ -1,6 +1,6 @@
 /**
  * jev:report — how jev did today, one block per flow (`script/lib/jev-report.ts` renders). the halt
- * prints it right after the flush verdicts; `/cclio:report` on «how did jev do». `--health` prints
+ * prints it right after the flush verdicts. `--health` prints
  * only the health facts and exits non-zero on a failure — the boot digest's jev check.
  */
 

@@ -126,7 +126,11 @@ the next session directly. before writing the CST:
 
 
 ## phase 4 — the board
-the `/cclio:report` shape, mutated to fold in whatever the sweep and the park list surfaced.
+one message, folding in whatever the sweep and the park list surfaced:
+- 📊 **run** `<run id>` — **elapsed** `<time>`
+- 🟢 **done** `N / ~M` — the 2–4 biggest, one line each, artifacts backticked
+- 🚧 **in flight** · ⏸️ **left** (next 2–3, in order) · ❓ **on dima** («nothing blocked» if none)
+- 🃏 one-liner mood
 ticket ids as links in the `rules/fleet-output-format.md` form.
 
 ## phase 4.5 — the gazette 🗞️ (before the CST, always)
