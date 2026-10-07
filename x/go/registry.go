@@ -38,6 +38,10 @@ type Verb struct {
 	Hidden     bool                `json:"hidden,omitempty"`
 	Steps      []string            `json:"steps"`
 	Usage      string              `json:"usage"`
+	// what the verb reads or writes outside the repo, so a fixer finds what the door hides
+	Touches []string `json:"touches,omitempty"`
+	// the files and script names this verb took over; a contract test is red while one exists or is called
+	Replaces []string `json:"replaces,omitempty"`
 }
 
 // a family owns a colour (its place in this list), a one-line gist and the example its help shows
@@ -112,9 +116,16 @@ func usageOf(verb Verb) string {
 
 // the whole schema of a verb, the shape `x schema` prints
 func (v Verb) Schema() ordered {
-	return ordered{{"args", v.Args}, {"exits", ordered{{"confirm", 4}, {"failed", 1}, {"ok", 0}, {"usage", 2}}},
-		{"flags", v.Flags}, {"name", v.Name}, {"needsApply", v.NeedsApply}, {"purpose", v.Purpose},
-		{"steps", v.Steps}, {"usage", v.Usage}}
+	schema := ordered{{"args", v.Args}, {"exits", ordered{{"confirm", 4}, {"failed", 1}, {"ok", 0}, {"usage", 2}}},
+		{"flags", v.Flags}, {"name", v.Name}, {"needsApply", v.NeedsApply}, {"purpose", v.Purpose}}
+	if v.Replaces != nil {
+		schema = append(schema, kv{"replaces", v.Replaces})
+	}
+	schema = append(schema, kv{"source", sourceDir()}, kv{"steps", v.Steps})
+	if v.Touches != nil {
+		schema = append(schema, kv{"touches", v.Touches})
+	}
+	return append(schema, kv{"usage", v.Usage})
 }
 
 func familyOf(name string) Family {

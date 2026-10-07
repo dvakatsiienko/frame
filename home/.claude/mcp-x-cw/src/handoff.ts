@@ -1,29 +1,32 @@
 /* ── handoff ───────────────────────────────────────────────────────────────
- * Every tool here is an adapter over the `handoff-store` cli in frame. The
- * store's rules — filename grammar, the audience gate, ingest-deletes, the
- * replace that folds two handoffs into one — live there once, so cc and cw can
- * no longer fork them. Nothing in this file decides anything about the store;
- * it shapes arguments, forwards the cli's own words, and adds the cw-facing
- * instruction around them.
+ * Every tool here is an adapter over `x handoff`, the fleet cli's door to the
+ * store. The store's rules — filename grammar, the audience gate, ingest-deletes,
+ * the replace that folds two handoffs into one — live in x once, so cc and cw can
+ * no longer fork them. Nothing in this file decides anything about the store; it
+ * shapes arguments, reads x's json envelope, phrases it for cw, and adds the
+ * cw-facing instruction around it.
  */
 
 /* Core */
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import {
     CLAUDE_HOME,
-    FRAME,
     completableString,
     promptMessage,
     readOrNull,
+    sizeLabel,
     text,
 } from './shared.js';
 
-const CLI = join(FRAME, 'script', 'skill-handoff-store.ts');
+// the shim of the frame tree this module sits in (src/ and dist/ are both four levels down); it
+// runs the go binary of the tree above the cwd, else this one's, and rebuilds it when stale
+const X = fileURLToPath(new URL('../../../../x/bin/x', import.meta.url));
 const SPEC_PATH = join(CLAUDE_HOME, 'plugin-x', 'CST-SPEC.md');
 
 /** Which agent this server reads for. The x-cw server is the desktop door. */
@@ -84,7 +87,8 @@ export function registerHandoffTools(server: McpServer) {
             title: 'Save handoff (CST)',
         },
         async ({ cst, slug, shared, audience, author, lane }) => {
-            const written = cli(
+            const written = x(
+                writeShape,
                 [
                     'write',
                     '--audience',
@@ -99,10 +103,10 @@ export function registerHandoffTools(server: McpServer) {
                 ],
                 cst,
             );
-            if (!written.ok) return text(written.out);
+            if (!written.ok) return text(written.said);
 
             return text(
-                `${specWarning()}${written.out}\nTell the user in one line: handoff written; pull it with /handoff-ingest in a new cw thread or /x:handoff-ingest in cc. It is deleted on ingest${shared ? ' (shared: kept for multiple pullers)' : ''}.`,
+                `${specWarning()}${writeText(written.data)}\nTell the user in one line: handoff written; pull it with /handoff-ingest in a new cw thread or /x:handoff-ingest in cc. It is deleted on ingest${shared ? ' (shared: kept for multiple pullers)' : ''}.`,
             );
         },
     );
@@ -139,7 +143,8 @@ export function registerHandoffTools(server: McpServer) {
             title: 'Supersede handoff (CST)',
         },
         async ({ cst, slug, shared, audience, author, lane }) => {
-            const written = cli(
+            const written = x(
+                writeShape,
                 [
                     'write',
                     '--audience',
@@ -156,10 +161,10 @@ export function registerHandoffTools(server: McpServer) {
                 ],
                 cst,
             );
-            if (!written.ok) return text(written.out);
+            if (!written.ok) return text(written.said);
 
             return text(
-                `${specWarning()}${written.out}\nTell the user in one line: handoff replaced, one live CST again; pull it with /handoff-ingest in a new cw thread or /x:handoff-ingest in cc.`,
+                `${specWarning()}${writeText(written.data)}\nTell the user in one line: handoff replaced, one live CST again; pull it with /handoff-ingest in a new cw thread or /x:handoff-ingest in cc.`,
             );
         },
     );
@@ -175,7 +180,7 @@ export function registerHandoffTools(server: McpServer) {
             inputSchema: {},
             title: 'List pending handoffs',
         },
-        async () => forward(cli(['list', '--for', READER])),
+        async () => say(x(listShape, ['list', '--for', READER]), listText),
     );
 
     server.registerTool(
@@ -192,7 +197,8 @@ export function registerHandoffTools(server: McpServer) {
             },
             title: 'Peek at a handoff (META only)',
         },
-        async ({ slug }) => forward(cli(['peek', ...(slug ? [slug] : [])])),
+        async ({ slug }) =>
+            say(x(peekShape, ['peek', ...(slug ? [slug] : [])]), peekText),
     );
 
     server.registerTool(
@@ -210,8 +216,14 @@ export function registerHandoffTools(server: McpServer) {
             title: 'Ingest handoff (CST)',
         },
         async ({ topic }) =>
-            forward(
-                cli(['ingest', ...(topic ? [topic] : []), '--for', READER]),
+            say(
+                x(ingestShape, [
+                    'ingest',
+                    ...(topic ? [topic] : []),
+                    '--for',
+                    READER,
+                ]),
+                ingestText,
             ),
     );
 
@@ -223,7 +235,7 @@ export function registerHandoffTools(server: McpServer) {
             inputSchema: {},
             title: 'Delete all handoffs',
         },
-        async () => forward(cli(['delete', '--all'])),
+        async () => say(x(deleteShape, ['delete', '--all']), deleteText),
     );
 
     server.registerTool(
@@ -242,7 +254,7 @@ export function registerHandoffTools(server: McpServer) {
             },
             title: 'Delete one handoff',
         },
-        async ({ slug }) => forward(cli(['delete', slug])),
+        async ({ slug }) => say(x(deleteShape, ['delete', slug]), deleteText),
     );
 
     server.registerPrompt(
@@ -282,37 +294,135 @@ export function registerHandoffTools(server: McpServer) {
 }
 
 /* Helpers */
-type CliResult = { ok: boolean; out: string };
+
+// the data half of x's envelope, one shape per verb — `x schema handoff` is the contract
+const rowShape = z.object({
+    age: z.string(),
+    audience: z.string(),
+    author: z.string(),
+    bytes: z.number(),
+    lane: z.string(),
+    runId: z.string().nullable(),
+    shared: z.boolean(),
+    slug: z.string(),
+    stale: z.boolean(),
+});
+const listShape = z.object({
+    entries: z.array(rowShape),
+    others: z.array(rowShape),
+    root: z.string(),
+});
+const peekShape = z.object({
+    age: z.string(),
+    bytes: z.number(),
+    meta: z.string().nullable(),
+    name: z.string(),
+});
+const ingestShape = z.object({
+    body: z.string(),
+    kept: z.boolean(),
+    name: z.string(),
+});
+const writeShape = z.object({
+    path: z.string(),
+    replaced: z.string().nullable(),
+});
+const deleteShape = z.object({
+    deleted: z.array(z.object({ name: z.string(), slug: z.string() })),
+});
+const failureShape = z.object({ error: z.string() });
 
 /**
  * `input` is always passed, even empty: without it the child would inherit this
- * server's stdin, which is the MCP transport itself.
+ * server's stdin, which is the MCP transport itself. A refusal still prints its
+ * envelope on stdout, so the error x phrased is what cw reads.
  */
-function cli(args: string[], input = ''): CliResult {
+function x<Shape extends z.ZodType>(
+    shape: Shape,
+    args: string[],
+    input = '',
+): XResult<z.output<Shape>> {
+    let stdout: string;
     try {
-        return {
-            ok: true,
-            out: execFileSync(process.execPath, [CLI, ...args], {
-                encoding: 'utf8',
-                input,
-                maxBuffer: 64 * 1024 * 1024,
-            }).trim(),
-        };
+        stdout = execFileSync(X, ['handoff', ...args, '--json'], {
+            encoding: 'utf8',
+            input,
+            maxBuffer: 64 * 1024 * 1024,
+        });
     } catch (error) {
-        const failed = error as { stderr?: string; stdout?: string };
-        const said = `${failed.stdout ?? ''}${failed.stderr ?? ''}`.trim();
+        const failed = failureShape.safeParse(
+            jsonOrNull((error as { stdout?: string }).stdout),
+        );
         return {
             ok: false,
-            out:
-                said ||
-                `The handoff-store cli could not be run at ${CLI}. Tell the user the path needs fixing; do not fall back to touching the store by hand.`,
+            said: failed.success
+                ? failed.data.error
+                : `x could not be run at ${X}. Tell the user the path needs fixing; do not fall back to touching the store by hand.`,
         };
+    }
+    const envelope = z
+        .object({ data: z.unknown() })
+        .safeParse(jsonOrNull(stdout));
+    const data = shape.safeParse(envelope.data?.data);
+    return data.success
+        ? { data: data.data, ok: true }
+        : {
+              ok: false,
+              said: `x answered in a shape this server does not read: ${data.error.message}`,
+          };
+}
+
+function jsonOrNull(raw: string | undefined): unknown {
+    try {
+        return JSON.parse(raw ?? '');
+    } catch {
+        return null;
     }
 }
 
-/** The cli already phrases both outcomes for a reader. Do not re-word them. */
-function forward(result: CliResult) {
-    return text(result.out);
+function say<Data>(result: XResult<Data>, phrase: (data: Data) => string) {
+    return text(result.ok ? phrase(result.data) : result.said);
+}
+
+function listText({ entries, others, root }: z.infer<typeof listShape>) {
+    if (entries.length === 0 && others.length === 0)
+        return 'handoff store is clean — nothing pending.';
+
+    const lines = [
+        `${entries.length} pending for ${READER} · newest first · ${root}`,
+        ...entries.map(
+            (row) =>
+                `  ${row.slug}${row.shared ? ' (shared)' : ''} — for ${row.audience} · ${row.lane} lane · by ${row.author} · ${row.age} · ${sizeLabel(row.bytes)} · run ${row.runId ?? 'unknown'}${row.stale ? '  ⚠ stale' : ''}`,
+        ),
+    ];
+    if (others.length > 0)
+        lines.push(
+            '',
+            `${others.length} addressed to another agent — do not pull, do not delete:`,
+            ...others.map(
+                (row) =>
+                    `  · ${row.slug} → for ${row.audience} · by ${row.author}`,
+            ),
+        );
+    return lines.join('\n');
+}
+
+function peekText({ age, bytes, meta, name }: z.infer<typeof peekShape>) {
+    return `META of ${name} (${age} old, ${sizeLabel(bytes)}). nothing ingested, file untouched.\n\n${meta ?? 'no META block in this CST — unusual, but ingest would still take it whole.'}`;
+}
+
+function ingestText({ body, kept, name }: z.infer<typeof ingestShape>) {
+    return `CST from ${name} — ${kept ? 'shared, file kept for other pullers' : 'file deleted on ingest'}.\n\n${body}`;
+}
+
+function writeText({ path, replaced }: z.infer<typeof writeShape>) {
+    return `${replaced === null ? '' : `replaced ${replaced}\n`}written ${path}`;
+}
+
+function deleteText({ deleted }: z.infer<typeof deleteShape>) {
+    return deleted.length === 0
+        ? 'handoff store already empty.'
+        : `deleted ${deleted.length}: ${deleted.map((one) => one.slug).join(', ')}`;
 }
 
 /**
@@ -348,3 +458,6 @@ function specWarning() {
         ? ''
         : `!! CST-SPEC.md is missing at ${SPEC_PATH} — this CST was composed without the authoritative spec. Say so to the user.\n\n`;
 }
+
+/* Types */
+type XResult<Data> = { data: Data; ok: true } | { ok: false; said: string };

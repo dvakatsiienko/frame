@@ -16,15 +16,13 @@ import { useCachedPromise, usePromise } from '@raycast/utils';
 import {
     type Handoff,
     deleteHandoff,
-    handoffDir,
     readHandoffBody,
     readHandoffList,
-    toAge,
     toCclioBootLine,
     toIngestLine,
-} from './lib/handoffs';
+} from './lib/handoff';
 
-const Handoffs = () => {
+const HandoffShelf = () => {
     const { data, isLoading, revalidate } = useCachedPromise(
         readHandoffList,
         [],
@@ -69,7 +67,7 @@ const Handoffs = () => {
 
     const emptyViewJSX = (
         <List.EmptyView
-            description={`nothing in ${handoffDir} — a /handoff is what writes one.`}
+            description='nothing pending — a /handoff is what writes one.'
             icon={Icon.Tray}
             title='the shelf is empty'
         />
@@ -177,8 +175,8 @@ const HandoffShelfActions = (props: HandoffShelfActionsProps) => {
     );
 };
 
-// The shelf is gitignored and the store keeps no trash, so this is the extension's one
-// irreversible verb and the confirm is its only undo. It goes through the store cli rather
+// The shelf is gitignored, so a deleted CST survives only in the macos trash, where x moves it;
+// the confirm is the undo that does not need finder. It goes through `x handoff delete` rather
 // than unlinking the path it already holds: a non-zero exit is what proves the file is gone,
 // and a frontend that deletes behind the store's back is a second set of rules to keep true.
 const DeleteHandoffAction = (props: DeleteHandoffActionProps) => {
@@ -222,7 +220,7 @@ const DeleteHandoffAction = (props: DeleteHandoffActionProps) => {
     );
 };
 
-export default Handoffs;
+export default HandoffShelf;
 
 /* Helpers */
 // The command icon is this same scroll rendered to a png — the emoji is the shelf's mark on
@@ -299,18 +297,13 @@ const toAccessoryList = (handoff: Handoff): List.Item.Accessory[] => {
                   tooltip: 'lane',
               },
           ]
-        : [
-              {
-                  tag: { color: Color.SecondaryText, value: 'legacy' },
-                  tooltip: 'legacy filename — no lane, no author',
-              },
-          ];
+        : [];
 
     return [
         ...authorAccessory,
         ...audienceAccessory,
         ...laneAccessory,
-        { text: toAge(handoff.modifiedAt), tooltip: 'age' },
+        { text: handoff.age, tooltip: 'age' },
     ];
 };
 

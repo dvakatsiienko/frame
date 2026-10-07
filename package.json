@@ -74,7 +74,6 @@
         "schedule:restart": "node ./schedule/restart.ts",
         "skill:cclio-mode-snapshot": "node ./script/skill-cclio-mode-snapshot.ts",
         "skill:evergreen-apps": "node ./script/skill-evergreen-apps.ts",
-        "skill:handoff-store": "node ./script/skill-handoff-store.ts",
         "skill:memory-sync-mirror": "node ./script/skill-memory-sync-mirror.ts",
         "sline:build": "cd ./home/.claude/sline && go build -trimpath -buildvcs=false -ldflags \"-s -w\" -o bin .",
         "sline:test": "cd ./home/.claude/sline && go test ./...",

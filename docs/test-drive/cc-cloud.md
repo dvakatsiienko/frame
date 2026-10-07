@@ -32,7 +32,7 @@ Ticket: none
 6. **post-deploy check** — a routine after a vercel deploy (`/schedule`, api trigger), checked through browserbase
 7. **a frame job** — proves the git-crypt read: a fresh clone commits normally around `gmail/blocklist.json`
 8. **plugin `x` in the VM** — the environment's setup script sparse-clones frame and installs `x` (probe 2: reachable + installs; the next-session load is unproven)
-- **the cli door from cw and project threads** (dima, 2026-10-05) — the same op three ways: a cloud thread → remote-devices Desktop Commander → `x handoffs list`, the `x-cw` mcp tool, a «Work locally» thread running `x`; measure tool calls, seconds, 5h window %. re-measures `x:notes`' «~1 % per op» (taken on pre-merge cw); `x-cw` keeps a verb only where it wins
+- **the cli door from cw and project threads** (dima, 2026-10-05) — the same op three ways: a cloud thread → remote-devices Desktop Commander → `x handoff list`, the `x-cw` mcp tool, a «Work locally» thread running `x`; measure tool calls, seconds, 5h window %. re-measures `x:notes`' «~1 % per op» (taken on pre-merge cw); `x-cw` keeps a verb only where it wins
 
 ## rounds
 

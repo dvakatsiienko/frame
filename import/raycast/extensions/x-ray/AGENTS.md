@@ -7,7 +7,7 @@ shelf, the schedulers, monobank rates. source lives here; the command runs out o
 
 - `linear-query-tickets` — full-text search over linear issues: titles, descriptions, comments
 - `linear-query-projects` — every project with its progress, team, priority and lead
-- `handoffs` — the CST shelf: read one, paste an ingest command, open a transcript in cursor
+- `handoff` — the CST shelf: read one, paste an ingest command, open a transcript in cursor
 - `schedule` — what our scheduled jobs do, when they fire next, how the last run ended
 - `currency` — monobank buy/sell for the hryvnia, with an amount argument to convert
 - `gmail-block-sender` — appends a sender, domain or display name to `gmail/blocklist.json` and runs

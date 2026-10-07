@@ -1,7 +1,7 @@
 # x — words
 
 - **verb** — one operation `x` runs, named `<family> <name>` (`lane commit`); the unit an agent calls
-- **family** — a group of verbs about one subject (`lane`, `handoffs`); owns a colour in the human view
+- **family** — a group of verbs about one subject (`lane`, `handoff`); owns a colour in the human view
 - **registry** — the one list of verbs and families in `x/go/registry.json`; dispatch, schema, help and completion all read it
 - **envelope** — the json every verb prints for a machine: `{verb, ok, status, data}`
 - **resident line** — the one line every session holds about x: it exists, `x` lists families, `x schema <family>` the verbs; a per-verb index was cut (2026-10-07)
@@ -15,4 +15,6 @@
 - **trace** — the one json line x writes when a call exits: the verb, flag names (never values), the caller, duration, exit and error kind; `x stats` reads them
 - **caller** — who ran a verb, one fixed value per trace line, read from the env: `hook` (`GIT_EXEC_PATH` from git, `CLAUDE_PROJECT_DIR` from a cc hook), `cc` (`CLAUDECODE`), `cw` (Cowork's Desktop Commander passes on a `CLAUDE_PLUGIN_ROOT` under `local-agent-mode-sessions/`), `ssh` (`SSH_CONNECTION`), `dima` (a tty), `other`
 - **error kind** — why a traced call failed: `usage` (exit 2), `refused` (x's own check stopped before acting), `external` (a tool ran and failed), `bug` (a panic or an unexpected error)
+- **old door** — a script or file a verb took over; its registry entry names it under `replaces`, and `replaces_test.go` stays red while it exists or anything tracked still names it
+- **touches** — what a verb reads or writes outside the repo (a store dir, the trash), named in its registry entry so `x schema` shows a fixer where the door leads
 - **raw door** — a family's traced passthrough to the tool underneath (`x linear api`), the fallback when no verb fits; what it carries ranks the next verbs

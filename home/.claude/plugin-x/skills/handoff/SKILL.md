@@ -6,24 +6,19 @@ description: Load on /handoff with any argument shape — focus, spawn, <session
 
 # Handoff (sender)
 
-**lane** — `cw`: `x-cw__handoff_save` (+ `_supersede`, `_list`, `_peek`, `_delete`) · `cc`: the
-`handoff-store` cli, below. Both doors run the same rules; neither implements them.
+**lane** — `cw`: `x-cw__handoff_save` (+ `_supersede`, `_list`, `_peek`, `_delete`) · `cc`:
+`x handoff`, below. Both doors run the same rules — the `x-cw` tools shell out to `x handoff`.
 
 Produce a CST per [CST-SPEC.md](../../CST-SPEC.md) — read it first; it defines sections,
 calibration, and the store's semantics. This skill adds the Claude Code sender mechanics.
 Counterpart: `handoff-ingest`.
 
-## The store cli
+## The store door — `x handoff`
 
-```bash
-node ~/frame/script/skill-handoff-store.ts list --for <audience>
-node ~/frame/script/skill-handoff-store.ts peek <slug>
-node ~/frame/script/skill-handoff-store.ts write --audience <a> --slug <s> --lane <l> --author <who> [--shared] [--replaces <slug>]
-node ~/frame/script/skill-handoff-store.ts delete <slug> | --all
-```
-
-`write` takes the CST on stdin — heredoc it. The cli owns the filename, the permissions, and the
-timestamp; never build a path by hand. `--help` prints the rest.
+`list`, `peek`, `write`, `delete`; `x handoff <verb> --help` prints the flags, the one place they
+live. `write` takes the CST on stdin — heredoc it. x owns the filename, the permissions and the
+timestamp; never build a path by hand. Each verb answers in one json envelope: the written path
+is `data.path`, a refusal is `error` plus the `next` command.
 
 `<audience>` = who the CST is FOR: nobody in particular → `any`; a specific agent → its token
 (`cclio` for a coordinator session, `ccli` for a plain one, `cw`). `--shared` when
@@ -72,7 +67,7 @@ Offer with a 💡 tip, specific and occasional, never a running commentary.
   rather than letting both sides work blind.
 
 📌 The store is shared: CSTs flow `cc`↔`cw` through one directory, served to `cw` by the `x-cw`
-mcp server, which shells out to the same cli this skill calls.
+mcp server, which shells out to the same `x handoff` this skill calls.
 
 ## DELIVERY FAILURE RULE (MANDATORY — triggers A and D)
 
@@ -92,7 +87,7 @@ it was. Bounce → the rule above.
 Sibling check, compose, then write:
 
 ```bash
-node ~/frame/script/skill-handoff-store.ts write --audience <a> --slug <topic> --lane <l> --author <this session's token> <<'CST'
+x handoff write --audience <a> --slug <topic> --lane <l> --author <this session's token> --json <<'CST'
 <the composed CST>
 CST
 ```
@@ -124,7 +119,7 @@ applies in full. One line: spawned `<name>`; manage via `claude agents`.
    expect the runtime to demand the ref on a first bare-name send (the error carries it —
    resend). Unresolvable → fall back to Trigger B, one line (peer unreachable, file written).
 2. Produce the CST, `write` it to the store — **file is the default transport**; inline only if
-   explicitly asked. The cli prints the path; use that path verbatim in step 3.
+   explicitly asked. The envelope's `data.path` is the path; use it verbatim in step 3.
 3. `SendMessage` a short notification: path + ingest contract inline (the receiver may never
    have activated these skills):
 
@@ -147,7 +142,7 @@ No confirmation dance — a deliberately destructive verb on disposable files. N
 
 ## Trigger F — `/handoff list`
 
-Read-only, nothing consumed: `list --for <this session's audience>`. Report the cli's rows as
+Read-only, nothing consumed: `list --for <this session's audience>`. Report x's rows as
 they come — slug, audience, age, size, run id — plus the ones it separates out as another
 agent's. A row flagged older than 7 days is information for Dima, not a cue to delete anything.
 

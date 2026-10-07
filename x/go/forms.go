@@ -126,7 +126,7 @@ func pick(family, title string, items []pickable) (string, error) {
 	}
 	field := huh.NewSelect[string]().Title(title).Options(options...).Value(&chosen)
 	if err := runForm(formFor(family, huh.NewGroup(field))); err != nil {
-		return "", usageFail("nothing was picked", "x handoffs list")
+		return "", usageFail("nothing was picked", "x handoff list")
 	}
 	return chosen, nil
 }

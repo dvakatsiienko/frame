@@ -128,6 +128,23 @@ func (r *Run) step(name, doing string, work func() (string, error)) error {
 	return done.err
 }
 
+// Wait spins in the family colour while work runs, then leaves no row: a wait before a picker,
+// with no step to name and nothing to keep on screen
+func (r *Run) Wait(doing string, work func()) {
+	if !r.human || !r.interactive {
+		work()
+		return
+	}
+	accent := lipgloss.NewStyle().Foreground(ui.familyColor(r.verb.Family()))
+	model := stepModel{work: func() (string, error) { work(); return "", nil }, started: time.Now(),
+		spin: spinner.New(spinner.WithSpinner(spinner.MiniDot), spinner.WithStyle(accent))}
+	model.running = func(mark string, _ time.Duration) string {
+		return strings.Repeat(" ", inset) + mark + " " + ui.dim.Render(doing)
+	}
+	model.finish = func(string, error, time.Duration) string { return "" }
+	_, _ = tea.NewProgram(model, tea.WithInput(nil), tea.WithOutput(os.Stdout)).Run()
+}
+
 func (r *Run) stepLine(mark, name, detail, took string) string {
 	left := mark + " " + name + strings.Repeat(" ", max(nameCell-lipgloss.Width(name), 1)) + detail
 	room := r.board.inner() - lipgloss.Width(left) - lipgloss.Width(took)

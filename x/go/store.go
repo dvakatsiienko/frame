@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-// the handoff store's read side, the same rules as script/lib/handoff-store.ts (its writer and the
-// x-cw door). both read the names in script/lib/handoff-names.json, so the grammar cannot drift apart
+// the handoff store: a flat dir of CSTs, named by one grammar (script/lib/handoff-names.json holds its
+// cases). nothing here deletes by age — a stale CST is dima's to see and decide about
 
 var audiences = []string{"any", "ccli", "cclio", "cw"}
 
@@ -173,11 +173,11 @@ func pickEntry(slug string, entries []stored) (stored, error) {
 	case len(matches) == 1:
 		return matches[0], nil
 	case len(entries) == 0:
-		return stored{}, usageFail("handoff store is clean — nothing pending.", "x handoffs list")
+		return stored{}, usageFail("handoff store is clean — nothing pending.", "x handoff list")
 	case len(matches) == 0:
-		return stored{}, usageFail(fmt.Sprintf("no pending handoff matches %q. pending:\n%s", slug, describe(entries)), "x handoffs list")
+		return stored{}, usageFail(fmt.Sprintf("no pending handoff matches %q. pending:\n%s", slug, describe(entries)), "x handoff list")
 	}
-	return stored{}, usageFail("several pending handoffs match — pick one with a slug that is unique:\n"+describe(matches), "x handoffs list")
+	return stored{}, usageFail("several pending handoffs match — pick one with a slug that is unique:\n"+describe(matches), "x handoff list")
 }
 
 func describe(entries []stored) string {
@@ -193,9 +193,10 @@ func describe(entries []stored) string {
 var (
 	metaHeading = regexp.MustCompile(`(?i)^#\s+META\b`)
 	topHeading  = regexp.MustCompile(`^#\s`)
-	// `run id: **x**` today, `**Run marker:** `+"`x`"+` in older CSTs; the value starts on a non-space,
-	// so `**run marker** — run id: **x**` reads x, never «— run id:»
-	runIDPattern = regexp.MustCompile("(?i)run\\s*(?:id|marker)\\s*:?\\**\\s*(?:\\*\\*|`)([^*`\\s][^*`\\n]*)(?:\\*\\*|`)")
+	// the label is plain, bold or backticked in the CSTs out there; the value is whatever reads as a run
+	// id after it (`<surface>·<date>·<slug>`, any ·-joined words), so «none» or prose is no run id at all
+	runIDLabel = regexp.MustCompile(`(?i)run\s*(?:id|marker)`)
+	runIDValue = regexp.MustCompile(`[\p{L}\p{N}_-]+(?:·[\p{L}\p{N}_-]+)+`)
 )
 
 func metaBlock(cst string) *string {
@@ -216,12 +217,16 @@ func parseRunID(meta *string) *string {
 	if meta == nil {
 		return nil
 	}
-	match := runIDPattern.FindStringSubmatch(*meta)
-	if match == nil {
-		return nil
+	for line := range strings.SplitSeq(*meta, "\n") {
+		label := runIDLabel.FindStringIndex(line)
+		if label == nil {
+			continue
+		}
+		if id := runIDValue.FindString(line[label[1]:]); id != "" {
+			return &id
+		}
 	}
-	id := strings.TrimSpace(match[1])
-	return &id
+	return nil
 }
 
 func readMeta(path string) *string {
@@ -230,6 +235,33 @@ func readMeta(path string) *string {
 		return nil
 	}
 	return metaBlock(string(body))
+}
+
+var notSlug = regexp.MustCompile(`[^a-z0-9]+`)
+
+// a field is kebab-cased so it can never carry the `--` that cuts fields, nor smuggle in a -shared suffix
+func sanitize(field string) string {
+	kebab := strings.Trim(notSlug.ReplaceAllString(strings.ToLower(field), "-"), "-")
+	return cmp.Or(strings.TrimSuffix(kebab, "-shared"), "handoff")
+}
+
+func buildName(n name) string {
+	stem := strings.Join([]string{n.Audience, sanitize(cmp.Or(n.Lane, "any")), sanitize(n.Slug),
+		"by-" + sanitize(cmp.Or(n.Author, "any")), n.TS}, "--")
+	if n.Shared {
+		stem += "-shared"
+	}
+	return stem + ".md"
+}
+
+func utcStamp(at time.Time) string { return at.UTC().Format("20060102T150405Z") }
+
+// a file another thread already pulled is gone, which is all a removal wanted
+func discardIfThere(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil
+	}
+	return discard(path)
 }
 
 // a pulled CST goes to the macos trash, so it stays recoverable; a test run never fills the trash

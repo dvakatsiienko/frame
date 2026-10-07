@@ -9,7 +9,7 @@
 // the shape a human actually sees.
 //
 // No corner mask. The extension's image-sourced tiles (linear, currency, the extension icon)
-// are 22 %-radius rounded squares filling the canvas, but its two emoji tiles — handoffs and
+// are 22 %-radius rounded squares filling the canvas, but its two emoji tiles — handoff and
 // schedule — are bare glyphs on transparency, and a glyph scaled into a 424 px box never
 // reaches the corners a 112 px radius would cut. Measured on ⬛ 🔲 🟦 🏁 📜 🚫: masked and
 // unmasked renders are byte-identical.

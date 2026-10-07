@@ -15,7 +15,7 @@ schedule/jobs/x-speak/bin
 
 # The shelf holds what the agents produce, and most of it is versioned. Handoffs
 # are the exception: CSTs are transient by design (deleted on ingest; nothing
-# auto-deletes — `handoff-store list` age-flags strays), they are chmod 600, and
+# auto-deletes — `x handoff list` age-flags strays), they are chmod 600, and
 # they carry raw conversation context. Tracking a
 # file built to delete itself is churn; tracking one built to hold session
 # contents is worse.

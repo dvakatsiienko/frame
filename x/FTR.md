@@ -28,7 +28,7 @@
   - then the error lists the valid verbs or flags of that family
 - ✅ `x schema` prints a verb's schema — the same entry that dispatches it
 - ✅ a board taller than the terminal opens in a pager
-  - given `x knowledge read`, `x handoffs peek`, `x handoffs ingest` or `x schema` drawing more rows than the terminal holds
+  - given `x knowledge read`, `x handoff peek`, `x handoff ingest` or `x schema` drawing more rows than the terminal holds
   - when dima runs it in a terminal
   - then the board scrolls in a pager with its frame fixed, the footer shows the scroll and the keys, and q leaves; a pipe or a board that fits prints as before
 - ✅ zsh completes every verb, flag and value
@@ -36,6 +36,14 @@
   - when dima presses Tab after `x`, a family, a verb or a flag
   - then zsh offers the families, the verbs, the flags, and each value from where it lives: pending slugs, shelf names, probe names, models, audiences, `.md` briefs, `.json` settings, dirs for `--repo`
   - decision: the completers are keyed by the registry's arg and flag names, so a new verb that reuses a name completes with no edit
+- ✅ a bare family prints its help
+  - given any family, a hidden one (`trace`) included
+  - when `x <family>` runs with no verb
+  - then it prints that family's verbs, the same as `x <family> --help`; a hidden family still stays out of the overview and completion
+- ✅ a ported verb's old door stays dead
+  - given a registry entry whose `replaces:` names a file or a script name
+  - when `go test` runs
+  - then `replaces_test.go` is red while that file exists or any tracked file outside history names its basename; `x schema <verb>` prints `replaces`, `touches` and the source dir
 - ✅ `x schema` at two detail levels
   - given a verb or a family name
   - when `x schema` runs with the short level
@@ -72,24 +80,47 @@
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ `x lane unlock` decrypts a worktree's git-crypt files
 
-## handoffs
+## handoff — the CST store
 
-- ✅ `x handoffs` lists, peeks and ingests CSTs from the shared store
+- ✅ `x handoff` lists, peeks and ingests CSTs from the shared store
   - given a pending handoff in the store
-  - when `x handoffs list` runs
-  - then it lists the same handoffs `x-cw`'s tools see — one store, two doors
-- ✅ `x handoffs list` paints in under 20 ms
+  - when `x handoff list` runs
+  - then it lists the same handoffs `x-cw`'s tools see — they shell out to it, one store, one door
+- ✅ an ingest names its reader
+  - given a pending CST
+  - when `x handoff ingest` runs without `--for`, a slug or not
+  - then it is exit 2, the file stays, and `next` names the `--for` form; with `--for`, a slug forces another agent's file, a bare pull never takes one
+- ✅ `x handoff write` saves a CST
+  - makes: `~/.claude/shelf/handoffs/<for>--<lane>--<topic>--by-<author>--<utc-ts>[-shared].md`, mode 600
+  - given a CST on stdin and `--slug`
+  - when `x handoff write --audience <a> --slug <s> --lane <l> --author <who>` runs
+  - then one file lands under that name; an empty stdin or no slug is exit 2 and writes nothing
+- ✅ `x handoff write --replaces` folds a thread into one file
+  - given a pending handoff of the same thread
+  - when `write --replaces <slug>` runs
+  - then the sibling is gone, the new file stands alone and inherits its `-shared`; a slug matching nothing is exit 2 and writes nothing
+- ✅ `x handoff delete` removes one CST or all of them
+  - given pending handoffs, shared ones among them
+  - when `x handoff delete <slug>` or `x handoff delete --all` runs
+  - then that one file, or every file, goes to the macos trash; a bare `delete` is exit 2 and touches nothing
+  - decision: no `--apply` — the store is disposable by contract (ADR-0002), and the envelope names what went
+- ✅ every handoff caller goes through `x handoff`
+  - given the two plugin-x handoff skills, `CST-SPEC.md`, the `x-cw` handoff tools and the x-ray raycast command
+  - when they list, peek, ingest, write or delete
+  - then each one calls `x handoff … --json`; the node store script is gone
+  - decision: the raycast command is renamed `handoff` with the rest — it carries no hotkey, so nothing was orphaned (dima's screenshot, via cclio, 2026-10-07)
+- ✅ `x handoff list` paints in under 20 ms
   - given the live store
-  - when dima runs `x handoffs list` in a terminal
+  - when dima runs `x handoff list` in a terminal
   - then the board is drawn in under 20 ms (median of 40), node never starts
-  - decision: go reads the store itself; the node bridge cost 60 of 72 ms. both readers test `script/lib/handoff-names.json` (ADR 0002, amended)
+  - decision: go reads the store itself; the node bridge cost 60 of 72 ms. `store_test.go` reads every name in `script/lib/handoff-names.json` (ADR 0002, amended)
 - ✅ a CST's run id reads its value
-  - given a META line `**run marker** — run id: **cc·x**`
-  - when `x handoffs list` shows it
-  - then the run id column says `cc·x`
+  - given a META line in any shape out there — `run id: x`, `run id: **x**`, `**run marker** — run id: **cc·x**`, `**run marker** — \`x\``
+  - when `x handoff list` shows it
+  - then the run id column says the id; «none» or prose after the label reads as no run id
 - 🧭 a cloud thread reaches handoffs through the mac
   - given a cloud project thread
-  - when it runs `~/.local/bin/x handoffs list` through the remote-devices Desktop Commander
+  - when it runs `~/.local/bin/x handoff list` through the remote-devices Desktop Commander
   - then it gets the same envelope as on the mac
 
 ## brief

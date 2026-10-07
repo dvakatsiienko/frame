@@ -1,6 +1,6 @@
 // renders an emoji into an x-ray command tile — 512×512 png, clipped to the 22% round-rect
 // every icon in the extension wears, transparent outside the glyph.
-//   pnpm x-ray:icon-generate 📜 handoffs     → import/raycast/extensions/x-ray/assets/handoffs.png
+//   pnpm x-ray:icon-generate 📜 handoff      → import/raycast/extensions/x-ray/assets/handoff.png
 //
 // the pipeline was run four times by hand on 2026-09-18 and thrown away each time, so the
 // icons shipped and the recipe did not. the render itself needs CoreText, which node cannot

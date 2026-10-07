@@ -5,8 +5,8 @@ description: Load on /handoff-ingest or "grab/pull/ingest handoff" — session i
 
 # Handoff-ingest (requester)
 
-**lane** — `cw`: `x-cw__handoff_ingest` (+ `_list`, `_peek` to look first) · `cc`: the
-`handoff-store` cli, below.
+**lane** — `cw`: `x-cw__handoff_ingest` (+ `_list`, `_peek` to look first) · `cc`:
+`x handoff`, below.
 
 Ingest a CST per [CST-SPEC.md](../../CST-SPEC.md) — read it first; its Ingest section is the
 consumer contract (silent ingest, ≤2-line confirmation, META first-acts before anything else,
@@ -25,13 +25,13 @@ If the user stated what THIS thread is for, that is a TARGET — peer mode passe
 ## FILE MODE
 
 ```bash
-node ~/frame/script/skill-handoff-store.ts ingest [<topic>] --for <this session's audience>
+x handoff ingest [<topic>] --for <this session's audience> --json
 ```
 
-🚫 **never silence an ingest.** it prints the CST once and deletes the file — piping it to `/dev/null` destroys the handoff (measured 2026-09-07: halt8, reconstructed from a peek, tail lost). read the print in full; a peek is not an ingest.
+🚫 **never silence an ingest.** it prints the CST once — the envelope's `data.body` — and deletes the file; piping it to `/dev/null` destroys the handoff (measured 2026-09-07: halt8, reconstructed from a peek, tail lost). read the print in full; a peek is not an ingest.
 
 `<audience>` is this session's own token — `cclio` for a coordinator session, `ccli` for a plain
-one. The cli does the mechanics and refuses rather than guessing:
+one; an ingest without `--for` is refused. x does the mechanics and refuses rather than guessing:
 
 - it keeps only handoffs for `any` or this token, and names the others without touching them —
   🚨 **a file addressed to another agent is never ingested by a bare pull.** Wrong context in

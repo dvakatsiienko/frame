@@ -209,7 +209,7 @@ func markdown(text string, width int) []string {
 	style.Document.Margin = &zero
 	style.CodeBlock.Margin = &zero
 	// the stock style paints a purple h1 bar and red code on a grey band; T2 keeps its own tokens
-	fg, accent, code := hex(ui.p.fg), hex(ui.familyColor("handoffs")), hex(ui.familyColor("lane"))
+	fg, accent, code := hex(ui.p.fg), hex(ui.familyColor("handoff")), hex(ui.familyColor("lane"))
 	style.Document.Color = &fg
 	style.Heading.Color = &accent
 	for _, heading := range []*ansi.StyleBlock{&style.H1, &style.H2, &style.H3} {

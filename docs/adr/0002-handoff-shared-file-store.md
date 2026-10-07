@@ -20,6 +20,11 @@ multiple pullers). CSTs therefore flow in every direction
 > (`x/go/store.go`), because a node bridge cost 60 of its 72 ms. The writer stays one executable,
 > `script/skill-handoff-store.ts`. The two readers test the same names, `script/lib/handoff-names.json`,
 > so the grammar is still defined once.
+>
+> **Amended 2026-10-07 (FRM-343):** one door again — `x handoff` (list, peek, ingest, write,
+> delete) owns the whole store, and the node store script is gone. The `cc` skills, the `x-cw` mcp
+> server and the raycast command all call it. Its deletes skip `--apply`: the store is disposable
+> by this decision, and every removal goes to the macos trash.
 
 ## Considered Options
 

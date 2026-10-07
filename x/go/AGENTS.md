@@ -17,9 +17,10 @@ the [FRM-284](https://linear.app/x-com/issue/FRM-284) look probe. The probe's nu
   into the binary, so the shim's rebuild picks up an edit to it.
 - `../fixtures/calls.json` is the contract: `x_test.go` runs every call, a pipe call checks the
   envelope, a tty call runs on a pty and checks the human view and the exit code.
-- the handoff store has two readers: `script/lib/handoff-store.ts` (its writer, and the x-cw door)
-  and `store.go`. both test every name in `script/lib/handoff-names.json`; a grammar change edits
-  that file first, and both suites go red until both readers follow.
+- `store.go` is the handoff store's one door (ADR-0002); `store_test.go` reads every name in
+  `script/lib/handoff-names.json`, so a grammar change edits that file first.
+- a verb's `replaces` is checked by `replaces_test.go` through `git grep` of each door's basename;
+  `notCallers` there lists the history paths it skips.
 - every `Fail.Log` line goes to stderr in agent mode — the envelope says «the output is above».
 
 ## bubbletea v2 traps

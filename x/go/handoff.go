@@ -2,12 +2,19 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/charmbracelet/x/term"
 )
 
 type row struct {
@@ -34,10 +41,10 @@ func rowOf(e stored, now time.Time) row {
 	return row{age.label, e.Audience, e.Author, e.size, e.Lane, e.file, parseRunID(readMeta(e.path)), e.Shared, e.Slug, age.stale}
 }
 
-func readerOf(flags Flags) (string, error) {
+func readerOf(r *Run, flags Flags) (string, error) {
 	reader, _ := flags["for"].(string)
 	if reader != "" && !slices.Contains(audiences, reader) {
-		return "", usageFail("unknown audience "+reader+" — any, ccli, cclio, cw", "x handoffs list --help")
+		return "", usageFail("unknown audience "+reader+" — any, ccli, cclio, cw", "x "+r.verb.Name+" --help")
 	}
 	return reader, nil
 }
@@ -56,8 +63,8 @@ func list(reader string) listing {
 	return found
 }
 
-func handoffsList(r *Run, _ []string, flags Flags) (any, error) {
-	reader, err := readerOf(flags)
+func handoffList(r *Run, _ []string, flags Flags) (any, error) {
+	reader, err := readerOf(r, flags)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +81,8 @@ func listBoard(found listing, flags Flags) string {
 	if audience != "" {
 		right = fmt.Sprintf("%d pending for %s", len(found.Entries), audience)
 	}
-	b := frame{width: frameWidth(), titleLeft: titleOf("handoffs list"), titleRight: ui.dim.Render(right),
-		footLeft: ui.dim.Render("x handoffs peek <slug>"), footRight: ui.dim.Render("nothing is deleted by age"), padRows: true}
+	b := frame{width: frameWidth(), titleLeft: titleOf("handoff list"), titleRight: ui.dim.Render(right),
+		footLeft: ui.dim.Render("x handoff peek <slug>"), footRight: ui.dim.Render("nothing is deleted by age"), padRows: true}
 	narrow := isNarrow()
 	widths := []int{16, 8, 8, 12, b.inner() - 44}
 	head := []string{"slug", "for", "by", "age", "lane · run id"}
@@ -97,7 +104,7 @@ func listBoard(found listing, flags Flags) string {
 		if e.Stale {
 			age = ui.er.Render(e.Age + " stale")
 		}
-		cells := []string{ui.verb("handoffs", e.Slug), ui.fg.Render(e.Audience), ui.fg.Render(e.Author), age}
+		cells := []string{ui.verb("handoff", e.Slug), ui.fg.Render(e.Audience), ui.fg.Render(e.Author), age}
 		if !narrow {
 			lane := e.Lane
 			if e.Shared {
@@ -119,7 +126,7 @@ func listBoard(found listing, flags Flags) string {
 	return b.String()
 }
 
-func handoffsPeek(r *Run, args []string, _ Flags) (any, error) {
+func handoffPeek(r *Run, args []string, _ Flags) (any, error) {
 	picked, err := pickEntry(firstArg(args), listStore(storeRoot()))
 	if err != nil {
 		return nil, err
@@ -131,29 +138,31 @@ func handoffsPeek(r *Run, args []string, _ Flags) (any, error) {
 		if meta != nil {
 			shown = *meta
 		}
-		b := frame{width: frameWidth(), titleLeft: titleOf("handoffs peek"),
+		b := frame{width: frameWidth(), titleLeft: titleOf("handoff peek"),
 			titleRight: ui.dim.Render(fmt.Sprintf("%s, %s old, %s", picked.Slug, age, size(int(picked.size)))),
-			footLeft:   ui.dim.Render("take it with") + " " + cmd("x handoffs ingest "+picked.Slug), footRight: ui.dim.Render("the file is untouched"), padRows: true}
+			footLeft:   ui.dim.Render("take it with") + " " + cmd("x handoff ingest "+picked.Slug), footRight: ui.dim.Render("the file is untouched"), padRows: true}
 		b.rows = markdown(shown, b.inner())
 		r.Page(b)
 	}
 	return ordered{{"age", age}, {"bytes", picked.size}, {"meta", meta}, {"name", picked.file}, {"slug", picked.Slug}}, nil
 }
 
-func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
-	reader, err := readerOf(flags)
+func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
+	reader, err := readerOf(r, flags)
 	if err != nil {
 		return nil, err
 	}
-	all := listStore(storeRoot())
-	if len(all) == 0 {
-		return nil, usageFail("handoff store is clean — nothing pending.", "x handoffs list")
-	}
-	mine := all
-	if reader != "" {
-		mine = slices.DeleteFunc(slices.Clone(all), func(e stored) bool { return !readableBy(e.Audience, reader) })
-	}
 	slug := firstArg(args)
+	// a pull that names no reader could take a file another agent waits for, and deletes it
+	if reader == "" {
+		return nil, usageFail("ingest names its reader: --for any, ccli, cclio or cw", "x handoff ingest --for <audience>")
+	}
+	var all []stored
+	r.Wait("reading the store", func() { all = listStore(storeRoot()) })
+	if len(all) == 0 {
+		return nil, usageFail("handoff store is clean — nothing pending.", "x handoff list")
+	}
+	mine := slices.DeleteFunc(slices.Clone(all), func(e stored) bool { return !readableBy(e.Audience, reader) })
 	// naming a slug forces a foreign file: the caller said so out loud
 	candidates := mine
 	if slug != "" {
@@ -162,7 +171,7 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 	if len(candidates) == 0 {
 		others := slices.DeleteFunc(slices.Clone(all), func(e stored) bool { return readableBy(e.Audience, reader) })
 		return nil, usageFail(fmt.Sprintf("nothing pending for %s. %d handoff(s) are addressed to another agent and were left untouched:\n%s",
-			reader, len(others), describe(others)), "x handoffs list")
+			reader, len(others), describe(others)), "x handoff list")
 	}
 	if slug == "" && len(candidates) > 1 && r.interactive {
 		now := time.Now()
@@ -170,7 +179,7 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 		for i, e := range candidates {
 			items[i] = pickable{e.file, fmt.Sprintf("%-14s %s", e.Slug, ui.dim.Render(fmt.Sprintf("for %s, %s lane, by %s, %s old", e.Audience, e.Lane, e.Author, ageOf(e.mtime, now).label)))}
 		}
-		if slug, err = pick("handoffs", "which handoff continues here?", items); err != nil {
+		if slug, err = pick("handoff", "which handoff continues here?", items); err != nil {
 			return nil, err
 		}
 	}
@@ -180,7 +189,7 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 	}
 	body, err := os.ReadFile(picked.path)
 	if err != nil {
-		return nil, &Fail{Msg: picked.file + " vanished before it was read — another thread pulled it", Next: "x handoffs list"}
+		return nil, &Fail{Msg: picked.file + " vanished before it was read — another thread pulled it", Next: "x handoff list"}
 	}
 	// a file that could not be trashed stays for the next puller, and the envelope says so
 	kept := picked.Shared
@@ -195,12 +204,135 @@ func handoffsIngest(r *Run, args []string, flags Flags) (any, error) {
 		if kept {
 			foot = "the file stays in the store"
 		}
-		b := frame{width: frameWidth(), titleLeft: titleOf("handoffs ingest"), titleRight: ui.dim.Render(picked.Slug),
+		b := frame{width: frameWidth(), titleLeft: titleOf("handoff ingest"), titleRight: ui.dim.Render(picked.Slug),
 			footLeft: ui.dim.Render(foot), padRows: true}
 		b.rows = markdown(string(body), b.inner())
 		r.Page(b)
 	}
 	return ordered{{"body", string(body)}, {"kept", kept}, {"name", picked.file}, {"slug", picked.Slug}}, nil
+}
+
+func handoffWrite(r *Run, _ []string, flags Flags) (any, error) {
+	audience := cmp.Or(flagString(flags, "audience"), "any")
+	if !slices.Contains(audiences, audience) {
+		return nil, usageFail("unknown audience "+audience+" — any, ccli, cclio, cw", "x handoff write --help")
+	}
+	if strings.TrimSpace(flagString(flags, "slug")) == "" {
+		return nil, usageFail("write needs --slug <topic>", "x handoff write --help")
+	}
+	body := readStdin()
+	if strings.TrimSpace(body) == "" {
+		return nil, usageFail("write takes the CST on stdin, and stdin was empty", "x handoff write --help")
+	}
+	n := name{Audience: audience, Author: flagString(flags, "author"), Lane: flagString(flags, "lane"),
+		Shared: flags["shared"] == true, Slug: flagString(flags, "slug"), TS: utcStamp(time.Now())}
+	root := storeRoot()
+
+	var replaced *stored
+	if err := r.Step("read", "reading the store", func() (string, error) {
+		replaces := flagString(flags, "replaces")
+		if replaces == "" {
+			return "a new thread", nil
+		}
+		target, err := pickEntry(replaces, listStore(root))
+		if fail, ok := errors.AsType[*Fail](err); ok {
+			return "", usageFail(fail.Msg+"\nnothing was replaced. drop --replaces to write this as a new handoff.", "x handoff list")
+		}
+		replaced = &target
+		n.Shared = n.Shared || target.Shared
+		return "replaces " + target.Slug, nil
+	}); err != nil {
+		return nil, err
+	}
+
+	file := buildName(n)
+	path := filepath.Join(root, file)
+	if err := r.Step("write", "writing "+file, func() (string, error) {
+		if err := os.MkdirAll(root, 0o700); err != nil {
+			return "", &Fail{Msg: err.Error() + " — nothing was written", Next: "x handoff list"}
+		}
+		// remove first, write second: one live CST per thread, so the window this order risks is zero, never two
+		if replaced != nil {
+			if err := discardIfThere(replaced.path); err != nil {
+				return "", &Fail{Msg: err.Error() + " — nothing was written, the old CST stays", Next: "x handoff list"}
+			}
+		}
+		// exclusive: a CST of the same name written this second is another thread's, never truncated
+		out, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+		if errors.Is(err, fs.ErrExist) {
+			return "", &Fail{Msg: file + " is already pending — nothing was written; wait a second or pass --replaces", Next: "x handoff list"}
+		}
+		if err != nil {
+			return "", &Fail{Msg: err.Error(), Next: "x handoff list"}
+		}
+		if _, err := out.WriteString(body); err != nil {
+			return "", &Fail{Msg: errors.Join(err, out.Close()).Error(), Next: "x handoff list"}
+		}
+		if err := out.Close(); err != nil {
+			return "", &Fail{Msg: err.Error(), Next: "x handoff list"}
+		}
+		return file, nil
+	}); err != nil {
+		return nil, err
+	}
+
+	var replacedName any
+	if replaced != nil {
+		replacedName = replaced.file
+	}
+	r.Done("written "+file, "x handoff list")
+	return ordered{{"name", file}, {"path", path}, {"replaced", replacedName}, {"slug", sanitize(n.Slug)}}, nil
+}
+
+// an explicit delete takes -shared files too: the suffix means the file survives a pull, not a delete
+func handoffDelete(r *Run, args []string, flags Flags) (any, error) {
+	all, slug := flags["all"] == true, firstArg(args)
+	if all == (slug != "") {
+		return nil, usageFail("delete takes a slug or --all", "x handoff delete --help")
+	}
+	var doomed []stored
+	if err := r.Step("read", "reading the store", func() (string, error) {
+		doomed = listStore(storeRoot())
+		if all {
+			return fmt.Sprintf("%d pending", len(doomed)), nil
+		}
+		picked, err := pickEntry(slug, doomed)
+		if err != nil {
+			return "", err
+		}
+		doomed = []stored{picked}
+		return picked.Slug, nil
+	}); err != nil {
+		return nil, err
+	}
+
+	deleted, gone := []ordered{}, []string{}
+	err := r.Step("delete", "moving to the trash", func() (string, error) {
+		for _, e := range doomed {
+			if err := discardIfThere(e.path); err != nil {
+				return "", &Fail{Msg: fmt.Sprintf("%s — %d deleted before it: %s", err, len(gone), strings.Join(gone, ", ")), Next: "x handoff list"}
+			}
+			deleted = append(deleted, ordered{{"name", e.file}, {"slug", e.Slug}})
+			gone = append(gone, e.Slug)
+		}
+		return fmt.Sprintf("%d deleted", len(deleted)), nil
+	})
+	r.Done(fmt.Sprintf("%d deleted", len(deleted)), "x handoff list")
+	return ordered{{"deleted", deleted}}, err
+}
+
+func flagString(flags Flags, key string) string {
+	value, _ := flags[key].(string)
+	return value
+}
+
+// a terminal on stdin carries no CST; reading it would wait for a ^D nobody knows to type
+func readStdin() string {
+	if term.IsTerminal(os.Stdin.Fd()) {
+		return ""
+	}
+	body, _ := io.ReadAll(os.Stdin)
+	return string(body)
 }
 
 func pendingSlugs() []string {

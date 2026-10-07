@@ -254,7 +254,7 @@ describe('splitGhosts', () => {
     const rows = [
         { action: 'linear-query-wide', chord: 'hyper+pageup' },
         { action: 'linear-query-tickets (quicklink)', chord: 'hyper+pageup' },
-        { action: 'handoffs', chord: 'hyper+h' },
+        { action: 'handoff', chord: 'hyper+h' },
     ];
 
     it('names the dead command and leaves the live rows alone', () => {
@@ -264,7 +264,7 @@ describe('splitGhosts', () => {
         ]);
         expect(split.live.map((row) => row.action)).toEqual([
             'linear-query-tickets (quicklink)',
-            'handoffs',
+            'handoff',
         ]);
     });
 

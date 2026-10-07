@@ -80,7 +80,7 @@ read `notes.txt`, then run `x lane commit`; a new `x lane tidy` (new) joins.
 EOF
 
 mkdir "${world}/store"
-for file in "${here}"/handoffs/*.md; do
+for file in "${here}"/csts/*.md; do
     name=${file##*/}
     cp "${file}" "${world}/store/${name}"
     stamp=$(sed -E 's/.*--([0-9]{8})T([0-9]{4})[0-9]*Z.*/\1\2/' <<<"${name}")

@@ -6,9 +6,9 @@
             "name": "lane"
         },
         {
-            "example": "x handoffs peek cli-arms",
+            "example": "x handoff peek cli-arms",
             "gist": "the shared CST store, one door for cc and cw",
-            "name": "handoffs"
+            "name": "handoff"
         },
         {
             "example": "x brief check brief.md --repo ~/frame",
@@ -125,9 +125,17 @@
                     "value": "audience"
                 }
             },
-            "name": "handoffs list",
+            "name": "handoff list",
             "needsApply": false,
-            "purpose": "list the pending CSTs in the shared handoff store, newest first, without reading or deleting one"
+            "purpose": "list the pending CSTs in the shared handoff store, newest first, without reading or deleting one",
+            "replaces": [
+                "script/skill-handoff-store.ts",
+                "script/lib/handoff-store.ts",
+                "skill:handoff-store"
+            ],
+            "touches": [
+                "~/.claude/shelf/handoffs/ — the CST store, $HANDOFF_STORE_ROOT in tests"
+            ]
         },
         {
             "args": [
@@ -137,9 +145,17 @@
                     "name": "slug"
                 }
             ],
-            "name": "handoffs peek",
+            "name": "handoff peek",
             "needsApply": false,
-            "purpose": "print one pending CST's META block as markdown; the file stays untouched"
+            "purpose": "print one pending CST's META block as markdown; the file stays untouched",
+            "replaces": [
+                "script/skill-handoff-store.ts",
+                "script/lib/handoff-store.ts",
+                "skill:handoff-store"
+            ],
+            "touches": [
+                "~/.claude/shelf/handoffs/ — the CST store, $HANDOFF_STORE_ROOT in tests"
+            ]
         },
         {
             "args": [
@@ -156,9 +172,92 @@
                     "value": "audience"
                 }
             },
-            "name": "handoffs ingest",
+            "name": "handoff ingest",
             "needsApply": false,
-            "purpose": "print one pending CST in full and delete its file, unless it is shared"
+            "purpose": "print one pending CST in full and delete its file, unless it is shared",
+            "replaces": [
+                "script/skill-handoff-store.ts",
+                "script/lib/handoff-store.ts",
+                "skill:handoff-store"
+            ],
+            "touches": [
+                "~/.claude/shelf/handoffs/ — the CST store, $HANDOFF_STORE_ROOT in tests",
+                "~/.Trash — a pulled CST goes there through `trash`"
+            ]
+        },
+        {
+            "flags": {
+                "audience": {
+                    "description": "the agent the CST is for, one of any, ccli, cclio, cw; any (the default) is whoever pulls next",
+                    "type": "string",
+                    "value": "audience"
+                },
+                "author": {
+                    "description": "the agent that wrote it, named in the file as by-<author>; any by default",
+                    "type": "string",
+                    "value": "who"
+                },
+                "lane": {
+                    "description": "the work lane the thread ran in: pm, code, research, design; any by default",
+                    "type": "string",
+                    "value": "lane"
+                },
+                "replaces": {
+                    "description": "a pending handoff of the same thread, by slug: it is removed as this one lands, and its -shared carries over",
+                    "type": "string",
+                    "value": "slug"
+                },
+                "shared": {
+                    "description": "keep the file on ingest, for several pullers",
+                    "type": "boolean"
+                },
+                "slug": {
+                    "description": "the topic, kebab-cased into the file name",
+                    "type": "string",
+                    "value": "topic"
+                }
+            },
+            "name": "handoff write",
+            "needsApply": false,
+            "purpose": "save the CST on stdin to the shared store as one file; --replaces removes the sibling it supersedes",
+            "replaces": [
+                "script/skill-handoff-store.ts",
+                "script/lib/handoff-store.ts",
+                "skill:handoff-store"
+            ],
+            "steps": ["read", "write"],
+            "touches": [
+                "~/.claude/shelf/handoffs/ — the CST store, $HANDOFF_STORE_ROOT in tests",
+                "~/.Trash — a --replaces sibling goes there through `trash`"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "a word of the handoff filename; must match exactly one",
+                    "isOptional": true,
+                    "name": "slug"
+                }
+            ],
+            "flags": {
+                "all": {
+                    "description": "delete every pending CST instead of one",
+                    "type": "boolean"
+                }
+            },
+            "name": "handoff delete",
+            "needsApply": false,
+            "purpose": "remove one pending CST by slug, or every one with --all; shared files go too, to the macos trash",
+            "replaces": [
+                "script/skill-handoff-store.ts",
+                "script/lib/handoff-store.ts",
+                "skill:handoff-store"
+            ],
+            "steps": ["read", "delete"],
+            "touches": [
+                "~/.claude/shelf/handoffs/ — the CST store, $HANDOFF_STORE_ROOT in tests",
+                "~/.Trash — every deleted CST goes there through `trash`"
+            ]
         },
         {
             "args": [

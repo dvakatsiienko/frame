@@ -49,14 +49,14 @@ a verb lives in x only when all three hold:
 
 ## a verb is done when its old door is dead (2026-10-07)
 
-a ported verb names what it replaces (`replaces:` in its registry entry); a contract test stays red while that file exists or anything still calls it. `x handoffs` shipped without it and gained zero callers — dima: «creating dead cli families and verbs is not about optimization».
+a ported verb names what it replaces (`replaces:` in its registry entry); a contract test stays red while that file exists or anything still calls it. `x handoffs` (now `x handoff`) shipped without it and gained zero callers — dima: «creating dead cli families and verbs is not about optimization».
 <!-- this rule dies when the migration map below is empty: every planned port landed, nothing left to replace -->
 
 after a frame → bytes merge, x is one workspace package beside turbo: turbo owns the graph, x owns the procedures.
 
 ## the cut — v1 (2026-10-05)
 
-- `lane` (shipped in v0) · `handoffs` (list, peek, ingest — the store `x-cw` uses) · `x schema` at two detail levels
+- `lane` (shipped in v0) · `handoff` (list, peek, ingest, write, delete — the store `x-cw` and raycast call) · `x schema` at two detail levels
 - one resident line, never a per-verb index: «`x` is the fleet cli; `x` lists families, `x schema <family>` the verbs» (~30 tokens, against ~1.5k for 60 verbs, dima 2026-10-07); an `x-mod-guard` hint answers a call to a replaced script with its verb
 - the look: the FRM-284 a/b/c winner, built to the T2 design
 - every new verb passes the admission rule first

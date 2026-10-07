@@ -45,9 +45,12 @@ var argCompleters = map[string]completer{
 }
 
 var flagCompleters = map[string]completer{
-	"for":   fixed(audiences...),
-	"level": fixed("short", "full"),
-	"model": fixed("haiku", "sonnet", "opus", "fable"),
+	"for":      fixed(audiences...),
+	"audience": fixed(audiences...),
+	"lane":     fixed("pm", "code", "research", "design"),
+	"replaces": func(Verb, []string) ([]string, cobra.ShellCompDirective) { return pendingSlugs(), none },
+	"level":    fixed("short", "full"),
+	"model":    fixed("haiku", "sonnet", "opus", "fable"),
 	"repo": func(Verb, []string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveFilterDirs
 	},

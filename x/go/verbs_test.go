@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,6 +26,29 @@ func TestEveryVerbHasHelpAndSchema(t *testing.T) {
 		if _, offers := flags["apply"]; offers != verb.NeedsApply {
 			t.Errorf("schema %s offers --apply: %v, but it publishes: %v", verb.Name, offers, verb.NeedsApply)
 		}
+	}
+}
+
+func TestSchemaNamesWhatAVerbTouchesAndReplaces(t *testing.T) {
+	got := xIn(t, t.TempDir(), nil, "schema", "handoff", "write")
+
+	listed, _ := got.data["verbs"].([]any)
+	if got.code != 0 || len(listed) != 1 {
+		t.Fatalf("exit %d: %s", got.code, got.stdout)
+	}
+	entry := listed[0].(map[string]any)
+	if !strings.Contains(fmt.Sprint(entry["touches"]), ".claude/shelf/handoffs") || !strings.Contains(fmt.Sprint(entry["replaces"]), "handoff-store") || entry["source"] == "" {
+		t.Errorf("touches %v, replaces %v, source %v", entry["touches"], entry["replaces"], entry["source"])
+	}
+}
+
+func TestBareHiddenFamilyPrintsItsHelp(t *testing.T) {
+	got := xIn(t, t.TempDir(), nil, "trace")
+
+	groups, _ := got.data["groups"].(map[string]any)
+	listed, _ := groups["trace"].([]any)
+	if got.code != 0 || len(listed) != 1 || listed[0].(map[string]any)["name"] != "trace record" {
+		t.Fatalf("exit %d: %s", got.code, got.stdout)
 	}
 }
 
@@ -260,7 +284,7 @@ func TestIngestThatCannotTrashKeepsTheFile(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.Chmod(root, 0o700) })
 
-	got := xIn(t, repo(t), []string{"HANDOFF_STORE_ROOT=" + root}, "handoffs", "ingest", "probe")
+	got := xIn(t, repo(t), []string{"HANDOFF_STORE_ROOT=" + root}, "handoff", "ingest", "--for", "cclio", "probe")
 
 	if got.code != 0 || got.data["kept"] != true || len(listStore(root)) != 1 {
 		t.Fatalf("exit %d, kept %v, files %d", got.code, got.data["kept"], len(listStore(root)))

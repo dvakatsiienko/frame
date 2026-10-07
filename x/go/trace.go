@@ -72,12 +72,18 @@ func callerOf(tty bool) string {
 
 var (
 	idArgs  = []string{"slug", "name", "verb", "shell"}
+	idFlags = []string{"slug", "replaces"}
 	idShape = regexp.MustCompile(`^[\w.:-]+$`)
 )
 
 // an arg the registry names as an id is kept whole; any other arg gives up only the ticket ids inside it
-func idsOf(verb Verb, args []string) []string {
+func idsOf(verb Verb, args []string, flags Flags) []string {
 	var ids []string
+	for _, name := range idFlags {
+		if value, _ := flags[name].(string); idShape.MatchString(value) {
+			ids = append(ids, value)
+		}
+	}
 	for i, arg := range args {
 		// past the last arg spec the last one repeats, as a variadic does; a verb with none has no id args
 		named := len(verb.Args) > 0 && slices.Contains(idArgs, verb.Args[min(i, len(verb.Args)-1)].Name)
