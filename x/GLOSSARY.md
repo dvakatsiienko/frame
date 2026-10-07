@@ -12,3 +12,6 @@
 - **probe** — a `claude -p` session run from a dir no repo owns, so our setup cannot answer for it: `bare` (no setup at all) or `session` (named, with a settings json, resumable)
 - **shelf** — `docs/knowledge/`, the fleet's reference files; each file's verified date is its stamp, a file with none is unstamped
 - **held files** — the unstaged and untracked work outside a commit's paths, moved into the git dir while the hooks run, then put back byte for byte
+- **trace** — the one json line x writes when a call exits: the verb, flag names (never values), the caller, duration, exit and error kind; `x stats` reads them
+- **caller** — who ran a verb, one fixed value per trace line: `dima`, `cc`, `cw`, `ssh`, `hook`, `other`
+- **raw door** — a family's traced passthrough to the tool underneath (`x linear api`), the fallback when no verb fits; what it carries ranks the next verbs

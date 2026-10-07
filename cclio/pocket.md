@@ -46,6 +46,7 @@ sweep inputs added 10-07 (dima):
 - **fold the scattered findings**: inventory `docs/research`, `docs/knowledge`, `docs/test-drive`, the recipes and the cw leaves; each finding gets one verdict: shelf, recipe, memory line, guard, or dies
 - **the boot weight**: dima measured 117k at boot (memory files 81.2k) and 188k after init (+51.8k message); «is everything you preload truly useful?»
 - **the usage door**: `mcp__ccd_session_mgmt__get_usage` reads plan limits + this session's context without sline (a desktop-born session has no statusline feed)
+- **recipes are processes, not only research** (dima 10-07: «our recipes becomes upgraded from pure research-type to kinda process-ones … plain research only, or pre-research + followup operations … we will revamp recipes there») — `_spec.md`'s «maintenance run or execution script» split goes; a recipe may be research only, or research + follow-up operations (`refresh-agent-ops`' doors vector is the first)
 first quick win (dima 10-07, yes): `_reminders.md` is 24 kB imported every turn, 29 of 41 lines are test-drive verdicts copied three times — verdict dates live only in each test-drive file, the boot prints the ones due in 2 days, reminders keep real date/condition hooks only.
 
 dima 10-07: `_hq/memory-sweep.md` holds his corrections. plan the steps first, broken into tasks, folded and ordered; then checkpoint or sweep by context size. think what goes to chore-helpers or cloud. the first real spec for the pocket.

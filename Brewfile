@@ -77,6 +77,7 @@ brew "sd"                        # sed replacement without the macos -i '' quoti
 brew "ffmpeg"
 brew "vhs"                       # charm terminal recorder → gif from a .tape script
 brew "freeze"                    # charm code/terminal shots → png; FRM-284 shoots the cli arms with it
+brew "sequin"                    # charm's ansi decoder — `… | sequin` shows what a tui redraw really printed
 brew "gifski"                    # high-quality gif encoder for browser recordings
 brew "yt-dlp"
 brew "whisper-cpp"               # local speech-to-text — mcp-x-cw transcripts pipeline calls it

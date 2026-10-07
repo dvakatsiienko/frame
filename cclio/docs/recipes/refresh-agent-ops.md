@@ -18,11 +18,16 @@ the four vectors of the brief, as written there:
 ## analysis vectors (local evidence)
 
 - the flawlog `#dima-caught` lines since the last run: the verifier's true finds, false alarms and misses
+- **doors** (dima, 2026-10-07: «this is very useful data. how/where to automate this check?») — raw calls per external cli (`linear api`, `gh api`, `curl`, inline python) classified by operation; the seed run found 981 `linear api` + 93 curl calls in 30 days and reshaped the `linear` family. each class is a verb candidate. plus:
+  - repeated chains: the same 2–3 command sequence across sessions
+  - Bash writes: heredoc and python edits that skip `Edit`/`Write` and their hooks
+  - re-reads: the same ticket or doc read again in one session (a context gap)
+  - linear extras: comments by actor (each notifies dima), time in Triage, a read followed by a raw call on the same id
 
 ## artifacts (pointed at, never housed)
 
 - `docs/knowledge/agent-ops.md` — the verdict, the five activities, the 7-day numbers
-- `script/agent-ops.ts` — `pnpm agent-ops:report`: cost per ticket, cclio code edits, boot cost
+- `script/agent-ops.ts` — `pnpm agent-ops:report`: cost per ticket, cclio code edits, boot cost; gains `--doors` (the 2026-10-07 seed classifier was a throwaway regex script; `--doors` rebuilds it), later `x fleet doors`
 
 ## the run
 
