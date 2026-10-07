@@ -55,7 +55,8 @@ done
 
 backup=$(mktemp)
 cp -p "$file" "$backup"
-restore() { cp -p "$backup" "$file"; }
+# touch: a build cache keyed on mtime (the x shim) must not keep the mutated build
+restore() { cp -p "$backup" "$file"; touch "$file"; }
 trap 'restore; rm -f "$backup"' EXIT
 trap 'exit 130' INT TERM
 
