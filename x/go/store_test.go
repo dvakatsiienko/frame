@@ -174,9 +174,13 @@ func TestAgeReadsMinutesThenHoursThenDays(t *testing.T) {
 
 func TestRunIDReadsTheValueNotTheMarkerLabel(t *testing.T) {
 	cases := map[string]string{
+		"# META\n\nrun id: cc·20261007·plain":                    "cc·20261007·plain",
 		"# META\n\nrun id: **cc·20260831·probe**":                "cc·20260831·probe",
 		"# META\n\n- **run marker** — run id: **cc·20261006·x**": "cc·20261006·x",
+		"# META\n\n- **run marker** — `cc·20261007·spec`":        "cc·20261007·spec",
+		"# META\n\n- **run marker** — cc·20261007·bare-dash":     "cc·20261007·bare-dash",
 		"# META\n\n**Run marker:** `cc·old·shape`":               "cc·old·shape",
+		"# META\n\n- **run marker** — none, no tracker run":      "",
 		"# META\n\nno marker here":                               "",
 	}
 	for meta, want := range cases {

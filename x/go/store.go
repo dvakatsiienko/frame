@@ -193,9 +193,10 @@ func describe(entries []stored) string {
 var (
 	metaHeading = regexp.MustCompile(`(?i)^#\s+META\b`)
 	topHeading  = regexp.MustCompile(`^#\s`)
-	// `run id: **x**` today, `**Run marker:** `+"`x`"+` in older CSTs; the value starts on a non-space,
-	// so `**run marker** — run id: **x**` reads x, never «— run id:»
-	runIDPattern = regexp.MustCompile("(?i)run\\s*(?:id|marker)\\s*:?\\**\\s*(?:\\*\\*|`)([^*`\\s][^*`\\n]*)(?:\\*\\*|`)")
+	// the label is plain, bold or backticked in the CSTs out there; the value is whatever reads as a run
+	// id after it (`<surface>·<date>·<slug>`), so «none» or prose after the label is no run id at all
+	runIDLabel = regexp.MustCompile(`(?i)run\s*(?:id|marker)`)
+	runIDValue = regexp.MustCompile(`[\p{L}\p{N}_-]+(?:·[\p{L}\p{N}_-]+){2,}`)
 )
 
 func metaBlock(cst string) *string {
@@ -216,12 +217,16 @@ func parseRunID(meta *string) *string {
 	if meta == nil {
 		return nil
 	}
-	match := runIDPattern.FindStringSubmatch(*meta)
-	if match == nil {
-		return nil
+	for line := range strings.SplitSeq(*meta, "\n") {
+		label := runIDLabel.FindStringIndex(line)
+		if label == nil {
+			continue
+		}
+		if id := runIDValue.FindString(line[label[1]:]); id != "" {
+			return &id
+		}
 	}
-	id := strings.TrimSpace(match[1])
-	return &id
+	return nil
 }
 
 func readMeta(path string) *string {

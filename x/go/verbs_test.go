@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,6 +26,19 @@ func TestEveryVerbHasHelpAndSchema(t *testing.T) {
 		if _, offers := flags["apply"]; offers != verb.NeedsApply {
 			t.Errorf("schema %s offers --apply: %v, but it publishes: %v", verb.Name, offers, verb.NeedsApply)
 		}
+	}
+}
+
+func TestSchemaNamesWhatAVerbTouchesAndReplaces(t *testing.T) {
+	got := xIn(t, t.TempDir(), nil, "schema", "handoff", "write")
+
+	listed, _ := got.data["verbs"].([]any)
+	if got.code != 0 || len(listed) != 1 {
+		t.Fatalf("exit %d: %s", got.code, got.stdout)
+	}
+	entry := listed[0].(map[string]any)
+	if !strings.Contains(fmt.Sprint(entry["touches"]), ".claude/shelf/handoffs") || !strings.Contains(fmt.Sprint(entry["replaces"]), "skill:handoff-store") || entry["source"] == "" {
+		t.Errorf("touches %v, replaces %v, source %v", entry["touches"], entry["replaces"], entry["source"])
 	}
 }
 
