@@ -193,9 +193,38 @@ func TestTheTraceNamesTheRepoOfAWorktreeByItsMainCheckout(t *testing.T) {
 	}
 }
 
+// a name is only ever a script the nearest package.json defines: a flag's value or free text never is
+func TestTraceRecordNamesOnlyARealScript(t *testing.T) {
+	cases := []struct {
+		name  string
+		typed []string
+		want  string
+	}{
+		{"a flag's value before the script", []string{"pnpm", "--reporter", "silent", "four"}, "pnpm four"},
+		{"free text that is no script", []string{"pnpm", "'my", "secret", "text'"}, "pnpm"},
+		{"a script run from a subdir", []string{"pnpm", "run", "four"}, "pnpm four"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			state, dir := t.TempDir(), repo(t)
+			write(t, filepath.Join(dir, "package.json"), `{"scripts": {"four": "echo 4", "x-go:test": "go test"}}`)
+			cwd := dir
+			if strings.Contains(c.name, "subdir") {
+				cwd = filepath.Join(dir, "apps", "web")
+				write(t, filepath.Join(cwd, ".keep"), "")
+			}
+			xIn(t, cwd, tracing(state), append([]string{"trace", "record", "--exit", "0", "--duration", "5", "--"}, c.typed...)...)
+			if lines := traces(t, state); len(lines) != 1 || lines[0]["name"] != c.want {
+				t.Errorf("traces %v, want name %q", lines, c.want)
+			}
+		})
+	}
+}
+
 func TestTraceRecordWritesTheDispatchersLineShape(t *testing.T) {
-	state := t.TempDir()
-	got := xIn(t, repo(t), tracing(state), "trace", "record", "--exit", "1", "--duration", "1500", "--", "pnpm", "run", "x-go:test", "--watch", "my notes")
+	state, dir := t.TempDir(), repo(t)
+	write(t, filepath.Join(dir, "package.json"), `{"scripts": {"x-go:test": "go test"}}`)
+	got := xIn(t, dir, tracing(state), "trace", "record", "--exit", "1", "--duration", "1500", "--", "pnpm", "run", "x-go:test", "--watch", "my notes")
 	if got.code != 0 {
 		t.Fatalf("exit %d: %s", got.code, got.stdout)
 	}

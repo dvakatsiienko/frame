@@ -88,6 +88,14 @@ func TestStatsRefusesAWindowPastTheKeptDays(t *testing.T) {
 	}
 }
 
+func TestStatsSkipsALineWithABlankName(t *testing.T) {
+	state := t.TempDir()
+	plant(t, state, 0, planted{" ", "cc", "", 3}, planted{"schema", "cc", "", 3})
+	if got := xIn(t, repo(t), tracing(state), "stats"); got.code != 0 || marshal(got.data["calls"]) != "1" {
+		t.Errorf("exit %d, calls %s", got.code, marshal(got.data["calls"]))
+	}
+}
+
 func TestStatsCountsALineWithNoCallerAsUnknown(t *testing.T) {
 	state := t.TempDir()
 	plant(t, state, 0, planted{"schema", "", "", 3})

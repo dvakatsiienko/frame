@@ -176,7 +176,7 @@ func readTraces(days int) []span {
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			var line span
-			if json.Unmarshal(scanner.Bytes(), &line) == nil && line.Name != "" {
+			if json.Unmarshal(scanner.Bytes(), &line) == nil && strings.TrimSpace(line.Name) != "" {
 				lines = append(lines, line)
 			}
 		}

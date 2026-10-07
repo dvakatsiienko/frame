@@ -151,4 +151,7 @@
   - given the zsh hook `home/.config/zsh-custom/x-trace.zsh`
   - when dima types `pnpm <script>` at his prompt
   - then `x trace record` writes the same line shape in the background, with the script's exit and time; an `x` call is not recorded twice
+  - then the name is `pnpm <script>` only for a script the nearest `package.json` defines, else plain `pnpm` — a flag's value or free text never becomes a name
+  - not traced: a line that does not start with `pnpm` — an env prefix (`FOO=1 pnpm dev`) or a compound (`cd app; pnpm dev`)
   - decision: the hook skips `x` — the dispatcher already traces it as `dima` (cclio, 2026-10-07)
+  - decision: only lines that start with `pnpm`; the gap above is known and kept narrow (cclio, 2026-10-07)

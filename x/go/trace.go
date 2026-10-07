@@ -2,6 +2,7 @@ package main
 
 import (
 	"cmp"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -149,21 +150,38 @@ func traceRecord(_ *Run, args []string, flags Flags) (any, error) {
 	return ordered{{"name", name}}, nil
 }
 
-// `pnpm [run] <script> …` → `pnpm <script>`; the script's own args are free text and stay out
+// `pnpm … <script> …` → `pnpm <script>`, where the script is the first word the nearest package.json
+// defines: a flag's value or a word of free text is never a name. none found → plain `pnpm`
 func scriptOf(words []string) string {
 	if len(words) == 0 || words[0] != "pnpm" {
 		return ""
 	}
-	valued := []string{"-C", "--dir", "-F", "--filter"}
-	for i := 1; i < len(words); i++ {
-		switch word := words[i]; {
-		case slices.Contains(valued, word):
-			i++
-		case word != "run" && !strings.HasPrefix(word, "-") && idShape.MatchString(word):
+	scripts := nearestScripts()
+	for _, word := range words[1:] {
+		if _, ok := scripts[word]; ok {
 			return "pnpm " + word
 		}
 	}
 	return "pnpm"
+}
+
+func nearestScripts() map[string]any {
+	dir, err := os.Getwd()
+	if err != nil {
+		return nil
+	}
+	for ; dir != filepath.Dir(dir); dir = filepath.Dir(dir) {
+		raw, err := os.ReadFile(filepath.Join(dir, "package.json"))
+		if err != nil {
+			continue
+		}
+		var manifest struct {
+			Scripts map[string]any `json:"scripts"`
+		}
+		_ = json.Unmarshal(raw, &manifest)
+		return manifest.Scripts
+	}
+	return nil
 }
 
 func traceOff() bool { return os.Getenv("X_TRACE") == "0" }
