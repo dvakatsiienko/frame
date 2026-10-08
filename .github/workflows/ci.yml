@@ -64,11 +64,6 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      # x's go tests lock a git-crypt fixture worktree and source the zsh trace hook, so both
-      # tools must exist here or the run fails instead of skipping
-      - name: Install git-crypt and zsh
-        run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends git-crypt zsh
-
       # x is go, on a newer go than sline's. its toolchain comes before the vitest run: the x-cw
       # handoff tools are tested against a built x, which the x shim compiles on first call
       - uses: actions/setup-go@v7
@@ -77,10 +72,6 @@ jobs:
 
       - name: Test
         run: pnpm test
-
-      # x's tests run every calls.json call, tty ones on a pty
-      - name: Test x
-        run: pnpm x-go:test
 
       # sline is a Go module, and renovate.json turns the gomod manager on for
       # it. Without these steps a Go update would merge with nothing having
@@ -95,13 +86,48 @@ jobs:
       - name: Test sline
         run: pnpm sline:test
 
+  # its own job, so a red step in `check` never skips it: a red vitest file hid #67's go tests for
+  # three verifier rounds. x's tests run every calls.json call, tty ones on a pty, lock a git-crypt
+  # fixture worktree and source the zsh trace hook.
+  x:
+    name: Test x
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # a binary a test execs is installed in the job that runs it, or ci-binaries.test.ts goes red
+      - name: Install git-crypt and zsh
+        run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends git-crypt zsh
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: x/go/go.mod
+
+      - name: Test x
+        run: pnpm x-go:test
+
   # The readme's ci badge in the repo's own style, redrawn after every main run. It lives on an
   # orphan `badges` branch, one commit force-replaced each time, so a status never lands in
   # main's history. A cancelled run is skipped: superseded is not failed.
   badge:
     name: ci badge
-    needs: check
-    if: always() && needs.check.result != 'cancelled' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [check, x]
+    if: always() && !contains(needs.*.result, 'cancelled') && github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -117,7 +143,7 @@ jobs:
 
       - name: Draw and publish
         env:
-          RESULT: ${{ needs.check.result }}
+          RESULT: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
           TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
