@@ -74,6 +74,10 @@ diff: <paths reviewed, A/M/D>
 
 a `pending` line keeps the round honest while tickets are still being built: `refuted` or `clean so far`, never `clean` while it is non-empty. `head` is read with `git rev-parse HEAD` in the tree the probes ran in — a `cd` reset once ran a gate in the previous round's tree (FRM-344).
 
+a `clean` is bound to its head: any push after it reopens the round, and a coder's mac-green tests prove
+nothing for the ubuntu runner (FRM-352: 5 red after a clean). a verb meant for a broken or locked tree is
+proven inside that tree through its `x` shim, never through the prebuilt binary (FRM-342).
+
 `clean` requires every exit line ✅, tests run and green, every reviewer finding confirmed-fixed
 or refuted with evidence. one ⬜ makes the verdict `not-checkable`, never `clean`. **you fill the
 fields; the verdict follows from them** — you are not deciding a merge, and this brief carries no

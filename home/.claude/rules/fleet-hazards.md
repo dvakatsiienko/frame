@@ -47,9 +47,10 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 - **the cause (read in a coder transcript, 2026-09-28): claude code's worktree isolation.** a
   `--bg` session in a worktree may run git only in a form cc can prove targets its own tree —
-  literal arguments, run from the tree. `eval`, a variable, `cd x && git`, a pipe, or any command
-  whose text names git is refused: «a worktree-isolated session's git operations must target its
-  own worktree»
+  literal arguments, run from the tree. `eval`, a variable, `cd x && git`, a pipe, `$(…)` near
+  git-ish text is refused: «a worktree-isolated session's git operations must target its own
+  worktree». this is cc's own check, not `x-mod-guard` — no mod can lift it (FRM-356; ~40 calls
+  lost across 9 retros on 10-08). guard: `x lane <verb>` below
 - ✅ **commit, push, pr-open, merge-main and unlock run through `x lane <verb>`** (frame `x/`, on PATH;
   bare `x` prints the verbs; the old plugin-x `lane` is a shim) — the git runs inside the script, so
   the command text passes (4 coders lost ~1 h before it existed, 2026-09-28); a frame worktree's
@@ -99,4 +100,6 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 - a jq program is proven when ci compiles it — ubuntu runners ship jq 1.7, the mac 1.8; `a + b`
   as a bare object value parses locally and fails on the runner (bytes #79, 2026-09-12). a job
-  that runs jq prints `jq --version` first. guard: none · BYT-94 (the gate redraw drops the jq gate)
+  that runs jq prints `jq --version` first; and `gh --jq` runs gojq, not jq, so a program proven with
+  the system jq can differ inside `gh` (BYT-95/96 retros, 2026-10-08). guard: none · BYT-94 (the gate
+  redraw drops the jq gate)

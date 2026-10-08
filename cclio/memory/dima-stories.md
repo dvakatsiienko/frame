@@ -10,17 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «make it lightning fast» · 2026-09-29
-speak worked end to end on node: raycast → a script → op-run for the keys → ffplay, with a clean engine fallback. he listened and said: «system readaloud have slight .1s delay before speaking. i feel that with those fallbacks the latency also be present. make it fast.» no profiler, only the feel of F4 beside ours. the coder timed each stage: op-run 800 ms per press, a player spawn 250–360 ms, `say` 280 ms — over a second before any synthesis, against F4's already-running speech engine. the whole node design went; one resident swift daemon took its place, and his first F5 heard Sarah at 401 ms, warm ones at 189. his felt sense named the architecture before anyone measured it. → `schedule/jobs/x-speak`, the latency line in `craft-spawning`
-
-## «it feels off to me that it is unavailable» · 2026-09-29
-he asked the speak coder to set up impeccable, and it said the plugin was inaccessible. the coder turned it on, and he came
-to me with one line: «it feels off to me that it is unavailable when I need it». the day before, he had said «keep it
-enabled, no toggling», and I had set it on at user scope. my own commit that evening edited frame's project settings and
-left `"impeccable@impeccable": false` in them; a project value beats a user value, so every frame session ran without it
-for a day. no error, no log line, only his sense that a thing he had settled was not settled. → `sys-settings-drift`,
-e4c5c8b5
-
 ## «the question we covered in a grill makes the design totally different» · 2026-09-30
 speak was built on a random ask the day before and never shaped. the re-shape grill took four
 questions: why (he hears 90 % of his text, F4 is his most-used hotkey), what the product is (the pill and
@@ -70,3 +59,6 @@ past 3 a.m. we grilled the pocket, flowlog's successor, and he approved Q1 as wr
 ## «are you sure it researches what i want from you as coordinator?» · 2026-10-07
 he was grooming `refresh-craft-spawning`, the recipe that keeps my spawning true, and had just written a new want into it by hand: own the whole spawn lifecycle, pick the door deliberately, collect the retro. I had already launched its research lanes. he stopped and asked whether the recipe researched what he wanted from me as coordinator, then answered himself: our coordination is home-baked, the crew may lack roles, roles drift as models improve. the recipe researched doors and models — my tools, never my job. it became `refresh-crew-coordinator`, one run with a tools half and a craft half. his felt sense read the gap between the recipe's name and its want before any vector was checked. → `recipes/refresh-crew-coordinator/`, step 0 of `x:shape-recipe`
 
+
+## «you are either rushing, or choosing the wrong shape» · 2026-10-09
+past midnight he asked me to grill the next cli chunks, and I packed seven decisions into the ⏳ block as one wall of numbered lines, each with my pick. he sent a screenshot with a red box around it: «what is this? … is that a grill?» then, before I had fixed it: «why do not use grill shape from a skill?» matt's grilling skill was in the list the whole time, and its round shape (one question, its context, a pick) exists so he can steer each line. he added the shape he wanted from then on: a title naming the ticket or lane, the rounds, a pre-filled answer fence he only steers. an hour later he named the next gap himself: «a grill assumes exit lines too», so a chunk is sealed, not grilled. his eye read the shape before the cost showed. → `habit-grill-shape`, «rushing, or the wrong shape»
