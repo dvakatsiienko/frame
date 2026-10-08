@@ -59,7 +59,7 @@ func briefCheck(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, usageFail("no brief at "+path, "x brief check <brief.md> --repo <path>")
 	}
-	repo, err := repoRoot(flags)
+	repo, err := repoRoot(flags, "x brief check <brief.md> --repo <path>")
 	if err != nil {
 		return nil, err
 	}
@@ -162,18 +162,18 @@ func repoFlag(flags Flags) string {
 	return ""
 }
 
-func repoRoot(flags Flags) (string, error) {
+func repoRoot(flags Flags, usage string) (string, error) {
 	repo, _ := flags["repo"].(string)
 	if repo == "" {
 		top, err := mustGit("rev-parse", "rev-parse", "--show-toplevel")
 		if err != nil {
-			return "", usageFail("not in a repo — name one with --repo <path>", "x brief check <brief.md> --repo <path>")
+			return "", usageFail("not in a repo — name one with --repo <path>", usage)
 		}
 		return top, nil
 	}
 	abs, err := filepath.Abs(expandHome(repo))
 	if err != nil || !exists(abs) {
-		return "", usageFail("no repo at "+repo, "x brief check <brief.md> --repo <path>")
+		return "", usageFail("no repo at "+repo, usage)
 	}
 	return abs, nil
 }

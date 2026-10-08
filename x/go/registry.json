@@ -166,6 +166,36 @@
         {
             "args": [
                 {
+                    "description": "the pr number",
+                    "name": "pr"
+                }
+            ],
+            "name": "lane review",
+            "needsApply": false,
+            "purpose": "re-request a ci review that judged an older commit than the pr head; at the 2-round cap, name dima's approval instead",
+            "steps": ["pr", "rounds", "request"],
+            "touches": ["github — the pr's labels, as the x-coder-cc app"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the pr number, never inferred",
+                    "name": "pr"
+                },
+                {
+                    "description": "file holding the pr body",
+                    "name": "body-file"
+                }
+            ],
+            "name": "lane pr-body",
+            "needsApply": true,
+            "purpose": "write a file as the body of the numbered pr as the x-coder-cc app, then read it back",
+            "steps": ["plan", "write", "verify"],
+            "touches": ["github — the pr's body, as the x-coder-cc app"]
+        },
+        {
+            "args": [
+                {
                     "description": "the go module dir; x's own module when absent",
                     "isOptional": true,
                     "name": "dir"
@@ -335,6 +365,24 @@
             "name": "brief check",
             "purpose": "check that every backticked path, script, verb and id in a brief exists, and lint its exit lines; a pass stamps it",
             "steps": ["read", "exist", "lint", "stamp"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the ticket id, FRM-N or BYT-N",
+                    "name": "ticket"
+                }
+            ],
+            "flags": {
+                "repo": {
+                    "description": "the repo the ticket's lane works in; defaults to the repo of the cwd",
+                    "type": "string",
+                    "value": "path"
+                }
+            },
+            "name": "brief preflight",
+            "purpose": "read a ticket before a lane: numbered exit lines with a surface, nothing already on main, no redesign wording",
+            "steps": ["read", "lint", "main"]
         },
         {
             "args": [
