@@ -12,11 +12,12 @@ import (
 const headSha, oldSha = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 // a fake gh answering from files beside it: pr.json, runs.jsonl (absent → 404), body; every call
-// lands in calls.log behind the token it ran with
+// lands in calls.log behind the token it ran with. FAKE_GH_DECISION is the pr's reviewDecision,
+// FAKE_GH_CLEAN the head's review:clean conclusion, FAKE_GH_ADD_FAIL refuses a label add
 func fakeGh(t *testing.T, runs []string) (env []string, dir string) {
 	t.Helper()
 	dir = t.TempDir()
-	write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"coder/x","headRefOid":"`+headSha+`","labels":[{"name":"🤖 review:requested"}]}`)
+	write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"coder/x","headRefOid":"`+headSha+`","reviewDecision":"__DECISION__","labels":[{"name":"🤖 review:requested"}]}`)
 	if runs != nil {
 		write(t, filepath.Join(dir, "runs.jsonl"), strings.Join(runs, "\n")+"\n")
 	}
@@ -24,10 +25,12 @@ func fakeGh(t *testing.T, runs []string) (env []string, dir string) {
 d='`+dir+`'
 printf '%s %s\n' "$GH_TOKEN" "$*" >> "$d/calls.log"
 case "$1" in
-api) [ -f "$d/runs.jsonl" ] && exec cat "$d/runs.jsonl"; echo 'gh: Not Found (HTTP 404)' >&2; exit 1 ;;
+api) case "$*" in *check-runs*) echo "$FAKE_GH_CLEAN"; exit 0 ;; esac
+	[ -f "$d/runs.jsonl" ] && exec cat "$d/runs.jsonl"; echo 'gh: Not Found (HTTP 404)' >&2; exit 1 ;;
 pr) case "$2 $*" in
 	view*'--json body'*) cat "$d/body"; if [ -n "$FAKE_GH_MANGLE" ]; then echo mangled; fi ;;
-	view*) cat "$d/pr.json" ;;
+	view*) sed "s/__DECISION__/$FAKE_GH_DECISION/" "$d/pr.json" ;;
+	edit*--add-label*) if [ -n "$FAKE_GH_ADD_FAIL" ]; then echo 'HTTP 502' >&2; exit 1; fi ;;
 	edit*--body-file*) for a; do last=$a; done; cp "$last" "$d/body" ;;
 	esac ;;
 esac
@@ -62,25 +65,43 @@ func TestReviewReRequestsAStaleVerdictUnderTheCap(t *testing.T) {
 }
 
 func TestReviewLeavesTheLabelAloneWhenNothingIsStale(t *testing.T) {
+	capped := []string{runOf(1, oldSha, "completed", "success"), runOf(2, oldSha, "completed", "success")}
 	cases := []struct {
 		name   string
 		runs   []string
+		env    string
 		review string
 	}{
-		{"the verdict judged the head", []string{runOf(1, oldSha, "completed", "success"), runOf(2, headSha, "completed", "success")}, "current"},
-		{"a round is running on the head", []string{runOf(1, oldSha, "completed", "success"), runOf(2, headSha, "in_progress", "")}, "running"},
-		{"the repo has no review lane", nil, "no lane"},
+		{"the verdict judged the head", []string{runOf(1, oldSha, "completed", "success"), runOf(2, headSha, "completed", "success")}, "", "current"},
+		{"a round is running on the head", []string{runOf(1, oldSha, "completed", "success"), runOf(2, headSha, "in_progress", "")}, "", "running"},
+		{"a round is running on an older commit", []string{runOf(1, oldSha, "queued", "")}, "", "running"},
+		{"the repo has no review lane", nil, "", "no lane"},
+		{"dima approved the head past the cap", capped, "FAKE_GH_DECISION=APPROVED", "cleared"},
+		{"review:clean is green on the head past the cap", capped, "FAKE_GH_CLEAN=success", "cleared"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			env, dir := fakeGh(t, c.runs)
 
-			got := xIn(t, t.TempDir(), env, "lane", "review", "7")
+			got := xIn(t, t.TempDir(), append(env, c.env), "lane", "review", "7")
 
 			if got.code != 0 || got.data["review"] != c.review || strings.Contains(calls(t, dir), "pr edit") {
 				t.Fatalf("exit %d, review %v, calls:\n%s", got.code, got.data["review"], calls(t, dir))
 			}
 		})
+	}
+}
+
+func TestReviewNamesTheRemovedLabelWhenTheAddFails(t *testing.T) {
+	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success")})
+
+	got := xIn(t, t.TempDir(), append(env, "FAKE_GH_ADD_FAIL=1"), "lane", "review", "7")
+
+	if got.code != 1 || !strings.Contains(calls(t, dir), "--remove-label") {
+		t.Fatalf("exit %d, calls:\n%s", got.code, calls(t, dir))
+	}
+	if !strings.Contains(got.stdout, "the label came off #7 and did not go back on") {
+		t.Errorf("the failure does not name the removed label: %s", got.stdout)
 	}
 }
 

@@ -85,8 +85,10 @@
   - given a pr whose last review round judged an older commit, under the 2-round cap
   - when `x lane review <pr>` runs
   - then it re-adds `🤖 review:requested` as the coder app and names the judged commit
-  - given the last round judged the head, a round running on the head, or a repo with no `review.yml`, then it prints ok and touches no label
-  - given 2 rounds already ran, then it requests nothing, exits 1 and names dima's approval of the pr as the way past
+  - given the last round judged the head, a round still running on the branch, or a repo with no `review.yml`, then it prints ok and touches no label
+  - given dima approved the head, or `review:clean` is green on it, then it prints ok («cleared») and touches no label, past the cap too
+  - given 2 rounds already ran and neither holds, then it requests nothing, exits 1 and names dima's approval of the pr as the way past
+  - given the label came off and the add failed, then the failure says the pr now holds no review label
   - decision: no `--apply` — the verb's own checks (staleness, the cap) are the guard, and the coder's «final» ping runs it as one call (FRM-355)
 - ✅ `x lane pr-body <pr> <file>` writes a pr body by number and reads it back
   - given no pr number, or a file where the number goes
