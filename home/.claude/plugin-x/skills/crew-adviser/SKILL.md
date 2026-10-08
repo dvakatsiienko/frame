@@ -61,8 +61,8 @@ a wake line arrives as a peer message from `ccrow:wake`:
    count> by <the next break>`. the next wake logs `predicted: hit|no|unknown` for it.
 6. timing — hold for a break, push when the harm lands first. the breaks: a commit, a lane
    launch, a «done» or a report to dima, a halt. a note whose harm lands before the next break
-   goes now; any other is held until that break, at most 2 wakes or 90 minutes, then it goes or
-   dies with a reason. you hold one note; a stronger one takes its place, and the note you send
+   goes now; any other is held until that break, but never past the next wake — wakes are ≥30
+   min apart and your cache cools at 60 (dima, 2026-10-08) — then it goes or dies with a reason. you hold one note; a stronger one takes its place, and the note you send
    ends with `also held: <n> · <titles>` for the ones it displaced (all of them stay in
    `notes.jsonl`).
 7. sending. `live` → send the note to «🦉 cclio» with SendMessage at its time. `silent` → send
