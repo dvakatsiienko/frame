@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+const FILE = 'x-mod-guard_inline-abc.json';
 const STORE = '/home/.claude/plugins/store';
 const MIN = 60_000;
 // the clock starts here, so every event below sits a few minutes in the past
@@ -47,7 +48,6 @@ async function band(
     on: On,
     surface: 'terminal' | 'desktop',
     events: Record<string, unknown>,
-    file = 'x-mod-guard_inline-abc.json',
 ) {
     const clock = mock.clock(on);
     await clock.advance(NOW);
@@ -61,14 +61,14 @@ async function band(
                           isLink: false,
                           kind: 'file' as const,
                           mtimeMs: 0,
-                          name: file,
+                          name: FILE,
                           size: 1,
                       },
                   ]
                 : [],
     }));
     on('fs.read', (_$, e) => ({
-        value: JSON.stringify(e.path === `${STORE}/${file}` ? events : {}),
+        value: JSON.stringify(e.path === `${STORE}/${FILE}` ? events : {}),
     }));
     on('session.id', () => ({ value: 'b2b2b2b2-0000' }));
     on('session.repo', () => ({ value: null }));
@@ -130,11 +130,6 @@ test('an unfolded escape shows what it ran on', async ($, on) => {
     expect((await b.lines())[1]).toBe(
         'a1a1a1a1 — rm -rf dist # dima-ok: dist → ran on dima-ok: dist',
     );
-});
-
-test('refusals kept under the old guard name still count after the rename', async ($, on) => {
-    const b = await band($, on, 'terminal', FOUR, 'guard_inline-0ld0ld.json');
-    expect(await b.lines()).toEqual(['🛡️ 4 refusals · 2 sessions']);
 });
 
 test("the counter row's hover card names what the next press does", async ($, on) => {

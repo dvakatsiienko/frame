@@ -10,18 +10,9 @@ import {
 
 // the vault survives a hot reload and dies with the session; never `$.store`, which every session shares
 const VAULT = { key: 'vault', plugin: 'x-mod-redact' } as const;
-// the mod was `redact` before the x-mod rename, and `$.state` is keyed by plugin name
-const OLD_VAULT = { key: 'vault', plugin: 'redact' } as const;
 
 const errorText = (err: unknown) =>
     err instanceof Error ? err.message : String(err);
-
-// a vault never written under the new name takes the old one's, once
-async function adoptOldVault($: EngineInterface) {
-    if ((await $.state.get(VAULT)).version !== 0) return;
-    const { value } = await $.state.get(OLD_VAULT);
-    if (value) await $.state.set(VAULT, value, { ifVersion: 0 });
-}
 
 // a secret swapped for its placeholder in a row; new placeholders join the vault, retried when a parallel row wrote first
 async function redactRow<T>($: EngineInterface, content: T) {
@@ -50,15 +41,6 @@ async function redactOrMask<T>($: EngineInterface, value: T) {
 // x-mod-redact: every row a session keeps, and every tool result, reads secrets as placeholders before it is stored and sent;
 // a Bash command gets the secrets back. Only Bash: a Write or an Edit quoting a placeholder would put the live key into a file.
 export const register: Register = (on) => {
-    on('session.start', async ($, e, next) => {
-        await adoptOldVault($).catch((err) =>
-            $.ui.log(
-                `x-mod-redact: the old vault was not adopted: ${errorText(err)}`,
-            ),
-        );
-        return next(e);
-    });
-
     on('session.append', async ($, e, next) => {
         const content = await redactOrMask($, e.message.content);
         if (content === e.message.content) return next(e);

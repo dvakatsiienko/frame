@@ -95,7 +95,7 @@ type GuardLine = {
     why?: string;
 };
 // the mod was `guard` before it was x-mod-guard: its old store file is read beside the new one
-const GUARD_FILE = /^(x-mod-)?guard_.*\.json$/;
+const GUARD_FILE = /^x-mod-guard_.*\.json$/;
 const GUARD_EVENT = 'event:';
 // the counter row ages out after this long with no new event
 const GUARD_AGE_MS = 30 * 60_000;
@@ -477,51 +477,6 @@ async function guardLines($: EngineInterface): Promise<GuardLine[]> {
         since = g.at;
     }
     return run;
-}
-
-// the mod was `stash` before it was x-mod-stash, and $.store is one file per plugin name: a start copies every
-// key of the old file over, and marks the store with the old file's mtime. the old file is the truth until the
-// cutover, so one written after the mark (an early probe under the new name) is copied again
-const OLD_STORE = /^stash_.*\.json$/;
-const ADOPTED = 'adopted:stash';
-async function adoptOldStore($: EngineInterface) {
-    const dir = `${await $.env.get('HOME')}/.claude/plugins/store`;
-    const olds = (await $.fs.list(dir)).filter((f) => OLD_STORE.test(f.name));
-    if (!olds.length) return;
-    const newest = Math.max(...olds.map((f) => f.mtimeMs));
-    const mark = await $.store.get(ADOPTED);
-    if (typeof mark === 'number' && mark >= newest) return;
-    for (const f of olds) {
-        const old = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as Record<
-            string,
-            unknown
-        >;
-        for (const [key, value] of Object.entries(old))
-            await $.store.set(key, value);
-    }
-    await $.store.set(ADOPTED, newest);
-}
-
-// what a reload finds in `$.state`. it is keyed by plugin name too: a value never written under the new name
-// takes the old one's, once. returned, never re-read: every get of one dispatch reads the moment it began
-const OLD_OPEN = { key: 'open', plugin: 'stash' } as const;
-const OLD_FIVE_HOUR = { key: 'fiveHour', plugin: 'stash' } as const;
-async function keptState($: EngineInterface) {
-    const was = {
-        fiveHour: await $.state.get(FIVE_HOUR),
-        open: await $.state.get(OPEN),
-    };
-    const kept = { fiveHour: was.fiveHour.value, open: was.open.value };
-    if (was.open.version === 0) {
-        kept.open = (await $.state.get(OLD_OPEN)).value;
-        if (kept.open !== undefined) await $.state.set(OPEN, kept.open);
-    }
-    if (was.fiveHour.version === 0) {
-        kept.fiveHour = (await $.state.get(OLD_FIVE_HOUR)).value;
-        if (kept.fiveHour !== undefined)
-            await $.state.set(FIVE_HOUR, kept.fiveHour);
-    }
-    return kept;
 }
 
 // fail-open: a store or git error lets the edit through, with a line in the transcript
@@ -942,17 +897,11 @@ export const register: Register = (on) => {
             );
             return undefined;
         });
-        await adoptOldStore($).catch((err) =>
-            $.ui.log(
-                `x-mod-stash: the old stash store was not adopted: ${errorText(err)}`,
-            ),
-        );
-        const kept = await keptState($).catch((err) => {
-            $.ui.log(
-                `x-mod-stash: the kept state was not read: ${errorText(err)}`,
-            );
-            return { fiveHour: undefined, open: undefined };
-        });
+        // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
+        const kept = {
+            fiveHour: (await $.state.get(FIVE_HOUR)).value,
+            open: (await $.state.get(OPEN)).value,
+        };
         await pruneEnded($).catch(() => undefined);
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
         fiveHour = kept.fiveHour;
