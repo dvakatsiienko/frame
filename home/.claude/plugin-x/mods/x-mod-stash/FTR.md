@@ -246,6 +246,7 @@ two sessions, A and B, in one checkout.
   - then the command is refused, and the message names A, as an Edit's would be
   - decision: refuse only — a Bash write takes no hold, since nothing tells a command that wrote from one that failed
   - decision: `tool.call` on `Bash`, the same seat as the Edit/Write guard, so it fires in bypass mode too
+  - then a relative path after a leading `cd X &&` or `cd X;` is read from X — a `;` once resolved against the session cwd and refused a coder over another file of that name (FRM-337)
 - ✅ a Bash command holds cannot read goes through
   - given A holds `x.ts`
   - when B's command writes through a variable, `cd` into a subshell, or any shape the parser misses

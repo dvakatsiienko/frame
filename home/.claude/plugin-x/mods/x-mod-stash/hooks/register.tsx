@@ -543,7 +543,8 @@ async function bashGuard($: EngineInterface, command: unknown) {
     try {
         const targets = writeTargets(command);
         if (!targets.length) return undefined;
-        const lead = command.match(/^\s*cd\s+([^\s;&|]+)\s*&&/)?.[1];
+        // a leading `cd X &&` or `cd X;` moves where the writes land
+        const lead = command.match(/^\s*cd\s+([^\s;&|]+)\s*(&&|;)/)?.[1];
         const cwd = await $.session.cwd();
         const home = (await $.env.get('HOME')) ?? '';
         const absolute = (p: string, from: string) =>

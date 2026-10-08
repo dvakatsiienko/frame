@@ -483,6 +483,20 @@ test("a Bash write to another session's held file is refused with the holder nam
     );
 });
 
+test('a Bash write after `cd X;` is read from X, not from the session cwd', async ($, on) => {
+    mock.store(on);
+    on('session.cwd', () => ({ value: '/repo' }));
+    on('env.get', () => ({ value: '/home' }));
+    const w = world(on);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    expect((await bash($, "cd sub; sd 'a' 'b' x.ts")).deny).toBeUndefined();
+    expect((await bash($, "cd /repo; sd 'a' 'b' x.ts")).deny).toContain(
+        'held by session b1b1b1b1',
+    );
+});
+
 test('a Bash command holds cannot read goes through', async ($, on) => {
     mock.store(on);
     on('session.cwd', () => ({ value: '/repo' }));
