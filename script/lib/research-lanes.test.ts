@@ -62,7 +62,7 @@ test.each([
     const { run, entries } = runLanes(stamp, briefDir);
 
     expect(entries.some((entry) => entry.startsWith('lanes-'))).toBe(true);
-    // both lanes died on the missing op-run.sh, so nothing reached the network
+    // no lane body ran (each prints its «exa:» / «parallel:» line), so nothing reached the network
     expect(run.status).not.toBe(0);
-    expect(run.stdout.match(/op-run\.sh'?: No such file/g)).toHaveLength(2);
+    expect(run.stdout).not.toMatch(/^(exa|parallel): /m);
 });
