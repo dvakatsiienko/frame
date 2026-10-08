@@ -82,6 +82,11 @@
   - when it reaches the model
   - then its context holds `now HH:MM`, so a reply's 📄 stamp copies the clock
   - decision: three 📄 stamps were guessed ahead of the clock on 10-07 and `reply-check` refused each one, a correction turn every time; ccrow named the fix, dima said yes
+- ⬜ a reply's 📄 stamp is stored with the real clock
+  - given a reply row whose 📄 line carries an `HH:MM` that is not now (a long turn outran its prompt's clock, or the model guessed)
+  - when the row is kept (`session.append`, the response door)
+  - then the stored row reads the clock's `HH:MM`; a time outside a 📄 line, and dima's own prompt, stay as typed (FRM-337)
+  - 📌 harness-proven only: whether the live screen and `reply-check.py`'s Stop input read the stored row or the streamed one is unprobed — a live reply with a stamp a minute ahead would show it
 - ⬜ afk switch: one icon, `💨`; the `secondary` chip alone says it is on
   - decision: one icon, the chip tells the state, and the icon is `💨` — dima, 2026-10-05 (tried `🚶` first)
 - ⬜ an away digest when 💨 turns off: what needs dima first, then what finished

@@ -51,6 +51,8 @@ const HOT = 'hot:';
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives here (FRM-320)
 const OPEN = { key: 'open', plugin: 'x-mod-stash' } as const;
 const FIVE_HOUR = { key: 'fiveHour', plugin: 'x-mod-stash' } as const;
+// a 📄 line's HH:MM — the same shape reply-check.py reads
+const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
 const PING =
     'x-mod-stash keep-hot ping: answer with one character, nothing else.';
 const ACCENT = '#d97757';
@@ -981,6 +983,26 @@ export const register: Register = (on) => {
             ...e,
             context: [...(e.context ?? []), clock, ...(afk ? [AWAY_NOTE] : [])],
         });
+    });
+
+    // a long turn outruns the prompt's clock: the stored reply's 📄 stamp is the time it was written
+    on('session.append', { door: 'response' }, async ($, e, next) => {
+        const now = new Date(await $.clock.now()).toTimeString().slice(0, 5);
+        let isChanged = false;
+        const content = e.message.content.map((b) => {
+            if (b.type !== 'text' || typeof b.text !== 'string') return b;
+            const text = b.text.replace(
+                STAMP,
+                (whole: string, head: string, at: string) => {
+                    if (at === now) return whole;
+                    isChanged = true;
+                    return `${head}${now}`;
+                },
+            );
+            return { ...b, text };
+        });
+        if (!isChanged) return next(e);
+        return next({ ...e, message: { ...e.message, content } });
     });
 
     on('classic.Stop', async ($, e, next) => {
