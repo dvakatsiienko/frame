@@ -6,8 +6,14 @@ const LINTS = [
     [
         'sd $ in double quotes',
         `sd 'a' "$x" f.ts`,
-        'single-quote',
-        `sd 'a' '$1' f.ts`,
+        'python or the Edit tool',
+        `sd 'a' 'b' f.ts`,
+    ],
+    [
+        'sd $ in a single-quoted replacement',
+        `sd 'a' 'under $CLAUDE_JOB_DIR/tmp' f.ts`,
+        'python or the Edit tool',
+        `sd '$x' 'y' f.ts`,
     ],
     [
         'sd find led by -',

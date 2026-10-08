@@ -834,12 +834,16 @@ function lint(c: Command, next: Command | undefined): Refusal | undefined {
                 };
             else if (SD_VALUE.has(w.text)) i++;
         }
-        if (positional[1]?.isExpanding)
+        // a `$` in the replacement is lost either way: the shell expands it in double quotes, sd reads `$NAME` as a capture ref in single
+        const replacement = positional[1];
+        if (replacement?.isExpanding || replacement?.text.includes('$'))
             return {
-                door: 'single-quote the replacement, or use the Edit tool',
+                door: 'python or the Edit tool for a replacement holding $',
                 rule: 'sd-dollar',
                 targets: ['sd'],
-                why: 'the shell expands $ inside double quotes and the line ships hollow',
+                why: replacement.isExpanding
+                    ? 'the shell expands $ inside double quotes and the line ships hollow'
+                    : 'sd reads $NAME in the replacement as a capture group and writes it empty',
             };
         if (
             !hasFlag(c.args, ['--preview'], 'p') &&
