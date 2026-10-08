@@ -219,15 +219,24 @@ func shellWords(command string) []string {
 			quote, inWord = c, true
 		case c == '$' && i+1 < len(runes) && runes[i+1] == '(':
 			// a command substitution belongs to its word, however its parens and quotes nest
-			depth := 0
+			depth, inner := 0, rune(0)
 			for ; i < len(runes); i++ {
-				word.WriteRune(runes[i])
-				if runes[i] == '(' {
-					depth++
-				} else if runes[i] == ')' {
-					if depth--; depth == 0 {
-						break
+				r := runes[i]
+				word.WriteRune(r)
+				switch {
+				case inner != 0:
+					if r == inner {
+						inner = 0
 					}
+				case r == '\'' || r == '"':
+					inner = r
+				case r == '(':
+					depth++
+				case r == ')':
+					depth--
+				}
+				if depth == 0 && r == ')' {
+					break
 				}
 			}
 			inWord = true

@@ -82,6 +82,8 @@ func TestStatsOutsideHeadsSkipTheSetup(t *testing.T) {
 		{"S=$(cat f); git push", "git push"},
 		{"J=$(jq -r '.a' \"$(dirname f)\") && gh pr view $J", "gh pr"},
 		{"T=`date`; ls", "ls"},
+		{`S=$(echo ")"); git push`, "git push"},
+		{`S=$(printf '%s' "(") && gh pr view 1`, "gh pr"},
 		{"S=1", ""},
 	}
 	for _, c := range cases {
