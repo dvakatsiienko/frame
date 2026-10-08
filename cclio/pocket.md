@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-09 (the cli grill, census ready) → 54 (the long cli lane) → 49 (refresh-crew-coordinator-adviser run, lanes in) → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 53 → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+09 (the cli grill, census ready) → 54 (the long cli lane) → 49 (refresh-crew-coordinator-adviser run, lanes in) → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 53 → 55 → 56 → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
@@ -208,6 +208,16 @@ open · test-drive
 ### 54 · plan the cli lane to run long, right after refresh-crew-coordinator closes
 open · task · blocked by 09
 - dima, 2026-10-08: «plan enough for them to run for some time, because recipe grooming blocks the lane» — the grill (09) feeds it; a coder + verifier with a queue deep enough to work through hours of siestas
+
+### 55 · crew-coder: name 🪶 sifter for big reads, after a trim
+open · task
+- dima, 2026-10-08: «ensure it is not lost (sifter for coders)». `x:crew-coder` sits at its compaction cap (18,987 of 18,995 chars, `skill-size.test.ts`), so the «hand big reads to subagents» line names `sifter` only after a trim frees room. until then every brief carries the sifter line (FRM-346's does)
+
+### 56 · count bare fleet words in cclio's replies, mod it if it grows
+open · test-drive
+- dima, 2026-10-08: «pocket it and count error occurrences, if it grows — mod it». the miss: «that becomes a wisp» printed plain, where the rule says **✨ wisp**, bold with its badge
+- the count: at each halt, 🪶 sifter counts this session's replies that print `wisp`, `wish`, `siesta` or `freebie` without the bold + badge (`lane` is left out — too common as a plain word, false positives). one line per halt in `docs/test-drive/reply-check.md`
+- the bar: 3+ misses across two halts → a `reply-check` rule; below it, nothing is built
 
 ## decisions so far
 

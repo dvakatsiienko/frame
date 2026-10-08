@@ -93,7 +93,7 @@ combines with a role (different groups).
 - 📌 **a label never names a project.** `harness: home baked` was deleted for exactly that
   (TRK-0004) — the area of work belongs in the project field.
   these sit beside role and kind, never replace them (TRK-0002).
-- **model routing** — `fable 5` (magenta) · `opus 5` (blue) · `sonnet 5` (emerald) · `haiku 4.5`. dima's
+- **model routing** — `fable 5` (magenta) · `opus 5` (blue) · `sonnet 5` (emerald) · `haiku 5.5`. dima's
   notation for which model a ticket wants, aimed at future label→model routing. set one only when
   the ticket has a real model preference; absence means "no preference". when dima asks what to
   grab, read these and say which tickets want which model.

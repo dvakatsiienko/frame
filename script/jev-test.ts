@@ -272,7 +272,7 @@ async function routerTest() {
         {
             cost: (run, i) => haiku[run]?.[i]?.cost ?? 0,
             hasMemory: true,
-            label: 'haiku 4.5',
+            label: 'haiku',
             ms: haiku.flat().map((h) => h.ms),
             runs: haiku.map((run) =>
                 run.map(
