@@ -97,10 +97,34 @@ for (const [command, said, target] of [
         expect(ran).toEqual([]);
     });
 
-test('a short target runs when dima names it alone', async ($, on) => {
+test('a bare-symbol target runs when dima pastes its marker phrase', async ($, on) => {
     const { ran } = world(on);
     const command = 'git checkout -- . # dima-ok: .';
-    await dimaSays($, 'yes, checkout -- .');
+    await dimaSays($, 'yes, dima-ok: .');
+    expect((await bash($, command)).deny).toBeUndefined();
+    expect(ran).toEqual([command]);
+});
+
+test('a bare-symbol target is refused when dima names it only in prose', async ($, on) => {
+    const { ran } = world(on);
+    const command = 'sleep 1 & # dima-ok: &';
+    await dimaSays($, 'fix this & that');
+    expect((await bash($, command)).deny).toContain('it does not name: &');
+    expect(ran).toEqual([]);
+});
+
+for (const said of ['drop «build»', 'drop “build”', 'drop build—now'])
+    test(`a target dima quotes or dashes the way he writes runs: ${said}`, async ($, on) => {
+        const { ran } = world(on);
+        await dimaSays($, said);
+        expect((await bash($, RM)).deny).toBeUndefined();
+        expect(ran).toEqual([RM]);
+    });
+
+test('a path target runs when dima names it with a trailing slash', async ($, on) => {
+    const { ran } = world(on);
+    const command = 'rm -rf /x/build # dima-ok: /x/build';
+    await dimaSays($, 'rm /x/build/');
     expect((await bash($, command)).deny).toBeUndefined();
     expect(ran).toEqual([command]);
 });

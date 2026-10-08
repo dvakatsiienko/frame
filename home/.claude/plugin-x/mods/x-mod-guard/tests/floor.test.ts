@@ -89,7 +89,7 @@ for (const [family, command, , target] of FAMILIES)
     test(`${family} runs with a dima-ok naming its target`, async ($, on) => {
         mock.store(on);
         const w = world(on);
-        await dimaSays($, `yes, go ahead: ${target}`);
+        await dimaSays($, `yes, go ahead. dima-ok: ${target}`);
         const r = await bash($, `${command} # dima-ok: ${target}`);
         expect(r.deny).toBeUndefined();
         expect(w.logs).toContainEqual(`x-mod-guard: ran on dima-ok: ${target}`);

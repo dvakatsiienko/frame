@@ -143,10 +143,14 @@ export function refusals(
             ) === i,
     );
 }
-// a target dima named as a whole word: each edge is the prompt's end, a space, a quote or punctuation, or a
-// sentence-ending period — so `.` inside `build.` or `&` inside `a&b` never proves itself
-const EDGE = /[\s"'`,;:!?()[\]<>]/;
+// a target dima named as a whole word: each edge is the prompt's end, a space, a quote (his «», ios “” included),
+// punctuation or a dash; a `.` or `/` closes it only before a space or the end (`build.`, `/x/build/`).
+// a target of bare symbols (`.`, `&`) reads in any prose, so it counts only inside the marker phrase he pastes
+const EDGE = /[\s"'`,;:!?()[\]<>«»“”‘’—–]/;
+const CLOSER = /[./]/;
 export function namesWhole(said: string, target: string) {
+    if (!/[\p{L}\p{N}]/u.test(target))
+        return namesWhole(said, `dima-ok: ${target}`);
     for (
         let i = said.indexOf(target);
         i >= 0;
@@ -159,7 +163,7 @@ export function namesWhole(said: string, target: string) {
         const isEnd =
             after === undefined ||
             EDGE.test(after) ||
-            (after === '.' &&
+            (CLOSER.test(after) &&
                 (end + 1 === said.length || /\s/.test(said[end + 1] ?? '')));
         if (isStart && isEnd) return true;
     }

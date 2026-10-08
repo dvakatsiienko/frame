@@ -249,7 +249,7 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
 const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
 const UNPROVEN_DOOR =
-    'ask dima; his own next prompt naming the target is what lets the # dima-ok marker through';
+    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»)';
 const UNPROVEN_WHY =
     "a # dima-ok marker counts only when dima's last typed prompt names its target";
 const UNREAD_DOOR = 'Read the file first, then Write';
