@@ -18,6 +18,11 @@
             "rawDoor": "x linear api"
         },
         {
+            "example": "x fleet flow --days 14",
+            "gist": "the fleet measuring itself: flow, coder audits, agent ops",
+            "name": "fleet"
+        },
+        {
             "example": "x brief check brief.md --repo ~/frame",
             "gist": "a spawn brief checked against the repo it names",
             "name": "brief"
@@ -641,6 +646,62 @@
             "steps": ["find", "archive"],
             "touches": [
                 "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "flags": {
+                "days": {
+                    "description": "the window, in local days back from today (default 14)",
+                    "type": "string",
+                    "value": "n"
+                }
+            },
+            "name": "fleet flow",
+            "needsApply": false,
+            "purpose": "the fleet-flow done test: flawlog tags, bare cc runs, crew-skill loads, guard refusals, pr merge median, knowledge Reads",
+            "replaces": ["script/flow-report.ts", "script/lib/flow-report.ts"],
+            "touches": [
+                "~/.claude/shelf/flawlog/ — the dated flawlog files",
+                "~/.claude/projects/ — the session transcripts, one level deep",
+                "~/.claude/plugins/store/ — x-mod-guard's day counts",
+                "github, through `gh pr list` — the merged prs of frame and bytes"
+            ]
+        },
+        {
+            "flags": {
+                "days": {
+                    "description": "transcripts touched in this many days (default 1)",
+                    "type": "string",
+                    "value": "n"
+                }
+            },
+            "name": "fleet audit",
+            "needsApply": false,
+            "purpose": "per coder session: lessons read before the first edit and after each compaction, and its library-docs lookups",
+            "replaces": ["script/crew-audit.ts"],
+            "touches": [
+                "~/.claude/projects/ — the session transcripts, one level deep"
+            ]
+        },
+        {
+            "flags": {
+                "days": {
+                    "description": "transcripts touched in this many days (default 7)",
+                    "type": "string",
+                    "value": "n"
+                },
+                "min-kb": {
+                    "description": "skip transcripts smaller than this many kilobytes (default 200)",
+                    "type": "string",
+                    "value": "kb"
+                }
+            },
+            "name": "fleet ops",
+            "needsApply": false,
+            "purpose": "agent ops off the transcripts: tokens and wall time per ticket, cclio's code edits per session, a cclio boot's cost",
+            "replaces": ["script/agent-ops.ts"],
+            "touches": [
+                "~/.claude/projects/ — the session transcripts, one level deep"
             ]
         },
         {

@@ -8,7 +8,7 @@ one line per tool: date · tool [link] · what it is · stars / last push · ver
 
 - [duckdb](https://github.com/duckdb/duckdb) · SQL over jsonl, md and git where they lie · try → test drive to 10-21 · classified 30 days of `linear api` calls in 0.26 s · `docs/test-drive/duckdb.md`, `rules/fleet-tooling.md`
 - [meteor](https://github.com/raystack/meteor) · metadata catalog ingestion · skip · reads no local jsonl, git or linear; cannot count events
-- [ccusage](https://github.com/ccusage/ccusage) · Claude Code cost and tokens per day, session or 5-hour block, `--json` · 18.9k★, 2026-09-27 · candidate · overlaps `agent-ops:report`; pipe into duckdb if the cost half is needed
+- [ccusage](https://github.com/ccusage/ccusage) · Claude Code cost and tokens per day, session or 5-hour block, `--json` · 18.9k★, 2026-09-27 · candidate · overlaps `x fleet ops`; pipe into duckdb if the cost half is needed
 - [steampipe](https://github.com/turbot/steampipe) · SQL over apis, github plugin · candidate · its linear plugin last released 2025-10, a risk; `gh api` + duckdb may be enough
 - [savvy-cli](https://github.com/getsavvyinc/savvy-cli) · records shell sessions into team runbooks · 465★, 2025-01 · skip · stale; transcripts + x traces + duckdb cover it
 - [mergestat-lite](https://github.com/mergestat/mergestat-lite) · SQL over git · 3.5k★, 2024-03 · skip · stale; duckdb's `duck_tails` is current

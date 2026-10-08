@@ -248,6 +248,23 @@
   - given linear rejects a cached app token (401), then x mints it again and retries once
   - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
 
+## fleet — the fleet measuring itself
+
+- ✅ `x fleet flow` prints the fleet-flow done test
+  - given the flawlog, the session transcripts, x-mod-guard's store and `gh`
+  - when `x fleet flow --days 14` runs
+  - then it prints the `#dima-caught` and `#brief` flawlog lines against their baselines, **bare runs**, crew-skill loads (brief-led or a **false fire**), today's guard refusals and escapes by rule, the pr open → merge median of frame and bytes (renovate left out), and Reads per `docs/knowledge` file
+  - decision: a straight port of the flow script, number for number on the same day; the script died with it (FRM-347)
+- ✅ `x fleet audit` checks each coder read its lessons first
+  - given the session transcripts of the last `--days` (default 1)
+  - when `x fleet audit` runs
+  - then each session opened with `/x:crew-coder` gets a line: whether it read `crew-coder/how-you-work.md` before its first edit, a ✅ or 🚫 per compaction for the re-read, and its library-docs lookups (ctx7, the context7 mcp, web)
+- ✅ `x fleet ops` prices the agents' work
+  - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)
+  - when `x fleet ops` runs
+  - then it prints tokens and wall time per ticket (coder + verifier, each step once), cclio's code edits per session, and the cost of a cclio boot (full and mini), each with its median
+- ✅ a bad `--days` or `--min-kb` exits 2 with the command that works
+
 ## stats — telemetry
 
 - ✅ every `x` call leaves one trace line
