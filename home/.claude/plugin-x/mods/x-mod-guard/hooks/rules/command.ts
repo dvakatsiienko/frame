@@ -15,6 +15,8 @@ export type Context = {
     missing?: Set<string>;
     kinds?: Map<string, 'file' | 'dir' | 'other'>;
     briefs?: Map<string, Brief>;
+    // the session is cclio's: it cleans its fleet's scratch trees and branches on its own
+    isCclio?: boolean;
 };
 // a spawn's brief file as found on disk: whether it names the coder skill, and whether x brief check stamped its bytes
 export type Brief = { isCoder: boolean; isStamped: boolean };

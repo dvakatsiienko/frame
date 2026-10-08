@@ -8,6 +8,7 @@ import {
     commands,
     gitDir,
     gitParts,
+    hasFlag,
     isJobTmp,
     operands,
     resolve,
@@ -67,6 +68,25 @@ function isScratchGit(c: Command, r: Refusal, ctx: Context) {
             isJobTmp(p, ctx) || TEMP_ROOTS.some((root) => p.startsWith(root)),
     );
 }
+// cclio removes a scratch tree (a clean one: --force still asks) and deletes a scratch/* branch without dima's word;
+// a merged branch's `git branch -d` already runs for everyone, since git itself refuses an unmerged one
+const SCRATCH_TREE = /\/\.claude\/(worktrees\/[^/]+|jobs\/[^/]+\/tmp\/.+)$/;
+function isCleanup(c: Command, r: Refusal, ctx: Context) {
+    if (!ctx.isCclio || c.name !== 'git' || r.rule !== 'git-rewrite')
+        return false;
+    const { sub, subArgs } = gitParts(c.args);
+    const ops = operands(subArgs);
+    if (sub === 'branch')
+        return ops.length > 0 && ops.every((o) => o.startsWith('scratch/'));
+    if (sub !== 'worktree' || ops[0] !== 'remove') return false;
+    if (hasFlag(subArgs, ['--force'], 'f')) return false;
+    const dir = gitDir(c, ctx);
+    const trees = ops.slice(1);
+    return (
+        trees.length > 0 &&
+        trees.every((t) => SCRATCH_TREE.test(resolve(t, dir, ctx)))
+    );
+}
 export function refusals(
     command: string,
     cwd: string,
@@ -83,7 +103,8 @@ export function refusals(
             lint(c, list[i + 1]) ??
             missingAdd(c, ctx) ??
             brief(c, ctx);
-        if (found && !isScratchGit(c, found, ctx)) out.push(found);
+        if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
+            out.push(found);
         // a nested shell's script is a command too
         // `-c` alone or in a cluster: `bash -lc`
         const dashC = SHELLS.has(c.name)

@@ -38,6 +38,15 @@
   - decision: the temp roots joined after a verifier lost ~8 calls to fixture repos under `mktemp -d` (FRM-346's retro, dima, 2026-10-08)
   - then it runs; the same command anywhere else, in the job dir itself, in another job's tmp or climbing out with `..` is refused as before
   - then a push, a gate bypass and every non-git floor command stay refused inside the tmp too — a push reaches a real remote, a bypass a real gate
+- ⬜ cclio cleans up its fleet's scratch without dima's word
+  - given a session rooted under `~/frame/cclio` runs `git worktree remove <tree>` on a tree at `<repo>/.claude/worktrees/<name>` or under a job's tmp (`~/.claude/jobs/<id>/tmp/…`), or `git branch -D` on branches that all start `scratch/`
+  - then it runs; `git branch -d` of a fully merged branch already runs for every session, since git refuses an unmerged one
+  - then a tree elsewhere, a `--force` remove, a `-D` naming any non-`scratch/` branch, and the same commands from any other session are still refused with «ask cclio»
+  - decision: dima wants everything clear when he returns, parking only things like backup restores; a dirty tree keeps git's own refusal, so `--force` still asks (FRM-356, 2026-10-09)
+- ✅ a command that only names git runs
+  - given `cat .github/workflows/ci.yml`, `github-token-wrap gh pr edit 1 --add-label x`, `lefthook run commit-msg` or `bash <script> "$VAR"`
+  - then x-mod-guard runs it: git rules read the command's name, never a substring
+  - 📌 the «names git» refusals the 10-08 retros counted come from cc's own worktree isolation («a worktree-isolated session's git operations must target its own worktree»), which no mod reaches (FRM-356)
 - ✅ a job's own tmp takes writes over its own files
   - given a `>` redirect, a heredoc into a file, an `mv` or a `cp -f` onto a file that exists under `$CLAUDE_JOB_DIR/tmp` (spelled out, as the variable, or after a `cd` there), a script run by path writing its own log included
   - then it runs; the same write onto a repo path, another job's tmp or a path climbing out with `..` is refused as before
@@ -128,6 +137,14 @@
   - given other file types, or a session outside `~/frame/cclio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
   - makes: a count in x-mod-guard's `$.state`, the session's own: it survives a hot reload and dies with the session, so nothing piles up in the shared store
+- ⬜ a Write over a tracked file this session never read is refused
+  - given a session that has not Read, Edited or Written a file git tracks
+  - when it Writes over that file
+  - then the Write is refused: «instead: Read the file first, then Write», and a guard event is kept (rule `write-unread`)
+  - then after a Read of it the same Write runs; a new file, or an untracked one, runs unread
+  - decision: cc's own Write lets an unread existing file be replaced (measured 2026-10-09); a tracked test file was lost that way and restored from git (FRM-350)
+  - makes: the session's seen paths in x-mod-guard's `$.state`, real paths, gone with the session
+  - 📌 a file read by `cat` in Bash does not count as read; the Read tool is the door
 
 ## held files — x-mod-holds' holds, refused for Bash
 

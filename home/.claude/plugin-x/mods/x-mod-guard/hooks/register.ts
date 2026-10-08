@@ -234,6 +234,35 @@ async function isReleased(
     return !git || git.exitCode !== 0 || git.stdout.trim() === '';
 }
 
+const isUnder = (path: string, dir: string) =>
+    path === dir || path.startsWith(`${dir}/`);
+
+const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
+const UNREAD_DOOR = 'Read the file first, then Write';
+const UNREAD_WHY = 'a Write replaces a tracked file this session never read';
+
+async function isTracked($: EngineInterface, path: string) {
+    if (!(await $.fs.exists(path))) return false;
+    const cut = path.lastIndexOf('/');
+    const ls = await $.process.run(
+        ['git', 'ls-files', '--error-unmatch', '--', path.slice(cut + 1)],
+        { cwd: path.slice(0, cut) || '/' },
+    );
+    return ls.exitCode === 0;
+}
+
+// parallel Reads in one step each add their path: a write that lost the race reads again
+async function markSeen($: EngineInterface, path: string) {
+    for (;;) {
+        const { value = [], version } = await $.state.get(SEEN);
+        if (value.includes(path)) return;
+        const { isSet } = await $.state.set(SEEN, [...value, path], {
+            ifVersion: version,
+        });
+        if (isSet) return;
+    }
+}
+
 export const register: Register = (on) => {
     // a Monitor's command is a shell command too
     on('tool.call', { tool: /^(Bash|Monitor)$/ }, async ($, e, next) => {
@@ -244,8 +273,11 @@ export const register: Register = (on) => {
         // a shape with one right spelling is fixed, then the fixed command is what every rule reads
         const { command, notes } = rewrite(typed);
         const cwd = await $.session.cwd();
+        const home = await $.env.get('HOME');
+        const root = await $.session.root().catch(() => cwd);
         const ctx: Context = {
-            home: await $.env.get('HOME'),
+            home,
+            isCclio: isUnder(root, `${home}/frame/cclio`),
             jobDir: await $.env.get('CLAUDE_JOB_DIR'),
         };
         const missing = new Set<string>();
@@ -266,7 +298,6 @@ export const register: Register = (on) => {
             missing,
         });
         // a worktree session whose shell `cd`ed out (`cd ~/frame && …`) is refused for the wrong tree; the root still names its own
-        const root = await $.session.root().catch(() => cwd);
         const drift =
             root.includes('/.claude/worktrees/') &&
             cwd !== root &&
@@ -337,8 +368,7 @@ export const register: Register = (on) => {
             try {
                 const home = await $.env.get('HOME');
                 const cwd = await $.session.cwd();
-                const root = `${home}/frame/cclio`;
-                if (cwd !== root && !cwd.startsWith(`${root}/`)) return result;
+                if (!isUnder(cwd, `${home}/frame/cclio`)) return result;
                 const n = ((await $.state.get(EDITS)).value ?? 0) + 1;
                 await $.state.set(EDITS, n);
                 if (n !== EDIT_LIMIT) return result;
@@ -351,6 +381,42 @@ export const register: Register = (on) => {
             }
         },
     );
+
+    // a Write over a tracked file this session never saw replaces what it never read; a Read, Edit or Write marks it seen
+    on(
+        'tool.call',
+        { tool: /^(Read|Edit|MultiEdit|Write)$/ },
+        async ($, e, next) => {
+            const path = 'file_path' in e ? e.file_path : undefined;
+            if (typeof path !== 'string') return next(e);
+            const real = await $.fs.stat(path, { resolve: true }).then(
+                (s) => s.realPath ?? path,
+                () => path,
+            );
+            const { value: seen = [] } = await $.state.get(SEEN);
+            if (
+                e.tool === 'Write' &&
+                !seen.includes(real) &&
+                (await isTracked($, real))
+            ) {
+                await record($, {
+                    command: `Write ${path}`,
+                    door: UNREAD_DOOR,
+                    kind: 'refused',
+                    rule: 'write-unread',
+                    target: path,
+                    why: UNREAD_WHY,
+                });
+                return {
+                    deny: `x-mod-guard stopped this Write. instead: ${UNREAD_DOOR}. why: ${UNREAD_WHY}: ${path}`,
+                };
+            }
+            const result = await next(e);
+            if (result.deny === undefined && !result.isError)
+                await markSeen($, real);
+            return result;
+        },
+    ).catch(() => ({ deny: FAILED }));
 
     on('agent.spawn', async ($, e, next) => {
         if (!e.fork || WHY_FORK.test(e.prompt)) return next(e);
