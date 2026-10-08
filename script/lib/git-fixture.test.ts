@@ -30,6 +30,21 @@ test('a git spawn passing the inherited env is caught though the file imports gi
     expect(bareGitSpawns(source)).toEqual([2, 3]);
 });
 
+test('a git spawn passing the inherited env is caught in a file that binds env from gitEnv', () => {
+    const source = `${IMPORT}const env = gitEnv();\n${callOf('spawn')}'git', ['init'], { cwd, env: process.env });\n${callOf('spawn')}'git', ['init'], { env: opts.env });`;
+    expect(bareGitSpawns(source)).toEqual([3, 4]);
+});
+
+test('a git spawn whose options only end in process.env is caught in a file that binds env', () => {
+    const source = `${IMPORT}const env = gitEnv();\n${callOf('spawn')}'git', ['init'], { cwd, ...process.env });`;
+    expect(bareGitSpawns(source)).toEqual([3]);
+});
+
+test('a git spawn passing a spread of gitEnv passes', () => {
+    const source = `${IMPORT}${callOf('spawn')}'git', ['init'], { env: { ...gitEnv(), X: '1' } });`;
+    expect(bareGitSpawns(source)).toEqual([]);
+});
+
 test('a git spawn passing a binding not made from gitEnv is caught', () => {
     const source = `${IMPORT}const inherited = process.env;\n${callOf('spawn')}'git', ['init'], { env: inherited });`;
     expect(bareGitSpawns(source)).toEqual([3]);

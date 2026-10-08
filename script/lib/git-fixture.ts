@@ -46,11 +46,16 @@ function runsGit(callee: string, args: string) {
 }
 
 // `env: gitEnv()`, or an env naming a binding the file made from gitEnv() — `{ env }`, `{ env: fixtureEnv }`
+// an `env` key, never the tail of `process.env` or `opts.env`; its value read whole: `gitEnv()`, `{ ...gitEnv(), … }` or a name
 function passesGitEnv(args: string, bound: Set<string>) {
-    if (/\benv\s*:\s*gitEnv\(\)/.test(args)) return true;
-    const named = args.match(/\benv\s*:\s*(\w+)\s*[,}\n]/)?.[1];
-    if (named) return bound.has(named);
-    return /\benv\s*[,}\n]/.test(args) && bound.has('env');
+    const value = args.match(
+        /(?<![.\w])env\s*:\s*(gitEnv\(\)|\{\s*\.\.\.gitEnv\(\)|[\w.$]+)/,
+    )?.[1];
+    if (value !== undefined)
+        return (
+            value === 'gitEnv()' || value.startsWith('{') || bound.has(value)
+        );
+    return /(?<![.\w])env\s*[,}\n]/.test(args) && bound.has('env');
 }
 
 // the lint: the 1-based line of every git call that does not pass gitEnv's env
