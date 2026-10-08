@@ -20,6 +20,8 @@ source file is newer.
   the second: the `linear` writes (`body --set`, `set`, `link`, `comment`, `update`) go out in one call —
   the hottest door stays one call, and the stale check, the printed actor and linear's own history guard
   them; `linear archive` destroys from the board's view and keeps `--apply` (FRM-344, dima 2026-10-07)
+  the third: `lane review` re-adds the review label without it — it acts only on a stale verdict under
+  the cap, which are its own checks, and the coder's «final» runs it as one call (FRM-355)
 - a verb that took over a script names it in `replaces:`; `replaces_test.go` stays red while that
   file exists or any tracked file outside history names it. `touches:` names what the verb reads or
   writes outside the repo; `x schema` prints both.

@@ -54,6 +54,9 @@ their head.
   restores byte-for-byte; exit 0 only on red-then-green. Many lines at once: `red-proof --pairs <pairs> <file> <test>`,
   one `anchor<TAB>replacement` per line, each swapped alone. Any other runner: `--cmd` first and `-- <command…>`
   in place of `<test>` — `red-proof --cmd <file> <anchor> <replacement> -- claude plugin test home/.claude/plugin-x/mods/<mod>`.
+- **A red-proof covers each allow, exemption and parse branch**, not only the refusal branch.
+- **A test that spawns a paid or networked script runs a copy with the spender stubbed**, never the
+  real path (FRM-352 spent ~$0.20 of real lanes in a test).
 
 ## traps that cost hours
 
