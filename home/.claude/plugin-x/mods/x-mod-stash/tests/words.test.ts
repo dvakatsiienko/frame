@@ -15,8 +15,10 @@ test('a plural keeps its badge', () => {
     );
 });
 
-test('a freebie prints bold with no badge', () => {
-    expect(boldFleetWords('do the freebies').text).toBe('do the **freebies**');
+test('a freebie prints bold with its clover', () => {
+    expect(boldFleetWords('do the freebies').text).toBe(
+        'do the **🍀 freebies**',
+    );
 });
 
 test('a wish is bolded as a noun, never as a verb', () => {

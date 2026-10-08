@@ -43,10 +43,10 @@ export function bulletDots(text: string) {
 
 // a fleet word prints bold with its badge glued on (rules/fleet-output-format.md); a bare one in prose is fixed, not policed.
 // fences, quotes, inline code, bold text and links keep theirs; «wish» only as a noun, after a determiner
-const BADGES = { freebie: '', siesta: '🌤️', wish: '🌠', wisp: '✨' } as const;
+const BADGES = { freebie: '🍀', siesta: '🌤️', wish: '🌠', wisp: '✨' } as const;
 type FleetWord = keyof typeof BADGES;
 const WORD =
-    /(?<![\w\-/.])(?:(?:✨|🌤️|🌠) )?(wisp|siesta|freebie|wish)(s|es)?(?![\w\-/]|\.\w)/giu;
+    /(?<![\w\-/.])(?:(?:✨|🌤️|🌠|🍀) )?(wisp|siesta|freebie|wish)(s|es)?(?![\w\-/]|\.\w)/giu;
 const DETERMINER =
     /(?:^|\s)(?:a|an|the|his|her|this|that|each|every|one|new|your|my|our|their|dima's)\s+(?:🌠 )?$/i;
 
@@ -70,7 +70,7 @@ export function boldFleetWords(text: string) {
                 continue;
             const badge = BADGES[word];
             const shown = m[0].replace(/^\S+ /u, '');
-            out += `${line.slice(from, at)}**${badge ? `${badge} ` : ''}${shown}**`;
+            out += `${line.slice(from, at)}**${badge} ${shown}**`;
             from = at + m[0].length;
             hits[word] = (hits[word] ?? 0) + 1;
         }
