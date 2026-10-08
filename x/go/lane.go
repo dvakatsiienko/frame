@@ -296,7 +296,7 @@ func mergeMain(r *Run, _ []string, _ Flags) (any, error) {
 		if !merged.ok {
 			conflicts, _ := git("diff", "--name-only", "--diff-filter=U")
 			if conflicts.out == "" {
-				return "", &Fail{Msg: "merge failed without conflicts — its output is above", Next: "git status", Log: nonBlank(merged.log)}
+				return "", &Fail{Msg: "merge failed without conflicts: " + gitReason(merged.log), Next: "git status", Log: nonBlank(merged.log)}
 			}
 			files := strings.Split(conflicts.out, "\n")
 			return "", &Fail{Msg: "conflicts: " + strings.Join(files, ", "),
@@ -617,6 +617,20 @@ func firstLine(path string) string {
 	body, _ := os.ReadFile(path)
 	line, _, _ := strings.Cut(strings.TrimSpace(string(body)), "\n")
 	return line
+}
+
+// gitReason is the line git leads its refusal with, so an envelope reader needs no stderr
+func gitReason(log string) string {
+	lines := nonBlank(log)
+	for _, line := range lines {
+		if strings.HasPrefix(line, "error: ") || strings.HasPrefix(line, "fatal: ") {
+			return line
+		}
+	}
+	if len(lines) == 0 {
+		return "git printed nothing"
+	}
+	return lines[len(lines)-1]
 }
 
 func nonBlank(log string) []string {

@@ -62,6 +62,7 @@ the checks the FRM-340 verifier built by hand; a verifier or coder on `x` starts
 - agent mode (`CLAUDECODE` / `AI_AGENT` set, a pipe, or `--json`): one json envelope on stdout,
   `{ verb, x, ok, status, data | plan | error, next }`; `x` names the source dir that ran.
 - tty: the T2 boards (`PRODUCT.md`'s look rule). tool output goes to stderr in both modes.
+- `--board` draws the tty board in agent mode too (an agent showing dima a board); `--json` beside it wins.
 - exits: 0 ok · 1 failed · 2 usage · 4 needs `--apply`.
 - `fixtures/calls.json` is the contract; `go test` runs every call in it, tty ones on a pty.
 
