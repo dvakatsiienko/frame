@@ -8,6 +8,7 @@ import {
     commands,
     gitDir,
     gitParts,
+    hasFlag,
     isJobTmp,
     operands,
     resolve,
@@ -67,6 +68,41 @@ function isScratchGit(c: Command, r: Refusal, ctx: Context) {
             isJobTmp(p, ctx) || TEMP_ROOTS.some((root) => p.startsWith(root)),
     );
 }
+// cclio removes a scratch tree (a clean one: --force still asks) and deletes a scratch/* branch without dima's word;
+// a merged branch's `git branch -d` already runs for everyone, since git itself refuses an unmerged one
+const SCRATCH_TREE = /\/\.claude\/(worktrees\/[^/]+|jobs\/[^/]+\/tmp\/.+)$/;
+// the scratch trees a cclio `git worktree remove` names, for the caller to look up; a tree elsewhere asks anyway
+export function removedTrees(command: string, cwd: string, ctx: Context = {}) {
+    if (!ctx.isCclio) return [];
+    return commands(parse(command), cwd).flatMap((c) => {
+        if (c.name !== 'git') return [];
+        const { sub, subArgs } = gitParts(c.args);
+        const ops = operands(subArgs);
+        if (sub !== 'worktree' || ops[0] !== 'remove') return [];
+        const dir = gitDir(c, ctx);
+        return ops
+            .slice(1)
+            .map((t) => resolve(t, dir, ctx))
+            .filter((t) => SCRATCH_TREE.test(t));
+    });
+}
+function isCleanup(c: Command, r: Refusal, ctx: Context) {
+    if (!ctx.isCclio || c.name !== 'git' || r.rule !== 'git-rewrite')
+        return false;
+    const { sub, subArgs } = gitParts(c.args);
+    const ops = operands(subArgs);
+    if (sub === 'branch')
+        return ops.length > 0 && ops.every((o) => o.startsWith('scratch/'));
+    if (sub !== 'worktree' || ops[0] !== 'remove') return false;
+    if (hasFlag(subArgs, ['--force'], 'f')) return false;
+    const dir = gitDir(c, ctx);
+    const trees = ops.slice(1).map((t) => resolve(t, dir, ctx));
+    // a tree never looked up, or holding a `.scratch/` plan or commits only its HEAD reaches, asks
+    return (
+        trees.length > 0 &&
+        trees.every((t) => SCRATCH_TREE.test(t) && ctx.cleanTrees?.has(t))
+    );
+}
 export function refusals(
     command: string,
     cwd: string,
@@ -83,7 +119,8 @@ export function refusals(
             lint(c, list[i + 1]) ??
             missingAdd(c, ctx) ??
             brief(c, ctx);
-        if (found && !isScratchGit(c, found, ctx)) out.push(found);
+        if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
+            out.push(found);
         // a nested shell's script is a command too
         // `-c` alone or in a cluster: `bash -lc`
         const dashC = SHELLS.has(c.name)
@@ -105,6 +142,32 @@ export function refusals(
                     o.rule === r.rule && o.targets.join() === r.targets.join(),
             ) === i,
     );
+}
+// a target dima named as a whole word: each edge is the prompt's end, a space, a quote (his «», ios “” included),
+// punctuation or a dash; a `.` or `/` closes it only before a space or the end (`build.`, `/x/build/`).
+// a target of bare symbols (`.`, `&`) reads in any prose, so it counts only inside the marker phrase he pastes
+const EDGE = /[\s"'`,;:!?()[\]<>«»“”‘’—–]/;
+const CLOSER = /[./]/;
+export function namesWhole(said: string, target: string) {
+    if (!/[\p{L}\p{N}]/u.test(target))
+        return namesWhole(said, `dima-ok: ${target}`);
+    for (
+        let i = said.indexOf(target);
+        i >= 0;
+        i = said.indexOf(target, i + 1)
+    ) {
+        const before = said[i - 1];
+        const end = i + target.length;
+        const after = said[end];
+        const isStart = before === undefined || EDGE.test(before);
+        const isEnd =
+            after === undefined ||
+            EDGE.test(after) ||
+            (CLOSER.test(after) &&
+                (end + 1 === said.length || /\s/.test(said[end + 1] ?? '')));
+        if (isStart && isEnd) return true;
+    }
+    return false;
 }
 export function markers(command: string) {
     return parse(command)

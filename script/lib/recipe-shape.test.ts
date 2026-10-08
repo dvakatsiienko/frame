@@ -5,6 +5,8 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 import { expect, test } from 'vitest';
 
+import { gitEnv } from './git-fixture.ts';
+
 const root = path.resolve(import.meta.dirname, '../..');
 const recipesDir = path.join(root, 'recipes');
 const scripts = Object.keys(
@@ -170,7 +172,7 @@ test('no live file names a recipe by its old name', () => {
             '.',
             ...history.map((dir) => `:!${dir}`),
         ],
-        { cwd: root, encoding: 'utf8' },
+        { cwd: root, encoding: 'utf8', env: gitEnv() },
     ).stdout.trim();
     expect(hits, 'old recipe names in live files').toBe('');
 });

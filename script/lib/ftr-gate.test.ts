@@ -4,14 +4,14 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+import { gitEnv } from './git-fixture.ts';
+
 const script = resolve(
     import.meta.dirname,
     '../../home/.claude/plugin-x/bin/ftr-gate',
 );
 
-const env = Object.fromEntries(
-    Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
-);
+const env = gitEnv();
 
 const git = (repo: string, ...args: string[]) =>
     execFileSync(

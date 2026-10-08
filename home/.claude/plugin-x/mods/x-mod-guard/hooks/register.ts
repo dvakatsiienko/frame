@@ -4,7 +4,13 @@ import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context } from './rules/command.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
-import { addedPaths, check, message } from './rules.ts';
+import {
+    addedPaths,
+    check,
+    message,
+    namesWhole,
+    removedTrees,
+} from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
 // each refusal and each escape is kept in $.store as one `event:` key; x-mod-stash's band reads them as 🛡️ lines.
@@ -234,6 +240,68 @@ async function isReleased(
     return !git || git.exitCode !== 0 || git.stdout.trim() === '';
 }
 
+const isUnder = (path: string, dir: string) =>
+    path === dir || path.startsWith(`${dir}/`);
+
+const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
+// dima's last prompt typed at the composer or sent over the bridge: a peer's message, a notification, a plugin's or an
+// sdk turn never lands here, and only this plugin writes $.state, so no tool call can forge it
+const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
+const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
+const UNPROVEN_DOOR =
+    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»). a bg session: ask cclio, who asks dima';
+const UNPROVEN_WHY =
+    "a # dima-ok marker counts only when dima's last typed prompt names its target";
+const UNREAD_DOOR = 'Read the file first, then Write';
+const UNREAD_WHY = 'a Write replaces a tracked file this session never read';
+
+async function isTracked($: EngineInterface, path: string) {
+    if (!(await $.fs.exists(path))) return false;
+    const cut = path.lastIndexOf('/');
+    // a slow or locked repo fails open on this lookup only: the Write runs as cc would run it
+    const ls = await $.process
+        .run(
+            ['git', 'ls-files', '--error-unmatch', '--', path.slice(cut + 1)],
+            { cwd: path.slice(0, cut) || '/' },
+        )
+        .catch(() => null);
+    return ls?.exitCode === 0;
+}
+
+// a tree cclio may drop unasked: no `.scratch/` plan inside, and every commit its HEAD reaches is on a branch;
+// a lookup that fails counts as unclean, so the remove asks
+async function isCleanTree($: EngineInterface, tree: string) {
+    if (await $.fs.exists(`${tree}/.scratch`)) return false;
+    const orphans = await $.process
+        .run(
+            [
+                'git',
+                'rev-list',
+                '-n',
+                '1',
+                'HEAD',
+                '--not',
+                '--branches',
+                '--remotes',
+            ],
+            { cwd: tree },
+        )
+        .catch(() => null);
+    return !!orphans && orphans.exitCode === 0 && orphans.stdout.trim() === '';
+}
+
+// parallel Reads in one step each add their path: a write that lost the race reads again
+async function markSeen($: EngineInterface, path: string) {
+    for (let tries = 0; tries < 3; tries++) {
+        const { value = [], version } = await $.state.get(SEEN);
+        if (value.includes(path)) return;
+        const { isSet } = await $.state.set(SEEN, [...value, path], {
+            ifVersion: version,
+        });
+        if (isSet) return;
+    }
+}
+
 export const register: Register = (on) => {
     // a Monitor's command is a shell command too
     on('tool.call', { tool: /^(Bash|Monitor)$/ }, async ($, e, next) => {
@@ -244,8 +312,11 @@ export const register: Register = (on) => {
         // a shape with one right spelling is fixed, then the fixed command is what every rule reads
         const { command, notes } = rewrite(typed);
         const cwd = await $.session.cwd();
+        const home = await $.env.get('HOME');
+        const root = await $.session.root().catch(() => cwd);
         const ctx: Context = {
-            home: await $.env.get('HOME'),
+            home,
+            isCclio: isUnder(root, `${home}/frame/cclio`),
             jobDir: await $.env.get('CLAUDE_JOB_DIR'),
         };
         const missing = new Set<string>();
@@ -255,6 +326,9 @@ export const register: Register = (on) => {
         for (const path of overwrittenPaths(command, cwd, ctx))
             if (await $.fs.exists(path))
                 kinds.set(path, (await $.fs.stat(path)).kind);
+        const cleanTrees = new Set<string>();
+        for (const tree of removedTrees(command, cwd, ctx))
+            if (await isCleanTree($, tree)) cleanTrees.add(tree);
         const briefs = new Map<string, Brief>();
         for (const path of briefPaths(command, cwd, ctx))
             if (await $.fs.exists(path))
@@ -262,11 +336,11 @@ export const register: Register = (on) => {
         const verdict = check(command, cwd, {
             ...ctx,
             briefs,
+            cleanTrees,
             kinds,
             missing,
         });
         // a worktree session whose shell `cd`ed out (`cd ~/frame && …`) is refused for the wrong tree; the root still names its own
-        const root = await $.session.root().catch(() => cwd);
         const drift =
             root.includes('/.claude/worktrees/') &&
             cwd !== root &&
@@ -310,6 +384,24 @@ export const register: Register = (on) => {
             });
             return deny(message(refusal));
         }
+        // the marker is only a claim: dima's own last prompt must name every target the refusals named
+        const { value: said = '' } = await $.state.get(PROMPT);
+        const unproven = [
+            ...new Set(verdict.refusals.flatMap((r) => r.targets)),
+        ].filter((t) => !namesWhole(said, t));
+        if (unproven.length) {
+            await record($, {
+                command,
+                door: UNPROVEN_DOOR,
+                kind: 'refused',
+                rule: 'dima-ok-unproven',
+                target: unproven[0] ?? '',
+                why: UNPROVEN_WHY,
+            });
+            return deny(
+                `nothing in this command ran — x-mod-guard stopped it. instead: ${UNPROVEN_DOOR}. why: ${UNPROVEN_WHY}; it does not name: ${unproven.join(' ')}`,
+            );
+        }
         await record($, {
             command,
             door: verdict.refusals.map((r) => r.door).join('; '),
@@ -337,8 +429,7 @@ export const register: Register = (on) => {
             try {
                 const home = await $.env.get('HOME');
                 const cwd = await $.session.cwd();
-                const root = `${home}/frame/cclio`;
-                if (cwd !== root && !cwd.startsWith(`${root}/`)) return result;
+                if (!isUnder(cwd, `${home}/frame/cclio`)) return result;
                 const n = ((await $.state.get(EDITS)).value ?? 0) + 1;
                 await $.state.set(EDITS, n);
                 if (n !== EDIT_LIMIT) return result;
@@ -351,6 +442,49 @@ export const register: Register = (on) => {
             }
         },
     );
+
+    // a Write over a tracked file this session never saw replaces what it never read; a Read, Edit or Write marks it seen
+    on(
+        'tool.call',
+        { tool: /^(Read|Edit|MultiEdit|Write)$/ },
+        async ($, e, next) => {
+            const path = 'file_path' in e ? e.file_path : undefined;
+            if (typeof path !== 'string') return next(e);
+            const real = await $.fs.stat(path, { resolve: true }).then(
+                (s) => s.realPath ?? path,
+                () => path,
+            );
+            const { value: seen = [] } = await $.state.get(SEEN);
+            if (
+                e.tool === 'Write' &&
+                !seen.includes(real) &&
+                (await isTracked($, real))
+            ) {
+                await record($, {
+                    command: `Write ${path}`,
+                    door: UNREAD_DOOR,
+                    kind: 'refused',
+                    rule: 'write-unread',
+                    target: path,
+                    why: UNREAD_WHY,
+                });
+                return {
+                    deny: `x-mod-guard stopped this Write. instead: ${UNREAD_DOOR}. why: ${UNREAD_WHY}: ${path}`,
+                };
+            }
+            const result = await next(e);
+            if (result.deny === undefined && !result.isError)
+                // bookkeeping only: the call already ran, so a failed mark never turns it into a refusal
+                await markSeen($, real).catch(() => undefined);
+            return result;
+        },
+    ).catch(() => ({ deny: FAILED }));
+
+    on('prompt.submit', async ($, e, next) => {
+        if (TYPED_BY_DIMA.has(e.origin.kind))
+            await $.state.set(PROMPT, e.text).catch(() => undefined);
+        return next(e);
+    });
 
     on('agent.spawn', async ($, e, next) => {
         if (!e.fork || WHY_FORK.test(e.prompt)) return next(e);

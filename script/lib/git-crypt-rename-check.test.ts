@@ -5,23 +5,14 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
 
+import { gitEnv } from './git-fixture.ts';
+
 const script = path.resolve(
     import.meta.dirname,
     '../git-crypt-rename-check.ts',
 );
 
-// a commit hook runs this suite with GIT_DIR, GIT_INDEX_FILE and friends set for frame; a fixture
-// that inherits them writes frame's index instead of its own
-const env = {
-    ...Object.fromEntries(
-        Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
-    ),
-    GIT_AUTHOR_EMAIL: 'fixture@example.com',
-    GIT_AUTHOR_NAME: 'fixture',
-    GIT_COMMITTER_EMAIL: 'fixture@example.com',
-    GIT_COMMITTER_NAME: 'fixture',
-    GIT_CONFIG_GLOBAL: '/dev/null',
-};
+const env = gitEnv();
 
 function git(dir: string, ...args: string[]) {
     const run = spawnSync('git', args, { cwd: dir, encoding: 'utf8', env });

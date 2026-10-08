@@ -1,16 +1,19 @@
 import { expect, mock, test } from 'claude-code/testing';
 
+import { answerPrompts, dimaSays } from './said.ts';
 import { liveStore } from './store.ts';
 
 test("a day's refusals and escapes are counted past the kept events", async ($, on) => {
     mock.clock(on, { now: new Date(2026, 9, 6, 12).getTime() });
     const store = liveStore(on);
+    answerPrompts(on);
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
     on('fs.exists', () => ({ value: false }));
     on('ui.log', () => ({ value: undefined }));
     on('tool.call', () => ({ result: {}, text: 'ran' }));
+    await dimaSays($, 'rm c is fine');
     for (const command of ['rm a', 'rm b', 'rm c # dima-ok: c'])
         await $.tool.call({ command, tool: 'Bash' });
     expect(store.get('day:2026-10-06:a1a1a1a1-0000')).toMatchObject({
@@ -22,12 +25,14 @@ test("a day's refusals and escapes are counted past the kept events", async ($, 
 test("a day's count names the rule behind each refusal and escape", async ($, on) => {
     mock.clock(on, { now: new Date(2026, 9, 6, 12).getTime() });
     const store = liveStore(on);
+    answerPrompts(on);
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
     on('fs.exists', () => ({ value: false }));
     on('ui.log', () => ({ value: undefined }));
     on('tool.call', () => ({ result: {}, text: 'ran' }));
+    await dimaSays($, 'rm c is fine');
     for (const command of [
         'rm a',
         'git push -f origin x',
