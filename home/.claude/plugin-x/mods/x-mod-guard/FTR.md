@@ -96,6 +96,11 @@
   - given a Bash call x-mod-guard refuses, a chained command included
   - then the reason opens with «nothing in this command ran — », so no one assumes the first half ran
   - decision: a chained command is refused whole; an agent once took its first half as run
+- ✅ a worktree session whose shell left its tree is pointed back
+  - given a session rooted under `<repo>/.claude/worktrees/` whose shell cwd sits outside that tree (a `cd ~/frame && …` left it in main)
+  - when its Bash or Monitor call is refused (by x-mod-guard or beneath it) or fails
+  - then the refusal or the result carries «this worktree session's shell left its tree for <cwd>: cd <tree>, or EnterWorktree(path: "<tree>")»; a call that runs, or one inside the tree, gets nothing (FRM-337)
+  - 📌 harness-proven only: that cc's own isolation refusal reaches the mod as a deny or an error beneath `tool.call` is unprobed — a live worktree session `cd`ed to main would show it
 - ✅ a hand-typed push to main is refused with `x lane push`
   - given a Bash `git push <remote> <sha-or-ref>:main` (or `:refs/heads/main`) run inside `~/frame` or `~/projects/bytes`, `cd` or `-C` included
   - then it is refused with the door `x lane push` (it pushes HEAD's sha and reads the remote back); `# dima-ok: <refspec>` lets it run

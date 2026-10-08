@@ -179,13 +179,34 @@ export const register: Register = (on) => {
             kinds,
             missing,
         });
+        // a worktree session whose shell `cd`ed out (`cd ~/frame && …`) is refused for the wrong tree; the root still names its own
+        const root = await $.session.root().catch(() => cwd);
+        const drift =
+            root.includes('/.claude/worktrees/') &&
+            cwd !== root &&
+            !cwd.startsWith(`${root}/`)
+                ? `this worktree session's shell left its tree for ${cwd}: cd ${root}, or EnterWorktree(path: "${root}")`
+                : undefined;
+        const deny = (text: string) => ({
+            deny: drift ? `${text} — ${drift}` : text,
+        });
         // the model typed the old command: it is told what changed, or it reads a surprise
         const go = async () => {
-            if (!notes.length) return next(e);
-            const result = await next({ ...e, command });
-            if (result.deny !== undefined) return result;
-            const note = `x-mod-guard rewrote this call before it ran: ${notes.join('; ')}. it ran: ${command}`;
-            return { ...result, context: [...(result.context ?? []), note] };
+            const result = await next(notes.length ? { ...e, command } : e);
+            if (result.deny !== undefined) return deny(result.deny);
+            const context = [
+                ...(notes.length
+                    ? [
+                          `x-mod-guard rewrote this call before it ran: ${notes.join('; ')}. it ran: ${command}`,
+                      ]
+                    : []),
+                ...(drift && result.isError ? [drift] : []),
+            ];
+            if (!context.length) return result;
+            return {
+                ...result,
+                context: [...(result.context ?? []), ...context],
+            };
         };
         if (verdict.kind === 'run') return go();
         if (verdict.kind === 'refused') {
@@ -198,7 +219,7 @@ export const register: Register = (on) => {
                 target: refusal.targets[0] ?? '',
                 why: refusal.why,
             });
-            return { deny: message(refusal) };
+            return deny(message(refusal));
         }
         await record($, {
             command,
