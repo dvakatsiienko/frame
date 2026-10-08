@@ -1,5 +1,6 @@
 {
     "name": "x-mod-guard",
     "version": "0.4.0",
-    "description": "reads every Bash call and fork spawn before it runs: a floor command, a system, overwrite, prune or remote-delete command, a known hazard shape, a coder spawn whose brief has no x brief check stamp, or a fork with no why-fork line is refused with its safe door, never a dialog; each refusal and escape is kept in its own store as an event and a per-day count, which x-mod-stash's band reads as its 🛡️ counter row"
+    "description": "reads every Bash call and fork spawn before it runs: a floor command, a system, overwrite, prune or remote-delete command, a known hazard shape, a coder spawn whose brief has no x brief check stamp, or a fork with no why-fork line is refused with its safe door, never a dialog; each refusal and escape is kept in its own store as an event and a per-day count, which x-mod-stash's band reads as its 🛡️ counter row",
+    "types": "./types/guard.d.ts"
 }

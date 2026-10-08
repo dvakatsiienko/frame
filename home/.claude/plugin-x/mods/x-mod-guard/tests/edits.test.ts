@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { liveStore } from './store.ts';
+
 function world(on: On, cwd: string) {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
@@ -50,4 +52,14 @@ test('a session outside cclio gets no note', async ($, on) => {
         const r = await edit($, '/home/projects/bytes/a.ts');
         expect(r.context ?? []).toHaveLength(0);
     }
+});
+
+test('the edit count leaves nothing in the shared store', async ($, on) => {
+    const store = liveStore(on);
+    on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
+    on('session.cwd', () => ({ value: '/home/frame/cclio' }));
+    on('env.get', () => ({ value: '/home' }));
+    on('tool.call', () => ({ result: {}, text: 'ran' }));
+    await edit($, '/home/frame/x/a.ts');
+    expect([...store.keys()]).toEqual([]);
 });

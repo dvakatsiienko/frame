@@ -39,7 +39,7 @@ const DAYS = 30;
 const SHOWN = 160;
 // a cclio session's own code edits: the 8th gets one note that a bigger job belongs to a helper
 const CODE_FILE = /\.(ts|tsx|go|sh|py|swift)$/;
-const EDITS = 'edits:';
+const EDITS = { key: 'edits', plugin: 'x-mod-guard' } as const;
 const EDIT_LIMIT = 8;
 const DELEGATE_NOTE =
     "x-mod-guard: 8 code edits in this cclio session — a bigger job goes to a helper (~137k base) instead of this thread's context";
@@ -255,10 +255,8 @@ export const register: Register = (on) => {
                 const cwd = await $.session.cwd();
                 const root = `${home}/frame/cclio`;
                 if (cwd !== root && !cwd.startsWith(`${root}/`)) return result;
-                const key = EDITS + (await $.session.id());
-                const n =
-                    (((await $.store.get(key)) as number | undefined) ?? 0) + 1;
-                await $.store.set(key, n);
+                const n = ((await $.state.get(EDITS)).value ?? 0) + 1;
+                await $.state.set(EDITS, n);
                 if (n !== EDIT_LIMIT) return result;
                 return {
                     ...result,

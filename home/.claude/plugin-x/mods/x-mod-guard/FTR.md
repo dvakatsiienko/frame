@@ -125,4 +125,4 @@
   - then the call runs and the model gets one note: «x-mod-guard: 8 code edits in this cclio session — a bigger job goes to a helper (~137k base) instead of this thread's context»; later edits get none
   - given other file types, or a session outside `~/frame/cclio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
-  - makes: one `edits:<session>` count key in x-mod-guard's `$.store`
+  - makes: a count in x-mod-guard's `$.state`, the session's own: it survives a hot reload and dies with the session, so nothing piles up in the shared store
