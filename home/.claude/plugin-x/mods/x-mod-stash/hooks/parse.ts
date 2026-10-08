@@ -1,5 +1,46 @@
 const HEADER = /⏳\s*waiting on your word/i;
 
+// a ·-joined list in prose, rewritten as bullets the way the output rules want it (reply-check blocks the dot);
+// fences, inline code and the 📄 stamp line keep theirs
+export function bulletDots(text: string) {
+    let isFence = false;
+    return text
+        .split('\n')
+        .flatMap((line) => {
+            if (/^\s*```/.test(line)) isFence = !isFence;
+            if (isFence || line.includes('📄')) return [line];
+            // inline code masked at the same length, so split offsets land on the real line
+            const masked = line.replace(/`[^`\n]*`/g, (m) =>
+                '\0'.repeat(m.length),
+            );
+            if (!/\S\s·\s\S/.test(masked)) return [line];
+            const parts: string[] = [];
+            let from = 0;
+            for (const m of masked.matchAll(/\s·\s/g)) {
+                parts.push(line.slice(from, m.index));
+                from = (m.index ?? 0) + m[0].length;
+            }
+            parts.push(line.slice(from));
+            const [indent, bullet, head] = (parts[0] ?? '')
+                .match(/^(\s*)(-\s+)?(.*)$/)
+                ?.slice(1) ?? ['', undefined, ''];
+            const pad = bullet ? `${indent}  ` : (indent ?? '');
+            // a label ends at the first item's last colon: `the crew: a · b` keeps `the crew:` as its line
+            const colon = (head ?? '').lastIndexOf(': ');
+            const label =
+                colon >= 0 ? (head ?? '').slice(0, colon + 1) : undefined;
+            const items = [
+                colon >= 0 ? (head ?? '').slice(colon + 2) : (head ?? ''),
+                ...parts.slice(1),
+            ];
+            const lines = items.map((i) => `${pad}- ${i.trim()}`);
+            if (label !== undefined)
+                return [`${indent}${bullet ?? ''}${label}`, ...lines];
+            return bullet ? [`${indent}${bullet}`.trimEnd(), ...lines] : lines;
+        })
+        .join('\n');
+}
+
 // dima's «yes, after X» verdicts, each with the open ask its number names; a plain yes is not one
 export function parseAfter(prompt: string, asks: string[]) {
     return prompt.split('\n').flatMap((line) => {

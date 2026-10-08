@@ -4,6 +4,7 @@ import type { EngineInterface, Register, RenderElement } from 'claude-code';
 import {
     type Door,
     FLEET_NAME,
+    bulletDots,
     doorOf,
     nestedAsks,
     parseAfter,
@@ -1013,7 +1014,10 @@ export const register: Register = (on) => {
         let isChanged = false;
         const content = e.message.content.map((b) => {
             if (b.type !== 'text' || typeof b.text !== 'string') return b;
-            const text = b.text.replace(
+            // the stored row is what the Stop hooks read: a ·-list fixed here never trips reply-check
+            const bulleted = bulletDots(b.text);
+            if (bulleted !== b.text) isChanged = true;
+            const text = bulleted.replace(
                 STAMP,
                 (whole: string, head: string, at: string) => {
                     if (at === now) return whole;
@@ -1025,6 +1029,13 @@ export const register: Register = (on) => {
         });
         if (!isChanged) return next(e);
         return next({ ...e, message: { ...e.message, content } });
+    });
+
+    // the drawing: the reply's ·-list shows as bullets while it streams, before the stored row exists
+    on('ui.render', { component: 'AssistantMessage' }, async (_$, e, next) => {
+        const text = bulletDots(e.props.text);
+        if (text === e.props.text) return next(e);
+        return next({ ...e, props: { ...e.props, text } });
     });
 
     on('classic.Stop', async ($, e, next) => {

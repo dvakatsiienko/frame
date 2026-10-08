@@ -37,6 +37,28 @@ test("a reply's 📄 stamp is stored with the real clock", async ($, on) => {
     expect(w.stored.join()).toContain('📄 last report: **mods**, 13:58');
 });
 
+test("a reply's ·-list is stored as bullets", async ($, on) => {
+    const w = world(on);
+    await reply($, 'crew: a · b · c');
+    expect(w.stored.join()).toContain('crew:\\n- a\\n- b\\n- c');
+});
+
+test("a reply's ·-list is drawn as bullets", async ($, on) => {
+    world(on);
+    const drawn: string[] = [];
+    on('ui.render', ($, e) => {
+        if (e.component === 'AssistantMessage') drawn.push(e.props.text);
+        return $.ui.resolve(e).Box({});
+    });
+    await $.ui.mount({
+        component: 'AssistantMessage',
+        plugin: 'x-mod-stash',
+        props: { isFirstOfReply: true, text: 'crew: a · b' },
+        surface: 'desktop',
+    });
+    expect(drawn).toContain('crew:\n- a\n- b');
+});
+
 test('a time outside a 📄 line is kept', async ($, on) => {
     const w = world(on);
     await reply($, 'the run started at 14:20');

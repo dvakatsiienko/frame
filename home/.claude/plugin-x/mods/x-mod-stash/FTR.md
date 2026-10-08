@@ -88,6 +88,11 @@
   - when it reaches the model
   - then its context holds `now HH:MM`, so a reply's 📄 stamp copies the clock
   - decision: three 📄 stamps were guessed ahead of the clock on 10-07 and `reply-check` refused each one, a correction turn every time; ccrow named the fix, dima said yes
+- ✅ a ·-joined list in a reply becomes bullets before dima sees it
+  - given a reply line in prose like `the crew: a · b · c` (outside a fence, inline code and the 📄 line)
+  - then the drawing (`ui.render` on `AssistantMessage`, every surface) and the stored row (`session.append`, the response door) both read `the crew:` and one `- ` line per item; a `·` list inside a bullet nests under it
+  - then `reply-check.py` never sees the dot, so its block and the «Hook re-prompted Claude» second reply never happen; it stays as the net
+  - proven live 2026-10-08: a headless reply told to print `the crew: chores · researcher · retro` came out as bullets in one turn; the Stop hook reads the rewritten row (a probe mod saw it)
 - ⬜ a reply's 📄 stamp is stored with the real clock
   - given a reply row whose 📄 line carries an `HH:MM` that is not now (a long turn outran its prompt's clock, or the model guessed)
   - when the row is kept (`session.append`, the response door)
