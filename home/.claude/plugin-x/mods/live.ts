@@ -19,6 +19,8 @@ import { dirname, join, resolve } from 'node:path';
 import xterm from '@xterm/headless';
 import pty from 'node-pty';
 
+import { reloadVerdict, sourceHash } from './live-verdict.ts';
+
 const COLS = 140;
 const ROWS = 40;
 const QUIET_MS = 600;
@@ -193,6 +195,7 @@ async function serve() {
 
     let timer: NodeJS.Timeout | undefined;
     let busy = false;
+    let loadedHash = sourceHash(mod);
     // a save that lands mid-check runs once the check ends, so no save goes unframed
     let isPending = false;
     const onSave = async () => {
@@ -212,13 +215,20 @@ async function serve() {
         const until = Date.now() + RELOAD_MS;
         while (reloads() === before && Date.now() < until) await sleep(200);
         await settle();
-        const line = loadLines().at(-1);
+        const hash = sourceHash(mod);
         if (check.status === 0)
             console.log(
-                reloads() > before
-                    ? `reload ok: ${line}`
-                    : `reload error: the engine logged no load of ${name} in 8 s${line ? `; last: ${line}` : ''}`,
+                reloadVerdict({
+                    isReloaded: reloads() > before,
+                    isSame: hash === loadedHash,
+                    // the last load verdict, never a render or timing line about the module
+                    line: loadLines()
+                        .filter((l) => / (re|not )?loaded\b/.test(l))
+                        .at(-1),
+                    name,
+                }),
             );
+        loadedHash = hash;
         console.log(`frame: ${frame('save')}`);
         busy = false;
         if (isPending) {

@@ -6,7 +6,7 @@
 - a mod test is proven red with `red-proof --cmd <file> <anchor> <replacement> -- claude plugin test home/.claude/plugin-x/mods/<mod>` (plugin bin; `--pairs` for many lines), never a hand swap
 - `pnpm mods:live <mod dir>` is the reload and hover check for every mod round — what `claude plugin test` cannot reach (FRM-322, proven 2026-10-05):
   - it runs a real cc session in a pty (`node-pty` + `@xterm/headless`) with the mod on `--plugin-dir`, named `mods-live: <mod>` on the board; run it in the background
-  - each save prints `reload ok: <the engine's load line>` or the error — `claude plugin validate`'s parse error, or no load in 8 s with the engine's last word (a name clash reads «another plugin of that name loads first») — and writes a text frame of the screen to `$TMPDIR/mods-live/<mod>/` (`latest.txt` is the newest)
+  - each save prints `reload ok: <the engine's load line>` — or `reload ok: no hook changed, still loaded`, when the save left `hooks/` and the manifest as they were and the engine skipped the unchanged module (`live-verdict.ts`) — or the error — `claude plugin validate`'s parse error, or no load in 8 s with the engine's last word (a name clash reads «another plugin of that name loads first») — and writes a text frame of the screen to `$TMPDIR/mods-live/<mod>/` (`latest.txt` is the newest)
   - the load lines come from the session's `--debug-file`, never the screen: cc draws on the alternate screen, which keeps no scrollback
   - `pnpm mods:live <mod dir> hover <label>` moves the pointer onto the label's first cell (an SGR motion event) and prints the frame with its hover card
   - stop it with `kill $(cat $TMPDIR/mods-live/<mod>/server.pid)`; the session goes with it
