@@ -69,6 +69,42 @@ test("a dima-ok marker is refused when dima's last prompt names the target in an
     expect(ran).toEqual([]);
 });
 
+test("a dima-ok marker runs when dima's prompt names the target before a full stop", async ($, on) => {
+    const { ran } = world(on);
+    await dimaSays($, 'ok, drop build.');
+    expect((await bash($, RM)).deny).toBeUndefined();
+    expect(ran).toEqual([RM]);
+});
+
+for (const said of ['the rebuild is fine', 'the builder is fine'])
+    test(`a dima-ok marker is refused when dima's prompt holds the target only inside a word: ${said}`, async ($, on) => {
+        const { ran } = world(on);
+        await dimaSays($, said);
+        expect((await bash($, RM)).deny).toContain('it does not name: build');
+        expect(ran).toEqual([]);
+    });
+
+for (const [command, said, target] of [
+    ['git checkout -- . # dima-ok: .', 'rm build.', '.'],
+    ['sleep 1 & # dima-ok: &', 'run a&b', '&'],
+] as const)
+    test(`a short target never proves itself inside a word: ${target}`, async ($, on) => {
+        const { ran } = world(on);
+        await dimaSays($, said);
+        expect((await bash($, command)).deny).toContain(
+            `it does not name: ${target}`,
+        );
+        expect(ran).toEqual([]);
+    });
+
+test('a short target runs when dima names it alone', async ($, on) => {
+    const { ran } = world(on);
+    const command = 'git checkout -- . # dima-ok: .';
+    await dimaSays($, 'yes, checkout -- .');
+    expect((await bash($, command)).deny).toBeUndefined();
+    expect(ran).toEqual([command]);
+});
+
 test("only dima's last typed prompt counts", async ($, on) => {
     const { ran } = world(on);
     await dimaSays($, 'rm build');

@@ -63,9 +63,10 @@
   - decision: the target is the command's own — its paths, pattern or branch; the rule's own word when it names none (`HEAD`, `&`, `-s`) — and the refusal prints the exact marker, so a coder never guesses it
 - ⬜ a dima-ok marker counts only when dima's own last prompt names its target
   - given a command whose `# dima-ok:` marker names every target
-  - when dima's last prompt typed at the composer or sent over the bridge holds each target as an exact, case-sensitive substring
+  - when dima's last prompt typed at the composer or sent over the bridge names each target as a whole word, case-sensitive: each edge is the prompt's end, a space, a quote, punctuation or a sentence-ending period
   - then it runs as an escape
-  - when no such prompt exists, it names the target in another case, or only an older prompt did
+  - when no such prompt exists, it names the target in another case, only inside a word (`.` in `build.`, `&` in `a&b`, `build` in `rebuild`), or only an older prompt did
+  - decision: a whole-word match, so a short target like `.` or `&` never proves itself (dima, 2026-10-09)
   - then it is refused, naming the targets his prompt lacks (rule `dima-ok-unproven`); a peer's message, a task notification, an sdk or a plugin prompt never counts
   - makes: dima's last typed prompt in x-mod-guard's `$.state`, written only by its `prompt.submit` hook, so no tool call can forge it
   - decision: a model appended `# dima-ok:` on its own in a live probe and passed (2026-10-09); dima chose the proof, `$.state` over a file since no Bash parse can stop a write through a variable (FRM-356)

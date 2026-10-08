@@ -4,7 +4,13 @@ import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context } from './rules/command.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
-import { addedPaths, check, message, removedTrees } from './rules.ts';
+import {
+    addedPaths,
+    check,
+    message,
+    namesWhole,
+    removedTrees,
+} from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
 // each refusal and each escape is kept in $.store as one `event:` key; x-mod-stash's band reads them as 🛡️ lines.
@@ -379,7 +385,7 @@ export const register: Register = (on) => {
         const { value: said = '' } = await $.state.get(PROMPT);
         const unproven = [
             ...new Set(verdict.refusals.flatMap((r) => r.targets)),
-        ].filter((t) => !said.includes(t));
+        ].filter((t) => !namesWhole(said, t));
         if (unproven.length) {
             await record($, {
                 command,

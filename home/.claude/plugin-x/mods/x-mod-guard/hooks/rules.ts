@@ -143,6 +143,28 @@ export function refusals(
             ) === i,
     );
 }
+// a target dima named as a whole word: each edge is the prompt's end, a space, a quote or punctuation, or a
+// sentence-ending period — so `.` inside `build.` or `&` inside `a&b` never proves itself
+const EDGE = /[\s"'`,;:!?()[\]<>]/;
+export function namesWhole(said: string, target: string) {
+    for (
+        let i = said.indexOf(target);
+        i >= 0;
+        i = said.indexOf(target, i + 1)
+    ) {
+        const before = said[i - 1];
+        const end = i + target.length;
+        const after = said[end];
+        const isStart = before === undefined || EDGE.test(before);
+        const isEnd =
+            after === undefined ||
+            EDGE.test(after) ||
+            (after === '.' &&
+                (end + 1 === said.length || /\s/.test(said[end + 1] ?? '')));
+        if (isStart && isEnd) return true;
+    }
+    return false;
+}
 export function markers(command: string) {
     return parse(command)
         .comments.map((c) => c.match(/^\s*dima-ok:\s*(.+?)\s*$/)?.[1])
