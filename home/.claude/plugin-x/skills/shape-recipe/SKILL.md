@@ -122,7 +122,8 @@ special way here.» so:
 
 a branch (design, voice, a tool stack) or a research with several vectors that will run again becomes a
 recipe the same session: the folder, `recipe.md` with dima's want quoted from the thread, an empty
-`log.md`. the tell is writing research vectors from scratch for a subject researched before.
+`log.md`. the tell is writing research vectors from scratch for a subject researched before. its first
+run needs the stamp too: `groomed: <today> (dima)` lands on his word, before any lane.
 
 ## practices
 

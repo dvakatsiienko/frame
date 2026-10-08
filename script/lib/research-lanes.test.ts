@@ -5,19 +5,23 @@ import {
     mkdirSync,
     mkdtempSync,
     readdirSync,
+    rmSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { expect, test } from 'vitest';
+import { expect, onTestFinished, test } from 'vitest';
 
 const script = path.resolve(import.meta.dirname, '../research-lanes.sh');
 
 test.each([
     ['no stamp', ''],
     ['a stale stamp', 'groomed: 2000-01-01 (dima)\n'],
+    // sv formats a local date as yyyy-mm-dd, the same day `date +%F` prints
+    ['an unsigned stamp', `groomed: ${new Date().toLocaleDateString('sv')}\n`],
 ])('a recipe brief with %s is refused before any lane starts', (_, stamp) => {
     const root = mkdtempSync(path.join(tmpdir(), 'lanes-'));
+    onTestFinished(() => rmSync(root, { recursive: true }));
     // a copy with no op-run.sh beside it: a broken gate fails here instead of paying for real lanes
     const copy = path.join(root, 'research-lanes.sh');
     copyFileSync(script, copy);

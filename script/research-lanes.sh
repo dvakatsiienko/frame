@@ -36,9 +36,10 @@ brief=${1:?usage: research-lanes <brief.md> [out-dir]}
 brief_abs=$(cd "$(dirname "$brief")" && pwd)/$(basename "$brief")
 case $brief_abs in
   */recipes/*/last/*)
-    recipe=${brief_abs%%/last/*}
-    groomed=$(awk 'NR > 1 && /^---$/ { exit } /^groomed:/ { print $2; exit }' "$recipe/recipe.md" 2>/dev/null)
-    [ "$groomed" = "$(date +%F)" ] || {
+    name=${brief_abs##*/recipes/}
+    recipe=${brief_abs%/recipes/*}/recipes/${name%%/*}
+    groomed=$(awk 'NR > 1 && /^---$/ { exit } /^groomed:/ { sub(/^groomed:[ \t]*/, ""); gsub(/["'\''`]/, ""); print; exit }' "$recipe/recipe.md" 2>/dev/null)
+    [ "$groomed" = "$(date +%F) (dima)" ] || {
       echo "research-lanes: recipe $(basename "$recipe") is groomed ${groomed:-never}, not today — groom it with dima first (x:shape-recipe step 0)" >&2
       exit 2
     }
