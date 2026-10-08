@@ -21,6 +21,7 @@ import {
     dayOf,
     fail,
     findSession,
+    isCoordinatorTranscript,
     isMode,
     localDay,
     modeList,
@@ -86,6 +87,9 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     const now = new Date();
     if (existsSync(join(STATE_DIR, 'paused'))) {
         skip(`paused (${join(STATE_DIR, 'paused')} exists)`);
+    }
+    if (!isCoordinatorTranscript(transcriptPath)) {
+        skip(`not cclio's thread: ${transcriptPath}`);
     }
     const state = readState();
     const session = findSession();

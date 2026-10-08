@@ -15,6 +15,7 @@ import {
     blindPrompt,
     blindSections,
     buildPacket,
+    isCoordinatorTranscript,
     isLocated,
     planNotes,
     planPrompt,
@@ -305,5 +306,25 @@ describe('planNotes', () => {
                 located: false,
             },
         ]);
+    });
+});
+
+describe('isCoordinatorTranscript', () => {
+    const sessions = mkdtempSync(join(tmpdir(), 'ccrow-sessions-'));
+    writeFileSync(
+        join(sessions, '6020.json'),
+        JSON.stringify({ name: '🦉 cclio', sessionId: 'aaa' }),
+    );
+    writeFileSync(
+        join(sessions, '3356.json'),
+        JSON.stringify({ name: '☕️ 🔧 coder: mods', sessionId: 'bbb' }),
+    );
+
+    test('a transcript of the session named cclio wakes ccrow', () => {
+        expect(isCoordinatorTranscript('/p/aaa.jsonl', sessions)).toBe(true);
+    });
+
+    test('a coder transcript under the cclio dir does not', () => {
+        expect(isCoordinatorTranscript('/p/bbb.jsonl', sessions)).toBe(false);
     });
 });

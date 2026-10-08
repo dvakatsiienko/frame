@@ -139,6 +139,27 @@ export function writeState(state: State) {
 // the registry stores the name with its zero-width joiner turned into a space: «🐦 ⬛ ccrow»
 const bareName = (name: string) => name.replaceAll(/[\s‍]/g, '');
 
+// a coder whose cwd is ~/frame/cclio fires cclio's Stop hook too; only the coordinator's own thread wakes ccrow
+export function isCoordinatorTranscript(
+    transcriptPath: string,
+    sessionsDir = SESSIONS_DIR,
+) {
+    const sessionId = basename(transcriptPath, '.jsonl');
+    for (const file of readdirSync(sessionsDir)) {
+        if (!file.endsWith('.json')) continue;
+        try {
+            const entry: { name?: string; sessionId?: string } = JSON.parse(
+                readFileSync(join(sessionsDir, file), 'utf8'),
+            );
+            if (entry.sessionId !== sessionId) continue;
+            return bareName(entry.name ?? '')
+                .replace(/^\p{Extended_Pictographic}+/u, '')
+                .startsWith('cclio');
+        } catch {}
+    }
+    return false;
+}
+
 export function isAlive(pid: number) {
     try {
         process.kill(pid, 0);
