@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Stop hook: reads the reply that just ended and logs every shape the output-format rules ban.
-# it blocks only a 📄 stamp later than the clock; every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
+# it blocks a 📄 stamp later than the clock and a ·-joined list in prose; every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
 # fixed instead of a validator stopping every reply. `pnpm reply-check:report` reads it.
 import json
 import os
@@ -15,6 +15,7 @@ LINEAR_LINK = re.compile(r"\[[^\]]*\]\(https://linear\.app/[^)]*\)")
 URL = re.compile(r"https?://\S+")
 TICKET = re.compile(r"\b(?:FRM|BYT|DOT)-\d+\b")
 TABLE_SEPARATOR = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$", re.M)
+INLINE_CODE = re.compile(r"`[^`\n]*`")
 MIDDOT = re.compile(r"\w[^\n·]*\s·\s[^\n·]*\w")
 CIRCLED = re.compile(r"[①-⑳]")
 HASH = re.compile(r"(?<![\w/.-])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}(?![\w/.-])")
@@ -68,8 +69,10 @@ def findings(reply: str) -> list[tuple[str, str]]:
     unlinked = URL.sub("", LINEAR_LINK.sub("", prose))
     found += [("bare-ticket", m.group(0)) for m in TICKET.finditer(unlinked)]
     found += [("table", m.group(0).strip()[:40]) for m in TABLE_SEPARATOR.finditer(prose)]
-    for line in prose.split("\n"):
-        found += [("middot", m.group(0)[:40]) for m in MIDDOT.finditer(line)]
+    # inline code quotes a machine string, and the 📄 line is a stamp, not a list
+    for line in INLINE_CODE.sub("", prose).split("\n"):
+        if "📄" not in line:
+            found += [("middot", m.group(0)[:40]) for m in MIDDOT.finditer(line)]
     found += [("circled-digits", m.group(0)) for m in CIRCLED.finditer(prose)]
     found += [("commit-hash", m.group(0)) for m in HASH.finditer(URL.sub("", prose))]
     found += [("future-stamp", stamp) for stamp in future_stamps(prose)]
@@ -97,13 +100,16 @@ def main() -> None:
             clean = snippet.replace("\t", " ").replace("\n", " ")
             log.write(f"{stamp}\t{session}\t{where}\t{rule}\t{clean}\n")
     late = [snippet for rule, snippet in hits if rule == "future-stamp"]
-    # the one blocking rule: 28 logged hits in a day changed nothing (dima, 2026-10-06); a second stop passes, so a block never loops
-    if late and not event.get("stop_hook_active"):
+    dots = [snippet for rule, snippet in hits if rule == "middot"]
+    # the two blocking rules: logging alone changed nothing (28 stamp hits in a day, dima 2026-10-06; the · list, dima 2026-10-08); a second stop passes, so a block never loops
+    reasons: list[str] = []
+    if late:
         now = os.environ.get("REPLY_CHECK_NOW", time.strftime("%H:%M"))
-        print(json.dumps({
-            "decision": "block",
-            "reason": f"the 📄 stamp {', '.join(late)} is later than now ({now}). run `date` and reprint the 📄 line with the real time.",
-        }))
+        reasons.append(f"the 📄 stamp {', '.join(late)} is later than now ({now}). run `date` and reprint the 📄 line with the real time.")
+    if dots:
+        reasons.append(f"a ·-joined list in prose («{dots[0]}»): three things in a row are three bullets. reprint it as one `- ` line per item.")
+    if reasons and not event.get("stop_hook_active"):
+        print(json.dumps({"decision": "block", "reason": " ".join(reasons)}))
 
 
 if __name__ == "__main__":
