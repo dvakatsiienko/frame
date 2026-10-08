@@ -51,7 +51,7 @@ every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item h
 it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear (dima, 2026-09-28). the template
 is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
-the same pass prunes the pocket first: every resolved item leaves one line in `pocket.md`'s «decisions so far» and its section goes; the gazette post (phase 4.5) carries the day's decision lines and the `pnpm agent-ops:report --days 1` numbers (cost per ticket, cclio code edits, boot cost), then the section empties; then the
+the same pass prunes the pocket first: every resolved item leaves one line in `pocket.md`'s «decisions so far» and its section goes; the gazette post (phase 4.5) carries the day's decision lines and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost), then the section empties; then the
 inbox clears — before the CST is written, every halt, both lanes (the 09-20 halt skipped the prune
 and dima found six done lines at the next boot).
 
@@ -85,7 +85,7 @@ placed by cclio into that app's `.claude/skills/verify/SKILL.md` in the flush �
 verifiers only suggest; the recipe stays short (commands that worked, flows worth driving, gotchas).
 **second sighting = teeth (FRM-314):** before a lesson enters the proposal, `rg -i '<its key words>' ~/.claude/shelf/flawlog/` over the last 30 days; a hit makes it a repeat, and a repeat leaves the flush as a guard, a verb, a check or a ticket, never a memory line. a stopgap memory line is written with `until: <ticket>`.
 **notes expire:** `rg -n 'until: (FRM|BYT)-[0-9]+' ~/frame/cclio/memory ~/.claude/rules` and check each id's state; a line whose ticket closed goes into the proposal for deletion.
-**the flow numbers, before the proposal:** `pnpm flow:report --days 14` in `~/frame` — the
+**the flow numbers, before the proposal:** `x fleet flow --days 14` in `~/frame` — the
 `habit-cto` halt read; name one inefficiency from it, fixed in place or ticketed in the flush.
 **the self-grill, with the log still open:** with the day's log still open, name the ONE weakest part of cclio
 as coordinator or pm, with the fix — `🥊 <issue>` + `➡️ <approach>`, one line each — and write the

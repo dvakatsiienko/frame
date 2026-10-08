@@ -15,7 +15,7 @@ each stage names its gate, its owner, its door and its wait budget.
 7. **verify** — gate: the verifier says clean, or its round-3 stop goes to cclio; owner: the verifier; door: `x:crew-verifier`; wait: 3 rounds
 8. **land** — gate: merge state clean and the deploy Ready, where «no run» is never green; owner: dima merges, cclio pushes; door: `x lane ci-wait`; wait: the pr median
 9. **look** — gate: one look card (what, where, try, proven, not checked — never empty), with a shot for anything rendered; owner: dima; door: `SendUserFile`; wait: his next time at the keyboard
-10. **fold** — gate: a repeat lesson leaves as a guard, a verb, a check or a ticket, and a stopgap line carries `until: <ticket>`; owner: cclio; door: `cclio:halt`, `flow:report`; wait: the same day
+10. **fold** — gate: a repeat lesson leaves as a guard, a verb, a check or a ticket, and a stopgap line carries `until: <ticket>`; owner: cclio; door: `cclio:halt`, `x fleet flow`; wait: the same day
 
 the lane is the ticket's first body line, `lane: <name>`. cclio proposes it and silence accepts; a coder pings at a named trigger and cclio promotes.
 
@@ -25,6 +25,6 @@ the lane is the ticket's first body line, `lane: <name>`. cclio proposes it and 
 - **feature** — worktree, pr and verifier: every stage, design when it earns it
 - **app / redesign** — every stage
 
-the done test, read at every halt with `pnpm flow:report --days 14`: the `#dima-caught` lines, the `#brief` lines and the pr open → merge median per repo all go down.
+the done test, read at every halt with `x fleet flow --days 14`: the `#dima-caught` lines, the `#brief` lines and the pr open → merge median per repo all go down.
 
 Related: [[habit-cto]], [[craft-spawning]], [[craft-pm]]

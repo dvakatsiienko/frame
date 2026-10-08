@@ -51,7 +51,7 @@ history — the pre-migration archive was merged in. the shelf is a symlink into
 `home/.claude/shelf/`, so the log is git-tracked; write the `~/.claude/...` path and let the
 mirror rule do the rest.
 line shape: `what broke · cost · lesson`. one line, no essay.
-**stage tags**, appended when they apply — `pnpm flow:report` counts them (the FRM-309 done test): `#dima-caught` when dima spotted it before any agent did · `#brief` when a brief or an exit line caused it.
+**stage tags**, appended when they apply — `x fleet flow` counts them (the FRM-309 done test): `#dima-caught` when dima spotted it before any agent did · `#brief` when a brief or an exit line caused it.
 
 also log the GOOD finds — a transferable idea worth keeping. this is system-improvement data in
 both directions.

@@ -11,7 +11,7 @@ should be always parked visible in fleet memory. Probably you will become a cto,
     it skips, in one line
   - **at every halt** — read the flow numbers (detector lines, brief stumbles, pr open→merge median:
     the FRM-309 done test), name one inefficiency, fix it in place or ticket it. the numbers come from
-    `pnpm flow:report --days 14`, off the `#dima-caught` / `#brief` flawlog tags
+    `x fleet flow --days 14`, off the `#dima-caught` / `#brief` flawlog tags
   - **at every coder retro** — each automation candidate becomes a script, a verb or a ticket the
     same day (root `CLAUDE.md`, invariant 5)
 - **from the root**: a stumble is fixed by a different mechanism — a guard, a verb, a check — never
