@@ -34,13 +34,8 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 ## git hooks
 
 - a gitignore pattern with a `/` in the middle is anchored to the ignore file's directory — `.impeccable/x.json` at a repo root never matches `apps/web/.impeccable/x.json`; `**/` in front makes it match at any depth (measured with `git check-ignore -v`, 2026-09-19)
-- worktrees share `.git/hooks`, and any pnpm run in one rewrites the shared lefthook shims to
-  the worktree's path — including pnpm's own auto-install before ANY script, so the first gated
-  commit in a fresh worktree does it by itself. harmless to gating (the shim's repo-root
-  fallback rescues it) but dirty. on pnpm 12 `CI=1 pnpm install` no longer stops it: it still prints
-  «sync hooks» and points the shims at the worktree (two sessions on #53, 2026-10-01; the FRM-278
-  coder, 2026-10-02). after a worktree is removed, `pnpm exec lefthook install` in the main checkout
-  points them home (a plain `pnpm install` answers «already up to date» and leaves them). guard: `x lane decamp` (and `x lane seed`) re-home the shims; a pnpm run in a live worktree still moves them
+- worktrees share `.git/hooks`: any pnpm run in one (its auto-install included, `CI=1` or not) points the shared lefthook shims at that worktree — harmless to gating, but dirty. guard: `x lane decamp` and `x lane seed` re-home them; by hand, `pnpm exec lefthook install` in the main checkout
+- **a test that spawns git clears every `GIT_*` variable** — under the commit hook a fixture's `git init` inherited them and set `core.bare=true` in frame; git refused every command for ~3 min (2026-10-08). guard: none · FRM-356
 - `rebase.updateRefs` is on since the git overhaul (2026-09-03): a safety BRANCH made before a
   rebase is dragged forward with the rewrite and stops being a recovery point — a tag or the
   reflog is the net (a coder lost its net on a reword, 2026-09-05)
@@ -105,4 +100,4 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 - a jq program is proven when ci compiles it — ubuntu runners ship jq 1.7, the mac 1.8; `a + b`
   as a bare object value parses locally and fails on the runner (bytes #79, 2026-09-12). a job
-  that runs jq prints `jq --version` first
+  that runs jq prints `jq --version` first. guard: none · BYT-94 (the gate redraw drops the jq gate)
