@@ -61,6 +61,9 @@ var impls = map[string]Impl{
 	"linear api":      {Run: linearAPI},
 	"linear push":     {Run: linearPush},
 	"linear archive":  {Plan: archivePlanOf, Apply: archiveApply, Undone: "nothing was archived", Ask: askArchive},
+	"fleet flow":      {Run: fleetFlow},
+	"fleet audit":     {Run: fleetAudit},
+	"fleet ops":       {Run: fleetOps},
 	"probe bare":      {Run: probeBare, Undone: "no answer came back"},
 	"probe session":   {Run: probeSession, Undone: "the session was not saved"},
 	"knowledge list":  {Run: knowledgeList},
@@ -73,6 +76,9 @@ var impls = map[string]Impl{
 
 // set by -ldflags at build; a dev run falls back to the executable's own tree
 var srcDir string
+
+// set to "1" by the shim when the x/go it built differs from its merge base with origin/main
+var devBuild string
 
 var (
 	logger   = log.NewWithOptions(os.Stderr, log.Options{Prefix: "x", Level: logLevel()})

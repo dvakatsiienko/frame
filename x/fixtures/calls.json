@@ -337,6 +337,37 @@
             "status": "usage"
         },
         {
+            "argv": ["fleet", "flow", "--days", "week"],
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "fleet-flow-days-bad",
+            "matrix": "telemetry",
+            "mode": "pipe",
+            "next": "x fleet flow --days 14",
+            "status": "usage"
+        },
+        {
+            "argv": ["fleet", "ops", "--min-kb", "lots"],
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "fleet-ops-min-kb-bad",
+            "matrix": "telemetry",
+            "mode": "pipe",
+            "next": "x fleet ops --min-kb 200",
+            "status": "usage"
+        },
+        {
+            "argv": ["stats", "--outside", "--dev"],
+            "cwd": "{world}/repo",
+            "exit": 2,
+            "id": "stats-outside-dev",
+            "matrix": "telemetry",
+            "mode": "pipe",
+            "next": "x stats --outside",
+            "note": "cc transcripts carry no dev builds, so --dev has nothing to change",
+            "status": "usage"
+        },
+        {
             "argv": ["stats"],
             "cols": 100,
             "cwd": "{world}/repo",

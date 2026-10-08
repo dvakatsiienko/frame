@@ -248,13 +248,30 @@
   - given linear rejects a cached app token (401), then x mints it again and retries once
   - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
 
+## fleet — the fleet measuring itself
+
+- ✅ `x fleet flow` prints the fleet-flow done test
+  - given the flawlog, the session transcripts, x-mod-guard's store and `gh`
+  - when `x fleet flow --days 14` runs
+  - then it prints the `#dima-caught` and `#brief` flawlog lines against their baselines, **bare runs**, crew-skill loads (brief-led or a **false fire**), today's guard refusals and escapes by rule, the pr open → merge median of frame and bytes (renovate left out), and Reads per `docs/knowledge` file
+  - decision: a straight port of the flow script, number for number on the same day; the script died with it (FRM-347)
+- ✅ `x fleet audit` checks each coder read its lessons first
+  - given the session transcripts of the last `--days` (default 1)
+  - when `x fleet audit` runs
+  - then each session opened with `/x:crew-coder` gets a line: whether it read `crew-coder/how-you-work.md` before its first edit, a ✅ or 🚫 per compaction for the re-read, and its library-docs lookups (ctx7, the context7 mcp, web)
+- ✅ `x fleet ops` prices the agents' work
+  - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)
+  - when `x fleet ops` runs
+  - then it prints tokens and wall time per ticket (coder + verifier, each step once), cclio's code edits per session, and the cost of a cclio boot (full and mini), each with its median
+- ✅ a bad `--days` or `--min-kb` exits 2 with the command that works
+
 ## stats — telemetry
 
 - ✅ every `x` call leaves one trace line
   - makes: a json line in `~/.local/state/x/traces/<local day>.jsonl`
   - given any verb, run by anyone
   - when it exits — ok, usage, refused, external or a panic
-  - then the day's file holds one line: the verb, flag names, ids, caller, duration, step times, exit, error kind, x version — never a flag value or free text
+  - then the day's file holds one line: the verb, flag names, ids, caller, duration, step times, exit, error kind, x version, and `x.dev` for a dev build (never on an `x trace record` line: a pnpm script dima types in a worktree is real use) — never a flag value or free text
   - given `X_TRACE=0`, then nothing is written; given a trace dir that cannot be written, then the call ends as it would untraced
   - decision: the dispatcher writes it at exit, so a new verb is traced with no telemetry code (spec, 2026-10-07)
 - ✅ the trace names its caller
@@ -267,6 +284,23 @@
   - then it prints calls per family and verb, the caller split, p50/p95 per verb, failures by kind, and the verbs with no calls
   - given a day file older than 90 days, then it moves to the macos trash
   - given a terminal, then a plain summary board prints until the `x-stats-board` spec lands
+- ✅ `x stats` names the span the traces really cover
+  - given traces only for 10-07 and 10-08
+  - when `x stats --days 30` runs
+  - then `days` reads 2, `first` and `last` name 10-07 and 10-08 — never the window asked for
+- ✅ `x stats` leaves dev builds out
+  - given trace lines written by a dev build — an x the shim built from `x/go` code that differs from its merge base with `origin/main` (an edit, an untracked file, an unpushed commit), stamped `x.dev`
+  - when `x stats` runs, then they are left out of every count, the span included, and `dev` says how many there were
+  - when `x stats --dev` runs, then they are counted too
+  - decision: dev means x/go differs from its merge base with origin/main, in a worktree or the main checkout — never the `-dirty` version, which main's x carries whenever the frame tree holds any uncommitted file and which hid 73 % of real calls; never «built in a worktree», which would hide a coder's real `x lane` calls; never origin/main itself, which would mark a checkout merely behind main; lines from before the stamp count as real (dima, 2026-10-08)
+- ✅ `x stats --outside` ranks what cc runs by hand
+  - given cc session transcripts under `~/.claude/projects/`, subagents included
+  - when `x stats --outside --days 7` runs
+  - then it ranks the top 25 Bash command heads of that window with counts, each call once however many transcripts copy it; `x` calls are left out and counted apart as `x_calls`
+  - then a head skips a leading `cd <dir> &&`, a subshell `(`, variable setup (`J=…;`, `S=$(…);`, `export S=…;`, `FOO=1 cmd`) and the wrappers `timeout <n>` and `env …`, so `cd` and `S=` never top the list and the wrapped command ranks; `for` stays its own head; `git`, `claude`, `gh` and `pnpm` count two words (`git log`, `pnpm <script>`); the `lane` shim counts as an `x` call
+  - given `--outside --dev`, then it exits 2: cc transcripts hold no dev builds
+  - then it prints its own elapsed time — no speed bar; slow over 7 days becomes a ✨ wisp
+  - decision: cc transcripts only — dima's own typing is already traced by `x-trace.zsh`; grouping heads into operations is a later round (dima, 2026-10-08)
 - ✅ dima's `pnpm <script>` calls are traced too
   - given the zsh hook `home/.config/zsh-custom/x-trace.zsh`
   - when dima types `pnpm <script>` at his prompt

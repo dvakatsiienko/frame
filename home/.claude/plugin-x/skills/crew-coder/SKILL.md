@@ -28,7 +28,7 @@ dima in 3 review rounds because nobody looked at a wide window first.
 **then read [how-you-work.md](how-you-work.md) in full** (beside this file,
 `~/frame/home/.claude/plugin-x/skills/crew-coder/how-you-work.md`) — the lessons every coder paid
 for: docs before building, measure first, serve your tree, open every view. it binds like this file.
-name it in your first reply beside your AGENTS.md paths; `pnpm crew:audit` reads your transcript for the Read.
+name it in your first reply beside your AGENTS.md paths; `x fleet audit` reads your transcript for the Read.
 
 `x:guide-code` first, then **only the guides for the file types you actually touch** — `.ts` →
 `x:guide-typescript`, `.tsx` → plus `x:guide-react`, `.go` → `x:guide-go`; anything a human looks at → `x:guide-ui-ux`,

@@ -10,6 +10,9 @@ const recipesDir = path.join(root, 'recipes');
 const scripts = Object.keys(
     JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).scripts,
 );
+const verbs: string[] = JSON.parse(
+    readFileSync(path.join(root, 'x/go/registry.json'), 'utf8'),
+).verbs.map((verb: { name: string }) => verb.name);
 const recipes = readdirSync(recipesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name);
@@ -92,10 +95,12 @@ test.each(recipes)('%s has the recipe shape', (name) => {
         true,
     );
 
-    const script = fields?.script;
+    const script = String(fields?.script);
     expect(
-        script === 'none' || scripts.includes(String(script)),
-        `${name}: script «${script}» is none or a package.json key`,
+        script === 'none' ||
+            scripts.includes(script) ||
+            verbs.includes(script.replace(/^x /, '')),
+        `${name}: script «${script}» is none, a package.json key or an x verb`,
     ).toBe(true);
 
     const artifacts = Array.isArray(fields?.artifacts) ? fields.artifacts : [];

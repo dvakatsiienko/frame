@@ -47,7 +47,7 @@ sections, most important first:
 
 kind-first, then the main artifact it refreshes, so the recipe sits beside its target:
 `refresh-guide-go` → `x:guide-go`, `refresh-monorepo` → the monorepo research; a recipe that keeps one fleet member true is named after the member (`refresh-crew-coordinator`). a recipe's script
-shares the stem (`refresh-agent-ops` ↔ `pnpm agent-ops:report` ↔ `docs/knowledge/agent-ops.md`).
+or verb shares the stem (`refresh-agent-ops` ↔ `x fleet ops` ↔ `docs/knowledge/agent-ops.md`).
 
 ## running one
 

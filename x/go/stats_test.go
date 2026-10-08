@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -127,5 +128,74 @@ func TestStatsCountsTheCallsInTheWindow(t *testing.T) {
 		if marshal(got.data[key]) != value {
 			t.Errorf("%s = %s, want %s", key, marshal(got.data[key]), value)
 		}
+	}
+}
+
+func TestATraceLineSaysADevBuildWroteIt(t *testing.T) {
+	cases := []struct {
+		name, pin string
+		dev       bool
+	}{
+		{"a dev build", "1", true},
+		{"a build of origin/main's code", "", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			bin, state := filepath.Join(t.TempDir(), "x"), t.TempDir()
+			if out, err := exec.Command("go", "build", "-ldflags", "-X main.devBuild="+c.pin, "-o", bin, ".").CombinedOutput(); err != nil {
+				t.Fatalf("build: %v\n%s", err, out)
+			}
+			run := exec.Command(bin, "schema")
+			run.Env = append(cleanEnv(), tracing(state)...)
+			if out, err := run.CombinedOutput(); err != nil {
+				t.Fatalf("x schema: %v\n%s", err, out)
+			}
+
+			lines := traces(t, state)
+			if len(lines) != 1 || (lines[0]["x.dev"] == true) != c.dev {
+				t.Errorf("x.dev = %v, want %v (%d lines)", lines[0]["x.dev"], c.dev, len(lines))
+			}
+		})
+	}
+}
+
+func TestStatsDaysIsTheSpanOfTheTraces(t *testing.T) {
+	state := t.TempDir()
+	plant(t, state, 1, planted{"schema", "cc", "", 3})
+	plant(t, state, 0, planted{"schema", "cc", "", 3})
+
+	got := xIn(t, repo(t), tracing(state), "stats", "--days", "30")
+
+	day := func(ago int) string { return `"` + time.Now().AddDate(0, 0, -ago).Format(time.DateOnly) + `"` }
+	want := map[string]string{"days": `2`, "first": day(1), "last": day(0)}
+	for key, value := range want {
+		if marshal(got.data[key]) != value {
+			t.Errorf("%s = %s, want %s", key, marshal(got.data[key]), value)
+		}
+	}
+}
+
+func TestStatsLeavesDevBuildsOutUnlessAsked(t *testing.T) {
+	dev := `{"name":"schema","duration_ms":3,"x.caller":"cc","service.version":"v1-go+abc1234","x.dev":true}` + "\n"
+	cases := []struct {
+		name, calls, days string
+		argv              []string
+	}{
+		{"by default", `1`, `1`, []string{"stats"}},
+		{"with --dev", `3`, `4`, []string{"stats", "--dev"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			state := t.TempDir()
+			plant(t, state, 0, planted{"schema", "cc", "", 3})
+			write(t, filepath.Join(state, "traces", time.Now().AddDate(0, 0, -3).Format(time.DateOnly)+".jsonl"), dev+dev)
+
+			got := xIn(t, repo(t), tracing(state), c.argv...)
+			for key, value := range map[string]string{"calls": c.calls, "days": c.days, "dev": `2`} {
+				if marshal(got.data[key]) != value {
+					t.Errorf("%s = %s, want %s", key, marshal(got.data[key]), value)
+				}
+			}
+		})
 	}
 }

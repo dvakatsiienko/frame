@@ -103,7 +103,7 @@ tools — models:
 - the spawn base from our own data: first-request `cache_read` / `cache_creation` per spawn door from transcripts (duckdb) and `x` traces, measured instead of assumed
 
 analysis (on top of the shared three):
-- the flow numbers (`pnpm flow:report --days 14`): `#dima-caught`, `#brief`, the pr open → merge median — which stage and which member keep failing
+- the flow numbers (`x fleet flow --days 14`): `#dima-caught`, `#brief`, the pr open → merge median — which stage and which member keep failing
 - each member's retros since the last run: what a role keeps missing, and whether a new role would have caught it
 - which bundled skills does this cc build ship, gated ones included? name any new one to dima
 - do the spawn choices made since the last run agree with `models.md` — and where a card was overridden, was the card wrong or the moment special?

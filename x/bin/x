@@ -23,8 +23,17 @@ done
 if ((stale)); then
     gobin=$(command -v go || echo /opt/homebrew/bin/go)
     echo "x: building from ${go} with ${gobin}" >&2
+    # a dev build: x/go differs from where this checkout left origin/main (their merge base) — an edit,
+    # an untracked file or an unpushed commit; a checkout merely behind main reads real.
+    # `x stats` leaves its trace lines out; a git that fails reads as not dev
+    dev=
+    base=$(git -C "${dir}" merge-base origin/main HEAD 2>/dev/null)
+    git -C "${dir}" diff --quiet "${base}" -- x/go 2>/dev/null
+    if (($? == 1)) || [[ -n $(git -C "${dir}" ls-files --others --exclude-standard -- x/go 2>/dev/null) ]]; then
+        dev=1
+    fi
     # a temp file then a rename: two shells building at once never run a half-written binary
-    if (cd "${go}" && "${gobin}" build -trimpath -ldflags "-s -w -X main.srcDir=${go}" -o "bin/.x.$$" . && mv -f "bin/.x.$$" bin/x) >&2; then
+    if (cd "${go}" && "${gobin}" build -trimpath -ldflags "-s -w -X main.srcDir=${go} -X main.devBuild=${dev}" -o "bin/.x.$$" . && mv -f "bin/.x.$$" bin/x) >&2; then
         :
     elif [[ -x ${bin} ]]; then
         echo "x: the build failed — running the last binary" >&2

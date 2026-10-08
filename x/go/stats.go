@@ -32,7 +32,12 @@ type verbCount struct {
 }
 
 type statsData struct {
-	Days     int            `json:"days"`
+	// the days from the first counted trace to the last, both included; never the window asked for
+	Days  int    `json:"days"`
+	First string `json:"first"`
+	Last  string `json:"last"`
+	// the lines a worktree-built x wrote in the window (`x.dev`); counted only under --dev
+	Dev      int            `json:"dev"`
 	Calls    int            `json:"calls"`
 	Callers  map[string]int `json:"callers"`
 	Failures map[string]int `json:"failures"`
@@ -78,20 +83,25 @@ func byCalls[T any](calls func(T) int, name func(T) string) func(a, b T) int {
 }
 
 func stats(r *Run, _ []string, flags Flags) (any, error) {
-	days := 30
-	if value, _ := flags["days"].(string); value != "" {
-		n, err := strconv.Atoi(value)
-		if err != nil || n < 1 {
-			return nil, usageFail("--days is a whole number of days, not "+value, "x stats --days 30")
+	days, err := daysFlag(flags, "stats", 30)
+	if err != nil {
+		return nil, err
+	}
+	if days > keepDays {
+		return nil, usageFail(fmt.Sprintf("the traces keep %d days, not %d", keepDays, days), fmt.Sprintf("x stats --days %d", keepDays))
+	}
+	if flags["outside"] == true {
+		if flags["dev"] == true {
+			return nil, usageFail("--dev counts x's own dev builds; --outside reads cc transcripts, which have none", "x stats --outside")
 		}
-		if n > keepDays {
-			return nil, usageFail(fmt.Sprintf("the traces keep %d days, not %d", keepDays, n), fmt.Sprintf("x stats --days %d", keepDays))
-		}
-		days = n
+		return statsOutside(r, days)
 	}
 	trashed := trashOld()
-	lines := readTraces(days)
-	data := statsData{Days: days, Calls: len(lines), Callers: map[string]int{}, Failures: map[string]int{},
+	dev := flags["dev"] == true
+	read := readTraces(days, dev)
+	lines := read.lines
+	data := statsData{Days: read.span(), First: read.first, Last: read.last, Dev: read.dev, Calls: len(lines),
+		Callers: map[string]int{}, Failures: map[string]int{},
 		Families: []familyCount{}, Verbs: []*verbCount{}, Unused: []string{}, Trashed: trashed}
 	byFamily := map[string]int{}
 	shapes := map[string]map[string]int{}
@@ -134,16 +144,26 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 	slices.SortFunc(data.Families, byCalls(func(f familyCount) int { return f.Calls }, func(f familyCount) string { return f.Name }))
 	slices.SortFunc(data.Verbs, byCalls(func(v *verbCount) int { return v.Calls }, func(v *verbCount) string { return v.Name }))
 	if r.human {
-		r.Board(statsBoard(data))
+		r.Board(statsBoard(data, dev))
 	}
 	return data, nil
 }
 
 // the plain summary dima reads until the x-stats-board spec lands: top families, slowest p95,
 // failure kinds, callers, unused verbs
-func statsBoard(data statsData) string {
+func spanTitle(noun string, calls, days int, first, last string) string {
+	if calls == 0 {
+		return "no " + noun + " in the window"
+	}
+	if days == 1 {
+		return fmt.Sprintf("%d %s on %s", calls, noun, first)
+	}
+	return fmt.Sprintf("%d %s over %d days, %s → %s", calls, noun, days, first, last)
+}
+
+func statsBoard(data statsData, dev bool) string {
 	b := frame{width: frameWidth(), titleLeft: titleOf("stats"),
-		titleRight: ui.dim.Render(fmt.Sprintf("%d calls, last %d days", data.Calls, data.Days)),
+		titleRight: ui.dim.Render(spanTitle("calls", data.Calls, data.Days, data.First, data.Last)),
 		footLeft:   ui.dim.Render("x stats --json"), footRight: ui.dim.Render(home(filepath.Join(stateDir(), "traces"))), padRows: true}
 	widths := []int{16, b.inner() - 16}
 	section := func(name string, cells []string) {
@@ -172,6 +192,11 @@ func statsBoard(data statsData) string {
 	section("failures", failures)
 	section("callers", callers)
 	section("unused", []string{ui.dim.Render(strings.Join(data.Unused, ", "))})
+	devNote := " left out, x stats --dev counts them"
+	if dev {
+		devNote = " counted"
+	}
+	section("dev builds", []string{ui.bold.Render(strconv.Itoa(data.Dev)) + ui.dim.Render(devNote)})
 	return b.String()
 }
 
@@ -184,22 +209,48 @@ func dayFiles(offset int, before bool) []string {
 	})
 }
 
-// the trace lines of the last `days` local days, today included; a line that does not parse is skipped
-func readTraces(days int) []span {
-	var lines []span
+type window struct {
+	lines       []span
+	first, last string
+	dev         int
+}
+
+func (t window) span() int {
+	first, err1 := time.Parse(time.DateOnly, t.first)
+	last, err2 := time.Parse(time.DateOnly, t.last)
+	if err1 != nil || err2 != nil {
+		return 0
+	}
+	return int(last.Sub(first).Hours()/24) + 1
+}
+
+// the trace lines of the last `days` local days, today included; a line that does not parse is skipped,
+// a dev build's line only counts with dev
+func readTraces(days int, dev bool) window {
+	var read window
 	for _, file := range dayFiles(1-days, false) {
 		f, err := os.Open(file)
 		if err != nil {
 			continue
 		}
+		day := strings.TrimSuffix(filepath.Base(file), ".jsonl")
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			var line span
-			if json.Unmarshal(scanner.Bytes(), &line) == nil && strings.TrimSpace(line.Name) != "" {
-				lines = append(lines, line)
+			if json.Unmarshal(scanner.Bytes(), &line) != nil || strings.TrimSpace(line.Name) == "" {
+				continue
 			}
+			if line.Dev {
+				read.dev++
+				if !dev {
+					continue
+				}
+			}
+			read.lines = append(read.lines, line)
+			read.first = cmp.Or(read.first, day)
+			read.last = day
 		}
 		f.Close()
 	}
-	return lines
+	return read
 }
