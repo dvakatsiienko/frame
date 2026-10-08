@@ -14,7 +14,9 @@ function world(on: On, files: string[]) {
         value: e.name === 'CLAUDE_JOB_DIR' ? JOB : '/home',
     }));
     on('fs.exists', (_$, e) => ({ value: files.includes(e.path) }));
-    on('fs.stat', () => ({ value: { kind: 'file', size: 1 } }));
+    on('fs.stat', () => ({
+        value: { isLink: false, kind: 'file', mtimeMs: 0, size: 1 },
+    }));
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };

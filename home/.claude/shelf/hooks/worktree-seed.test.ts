@@ -25,7 +25,18 @@ function fixture() {
     git('init', '-q');
     writeFileSync(join(repo, '.gitignore'), '.claude-plugin/types/\n');
     git('add', '.gitignore');
-    git('-c', 'commit.gpgsign=false', 'commit', '-qm', 'init');
+    // the ci runner has no git identity
+    git(
+        '-c',
+        'commit.gpgsign=false',
+        '-c',
+        'user.name=fixture',
+        '-c',
+        'user.email=fixture@local',
+        'commit',
+        '-qm',
+        'init',
+    );
     mkdirSync(join(repo, 'mods/m/.claude-plugin/types/claude-code'), {
         recursive: true,
     });

@@ -172,7 +172,12 @@ for (const command of ['clear', 'resume'] as const)
             return { result: {}, text: 'ok' };
         });
         await $.session.append(prompt(`use ${FAKE}`)).catch(() => undefined);
-        await $.command.run({ args: '', command });
+        await $.command.run({
+            args: '',
+            command,
+            origin: { kind: 'composer' },
+            presentation: { columns: 80, isFullscreen: false },
+        });
         await $.tool.call({
             command: `echo ${placeholderOf(FAKE)}`,
             tool: 'Bash',

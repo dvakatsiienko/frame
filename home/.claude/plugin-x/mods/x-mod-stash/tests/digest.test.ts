@@ -130,7 +130,11 @@ test("dima's next prompt folds the digest away", async ($, on) => {
     await b.afk();
     await b.stop('d0d0d0d0-done', 'shipped the fix.');
     await b.afk();
-    await $.prompt.submit({ origin: { kind: 'composer' }, text: 'thanks' });
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'thanks',
+        wait: false,
+    });
     expect(await b.digest()).toEqual([]);
 });
 

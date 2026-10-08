@@ -58,12 +58,22 @@ async function session($: Engine, on: On, peer?: string) {
 for (const command of ['clear', 'resume'] as const)
     test(`/${command} empties the band in the same turn`, async ($, on) => {
         const s = await session($, on);
-        await $.command.run({ args: '', command });
+        await $.command.run({
+            args: '',
+            command,
+            origin: { kind: 'composer' },
+            presentation: { columns: 80, isFullscreen: false },
+        });
         expect(await s.asks()).toEqual(['no open asks']);
     });
 
 test("/clear leaves another conversation's asks on the band", async ($, on) => {
     const s = await session($, on, 'c3c3c3c3-0000');
-    await $.command.run({ args: '', command: 'clear' });
+    await $.command.run({
+        args: '',
+        command: 'clear',
+        origin: { kind: 'composer' },
+        presentation: { columns: 80, isFullscreen: false },
+    });
     expect(await s.asks()).toContain('1. ship it ➡️ yes');
 });

@@ -16,7 +16,9 @@ function world(on: On, files: string[] = [], dirs: string[] = []) {
     }));
     on('fs.stat', (_$, e) => ({
         value: {
+            isLink: false,
             kind: dirs.includes(e.path) ? 'dir' : 'file',
+            mtimeMs: 0,
             size: 1,
         },
     }));

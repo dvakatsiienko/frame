@@ -429,7 +429,12 @@ test('/board colour turns the board colour on', async ($, on) => {
     fleet(on);
     panes(on, true);
     on('command.run', () => ({ text: '' }));
-    await $.command.run({ args: 'colour', command: 'board' });
+    await $.command.run({
+        args: 'colour',
+        command: 'board',
+        origin: { kind: 'composer' },
+        presentation: { columns: 80, isFullscreen: false },
+    });
     expect(await dotColour($)).toMatch(/^#/);
 });
 

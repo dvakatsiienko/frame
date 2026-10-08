@@ -32,3 +32,4 @@ Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else 
   flagged what the hand command missed**: 39 entries are 9 responses, so summing usage counts streaming
   snapshots several times — the 16:41 cloud grade read ~$4.75 where the deduped cost is ~$1.17 · grade 5/5
   against the hand `jq`
+- 2026-10-08 17:33 · code audit (a stretch past pure extraction): which scripts sum transcript usage without deduping by message id · 37 s, 33.6k tokens, in-session `Agent` (the card loaded after the plugin update) · **clean answer**: `script/agent-ops.ts` and `ccrow/harvest.ts` dedupe, every other hit sums `claude -p` or judge-api responses, with file:line and the pnpm script per place; it noticed its own first `rg` skipped `input_tokens` and re-ran · grade 5/5, cheaper than a `general-purpose` read of the same files

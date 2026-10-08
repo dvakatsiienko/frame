@@ -108,16 +108,16 @@ these are the levers. get them wrong and no amount of good prose helps.
 # 1. is the comment stripped?
 mkdir p && cd p
 printf '# p\n\nvisible: ZEBRA.\n\n<!--\nhidden: WALRUS.\n-->\n' > CLAUDE.md
-claude -p "YES or NO: does the exact word WALRUS appear in your context?" --model claude-haiku-4-5-20251001 </dev/null
+claude -p "YES or NO: does the exact word WALRUS appear in your context?" --model haiku </dev/null
 # measured 2026-08-23 → NO   (and ZEBRA → YES)
 
 # 2. does paths: scoping work?
 mkdir -p q/.claude/rules && cd q
 printf -- '---\npaths:\n  - "**/*.zzz"\n---\n\nscoped: OTTER.\n' > .claude/rules/probe.md
 printf 'x\n' > thing.zzz
-claude -p "YES or NO: does OTTER appear in your context?" --model claude-haiku-4-5-20251001 </dev/null
+claude -p "YES or NO: does OTTER appear in your context?" --model haiku </dev/null
 # measured 2026-08-23 → NO   (boot)
-claude -p "Read thing.zzz. Then YES or NO: does OTTER appear in your context?" --model claude-haiku-4-5-20251001 </dev/null
+claude -p "Read thing.zzz. Then YES or NO: does OTTER appear in your context?" --model haiku </dev/null
 # measured 2026-08-23 → YES  (after the match)
 ```
 
