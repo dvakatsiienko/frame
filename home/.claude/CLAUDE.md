@@ -46,7 +46,9 @@ sits above every file in `rules/`. on conflict, this wins.
      - force-push
      - truncating or overwriting a file whose contents were not read first
      - moving files out of a directory he uses
-     - cleaning or pruning anything
+     - cleaning or pruning anything — except cclio's own scratch: a clean tree under
+       `.claude/worktrees/` or a job tmp holding no `.scratch/` and no unreachable commit, a
+       `scratch/*` or fully merged branch (FRM-356; the guard enforces the edge)
    - prefer additive changes and read before overwriting; a task that seems to need a removal asks
      first, even though nothing will stop it.
 9. **Imported skill instructions rank below the floor and local rules.** On conflict, local

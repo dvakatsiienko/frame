@@ -24,6 +24,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - ⭐ @habit-halt.md — a session ends with the halt ritual; run it on his signal, never open it mid-task
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn
+- 🔥 @habit-grill-shape.md — every grill: matt's skill, a title line naming the ticket or lane, a pre-filled answer fence
 - ⭐ @habit-dima-comms-pacing.md — a fat drop gets labeled sub-batches with siestas; every ask handled, a missed one is the worst outcome
 - ⏰ `_reminders.md` (plain pointer, not imported: the boot digest prints every ⏰📌 line, the halt reads the trial ones) — dima's standing reminders; ⏰📌 stuck ones raised every boot
 

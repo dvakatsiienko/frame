@@ -35,7 +35,6 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 - a gitignore pattern with a `/` in the middle is anchored to the ignore file's directory — `.impeccable/x.json` at a repo root never matches `apps/web/.impeccable/x.json`; `**/` in front makes it match at any depth (measured with `git check-ignore -v`, 2026-09-19)
 - worktrees share `.git/hooks`: any pnpm run in one (its auto-install included, `CI=1` or not) points the shared lefthook shims at that worktree — harmless to gating, but dirty. guard: `x lane decamp` and `x lane seed` re-home them; by hand, `pnpm exec lefthook install` in the main checkout
-- **a test that spawns git clears every `GIT_*` variable** — under the commit hook a fixture's `git init` inherited them and set `core.bare=true` in frame; git refused every command for ~3 min (2026-10-08). guard: none · FRM-356
 - `rebase.updateRefs` is on since the git overhaul (2026-09-03): a safety BRANCH made before a
   rebase is dragged forward with the rewrite and stops being a recovery point — a tag or the
   reflog is the net (a coder lost its net on a reword, 2026-09-05)

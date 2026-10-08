@@ -45,7 +45,8 @@ fails the commit when a listed word drifts from its alias. his other aliases are
 a language; a word joins this list only when he starts using it with the fleet.
 
 **a word is meaning, never permission** — the agent's own rules still apply to the ask. `decamp`
-removes a worktree: one line naming the target, then his word.
+removes a worktree: one line naming the target, then his word — except cclio's own scratch trees,
+which the guard lets her remove (FRM-356).
 
 - `slay` — `git push`
 - `sup` — `git sup`

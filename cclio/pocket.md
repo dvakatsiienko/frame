@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-49 (adviser run 2 round 3, lanes running) → 54 (the cli lane, batch plan drafted) → 57 (night-shift readiness) → 33 (shape `x:crew-lead`, pulled ahead of the sweep — dima 10-08) → 60 (global memory easy wins) → 58 (lane tracker mod, shape first) → 59 (threshold input, grill) → 09 → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 53 → 55 → 56 → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+49 (adviser run 2 round 3, lanes running) → 33 (shape `x:crew-lead`, pulled ahead of the sweep — dima 10-08) → 60 (global memory easy wins) → 58 (lane tracker mod, shape first) → 59 (threshold input, grill) → 61 (reset waker, mods lane) → 45 → 39 → 40 → 42 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 53 → 55 → 56 → 24 → 12 → 13 → 14 → 15 → 16 → 31
 
 ## on linear, not here
 
@@ -32,15 +32,6 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 `open · grilling` · [FRM-284](https://linear.app/x-com/issue/FRM-284)
 
 dima 10-07: bare `x` prints help today; he wants a dashboard-like main view (bubbletea/lipgloss) if it is useful, leans conventional for now. answer: now vs later, and what it shows. screenshot: `_hq/attachments/CleanShot 2026-10-07 at 00.01.16.jpg`.
-
-### 09 · finish the cli plan
-`open · task` · [FRM-284](https://linear.app/x-com/issue/FRM-284)
-
-dima 10-07: close yesterday's tails — the full cli plan, so a coder + verifier run while the memory sweep goes. the sweep will steer it.
-
-- wisp, 10-08: `x stats` prints the span it really covers (the go trace store starts 10-07) and excludes `-dirty` builds unless `--dev`; 2,235 lines = 2 days, 640 from dirty binaries, the 10-07 hook burst a dev loop. estimate 1, rides the cli lane after its grill (dima)
-
-planned 10-07: FRM-284 closed; four specs under FRM-14 in `.scratch/` — `x-telemetry` → `x-handoff` → `x-linear` → `x-stats-board`; decisions in `x/PRODUCT.md` «the next lane». next: the telemetry coder, spawned when the sweep session starts.
 
 ### 10 · plan the memory sweep
 `open · task` · [FRM-267](https://linear.app/x-com/issue/FRM-267) · blocked by 09
@@ -82,11 +73,6 @@ dima 10-02: test drive first (day-0 docs + users, a stress list, one real asset 
 
 dev.fast whiteboard, installed, cli-driven. first case: the cli a/b/c review. research: best practices, anti-patterns, pitfalls, built products last. log: `docs/test-drive/whiteboard.md`.
 
-### 22 · go deps on evergreen
-`open · task`
-
-dima 10-06 opener: renovate gomod + gomodTidy; `pnpm x-go:vuln` in ci or the digest.
-
 ### 24 · delve test drive
 `open · test-drive`
 
@@ -103,11 +89,6 @@ dima 10-07: «yes remind me». run before the CST, in the session it looks back 
 `open · test-drive` · parked until the budget allows (dima 10-07: «maybe if i get a $200 anthropic plan»)
 
 `claude plugin eval` runs each case as a full session; 10 cases × 3 runs × 2 arms = 60 sessions. first step: one `x:cmt` case («commit this» in a temp repo), one run, `--max-cost-usd 1`, read the printed cost. tiers to decide then: the plugin alone (cheap, does the skill fire on its own phrasing) vs the full fleet context (the truth, the real competition between skills). source: `docs/knowledge/agent-ops.md`.
-
-### 32 · govulncheck in the boot digest
-`open · task`
-
-dima 10-07: the digest, not CI. one line in `boot-prefetch.sh`: `pnpm x-go:vuln`, informational, a red names the module.
 
 ### 34 · the spec ↔ linear body relation, from the archive
 `open · parked` · after enough spec runs
@@ -146,15 +127,18 @@ ccrow's session read 625k chars on 10-07, ~all of it 22 `packets/<wake>/delta.md
 
 cclio twice proposed stopping a remote-control session dima had started himself that day (pid 69787, the night flawlog had already named it). the boot's fleet roster marks a session dima created (desktop-born or remote-control, born today, not in cclio's spawn list) as his, and the halt's stop list never names it.
 
-### 38 · the 5h window trick — an autokicker or a 1-click prestarter
-`open · research` · inbox 10-08, 🐦‍⬛ first actions
-
-dima: the 5h window starts on the first token spent, so when he boots me the window opens and our token plan spreads over those 5h. but if at boot the window is already at, say, 2:30, we can code more densely in the shorter window. how to set up a 5h autokicker properly? a tiny probe that sends 1 token to claude.ai so the window is always moving, and he starts at any time but always with less than 5h? alternative: a 1-click door to a 5h prestarter — he roughly plans when he boots me and opens the window 1–2 h before. must: 1. good ux · 2. preferably works on his mobiles · 3. preferably 1-click · 4. maybe a complementary useful feature or two · 5. ideally pretty. «search and propose».
-
 ### 39 · weekly usage window — spend it fully, non-stop lanes, the 5h catch
 `open · grilling` · inbox 10-08, 🛹 steering, this session
 
 dima: we went overboard, he is at 69 %. two ways: economic mode, or push to spend the full weekly window and apply his weekly-reset option — he leans to the latter. spend efficiently: going overboard is not waste; spend as much as possible on the most needed stuff. plan and grill lanes so they work non-stop; review the night-shift lanes; what can i batch-do that needs little of his attention? the catch is the 5h window: keep an eye on it so he is never stuck at 95 % with the reset 3h away. boot line 10-08: pace it as a permanent habit; from the desktop the door is `get_usage`, from a terminal sline's window measures; over the line → pause parallel lanes without letting their cache cool, resume when it loosens; attention and wellbeing first, output volume after.
+- merged from 43 (dima, 2026-10-09):
+  `open · research` · inbox 10-08, 🙋‍♂️ question
+
+  dima: when i rushed the refresh-spawning-mechanics research, i said it cost ~700k. why? how can a research cost that much? can i use cloud agents for research? if yes, what is the easiest data transfer — a prompt → a pr that merges the research results into frame/main → i pull → research by hand?
+- merged from 44 (dima, 2026-10-09):
+  `open · research` · inbox 10-08, 🙋‍♂️ question · beside 39 and 43
+
+  dima: he is at 68 % — what ops could i delegate to cloud agents?
 
 ### 40 · «wishes» — he likes the name he invented
 `open · task` · inbox 10-08, 👀 fyi
@@ -166,16 +150,6 @@ dima: he liked the «wishes» name. 13:22: «i actually meant a possible new nam
 `open · research` · inbox 10-08, 🙋‍♂️ question
 
 dima: how do i collect retros from the coder, the verifier and myself, via him? since they are steerable, we could gain more if they are targeted: do i simply ask the coder and verifier for a «retro», or steered? what should the coder, verifier and ccrow retro about — the steer vector? for my own retro he will pick each steer himself. also: the cost of the retro skill — it reads thread transcripts, is it costlier than our previous matt-skill-less retros? remind how matt's retro skill works.
-
-### 43 · yesterday's ctx jump — why ~700k, and cloud agents for research
-`open · research` · inbox 10-08, 🙋‍♂️ question
-
-dima: when i rushed the refresh-spawning-mechanics research, i said it cost ~700k. why? how can a research cost that much? can i use cloud agents for research? if yes, what is the easiest data transfer — a prompt → a pr that merges the research results into frame/main → i pull → research by hand?
-
-### 44 · weekly window at 68 % — what ops could go to the cloud
-`open · research` · inbox 10-08, 🙋‍♂️ question · beside 39 and 43
-
-dima: he is at 68 % — what ops could i delegate to cloud agents?
 
 ### 45 · recipes revamp — the right shape for any produce, as global memory
 `open · grilling` · inbox 10-08, 🙋‍♂️ question
@@ -199,25 +173,16 @@ dima: «let's try shortcut and ray cmd. i also want a way to set a scheduled 5h 
 - his hands: an ios shortcut on the «Ask Claude» app intent, prompt «ok», home screen on iphone + ipad, ending with a «window opened · resets» notification; the probe tomorrow morning (tap with no claude use in 5 h, boot, read the digest's 5h reset)
 - a coder freebie: a raycast script command in x-ray running `claude -p --model haiku` with no tools and a replaced system prompt (not `--bare`); a «kick at HH:MM» variant via a one-shot launchd job + `pmset schedule wake`
 - the scheduled kickoff: candidates — an ios automation on an alarm trigger (set the alarm = set the time; runs locked? «?»), a one-off cloud routine set from the phone (whole cloud session per kick), the mac one-shot above. one probe each before a pick
+- merged from 38 (dima, 2026-10-09):
+  `open · research` · inbox 10-08, 🐦‍⬛ first actions
+
+  dima: the 5h window starts on the first token spent, so when he boots me the window opens and our token plan spreads over those 5h. but if at boot the window is already at, say, 2:30, we can code more densely in the shorter window. how to set up a 5h autokicker properly? a tiny probe that sends 1 token to claude.ai so the window is always moving, and he starts at any time but always with less than 5h? alternative: a 1-click door to a 5h prestarter — he roughly plans when he boots me and opens the window 1–2 h before. must: 1. good ux · 2. preferably works on his mobiles · 3. preferably 1-click · 4. maybe a complementary useful feature or two · 5. ideally pretty. «search and propose».
 
 ### 53 · sonnet 5.5 as a coder, one quick-lane ticket
 open · test-drive
 - dima's yes, 2026-10-08: the next quick-lane ticket spawns `--model sonnet --effort medium` instead of opus; graded against an opus coder on the same lane shape (steps, cost, `#brief` lines, rounds). a fresh `docs/test-drive/sonnet-coder.md` on day 0
 - why: sonnet 5.5 beats opus 5.5 on Terminal-Bench 4.0 (70.6 vs 66.4); anthropic still calls opus stronger on open-ended work
 
-### 54 · plan the cli lane to run long, right after refresh-crew-coordinator closes
-open · task · blocked by 09
-- dima, 2026-10-08: «plan enough for them to run for some time, because recipe grooming blocks the lane» — the grill (09) feeds it; a coder + verifier with a queue deep enough to work through hours of siestas
-
-- lane candidates, groomed into tickets as the queue drains (dima, 18:10: «2–4 lanes prepped upfront»): FRM-347 `x fleet` (running) → FRM-352 the groom stamp → FRM-342 test env (+ `Test x` own job, `x lane seed`) → `x linear attachments FRM-N <dir>` (the FRM-329 coder's retro: linear uploads took 3 tries, `x as` covers only linear and gh, the sandbox blocks curl)
-- 📋 the batch plan, drafted 19:22 for dima's read (FRM-347 merged):
-  - the coder: a FRESH opus coder — FRM-346's sits at ctx 51 % (~510k); the reuse grid says spawn fresh above ~80k for a ticket-sized job. its retro is in; stop it on dima's word
-  - batch 1: FRM-352 groom stamp — est 1, exit ✓, quick lane on main
-  - batch 2: FRM-342 test env — est 2, exit ✓, feature lane, pr + verifier
-  - batch 3: FRM-345 retro verbs — no estimate, no exit lines, 11 verbs: needs a grill to cut a first slice (proposed: `x fleet eq` + `x --board` + the merge-main wisp, each asked twice)
-  - batch 4: `x linear attachments` — no ticket yet, made when batch 3 starts
-  - the mods lane beside it: FRM-350 step 2 (the rules.ts split) — in a scratch copy loaded with `--plugin-dir`, moved in only when `claude plugin test` is green (the 19:00 guard outage); the mods coder is at ctx 64 %, so it finishes FRM-350 and retires
-- a mods-guard candidate from the same retro: refuse a Write over a tracked file this session never Read (the coder overwrote `tests/edits.test.ts`, restored from git) — goes to FRM-304 with the next mods round
 ### 55 · crew-coder: name 🪶 sifter for big reads, after a trim
 open · task
 - dima, 2026-10-08: «ensure it is not lost (sifter for coders)». `x:crew-coder` sits at its compaction cap (18,987 of 18,995 chars, `skill-size.test.ts`), so the «hand big reads to subagents» line names `sifter` only after a trim frees room. until then every brief carries the sifter line (FRM-346's does)
@@ -228,26 +193,20 @@ open · test-drive
 - the count: at each halt, 🪶 sifter counts this session's replies that print `wisp`, `wish`, `siesta` or `freebie` without the bold + badge (`lane` is left out — too common as a plain word, false positives). one line per halt in `docs/test-drive/reply-check.md`
 - 17:51 dima approved the autofix instead: x-mod-stash bolds + badges a bare fleet word pre-render (sent to the mods coder). the halt count now reads the fixer's own hit counter — a hit is a miss of mine it caught. shipped 18:14 (mods coder, live-proven): hits live in x-mod-stash's store under `words:<yyyy-mm-dd>:<sid>`
 
-### 57 · night-shift readiness
-open · task · reviewed at the halt
-- dima, 2026-10-08: «plan and grill lanes so they work non stop … review night shift lanes». two 5h windows fit the night (22:00, 03:00)
-- ✅ ready (exit lines + estimate): FRM-352 (1), FRM-342 (2), FRM-350 rest (3, mods)
-- 🟡 needs a ~15-min grill: m2 «make ci boring» — BYT-100 (1), BYT-95 (2), BYT-94 (2) have no exit lines; BYT-106 (3) has exit lines and 2 open `?`. FRM-345 needs its cut
-- 🍀 ready and mechanical: the 7 branch-badge freebies in bytes — the sonnet coder test drive (item 53) fits here
-- proposed night: lane A cli (FRM-352 → FRM-342, fresh opus coder + verifier) · lane B bytes (m2 after the grill, else the branch badges on sonnet); runs under `cclio:shift`
-
 ### 58 · a live lane tracker in the fleet board
 open · idea · shape-idea first
 - dima, 2026-10-08 (screenshot, the board's empty lower half): «i often ask you to tell me where we are … how could i see that plan live via a mod, maybe in the board area, because it has a lot of wasted space?»
 - what it shows: now · next · then — the thread's lane (researching the adviser → cli groom → night-shift grill), one line each, plus the 🔭 waits
 - two sources, a grill picks one: the pocket's «order» plus a `now:` line cclio keeps · or a `📍 now:` line in cclio's replies, which x-mod-stash already parses (it reads the ⏳ block today), so no new file
 - owner: x-mod-stash's board (the mods coder); FRM-349 kept the board in stash, so this is its home
+- dima, 2026-10-09 (screenshot, the board's empty lower half): «what I wanted is a live list of a lane with checkboxes (ordered tasks, organized by lane if several lanes run at once), so I could see a kind of progress live.» the `📍 now:` reply line was «naive, it will display poorly». a file the mod reads from has to exist, but never a stray one: it serves several purposes at once — cclio's live progress log during a lane (the one planned before) and the board's render. «a bigger thing to plan» → a granular grill tomorrow, then a ticket
 
 ### 59 · a live autocompact threshold input in the stash pane
 open · idea · grill first, no build before the grill
 - dima, 2026-10-08: «something like a number input that i can edit live — a compaction threshold». context: cclio's `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in `cclio/.claude/settings.json` takes effect live (a 45 % probe compacted cclio one turn later, 20:43); set to 70 at 21:25
 - shows: context % against the threshold; a compaction fired → when, from what % to what %
 - open: does a stash band write settings.json (a shared, hand-kept file), or a stash-owned env file? per session or cclio-only?
+- grill 10-09, Q7 accepted by silence: it writes the current session's project `.claude/settings.local.json`, never user settings
 
 ### 60 · global memory easy wins, every member loads them
 open · task · planned ahead of the sweep (dima, 2026-10-08)
@@ -282,3 +241,10 @@ open · task · planned ahead of the sweep (dima, 2026-10-08)
 - 2026-10-08: 46 answered — wishes works; the fold rule landed (craft-pm, dima-signals, fleet-vibe), 🌠 wish + ✨ wisp badges, bold fleet words fleet-wide
 - 2026-10-08: 48 landed — invariant 10 in root CLAUDE.md, the checkup card (cclio-only), siesta replaces pit stop, the subagents named + badged in fleet-identity (helper, researcher, retro, Explore, checkup), the cli verdict: useful for the fleet (lane commit/push), 8 hand calls by dima; the «is the cli useful» question folds into the cli grill (09)
 - 2026-10-08: 51 landed — one wish, one home at a time; a spec points at its wish; wishes checked at fold time; old verbatims re-folded on touch
+
+### 61 · the 5h reset waker, behind a global switch
+open · grilled 10-09 · ticket under FRM-304 at the next mods lane
+- dima, 2026-10-09: the `--bg` coders slept past the window's return until cclio nudged them. at a reset x-mod-stash sends one «resume» to every member that stopped on the cap — «I kind of agree if it is easy, but I don't want this to be permanent … it has to be gated behind a button, like the hot button in a mod, but global. a redundant trigger gate.»
+- detectable: stash already reads `five_hour` from `session.measure` (`x-mod-stash/hooks/register.tsx:882`), so a reset is a resets-at move it sees
+- off by default; on only by his click; a member not stopped on the cap gets nothing
+
