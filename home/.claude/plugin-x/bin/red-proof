@@ -7,7 +7,7 @@
 set -u
 usage() {
   echo "usage: red-proof <file> <anchor> <replacement> <test>" >&2
-  echo "       red-proof --pairs <pairs> <file> <test>   (pairs: one 'anchor<TAB>replacement' per line, # and blank lines skipped)" >&2
+  echo "       red-proof --pairs <pairs> <file> <test>   (pairs: one 'anchor<TAB>replacement' per line, split on the last tab, # and blank lines skipped)" >&2
   echo "       red-proof --cmd <file> <anchor> <replacement> -- <command…>" >&2
   echo "       red-proof --cmd --pairs <pairs> <file> -- <command…>" >&2
   exit 2
@@ -39,8 +39,9 @@ if [ "${1-}" = --pairs ]; then
     n=$((n + 1))
     case $line in '' | '#'*) continue ;; esac
     case $line in *$'\t'*) ;; *) echo "red-proof: $pairs:$n has no tab between anchor and replacement" >&2; exit 2 ;; esac
-    [ -n "${line%%$'\t'*}" ] || { echo "red-proof: $pairs:$n has an empty anchor" >&2; exit 2; }
-    anchors+=("${line%%$'\t'*}") replacements+=("${line#*$'\t'}")
+    # the LAST tab splits a pair, so an anchor keeps its leading tabs (go is tab-indented); a replacement holds none
+    [ -n "${line%$'\t'*}" ] || { echo "red-proof: $pairs:$n has an empty anchor" >&2; exit 2; }
+    anchors+=("${line%$'\t'*}") replacements+=("${line##*$'\t'}")
   done < "$pairs"
   [ ${#anchors[@]} -gt 0 ] || { echo "red-proof: $pairs holds no pairs" >&2; exit 2; }
 else

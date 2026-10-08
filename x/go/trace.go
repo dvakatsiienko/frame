@@ -30,7 +30,7 @@ type span struct {
 	Session string `json:"session.id,omitempty"`
 	Repo    string `json:"vcs.repository.name,omitempty"`
 	Version string `json:"service.version"`
-	// a binary built from x/go code that differs from origin/main: x being changed, not x in use
+	// a binary built from x/go code that differs from its merge base with origin/main: x being changed, not x in use
 	Dev  bool   `json:"x.dev,omitempty"`
 	Exit int    `json:"process.exit.code"`
 	Kind string `json:"error.type"`
