@@ -180,5 +180,8 @@ func ticketCommits(repo, id string) []string {
 func touchedBy(repo, id, path string) string {
 	path = strings.TrimSuffix(lineRef.ReplaceAllString(path, ""), "/")
 	got, _ := gitIn(repo, "log", "origin/main", "-1", "-E", "--grep="+ticketLine(id), "--format=%h %s", "--", ":(glob)**/"+path)
+	if !got.ok {
+		return ""
+	}
 	return got.out
 }
