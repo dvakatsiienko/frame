@@ -10,8 +10,8 @@ const runnerBinaries = ['bash', 'git', 'python3', 'sh'];
 // sees a binary a test names as a literal; one the code under test execs, or one passed in a
 // variable, stays the test author's to install
 const execCall: Record<string, RegExp> = {
-    go: /exec\.(?:Command\(|CommandContext\(\w+,\s*)"([\w.+-]+)"/g,
-    ts: /\b(?:spawnSync|spawn|execFileSync|execFile|execSync)\(\s*['"`]([\w.+-]+)/g,
+    go: /exec\.(?:Command\(|CommandContext\(\w+,\s*)"([\w./+-]+)"/g,
+    ts: /\b(?:spawnSync|spawn|execFileSync|execFile|execSync)\(\s*['"`]([\w./+-]+)/g,
 };
 
 function jobBinaries(ci: string) {
@@ -48,10 +48,15 @@ test('every binary a test execs is installed by the ci job that runs it', () => 
         const job = file.startsWith('x/go/') ? 'x' : 'check';
         const kind = file.endsWith('.go') ? 'go' : 'ts';
         const text = readFileSync(path.join(root, file), 'utf8');
-        return [...text.matchAll(execCall[kind] as RegExp)]
-            .map((call) => call[1] ?? '')
-            .filter((bin) => !jobs.get(job)?.has(bin))
-            .map((bin) => `${bin} (${file}, job ${job})`);
+        return (
+            [...text.matchAll(execCall[kind] as RegExp)]
+                .map((call) => call[1] ?? '')
+                // a relative path is a repo script; an absolute one is still the binary it names
+                .filter((exe) => !exe.startsWith('.'))
+                .map((exe) => path.basename(exe))
+                .filter((bin) => !jobs.get(job)?.has(bin))
+                .map((bin) => `${bin} (${file}, job ${job})`)
+        );
     });
 
     expect([...new Set(missing)], 'binaries ci.yml never installs').toEqual([]);
