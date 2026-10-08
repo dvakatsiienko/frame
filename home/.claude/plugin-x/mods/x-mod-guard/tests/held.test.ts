@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { writtenPaths } from '../hooks/rules.ts';
+import { writtenPaths } from '../hooks/rules/overwrite.ts';
 
 // every file a Bash command writes, resolved from /repo
 const writes: [string, string, string[]][] = [

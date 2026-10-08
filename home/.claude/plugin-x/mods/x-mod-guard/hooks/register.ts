@@ -1,16 +1,10 @@
 import type { EngineInterface, Register } from 'claude-code';
 
-import {
-    type Brief,
-    type Context,
-    addedPaths,
-    briefPaths,
-    check,
-    message,
-    overwrittenPaths,
-    rewrite,
-    writtenPaths,
-} from './rules.ts';
+import { briefPaths } from './rules/brief.ts';
+import type { Brief, Context } from './rules/command.ts';
+import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
+import { rewrite } from './rules/rewrite.ts';
+import { addedPaths, check, message } from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
 // each refusal and each escape is kept in $.store as one `event:` key; x-mod-stash's band reads them as 🛡️ lines.

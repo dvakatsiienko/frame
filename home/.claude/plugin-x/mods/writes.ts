@@ -5,7 +5,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 
-import { writtenPaths } from './x-mod-guard/hooks/rules.ts';
+import { writtenPaths } from './x-mod-guard/hooks/rules/overwrite.ts';
 
 const days = Number(process.argv[2] ?? 7);
 if (!Number.isInteger(days) || days < 1) {
