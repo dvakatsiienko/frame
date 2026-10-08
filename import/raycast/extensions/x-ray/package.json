@@ -119,6 +119,40 @@
             ],
             "icon": "gmail-block-sender.png",
             "mode": "view"
+        },
+        {
+            "name": "kick-5h",
+            "title": "5h kick",
+            "subtitle": "x-ray",
+            "description": "Open the claude 5h usage window now with one tiny haiku call.",
+            "keywords": ["claude", "usage", "window", "limit", "5h", "kick"],
+            "icon": "⏱️",
+            "mode": "no-view"
+        },
+        {
+            "name": "kick-5h-at",
+            "title": "5h kick at",
+            "subtitle": "x-ray",
+            "description": "Open the claude 5h usage window once at a time you pick; the mac wakes a minute before.",
+            "keywords": [
+                "claude",
+                "usage",
+                "window",
+                "limit",
+                "5h",
+                "kick",
+                "schedule"
+            ],
+            "icon": "⏱️",
+            "mode": "no-view",
+            "arguments": [
+                {
+                    "name": "time",
+                    "type": "text",
+                    "placeholder": "hh:mm",
+                    "required": true
+                }
+            ]
         }
     ],
     "preferences": [

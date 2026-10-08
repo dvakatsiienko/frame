@@ -12,6 +12,12 @@ shelf, the schedulers, monobank rates. source lives here; the command runs out o
 - `currency` — monobank buy/sell for the hryvnia, with an amount argument to convert
 - `gmail-block-sender` — appends a sender, domain or display name to `gmail/blocklist.json` and runs
   `gmailctl apply`; the filter deletes on arrival, old mail is his one search by hand
+- `kick-5h` — opens the claude 5h usage window now: one `claude -p --model haiku` «ok» call from an
+  empty temp dir (`lib/kick.ts` holds the line; never `--bare`, it skips the subscription), then a HUD
+- `kick-5h-at <hh:mm>` — the same call once, later: writes `com.dima.kick-5h-once.plist` (the next
+  time the clock shows hh:mm), which runs it, trashes itself and boots itself out; `pmset schedule
+  wake` a minute before needs root, so macOS asks for the password — a cancel keeps the kick, unwoken.
+  logs at `~/.local/share/kick-5h/`
 
 ## schedulers — the live thread
 
