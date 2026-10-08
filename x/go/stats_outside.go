@@ -97,12 +97,13 @@ func statsOutside(r *Run, days int) (any, error) {
 							read.first = day
 						}
 						read.last = max(read.last, day)
-						head := commandHead(block.Input.Command)
-						if head == "" {
+						switch head := commandHead(block.Input.Command); head {
+						case "":
+						case "x":
 							data.XCalls++
-							continue
+						default:
+							counts[head]++
 						}
-						counts[head]++
 					}
 				}
 			}
@@ -125,7 +126,7 @@ func statsOutside(r *Run, days int) (any, error) {
 }
 
 // commandHead names what a Bash command runs, past any `cd <dir> &&` and variable setup;
-// an `x` call, or the `lane` shim that runs one, reads "", since x traces itself
+// an `x` call, or the `lane` shim that runs one, reads "x", since x traces itself; setup alone reads ""
 func commandHead(command string) string {
 	words := shellWords(command)
 	i := pastSetup(words)
@@ -134,7 +135,7 @@ func commandHead(command string) string {
 	}
 	tool := filepath.Base(words[i])
 	if tool == "x" || tool == "lane" {
-		return ""
+		return "x"
 	}
 	if !twoWord[tool] {
 		return tool
@@ -214,8 +215,22 @@ func shellWords(command string) []string {
 			} else {
 				word.WriteRune(c)
 			}
-		case c == '\'' || c == '"':
+		case c == '\'' || c == '"' || c == '`':
 			quote, inWord = c, true
+		case c == '$' && i+1 < len(runes) && runes[i+1] == '(':
+			// a command substitution belongs to its word, however its parens and quotes nest
+			depth := 0
+			for ; i < len(runes); i++ {
+				word.WriteRune(runes[i])
+				if runes[i] == '(' {
+					depth++
+				} else if runes[i] == ')' {
+					if depth--; depth == 0 {
+						break
+					}
+				}
+			}
+			inWord = true
 		case c == '\\' && i+1 < len(runes):
 			i++
 			word.WriteRune(runes[i])

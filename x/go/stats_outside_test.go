@@ -29,7 +29,7 @@ func TestStatsOutsideRanksTheBashHeadsOfTheWindow(t *testing.T) {
 	home := t.TempDir()
 	transcript(t, home, "-Users-dima-frame/s1.jsonl",
 		bashCall{"a", "ls -la", 0}, bashCall{"b", "ls", 1}, bashCall{"c", "git log --oneline", 0},
-		bashCall{"d", "x lane push --apply", 0}, bashCall{"e", "rg foo", 9})
+		bashCall{"d", "x lane push --apply", 0}, bashCall{"e", "rg foo", 9}, bashCall{"g", "S=1", 0})
 	transcript(t, home, "-Users-dima-frame/s1/subagents/agent-1.jsonl",
 		bashCall{"f", "git status", 0}, bashCall{"a", "ls -la", 0})
 
@@ -38,6 +38,9 @@ func TestStatsOutsideRanksTheBashHeadsOfTheWindow(t *testing.T) {
 	want := `[{"calls":2,"name":"ls"},{"calls":1,"name":"git log"},{"calls":1,"name":"git status"}]`
 	if got.code != 0 || marshal(got.data["heads"]) != want {
 		t.Errorf("exit %d, heads %s\nwant  %s", got.code, marshal(got.data["heads"]), want)
+	}
+	if marshal(got.data["x_calls"]) != `1` {
+		t.Errorf("x_calls %s, want 1", marshal(got.data["x_calls"]))
 	}
 }
 
@@ -76,6 +79,10 @@ func TestStatsOutsideHeadsSkipTheSetup(t *testing.T) {
 		{"(cd a && ls)", "ls"},
 		{"claude -p --model haiku 'say hi'", "claude"},
 		{"/Users/a/plugin-x/bin/lane push", ""},
+		{"S=$(cat f); git push", "git push"},
+		{"J=$(jq -r '.a' \"$(dirname f)\") && gh pr view $J", "gh pr"},
+		{"T=`date`; ls", "ls"},
+		{"S=1", ""},
 	}
 	for _, c := range cases {
 		t.Run(c.command, func(t *testing.T) {
