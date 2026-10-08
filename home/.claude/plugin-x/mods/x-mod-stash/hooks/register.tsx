@@ -652,20 +652,29 @@ function modelLabel(model: string, effort?: string | number) {
 
 // the colour look, borrowed from the reference on FRM-329: calm by default, each member's dot its own hue, and a
 // colour only where something is live — theme keys follow light and dark; orange stays the asks' alone
+// six mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane; no coral, which would read as the asks' orange
 const HUES = [
-    '#5b8def',
-    '#3aa9a4',
-    '#d1a224',
-    '#e0795a',
-    '#a67fd0',
+    '#4f83e0',
+    '#2f8f8a',
+    '#a87f12',
+    '#47915a',
+    '#9a74c9',
     '#c4689f',
 ] as const;
-// a member's hue from its name, so it holds across reloads and resumes
-const hueOf = (name: string) => {
-    let h = 0;
-    for (const c of name) h = (h * 31 + (c.codePointAt(0) ?? 0)) >>> 0;
-    return HUES[h % HUES.length];
-};
+// each member's hue: the one its name hashes to, so it holds across reloads, or the next free one when an earlier
+// row took it — up to six members never share a colour
+export function huesOf(names: string[]) {
+    const used = new Set<number>();
+    return names.map((name) => {
+        let h = 0;
+        for (const c of name) h = (h * 31 + (c.codePointAt(0) ?? 0)) >>> 0;
+        let at = h % HUES.length;
+        for (let n = 0; n < HUES.length && used.has(at); n++)
+            at = (at + 1) % HUES.length;
+        used.add(at);
+        return HUES[at];
+    });
+}
 // cc's registry status: the word the board shows, and its tint with colour on. `shell` is a long command
 // inside a turn, so it reads busy; a status cc adds later reads as itself, amber
 const STATUS = {
@@ -1141,6 +1150,7 @@ export const register: Register = (on) => {
         if (!list.length) return <Text dimColor>no live sessions</Text>;
         const isColour =
             (await $.store.get(COLOUR).catch(() => false)) === true;
+        const hues = huesOf(list.map((m) => m.name));
         const row = (m: Member, i: number) => {
             const { tint: stateTint, word: state } = statusOf(m.status);
             const isMemberBusy = state === 'busy';
@@ -1168,7 +1178,7 @@ export const register: Register = (on) => {
                             {/* the dot leads the row, the reference's cue: with colour on, the member's own hue, dimmed while idle */}
                             <Box flexShrink={0}>
                                 <Text
-                                    color={isColour ? hueOf(m.name) : undefined}
+                                    color={isColour ? hues[i] : undefined}
                                     dimColor={!isColour || state === 'idle'}>
                                     ●
                                 </Text>

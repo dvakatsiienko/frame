@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { huesOf } from '../hooks/register.tsx';
+
 const NOW = 10_000_000;
 const MIN = 60 * 1000;
 const HERE = 'h1h1h1h1-here';
@@ -460,6 +462,18 @@ test("with colour on, each member's dot wears its own hue", async ($, on) => {
     ]).toEqual([2, 2, true]);
 });
 
+test('two members whose names hash alike still get two hues', () => {
+    const hues = huesOf(['☕️ 🔧 twin', '☕️ 🔧 twin']);
+    expect(new Set(hues).size).toBe(2);
+});
+
+test("with colour on, an idle member's dot is dimmed and a busy one's is not", async ($, on) => {
+    fleet(on, { 'board-colour': true });
+    const dots = (await colourTexts($)).filter((t) => t.text === '●');
+    // cclio is pinned first and busy, the coder second and idle
+    expect(dots.map((d) => d.dim)).toEqual([false, true]);
+});
+
 test('with colour on, a busy member reads in the working blue and an idle one stays dim', async ($, on) => {
     fleet(on, { 'board-colour': true });
     const texts = await colourTexts($);
@@ -479,8 +493,8 @@ test('with colour on, a calm context stays dim and a full one turns red', async 
         [`context:${PEER}`]: 86,
     });
     const texts = await colourTexts($);
-    const calm = texts.find((t) => t.text.includes('31'));
-    const full = texts.find((t) => t.text.includes('86'));
+    const calm = texts.find((t) => t.text === 'ctx 31%');
+    const full = texts.find((t) => t.text === 'ctx 86%');
     expect([calm?.color, calm?.dim, full?.color]).toEqual([
         undefined,
         true,
