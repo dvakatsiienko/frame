@@ -1,4 +1,6 @@
-# mods — cc function-hook plugins, one per folder, each its own plugin in the x marketplace
+# mods — cc function-hook plugins, one per folder, each its own plugin
+
+- the x marketplace lists x-mod-breather and x-mod-stash, the two worth sharing; x-mod-guard and x-mod-redact stay local, run from source only (dima, 2026-10-08)
 
 - a mod runs from source: `CLAUDE_CODE_PLUGIN_DIRS` in `~/.claude/settings.json` `env` names each mod folder (plus `CLAUDE_CODE_PLUGIN_DIR_WATCH=1` for desktop-born sessions), so a save reloads it at the end of the turn, no bump, no `/reload-plugins`; the installed `<mod>@x` stays disabled. a new mod joins that list. proof: `claude -p --debug-file <f> ok` prints `hooks module <mod>@inline loaded` (2026-10-04); the env reaches only sessions started after the edit
 - a background session edits a mod in the main checkout through `scratch-edit` (plugin bin): `pull <paths…>` prints scratch copies, `Edit`/`Write` those, `push` writes them back and refuses any file the repo changed since its pull — cc's bg isolation guard blocks a direct edit, and a worktree would hide the change from the mod's hot reload (cc's guard has no per-path exemption, only `bgIsolation: none` for the whole repo)

@@ -438,6 +438,56 @@ test('/board colour turns the board colour on', async ($, on) => {
     expect(await dotColour($)).toMatch(/^#/);
 });
 
+// every Text the board draws with colour on, by its text, with its colour and dim
+async function colourTexts($: Engine) {
+    const ui = await board($);
+    const texts = await ui.findAll({ type: 'Text' });
+    return texts.map((t) => ({
+        color: t.props.color,
+        dim: t.props.dimColor === true,
+        text: t.text,
+    }));
+}
+
+test("with colour on, each member's dot wears its own hue", async ($, on) => {
+    fleet(on, { 'board-colour': true });
+    const dots = (await colourTexts($)).filter((t) => t.text === '●');
+    const hues = dots.map((d) => d.color);
+    expect([
+        hues.length,
+        new Set(hues).size,
+        hues.every((h) => /^#/.test(String(h))),
+    ]).toEqual([2, 2, true]);
+});
+
+test('with colour on, a busy member reads in the working blue and an idle one stays dim', async ($, on) => {
+    fleet(on, { 'board-colour': true });
+    const texts = await colourTexts($);
+    const busy = texts.find((t) => t.text.startsWith('busy'));
+    const idle = texts.find((t) => t.text.startsWith('idle'));
+    expect([busy?.color, idle?.color, idle?.dim]).toEqual([
+        'suggestion',
+        undefined,
+        true,
+    ]);
+});
+
+test('with colour on, a calm context stays dim and a full one turns red', async ($, on) => {
+    fleet(on, {
+        'board-colour': true,
+        [`context:${HERE}`]: 31,
+        [`context:${PEER}`]: 86,
+    });
+    const texts = await colourTexts($);
+    const calm = texts.find((t) => t.text.includes('31'));
+    const full = texts.find((t) => t.text.includes('86'));
+    expect([calm?.color, calm?.dim, full?.color]).toEqual([
+        undefined,
+        true,
+        'error',
+    ]);
+});
+
 test("a dead session's asks leave the band", async ($, on) => {
     const asks = (n: number) => ({
         asks: Array.from({ length: n }, (_, i) => `${i + 1}. ask ➡️ yes`),

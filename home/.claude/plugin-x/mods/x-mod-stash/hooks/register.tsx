@@ -650,39 +650,41 @@ function modelLabel(model: string, effort?: string | number) {
     return effort === undefined ? name : `${name} · ${effort}`;
 }
 
-// the colour MVP's tints, each beside a word or glyph that already says the same, never alone
-const TINT = {
-    amber: '#e0b45c',
-    green: '#8fbf7f',
-    grey: '#8a8f98',
-    red: '#e06c6c',
-} as const;
-const FAMILY = {
-    fable: '#d98fb0',
-    haiku: TINT.green,
-    opus: '#b495d6',
-    sonnet: '#79a8d6',
-} as const satisfies Record<string, string>;
-const isFamily = (name: string): name is keyof typeof FAMILY =>
-    Object.hasOwn(FAMILY, name);
+// the colour look, borrowed from the reference on FRM-329: calm by default, each member's dot its own hue, and a
+// colour only where something is live — theme keys follow light and dark; orange stays the asks' alone
+const HUES = [
+    '#5b8def',
+    '#3aa9a4',
+    '#d1a224',
+    '#e0795a',
+    '#a67fd0',
+    '#c4689f',
+] as const;
+// a member's hue from its name, so it holds across reloads and resumes
+const hueOf = (name: string) => {
+    let h = 0;
+    for (const c of name) h = (h * 31 + (c.codePointAt(0) ?? 0)) >>> 0;
+    return HUES[h % HUES.length];
+};
 // cc's registry status: the word the board shows, and its tint with colour on. `shell` is a long command
 // inside a turn, so it reads busy; a status cc adds later reads as itself, amber
 const STATUS = {
-    blocked: { tint: TINT.red, word: 'blocked' },
-    busy: { tint: ACCENT, word: 'busy' },
-    idle: { tint: TINT.grey, word: 'idle' },
-    needs_input: { tint: TINT.amber, word: 'needs_input' },
-    shell: { tint: ACCENT, word: 'busy' },
-    waiting: { tint: TINT.amber, word: 'waiting' },
-} as const satisfies Record<string, { tint: string; word: string }>;
+    blocked: { tint: 'error', word: 'blocked' },
+    busy: { tint: 'suggestion', word: 'busy' },
+    idle: { tint: undefined, word: 'idle' },
+    needs_input: { tint: 'warning', word: 'needs_input' },
+    shell: { tint: 'suggestion', word: 'busy' },
+    waiting: { tint: 'warning', word: 'waiting' },
+} as const satisfies Record<string, { tint: string | undefined; word: string }>;
 const isStatus = (status: string): status is keyof typeof STATUS =>
     Object.hasOwn(STATUS, status);
 const statusOf = (status: string | undefined) =>
     status !== undefined && isStatus(status)
         ? STATUS[status]
-        : { tint: TINT.amber, word: status ?? '?' };
+        : { tint: 'warning', word: status ?? '?' };
+// a calm context is dim; only one filling up asks for the eye
 const contextTint = (percent: number) =>
-    percent >= 80 ? TINT.red : percent >= 50 ? TINT.amber : TINT.green;
+    percent >= 80 ? 'error' : percent >= 50 ? 'warning' : undefined;
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
@@ -1146,8 +1148,6 @@ export const register: Register = (on) => {
             const door = m.door;
             const name = m.sid === me ? `${m.name} (here)` : m.name;
             const line = m.wait && `🔭 ${m.wait}`;
-            const family = m.model?.split(' ')[0] ?? '';
-            const familyTint = isFamily(family) ? FAMILY[family] : undefined;
             return (
                 <Box
                     flexDirection='column'
@@ -1165,11 +1165,11 @@ export const register: Register = (on) => {
                             gap={1}
                             minWidth={0}
                             overflow='hidden'>
-                            {/* the state dot leads the row, the reference's cue; tinted only with colour on, the state word says the same */}
+                            {/* the dot leads the row, the reference's cue: with colour on, the member's own hue, dimmed while idle */}
                             <Box flexShrink={0}>
                                 <Text
-                                    color={isColour ? stateTint : undefined}
-                                    dimColor={!isColour}>
+                                    color={isColour ? hueOf(m.name) : undefined}
+                                    dimColor={!isColour || state === 'idle'}>
                                     ●
                                 </Text>
                             </Box>
@@ -1233,7 +1233,9 @@ export const register: Register = (on) => {
                                                 ? contextTint(m.context)
                                                 : undefined
                                         }
-                                        dimColor={!isColour}>
+                                        dimColor={
+                                            !isColour || !contextTint(m.context)
+                                        }>
                                         ctx {m.context}%
                                     </Text>
                                 )}
@@ -1243,7 +1245,13 @@ export const register: Register = (on) => {
                                 width={COLUMNS.state}>
                                 <Text
                                     bold={isMemberBusy}
-                                    color={isMemberBusy ? ACCENT : undefined}
+                                    color={
+                                        isColour
+                                            ? stateTint
+                                            : isMemberBusy
+                                              ? ACCENT
+                                              : undefined
+                                    }
                                     dimColor={state === 'idle'}
                                     wrap='truncate-end'>
                                     {m.statusSince
@@ -1261,18 +1269,12 @@ export const register: Register = (on) => {
                             </Box>
                         </Box>
                     </Box>
-                    {/* the second line sits under the name, past the dot, dim — the reference's: the model first, kept whole and tinted by family with colour on, then the wait, cut at its end */}
+                    {/* the second line sits under the name, past the dot, dim — the reference's: the model first, kept whole, then the wait, cut at its end */}
                     {m.model || line ? (
                         <Box flexDirection='row' gap={2} paddingLeft={2}>
                             {m.model ? (
                                 <Box flexShrink={0}>
-                                    <Text
-                                        color={
-                                            isColour ? familyTint : undefined
-                                        }
-                                        dimColor={!(isColour && familyTint)}>
-                                        {m.model}
-                                    </Text>
+                                    <Text dimColor>{m.model}</Text>
                                 </Box>
                             ) : null}
                             {line ? (
@@ -1303,7 +1305,13 @@ export const register: Register = (on) => {
                         <Text dimColor>on this mac · {list.length}</Text>
                     </Box>
                     <Text
-                        color={busyCount ? ACCENT : undefined}
+                        color={
+                            busyCount
+                                ? isColour
+                                    ? STATUS.busy.tint
+                                    : ACCENT
+                                : undefined
+                        }
                         dimColor={!busyCount}>
                         {busyCount} busy
                     </Text>
