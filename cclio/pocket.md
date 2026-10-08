@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-09 (the cli grill, census ready) → 54 (the long cli lane) → 49 (refresh-crew-coordinator-adviser run, lanes in) → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 53 → 55 → 56 → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+49 (adviser run 2 round 3, lanes running) → 54 (the cli lane, batch plan drafted) → 57 (night-shift readiness) → 33 (shape `x:crew-lead`, pulled ahead of the sweep — dima 10-08) → 60 (global memory easy wins) → 58 (lane tracker mod, shape first) → 59 (threshold input, grill) → 09 → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 53 → 55 → 56 → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
@@ -115,7 +115,7 @@ dima 10-07: the digest, not CI. one line in `boot-prefetch.sh`: `pnpm x-go:vuln`
 dima 10-07: «do not delete specs we create, but move them into an archive somewhere, maybe in scratch. After some time, when we run enough specs and have an updated comparison, we would just open the archive, see what kind of specs we have, and see how to apply it to linear (e.g., move specs into linear from scratch, or just keep specs local or something). E.g., solve the linear ticket body/specs body relation question.» the archive is `.scratch/_archive/<feature>/` (`docs/agents/issue-tracker.md`).
 
 ### 33 · shape the squad leader
-`open · grilling` · blocked by 10
+`open · grilling` · pulled ahead of 10 (dima 10-08: «plan your coordination module split earlier … prioritize the planning»); the 10-07 estimate: `craft-spawning` keeps a ~5k core, the brief lessons move to `x:crew-lead`, ~19k tokens off every cclio turn
 
 dima 10-08 13:22: the crew-coordinator as part of a squad (an independent `--bg` session outside cclio) is to be a/b test-driven.
 
@@ -210,6 +210,13 @@ open · task · blocked by 09
 - dima, 2026-10-08: «plan enough for them to run for some time, because recipe grooming blocks the lane» — the grill (09) feeds it; a coder + verifier with a queue deep enough to work through hours of siestas
 
 - lane candidates, groomed into tickets as the queue drains (dima, 18:10: «2–4 lanes prepped upfront»): FRM-347 `x fleet` (running) → FRM-352 the groom stamp → FRM-342 test env (+ `Test x` own job, `x lane seed`) → `x linear attachments FRM-N <dir>` (the FRM-329 coder's retro: linear uploads took 3 tries, `x as` covers only linear and gh, the sandbox blocks curl)
+- 📋 the batch plan, drafted 19:22 for dima's read (FRM-347 merged):
+  - the coder: a FRESH opus coder — FRM-346's sits at ctx 51 % (~510k); the reuse grid says spawn fresh above ~80k for a ticket-sized job. its retro is in; stop it on dima's word
+  - batch 1: FRM-352 groom stamp — est 1, exit ✓, quick lane on main
+  - batch 2: FRM-342 test env — est 2, exit ✓, feature lane, pr + verifier
+  - batch 3: FRM-345 retro verbs — no estimate, no exit lines, 11 verbs: needs a grill to cut a first slice (proposed: `x fleet eq` + `x --board` + the merge-main wisp, each asked twice)
+  - batch 4: `x linear attachments` — no ticket yet, made when batch 3 starts
+  - the mods lane beside it: FRM-350 step 2 (the rules.ts split) — in a scratch copy loaded with `--plugin-dir`, moved in only when `claude plugin test` is green (the 19:00 guard outage); the mods coder is at ctx 64 %, so it finishes FRM-350 and retires
 - a mods-guard candidate from the same retro: refuse a Write over a tracked file this session never Read (the coder overwrote `tests/edits.test.ts`, restored from git) — goes to FRM-304 with the next mods round
 ### 55 · crew-coder: name 🪶 sifter for big reads, after a trim
 open · task
@@ -220,6 +227,32 @@ open · test-drive
 - dima, 2026-10-08: «pocket it and count error occurrences, if it grows — mod it». the miss: «that becomes a wisp» printed plain, where the rule says **✨ wisp**, bold with its badge
 - the count: at each halt, 🪶 sifter counts this session's replies that print `wisp`, `wish`, `siesta` or `freebie` without the bold + badge (`lane` is left out — too common as a plain word, false positives). one line per halt in `docs/test-drive/reply-check.md`
 - 17:51 dima approved the autofix instead: x-mod-stash bolds + badges a bare fleet word pre-render (sent to the mods coder). the halt count now reads the fixer's own hit counter — a hit is a miss of mine it caught. shipped 18:14 (mods coder, live-proven): hits live in x-mod-stash's store under `words:<yyyy-mm-dd>:<sid>`
+
+### 57 · night-shift readiness
+open · task · reviewed at the halt
+- dima, 2026-10-08: «plan and grill lanes so they work non stop … review night shift lanes». two 5h windows fit the night (22:00, 03:00)
+- ✅ ready (exit lines + estimate): FRM-352 (1), FRM-342 (2), FRM-350 rest (3, mods)
+- 🟡 needs a ~15-min grill: m2 «make ci boring» — BYT-100 (1), BYT-95 (2), BYT-94 (2) have no exit lines; BYT-106 (3) has exit lines and 2 open `?`. FRM-345 needs its cut
+- 🍀 ready and mechanical: the 7 branch-badge freebies in bytes — the sonnet coder test drive (item 53) fits here
+- proposed night: lane A cli (FRM-352 → FRM-342, fresh opus coder + verifier) · lane B bytes (m2 after the grill, else the branch badges on sonnet); runs under `cclio:shift`
+
+### 58 · a live lane tracker in the fleet board
+open · idea · shape-idea first
+- dima, 2026-10-08 (screenshot, the board's empty lower half): «i often ask you to tell me where we are … how could i see that plan live via a mod, maybe in the board area, because it has a lot of wasted space?»
+- what it shows: now · next · then — the thread's lane (researching the adviser → cli groom → night-shift grill), one line each, plus the 🔭 waits
+- two sources, a grill picks one: the pocket's «order» plus a `now:` line cclio keeps · or a `📍 now:` line in cclio's replies, which x-mod-stash already parses (it reads the ⏳ block today), so no new file
+- owner: x-mod-stash's board (the mods coder); FRM-349 kept the board in stash, so this is its home
+
+### 59 · a live autocompact threshold input in the stash pane
+open · idea · grill first, no build before the grill
+- dima, 2026-10-08: «something like a number input that i can edit live — a compaction threshold». context: cclio's `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in `cclio/.claude/settings.json` takes effect live (a 45 % probe compacted cclio one turn later, 20:43); set to 70 at 21:25
+- shows: context % against the threshold; a compaction fired → when, from what % to what %
+- open: does a stash band write settings.json (a shared, hand-kept file), or a stash-owned env file? per session or cclio-only?
+
+### 60 · global memory easy wins, every member loads them
+open · task · planned ahead of the sweep (dima, 2026-10-08)
+- from cclio's 10-07 20:29 answer: `fleet-hazards` lines whose `x-mod-guard` rule exists die (~3–4k chars); `fleet-tooling` cc-only trial lines (duckdb, ctx7) move to their test-drive files (~2k); frame `AGENTS.md` launchd + tcc hazards move to `schedule/AGENTS.md` (~3k). ~8–9k chars, ~3k tokens per session for every member
+- `rules/` and frame `AGENTS.md` edits need dima's word before the edit
 
 ## decisions so far
 
