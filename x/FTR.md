@@ -85,7 +85,9 @@
 - ✅ `x lane seed <path>` seeds a hand-made worktree the way EnterWorktree does
   - given a tree made by `git worktree add`
   - when `x lane seed <path>` runs
-  - then its git-crypt files are plaintext, `go build` passes, and each mod's ignored `tsconfig.json` is copied from the main checkout
+  - then its git-crypt files are plaintext, `go build` passes, each mod's ignored `tsconfig.json` is copied from the main checkout, and the hook shims still point at the main checkout
+  - given the main checkout itself
+  - then it is refused as a usage error
 - ✅ `x lane decamp <path> --apply` removes a worktree and points the hook shims home
   - given the shared lefthook shims point at a linked worktree
   - when `x lane decamp <path> --apply` runs

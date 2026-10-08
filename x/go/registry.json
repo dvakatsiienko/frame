@@ -149,7 +149,7 @@
             "name": "lane seed",
             "needsApply": false,
             "purpose": "seed a hand-made frame worktree like EnterWorktree does: git-crypt unlock, mod types, install",
-            "steps": ["seed", "verify"]
+            "steps": ["seed", "verify", "hooks"]
         },
         {
             "args": [

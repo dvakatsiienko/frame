@@ -51,5 +51,5 @@ func goGate(r *Run, args []string, _ Flags) (any, error) {
 		}
 	}
 	r.Done("GATE ok", "")
-	return ordered{{"gate", "ok"}, {"dir", dir}}, nil
+	return ordered{{"gate", "GATE ok"}, {"dir", dir}}, nil
 }

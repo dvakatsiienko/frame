@@ -9,9 +9,9 @@ import (
 // seed hands a hand-made worktree to the same hook EnterWorktree fires, so one script holds the
 // recipe: git-crypt unlock, the mods' generated types and tsconfigs, the repo's install
 func seed(r *Run, args []string, _ Flags) (any, error) {
-	tree, err := filepath.Abs(args[0])
-	if err != nil || !exists(filepath.Join(tree, ".git")) {
-		return nil, &Fail{IsUsage: true, Msg: args[0] + " is not a git worktree", Next: "git worktree add <path> && x lane seed <path>"}
+	tree, main, err := linkedWorktree(args[0])
+	if err != nil {
+		return nil, err
 	}
 	hook := filepath.Join(sourceDir(), "../../home/.claude/shelf/hooks/worktree-seed.sh")
 	r.Open(tree)
@@ -34,6 +34,12 @@ func seed(r *Run, args []string, _ Flags) (any, error) {
 		return "no ciphertext left", err
 	}); err != nil {
 		return nil, err
+	}
+	// the hook's install points the shared shims at this tree; a repo without lefthook has none to move
+	if exists(filepath.Join(main, "lefthook.yml")) || exists(filepath.Join(main, "lefthook.yaml")) {
+		if err := r.Step("hooks", "pnpm exec lefthook install in the main checkout", func() (string, error) { return hooksHome(main, tree) }); err != nil {
+			return nil, err
+		}
 	}
 	r.Done("seeded "+tree, "")
 	return ordered{{"tree", tree}}, nil
