@@ -22,6 +22,10 @@
   - given any verb run with `--json` or into a pipe
   - when it ends
   - then stdout holds one envelope `{verb, ok, status, data}` and the exit code matches `ok`
+- ✅ `--board` draws the human board where json is the default
+  - given an agent env (`CLAUDECODE` set) or a pipe
+  - when a verb runs with `--board`, `x fleet flow --board` among them
+  - then stdout holds the board, not json; `--json` beside it still wins
 - ✅ a wrong verb names the right ones
   - given an unknown verb or flag
   - when it fails
@@ -78,6 +82,10 @@
 - ✅ `x lane push` pushes HEAD's sha and reads the remote back
 - ⬜ `x lane pr-open` opens a pr as the coder app
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
+- ✅ a merge-main that git refuses without conflicts names git's reason
+  - given an untracked file where origin/main adds one
+  - when `x lane merge-main` runs
+  - then the envelope error carries git's own `error:` line
 - ✅ `x lane unlock` decrypts a worktree's git-crypt files
   - given a hand-made worktree whose git-crypt files hold ciphertext, where `go build` dies on the vcs stamp
   - when `x lane unlock` runs inside it

@@ -56,11 +56,12 @@ type Family struct {
 
 var globalFlags = map[string]FlagSpec{
 	"apply": {Type: "boolean", Description: "run a verb that publishes or destroys; without it the verb prints its plan and exits 4"},
+	"board": {Type: "boolean", Description: "the human board even in an agent env or on a pipe; --json still wins"},
 	"help":  {Type: "boolean", Description: "print the verb help"},
 	"json":  {Type: "boolean", Description: "json on stdout even on a tty"},
 }
 
-var globalFlagNames = []string{"apply", "help", "json"}
+var globalFlagNames = []string{"apply", "board", "help", "json"}
 
 var familyList, verbs = loadRegistry(registryJSON)
 
@@ -148,7 +149,7 @@ func (v Verb) Short() string {
 	return rest
 }
 
-// flags the verb adds beside the global three
+// flags the verb adds beside the global ones
 func (v Verb) OwnFlags() []string {
 	var own []string
 	for name := range v.Flags {
