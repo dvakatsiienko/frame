@@ -59,6 +59,7 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
   status; busy → wait a tick, retry): a merge that races the coder's tail push had its worktree
   removed under a live push twice on 2026-09-08. dima merges, cclio cleans; the monitor dies
   with the session.
+- 📡 **the two plugin monitors must run**: `ps -ax -o command | grep -c '[p]r-watch.sh\|[c]i-watch.sh'` prints 2. less → arm the missing ones by hand (`Monitor` on `~/frame/cclio/.claude/hooks/pr-watch.sh --watch` and `ci-watch.sh --watch`, 30-min cap, re-armed on every expiry) and say so on the board. without pr-watch a cloud report branch lands in silence, and silence reads as «still running» (2026-10-08: the adviser cloud lane sat done, unseen).
 - 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:ensure` — it starts ccrow (today's arm, stash-only, 🔥 on) when none is live and answers «ccrow live» otherwise, so a second cclio never starts a second one.
 - 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or the apps lane
   says DUE → fire the `/cclio:evergreen` digest as a fork DURING the boot**, report-only, and say
