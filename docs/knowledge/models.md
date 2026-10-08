@@ -10,7 +10,7 @@ ticket: DOT-130
 lives in `cclio/memory/craft-spawning.md`; the two must agree line by line.
 
 📌 This file stays evergreen — [DOT-130](https://linear.app/x-com/issue/DOT-130) owns that, and
-`recipes/refresh-coordinator/recipe.md` runs it. Add measurements and Dima's live
+`recipes/refresh-crew-coordinator/recipe.md` runs it. Add measurements and Dima's live
 calls; never delete a claim tag. Sources of the 2026-09-28 run: the bundled `claude-api` skill
 (Anthropic's own model tables and migration guides) + one `parallel-cli` research lane
 (`docs/research/` holds no copy — this file is the distillate).
@@ -137,7 +137,21 @@ sonnet-5.5 at the same price; active to ≥2027-06-30. **[vendor]**
 - **Pick it for** — routine, well-specified coding and high-volume work. **Avoid** for hard
   multi-step engineering.
 
-## haiku-4.5 — `claude-haiku-4-5`
+## haiku-5.5 — `claude-haiku-5-5`
+
+Shipped 2026-10-07. $0.10 / $0.50 per MTok for prompts ≤100K, **1M** context, effort supported, needs cc
+2.1.293+ (the `haiku` alias resolves to it on 2.1.294 **[verified]**, probed 2026-10-08). **[vendor]**
+
+- Terminal-Bench 4.0 39.2 % (4.5: 0.0 %); pitched as a sidekick subagent under an Opus or Sonnet lead;
+  Cognition runs it that way. **[vendor]**
+- **Pick it for** — retrieval, extraction, bulk transforms, bare probes, sidekick subagents. dima's pick
+  over 4.5 everywhere, 2026-10-08 **[dima]**. **Avoid** — complex agentic coding, low effort on long
+  prompts. **[vendor]**
+- as a classifier engine: unmeasured. the 4.5 arm on our skill router read 27 % precision, 6.6–9.6 s per
+  call through `claude -p` (`docs/research/skill-router.md`) **[verified, 4.5 only]**. re-measure rides the
+  2026-10-15 and 2026-10-22 research reminders.
+
+## haiku-4.5 — `claude-haiku-4-5` (retiring 2026-10-15)
 
 Launched 2025-10-15. $1/$5, **200K** context, 64K output, **no effort dial** (manual extended
 thinking only). **[vendor]**
@@ -196,7 +210,7 @@ dima's screenshots of the Anthropic webinar (Lucas Gonzalez), read through his s
 - **Explore** · runs on sonnet-5.5 `medium`: `home/.claude/agents/explore.md` pins `model: sonnet`,
   `effort: medium`, on a one-week test drive to 2026-10-08 (`docs/test-drive/explore.md`); without
   that file it inherits the session model (opus-5.5)
-- **haiku-4.5** · bulk, classification, retrieval · no effort flag exists
+- **haiku-5.5** · retrieval, extraction, bulk, bare probes, sidekick subagents · `medium` baseline; classification unmeasured
 
 📌 **`--effort` is a flag on `claude --bg` and is honoured; it is never inherited** — pass it every
 time. `--model opus` resolves to `claude-opus-5-5` (cc 2.1.280+, probed).

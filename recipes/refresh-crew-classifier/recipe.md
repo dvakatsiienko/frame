@@ -6,10 +6,10 @@ artifacts:
   - script/lib/jev-questions.ts
   - docs/research/skill-router.md
 script: jev:report
-was: [refresh-branch-classification, refresh-jev]
+was: [refresh-branch-classification, refresh-jev, refresh-classification]
 ---
 
-# refresh-classification
+# refresh-crew-classifier
 
 Keeps the fleet's classification branch sharp: our classifier — jev (typesafe.ai) today, the primary
 target of every run unless a better alternative wins — our flows, the craft of writing them, and what
@@ -25,6 +25,8 @@ else exists. Born 2026-10-05 from the skill-router research round.
 > i think a «hunt already built to borrow» case is essential, plus «hunt already built for inspo ideas». and hunt jev itself alternatives. (2026-10-05)
 
 > add/merge vectors: jev best practices - how to build solid jev flows? consult with jev docs too … so it is generic for a case if we swap jev into something else? but currently holds jev as our main classifier and should refresh primarily for jev, unless better alternative is found. (2026-10-05)
+
+> the seat is called «classifier», not jev, on purpose: jev is just a model, a tool, and we could find another model for classification some day. what matters is the type of operation. the field looks bare because jev and classification are very new; jev is frozen only because we overspent, and it is useful. (2026-10-08)
 
 ## the run
 
@@ -54,7 +56,9 @@ else exists. Born 2026-10-05 from the skill-router research round.
 5. **a living eval set** — each run hand-labels ~10 fresh prompts from `route.log` (and the inputs of every other flow) and adds every real miss as a fixture, so the fixtures follow how dima talks instead of freezing
 6. **a cheap baseline, every run** — the same fixtures through a small model with a schema (haiku) beside jev: «is jev still worth it» gets a number each run
 7. **the flow inventory** — every jev flow in the fleet on one list: owner, vet state, last tuned, weekly cost; a flow nobody reads or tunes is cut (today: inbox-lanes, skill-router, flawlog-lanes)
-8. **classification candidates from inside** — scan the flawlog and coder retros for judgment calls agents keep making by hand; each is a candidate flow
+8. **the budget gate** — what stops a replay or a bulk run from overspending again (the 10-05 freeze: $4.43 in a day on a $5 monthly credit), which flows are fail-soft when the engine is down or out of credit, and which engine each flow could fall back to
+9. **never retire the seat for lack of prior art** — the field is young; a verdict on the seat names the engine it judged, and «retire» is a verdict on an engine, never on the operation
+10. **classification candidates from inside** — scan the flawlog and coder retros for judgment calls agents keep making by hand; each is a candidate flow
 
 ## artifacts (pointed at, never housed here)
 

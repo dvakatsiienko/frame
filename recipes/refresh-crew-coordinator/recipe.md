@@ -4,10 +4,10 @@ cadence: the tools half on a cc minor version, a new claude model or a spawn beh
 artifacts: [cclio/memory/craft-spawning.md, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, docs/knowledge/spawning-mechanics.md, docs/knowledge/models.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md]
 script: none
 owner: coordinator
-was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning]
+was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning, refresh-coordinator]
 ---
 
-# refresh-coordinator
+# refresh-crew-coordinator
 
 keeps the coordinator true: how cclio spawns, picks models, runs the crew, the tickets and the flow.
 one run, two halves whose lanes run in parallel and land in one findings print:
@@ -49,7 +49,7 @@ the cards against the ladder (dima's, 2026-10-08):
 
 > «we have a few subagents — a helper, a researcher, an explorer — and we use specific models for them: the helper is sonnet 5.5, meant for a quick one-off job it does well at less spend than opus (opus is for granular, sophisticated changes where thoughtful decisions are needed). this is a checkup across every subagent and crew member: do we still have the right model for what each is meant to do, at the right effort? is chores on sonnet 5.5 medium still the right pick, or would opus 5.5 medium be better? the recipe gathers our settled baseline picks and searches whether they hold.»
 
-the adviser (dima's, 2026-10-08): the want lives in `recipes/refresh-coordinator-adviser/recipe.md`; this run reads that recipe's latest verdicts and never re-researches it.
+the adviser (dima's, 2026-10-08): the want lives in `recipes/refresh-crew-coordinator-adviser/recipe.md`; this run reads that recipe's latest verdicts and never re-researches it.
 
 the tracker and the CTO hat (dima's, standing):
 > «optimize the fleet flow.»
@@ -59,13 +59,13 @@ the tracker and the CTO hat (dima's, standing):
 
 1. **re-groom** every vector list below with dima, plus the shared vectors of `x:shape-recipe`; step 0 of the skill first. done: his word on the list. (open)
 2. **probe the mechanics** (tools): execute `spawning-mechanics.md`'s «the test suite» section against the current build. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
-3. **research, both halves at once** — before any new lane, distill what the last run's `last/` still holds and name what it already answered; a lane re-runs only for what is unanswered or dated. this run (2026-10-08): the craft brief runs a cloud agent (`x:crew-cloud`, branch transfer) beside `researcher`, `get_usage` weekly + 5h read before the launch and after it lands, both graded in `docs/test-drive/cc-cloud.md`. then: one brief per half, each through the `researcher` agent + `pnpm research:lanes`; prices read from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. done: every lane landed or failed out loud. (template)
+3. **research, both halves at once** — before any new lane, distill what the last run's `last/` still holds and name what it already answered; a lane re-runs only for what is unanswered or dated. this run (2026-10-08): the craft brief runs a cloud agent (`x:crew-cloud`, branch transfer) beside `researcher`, `get_usage` weekly + 5h read before the launch and after it lands, both graded in `docs/test-drive/cc-cloud.md`. then: one brief per half, each through the `researcher` agent + `pnpm research:lanes`; prices read from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. **each brief quotes the want block and every vector line verbatim; before launch, diff the brief against this file and fix any line that re-describes a seat** (the 10-08 brief called the classifier «a fast typed-judgment model, currently frozen», and every lane answered «retire»). done: every lane landed or failed out loud, and every vector lists ≥1 source or is printed `open`. (template)
 4. **distill** into the artifacts:
    - `spawning-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
    - `models.md` — THE model reference; claim tags ([dima] / [bench] / [vendor] / [community] / [?]) updated, never deleted; dima's [dima] calls never overwritten, outside evidence sits beside them
    - `craft-spawning`, `craft-fleet-flow`, `craft-pm`, `habit-cto` — a finding changes a line only through the memory-edit habit (announced; deletions and his words need his word first)
    - `rules/fleet-flow.md`, `rules/fleet-identity.md` — the crew list and who talks to whom; a role added or retired is his word first
-   - raw research dies after the distill. done: every artifact touched or named «unchanged». (open)
+   - raw research dies after the distill. done: every artifact touched, or named «unchanged» with the finding that left it so. (open)
 5. **re-size the grid**: the spawn base measured from our own sessions times the run's prices → the spawn-or-reuse grid in `craft-spawning`. then read `craft-spawning` against both docs line by line. done: the grid's numbers equal this run's base and prices, and no line disagrees with a doc — else go back to step 4. (template)
 6. **thin-data check**: a model in scope under ~4 weeks old, or a lane that found no independent measurement → a dated re-run **12 weeks** out in `cclio/memory/_reminders.md`. done: the reminder is written, or «no thin data». (script)
 7. **findings print** (below), then resolve with dima by outcome; noop is first-class. done: printed, each item verdicted. (open)
@@ -77,11 +77,14 @@ on top of the shared vectors of `x:shape-recipe` (the delta covers the cc change
 
 craft — the coordinator:
 - how a coordinator agent should work in general and coordinate efficiently: planning, routing work to members, gates, comms, attention economy with the operator
-- the adviser: read `refresh-coordinator-adviser`'s latest verdicts (the arm, the setup keep/revamp/retire) — its research is that recipe's, never this one's
-- the full crew: which roles a mature agent team has, against ours (coder, verifier, designer, classifier, ccrow, the ci reviewers coderabbit + cc); which we lack
+- the adviser: read `refresh-crew-coordinator-adviser`'s latest verdicts (the arm, the setup keep/revamp/retire) — its research is that recipe's, never this one's
+- the full crew: which roles a mature agent team has, against ours (coder, verifier, designer, classifier, ccrow, the ci reviewers coderabbit + cc); which we lack. the crew checklist re-runs every run, even when the last said «nothing missing» — the field moves
+- per seat: each crew role (coder, verifier, designer, the ci reviewers) and each card (`helper`, `researcher`, `retro`, `Explore`, `checkup`) judged by its own job — still needed, merged or missing, plus the prior art for that job (reviewer agents, design agents). the designer reads `refresh-crew-designer`'s latest verdicts, the way the adviser reads its own recipe
 - role drift: roles that appear as capabilities grow, roles that go obsolete as models improve
 - ticket management for an agent coordinator: tools and strategies (linear, local spec trackers, the pocket, matt's pipeline), what keeps the loop chill
 - agentic workflows overall: spec-driven runs, shifts vs lanes, review loops — what is proven
+
+craft — the classifier seat: read `refresh-crew-classifier`'s latest verdicts (the engine judged, the jobs found, the budget gate) — its research is that recipe's, never this one's; a seat is a type of operation, never one engine
 
 tools — spawn mechanics:
 - re-verify every [verified] row against the current cc build — a row stays as sharp as its last run left it
@@ -107,9 +110,15 @@ analysis (on top of the shared three):
 
 ## findings
 
-**the craft half's done-test: ≤3 verdicts** — a role to add, merge or retire · a practice to adopt and what it replaces · a thing to drop — each with its evidence against our own flow numbers, or `noop`. a craft run that prints findings without a verdict did not run. the tools half's done-test is the rows flipped and the grid re-sized.
+**the craft half's done-test: ≤3 verdicts** — a role to add, merge or retire · a practice to adopt and what it replaces · a thing to drop — each with its evidence against our own flow numbers, or `noop`. `noop` is valid only when every craft vector names its sources; a vector with none prints as `open`, never as `noop`. the tools half's done-test is the rows flipped and the grid re-sized.
 
-beyond the shared shape, the print answers:
+**the verdicts are the decisions, never the whole print.** the print carries four parts:
+- **decisions** — the verdicts, each with its evidence
+- **facts that move something** — uncapped: every fact that changes a pick, a price, a default or a date, with its source and the artifact line it moves (a model retiring, a cache ttl, a cost ratio)
+- **the checklists** — the crew, seat by seat (still needed · merged · missing); the classifier seat (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named)
+- **open** — every vector left unanswered, by name
+
+beyond that shape, the print answers:
 - a role to add, merge or retire, with the evidence
 - a coordination or ticket practice to adopt, and what it replaces
 - any [verified] row flipped? the build it flipped on, and the row's new tag

@@ -29,8 +29,9 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 - ☁️ **`cc cloud`** — Claude Code on Anthropic's machines, on a test drive to 11-04 (`x:crew-cloud`).
 
 ## the subagents — in-process cards, spawned by name (`Agent` tool); no prefix, the badge + bold is the differentiator in text (dima, 2026-10-08)
-- 🐜 **`helper`** — sonnet 5.5 medium: mechanical, fully specified jobs; several may run at once. `home/.claude/agents/chores.md`, global.
+- 🐜 **`helper`** — sonnet 5.5 medium: mechanical, fully specified jobs; several may run at once; loads the code guides its job's files need. `home/.claude/agents/helper.md`, global.
 - 🐝 **`researcher`** — opus, no fleet memory (`omitClaudeMd`): a bounded research question answered from sources into one file. global.
 - 🦡 **`retro`** — opus: matt's retro over finished transcripts, fixes to the agents' environment ranked by severity. global.
+- 🪶 **`sifter`** — haiku 5.5 medium, no fleet memory (`omitClaudeMd`), read-only: pulls counts, fields and lines out of big logs, transcripts and json, so the raw output never enters the caller's context. `home/.claude/agents/sifter.md`, global; on a test drive to 10-22 (`docs/test-drive/sifter.md`).
 - 🦊 **`Explore`** — the built-in search agent, overridden onto sonnet 5.5 (`home/.claude/agents/explore.md`); keeps its built-in name so the override holds.
 - 🐦 **`checkup`** — opus, read-only: cclio's siesta reviewer over what a sweep just changed, ≤10 lines. `cclio/.claude/agents/`, cclio-only — a siesta habit, not a reviewer for other members.

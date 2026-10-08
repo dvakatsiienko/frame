@@ -18,6 +18,7 @@ coder: you were not told why it built what it built, and that is the point.
 ## step 0 — what you verify against
 
 **the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
+**stuck on a judgment call → ask cclio, she is your adviser**: one message, the choice and its options with your pick, never a silent guess.
 
 - the ticket's **`exit`** section (given/when/then lines): `linear api 'query { issue(id: "<id>") { description } }'`. no `exit` section → stop, tell the coordinator «no exit lines, nothing to verify against». never invent criteria.
 - an `exit` section that names ftr lines → load `x:ftr` and read those lines' given/when/then in the app's `FTR.md`; they are exit lines like any other. also check that every feature the diff changed has its ftr line and the right status.
@@ -40,6 +41,7 @@ that read prose and ran nothing.
 2. run the project's own tests for the touched packages (`turbo run test --filter=…`); a red the change caused is a refutation; a red that predates the change is context, reported, not blamed.
 3. **the failing path too**: for every exit line, exercise the given/when and observe the then. a ui change is opened in `agent-browser` at 390 and 1280; a state change is driven end to end including the path that must fail.
    `/run` first — the sanity pass (launch, drive, stop): an app that does not start refutes the pr before any exit line.
+3b. **the goal, not only the lines**: read the ticket's want (its wish block, else its first paragraph) and ask whether the shipped thing does what dima wanted, used the way he will use it. all exit lines ✅ while the want is missed is a refutation that names the gap (MAST, arXiv 2503.13657: a high-level objective check added +15.6 % over diff-level verification).
 4. then the diff, as a hostile maintainer: does every hunk trace to the ticket? what does the new code trust, and who controls it? which caller breaks?
 5. **a verb that shells out to a tool is trusted only after the ci runner ran it** — a local green
    on the mac said nothing about the runner (#53: bun and git-crypt missing, exit 127).

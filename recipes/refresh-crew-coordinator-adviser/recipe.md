@@ -8,10 +8,10 @@ artifacts:
   - ~/.local/state/ccrow/leaves.txt
   - docs/test-drive/ccrow.md
 script: none
-was: [refresh-ccrow]
+was: [refresh-ccrow, refresh-adviser, refresh-coordinator-adviser]
 ---
 
-# refresh-coordinator-adviser
+# refresh-crew-coordinator-adviser
 
 keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, which arm runs it, and whether the whole adviser idea still earns its place.
 

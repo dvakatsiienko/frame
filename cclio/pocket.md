@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-09 (the cli grill, census ready) → 49 (refresh-coordinator-adviser run, lanes in) → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+09 (the cli grill, census ready) → 54 (the long cli lane) → 49 (refresh-crew-coordinator-adviser run, lanes in) → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 53 → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
@@ -139,7 +139,7 @@ ccrow's session read 625k chars on 10-07, ~all of it 22 `packets/<wake>/delta.md
 - measure first: the tool_result share of a delta packet (one `jq` over today's packets)
 - then: the packet keeps dima's messages whole (`<command-args>` included), cclio's replies and peer messages whole, task-notification results capped at ~2k chars with the output_file path, tool-call names; tool_result bodies go. a/b one day of notes against today's
 - ccrow 10-07, asked: «yes, drop the tool_result bodies — none of today's catches used them»; the real loss was the 60000-char cut losing dima's lines at a packet's head, a slimmer packet fixes it; she writes each watch item into the note text so a halt restart drops nothing; a cold-cache guard is a keep-hot ping at ~50 min idle, default off, never a skipped wake
-- cold cache, measured 10-07: only the 09:20 start wrote cold; the 48-min pause stayed warm (1h ttl on a main session, per the refresh-coordinator researcher lane). a gap over 1h goes cold silently — a guard is ccrow's call
+- cold cache, measured 10-07: only the 09:20 start wrote cold; the 48-min pause stayed warm (1h ttl on a main session, per the refresh-crew-coordinator researcher lane). a gap over 1h goes cold silently — a guard is ccrow's call
 
 ### 37 · the roster marks dima's own sessions
 `open · task` · a second sighting (10-07)
@@ -186,7 +186,7 @@ dima: yesterday we added a «log» for recipes, but he spotted a log (cannot rec
 
 
 ### 49 · ccrow is underutilized — the adviser vector in the coordinator recipe
-`open · task` · inbox 10-08, 🐞 · dima 13:54: the `refresh-coordinator` rerun runs its source lane as a **cloud agent** (`x:crew-cloud`, branch transfer) head-to-head with the opus `researcher`, graded in `docs/test-drive/cc-cloud.md` — after the step-0 groom and his review (48)
+`open · task` · inbox 10-08, 🐞 · dima 13:54: the `refresh-crew-coordinator` rerun runs its source lane as a **cloud agent** (`x:crew-cloud`, branch transfer) head-to-head with the opus `researcher`, graded in `docs/test-drive/cc-cloud.md` — after the step-0 groom and his review (48)
 
 dima: add a research vector to the coordinator recipe to hunt solid adviser-model behaviour — what would a good adviser model want to do to be a very good adviser? what do i, as coordinator, pm and cto, want from an adviser model? consider the crow taxonomy and the ctx budget; do not ask it to code — coding is disapproved, not banned; it can explore at least. enable his mod for crow and enable the retro recipe. when the recipe is updated, run it, and propose a good update for the adviser model — consult the adviser model itself, ask his question and mine. what to search for: how to build a good adviser model, the best model fit (opus? fable?), the baseline effort.
 
@@ -199,6 +199,15 @@ dima: «let's try shortcut and ray cmd. i also want a way to set a scheduled 5h 
 - his hands: an ios shortcut on the «Ask Claude» app intent, prompt «ok», home screen on iphone + ipad, ending with a «window opened · resets» notification; the probe tomorrow morning (tap with no claude use in 5 h, boot, read the digest's 5h reset)
 - a coder freebie: a raycast script command in x-ray running `claude -p --model haiku` with no tools and a replaced system prompt (not `--bare`); a «kick at HH:MM» variant via a one-shot launchd job + `pmset schedule wake`
 - the scheduled kickoff: candidates — an ios automation on an alarm trigger (set the alarm = set the time; runs locked? «?»), a one-off cloud routine set from the phone (whole cloud session per kick), the mac one-shot above. one probe each before a pick
+
+### 53 · sonnet 5.5 as a coder, one quick-lane ticket
+open · test-drive
+- dima's yes, 2026-10-08: the next quick-lane ticket spawns `--model sonnet --effort medium` instead of opus; graded against an opus coder on the same lane shape (steps, cost, `#brief` lines, rounds). a fresh `docs/test-drive/sonnet-coder.md` on day 0
+- why: sonnet 5.5 beats opus 5.5 on Terminal-Bench 4.0 (70.6 vs 66.4); anthropic still calls opus stronger on open-ended work
+
+### 54 · plan the cli lane to run long, right after refresh-crew-coordinator closes
+open · task · blocked by 09
+- dima, 2026-10-08: «plan enough for them to run for some time, because recipe grooming blocks the lane» — the grill (09) feeds it; a coder + verifier with a queue deep enough to work through hours of siestas
 
 ## decisions so far
 

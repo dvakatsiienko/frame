@@ -29,6 +29,7 @@ an app with a direction: read, in order, and draw inside it — never invent a n
 ## 1. read the brief
 
 **the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
+**stuck on a judgment call → ask cclio, she is your adviser**: one message, the choice and its options with your pick, never a silent guess.
 
 - 🎯 full: `jobs/<app>/brief.md`. a blind brief adds `map.md`, and those two files are all you
   read about the app.

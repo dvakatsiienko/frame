@@ -84,6 +84,7 @@ for ceremony.
   new coordinator: answer him there, and whatever stops you (a question, a ⏳, done) also goes to
   cclio as a one-line ping (frame-1b sat 11 min on two asks only dima saw, 2026-10-06).
 - **a probe prints counts or filtered fields, never a raw payload** — a loose selector and a wrong `2>&1` order dumped ~40k tokens of tables and json into one coder's context (2026-09-28)
+- **stuck on a judgment call → ask cclio**: the options and your pick, never a silent guess.
 - **ping on four events only** — you stop for dima (a pick, a decision) · you are blocked · the
   assignment is done · a find dima would truly want (a better way to build a feature, a tool or
   script you built for yourself, an improvement proposal, a tool feature worth adopting after a
