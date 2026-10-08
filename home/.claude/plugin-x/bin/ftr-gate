@@ -21,7 +21,7 @@ done)
 missing=""
 while read -r file; do
     case "$file" in *.ts | *.tsx | *.js | *.jsx | *.mjs | *.css | *.swift | *.html) ;; *) continue ;; esac
-    case "/$file" in */.claude/*) continue ;; esac
+    case "/$file" in */.claude/plugin-x/mods/*) ;; */.claude/*) continue ;; esac
     ftr=""
     dir=$(dirname "$file")
     while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
