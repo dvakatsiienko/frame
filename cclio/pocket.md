@@ -209,6 +209,8 @@ open · test-drive
 open · task · blocked by 09
 - dima, 2026-10-08: «plan enough for them to run for some time, because recipe grooming blocks the lane» — the grill (09) feeds it; a coder + verifier with a queue deep enough to work through hours of siestas
 
+- lane candidates, groomed into tickets as the queue drains (dima, 18:10: «2–4 lanes prepped upfront»): FRM-347 `x fleet` (running) → FRM-352 the groom stamp → FRM-342 test env (+ `Test x` own job, `x lane seed`) → `x linear attachments FRM-N <dir>` (the FRM-329 coder's retro: linear uploads took 3 tries, `x as` covers only linear and gh, the sandbox blocks curl)
+- a mods-guard candidate from the same retro: refuse a Write over a tracked file this session never Read (the coder overwrote `tests/edits.test.ts`, restored from git) — goes to FRM-304 with the next mods round
 ### 55 · crew-coder: name 🪶 sifter for big reads, after a trim
 open · task
 - dima, 2026-10-08: «ensure it is not lost (sifter for coders)». `x:crew-coder` sits at its compaction cap (18,987 of 18,995 chars, `skill-size.test.ts`), so the «hand big reads to subagents» line names `sifter` only after a trim frees room. until then every brief carries the sifter line (FRM-346's does)
@@ -217,7 +219,7 @@ open · task
 open · test-drive
 - dima, 2026-10-08: «pocket it and count error occurrences, if it grows — mod it». the miss: «that becomes a wisp» printed plain, where the rule says **✨ wisp**, bold with its badge
 - the count: at each halt, 🪶 sifter counts this session's replies that print `wisp`, `wish`, `siesta` or `freebie` without the bold + badge (`lane` is left out — too common as a plain word, false positives). one line per halt in `docs/test-drive/reply-check.md`
-- the bar: 3+ misses across two halts → a `reply-check` rule; below it, nothing is built
+- 17:51 dima approved the autofix instead: x-mod-stash bolds + badges a bare fleet word pre-render (sent to the mods coder). the halt count now reads the fixer's own hit counter — a hit is a miss of mine it caught. shipped 18:14 (mods coder, live-proven): hits live in x-mod-stash's store under `words:<yyyy-mm-dd>:<sid>`
 
 ## decisions so far
 

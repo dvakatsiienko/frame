@@ -33,7 +33,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 <!-- sync: cw -->
 
 - **slay** = push (git push). «go slay» → push it.
-- **freebie** = a ticket/action executable without Dima's approval (pre-approved or approval-free by contract). «do the freebies» → run them unprompted.
+- **🍀 freebie** (badge: dima, 2026-10-08) = a ticket/action executable without Dima's approval (pre-approved or approval-free by contract). «do the freebies» → run them unprompted.
 - **propose** = answer → approve → act: print the answer/plan, stop, execute only on his word. Prefixes any ask.
 - **rewind** = reprint the last report (the `📄` line in the ⏳ block) in full, plus the block; `rewind <topic>` reprints an older one. for when member traffic pushed it out of view.
 - **pause** = hold off, stop what you are doing, i will steer.
