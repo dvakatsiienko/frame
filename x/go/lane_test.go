@@ -303,6 +303,12 @@ func TestShimPinsADevBuildWhenXGoDiffersFromOriginMain(t *testing.T) {
 			write(t, filepath.Join(tree, "x/go/main.go"), program+"\n// committed\n")
 			gitT(t, tree, "commit", "-qam", "ahead")
 		}},
+		{"a checkout behind origin/main", "dev=", func(t *testing.T, tree string) {
+			write(t, filepath.Join(tree, "x/go/main.go"), program+"\n// newer on main\n")
+			gitT(t, tree, "commit", "-qam", "main moved")
+			gitT(t, tree, "update-ref", "refs/remotes/origin/main", "HEAD")
+			gitT(t, tree, "checkout", "-q", "HEAD~1")
+		}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
