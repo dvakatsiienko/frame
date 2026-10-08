@@ -19,6 +19,7 @@
 - ✅ a hazard shape is refused with its fix, and its near miss runs
   - given a Bash call holds: an `sd` replacement with `$` in double quotes; an `sd` find led by `-` with no `--`; an unbraced `$var` before `:<letter>` (a zsh modifier) or a non-ascii character; `sd`, or `sed -i`, on `.github/workflows/*`; a trailing `&` with no `wait` or `sleep` after it; a gate (`typecheck`, `test`, `check`, `tsc`, `vitest`, a `family:test` script) piped into `head` or `grep`; a `git push` piped into `grep`; a `git commit` with no `--` paths, `git add -A` / `--all` / `.`
   - then it is refused with its fix; `$HOST:8080`, `$HOST:/tmp`, `pgrep -l x; kill <pid>`, `kill $(cat x.pid)` and a search for `--no-verify` run; the shape one step away (single quotes, `--`, `${var}`, `sed -n`, a `sleep` after the `&`, an unpiped gate, `git ls-remote`, `-- <paths>`) runs
+  - given `set -- $VAR` (or `${VAR}`) unquoted, then it is refused with the door `${=VAR}`, zsh's split — zsh never splits the parameter, so a watch on `$1` sees one word and dies silent; `set -- ${=VAR}` and `set -- "$A" b` run (FRM-337)
   - then a gate tool run to list or print (`--help`, `--version`, `--listFilesOnly`, `--showConfig`, `vitest list`) piped into `grep` runs, and so does a gate ended by `;` before the pipe (FRM-337)
 - ✅ a shape with one right spelling is rewritten, never refused
   - given a Bash call holds `pnpm -s` (before any `--`), or an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`
@@ -59,7 +60,7 @@
   - then `pnpm flow:report` prints the day's total and a `guard by rule, refused/escaped` line, busiest rule first, so noise and real catches separate (FRM-341)
   - then a halt sums the day's keys for the whole day, however many events the newest-50 cut has dropped
   - decision: one key per session a day — two sessions never write the same key, so a count is never lost to a race; a count that fails to write never changes the refusal
-  - 📌 only the Bash tool is read: a command started by `Monitor` or a `!` line in the prompt goes through unread
+  - 📌 the Bash and `Monitor` tools are read (a Monitor's `command`, every rule, FRM-337); a `!` line in the prompt goes through unread
 
 - ✅ a system, overwrite, prune or remote-delete command is refused with its door
   - given a Bash call runs one of:

@@ -770,7 +770,10 @@ function spawnBrief(c: Command, ctx: Context) {
         c.feeders.flatMap((f) =>
             f.name === 'cat' ? operands(f.args) : [],
         )[0] ?? c.reads[0];
-    return { dir, file: text && { path: resolve(text, dir, ctx), text } };
+    return {
+        dir,
+        file: text ? { path: resolve(text, dir, ctx), text } : undefined,
+    };
 }
 
 // the brief files every coder spawn in the command reads, for the caller to hash and look up
@@ -901,6 +904,28 @@ function lint(c: Command, next: Command | undefined): Refusal | undefined {
             targets: [pipedTo],
             why: `| ${pipedTo} turns a red gate quiet`,
         };
+    // zsh never splits an unquoted parameter: `set -- $PIDS` sets one arg, and a watch on `$1` dies silent
+    const dashes = c.args.findIndex((w) => w.text === '--');
+    const unsplit =
+        c.name === 'set' && dashes >= 0
+            ? c.args
+                  .slice(dashes + 1)
+                  .find(
+                      (w) =>
+                          !w.hasQuote &&
+                          /^\$\{?[A-Za-z_]/.test(w.text) &&
+                          !w.text.startsWith('${='),
+                  )
+            : undefined;
+    if (unsplit) {
+        const name = unsplit.text.replace(/^\$\{?|\}$/g, '');
+        return {
+            door: `\${=${name}} — zsh's split — or write the items out`,
+            rule: 'set-unsplit',
+            targets: [unsplit.text],
+            why: `zsh does not split ${unsplit.text}, so set -- gets one argument`,
+        };
+    }
     if (c.name === 'git') {
         const { sub, subArgs } = gitParts(c.args);
         if (sub === 'commit' && !subArgs.some((w) => w.text === '--'))

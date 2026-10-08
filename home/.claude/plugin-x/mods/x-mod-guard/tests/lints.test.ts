@@ -78,6 +78,12 @@ const LINTS = [
         'obsidian delete path=_hq/old.md',
     ],
     [
+        'an unquoted $var after set --',
+        'set -- $FILES; echo $#',
+        '${=FILES}',
+        'set -- ${=FILES}; set -- "$A" b',
+    ],
+    [
         'a sha pushed to main in frame',
         'cd /home/frame && git push origin abc123:main',
         'x lane push',
@@ -134,6 +140,17 @@ for (const command of NOT_GATES)
             (await $.tool.call({ command, tool: 'Bash' })).deny,
         ).toBeUndefined();
     });
+
+test("a Monitor's command is read like a Bash one", async ($, on) => {
+    world(on);
+    const r = await $.tool.call({
+        command: 'set -- $PIDS; until false; do sleep 5; done',
+        description: 'watch',
+        timeout_ms: 60_000,
+        tool: 'Monitor',
+    });
+    expect(r.deny).toContain('${=PIDS}');
+});
 
 test('a refusal says nothing in the command ran', async ($, on) => {
     world(on);

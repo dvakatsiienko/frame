@@ -2,7 +2,13 @@
 // quoted text, heredoc bodies and comments are never read as commands; a `$( … )` or a backtick pair is read as a command of its own.
 
 // at: the word's offset in the command, kept only for a bare word — plain characters, no quote, escape or expansion
-export type Word = { text: string; isExpanding: boolean; at?: number };
+// hasQuote: some of the word sat in quotes or behind a backslash, so the shell neither splits nor globs that part
+export type Word = {
+    text: string;
+    isExpanding: boolean;
+    at?: number;
+    hasQuote?: boolean;
+};
 export type Sep = ';' | '&&' | '||' | '|' | '&' | '(' | ')';
 // subst: the commands inside this command's `$( … )` and backticks
 export type Segment = { words: Word[]; sep: Sep; subst: Segment[] };
@@ -20,6 +26,7 @@ type Frame = {
     isWord: boolean;
     isExpanding: boolean;
     isBare: boolean;
+    hasQuote: boolean;
     at: number;
     from: number;
 };
@@ -41,18 +48,23 @@ export function parse(command: string): Parsed {
     let isExpanding = false;
     let isQuoted = false;
     let isBare = false;
+    let hasQuote = false;
     let at = 0;
     let i = 0;
 
     const endWord = () => {
         if (isWord)
-            words.push(
-                isBare ? { at, isExpanding, text } : { isExpanding, text },
-            );
+            words.push({
+                isExpanding,
+                text,
+                ...(isBare && { at }),
+                ...(hasQuote && { hasQuote }),
+            });
         text = '';
         isWord = false;
         isExpanding = false;
         isBare = false;
+        hasQuote = false;
     };
     const endSegment = (sep: Sep) => {
         endWord();
@@ -76,6 +88,7 @@ export function parse(command: string): Parsed {
         stack.push({
             at,
             from: segments.length,
+            hasQuote,
             isBare,
             isExpanding,
             isWord,
@@ -97,7 +110,7 @@ export function parse(command: string): Parsed {
         const frame = stack.pop();
         if (!frame) return;
         const inner = segments.slice(frame.from);
-        ({ words, text, isWord, isExpanding, isBare, at } = frame);
+        ({ words, text, isWord, isExpanding, isBare, at, hasQuote } = frame);
         subst = [...frame.subst, ...inner];
         if (frame.kind === 'group') return;
         add('$(…)');
@@ -115,6 +128,7 @@ export function parse(command: string): Parsed {
             stack.push({
                 at: 0,
                 from: segments.length,
+                hasQuote: false,
                 isBare: false,
                 isExpanding: false,
                 isWord: false,
@@ -223,14 +237,17 @@ export function parse(command: string): Parsed {
             i = end < 0 ? command.length : end;
         } else if (c === '\\') {
             add(next === '\n' ? '' : next);
+            hasQuote = true;
             i += 2;
         } else if (c === "'") {
             const end = command.indexOf("'", i + 1);
             add(command.slice(i + 1, end < 0 ? undefined : end));
+            hasQuote = true;
             i = end < 0 ? command.length : end + 1;
         } else if (c === '"') {
             isWord = true;
             isBare = false;
+            hasQuote = true;
             isQuoted = true;
             i++;
         } else if (c === '$') {

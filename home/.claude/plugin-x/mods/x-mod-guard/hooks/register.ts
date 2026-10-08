@@ -149,9 +149,11 @@ async function count(
 }
 
 export const register: Register = (on) => {
-    on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
+    // a Monitor's command is a shell command too
+    on('tool.call', { tool: /^(Bash|Monitor)$/ }, async ($, e, next) => {
         // the input is the model's: a command that is not a string is the tool's to refuse
-        const typed = 'command' in e ? e.command : undefined;
+        if (e.tool !== 'Bash' && e.tool !== 'Monitor') return next(e);
+        const typed = e.command;
         if (typeof typed !== 'string') return next(e);
         // a shape with one right spelling is fixed, then the fixed command is what every rule reads
         const { command, notes } = rewrite(typed);
