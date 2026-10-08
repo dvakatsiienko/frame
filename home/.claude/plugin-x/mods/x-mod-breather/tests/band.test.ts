@@ -1,5 +1,5 @@
 import { expect, mock, test } from 'claude-code/testing';
-import { exerciseOf } from '../hooks/breath/exercises.ts';
+import { EXERCISES, exerciseOf } from '../hooks/breath/exercises.ts';
 import { meterSvg } from '../hooks/meter.ts';
 
 const working = { bodyColumns: 100, hasSurvey: false, isWorking: true, maxRows: 9, scroll: { bodyRows: 40, offset: 0 }, view: {} };
@@ -31,4 +31,8 @@ test('the meter breathes on the exercise cycle', () => {
 
 test('the meter glides between levels instead of stepping', () => {
     expect(meterSvg(exerciseOf('hrv'))).toContain('calcMode="linear"');
+});
+
+test('every exercise fits the engine svg limit', () => {
+    for (const ex of EXERCISES) expect(meterSvg(ex).length).toBeLessThan(131072);
 });

@@ -1,6 +1,6 @@
 /* @jsx h */
 import { exerciseOf } from './breath/exercises.ts';
-import { orbSvg } from './orb.ts';
+import { METER_HEIGHT, meterSvg } from './meter.ts';
 import type { Register } from 'claude-code';
 
 import {
@@ -124,10 +124,10 @@ export const register: Register = (on) => {
                 <Box flexDirection='column'>
                     <Svg
                         alt={`breathing guide: ${exercise.name}, ${exercise.pattern}`}
-                        height={124}
+                        height={METER_HEIGHT}
                         isInteractive
-                        key={`orb:${running.startedAt}:${config.exercise}`}
-                        source={orbSvg(exercise)}
+                        key={`meter:${running.startedAt}:${config.exercise}`}
+                        source={meterSvg(exercise)}
                     />
                     {await next(e)}
                 </Box>
