@@ -6,6 +6,11 @@
             "name": "lane"
         },
         {
+            "example": "x go gate",
+            "gist": "x's own go checks, one GATE line",
+            "name": "go"
+        },
+        {
             "example": "x handoff peek cli-arms",
             "gist": "the shared CST store, one door for cc and cw",
             "name": "handoff"
@@ -133,6 +138,43 @@
             "needsApply": false,
             "purpose": "decrypt the git-crypt files of a worktree that holds ciphertext, so staging stops dying",
             "steps": ["scan", "decrypt", "verify"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the worktree made by hand with git worktree add",
+                    "name": "path"
+                }
+            ],
+            "name": "lane seed",
+            "needsApply": false,
+            "purpose": "seed a hand-made frame worktree like EnterWorktree does: git-crypt unlock, mod types, install",
+            "steps": ["seed", "verify", "hooks"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the linked worktree to remove",
+                    "name": "path"
+                }
+            ],
+            "name": "lane decamp",
+            "needsApply": true,
+            "purpose": "remove a linked worktree, then point the shared lefthook shims back at the main checkout",
+            "steps": ["tree", "remove", "hooks"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the go module dir; x's own module when absent",
+                    "isOptional": true,
+                    "name": "dir"
+                }
+            ],
+            "name": "go gate",
+            "needsApply": false,
+            "purpose": "run gofmt, vet, staticcheck, go fix and the tests on x's module; GATE ok, or GATE red naming the step",
+            "steps": ["gofmt", "vet", "staticcheck", "fix", "test"]
         },
         {
             "flags": {

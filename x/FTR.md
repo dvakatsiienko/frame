@@ -79,6 +79,28 @@
 - ⬜ `x lane pr-open` opens a pr as the coder app
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ `x lane unlock` decrypts a worktree's git-crypt files
+  - given a hand-made worktree whose git-crypt files hold ciphertext, where `go build` dies on the vcs stamp
+  - when `x lane unlock` runs inside it
+  - then the files read as plaintext and `go build` passes with no extra env
+- ✅ `x lane seed <path>` seeds a hand-made worktree the way EnterWorktree does
+  - given a tree made by `git worktree add`
+  - when `x lane seed <path>` runs
+  - then its git-crypt files are plaintext, `go build` passes, each mod's ignored `tsconfig.json` is copied from the main checkout, and the hook shims still point at the main checkout
+  - given the main checkout itself
+  - then it is refused as a usage error
+- ✅ `x lane decamp <path> --apply` removes a worktree and points the hook shims home
+  - given the shared lefthook shims point at a linked worktree
+  - when `x lane decamp <path> --apply` runs
+  - then the tree is gone and the shims point at the main checkout
+  - decision: dima's `decamp` alias stays `git worktree remove` until he says otherwise (cclio, 2026-10-08)
+
+## go — x's own checks
+
+- ✅ `x go gate [dir]` runs gofmt, vet, staticcheck, go fix and the tests in one call
+  - given a go module with a gofmt finding
+  - when `x go gate <dir>` runs
+  - then it prints `GATE red: gofmt` and exits non-zero
+  - decision: piped into head, tail or grep it is refused by x-mod-guard, whose fix is reading the GATE line — no process controls a pipeline's exit (cclio, 2026-10-08)
 
 ## handoff — the CST store
 

@@ -29,6 +29,9 @@ if [ -d "$main" ] && [ "$main" != "$wt" ]; then
   (cd "$main" && find . \( -name node_modules -o -name .git -o -path ./.claude/worktrees \) -prune \
     -o -type d -path '*/.claude-plugin/types' -print -prune) | while read -r d; do
     [ -e "$wt/$d" ] || { mkdir -p "$wt/$(dirname "$d")" && cp -R "$main/$d" "$wt/$d"; }
+    # the mod's tsconfig.json beside it is gitignored too, and mods:typecheck reads it
+    m=$(dirname "$(dirname "$d")")
+    [ -e "$wt/$m/tsconfig.json" ] || [ ! -f "$main/$m/tsconfig.json" ] || cp "$main/$m/tsconfig.json" "$wt/$m/tsconfig.json"
   done
 fi
 [ -f "$wt/package.json" ] || exit 0
