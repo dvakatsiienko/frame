@@ -285,11 +285,22 @@ function adds(c: Command, ctx: Context) {
         .map((text) => ({ path: resolve(text, dir, ctx), text }));
 }
 
-// the paths every git add in the command names, for the caller to look up on disk
+// the paths every git add in the command names, for the caller to look up on disk; a path an earlier part of the
+// same command makes (a > redirect, touch, mkdir, a cp or mv dest) is there by the time the add runs
 export function addedPaths(command: string, cwd: string, ctx: Context = {}) {
-    return commands(parse(command), cwd).flatMap((c) =>
-        adds(c, ctx).map((a) => a.path),
-    );
+    const made = new Set<string>();
+    return commands(parse(command), cwd).flatMap((c) => {
+        const added = adds(c, ctx)
+            .map((a) => a.path)
+            .filter((p) => !made.has(p));
+        const dir = resolve(c.dir, '/', ctx);
+        for (const w of c.writes) made.add(resolve(w, dir, ctx));
+        if (c.name === 'touch' || c.name === 'mkdir')
+            for (const o of operands(c.args)) made.add(resolve(o, dir, ctx));
+        if (c.name === 'cp' || c.name === 'mv')
+            for (const l of landings(c, ctx)) made.add(l.path);
+        return added;
+    });
 }
 
 function missingAdd(c: Command, ctx: Context): Refusal | undefined {
@@ -311,15 +322,27 @@ function isJobTmp(path: string, ctx: Context) {
     );
 }
 
-// a scratch clone under the job's own tmp: everything its local git does stays there; a push or a skipped hook does not
+// the os temp roots: a throwaway repo from `mktemp -d` lands under /var/folders, a hand-made fixture under /tmp
+const TEMP_ROOTS = [
+    '/tmp/',
+    '/private/tmp/',
+    '/var/folders/',
+    '/private/var/folders/',
+];
+
+// a scratch clone under the job's own tmp or an os temp root: everything its local git does stays there; a push or a
+// skipped hook does not
 const LOCAL_GIT = new Set(['git-discard', 'git-rewrite', 'git-sweep']);
-function isJobScratch(c: Command, r: Refusal, ctx: Context) {
-    if (!ctx.jobDir || c.name !== 'git' || !LOCAL_GIT.has(r.rule)) return false;
+function isScratchGit(c: Command, r: Refusal, ctx: Context) {
+    if (c.name !== 'git' || !LOCAL_GIT.has(r.rule)) return false;
     const { sub, subArgs } = gitParts(c.args);
     if (sub === 'push') return false;
     const dir = gitDir(c, ctx);
     const paths = [dir, ...operands(subArgs).map((o) => resolve(o, dir, ctx))];
-    return paths.every((p) => isJobTmp(p, ctx));
+    return paths.every(
+        (p) =>
+            isJobTmp(p, ctx) || TEMP_ROOTS.some((root) => p.startsWith(root)),
+    );
 }
 
 function floor(c: Command, ctx: Context): Refusal | undefined {
@@ -1070,7 +1093,7 @@ export function refusals(
             lint(c, list[i + 1]) ??
             missingAdd(c, ctx) ??
             brief(c, ctx);
-        if (found && !isJobScratch(c, found, ctx)) out.push(found);
+        if (found && !isScratchGit(c, found, ctx)) out.push(found);
         // a nested shell's script is a command too
         // `-c` alone or in a cluster: `bash -lc`
         const dashC = SHELLS.has(c.name)

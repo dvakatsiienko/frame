@@ -30,10 +30,12 @@
   - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left
   - then it is refused, the reason names the missing path, and the door is «stage only paths that exist; a deleted file stages with git rm <path>»
   - given every named path exists, then it runs; a glob, a `:(magic)` pathspec or a word holding a `$` is left to git
+  - given an earlier part of the same command makes the path — a `>` redirect, `touch`, `mkdir`, a `cp` or `mv` dest (`echo x > f && git add f`) — then it runs; an add before the command makes it is still refused
   - decision: git aborts the whole add on one unmatched pathspec, and a commit after it lands partial — the old path after a `git mv` was the case (fleet-hazards, the bash tool)
   - 📌 a tracked file already deleted is refused too; `git rm <path>` stages it. a `git add` inside `bash -c` or `eval` is not looked up
-- ✅ a job's own scratch clone runs its local git
-  - given a git discard, a local rewrite (`branch -D`, `worktree remove|prune`) or a sweep (`add -A`, a bare `commit`) whose dir and every path resolve under `$CLAUDE_JOB_DIR/tmp`, spelled out or as `$CLAUDE_JOB_DIR` / `${CLAUDE_JOB_DIR}`, through `cd` or `-C`
+- ✅ a scratch clone runs its local git
+  - given a git discard, a local rewrite (`branch -D`, `worktree remove|prune`) or a sweep (`add -A`, `add .`, a bare `commit`) whose dir and every path resolve under `$CLAUDE_JOB_DIR/tmp` (spelled out or as `$CLAUDE_JOB_DIR` / `${CLAUDE_JOB_DIR}`) or an os temp root (`/tmp`, `/private/tmp`, `/var/folders`, where `mktemp -d` lands), through `cd` or `-C`
+  - decision: the temp roots joined after a verifier lost ~8 calls to fixture repos under `mktemp -d` (FRM-346's retro, dima, 2026-10-08)
   - then it runs; the same command anywhere else, in the job dir itself, in another job's tmp or climbing out with `..` is refused as before
   - then a push, a gate bypass and every non-git floor command stay refused inside the tmp too — a push reaches a real remote, a bypass a real gate
 - ✅ a job's own tmp takes writes over its own files

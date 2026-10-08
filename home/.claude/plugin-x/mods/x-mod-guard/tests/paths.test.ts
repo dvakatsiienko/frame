@@ -39,6 +39,27 @@ test('a git add whose every path exists runs', async ($, on) => {
     expect(w.ran).toEqual(['git add a -- src/b.ts']);
 });
 
+const MADE = [
+    ['a > redirect', 'echo x > f && git add f'],
+    ['touch', 'touch f && git add f'],
+    ['mkdir', 'mkdir d && git add d'],
+    ['a cp dest', 'cp a b && git add b'],
+] as const;
+
+for (const [shape, command] of MADE)
+    test(`a git add of a path ${shape} made earlier in the same command runs`, async ($, on) => {
+        const w = world(on, ['/repo/a']);
+        expect((await bash($, command)).deny).toBeUndefined();
+        expect(w.ran).toEqual([command]);
+    });
+
+test('a git add before the command makes the path is still refused', async ($, on) => {
+    world(on);
+    expect((await bash($, 'git add f && echo x > f')).deny).toContain(
+        'dima-ok: f',
+    );
+});
+
 test('a git add after a cd is checked against that dir', async ($, on) => {
     world(on, ['/repo/a']);
     expect((await bash($, 'cd sub && git add a')).deny).toContain('dima-ok: a');
@@ -53,10 +74,15 @@ const SCRATCH = [
         'git filter-branch',
         `cd ${JOB}/tmp/clone && git filter-branch --tree-filter x`,
     ],
+    [
+        'git add . in a mktemp repo',
+        'cd /var/folders/x1/T/tmp.ab12 && git add .',
+    ],
+    ['git reset --hard in /tmp', 'cd /tmp/fixture && git reset --hard'],
 ] as const;
 
 for (const [shape, command] of SCRATCH)
-    test(`${shape} in the job's own tmp runs`, async ($, on) => {
+    test(`${shape} in a scratch clone runs`, async ($, on) => {
         const w = world(on);
         expect((await bash($, command)).deny).toBeUndefined();
         expect(w.ran).toEqual([command]);
@@ -79,6 +105,7 @@ const OUTSIDE = [
         'a skipped hook in the tmp',
         `cd ${JOB}/tmp/clone && git commit --no-verify -m x -- a.ts`,
     ],
+    ['a force-push from a /tmp repo', 'cd /tmp/fixture && git push -f'],
 ] as const;
 
 for (const [shape, command] of OUTSIDE)
