@@ -10,6 +10,8 @@ export default defineConfig({
             '**/node_modules/**',
             '.claude/worktrees/**',
             '**/plugin-x/mods/*/**',
+            // `cc` is a symlink to home/.claude: through it its 17 tests ran twice (332 listed → 315, 2026-10-08)
+            'cc/**',
         ],
     },
 });
