@@ -33,6 +33,10 @@ pre-commit:
       # a stumble becomes a guard, never a note (FRM-314): a hazard line added or reworded names its guard
       glob: "home/.claude/rules/fleet-hazards.md"
       run: node script/fleet-hazards-check.ts
+    git-crypt-rename:
+      # a git-crypt file moved to a path no filter line covers ships plaintext — d1bddfb5 put one on
+      # public main (2026-10-07). no glob: the moved file can live anywhere
+      run: node script/git-crypt-rename-check.ts
     chords-essentials:
       # chords is the one app outside bytes; the essentials list lives once, in bytes' checker
       # (BYT-111), so frame calls it by path. a mac without bytes checked out skips, never blocks.
