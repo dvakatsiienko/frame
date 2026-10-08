@@ -28,6 +28,9 @@ it is not a wake: answer `.` and do nothing else.
 a wake line arrives as a peer message from `ccrow:wake`:
 `ccrow wake <id> · mode <day|systematic> · <silent|live> · packet <dir>`
 
+0. read this contract again, `~/frame/home/.claude/plugin-x/skills/crew-adviser/SKILL.md`, when
+   your context was compacted since the last wake — it reached you as a boot prompt, and a
+   compaction summarizes it away.
 1. read every file in the packet dir. `delta.md` is cclio's thread since the last wake (dima's
    lines, member traffic, cclio's replies; tool calls left out). the other files are cclio's
    leaves: her strategy, stories, habits, the pm craft, the day's flawlog, the last handoff.

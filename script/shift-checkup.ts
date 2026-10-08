@@ -145,13 +145,24 @@ const checks: Check[] = [
                     'utf8',
                 ),
             );
-            return (
+            const on =
                 settings.enabledPlugins?.[
                     'fast-jev-compaction@fast-jev-compaction'
-                ] === true || 'not enabled at cclio scope'
+                ] === true;
+            const health = spawnSync(
+                join(frame, 'script/op-run.sh'),
+                ['node', join(frame, 'script/jev-report.ts'), '--health'],
+                { encoding: 'utf8', timeout: 20_000 },
             );
+            const jevUp =
+                health.status === 0 &&
+                !/402|billing|credit/i.test(health.stdout + health.stderr);
+            if (on === jevUp) return true;
+            return on
+                ? 'on at cclio scope while jev refuses — a compaction would call a dead api; set it false in cclio/.claude/settings.json'
+                : 'jev answers again — turn the plugin back on at cclio scope, its test drive prefers it';
         },
-        why: 'on test drive at cclio scope: compacts at 95 % keeping the last 10 messages; whether it fires SessionStart:compact is unmeasured',
+        why: 'jev compacts at 95 % keeping the last 10 messages when its credit is live; frozen, cc native autocompact + the shift recompact hook carry the shift',
     },
 ];
 
