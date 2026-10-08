@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -27,6 +28,26 @@ func TestSeedCopiesAModsIgnoredTsconfigFromTheMainCheckout(t *testing.T) {
 
 	if _, err := os.Stat(filepath.Join(tree, "mods/m/tsconfig.json")); got.code != 0 || err != nil {
 		t.Fatalf("exit %d, tsconfig: %v", got.code, err)
+	}
+}
+
+// unlock is the door out of a locked tree, so the shim that builds x there must not need git status
+func TestTheShimBuildsXInsideALockedWorktree(t *testing.T) {
+	tree := lockedWorktree(t)
+	shim, _ := os.ReadFile("../bin/x")
+	write(t, filepath.Join(tree, "x/bin/x"), string(shim))
+	if err := os.Chmod(filepath.Join(tree, "x/bin/x"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(tree, "x/go/go.mod"), "module x\n\ngo 1.24\n")
+	write(t, filepath.Join(tree, "x/go/main.go"), "package main\n\nfunc main() { println(\"built\") }\n")
+
+	c := exec.Command(filepath.Join(tree, "x/bin/x"))
+	c.Dir, c.Env = tree, cleanEnv()
+	out, err := c.CombinedOutput()
+
+	if err != nil || !strings.Contains(string(out), "built") {
+		t.Fatalf("the shim could not build x in a locked tree: %v\n%s", err, out)
 	}
 }
 

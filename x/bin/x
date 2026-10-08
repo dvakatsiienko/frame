@@ -32,8 +32,10 @@ if ((stale)); then
     if (($? == 1)) || [[ -n $(git -C "${dir}" ls-files --others --exclude-standard -- x/go 2>/dev/null) ]]; then
         dev=1
     fi
-    # a temp file then a rename: two shells building at once never run a half-written binary
-    if (cd "${go}" && "${gobin}" build -trimpath -ldflags "-s -w -X main.srcDir=${go} -X main.devBuild=${dev}" -o "bin/.x.$$" . && mv -f "bin/.x.$$" bin/x) >&2; then
+    # a temp file then a rename: two shells building at once never run a half-written binary.
+    # -buildvcs=false: go's stamp runs git status, which dies in a git-crypt tree still locked — the
+    # tree `x lane unlock` exists for; dev above is the only vcs fact x reads
+    if (cd "${go}" && "${gobin}" build -buildvcs=false -trimpath -ldflags "-s -w -X main.srcDir=${go} -X main.devBuild=${dev}" -o "bin/.x.$$" . && mv -f "bin/.x.$$" bin/x) >&2; then
         :
     elif [[ -x ${bin} ]]; then
         echo "x: the build failed — running the last binary" >&2
