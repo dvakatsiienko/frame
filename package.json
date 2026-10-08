@@ -56,7 +56,7 @@
         "mcp:build": "pnpm --filter mcp-x-cw build",
         "mods:live": "node ./home/.claude/plugin-x/mods/live.ts",
         "mods:probe-x-mod-redact": "node ./home/.claude/plugin-x/mods/probe-x-mod-redact.ts",
-        "mods:test": "for m in home/.claude/plugin-x/mods/*/; do claude plugin test \"$m\" || exit 1; done",
+        "mods:test": "node ./home/.claude/plugin-x/mods/test.ts",
         "mods:writes": "node ./home/.claude/plugin-x/mods/writes.ts",
         "memory-load:replay": "python3 ./script/memory-load-replay.py",
         "memory-sync:map": "node ./script/memory-sync-map.ts",
