@@ -29,7 +29,7 @@ an app with a direction: read, in order, and draw inside it — never invent a n
 ## 1. read the brief
 
 **the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
-**stuck on a judgment call → ask cclio, she is your adviser**: one message, the choice and its options with your pick, never a silent guess.
+**stuck on a judgment call → ask cclio**: one message, the choice and its options with your pick, never a silent guess.
 
 - 🎯 full: `jobs/<app>/brief.md`. a blind brief adds `map.md`, and those two files are all you
   read about the app.
@@ -164,7 +164,7 @@ window % before and after (`~/.claude/shelf/cc-usage-window.json`, read at the s
 end) · pick minutes · rounds. output tokens come from this session's own footer at the spread's
 end («↓68.4k tokens»); never write «not measurable».
 
-- **last act: a retro to the coordinator, ≤12 lines**, walked through matt's retro categories (read its SKILL.md). **the designer's standing focus** (dima, 2026-10-08): the brief's fit to the canvas — what the interview missed, what a comp could not say and a word could, where the comment rounds cost the most; a brief's `focus:` line replaces it for one run. then: where the brief was wrong or thin, which steers came late, what the canvas or the tools cost, one automation candidate.
+- **last act: a retro, ≤12 lines, written to `~/.claude/shelf/retros/<YYYY-MM-DD>-<app>-designer.md`, never sent as a message** (cclio reads it at the halt; **until 2026-10-15** its last line answers `comms:` — a moment you needed cclio and could not reach her, or a message nobody needed), walked through matt's retro categories (read its SKILL.md). **the designer's standing focus** (dima, 2026-10-08): the brief's fit to the canvas — what the interview missed, what a comp could not say and a word could, where the comment rounds cost the most; a brief's `focus:` line replaces it for one run. then: where the brief was wrong or thin, which steers came late, what the canvas or the tools cost, one automation candidate.
 
 ## completion criterion
 

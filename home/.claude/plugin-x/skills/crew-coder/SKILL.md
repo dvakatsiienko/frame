@@ -73,7 +73,10 @@ for ceremony.
   Linear comment, the pr, a file) — every message you send lands in dima's thread, and a long one
   buries what he came back to read. the essay stays in your transcript.
 - **the done report opens with the look card** — its five fields and the screenshot rule are in `how-you-work.md` (FRM-315).
-- **last act of every assignment: a retro to the coordinator, ≤20 lines, ranked by cost** — the
+- **last act: a retro, ≤20 lines, ranked by cost, into
+  `~/.claude/shelf/retros/<YYYY-MM-DD>-<ticket>-coder.md`, never a message** (cclio folds it at
+  the halt). **until 2026-10-15** it ends with `comms:` — where you needed cclio and could not
+  reach her, or sent what nobody needed. the
   fleet improves only from what its members saw. **standing focus** (dima, 2026-10-08): the brief
   and the tools — what blocked you, every guard refusal counted, the docs you lacked, how the exit
   lines fit the work; a brief's `focus:` line replaces it for one run. then: steers that came late
@@ -85,13 +88,10 @@ for ceremony.
   cclio as a one-line ping (frame-1b sat 11 min on two asks only dima saw, 2026-10-06).
 - **a probe prints counts or filtered fields, never a raw payload** — a loose selector and a wrong `2>&1` order dumped ~40k tokens of tables and json into one coder's context (2026-09-28)
 - **stuck on a judgment call → ask cclio**: the options and your pick, never a silent guess.
-- **ping on four events only** — you stop for dima (a pick, a decision) · you are blocked · the
-  assignment is done · a find dima would truly want (a better way to build a feature, a tool or
-  script you built for yourself, an improvement proposal, a tool feature worth adopting after a
-  docs read). step
-  progress stays in your commits and your own chat; a push request rides the next of those four
-  pings. every ping starts a coordinator turn in dima's thread, so a step ping costs his reading
-  (dima, 2026-09-28: «most of these messages are intermediary updates … not interesting to me»).
+- **ping on three events only** — blocked (a judgment call you cannot make counts) · a proposal
+  that wants dima · done. a find dima would want rides the done ping, alone only when it changes
+  the plan now. progress, acks and «resumed» stay in your commits and chat; a push request rides
+  the next ping. every ping is a turn in dima's thread (dima, 2026-10-08).
 - **a question to dima is sent with a timer, never left hanging.** dima may steer in your
   thread; answer him there. but an ended turn has no clock, and his silence means he is in
   another thread (cclio's, almost always). so before a turn ends on a question to him, arm
@@ -160,8 +160,8 @@ for ceremony.
      «final» is a `SendMessage` to the verifier (pr url + head sha), it owns the ci reviewer and
      reads every reviewer for you — you read none. **every reviewer thread is still yours to answer on github**, as `x-coder-cc`, ≤3 lines on the thread itself (fixed in `<sha>` / declined: why) — the verifier reads threads, it never replies to them (#94: three ci threads fixed and never answered). Its reply is one prompt per round, ≤12 lines,
      with a `verdict:` line; fix what it lists, push, message it «round N on <sha>». **the loop is
-     yours and the verifier's — the coordinator reads one round line per round and nothing
-     else.** open the lane at your FIRST commit («round 1 on <sha>»), not at the end of the
+     yours and the verifier's — the coordinator hears nothing of it until your report on
+     `clean`.** open the lane at your FIRST commit («round 1 on <sha>»), not at the end of the
      assignment. you report to the coordinator ONCE, on `clean`: the verdict object quoted, the
      round count, the head sha. a finding you dispute goes to the coordinator with both sides in
      one message, and the loop pauses until it answers. the cap counts findings, not rounds — a

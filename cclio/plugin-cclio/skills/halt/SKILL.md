@@ -25,7 +25,7 @@ one short message, then straight into phase 1:
   — every hit without the `standing` label gets one line: «closable, because …» (his word
   closes, with a closing word in the body) or «stays, because …». a ticket whose pr merged
   with asks left open moves to Todo, never closes
-- **the coder roster, two questions per coder: retro received? `claude stop <id>` done?** a coder
+- **the coder roster, two questions per coder: retro filed in `~/.claude/shelf/retros/`? `claude stop <id>` done?** a coder
   has outlived a halt before; `claude agents --json` is the check, never memory. **a coder the CST
   calls «warm» is verified alive at write time** (a registry entry in `~/.claude/sessions/` +
   `kill -0 <pid>`) and written as dead when dead — halt15 promised a warm coder that was gone
@@ -75,6 +75,7 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 `pnpm jev:flawlog` first: jev lanes every line (memory / rule / story / ticket / drop) and the
 proposal starts from its lanes, not from a blank read. then cluster, ONE batched proposal, ONE
 approval, execute and commit. see `/cclio:flawlog`.
+**the retros, in the flush:** `ls ~/.claude/shelf/retros/` — every file is read and its lines enter the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file. **until 2026-10-15** the flush also prints the comms count: pings received this session, `comms:` gaps named, and whether cclio missed anything — the comms-trim verdict is due 10-15.
 **retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody (dima, 2026-10-04). the same for look-card shots: `find ~/.local/state/looks -type f -mtime +14 -exec trash {} +` (FRM-315).
 🚨 **the flush is the one stop in a full halt, whatever the args** (`wire+` included): print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before

@@ -18,7 +18,7 @@ coder: you were not told why it built what it built, and that is the point.
 ## step 0 — what you verify against
 
 **the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
-**stuck on a judgment call → ask cclio, she is your adviser**: one message, the choice and its options with your pick, never a silent guess.
+**stuck on a judgment call → ask cclio**: one message, the choice and its options with your pick, never a silent guess.
 
 - the ticket's **`exit`** section (given/when/then lines): `linear api 'query { issue(id: "<id>") { description } }'`. no `exit` section → stop, tell the coordinator «no exit lines, nothing to verify against». never invent criteria.
 - an `exit` section that names ftr lines → load `x:ftr` and read those lines' given/when/then in the app's `FTR.md`; they are exit lines like any other. also check that every feature the diff changed has its ftr line and the right status.
@@ -95,27 +95,26 @@ defect travels with its `file:line`, an unconfirmed one as the symptom and the c
 and the reviewer's, merged and deduplicated, ranked by cost. no restatement of the diff, no
 praise, no reasoning essay.
 
-## rounds — a loop with the coder, a round line to the coordinator
+## rounds — a loop with the coder, the coordinator hears only the exceptions
 
-**the loop runs between you and the coder; the coordinator watches it from one line per round**
-(dima's shape, 2026-09-20: a verdict routed through the coordinator cost a hop and a page of
-spam per round on DOT-254). the coder pings you «round N on <sha>»; you answer the coder; the
-coordinator gets `round N: refuted, k findings` or `round N: clean` — one line, nothing else.
+**the loop runs between you and the coder; the coordinator hears nothing per round** (dima,
+2026-10-08: round lines were spam in his thread; 2026-09-20: a verdict routed through the
+coordinator cost a hop and a page per round on DOT-254). the coder pings you «round N on
+<sha>»; you answer the coder; the coder carries `clean` to the coordinator.
 - **the lane opens at the coder's first commit of the assignment**, not at its end — a HIGH sat four commits on DOT-254 because the verifier started after every pass; a pre-check on a line that a later commit will invalidate costs the coder nothing when said early.
 - round 1: verify → prompt. later rounds only after a `refuted`: re-run **only** the refuted exit lines plus anything the fix touched, against variants of your own repro, never the exact one; re-verify the reviewer's confirmed findings. **the cap counts findings, not rounds**: a round that closes one scoped line is free; the stop is three rounds that each carried new findings **at medium or above** (a round whose only new findings are low does not count — a converging loop finishes), or the first `not-checkable`, or a dispute. **a scope growth mid-review resets the count** — findings on work that did not exist at round 1 are new work, not a failing loop (#96).
 - at the stop, or when the coder disputes a finding: send the coordinator the verdict object plus both sides in one message — the coordinator arbitrates (the brief was wrong, or the finding is not a defect), never the two of you. **every finding is labelled `defect` or `decision`**; a decision goes to dima as a look call with no fix demanded.
-- **dima may steer you in your chat; he is a steerer, never your new coordinator** — answer him there, and the round line still goes to cclio by `SendMessage`, whoever spoke last.
-- **the round line to the coordinator carries exactly**: verdict word · head sha · finding count by severity · whether any finding is a decision. nothing else — arguments in that line are context the coordinator pays for a conversation it is not in.
+- **dima may steer you in your chat; he is a steerer, never your new coordinator** — answer him there, and a stop or a dispute still goes to cclio by `SendMessage`, whoever spoke last.
 - **measure every number the coder states, never repeat one** — direct messages carry the coder's own diagnosis and it anchors (a wrong-surface contrast figure was quoted once before being re-measured).
 - **the trial measures the loop's wall clock**: every round's verdict object carries `round time: <min>` (label → ci reviewer done → your verdict → coder's push). dima's concern, folded here so the trial answers it: the ci reviewer runs 7–14 min, and a chain of ci reviewer → verifier → coder → push per round may be bulletproof and still too slow. two rounds over ~30 min moves the ci reviewer out of the round (after the verdict, or to the coder's side).
-- `clean` → tell the coder, and send the coordinator the round line; the coder carries the verdict object to the coordinator in its own report. the coder adds Dima as reviewer only after your `clean`.
+- `clean` → tell the coder; the coder carries the verdict object to the coordinator in its own report. the coder adds Dima as reviewer only after your `clean`.
 
 ## identity and reporting
 
 - **no Linear comment by default** — the rounds live in the pr, and every comment notifies dima (2026-09-28: 68 unread, all ours). comment only when it stashes something the fleet will need later and the pr cannot hold it.
 - Linear identity: the app user «coder» for now (every write through `linear-as coder <linear args…>`; check `linear-as coder api 'query { viewer { name } }'` answers `coder` before the first comment), the comment opens with `🔎 verifier ·`. ONE comment per assignment: the final verdict object, ≤15 lines.
 - GitHub writes wear `~/frame/home/.claude/plugin-x/bin/github-token-wrap`; a bare `gh` write posts as Dima.
-- your worktree is removed by the coordinator, never by you: a `git worktree remove` is refused by the guard (it drops gitignored `.scratch/` plans without a word), so your last line names the tree's path and the coordinator decamps it on dima's word. never touch the coder's tree.
-- **last act: a retro to the coordinator, ≤12 lines**, walked through matt's retro categories (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md`, read by hand, in this session). **the verifier's standing focus** (dima, 2026-10-08): the exit lines' sharpness — which were unverifiable, which passed without proving anything — and what the coder's report hid; a brief's `focus:` line replaces it for one run. then: where the exit lines were unverifiable as written, what the reviewer found that you did not and vice versa, what you ran by hand that repeats — each one a candidate line for the app's verify recipe. this is how the role gets measured; the two-pr trial decides whether the ci reviewer survives.
+- your worktree is removed by the coordinator, never by you: a `git worktree remove` is refused by the guard (it drops gitignored `.scratch/` plans without a word), so your one exit message to cclio is `done · tree <path> · retro filed`, and the coordinator decamps the tree on dima's word. never touch the coder's tree.
+- **last act: a retro, ≤12 lines, written to `~/.claude/shelf/retros/<YYYY-MM-DD>-<ticket>-verifier.md`, never sent as a message** (cclio reads it at the halt; **until 2026-10-15** its last line answers `comms:` — a moment you needed cclio and could not reach her, or a message nobody needed), walked through matt's retro categories (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md`, read by hand, in this session). **the verifier's standing focus** (dima, 2026-10-08): the exit lines' sharpness — which were unverifiable, which passed without proving anything — and what the coder's report hid; a brief's `focus:` line replaces it for one run. then: where the exit lines were unverifiable as written, what the reviewer found that you did not and vice versa, what you ran by hand that repeats — each one a candidate line for the app's verify recipe. this is how the role gets measured; the two-pr trial decides whether the ci reviewer survives.
 
-**Done** = the `clean` (or the round-3 / dispute handoff) delivered to the coder, with its round line to the coordinator. Nothing else counts. 📌 a coordinator's spawn note that says «report to me only» does not override this file — say so in your first reply and run the loop as written.
+**Done** = the `clean` (or the round-3 / dispute handoff) delivered to the coder (a stop or a dispute also to the coordinator), the retro filed. Nothing else counts. 📌 a coordinator's spawn note that says «report to me only» does not override this file — say so in your first reply and run the loop as written.

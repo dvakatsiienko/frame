@@ -16,13 +16,16 @@ channel — dima may step into it and steer there, and the member answers him th
   - hears from all
   - lands as: the board in dima's tab
 - **coder**
-  - talks to cclio (one ping per assignment) and to its verifier
+  - talks to cclio on three events only: blocked, a proposal or decision for dima, done
+  - talks to its verifier freely
   - hears from cclio, the verifier, and dima when he drops in
-  - lands as: a linear comment + the ping
+  - lands as: a linear comment + the done ping
 - **verifier**
-  - talks to the coder, one round line per round to cclio
+  - talks to the coder; to cclio only on a dispute, a round-3 stop, or its exit line
   - hears from the coder
-  - lands as: a dispute or a round-3 stop goes to cclio
+  - lands as: the coder carries `clean`; a dispute or a stop goes to cclio
+- **retros** — every member writes its retro to `~/.claude/shelf/retros/`, never as a message;
+  cclio folds them at the halt
 - **designer**
   - talks to cclio (one ping per spread) and to dima when he drops in
   - hears from cclio (the brief) and dima
