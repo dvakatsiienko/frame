@@ -50,4 +50,4 @@ removes a worktree: one line naming the target, then his word.
 - `slay` — `git push`
 - `sup` — `git sup`
 - `camp` — `git worktree add`
-- `decamp` — `git worktree remove`
+- `decamp` — `x lane decamp` (removes the worktree, then points the shared hook shims back at the main checkout; plans only without `--apply`)

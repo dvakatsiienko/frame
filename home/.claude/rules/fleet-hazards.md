@@ -40,7 +40,7 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
   fallback rescues it) but dirty. on pnpm 12 `CI=1 pnpm install` no longer stops it: it still prints
   «sync hooks» and points the shims at the worktree (two sessions on #53, 2026-10-01; the FRM-278
   coder, 2026-10-02). after a worktree is removed, `pnpm exec lefthook install` in the main checkout
-  points them home (a plain `pnpm install` answers «already up to date» and leaves them). guard: none · FRM-342
+  points them home (a plain `pnpm install` answers «already up to date» and leaves them). guard: `x lane decamp` (and `x lane seed`) re-home the shims; a pnpm run in a live worktree still moves them
 - `rebase.updateRefs` is on since the git overhaul (2026-09-03): a safety BRANCH made before a
   rebase is dragged forward with the rewrite and stops being a recovery point — a tag or the
   reflog is the net (a coder lost its net on a reword, 2026-09-05)

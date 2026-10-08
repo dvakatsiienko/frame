@@ -47,7 +47,7 @@ alias lore='git --no-pager lg -20'          # the story so far: git lg, last 20,
 alias peek='git diff'                       # unstaged changes: what you edited but did not grab yet
 alias peeked='git diff --staged'            # staged changes: what the next commit will contain
 alias camp='git worktree add'
-alias decamp='git worktree remove'
+alias decamp='x lane decamp'
 alias reforge='git rebase -i $(git merge-base HEAD main)'  # rewrite every commit of this branch since it left main
 
 # git — only the shortcuts with no vibe word above and no better git alias below.
