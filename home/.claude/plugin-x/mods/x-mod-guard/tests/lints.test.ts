@@ -59,6 +59,18 @@ const LINTS = [
         'pnpm --filter chords test 2>&1 > out.txt',
     ],
     [
+        'the x go gate piped to tail',
+        'x go gate | tail -5',
+        'GATE line',
+        'x go gate',
+    ],
+    [
+        'the x-go gate script piped to tail',
+        'pnpm x-go:gate 2>&1 | tail',
+        'exit code',
+        'pnpm x-go:gate',
+    ],
+    [
         'grepping push output',
         'git push origin main 2>&1 | grep main',
         'git ls-remote',
