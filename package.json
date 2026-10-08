@@ -57,6 +57,7 @@
         "mods:live": "node ./home/.claude/plugin-x/mods/live.ts",
         "mods:probe-x-mod-redact": "node ./home/.claude/plugin-x/mods/probe-x-mod-redact.ts",
         "mods:test": "node ./home/.claude/plugin-x/mods/test.ts",
+        "mods:typecheck": "node ./home/.claude/plugin-x/mods/typecheck.ts",
         "mods:writes": "node ./home/.claude/plugin-x/mods/writes.ts",
         "memory-load:replay": "python3 ./script/memory-load-replay.py",
         "memory-sync:map": "node ./script/memory-sync-map.ts",

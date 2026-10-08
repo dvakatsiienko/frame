@@ -44,7 +44,11 @@ test('every prompt carries the local clock', async ($, on) => {
         isInteractive: true,
         surface: 'terminal',
     });
-    await $.prompt.submit({ text: 'hi' });
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'hi',
+        wait: false,
+    });
     expect(seen[0]).toContainEqual('now 14:05');
 });
 
@@ -69,9 +73,17 @@ test('a prompt carries the away note only while afk is on', async ($, on) => {
         props,
         surface: 'terminal',
     });
-    await $.prompt.submit({ text: 'hi' });
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'hi',
+        wait: false,
+    });
     await ui.press({ key: 'afk' });
-    await $.prompt.submit({ text: 'hi again' });
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'hi again',
+        wait: false,
+    });
     expect(seen[0] ?? []).not.toContainEqual(expect.stringContaining('afk'));
     expect(seen[1]).toContainEqual(expect.stringContaining('dima is afk'));
 });

@@ -24,6 +24,11 @@ pre-commit:
       run: pnpm typecheck
     test:
       run: pnpm test
+    mods:
+      # the mods sit outside vitest and the root tsconfig: their own runner and their engine-written types gate them.
+      # a cc bump made fields required and 11 test fixtures went untyped for days before this ran (2026-10-08)
+      glob: "home/.claude/plugin-x/mods/**"
+      run: pnpm mods:typecheck && pnpm mods:test
     fleet-hazards:
       # a stumble becomes a guard, never a note (FRM-314): a hazard line added or reworded names its guard
       glob: "home/.claude/rules/fleet-hazards.md"

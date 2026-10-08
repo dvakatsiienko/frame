@@ -46,7 +46,7 @@ async function world($: Engine, on: On, queue?: string) {
 }
 
 const say = ($: Engine, text: string, kind = 'composer' as const) =>
-    $.prompt.submit({ origin: { kind }, text });
+    $.prompt.submit({ origin: { kind }, text, wait: false });
 
 test('a «yes, after X» verdict queues its pocket line', async ($, on) => {
     const w = await world($, on);
