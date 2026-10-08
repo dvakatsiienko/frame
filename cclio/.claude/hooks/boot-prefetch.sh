@@ -14,6 +14,9 @@ STAMP="$HOME/.claude/shelf/boot-digest.stamp"
 VAULT="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq"
 
 echo "=== cclio boot digest · $(date '+%Y-%m-%d %H:%M') ==="
+# after a compaction (stdin source=compact) or `--compact` by hand: the day-opener checks stay out
+in=$([ -t 0 ] || timeout 1 cat)
+{ [ "$(printf %s "$in" | jq -r '.source // empty' 2>/dev/null)" = compact ] || [ "${1:-}" = --compact ]; } && COMPACT=1 && echo "(compact mode — the full digest: boot-prefetch.sh)"
 
 echo "-- pending handoffs (list-only; ingest via /x:handoff-ingest) --"
 found=0
@@ -52,12 +55,15 @@ if [ -r "$VAULT/inbox.md" ]; then
   n=$(awk 'NR==1 && /^---$/ {fm=1; next} fm && /^---$/ {fm=0; next} fm {next} /^## |^> |^-+$|^[[:space:]]*$/ {next} {c++} END {print c+0}' "$VAULT/inbox.md")
   [ "$n" = 0 ] && echo "clean" || echo "$n content lines — parse into the pocket before any work"
   grep -q 'FROZEN' "$VAULT/inbox.md" && echo "FROZEN marker present — do not touch"
+  if [ -z "${COMPACT:-}" ]; then
   echo "-- inbox, laned by jev (script/lib/jev-questions.ts; ⏳ = band 0.30–0.70, dima's call) --"
   timeout 25 ~/frame/script/op-run.sh node ~/frame/script/inbox-triage.ts 2>/dev/null || echo "jev triage unavailable — lane by hand"
+  fi
 else
   fail "inbox unreadable (icloud not mounted?)"
 fi
 
+if [ -z "${COMPACT:-}" ]; then
 echo "-- jev vet (pnpm jev:vet ok|miss <flow> <note> records a verdict; a miss restarts the window) --"
 node "$HOME/frame/script/jev-vet.ts" 2>/dev/null || fail "jev vet registry unreadable"
 health=$(timeout 15 "$HOME/frame/script/op-run.sh" node "$HOME/frame/script/jev-report.ts" --health 2>&1) && echo "jev health: $health" || fail "jev: ${health:-probe did not run}"
@@ -69,6 +75,8 @@ if echo "$roadmap" | grep -q '^-- scope'; then
   echo "$roadmap"
 else
   fail "tracker unreachable — roadmap prefetch returned nothing (linear auth or network)"
+fi
+
 fi
 
 echo "-- stuck reminders (raise every one in the opening board) --"
@@ -85,6 +93,7 @@ for repo in bytes frame; do
   [ -n "$prs" ] && echo "$repo coder prs: $prs" || echo "$repo: no open coder prs"
 done
 
+if [ -z "${COMPACT:-}" ]; then
 echo "-- renovate (digest is /cclio:evergreen, on his word) --"
 for repo in bytes frame; do
   gh pr list -R "dvakatsiienko/$repo" --search 'author:app/renovate' --json number,createdAt 2>/dev/null \
@@ -96,6 +105,8 @@ jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
   | ($t - (($t | strftime("%u") | tonumber) - 1) * 86400 | strftime("%Y-%m-%d")) as $monday
   | "apps lane: \(length) apps · last marked \($m) · " + (if $m < $monday then "DUE (a monday passed) — pnpm skill:evergreen-apps" else "next monday" end)' \
   "$HOME/frame/cclio/evergreen/sources.json" || fail "apps lane index unreadable"
+
+fi
 
 echo "-- usage (sline mirrors the statusline's rate_limits to shelf/cc-usage-window.json on every render) --"
 jq -r --argjson now "$(date +%s)" '
@@ -146,6 +157,7 @@ cw_err=$(mktemp)
 "$(dirname "$0")/ci-watch.sh" --boot 2>"$cw_err" || fail "ci-watch --boot exited $?: $(grep . "$cw_err" | tail -1 || echo 'no stderr')"
 rm -f "$cw_err"
 
+if [ -z "${COMPACT:-}" ]; then
 echo "-- app essentials (bytes/script/apps-essentials.ts, BYT-111; 🔴 = a gap to fold into today) --"
 ESS="$HOME/projects/bytes/script/apps-essentials.ts"
 if [ -f "$ESS" ]; then
@@ -257,6 +269,8 @@ else
   fail "barrel probe: a fresh process cannot name d03f3da (ctx ${ctx:-0}, got: ${probe:-nothing}) — the import chain is broken"
 fi
 echo "📌 this hook proves the FILE chain in a fresh process; the running session proves itself at init step 1 — a stale gate in a parked process only that step sees"
+
+fi
 
 echo "-- flawlog (the day's file; the 🥊 pair rides the CST) --"
 today="$HOME/.claude/shelf/flawlog/$(date +%Y-%m-%d)"
