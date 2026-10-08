@@ -239,6 +239,24 @@ func TestOpsCostsACclioBootUpToItsFirstEndTurn(t *testing.T) {
 	}
 }
 
+func TestOpsCountsCodeEditsAndSkipsTheSidechain(t *testing.T) {
+	edit := func(file string, sidechain bool) map[string]any {
+		return map[string]any{"type": "assistant", "timestamp": flowAt, "isSidechain": sidechain, "message": map[string]any{
+			"id": "m-" + file, "content": []any{map[string]any{"type": "tool_use", "name": "Edit", "input": map[string]any{"file_path": file}}}}}
+	}
+	s := opsSessionOf(t, edit("a.go", false), edit("b.md", false), edit("c.ts", true))
+	if s.CodeEdits != 1 || s.Steps != 2 {
+		t.Errorf("code edits %d, steps %d — want 1 edit of a.go, the sidechain step left out", s.CodeEdits, s.Steps)
+	}
+}
+
+func TestRoundHalfUpRoundsAHalfUp(t *testing.T) {
+	// node: Math.round(2.5) 3, Math.round(2.49) 2
+	if roundHalfUp(2.5) != 3 || roundHalfUp(2.49) != 2 {
+		t.Errorf("roundHalfUp(2.5) = %d, roundHalfUp(2.49) = %d", roundHalfUp(2.5), roundHalfUp(2.49))
+	}
+}
+
 func TestOpsAddsTheCoderAndVerifierOfOneTicket(t *testing.T) {
 	usage := map[string]int{"output_tokens": 100}
 	of := func(title, start, end string) opsSession {
@@ -282,6 +300,23 @@ func TestAuditChecksTheLessonsReadComesFirst(t *testing.T) {
 				t.Errorf("coder %v, in order %v, row %q", ok, s.InOrder, row)
 			}
 		})
+	}
+}
+
+func TestAuditCountsEachDocsDoorAndEditBin(t *testing.T) {
+	opening := said("<command-name>/x:crew-coder</command-name> FRM-1")
+	at := "2026-10-05T10:02:00.000Z"
+	path := filepath.Join(t.TempDir(), "session.jsonl")
+	write(t, path, jsonLines(t, opening,
+		bashCalled("ctx7 docs /charm/bubbletea 'viewport'"),
+		called("mcp__plugin_context7_context7__query-docs", map[string]any{}, flowAt),
+		called("WebSearch", map[string]any{}, flowAt), called("WebFetch", map[string]any{}, flowAt),
+		called("Bash", map[string]any{"command": "edit-anchored a.go anchor repl"}, at)))
+
+	s, _ := auditSession(path)
+
+	if want := `{"ctx7":1,"mcp":1,"web":2}`; marshal(s.Docs) != want || s.FirstEdit != "10:02:00" {
+		t.Errorf("docs %s, first edit %q", marshal(s.Docs), s.FirstEdit)
 	}
 }
 
