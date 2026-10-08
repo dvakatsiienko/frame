@@ -92,6 +92,14 @@ for (const [family, command, , target] of FAMILIES)
         expect(w.logs).toContainEqual(`x-mod-guard: ran on dima-ok: ${target}`);
     });
 
+test('a dima-ok command runs when its store write fails', async ($, on) => {
+    const w = world(on);
+    on('store.set', () => ({ deny: 'store unwritable' }));
+    on('store.keys', () => ({ value: [] }));
+    await bash($, 'rm -rf build # dima-ok: build');
+    expect(w.ran).toEqual(['rm -rf build # dima-ok: build']);
+});
+
 test('a dima-ok naming another target is refused', async ($, on) => {
     mock.store(on);
     const w = world(on);
@@ -223,8 +231,15 @@ test('a script under bash -c is checked too', async ($, on) => {
 
 // the harness throws on an unmocked store, so the escape cannot be logged; without .catch the hook is skipped and the command runs
 test('a guard that fails refuses the command', async ($, on) => {
-    const w = world(on);
+    const ran: string[] = [];
+    mock.clock(on, { now: 1_000_000 });
+    on('ui.log', () => ({ value: undefined }));
+    on('session.cwd', () => ({ deny: 'no cwd' }));
+    on('tool.call', (_$, e) => {
+        ran.push('command' in e ? String(e.command) : '');
+        return { result: {}, text: 'ran' };
+    });
     const r = await bash($, 'rm -rf build # dima-ok: build');
     expect(r.deny).toContain('fail closed');
-    expect(w.ran).toEqual([]);
+    expect(ran).toEqual([]);
 });

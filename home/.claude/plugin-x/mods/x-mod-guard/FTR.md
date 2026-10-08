@@ -49,11 +49,12 @@
   - then the command is refused as before
   - decision: the target is the command's own — its paths, pattern or branch; the rule's own word when it names none (`HEAD`, `&`, `-s`) — and the refusal prints the exact marker, so a coder never guesses it
 - ✅ a guard that fails refuses the command
-  - given x-mod-guard throws or runs past its 10 s budget (the throw is tested; the overrun is the same `.catch` by the engine's types, unprobed)
+  - given x-mod-guard's check throws (a `$` call it needs fails) or runs past its 10 s budget (the throw is tested; the overrun is the same `.catch` by the engine's types, unprobed)
   - then the command is refused with «x-mod-guard: the check failed or ran out of time … (fail closed)»
   - decision: `.catch` answers `{ deny }` — a hook without one is skipped and the command would run
 - ✅ every refusal and escape is kept as a guard event
   - makes: one `event:<at>:<session>` key in x-mod-guard's `$.store` (`~/.claude/plugins/store/x-mod-guard_*.json`): session, its registry name, the command cut to 160 characters, refused or escaped, the rule that fired, door, target, and why it was refused; the newest 50 kept
+  - given the store write fails, then the verdict stands: a refusal still refuses with its own door, a dima-ok command still runs, and the log reads «x-mod-guard: the event was not kept»
   - then x-mod-stash's band folds the run into one `🛡️ <n> refusals · <m> sessions` counter row that ages out 30 min after the last event, no dismiss — x-mod-stash's `FTR.md`, «guard counter»
 - ✅ every day's refusals and escapes are counted past the kept events
   - makes: one `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's `$.store`, `{ refused, escaped, rules: { <rule>: { refused, escaped } } }`, the local day; counts older than 30 days are dropped

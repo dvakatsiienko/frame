@@ -107,12 +107,17 @@ async function record(
         name: await sessionName($, sid),
         sid,
     };
-    await $.store.set(`${EVENT}${at}:${sid}`, value);
-    const keys = await $.store.keys();
-    const events = keys.filter((k) => k.startsWith(EVENT));
-    for (const old of events.slice(0, Math.max(0, events.length - KEEP)))
-        await $.store.delete(old);
-    await count($, keys, at, sid, event).catch(() => undefined);
+    // the band's record only: a store failure never turns a verdict into a refusal
+    try {
+        await $.store.set(`${EVENT}${at}:${sid}`, value);
+        const keys = await $.store.keys();
+        const events = keys.filter((k) => k.startsWith(EVENT));
+        for (const old of events.slice(0, Math.max(0, events.length - KEEP)))
+            await $.store.delete(old);
+        await count($, keys, at, sid, event).catch(() => undefined);
+    } catch (err) {
+        $.ui.log(`x-mod-guard: the event was not kept: ${err}`);
+    }
 }
 
 const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
