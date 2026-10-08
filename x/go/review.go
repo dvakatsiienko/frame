@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -21,10 +22,11 @@ const (
 var prNumber = regexp.MustCompile(`^\d+$`)
 
 type prHead struct {
-	Title       string  `json:"title"`
-	HeadRefName string  `json:"headRefName"`
-	HeadRefOid  string  `json:"headRefOid"`
-	Labels      []label `json:"labels"`
+	Title          string  `json:"title"`
+	HeadRefName    string  `json:"headRefName"`
+	HeadRefOid     string  `json:"headRefOid"`
+	ReviewDecision string  `json:"reviewDecision"`
+	Labels         []label `json:"labels"`
 }
 
 type label struct {
@@ -66,7 +68,8 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 		}
 		for _, run := range all {
 			switch {
-			case run.Status != "completed" && run.HeadSha == head:
+			// a new label cancels a round in flight, whichever commit it reviews
+			case run.Status != "completed":
 				running = true
 			case run.Conclusion == "success":
 				rounds = append(rounds, run)
@@ -97,13 +100,21 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 		return data("no lane"), nil
 	case running:
 		r.skip("request")
-		r.Done("a round is running on "+short(head), "")
+		r.Done("a round is running on "+pr.HeadRefName, "")
 		return data("running"), nil
 	case judged == head:
 		r.skip("request")
 		r.Done("ok: the verdict judged the head "+short(head), "")
 		return data("current"), nil
-	case len(rounds) >= reviewCap:
+	}
+	// past the cap the way through is dima's approval, which review-approved.yml turns into a green
+	// review:clean on the head he approved; either one clears the head without a round
+	if pr.ReviewDecision == "APPROVED" || cleanOnHead(head) {
+		r.skip("request")
+		r.Done("ok: "+short(head)+" is cleared — dima approved it or review:clean is green on it", "")
+		return data("cleared"), nil
+	}
+	if len(rounds) >= reviewCap {
 		return nil, &Fail{Refused: true,
 			Msg: fmt.Sprintf("%d review rounds ran on %s, the last judged %s, the head is %s — a third round is dima's: he approves #%s on github, and review-approved.yml publishes review:clean on the head he approved",
 				len(rounds), pr.HeadRefName, short(judged), short(head), n),
@@ -112,12 +123,17 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 
 	if err := r.Step("request", "re-labelling "+reviewLabel, func() (string, error) {
 		// a label already on the pr fires no event: only a fresh add starts a round
-		if slices.Contains(pr.Labels, label{reviewLabel}) {
+		removed := slices.Contains(pr.Labels, label{reviewLabel})
+		if removed {
 			if err := ghCoderOK("pr", "edit", n, "--remove-label", reviewLabel); err != nil {
 				return "", err
 			}
 		}
 		if err := ghCoderOK("pr", "edit", n, "--add-label", reviewLabel); err != nil {
+			if failed, ok := errors.AsType[*Fail](err); ok && removed {
+				failed.Msg = "the label came off #" + n + " and did not go back on, so the pr holds no review label: " + failed.Msg
+				failed.Next = "gh pr edit " + n + " --add-label '" + reviewLabel + "'"
+			}
 			return "", err
 		}
 		return fmt.Sprintf("round %d of %d on %s", len(rounds)+1, reviewCap, short(head)), nil
@@ -189,7 +205,7 @@ func prBody(r *Run, _ []string, _ Flags, plan any) (any, error) {
 
 /* Github */
 func readPR(n string) (prHead, error) {
-	got, err := ghCoder("pr", "view", n, "--json", "title,headRefName,headRefOid,labels")
+	got, err := ghCoder("pr", "view", n, "--json", "title,headRefName,headRefOid,reviewDecision,labels")
 	if err != nil {
 		return prHead{}, err
 	}
@@ -224,6 +240,12 @@ func reviewRuns(branch string) ([]reviewRun, bool, error) {
 		}
 	}
 	return runs, true, nil
+}
+
+// a failed read answers false: the caller then asks for a round, or names the cap
+func cleanOnHead(head string) bool {
+	got, err := ghRaw("api", "repos/{owner}/{repo}/commits/"+head+"/check-runs?check_name=review:clean", "--jq", `.check_runs[0].conclusion // ""`)
+	return err == nil && got.ok && got.out == "success"
 }
 
 // ghCoder runs gh as the x-coder-cc app, the identity every lane write on github wears

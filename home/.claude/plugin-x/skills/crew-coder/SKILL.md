@@ -157,7 +157,7 @@ for ceremony.
   2. `coderabbit` (on a test drive to 10-14: log its findings and unique finds in `~/frame/docs/test-drive/coderabbit.md`) first while its quota lasts (`coderabbit review --agent` for structured findings — `--plain` does not exist in cli 0.7.6; one run); no quota
      left (3 reviews an hour on the free tier) → skip it and say so in the report; step 1 has
      already covered the branch (dima, 2026-09-25). Push.
-  3b. **A verifier named in the brief (its registry name, `☕️ 🔎 <ticket> verify: #<pr>`) changes the rest of the chain**: skip steps 4 and 5.
+  3b. **A verifier named in the brief (its registry name, `☕️ 🔎 <ticket> verify: #<pr>`) changes the rest of the chain**: skip steps 4 and 5; `x lane review` stays yours.
      «final» is a `SendMessage` to the verifier (pr url + head sha); it reads every reviewer for you — you read none. **every reviewer thread is still yours to answer on github**, as `x-coder-cc`, ≤3 lines on the thread itself (fixed in `<sha>` / declined: why) — the verifier reads threads, it never replies to them (#94: three ci threads fixed and never answered). Its reply is one prompt per round, ≤12 lines,
      with a `verdict:` line; fix what it lists, push, message it «round N on <sha>». **the loop is
      yours and the verifier's — the coordinator hears nothing of it until your report on
