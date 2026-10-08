@@ -1,10 +1,10 @@
 ---
 kind: refresh
 cadence: "at the trial verdict (2026-10-20), then at every new anthropic model release or a cc change to mods, advisor or cross-session messaging; the whole setup reviewed critically at every run — the adviser is experimental"
-owner: coordinator
+owner: coordinator + adviser
 groomed: 2026-10-08 (dima)
 artifacts:
-  - ccrow/charter.md
+  - home/.claude/plugin-x/skills/crew-adviser/SKILL.md
   - ccrow/AGENTS.md
   - ~/.local/state/ccrow/leaves.txt
   - docs/test-drive/ccrow.md
@@ -26,7 +26,7 @@ keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, w
 
 ## the run
 
-1. **groom** (step 0 of `x:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why». its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
+1. **groom** (step 0 of `x:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «read first: this recipe (`recipes/refresh-crew-coordinator-adviser/recipe.md`), `x:crew-adviser`, `ccrow/AGENTS.md`, your `notes.jsonl` + `verdicts.jsonl`, and the last findings in `last/`. then: what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why» — the adviser co-owns the recipe and answers from its whole contract, never blind (dima, 2026-10-08). its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
 2. **distill the last run's `last/`** before any new lane; name what it already answered. done: a list of answered vs open vectors.
 3. **lanes, from one brief**: `researcher` (sources, papers, code) + `pnpm research:lanes` (exa + parallel); `neuroarxiv` when the prior-art vector is open. done: every lane landed or failed out loud. (template)
 3b. **the `/advisor` head-to-head**: a day with cc's built-in `/advisor opus` on cclio beside ccrow; both log every note, whether cclio acted on it, and its tokens into `docs/test-drive/ccrow.md`. done: one verdict — borrow its best parts into ccrow, or switch to it. (template)
@@ -36,11 +36,11 @@ keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, w
 7. **distill** into the artifacts; print dima ≤3 verdicts. done: printed, each verdicted. (open)
 8. **log** today's line. done: `log.md` has it.
 
-## done-test
+## done
 
-≤3 verdicts per run — the arm (opus / fable / alternate), one charter change, one hunt added or dropped — each measured by `verdicts.jsonl` hit rate over the next week; plus the setup verdict (keep / revamp / retire). else `noop`, valid only when every vector names its sources.
+done = the run happened (the `x:shape-recipe` rule). the print always carries the setup verdict (keep / revamp / retire) — the adviser is experimental, so every run reviews it whole.
 
-the print carries the four parts of `x:shape-recipe`: decisions · facts that move something · the checklist (ccrow's charter, hunt by hunt: fired · caught · never fired) · open.
+the print carries the parts of `x:shape-recipe`: decisions · facts that move something · prior art (only what is interesting) · the checklist (`x:crew-adviser`, hunt by hunt: fired · caught · never fired) · open.
 
 ## vectors (the owner's, re-groomed with dima each run)
 
@@ -67,7 +67,7 @@ cut (settled): «the comms model: pings or reads» — it reads her transcript o
 
 ## artifacts (pointed at, never housed)
 
-- `ccrow/charter.md` — what it hunts, its bar, its modes
+- `x:crew-adviser` (`home/.claude/plugin-x/skills/crew-adviser/SKILL.md`) — the seat's contract: hunts, bar, note shape, timing, modes; ccrow's boot prompt
 - `ccrow/AGENTS.md` — the mechanics and the facts that bite
 - `~/.local/state/ccrow/leaves.txt` — the memory slice it gets per wake
 - `docs/test-drive/ccrow.md` — the trial and its log

@@ -83,6 +83,7 @@ craft — the coordinator:
 - role drift: roles that appear as capabilities grow, roles that go obsolete as models improve
 - ticket management for an agent coordinator: tools and strategies (linear, local spec trackers, the pocket, matt's pipeline), what keeps the loop chill
 - agentic workflows overall: spec-driven runs, shifts vs lanes, review loops — what is proven
+- operator overload, the coordinator's half: how a coordinator paces one human — batching, collapsing asks, holding member traffic, the siesta — and which remedies measurably shrank his load (dima, 2026-10-08: the thread spam; the adviser recipe researches the detector, this one the remedy)
 
 craft — the classifier seat: read `refresh-crew-classifier`'s latest verdicts (the engine judged, the jobs found, the budget gate) — its research is that recipe's, never this one's; a seat is a type of operation, never one engine
 

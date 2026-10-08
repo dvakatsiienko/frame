@@ -88,15 +88,20 @@ special way here.» so:
   the role whose work the artifacts feed. dima writes the want; **the owner writes and grooms the
   vectors from its own seat**: «what would make me better at this job next week?» — never a list of
   topics about the subject
-- **every half has a done-test**: what the run changes (rows flipped, a grid re-sized, ≤3 verdicts
-  — add / adopt / drop — or `noop`). a half without one does not run. `noop` holds only when every
-  vector names its sources; a vector with none prints as `open`
+- **done = the run happened** (dima, 2026-10-08: «exit criteria kind of forces you to make
+  changes, but it is not always needed»): every lane landed or failed out loud, the print reached
+  dima, the log line is written. a run that finds nothing to change is a full run; a change is
+  adopted on dima's word, never made because the run must produce one. the weight of a recipe is
+  its want and its vectors, sharpened at every groom. a vector with no sources prints as `open`
 - **the verdicts are the decisions, never the whole print** (dima, 2026-10-08, after a run printed
   three verdicts and dropped the tools facts he called the most useful part). every recipe's findings
-  print carries four parts:
-  - **decisions** — the verdicts, each with its evidence
+  print carries these parts:
+  - **decisions** — uncapped, ranked, each with its evidence
+  - **prior art** — who already solved it and where it broke; only what is interesting, one line
+    «nothing worth borrowing» otherwise
   - **facts that move something** — uncapped: every fact that changes a pick, a price, a default or a
-    date, with its source and the artifact line it moves
+    date, with its source and the artifact line it moves — or tagged «informative» when it moves
+    nothing yet, so a useful fact is kept, never forced into a change
   - **the recipe's checklist** — the standing list it re-checks every run (a crew, a set of apps, a
     set of rules), item by item, even when the last run said «nothing changed»
   - **open** — every vector left unanswered, by name

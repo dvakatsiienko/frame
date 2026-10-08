@@ -1,7 +1,10 @@
 # ccrow — cclio's parked adviser
 
 a long-lived `--bg` session «🐦‍⬛ ccrow» that reads cclio's thread on a wake and returns one note
-or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
+or `none`. built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
+silence bar, note shape, timing, holdout, the consult) is the `x:crew-adviser` skill, which
+`readCharter` sends as the boot prompt with its frontmatter cut — ccrow loads no plugins, so the
+skill reaches it as text. a contract change goes there, never here.
 
 ## how it runs
 

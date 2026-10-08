@@ -28,3 +28,5 @@ arm, the exact model id from the transcript, effort, tokens in/out, seconds, mod
 
 one line per day: date · arm · wakes · notes / none · ok / miss · tokens · note
 - 2026-10-06 · day 1 silent, paired · 16 notes; 4 graded ok (the uncommitted pile before implement-spec, flagged from 17:46, ahead of cclio; .scratch absent in worktrees) · dima: «i also think it is very useful and worth sharpening» → live from day 2, a fleet member
+
+- 2026-10-08 · run 2 of refresh-crew-coordinator-adviser landed: the contract moved into `x:crew-adviser` (timing hold + `also held`, `predicts:` lines, 4 new or reshaped hunts, a 1-in-5 holdout to 10-20). 19:16 live note (5h wall) → ok, acted on. effort stays medium on both arms (dima: fable high is too much)

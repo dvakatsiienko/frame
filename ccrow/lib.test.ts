@@ -19,6 +19,7 @@ import {
     isLocated,
     planNotes,
     planPrompt,
+    readCharter,
     readLines,
     resolveLeaves,
     setHot,
@@ -28,6 +29,17 @@ import {
 
 const fixtures = join(import.meta.dirname, 'fixtures');
 const leavesDir = join(fixtures, 'leaves');
+
+test('the boot prompt is the x:crew-adviser skill body, frontmatter cut', () => {
+    const charter = readCharter();
+    expect(charter.startsWith('you are a parked adviser')).toBe(true);
+    expect(charter).toContain('the silence bar');
+});
+
+test('ccrow/AGENTS.md holds the mechanics, never the hunts', () => {
+    const agents = readFileSync(join(import.meta.dirname, 'AGENTS.md'), 'utf8');
+    expect(agents).not.toMatch(/a dropped ask|the silence bar/);
+});
 const lines = readLines(join(fixtures, 'transcript.jsonl'));
 
 describe('transcriptDelta', () => {

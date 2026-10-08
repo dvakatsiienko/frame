@@ -100,8 +100,16 @@ export function clearHot(storePath: string, sessionId: string) {
     writeFileSync(storePath, JSON.stringify(store));
 }
 
+// ccrow runs without user plugins, so its contract arrives as the boot prompt, frontmatter cut
 export function readCharter() {
-    return readFileSync(new URL('charter.md', import.meta.url), 'utf8');
+    const skill = readFileSync(
+        new URL(
+            '../home/.claude/plugin-x/skills/crew-adviser/SKILL.md',
+            import.meta.url,
+        ),
+        'utf8',
+    );
+    return skill.replace(/^---\n[\s\S]*?\n---\n+/, '');
 }
 
 export function isArm(value: string | undefined): value is Arm {
