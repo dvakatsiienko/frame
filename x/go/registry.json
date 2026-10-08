@@ -154,6 +154,18 @@
         {
             "args": [
                 {
+                    "description": "the linked worktree to remove",
+                    "name": "path"
+                }
+            ],
+            "name": "lane decamp",
+            "needsApply": true,
+            "purpose": "remove a linked worktree, then point the shared lefthook shims back at the main checkout",
+            "steps": ["tree", "remove", "hooks"]
+        },
+        {
+            "args": [
+                {
                     "description": "the go module dir; x's own module when absent",
                     "isOptional": true,
                     "name": "dir"
