@@ -102,11 +102,15 @@ type mode struct{ json, interactive bool }
 
 func detect(argv []string) mode {
 	options := optionsOf(argv)
+	// cobra takes a boolean as `--x` or `--x=true`, so the mode reads both
+	on := func(flag string) bool {
+		return slices.Contains(options, flag) || slices.Contains(options, flag+"=true")
+	}
 	// --board asks for the human view where json is the default: an agent env, a pipe. --json still wins
-	if slices.Contains(options, "--board") && !slices.Contains(options, "--json") {
+	if on("--board") && !on("--json") {
 		return mode{}
 	}
-	asked := slices.Contains(options, "--json") || os.Getenv("CLAUDECODE") != "" || os.Getenv("AI_AGENT") != ""
+	asked := on("--json") || os.Getenv("CLAUDECODE") != "" || os.Getenv("AI_AGENT") != ""
 	// a verb whose human view is raw text stays raw on a pipe: `source <(x completion zsh)` is a pipe
 	if words := wordsOf(argv); len(words) > 0 && words[0] == "completion" && !asked {
 		return mode{}

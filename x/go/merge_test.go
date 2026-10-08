@@ -24,7 +24,7 @@ func TestMergeMainNamesGitsOwnLineWhenItFailsWithoutConflicts(t *testing.T) {
 		Error string `json:"error"`
 	}
 	_ = json.Unmarshal([]byte(got.stdout), &envelope)
-	if got.code != 1 || !strings.Contains(envelope.Error, "untracked working tree files would be overwritten by merge") {
+	if got.code != 1 || !strings.Contains(envelope.Error, "untracked working tree files would be overwritten by merge: new.txt") {
 		t.Fatalf("exit %d, envelope error %q", got.code, envelope.Error)
 	}
 }

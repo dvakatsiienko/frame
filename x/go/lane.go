@@ -622,8 +622,12 @@ func firstLine(path string) string {
 // gitReason is the line git leads its refusal with, so an envelope reader needs no stderr
 func gitReason(log string) string {
 	lines := nonBlank(log)
-	for _, line := range lines {
+	for i, line := range lines {
 		if strings.HasPrefix(line, "error: ") || strings.HasPrefix(line, "fatal: ") {
+			// a reason ending in «:» names its files on the next line
+			if strings.HasSuffix(line, ":") && i+1 < len(lines) {
+				return line + " " + strings.TrimSpace(lines[i+1])
+			}
 			return line
 		}
 	}
