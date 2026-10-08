@@ -16,7 +16,7 @@ window: 2026-10-06 → 2026-10-20 (two weeks). the fold: one line in `rules/flee
 
 ## the count
 
-`pnpm flow:report` prints bare runs per window ([FRM-328](https://linear.app/x-com/issue/FRM-328)); read at every halt.
+`x fleet flow` prints bare runs per window ([FRM-328](https://linear.app/x-com/issue/FRM-328)); read at every halt.
 
 ## verdict rule
 

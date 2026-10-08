@@ -19,7 +19,7 @@ Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else 
   check) · seconds, cost, hit or miss
 - **bash census** — head counts over many transcripts (the cli grill's 484-transcript census) · seconds,
   cost, counts equal to the census script's
-- **flow numbers off raw files** — anything `pnpm flow:report` does not print yet · seconds, cost, match
+- **flow numbers off raw files** — anything `x fleet flow` does not print yet · seconds, cost, match
 - **a coder's own big reads** — a `--bg` coder hands a log or a big json to sifter instead of reading it
   (`x:crew-coder`'s «hand big reads to subagents») · steps saved in the coder's context
 - **failure probes** — a question with no answer in the file (must say «not found»), a file over 100K tokens

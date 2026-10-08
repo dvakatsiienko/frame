@@ -1,6 +1,6 @@
 # test drive — duckdb, the fleet's measuring engine
 
-verdict due: 2026-10-21 (two weeks) — adopt as the doors engine (`agent-ops:report --doors`, later `x fleet doors`) and the ad-hoc measure door, or drop
+verdict due: 2026-10-21 (two weeks) — adopt as the doors engine (a doors measure under `x fleet`) and the ad-hoc measure door, or drop
 
 ## the want (dima's, 2026-10-07)
 
@@ -21,7 +21,7 @@ verdict due: 2026-10-21 (two weeks) — adopt as the doors engine (`agent-ops:re
 3. subagent transcripts (`*/subagents/*.jsonl`): cost per helper vs per `researcher` — the omitClaudeMd saving across every run, not one probe
 4. token columns: first-request `cache_creation` per spawned agent per day — the spawn grid's base, re-measured
 5. the x traces once `x-telemetry` lands: an ad-hoc question `x stats` does not answer
-6. markdown: the flawlog `#dima-caught` / `#brief` tags per week (today `flow:report`'s regex)
+6. markdown: the flawlog `#dima-caught` / `#brief` tags per week (today `x fleet flow`'s tag match)
 7. `duck_tails`: pr open → merge median from git history alone
 8. `agent_data`: does it read our transcripts, subagents and cache tokens, and is it simpler than raw `read_ndjson_objects`
 9. `shellfs` + `gh api`: ci reds per repo per week

@@ -19,6 +19,8 @@
 - **touches** — what a verb reads or writes outside the repo (a store dir, the trash), named in its registry entry so `x schema` shows a fixer where the door leads
 - **actor** — the fleet member a call acts as on an outside service (`cclio`, `coder`, `dima`); `x as` picks its token, the trace names it, never the token
 - **shape** — what a raw-door query asks for, without a word of its text: the operation kind and its top-level field names (`mutation issueArchive`); the trace keeps it as `x.shape`, `x stats` ranks it
+- **bare run** — a `claude … --safe-mode` call in a Bash command: a cc session our setup cannot touch; `x fleet flow` counts them per window
+- **false fire** — a crew skill (`x:crew-coder`, `x:crew-verifier`) loaded with no earlier message naming it; its opposite is **brief-led**
 - **raw door** — a family's traced passthrough to the tool underneath (`x linear api`), the fallback when no verb fits; what it carries ranks the next verbs
 - **dev build** — an x binary built from `x/go` code that differs from its merge base with `origin/main`, in a worktree or the main checkout: x being changed, not x in use. the shim decides at build time; its trace lines carry `x.dev`, and `x stats` leaves them out unless `--dev`. never the `-dirty` version: main's own x reads dirty whenever the frame tree holds any uncommitted file (dima, 2026-10-08)
 - **span** — the days from the first counted trace to the last, both included; what `x stats` names as `days`, never the window asked for

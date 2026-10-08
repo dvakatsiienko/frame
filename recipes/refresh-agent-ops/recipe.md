@@ -3,8 +3,8 @@ kind: refresh
 cadence: every two weeks while on the test drive
 artifacts:
   - docs/knowledge/agent-ops.md
-  - script/agent-ops.ts
-script: agent-ops:report
+  - x/go/fleet_ops.go
+script: x fleet ops
 ---
 
 # refresh-agent-ops
@@ -51,7 +51,7 @@ the four vectors of the brief, as written there:
 ## artifacts (pointed at, never housed)
 
 - `docs/knowledge/agent-ops.md` — the verdict, the five activities, the 7-day numbers
-- `script/agent-ops.ts` — `pnpm agent-ops:report`: cost per ticket, cclio code edits, boot cost; gains `--doors` (the 2026-10-07 seed classifier was a throwaway regex script; `--doors` rebuilds it), later `x fleet doors`
+- `x/go/fleet_ops.go` — `x fleet ops`: cost per ticket, cclio code edits, boot cost; gains a doors measure later (the 2026-10-07 seed classifier was a throwaway regex script)
 
 ## cadence
 

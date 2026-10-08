@@ -20,7 +20,7 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
   never the whole of next.js. the docs hold the ux a bare call cannot guess.
   the door: `ctx7 library <name>` → its id, then `ctx7 docs <id> "<the part you build>"` (~3 s, ~3k chars;
   brew, on a test drive to 10-07). a library ctx7 does not carry → the `WebSearch` tool for its official
-  docs. `pnpm crew:audit` counts these calls per session — a feature built with none is visible.
+  docs. `x fleet audit` counts these calls per session — a feature built with none is visible.
 - **the brief names the constraint you may break** («ship only what a test exercises today»,
   «touch the shared biome config if lint needs it»); brief behaviours, never a count — «one
   test: renders, a variant, a click» produced a conjunctive test where five were right.
