@@ -130,18 +130,6 @@
   - then 🔥 ticks and the 50-minute ping is armed, or unticks and no ping is armed
   - given dima switched 🔥 off on the band
   - then the key is gone from the store, so the re-read never switches it back on
-- ✅ the store kept under the old name survives the rename
-  - given the mod ran as `stash` and its store file is `stash_*.json`
-  - when it first starts as x-mod-stash
-  - then every key of the old store is copied over — asks, holds, 🔥, afk, the board's per-session state — and the store is marked `adopted:stash` with the old file's mtime
-  - when the old file is written after that mark (a probe ran the new name before the cutover)
-  - then the next start copies it again; an unchanged old file is never copied twice
-  - decision: the old file is the truth until the cutover — before it, only test sessions run the new name
-- ✅ the fold and the 5h reset kept under the old name survive the rename
-  - given the session's `$.state` holds `open` or `fiveHour` under the old plugin name `stash`, and nothing under `x-mod-stash`
-  - when x-mod-stash starts
-  - then each value is copied to the new name once and used — a folded band stays folded
-  - decision: a value already written under the new name wins; the old one is never read again
 - ✅ 🔥 turns itself off after the 5h window resets
   - given 🔥 was turned on while the 5h window's reset was known
   - when that reset passes
@@ -187,7 +175,7 @@
   - then each event shows under it, newest first: `<session> — <command> → <why it was refused>` (an escape: `→ ran on dima-ok: <target>`; an event kept before x-mod-guard wrote a reason: `→ <door>`)
   - when 30 min pass with no new event
   - then the row is gone from every session's band
-  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`, and the `guard_*.json` it kept before the rename) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the band reads only the last 50 events x-mod-guard keeps there; a halt counts the day from the same file's per-day keys, `day:<yyyy-mm-dd>:<session>` with its refused and escaped counts (kept 30 days), never from the 50 events
+  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the band reads only the last 50 events x-mod-guard keeps there; a halt counts the day from the same file's per-day keys, `day:<yyyy-mm-dd>:<session>` with its refused and escaped counts (kept 30 days), never from the 50 events
 
 ## edits — holds
 

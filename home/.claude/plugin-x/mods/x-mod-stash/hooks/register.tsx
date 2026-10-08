@@ -14,7 +14,7 @@ import {
     writeTargets,
 } from './parse.ts';
 
-// x-mod-stash: dima's command center above the prompt, one folded row with three features.
+// x-mod-stash: dima's command center above the prompt, one folded row; FTR.md lists every feature.
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
 // holds: a session's first edit of a file holds it; another session's edit is refused
