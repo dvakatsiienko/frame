@@ -60,7 +60,7 @@
   - then x-mod-stash's band folds the run into one `🛡️ <n> refusals · <m> sessions` counter row that ages out 30 min after the last event, no dismiss — x-mod-stash's `FTR.md`, «guard counter»
 - ✅ every day's refusals and escapes are counted past the kept events
   - makes: one `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's `$.store`, `{ refused, escaped, rules: { <rule>: { refused, escaped } } }`, the local day; counts older than 30 days are dropped
-  - then `pnpm flow:report` prints the day's total and a `guard by rule, refused/escaped` line, busiest rule first, so noise and real catches separate (FRM-341)
+  - then `x fleet flow` prints the day's total and a `guard by rule, refused/escaped` line, busiest rule first, so noise and real catches separate (FRM-341)
   - then a halt sums the day's keys for the whole day, however many events the newest-50 cut has dropped
   - decision: one key per session a day — two sessions never write the same key, so a count is never lost to a race; a count that fails to write never changes the refusal
   - 📌 the Bash and `Monitor` tools are read (a Monitor's `command`, every rule, FRM-337); a `!` line in the prompt goes through unread
