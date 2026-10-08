@@ -7,10 +7,11 @@ import (
 	"testing"
 )
 
-var testHome string
+var testHome, realHome string
 
 // every path sline writes hangs off $HOME, so no test can reach dima's real ~/.claude
 func TestMain(m *testing.M) {
+	realHome, _ = os.UserHomeDir()
 	dir, err := os.MkdirTemp("", "sline-home-")
 	if err != nil {
 		panic(err)

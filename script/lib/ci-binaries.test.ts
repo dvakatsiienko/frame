@@ -7,8 +7,10 @@ import { expect, test } from 'vitest';
 const root = path.resolve(import.meta.dirname, '../..');
 // what ubuntu-latest ships before any step runs
 const runnerBinaries = ['bash', 'git', 'python3', 'sh'];
+// sees a binary a test names as a literal; one the code under test execs, or one passed in a
+// variable, stays the test author's to install
 const execCall: Record<string, RegExp> = {
-    go: /exec\.Command(?:Context)?\((?:ctx,\s*)?"([\w.+-]+)"/g,
+    go: /exec\.(?:Command\(|CommandContext\(\w+,\s*)"([\w.+-]+)"/g,
     ts: /\b(?:spawnSync|spawn|execFileSync|execFile|execSync)\(\s*['"`]([\w.+-]+)/g,
 };
 
@@ -23,7 +25,11 @@ function jobBinaries(ci: string) {
                 if (!word.startsWith('-')) installed.add(word);
         }
         if (block.includes('actions/setup-go')) installed.add('go');
-        if (block.includes('actions/setup-node')) installed.add('node');
+        if (block.includes('actions/setup-node')) {
+            installed.add('node');
+            installed.add('npx');
+        }
+        if (block.includes('pnpm/action-setup')) installed.add('pnpm');
         jobs.set(name, installed);
     }
     return jobs;

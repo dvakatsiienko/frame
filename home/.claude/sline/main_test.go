@@ -632,7 +632,8 @@ func TestOutputStyleBadgeLinksItsSource(t *testing.T) {
 // up, which is true only where frame:link has run — so on a CI runner, or
 // any checkout that is not the live one, it skips rather than fails.
 func TestOutputStyleFileIsLinkedOnDisk(t *testing.T) {
-	path := claudeHome("output-styles", "output-ELI5.md")
+	// read-only, so it alone looks at the real home TestMain moved HOME away from
+	path := filepath.Join(realHome, ".claude", "output-styles", "output-ELI5.md")
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		t.Skipf("no style file at %s — frame:link has not run here", path)
