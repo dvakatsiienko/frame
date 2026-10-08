@@ -265,7 +265,7 @@ export async function startCcrow(arm: Arm) {
     }
     setHot(store, live.sessionId, Date.now());
     console.log(
-        `🔥 key hot:${live.sessionId} written; stash reads it at session.start only, so ccrow's 🔥 waits on a stash change`,
+        `🔥 key hot:${live.sessionId} written; stash re-reads it at ccrow's next turn end and pings 50 min after`,
     );
 }
 
