@@ -1,8 +1,10 @@
 package main
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
+	"math"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -49,10 +51,13 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	var found []finding
 	exits := 0
 	if err := r.Step("lint", "the exit lines and the grill words", func() (string, error) {
-		for _, line := range lines {
-			if grill := grillWord.FindString(quotedText.ReplaceAllString(line.text, "")); grill != "" {
-				found = append(found, finding{line.n, "grill", grill, "a simplify / redesign / rework wants a grill before a lane"})
+		// the raw lines, headings included: a heading is the likeliest place for «redesign»
+		for i, text := range strings.Split(body, "\n") {
+			if grill := grillWord.FindString(quotedText.ReplaceAllString(text, "")); grill != "" {
+				found = append(found, finding{i + 1, "grill", grill, "a simplify / redesign / rework wants a grill before a lane"})
 			}
+		}
+		for _, line := range lines {
 			if !line.exit {
 				continue
 			}
@@ -75,8 +80,8 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	var shipped []string
 	if err := r.Step("main", "what origin/main already holds", func() (string, error) {
 		_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
-		onMain := found
-		verbsOnMain := mainVerbs()
+		before := len(found)
+		verbsOnMain := mainVerbs(repo)
 		shipped = ticketCommits(repo, id)
 		for _, line := range lines {
 			if !line.exit {
@@ -96,16 +101,21 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		for _, commit := range shipped {
 			found = append(found, finding{0, "main", commit, "main already carries a commit for " + id})
 		}
-		return fmt.Sprintf("%s, %s on main", plural(len(found)-len(onMain), "finding"), plural(len(shipped), "commit")), nil
+		return fmt.Sprintf("%s, %s on main", plural(len(found)-before, "finding"), plural(len(shipped), "commit")), nil
 	}); err != nil {
 		return nil, err
 	}
 
-	slices.SortStableFunc(found, func(a, b finding) int { return a.Line - b.Line })
+	// a ticket's commit has no line, so it sorts after every line
+	slices.SortStableFunc(found, func(a, b finding) int { return cmp.Compare(lineOrLast(a), lineOrLast(b)) })
 	if len(found) > 0 {
 		r.Show(findingRows(found, r.board.inner()-nameCell-2), nameCell+2)
 		msg := []string{plural(len(found), "problem") + " in " + id}
 		for _, f := range found {
+			if f.Line == 0 {
+				msg = append(msg, fmt.Sprintf("%s commit %s — %s", f.Kind, f.What, f.Why))
+				continue
+			}
 			msg = append(msg, fmt.Sprintf("line %d: %s %s — %s", f.Line, f.Kind, f.What, f.Why))
 		}
 		return nil, &Fail{Refused: true, Msg: strings.Join(msg, "\n"), Next: "x linear body " + id}
@@ -114,11 +124,13 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	return ordered{{"ticket", id}, {"exits", exits}, {"repo", repo}}, nil
 }
 
-// the verb names on frame's origin/main, read from git: the running x may be a worktree's, which
-// already holds the verbs a ticket asks for
-func mainVerbs() []string {
-	frame := filepath.Dir(filepath.Dir(sourceDir()))
-	got, _ := gitIn(frame, "show", "origin/main:x/go/registry.json")
+// the verb names on origin/main, read from git: the running x may be a worktree's, which already
+// holds the verbs a ticket asks for. the ticket's repo holds x when it is frame; any other repo reads frame's
+func mainVerbs(repo string) []string {
+	got, _ := gitIn(repo, "show", "origin/main:x/go/registry.json")
+	if !got.ok {
+		got, _ = gitIn(filepath.Dir(filepath.Dir(sourceDir())), "show", "origin/main:x/go/registry.json")
+	}
 	var registry struct {
 		Verbs []struct {
 			Name string `json:"name"`
@@ -146,6 +158,13 @@ func verbOf(token string, verbs []string) string {
 		}
 	}
 	return ""
+}
+
+func lineOrLast(f finding) int {
+	if f.Line == 0 {
+		return math.MaxInt
+	}
+	return f.Line
 }
 
 func ticketLine(id string) string { return `ticket: ` + id + `([^0-9]|$)` }

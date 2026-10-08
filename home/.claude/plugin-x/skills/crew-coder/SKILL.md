@@ -158,8 +158,7 @@ for ceremony.
      left (3 reviews an hour on the free tier) → skip it and say so in the report; step 1 has
      already covered the branch (dima, 2026-09-25). Push.
   3b. **A verifier named in the brief (its registry name, `☕️ 🔎 <ticket> verify: #<pr>`) changes the rest of the chain**: skip steps 4 and 5.
-     «final» is a `SendMessage` to the verifier (pr url + head sha), it owns the ci reviewer and
-     reads every reviewer for you — you read none. **every reviewer thread is still yours to answer on github**, as `x-coder-cc`, ≤3 lines on the thread itself (fixed in `<sha>` / declined: why) — the verifier reads threads, it never replies to them (#94: three ci threads fixed and never answered). Its reply is one prompt per round, ≤12 lines,
+     «final» is a `SendMessage` to the verifier (pr url + head sha); it reads every reviewer for you — you read none. **every reviewer thread is still yours to answer on github**, as `x-coder-cc`, ≤3 lines on the thread itself (fixed in `<sha>` / declined: why) — the verifier reads threads, it never replies to them (#94: three ci threads fixed and never answered). Its reply is one prompt per round, ≤12 lines,
      with a `verdict:` line; fix what it lists, push, message it «round N on <sha>». **the loop is
      yours and the verifier's — the coordinator hears nothing of it until your report on
      `clean`.** open the lane at your FIRST commit («round 1 on <sha>»), not at the end of the

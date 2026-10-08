@@ -144,9 +144,10 @@ func TestPrBodyWritesTheFileAndReadsItBack(t *testing.T) {
 	}
 }
 
-// a fixture repo whose origin/main carries one commit for FRM-9 and one for FRM-90
+// a fixture repo whose origin/main holds x's registry, one commit for FRM-9 and one for FRM-90
 func preflightRepo(t *testing.T) string {
 	dir := repo(t)
+	write(t, filepath.Join(dir, "x/go/registry.json"), `{"verbs":[{"name":"lane unlock"}]}`)
 	write(t, filepath.Join(dir, "docs/shipped.md"), "done\n")
 	gitT(t, dir, "add", ".")
 	gitT(t, dir, "commit", "-q", "-m", "ship it", "-m", "- ticket: FRM-9")
@@ -177,9 +178,10 @@ func TestPreflightPassesACleanTicket(t *testing.T) {
 }
 
 func TestPreflightNamesEveryProblem(t *testing.T) {
-	body := "## want\n\nwe redesign the board\n\n## exit\n\n- `other.md` lists the rest\n2. it works\n3. `x lane unlock` runs in a locked tree\n4. `docs/shipped.md` says done\n"
+	body := "## the board redesign\n\nwe rework the board\n\n## exit\n\n- `other.md` lists the rest\n2. it works\n3. `x lane unlock` runs in a locked tree\n4. `docs/shipped.md` says done\n"
 	want := []string{
-		"line 3: grill redesign",
+		"line 1: grill redesign",
+		"line 3: grill rework",
 		"line 7: lint exit line — has no number",
 		"line 8: lint exit line — names no surface",
 		"line 9: main x lane unlock — is already a verb on main",

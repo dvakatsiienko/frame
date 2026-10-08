@@ -176,7 +176,7 @@ func prBody(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		if err != nil {
 			return "", err
 		}
-		if normal(got.out) != normal(string(want)) {
+		if normalBody(got.out) != normalBody(string(want)) {
 			return "", &Fail{Msg: "the body on #" + n + " differs from " + home(file), Next: "gh pr view " + n + " --json body"}
 		}
 		return "the body on #" + n + " matches " + filepath.Base(file), nil
@@ -247,4 +247,4 @@ func ghRaw(args ...string) (result, error) {
 	return got, nil
 }
 
-func normal(text string) string { return strings.TrimSpace(strings.ReplaceAll(text, "\r\n", "\n")) }
+func normalBody(text string) string { return strings.TrimSpace(strings.ReplaceAll(text, "\r\n", "\n")) }
