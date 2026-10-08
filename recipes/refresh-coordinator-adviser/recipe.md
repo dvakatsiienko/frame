@@ -11,7 +11,7 @@ script: none
 was: [refresh-ccrow]
 ---
 
-# refresh-adviser
+# refresh-coordinator-adviser
 
 keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, which arm runs it, and whether the whole adviser idea still earns its place.
 

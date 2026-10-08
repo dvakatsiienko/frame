@@ -346,4 +346,4 @@ date · feature · ask · hit · seconds · chars · $ · vs parallel / opus
 ## verdict
 
 **adopted, 2026-10-08** — a standing lane under `pnpm research:lanes`, beside parallel and the opus researcher. 31 rounds, avg grade 3.85, ~99 s, $0.10 a run; it lost every head-to-head to the opus researcher and still caught what the others missed (the terms clause, the keepalive repos). dima: «even when they lose to opus researchers — they are free, so let's have an alternative free opinion, they still can catch something useful». the stress list stops here; a feature untried after 30 rounds was not needed.
-- 2026-10-08 · agent run · «the adviser: craft + comms model» (refresh-adviser) · landed, ungraded until the synthesis
+- 2026-10-08 · agent run · «the adviser: craft + comms model» (refresh-coordinator-adviser) · landed, ungraded until the synthesis

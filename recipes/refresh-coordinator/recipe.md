@@ -49,7 +49,7 @@ the cards against the ladder (dima's, 2026-10-08):
 
 > «we have a few subagents — a helper, a researcher, an explorer — and we use specific models for them: the helper is sonnet 5.5, meant for a quick one-off job it does well at less spend than opus (opus is for granular, sophisticated changes where thoughtful decisions are needed). this is a checkup across every subagent and crew member: do we still have the right model for what each is meant to do, at the right effort? is chores on sonnet 5.5 medium still the right pick, or would opus 5.5 medium be better? the recipe gathers our settled baseline picks and searches whether they hold.»
 
-the adviser (dima's, 2026-10-08): the want lives in `recipes/refresh-adviser/recipe.md`; this run reads that recipe's latest verdicts and never re-researches it.
+the adviser (dima's, 2026-10-08): the want lives in `recipes/refresh-coordinator-adviser/recipe.md`; this run reads that recipe's latest verdicts and never re-researches it.
 
 the tracker and the CTO hat (dima's, standing):
 > «optimize the fleet flow.»
@@ -77,7 +77,7 @@ on top of the shared vectors of `x:shape-recipe` (the delta covers the cc change
 
 craft — the coordinator:
 - how a coordinator agent should work in general and coordinate efficiently: planning, routing work to members, gates, comms, attention economy with the operator
-- the adviser: read `refresh-adviser`'s latest verdicts (the arm, the setup keep/revamp/retire) — its research is that recipe's, never this one's
+- the adviser: read `refresh-coordinator-adviser`'s latest verdicts (the arm, the setup keep/revamp/retire) — its research is that recipe's, never this one's
 - the full crew: which roles a mature agent team has, against ours (coder, verifier, designer, classifier, ccrow, the ci reviewers coderabbit + cc); which we lack
 - role drift: roles that appear as capabilities grow, roles that go obsolete as models improve
 - ticket management for an agent coordinator: tools and strategies (linear, local spec trackers, the pocket, matt's pipeline), what keeps the loop chill

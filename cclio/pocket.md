@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-09 (the cli grill, census ready) → 49 (refresh-adviser run, lanes in) → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+09 (the cli grill, census ready) → 49 (refresh-coordinator-adviser run, lanes in) → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
