@@ -10,10 +10,11 @@ import (
 )
 
 // history records what happened and never calls anything (an ADR's amendments, the gazette, the
-// pocket, the flawlog, jev's verbatim observed prompts, a test drive's dated rounds, a research
-// answer); the registry names the doors on purpose
+// pocket, the flawlog, jev's verbatim observed prompts, a research answer, and the test drives whose
+// dated rounds and baselines quote a door that has since died); the registry names the doors on purpose
 var notCallers = []string{":!x/go/registry.json", ":!docs/adr", ":!cclio/gazette", ":!cclio/pocket.md", ":!home/.claude/shelf/flawlog",
-	":!home/.claude/shelf/jev/fixtures", ":!docs/test-drive", ":!docs/research"}
+	":!home/.claude/shelf/jev/fixtures", ":!docs/research", ":!docs/test-drive/ctx7.md", ":!docs/test-drive/pocket.md",
+	":!docs/test-drive/sifter.md"}
 
 // a verb is done when its old door is dead: the file it replaces is gone and nothing tracked still calls it
 func TestReplacedDoorsAreDead(t *testing.T) {

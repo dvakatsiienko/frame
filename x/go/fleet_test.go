@@ -109,6 +109,19 @@ func TestMedianMinutesTakesTheMiddlePR(t *testing.T) {
 	}
 }
 
+func TestFixed1RoundsLikeJavascriptToFixed(t *testing.T) {
+	// node: (0.15).toFixed(1) "0.1", (0.25).toFixed(1) "0.3", (1.05).toFixed(1) "1.1", (2.449).toFixed(1) "2.4"
+	cases := []struct {
+		in   float64
+		want string
+	}{{0.15, "0.1"}, {0.25, "0.3"}, {1.05, "1.1"}, {2.449, "2.4"}, {30, "30.0"}, {0, "0.0"}}
+	for _, c := range cases {
+		if got := fixed1(c.in); got != c.want {
+			t.Errorf("fixed1(%v) = %s, want %s", c.in, got, c.want)
+		}
+	}
+}
+
 func TestFlowCountsABareCCRun(t *testing.T) {
 	cases := []struct {
 		name string

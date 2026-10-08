@@ -83,16 +83,12 @@ func byCalls[T any](calls func(T) int, name func(T) string) func(a, b T) int {
 }
 
 func stats(r *Run, _ []string, flags Flags) (any, error) {
-	days := 30
-	if value, _ := flags["days"].(string); value != "" {
-		n, err := strconv.Atoi(value)
-		if err != nil || n < 1 {
-			return nil, usageFail("--days is a whole number of days, not "+value, "x stats --days 30")
-		}
-		if n > keepDays {
-			return nil, usageFail(fmt.Sprintf("the traces keep %d days, not %d", keepDays, n), fmt.Sprintf("x stats --days %d", keepDays))
-		}
-		days = n
+	days, err := daysFlag(flags, "stats", 30)
+	if err != nil {
+		return nil, err
+	}
+	if days > keepDays {
+		return nil, usageFail(fmt.Sprintf("the traces keep %d days, not %d", keepDays, days), fmt.Sprintf("x stats --days %d", keepDays))
 	}
 	if flags["outside"] == true {
 		if flags["dev"] == true {

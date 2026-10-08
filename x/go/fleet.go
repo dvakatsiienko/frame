@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"math/big"
 	"os"
 	"path/filepath"
 	"slices"
@@ -87,9 +88,20 @@ func median(values []float64) float64 {
 	return (sorted[mid-1] + sorted[mid]) / 2
 }
 
-// javascript's toFixed(1) and Math.round: a half rounds up, where go's formatting rounds it to even
-func fixed1(x float64) string   { return strconv.FormatFloat(math.Floor(x*10+0.5)/10, 'f', 1, 64) }
-func roundHalfUp(x float64) int { return int(math.Floor(x + 0.5)) }
+// javascript's toFixed(1) for x ≥ 0: rounds the float's exact decimal value, a tie going up — where
+// go's 'f' formatting sends an exact tie to even, and x*10 first would round 0.15 up to a tie
+func fixed1(x float64) string {
+	exact := new(big.Float).SetFloat64(x).Text('f', 60)
+	whole, frac, _ := strings.Cut(exact, ".")
+	tenths, _ := strconv.Atoi(whole + frac[:1])
+	if frac[1] >= '5' {
+		tenths++
+	}
+	return fmt.Sprintf("%d.%d", tenths/10, tenths%10)
+}
+
+// javascript's Math.round for x ≥ 0: a half goes up, as go's math.Round does away from zero
+func roundHalfUp(x float64) int { return int(math.Round(x)) }
 
 // a report printed as its lines inside a board; a long line wraps under itself
 func textBoard(verb, right string, lines []string) string {
