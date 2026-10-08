@@ -51,6 +51,7 @@
 - a `Markdown` link draws in the surface's blue and a mod cannot restyle it; a `Button` label cannot be bold — a bold name with a `↗` beside it is the shape that works (FRM-306)
 - a transcript-scrubbing mod redacts in `tool.call` as well as `session.append`: the engine stores a tool's own result (`toolUseResult`) beside the row, and `session.append` never sees it (x-mod-redact, FRM-307)
 - a live redactor masks your own view and restores placeholders inside your own tool calls — tests build fake keys by concatenation, never as one literal (FRM-307)
+- `CLAUDE_CODE_PLUGIN_DIRS` order is the chain order, first outermost: x-mod-redact stays last, so every mod above it reads placeholders and only the tool gets the key. a hook adds `context` notes but cannot rewrite one from beneath, so a mod below redact that quotes the command leaks it for good (guard's «it ran:» did, live probe 2026-10-08)
 - a throwing op mock is skipped by the harness, never thrown — test a failure by forcing the real failing path (FRM-307)
 - a declaration a mod needs (a vault, a store shape) sits in a `types` contract the manifest names, never inline — `claude plugin validate` goes red otherwise; stop on that red before committing (FRM-307)
 - what a mod cannot reach (measured, so nobody retries it): the queued-prompt `queue-operation` record is written before any hook (x-mod-redact); the «<mod> reloaded (n hooks)» line is the terminal's `InfoNotice`, not a mod site; the desktop draws cc's own prompt suggestion, so a mod suggestion races it (dropped, FRM-303)
