@@ -22,3 +22,14 @@ func TestBoardDrawsTheHumanViewInAnAgentEnv(t *testing.T) {
 		t.Errorf("without --board an agent env still gets json:\n%s", plain.stdout)
 	}
 }
+
+func TestJSONBesideBoardStillWins(t *testing.T) {
+	shelf := t.TempDir()
+	write(t, filepath.Join(shelf, "probe.md"), "# probe\n\na probe doc\n")
+
+	got := xIn(t, t.TempDir(), []string{"CLAUDECODE=1", "X_KNOWLEDGE_ROOT=" + shelf}, "knowledge", "list", "--board", "--json")
+
+	if !json.Valid([]byte(strings.TrimSpace(got.stdout))) {
+		t.Fatalf("--board --json must print json:\n%s", got.stdout)
+	}
+}
