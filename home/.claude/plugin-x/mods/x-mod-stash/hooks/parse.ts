@@ -41,6 +41,44 @@ export function bulletDots(text: string) {
         .join('\n');
 }
 
+// a fleet word prints bold with its badge glued on (rules/fleet-output-format.md); a bare one in prose is fixed, not policed.
+// fences, quotes, inline code, bold text and links keep theirs; «wish» only as a noun, after a determiner
+const BADGES = { freebie: '', siesta: '🌤️', wish: '🌠', wisp: '✨' } as const;
+type FleetWord = keyof typeof BADGES;
+const WORD =
+    /(?<![\w\-/.])(?:(?:✨|🌤️|🌠) )?(wisp|siesta|freebie|wish)(s|es)?(?![\w\-/]|\.\w)/giu;
+const DETERMINER =
+    /(?:^|\s)(?:a|an|the|his|her|this|that|each|every|one|new|your|my|our|their|dima's)\s+(?:🌠 )?$/i;
+
+export function boldFleetWords(text: string) {
+    const hits: Partial<Record<FleetWord, number>> = {};
+    let isFence = false;
+    const lines = text.split('\n').map((line) => {
+        if (/^\s*```/.test(line)) isFence = !isFence;
+        if (isFence || /^\s*>/.test(line)) return line;
+        // masked at the same length, so match offsets land on the real line
+        const masked = line.replace(
+            /`[^`\n]*`|\*\*[^*\n]+\*\*|\]\([^)\n]*\)|https?:\/\/\S+/g,
+            (m) => '\0'.repeat(m.length),
+        );
+        let out = '';
+        let from = 0;
+        for (const m of masked.matchAll(WORD)) {
+            const at = m.index ?? 0;
+            const word = (m[1] ?? '').toLowerCase() as FleetWord;
+            if (word === 'wish' && !DETERMINER.test(masked.slice(0, at)))
+                continue;
+            const badge = BADGES[word];
+            const shown = m[0].replace(/^\S+ /u, '');
+            out += `${line.slice(from, at)}**${badge ? `${badge} ` : ''}${shown}**`;
+            from = at + m[0].length;
+            hits[word] = (hits[word] ?? 0) + 1;
+        }
+        return out + line.slice(from);
+    });
+    return { hits, text: lines.join('\n') };
+}
+
 // dima's «yes, after X» verdicts, each with the open ask its number names; a plain yes is not one
 export function parseAfter(prompt: string, asks: string[]) {
     return prompt.split('\n').flatMap((line) => {

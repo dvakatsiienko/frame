@@ -43,3 +43,7 @@ _Avoid_: theme, palette mode
 **Wait**:
 What a session is blocked on, from the `🔭` line that ends its last reply; on the board it is a row's second line, absent when the reply has none.
 _Avoid_: blocker, status, watch
+
+**Fleet word**:
+A word of the fleet's own vocabulary that prints bold, its badge glued on: **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **freebie**; the list and badges are `rules/fleet-vibe.md`'s.
+_Avoid_: keyword, vibe word

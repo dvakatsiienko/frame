@@ -93,6 +93,13 @@
   - then the drawing (`ui.render` on `AssistantMessage`, every surface) and the stored row (`session.append`, the response door) both read `the crew:` and one `- ` line per item; a `·` list inside a bullet nests under it
   - then `reply-check.py` never sees the dot, so its block and the «Hook re-prompted Claude» second reply never happen; it stays as the net
   - proven live 2026-10-08: a headless reply told to print `the crew: chores · researcher · retro` came out as bullets in one turn; the Stop hook reads the rewritten row (a probe mod saw it)
+- ✅ a bare fleet word in a reply prints bold with its badge before dima sees it
+  - given a reply in prose names a fleet word plain: `wisp`, `siesta`, `wish` after a determiner (`a`, `the`, `his` …), `freebie`, or their plurals
+  - then the drawing and the stored row both read **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **freebie** (bold, no badge); a word already badged only gains the bold
+  - then a fence, a `>` quote, inline code, bold text, a link or url, and a name like `x-mod-wisp` or `wisp.md` keep theirs; «i wish» stays a verb; «lane» is never touched
+  - makes: one `words:<yyyy-mm-dd>:<session>` key in x-mod-stash's `$.store`, `{ <word>: <rewrites> }`, counted from the stored row only (a redraw never counts); keys older than 30 days are dropped
+  - decision: fixed in the output, never policed — cclio wrote «that becomes a wisp» plain at 17:43 and dima wanted it fixed in place (2026-10-08)
+  - proven live 2026-10-08: a headless reply told to print «that becomes a wisp, then a siesta; i wish the wish were a freebie» was stored with all four bolded, the verb left, and the day's key written
 - ⬜ a reply's 📄 stamp is stored with the real clock
   - given a reply row whose 📄 line carries an `HH:MM` that is not now (a long turn outran its prompt's clock, or the model guessed)
   - when the row is kept (`session.append`, the response door)

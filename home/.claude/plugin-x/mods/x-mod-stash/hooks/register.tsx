@@ -4,6 +4,7 @@ import type { EngineInterface, Register, RenderElement } from 'claude-code';
 import {
     type Door,
     FLEET_NAME,
+    boldFleetWords,
     bulletDots,
     doorOf,
     nestedAsks,
@@ -477,6 +478,24 @@ async function guardLines($: EngineInterface): Promise<GuardLine[]> {
         since = g.at;
     }
     return run;
+}
+
+// one `words:<yyyy-mm-dd>:<session>` key a day, the fleet words a reply had bolded for it, so a halt reads the hits;
+// a key past WORDS_DAYS is dropped
+const WORDS = 'words:';
+const WORDS_DAYS = 30;
+async function countWords($: EngineInterface, hits: Record<string, number>) {
+    const at = await $.clock.now();
+    const day = (ms: number) => new Date(ms).toLocaleDateString('sv');
+    const key = `${WORDS}${day(at)}:${await $.session.id()}`;
+    const was = ((await $.store.get(key)) ?? {}) as Record<string, number>;
+    const next = { ...was };
+    for (const [word, n] of Object.entries(hits))
+        next[word] = (next[word] ?? 0) + n;
+    await $.store.set(key, next);
+    const oldest = `${WORDS}${day(at - WORDS_DAYS * 86_400_000)}`;
+    for (const old of await $.store.keys())
+        if (old.startsWith(WORDS) && old < oldest) await $.store.delete(old);
 }
 
 // fail-open: a store or git error lets the edit through, with a line in the transcript
@@ -961,10 +980,14 @@ export const register: Register = (on) => {
     on('session.append', { door: 'response' }, async ($, e, next) => {
         const now = new Date(await $.clock.now()).toTimeString().slice(0, 5);
         let isChanged = false;
+        const hits: Record<string, number> = {};
         const content = e.message.content.map((b) => {
             if (b.type !== 'text' || typeof b.text !== 'string') return b;
             // the stored row is what the Stop hooks read: a ·-list fixed here never trips reply-check
-            const bulleted = bulletDots(b.text);
+            const fixed = boldFleetWords(bulletDots(b.text));
+            for (const [word, n] of Object.entries(fixed.hits))
+                hits[word] = (hits[word] ?? 0) + n;
+            const bulleted = fixed.text;
             if (bulleted !== b.text) isChanged = true;
             const text = bulleted.replace(
                 STAMP,
@@ -976,13 +999,19 @@ export const register: Register = (on) => {
             );
             return { ...b, text };
         });
+        if (Object.keys(hits).length)
+            await countWords($, hits).catch((err) =>
+                $.ui.log(
+                    `x-mod-stash: the fleet-word count was not kept: ${errorText(err)}`,
+                ),
+            );
         if (!isChanged) return next(e);
         return next({ ...e, message: { ...e.message, content } });
     });
 
     // the drawing: the reply's ·-list shows as bullets while it streams, before the stored row exists
     on('ui.render', { component: 'AssistantMessage' }, async (_$, e, next) => {
-        const text = bulletDots(e.props.text);
+        const { text } = boldFleetWords(bulletDots(e.props.text));
         if (text === e.props.text) return next(e);
         return next({ ...e, props: { ...e.props, text } });
     });
