@@ -63,6 +63,16 @@ In the plan file, then one chat message:
 - severity: 🔴 touches sign-in or data (read it) · 🟢 cosmetic (skim)
 - stated plainly: **an unanswered item counts as accepted**
 - the spend, the steer log, what the next plan changes
+- then the return sections, every shift, one or two lines each, in plain words (dima's return questions, 2026-10-09):
+  - **how it went**: per lane, merged / parked / not run
+  - **what waited on dima**: each wait, and how it resolved — his word, or a decision of cclio's with its reason
+  - **compactions**: count, and what survived each
+  - **failures**: ci, keys, access, permissions, the 5h window — each with its state now
+  - **merging**: count, and anything a checkup or a verifier held
+  - **retros**: filed per member, and the `comms:` gaps they name
+  - **the flow**: planning, briefs, comms — good and off, with the fix for each off
+  - **ticket readiness**: which tickets ran straight, which exit lines were rewritten mid-lane and why
+  - **anything else** dima would want: one line or `none`
 
 Retros in, members stopped, the plan's `status:` flipped to `done`, the ⏳ block back on.
 
