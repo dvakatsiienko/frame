@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'vitest';
 
+import { gitEnv } from './git-fixture.ts';
+
 const root = path.resolve(import.meta.dirname, '../..');
 // what ubuntu-latest ships before any step runs
 const runnerBinaries = ['bash', 'git', 'python3', 'sh'];
@@ -42,6 +44,7 @@ test('every binary a test execs is installed by the ci job that runs it', () => 
     const files = spawnSync('git', ['ls-files', '*.test.ts', '*_test.go'], {
         cwd: root,
         encoding: 'utf8',
+        env: gitEnv(),
     }).stdout.split('\n');
 
     const missing = files.filter(Boolean).flatMap((file) => {

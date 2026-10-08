@@ -10,12 +10,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
 
+import { gitEnv } from '../../../../script/lib/git-fixture.ts';
+
 const HOOK = join(import.meta.dirname, 'worktree-seed.sh');
 const TYPES = 'mods/m/.claude-plugin/types/claude-code/index.d.ts';
-// a git hook's GIT_INDEX_FILE and GIT_DIR would point the fixture's git at the repo being committed
-const env = Object.fromEntries(
-    Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')),
-);
+const env = gitEnv();
 
 // a repo whose mod types are generated and gitignored, and a fresh worktree of it
 function fixture() {
