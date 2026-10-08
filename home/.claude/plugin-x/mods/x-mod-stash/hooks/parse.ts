@@ -1,5 +1,14 @@
 const HEADER = /⏳\s*waiting on your word/i;
 
+// dima's «yes, after X» verdicts, each with the open ask its number names; a plain yes is not one
+export function parseAfter(prompt: string, asks: string[]) {
+    return prompt.split('\n').flatMap((line) => {
+        const m = line.match(/^\s*(\d+)\.\s.*?\byes,?\s+after\s+(.+?)\s*$/i);
+        const ask = m && asks[Number(m[1]) - 1];
+        return m?.[2] && ask ? [{ after: m[2], ask }] : [];
+    });
+}
+
 // The asks of a reply's ⏳ block, in order; null when the reply carries no block.
 export function parseAsks(reply: string): string[] | null {
     const start = reply.search(HEADER);

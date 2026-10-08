@@ -70,6 +70,12 @@
   - decision: a real button, not plain text — dima could not tell it was pressable; the mod api has no cursor prop, so the pointer is the surface's own
   - decision: ask lines are not selectable — the mod api has no selection control and `Markdown` did not help either (dima, 2026-10-04); copy all is the door
   - decision: no read-aloud button — dima uses F4 on a selected phrase, F4 does not read the clipboard, and a «read all» is not useful (2026-10-05); selectable band text would need an api cc does not have yet
+- ✅ a «yes, after X» verdict is queued for the pocket
+  - given this session's last reply left open asks, and dima answers one of them `<n>. … yes, after <X>`
+  - when the prompt is submitted
+  - then one line per verdict joins `~/.claude/shelf/stash/pocket-queue.md`: `- YYYY-MM-DD HH:MM · after <X> · <the ask as it stood>`; a plain yes, or a peer's prompt, queues nothing (FRM-337)
+  - decision: `cclio/pocket.md` keeps one writer — cclio's boot reads and empties the queue (cclio, 2026-10-08); the approved history purge left the ⏳ block and was tracked nowhere
+  - proven live 2026-10-08: a two-turn `claude -p --input-format stream-json` session, a ⏳ reply then «1. yes, after the probe lands», appended exactly one line
 - ⬜ a ⏳ item with nested lines draws a warning at Stop, so `c` always copies the whole item
   - given a reply's ⏳ fence holds an item with lines under it (item 2 has an indented `- …`)
   - when the reply ends

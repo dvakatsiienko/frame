@@ -6,6 +6,7 @@ import {
     FLEET_NAME,
     doorOf,
     nestedAsks,
+    parseAfter,
     parseAsks,
     parseWait,
     ticketOf,
@@ -352,6 +353,22 @@ async function releaseClean($: EngineInterface, sid: string) {
         else left++;
     }
     return left;
+}
+
+// a «yes, after X» answer to an open ask lands one line in the queue cclio's boot reads and empties; cclio/pocket.md has one writer
+async function queueAfter($: EngineInterface, prompt: string) {
+    const entry = (await $.store.get(PREFIX + (await $.session.id()))) as
+        | Entry
+        | undefined;
+    const found = parseAfter(prompt, entry?.asks ?? []);
+    if (!found.length) return;
+    const path = `${await $.env.get('HOME')}/.claude/shelf/stash/pocket-queue.md`;
+    const d = new Date(await $.clock.now());
+    const two = (n: number) => String(n).padStart(2, '0');
+    const at = `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())} ${two(d.getHours())}:${two(d.getMinutes())}`;
+    const was = await $.fs.read(path).catch(() => '');
+    const lines = found.map((f) => `- ${at} · after ${f.after} · ${f.ask}\n`);
+    await $.fs.write(path, `${was}${lines.join('')}`);
 }
 
 // a commit run through the shell, `git commit` or `x lane commit`
@@ -975,6 +992,10 @@ export const register: Register = (on) => {
         isBusy = true;
         hotGen++;
         await load($);
+        if (isUserTurn)
+            await queueAfter($, e.text).catch(() =>
+                $.ui.log('x-mod-stash: a «yes, after» verdict was not queued'),
+            );
         turnAfk = afk;
         await markBusy($).catch(() => undefined);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
