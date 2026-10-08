@@ -125,7 +125,7 @@ func statsOutside(r *Run, days int) (any, error) {
 }
 
 // commandHead names what a Bash command runs, past any `cd <dir> &&` and variable setup;
-// an `x` call reads "", since x traces itself
+// an `x` call, or the `lane` shim that runs one, reads "", since x traces itself
 func commandHead(command string) string {
 	words := shellWords(command)
 	i := pastSetup(words)
@@ -133,10 +133,17 @@ func commandHead(command string) string {
 		return ""
 	}
 	tool := filepath.Base(words[i])
-	if tool == "x" {
+	if tool == "x" || tool == "lane" {
 		return ""
 	}
 	if !twoWord[tool] {
+		return tool
+	}
+	// claude's flags take values freely (`-p --model haiku 'prompt'`), so only a word right after it is its verb
+	if tool == "claude" {
+		if i+1 < len(words) && !isSeparator(words[i+1]) && !strings.HasPrefix(words[i+1], "-") {
+			return tool + " " + words[i+1]
+		}
 		return tool
 	}
 	for j := i + 1; j < len(words) && !isSeparator(words[j]); j++ {
@@ -154,14 +161,21 @@ func commandHead(command string) string {
 // the index of the first word past the leading `cd <dir> &&`, `NAME=value;` and `export NAME=value;`
 func pastSetup(words []string) int {
 	i := 0
+	for i < len(words) && isSeparator(words[i]) {
+		i++
+	}
 	for i < len(words) {
 		switch {
 		case assignment.MatchString(words[i]):
 			i++
 		case words[i] == "export" && i+1 < len(words) && assignment.MatchString(words[i+1]):
 			i += 2
-		case words[i] == "cd" && i+2 < len(words) && isSeparator(words[i+2]):
-			i += 2
+		case words[i] == "cd":
+			next := slices.IndexFunc(words[i:], isSeparator)
+			if next < 0 {
+				return i
+			}
+			i += next
 		default:
 			return i
 		}
@@ -208,7 +222,7 @@ func shellWords(command string) []string {
 			inWord = true
 		case c == ' ' || c == '\t':
 			end()
-		case c == ';' || c == '\n':
+		case c == ';' || c == '\n' || c == '(' || c == ')':
 			end()
 			words = append(words, ";")
 		case c == '&' || c == '|':

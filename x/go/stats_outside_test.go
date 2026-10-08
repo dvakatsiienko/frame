@@ -71,6 +71,11 @@ func TestStatsOutsideHeadsSkipTheSetup(t *testing.T) {
 		{"/usr/local/bin/x stats", ""},
 		{"cd /a && x lane push", ""},
 		{"cd /a", "cd"},
+		{"cd /a 2>/dev/null && rg y", "rg"},
+		{"cd && ls", "ls"},
+		{"(cd a && ls)", "ls"},
+		{"claude -p --model haiku 'say hi'", "claude"},
+		{"/Users/a/plugin-x/bin/lane push", ""},
 	}
 	for _, c := range cases {
 		t.Run(c.command, func(t *testing.T) {

@@ -95,6 +95,9 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 		days = n
 	}
 	if flags["outside"] == true {
+		if flags["dev"] == true {
+			return nil, usageFail("--dev counts x's own dev builds; --outside reads cc transcripts, which have none", "x stats --outside")
+		}
 		return statsOutside(r, days)
 	}
 	trashed := trashOld()

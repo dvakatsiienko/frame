@@ -254,7 +254,7 @@
   - makes: a json line in `~/.local/state/x/traces/<local day>.jsonl`
   - given any verb, run by anyone
   - when it exits — ok, usage, refused, external or a panic
-  - then the day's file holds one line: the verb, flag names, ids, caller, duration, step times, exit, error kind, x version, and `x.dev` for a dev build — never a flag value or free text
+  - then the day's file holds one line: the verb, flag names, ids, caller, duration, step times, exit, error kind, x version, and `x.dev` for a dev build (never on an `x trace record` line: a pnpm script dima types in a worktree is real use) — never a flag value or free text
   - given `X_TRACE=0`, then nothing is written; given a trace dir that cannot be written, then the call ends as it would untraced
   - decision: the dispatcher writes it at exit, so a new verb is traced with no telemetry code (spec, 2026-10-07)
 - ✅ the trace names its caller
@@ -280,7 +280,8 @@
   - given cc session transcripts under `~/.claude/projects/`, subagents included
   - when `x stats --outside --days 7` runs
   - then it ranks the top 25 Bash command heads of that window with counts, each call once however many transcripts copy it; `x` calls are left out and counted apart as `x_calls`
-  - then a head skips a leading `cd <dir> &&` and variable setup (`J=…;`, `export S=…;`, `FOO=1 cmd`), so `cd` and `S=` never top the list; `git`, `claude`, `gh` and `pnpm` count two words (`git log`, `pnpm <script>`)
+  - then a head skips a leading `cd <dir> &&`, a subshell `(` and variable setup (`J=…;`, `export S=…;`, `FOO=1 cmd`), so `cd` and `S=` never top the list; `git`, `claude`, `gh` and `pnpm` count two words (`git log`, `pnpm <script>`); the `lane` shim counts as an `x` call
+  - given `--outside --dev`, then it exits 2: cc transcripts hold no dev builds
   - then it prints its own elapsed time — no speed bar; slow over 7 days becomes a ✨ wisp
   - decision: cc transcripts only — dima's own typing is already traced by `x-trace.zsh`; grouping heads into operations is a later round (dima, 2026-10-08)
 - ✅ dima's `pnpm <script>` calls are traced too
