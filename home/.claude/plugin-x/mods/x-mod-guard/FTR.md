@@ -22,7 +22,7 @@
   - given `set -- $VAR` (or `${VAR}`) unquoted, then it is refused with the door `${=VAR}`, zsh's split — zsh never splits the parameter, so a watch on `$1` sees one word and dies silent; `set -- ${=VAR}` and `set -- "$A" b` run (FRM-337)
   - then a gate tool run to list or print (`--help`, `--version`, `--listFilesOnly`, `--showConfig`, `vitest list`) piped into `grep` runs, and so does a gate ended by `;` before the pipe (FRM-337)
 - ✅ a shape with one right spelling is rewritten, never refused
-  - given a Bash call holds `pnpm -s` (before any `--`), or an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`
+  - given a Bash call holds `pnpm -s` (before any `--`), an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`, or an unquoted option glob (`--include=*.ts`, `--glob=!*.md`) that zsh would abort on
   - then it runs as `pnpm --silent` / `'==='`, every rule reads the fixed command, and the model gets one context line: «x-mod-guard rewrote this call before it ran: `-s` → `--silent` (…). it ran: <command>»
   - then quoted text, heredoc bodies, a `-s` after `--` and `a=b` run as typed
   - decision: a mod's `tool.call` rewrite runs before the classic PreToolUse hooks, so `zsh-equals-guard.py` sees the quoted word and stays the backstop — probed live 2026-10-08 (FRM-337 comment); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each

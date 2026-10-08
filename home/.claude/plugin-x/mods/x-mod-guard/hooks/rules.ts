@@ -978,6 +978,16 @@ function edits(segments: Segment[]): Edit[] {
                         why: 'pnpm 12 refuses -s',
                     },
                 ];
+            // `--include=*.ts` matches no file, so zsh's NOMATCH aborts the command before grep sees it
+            if (/^--?[A-Za-z][\w-]*=.*[*?[]/.test(w.text))
+                return [
+                    {
+                        at: w.at,
+                        from: w.text,
+                        to: `'${w.text}'`,
+                        why: 'zsh aborts on an option glob that matches no file',
+                    },
+                ];
             if (
                 w.text.startsWith('=') &&
                 w.text !== '=' &&

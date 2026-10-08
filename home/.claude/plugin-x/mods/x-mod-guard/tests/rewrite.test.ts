@@ -29,6 +29,12 @@ const FIXED = [
     ['an unquoted =word', 'echo a ==q && ls', "echo a '==q' && ls"],
     ['pnpm -s inside $( … )', 'x=$(pnpm -s y)', 'x=$(pnpm --silent y)'],
     ['two at once', 'pnpm -s a; echo ===', "pnpm --silent a; echo '==='"],
+    [
+        'an unquoted --include glob',
+        'grep -rn x --include=*.ts .',
+        "grep -rn x '--include=*.ts' .",
+    ],
+    ['an unquoted --exclude glob', 'rg x --glob=!*.md', "rg x '--glob=!*.md'"],
 ] as const;
 
 for (const [shape, typed, runs] of FIXED)
@@ -54,6 +60,8 @@ const KEPT = [
     "cat <<'EOF'\n==q\nEOF",
     'echo a=b c==d',
     'grep -s x f',
+    'ls *.ts',
+    "grep -rn x --include='*.ts' .",
 ] as const;
 
 for (const command of KEPT)

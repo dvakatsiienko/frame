@@ -9,7 +9,7 @@ x-mod-guard stopping one command: the tool call ends with the door and the reaso
 _Avoid_: block, deny (alone), veto
 
 **Rewrite**:
-x-mod-guard fixing a command that has one right spelling (`pnpm -s` → `--silent`, an unquoted `=`-word quoted) before it runs, with one context line telling the model what ran.
+x-mod-guard fixing a command that has one right spelling (`pnpm -s` → `--silent`, an unquoted `=`-word or `--include=*.ts` quoted) before it runs, with one context line telling the model what ran.
 _Avoid_: autofix, correction
 
 **Door**:
