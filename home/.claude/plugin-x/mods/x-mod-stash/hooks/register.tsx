@@ -340,12 +340,8 @@ async function markBusy($: EngineInterface) {
         await $.store.set(HOLDER + sid, { ...holder, idleSince: null });
 }
 
-// a turn ended: start the idle clock and drop the holds whose files are clean again
-async function settle($: EngineInterface) {
-    const sid = await $.session.id();
-    await sweep($, sid);
-    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
-    if (!holder) return;
+// drop this session's holds whose files are clean again; answers how many are left
+async function releaseClean($: EngineInterface, sid: string) {
     let left = 0;
     for (const key of await $.store.keys()) {
         if (parseHoldKey(key)?.sid !== sid) continue;
@@ -353,7 +349,19 @@ async function settle($: EngineInterface) {
         if (!hold || (await isClean($, hold.file))) await $.store.delete(key);
         else left++;
     }
-    if (left) {
+    return left;
+}
+
+// a commit run through the shell, `git commit` or `x lane commit`
+const COMMIT = /\b(git|x\s+lane)\s+(-C\s+\S+\s+)?commit\b/;
+
+// a turn ended: start the idle clock and drop the holds whose files are clean again
+async function settle($: EngineInterface) {
+    const sid = await $.session.id();
+    await sweep($, sid);
+    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
+    if (!holder) return;
+    if (await releaseClean($, sid)) {
         await $.store.set(HOLDER + sid, {
             ...holder,
             idleSince: await $.clock.now(),
@@ -1315,9 +1323,17 @@ export const register: Register = (on) => {
         },
     );
 
+    // a commit made through Bash releases its clean files now, not at the turn's end
     on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
-        const deny = await bashGuard($, 'command' in e ? e.command : undefined);
-        return deny ? { deny } : next(e);
+        const command = 'command' in e ? e.command : undefined;
+        const deny = await bashGuard($, command);
+        if (deny) return { deny };
+        const r = await next(e);
+        if (typeof command === 'string' && COMMIT.test(command))
+            await releaseClean($, await $.session.id()).catch(() =>
+                $.ui.log('x-mod-stash holds: could not release after a commit'),
+            );
+        return r;
     });
 
     // afk flipped mid-turn: the next tool result carries the new state once

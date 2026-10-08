@@ -203,6 +203,10 @@ two sessions, A and B, in one checkout.
   - when B edits it
   - then the edit goes through and A's hold is gone
   - decision: clean releases only a hold whose edit landed — while A's permission prompt is open the file is clean and still A's
+- ✅ a commit through Bash releases at once
+  - given A holds `x.ts` and commits it through Bash (`x lane commit …`, `git commit …`) mid-turn
+  - then A's clean holds drop right after the command, and B's chip stops counting them; a command that commits nothing keeps them to the turn's end (FRM-337)
+  - decision: before, a hold dropped only at A's turn end or on B's next try — a coordinator in one long turn kept its holds ~30 min past the commit and blocked the FRM-336 coder
 - ✅ a new file stays held until committed
   - given A created a new file and left it uncommitted
   - when B edits it

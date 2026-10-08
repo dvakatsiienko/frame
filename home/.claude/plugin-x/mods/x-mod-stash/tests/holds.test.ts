@@ -333,6 +333,36 @@ async function chipFor($: Engine, on: On, surface: 'terminal' | 'desktop') {
     });
 }
 
+// A holds x.ts, runs one Bash command mid-turn, and B looks at its chip
+async function chipAfterBash($: Engine, on: On, command: string) {
+    mock.store(on);
+    on('session.cwd', () => ({ value: '/repo' }));
+    on('env.get', () => ({ value: '/home' }));
+    const w = world(on);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    w.files.delete('/repo/x.ts');
+    await bash($, command);
+    await w.as($, B);
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props: PROPS,
+        surface: 'terminal',
+    });
+    return (await ui.find({ text: '🔒', type: 'Text' }))?.text;
+}
+
+test('a commit through Bash releases the clean holds before the turn ends', async ($, on) => {
+    expect(
+        await chipAfterBash($, on, 'x lane commit m.txt -- x.ts'),
+    ).toBeUndefined();
+});
+
+test('a Bash command that commits nothing keeps the holds until the turn ends', async ($, on) => {
+    expect(await chipAfterBash($, on, 'ls')).toBe('🔒 1');
+});
+
 test("the holds chip counts other sessions' holds", async ($, on) => {
     const ui = await chipFor($, on, 'terminal');
     expect((await ui.find({ text: '🔒', type: 'Text' }))?.text).toBe('🔒 2');
