@@ -30,7 +30,7 @@ type span struct {
 	Session string `json:"session.id,omitempty"`
 	Repo    string `json:"vcs.repository.name,omitempty"`
 	Version string `json:"service.version"`
-	// a binary built from a worktree under `.claude/worktrees/`: a coder testing x, not x in use
+	// a binary built from x/go code that differs from origin/main: x being changed, not x in use
 	Dev  bool   `json:"x.dev,omitempty"`
 	Exit int    `json:"process.exit.code"`
 	Kind string `json:"error.type"`
@@ -104,7 +104,7 @@ func idsOf(verb Verb, args []string, flags Flags) []string {
 func newSpan(argv []string) *span {
 	return &span{Start: time.Now(), Name: traceName(wordsOf(argv)), Flags: flagNames(argv),
 		Caller: callerOf(term.IsTerminal(os.Stdin.Fd())), Session: os.Getenv("CLAUDE_CODE_SESSION_ID"),
-		Repo: repoName(), Version: version(), Dev: strings.Contains(sourceDir(), "/.claude/worktrees/")}
+		Repo: repoName(), Version: version(), Dev: devBuild != ""}
 }
 
 // the repo's name, never its path; a worktree under .claude/worktrees/ is named by its main checkout

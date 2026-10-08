@@ -159,7 +159,8 @@ func commandHead(command string) string {
 	return tool
 }
 
-// the index of the first word past the leading `cd <dir> &&`, `NAME=value;` and `export NAME=value;`
+// the index of the first word past the leading `cd <dir> &&`, `NAME=value;`, `export NAME=value;`,
+// and the wrappers `timeout <n>` and `env …` that only run the command after them
 func pastSetup(words []string) int {
 	i := 0
 	for i < len(words) && isSeparator(words[i]) {
@@ -171,6 +172,10 @@ func pastSetup(words []string) int {
 			i++
 		case words[i] == "export" && i+1 < len(words) && assignment.MatchString(words[i+1]):
 			i += 2
+		case words[i] == "timeout":
+			i = pastFlags(words, i+1, "-s", "--signal", "-k", "--kill-after") + 1
+		case words[i] == "env":
+			i = pastFlags(words, i+1, "-u", "--unset", "-C", "--chdir")
 		case words[i] == "cd":
 			next := slices.IndexFunc(words[i:], isSeparator)
 			if next < 0 {
@@ -183,6 +188,17 @@ func pastSetup(words []string) int {
 		for i < len(words) && isSeparator(words[i]) {
 			i++
 		}
+	}
+	return i
+}
+
+// the index of the first word from i on that is no flag; the named flags take the next word as their value
+func pastFlags(words []string, i int, valued ...string) int {
+	for i < len(words) && strings.HasPrefix(words[i], "-") {
+		if slices.Contains(valued, words[i]) {
+			i++
+		}
+		i++
 	}
 	return i
 }

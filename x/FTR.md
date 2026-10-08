@@ -272,15 +272,15 @@
   - when `x stats --days 30` runs
   - then `days` reads 2, `first` and `last` name 10-07 and 10-08 — never the window asked for
 - ✅ `x stats` leaves dev builds out
-  - given trace lines written by a dev build — an x built from a worktree under `.claude/worktrees/`, stamped `x.dev`
+  - given trace lines written by a dev build — an x the shim built from `x/go` code that differs from `origin/main` (an edit, an untracked file, an unpushed commit), stamped `x.dev`
   - when `x stats` runs, then they are left out of every count, the span included, and `dev` says how many there were
   - when `x stats --dev` runs, then they are counted too
-  - decision: dev means built from a worktree, never the `-dirty` version — main's own x reads dirty whenever the frame tree holds an uncommitted file, which hid 73 % of real calls; lines from before the stamp count as real (dima, 2026-10-08)
+  - decision: dev means x/go differs from origin/main, in a worktree or the main checkout — never the `-dirty` version, which main's x carries whenever the frame tree holds any uncommitted file and which hid 73 % of real calls; never «built in a worktree», which would hide a coder's real `x lane` calls; lines from before the stamp count as real (dima, 2026-10-08)
 - ✅ `x stats --outside` ranks what cc runs by hand
   - given cc session transcripts under `~/.claude/projects/`, subagents included
   - when `x stats --outside --days 7` runs
   - then it ranks the top 25 Bash command heads of that window with counts, each call once however many transcripts copy it; `x` calls are left out and counted apart as `x_calls`
-  - then a head skips a leading `cd <dir> &&`, a subshell `(` and variable setup (`J=…;`, `S=$(…);`, `export S=…;`, `FOO=1 cmd`), so `cd` and `S=` never top the list; `git`, `claude`, `gh` and `pnpm` count two words (`git log`, `pnpm <script>`); the `lane` shim counts as an `x` call
+  - then a head skips a leading `cd <dir> &&`, a subshell `(`, variable setup (`J=…;`, `S=$(…);`, `export S=…;`, `FOO=1 cmd`) and the wrappers `timeout <n>` and `env …`, so `cd` and `S=` never top the list and the wrapped command ranks; `for` stays its own head; `git`, `claude`, `gh` and `pnpm` count two words (`git log`, `pnpm <script>`); the `lane` shim counts as an `x` call
   - given `--outside --dev`, then it exits 2: cc transcripts hold no dev builds
   - then it prints its own elapsed time — no speed bar; slow over 7 days becomes a ✨ wisp
   - decision: cc transcripts only — dima's own typing is already traced by `x-trace.zsh`; grouping heads into operations is a later round (dima, 2026-10-08)

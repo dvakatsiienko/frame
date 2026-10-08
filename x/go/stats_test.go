@@ -131,18 +131,18 @@ func TestStatsCountsTheCallsInTheWindow(t *testing.T) {
 	}
 }
 
-func TestATraceLineSaysAWorktreeBuiltIt(t *testing.T) {
+func TestATraceLineSaysADevBuildWroteIt(t *testing.T) {
 	cases := []struct {
-		name, src string
+		name, pin string
 		dev       bool
 	}{
-		{"a worktree build", "/a/frame/.claude/worktrees/b/x/go", true},
-		{"a main checkout build", "/a/frame/x/go", false},
+		{"a dev build", "1", true},
+		{"a build of origin/main's code", "", false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			bin, state := filepath.Join(t.TempDir(), "x"), t.TempDir()
-			if out, err := exec.Command("go", "build", "-ldflags", "-X main.srcDir="+c.src, "-o", bin, ".").CombinedOutput(); err != nil {
+			if out, err := exec.Command("go", "build", "-ldflags", "-X main.devBuild="+c.pin, "-o", bin, ".").CombinedOutput(); err != nil {
 				t.Fatalf("build: %v\n%s", err, out)
 			}
 			run := exec.Command(bin, "schema")

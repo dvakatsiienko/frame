@@ -20,6 +20,6 @@
 - **actor** — the fleet member a call acts as on an outside service (`cclio`, `coder`, `dima`); `x as` picks its token, the trace names it, never the token
 - **shape** — what a raw-door query asks for, without a word of its text: the operation kind and its top-level field names (`mutation issueArchive`); the trace keeps it as `x.shape`, `x stats` ranks it
 - **raw door** — a family's traced passthrough to the tool underneath (`x linear api`), the fallback when no verb fits; what it carries ranks the next verbs
-- **dev build** — an x binary built from a worktree under `.claude/worktrees/`: a coder testing x, not x in use; its trace lines carry `x.dev`, and `x stats` leaves them out unless `--dev`. never the `-dirty` version: main's own x reads dirty whenever the frame tree holds any uncommitted file (dima, 2026-10-08)
+- **dev build** — an x binary built from `x/go` code that differs from `origin/main`, in a worktree or the main checkout: x being changed, not x in use. the shim decides at build time; its trace lines carry `x.dev`, and `x stats` leaves them out unless `--dev`. never the `-dirty` version: main's own x reads dirty whenever the frame tree holds any uncommitted file (dima, 2026-10-08)
 - **span** — the days from the first counted trace to the last, both included; what `x stats` names as `days`, never the window asked for
-- **head** — what a Bash command runs, past a leading `cd <dir> &&` and variable setup: the tool's name, plus its verb for `git`, `claude`, `gh` and `pnpm`; `x stats --outside` ranks them
+- **head** — what a Bash command runs, past a leading `cd <dir> &&`, variable setup and the wrappers `timeout <n>` and `env …`: the tool's name, plus its verb for `git`, `claude`, `gh` and `pnpm`; `x stats --outside` ranks them

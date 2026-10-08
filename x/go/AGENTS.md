@@ -8,6 +8,9 @@ the [FRM-284](https://linear.app/x-com/issue/FRM-284) look probe. The probe's nu
 - `pnpm x-go:build` → `bin/x` (gitignored); the shim `../bin/x` runs the same build itself when a
   source file is newer. It pins `srcDir` to this dir: the binary finds the frame tree from there
   (the token wrap for `pr-open`, the knowledge shelf), so a moved copy without the pin cannot.
+- the shim also pins `devBuild=1` when `x/go` differs from `origin/main` (an edit, an untracked file,
+  an unpushed commit), so the trace marks the build a **dev build**; `pnpm x-go:build` never pins it,
+  and a stamp lasts until the next rebuild — a push alone does not clear it.
 - `pnpm x-go:test` — the gate, run in ci; the frame commit hooks never run it, so run it before
   every commit here. `x:guide-go` holds the go craft (gofmt, vet, staticcheck, table tests).
 

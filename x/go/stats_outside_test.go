@@ -85,6 +85,11 @@ func TestStatsOutsideHeadsSkipTheSetup(t *testing.T) {
 		{`S=$(echo ")"); git push`, "git push"},
 		{`S=$(printf '%s' "(") && gh pr view 1`, "gh pr"},
 		{"S=1", ""},
+		{"timeout 30 git fetch", "git fetch"},
+		{"timeout -k 5 -s KILL 2m pnpm test", "pnpm test"},
+		{"cd /a && timeout 9 env -u CLAUDECODE FOO=1 claude plugin list", "claude plugin"},
+		{"env -i PATH=/bin ls", "ls"},
+		{"for f in *; do ls $f; done", "for"},
 	}
 	for _, c := range cases {
 		t.Run(c.command, func(t *testing.T) {
