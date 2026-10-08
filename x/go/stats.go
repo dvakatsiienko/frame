@@ -36,7 +36,7 @@ type statsData struct {
 	Days  int    `json:"days"`
 	First string `json:"first"`
 	Last  string `json:"last"`
-	// the lines a `-dirty` build wrote in the window; counted only under --dev
+	// the lines a worktree-built x wrote in the window (`x.dev`); counted only under --dev
 	Dev      int            `json:"dev"`
 	Calls    int            `json:"calls"`
 	Callers  map[string]int `json:"callers"`
@@ -94,6 +94,9 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 		}
 		days = n
 	}
+	if flags["outside"] == true {
+		return statsOutside(r, days)
+	}
 	trashed := trashOld()
 	dev := flags["dev"] == true
 	read := readTraces(days, dev)
@@ -149,9 +152,19 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 
 // the plain summary dima reads until the x-stats-board spec lands: top families, slowest p95,
 // failure kinds, callers, unused verbs
+func spanTitle(noun string, calls, days int, first, last string) string {
+	if calls == 0 {
+		return "no " + noun + " in the window"
+	}
+	if days == 1 {
+		return fmt.Sprintf("%d %s on %s", calls, noun, first)
+	}
+	return fmt.Sprintf("%d %s over %d days, %s → %s", calls, noun, days, first, last)
+}
+
 func statsBoard(data statsData, dev bool) string {
 	b := frame{width: frameWidth(), titleLeft: titleOf("stats"),
-		titleRight: ui.dim.Render(fmt.Sprintf("%d calls over %d days, %s → %s", data.Calls, data.Days, data.First, data.Last)),
+		titleRight: ui.dim.Render(spanTitle("calls", data.Calls, data.Days, data.First, data.Last)),
 		footLeft:   ui.dim.Render("x stats --json"), footRight: ui.dim.Render(home(filepath.Join(stateDir(), "traces"))), padRows: true}
 	widths := []int{16, b.inner() - 16}
 	section := func(name string, cells []string) {
@@ -213,7 +226,7 @@ func (t window) span() int {
 }
 
 // the trace lines of the last `days` local days, today included; a line that does not parse is skipped,
-// a `-dirty` build's line only counts with dev
+// a dev build's line only counts with dev
 func readTraces(days int, dev bool) window {
 	var read window
 	for _, file := range dayFiles(1-days, false) {
@@ -228,7 +241,7 @@ func readTraces(days int, dev bool) window {
 			if json.Unmarshal(scanner.Bytes(), &line) != nil || strings.TrimSpace(line.Name) == "" {
 				continue
 			}
-			if strings.HasSuffix(line.Version, "-dirty") {
+			if line.Dev {
 				read.dev++
 				if !dev {
 					continue

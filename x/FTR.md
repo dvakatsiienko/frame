@@ -254,7 +254,7 @@
   - makes: a json line in `~/.local/state/x/traces/<local day>.jsonl`
   - given any verb, run by anyone
   - when it exits — ok, usage, refused, external or a panic
-  - then the day's file holds one line: the verb, flag names, ids, caller, duration, step times, exit, error kind, x version — never a flag value or free text
+  - then the day's file holds one line: the verb, flag names, ids, caller, duration, step times, exit, error kind, x version, and `x.dev` for a dev build — never a flag value or free text
   - given `X_TRACE=0`, then nothing is written; given a trace dir that cannot be written, then the call ends as it would untraced
   - decision: the dispatcher writes it at exit, so a new verb is traced with no telemetry code (spec, 2026-10-07)
 - ✅ the trace names its caller
@@ -267,14 +267,22 @@
   - then it prints calls per family and verb, the caller split, p50/p95 per verb, failures by kind, and the verbs with no calls
   - given a day file older than 90 days, then it moves to the macos trash
   - given a terminal, then a plain summary board prints until the `x-stats-board` spec lands
-- ⬜ `x stats` names the span the traces really cover
+- ✅ `x stats` names the span the traces really cover
   - given traces only for 10-07 and 10-08
   - when `x stats --days 30` runs
   - then `days` reads 2, `first` and `last` name 10-07 and 10-08 — never the window asked for
-- ⬜ `x stats` leaves dev builds out
-  - given trace lines written by a dev build
+- ✅ `x stats` leaves dev builds out
+  - given trace lines written by a dev build — an x built from a worktree under `.claude/worktrees/`, stamped `x.dev`
   - when `x stats` runs, then they are left out of every count, the span included, and `dev` says how many there were
   - when `x stats --dev` runs, then they are counted too
+  - decision: dev means built from a worktree, never the `-dirty` version — main's own x reads dirty whenever the frame tree holds an uncommitted file, which hid 73 % of real calls; lines from before the stamp count as real (dima, 2026-10-08)
+- ✅ `x stats --outside` ranks what cc runs by hand
+  - given cc session transcripts under `~/.claude/projects/`, subagents included
+  - when `x stats --outside --days 7` runs
+  - then it ranks the top 25 Bash command heads of that window with counts, each call once however many transcripts copy it; `x` calls are left out and counted apart as `x_calls`
+  - then a head skips a leading `cd <dir> &&` and variable setup (`J=…;`, `export S=…;`, `FOO=1 cmd`), so `cd` and `S=` never top the list; `git`, `claude`, `gh` and `pnpm` count two words (`git log`, `pnpm <script>`)
+  - then it prints its own elapsed time — no speed bar; slow over 7 days becomes a ✨ wisp
+  - decision: cc transcripts only — dima's own typing is already traced by `x-trace.zsh`; grouping heads into operations is a later round (dima, 2026-10-08)
 - ✅ dima's `pnpm <script>` calls are traced too
   - given the zsh hook `home/.config/zsh-custom/x-trace.zsh`
   - when dima types `pnpm <script>` at his prompt

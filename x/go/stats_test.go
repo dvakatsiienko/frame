@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -130,6 +131,34 @@ func TestStatsCountsTheCallsInTheWindow(t *testing.T) {
 	}
 }
 
+func TestATraceLineSaysAWorktreeBuiltIt(t *testing.T) {
+	cases := []struct {
+		name, src string
+		dev       bool
+	}{
+		{"a worktree build", "/a/frame/.claude/worktrees/b/x/go", true},
+		{"a main checkout build", "/a/frame/x/go", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			bin, state := filepath.Join(t.TempDir(), "x"), t.TempDir()
+			if out, err := exec.Command("go", "build", "-ldflags", "-X main.srcDir="+c.src, "-o", bin, ".").CombinedOutput(); err != nil {
+				t.Fatalf("build: %v\n%s", err, out)
+			}
+			run := exec.Command(bin, "schema")
+			run.Env = append(cleanEnv(), tracing(state)...)
+			if out, err := run.CombinedOutput(); err != nil {
+				t.Fatalf("x schema: %v\n%s", err, out)
+			}
+
+			lines := traces(t, state)
+			if len(lines) != 1 || (lines[0]["x.dev"] == true) != c.dev {
+				t.Errorf("x.dev = %v, want %v (%d lines)", lines[0]["x.dev"], c.dev, len(lines))
+			}
+		})
+	}
+}
+
 func TestStatsDaysIsTheSpanOfTheTraces(t *testing.T) {
 	state := t.TempDir()
 	plant(t, state, 1, planted{"schema", "cc", "", 3})
@@ -147,7 +176,7 @@ func TestStatsDaysIsTheSpanOfTheTraces(t *testing.T) {
 }
 
 func TestStatsLeavesDevBuildsOutUnlessAsked(t *testing.T) {
-	dev := `{"name":"schema","duration_ms":3,"x.caller":"cc","service.version":"v1-go+abc1234-dirty"}` + "\n"
+	dev := `{"name":"schema","duration_ms":3,"x.caller":"cc","service.version":"v1-go+abc1234","x.dev":true}` + "\n"
 	cases := []struct {
 		name, calls, days string
 		argv              []string
