@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { answerPrompts, dimaSays } from './said.ts';
 import { liveStore } from './store.ts';
 
 const SID = 'a1a1a1a1-0000';
@@ -9,6 +10,7 @@ function world(on: On) {
     mock.clock(on, { now: 1_000_000 });
     const logs: string[] = [];
     const ran: string[] = [];
+    answerPrompts(on);
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: '/repo' }));
     // an empty disk: nothing a command names exists yet
@@ -87,6 +89,7 @@ for (const [family, command, , target] of FAMILIES)
     test(`${family} runs with a dima-ok naming its target`, async ($, on) => {
         mock.store(on);
         const w = world(on);
+        await dimaSays($, `yes, go ahead: ${target}`);
         const r = await bash($, `${command} # dima-ok: ${target}`);
         expect(r.deny).toBeUndefined();
         expect(w.logs).toContainEqual(`x-mod-guard: ran on dima-ok: ${target}`);
@@ -96,6 +99,7 @@ test('a dima-ok command runs when its store write fails', async ($, on) => {
     const w = world(on);
     on('store.set', () => ({ deny: 'store unwritable' }));
     on('store.keys', () => ({ value: [] }));
+    await dimaSays($, 'trash is fine, rm build');
     await bash($, 'rm -rf build # dima-ok: build');
     expect(w.ran).toEqual(['rm -rf build # dima-ok: build']);
 });

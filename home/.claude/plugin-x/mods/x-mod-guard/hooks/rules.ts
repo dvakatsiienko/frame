@@ -71,6 +71,21 @@ function isScratchGit(c: Command, r: Refusal, ctx: Context) {
 // cclio removes a scratch tree (a clean one: --force still asks) and deletes a scratch/* branch without dima's word;
 // a merged branch's `git branch -d` already runs for everyone, since git itself refuses an unmerged one
 const SCRATCH_TREE = /\/\.claude\/(worktrees\/[^/]+|jobs\/[^/]+\/tmp\/.+)$/;
+// the scratch trees a cclio `git worktree remove` names, for the caller to look up; a tree elsewhere asks anyway
+export function removedTrees(command: string, cwd: string, ctx: Context = {}) {
+    if (!ctx.isCclio) return [];
+    return commands(parse(command), cwd).flatMap((c) => {
+        if (c.name !== 'git') return [];
+        const { sub, subArgs } = gitParts(c.args);
+        const ops = operands(subArgs);
+        if (sub !== 'worktree' || ops[0] !== 'remove') return [];
+        const dir = gitDir(c, ctx);
+        return ops
+            .slice(1)
+            .map((t) => resolve(t, dir, ctx))
+            .filter((t) => SCRATCH_TREE.test(t));
+    });
+}
 function isCleanup(c: Command, r: Refusal, ctx: Context) {
     if (!ctx.isCclio || c.name !== 'git' || r.rule !== 'git-rewrite')
         return false;
@@ -81,10 +96,11 @@ function isCleanup(c: Command, r: Refusal, ctx: Context) {
     if (sub !== 'worktree' || ops[0] !== 'remove') return false;
     if (hasFlag(subArgs, ['--force'], 'f')) return false;
     const dir = gitDir(c, ctx);
-    const trees = ops.slice(1);
+    const trees = ops.slice(1).map((t) => resolve(t, dir, ctx));
+    // a tree never looked up, or holding a `.scratch/` plan or commits only its HEAD reaches, asks
     return (
         trees.length > 0 &&
-        trees.every((t) => SCRATCH_TREE.test(resolve(t, dir, ctx)))
+        trees.every((t) => SCRATCH_TREE.test(t) && ctx.cleanTrees?.has(t))
     );
 }
 export function refusals(

@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { answerPrompts, dimaSays } from './said.ts';
+
 const BRIEF = '/x:crew-coder FRM-1 build the thing\n';
 // `shasum -a 256` of BRIEF, and of BRIEF with its last letter capitalised
 const SUM = '52729345631895ec297d387a57506ea5344a3a1c4fdc94da3ed3636b53f144d1';
@@ -15,6 +17,7 @@ function world(
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
     const ran: string[] = [];
+    answerPrompts(on);
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', (_$, e) => ({
@@ -77,6 +80,7 @@ test('a coder spawn ending in a dima-ok marker runs', async ($, on) => {
     const w = world(on, {});
     const command =
         "claude --bg '/x:crew-coder FRM-1 fix' # dima-ok: inline-brief one-line hotfix";
+    await dimaSays($, 'spawn it, inline-brief is fine for a one-line hotfix');
     expect((await bash($, command)).deny).toBeUndefined();
     expect(w.ran).toEqual([command]);
 });

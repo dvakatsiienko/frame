@@ -4,7 +4,7 @@ import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context } from './rules/command.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
-import { addedPaths, check, message } from './rules.ts';
+import { addedPaths, check, message, removedTrees } from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
 // each refusal and each escape is kept in $.store as one `event:` key; x-mod-stash's band reads them as 🛡️ lines.
@@ -238,6 +238,14 @@ const isUnder = (path: string, dir: string) =>
     path === dir || path.startsWith(`${dir}/`);
 
 const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
+// dima's last prompt typed at the composer or sent over the bridge: a peer's message, a notification, a plugin's or an
+// sdk turn never lands here, and only this plugin writes $.state, so no tool call can forge it
+const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
+const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
+const UNPROVEN_DOOR =
+    'ask dima; his own next prompt naming the target is what lets the # dima-ok marker through';
+const UNPROVEN_WHY =
+    "a # dima-ok marker counts only when dima's last typed prompt names its target";
 const UNREAD_DOOR = 'Read the file first, then Write';
 const UNREAD_WHY = 'a Write replaces a tracked file this session never read';
 
@@ -249,6 +257,28 @@ async function isTracked($: EngineInterface, path: string) {
         { cwd: path.slice(0, cut) || '/' },
     );
     return ls.exitCode === 0;
+}
+
+// a tree cclio may drop unasked: no `.scratch/` plan inside, and every commit its HEAD reaches is on a branch;
+// a lookup that fails counts as unclean, so the remove asks
+async function isCleanTree($: EngineInterface, tree: string) {
+    if (await $.fs.exists(`${tree}/.scratch`)) return false;
+    const orphans = await $.process
+        .run(
+            [
+                'git',
+                'rev-list',
+                '-n',
+                '1',
+                'HEAD',
+                '--not',
+                '--branches',
+                '--remotes',
+            ],
+            { cwd: tree },
+        )
+        .catch(() => null);
+    return !!orphans && orphans.exitCode === 0 && orphans.stdout.trim() === '';
 }
 
 // parallel Reads in one step each add their path: a write that lost the race reads again
@@ -287,6 +317,9 @@ export const register: Register = (on) => {
         for (const path of overwrittenPaths(command, cwd, ctx))
             if (await $.fs.exists(path))
                 kinds.set(path, (await $.fs.stat(path)).kind);
+        const cleanTrees = new Set<string>();
+        for (const tree of removedTrees(command, cwd, ctx))
+            if (await isCleanTree($, tree)) cleanTrees.add(tree);
         const briefs = new Map<string, Brief>();
         for (const path of briefPaths(command, cwd, ctx))
             if (await $.fs.exists(path))
@@ -294,6 +327,7 @@ export const register: Register = (on) => {
         const verdict = check(command, cwd, {
             ...ctx,
             briefs,
+            cleanTrees,
             kinds,
             missing,
         });
@@ -340,6 +374,24 @@ export const register: Register = (on) => {
                 why: refusal.why,
             });
             return deny(message(refusal));
+        }
+        // the marker is only a claim: dima's own last prompt must name every target the refusals named
+        const { value: said = '' } = await $.state.get(PROMPT);
+        const unproven = [
+            ...new Set(verdict.refusals.flatMap((r) => r.targets)),
+        ].filter((t) => !said.includes(t));
+        if (unproven.length) {
+            await record($, {
+                command,
+                door: UNPROVEN_DOOR,
+                kind: 'refused',
+                rule: 'dima-ok-unproven',
+                target: unproven[0] ?? '',
+                why: UNPROVEN_WHY,
+            });
+            return deny(
+                `nothing in this command ran — x-mod-guard stopped it. instead: ${UNPROVEN_DOOR}. why: ${UNPROVEN_WHY}; it does not name: ${unproven.join(' ')}`,
+            );
         }
         await record($, {
             command,
@@ -417,6 +469,12 @@ export const register: Register = (on) => {
             return result;
         },
     ).catch(() => ({ deny: FAILED }));
+
+    on('prompt.submit', async ($, e, next) => {
+        if (TYPED_BY_DIMA.has(e.origin.kind))
+            await $.state.set(PROMPT, e.text).catch(() => undefined);
+        return next(e);
+    });
 
     on('agent.spawn', async ($, e, next) => {
         if (!e.fork || WHY_FORK.test(e.prompt)) return next(e);

@@ -43,6 +43,8 @@
   - then it runs; `git branch -d` of a fully merged branch already runs for every session, since git refuses an unmerged one
   - then a tree elsewhere, a `--force` remove, a `-D` naming any non-`scratch/` branch, and the same commands from any other session are still refused with «ask cclio»
   - decision: dima wants everything clear when he returns, parking only things like backup restores; a dirty tree keeps git's own refusal, so `--force` still asks (FRM-356, 2026-10-09)
+  - then a tree holding a `.scratch/` dir, or whose HEAD reaches a commit no branch or remote branch does, still asks; so does a tree the lookup could not read
+  - decision: git's dirty check misses both — a gitignored `.scratch/` plan goes with the tree, and a detached HEAD's commits are orphaned (the verifier's find; dima, 2026-10-09)
 - ✅ a command that only names git runs
   - given `cat .github/workflows/ci.yml`, `github-token-wrap gh pr edit 1 --add-label x`, `lefthook run commit-msg` or `bash <script> "$VAR"`
   - then x-mod-guard runs it: git rules read the command's name, never a substring
@@ -59,6 +61,14 @@
   - when the marker names another target, or only some of them (`rm -rf ~/keep tmp.txt # dima-ok: tmp.txt`)
   - then the command is refused as before
   - decision: the target is the command's own — its paths, pattern or branch; the rule's own word when it names none (`HEAD`, `&`, `-s`) — and the refusal prints the exact marker, so a coder never guesses it
+- ⬜ a dima-ok marker counts only when dima's own last prompt names its target
+  - given a command whose `# dima-ok:` marker names every target
+  - when dima's last prompt typed at the composer or sent over the bridge holds each target as an exact, case-sensitive substring
+  - then it runs as an escape
+  - when no such prompt exists, it names the target in another case, or only an older prompt did
+  - then it is refused, naming the targets his prompt lacks (rule `dima-ok-unproven`); a peer's message, a task notification, an sdk or a plugin prompt never counts
+  - makes: dima's last typed prompt in x-mod-guard's `$.state`, written only by its `prompt.submit` hook, so no tool call can forge it
+  - decision: a model appended `# dima-ok:` on its own in a live probe and passed (2026-10-09); dima chose the proof, `$.state` over a file since no Bash parse can stop a write through a variable (FRM-356)
 - ✅ a guard that fails refuses the command
   - given x-mod-guard's check throws (a `$` call it needs fails) or runs past its 10 s budget (the throw is tested; the overrun is the same `.catch` by the engine's types, unprobed)
   - then the command is refused with «x-mod-guard: the check failed or ran out of time … (fail closed)»
