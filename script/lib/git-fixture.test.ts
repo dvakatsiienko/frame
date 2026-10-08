@@ -3,18 +3,41 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'vitest';
 
-import { gitEnv, spawnsGitBare } from './git-fixture.ts';
+import { bareGitSpawns, gitEnv } from './git-fixture.ts';
 
 const root = path.resolve(import.meta.dirname, '../..');
+// the fixtures' calls are spelled in pieces, so the repo-wide lint below never reads them as this file's own spawns
+const callOf = (name: string) => `${name}Sync(`;
+const IMPORT = `import { gitEnv } from './git-fixture.ts';\n`;
 
-test('a test that spawns git without gitEnv is caught', () => {
-    const source = `import { spawnSync } from 'node:child_process';\nspawnSync(\n    'git', ['init'], { cwd: dir });`;
-    expect(spawnsGitBare(source)).toBe(true);
+test('a git spawn in a file that never imports gitEnv is caught', () => {
+    const source = `const a = 1;\n${callOf('spawn')}'git', ['init'], { cwd: dir });`;
+    expect(bareGitSpawns(source)).toEqual([2]);
 });
 
-test('a test that spawns git with gitEnv passes', () => {
-    const source = `import { gitEnv } from './git-fixture.ts';\nexecFileSync('git', ['init'], { env: gitEnv() });`;
-    expect(spawnsGitBare(source)).toBe(false);
+test('a git spawn that passes gitEnv passes', () => {
+    const source = `${IMPORT}${callOf('execFile')}'git', ['init'], { env: gitEnv() });`;
+    expect(bareGitSpawns(source)).toEqual([]);
+});
+
+test('a second git spawn without env is caught though the file imports gitEnv', () => {
+    const source = `${IMPORT}${callOf('execFile')}'git', ['init'], { env });\n${callOf('execFile')}'git', ['add', '.'], { cwd: dir });`;
+    expect(bareGitSpawns(source)).toEqual([3]);
+});
+
+test('git run through a shell string is caught', () => {
+    const source = `${callOf('exec')}'cd x && git init', { cwd: dir });`;
+    expect(bareGitSpawns(source)).toEqual([1]);
+});
+
+test('git run through sh -c is caught', () => {
+    const source = `${callOf('spawn')}'sh', ['-c', 'git init -q'], { cwd: dir });`;
+    expect(bareGitSpawns(source)).toEqual([1]);
+});
+
+test('a spawn of another binary needs no gitEnv', () => {
+    const source = `${callOf('spawn')}'node', [script], { cwd: dir });`;
+    expect(bareGitSpawns(source)).toEqual([]);
 });
 
 test('gitEnv drops every inherited GIT_ variable', () => {
@@ -26,7 +49,7 @@ test('gitEnv drops every inherited GIT_ variable', () => {
     }
 });
 
-test('every tracked test that spawns git takes its env from gitEnv in script/lib/git-fixture.ts', () => {
+test('every tracked test that spawns git passes env from gitEnv in script/lib/git-fixture.ts', () => {
     const files = spawnSync('git', ['ls-files', '*.test.ts'], {
         cwd: root,
         encoding: 'utf8',
@@ -34,11 +57,13 @@ test('every tracked test that spawns git takes its env from gitEnv in script/lib
     }).stdout.split('\n');
     const bare = files
         .filter(Boolean)
-        .filter((file) =>
-            spawnsGitBare(readFileSync(path.join(root, file), 'utf8')),
+        .flatMap((file) =>
+            bareGitSpawns(readFileSync(path.join(root, file), 'utf8')).map(
+                (line) => `${file}:${line}`,
+            ),
         );
     expect(
         bare,
-        'spawns git without gitEnv() from script/lib/git-fixture.ts',
+        'spawns git without env: gitEnv() from script/lib/git-fixture.ts',
     ).toEqual([]);
 });

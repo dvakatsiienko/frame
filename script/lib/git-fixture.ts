@@ -15,12 +15,45 @@ export function gitEnv(): NodeJS.ProcessEnv {
     };
 }
 
-const SPAWNS_GIT =
-    /\b(?:spawnSync|spawn|execFileSync|execFile|execSync|exec)\(\s*['"`]git\b/;
+const CALL = /\b(spawnSync|spawn|execFileSync|execFile|execSync|exec)\(/g;
 const IMPORTS_GIT_ENV =
     /import\s*\{[^}]*\bgitEnv\b[^}]*\}\s*from\s*['"][^'"]*\/git-fixture\.ts['"]/;
 
-// the lint: a test source that spawns git and never imports gitEnv
-export function spawnsGitBare(source: string) {
-    return SPAWNS_GIT.test(source) && !IMPORTS_GIT_ENV.test(source);
+// a call's argument text up to its closing paren; a paren inside a string never closes it
+function argsFrom(source: string, open: number) {
+    let depth = 1;
+    let quote = '';
+    for (let i = open; i < source.length; i++) {
+        const ch = source[i];
+        if (quote) {
+            if (ch === '\\') i++;
+            else if (ch === quote) quote = '';
+        } else if (ch === "'" || ch === '"' || ch === '`') quote = ch;
+        else if (ch === '(') depth++;
+        else if (ch === ')' && --depth === 0) return source.slice(open, i);
+    }
+    return source.slice(open);
+}
+
+// git as the binary, or inside a shell string: `execSync('cd x && git init')`, `spawnSync('sh', ['-c', 'git init'])`
+function runsGit(callee: string, args: string) {
+    if (/^\s*['"`]git['"`]/.test(args)) return true;
+    const isShell =
+        callee === 'exec' ||
+        callee === 'execSync' ||
+        /^\s*['"`](?:ba|z)?sh['"`]/.test(args);
+    return isShell && /['"`][^'"`]*\bgit\s/.test(args);
+}
+
+// the lint: the 1-based line of every git call that does not pass env, or every one when the file never imports gitEnv
+export function bareGitSpawns(source: string) {
+    const imported = IMPORTS_GIT_ENV.test(source);
+    const lines: number[] = [];
+    for (const m of source.matchAll(CALL)) {
+        const args = argsFrom(source, m.index + m[0].length);
+        if (!runsGit(m[1] ?? '', args)) continue;
+        if (imported && /\benv\b/.test(args)) continue;
+        lines.push(source.slice(0, m.index).split('\n').length);
+    }
+    return lines;
 }
