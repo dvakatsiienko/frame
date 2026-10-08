@@ -8,6 +8,10 @@ reads every Bash call and every fork spawn before it runs, and stops the one cal
 x-mod-guard stopping one command: the tool call ends with the door and the reason, the session goes on.
 _Avoid_: block, deny (alone), veto
 
+**Rewrite**:
+x-mod-guard fixing a command that has one right spelling (`pnpm -s` → `--silent`, an unquoted `=`-word quoted) before it runs, with one context line telling the model what ran.
+_Avoid_: autofix, correction
+
 **Door**:
 The safe way to do what the refused command meant — `trash`, `git stash -u`, the Edit tool; «ask cclio» only where no safe way exists.
 _Avoid_: fix, alternative, suggestion

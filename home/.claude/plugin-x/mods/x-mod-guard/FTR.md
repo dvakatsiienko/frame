@@ -17,8 +17,14 @@
   - decision: quoted text, heredoc bodies and comments are never read as commands — a commit message may name `rm -rf`
   - 📌 not read: a script piped into a shell (`curl … | sh`, `cat x | bash`); `rmdir`, `truncate`, `git worktree` moves
 - ✅ a hazard shape is refused with its fix, and its near miss runs
-  - given a Bash call holds: an `sd` replacement with `$` in double quotes; an `sd` find led by `-` with no `--`; an unbraced `$var` before `:<letter>` (a zsh modifier) or a non-ascii character; `sd`, or `sed -i`, on `.github/workflows/*`; a trailing `&` with no `wait` or `sleep` after it; a gate (`typecheck`, `test`, `check`, `tsc`, `vitest`, a `family:test` script) piped into `head` or `grep`; a `git push` piped into `grep`; a `git commit` with no `--` paths, `git add -A` / `--all` / `.`; `pnpm -s`
-  - then it is refused with its fix; `$HOST:8080`, `$HOST:/tmp`, `pgrep -l x; kill <pid>`, `kill $(cat x.pid)` and a search for `--no-verify` run; the shape one step away (single quotes, `--`, `${var}`, `sed -n`, a `sleep` after the `&`, an unpiped gate, `git ls-remote`, `-- <paths>`, `--silent`) runs
+  - given a Bash call holds: an `sd` replacement with `$` in double quotes; an `sd` find led by `-` with no `--`; an unbraced `$var` before `:<letter>` (a zsh modifier) or a non-ascii character; `sd`, or `sed -i`, on `.github/workflows/*`; a trailing `&` with no `wait` or `sleep` after it; a gate (`typecheck`, `test`, `check`, `tsc`, `vitest`, a `family:test` script) piped into `head` or `grep`; a `git push` piped into `grep`; a `git commit` with no `--` paths, `git add -A` / `--all` / `.`
+  - then it is refused with its fix; `$HOST:8080`, `$HOST:/tmp`, `pgrep -l x; kill <pid>`, `kill $(cat x.pid)` and a search for `--no-verify` run; the shape one step away (single quotes, `--`, `${var}`, `sed -n`, a `sleep` after the `&`, an unpiped gate, `git ls-remote`, `-- <paths>`) runs
+  - then a gate tool run to list or print (`--help`, `--version`, `--listFilesOnly`, `--showConfig`, `vitest list`) piped into `grep` runs, and so does a gate ended by `;` before the pipe (FRM-337)
+- ✅ a shape with one right spelling is rewritten, never refused
+  - given a Bash call holds `pnpm -s` (before any `--`), or an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`
+  - then it runs as `pnpm --silent` / `'==='`, every rule reads the fixed command, and the model gets one context line: «x-mod-guard rewrote this call before it ran: `-s` → `--silent` (…). it ran: <command>»
+  - then quoted text, heredoc bodies, a `-s` after `--` and `a=b` run as typed
+  - decision: a mod's `tool.call` rewrite runs before the classic PreToolUse hooks, so `zsh-equals-guard.py` sees the quoted word and stays the backstop — probed live 2026-10-08 (FRM-337 comment); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each
 - ✅ a git add of a missing path is refused before git runs
   - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left
   - then it is refused, the reason names the missing path, and the door is «stage only paths that exist; a deleted file stages with git rm <path>»

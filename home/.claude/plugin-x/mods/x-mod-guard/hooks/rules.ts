@@ -1,4 +1,10 @@
-import { type Parsed, type Sep, type Word, parse } from './shell.ts';
+import {
+    type Parsed,
+    type Segment,
+    type Sep,
+    type Word,
+    parse,
+} from './shell.ts';
 
 // a refusal names its door; an escape marker must name every one of its targets
 export type Refusal = {
@@ -68,6 +74,16 @@ const SHELLS = new Set(['sh', 'bash', 'zsh']);
 const GREPS = new Set(['grep', 'egrep', 'fgrep', 'rg', 'ugrep', 'head']);
 // a script named for a gate, a family member included: `typecheck`, `test:unit`, `mods:test`
 const GATE = /(^|:)(typecheck|test|check|tsc|vitest)(:|$)/;
+// a gate tool run to list or print, which checks nothing
+const LISTING = [
+    '--help',
+    '-h',
+    '--version',
+    '-v',
+    '--listFiles',
+    '--listFilesOnly',
+    '--showConfig',
+];
 const SD_FLAGS = new Set([
     '-p',
     '--preview',
@@ -871,10 +887,13 @@ function lint(c: Command, next: Command | undefined): Refusal | undefined {
             targets: [pipedTo],
             why: 'a push is read by git ls-remote, never by its output',
         };
+    const isListing =
+        hasFlag(c.args, LISTING) || ops.includes('list') || ops.includes('ls');
     const isGate =
-        ['tsc', 'vitest'].includes(c.name) ||
-        (['pnpm', 'npm', 'yarn', 'bun'].includes(c.name) &&
-            ops.some((o) => GATE.test(o)));
+        !isListing &&
+        (['tsc', 'vitest'].includes(c.name) ||
+            (['pnpm', 'npm', 'yarn', 'bun'].includes(c.name) &&
+                ops.some((o) => GATE.test(o))));
     if (pipedTo && isGate)
         return {
             door: 'run the gate unpiped and read its exit code',
@@ -902,14 +921,69 @@ function lint(c: Command, next: Command | undefined): Refusal | undefined {
                 why: `git add ${sweep.text} stages files that are not yours`,
             };
     }
-    if (c.name === 'pnpm' && c.args.some((w) => w.text === '-s'))
-        return {
-            door: 'pnpm --silent',
-            rule: 'pnpm-s',
-            targets: ['-s'],
-            why: 'pnpm 12 refuses -s',
-        };
     return undefined;
+}
+
+// zsh reads `[[ a == b ]]`'s operator as syntax, never as a path
+const TEST_OPERATORS = new Set(['=', '==', '=~']);
+type Edit = { at: number; from: string; to: string; why: string };
+
+// a shape with one right spelling, fixed in place: `pnpm -s` and an unquoted `=`-led word
+function edits(segments: Segment[]): Edit[] {
+    return segments.flatMap((s) => {
+        const isTest = s.words[0]?.text === '[[';
+        const peeled = peel(s.words);
+        const end = peeled.args.findIndex((w) => w.text === '--');
+        const pnpmFlags =
+            peeled.name === 'pnpm'
+                ? peeled.args.slice(0, end < 0 ? undefined : end)
+                : [];
+        const own = s.words.flatMap((w): Edit[] => {
+            if (w.at === undefined) return [];
+            if (w.text === '-s' && pnpmFlags.includes(w))
+                return [
+                    {
+                        at: w.at,
+                        from: w.text,
+                        to: '--silent',
+                        why: 'pnpm 12 refuses -s',
+                    },
+                ];
+            if (
+                w.text.startsWith('=') &&
+                w.text !== '=' &&
+                !(isTest && TEST_OPERATORS.has(w.text))
+            )
+                return [
+                    {
+                        at: w.at,
+                        from: w.text,
+                        to: `'${w.text}'`,
+                        why: 'zsh reads an unquoted =word as a command path',
+                    },
+                ];
+            return [];
+        });
+        return [...own, ...edits(s.subst)];
+    });
+}
+
+export function rewrite(command: string) {
+    // a `$( … )`'s commands are segments of their own and of the word's subst: one edit per offset
+    const found = [
+        ...new Map(
+            edits(parse(command).segments).map((e) => [e.at, e]),
+        ).values(),
+    ].sort((a, b) => b.at - a.at);
+    let out = command;
+    for (const e of found)
+        out = out.slice(0, e.at) + e.to + out.slice(e.at + e.from.length);
+    return {
+        command: out,
+        notes: found
+            .reverse()
+            .map((e) => `\`${e.from}\` → \`${e.to}\` (${e.why})`),
+    };
 }
 
 function unbraced(parsed: Parsed): Refusal | undefined {

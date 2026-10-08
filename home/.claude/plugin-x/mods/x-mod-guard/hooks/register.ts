@@ -8,6 +8,7 @@ import {
     check,
     message,
     overwrittenPaths,
+    rewrite,
 } from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
@@ -150,8 +151,10 @@ async function count(
 export const register: Register = (on) => {
     on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
         // the input is the model's: a command that is not a string is the tool's to refuse
-        const command = 'command' in e ? e.command : undefined;
-        if (typeof command !== 'string') return next(e);
+        const typed = 'command' in e ? e.command : undefined;
+        if (typeof typed !== 'string') return next(e);
+        // a shape with one right spelling is fixed, then the fixed command is what every rule reads
+        const { command, notes } = rewrite(typed);
         const cwd = await $.session.cwd();
         const ctx: Context = {
             home: await $.env.get('HOME'),
@@ -174,7 +177,15 @@ export const register: Register = (on) => {
             kinds,
             missing,
         });
-        if (verdict.kind === 'run') return next(e);
+        // the model typed the old command: it is told what changed, or it reads a surprise
+        const go = async () => {
+            if (!notes.length) return next(e);
+            const result = await next({ ...e, command });
+            if (result.deny !== undefined) return result;
+            const note = `x-mod-guard rewrote this call before it ran: ${notes.join('; ')}. it ran: ${command}`;
+            return { ...result, context: [...(result.context ?? []), note] };
+        };
+        if (verdict.kind === 'run') return go();
         if (verdict.kind === 'refused') {
             const { refusal } = verdict;
             await record($, {
@@ -196,7 +207,7 @@ export const register: Register = (on) => {
             why: verdict.refusals.map((r) => r.why).join('; '),
         });
         $.ui.log(`x-mod-guard: ran on dima-ok: ${verdict.targets.join(', ')}`);
-        return next(e);
+        return go();
     }).catch(() => ({ deny: FAILED }));
 
     on(

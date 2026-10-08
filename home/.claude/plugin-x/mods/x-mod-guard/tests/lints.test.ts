@@ -66,12 +66,6 @@ const LINTS = [
     ],
     ['git add -A', 'git add -A', 'x lane commit', 'git add a.ts'],
     [
-        'pnpm -s',
-        'pnpm -s github:agent-token',
-        '--silent',
-        'pnpm --silent github:agent-token',
-    ],
-    [
         'an obsidian verb with --help',
         'obsidian delete --help',
         'obsidian --help',
@@ -124,10 +118,26 @@ for (const [lint, , , good] of LINTS)
         ).toBeUndefined();
     });
 
+// a gate tool that lists or prints help checks nothing, and a `;` ends the gate before the pipe
+const NOT_GATES = [
+    'tsc --listFilesOnly | grep -c hotkeys',
+    'pnpm exec tsc --showConfig -p x | grep strict',
+    'vitest list | grep foo',
+    'pnpm exec biome check --help | head',
+    'pnpm typecheck; ls | grep d',
+] as const;
+
+for (const command of NOT_GATES)
+    test(`${command} is not a piped gate`, async ($, on) => {
+        world(on);
+        expect(
+            (await $.tool.call({ command, tool: 'Bash' })).deny,
+        ).toBeUndefined();
+    });
+
 test('a refusal says nothing in the command ran', async ($, on) => {
     world(on);
     expect(
-        (await $.tool.call({ command: 'pnpm -s x; echo hi', tool: 'Bash' }))
-            .deny,
+        (await $.tool.call({ command: 'rm x; echo hi', tool: 'Bash' })).deny,
     ).toMatch(/^nothing in this command ran — /);
 });

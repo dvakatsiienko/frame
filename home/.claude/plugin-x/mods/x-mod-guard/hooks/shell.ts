@@ -1,7 +1,8 @@
 // a small reading of a shell command: enough to name each simple command, its words and what joins them.
 // quoted text, heredoc bodies and comments are never read as commands; a `$( … )` or a backtick pair is read as a command of its own.
 
-export type Word = { text: string; isExpanding: boolean };
+// at: the word's offset in the command, kept only for a bare word — plain characters, no quote, escape or expansion
+export type Word = { text: string; isExpanding: boolean; at?: number };
 export type Sep = ';' | '&&' | '||' | '|' | '&' | '(' | ')';
 // subst: the commands inside this command's `$( … )` and backticks
 export type Segment = { words: Word[]; sep: Sep; subst: Segment[] };
@@ -18,6 +19,8 @@ type Frame = {
     text: string;
     isWord: boolean;
     isExpanding: boolean;
+    isBare: boolean;
+    at: number;
     from: number;
 };
 
@@ -37,13 +40,19 @@ export function parse(command: string): Parsed {
     let isWord = false;
     let isExpanding = false;
     let isQuoted = false;
+    let isBare = false;
+    let at = 0;
     let i = 0;
 
     const endWord = () => {
-        if (isWord) words.push({ isExpanding, text });
+        if (isWord)
+            words.push(
+                isBare ? { at, isExpanding, text } : { isExpanding, text },
+            );
         text = '';
         isWord = false;
         isExpanding = false;
+        isBare = false;
     };
     const endSegment = (sep: Sep) => {
         endWord();
@@ -56,13 +65,18 @@ export function parse(command: string): Parsed {
         words = [];
         subst = [];
     };
-    const add = (s: string) => {
+    // plain: one literal character read as itself; anything else ends the word's bareness
+    const add = (s: string, isPlain = false) => {
+        if (!isWord) at = i;
+        isBare = isPlain && (isBare || !isWord);
         text += s;
         isWord = true;
     };
     const open = (kind: Frame['kind']) => {
         stack.push({
+            at,
             from: segments.length,
+            isBare,
             isExpanding,
             isWord,
             kind,
@@ -83,7 +97,7 @@ export function parse(command: string): Parsed {
         const frame = stack.pop();
         if (!frame) return;
         const inner = segments.slice(frame.from);
-        ({ words, text, isWord, isExpanding } = frame);
+        ({ words, text, isWord, isExpanding, isBare, at } = frame);
         subst = [...frame.subst, ...inner];
         if (frame.kind === 'group') return;
         add('$(…)');
@@ -99,7 +113,9 @@ export function parse(command: string): Parsed {
     const quoted = (kind: Frame['kind']) => {
         if (isQuoted)
             stack.push({
+                at: 0,
                 from: segments.length,
+                isBare: false,
                 isExpanding: false,
                 isWord: false,
                 kind: 'dq',
@@ -214,6 +230,7 @@ export function parse(command: string): Parsed {
             i = end < 0 ? command.length : end + 1;
         } else if (c === '"') {
             isWord = true;
+            isBare = false;
             isQuoted = true;
             i++;
         } else if (c === '$') {
@@ -256,7 +273,7 @@ export function parse(command: string): Parsed {
         } else if (c === '<' && next === '<' && command[i + 2] !== '<') {
             heredoc();
         } else {
-            add(c);
+            add(c, true);
             i++;
         }
     }
