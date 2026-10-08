@@ -66,6 +66,36 @@ test('a git-crypt file renamed under a path that keeps the filter goes through',
     expect(run.status, run.stderr).toBe(0);
 });
 
+// d1bddfb5's shape: a plain mv + add, which git stages as a delete and an add, never a rename
+test('a git-crypt file deleted beside a plaintext add is refused', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'crypt-rename-'));
+    onTestFinished(() => rmSync(dir, { recursive: true }));
+    git(dir, 'init', '-q');
+    writeFileSync(
+        path.join(dir, '.gitattributes'),
+        'secret.txt filter=git-crypt diff=git-crypt\n',
+    );
+    writeFileSync(path.join(dir, 'secret.txt'), 'a secret\n');
+    git(dir, 'add', '.');
+    git(dir, 'commit', '-q', '-m', 'init');
+    git(dir, 'rm', '-q', 'secret.txt');
+    writeFileSync(
+        path.join(dir, 'elsewhere.md'),
+        'a secret, edited on the way\n',
+    );
+    git(dir, 'add', 'elsewhere.md');
+
+    const run = spawnSync('node', [script], {
+        cwd: dir,
+        encoding: 'utf8',
+        env,
+    });
+
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain('secret.txt');
+    expect(run.stderr).toContain('elsewhere.md');
+});
+
 test('a rename that also drops the old pattern is still refused', () => {
     const run = renamed('moved.txt', '');
 
