@@ -45,14 +45,27 @@ function runsGit(callee: string, args: string) {
     return isShell && /['"`][^'"`]*\bgit\s/.test(args);
 }
 
-// the lint: the 1-based line of every git call that does not pass env, or every one when the file never imports gitEnv
+// `env: gitEnv()`, or an env naming a binding the file made from gitEnv() — `{ env }`, `{ env: fixtureEnv }`
+function passesGitEnv(args: string, bound: Set<string>) {
+    if (/\benv\s*:\s*gitEnv\(\)/.test(args)) return true;
+    const named = args.match(/\benv\s*:\s*(\w+)\s*[,}\n]/)?.[1];
+    if (named) return bound.has(named);
+    return /\benv\s*[,}\n]/.test(args) && bound.has('env');
+}
+
+// the lint: the 1-based line of every git call that does not pass gitEnv's env
 export function bareGitSpawns(source: string) {
-    const imported = IMPORTS_GIT_ENV.test(source);
+    const isImported = IMPORTS_GIT_ENV.test(source);
+    const bound = new Set(
+        [...source.matchAll(/\b(?:const|let)\s+(\w+)\s*=\s*gitEnv\(\)/g)].map(
+            (m) => m[1] ?? '',
+        ),
+    );
     const lines: number[] = [];
     for (const m of source.matchAll(CALL)) {
         const args = argsFrom(source, m.index + m[0].length);
         if (!runsGit(m[1] ?? '', args)) continue;
-        if (imported && /\benv\b/.test(args)) continue;
+        if (isImported && passesGitEnv(args, bound)) continue;
         lines.push(source.slice(0, m.index).split('\n').length);
     }
     return lines;

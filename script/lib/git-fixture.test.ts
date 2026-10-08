@@ -21,8 +21,23 @@ test('a git spawn that passes gitEnv passes', () => {
 });
 
 test('a second git spawn without env is caught though the file imports gitEnv', () => {
-    const source = `${IMPORT}${callOf('execFile')}'git', ['init'], { env });\n${callOf('execFile')}'git', ['add', '.'], { cwd: dir });`;
+    const source = `${IMPORT}const env = gitEnv();\n${callOf('execFile')}'git', ['init'], { env });\n${callOf('execFile')}'git', ['add', '.'], { cwd: dir });`;
+    expect(bareGitSpawns(source)).toEqual([4]);
+});
+
+test('a git spawn passing the inherited env is caught though the file imports gitEnv', () => {
+    const source = `${IMPORT}${callOf('spawn')}'git', ['init'], { env: process.env });\n${callOf('spawn')}'git', ['init'], { env: { ...process.env } });`;
+    expect(bareGitSpawns(source)).toEqual([2, 3]);
+});
+
+test('a git spawn passing a binding not made from gitEnv is caught', () => {
+    const source = `${IMPORT}const inherited = process.env;\n${callOf('spawn')}'git', ['init'], { env: inherited });`;
     expect(bareGitSpawns(source)).toEqual([3]);
+});
+
+test('a git spawn passing a binding made from gitEnv passes', () => {
+    const source = `${IMPORT}const env = gitEnv();\nconst fixtureEnv = gitEnv();\n${callOf('spawn')}'git', ['init'], { env, stdio: 'pipe' });\n${callOf('spawn')}'git', ['init'], { env: fixtureEnv });`;
+    expect(bareGitSpawns(source)).toEqual([]);
 });
 
 test('git run through a shell string is caught', () => {
