@@ -5,7 +5,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 
-import { writeTargets } from './x-mod-holds/hooks/parse.ts';
+import { writtenPaths } from './x-mod-guard/hooks/rules.ts';
 
 const days = Number(process.argv[2] ?? 7);
 if (!Number.isInteger(days) || days < 1) {
@@ -52,7 +52,7 @@ function tally(use: Use) {
     if (!shape) return;
     bump(`bash: ${shape[0]}`);
     bump('bash');
-    if (writeTargets(command).length) read++;
+    if (writtenPaths(command, '/').length) read++;
 }
 
 for await (const file of transcripts(root)) {

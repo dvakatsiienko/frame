@@ -36,6 +36,7 @@ type Peeled = {
     assigns: string[];
     wrappers: string[];
     writes: string[];
+    appends: string[];
     reads: string[];
 };
 // feeders: the commands whose output reaches this one, through `$( … )` or a pipe
@@ -189,6 +190,7 @@ function peel(raw: Word[]): Peeled {
     }
     const [first, ...args] = words;
     return {
+        appends: redirected(raw, APPEND, APPEND_JOINED),
         args,
         assigns,
         name: first ? basename(first.text) : '',
@@ -609,6 +611,61 @@ export function overwrittenPaths(
                 : [];
         return [...c.writes.map((w) => resolve(w, dir, ctx)), ...moved];
     });
+}
+
+// every file a command writes, resolved: `>` and `>>` targets, `tee`, `sd` and `sed -i` files, python's `open(…, 'w')`.
+// x-mod-holds' files are checked against it; a path held in a variable is not read
+const APPEND = /^\d*&?>>$/;
+const APPEND_JOINED = /^\d*&?>>([^&].*)$/;
+export function writtenPaths(command: string, cwd: string, ctx: Context = {}) {
+    const out: string[] = [];
+    for (const m of command.matchAll(
+        /open\(\s*['"]([^'"]+)['"]\s*,\s*['"][wax]/g,
+    ))
+        if (m[1]) out.push(resolve(m[1], cwd, ctx));
+    const parsed = parse(command);
+    for (const c of commands(parsed, cwd)) {
+        const dir = resolve(c.dir, '/', ctx);
+        const named = [...c.writes, ...c.appends];
+        const ops = operands(c.args);
+        if (c.name === 'tee') named.push(...ops);
+        if (c.name === 'sd') named.push(...sdFiles(c.args));
+        if (c.name === 'sed') named.push(...sedFiles(c.args));
+        for (const n of named)
+            if (n && !n.startsWith('/dev/') && !n.includes('$'))
+                out.push(resolve(n, dir, ctx));
+    }
+    return [...new Set(out)];
+}
+
+// sd's files follow its find and replace; a flag in SD_VALUE eats the word after it
+function sdFiles(args: Word[]) {
+    const out: string[] = [];
+    let isRest = false;
+    for (let i = 0; i < args.length; i++) {
+        const t = args[i]?.text ?? '';
+        if (isRest) out.push(t);
+        else if (t === '--') isRest = true;
+        else if (SD_VALUE.has(t)) i++;
+        else if (!isFlag(t)) out.push(t);
+    }
+    return out.slice(2);
+}
+
+// sed edits in place only with -i; macOS spells it `-i ''`, and -e or -f carries the script
+function sedFiles(args: Word[]) {
+    if (!args.some((a) => /^(-i|--in-place)/.test(a.text))) return [];
+    const kept = args.filter(
+        (a, i) => !(a.text === '' && args[i - 1]?.text === '-i'),
+    );
+    const isScripted = kept.some((a) => /^-[ef]$/.test(a.text));
+    const files: string[] = [];
+    for (let i = 0; i < kept.length; i++) {
+        const t = kept[i]?.text ?? '';
+        if (/^-[ef]$/.test(t)) i++;
+        else if (!isFlag(t)) files.push(t);
+    }
+    return isScripted ? files : files.slice(1);
 }
 
 // the file a `>`, an mv, a cp -f or a cp /dev/null would empty or replace; the job's own tmp is its scratch to write over

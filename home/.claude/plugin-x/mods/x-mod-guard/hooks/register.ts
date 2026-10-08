@@ -9,6 +9,7 @@ import {
     message,
     overwrittenPaths,
     rewrite,
+    writtenPaths,
 } from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
@@ -153,6 +154,92 @@ async function count(
         if (old.startsWith(DAY) && old < oldest) await $.store.delete(old);
 }
 
+// x-mod-holds' store file: a session's first edit of a file holds it, and a Bash write by another session is refused here,
+// by the one Bash parser. the release checks are holds' own: a holder idle 30 min, a dead pid, a landed hold clean in git
+const HOLDS_FILE = /^x-mod-holds_.*\.json$/;
+const HOLD = 'hold:';
+const HOLD_IDLE_MS = 30 * 60_000;
+type Hold = { at: number; file: string; landed?: boolean };
+type Holder = { pid?: number; start?: string; idleSince: number | null };
+
+async function heldBy(
+    $: EngineInterface,
+    command: string,
+    cwd: string,
+    ctx: Context,
+): Promise<string | undefined> {
+    const paths = writtenPaths(command, cwd, ctx);
+    if (!paths.length) return undefined;
+    const dir = `${ctx.home}/.claude/plugins/store`;
+    const held: Record<string, unknown> = {};
+    for (const f of await $.fs.list(dir).catch(() => [])) {
+        if (!HOLDS_FILE.test(f.name)) continue;
+        try {
+            Object.assign(
+                held,
+                JSON.parse(await $.fs.read(`${dir}/${f.name}`)),
+            );
+        } catch {}
+    }
+    const sid = await $.session.id();
+    const now = await $.clock.now();
+    for (const path of paths) {
+        const real = await $.fs.stat(path, { resolve: true }).then(
+            (s) => s.realPath ?? path,
+            () => path,
+        );
+        for (const [key, value] of Object.entries(held)) {
+            if (!key.startsWith(HOLD)) continue;
+            const cut = key.indexOf(':', HOLD.length);
+            const holder = key.slice(HOLD.length, cut);
+            if (key.slice(cut + 1) !== real.toLowerCase() || holder === sid)
+                continue;
+            const hold = value as Hold;
+            if (
+                await isReleased(
+                    $,
+                    held[`holder:${holder}`] as Holder | undefined,
+                    hold,
+                    now,
+                )
+            )
+                continue;
+            const mins = Math.round((now - hold.at) / 60000);
+            return `x-mod-holds: ${path} is held by session ${holder.slice(0, 8)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
+        }
+    }
+    return undefined;
+}
+
+async function isReleased(
+    $: EngineInterface,
+    holder: Holder | undefined,
+    hold: Hold,
+    now: number,
+) {
+    if (!holder) return true;
+    if (holder.idleSince !== null && now - holder.idleSince >= HOLD_IDLE_MS)
+        return true;
+    if (holder.pid && holder.start) {
+        const ps = await $.process.run([
+            'ps',
+            '-o',
+            'lstart=',
+            '-p',
+            String(holder.pid),
+        ]);
+        // a reused pid starts at another time
+        if (ps.stdout.trim() !== holder.start) return true;
+    }
+    if (!hold.landed) return false;
+    const git = await $.process
+        .run(['git', 'status', '--porcelain', '--', hold.file], {
+            cwd: hold.file.slice(0, hold.file.lastIndexOf('/')) || '/',
+        })
+        .catch(() => null);
+    return !git || git.exitCode !== 0 || git.stdout.trim() === '';
+}
+
 export const register: Register = (on) => {
     // a Monitor's command is a shell command too
     on('tool.call', { tool: /^(Bash|Monitor)$/ }, async ($, e, next) => {
@@ -213,6 +300,9 @@ export const register: Register = (on) => {
                 context: [...(result.context ?? []), ...context],
             };
         };
+        // a file another live session holds (x-mod-holds) is refused before any other rule; holds has no escape
+        const held = await heldBy($, command, cwd, ctx).catch(() => undefined);
+        if (held) return deny(held);
         if (verdict.kind === 'run') return go();
         if (verdict.kind === 'refused') {
             const { refusal } = verdict;

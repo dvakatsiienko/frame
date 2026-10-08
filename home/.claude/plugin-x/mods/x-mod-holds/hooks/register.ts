@@ -1,10 +1,9 @@
 import type { EngineInterface, Register } from 'claude-code';
 
-import { writeTargets } from './parse.ts';
-
 // x-mod-holds: no two sessions write the same file. a session's first Edit or Write of a file holds it until the file
 // is committed, the session ends or sits idle; another session's edit of it, or a Bash write to it, is refused and
-// names the holder. x-mod-stash's band reads this store file for its 🔒 chip.
+// names the holder. x-mod-guard refuses a Bash write to a held file from this store; x-mod-stash's band reads it for
+// its 🔒 chip.
 
 const errorText = (err: unknown) =>
     err instanceof Error ? err.message : String(err);
@@ -19,7 +18,6 @@ let proc: Proc | undefined;
 type Hold = { at: number; file: string; top: string; landed?: boolean };
 type Claim = { deny?: string; key?: string };
 type Holder = { pid?: number; start?: string; idleSince: number | null };
-type Refusal = { at: number; by: string; path: string };
 type Proc = { pid: number; start: string };
 
 const HOLD = 'hold:';
@@ -272,39 +270,6 @@ async function guard($: EngineInterface, file: unknown): Promise<Claim> {
     }
 }
 
-// a Bash write is refused on a held file and takes no hold; an unread command, or an error, goes through
-async function bashGuard($: EngineInterface, command: unknown) {
-    if (typeof command !== 'string') return undefined;
-    try {
-        const targets = writeTargets(command);
-        if (!targets.length) return undefined;
-        // a leading `cd X &&` or `cd X;` moves where the writes land
-        const lead = command.match(/^\s*cd\s+([^\s;&|]+)\s*(&&|;)/)?.[1];
-        const cwd = await $.session.cwd();
-        const home = (await $.env.get('HOME')) ?? '';
-        const absolute = (p: string, from: string) =>
-            p.startsWith('/')
-                ? p
-                : p.startsWith('~/')
-                  ? `${home}${p.slice(1)}`
-                  : `${from}/${p}`;
-        const dir = lead ? absolute(lead, cwd) : cwd;
-        const sid = await $.session.id();
-        const now = await $.clock.now();
-        for (const target of targets) {
-            const file = absolute(target, dir);
-            const { key } = await realPath($, file);
-            const deny = await heldBy($, sid, file, key, now);
-            if (deny) return deny;
-        }
-    } catch (err) {
-        $.ui.log(
-            `x-mod-holds: ${errorText(err)}; the command went through unguarded`,
-        );
-    }
-    return undefined;
-}
-
 export const register: Register = (on) => {
     on('session.start', async ($, e, next) => {
         proc = await procOf($).catch(() => {
@@ -369,8 +334,6 @@ export const register: Register = (on) => {
     // a commit made through Bash releases its clean files now, not at the turn's end
     on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
         const command = 'command' in e ? e.command : undefined;
-        const deny = await bashGuard($, command);
-        if (deny) return { deny };
         const r = await next(e);
         if (typeof command === 'string' && COMMIT.test(command))
             await releaseClean($, await $.session.id()).catch(() =>

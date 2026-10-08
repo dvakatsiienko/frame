@@ -128,3 +128,18 @@
   - given other file types, or a session outside `~/frame/cclio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
   - makes: a count in x-mod-guard's `$.state`, the session's own: it survives a hot reload and dies with the session, so nothing piles up in the shared store
+
+## held files — x-mod-holds' holds, refused for Bash
+
+- ✅ a Bash write to a held file is refused
+  - given A holds `x.ts`
+  - when B runs a Bash command that writes `x.ts` — `sd`, `sed -i`, `> x.ts`, `>> x.ts`, `cat > x.ts <<EOF`, `tee`, python `open('x.ts', 'w')`
+  - then the command is refused, and the message names A, as an Edit's would be
+  - decision: refuse only — a Bash write takes no hold, since nothing tells a command that wrote from one that failed
+  - decision: guard refuses it, so one Bash parser reads every command — x-mod-holds had a second, simpler one until FRM-350
+  - then a hold whose holder sat idle 30 min, whose pid died, or whose landed file is clean in git does not refuse
+  - then a relative path is read from the dir every `cd` before it left, the way every guard rule reads it
+- ✅ a Bash command the parser cannot read goes through
+  - given A holds `x.ts`
+  - when B's command writes through a variable, `cd` into a subshell, or any shape the parser misses
+  - then the command runs — a parse miss fails open, like a broken store
