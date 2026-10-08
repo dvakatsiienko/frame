@@ -22,6 +22,15 @@ if [ -f "$key" ] && [ ! -d "$(git -C "$wt" rev-parse --git-dir)/git-crypt" ]; th
   (cd "$wt" && git ls-files | git check-attr --stdin filter | awk -F': ' '$3=="git-crypt"{print $1}' \
     | while read -r f; do rm -f "$f" && git checkout -- "$f"; done) >/dev/null 2>&1
 fi
+# a cc mod's `.claude-plugin/types` is generated and gitignored, so a fresh tree has none and
+# every type read in it fails (~30 reads lost on one retro, FRM-337): copy the main checkout's
+main=$(dirname "$(git -C "$wt" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)")
+if [ -d "$main" ] && [ "$main" != "$wt" ]; then
+  (cd "$main" && find . \( -name node_modules -o -name .git -o -path ./.claude/worktrees \) -prune \
+    -o -type d -path '*/.claude-plugin/types' -print -prune) | while read -r d; do
+    [ -e "$wt/$d" ] || { mkdir -p "$wt/$(dirname "$d")" && cp -R "$main/$d" "$wt/$d"; }
+  done
+fi
 [ -f "$wt/package.json" ] || exit 0
 if jq -e '.scripts["worktree:seed"]' "$wt/package.json" >/dev/null 2>&1; then
   # no `-s`: pnpm 12 dropped it, and the error hid behind the redirect for a month
