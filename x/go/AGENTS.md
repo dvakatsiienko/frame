@@ -25,6 +25,8 @@ the [FRM-284](https://linear.app/x-com/issue/FRM-284) look probe. The probe's nu
 - a verb's `replaces` is checked by `replaces_test.go` through `git grep` of each door's basename;
   `notCallers` there lists the history paths it skips.
 - every `Fail.Log` line goes to stderr in agent mode — the envelope says «the output is above».
+- a transcript fixture is encoded with `SetEscapeHTML(false)`: `json.Marshal` writes `<` as
+  `<`, so a fixture never holds `<command-name>` the way a real transcript does.
 
 ## bubbletea v2 traps
 
