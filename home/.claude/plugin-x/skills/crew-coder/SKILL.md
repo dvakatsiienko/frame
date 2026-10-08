@@ -143,11 +143,12 @@ for ceremony.
   records were switched off on all 6 projects (bytes `d0fcc285`). A merge to main costs 6 prod deploys — that one is
   Dima's click, never yours.
 - **«final» is a handshake, and it comes after your own review — run it, then two local passes,
-  then the ci reviewer, in this order.** When the last step is done:
+  then the ci reviewer, in this order, and only once `x lane review <pr>` exits 0.** When the last step is done:
   0. **Run the thing before anyone reads it.** A ui or chart change is opened in `agent-browser` at
      two widths (390 and 1280), a state change is exercised end to end (the failing path too), one
      screenshot lands in the PR. On BYT-83 running it found 3 of 8 real defects; five reviewers and
-     61 tests found none of those.
+     61 tests found none of those. a live proof that writes shared pr state (the body, labels) is the
+     verifier's; you prove locally (failed runs blocked #125).
   1. `mattpocock-skills:code-review` over the branch (matt's standards + spec review — NOT the
      built-in `/code-review`; the ci action already runs the built-in one, this is the second
      angle), fix what it finds. **Read every reviewer's output in a fork that returns the
@@ -171,11 +172,9 @@ for ceremony.
      2026-09-20: a local adversary is worth it in most cases); a big PR runs both adversaries
      (code-review AND coderabbit); a long-lived PR is a reason for more review, never less.
      after `clean` the coordinator tells you to add Dima as reviewer.
-  4. the ci reviewer on `bytes` — the label, the round counter, the stale rule and where it posts
-     live in `x:github-contrib` (the bytes review lane). yours on top: re-label at the next
-     «final», never per push (each run is ~13 min of opus on dima's own window); at counter 1,
-     tell the coordinator BEFORE the label goes on. Fix what is real, answer «declined: <why>» on
-     the thread, re-label once per batch of fixes.
+  4. the ci reviewer on `bytes` — `x lane review <pr>` is its door: a stale verdict under the
+     2-round cap is re-requested, at the cap it names dima's approval. run it at «final», never per
+     push (a round is ~13 min of opus). Fix what is real, answer «declined: <why>» on the thread.
   5. **Only after both reviews are handled**: `gh pr edit <n> --add-reviewer dvakatsiienko`, then
      the «final» line to the coordinator (PR url + head sha + «final»). Adding the reviewer before
      the reviews land hands dima a PR with open findings (measured on #68). Leave no untracked
