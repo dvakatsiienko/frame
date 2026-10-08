@@ -19,7 +19,6 @@ import {
     parseAsks,
     parseWait,
     ticketOf,
-    writeTargets,
 } from './parse.ts';
 
 // x-mod-stash: dima's command center above the prompt, one folded row; FTR.md lists every feature.
@@ -116,12 +115,9 @@ const errorText = (err: unknown) =>
 const basename = (path: string) =>
     path.split('/').filter(Boolean).pop() ?? path;
 
-// holds: a session's first edit of a file holds it; another session's edit of it is refused.
-// $.store has no compare-and-set, so each session writes only its own keys and the earliest claim wins.
-
-// file is the real path in its own case, for git; landed once the edit went through
+// x-mod-holds keeps the holds in its own store file; the 🔒 chip reads that file, the way the guard row reads x-mod-guard's.
+// its shapes and keys, as x-mod-holds writes them
 type Hold = { at: number; file: string; top: string; landed?: boolean };
-type Claim = { deny?: string; key?: string };
 type Holder = { pid?: number; start?: string; idleSince: number | null };
 type Refusal = { at: number; by: string; path: string };
 type Proc = { pid: number; start: string };
@@ -133,7 +129,6 @@ const IDLE_MS = 30 * 60 * 1000;
 
 const holdKey = (sid: string, path: string) => `${HOLD}${sid}:${path}`;
 const short = (sid: string) => sid.slice(0, 8);
-const dirname = (file: string) => file.slice(0, file.lastIndexOf('/')) || '/';
 
 // a session id carries no ':', so the first one after the prefix ends it
 function parseHoldKey(key: string) {
@@ -142,26 +137,6 @@ function parseHoldKey(key: string) {
     return cut < 0
         ? null
         : { path: key.slice(cut + 1), sid: key.slice(HOLD.length, cut) };
-}
-
-// the key is lowercased on every platform: APFS is case-insensitive and the mod cannot ask which os it runs on
-async function realPath($: EngineInterface, file: string) {
-    const resolve = (p: string) =>
-        $.fs.stat(p, { resolve: true }).then(
-            (s) => s.realPath,
-            () => undefined,
-        );
-    const direct = await resolve(file);
-    if (direct) return { file: direct, key: direct.toLowerCase() };
-    // a new file has no real path yet; its nearest existing folder does
-    let dir = dirname(file);
-    let real = await resolve(dir);
-    while (!real && dir !== '/') {
-        dir = dirname(dir);
-        real = await resolve(dir);
-    }
-    const full = `${real ?? dir}${file.slice(dir.length)}`;
-    return { file: full, key: full.toLowerCase() };
 }
 
 // the name ListAgents shows lives in the session registry, keyed by the claude process id
@@ -200,159 +175,6 @@ async function topOf($: EngineInterface, cwd: string) {
     return r?.exitCode === 0 ? r.stdout.trim().toLowerCase() : '';
 }
 
-async function isClean($: EngineInterface, file: string) {
-    const r = await $.process
-        .run(['git', 'status', '--porcelain', '--', file], {
-            cwd: dirname(file),
-        })
-        .catch(() => null);
-    // the folder is gone, and the file with it
-    if (!r) return true;
-    if (r.exitCode === 0) return r.stdout.trim() === '';
-    // outside a repo nothing can be committed, so nothing is held
-    if (!/not a git repository/i.test(r.stderr))
-        $.ui.log(
-            `x-mod-stash holds: git status failed on ${file}, hold released`,
-        );
-    return true;
-}
-
-// a holder that ended, went idle or died holds nothing
-async function isGone(
-    $: EngineInterface,
-    holder: Holder | undefined,
-    now: number,
-) {
-    if (!holder) return true;
-    if (holder.idleSince !== null && now - holder.idleSince >= IDLE_MS)
-        return true;
-    if (holder.pid && holder.start) {
-        const ps = await $.process.run([
-            'ps',
-            '-o',
-            'lstart=',
-            '-p',
-            String(holder.pid),
-        ]);
-        // a reused pid starts at another time
-        if (ps.stdout.trim() !== holder.start) return true;
-    }
-    return false;
-}
-
-async function isReleased(
-    $: EngineInterface,
-    sid: string,
-    hold: Hold,
-    now: number,
-) {
-    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
-    if (await isGone($, holder, now)) return true;
-    // a hold whose edit has not landed yet (a permission prompt open) is clean and still held
-    return hold.landed === true && isClean($, hold.file);
-}
-
-// a holder that crashed or went idle never settles its own keys
-async function sweep($: EngineInterface, self: string) {
-    const now = await $.clock.now();
-    for (const key of await $.store.keys()) {
-        if (!key.startsWith(HOLDER) || key === HOLDER + self) continue;
-        const holder = (await $.store.get(key)) as Holder | undefined;
-        if (await isGone($, holder, now))
-            await dropAll($, key.slice(HOLDER.length));
-    }
-}
-
-async function claimsOn($: EngineInterface, path: string) {
-    const claims: { sid: string; key: string; hold: Hold }[] = [];
-    for (const key of await $.store.keys()) {
-        const parsed = parseHoldKey(key);
-        if (parsed?.path !== path) continue;
-        const hold = (await $.store.get(key)) as Hold | undefined;
-        if (hold) claims.push({ hold, key, sid: parsed.sid });
-    }
-    return claims;
-}
-
-function refusal(file: string, sid: string, hold: Hold, now: number) {
-    const mins = Math.round((now - hold.at) / 60000);
-    return `x-mod-stash: ${file} is held by session ${short(sid)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
-}
-
-// the refusal when another live session holds the path; a released hold is cleared on the way
-async function heldBy(
-    $: EngineInterface,
-    sid: string,
-    file: string,
-    path: string,
-    now: number,
-) {
-    for (const c of await claimsOn($, path)) {
-        if (c.sid === sid) continue;
-        if (await isReleased($, c.sid, c.hold, now)) {
-            await $.store.delete(c.key);
-            continue;
-        }
-        await $.store.set(REFUSED + c.sid, { at: now, by: sid, path });
-        return refusal(file, c.sid, c.hold, now);
-    }
-    return undefined;
-}
-
-// a deny when another session holds the file; the key when this call took a new hold
-async function claim(
-    $: EngineInterface,
-    file: string,
-    proc: Proc | undefined,
-): Promise<Claim> {
-    const sid = await $.session.id();
-    const { key: path, file: real } = await realPath($, file);
-    const now = await $.clock.now();
-    const deny = await heldBy($, sid, file, path, now);
-    if (deny) return { deny };
-    const mine = holdKey(sid, path);
-    const held = (await $.store.get(mine)) as Hold | undefined;
-    // a first edit that failed left the hold unlanded; the next one that goes through lands it
-    if (held) return held.landed ? {} : { key: mine };
-    // the holder first: a rival reading the hold without it would take it for released
-    if (!(await $.store.get(HOLDER + sid)))
-        await $.store.set(HOLDER + sid, { ...proc, idleSince: null });
-    await $.store.set(mine, {
-        at: now,
-        file: real,
-        top: await topOf($, dirname(real)),
-    });
-    // no compare-and-set: a rival that wrote meanwhile refuses this claim; a true tie refuses both, the next try settles it
-    const rival = (await claimsOn($, path)).find((c) => c.sid !== sid);
-    if (!rival) return { key: mine };
-    await $.store.delete(mine);
-    return { deny: refusal(file, rival.sid, rival.hold, now) };
-}
-
-async function land($: EngineInterface, key: string) {
-    const hold = (await $.store.get(key)) as Hold | undefined;
-    if (hold) await $.store.set(key, { ...hold, landed: true });
-}
-
-async function markBusy($: EngineInterface) {
-    const sid = await $.session.id();
-    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
-    if (holder?.idleSince != null)
-        await $.store.set(HOLDER + sid, { ...holder, idleSince: null });
-}
-
-// drop this session's holds whose files are clean again; answers how many are left
-async function releaseClean($: EngineInterface, sid: string) {
-    let left = 0;
-    for (const key of await $.store.keys()) {
-        if (parseHoldKey(key)?.sid !== sid) continue;
-        const hold = (await $.store.get(key)) as Hold | undefined;
-        if (!hold || (await isClean($, hold.file))) await $.store.delete(key);
-        else left++;
-    }
-    return left;
-}
-
 // a «yes, after X» answer to an open ask lands one line in the queue cclio's boot reads and empties; cclio/pocket.md has one writer
 async function queueAfter($: EngineInterface, prompt: string) {
     const entry = (await $.store.get(PREFIX + (await $.session.id()))) as
@@ -369,33 +191,6 @@ async function queueAfter($: EngineInterface, prompt: string) {
     await $.fs.write(path, `${was}${lines.join('')}`);
 }
 
-// a commit run through the shell, `git commit` or `x lane commit`
-const COMMIT = /\b(git|x\s+lane)\s+(-C\s+\S+\s+)?commit\b/;
-
-// a turn ended: start the idle clock and drop the holds whose files are clean again
-async function settle($: EngineInterface) {
-    const sid = await $.session.id();
-    await sweep($, sid);
-    const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
-    if (!holder) return;
-    if (await releaseClean($, sid)) {
-        await $.store.set(HOLDER + sid, {
-            ...holder,
-            idleSince: await $.clock.now(),
-        });
-        return;
-    }
-    await $.store.delete(HOLDER + sid);
-    await $.store.delete(REFUSED + sid);
-}
-
-async function dropAll($: EngineInterface, sid: string) {
-    for (const key of await $.store.keys())
-        if (parseHoldKey(key)?.sid === sid) await $.store.delete(key);
-    await $.store.delete(HOLDER + sid);
-    await $.store.delete(REFUSED + sid);
-}
-
 // everything this mod keeps for one conversation
 async function forget($: EngineInterface, sid: string) {
     await $.store.delete(PREFIX + sid);
@@ -403,7 +198,6 @@ async function forget($: EngineInterface, sid: string) {
     await $.store.delete(REPLY + sid);
     await $.store.delete(CONTEXT + sid);
     await $.store.delete(MODEL + sid);
-    await dropAll($, sid).catch(() => undefined);
 }
 
 // a session that exited keeps only its last reply, marked ended, so an away digest still counts it as done
@@ -428,24 +222,35 @@ async function pruneEnded($: EngineInterface) {
     }
 }
 
-// what the row shows: other live sessions' holds in this working tree, and whether this session's hold was wanted
+const HOLDS_FILE = /^x-mod-holds_.*\.json$/;
+
+// what the row shows: other live sessions' holds in this working tree, and whether this session's hold was wanted.
+// a file mid-write reads as no holds until the next poll
 async function chip($: EngineInterface, sid: string, root: string) {
-    const keys = await $.store.keys();
+    const dir = `${await $.env.get('HOME')}/.claude/plugins/store`;
+    const held: Record<string, unknown> = {};
+    for (const f of await $.fs.list(dir).catch(() => [])) {
+        if (!HOLDS_FILE.test(f.name)) continue;
+        try {
+            Object.assign(
+                held,
+                JSON.parse(await $.fs.read(`${dir}/${f.name}`)),
+            );
+        } catch {}
+    }
     const now = await $.clock.now();
     let others = 0;
-    for (const key of keys) {
+    for (const [key, value] of Object.entries(held)) {
         const h = parseHoldKey(key);
         if (!h || h.sid === sid) continue;
-        const hold = (await $.store.get(key)) as Hold | undefined;
-        const holder = (await $.store.get(HOLDER + h.sid)) as
-            | Holder
-            | undefined;
+        const hold = value as Hold | undefined;
+        const holder = held[HOLDER + h.sid] as Holder | undefined;
         const idle =
             holder?.idleSince != null && now - holder.idleSince >= IDLE_MS;
         if (hold?.top === root && holder && !idle) others++;
     }
-    const refused = (await $.store.get(REFUSED + sid)) as Refusal | undefined;
-    const warned = !!refused && keys.includes(holdKey(sid, refused.path));
+    const refused = held[REFUSED + sid] as Refusal | undefined;
+    const warned = !!refused && holdKey(sid, refused.path) in held;
     return { others, warned };
 }
 
@@ -494,53 +299,6 @@ async function countWords($: EngineInterface, hits: Record<string, number>) {
         if (old.startsWith(WORDS) && old < oldest) await $.store.delete(old);
 }
 
-// fail-open: a store or git error lets the edit through, with a line in the transcript
-// the tool input is the model's: a path that is not a string is not guarded
-async function guard($: EngineInterface, file: unknown): Promise<Claim> {
-    if (typeof file !== 'string') return {};
-    try {
-        return await claim($, file, proc);
-    } catch (err) {
-        $.ui.log(
-            `x-mod-stash holds: ${errorText(err)}; the edit went through unguarded`,
-        );
-        return {};
-    }
-}
-
-// a Bash write is refused on a held file and takes no hold; an unread command, or an error, goes through
-async function bashGuard($: EngineInterface, command: unknown) {
-    if (typeof command !== 'string') return undefined;
-    try {
-        const targets = writeTargets(command);
-        if (!targets.length) return undefined;
-        // a leading `cd X &&` or `cd X;` moves where the writes land
-        const lead = command.match(/^\s*cd\s+([^\s;&|]+)\s*(&&|;)/)?.[1];
-        const cwd = await $.session.cwd();
-        const home = (await $.env.get('HOME')) ?? '';
-        const absolute = (p: string, from: string) =>
-            p.startsWith('/')
-                ? p
-                : p.startsWith('~/')
-                  ? `${home}${p.slice(1)}`
-                  : `${from}/${p}`;
-        const dir = lead ? absolute(lead, cwd) : cwd;
-        const sid = await $.session.id();
-        const now = await $.clock.now();
-        for (const target of targets) {
-            const file = absolute(target, dir);
-            const { key } = await realPath($, file);
-            const deny = await heldBy($, sid, file, key, now);
-            if (deny) return deny;
-        }
-    } catch (err) {
-        $.ui.log(
-            `x-mod-stash holds: ${errorText(err)}; the command went through unguarded`,
-        );
-    }
-    return undefined;
-}
-
 async function load($: EngineInterface) {
     const now = await $.clock.now();
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
@@ -569,7 +327,8 @@ async function load($: EngineInterface) {
     }
     entries = next;
     await cooled($);
-    if (selfId) holds = await chip($, selfId, root);
+    // an unreadable holds file keeps the last chip
+    if (selfId) holds = await chip($, selfId, root).catch(() => holds);
     guards = await guardLines($).catch(() => guards);
     await publish($);
 }
@@ -947,7 +706,7 @@ export const register: Register = (on) => {
         root = (await topOf($, e.cwd)) || top.toLowerCase();
         proc = await procOf($).catch(() => {
             $.ui.log(
-                'x-mod-stash holds: no pid for this session, a dead holder releases only by idle',
+                'x-mod-stash: no pid for this session, so its row reads no registry name',
             );
             return undefined;
         });
@@ -1010,7 +769,6 @@ export const register: Register = (on) => {
             );
         turnAfk = afk;
         await keepTurn($);
-        await markBusy($).catch(() => undefined);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const clock = `now ${new Date(await $.clock.now()).toTimeString().slice(0, 5)}`;
         return next({
@@ -1115,9 +873,6 @@ export const register: Register = (on) => {
             await saveHot($);
         }
         await armHot($);
-        await settle($).catch(() =>
-            $.ui.log("x-mod-stash holds: could not settle this turn's holds"),
-        );
         await load($);
         return r;
     });
@@ -1384,39 +1139,6 @@ export const register: Register = (on) => {
         const r = await next(e);
         if (left) await forget($, left).catch(() => undefined);
         await load($);
-        return r;
-    });
-
-    on(
-        'tool.call',
-        { tool: /^(Edit|Write|NotebookEdit)$/ },
-        async ($, e, next) => {
-            const g = await guard(
-                $,
-                'notebook_path' in e
-                    ? e.notebook_path
-                    : 'file_path' in e
-                      ? e.file_path
-                      : undefined,
-            );
-            if (g.deny) return { deny: g.deny };
-            const r = await next(e);
-            if (g.key && r.deny === undefined && !r.isError)
-                await land($, g.key).catch(() => undefined);
-            return r;
-        },
-    );
-
-    // a commit made through Bash releases its clean files now, not at the turn's end
-    on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
-        const command = 'command' in e ? e.command : undefined;
-        const deny = await bashGuard($, command);
-        if (deny) return { deny };
-        const r = await next(e);
-        if (typeof command === 'string' && COMMIT.test(command))
-            await releaseClean($, await $.session.id()).catch(() =>
-                $.ui.log('x-mod-stash holds: could not release after a commit'),
-            );
         return r;
     });
 

@@ -1,0 +1,5 @@
+{
+    "name": "x-mod-holds",
+    "version": "0.1.0",
+    "description": "no two sessions write the same file: a session's first edit of a file holds it until it is committed, the session ends or sits idle 30 min; another session's Edit, Write or Bash write to it is refused, naming the holder"
+}

@@ -20,17 +20,7 @@ _Avoid_: away mode, shift presence
 The lines the band shows when dima turns afk off: the sessions that left him asks, then the ones that finished, since afk went on.
 _Avoid_: summary, recap, catch-up
 
-**Hold**:
-A session's claim on one file, taken by its first edit of that file; other sessions' edits of it are refused.
-_Avoid_: lock, lease, claim, reservation
-
-**Holder**:
-The session that owns a hold.
-_Avoid_: owner, locker
-
-**Release**:
-The end of a hold: the file is clean in git, the holder is dead, or the holder sat idle 30 minutes since its last turn.
-_Avoid_: unlock, expiry
+**Hold**, **Holder**, **Release**: x-mod-holds' words, defined in its `GLOSSARY.md`; the band's 🔒 chip counts them.
 
 **Board**:
 The `/board` pane: every live session, its state as cc wrote it, what it waits on, and its facts.
