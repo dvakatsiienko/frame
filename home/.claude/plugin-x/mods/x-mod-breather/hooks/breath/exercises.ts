@@ -1,5 +1,5 @@
 // The four breathing exercises and the maths of one breath, ported from legacy/breathe.sh.
-// Pure functions: no engine, no surface, so `bun test` covers them.
+// Pure functions: no engine, no surface.
 
 export type ExerciseKey = 'hrv' | 'sigh' | 'box' | '478';
 
@@ -134,10 +134,6 @@ export function phaseAt(ex: Exercise, elapsedMs: number): Phase {
 /** The countdown the phase line shows: whole seconds, rounded up. */
 export const secondsLeft = (phase: Phase): number =>
     Math.ceil(phase.remainingMs / 1000);
-
-/** The band's line: `Breathe in... 4s` */
-export const phaseLine = (phase: Phase): string =>
-    `${phase.label}... ${secondsLeft(phase)}s`;
 
 /** The spinner's word, which the engine follows with its own ellipsis: `Breathe in 4s` */
 export const spinnerWord = (phase: Phase): string =>

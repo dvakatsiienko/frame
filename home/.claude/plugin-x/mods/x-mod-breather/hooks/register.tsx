@@ -9,19 +9,18 @@ import {
     applyCommand,
     readConfig,
 } from './breath/config.ts';
-import { type Style, pickStyle } from './breath/shapes.ts';
 
-// The hooks module. While a turn runs it mounts ./breathe.tsx above the prompt (the band's
+// The hooks module. While a turn runs it draws the meter above the prompt: ./breathe.tsx on the
+// terminal, ./meter.ts on the desktop (the band's
 // `isWorking` prop is the trigger, so the band appears when Claude starts and goes when Claude
 // stops) and reads the breath's phase into the spinner line. /breathe changes the settings,
 // kept in $.store.
 
-const BAND_ROWS = 9; // seven rows of picture, the phase line, the exercise name
+const BAND_ROWS = 3;
 
 let config: Config = DEFAULTS;
-// the running turn: when it started and which style it drew
-let turn: { startedAt: number; style: Style } | undefined;
-let lastStyle: Style | undefined;
+// the running turn: when it started
+let turn: { startedAt: number } | undefined;
 // the breath the band last posted, for the spinner
 let phase: { word: string; exercise: string } | undefined;
 
@@ -40,9 +39,9 @@ export const register: Register = (on) => {
         await $.command
             .register({
                 argumentHint:
-                    '[on | off | hrv | sigh | box | 478 | style <name> | delay <s> | help]',
+                    '[on | off | hrv | sigh | box | 478 | delay <s> | help]',
                 description:
-                    'Breathing exercises above the prompt while Claude works: on, off, hrv, sigh, box, 478, style, delay (mindful-claude)',
+                    'Breathing exercises above the prompt while Claude works: on, off, hrv, sigh, box, 478, delay (mindful-claude)',
                 immediate: true,
                 name: 'breathe',
             })
@@ -63,9 +62,7 @@ export const register: Register = (on) => {
     });
 
     on('turn.start', async ($, e, next) => {
-        const style = pickStyle(config.style, lastStyle);
-        lastStyle = style;
-        turn = { startedAt: await $.clock.now(), style };
+        turn = { startedAt: await $.clock.now() };
         phase = undefined;
         // the band is drawn from a delay on: wake the render hook when it has passed
         if (config.delay > 0)
@@ -78,6 +75,8 @@ export const register: Register = (on) => {
 
     on('turn.complete', async ($, e, next) => {
         const r = await next(e);
+        // a subagent's run ends inside the main turn: the band keeps breathing
+        if (e.agentId) return r;
         turn = undefined;
         phase = undefined;
         $.ui.invalidate('ui.render');
@@ -108,12 +107,7 @@ export const register: Register = (on) => {
             return next(e);
         const now = await $.clock.now();
         // a turn the hook saw start; else one that is working anyway (started before the plugin loaded)
-        const running =
-            turn ??
-            (turn = {
-                startedAt: now,
-                style: pickStyle(config.style, lastStyle),
-            });
+        const running = turn ?? (turn = { startedAt: now });
         const elapsedMs = now - running.startedAt;
         if (elapsedMs < config.delay * 1000) return next(e);
         if (e.surface === 'desktop') {
@@ -137,19 +131,15 @@ export const register: Register = (on) => {
         const rows = Math.min(BAND_ROWS, e.props.maxRows);
         if (rows < 1) return next(e);
         // the key names the turn: one instance per turn, remounted when the settings change mid-turn
-        const key = `breathe:${running.startedAt}:${config.exercise}:${running.style}`;
+        const key = `breathe:${running.startedAt}:${config.exercise}`;
         return (
             <Box flexDirection='column'>
                 <Client
                     height={rows}
                     key={key}
                     module='./breathe.tsx'
-                    props={{
-                        elapsedMs,
-                        exercise: config.exercise,
-                        style: running.style,
-                    }}
-                    width={e.viewport?.columns ?? 80}
+                    props={{ elapsedMs, exercise: config.exercise }}
+                    width={e.props.bodyColumns}
                 />
                 {await next(e)}
             </Box>
