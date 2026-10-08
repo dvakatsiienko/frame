@@ -287,16 +287,23 @@ function missingAdd(c: Command, ctx: Context): Refusal | undefined {
     };
 }
 
+// a resolved path under the session's own `$CLAUDE_JOB_DIR/tmp`
+function isJobTmp(path: string, ctx: Context) {
+    return (
+        !!ctx.jobDir &&
+        path.startsWith(`${resolve(`${ctx.jobDir}/tmp`, '/', ctx)}/`)
+    );
+}
+
 // a scratch clone under the job's own tmp: everything its local git does stays there; a push or a skipped hook does not
 const LOCAL_GIT = new Set(['git-discard', 'git-rewrite', 'git-sweep']);
 function isJobScratch(c: Command, r: Refusal, ctx: Context) {
     if (!ctx.jobDir || c.name !== 'git' || !LOCAL_GIT.has(r.rule)) return false;
     const { sub, subArgs } = gitParts(c.args);
     if (sub === 'push') return false;
-    const tmp = resolve(`${ctx.jobDir}/tmp`, '/', ctx);
     const dir = gitDir(c, ctx);
     const paths = [dir, ...operands(subArgs).map((o) => resolve(o, dir, ctx))];
-    return paths.every((p) => p.startsWith(`${tmp}/`));
+    return paths.every((p) => isJobTmp(p, ctx));
 }
 
 function floor(c: Command, ctx: Context): Refusal | undefined {
@@ -565,10 +572,11 @@ export function overwrittenPaths(
     });
 }
 
-// the file a `>`, an mv, a cp -f or a cp /dev/null would empty or replace
+// the file a `>`, an mv, a cp -f or a cp /dev/null would empty or replace; the job's own tmp is its scratch to write over
 function overwrite(c: Command, ctx: Context): Refusal | undefined {
     const dir = resolve(c.dir, '/', ctx);
-    const isFile = (p: string) => ctx.kinds?.get(p) === 'file';
+    const isFile = (p: string) =>
+        ctx.kinds?.get(p) === 'file' && !isJobTmp(p, ctx);
     const written = c.writes.filter((w) => isFile(resolve(w, dir, ctx)));
     if (written.length)
         return {
@@ -585,10 +593,9 @@ function overwrite(c: Command, ctx: Context): Refusal | undefined {
     if (!(isNull || isForced) || isKept) return undefined;
     const [to, ...into] = landings(c, ctx);
     if (!to) return undefined;
-    const kind = ctx.kinds?.get(to.path);
     if (
-        kind !== 'file' &&
-        !(kind === 'dir' && into.some((l) => isFile(l.path)))
+        !isFile(to.path) &&
+        !(ctx.kinds?.get(to.path) === 'dir' && into.some((l) => isFile(l.path)))
     )
         return undefined;
     if (isNull)

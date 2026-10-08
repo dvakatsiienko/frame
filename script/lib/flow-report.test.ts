@@ -159,10 +159,37 @@ describe('guardDay', () => {
             join(dir, 'x-mod-stash_inline-def.json'),
             JSON.stringify({ 'day:2026-10-06:d4': day(5, 5) }),
         );
-        expect(guardDay(dir, '2026-10-06')).toEqual({
+        expect(guardDay(dir, '2026-10-06')).toMatchObject({
             escaped: 1,
             refused: 4,
             sessions: 3,
+        });
+    });
+
+    it("sums the day's refusals per rule across sessions", () => {
+        const dir = mkdtempSync(join(tmpdir(), 'flow-guard-'));
+        writeFileSync(
+            join(dir, 'x-mod-guard_inline-abc.json'),
+            JSON.stringify({
+                'day:2026-10-06:a1': {
+                    escaped: 1,
+                    refused: 2,
+                    rules: {
+                        overwrite: { escaped: 0, refused: 2 },
+                        rm: { escaped: 1, refused: 0 },
+                    },
+                },
+                'day:2026-10-06:b2': {
+                    escaped: 0,
+                    refused: 1,
+                    rules: { overwrite: { escaped: 0, refused: 1 } },
+                },
+                'day:2026-10-06:c3': { escaped: 0, refused: 1 },
+            }),
+        );
+        expect(guardDay(dir, '2026-10-06').rules).toEqual({
+            overwrite: { escaped: 0, refused: 3 },
+            rm: { escaped: 1, refused: 0 },
         });
     });
 });

@@ -37,7 +37,7 @@ One refusal or escape kept in x-mod-guard's store, the newest 50; x-mod-stash's 
 _Avoid_: log entry, alert
 
 **Job scratch**:
-A throwaway clone under the session's own `$CLAUDE_JOB_DIR/tmp`; its local git runs unrefused, a push or a gate bypass from it does not.
+The session's own `$CLAUDE_JOB_DIR/tmp`: a throwaway clone's local git and any write over its own files run unrefused, a push or a gate bypass from it does not.
 _Avoid_: sandbox, temp repo
 
 **Day count**:

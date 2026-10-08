@@ -62,6 +62,11 @@ if (existsSync(guardStore)) {
     console.log(
         `- guard: ${today.refused} refusals · ${today.escaped} escapes today, ${today.sessions} sessions`,
     );
+    const rules = Object.entries(today.rules)
+        .sort(([, a], [, b]) => b.refused + b.escaped - a.refused - a.escaped)
+        .map(([rule, n]) => `${rule} ${n.refused}/${n.escaped}`);
+    if (rules.length)
+        console.log(`- guard by rule, refused/escaped: ${rules.join(', ')}`);
 } else {
     console.log(`- guard: no plugin store at ${guardStore}`);
 }

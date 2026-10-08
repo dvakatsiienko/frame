@@ -23,9 +23,13 @@ export type GuardEvent = {
     target: string;
     // why it was refused, the line x-mod-stash shows unfolded; an escape names every rule it stepped past
     why: string;
+    // the rule that fired; an escape names every rule it stepped past, comma-joined
+    rule: string;
 };
 
-export type DayCount = { refused: number; escaped: number };
+type Tally = { refused: number; escaped: number };
+// rules: the same tally split by the rule that fired, so noise and real catches separate
+export type DayCount = Tally & { rules?: Record<string, Tally> };
 
 const EVENT = 'event:';
 const KEEP = 50;
@@ -107,8 +111,13 @@ async function record(
     const events = keys.filter((k) => k.startsWith(EVENT));
     for (const old of events.slice(0, Math.max(0, events.length - KEEP)))
         await $.store.delete(old);
-    await count($, keys, at, sid, event.kind).catch(() => undefined);
+    await count($, keys, at, sid, event).catch(() => undefined);
 }
+
+const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
+    escaped: (was?.escaped ?? 0) + (kind === 'escaped' ? 1 : 0),
+    refused: (was?.refused ?? 0) + (kind === 'refused' ? 1 : 0),
+});
 
 // the local day, `yyyy-mm-dd`
 function day(at: number) {
@@ -123,13 +132,15 @@ async function count(
     keys: string[],
     at: number,
     sid: string,
-    kind: GuardEvent['kind'],
+    { kind, rule }: Pick<GuardEvent, 'kind' | 'rule'>,
 ) {
     const key = `${DAY}${day(at)}:${sid}`;
     const was = (await $.store.get(key)) as DayCount | undefined;
+    const rules = { ...was?.rules };
+    for (const r of new Set(rule.split(', '))) rules[r] = tally(rules[r], kind);
     await $.store.set(key, {
-        escaped: (was?.escaped ?? 0) + (kind === 'escaped' ? 1 : 0),
-        refused: (was?.refused ?? 0) + (kind === 'refused' ? 1 : 0),
+        ...tally(was, kind),
+        rules,
     } satisfies DayCount);
     const oldest = `${DAY}${day(at - DAYS * 86_400_000)}`;
     for (const old of keys)
@@ -170,6 +181,7 @@ export const register: Register = (on) => {
                 command,
                 door: refusal.door,
                 kind: 'refused',
+                rule: refusal.rule,
                 target: refusal.targets[0] ?? '',
                 why: refusal.why,
             });
@@ -179,6 +191,7 @@ export const register: Register = (on) => {
             command,
             door: verdict.refusals.map((r) => r.door).join('; '),
             kind: 'escaped',
+            rule: [...new Set(verdict.refusals.map((r) => r.rule))].join(', '),
             target: verdict.targets.join(', '),
             why: verdict.refusals.map((r) => r.why).join('; '),
         });
@@ -224,6 +237,7 @@ export const register: Register = (on) => {
             command: `fork: ${e.description}`,
             door: FORK_DOOR,
             kind: 'refused',
+            rule: 'fork',
             target: 'why-fork',
             why: FORK_WHY,
         });

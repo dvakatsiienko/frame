@@ -124,8 +124,9 @@ export const guardDay = (dir: string, day: string) => {
     const prefix = `day:${day}:`;
     const sessions = new Set<string>();
     const counts = { escaped: 0, refused: 0 };
+    const rules: Record<string, GuardDayCount> = {};
     for (const name of readdirSync(dir).filter((f) => GUARD_STORE.test(f))) {
-        let store: Record<string, Partial<GuardDayCount>>;
+        let store: Record<string, Partial<GuardDay>>;
         try {
             store = JSON.parse(readFileSync(join(dir, name), 'utf8'));
         } catch {
@@ -136,9 +137,16 @@ export const guardDay = (dir: string, day: string) => {
             sessions.add(key.slice(prefix.length));
             counts.refused += count.refused ?? 0;
             counts.escaped += count.escaped ?? 0;
+            for (const [rule, n] of Object.entries(count.rules ?? {})) {
+                const was = rules[rule] ?? { escaped: 0, refused: 0 };
+                rules[rule] = {
+                    escaped: was.escaped + n.escaped,
+                    refused: was.refused + n.refused,
+                };
+            }
         }
     }
-    return { ...counts, sessions: sessions.size };
+    return { ...counts, rules, sessions: sessions.size };
 };
 
 export const medianMinutes = (prs: MergedPr[]) => {
@@ -155,6 +163,7 @@ export const medianMinutes = (prs: MergedPr[]) => {
 /* Types */
 export type MergedPr = { createdAt: string; mergedAt: string };
 type GuardDayCount = { refused: number; escaped: number };
+type GuardDay = GuardDayCount & { rules: Record<string, GuardDayCount> };
 type ContentBlock =
     | { type: 'text'; text: string }
     | {

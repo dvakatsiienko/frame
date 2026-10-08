@@ -29,6 +29,11 @@
   - given a git discard, a local rewrite (`branch -D`, `worktree remove|prune`) or a sweep (`add -A`, a bare `commit`) whose dir and every path resolve under `$CLAUDE_JOB_DIR/tmp`, spelled out or as `$CLAUDE_JOB_DIR` / `${CLAUDE_JOB_DIR}`, through `cd` or `-C`
   - then it runs; the same command anywhere else, in the job dir itself, in another job's tmp or climbing out with `..` is refused as before
   - then a push, a gate bypass and every non-git floor command stay refused inside the tmp too — a push reaches a real remote, a bypass a real gate
+- ✅ a job's own tmp takes writes over its own files
+  - given a `>` redirect, a heredoc into a file, an `mv` or a `cp -f` onto a file that exists under `$CLAUDE_JOB_DIR/tmp` (spelled out, as the variable, or after a `cd` there), a script run by path writing its own log included
+  - then it runs; the same write onto a repo path, another job's tmp or a path climbing out with `..` is refused as before
+  - decision: the FRM-340 retros counted ~15 hand rewrites of a coder's and a verifier's own scratch writes (FRM-341); `rm` stays refused there too, `trash` is the door
+  - 📌 the `zsh -f <script>` and `gh --jq '.[0]'` refusals FRM-341 names left no x-mod-guard event — inference: cc's own worktree-isolation guard refused them, which no mod reaches
 - ✅ an escape lets one refused command run
   - given dima said yes to a refused command
   - when the command ends with `# dima-ok: <targets>`, naming every target the refusal named (split by spaces or commas)
@@ -41,10 +46,11 @@
   - then the command is refused with «x-mod-guard: the check failed or ran out of time … (fail closed)»
   - decision: `.catch` answers `{ deny }` — a hook without one is skipped and the command would run
 - ✅ every refusal and escape is kept as a guard event
-  - makes: one `event:<at>:<session>` key in x-mod-guard's `$.store` (`~/.claude/plugins/store/x-mod-guard_*.json`): session, its registry name, the command cut to 160 characters, refused or escaped, door, target, and why it was refused; the newest 50 kept
+  - makes: one `event:<at>:<session>` key in x-mod-guard's `$.store` (`~/.claude/plugins/store/x-mod-guard_*.json`): session, its registry name, the command cut to 160 characters, refused or escaped, the rule that fired, door, target, and why it was refused; the newest 50 kept
   - then x-mod-stash's band folds the run into one `🛡️ <n> refusals · <m> sessions` counter row that ages out 30 min after the last event, no dismiss — x-mod-stash's `FTR.md`, «guard counter»
 - ✅ every day's refusals and escapes are counted past the kept events
-  - makes: one `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's `$.store`, `{ refused, escaped }`, the local day; counts older than 30 days are dropped
+  - makes: one `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's `$.store`, `{ refused, escaped, rules: { <rule>: { refused, escaped } } }`, the local day; counts older than 30 days are dropped
+  - then `pnpm flow:report` prints the day's total and a `guard by rule, refused/escaped` line, busiest rule first, so noise and real catches separate (FRM-341)
   - then a halt sums the day's keys for the whole day, however many events the newest-50 cut has dropped
   - decision: one key per session a day — two sessions never write the same key, so a count is never lost to a race; a count that fails to write never changes the refusal
   - 📌 only the Bash tool is read: a command started by `Monitor` or a `!` line in the prompt goes through unread
