@@ -4,7 +4,11 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 const CCLIO = '/home/frame/cclio';
 
 // every tree is clean unless it holds `.scratch/` or its HEAD reaches a commit no branch does
-function world(on: On, root: string, { scratch = false, orphan = false } = {}) {
+function world(
+    on: On,
+    root: string,
+    { scratch = false, orphan = false, broken = false } = {},
+) {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
     const ran: string[] = [];
@@ -15,15 +19,19 @@ function world(on: On, root: string, { scratch = false, orphan = false } = {}) {
     on('fs.exists', (_$, e) => ({
         value: !e.path.endsWith('/.scratch') || scratch,
     }));
-    on('process.run', () => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout: orphan ? 'a1b2c3\n' : '',
-        },
-    }));
+    on('process.run', () =>
+        broken
+            ? { deny: 'index.lock held' }
+            : {
+                  value: {
+                      exitCode: 0,
+                      isStderrTruncated: false,
+                      isStdoutTruncated: false,
+                      stderr: '',
+                      stdout: orphan ? 'a1b2c3\n' : '',
+                  },
+              },
+    );
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
@@ -78,6 +86,16 @@ for (const tree of [
         expect(ran).toEqual([]);
     });
 }
+
+test('cclio asks to remove a scratch tree whose lookup fails', async ($, on) => {
+    const { ran } = world(on, CCLIO, { broken: true });
+    const r = await bash(
+        $,
+        'git -C /home/frame worktree remove .claude/worktrees/FRM-1-x',
+    );
+    expect(r.deny).toContain('ask cclio');
+    expect(ran).toEqual([]);
+});
 
 test('a session outside cclio still asks to remove a scratch tree', async ($, on) => {
     const { ran } = world(on, '/home/frame');

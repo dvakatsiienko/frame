@@ -249,7 +249,7 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
 const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
 const UNPROVEN_DOOR =
-    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»)';
+    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»). a bg session: ask cclio, who asks dima';
 const UNPROVEN_WHY =
     "a # dima-ok marker counts only when dima's last typed prompt names its target";
 const UNREAD_DOOR = 'Read the file first, then Write';
@@ -258,11 +258,14 @@ const UNREAD_WHY = 'a Write replaces a tracked file this session never read';
 async function isTracked($: EngineInterface, path: string) {
     if (!(await $.fs.exists(path))) return false;
     const cut = path.lastIndexOf('/');
-    const ls = await $.process.run(
-        ['git', 'ls-files', '--error-unmatch', '--', path.slice(cut + 1)],
-        { cwd: path.slice(0, cut) || '/' },
-    );
-    return ls.exitCode === 0;
+    // a slow or locked repo fails open on this lookup only: the Write runs as cc would run it
+    const ls = await $.process
+        .run(
+            ['git', 'ls-files', '--error-unmatch', '--', path.slice(cut + 1)],
+            { cwd: path.slice(0, cut) || '/' },
+        )
+        .catch(() => null);
+    return ls?.exitCode === 0;
 }
 
 // a tree cclio may drop unasked: no `.scratch/` plan inside, and every commit its HEAD reaches is on a branch;
@@ -289,7 +292,7 @@ async function isCleanTree($: EngineInterface, tree: string) {
 
 // parallel Reads in one step each add their path: a write that lost the race reads again
 async function markSeen($: EngineInterface, path: string) {
-    for (;;) {
+    for (let tries = 0; tries < 3; tries++) {
         const { value = [], version } = await $.state.get(SEEN);
         if (value.includes(path)) return;
         const { isSet } = await $.state.set(SEEN, [...value, path], {
@@ -471,7 +474,8 @@ export const register: Register = (on) => {
             }
             const result = await next(e);
             if (result.deny === undefined && !result.isError)
-                await markSeen($, real);
+                // bookkeeping only: the call already ran, so a failed mark never turns it into a refusal
+                await markSeen($, real).catch(() => undefined);
             return result;
         },
     ).catch(() => ({ deny: FAILED }));

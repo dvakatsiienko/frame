@@ -38,7 +38,7 @@
   - decision: the temp roots joined after a verifier lost ~8 calls to fixture repos under `mktemp -d` (FRM-346's retro, dima, 2026-10-08)
   - then it runs; the same command anywhere else, in the job dir itself, in another job's tmp or climbing out with `..` is refused as before
   - then a push, a gate bypass and every non-git floor command stay refused inside the tmp too — a push reaches a real remote, a bypass a real gate
-- ⬜ cclio cleans up its fleet's scratch without dima's word
+- ✅ cclio cleans up its fleet's scratch without dima's word
   - given a session rooted under `~/frame/cclio` runs `git worktree remove <tree>` on a tree at `<repo>/.claude/worktrees/<name>` or under a job's tmp (`~/.claude/jobs/<id>/tmp/…`), or `git branch -D` on branches that all start `scratch/`
   - then it runs; `git branch -d` of a fully merged branch already runs for every session, since git refuses an unmerged one
   - then a tree elsewhere, a `--force` remove, a `-D` naming any non-`scratch/` branch, and the same commands from any other session are still refused with «ask cclio»
@@ -61,7 +61,7 @@
   - when the marker names another target, or only some of them (`rm -rf ~/keep tmp.txt # dima-ok: tmp.txt`)
   - then the command is refused as before
   - decision: the target is the command's own — its paths, pattern or branch; the rule's own word when it names none (`HEAD`, `&`, `-s`) — and the refusal prints the exact marker, so a coder never guesses it
-- ⬜ a dima-ok marker counts only when dima's own last prompt names its target
+- ✅ a dima-ok marker counts only when dima's own last prompt names its target
   - given a command whose `# dima-ok:` marker names every target
   - when dima's last prompt typed at the composer or sent over the bridge names each target as a whole word, case-sensitive: each edge is the prompt's end, a space, a quote (`«»`, `“”` included), punctuation or a dash; a `.` or `/` closes it before a space or the end (`build.`, `/x/build/`)
   - then it runs as an escape
@@ -149,7 +149,7 @@
   - given other file types, or a session outside `~/frame/cclio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start
   - makes: a count in x-mod-guard's `$.state`, the session's own: it survives a hot reload and dies with the session, so nothing piles up in the shared store
-- ⬜ a Write over a tracked file this session never read is refused
+- ✅ a Write over a tracked file this session never read is refused
   - given a session that has not Read, Edited or Written a file git tracks
   - when it Writes over that file
   - then the Write is refused: «instead: Read the file first, then Write», and a guard event is kept (rule `write-unread`)
