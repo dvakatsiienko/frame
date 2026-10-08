@@ -317,14 +317,15 @@ two sessions, A and B, in one checkout.
   - decision: on the second line, not beside the name — in the narrow pane a long name wrapped to three lines or cut the model (the live look, FRM-329)
 - ⬜ the board borrows the reference's look (dima's dark screenshot on FRM-329)
   - given the board draws
-  - then a head reads `◆ sessions on this mac · n` with `n busy` on its right, each row leads with a `●` state dot, the second line sits under the name and is dim, and a dim footer says what a press does
+  - then a head reads `🚦 sessions on this mac · n` with `n busy` on its right, each row leads with a `●` state dot, the second line sits under the name and is dim, and a dim footer says what a press does
   - decision: no new controls — the reference's run buttons stay out (dima: «no need functionality buttons»)
   - decision: the full row between members stays, dima's call of 2026-10-05, though the reference packs its rows
 - ⬜ `/board colour` tries colour as an MVP
   - given colour is off, the default
   - when dima types `/board colour`
-  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), the state word `busy` in the theme's blue (`n busy` in the head too), `blocked` red, `waiting` and `needs_input` amber, `ctx n%` dim under 50, amber under 80, red above; the model stays dim and orange is left to `⏳ n` alone; typed again, it goes back
+  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), the state word `busy` in the theme's blue (`n busy` in the head too), `blocked` red, `waiting` and `needs_input` amber, `ctx n%` dim under 50, then sline's bar ramp: yellow from 50, orange from 65, red from 80; the model stays dim and orange is left to `⏳ n` alone; typed again, it goes back
   - decision: calm by default, a colour only where something is live — the first MVP put the same orange on the busy dot, the busy word, the head and the asks, and painted a calm context green (dima, 2026-10-08: «colors like in SS»)
+  - decision: the head leads with `🚦`, the board's own button in the row, not the reference's `◆` (dima, 2026-10-08: «dont' like the diamond»); the context climbs sline's ramp, not the theme's dull amber (dima: «pick prettier color ctx filling»)
   - decision: theme keys (`suggestion`, `warning`, `error`) for every state colour, so light and dark both read; the six dot hues are fixed mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane, with no coral beside the asks' orange
   - decision: one fleet-wide switch in the store, so dima compares on his own board; the verdict is his eye (FRM-329)
 - ⬜ the board stays current

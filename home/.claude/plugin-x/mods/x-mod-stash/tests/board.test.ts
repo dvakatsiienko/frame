@@ -486,7 +486,7 @@ test('with colour on, a busy member reads in the working blue and an idle one st
     ]);
 });
 
-test('with colour on, a calm context stays dim and a full one turns red', async ($, on) => {
+test("with colour on, a calm context stays dim and a filling one climbs sline's ramp", async ($, on) => {
     fleet(on, {
         'board-colour': true,
         [`context:${HERE}`]: 31,
@@ -498,8 +498,14 @@ test('with colour on, a calm context stays dim and a full one turns red', async 
     expect([calm?.color, calm?.dim, full?.color]).toEqual([
         undefined,
         true,
-        'error',
+        '#e5484d',
     ]);
+});
+
+test("the board's head leads with the board's own 🚦", async ($, on) => {
+    fleet(on);
+    const ui = await board($);
+    expect(await ui.find({ text: '🚦', type: 'Text' })).toBeTruthy();
 });
 
 test("a dead session's asks leave the band", async ($, on) => {

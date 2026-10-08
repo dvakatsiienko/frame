@@ -691,9 +691,16 @@ const statusOf = (status: string | undefined) =>
     status !== undefined && isStatus(status)
         ? STATUS[status]
         : { tint: 'warning', word: status ?? '?' };
-// a calm context is dim; only one filling up asks for the eye
+// a calm context is dim; a filling one climbs sline's bar ramp, yellow, orange, red, tuned to 3.2:1 or more on a
+// light pane and 4.2:1 on a dark one
 const contextTint = (percent: number) =>
-    percent >= 80 ? 'error' : percent >= 50 ? 'warning' : undefined;
+    percent >= 80
+        ? '#e5484d'
+        : percent >= 65
+          ? '#d9661a'
+          : percent >= 50
+            ? '#b98500'
+            : undefined;
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
@@ -1310,7 +1317,7 @@ export const register: Register = (on) => {
                     justifyContent='space-between'
                     marginBottom={1}>
                     <Box flexDirection='row' gap={1}>
-                        <Text color={ACCENT}>◆</Text>
+                        <Text>🚦</Text>
                         <Text bold>sessions</Text>
                         <Text dimColor>on this mac · {list.length}</Text>
                     </Box>
