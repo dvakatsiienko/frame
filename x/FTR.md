@@ -272,10 +272,10 @@
   - when `x stats --days 30` runs
   - then `days` reads 2, `first` and `last` name 10-07 and 10-08 — never the window asked for
 - ✅ `x stats` leaves dev builds out
-  - given trace lines written by a dev build — an x the shim built from `x/go` code that differs from `origin/main` (an edit, an untracked file, an unpushed commit), stamped `x.dev`
+  - given trace lines written by a dev build — an x the shim built from `x/go` code that differs from its merge base with `origin/main` (an edit, an untracked file, an unpushed commit), stamped `x.dev`
   - when `x stats` runs, then they are left out of every count, the span included, and `dev` says how many there were
   - when `x stats --dev` runs, then they are counted too
-  - decision: dev means x/go differs from origin/main, in a worktree or the main checkout — never the `-dirty` version, which main's x carries whenever the frame tree holds any uncommitted file and which hid 73 % of real calls; never «built in a worktree», which would hide a coder's real `x lane` calls; lines from before the stamp count as real (dima, 2026-10-08)
+  - decision: dev means x/go differs from its merge base with origin/main, in a worktree or the main checkout — never the `-dirty` version, which main's x carries whenever the frame tree holds any uncommitted file and which hid 73 % of real calls; never «built in a worktree», which would hide a coder's real `x lane` calls; never origin/main itself, which would mark a checkout merely behind main; lines from before the stamp count as real (dima, 2026-10-08)
 - ✅ `x stats --outside` ranks what cc runs by hand
   - given cc session transcripts under `~/.claude/projects/`, subagents included
   - when `x stats --outside --days 7` runs

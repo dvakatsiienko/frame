@@ -761,7 +761,7 @@
                     "value": "n"
                 },
                 "dev": {
-                    "description": "count the lines a dev build (x/go differing from origin/main) wrote too; left out by default",
+                    "description": "count the lines a dev build (x/go differing from its merge base with origin/main) wrote too; left out by default",
                     "type": "boolean"
                 },
                 "outside": {

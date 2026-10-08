@@ -74,7 +74,7 @@ var impls = map[string]Impl{
 // set by -ldflags at build; a dev run falls back to the executable's own tree
 var srcDir string
 
-// set to "1" by the shim when the x/go it built differs from origin/main
+// set to "1" by the shim when the x/go it built differs from its merge base with origin/main
 var devBuild string
 
 var (
