@@ -81,6 +81,18 @@
   - decision: the files move into the git dir, never the shared stash stack another session could pop
 - ✅ `x lane push` pushes HEAD's sha and reads the remote back
 - ⬜ `x lane pr-open` opens a pr as the coder app
+- ✅ `x lane review <pr>` keeps the ci review on the pr head
+  - given a pr whose last review round judged an older commit, under the 2-round cap
+  - when `x lane review <pr>` runs
+  - then it re-adds `🤖 review:requested` as the coder app and names the judged commit
+  - given the last round judged the head, a round running on the head, or a repo with no `review.yml`, then it prints ok and touches no label
+  - given 2 rounds already ran, then it requests nothing, exits 1 and names dima's approval of the pr as the way past
+  - decision: no `--apply` — the verb's own checks (staleness, the cap) are the guard, and the coder's «final» ping runs it as one call (FRM-355)
+- ✅ `x lane pr-body <pr> <file>` writes a pr body by number and reads it back
+  - given no pr number, or a file where the number goes
+  - when `x lane pr-body` runs
+  - then it refuses with exit 2 and calls nothing
+  - given a number and a file, when it runs with `--apply`, then the body is written as the coder app and the read-back matches the file, or it fails naming the difference
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ a merge-main that git refuses without conflicts names git's reason
   - given an untracked file where origin/main adds one
@@ -164,6 +176,12 @@
   - given a rate with no n, an exit line with no surface, an exit line into `cclio/`, a relayed approval with no time, or jev with no budget
   - when it runs
   - then each finding names its line and the rule
+- ✅ `x brief preflight <ticket>` reads a ticket against main before a lane
+  - given a ticket with an exit line without a number, an exit line with no surface and no «post-merge», a simplify / redesign / rework outside quotes, an `x` verb origin/main already has, or a path a main commit for this ticket already changed
+  - when `x brief preflight <ticket>` runs
+  - then it fails naming each one with its line, and lists every main commit whose body carries `ticket: <id>`
+  - given a clean ticket, then it prints ok
+  - decision: a path counts as shipped only through a commit for this ticket, never by existing — most exit lines edit files main has (cclio, 2026-10-09)
 
 ## probe
 

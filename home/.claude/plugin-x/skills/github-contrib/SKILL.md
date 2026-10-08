@@ -36,12 +36,9 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   top-level comment does not count as a reply.
 - **the bytes review lane**: `gh pr edit <n> --add-label '🤖 review:requested'` starts the ci
   reviewer on this head; the guard publishes `review:clean`, the required check on main —
-  never created = blocked. a later push leaves it stale — re-review = remove + add the label,
-  at most twice per pr, a third round on dima's word. read the counter before every label, never
-  from memory: `gh api --paginate 'repos/<o>/<r>/actions/workflows/review.yml/runs?per_page=100'
-  --jq '.workflow_runs[] | select(.head_branch=="<pr branch>" and .conclusion=="success") | .id' | wc -l`
-  — at 2 the label does nothing. filter on the client: the server's `?branch=` answered 0 while
-  the same list showed the success (#116, 2026-09-30). 📌 a green `review:clean` means a review ran; until the reviewer's
+  never created = blocked. a later push leaves it stale — `x lane review <pr>` re-requests it: it
+  names the judged commit, counts the rounds (two per pr), and at the cap names dima's approval,
+  the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
   own verdict marker gates it, the findings live in its comment — read that.
 - a claude-code-action pr that edits a workflow already on the default branch IS reviewed
   (measured 2026-09-12: #79 got two rounds with verdict lines; the «self-skips» belief in
