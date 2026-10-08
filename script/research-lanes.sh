@@ -38,7 +38,7 @@ case $brief_abs in
   */recipes/*/last/*)
     name=${brief_abs##*/recipes/}
     recipe=${brief_abs%/recipes/*}/recipes/${name%%/*}
-    groomed=$(awk 'NR > 1 && /^---$/ { exit } /^groomed:/ { sub(/^groomed:[ \t]*/, ""); gsub(/["'\''`]/, ""); print; exit }' "$recipe/recipe.md" 2>/dev/null)
+    groomed=$(awk 'NR > 1 && /^---$/ { exit } /^groomed:/ { sub(/^groomed:[ \t]*/, ""); sub(/\r$/, ""); sub(/[ \t]+#.*$/, ""); sub(/[ \t]+$/, ""); gsub(/["'\''`]/, ""); print; exit }' "$recipe/recipe.md" 2>/dev/null)
     [ "$groomed" = "$(date +%F) (dima)" ] || {
       echo "research-lanes: recipe $(basename "$recipe") is groomed ${groomed:-never}, not today — groom it with dima first (x:shape-recipe step 0)" >&2
       exit 2

@@ -13,16 +13,13 @@ import path from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
 
 const script = path.resolve(import.meta.dirname, '../research-lanes.sh');
+// sv formats a local date as yyyy-mm-dd, the same day `date +%F` prints
+const today = new Date().toLocaleDateString('sv');
 
-test.each([
-    ['no stamp', ''],
-    ['a stale stamp', 'groomed: 2000-01-01 (dima)\n'],
-    // sv formats a local date as yyyy-mm-dd, the same day `date +%F` prints
-    ['an unsigned stamp', `groomed: ${new Date().toLocaleDateString('sv')}\n`],
-])('a recipe brief with %s is refused before any lane starts', (_, stamp) => {
+function runOnRecipeBrief(stamp: string) {
     const root = mkdtempSync(path.join(tmpdir(), 'lanes-'));
     onTestFinished(() => rmSync(root, { recursive: true }));
-    // a copy with no op-run.sh beside it: a broken gate fails here instead of paying for real lanes
+    // a copy with no op-run.sh beside it: no run here can pay for real lanes
     const copy = path.join(root, 'research-lanes.sh');
     copyFileSync(script, copy);
     const recipe = path.join(root, 'recipes/refresh-probe');
@@ -33,12 +30,32 @@ test.each([
         `---\nkind: refresh\n${stamp}---\n\n# refresh-probe\n`,
     );
     writeFileSync(path.join(last, 'brief.md'), 'the question\n');
-
     const run = spawnSync('sh', [copy, path.join(last, 'brief.md')], {
         encoding: 'utf8',
     });
+    return { last: readdirSync(last), run };
+}
+
+test.each([
+    ['no stamp', ''],
+    ['a stale stamp', 'groomed: 2000-01-01 (dima)\n'],
+    ['an unsigned stamp', `groomed: ${today}\n`],
+])('a recipe brief with %s is refused before any lane starts', (_, stamp) => {
+    const { run, last } = runOnRecipeBrief(stamp);
 
     expect(run.status).toBe(2);
     expect(run.stderr).toContain('recipe refresh-probe');
-    expect(readdirSync(last)).toEqual(['brief.md']);
+    expect(last).toEqual(['brief.md']);
+});
+
+test.each([
+    ['plain', `groomed: ${today} (dima)\n`],
+    ['quoted', `groomed: "${today} (dima)"\n`],
+    ['commented', `groomed: ${today} (dima) # by dima\n`],
+    ['crlf', `groomed: ${today} (dima)  \r\n`],
+])('a %s stamp from today lets the lanes start', (_, stamp) => {
+    const { run, last } = runOnRecipeBrief(stamp);
+
+    expect(run.stderr).not.toContain('research-lanes: recipe');
+    expect(last.some((entry) => entry.startsWith('lanes-'))).toBe(true);
 });
