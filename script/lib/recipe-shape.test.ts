@@ -95,6 +95,13 @@ test.each(recipes)('%s has the recipe shape', (name) => {
         true,
     );
 
+    // research:lanes compares the date to today, so a stamp in another shape locks the recipe for good
+    if (fields?.groomed !== undefined) {
+        expect(fields.groomed, `${name}: groomed: <yyyy-mm-dd> (dima)`).toMatch(
+            /^\d{4}-\d{2}-\d{2} \(dima\)$/,
+        );
+    }
+
     const script = String(fields?.script);
     expect(
         script === 'none' ||
