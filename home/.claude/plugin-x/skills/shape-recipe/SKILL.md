@@ -29,6 +29,7 @@ kind: refresh | nurture | run   # research → distill · groom an existing syst
 cadence: <when it should run>   # «every cc minor», «monthly», «on dima's word»
 artifacts: [<path>, …]          # what it keeps fresh, pointed at, never housed here
 script: <package.json key> | none
+groomed: <yyyy-mm-dd> (dima)    # written only on dima's word; research:lanes refuses a brief under last/ on any other day
 was: [<old name>, …]            # after a rename; the shape test fails while a live file still names one
 ```
 the heading is `# <folder name>`, nothing else — the shape test checks it.
@@ -51,7 +52,7 @@ or verb shares the stem (`refresh-agent-ops` ↔ `x fleet ops` ↔ `docs/knowled
 
 ## running one
 
-0. **a rerun grooms the recipe before it runs it** (dima, 2026-10-08): read `recipe.md` as the thing under review, not as the plan — is every want line still true, does every vector serve a want line and ask today's question, do the artifacts and the lanes still exist, and does the recipe as a whole do what it was made for? the test: «would i want to run this to refresh myself and the fleet?» — a no on any line is printed with the groom and fixed with dima, never in silence, and no lane launches before his word on the groomed recipe. done: each vector names the want line it serves or is listed as orphaned, and dima said «run it»
+0. **a rerun grooms the recipe before it runs it** (dima, 2026-10-08): read `recipe.md` as the thing under review, not as the plan — is every want line still true, does every vector serve a want line and ask today's question, do the artifacts and the lanes still exist, and does the recipe as a whole do what it was made for? the test: «would i want to run this to refresh myself and the fleet?» — a no on any line is printed with the groom and fixed with dima, never in silence, and no lane launches before his word on the groomed recipe. done: each vector names the want line it serves or is listed as orphaned, dima said «run it», and on that word `groomed: <today> (dima)` is in the frontmatter — `pnpm research:lanes` refuses a brief under `last/` without it
 1. read `recipe.md` and the last 5 lines of `log.md`. done: you can say what changed since the last run
 2. re-groom the vectors with dima: print them with the shared vectors below, he cuts and adds. done: his word on the list. (open)
 3. research, all lanes at once from one brief: the `researcher` agent (sources, code, docs) + `pnpm research:lanes <brief>` (exa + parallel). raw output → `last/`. done: every lane landed or failed out loud

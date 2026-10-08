@@ -32,6 +32,18 @@ fi
 
 brief=${1:?usage: research-lanes <brief.md> [out-dir]}
 [ -s "$brief" ] || { echo "research-lanes: no brief at $brief" >&2; exit 1; }
+# a recipe's lanes launch only after dima's word on today's groom (x:shape-recipe step 0)
+brief_abs=$(cd "$(dirname "$brief")" && pwd)/$(basename "$brief")
+case $brief_abs in
+  */recipes/*/last/*)
+    recipe=${brief_abs%%/last/*}
+    groomed=$(awk 'NR > 1 && /^---$/ { exit } /^groomed:/ { print $2; exit }' "$recipe/recipe.md" 2>/dev/null)
+    [ "$groomed" = "$(date +%F)" ] || {
+      echo "research-lanes: recipe $(basename "$recipe") is groomed ${groomed:-never}, not today — groom it with dima first (x:shape-recipe step 0)" >&2
+      exit 2
+    }
+    ;;
+esac
 out=${2:-$(dirname "$brief")/lanes-$(date +%H%M%S)}
 mkdir -p "$out"
 op="$(dirname "$self")/op-run.sh"
