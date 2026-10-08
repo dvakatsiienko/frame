@@ -1,6 +1,13 @@
 /* @jsx h */
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
+import type {
+    StashDigest,
+    StashEntry,
+    StashGuardLine,
+    StashMember,
+    StashView,
+} from '../types/stash.d.ts';
 import {
     type Door,
     FLEET_NAME,
@@ -23,7 +30,7 @@ import {
 // The reply stays the source of truth for asks; this band only shows and copies them.
 
 // label: the repo; name: the session's registry name, when it has one
-type Entry = { label: string; name?: string; asks: string[]; at: number };
+type Entry = StashEntry;
 // a session's last reply: when it ended, its 🔭 wait; `ended` once the session itself exited
 type Reply = { at: number; name?: string; wait?: string; ended?: number };
 
@@ -54,6 +61,10 @@ const HOT = 'hot:';
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives here (FRM-320)
 const OPEN = { key: 'open', plugin: 'x-mod-stash' } as const;
 const FIVE_HOUR = { key: 'fiveHour', plugin: 'x-mod-stash' } as const;
+// what the band and the board draw: renders read it, and a write redraws them, no invalidate
+const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
+// the running turn, so a mid-turn reload still knows it is busy
+const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 // a 📄 line's HH:MM — the same shape reply-check.py reads
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
 const PING =
@@ -83,19 +94,7 @@ let modelSeen: string | undefined;
 let hotGen = 0;
 
 // x-mod-guard's refusals and escapes: each plugin's $.store is its own file, so the band reads x-mod-guard's file directly
-type GuardLine = {
-    key: string;
-    sid: string;
-    name?: string;
-    command: string;
-    kind: 'refused' | 'escaped';
-    door: string;
-    target: string;
-    at: number;
-    // why it was refused; an event kept before x-mod-guard wrote it has none, and shows its door
-    why?: string;
-};
-// the mod was `guard` before it was x-mod-guard: its old store file is read beside the new one
+type GuardLine = StashGuardLine;
 const GUARD_FILE = /^x-mod-guard_.*\.json$/;
 const GUARD_EVENT = 'event:';
 // the counter row ages out after this long with no new event
@@ -104,10 +103,7 @@ let guards: GuardLine[] = [];
 let areGuardsOpen = false;
 
 // what the fleet did while dima was afk, shown in the band where he turned 💨 off until his next prompt
-type Digest = {
-    needs: { sid: string; name: string; asks: number }[];
-    done: { sid: string; name: string }[];
-};
+type Digest = StashDigest;
 let digest: Digest | undefined;
 
 // a thread's asks show while it has any and they are under a day old
@@ -545,10 +541,9 @@ async function bashGuard($: EngineInterface, command: unknown) {
     return undefined;
 }
 
-async function load($: EngineInterface): Promise<boolean> {
+async function load($: EngineInterface) {
     const now = await $.clock.now();
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
-    const afkChanged = (flag?.on === true) !== afk;
     afk = flag?.on === true;
     const next: Record<string, Entry> = {};
     for (const key of await $.store.keys()) {
@@ -572,24 +567,57 @@ async function load($: EngineInterface): Promise<boolean> {
             for (const sid of Object.keys(next))
                 if (sid !== selfId && !alive.has(sid)) delete next[sid];
     }
-    const before = JSON.stringify(
-        Object.entries(entries).map(([k, v]) => [k, v.asks]),
-    );
-    const after = JSON.stringify(
-        Object.entries(next).map(([k, v]) => [k, v.asks]),
-    );
     entries = next;
-    const cool = await cooled($);
-    const prevHolds = holds;
+    await cooled($);
     if (selfId) holds = await chip($, selfId, root);
-    const holdsChanged =
-        prevHolds.others !== holds.others || prevHolds.warned !== holds.warned;
-    const prevGuards = guards.map((g) => g.key).join();
     guards = await guardLines($).catch(() => guards);
-    const guardsChanged = prevGuards !== guards.map((g) => g.key).join();
-    return (
-        afkChanged || holdsChanged || guardsChanged || cool || before !== after
-    );
+    await publish($);
+}
+
+// the view the module's values make; the board's rows ride only while it is open
+function viewOf(
+    board: Pick<StashView, 'isBoardOpen' | 'members' | 'isColour' | 'at'>,
+): StashView {
+    return {
+        afk,
+        areGuardsOpen,
+        digest,
+        entries,
+        guards,
+        holds,
+        isHot: Boolean(hot),
+        selfId,
+        ...board,
+    };
+}
+
+let published = '';
+// writes the view to $.state when it changed; every site that reads it while drawing redraws
+async function publish($: EngineInterface) {
+    const isBoardOpen = await isOpen($);
+    const board = isBoardOpen
+        ? {
+              at: await $.clock.now(),
+              isBoardOpen,
+              isColour: (await $.store.get(COLOUR).catch(() => false)) === true,
+              members: await members($).catch(() => undefined),
+          }
+        : { at: 0, isBoardOpen, isColour: false };
+    const view = viewOf(board);
+    const text = JSON.stringify(view);
+    if (text === published) return;
+    published = text;
+    await $.state
+        .set(VIEW, view)
+        .catch((err) =>
+            $.ui.log(`x-mod-stash: the view was not kept: ${errorText(err)}`),
+        );
+}
+
+async function keepTurn($: EngineInterface) {
+    await $.state
+        .set(TURN, { afk: turnAfk, isBusy, isPinged: pinged, isUserTurn })
+        .catch(() => undefined);
 }
 
 // this session's id as session.start read it, else asked now; undefined when the engine cannot say
@@ -620,7 +648,7 @@ async function armHot($: EngineInterface) {
     $.clock.after(Math.max(0, wait), async () => {
         if (!hot || isBusy || mine !== hotGen) return;
         if (await cooled($)) {
-            $.ui.invalidate('ui.render');
+            await publish($);
             return;
         }
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
@@ -628,18 +656,7 @@ async function armHot($: EngineInterface) {
     });
 }
 
-type Member = {
-    sid: string;
-    name: string;
-    status?: string;
-    statusSince?: number;
-    door?: Door;
-    wait?: string;
-    asks: number;
-    context?: number;
-    model?: string;
-    offPattern: boolean;
-};
+type Member = StashMember;
 
 // `claude-opus-5-5` + `medium` reads «opus 5.5 · medium»; a dated or `[1m]` id drops its tail, an id off the pattern shows as written
 function modelLabel(model: string, effort?: string | number) {
@@ -859,7 +876,7 @@ const COLUMNS = {
 const isCoordinator = (name: string) => /\bcclio\b/.test(name);
 const doorGlyph = (door: Door) => (door.kind === 'open' ? '↗' : '📋');
 
-async function isBoardOpen($: EngineInterface) {
+async function isOpen($: EngineInterface) {
     const panes = await $.ui.panes().catch(() => []);
     return panes.some((p) => p.id === BOARD);
 }
@@ -938,11 +955,22 @@ export const register: Register = (on) => {
         const kept = {
             fiveHour: (await $.state.get(FIVE_HOUR)).value,
             open: (await $.state.get(OPEN)).value,
+            turn: (await $.state.get(TURN)).value,
+            view: (await $.state.get(VIEW)).value,
         };
         await pruneEnded($).catch(() => undefined);
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
         fiveHour = kept.fiveHour;
         if (kept.open !== undefined) open = kept.open;
+        // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
+        if (kept.turn) {
+            isBusy = kept.turn.isBusy;
+            isUserTurn = kept.turn.isUserTurn;
+            pinged = kept.turn.isPinged;
+            turnAfk = kept.turn.afk;
+        }
+        digest = kept.view?.digest;
+        areGuardsOpen = kept.view?.areGuardsOpen ?? false;
         await load($);
         await armHot($);
         await $.command
@@ -956,9 +984,8 @@ export const register: Register = (on) => {
             isPolling = true;
             const tick = () =>
                 $.clock.after(POLL_MS, async () => {
-                    // an open board redraws each tick: its «ago» times move on their own
-                    if ((await load($)) || (await isBoardOpen($)))
-                        $.ui.invalidate('ui.render');
+                    // an open board's view carries the tick's clock, so its «ago» times move on their own
+                    await load($);
                     tick();
                 });
             tick();
@@ -973,10 +1000,7 @@ export const register: Register = (on) => {
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
         pinged = e.text === PING;
         // dima read the away digest once he types again
-        if (isUserTurn && digest) {
-            digest = undefined;
-            $.ui.invalidate('ui.render');
-        }
+        if (isUserTurn) digest = undefined;
         isBusy = true;
         hotGen++;
         await load($);
@@ -985,6 +1009,7 @@ export const register: Register = (on) => {
                 $.ui.log('x-mod-stash: a «yes, after» verdict was not queued'),
             );
         turnAfk = afk;
+        await keepTurn($);
         await markBusy($).catch(() => undefined);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const clock = `now ${new Date(await $.clock.now()).toTimeString().slice(0, 5)}`;
@@ -1058,9 +1083,10 @@ export const register: Register = (on) => {
                     name: await sessionName($),
                 });
             else await $.store.delete(key);
-            if (await load($)) $.ui.invalidate('ui.render');
+            await load($);
         }
         isUserTurn = false;
+        await keepTurn($);
         // warn, never block: the note reaches the model with the event
         const nested = nestedAsks(reply);
         if (!nested.length) return r;
@@ -1079,8 +1105,8 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         isBusy = false;
+        await keepTurn($);
         // the store is 🔥's truth: ccrow writes its key after session.start, and a deleted key turns it off
-        const wasHot = Boolean(hot);
         const sid = await currentId($);
         if (sid)
             hot = (await $.store.get(HOT + sid).catch(() => hot)) as typeof hot;
@@ -1089,11 +1115,10 @@ export const register: Register = (on) => {
             await saveHot($);
         }
         await armHot($);
-        if (wasHot !== Boolean(hot)) $.ui.invalidate('ui.render');
         await settle($).catch(() =>
             $.ui.log("x-mod-stash holds: could not settle this turn's holds"),
         );
-        if (await load($)) $.ui.invalidate('ui.render');
+        await load($);
         return r;
     });
 
@@ -1132,7 +1157,7 @@ export const register: Register = (on) => {
         if (isColourFlip)
             await $.store.set(COLOUR, !(await $.store.get(COLOUR)));
         await openBoard($);
-        $.ui.invalidate('ui.render');
+        await publish($);
         if (!isColourFlip) return { text: 'fleet board opened' };
         return {
             text: `fleet board colour ${(await $.store.get(COLOUR)) ? 'on' : 'off'}`,
@@ -1142,21 +1167,22 @@ export const register: Register = (on) => {
     // the row's 🚦 shows whether the board is open
     on('ui.close', async ($, e, next) => {
         const r = await next(e);
-        if (e.id === BOARD) $.ui.invalidate('ui.render');
+        if (e.id === BOARD) await publish($);
         return r;
     });
 
     on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
         const ui = $.ui.resolve(e);
         const { Box, Text, Button, Link } = ui;
-        const now = await $.clock.now();
-        const me = await $.session.id().catch(() => selfId);
-        const list = await members($).catch(() => null);
+        // the poll read the registry into the view; the pane only draws it, so a draw costs no file or process read
+        const view = (await $.state.get(VIEW)).value;
+        const now = view?.at ?? 0;
+        const me = view?.selfId;
+        const list = view?.members;
         if (!list)
             return <Text dimColor>the session registry is unreadable</Text>;
         if (!list.length) return <Text dimColor>no live sessions</Text>;
-        const isColour =
-            (await $.store.get(COLOUR).catch(() => false)) === true;
+        const isColour = view.isColour;
         const hues = huesOf(list.map((m) => m.name));
         const row = (m: Member, i: number) => {
             const { tint: stateTint, word: state } = statusOf(m.status);
@@ -1357,7 +1383,7 @@ export const register: Register = (on) => {
         const left = await currentId($);
         const r = await next(e);
         if (left) await forget($, left).catch(() => undefined);
-        if (await load($)) $.ui.invalidate('ui.render');
+        await load($);
         return r;
     });
 
@@ -1408,8 +1434,13 @@ export const register: Register = (on) => {
 
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
         if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e);
-        const groups = Object.entries(entries).sort(([a], [b]) =>
-            a === selfId ? -1 : b === selfId ? 1 : 0,
+        // the published view, never the module's values: reading it subscribes this band, and a write redraws it
+        const view =
+            (await $.state.get(VIEW)).value ??
+            viewOf({ at: 0, isBoardOpen: false, isColour: false });
+        const isOpenList = (await $.state.get(OPEN)).value ?? open;
+        const groups = Object.entries(view.entries).sort(([a], [b]) =>
+            a === view.selfId ? -1 : b === view.selfId ? 1 : 0,
         );
         const total = groups.reduce((n, [, v]) => n + v.asks.length, 0);
         const ui = $.ui.resolve(e);
@@ -1424,18 +1455,17 @@ export const register: Register = (on) => {
             return shared > 1 && v.name ? `${base} · ${v.label}` : base;
         };
         // the head stays short; the per-session breakdown lives in its hover card
-        const here = entries[selfId ?? '']?.asks.length ?? 0;
+        const here = view.entries[view.selfId ?? '']?.asks.length ?? 0;
         const counts = `here ${here}, parallel ${total - here}`;
         const breakdown = groups
             .map(
-                ([sid, v]) =>
-                    `${sid === selfId ? `${title(v)} (here)` : title(v)} ${v.asks.length}`,
+                ([sid, e]) =>
+                    `${sid === view.selfId ? `${title(e)} (here)` : title(e)} ${e.asks.length}`,
             )
             .join(', ');
         const handleFoldToggle = () => {
-            open = !open;
+            open = !isOpenList;
             void $.state.set(OPEN, open).catch(() => undefined);
-            $.ui.invalidate('ui.render');
         };
         const handleAfkFlip = async () => {
             const was = (await $.store.get(AFK_KEY)) as
@@ -1447,7 +1477,7 @@ export const register: Register = (on) => {
                     ? await awayDigest($, was.at)
                     : undefined;
             await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
-            $.ui.invalidate('ui.render');
+            await publish($);
         };
         const handleHotFlip = async () => {
             const now = await $.clock.now();
@@ -1460,7 +1490,7 @@ export const register: Register = (on) => {
                   };
             await saveHot($);
             await armHot($);
-            $.ui.invalidate('ui.render');
+            await publish($);
         };
         const tip = (
             key: string,
@@ -1469,11 +1499,11 @@ export const register: Register = (on) => {
             place: { left: number } | { right: number },
             press?: { hotkey: string; onPress: () => void },
         ) => hoverTip(ui, key, words, control, place, press);
-        const boardOpen = await isBoardOpen($);
+        const boardOpen = view.isBoardOpen;
         const handleBoardFlip = async () => {
-            if (await isBoardOpen($)) await $.ui.close({ id: BOARD });
+            if (await isOpen($)) await $.ui.close({ id: BOARD });
             else await openBoard($);
-            $.ui.invalidate('ui.render');
+            await publish($);
         };
         // a terminal draws a chromed Button as `[ label ]`
         const leftOf = (label: string, chrome: boolean) => ({
@@ -1506,17 +1536,17 @@ export const register: Register = (on) => {
         const many = groups.length > 1;
         // other sessions' holds in this repo; ⚠ when a session was refused one of this session's files
         const chipText = [
-            holds.warned ? '⚠' : '',
-            holds.others ? `🔒 ${holds.others}` : '',
+            view.holds.warned ? '⚠' : '',
+            view.holds.others ? `🔒 ${view.holds.others}` : '',
         ]
             .filter(Boolean)
             .join(' ');
         const chipName = [
-            holds.warned
+            view.holds.warned
                 ? 'a session was refused a file this session holds'
                 : '',
-            holds.others
-                ? `${holds.others} ${holds.others === 1 ? 'file' : 'files'} held by other sessions`
+            view.holds.others
+                ? `${view.holds.others} ${view.holds.others === 1 ? 'file' : 'files'} held by other sessions`
                 : '',
         ]
             .filter(Boolean)
@@ -1525,7 +1555,7 @@ export const register: Register = (on) => {
             ? tip(
                   'holds',
                   chipName,
-                  <Text color={holds.warned ? ACCENT : undefined}>
+                  <Text color={view.holds.warned ? ACCENT : undefined}>
                       {chipText}
                   </Text>,
                   { left: [...chipText].length + 1 },
@@ -1535,7 +1565,7 @@ export const register: Register = (on) => {
         const hotLabel = '🔥';
         // one icon; the accent background says afk is on (dima)
         const afkLabel = '💨';
-        const foldLabel = open ? '📂' : '📁';
+        const foldLabel = isOpenList ? '📂' : '📁';
 
         // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there
         const head = (
@@ -1543,7 +1573,7 @@ export const register: Register = (on) => {
                 flexDirection='row'
                 justifyContent='space-between'
                 marginBottom={
-                    open && total && surface === 'desktop' ? 0.25 : 0
+                    isOpenList && total && surface === 'desktop' ? 0.25 : 0
                 }>
                 {first ? (
                     <Box flexDirection='row' gap={1}>
@@ -1570,33 +1600,33 @@ export const register: Register = (on) => {
                     {first ? copyButton(first[0], first[1].asks, 'c') : null}
                     {tip(
                         'hot',
-                        hot
+                        view.isHot
                             ? "stop keeping this session's cache hot"
                             : "keep this session's cache hot: ping every 50 min",
                         <Button
                             key='hot'
                             onPress={() => void handleHotFlip()}
-                            {...(hot
+                            {...(view.isHot
                                 ? { variant: 'secondary' as const }
                                 : { plain: true as const })}>
                             {hotLabel}
                         </Button>,
-                        leftOf(hotLabel, !!hot),
+                        leftOf(hotLabel, !!view.isHot),
                     )}
                     {tip(
                         'afk',
-                        afk
+                        view.afk
                             ? 'back: tell fleet that dima is here'
                             : 'afk: tell fleet that dima is away',
                         <Button
                             key='afk'
                             onPress={() => void handleAfkFlip()}
-                            {...(afk
+                            {...(view.afk
                                 ? { variant: 'secondary' as const }
                                 : { plain: true as const })}>
                             {afkLabel}
                         </Button>,
-                        leftOf(afkLabel, afk),
+                        leftOf(afkLabel, view.afk),
                     )}
                     {tip(
                         'board',
@@ -1615,7 +1645,7 @@ export const register: Register = (on) => {
                     {first
                         ? tip(
                               'asks-toggle',
-                              open ? 'fold' : 'unfold',
+                              isOpenList ? 'fold' : 'unfold',
                               <Button
                                   key='asks-toggle'
                                   onPress={handleFoldToggle}
@@ -1632,25 +1662,25 @@ export const register: Register = (on) => {
         // guard's run folds into one counter row, shown folded or not, gone once guard has been quiet a while
         const plural = (n: number, word: string) =>
             `${n} ${word}${n === 1 ? '' : 's'}`;
-        const refused = guards.filter((g) => g.kind === 'refused').length;
-        const escaped = guards.length - refused;
+        const refused = view.guards.filter((g) => g.kind === 'refused').length;
+        const escaped = view.guards.length - refused;
         const counter = [
             ...(refused ? [plural(refused, 'refusal')] : []),
             ...(escaped ? [plural(escaped, 'escape')] : []),
-            plural(new Set(guards.map((g) => g.sid)).size, 'session'),
+            plural(new Set(view.guards.map((g) => g.sid)).size, 'session'),
         ].join(' · ');
-        const handleGuardsFlip = () => {
-            areGuardsOpen = !areGuardsOpen;
-            $.ui.invalidate('ui.render');
+        const handleGuardsFlip = async () => {
+            areGuardsOpen = !view.areGuardsOpen;
+            await publish($);
         };
-        const guardLabel = areGuardsOpen ? '▾' : '▸';
-        const shields = guards.length
+        const guardLabel = view.areGuardsOpen ? '▾' : '▸';
+        const shields = view.guards.length
             ? [
                   <Box flexDirection='row' gap={1} key='guard'>
                       <Text>🛡️ {counter}</Text>
                       {tip(
                           'guard-toggle',
-                          areGuardsOpen
+                          view.areGuardsOpen
                               ? 'fold guard refusals'
                               : 'unfold guard refusals',
                           <Button
@@ -1662,8 +1692,8 @@ export const register: Register = (on) => {
                           leftOf(guardLabel, false),
                       )}
                   </Box>,
-                  ...(areGuardsOpen
-                      ? guards.map((g) => (
+                  ...(view.areGuardsOpen
+                      ? view.guards.map((g) => (
                             <Text
                                 dimColor
                                 key={`guard:${g.key}`}
@@ -1675,17 +1705,17 @@ export const register: Register = (on) => {
               ]
             : [];
         const away =
-            digest && (digest.needs.length || digest.done.length)
+            view.digest && (view.digest.needs.length || view.digest.done.length)
                 ? [
                       <Text dimColor key='away'>
                           while you were away
                       </Text>,
-                      ...digest.needs.map((n) => (
+                      ...view.digest.needs.map((n) => (
                           <Text key={`away:n:${n.sid}`} wrap='truncate-end'>
                               {`needs you · ${n.name} · ⏳ ${n.asks}`}
                           </Text>
                       )),
-                      ...digest.done.map((d) => (
+                      ...view.digest.done.map((d) => (
                           <Text
                               dimColor
                               key={`away:d:${d.sid}`}
@@ -1695,7 +1725,7 @@ export const register: Register = (on) => {
                       )),
                   ]
                 : [];
-        if (!open || !total)
+        if (!isOpenList || !total)
             return (
                 <Box flexDirection='column'>
                     {head}
@@ -1716,7 +1746,9 @@ export const register: Register = (on) => {
                           key={`g:${sid}`}
                           marginTop={g > 0 && surface === 'desktop' ? 0.5 : 0}>
                           <Text bold>
-                              {sid === selfId ? `${title(v)} (here)` : title(v)}
+                              {sid === view.selfId
+                                  ? `${title(v)} (here)`
+                                  : title(v)}
                           </Text>
                           {g > 0 ? copyButton(sid, v.asks) : null}
                       </Box>,

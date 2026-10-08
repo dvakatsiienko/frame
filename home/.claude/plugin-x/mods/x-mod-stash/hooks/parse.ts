@@ -1,3 +1,5 @@
+import type { StashDoor } from '../types/stash.d.ts';
+
 const HEADER = /⏳\s*waiting on your word/i;
 
 // a ·-joined list in prose, rewritten as bullets the way the output rules want it (reply-check blocks the dot);
@@ -158,9 +160,7 @@ const LOCAL_ID = /^local_[A-Za-z0-9-]{1,64}$/;
 const BRIDGE_ID = /^session_[A-Za-z0-9_-]+$/;
 const JOB_ID = /^[A-Za-z0-9-]+$/;
 
-export type Door =
-    | { kind: 'open'; url: string }
-    | { kind: 'copy'; text: string };
+export type Door = StashDoor;
 
 // How a press reaches a session: its desktop deep link, else the terminal's attach command for a background job.
 export function doorOf(entry: {

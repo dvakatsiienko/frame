@@ -38,6 +38,7 @@ function fleet(
         alive = [1, 2],
         bg = [] as number[],
         patch = {} as Record<number, Record<string, unknown>>,
+        isBoardOpen = true,
     } = {},
 ) {
     const runs: string[][] = [];
@@ -51,6 +52,11 @@ function fleet(
     on('session.measure', (_$, e) => ({ changed: e.changed }));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
     on('ui.log', () => ({ value: undefined }));
+    on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('session.repo', () => ({
+        value: { internal: false, name: null, remote: null, root: '/tmp' },
+    }));
+    if (isBoardOpen) panes(on, true);
     on('ui.copy', (_$, e) => {
         copied.push(e.text);
         return { value: { isCopied: true as const } };
@@ -94,7 +100,13 @@ function fleet(
     return { copied, runs };
 }
 
-function board($: Engine) {
+// the board as the poll leaves it: a session start reads the registry into the view, then the pane draws it
+async function board($: Engine) {
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'desktop',
+    });
     return $.ui.mount({
         component: 'Pane',
         plugin: 'x-mod-stash',
@@ -346,7 +358,7 @@ function panes(on: On, isOpen: boolean) {
 }
 
 test('🚦 in the row opens a closed board', async ($, on) => {
-    fleet(on);
+    fleet(on, {}, { isBoardOpen: false });
     const calls = panes(on, false);
     const ui = await band($);
     await ui.press({ key: 'board' });
@@ -354,7 +366,7 @@ test('🚦 in the row opens a closed board', async ($, on) => {
 });
 
 test('🚦 in the row closes an open board', async ($, on) => {
-    fleet(on);
+    fleet(on, {}, { isBoardOpen: false });
     const calls = panes(on, true);
     const ui = await band($);
     await ui.press({ key: 'board' });
@@ -429,7 +441,6 @@ test('the board draws its state dots without colour by default', async ($, on) =
 
 test('/board colour turns the board colour on', async ($, on) => {
     fleet(on);
-    panes(on, true);
     on('command.run', () => ({ text: '' }));
     await $.command.run({
         args: 'colour',
@@ -515,8 +526,6 @@ test("a dead session's asks leave the band", async ($, on) => {
         label: 'frame',
     });
     fleet(on, { [`asks:${GONE}`]: asks(2), [`asks:${PEER}`]: asks(1) });
-    on('session.start', (_$, e) => ({ cwd: e.cwd }));
-    on('session.repo', () => ({ value: null }));
     await $.session.start({
         cwd: '/tmp',
         isInteractive: true,
@@ -557,8 +566,6 @@ test("this session's asks stay when the registry misses it", async ($, on) => {
         },
         { alive: [2] },
     );
-    on('session.start', (_$, e) => ({ cwd: e.cwd }));
-    on('session.repo', () => ({ value: null }));
     await $.session.start({
         cwd: '/tmp',
         isInteractive: true,

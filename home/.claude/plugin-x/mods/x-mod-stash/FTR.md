@@ -20,6 +20,11 @@
   - when a mod file is saved and x-mod-stash reloads
   - then the asks stay folded
   - decision: the fold lives in `$.state` (survives a reload, dies with the session) and is read back before the first asks load (FRM-319 audit, FRM-320)
+- ✅ a mid-turn reload keeps the turn and what only the band held
+  - given a turn is running and dima's away digest or the open guard list shows
+  - when a mod file is saved and x-mod-stash reloads mid-turn
+  - then the band shows the same digest and guard list, the turn stays busy, and keep-hot never pings into it
+  - decision: everything the band and the board draw is one `view` value in `$.state`, and the running turn one `turn` value; a render reads `view` and redraws when the poll or a hook writes it, so the band calls no `$.ui.invalidate` at all (FRM-348)
 - ✅ the fold is dima's: only his click changes it
   - given the ⏳ list folded
   - when a reply brings new asks, or every ask clears and a new one arrives later
@@ -332,6 +337,10 @@ two sessions, A and B, in one checkout.
   - given the board is open
   - when a member starts or ends a turn, or sends a message
   - then its row changes within a few seconds
+- ✅ the board draws without reading a file
+  - given the board is open
+  - then the 4 s poll reads the registry, the replies and the colour switch into the `view`, once per tick, and the pane only draws it — a draw spawns no `ps` and reads no file
+  - decision: the poll writes the tick's clock into the `view` while the board is open, so its `busy 3m` spans move on their own (FRM-348)
 
 ## spawn hints — the board's name flag only
 
