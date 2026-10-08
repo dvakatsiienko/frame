@@ -286,6 +286,46 @@ func TestShimRunsTheNearestTreesBinary(t *testing.T) {
 	}
 }
 
+func TestShimPinsADevBuildWhenXGoDiffersFromOriginMain(t *testing.T) {
+	program := "package main\n\nimport \"fmt\"\n\nvar devBuild string\n\nfunc main() { fmt.Println(\"dev=\" + devBuild) }\n"
+	cases := []struct {
+		name, want string
+		change     func(t *testing.T, tree string)
+	}{
+		{"the same code as origin/main", "dev=", func(*testing.T, string) {}},
+		{"an uncommitted edit", "dev=1", func(t *testing.T, tree string) {
+			write(t, filepath.Join(tree, "x/go/main.go"), program+"\n// edited\n")
+		}},
+		{"an untracked file", "dev=1", func(t *testing.T, tree string) {
+			write(t, filepath.Join(tree, "x/go/extra.go"), "package main\n")
+		}},
+		{"a commit origin/main lacks", "dev=1", func(t *testing.T, tree string) {
+			write(t, filepath.Join(tree, "x/go/main.go"), program+"\n// committed\n")
+			gitT(t, tree, "commit", "-qam", "ahead")
+		}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			tree := fakeTree(t, "stale")
+			write(t, filepath.Join(tree, ".gitignore"), "bin/\n")
+			write(t, filepath.Join(tree, "x/go/main.go"), program)
+			gitT(t, tree, "init", "-q")
+			gitT(t, tree, "add", ".")
+			gitT(t, tree, "commit", "-qm", "init")
+			gitT(t, tree, "update-ref", "refs/remotes/origin/main", "HEAD")
+			c.change(t, tree)
+
+			run := exec.Command(filepath.Join(tree, "x/bin/x"))
+			run.Dir = tree
+			out, _ := run.Output()
+
+			if strings.TrimSpace(string(out)) != c.want {
+				t.Errorf("got %q, want %q", out, c.want)
+			}
+		})
+	}
+}
+
 func TestShimRebuildsABinaryOlderThanItsSource(t *testing.T) {
 	tree := fakeTree(t, "stale")
 	write(t, filepath.Join(tree, "x/go/main.go"), "package main\n\nimport \"fmt\"\n\nfunc main() { fmt.Println(\"rebuilt\") }\n")
