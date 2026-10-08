@@ -154,7 +154,7 @@ since.
   results come back in the next `user` line as `tool_result`. one model response is written as
   several `assistant` lines (one per content block) that share `.message.id` and repeat the same
   `.message.usage` — sum usage once per id, never per line (a per-line sum read ~4× too high,
-  2026-10-08). `script/agent-ops.ts` and `ccrow/harvest.ts` dedupe this way; `x/go/probe.go` reads
+  2026-10-08). `x fleet ops` and `ccrow/harvest.ts` dedupe this way; `x/go/probe.go` reads
   one answer.
 - `~/.claude.json` is **state, not config** — rewritten whole from memory; hand edits mid-session get
   clobbered.
