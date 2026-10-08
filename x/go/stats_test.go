@@ -129,3 +129,44 @@ func TestStatsCountsTheCallsInTheWindow(t *testing.T) {
 		}
 	}
 }
+
+func TestStatsDaysIsTheSpanOfTheTraces(t *testing.T) {
+	state := t.TempDir()
+	plant(t, state, 1, planted{"schema", "cc", "", 3})
+	plant(t, state, 0, planted{"schema", "cc", "", 3})
+
+	got := xIn(t, repo(t), tracing(state), "stats", "--days", "30")
+
+	day := func(ago int) string { return `"` + time.Now().AddDate(0, 0, -ago).Format(time.DateOnly) + `"` }
+	want := map[string]string{"days": `2`, "first": day(1), "last": day(0)}
+	for key, value := range want {
+		if marshal(got.data[key]) != value {
+			t.Errorf("%s = %s, want %s", key, marshal(got.data[key]), value)
+		}
+	}
+}
+
+func TestStatsLeavesDevBuildsOutUnlessAsked(t *testing.T) {
+	dev := `{"name":"schema","duration_ms":3,"x.caller":"cc","service.version":"v1-go+abc1234-dirty"}` + "\n"
+	cases := []struct {
+		name, calls, days string
+		argv              []string
+	}{
+		{"by default", `1`, `1`, []string{"stats"}},
+		{"with --dev", `3`, `4`, []string{"stats", "--dev"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			state := t.TempDir()
+			plant(t, state, 0, planted{"schema", "cc", "", 3})
+			write(t, filepath.Join(state, "traces", time.Now().AddDate(0, 0, -3).Format(time.DateOnly)+".jsonl"), dev+dev)
+
+			got := xIn(t, repo(t), tracing(state), c.argv...)
+			for key, value := range map[string]string{"calls": c.calls, "days": c.days, "dev": `2`} {
+				if marshal(got.data[key]) != value {
+					t.Errorf("%s = %s, want %s", key, marshal(got.data[key]), value)
+				}
+			}
+		})
+	}
+}

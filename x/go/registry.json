@@ -756,9 +756,13 @@
         {
             "flags": {
                 "days": {
-                    "description": "the window, in local days back from today (default 30)",
+                    "description": "the window, in local days back from today (default 30); `days` in the answer is the span the traces really cover",
                     "type": "string",
                     "value": "n"
+                },
+                "dev": {
+                    "description": "count the lines a dev build (`-dirty` version) wrote too; left out by default",
+                    "type": "boolean"
                 }
             },
             "name": "stats",

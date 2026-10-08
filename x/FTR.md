@@ -267,6 +267,14 @@
   - then it prints calls per family and verb, the caller split, p50/p95 per verb, failures by kind, and the verbs with no calls
   - given a day file older than 90 days, then it moves to the macos trash
   - given a terminal, then a plain summary board prints until the `x-stats-board` spec lands
+- ⬜ `x stats` names the span the traces really cover
+  - given traces only for 10-07 and 10-08
+  - when `x stats --days 30` runs
+  - then `days` reads 2, `first` and `last` name 10-07 and 10-08 — never the window asked for
+- ⬜ `x stats` leaves dev builds out
+  - given trace lines written by a dev build
+  - when `x stats` runs, then they are left out of every count, the span included, and `dev` says how many there were
+  - when `x stats --dev` runs, then they are counted too
 - ✅ dima's `pnpm <script>` calls are traced too
   - given the zsh hook `home/.config/zsh-custom/x-trace.zsh`
   - when dima types `pnpm <script>` at his prompt
