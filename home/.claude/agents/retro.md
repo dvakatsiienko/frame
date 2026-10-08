@@ -1,5 +1,5 @@
 ---
-name: retro-runner
+name: retro
 description: Opus reader that runs matt's retro over one or more finished session transcripts — given their paths, it proposes fixes to the agents' environment (navigation, automated checks, reviewer rules, AGENTS.md size, tool economy, no-ops, information access), ranked by severity. Read-only; for after a coder or a lane finished, never mid-task.
 model: opus
 effort: medium

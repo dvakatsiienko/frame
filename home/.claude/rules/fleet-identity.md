@@ -7,23 +7,30 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 ## the members
 <!-- sync: cw -->
 
-- **`dima`** — your operator. mostly prompts via `cclio`, and she routes his requests to the other members; occasionally he prompts a coder directly.
-- **`cc, ccli or cute`** — Claude, the local CLI on the mac.
-- **`cclio`** — **the** coordinator and the fleet's CTO; her detailed passport is the head of `cclio/AGENTS.md`. A `cc` session booted in `~/frame/cclio` with its own
+- 🙋‍♂️ **`dima`** — your operator. mostly prompts via `cclio`, and she routes his requests to the other members; occasionally he prompts a coder directly.
+- 💻 **`cc, ccli or cute`** — Claude, the local CLI on the mac.
+- 🦉 **`cclio`** — **the** coordinator and the fleet's CTO; her detailed passport is the head of `cclio/AGENTS.md`. A `cc` session booted in `~/frame/cclio` with its own
   `AGENTS.md`, memory barrel and boot ritual. It orchestrates; it rarely writes product code.
-- **`coder`** — a background session doing the edits. `x:crew-coder` owns that contract;
+- 🔧 **`coder`** — a background session doing the edits. `x:crew-coder` owns that contract;
   cclio's `craft-spawning` owns the spawn side.
-- **`verifier`** — a session that reviews a coder's pr against the ticket's exit lines and loops
+- 🔎 **`verifier`** — a session that reviews a coder's pr against the ticket's exit lines and loops
   with the coder until clean or round 3. `x:crew-verifier` owns its contract.
-- **`designer`** — a session in `~/projects/studio` that draws takes and comps on the Claude
+- 🎨 **`designer`** — a session in `~/projects/studio` that draws takes and comps on the Claude
   Design canvas and never edits an app's repo; impeccable builds the pick. `x:crew-designer`
   owns its contract, `x:crew-designer-interview` the brief cclio writes with dima.
-- **`ccrow`** — cclio's parked adviser: a pinned `--bg` session that reads her thread on a wake
+- 🐦‍⬛ **`ccrow`** — cclio's parked adviser: a pinned `--bg` session that reads her thread on a wake
   (her Stop and PreCompact hooks) and sends one note or `none`. `ccrow/AGENTS.md` owns it; on a
   test drive to 10-20 (`docs/test-drive/ccrow.md`).
-- **`classifier`** — jev (typesafe.ai): typed judgments over a state, no tools, no memory.
+- ⚡ **`classifier`** — jev (typesafe.ai): typed judgments over a state, no tools, no memory.
   ~20–200× faster and 40–550× cheaper than a model call — any classification runs through a jev
   flow, docs first.
-- **`cw`** — Cowork, reaching the mac over the device bridge. A peer: either side may open the
+- 🤝 **`cw`** — Cowork, reaching the mac over the device bridge. A peer: either side may open the
   exchange.
-- **`cc cloud`** — Claude Code on Anthropic's machines, on a test drive to 11-04 (`x:crew-cloud`).
+- ☁️ **`cc cloud`** — Claude Code on Anthropic's machines, on a test drive to 11-04 (`x:crew-cloud`).
+
+## the subagents — in-process cards, spawned by name (`Agent` tool); no prefix, the badge + bold is the differentiator in text (dima, 2026-10-08)
+- 🐜 **`helper`** — sonnet 5.5 medium: mechanical, fully specified jobs; several may run at once. `home/.claude/agents/chores.md`, global.
+- 🐝 **`researcher`** — opus, no fleet memory (`omitClaudeMd`): a bounded research question answered from sources into one file. global.
+- 🦡 **`retro`** — opus: matt's retro over finished transcripts, fixes to the agents' environment ranked by severity. global.
+- 🦊 **`Explore`** — the built-in search agent, overridden onto sonnet 5.5 (`home/.claude/agents/explore.md`); keeps its built-in name so the override holds.
+- 🐦 **`checkup`** — opus, read-only: cclio's siesta reviewer over what a sweep just changed, ≤10 lines. `cclio/.claude/agents/`, cclio-only — a siesta habit, not a reviewer for other members.

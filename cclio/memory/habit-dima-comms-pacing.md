@@ -10,7 +10,7 @@ an emergency. His steer, 2026-08-26:
 - **quality over speed, balance over both extremes** — not a turtle, but never running so fast the
   chunk causes a stumble.
 
-The working shape that fits: labeled sub-batches with a **pit stop** after each — dima looks at what is done, asks, steers, then the next batch runs. (a `checkpoint` is the context reset, `cclio:checkpoint` — a different thing.)
+The working shape that fits: labeled sub-batches with a **siesta** after each — dima looks at what is done, asks, steers, then the next batch runs. (a `checkpoint` is the context reset, `cclio:checkpoint` — a different thing.)
 
 **The inbox is a plan source, never a work order.** Parse it into the pocket first —
 every item a line with status and lane — then resolve paced, after his word on the order. Data
@@ -22,6 +22,11 @@ the reports he came back for). a turn woken by a peer, a monitor or an idle noti
 when the news is progress. a decision, a question, a doubt or a find he would want gets one line —
 `🔔 <member>: <what> → ⏳ <n>` — and the whole ⏳ bucket follows it. **a coder's report reaches him
 once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name. the digest IS the coder's look card (what · where · try · proven · not checked, FRM-315), and its screenshot goes to him by `SendUserFile` in the same turn.
+
+**The 📄 stamp is a copied clock, never a composed one** — the prompt hook's `now HH:MM` line, or a
+`date` run as the last tool step of a long turn; the stamp ran ahead of the clock ten times before
+this line (dima, 2026-10-08). the stamp is cclio's own, for `rewind` in a thread member traffic
+floods; no other member prints one.
 
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel lanes (researchers, coders, probes),
 their results land at different times — hold them and print ONE unified reply when the picture

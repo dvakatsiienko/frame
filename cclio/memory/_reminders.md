@@ -37,10 +37,8 @@ Store contract: the `remind` skill. Both tiers die only when Dima drops them.
 
 
 
-⏰ 🔬 parallel test drive, to 2026-10-08 (moved from 10-01, dima 09-29: graded head-to-head with exa) — every «research X» runs `parallel-cli research run --processor core` (via `script/op-run.sh`) FIRST, an opus agent second, both graded; every lookup that WebSearch misses gets a `parallel-cli search --mode advanced` retry; the next list-shaped ask tries `findall`, the next url-that-returns-a-shell tries `extract`, one github-issue reminder tries `monitor`. every round appends one line to `docs/test-drive/parallel.md` (its vet log): date · tool · ask · hit · seconds · chars in ctx · ¢ (balance before/after, settled later). on 10-08: adopt as a door, or drop — beside the exa verdict. dima 2026-09-24: «decide based on data not guesses» — set 2026-09-24
 
 
-⏰ 🔬 exa test drive, one week to 2026-10-08 — parallel's challenger for the research door. every «research X» runs an exa agent run beside the parallel core and the opus lane; walk the stress list in `docs/test-drive/exa.md` (agent run, deep search, search, contents, answer, findSimilar, websets, monitors, batch), one real ask per feature, widest over deepest (`habit-test-drive`), one line per round in its log. on 10-08: adopt exa, keep parallel, or both — graded head-to-head. dima 2026-09-29: «possibly replacing parallel ai … fully tested, same as parallel» — set 2026-09-29
 
 ⏰ 🔬 adhd test drive, extended one week to 2026-10-14 (dima 10-06: «outputs was meh») — every real naming / design-fork / fuzzy-bug ask offers `/adhd:adhd` beside a plain opus baseline, blind a/b to dima, one line per round in `docs/test-drive/adhd.md` (the protocol is there). any real case counts from the weekly reset on — candidates named so far: the `crew-designer` four phases + the 10 atelier looks, the shift-model «what's missing» pass, a fuzzy bug with no known cause (BYT-88 refetch, the barrel-probe false red). not bytes naming (dima: the frame rename settles first). on 10-14: adopt user-only or uninstall. dima 2026-09-28: «install and vet for 1wk. and measure its perf» — set 2026-09-28
 

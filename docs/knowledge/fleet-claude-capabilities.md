@@ -57,7 +57,7 @@ since.
 - **`cc` / cclio** — local sessions and worktrees; `claude --bg` coders (take model and effort, survive
   a coordinator reset); `/fork`; **cloud sessions** via `claude --cloud` wrapped in `script` (it refuses
   a non-tty) **[verified, `x:crew-cloud`]**; subagents through `Agent` (no effort flag — an agent file's
-  `effort:` pins it, e.g. `home/.claude/agents/chore-helper.md`).
+  `effort:` pins it, e.g. `home/.claude/agents/chores.md`).
   - messaging: `SendMessage` reaches local, `--bg` and Code-tab sessions both ways; a cloud session
     takes a steer only as `claude -p "<msg>" --cloud <id>` and cannot message back.
 - **a Projects coordinator** — threads only (cloud, or «Work locally» on the mac); it cannot reach the

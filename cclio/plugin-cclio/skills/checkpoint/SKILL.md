@@ -5,7 +5,7 @@ argument-hint: "[what to drop, comma-separated]"
 
 # /cclio:checkpoint [drop …]
 
-**the trigger beside his word: context at 600–700k** (dima, 2026-10-07: «you reach 400k extremely fast … a good number for you to checkpoint is about 600k to 700k») — `get_usage` shows it at every pit stop; past 600k the ➡️ offers a checkpoint. **a half-halt, no exit.** frees the thread of a finished topic while everything else survives —
+**the trigger beside his word: context at 600–700k** (dima, 2026-10-07: «you reach 400k extremely fast … a good number for you to checkpoint is about 600k to 700k») — `get_usage` shows it at every siesta; past 600k the ➡️ offers a checkpoint. **a half-halt, no exit.** frees the thread of a finished topic while everything else survives —
 the same guarantees as a halt, minus the goodbye. dima's spec (2026-09-10): as few steps as
 possible; memory as precise as possible after the resume; only the unwanted absent. since
 2026-10-01 the drop list is mine to decide, no approval round: «when you run checkpoint, just print

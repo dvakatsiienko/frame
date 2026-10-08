@@ -9,7 +9,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-30 (before the halt) · 35 (after #65 merges) · 36 · 37 · 22 → 24 → 05 → 09 → 10 → 12 → 13 → 14 → 15 → 16 → 31 → 32
+09 (the cli grill, census ready) → 49 (refresh-adviser run, lanes in) → 45 → 39 → 38 → 40 → 42 → 43 → 44 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 22 → 24 → 12 → 13 → 14 → 15 → 16 → 31 → 32
 
 ## on linear, not here
 
@@ -38,6 +38,8 @@ dima 10-07: bare `x` prints help today; he wants a dashboard-like main view (bub
 
 dima 10-07: close yesterday's tails — the full cli plan, so a coder + verifier run while the memory sweep goes. the sweep will steer it.
 
+- wisp, 10-08: `x stats` prints the span it really covers (the go trace store starts 10-07) and excludes `-dirty` builds unless `--dev`; 2,235 lines = 2 days, 640 from dirty binaries, the 10-07 hook burst a dev loop. estimate 1, rides the cli lane after its grill (dima)
+
 planned 10-07: FRM-284 closed; four specs under FRM-14 in `.scratch/` — `x-telemetry` → `x-handoff` → `x-linear` → `x-stats-board`; decisions in `x/PRODUCT.md` «the next lane». next: the telemetry coder, spawned when the sweep session starts.
 
 ### 10 · plan the memory sweep
@@ -51,7 +53,7 @@ sweep inputs added 10-07 (dima):
 - **recipes are processes, not only research** (dima 10-07: «our recipes becomes upgraded from pure research-type to kinda process-ones … plain research only, or pre-research + followup operations … we will revamp recipes there») — `_spec.md`'s «maintenance run or execution script» split goes; a recipe may be research only, or research + follow-up operations (`refresh-agent-ops`' doors vector is the first)
 first quick win (dima 10-07, yes): `_reminders.md` is 24 kB imported every turn, 29 of 41 lines are test-drive verdicts copied three times — verdict dates live only in each test-drive file, the boot prints the ones due in 2 days, reminders keep real date/condition hooks only.
 
-dima 10-07: `_hq/memory-sweep.md` holds his corrections. plan the steps first, broken into tasks, folded and ordered; then checkpoint or sweep by context size. think what goes to chore-helpers or cloud. the first real spec for the pocket.
+dima 10-07: `_hq/memory-sweep.md` holds his corrections. plan the steps first, broken into tasks, folded and ordered; then checkpoint or sweep by context size. think what goes to choress or cloud. the first real spec for the pocket.
 
 planned 10-07: `.scratch/memory-sweep/` — the spec + nine phase tickets (01 baseline + audit → 09 global review); the grill log in `docs/test-drive/memory-sweep.md`. next: a fresh session runs 01.
 
@@ -115,6 +117,8 @@ dima 10-07: «do not delete specs we create, but move them into an archive somew
 ### 33 · shape the squad leader
 `open · grilling` · blocked by 10
 
+dima 10-08 13:22: the crew-coordinator as part of a squad (an independent `--bg` session outside cclio) is to be a/b test-driven.
+
 dima 10-07: «instead of spawning a coder you spawn a squad leader (e.g., a coordinator). It is a mini coordinator … it essentially manages a coder and a verifier with the given task by you. It handles communication between the coder and verifier and only reports to you with positive results, issues and disputes, or design questions that I would be interested to answer. This way your thread will be filtered out of the noise». the sweep (ticket 05) cuts `craft-spawning` by trigger first; the squad leader is shaped with `x:shape-idea` from what that cut leaves. its skill name: `x:crew-lead` (dima 10-07 ✓, beside `crew-coder` / `crew-verifier`).
 
 ### 35 · purge the plaintext job-market recipe from frame's history
@@ -142,6 +146,60 @@ ccrow's session read 625k chars on 10-07, ~all of it 22 `packets/<wake>/delta.md
 
 cclio twice proposed stopping a remote-control session dima had started himself that day (pid 69787, the night flawlog had already named it). the boot's fleet roster marks a session dima created (desktop-born or remote-control, born today, not in cclio's spawn list) as his, and the halt's stop list never names it.
 
+### 38 · the 5h window trick — an autokicker or a 1-click prestarter
+`open · research` · inbox 10-08, 🐦‍⬛ first actions
+
+dima: the 5h window starts on the first token spent, so when he boots me the window opens and our token plan spreads over those 5h. but if at boot the window is already at, say, 2:30, we can code more densely in the shorter window. how to set up a 5h autokicker properly? a tiny probe that sends 1 token to claude.ai so the window is always moving, and he starts at any time but always with less than 5h? alternative: a 1-click door to a 5h prestarter — he roughly plans when he boots me and opens the window 1–2 h before. must: 1. good ux · 2. preferably works on his mobiles · 3. preferably 1-click · 4. maybe a complementary useful feature or two · 5. ideally pretty. «search and propose».
+
+### 39 · weekly usage window — spend it fully, non-stop lanes, the 5h catch
+`open · grilling` · inbox 10-08, 🛹 steering, this session
+
+dima: we went overboard, he is at 69 %. two ways: economic mode, or push to spend the full weekly window and apply his weekly-reset option — he leans to the latter. spend efficiently: going overboard is not waste; spend as much as possible on the most needed stuff. plan and grill lanes so they work non-stop; review the night-shift lanes; what can i batch-do that needs little of his attention? the catch is the 5h window: keep an eye on it so he is never stuck at 95 % with the reset 3h away. boot line 10-08: pace it as a permanent habit; from the desktop the door is `get_usage`, from a terminal sline's window measures; over the line → pause parallel lanes without letting their cache cool, resume when it loosens; attention and wellbeing first, output volume after.
+
+### 40 · «wishes» — he likes the name he invented
+`open · task` · inbox 10-08, 👀 fyi
+
+dima: he liked the «wishes» name. 13:22: «i actually meant a possible new name for the bytes repo» — a rename candidate for the monorepo, decided at the merge (m1–m4), not before; a name grill then.
+
+
+### 42 · matt's retros — how they are collected, the steer, the cost
+`open · research` · inbox 10-08, 🙋‍♂️ question
+
+dima: how do i collect retros from the coder, the verifier and myself, via him? since they are steerable, we could gain more if they are targeted: do i simply ask the coder and verifier for a «retro», or steered? what should the coder, verifier and ccrow retro about — the steer vector? for my own retro he will pick each steer himself. also: the cost of the retro skill — it reads thread transcripts, is it costlier than our previous matt-skill-less retros? remind how matt's retro skill works.
+
+### 43 · yesterday's ctx jump — why ~700k, and cloud agents for research
+`open · research` · inbox 10-08, 🙋‍♂️ question
+
+dima: when i rushed the refresh-spawning-mechanics research, i said it cost ~700k. why? how can a research cost that much? can i use cloud agents for research? if yes, what is the easiest data transfer — a prompt → a pr that merges the research results into frame/main → i pull → research by hand?
+
+### 44 · weekly window at 68 % — what ops could go to the cloud
+`open · research` · inbox 10-08, 🙋‍♂️ question · beside 39 and 43
+
+dima: he is at 68 % — what ops could i delegate to cloud agents?
+
+### 45 · recipes revamp — the right shape for any produce, as global memory
+`open · grilling` · inbox 10-08, 🙋‍♂️ question
+
+dima: yesterday we added a «log» for recipes, but he spotted a log (cannot recall which) that was too bloated, told me to check, and i confirmed. how to translate that into global memory so any agent tries to pick the right shape for any produce — a log, a report, a stats report, anything — so «wrong» shapes (too large, too small) appear less often?
+
+
+
+
+### 49 · ccrow is underutilized — the adviser vector in the coordinator recipe
+`open · task` · inbox 10-08, 🐞 · dima 13:54: the `refresh-coordinator` rerun runs its source lane as a **cloud agent** (`x:crew-cloud`, branch transfer) head-to-head with the opus `researcher`, graded in `docs/test-drive/cc-cloud.md` — after the step-0 groom and his review (48)
+
+dima: add a research vector to the coordinator recipe to hunt solid adviser-model behaviour — what would a good adviser model want to do to be a very good adviser? what do i, as coordinator, pm and cto, want from an adviser model? consider the crow taxonomy and the ctx budget; do not ask it to code — coding is disapproved, not banned; it can explore at least. enable his mod for crow and enable the retro recipe. when the recipe is updated, run it, and propose a good update for the adviser model — consult the adviser model itself, ask his question and mine. what to search for: how to build a good adviser model, the best model fit (opus? fable?), the baseline effort.
+
+
+
+### 52 · the 5h prestarter kit — ios shortcut, raycast kick, a scheduled kickoff
+`standing · task` (his word 13:05: stays until he tried every door and picked one) · dima 10-08, from 38 · research: `scratchpad/research-5h-window.md` (this session's scratch; the facts are in the exa/parallel/researcher logs)
+
+dima: «let's try shortcut and ray cmd. i also want a way to set a scheduled 5h kickoff or a routine. for example: i plan to start you at 1 pm; i wake up at 9 and set a scheduled 5h kickoff at 11 am. how to do that the easiest way?»
+- his hands: an ios shortcut on the «Ask Claude» app intent, prompt «ok», home screen on iphone + ipad, ending with a «window opened · resets» notification; the probe tomorrow morning (tap with no claude use in 5 h, boot, read the digest's 5h reset)
+- a coder freebie: a raycast script command in x-ray running `claude -p --model haiku` with no tools and a replaced system prompt (not `--bare`); a «kick at HH:MM» variant via a one-shot launchd job + `pmset schedule wake`
+- the scheduled kickoff: candidates — an ios automation on an alarm trigger (set the alarm = set the time; runs locked? «?»), a one-off cloud routine set from the phone (whole cloud session per kick), the mac one-shot above. one probe each before a pick
+
 ## decisions so far
 
 - 2026-10-07: 02 the pocket mirrors to `_hq/pocket.md` after every cclio turn (a Stop hook, `cclio/.claude/hooks/pocket-mirror.sh`, one-way, a read-only banner on top, copies only on a change)
@@ -163,3 +221,10 @@ cclio twice proposed stopping a remote-control session dima had started himself 
 - 2026-10-07: 07 retargeted: chain length is the wrong target (3 lanes); the five activities and the numbers live in `docs/knowledge/agent-ops.md`, refreshed by `recipes/refresh-agent-ops/recipe.md` (on a test drive)
 - 2026-10-07: 06 + 29 + 08 one measuring pass: `pnpm agent-ops:report` (0 model tokens): cost per ticket median 30.0M tokens / 30 min over 23 tickets; cclio code edits up to 18 in one session; boot full 1.8M tokens / 61 s, mini 1.2M / 43 s (n=1 each, tokens mostly cache reads)
 - 2026-10-07: 28 resolved — `x handoff` owns the whole store, every caller moved, the node script died ([FRM-343](https://linear.app/x-com/issue/FRM-343), frame#64)
+- 2026-10-08: 46 answered — «wishes» works; the drift he named is real, the fold rule landed in craft-pm, dima-signals, fleet-vibe
+- 2026-10-08: 50 the handpicked wishes header is now the inbox template's section (todos → wishes)
+- 2026-10-08: 47 «gremlins» → «wisps» on every surface (4 linear stash tickets, craft-pm, the inbox template + live inbox section); dima: small glowing things to tend, not enemies
+- 2026-10-08: 41 ccrow runs opus 5.5 medium (the day arm); dima: one fable is enough
+- 2026-10-08: 46 answered — wishes works; the fold rule landed (craft-pm, dima-signals, fleet-vibe), 🌠 wish + ✨ wisp badges, bold fleet words fleet-wide
+- 2026-10-08: 48 landed — invariant 10 in root CLAUDE.md, the checkup card (cclio-only), siesta replaces pit stop, the subagents named + badged in fleet-identity (helper, researcher, retro, Explore, checkup), the cli verdict: useful for the fleet (lane commit/push), 8 hand calls by dima; the «is the cli useful» question folds into the cli grill (09)
+- 2026-10-08: 51 landed — one wish, one home at a time; a spec points at its wish; wishes checked at fold time; old verbatims re-folded on touch

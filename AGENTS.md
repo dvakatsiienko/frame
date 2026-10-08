@@ -142,17 +142,4 @@ multi-context: `GLOSSARY-MAP.md` lists every `GLOSSARY.md`. See `docs/agents/dom
 - **the encrypted set is `.gitattributes`** (the `filter=git-crypt` lines) — read it before calling a task git-crypt-blocked; every other file works in a fresh clone or a cloud session with no key (a «frame is git-crypt, so no cloud» call was wrong on 2026-09-28: the set was one file)
 - a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`; a hand-made `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, `x lane unlock` — the unlock with both filters off (it runs `git status`, which dies on the clean filter; the chords-run probe, 2026-09-27), plus a remove + checkout per file still encrypted after it — a real frame tree decrypts on the unlock, a fresh fixture keeps the ciphertext (FRM-285). a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe ONLY after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob — same ciphertext, nothing plaintext can be staged
 - **biome lints `.svg` in frame** (`useSortedAttributes`) — art shipped outside `assets/` and `brand/` gets its `!path` exclusion in `biome.jsonc` in the same commit, or the commit is refused (speak's favicon, 2026-09-29)
-
-### launchd + tcc (`schedule/`, `hotkeys/`)
-
-- **every daemon build signs through `script/lib/sign.sh`** — the one self-signed identity «x-speak local signing» (to 2036), so a tcc grant pins to the certificate leaf and survives rebuilds, source changes included (x-speak, 2026-09-29). **ad-hoc is the failure case**: its grant pins to the cdhash, the next source change silently drops Input Monitoring, and a listen-only tap still «succeeds» and hears nothing (chord lines stop, app-switch lines continue — the tell). a re-grant still runs edit → build → **re-grant** → restart; a tap created before the grant stays deaf. a plain off/on of the row can re-authorise an old hash — remove the row and add the binary back (2026-09-19)
-- **macOS 27 renamed the Accessibility list to «Device Control and Data Access»** (Privacy & Security); the old deep link still lands on it — `open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"` (x-speak's grant, 2026-09-29)
-- **PlistBuddy cannot `Set` array elements past index 0** in these prefs (`Cannot Perform Set On Containers`; index 0 works, which makes it look transient) — write with python `plistlib` and assert the value's type first (2026-09-19)
-- **FDA on an ad-hoc-signed launchd binary does not unlock `FileManager.trashItem` on an iCloud-managed
-  folder** (`~/Desktop` with Desktop & Documents in iCloud): reads and a plain `moveItem` into `~/.Trash`
-  work, the trash call is brokered and refused — read + a `folder writable` line in the error path told
-  it apart from a permission deny in one run (2026-09-18). a bare «trashed 0 / exit 0» on a folder with
-  nothing old enough reads identical to a deny: log the scanned count
-- `plutil -convert json` drops xml comments — prose in a plist is read from the raw file; `launchctl
-  print` repeats `state =` in nested blocks — anchor the parse on the top-level line
-- `pnpm frame:link apply` links new leaves and never prunes a dangling old symlink after a rename
+- **launchd + tcc hazards live in `schedule/AGENTS.md`** (signing, tcc grants, plist edits) — read it before touching `schedule/` or a daemon under `hotkeys/`

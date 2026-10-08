@@ -4,6 +4,8 @@ what is bound, what actually gets pressed, and the page that shows both. the rec
 the one thing living elsewhere — `schedule/jobs/x-monitor-hotkey-stats/` — because a plist belongs
 under `schedule/`; every reader and tool stays here.
 
+📌 launchd + tcc hazards (signing, Input Monitoring grants, plist edits): `schedule/AGENTS.md`.
+
 ## the contract
 
 📌 **`manual.ts` is the single source for the hand-kept apps.** raycast, cleanshot and 1password

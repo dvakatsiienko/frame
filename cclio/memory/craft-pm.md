@@ -24,6 +24,29 @@ and the heat never comes down.
 - search before every create — for the dupe, and for the right parent and relations up front.
 - act proactively but sit chill, even in the most stressful scenario.
 
+## wishes — one wish, one home at a time, specs point
+
+dima, 2026-10-08: «i print what i want, and you turn it into reality.» the drift he named is real: a
+wish heavily optimised into raw shape loses the want (the 16-file pocket, the recipe rename, the
+comparison brief).
+
+- **the fold**: a wish lands in his language with the spelling fixed, the fluff out, the manner kept
+  (`rules/dima-signals.md`); wordier than machine text, and that is justified — his word.
+- **one home at a time**: inbox → pocket item → linear ticket. the moment a ticket exists, the pocket
+  item becomes a pointer to it, and the ticket body opens with a `wish` block in his cleaned words —
+  linear is the human-readable record of his wants (reference, history, housekeeping).
+- **a spec never restates a wish**: `.scratch/<feature>/` carries `wish: FRM-N` and the grill's
+  decisions (the how), the ticket carries the want (the why and what). two places hold two different
+  things, so there is nothing to drift. a grill updates both — the wish block when his want moved, the
+  spec when the how did.
+- a ticket stays readable and meaningful in size; the machine detail lives in the spec.
+- **a wish is checked at fold time, not at spec time** (dima, 2026-10-08: «make always sure that my
+  wishes are valid user stories, and cover all essential questions to formulate the spec and the
+  lane»): the fold reads the wish against the body shape — want, why, stories («as dima, i …»),
+  proposed, decided, exit, out — and every question the wish leaves open lands as a `?` line under
+  it in the same turn, asked at the next siesta. a chaotic wish is normal; a wish that reaches
+  `to-spec` with an open `?` is the failure.
+
 ## the pace contract — propose before resolving
 
 Bypass mode removed the permission clicks, and with them the natural pause — so the pause is now
@@ -139,12 +162,13 @@ a coder brief never names a `standing` ticket (BYT-105 «atelier wishes», FRM-2
 it names a fresh child, so the done-report, the pr automation and the state all land on the child and
 the standing ticket stays in Todo with a clean body (dima, 2026-09-30). the mechanics are in `x:pm`.
 
-## gremlins stay empty — a touched app exhausts them first
+## wisps stay empty — a touched app exhausts them first
 
-each app keeps a `stash` pair: «<app> gremlins» (fixes, priority 2) + «<app> wishes» (features) —
-trophy-sys BYT-88/89, atelier BYT-115/105, chords FRM-277/255. gremlins are bugs, and bugs should not
-exist (dima, 2026-09-30): any round that touches an app carries its open gremlins into the same brief,
-first. `standing` stays for the fleet's records (pm, memory, nvim, skills), never an app's list.
+each app keeps a `stash` pair: «<app> wisps» (fixes, priority 2) + «<app> wishes» (features) —
+trophy-sys BYT-88/89, atelier BYT-115/105, chords FRM-277/255, speak FRM-281. a wisp is a bug: a
+small glow to tend before it burns, a will-o'-the-wisp that leads the app astray (dima's word,
+2026-10-08, replacing «gremlins»). bugs should not exist (dima, 2026-09-30): any round that touches
+an app carries its open wisps into the same brief, first. `standing` stays for the fleet's records (pm, memory, nvim, skills), never an app's list.
 
 ## tickets must be pretty
 

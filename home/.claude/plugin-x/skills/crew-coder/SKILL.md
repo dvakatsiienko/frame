@@ -73,13 +73,12 @@ for ceremony.
   Linear comment, the pr, a file) — every message you send lands in dima's thread, and a long one
   buries what he came back to read. the essay stays in your transcript.
 - **the done report opens with the look card** — its five fields and the screenshot rule are in `how-you-work.md` (FRM-315).
-- **last act of every assignment: a retro to the coordinator, ≤20 lines, ranked by cost.** The
-  why: the fleet improves itself only from what its members saw, and you are the one inside the
-  lane — where the brief was dead weight or wrong, which steers came late or on a false premise,
-  what you would have done differently unbriefed, what nobody asked about, and any verify-recipe
-  gap or check worth adding for the app you touched. Blunt, specific, name the moment. The coordinator folds it into the flawlog flush; nothing you say there is a
-  complaint, it is the input.
-  the automation angle is in `how-you-work.md`.
+- **last act of every assignment: a retro to the coordinator, ≤20 lines, ranked by cost** — the
+  fleet improves only from what its members saw. **standing focus** (dima, 2026-10-08): the brief
+  and the tools — what blocked you, every guard refusal counted, the docs you lacked, how the exit
+  lines fit the work; a brief's `focus:` line replaces it for one run. then: steers that came late
+  or on a false premise, what nobody asked, a verify-recipe gap for the app you touched. blunt,
+  name the moment; it is input, never a complaint. the automation angle is in `how-you-work.md`.
 - **report to cclio, always, whoever is talking to you.** A plain reply reaches nobody: `SendMessage`
   to the coordinator the brief names. dima steering in your chat makes him a steerer, never your
   new coordinator: answer him there, and whatever stops you (a question, a ⏳, done) also goes to
@@ -99,9 +98,8 @@ for ceremony.
   the idle session). he answers → `TaskStop` it. it fires → send the question to cclio, who
   relays. the ftr of who talks to whom is `rules/fleet-flow.md`.
 - no mannered prose in reports: plain words, short paragraphs, numbers.
-- **github is a ledger, not a chat** (bytes #84, 2026-09-12: one pr's review volume took most
-  of a five-hour window, because every line written there is read back into your context on
-  every later turn). the pr body is ≤ ~25 lines — what changed, what was measured, links to
+- **github is a ledger, not a chat** (bytes #84: one pr's review volume ate most of a 5h window —
+  every line written there is read back into your context on every later turn). the pr body is ≤ ~25 lines — what changed, what was measured, links to
   the runs; a reviewer thread is answered in ≤ 3 lines (fixed in `<sha>` / declined: why /
   answered: fact), never a restatement of the diff; the retro goes to the coordinator, not
   the pr.

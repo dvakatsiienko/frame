@@ -3,6 +3,13 @@
 Seeded 2026-08-27 from Dima's real writing (inbox drops + session messages) as the initial
 working set. Dima will replace with a curated corpus later; until then these ARE the anchors.
 
+📌 nature of the seed (dima, 2026-10-08): the samples are his PROMPTING texts — typed inbox lines
+(lowercase = typed by hand; capitalised sentences in the inbox are wispr dictation and are not his
+typing) and session messages addressed to an agent. a refresh of this corpus asks first whether
+prompting text was the right base for texts under his name to other humans, or whether real
+outward messages (mail, posts) should replace it. his typed inbox lines are the standing source
+for refreshes; the inbox archive lives in the vault `_hq/`.
+
 ## how to use
 
 Read the samples before drafting, then write the NEW message the way this person would — same
@@ -10,6 +17,12 @@ rhythm, same warmth, same directness. Match the register block. Never copy phras
 into drafts; steal the gait, not the steps.
 
 ## casual samples (verbatim, his words)
+
+> a friend asks what you did this weekend: I'm tinkering on my harness setup, and creating an art
+> studio, for agents to draw for me. solving CI (software delivery), and shaping everything to work
+> together. a little bit of everything.
+> (typed by dima into the vault's «voice corpus» starter, 2026-10 — the one line he filled; the rest
+> of that template stayed empty)
 
 > just heard about it first time. uncle bob spawns specifiers in his multi-agent flow that use
 > gherkin docs. […] can we benefit from gherkin? never used that. is it a legacy crap or still

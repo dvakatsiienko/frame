@@ -44,5 +44,6 @@ biome="$root/node_modules/.bin/biome"
 # biome reads its config from the cwd, never from the file's location — run anywhere else and
 # it formats with its defaults (tabs, double quotes) or panics on a path outside its root.
 cd "$root" || exit 0
-"$biome" check --write --no-errors-on-unmatched --files-ignore-unknown=true "$path" >/dev/null 2>&1
+# linter off: its safe fixes run mid-edit, deleting a not-yet-used import and turning `let` into `const`
+"$biome" check --write --linter-enabled=false --no-errors-on-unmatched --files-ignore-unknown=true "$path" >/dev/null 2>&1
 exit 0

@@ -51,7 +51,7 @@ shares the stem (`refresh-agent-ops` ↔ `pnpm agent-ops:report` ↔ `docs/knowl
 
 ## running one
 
-0. check the recipe against its want, before any lane: does every vector serve a want line, and does the want still say what dima wants? a gap is printed with the groom, never fixed in silence. done: each vector names the want line it serves, or is listed as orphaned
+0. **a rerun grooms the recipe before it runs it** (dima, 2026-10-08): read `recipe.md` as the thing under review, not as the plan — is every want line still true, does every vector serve a want line and ask today's question, do the artifacts and the lanes still exist, and does the recipe as a whole do what it was made for? the test: «would i want to run this to refresh myself and the fleet?» — a no on any line is printed with the groom and fixed with dima, never in silence, and no lane launches before his word on the groomed recipe. done: each vector names the want line it serves or is listed as orphaned, and dima said «run it»
 1. read `recipe.md` and the last 5 lines of `log.md`. done: you can say what changed since the last run
 2. re-groom the vectors with dima: print them with the shared vectors below, he cuts and adds. done: his word on the list. (open)
 3. research, all lanes at once from one brief: the `researcher` agent (sources, code, docs) + `pnpm research:lanes <brief>` (exa + parallel). raw output → `last/`. done: every lane landed or failed out loud
@@ -77,6 +77,27 @@ analysis, our own evidence:
 - **what broke for us** — the flawlog (`#dima-caught` first), coder and verifier retros, test-drive logs since the last run
 - **the artifact against reality** — every claim the artifacts hold re-checked on the current build, or marked stale
 - **drift** — vendored or copied files against their recorded upstream commit
+
+## the owner — a recipe is shaped by the role that lives off its artifacts
+
+dima, 2026-10-08: «recipes are special, they are not plain scripts, they want intention. but there are
+too many of them, so it is hard for me to update them all — you, the coordinator, should act in a
+special way here.» so:
+
+- **every recipe names its owner** in frontmatter — `owner: coordinator | coder | designer | fleet` —
+  the role whose work the artifacts feed. dima writes the want; **the owner writes and grooms the
+  vectors from its own seat**: «what would make me better at this job next week?» — never a list of
+  topics about the subject
+- **every half has a done-test**: what the run changes (rows flipped, a grid re-sized, ≤3 verdicts
+  — add / adopt / drop — or `noop`). a half without one does not run
+- **vectors start from our own evidence, then look outside**: the flawlog, the retros, the test-drive
+  logs and the flow numbers since the last run say where the owner failed; outside research is pointed
+  at that, never at the whole subject
+- **the groom is the owner's duty at every rerun** (step 0): the owner proposes cuts and adds, dima verdicts
+  in one block; a recipe dima has to rewrite by hand is a recipe its owner neglected
+- **the owner is a seat, never a spawn**: whoever holds that seat next grooms the vectors as a last act
+  of its session (the next design lane grooms `refresh-art-kit`); no seat due → cclio proxies with the
+  seat's skill loaded and says so. nobody is spawned for a groom
 
 ## creating one
 

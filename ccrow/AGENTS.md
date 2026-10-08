@@ -72,3 +72,6 @@ or `none`. built for FRM-327; the charter is `charter.md`, its boot prompt.
   (haiku probe, 2026-10-06); `total_cost_usd` is there too.
 - dates (`{today}`, the wake id) are local time; `wake.lock` keeps two hooks firing in one second
   from both passing the 30-min gate.
+- **a retro, when dima or cclio asks for one** (≤12 lines, ranked by cost): the standing focus is
+  what cclio missed and when your note landed late, plus one line on what a better adviser would
+  have said; an ask's `focus:` line replaces it for that retro (dima, 2026-10-08).

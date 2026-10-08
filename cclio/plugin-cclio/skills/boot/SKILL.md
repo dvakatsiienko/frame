@@ -13,8 +13,8 @@ run silently, report as ONE opening message.
 🎯 **the boot ORIENTS, it never resolves.** steps 1–8 are pure parse-and-assemble: no answers
 written, no tickets touched, no inbox item worked. the opening board ends with a proposed
 processing order and STOPS for dima's word. resolution then runs as labeled sub-batches with a
-pit stop after each (`habit-dima-comms-pacing`); heavy queries fire at the step that needs them, never
-up front. a query too fat for its pit stop → say so to dima instead of absorbing it.
+siesta after each (`habit-dima-comms-pacing`); heavy queries fire at the step that needs them, never
+up front. a query too fat for its siesta → say so to dima instead of absorbing it.
 
 ## 1. healthcheck — the digest, not a ritual
 the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context: handoffs,
@@ -92,7 +92,7 @@ one message, short lines, **no queries here — pure assembly**:
 - ⏰📌 stuck reminders, own line each (omit if none)
 - inbox status · handoffs pending · queue depth + top item
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
-  `⛽ pit stop` line placed where a topic boundary earns one (only when it helps; dima,
+  `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
   2026-09-11: «keep this habit») — the pocket's «order», lanes marked, sub-batches labeled;
   **the board ends here and waits for dima's word.** he corrects the parse before any work runs;
   a skipped question means the recommendation is accepted

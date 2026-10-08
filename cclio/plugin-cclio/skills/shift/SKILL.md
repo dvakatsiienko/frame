@@ -11,7 +11,7 @@ A **shift** is a lane built to run without dima (FRM-266). A lane asks and waits
 
 ## presence — near or away
 
-- `near` — dima is around but busy: a y/n ping only for a real decision, batched at a pit stop.
+- `near` — dima is around but busy: a y/n ping only for a real decision, batched at a siesta.
 - `away` — nothing waits on him. at most one y/n that fits a phone, and only for an irreversible
   step that blocks everything else.
 

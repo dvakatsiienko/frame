@@ -24,7 +24,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - ⭐ @habit-halt.md — a session ends with the halt ritual; run it on his signal, never open it mid-task
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn
-- ⭐ @habit-dima-comms-pacing.md — a fat drop gets labeled sub-batches with pit stops; every ask handled, a missed one is the worst outcome
+- ⭐ @habit-dima-comms-pacing.md — a fat drop gets labeled sub-batches with siestas; every ask handled, a missed one is the worst outcome
 - ⏰ `_reminders.md` (plain pointer, not imported: the boot digest prints every ⏰📌 line, the halt reads the trial ones) — dima's standing reminders; ⏰📌 stuck ones raised every boot
 
 ## method — how a claim earns belief
@@ -39,6 +39,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🔬 @habit-research-lanes.md — every research runs exa + parallel (`pnpm research:lanes`) + an opus source lane at once, one brief, one reply
 - 🧪 @habit-test-drive.md — a tool on trial: docs research + stress list on day 0, reached first on every fitting ask, widest over deepest
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit
+- 💸 @habit-usage-pacing.md — the 5h window read at every siesta (desktop: `get_usage`, terminal: sline); over the line, parallel lanes pause but their cache stays warm
 
 ## the system itself
 - @sys-skills.md — `x:*` runs anywhere, `cclio:*` is coordinator-only; the test is WHERE it runs

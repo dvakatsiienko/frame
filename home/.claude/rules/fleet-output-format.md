@@ -56,6 +56,13 @@ an emoji is a **line prefix**, never inline decoration.
 - ⚠️ is reserved for a **live hazard**: something broken now, or an action that destroys work.
   spending it on ordinary caveats is what made it invisible.
 - mid-sentence emoji only when the emoji **is** the content.
+- **every fleet word prints bold, with its badge glued to it when it has one** — **✨ wisp**,
+  **🌤️ siesta**, **wish**, **freebie**, **lane** (dima's verdict after a thread trial, 2026-10-08: «bold
+  reads much better than non-bold for vibe keywords»). the badge never travels alone: a bare ✨ reads as
+  llm slop sparkles, «✨ wisp» reads as the bug list. the words and badges live in `rules/fleet-vibe.md`.
+- **picking an emoji for anything** — offer a few from dima's own favourites first, then a few fresh
+  fits; he picks. his set (handpicked, 2026-10-08): 🐋 🐬 🐠 🫍 🦈 🐆 🪶 🐉 🐦‍🔥 🪸 🌼 🌻 🌞 🌘 🌗 🌔 🪐 💫 💨
+  🛼 🫟 🎑 🌠 🌌 🧞‍♂️
 
 ## links and paths — one click, always
 

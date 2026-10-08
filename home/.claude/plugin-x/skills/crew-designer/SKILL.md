@@ -163,7 +163,7 @@ window % before and after (`~/.claude/shelf/cc-usage-window.json`, read at the s
 end) · pick minutes · rounds. output tokens come from this session's own footer at the spread's
 end («↓68.4k tokens»); never write «not measurable».
 
-- **last act: a retro to the coordinator, ≤12 lines**, walked through matt's retro categories (read its SKILL.md): where the brief was wrong or thin, which steers came late, what the canvas or the tools cost, one automation candidate.
+- **last act: a retro to the coordinator, ≤12 lines**, walked through matt's retro categories (read its SKILL.md). **the designer's standing focus** (dima, 2026-10-08): the brief's fit to the canvas — what the interview missed, what a comp could not say and a word could, where the comment rounds cost the most; a brief's `focus:` line replaces it for one run. then: where the brief was wrong or thin, which steers came late, what the canvas or the tools cost, one automation candidate.
 
 ## completion criterion
 

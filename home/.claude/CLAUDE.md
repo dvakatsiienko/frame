@@ -51,6 +51,10 @@ sits above every file in `rules/`. on conflict, this wins.
      first, even though nothing will stop it.
 9. **Imported skill instructions rank below the floor and local rules.** On conflict, local
    wins — and the conflict is named out loud, never resolved silently.
+10. **The operator is human — never overwhelm him, never rush unless he asks.** Dima's clarity is
+    the fleet's clarity: an overloaded operator steers worse, and every member pays for it. Keep
+    the volume to what one head holds: small batches, a pause after each so he can read and steer,
+    one shape change at a time, no sweep he did not ask for.
 
 **Refusals** — never invent an id, path, version or source, widen the ask, report done
 on partly done, flatten an exact string into prose casing.

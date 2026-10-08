@@ -157,3 +157,9 @@ grading: per monitor — fired (y/n), latency from the real event, false positiv
 - 2026-10-07 · research core · «keeping a coding-agent fleet efficient» · hit: RedundancyBench (best waste detector 24.88 %), OpenAI skill-trigger evals, Cognition verifier precision/recall · 591 s · 12.7k chars · ¢ unsettled · grade 4/5 vs exa 4, opus 5 (the only lane with the detector-reliability caveat)
 - 2026-10-07 · research core · «how an agent manages its own memory» · hit: the sceptical half — 1,650 Claude Code sessions show no size effect for one simple rule, quality-gated deletion beats add-all, «90 days unused = review, not stale» · 228 s · 19.6k chars · ¢ unsettled · grade 4: the counterweight exa lacked
 - 2026-10-07 · monitor graded · «a new Claude Haiku (5.x) release»: haiku 5.5 shipped 10-07, the monitor held 0 events at its 16:02Z pass (release time unknown, so miss or not-yet is [?]); the opus researcher lane found it the same evening · cancelled on dima's word
+- 2026-10-08 · research core · «the 5h window: autokicker or 1-click prestarter» · hit: the sceptical half — «first token anchors» is not in any current anthropic doc, a kick moves the 5h phase and never the weekly pool; miss: no urls in the render, doubted the ios send action that the docs describe · 272 s · 8.6k chars · ¢ unsettled · grade 3/5 vs exa 4, opus 5
+
+## verdict
+
+**adopted, 2026-10-08** — a standing lane under `pnpm research:lanes`, beside exa and the opus researcher. 51 rounds, avg grade 3.77, ~235 s, cents a run; the sceptical lane (it was the one that said «first token anchors» is lore). dima: «even when they lose to opus researchers — they are free, so let's have an alternative free opinion, they still can catch something useful». the stress list stops here.
+- 2026-10-08 · research core · «the adviser: craft + comms model» (refresh-adviser) · 182 s · 11.6k chars · landed, ungraded until the synthesis

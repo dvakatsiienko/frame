@@ -51,3 +51,5 @@ Ticket: none
 - read-back: `claude -p … --teleport <id>` from a scratch clone answered in one call
 - meter: $245 of $250 left after round 1 (probes 1–5 on 09-28 + the name probe + this job — no «before» split); week 3 %, session 18 % at ~16:00
 - verdict for this use: works; the report quality matches a local coder's
+- 2026-10-08 · meter read by dima (usage page): credit $236 of $250 left, expires 2026-11-05 09:59 GMT+2 · «how they affect weekly and 5h in this state is unknown» (dima) — the refresh-coordinator cloud rerun reads get_usage weekly + 5h before and after as the probe
+- 2026-10-08 16:24 · cloud research launched: «☁️ 🔬 research: coordinator craft» (session_01E9zeRZ6UsG1zRMfGf7A4zL), the refresh-coordinator craft brief, head-to-head with a local opus `--bg` (45b6a19f) on the same brief · BEFORE (get_usage): weekly 78 %, 5h 67 % · AFTER (16:31, get_usage): weekly 78 %, 5h 74 % — weekly flat while 5h moved +7 under the local twin, a coder and two cclio sessions; reads as «the cloud run did not hit the weekly», not proven (one sample, the 5h delta has other spenders)
