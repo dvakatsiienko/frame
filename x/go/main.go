@@ -44,6 +44,8 @@ var impls = map[string]Impl{
 	"lane pr-open":    {Plan: prPlan, Apply: prOpen, Undone: "no pr was opened", Ask: askPR},
 	"lane merge-main": {Run: mergeMain, Undone: "nothing was merged"},
 	"lane unlock":     {Run: unlock, Undone: "nothing was decrypted"},
+	"lane seed":       {Run: seed, Undone: "the tree is as the hook left it"},
+	"go gate":         {Run: goGate, Undone: "the gate stopped at its first red step"},
 	"handoff list":    {Run: handoffList},
 	"handoff peek":    {Run: handoffPeek},
 	"handoff ingest":  {Run: handoffIngest},

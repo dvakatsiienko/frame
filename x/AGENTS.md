@@ -48,7 +48,7 @@ the checks the FRM-340 verifier built by hand; a verifier or coder on `x` starts
 - **a «no free text» exit line** is proven against hostile argv, never one example: an unknown `-word`, a bare `-`, words after `--`, free text in an id-named arg, a quoted multi-word arg as zsh `${(z)}` splits it, a flag value equal to a verb name.
 - **the zsh hook** is proven in a real `zsh -i` on a pty (python `pty` + a temp `ZDOTDIR`) with another `precmd` registered first, so `$?` reaching the hook is checked — calling `_x_trace_preexec` by hand proves nothing about firing.
 - **`x stats`** runs over a planted trace dir under a temp `X_STATE`, with a fake `trash` on `PATH` for the 90-day move.
-- in a git-crypt worktree, go builds need `GOFLAGS=-buildvcs=false` until the test-hygiene ticket lands.
+- a git-crypt worktree builds go with no extra env once `x lane unlock` (or `x lane seed <path>`) ran; a locked tree dies on the vcs stamp (exit 128), which `seed_test.go` reproduces.
 - **a port** is proven against the old door run side by side before it dies: twin stores, one verb script through both.
 - **every repro in a verdict ran on the verdict's head**, with a fresh temp store or `X_STATE` per probe.
 - **a ts test that shells to `x`** resolves the shim beside itself, never `~/frame` (ci set up go after vitest once).
