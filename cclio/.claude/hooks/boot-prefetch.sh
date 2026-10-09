@@ -272,6 +272,17 @@ echo "📌 this hook proves the FILE chain in a fresh process; the running sessi
 
 fi
 
+echo "-- pocket (Backlog.md, cclio/script/pocket-check.ts; a red is drift to fix today, not a broken boot) --"
+if out=$(node "$HOME/frame/cclio/script/pocket-check.ts" 2>&1); then
+  echo "$out"
+elif [ -n "$out" ] && [ -z "$(printf '%s\n' "$out" | grep -v '^🔴 ')" ]; then
+  echo "🔴 $(printf '%s\n' "$out" | wc -l | tr -d ' ') items off contract — \`node ~/frame/cclio/script/pocket-check.ts\` lists them"
+  printf '%s\n' "$out" | sed 's/^🔴 [^:]*: //' | sort | uniq -c | sort -rn | head -5
+else
+  fail "pocket-check could not run: $(printf '%s' "$out" | head -1)"
+fi
+echo "now: $(BACKLOG_CWD="$HOME/frame/cclio" backlog task list --plain --priority now 2>/dev/null | grep -c 'PK-') · ready: $(BACKLOG_CWD="$HOME/frame/cclio" backlog task list --plain --ready 2>/dev/null | grep -c 'PK-')"
+
 echo "-- flawlog (the day's file; the 🥊 pair rides the CST) --"
 today="$HOME/.claude/shelf/flawlog/$(date +%Y-%m-%d)"
 ls "$today"-*.md >/dev/null 2>&1 && echo "today's file exists" || echo "no file for today yet — open one at step 8"

@@ -4,6 +4,7 @@ title: '[10] plan the memory sweep'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
+updated_date: '2026-10-09 11:14'
 labels: []
 dependencies: []
 references:
@@ -30,3 +31,9 @@ dima 10-07: `_hq/memory-sweep.md` holds his corrections. plan the steps first, b
 
 planned 10-07: `.scratch/memory-sweep/` — the spec + nine phase tickets (01 baseline + audit → 09 global review); the grill log in `docs/test-drive/memory-sweep.md`. next: a fresh session runs 01.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+sweep exit test (from pk-31, 10-09): one door for memory edits — today the guidance lives in rules/authoring-trigger.md, habit-memory-edits, matt's writing-for-agents, and the pocket/leaf rules in cclio memory.
+<!-- SECTION:NOTES:END -->

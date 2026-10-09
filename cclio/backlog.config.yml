@@ -1,6 +1,6 @@
 project_name: "cclio-pocket"
 default_status: "open"
-statuses: ["open", "claimed", "blocked", "waiting", "done"]
+statuses: ["open", "claimed", "waiting", "done"]
 labels: ["xs", "s", "m", "l"]
 priorities: ["now", "next", "later"]
 types: ["task", "research", "grill", "test-drive", "idea", "wish", "question"]

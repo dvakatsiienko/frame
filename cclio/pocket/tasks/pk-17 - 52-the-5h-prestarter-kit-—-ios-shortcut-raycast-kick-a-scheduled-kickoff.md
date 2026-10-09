@@ -21,7 +21,7 @@ dima: «let's try shortcut and ray cmd. i also want a way to set a scheduled 5h 
 - a coder freebie: a raycast script command in x-ray running `claude -p --model haiku` with no tools and a replaced system prompt (not `--bare`); a «kick at HH:MM» variant via a one-shot launchd job + `pmset schedule wake`
 - the scheduled kickoff: candidates — an ios automation on an alarm trigger (set the alarm = set the time; runs locked? «?»), a one-off cloud routine set from the phone (whole cloud session per kick), the mac one-shot above. one probe each before a pick
 - merged from 38 (dima, 2026-10-09):
-  `open · research` · inbox 10-08, 🐦‍⬛ first actions
+  `open · research` · inbox 10-08, first-action first actions
 
   dima: the 5h window starts on the first token spent, so when he boots me the window opens and our token plan spreads over those 5h. but if at boot the window is already at, say, 2:30, we can code more densely in the shorter window. how to set up a 5h autokicker properly? a tiny probe that sends 1 token to claude.ai so the window is always moving, and he starts at any time but always with less than 5h? alternative: a 1-click door to a 5h prestarter — he roughly plans when he boots me and opens the window 1–2 h before. must: 1. good ux · 2. preferably works on his mobiles · 3. preferably 1-click · 4. maybe a complementary useful feature or two · 5. ideally pretty. «search and propose».
 <!-- SECTION:DESCRIPTION:END -->
