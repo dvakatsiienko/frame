@@ -170,7 +170,7 @@ file he names.
 - **shape**: what is waited on + how the answer arrives — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70) — the pr watcher wakes me`.
   - a thing with a page is a link labelled with an emoji and a short word; several things, one per line
   - a member is bold with its role emoji, no link: **🦉 cclio**, **🔧 coder**, **🔎 verifier**,
-    **🎨 designer**, **🔬 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**
+    **🎨 designer**, **🐝 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**
 
 ### ⏳ open asks
 - **open asks ride a «⏳ waiting on your word:» block at the very end of the reply**, repeated in
