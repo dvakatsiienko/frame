@@ -13,7 +13,7 @@ import {
 } from './rules.ts';
 
 // x-mod-guard: every Bash call is read before it runs; a floor command or a hazard shape is refused with its door.
-// each refusal and each escape is kept in $.store as one `event:` key; x-mod-stash's band reads them as 🛡️ lines.
+// each refusal and each escape is kept in $.store as one `event:` key, with per-day counts a halt reads.
 
 export type GuardEvent = {
     at: number;

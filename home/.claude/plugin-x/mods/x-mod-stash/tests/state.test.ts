@@ -108,14 +108,11 @@ test('the away digest still shows after a reload', async ($, on) => {
     await reloaded($, on, {
         view: {
             afk: false,
-            areGuardsOpen: false,
             digest: {
                 done: [{ name: 'd0d0d0d0', sid: 'd0d0d0d0-done' }],
                 needs: [],
             },
             entries: {},
-            guards: [],
-            holds: { others: 0, warned: false },
             isBoardOpen: false,
             isHot: false,
         },

@@ -239,6 +239,19 @@
   - when `x as` runs
   - then a fresh token is minted from the member's oauth pair or app key and cached; else the cached one is used
 
+## gh — github reads
+
+- ✅ `x gh pr <n>` reads a pr's checks and its three comment feeds in one call
+  - given a pr number, and `--repo <owner/name>` or a cwd whose origin is on github
+  - when it runs
+  - then one envelope holds the head, every check by its latest state, and the three feeds (`comments`, `reviews`, `reviewComments`), each newest first, each comment as author, `path:line` when it has one, and body; a line comment whose line left the diff is marked `outdated`
+  - then `vercel[bot]` and `linear-code[bot]` comments never print, nor a review with no words and no verdict
+  - given `--since <RFC 3339 time>`, then only comments from that second on print; a comment's time is its last edit, so a verdict edited into an old comment counts
+  - then its `read` field, github's own clock before the feeds were read, is the next poll's `--since`: a poll loop misses no comment and repeats at most one second's
+  - given an agent env, then json; `--board` draws the human view
+  - given a pr number that is not digits, a `--since` that is not RFC 3339 or a repo that is not owner/name, then exit 2 before any request
+  - decision: reads go over the rest api as the x-coder-cc app, never through the `gh` binary — the tests run against a local fixture server; writes keep `x as coder -- gh` (FRM-364)
+
 ## linear — tickets
 
 - ✅ `x linear read <ids…>` reads tickets in one request

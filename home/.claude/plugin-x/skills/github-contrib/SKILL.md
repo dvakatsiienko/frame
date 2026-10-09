@@ -22,16 +22,17 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
 - rebase onto latest main before opening; stale branches waste a review round.
 - UI changes need before/after images; motion or timing needs a short video. upload evidence to
   GitHub — never commit PR-only screenshots or assets into the repo.
-- **babysitting**: poll checks and comments newer than the last push; verify each bot finding
+- **babysitting**: poll `x gh pr <n> --since <the last read's read field>` — checks and every comment
+  feed in one read, in frame and bytes; verify each bot finding
   against the source; fix real ones, dismiss false positives with a written reason; fix CI
   failures, distinguishing real breaks from infra flakes. nothing new → stay quiet. stop when
   the bots are green on the latest commit.
 - **the ci reviewer reads the diff and runs nothing** — no `node`, no tests (2026-09-28: it passed a surviving mutation and a cross-view rounding gap the verifier caught). it finds reading bugs the verifier misses; the verifier stays the runtime check.
-- **the ci reviewer lands its verdict by editing its «working…» comment in place** — a watcher keyed on `created_at` never sees it; key on `updated_at` (atelier #115, 2026-09-29).
+- **the ci reviewer lands its verdict by editing its «working…» comment in place** — a watcher keyed on `created_at` never sees it; key on `updated_at` (atelier #115, 2026-09-29). `x gh pr --since` times a comment by its last edit.
 - **reading a reviewer, measured 2026-09-11**: the ci reviewer posts to a different endpoint per
-  round — poll all three (`issues/N/comments`, `pulls/N/reviews`, `pulls/N/comments`), never
-  the workflow run (an `issue_comment` workflow runs on the default branch; `gh run list
-  --branch` never shows it).
+  round — read all three (`issues/N/comments`, `pulls/N/reviews`, `pulls/N/comments`; `x gh pr <n>`
+  is the one read), never the workflow run (an `issue_comment` workflow runs on the default branch;
+  `gh run list --branch` never shows it).
   an inline thread is answered only through `POST /pulls/{n}/comments/{id}/replies`; a
   top-level comment does not count as a reply.
 - **the bytes review lane**: `gh pr edit <n> --add-label '🤖 review:requested'` starts the ci

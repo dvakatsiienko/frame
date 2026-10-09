@@ -28,4 +28,4 @@ fetches.
 
 ## verdict
 
-_(2026-10-07)_
+**adopted** (2026-10-09, dima's yes on pk-22): ctx7 is the library-docs door — 6 of 25 coder sessions in 7 days reached for it, the context7 mcp 0. the trial text left `rules/fleet-tooling.md`; the line stays as the door.

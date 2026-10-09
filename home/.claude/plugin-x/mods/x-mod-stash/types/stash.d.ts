@@ -6,19 +6,8 @@ export type StashEntry = {
     at: number;
 };
 
-// one x-mod-guard refusal or escape, read from x-mod-guard's own store file
-export type StashGuardLine = {
-    key: string;
-    sid: string;
-    name?: string;
-    command: string;
-    kind: 'refused' | 'escaped';
-    door: string;
-    target: string;
-    at: number;
-    // why it was refused; an event kept before x-mod-guard wrote one shows its door
-    why?: string;
-};
+// the session's last main turn stopped on the 5h cap: the reset it waits for, and the reset a resume already went for
+export type StashCap = { resetsAt?: number; sentFor?: number };
 
 // what the fleet did while dima was afk
 export type StashDigest = {
@@ -45,21 +34,19 @@ export type StashMember = {
     offPattern: boolean;
 };
 
-// everything the band and the board draw, written by the poll and the hooks; a render reads it and redraws on a write
+// everything the band draws, written by the poll and the hooks; a render reads it and redraws on a write
 export type StashView = {
     selfId?: string;
     entries: Record<string, StashEntry>;
     afk: boolean;
     isHot: boolean;
-    holds: { others: number; warned: boolean };
-    guards: StashGuardLine[];
-    areGuardsOpen: boolean;
+    isWaker: boolean;
     digest?: StashDigest;
     isBoardOpen: boolean;
 };
 
 // what only the board pane draws, kept apart from the band's view: its clock moves every poll, and a band that read it
-// would redraw — rebuilding x-mod-breather's svg — every 4 s (FRM-354)
+// would redraw — rebuilding x-mod-breather's svg (FRM-354)
 export type StashBoardView = {
     members?: StashMember[];
     isColour: boolean;
@@ -82,6 +69,8 @@ declare module 'claude-code' {
             view: StashView;
             board: StashBoardView;
             turn: StashTurn;
+            // null: the last main turn did not stop on the cap
+            cap: StashCap | null;
         };
     }
 }

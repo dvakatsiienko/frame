@@ -2,9 +2,9 @@
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
 import type {
+    StashCap,
     StashDigest,
     StashEntry,
-    StashGuardLine,
     StashMember,
     StashView,
 } from '../types/stash.d.ts';
@@ -24,7 +24,6 @@ import {
 // x-mod-stash: dima's command center above the prompt, one folded row; FTR.md lists every feature.
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
-// holds: a session's first edit of a file holds it; another session's edit is refused
 // keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm; the switch lives in $.store, so a reload keeps it
 // The reply stays the source of truth for asks; this band only shows and copies them.
 
@@ -69,6 +68,16 @@ const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
 const PING =
     'x-mod-stash keep-hot ping: answer with one character, nothing else.';
+// the waker: one global switch, off by default; when on, a session stopped on the 5h cap gets one resume at the reset
+const WAKER_KEY = 'waker';
+const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
+// the 5h cap ends the turn as an API error with this text; the weekly cap and spent credits read otherwise
+// (8 rows in the transcripts, 2026-10-08)
+const CAPPED = /hit your session limit/i;
+const RESUME =
+    'x-mod-stash waker: the 5h window reset. pick up where you stopped.';
+// a few seconds past the reset, so the window has turned before the resume goes out
+const WAKE_SLACK_MS = 5000;
 const ACCENT = '#d97757';
 
 let selfId: string | undefined;
@@ -80,10 +89,13 @@ let isUserTurn = false;
 let pinged = false;
 let isPolling = false;
 let afk = false;
+let isWaker = false;
+// the 5h reset as the last session.measure reported it, and this session's cap state
+let fiveHourResetsAt: number | undefined;
+let cap: StashCap | undefined;
+let capGen = 0;
 let turnAfk: boolean | undefined;
 let proc: Proc | undefined;
-let root = '';
-let holds = { others: 0, warned: false };
 // since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
 let hot: { since: number } | undefined;
 let isBusy = false;
@@ -91,15 +103,6 @@ let isBusy = false;
 let modelSeen: string | undefined;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
-
-// x-mod-guard's refusals and escapes: each plugin's $.store is its own file, so the band reads x-mod-guard's file directly
-type GuardLine = StashGuardLine;
-const GUARD_FILE = /^x-mod-guard_.*\.json$/;
-const GUARD_EVENT = 'event:';
-// the counter row ages out after this long with no new event
-const GUARD_AGE_MS = 30 * 60_000;
-let guards: GuardLine[] = [];
-let areGuardsOpen = false;
 
 // what the fleet did while dima was afk, shown in the band where he turned 💨 off until his next prompt
 type Digest = StashDigest;
@@ -115,29 +118,9 @@ const errorText = (err: unknown) =>
 const basename = (path: string) =>
     path.split('/').filter(Boolean).pop() ?? path;
 
-// x-mod-holds keeps the holds in its own store file; the 🔒 chip reads that file, the way the guard row reads x-mod-guard's.
-// its shapes and keys, as x-mod-holds writes them
-type Hold = { at: number; file: string; top: string; landed?: boolean };
-type Holder = { pid?: number; start?: string; idleSince: number | null };
-type Refusal = { at: number; by: string; path: string };
 type Proc = { pid: number; start: string };
 
-const HOLD = 'hold:';
-const HOLDER = 'holder:';
-const REFUSED = 'refused:';
-const IDLE_MS = 30 * 60 * 1000;
-
-const holdKey = (sid: string, path: string) => `${HOLD}${sid}:${path}`;
 const short = (sid: string) => sid.slice(0, 8);
-
-// a session id carries no ':', so the first one after the prefix ends it
-function parseHoldKey(key: string) {
-    if (!key.startsWith(HOLD)) return null;
-    const cut = key.indexOf(':', HOLD.length);
-    return cut < 0
-        ? null
-        : { path: key.slice(cut + 1), sid: key.slice(HOLD.length, cut) };
-}
 
 // the name ListAgents shows lives in the session registry, keyed by the claude process id
 async function sessionName($: EngineInterface) {
@@ -165,14 +148,6 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
     return r.exitCode === 0 && pid && start
         ? { pid: Number(pid), start }
         : undefined;
-}
-
-// the working tree a path sits in, lowercased; '' outside git
-async function topOf($: EngineInterface, cwd: string) {
-    const r = await $.process
-        .run(['git', 'rev-parse', '--show-toplevel'], { cwd })
-        .catch(() => null);
-    return r?.exitCode === 0 ? r.stdout.trim().toLowerCase() : '';
 }
 
 // a «yes, after X» answer to an open ask lands one line in the queue cclio's boot reads and empties; cclio/pocket.md has one writer
@@ -222,65 +197,6 @@ async function pruneEnded($: EngineInterface) {
     }
 }
 
-const HOLDS_FILE = /^x-mod-holds_.*\.json$/;
-
-// what the row shows: other live sessions' holds in this working tree, and whether this session's hold was wanted.
-// a file mid-write reads as no holds until the next poll
-async function chip($: EngineInterface, sid: string, root: string) {
-    const dir = `${await $.env.get('HOME')}/.claude/plugins/store`;
-    const held: Record<string, unknown> = {};
-    for (const f of await $.fs.list(dir).catch(() => [])) {
-        if (!HOLDS_FILE.test(f.name)) continue;
-        try {
-            Object.assign(
-                held,
-                JSON.parse(await $.fs.read(`${dir}/${f.name}`)),
-            );
-        } catch {}
-    }
-    const now = await $.clock.now();
-    let others = 0;
-    for (const [key, value] of Object.entries(held)) {
-        const h = parseHoldKey(key);
-        if (!h || h.sid === sid) continue;
-        const hold = value as Hold | undefined;
-        const holder = held[HOLDER + h.sid] as Holder | undefined;
-        const idle =
-            holder?.idleSince != null && now - holder.idleSince >= IDLE_MS;
-        if (hold?.top === root && holder && !idle) others++;
-    }
-    const refused = held[REFUSED + sid] as Refusal | undefined;
-    const warned = !!refused && holdKey(sid, refused.path) in held;
-    return { others, warned };
-}
-
-// the current run of guard events, newest first: each one under GUARD_AGE_MS after the next, the newest under it
-// before now. a file mid-write is skipped until the next poll
-async function guardLines($: EngineInterface): Promise<GuardLine[]> {
-    const dir = `${await $.env.get('HOME')}/.claude/plugins/store`;
-    const all: GuardLine[] = [];
-    for (const f of await $.fs.list(dir).catch(() => [])) {
-        if (!GUARD_FILE.test(f.name)) continue;
-        try {
-            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as Record<
-                string,
-                Omit<GuardLine, 'key'>
-            >;
-            for (const [key, event] of Object.entries(v))
-                if (key.startsWith(GUARD_EVENT)) all.push({ ...event, key });
-        } catch {}
-    }
-    all.sort((a, b) => b.at - a.at);
-    let since = await $.clock.now();
-    const run: GuardLine[] = [];
-    for (const g of all) {
-        if (since - g.at >= GUARD_AGE_MS) break;
-        run.push(g);
-        since = g.at;
-    }
-    return run;
-}
-
 // one `words:<yyyy-mm-dd>:<session>` key a day, the fleet words a reply had bolded for it, so a halt reads the hits;
 // a key past WORDS_DAYS is dropped
 const WORDS = 'words:';
@@ -303,6 +219,10 @@ async function load($: EngineInterface) {
     const now = await $.clock.now();
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
     afk = flag?.on === true;
+    const waker = (await $.store.get(WAKER_KEY)) as
+        | { on?: boolean }
+        | undefined;
+    isWaker = waker?.on === true;
     const next: Record<string, Entry> = {};
     for (const key of await $.store.keys()) {
         if (!key.startsWith(PREFIX)) continue;
@@ -326,9 +246,6 @@ async function load($: EngineInterface) {
                 if (sid !== selfId && !alive.has(sid)) delete next[sid];
     }
     entries = next;
-    // an unreadable holds file keeps the last chip
-    if (selfId) holds = await chip($, selfId, root).catch(() => holds);
-    guards = await guardLines($).catch(() => guards);
     await publish($);
 }
 
@@ -336,15 +253,33 @@ async function load($: EngineInterface) {
 function viewOf(isBoardOpen: boolean): StashView {
     return {
         afk,
-        areGuardsOpen,
         digest,
         entries,
-        guards,
-        holds,
         isBoardOpen,
         isHot: Boolean(hot),
+        isWaker,
         selfId,
     };
+}
+
+// a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
+// never fires
+async function armWake($: EngineInterface) {
+    const mine = ++capGen;
+    const at = cap?.resetsAt;
+    if (at === undefined || cap?.sentFor === at) return;
+    const wait = at + WAKE_SLACK_MS - (await $.clock.now());
+    $.clock.after(Math.max(0, wait), async () => {
+        if (mine !== capGen || isBusy || !cap) return;
+        const waker = (await $.store.get(WAKER_KEY)) as
+            | { on?: boolean }
+            | undefined;
+        if (waker?.on !== true) return;
+        cap = { ...cap, sentFor: at };
+        await $.state.set(CAP, cap).catch(() => undefined);
+        $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
+        await $.prompt.submit({ text: RESUME });
+    });
 }
 
 let published = '';
@@ -687,8 +622,6 @@ export const register: Register = (on) => {
         selfId = await $.session.id();
         const top = (await $.session.repo())?.root ?? e.cwd;
         label = basename(top);
-        // the working tree, not the repo: a worktree's holds never collide with the main checkout's
-        root = (await topOf($, e.cwd)) || top.toLowerCase();
         proc = await procOf($).catch(() => {
             $.ui.log(
                 'x-mod-stash: no pid for this session, so its row reads no registry name',
@@ -697,10 +630,12 @@ export const register: Register = (on) => {
         });
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
+            cap: (await $.state.get(CAP)).value,
             open: (await $.state.get(OPEN)).value,
             turn: (await $.state.get(TURN)).value,
             view: (await $.state.get(VIEW)).value,
         };
+        cap = kept.cap ?? undefined;
         await pruneEnded($).catch(() => undefined);
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
         if (kept.open !== undefined) open = kept.open;
@@ -712,9 +647,9 @@ export const register: Register = (on) => {
             turnAfk = kept.turn.afk;
         }
         digest = kept.view?.digest;
-        areGuardsOpen = kept.view?.areGuardsOpen ?? false;
         await load($);
         await armHot($);
+        await armWake($);
         await $.command
             .register({
                 description:
@@ -847,6 +782,13 @@ export const register: Register = (on) => {
         if (e.agentId) return r;
         isBusy = false;
         await keepTurn($);
+        // a stop on the 5h cap waits for the reset; any other end clears it
+        cap =
+            e.reason === 'error' && CAPPED.test(e.answer)
+                ? { resetsAt: fiveHourResetsAt }
+                : undefined;
+        await $.state.set(CAP, cap ?? null).catch(() => undefined);
+        await armWake($);
         // the store is 🔥's truth: ccrow writes its key after session.start, and a deleted key turns it off
         const sid = await currentId($);
         if (sid)
@@ -860,8 +802,19 @@ export const register: Register = (on) => {
         return r;
     });
 
-    // the context fill the board shows
+    // the context fill the board shows, and the 5h reset the waker waits on
     on('session.measure', async ($, e, next) => {
+        const w = e.rateLimits.find((r) => r.kind === 'five_hour');
+        const resetsAt = w?.resetsAt ? Date.parse(w.resetsAt) : undefined;
+        if (resetsAt !== undefined) {
+            fiveHourResetsAt = resetsAt;
+            // capped before any measure named the reset: wait for this one
+            if (cap && cap.resetsAt === undefined) {
+                cap = { ...cap, resetsAt };
+                await $.state.set(CAP, cap).catch(() => undefined);
+                await armWake($);
+            }
+        }
         const sid = await currentId($);
         if (sid && e.context.percent !== undefined)
             await $.store
@@ -1176,6 +1129,12 @@ export const register: Register = (on) => {
             await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
             await publish($);
         };
+        // one switch for every session, kept in the store so a restart keeps it
+        const handleWakerFlip = async () => {
+            isWaker = !view.isWaker;
+            await $.store.set(WAKER_KEY, { on: isWaker });
+            await publish($);
+        };
         const handleHotFlip = async () => {
             hot = hot ? undefined : { since: await $.clock.now() };
             await saveHot($);
@@ -1224,35 +1183,9 @@ export const register: Register = (on) => {
         };
         const [first] = groups;
         const many = groups.length > 1;
-        // other sessions' holds in this repo; ⚠ when a session was refused one of this session's files
-        const chipText = [
-            view.holds.warned ? '⚠' : '',
-            view.holds.others ? `🔒 ${view.holds.others}` : '',
-        ]
-            .filter(Boolean)
-            .join(' ');
-        const chipName = [
-            view.holds.warned
-                ? 'a session was refused a file this session holds'
-                : '',
-            view.holds.others
-                ? `${view.holds.others} ${view.holds.others === 1 ? 'file' : 'files'} held by other sessions`
-                : '',
-        ]
-            .filter(Boolean)
-            .join('; ');
-        const holdsChip = chipText
-            ? tip(
-                  'holds',
-                  chipName,
-                  <Text color={view.holds.warned ? ACCENT : undefined}>
-                      {chipText}
-                  </Text>,
-                  { left: [...chipText].length + 1 },
-              )
-            : null;
         // icons only; each card says what a press does (dima)
         const hotLabel = '🔥';
+        const wakerLabel = '⏰';
         // one icon; the accent background says afk is on (dima)
         const afkLabel = '💨';
         const foldLabel = isOpenList ? '📂' : '📁';
@@ -1278,13 +1211,9 @@ export const register: Register = (on) => {
                                   { left: counts.length + 1 },
                               )
                             : null}
-                        {holdsChip}
                     </Box>
                 ) : (
-                    <Box flexDirection='row' gap={1}>
-                        <Text dimColor>no open asks</Text>
-                        {holdsChip}
-                    </Box>
+                    <Text dimColor>no open asks</Text>
                 )}
                 <Box flexDirection='row' gap={1}>
                     {first ? copyButton(first[0], first[1].asks, 'c') : null}
@@ -1302,6 +1231,21 @@ export const register: Register = (on) => {
                             {hotLabel}
                         </Button>,
                         leftOf(hotLabel, !!view.isHot),
+                    )}
+                    {tip(
+                        'waker',
+                        view.isWaker
+                            ? 'stop waking capped sessions at the 5h reset'
+                            : 'wake every session stopped on the 5h cap when the window resets',
+                        <Button
+                            key='waker'
+                            onPress={() => void handleWakerFlip()}
+                            {...(view.isWaker
+                                ? { variant: 'secondary' as const }
+                                : { plain: true as const })}>
+                            {wakerLabel}
+                        </Button>,
+                        leftOf(wakerLabel, view.isWaker),
                     )}
                     {tip(
                         'afk',
@@ -1349,51 +1293,6 @@ export const register: Register = (on) => {
                 </Box>
             </Box>
         );
-        // guard's run folds into one counter row, shown folded or not, gone once guard has been quiet a while
-        const plural = (n: number, word: string) =>
-            `${n} ${word}${n === 1 ? '' : 's'}`;
-        const refused = view.guards.filter((g) => g.kind === 'refused').length;
-        const escaped = view.guards.length - refused;
-        const counter = [
-            ...(refused ? [plural(refused, 'refusal')] : []),
-            ...(escaped ? [plural(escaped, 'escape')] : []),
-            plural(new Set(view.guards.map((g) => g.sid)).size, 'session'),
-        ].join(' · ');
-        const handleGuardsFlip = async () => {
-            areGuardsOpen = !view.areGuardsOpen;
-            await publish($);
-        };
-        const guardLabel = view.areGuardsOpen ? '▾' : '▸';
-        const shields = view.guards.length
-            ? [
-                  <Box flexDirection='row' gap={1} key='guard'>
-                      <Text>🛡️ {counter}</Text>
-                      {tip(
-                          'guard-toggle',
-                          view.areGuardsOpen
-                              ? 'fold guard refusals'
-                              : 'unfold guard refusals',
-                          <Button
-                              key='guard-toggle'
-                              onPress={handleGuardsFlip}
-                              plain>
-                              {guardLabel}
-                          </Button>,
-                          leftOf(guardLabel, false),
-                      )}
-                  </Box>,
-                  ...(view.areGuardsOpen
-                      ? view.guards.map((g) => (
-                            <Text
-                                dimColor
-                                key={`guard:${g.key}`}
-                                wrap='truncate-end'>
-                                {`${g.name ?? short(g.sid)} — ${g.command} → ${g.kind === 'escaped' ? `ran on dima-ok: ${g.target}` : (g.why ?? g.door)}`}
-                            </Text>
-                        ))
-                      : []),
-              ]
-            : [];
         const away =
             view.digest && (view.digest.needs.length || view.digest.done.length)
                 ? [
@@ -1419,7 +1318,6 @@ export const register: Register = (on) => {
             return (
                 <Box flexDirection='column'>
                     {head}
-                    {shields}
                     {away}
                     {await next(e)}
                 </Box>
@@ -1451,15 +1349,11 @@ export const register: Register = (on) => {
                 </Text>
             )),
         ]);
-        const room = Math.max(
-            1,
-            e.props.maxRows - 1 - shields.length - away.length,
-        );
+        const room = Math.max(1, e.props.maxRows - 1 - away.length);
         const shown = rows.slice(0, room);
         return (
             <Box flexDirection='column'>
                 {head}
-                {shields}
                 {away}
                 {shown}
                 {rows.length > shown.length ? (

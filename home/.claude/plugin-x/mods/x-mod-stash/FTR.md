@@ -39,7 +39,7 @@
   - decision: no ➡️ prompt suggestion — the built-in suggestion writes a good prompt; one suggestion, no race (dima, 2026-10-05)
 - 🔎 every control in the row names itself on hover: a dim card beside it
   - given the row draws
-  - when dima hovers `📋`, `🔥`, `💨`, `🚦`, the fold folder or the holds chip
+  - when dima hovers `📋`, `🔥`, `💨`, `🚦` or the fold folder
   - then a dim line beside it says what a press does now: «copy this thread's asks» with its `c` badge, «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge, «fold» or «unfold» with its `f` badge
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
   - dima, 2026-10-05: seen in the desktop Code tab and in Warp
@@ -145,6 +145,20 @@
   - then 🔥 ticks and the 50-minute ping is armed, or unticks and no ping is armed
   - given dima switched 🔥 off on the band
   - then the key is gone from the store, so the re-read never switches it back on
+- ✅ ⏰ waker: one global switch in the row beside 🔥, off by default; while on, a session stopped on the 5h cap gets one «resume» at the reset (FRM-365)
+  - given ⏰ is off, its default
+  - when the 5h window resets
+  - then nothing is sent
+  - given ⏰ is on and a session's last main turn ended on the cap
+  - when the reset passes
+  - then that session gets one resume prompt; a session that stopped for any other reason gets nothing
+  - given the resume went out
+  - when the mod reloads or the clock runs on
+  - then no second resume goes for that reset
+  - makes: one `waker` key in x-mod-stash's `$.store`, `{ on }`, so a restart keeps the switch; the cap and the reset it was sent for live in `$.state` (`cap`)
+  - decision: «on the cap» is a turn that ended in error with «hit your session limit» — the text the 5h cap writes (8 transcript rows, 2026-10-08); the weekly cap and spent credits read otherwise and are left alone. inferred from transcripts, no capped turn seen through the hook yet
+  - decision: each session wakes itself at the reset its last measure named, a few seconds after; no message crosses sessions, and a capped session that never measured waits for its first measure
+  - decision: off unless dima clicks — «I don't want this to be permanent … gated behind a button, like the hot button, but global» (dima, 2026-10-09)
 - ✅ 🔥 stays on through a 5h window reset: only dima's click turns it off
   - given 🔥 is on
   - when the 5h window resets
@@ -162,35 +176,7 @@
 - ✅ a busy session is never pinged
   - given 🔥 is on and a turn is running at the 50-minute mark
   - then no ping is sent, and the clock restarts when that turn ends
-- ✅ holds chip: `🔒 n` counts other sessions' holds in this repo
-  - source: x-mod-holds' own store file, read each poll the way the guard row reads x-mod-guard's; the holds themselves are x-mod-holds' `FTR.md` (FRM-349)
-  - given session A holds 2 files in this repo
-  - when session B's row draws
-  - then B shows `🔒 2`; at zero the chip is hidden
-- 🔎 the holds chip names itself on hover
-  - dima, 2026-10-05: the desktop Code tab draws the card as a bubble above the chip, and Warp shows it
-  - given another session holds 2 files in this repo
-  - when dima hovers the chip, on desktop or in a terminal that reports the pointer
-  - then «2 files held by other sessions» shows beside it, dimmed
-  - decision: a hidden `Box` card revealed by the chip's hover — the `Svg` `<title>` route showed nothing on desktop (dima, 2026-10-05); the card sits on the chip's row because a one-row band clips anything above or below
-  - the test harness cannot hover: it checks the hidden card and its words, the reveal is dima's look
-  - decision: «this repo» is this working tree — a worktree's holds never collide with the main checkout's, so they stay out of its chip
-  - decision: a holder idle 30 min drops out at once; a dead one at the next turn end of any session
-- ✅ holder warning: the holder's chip turns ⚠ after someone was refused
-  - given A holds `x.ts`
-  - when B's edit of `x.ts` is refused
-  - then A's chip shows ⚠, and A gets no message
-- ✅ guard counter: x-mod-guard's run of refusals folds into one 🛡️ counter row, gone on its own — no crosses to clear
-  - given x-mod-guard refused commands in any session, or ran one on a `# dima-ok:` escape, each under 30 min after the one before
-  - when any session's band draws, folded or not
-  - then one row reads `🛡️ <n> refusals · <m> sessions` (escapes count beside: `· <k> escapes`)
-  - when new refusals arrive
-  - then the row stays one folded line, its counts updated — refusals never take the band
-  - when dima presses its `▸` (hover: «unfold guard refusals»)
-  - then each event shows under it, newest first: `<session> — <command> → <why it was refused>` (an escape: `→ ran on dima-ok: <target>`; an event kept before x-mod-guard wrote a reason: `→ <door>`)
-  - when 30 min pass with no new event
-  - then the row is gone from every session's band
-  - decision: the band reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the band reads only the last 50 events x-mod-guard keeps there; a halt counts the day from the same file's per-day keys, `day:<yyyy-mm-dd>:<session>` with its refused and escaped counts (kept 30 days), never from the 50 events
+- decision: stash shows no holds and no guard refusals — the 🔒 chip and the 🛡️ row moved to `/board`, then left (dima, 2026-10-09, FRM-354: «too noisy, i dont need this info at all»); 29 of 33 band redraws measured over 4 min were holds churn, each a blink in x-mod-breather. x-mod-holds and x-mod-guard work unchanged; a halt still counts guard's day from guard's own store file
 
 ## /board — the fleet board
 

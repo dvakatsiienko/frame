@@ -47,7 +47,7 @@ that read prose and ran nothing.
 
 the coder reads no reviewer. you do.
 
-- the fork reads the three endpoints (`x:github-contrib`), `--jq` for path, line, body: four reviewers read raw cost a coder 700k on #79.
+- the fork reads `x gh pr <n>` — the three comment feeds in one envelope, each comment as author, `path:line` and body: four reviewers read raw cost a coder 700k on #79.
 - triage every finding as you triage your own: reproduce it or refute it. a reviewer's finding you could not reproduce is reported as `unconfirmed`, never relayed as fact.
 - **gate before triage**: read the ci reviewer's findings P0/P1 first, the rest only if the P0/P1 set is empty — 56 % of agentic review comments are rejected by developers as false, redundant or out of scope (arXiv:2607.03316). round 2 reads P0 only.
 - matt's code-review and coderabbit are the coder's own pre-verification loop, not yours. a reviewer's finding you confirmed reproducible travels to the coder as its one-line symptom.

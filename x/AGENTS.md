@@ -43,7 +43,7 @@ source file is newer.
 ## keys
 
 - `go/keys.go` is the one place a token comes from; each secret is read where it lives: dima's linear key in 1password (`op read`, the `x-fleet` service account — never `op run`, it masks stdout), the cclio/coder oauth pairs and the github app keys in the macos keychain. minted app tokens cache in the keychain, written through `security -i` on stdin so no value reaches argv; dima's key is never cached (his word, 2026-10-07).
-- tests: `X_KEYS` names a json fixture standing in for both stores (`keychain:<service>:<account>` or `op://…` → value); `X_LINEAR_URL` / `X_GITHUB_URL` point the mints at a fake server. under `X_TEST` a missing `X_KEYS` is an error, so no test reads the real keychain.
+- tests: `X_KEYS` names a json fixture standing in for both stores (`keychain:<service>:<account>` or `op://…` → value); `X_LINEAR_URL` / `X_GITHUB_URL` point the mints, and the `linear` and `gh` reads, at a fake server. under `X_TEST` a missing `X_KEYS` is an error, so no test reads the real keychain.
 
 ## verify
 

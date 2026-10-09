@@ -20,7 +20,6 @@ _Avoid_: away mode, shift presence
 The lines the band shows when dima turns afk off: the sessions that left him asks, then the ones that finished, since afk went on.
 _Avoid_: summary, recap, catch-up
 
-**Hold**, **Holder**, **Release**: x-mod-holds' words, defined in its `GLOSSARY.md`; the band's 🔒 chip counts them.
 
 **Board**:
 The `/board` pane: every live session, its state as cc wrote it, what it waits on, and its facts.
@@ -29,6 +28,10 @@ _Avoid_: dock, roster, dashboard
 **Board colour**:
 The colour MVP on the board, flipped by `/board colour`, off by default; it tints only what a word already says.
 _Avoid_: theme, palette mode
+
+**Waker**:
+The ⏰ switch, one for every session: while on, a session stopped on the 5h cap gets one resume at the reset.
+_Avoid_: alarm, auto-resume, wake-up
 
 **Wait**:
 What a session is blocked on, from the `🔭` line that ends its last reply; on the board it is a row's second line, absent when the reply has none.

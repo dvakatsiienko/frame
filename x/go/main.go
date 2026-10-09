@@ -58,6 +58,7 @@ var impls = map[string]Impl{
 	"brief check":     {Run: briefCheck, Undone: "nothing was stamped"},
 	"brief preflight": {Run: briefPreflight},
 	"as":              {Run: as, Undone: "the command did not run"},
+	"gh pr":           {Run: ghPr},
 	"linear read":     {Run: linearRead},
 	"linear list":     {Run: linearList},
 	"linear body":     {Run: linearBody, Undone: "nothing was written"},

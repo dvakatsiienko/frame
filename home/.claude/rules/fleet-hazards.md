@@ -3,38 +3,17 @@
 common traps any surface can hit. one section per subject; add a section only for a hazard
 that bites 2+ repos or every session — a hazard that bites one repo goes to that repo's `AGENTS.md`.
 every hazard names its guard — `guard: <hook | x verb>` or `guard: none`; a line whose guard
-exists dies, so the file shrinks as the `x` cli grows. this file is the source of truth; the vault section is copied by hand
-into the cw leaf `/topics/obsidian.md` — the rest is cc-only, deliberately not mirrored.
+exists dies, so the file shrinks as the `x` cli grows. cc-only, deliberately not mirrored; the vault hazards
+live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
 📌 **a Bash-shaped hazard becomes an `x-mod-guard` rule first** (the cc mod, `plugin-x/mods/x-mod-guard`; a ticket under FRM-304); a line lands here only for what a Bash check cannot see — a judgment call, a non-Bash tool, a browser-only look (dima, 2026-10-05).
 
 📌 hazards that bite one subject live beside it: frame `AGENTS.md` (launchd + tcc, git-crypt,
 lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x:github-contrib`
-(github api reads), `docs/knowledge/macos-admin.md` (brew casks, desktop apps).
-
-## the obsidian vault
-
-- the vault is **not under git** — no undo, no history, a bad overwrite is gone
-- icloud sync lags: changes land a few minutes after obsidian opens, and relaunching often
-  forces the pull
-- **never edit before the synced version has arrived** — editing a stale copy silently drops
-  whatever the other device wrote (most likely when dima just printed from a mobile device)
-- reads are fine anytime; writes only when he asks — never change the vault on his behalf
-  unprompted
-- never move or rename a vault file by plain `mv` — 231/231 wikilinks broke on the bench; the
-  `obsidian` cli (`rename` / `move`) rewrites them through the running app, and it is judged by
-  the file landing with a timeout, never by the process returning (it hung twice, 2026-09-10)
-- icloud sync is whole-file, last-writer-wins, no conflict copy (measured 2026-09-10): a write on
-  the mac while a mobile device holds a stale copy is lost on that device's next reconnect — keep
-  obsidian closed on the ipad during a session, re-read before every write
-- the channel recipe for every surface: raw files for read / append / property edits, the cli
-  for rename / move / backlinks / search, never the rest-api plugin or an mcp; notion through
-  `ntn`, never the connector for edits. on cw both doors cost ~1 % of a 5-hour window per
-  paragraph (measured 2026-09-10) — cw reads, cc edits; a batch is handed to the mac
+(github api reads), `x:notes` (the obsidian vault), `docs/knowledge/macos-admin.md` (brew casks, desktop apps).
 
 ## git hooks
 
 - a gitignore pattern with a `/` in the middle is anchored to the ignore file's directory — `.impeccable/x.json` at a repo root never matches `apps/web/.impeccable/x.json`; `**/` in front makes it match at any depth (measured with `git check-ignore -v`, 2026-09-19)
-- worktrees share `.git/hooks`: any pnpm run in one (its auto-install included, `CI=1` or not) points the shared lefthook shims at that worktree — harmless to gating, but dirty. guard: `x lane decamp` and `x lane seed` re-home them; by hand, `pnpm exec lefthook install` in the main checkout
 - `rebase.updateRefs` is on since the git overhaul (2026-09-03): a safety BRANCH made before a
   rebase is dragged forward with the rewrite and stops being a recovery point — a tag or the
   reflog is the net (a coder lost its net on a reword, 2026-09-05)
@@ -45,18 +24,7 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 ## the bash sandbox
 
-- **the cause (read in a coder transcript, 2026-09-28): claude code's worktree isolation.** a
-  `--bg` session in a worktree may run git only in a form cc can prove targets its own tree —
-  literal arguments, run from the tree. `eval`, a variable, `cd x && git`, a pipe, `$(…)` near
-  git-ish text is refused: «a worktree-isolated session's git operations must target its own
-  worktree». this is cc's own check, not `x-mod-guard` — no mod can lift it (FRM-356; ~40 calls
-  lost across 9 retros on 10-08). guard: `x lane <verb>` below
-- ✅ **commit, push, pr-open, merge-main and unlock run through `x lane <verb>`** (frame `x/`, on PATH;
-  bare `x` prints the verbs; the old plugin-x `lane` is a shim) — the git runs inside the script, so
-  the command text passes (4 coders lost ~1 h before it existed, 2026-09-28); a frame worktree's
-  `x lane push` pushes through the main checkout
-- anything else whose text names git or `eval` (a jq path like `.git.x`, `gh --jq`, an
-  agent-browser `eval`) goes into a scratch script and runs by path
+- **a worktree-isolated session runs git only through `x lane <verb>`** (commit, push, pr-open, merge-main, unlock): cc's own isolation check refuses git it cannot prove targets the tree, and no mod can lift it (FRM-356). any other text naming git or `eval` (`.git.x` in jq, `gh --jq`, an agent-browser `eval`) goes into a scratch script, run by path. guard: `x lane <verb>`
 
 ## node
 

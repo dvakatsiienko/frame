@@ -28,10 +28,10 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 ## cc only
 
 - **a bare cc for clean runs** — `claude -p --model haiku --safe-mode --strict-mcp-config '<prompt>'` from a temp dir (`x probe` once the cli freezes it): no `CLAUDE.md`, rules, plugins, hooks, mods or MCP, only cc's built-ins. reach for it when our setup must not touch the answer: «is it us or cc?» probes, a model A/B, an upstream bug repro, a blind lane, the token weight of our memory (bare `/context` vs ours). `--bare` needs an API key, so it fails on our login (2026-10-06)
-- **duckdb** — SQL over jsonl, md and git where they lie, no import, no server: `duckdb -json -c "…"` or a saved `.sql`; the measuring engine for transcripts and x traces, on trial to 10-21 (`docs/test-drive/duckdb.md`)
+- **duckdb** — SQL over jsonl, md and git where they lie, no import, no server: `duckdb -json -c "…"`; the measuring engine for transcripts and x traces (🧪 `docs/test-drive/duckdb.md`)
 - **fnm** — node version manager, use if needed
 - **package.json** — exact pins, `npm view` before any version, script order and `family:name` keys: the whole shape is `x:guide-conventions` → `conventions/package-json.md`, read before printing or editing any manifest
-- **ctx7** — context7's docs cli, on trial vs the context7 mcp (`docs/test-drive/ctx7.md`; the verdict date lives in `_reminders.md` only): `ctx7 library <name>` → id, `ctx7 docs <id> "<query>"`; a library it lacks → `WebSearch`
+- **ctx7** — library docs: `ctx7 library <name>` → id, `ctx7 docs <id> "<query>"`; a library it lacks → `WebSearch`
 - **archives → keka's bundled binaries**, `/Applications/Keka.app/Contents/MacOS/Keka --cli <bin>` — `7z` `7zz` `unar` `unrar` `tar` `xz` `zstd` `brotli` `lz4` `lzip` `pigz` and friends. macos ships no `unrar` and no 7z at all, so this is the only door to those; plain `zip`/`tar`/`ditto` still handle the ordinary cases
 - **big or tiny images → crop with pillow first.** a screenshot up to ~2000 px is read directly (≈3k tokens); a larger image, or a detail under ~20 px (a sprite, an icon, a chart tick), is cropped or zoomed with pillow (`from PIL import Image`, installed) and the crop is read (≈300 tokens) — the harness downscales big images and small text dies
 - **uv** — the Python package manager here; pip in any form is not used
