@@ -2,6 +2,7 @@
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
 import type {
+    StashCap,
     StashDigest,
     StashEntry,
     StashMember,
@@ -67,6 +68,16 @@ const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
 const PING =
     'x-mod-stash keep-hot ping: answer with one character, nothing else.';
+// the waker: one global switch, off by default; when on, a session stopped on the 5h cap gets one resume at the reset
+const WAKER_KEY = 'waker';
+const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
+// the 5h cap ends the turn as an API error with this text; the weekly cap and spent credits read otherwise
+// (8 rows in the transcripts, 2026-10-08)
+const CAPPED = /hit your session limit/i;
+const RESUME =
+    'x-mod-stash waker: the 5h window reset. pick up where you stopped.';
+// a few seconds past the reset, so the window has turned before the resume goes out
+const WAKE_SLACK_MS = 5000;
 const ACCENT = '#d97757';
 
 let selfId: string | undefined;
@@ -78,6 +89,11 @@ let isUserTurn = false;
 let pinged = false;
 let isPolling = false;
 let afk = false;
+let isWaker = false;
+// the 5h reset as the last session.measure reported it, and this session's cap state
+let fiveHourResetsAt: number | undefined;
+let cap: StashCap | undefined;
+let capGen = 0;
 let turnAfk: boolean | undefined;
 let proc: Proc | undefined;
 // since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
@@ -203,6 +219,10 @@ async function load($: EngineInterface) {
     const now = await $.clock.now();
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
     afk = flag?.on === true;
+    const waker = (await $.store.get(WAKER_KEY)) as
+        | { on?: boolean }
+        | undefined;
+    isWaker = waker?.on === true;
     const next: Record<string, Entry> = {};
     for (const key of await $.store.keys()) {
         if (!key.startsWith(PREFIX)) continue;
@@ -237,8 +257,29 @@ function viewOf(isBoardOpen: boolean): StashView {
         entries,
         isBoardOpen,
         isHot: Boolean(hot),
+        isWaker,
         selfId,
     };
+}
+
+// a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
+// never fires
+async function armWake($: EngineInterface) {
+    const mine = ++capGen;
+    const at = cap?.resetsAt;
+    if (at === undefined || cap?.sentFor === at) return;
+    const wait = at + WAKE_SLACK_MS - (await $.clock.now());
+    $.clock.after(Math.max(0, wait), async () => {
+        if (mine !== capGen || isBusy || !cap) return;
+        const waker = (await $.store.get(WAKER_KEY)) as
+            | { on?: boolean }
+            | undefined;
+        if (waker?.on !== true) return;
+        cap = { ...cap, sentFor: at };
+        await $.state.set(CAP, cap).catch(() => undefined);
+        $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
+        await $.prompt.submit({ text: RESUME });
+    });
 }
 
 let published = '';
@@ -589,10 +630,12 @@ export const register: Register = (on) => {
         });
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
+            cap: (await $.state.get(CAP)).value,
             open: (await $.state.get(OPEN)).value,
             turn: (await $.state.get(TURN)).value,
             view: (await $.state.get(VIEW)).value,
         };
+        cap = kept.cap ?? undefined;
         await pruneEnded($).catch(() => undefined);
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
         if (kept.open !== undefined) open = kept.open;
@@ -606,6 +649,7 @@ export const register: Register = (on) => {
         digest = kept.view?.digest;
         await load($);
         await armHot($);
+        await armWake($);
         await $.command
             .register({
                 description:
@@ -738,6 +782,13 @@ export const register: Register = (on) => {
         if (e.agentId) return r;
         isBusy = false;
         await keepTurn($);
+        // a stop on the 5h cap waits for the reset; any other end clears it
+        cap =
+            e.reason === 'error' && CAPPED.test(e.answer)
+                ? { resetsAt: fiveHourResetsAt }
+                : undefined;
+        await $.state.set(CAP, cap ?? null).catch(() => undefined);
+        await armWake($);
         // the store is 🔥's truth: ccrow writes its key after session.start, and a deleted key turns it off
         const sid = await currentId($);
         if (sid)
@@ -751,8 +802,19 @@ export const register: Register = (on) => {
         return r;
     });
 
-    // the context fill the board shows
+    // the context fill the board shows, and the 5h reset the waker waits on
     on('session.measure', async ($, e, next) => {
+        const w = e.rateLimits.find((r) => r.kind === 'five_hour');
+        const resetsAt = w?.resetsAt ? Date.parse(w.resetsAt) : undefined;
+        if (resetsAt !== undefined) {
+            fiveHourResetsAt = resetsAt;
+            // capped before any measure named the reset: wait for this one
+            if (cap && cap.resetsAt === undefined) {
+                cap = { ...cap, resetsAt };
+                await $.state.set(CAP, cap).catch(() => undefined);
+                await armWake($);
+            }
+        }
         const sid = await currentId($);
         if (sid && e.context.percent !== undefined)
             await $.store
@@ -1067,6 +1129,12 @@ export const register: Register = (on) => {
             await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
             await publish($);
         };
+        // one switch for every session, kept in the store so a restart keeps it
+        const handleWakerFlip = async () => {
+            isWaker = !view.isWaker;
+            await $.store.set(WAKER_KEY, { on: isWaker });
+            await publish($);
+        };
         const handleHotFlip = async () => {
             hot = hot ? undefined : { since: await $.clock.now() };
             await saveHot($);
@@ -1117,6 +1185,7 @@ export const register: Register = (on) => {
         const many = groups.length > 1;
         // icons only; each card says what a press does (dima)
         const hotLabel = '🔥';
+        const wakerLabel = '⏰';
         // one icon; the accent background says afk is on (dima)
         const afkLabel = '💨';
         const foldLabel = isOpenList ? '📂' : '📁';
@@ -1162,6 +1231,21 @@ export const register: Register = (on) => {
                             {hotLabel}
                         </Button>,
                         leftOf(hotLabel, !!view.isHot),
+                    )}
+                    {tip(
+                        'waker',
+                        view.isWaker
+                            ? 'stop waking capped sessions at the 5h reset'
+                            : 'wake every session stopped on the 5h cap when the window resets',
+                        <Button
+                            key='waker'
+                            onPress={() => void handleWakerFlip()}
+                            {...(view.isWaker
+                                ? { variant: 'secondary' as const }
+                                : { plain: true as const })}>
+                            {wakerLabel}
+                        </Button>,
+                        leftOf(wakerLabel, view.isWaker),
                     )}
                     {tip(
                         'afk',

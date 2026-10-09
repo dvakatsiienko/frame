@@ -6,6 +6,9 @@ export type StashEntry = {
     at: number;
 };
 
+// the session's last main turn stopped on the 5h cap: the reset it waits for, and the reset a resume already went for
+export type StashCap = { resetsAt?: number; sentFor?: number };
+
 // what the fleet did while dima was afk
 export type StashDigest = {
     needs: { sid: string; name: string; asks: number }[];
@@ -37,6 +40,7 @@ export type StashView = {
     entries: Record<string, StashEntry>;
     afk: boolean;
     isHot: boolean;
+    isWaker: boolean;
     digest?: StashDigest;
     isBoardOpen: boolean;
 };
@@ -65,6 +69,8 @@ declare module 'claude-code' {
             view: StashView;
             board: StashBoardView;
             turn: StashTurn;
+            // null: the last main turn did not stop on the cap
+            cap: StashCap | null;
         };
     }
 }

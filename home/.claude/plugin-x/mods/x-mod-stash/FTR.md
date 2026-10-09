@@ -145,6 +145,20 @@
   - then 🔥 ticks and the 50-minute ping is armed, or unticks and no ping is armed
   - given dima switched 🔥 off on the band
   - then the key is gone from the store, so the re-read never switches it back on
+- ✅ ⏰ waker: one global switch in the row beside 🔥, off by default; while on, a session stopped on the 5h cap gets one «resume» at the reset (FRM-365)
+  - given ⏰ is off, its default
+  - when the 5h window resets
+  - then nothing is sent
+  - given ⏰ is on and a session's last main turn ended on the cap
+  - when the reset passes
+  - then that session gets one resume prompt; a session that stopped for any other reason gets nothing
+  - given the resume went out
+  - when the mod reloads or the clock runs on
+  - then no second resume goes for that reset
+  - makes: one `waker` key in x-mod-stash's `$.store`, `{ on }`, so a restart keeps the switch; the cap and the reset it was sent for live in `$.state` (`cap`)
+  - decision: «on the cap» is a turn that ended in error with «hit your session limit» — the text the 5h cap writes (8 transcript rows, 2026-10-08); the weekly cap and spent credits read otherwise and are left alone. inferred from transcripts, no capped turn seen through the hook yet
+  - decision: each session wakes itself at the reset its last measure named, a few seconds after; no message crosses sessions, and a capped session that never measured waits for its first measure
+  - decision: off unless dima clicks — «I don't want this to be permanent … gated behind a button, like the hot button, but global» (dima, 2026-10-09)
 - ✅ 🔥 stays on through a 5h window reset: only dima's click turns it off
   - given 🔥 is on
   - when the 5h window resets

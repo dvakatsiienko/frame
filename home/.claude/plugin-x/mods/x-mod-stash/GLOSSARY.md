@@ -29,6 +29,10 @@ _Avoid_: dock, roster, dashboard
 The colour MVP on the board, flipped by `/board colour`, off by default; it tints only what a word already says.
 _Avoid_: theme, palette mode
 
+**Waker**:
+The ⏰ switch, one for every session: while on, a session stopped on the 5h cap gets one resume at the reset.
+_Avoid_: alarm, auto-resume, wake-up
+
 **Wait**:
 What a session is blocked on, from the `🔭` line that ends its last reply; on the board it is a row's second line, absent when the reply has none.
 _Avoid_: blocker, status, watch
