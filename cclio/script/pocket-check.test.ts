@@ -15,6 +15,7 @@ function task(fields: Record<string, string | string[]>, description = 'body') {
     const rows = Object.entries({
         id: 'PK-1',
         labels: ['m'],
+        ordinal: '10000',
         priority: 'next',
         status: 'open',
         type: 'task',
@@ -42,6 +43,12 @@ describe('checkPocket', () => {
         ['no size label', { labels: [] as string[] }, 'exactly one size label'],
         ['two size labels', { labels: ['s', 'm'] }, 'exactly one size label'],
         ['an xs item with no due date', { labels: ['xs'] }, 'needs a due date'],
+        [
+            'a now item in the next band',
+            { priority: 'now' },
+            'outside the now band',
+        ],
+        ['a missing ordinal', { ordinal: '' }, 'ordinal missing'],
         [
             'an expired item',
             { due_date: '2026-10-08', labels: ['s'] },
@@ -80,7 +87,7 @@ describe('checkPocket', () => {
 
     test('now holds at most three items', () => {
         const four = [1, 2, 3, 4].map((n) =>
-            task({ id: `PK-${n}`, priority: 'now' }),
+            task({ id: `PK-${n}`, ordinal: `${n}000`, priority: 'now' }),
         );
         expect(checkPocket(config, four, today)).toEqual([
             'now holds 4 items, the cap is 3',

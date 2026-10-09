@@ -4,11 +4,14 @@ title: '[60] global memory easy wins, every member loads them'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+due_date: '2026-10-09'
+labels:
+  - s
 dependencies: []
-priority: next
+priority: now
 type: task
-ordinal: 6000
+ordinal: 2000
 ---
 
 ## Description

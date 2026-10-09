@@ -4,11 +4,13 @@ title: '[68] signed handoffs — by and to, for every member'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - m
 dependencies: []
 priority: next
 type: wish
-ordinal: 13000
+ordinal: 11000
 ---
 
 ## Description

@@ -42,6 +42,15 @@ export function checkPocket(
             report(
                 `priority «${priority}» is not one of ${config.priorities.join(' · ')}`,
             );
+        const band = config.priorities.indexOf(priority);
+        const ordinal = Number(front.scalars.ordinal);
+        if (
+            band >= 0 &&
+            !(ordinal >= 1000 * 10 ** band && ordinal < 1000 * 10 ** (band + 1))
+        )
+            report(
+                `ordinal ${front.scalars.ordinal || 'missing'} sits outside the ${priority} band (${1000 * 10 ** band}–${1000 * 10 ** (band + 1) - 1}), so --sort ordinal misplaces it`,
+            );
         if (!config.types.includes(front.scalars.type ?? ''))
             report(
                 `type «${front.scalars.type ?? ''}» is not one of ${config.types.join(' · ')}`,

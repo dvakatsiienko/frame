@@ -4,11 +4,13 @@ title: '[12] a better vpn'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - m
 dependencies: []
 priority: later
 type: research
-ordinal: 24000
+ordinal: 104000
 ---
 
 ## Description

@@ -4,11 +4,13 @@ title: '[33] shape the squad leader'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - l
 dependencies: []
-priority: later
+priority: next
 type: grill
-ordinal: 15000
+ordinal: 21000
 ---
 
 ## Description

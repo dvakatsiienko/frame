@@ -4,11 +4,13 @@ title: '[59] a live autocompact threshold input in the stash pane'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - m
 dependencies: []
 priority: next
 type: grill
-ordinal: 4000
+ordinal: 12000
 ---
 
 ## Description

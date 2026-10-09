@@ -1,15 +1,16 @@
 ---
 id: PK-34
-title: refresh-pocket — a recipe that keeps the pocket pretty
+title: refresh-crew-coordinator-pocket — a recipe that keeps the pocket pretty
 status: open
 assignee: []
 created_date: '2026-10-09 11:06'
+updated_date: '2026-10-09 11:48'
 labels:
   - m
 dependencies: []
 priority: next
 type: research
-ordinal: 32000
+ordinal: 15000
 ---
 
 ## Description

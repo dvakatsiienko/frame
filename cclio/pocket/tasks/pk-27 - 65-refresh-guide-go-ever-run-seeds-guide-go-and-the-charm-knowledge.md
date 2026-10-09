@@ -4,13 +4,14 @@ title: '[65] refresh-guide-go: ever run? seeds guide-go and the charm knowledge'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:14'
+updated_date: '2026-10-09 11:35'
 labels:
-  - s
-dependencies: []
+  - m
+dependencies:
+  - PK-28
 priority: next
 type: question
-ordinal: 11000
+ordinal: 19000
 ---
 
 ## Description

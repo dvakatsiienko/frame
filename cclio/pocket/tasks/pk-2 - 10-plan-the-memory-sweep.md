@@ -4,14 +4,15 @@ title: '[10] plan the memory sweep'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:14'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - l
 dependencies: []
 references:
   - 'https://linear.app/x-com/issue/FRM-267'
 priority: next
 type: task
-ordinal: 8000
+ordinal: 23000
 ---
 
 ## Description

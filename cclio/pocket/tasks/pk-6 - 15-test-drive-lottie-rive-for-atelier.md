@@ -4,11 +4,13 @@ title: '[15] test drive lottie / rive for atelier'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - m
 dependencies: []
 priority: later
 type: test-drive
-ordinal: 27000
+ordinal: 102000
 ---
 
 ## Description

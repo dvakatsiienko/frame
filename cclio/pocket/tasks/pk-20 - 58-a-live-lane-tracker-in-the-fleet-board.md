@@ -1,16 +1,18 @@
 ---
 id: PK-20
-title: "[58] a live lane tracker in the fleet board"
+title: '[58] a live lane tracker in the fleet board'
 status: open
 assignee: []
-created_date: "2026-10-09 10:38"
-updated_date: '2026-10-09 11:23'
-labels: []
+created_date: '2026-10-09 10:38'
+updated_date: '2026-10-09 11:35'
+labels:
+  - l
 dependencies: []
-priority: now
+priority: next
 type: idea
-ordinal: 3000
+ordinal: 22000
 ---
+
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->

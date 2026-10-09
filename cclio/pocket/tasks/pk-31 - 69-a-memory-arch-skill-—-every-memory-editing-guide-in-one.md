@@ -4,8 +4,9 @@ title: '[69] a memory-arch skill — every memory-editing guide in one'
 status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:14'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - s
 dependencies: []
 priority: next
 type: idea

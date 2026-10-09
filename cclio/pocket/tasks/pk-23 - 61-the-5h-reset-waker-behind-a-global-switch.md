@@ -4,11 +4,13 @@ title: '[61] the 5h reset waker, behind a global switch'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - m
 dependencies: []
 priority: next
 type: grill
-ordinal: 5000
+ordinal: 13000
 ---
 
 ## Description

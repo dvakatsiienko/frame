@@ -4,13 +4,15 @@ title: '[14] plan the model comparison bench'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - l
 dependencies: []
 references:
   - 'https://linear.app/x-com/issue/FRM-266'
 priority: later
 type: task
-ordinal: 26000
+ordinal: 105000
 ---
 
 ## Description

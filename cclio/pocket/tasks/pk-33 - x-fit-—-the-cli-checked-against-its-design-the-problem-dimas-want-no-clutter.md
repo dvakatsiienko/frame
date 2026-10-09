@@ -13,7 +13,7 @@ references:
   - 'https://linear.app/x-com/issue/FRM-284'
 priority: next
 type: task
-ordinal: 31000
+ordinal: 10000
 ---
 
 ## Description

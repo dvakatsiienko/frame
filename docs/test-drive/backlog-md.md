@@ -30,3 +30,4 @@ research (3 lanes, 2026-10-09): `cclio/.scratch/todo-trackers-top5.md` (opus sou
 
 - 2026-10-09 day 0: install, config, 32 items migrated, doctor 87 ms clean, search 89 ms ranked; archived-id reuse found; UTC timestamps
 - 2026-10-09 grill r1 applied: statuses open · claimed · waiting · done (blocked = an open dependency, derived); waiting carries a `check:` first line in the description (a custom frontmatter key is DROPPED on the next `task edit` — probed); done stays visible on the board until the halt runs `task complete`; true-state pass: 4 done, 4 waiting, 26 open. found: the TUI garbles a ZWJ emoji (🙋‍♂️) in a description; the file is fine
+- 2026-10-09 filed [Backlog.md#1070](https://github.com/MrLesk/Backlog.md/issues/1070): the task list loses keyboard focus after `E` → editor → quit (Warp, Terminal, iTerm2; vim + nvim); workaround `/` then back. the boot gh watch picks it up (every issue dima filed outside his repos)

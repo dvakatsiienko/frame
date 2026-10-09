@@ -4,11 +4,13 @@ title: '[66] recipes as a product — your lever on your own learning'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - l
 dependencies: []
 priority: next
 type: grill
-ordinal: 10000
+ordinal: 18000
 ---
 
 ## Description

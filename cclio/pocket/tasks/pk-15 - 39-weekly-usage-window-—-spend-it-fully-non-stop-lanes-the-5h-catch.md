@@ -4,11 +4,13 @@ title: '[39] weekly usage window — spend it fully, non-stop lanes, the 5h catc
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - m
 dependencies: []
 priority: later
 type: grill
-ordinal: 16000
+ordinal: 101000
 ---
 
 ## Description

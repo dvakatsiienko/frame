@@ -4,11 +4,13 @@ title: '[24] delve test drive'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - m
 dependencies: []
 priority: later
 type: test-drive
-ordinal: 23000
+ordinal: 103000
 ---
 
 ## Description

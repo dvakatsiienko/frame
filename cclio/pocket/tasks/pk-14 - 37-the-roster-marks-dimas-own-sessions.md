@@ -4,11 +4,14 @@ title: '[37] the roster marks dima''s own sessions'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+due_date: '2026-10-09'
+labels:
+  - s
 dependencies: []
-priority: later
+priority: now
 type: task
-ordinal: 19000
+ordinal: 3000
 ---
 
 ## Description

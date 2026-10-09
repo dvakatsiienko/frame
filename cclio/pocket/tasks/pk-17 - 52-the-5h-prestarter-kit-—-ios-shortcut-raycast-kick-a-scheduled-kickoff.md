@@ -1,19 +1,23 @@
 ---
 id: PK-17
 title: '[52] the 5h prestarter kit — ios shortcut, raycast kick, a scheduled kickoff'
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-09 10:38'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - m
 dependencies: []
 priority: later
 type: research
-ordinal: 30000
+ordinal: 110000
 ---
 
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+check: dima picked a door (ios shortcut, raycast kick or a scheduled kickoff)
+
 pocket 52 · status line was: `standing · task` (his word 13:05: stays until he tried every door and picked one) · dima 10-08, from 38 · research: `scratchpad/research-5h-window.md` (this session's scratch; the facts are in the exa/parallel/researcher logs)
 
 dima: «let's try shortcut and ray cmd. i also want a way to set a scheduled 5h kickoff or a routine. for example: i plan to start you at 1 pm; i wake up at 9 and set a scheduled 5h kickoff at 11 am. how to do that the easiest way?»

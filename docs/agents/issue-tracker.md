@@ -1,31 +1,33 @@
-# Issue tracker: Local Markdown
+# Issue tracker: Backlog.md, local
 
-Issues and specs for this repo live as markdown files in `.scratch/`.
+Specs live as markdown in `.scratch/`; their tickets live as Backlog.md tasks in `.backlog/` (prefix `SP`). Both are gitignored: a spec is a lane's working plan, linear keeps the record. The cli is `backlog` (brew `backlog-md`), run from the repo root or with `BACKLOG_CWD=<repo>`. Never edit a task file by hand: the cli keeps its frontmatter, and a key it does not own is dropped on the next edit.
 
 ## Conventions
 
-- One feature per directory: `.scratch/<feature-slug>/`
-- The spec is `.scratch/<feature-slug>/spec.md`
-- Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01`, never a single combined tickets file
-- Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
-- Comments and conversation history append to the bottom of the file under a `## Comments` heading
-- A finished feature dir is never deleted: it moves whole to `.scratch/_archive/<feature-slug>/`. The archive is the evidence for the open question of how a spec relates to its linear ticket body (pocket 34)
+- One feature per spec: `.scratch/<feature-slug>/spec.md`
+- One task per ticket: `backlog task create "<title>" --ref .scratch/<feature-slug>/spec.md --ac "<exit line>" … -l <size>,<role> --priority next --plain`
+  - each exit line is one `--ac`; Backlog renders them as checkboxes (`--check-ac <n>` ticks one)
+  - size: one of `xs` `s` `m` `l`; role: one of the strings in `triage-labels.md`
+  - the feature's tickets share a parent: create the first as the feature task, the rest with `--parent <its id>`
+- Order: `--ordinal`, banded by priority (`now` 1000–9999, `next` 10000–99999, `later` 100000+); read it with `--sort ordinal`
+- Comments and history go to the task's notes: `backlog task edit <id> --append-notes "<text>"`
+- A finished feature is never deleted: its tasks end `done` with a `--final-summary`, `backlog task complete <id>` files them, and the spec dir moves whole to `.scratch/_archive/<feature-slug>/`
 
 ## When a skill says "publish to the issue tracker"
 
-Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed).
+Write the spec to `.scratch/<feature-slug>/spec.md`, then create one task per ticket as above. Print the new ids.
 
 ## When a skill says "fetch the relevant ticket"
 
-Read the file at the referenced path. The user will normally pass the path or the issue number directly.
+`backlog task <id> --plain`. The user will normally pass the id (`SP-4`) or the feature slug (`backlog search <slug> --plain`).
 
 ## Wayfinding operations
 
-Used by `/wayfinder`. The **map** is a file with one **child** file per ticket.
+Used by `/wayfinder`. The **map** stays a file; each **child** is a task.
 
 - **Map**: `.scratch/<effort>/map.md` (the Notes / Decisions-so-far / Fog body).
-- **Child ticket**: `.scratch/<effort>/issues/NN-<slug>.md`, numbered from `01`, with the question in the body. A `Type:` line records the ticket type (`research`/`prototype`/`grilling`/`task`); a `Status:` line records `claimed`/`resolved`.
-- **Blocking**: a `Blocked by: NN, NN` line near the top. A ticket is unblocked when every file it lists is `resolved`.
-- **Frontier**: scan `.scratch/<effort>/issues/` for files that are open, unblocked, and unclaimed; first by number wins.
-- **Claim**: set `Status: claimed` and save before any work.
-- **Resolve**: append the answer under an `## Answer` heading, set `Status: resolved`, then append a context pointer (gist + link) to the map's Decisions-so-far in `map.md`.
+- **Child ticket**: a task with `--ref .scratch/<effort>/map.md`, the question in its description, `--type` unused; the ticket type (`research`/`prototype`/`grilling`/`task`) is the first word of the title.
+- **Blocking**: `--depends-on <ids>`. A ticket is unblocked when every task it depends on is `done`.
+- **Frontier**: `backlog task list --ready --sort ordinal -s open --plain`; the first one wins.
+- **Claim**: `backlog task edit <id> -s claimed` before any work.
+- **Resolve**: `backlog task edit <id> -s done --final-summary "<the answer>"`, then append a context pointer (gist + id) to the map's Decisions-so-far in `map.md`.

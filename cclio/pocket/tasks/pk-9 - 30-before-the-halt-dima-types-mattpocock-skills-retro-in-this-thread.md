@@ -4,8 +4,9 @@ title: '[30] before the halt: dima types /mattpocock-skills:retro in this thread
 status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:14'
-labels: []
+updated_date: '2026-10-09 11:35'
+labels:
+  - s
 dependencies: []
 priority: later
 type: task
