@@ -81,6 +81,7 @@
         "x-ray:icon-generate": "node ./script/x-ray-icon-generate.ts",
         "typecheck": "tsc --noEmit && pnpm -r typecheck",
         "test": "vitest run",
+        "test:twin": "bash script/runner-twin.sh",
         "test:watch": "vitest",
         "check": "biome check --write",
         "fleet-hazards:check": "node ./script/fleet-hazards-check.ts",

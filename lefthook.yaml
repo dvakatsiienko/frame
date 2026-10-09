@@ -50,6 +50,11 @@ pre-commit:
 pre-push:
   parallel: true
   commands:
+    runner-twin:
+      # vitest in a clean clone with an empty HOME and CI=1, the way the ubuntu runner reads the
+      # repo: a test that leans on dima's mac (a ~/ path, a git-crypt plaintext) goes red here
+      # instead of on main. ~8 s, node_modules symlinked (pk-43, 2026-10-09).
+      run: pnpm test:twin
     mirror:
       # The engine's own dogfood: if the manifest stops deriving, catch it here
       # rather than on the next machine.
