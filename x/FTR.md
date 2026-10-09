@@ -92,6 +92,18 @@
   - then `go test ./...` in that module, and the repo's `pnpm typecheck` and `pnpm test` for ts, run before the hooks; a red job refuses the commit with its output, and HEAD does not move
   - given any other branch, then no job runs
   - decision: local, before the commit lands; nothing on github, pr branches untouched (dima, cli grill 2026-10-09)
+- ✅ `x lane commit` adds `ftr: none` when an app's code moves without its ftr
+  - given a commit whose named paths change an app's code (the paths `ftr-gate` counts) and not that app's `FTR.md`
+  - when `x lane commit` runs
+  - then the commit body carries a bare `ftr: none` line in its own paragraph, before the `Agent:` trailer, and the caller's message file is unchanged
+  - given the same commit also names the app's `FTR.md`, or the message already says `ftr: none`, then the body is the message as written
+- ✅ `x lane commit` refuses a path another session holds
+  - given a named path x-mod-holds holds for another live session (`~/.claude/plugins/store/x-mod-holds_*.json`)
+  - when `x lane commit` runs
+  - then it refuses before staging or formatting, names the held file, the holder's session and how long ago it took it, and its next command names the free paths
+  - given a named dir with a held file under it, then the same refusal
+  - given the holder idle 30 min, its pid dead, or the hold landed and clean, then the path is free — the mod's own release checks
+  - decision: reads the mod's store instead of a diff snapshot (grill 2026-10-09); this session's own holds (`CLAUDE_CODE_SESSION_ID`) never refuse
 - ✅ `x lane push` pushes HEAD's sha and reads the remote back
   - given a remote that answers a 5xx, then the push tries again, up to 3 tries 2 s and 4 s apart, and lands once the remote recovers
   - given a 4xx or a hook refusal, then it fails on the first try
@@ -190,11 +202,11 @@
   - when `x brief check <brief> --repo <path>` runs
   - then it fails and names each one with its line; a thing the brief asks to build passes when `(new)` follows it
 - ✅ `x brief check` lints the exit lines
-  - given a rate with no n, an exit line with no surface, an exit line into `cclio/`, a relayed approval with no time, or jev with no budget
+  - given a rate with no n, an exit line with no surface, an exit line into `cclio/`, a relayed approval with no time, jev with no budget, «cclio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
   - when it runs
   - then each finding names its line and the rule
 - ✅ `x brief preflight <ticket>` reads a ticket against main before a lane
-  - given a ticket with an exit line without a number, an exit line with no surface and no «post-merge», a simplify / redesign / rework outside quotes, an `x` verb origin/main already has, or a path a main commit for this ticket already changed
+  - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (cclio's half beside a backticked surface outside `cclio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has, or a path a main commit for this ticket already changed
   - when `x brief preflight <ticket>` runs
   - then it fails naming each one with its line, and lists every main commit whose body carries `ticket: <id>`
   - given a clean ticket, then it prints ok
@@ -333,7 +345,9 @@
   - makes: the patch version moved by one in the plugin's `.claude-plugin/plugin.json`, a line edit
   - given a tracked plugin dir at a.b.c that a tracked marketplace lists by source
   - when it runs, then the manifest reads a.b.(c+1), `claude plugin marketplace update` and `claude plugin update` run, `claude plugin list` reports the install at the new version with its cache dir on disk, and the board ends on `next /reload-plugins`
-  - given a tree its marketplace does not read (a worktree, when the marketplace was added from the main checkout), then the plan refuses: nothing is written and nothing refreshed
+  - given a linked worktree, then the plan refuses before anything is written, whatever its marketplace reads, and names the main checkout
+  - given a tree its marketplace does not read, then the plan refuses: nothing is written and nothing refreshed
+  - decision: `pnpm plugin:release` retired into this verb (FRM-359); its moved-since status and the cw symlink audit did not move
   - given an install that stays at the old version, then it exits 1 naming the version claude reports — also when a dir for the new version is already in the cache
   - given a plugin not installed from a marketplace (the mods load `@inline`, `x-cw`'s marketplace is never added), then it bumps only and runs nothing
   - given a name no plugin carries, then exit 2 lists the names that exist

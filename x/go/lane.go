@@ -59,6 +59,14 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
+	if err := r.Step("holds", "the paths another session holds", func() (string, error) {
+		if held := heldByOthers(tree, paths); len(held) > 0 {
+			return "", heldFail(held, msgFile, paths)
+		}
+		return "none held by another session", nil
+	}); err != nil {
+		return nil, err
+	}
 
 	// a path gone from both the tree and the index (the old side of a mv) kills `add`,
 	// so stage only what exists and let the index carry the removal
@@ -91,6 +99,33 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		return fmt.Sprintf("%s: %s", plural(len(present), "path"), strings.Join(present, ", ")), nil
 	}); err != nil {
 		return nil, err
+	}
+	var copied string
+	if err := r.Step("ftr", "an app's code staged without its FTR.md", func() (string, error) {
+		raw, err := os.ReadFile(message)
+		if err != nil {
+			return "", err
+		}
+		missing := ftrMissing(tree, paths)
+		if len(missing) == 0 || ftrNone.Match(raw) {
+			return "nothing to add", nil
+		}
+		// the caller's file stays as written; the commit reads a copy beside the index
+		gitDir, err := mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
+		if err != nil {
+			return "", err
+		}
+		copied = filepath.Join(gitDir, fmt.Sprintf("x-msg-%d", os.Getpid()))
+		if err := os.WriteFile(copied, []byte(withFtrNone(string(raw))), 0o600); err != nil {
+			return "", err
+		}
+		message = copied
+		return "ftr: none added, " + strings.Join(missing, ", ") + " unchanged", nil
+	}); err != nil {
+		return nil, err
+	}
+	if copied != "" {
+		defer os.Remove(copied)
 	}
 
 	hold := flags["hold-unstaged"] == true
@@ -631,15 +666,11 @@ func pushHome() (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	gitDir, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
+	common, linked, err := worktreeOf(tree)
 	if err != nil {
 		return "", "", err
 	}
-	common, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-common-dir")
-	if err != nil {
-		return "", "", err
-	}
-	if gitDir == common {
+	if !linked {
 		return tree, "main checkout", nil
 	}
 	frameCommon, _ := gitIn(sourceDir(), "rev-parse", "--path-format=absolute", "--git-common-dir")
@@ -647,6 +678,16 @@ func pushHome() (string, string, error) {
 		return tree, "worktree", nil
 	}
 	return filepath.Dir(common), "frame worktree: the mirror gate passes only in the main checkout", nil
+}
+
+// worktreeOf answers the repo's common git dir and whether tree is a linked worktree of it
+func worktreeOf(tree string) (common string, linked bool, err error) {
+	own, err := mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
+	if err != nil {
+		return "", false, err
+	}
+	common, err = mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-common-dir")
+	return common, err == nil && own != common, err
 }
 
 func top() (string, error)  { return mustGit("rev-parse", "rev-parse", "--show-toplevel") }

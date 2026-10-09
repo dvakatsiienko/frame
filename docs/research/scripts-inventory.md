@@ -93,7 +93,7 @@ admission rule in `x/PRODUCT.md`.
 - memory-load:replay · `script/memory-load-replay.py` «replays memory-load-rule-lazy over real transcripts» · memory-load-rule-lazy.py hook comment, rules-lazy FTR/PRODUCT, memory-load test drive · app-dev · a replay tool for one hook; `--help` ran clean
 - memory-sync:map · `script/memory-sync-map.ts` «prints what reaches cw from the cc masters» · memory-update skill, the synced instructions head (dima's routes line) · keep → none yet (proposed `memory`) · dima and the cw skill both call it
 - memory-sync:copy · `script/memory-sync-copy.ts` «renders `account / profile / instructions` fresh and puts it on the clipboard» · memory-update skill and its instructions-head.md · keep → none yet (proposed `memory`) · dima and the cw skill both call it; a render + clipboard sequence
-- plugin:release · `script/plugin-release.ts` «bump the plugins the tree moved past, and refresh them» · package-json.md (as a naming example) · ? · a fleet procedure by its header, yet no caller outside `cclio/`
+- plugin:release · `script/plugin-release.ts` «bump the plugins the tree moved past, and refresh them» · package-json.md (as a naming example) · ? · a fleet procedure by its header, yet no caller outside `cclio/` · since retired into `x plugin bump` (FRM-359)
 - rayconfig:decrypt · `script/rayconfig-decrypt.ts` «reads a raycast `.rayconfig` export and prints what it has bound inside» · none (a flawlog only) · app-dev · a one-surface reader; its lib is tested
 - repo:defaults · `script/repo-defaults.ts` «applies ours to every repo dima» owns · none · ? · no caller; it writes github settings, so it was not run
 - reply-check:report · `script/reply-check-report.ts` «counts what the reply-check Stop hook logged» · reply-check.py hook comment, reply-check test drive · app-dev · a report for one hook on test drive; ran clean («nothing logged yet»)
@@ -129,7 +129,7 @@ admission rule in `x/PRODUCT.md`.
   - none yet: frame:link, macos:setup (`dotfiles`), wispr:add (`wispr`), jev:vet (`jev`), memory-sync:map, memory-sync:copy (`memory`), research:lanes (`research`), crew:audit (`crew`), flow:report (`flow`)
 - app-dev — **58**
 - drop — **2** (the push hook — since ported to `x linear push` —, fleet-hazards:check: the pnpm entry only, the file stays)
-- ? — **7** (profile:redraw, jev:inbox, jev:flawlog, the archive script (since `x linear archive`), plugin:release, repo:defaults, shift:checkup)
+- ? — **7** (profile:redraw, jev:inbox, jev:flawlog, the archive script (since `x linear archive`), plugin:release (since `x plugin bump`), repo:defaults, shift:checkup)
 - all — **84**
 
 ## what the count says
