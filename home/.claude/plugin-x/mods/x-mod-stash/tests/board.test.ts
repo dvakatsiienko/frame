@@ -221,6 +221,57 @@ test("an open board's span moves when its minute turns", async ($, on) => {
     expect(peer?.text).toContain('idle 13m');
 });
 
+// the state cell's look, found by the start of its words
+async function stateLook($: Engine, start: string) {
+    const cell = (await colourTexts($)).find((t) => t.text?.startsWith(start));
+    return cell ? { color: cell.color, dim: cell.dim } : 'no cell';
+}
+
+test('a busy session reads green with colour off', async ($, on) => {
+    fleet(on);
+    expect(await stateLook($, 'busy')).toEqual({
+        color: 'success',
+        dim: false,
+    });
+});
+
+test('an idle session under 15 minutes reads gray', async ($, on) => {
+    fleet(on);
+    expect(await stateLook($, 'idle')).toEqual({ color: undefined, dim: true });
+});
+
+test('an idle session past 15 minutes starts cooling in yellow', async ($, on) => {
+    fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 15 * MIN } } });
+    expect(await stateLook($, 'idle 15m')).toEqual({
+        color: '#b98500',
+        dim: false,
+    });
+});
+
+test('an idle session past 22 minutes cools to orange', async ($, on) => {
+    fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 22 * MIN } } });
+    expect(await stateLook($, 'idle 22m')).toEqual({
+        color: '#d9661a',
+        dim: false,
+    });
+});
+
+test('an idle session past half an hour reads red', async ($, on) => {
+    fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 30 * MIN } } });
+    expect(await stateLook($, 'idle 30m')).toEqual({
+        color: '#e5484d',
+        dim: false,
+    });
+});
+
+test('an idle session past an hour reads ❄️ cold', async ($, on) => {
+    fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 75 * MIN } } });
+    expect(await stateLook($, '❄️ 1h 15m')).toEqual({
+        color: '#e5484d',
+        dim: false,
+    });
+});
+
 test("a reply's 🔭 line shows on its session's row", async ($, on) => {
     fleet(on);
     await stop(
@@ -493,18 +544,6 @@ test("with colour on, an idle member's dot is dimmed and a busy one's is not", a
     const dots = (await colourTexts($)).filter((t) => t.text === '●');
     // cclio is pinned first and busy, the coder second and idle
     expect(dots.map((d) => d.dim)).toEqual([false, true]);
-});
-
-test('with colour on, a busy member reads in the working blue and an idle one stays dim', async ($, on) => {
-    fleet(on, { 'board-colour': true });
-    const texts = await colourTexts($);
-    const busy = texts.find((t) => t.text.startsWith('busy'));
-    const idle = texts.find((t) => t.text.startsWith('idle'));
-    expect([busy?.color, idle?.color, idle?.dim]).toEqual([
-        'suggestion',
-        undefined,
-        true,
-    ]);
 });
 
 test("with colour on, a calm context stays dim and a filling one climbs sline's ramp", async ($, on) => {

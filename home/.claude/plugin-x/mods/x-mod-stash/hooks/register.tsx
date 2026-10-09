@@ -388,10 +388,10 @@ export function huesOf(names: string[]) {
 // inside a turn, so it reads busy; a status cc adds later reads as itself, amber
 const STATUS = {
     blocked: { tint: 'error', word: 'blocked' },
-    busy: { tint: 'suggestion', word: 'busy' },
+    busy: { tint: 'success', word: 'busy' },
     idle: { tint: undefined, word: 'idle' },
     needs_input: { tint: 'warning', word: 'needs_input' },
-    shell: { tint: 'suggestion', word: 'busy' },
+    shell: { tint: 'success', word: 'busy' },
     waiting: { tint: 'warning', word: 'waiting' },
 } as const satisfies Record<string, { tint: string | undefined; word: string }>;
 const isStatus = (status: string): status is keyof typeof STATUS =>
@@ -400,15 +400,28 @@ const statusOf = (status: string | undefined) =>
     status !== undefined && isStatus(status)
         ? STATUS[status]
         : { tint: 'warning', word: status ?? '?' };
-// a calm context is dim; a filling one climbs sline's bar ramp, yellow, orange, red, tuned to 3.2:1 or more on a
-// light pane and 4.2:1 on a dark one
+// sline's bar ramp, yellow, orange, red, tuned to 3.2:1 or more on a light pane and 4.2:1 on a dark one
+const RAMP = ['#b98500', '#d9661a', '#e5484d'] as const;
+// a calm context is dim; a filling one climbs the ramp
 const contextTint = (percent: number) =>
     percent >= 80
-        ? '#e5484d'
+        ? RAMP[2]
         : percent >= 65
-          ? '#d9661a'
+          ? RAMP[1]
           : percent >= 50
-            ? '#b98500'
+            ? RAMP[0]
+            : undefined;
+// the prompt cache lives an hour: an idle session stays gray, then climbs the ramp as it cools, red from half the
+// cache's life; cold past all of it
+const COOLING_MS = [15 * 60_000, 22 * 60_000, 30 * 60_000] as const;
+const COLD_MS = 60 * 60_000;
+const idleTint = (ms: number) =>
+    ms >= COOLING_MS[2]
+        ? RAMP[2]
+        : ms >= COOLING_MS[1]
+          ? RAMP[1]
+          : ms >= COOLING_MS[0]
+            ? RAMP[0]
             : undefined;
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
@@ -885,6 +898,16 @@ export const register: Register = (on) => {
         const row = (m: Member, i: number) => {
             const { tint: stateTint, word: state } = statusOf(m.status);
             const isMemberBusy = state === 'busy';
+            const sinceMs =
+                m.statusSince === undefined ? undefined : now - m.statusSince;
+            const idleMs =
+                state === 'idle' && sinceMs !== undefined ? sinceMs : 0;
+            const isCold = idleMs >= COLD_MS;
+            const coolTint = idleTint(idleMs);
+            const stateText =
+                sinceMs === undefined
+                    ? state
+                    : `${isCold ? '❄️' : state} ${span(sinceMs)}`;
             const ticket = ticketOf(m.name);
             const door = m.door;
             const name = m.sid === me ? `${m.name} (here)` : m.name;
@@ -987,17 +1010,14 @@ export const register: Register = (on) => {
                                 <Text
                                     bold={isMemberBusy}
                                     color={
-                                        isColour
+                                        coolTint ??
+                                        (isColour || isMemberBusy
                                             ? stateTint
-                                            : isMemberBusy
-                                              ? ACCENT
-                                              : undefined
+                                            : undefined)
                                     }
-                                    dimColor={state === 'idle'}
+                                    dimColor={state === 'idle' && !coolTint}
                                     wrap='truncate-end'>
-                                    {m.statusSince
-                                        ? `${state} ${span(now - m.statusSince)}`
-                                        : state}
+                                    {stateText}
                                 </Text>
                             </Box>
                             {/* the asks close the row, always drawn: `⏳ 0` dimmed when none (dima, 2026-10-05) */}
@@ -1046,13 +1066,7 @@ export const register: Register = (on) => {
                         <Text dimColor>on this mac · {list.length}</Text>
                     </Box>
                     <Text
-                        color={
-                            busyCount
-                                ? isColour
-                                    ? STATUS.busy.tint
-                                    : ACCENT
-                                : undefined
-                        }
+                        color={busyCount ? STATUS.busy.tint : undefined}
                         dimColor={!busyCount}>
                         {busyCount} busy
                     </Text>

@@ -29,6 +29,14 @@ _Avoid_: dock, roster, dashboard
 The colour MVP on the board, flipped by `/board colour`, off by default; it tints only what a word already says.
 _Avoid_: theme, palette mode
 
+**Cooling**:
+An idle session 15 to 60 minutes past its last turn, its prompt cache nearing the hour it lives; its board state climbs yellow, orange, then red at 30.
+_Avoid_: stale, warm
+
+**Cold**:
+An idle session an hour or more past its last turn, its prompt cache gone; its board state reads ❄️.
+_Avoid_: frozen, expired, dead
+
 **Waker**:
 The ⏰ switch, one for every session: while on, a session stopped on the 5h cap gets one resume at the reset.
 _Avoid_: alarm, auto-resume, wake-up

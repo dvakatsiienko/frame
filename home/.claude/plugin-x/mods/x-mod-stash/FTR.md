@@ -201,6 +201,13 @@
   - then its row reads `busy` and for how long, not `idle`
   - source: the registry's `status` and `statusUpdatedAt`, written by cc for every session; `busy` and `shell` read `busy`, any other word (`idle`, `waiting`, `blocked`, `needs_input`) shows as cc wrote it
   - decision: the registry over a flag each x-mod-stash wrote — that flag read idle through FRM-305's long `shell` (2026-10-05)
+- ⬜ each row shows how cold its session's cache is
+  - given the prompt cache lives an hour
+  - when the board draws, colour on or off
+  - then `busy` reads green, `idle` reads gray under 15 min, then cools up sline's ramp: yellow from 15, orange from 22, red from 30; from 60 min the word turns ❄️, still red (cold): `❄️ 1h 15m`
+  - decision: always on, never behind `/board colour` — it is a cache signal, not decoration (dima's ask, 2026-10-09)
+  - decision: red, not a cooling blue — red is what dima sees, and it says something is wrong; the climb to it is gradual (dima, 2026-10-09)
+  - decision: ❄️ takes the place of the word `idle`, so a cold row fits the 9-cell state column
 - 🔎 each row says what its session waits on
   - given a session's last reply ends with a `🔭` line
   - when the board draws
@@ -249,10 +256,10 @@
 - ⬜ `/board colour` tries colour as an MVP
   - given colour is off, the default
   - when dima types `/board colour`
-  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), the state word `busy` in the theme's blue (`n busy` in the head too), `blocked` red, `waiting` and `needs_input` amber, `ctx n%` dim under 50, then sline's bar ramp: yellow from 50, orange from 65, red from 80; the model stays dim and orange is left to `⏳ n` alone; typed again, it goes back
+  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), `blocked` red, `waiting` and `needs_input` amber, `ctx n%` dim under 50, then sline's bar ramp: yellow from 50, orange from 65, red from 80; the model stays dim and orange is left to `⏳ n` alone; typed again, it goes back
   - decision: calm by default, a colour only where something is live — the first MVP put the same orange on the busy dot, the busy word, the head and the asks, and painted a calm context green (dima, 2026-10-08: «colors like in SS»)
   - decision: the head leads with `🚦`, the board's own button in the row, not the reference's `◆` (dima, 2026-10-08: «dont' like the diamond»); the context climbs sline's ramp, not the theme's dull amber (dima: «pick prettier color ctx filling»)
-  - decision: theme keys (`suggestion`, `warning`, `error`) for every state colour, so light and dark both read; the six dot hues are fixed mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane, with no coral beside the asks' orange
+  - decision: theme keys (`success`, `warning`, `error`) for every state colour, so light and dark both read; the six dot hues are fixed mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane, with no coral beside the asks' orange
   - decision: one fleet-wide switch in the store, so dima compares on his own board; the verdict is his eye (FRM-329)
 - ⬜ the board stays current
   - given the board is open
