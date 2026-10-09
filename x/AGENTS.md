@@ -35,8 +35,9 @@ source file is newer.
 - the dispatcher writes one trace line per call at exit (`go/trace.go`); a verb only runs its
   steps through `Run.Step` and returns a `*Fail` — `Refused: true` when x's own check stopped it
   (the **error kind** in `GLOSSARY.md`).
-- tests run with `X_TRACE=0` (`cleanEnv`), so no test writes to `~/.local/state/x`; a trace test
-  sets `X_TRACE=1` and its own `X_STATE`. the forced panic lives behind the `xpanic` build tag,
+- under `X_TEST` a trace is opt-in (`traceOff`), so no test in any language writes to `~/.local/state/x`;
+  a trace test sets `X_TRACE=1` and its own `X_STATE`. a ts test that shells to `x` sets `X_TEST=1`
+  on every call, the warm-up build included. the forced panic lives behind the `xpanic` build tag,
   which only the test binary carries.
 
 ## keys

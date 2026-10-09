@@ -18,6 +18,7 @@ beforeAll(() => {
     execFileSync(
         fileURLToPath(new URL('../../../../x/bin/x', import.meta.url)),
         ['--json'],
+        { env: { ...process.env, X_TEST: '1' } },
     );
 }, 180_000);
 

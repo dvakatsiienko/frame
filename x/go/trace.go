@@ -195,7 +195,13 @@ func nearestScripts() map[string]any {
 	return nil
 }
 
-func traceOff() bool { return os.Getenv("X_TRACE") == "0" }
+// under X_TEST a trace is opt-in, so a test in any language that forgets X_TRACE=0 never lands in the real trace
+func traceOff() bool {
+	if os.Getenv("X_TEST") != "" {
+		return os.Getenv("X_TRACE") != "1"
+	}
+	return os.Getenv("X_TRACE") == "0"
+}
 
 // a flag's name only, and only a name the registry knows: a value, or a mistyped dash word, can be free text
 func flagNames(argv []string) []string {
