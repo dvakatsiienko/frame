@@ -8,7 +8,8 @@
             "exit": 0,
             "id": "overview-120",
             "matrix": "bare x overview board",
-            "mode": "tty"
+            "mode": "tty",
+            "note": "one row per family: chip, purpose, verb names; it fits one screen"
         },
         {
             "argv": [],
@@ -18,7 +19,7 @@
             "id": "overview-80",
             "matrix": "the 80-col fold",
             "mode": "tty",
-            "note": "under 100 cols the takes/purpose column folds under the name"
+            "note": "under 100 cols the verb names fold under the family purpose"
         },
         {
             "argv": [],
@@ -27,7 +28,18 @@
             "id": "overview-json",
             "matrix": "json mode",
             "mode": "pipe",
+            "next": "x schema <family>",
+            "note": "families with their verb names only; purposes live in x schema <family> and x --all",
             "status": "ok"
+        },
+        {
+            "argv": ["--all"],
+            "cols": 120,
+            "cwd": "{world}/repo",
+            "exit": 0,
+            "id": "overview-all",
+            "matrix": "every verb in one table",
+            "mode": "tty"
         },
         {
             "argv": ["handoff", "list"],

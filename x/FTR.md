@@ -13,11 +13,17 @@
   - then that tree's `x/go/bin/x` runs, or the checkout the shim lives in when no tree is above the cwd
   - given a go source file newer than the binary, then the shim rebuilds it first, and a failed build prints the compiler output to stderr, says so, and runs the last binary
   - decision: go + charm, picked on the FRM-284 look probe (2026-10-06); the TS arm and its bun shim retire
-- ✅ bare `x` draws the T2 overview
+- ✅ bare `x` lists the families on one screen
   - given dima runs bare `x` in a terminal at 80 and at 120 cols
   - when it renders
-  - then it matches the T2 dense-family overview ([spread v6](https://claude.ai/artifact/6FSNX9owdhioGuJyeyGZJu)) at both widths: one framed table, a colour per family, the takes column folded under 100 cols
+  - then one framed row per family shows its colour chip, its purpose and its verb names, and the whole board fits a 30-row terminal; under 100 cols the verb names fold under the purpose
+  - given an agent or a pipe, then the envelope holds each family with its purpose and verb names only, and `next` names `x schema <family>`
+  - decision: families first, verbs one call deeper, as `PRODUCT.md` planned — the full list scrolled (dima, 2026-10-09)
   - decision: the look is picked by the a/b/c in FRM-284 — TS + gum, TS + ink, go + full charm
+- ✅ `x --all` draws every verb in one table
+  - given dima runs `x --all`
+  - when it renders
+  - then it draws the T2 dense-family table ([spread v6](https://claude.ai/artifact/6FSNX9owdhioGuJyeyGZJu)): every verb with its purpose, a colour per family, the takes column folded under 100 cols; `--json` lists every verb with its purpose
 - ✅ every verb speaks one envelope
   - given any verb run with `--json` or into a pipe
   - when it ends
@@ -40,10 +46,10 @@
   - when dima presses Tab after `x`, a family, a verb or a flag
   - then zsh offers the families, the verbs, the flags, and each value from where it lives: pending slugs, shelf names, probe names, models, audiences, `.md` briefs, `.json` settings, dirs for `--repo`
   - decision: the completers are keyed by the registry's arg and flag names, so a new verb that reuses a name completes with no edit
-- ✅ a bare family prints its help
+- ✅ a bare family prints its verbs
   - given any family, a hidden one (`trace`) included
   - when `x <family>` runs with no verb
-  - then it prints that family's verbs, the same as `x <family> --help`; a hidden family still stays out of the overview and completion
+  - then it draws that family's rows of the `x --all` table, titled with its chip and purpose; `x <family> --help` still draws the family help (usage, flags, exit codes, an example); a hidden family still stays out of the overview and completion
 - ✅ a ported verb's old door stays dead
   - given a registry entry whose `replaces:` names a file or a script name
   - when `go test` runs

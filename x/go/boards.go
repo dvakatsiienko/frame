@@ -40,10 +40,55 @@ func takes(verb Verb) string {
 	return strings.Join(parts, "  ")
 }
 
-func overviewBoard() string {
+// bare x: one row per family, so the whole cli fits one screen; the verbs live one call deeper
+func familiesBoard() string {
 	b := frame{width: frameWidth(), titleLeft: ui.bold.Render("x"),
 		titleRight: ui.dim.Render(fmt.Sprintf("%d verbs, %d families", len(verbsUnder("")), len(families()))),
-		footLeft:   ui.dim.Render("x <family> --help"), footRight: ui.dim.Render("json when piped, or with --json"), padRows: true}
+		footLeft:   ui.dim.Render("x <family> for its verbs, x --all for every verb"), footRight: ui.dim.Render("json when piped"), padRows: true}
+	widths := []int{13, 46, b.inner() - 59}
+	if isNarrow() {
+		widths = []int{13, b.inner() - 13}
+	}
+	head := []string{ui.label.Render("family"), ui.label.Render("what it is")}
+	if !isNarrow() {
+		head = append(head, ui.label.Render("verbs"))
+	}
+	b.rows = append(b.rows, columns(widths, head...)...)
+	b.rows = append(b.rows, "")
+	for _, family := range families() {
+		var names []string
+		for _, verb := range verbsUnder(family) {
+			if verb.Short() != "" {
+				names = append(names, verb.Short())
+			}
+		}
+		verbs := ui.verb(family, strings.Join(names, "  "))
+		cells := []string{ui.chip(family), ui.fg.Render(familyOf(family).Gist), verbs}
+		if isNarrow() {
+			cells = []string{ui.chip(family), ui.fg.Render(familyOf(family).Gist)}
+			if len(names) > 0 {
+				cells[1] += "\n" + verbs
+			}
+		}
+		b.rows = append(b.rows, columns(widths, cells...)...)
+	}
+	return b.String()
+}
+
+// today's table: every verb with its purpose and what it takes, grouped by family
+func tableBoard(members []Verb) string {
+	count := map[string]bool{}
+	for _, verb := range members {
+		count[verb.Family()] = true
+	}
+	b := frame{width: frameWidth(), titleLeft: ui.bold.Render("x"),
+		titleRight: ui.dim.Render(fmt.Sprintf("%d verbs, %d families", len(members), len(count))),
+		footLeft:   ui.dim.Render("x <family> <verb> --help"), footRight: ui.dim.Render("json when piped, or with --json"), padRows: true}
+	if len(count) == 1 {
+		family := members[0].Family()
+		b.titleLeft += " " + ui.chip(family) + "  " + ui.dim.Render(familyOf(family).Gist)
+		b.titleRight = ui.dim.Render(fmt.Sprintf("%d verbs", len(members)))
+	}
 	narrow := isNarrow()
 	widths := []int{13, 13, b.inner() - 26}
 	if !narrow {
@@ -54,9 +99,19 @@ func overviewBoard() string {
 		head = append(head, ui.label.Render("takes"))
 	}
 	b.rows = append(b.rows, columns(widths, head...)...)
-	for _, family := range families() {
+	for _, f := range familyList {
+		family := f.Name
+		var group []Verb
+		for _, verb := range members {
+			if verb.Family() == family {
+				group = append(group, verb)
+			}
+		}
+		if group == nil {
+			continue
+		}
 		b.rows = append(b.rows, "")
-		for i, verb := range verbsUnder(family) {
+		for i, verb := range group {
 			chip := ""
 			if i == 0 {
 				chip = ui.chip(family)

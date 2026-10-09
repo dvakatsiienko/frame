@@ -172,12 +172,16 @@ func dispatchArgv(argv []string) int {
 func buildRoot(m mode) *cobra.Command {
 	root := &cobra.Command{
 		Use: "x", Short: "the fleet cli", Args: cobra.ArbitraryArgs,
-		RunE:              func(_ *cobra.Command, args []string) error { return overview(m, args) },
+		RunE: func(c *cobra.Command, args []string) error {
+			all, _ := c.Flags().GetBool("all")
+			return overview(m, args, all)
+		},
 		CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
 	}
 	root.SetHelpCommand(&cobra.Command{Hidden: true})
 	root.PersistentFlags().Bool("json", false, "json on stdout even on a tty")
 	root.PersistentFlags().Bool("board", false, globalFlags["board"].Description)
+	root.Flags().Bool("all", false, "every verb in one table, with its purpose and what it takes")
 	root.SetFlagErrorFunc(func(c *cobra.Command, err error) error {
 		return usageFail(flagMessage(c, err), strings.TrimSpace(c.CommandPath()+" --help"))
 	})
@@ -191,7 +195,7 @@ func buildRoot(m mode) *cobra.Command {
 				groups[family] = &cobra.Command{
 					Use: family, Short: familyOf(family).Gist, Args: cobra.ArbitraryArgs, Hidden: !slices.Contains(families(), family),
 					RunE: func(_ *cobra.Command, args []string) error {
-						return overview(m, append([]string{family}, args...))
+						return overview(m, append([]string{family}, args...), false)
 					},
 				}
 				root.AddCommand(groups[family])
@@ -491,16 +495,11 @@ func flagMessage(c *cobra.Command, err error) string {
 	return fmt.Sprintf("%s — %s takes %s", err.Error(), strings.TrimPrefix(c.CommandPath(), "x "), strings.Join(valid, ", "))
 }
 
-func overview(m mode, words []string) error {
+func overview(m mode, words []string, all bool) error {
 	prefix := strings.Join(words, " ")
 	matched := verbsUnder(prefix)
-	// a hidden family stays out of the overview and completion, yet its bare name still prints its help
-	if len(words) == 1 && len(matched) == 0 {
-		for _, verb := range verbs {
-			if verb.Family() == words[0] {
-				matched = append(matched, verb)
-			}
-		}
+	if len(words) == 1 {
+		matched = familyMembers(words[0])
 	}
 	if len(words) > 0 && len(matched) == 0 {
 		family := verbsUnder(words[0])
@@ -518,7 +517,18 @@ func overview(m mode, words []string) error {
 		return nil
 	}
 
-	if m.json {
+	compact := len(words) == 0 && !all
+	if m.json && compact {
+		var rows []ordered
+		for _, family := range families() {
+			var names []string
+			for _, verb := range verbsUnder(family) {
+				names = append(names, verb.Name)
+			}
+			rows = append(rows, ordered{{"name", family}, {"gist", familyOf(family).Gist}, {"verbs", names}})
+		}
+		emit(prefix, kv{"data", ordered{{"families", rows}}}, kv{"next", "x schema <family>"}, kv{"ok", true}, kv{"status", "ok"})
+	} else if m.json {
 		groups := ordered{}
 		for _, family := range familyList {
 			var members []ordered
@@ -532,19 +542,39 @@ func overview(m mode, words []string) error {
 			}
 		}
 		emit(prefix, kv{"data", ordered{{"groups", groups}}}, kv{"ok", true}, kv{"status", "ok"})
-	} else if len(words) == 0 {
-		fmt.Println(overviewBoard())
+	} else if compact {
+		fmt.Println(familiesBoard())
 	} else {
-		fmt.Println(familyBoard(words[0], matched))
+		fmt.Println(tableBoard(matched))
 	}
 	exitCode = exits["ok"]
 	return nil
 }
 
+// a hidden family stays out of the overview and completion, yet its bare name still lists its verbs
+func familyMembers(family string) []Verb {
+	if listed := verbsUnder(family); listed != nil {
+		return listed
+	}
+	var hidden []Verb
+	for _, verb := range verbs {
+		if verb.Family() == family {
+			hidden = append(hidden, verb)
+		}
+	}
+	return hidden
+}
+
 func help(m mode, words []string) int {
 	verb, _, ok := findVerb(words)
 	if !ok {
-		_ = overview(m, words)
+		if len(words) == 1 && !m.json {
+			if members := familyMembers(words[0]); members != nil {
+				fmt.Println(familyBoard(words[0], members))
+				return exits["ok"]
+			}
+		}
+		_ = overview(m, words, false)
 		return exitCode
 	}
 	if m.json {
