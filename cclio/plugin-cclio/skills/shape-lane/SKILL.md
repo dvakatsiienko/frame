@@ -14,9 +14,9 @@ read the ticket's wish block and its `decided` section (or the pocket item's not
 
 ## 1 · the chunk card
 
-a card is prose, never a fence (a fence means «copy me»; dima, 2026-10-09):
+a card is prose, never a fence (a fence means «copy me»), and holds no `·`, which the output rules split into bullets (dima, 2026-10-09):
 
-> 🔥 **<chunk title>** · <ticket link>
+> 🔥 **<chunk title>** — <ticket link>
 > - **why we have it** — <one line>
 > - **what we want out of it** — <one line>
 
