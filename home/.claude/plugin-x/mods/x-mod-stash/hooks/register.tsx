@@ -1700,7 +1700,7 @@ export const register: Register = (on) => {
                 overflow='hidden'>
                 {gap === undefined ? null : (
                     <Text color={fiveTint}>
-                        {gap > 0 ? `+${gap} debt` : `${-gap} spare`}
+                        {gap > 0 ? `+${gap}% debt` : `${-gap}% spare`}
                     </Text>
                 )}
                 {five?.resetsAt === undefined ? null : (
@@ -1730,7 +1730,8 @@ export const register: Register = (on) => {
                 flexShrink={0}
                 key='meters'
                 marginBottom={air ? 0.75 : 0}
-                marginTop={air ? 0.5 : 0}>
+                marginTop={air ? 0.5 : 0}
+                paddingRight={air ? 0.75 : 0}>
                 {barRowJSX(
                     'meter:5h',
                     '🔥 5h',
