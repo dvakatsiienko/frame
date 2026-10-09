@@ -73,8 +73,8 @@ async function readBrief(
     };
 }
 
-// the name ListAgents shows, from cc's session registry
-async function sessionName($: EngineInterface, sid: string) {
+// a session's entry in cc's registry: the name ListAgents shows, and `bg` for a background session
+async function registryEntry($: EngineInterface, sid: string) {
     const dir = `${await $.env.get('HOME')}/.claude/sessions`;
     for (const f of await $.fs.list(dir).catch(() => [])) {
         if (!f.name.endsWith('.json')) continue;
@@ -84,12 +84,20 @@ async function sessionName($: EngineInterface, sid: string) {
             const v = JSON.parse(raw) as {
                 sessionId?: unknown;
                 name?: unknown;
+                kind?: unknown;
             };
-            if (v.sessionId === sid && typeof v.name === 'string')
-                return v.name;
+            if (v.sessionId === sid)
+                return {
+                    isBg: v.kind === 'bg',
+                    name: typeof v.name === 'string' ? v.name : undefined,
+                };
         } catch {}
     }
     return undefined;
+}
+
+async function sessionName($: EngineInterface, sid: string) {
+    return (await registryEntry($, sid))?.name;
 }
 
 // one key per event, so parallel sessions never overwrite each other; the oldest past KEEP are dropped
@@ -248,8 +256,11 @@ const SEEN = { key: 'seen', plugin: 'x-mod-guard' } as const;
 // sdk turn never lands here, and only this plugin writes $.state, so no tool call can forge it
 const PROMPT = { key: 'prompt', plugin: 'x-mod-guard' } as const;
 const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
+// a --bg session's spawn prompt arrives as `composer` and dima's typing there as `bridge` (measured 2026-10-09, FRM-358),
+// so in a bg session only the bridge is his
+const TYPED_BY_DIMA_IN_BG = new Set(['bridge']);
 const UNPROVEN_DOOR =
-    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»). a bg session: ask cclio, who asks dima';
+    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»). a bg session counts only what dima types into it himself; ask cclio to get him there';
 const UNPROVEN_WHY =
     "a # dima-ok marker counts only when dima's last typed prompt names its target";
 // a live mod's hooks reload into every session on save, so while its own tests are red a half-done edit there breaks the fleet
@@ -571,8 +582,15 @@ export const register: Register = (on) => {
     ).catch(() => ({ deny: FAILED }));
 
     on('prompt.submit', async ($, e, next) => {
-        if (TYPED_BY_DIMA.has(e.origin.kind))
-            await $.state.set(PROMPT, e.text).catch(() => undefined);
+        if (TYPED_BY_DIMA.has(e.origin.kind)) {
+            const sid = await $.session.id().catch(() => undefined);
+            const isBg = sid
+                ? ((await registryEntry($, sid).catch(() => undefined))?.isBg ??
+                  false)
+                : false;
+            if ((isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind))
+                await $.state.set(PROMPT, e.text).catch(() => undefined);
+        }
         await logOrigin($, e).catch(() => undefined);
         return next(e);
     });

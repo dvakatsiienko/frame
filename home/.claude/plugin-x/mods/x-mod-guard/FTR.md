@@ -73,7 +73,7 @@
   - decision: a model appended `# dima-ok:` on its own in a live probe and passed (2026-10-09); dima chose the proof, `$.state` over a file since no Bash parse can stop a write through a variable (FRM-356)
   - makes: the last 20 prompts across sessions, each with its origin and every field (text cut to 80 code points), under `origins` in x-mod-guard's `$.store` — what the origin rules are measured against (FRM-358)
   - measured 2026-10-09 (FRM-358): a desktop `send_message` into a Code-tab session arrives as `peer`; in a `--bg` session cclio's spawn prompt arrived as `composer` and dima's typed line as `bridge`, with no other field telling them apart
-  - 📌 open: a `--bg` session's spawn prompt counts as dima's word today — it arrives as `composer`
+  - ⬜ in a session the registry marks `kind: bg`, only a `bridge` prompt counts as dima's; a `composer` one, the spawn prompt's kind there, never does (dima's pick, 2026-10-09, FRM-358)
 - ✅ a guard that fails refuses the command
   - given x-mod-guard's check throws (a `$` call it needs fails) or runs past its 10 s budget (the throw is tested; the overrun is the same `.catch` by the engine's types, unprobed)
   - then the command is refused with «x-mod-guard: the check failed or ran out of time … (fail closed)»
