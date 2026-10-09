@@ -26,6 +26,7 @@
   - given a Bash call holds `pnpm -s` (before any `--`), an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`, or an unquoted option glob (`--include=*.ts`, `--glob=!*.md`) that zsh would abort on
   - then it runs as `pnpm --silent` / `'==='`, every rule reads the fixed command, and the model gets one context line: «x-mod-guard rewrote this call before it ran: `-s` → `--silent` (…). it ran: <command>»
   - then quoted text, heredoc bodies, a `-s` after `--` and `a=b` run as typed
+  - ⬜ given a command `linear api …`, then it runs as `x linear api …` with the one context line `` `linear` → `x linear` ``; `x linear api`, `x as <member> -- linear api`, `gh api`, quoted text and a heredoc body run as typed (FRM-370: 60 raw calls against 15 through x on 10-08, each skipping x's actor, ids and trace)
   - decision: a mod's `tool.call` rewrite runs before the classic PreToolUse hooks, so `zsh-equals-guard.py` sees the quoted word and stays the backstop — probed live 2026-10-08 (FRM-337 comment); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each
 - ✅ a git add of a missing path is refused before git runs
   - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left

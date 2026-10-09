@@ -1,4 +1,4 @@
-import { type Segment, parse } from '../shell.ts';
+import { type Segment, type Word, parse } from '../shell.ts';
 import { peel } from './command.ts';
 
 // zsh reads `[[ a == b ]]`'s operator as syntax, never as a path
@@ -50,7 +50,23 @@ export function edits(segments: Segment[]): Edit[] {
                 ];
             return [];
         });
-        return [...own, ...edits(s.subst)];
+        // a raw `linear api` skips x's actor, its id resolution and its trace (FRM-370); the head word becomes
+        // `x linear`, so a quoted string, a heredoc body or `x as <member> -- linear api` is never one
+        const head = s.words[s.words.indexOf(peeled.args[0] as Word) - 1];
+        const viaX =
+            peeled.name === 'linear' &&
+            peeled.args[0]?.text === 'api' &&
+            head?.at !== undefined
+                ? [
+                      {
+                          at: head.at,
+                          from: head.text,
+                          to: 'x linear',
+                          why: "a raw linear api skips x's actor, ids and trace",
+                      },
+                  ]
+                : [];
+        return [...own, ...viaX, ...edits(s.subst)];
     });
 }
 export function rewrite(command: string) {

@@ -35,6 +35,16 @@ const FIXED = [
         "grep -rn x '--include=*.ts' .",
     ],
     ['an unquoted --exclude glob', 'rg x --glob=!*.md', "rg x '--glob=!*.md'"],
+    [
+        'a raw linear api',
+        "linear api 'query { viewer { id } }'",
+        "x linear api 'query { viewer { id } }'",
+    ],
+    [
+        'a raw linear api after a cd',
+        "cd /repo && linear api 'query { viewer { id } }' | jq .",
+        "cd /repo && x linear api 'query { viewer { id } }' | jq .",
+    ],
 ] as const;
 
 for (const [shape, typed, runs] of FIXED)
@@ -44,6 +54,14 @@ for (const [shape, typed, runs] of FIXED)
         expect(r.deny).toBeUndefined();
         expect(w.ran).toEqual([runs]);
     });
+
+test('a linear api rewrite is named in one line', async ($, on) => {
+    world(on);
+    const r = await bash($, "linear api 'q'");
+    expect(r.context?.join()).toContain(
+        "`linear` → `x linear` (a raw linear api skips x's actor, ids and trace). it ran: x linear api 'q'",
+    );
+});
 
 test('a rewrite tells the model what ran', async ($, on) => {
     world(on);
@@ -62,6 +80,13 @@ const KEPT = [
     'grep -s x f',
     'ls *.ts',
     "grep -rn x --include='*.ts' .",
+    "x linear api 'query { viewer { id } }'",
+    "echo 'linear api is the raw door'",
+    "cat <<'EOF'\nlinear api 'query { viewer { id } }'\nEOF",
+    "x as coder -- linear api 'query { viewer { id } }'",
+    "x as cclio -- linear api 'query { viewer { id } }'",
+    'linear issue view FRM-1',
+    'gh api repos/x/y/pulls',
 ] as const;
 
 for (const command of KEPT)
