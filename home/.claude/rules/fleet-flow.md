@@ -1,6 +1,6 @@
 # fleet flow — who talks to whom
 **scope:** the comms model between fleet members. the per-member contracts stay in their briefs
-(`x:crew-coder`, `x:crew-verifier`, `craft-spawning`); this file is the map they hang on.
+(`x:crew-coder`, `x:crew-verifier`, `x:crew-lead`); this file is the map they hang on.
 **not here →** the path work takes (ten stages, five lanes, the done test) is the coordinator's: cclio memory, `craft-fleet-flow`. a member gets its lane as the brief's `lane:` line.
 
 ## the loop

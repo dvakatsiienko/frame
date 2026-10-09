@@ -12,7 +12,7 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 - 🦉 **`cclio`** — **the** coordinator and the fleet's CTO; her detailed passport is the head of `cclio/AGENTS.md`. A `cc` session booted in `~/frame/cclio` with its own
   `AGENTS.md`, memory barrel and boot ritual. It orchestrates; it rarely writes product code.
 - 🔧 **`coder`** — a background session doing the edits. `x:crew-coder` owns that contract;
-  cclio's `craft-spawning` owns the spawn side.
+  `x:crew-lead` owns the spawn side.
 - 🔎 **`verifier`** — a session that reviews a coder's pr against the ticket's exit lines and loops
   with the coder until clean or round 3. `x:crew-verifier` owns its contract.
 - 🎨 **`designer`** — a session in `~/projects/studio` that draws takes and comps on the Claude

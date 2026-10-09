@@ -52,8 +52,6 @@ nothing else. (The SessionStart prefetch already holds both; no queries needed.)
 
 Skills live in `plugin-cclio/skills/<name>/SKILL.md`, registered by `.claude/settings.json`. ⚠️ **A plugin edit
 binds only after `x plugin bump --apply cclio`** (bump, marketplace update, plugin update, the cache read
-back; FRM-345), **then `/reload-plugins` typed by Dima in the running session** — a compacted session is
-not a fresh one, so without it the cache stays stale forever (measured 2026-09-05). 📌 cclio installs at
-project scope; whether the verb's update step honours that is unproven until its first cclio run.
+back; FRM-345), **then a fresh session** — `/reload-plugins` in a running desktop-born session lists no new skill (2026-09-30, again 10-09 with `shape-lane`). cclio installs at project scope, and the verb updates it (0.3.124 reached the cache, 10-09).
 📌 A command file containing a query must contain a query that RAN — write it at the shell, watch
 it succeed, paste what ran. For an executable artifact the test IS the write.
