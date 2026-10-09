@@ -5,7 +5,7 @@
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
 - decision: lines record a choice and its reason
 
-no two sessions write the same file: a session's first edit of a file holds it until the file is committed, the session ends or it sits idle 30 min. x-mod-stash's band shows the 🔒 chip from this mod's store file — its `FTR.md`, «holds chip».
+no two sessions write the same file: a session's first edit of a file holds it until the file is committed, the session ends or it sits idle 30 min. x-mod-stash's `/board` shows a 🔒 line from this mod's store file — its `FTR.md`, «holds».
 
 ## edits
 
@@ -39,7 +39,7 @@ two sessions, A and B, in one checkout.
   - decision: clean releases only a hold whose edit landed — while A's permission prompt is open the file is clean and still A's
 - ✅ a commit through Bash releases at once
   - given A holds `x.ts` and commits it through Bash (`x lane commit …`, `git commit …`) mid-turn
-  - then A's clean holds drop from the store right after the command (so B's 🔒 chip stops counting them at its next poll); a command that commits nothing keeps them to the turn's end (FRM-337)
+  - then A's clean holds drop from the store right after the command (so B's 🔒 line stops counting them at its next poll); a command that commits nothing keeps them to the turn's end (FRM-337)
   - decision: before, a hold dropped only at A's turn end or on B's next try — a coordinator in one long turn kept its holds ~30 min past the commit and blocked the FRM-336 coder
 - ✅ a new file stays held until committed
   - given A created a new file and left it uncommitted

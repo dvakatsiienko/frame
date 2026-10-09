@@ -61,6 +61,7 @@ async function band(
             stdout: e.argv[1] === 'rev-parse' ? '/repo\n' : '',
         },
     }));
+    on('ui.panes', () => ({ value: [BOARD_PANE] }));
     await $.session.start({ cwd: '/repo', isInteractive: true, surface });
     return $.ui.mount({
         component: 'AbovePrompt',
@@ -68,6 +69,36 @@ async function band(
         props: PROPS,
         surface,
     });
+}
+
+const BOARD_PANE = {
+    id: 'fleet-board',
+    isFocused: false,
+    isPlaced: true,
+    isShown: true,
+    plugin: 'x-mod-stash',
+    title: 'fleet board',
+};
+
+// the open board's lines about holds
+async function boardHolds($: Engine) {
+    const pane = await $.ui.mount({
+        component: 'Pane',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 100,
+            isFocused: true,
+            placement: 'dock',
+            scroll: { bodyRows: 40, offset: 0 },
+            title: 'fleet board',
+            view: {},
+        },
+        requestId: 'fleet-board',
+        surface: 'desktop',
+    });
+    return (await pane.findAll({ text: /🔒|⚠/, type: 'Text' })).map(
+        (n) => n.text,
+    );
 }
 
 const hold = (top = '/repo') => ({
@@ -78,68 +109,49 @@ const hold = (top = '/repo') => ({
 });
 const live = { idleSince: null };
 
-test("the holds chip counts other sessions' holds", async ($, on) => {
-    const ui = await band($, on, B, {
-        [`hold:${A}:/repo/x.ts`]: hold(),
-        [`hold:${A}:/repo/y.ts`]: hold(),
-        [`holder:${A}`]: live,
-    });
-    expect((await ui.find({ text: '🔒', type: 'Text' }))?.text).toBe('🔒 2');
+const TWO = {
+    [`hold:${A}:/repo/x.ts`]: hold(),
+    [`hold:${A}:/repo/y.ts`]: hold(),
+    [`holder:${A}`]: live,
+};
+
+test("the board counts other sessions' holds", async ($, on) => {
+    await band($, on, B, TWO);
+    expect(await boardHolds($)).toEqual(['🔒 2 files held by other sessions']);
 });
 
-for (const surface of ['terminal', 'desktop'] as const)
-    test(`the holds chip names itself on hover on ${surface}`, async ($, on) => {
-        const ui = await band(
-            $,
-            on,
-            B,
-            {
-                [`hold:${A}:/repo/x.ts`]: hold(),
-                [`hold:${A}:/repo/y.ts`]: hold(),
-                [`holder:${A}`]: live,
-            },
-            surface,
-        );
-        const card = (await ui.findAll({ type: 'Box' })).find(
-            (n) => n.text === '2 files held by other sessions',
-        );
-        // the harness keeps `hover` out of props, so the reveal itself is the surface's
-        expect(card?.props.display).toBe('none');
-    });
+test('the band draws no holds chip', async ($, on) => {
+    const ui = await band($, on, B, TWO);
+    expect(await ui.find({ text: /🔒/, type: 'Text' })).toBeUndefined();
+});
 
-test("a worktree's holds stay out of the main checkout's chip", async ($, on) => {
-    const ui = await band($, on, B, {
+test("a worktree's holds stay out of the main checkout's count", async ($, on) => {
+    await band($, on, B, {
         [`hold:${A}:/repo/.claude/worktrees/w1/x.ts`]: hold(
             '/repo/.claude/worktrees/w1',
         ),
         [`holder:${A}`]: live,
     });
-    expect(await ui.find({ text: /🔒/, type: 'Text' })).toBeUndefined();
+    expect(await boardHolds($)).toEqual([]);
 });
 
-test("an idle holder's holds leave the chip", async ($, on) => {
-    const ui = await band($, on, B, {
+test("an idle holder's holds leave the count", async ($, on) => {
+    await band($, on, B, {
         [`hold:${A}:/repo/x.ts`]: hold(),
         [`holder:${A}`]: { idleSince: NOW - 31 * MIN },
     });
-    expect(await ui.find({ text: /🔒/, type: 'Text' })).toBeUndefined();
+    expect(await boardHolds($)).toEqual([]);
 });
 
-test('the holds chip is hidden when nobody else holds a file', async ($, on) => {
-    const ui = await band($, on, A, {
-        [`hold:${A}:/repo/x.ts`]: hold(),
-        [`holder:${A}`]: live,
-    });
-    expect(await ui.find({ text: /🔒|⚠/, type: 'Text' })).toBeUndefined();
-});
-
-test("the holder's chip warns after a refusal", async ($, on) => {
-    const ui = await band($, on, A, {
+test('the board warns the holder after a refusal', async ($, on) => {
+    await band($, on, A, {
         [`hold:${A}:/repo/x.ts`]: hold(),
         [`holder:${A}`]: live,
         [`refused:${A}`]: { at: NOW, by: B, path: '/repo/x.ts' },
     });
-    expect((await ui.find({ text: '⚠', type: 'Text' }))?.text).toBe('⚠');
+    expect(await boardHolds($)).toEqual([
+        '⚠ a session was refused a file this session holds',
+    ]);
 });
 
 test('an afk flip mid-turn reaches the next tool call once', async ($, on) => {

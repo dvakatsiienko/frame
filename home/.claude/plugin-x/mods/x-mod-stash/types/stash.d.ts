@@ -45,24 +45,23 @@ export type StashMember = {
     offPattern: boolean;
 };
 
-// everything the band and the board draw, written by the poll and the hooks; a render reads it and redraws on a write
+// everything the band draws, written by the poll and the hooks; a render reads it and redraws on a write
 export type StashView = {
     selfId?: string;
     entries: Record<string, StashEntry>;
     afk: boolean;
     isHot: boolean;
-    holds: { others: number; warned: boolean };
-    guards: StashGuardLine[];
-    areGuardsOpen: boolean;
     digest?: StashDigest;
     isBoardOpen: boolean;
 };
 
-// what only the board pane draws, kept apart from the band's view: its clock moves every poll, and a band that read it
-// would redraw — rebuilding x-mod-breather's svg — every 4 s (FRM-354)
+// what only the board pane draws, kept apart from the band's view: each value here moves often (the clock every poll,
+// holds at every edit any session makes), and a band that read it would redraw — rebuilding x-mod-breather's svg (FRM-354)
 export type StashBoardView = {
     members?: StashMember[];
     isColour: boolean;
+    holds: { others: number; warned: boolean };
+    guards: StashGuardLine[];
     // the poll's clock, so the board's «busy 3m» spans move on their own
     at: number;
 };

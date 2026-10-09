@@ -96,10 +96,9 @@ let hotGen = 0;
 type GuardLine = StashGuardLine;
 const GUARD_FILE = /^x-mod-guard_.*\.json$/;
 const GUARD_EVENT = 'event:';
-// the counter row ages out after this long with no new event
+// the board's guard lines age out after this long with no new event
 const GUARD_AGE_MS = 30 * 60_000;
 let guards: GuardLine[] = [];
-let areGuardsOpen = false;
 
 // what the fleet did while dima was afk, shown in the band where he turned 💨 off until his next prompt
 type Digest = StashDigest;
@@ -115,7 +114,7 @@ const errorText = (err: unknown) =>
 const basename = (path: string) =>
     path.split('/').filter(Boolean).pop() ?? path;
 
-// x-mod-holds keeps the holds in its own store file; the 🔒 chip reads that file, the way the guard row reads x-mod-guard's.
+// x-mod-holds keeps the holds in its own store file; the board's 🔒 line reads that file, the way its guard lines read x-mod-guard's.
 // its shapes and keys, as x-mod-holds writes them
 type Hold = { at: number; file: string; top: string; landed?: boolean };
 type Holder = { pid?: number; start?: string; idleSince: number | null };
@@ -336,11 +335,8 @@ async function load($: EngineInterface) {
 function viewOf(isBoardOpen: boolean): StashView {
     return {
         afk,
-        areGuardsOpen,
         digest,
         entries,
-        guards,
-        holds,
         isBoardOpen,
         isHot: Boolean(hot),
         selfId,
@@ -355,6 +351,8 @@ async function publish($: EngineInterface) {
         await $.state
             .set(BOARD_VIEW, {
                 at: await $.clock.now(),
+                guards,
+                holds,
                 isColour:
                     (await $.store.get(COLOUR).catch(() => false)) === true,
                 members: await members($).catch(() => undefined),
@@ -712,7 +710,6 @@ export const register: Register = (on) => {
             turnAfk = kept.turn.afk;
         }
         digest = kept.view?.digest;
-        areGuardsOpen = kept.view?.areGuardsOpen ?? false;
         await load($);
         await armHot($);
         await $.command
@@ -911,9 +908,70 @@ export const register: Register = (on) => {
         const now = board?.at ?? 0;
         const me = (await $.state.get(VIEW)).value?.selfId;
         const list = board?.members;
+        // holds and guard's run live here, never on the band: they move at every edit and refusal anywhere, and each
+        // band redraw rebuilds x-mod-breather's svg (FRM-354)
+        const holdsLine =
+            board && (board.holds.warned || board.holds.others)
+                ? [
+                      <Text
+                          color={board.holds.warned ? ACCENT : undefined}
+                          key='holds'
+                          wrap='truncate-end'>
+                          {[
+                              board.holds.warned
+                                  ? '⚠ a session was refused a file this session holds'
+                                  : '',
+                              board.holds.others
+                                  ? `🔒 ${board.holds.others} ${board.holds.others === 1 ? 'file' : 'files'} held by other sessions`
+                                  : '',
+                          ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                      </Text>,
+                  ]
+                : [];
+        const guardRun = board?.guards ?? [];
+        const plural = (n: number, word: string) =>
+            `${n} ${word}${n === 1 ? '' : 's'}`;
+        const refused = guardRun.filter((g) => g.kind === 'refused').length;
+        const counter = [
+            ...(refused ? [plural(refused, 'refusal')] : []),
+            ...(guardRun.length - refused
+                ? [plural(guardRun.length - refused, 'escape')]
+                : []),
+            plural(new Set(guardRun.map((g) => g.sid)).size, 'session'),
+        ].join(' · ');
+        const guardLines = guardRun.length
+            ? [
+                  <Text key='guard'>🛡️ {counter}</Text>,
+                  ...guardRun.map((g) => (
+                      <Text dimColor key={`guard:${g.key}`} wrap='truncate-end'>
+                          {`${g.name ?? short(g.sid)} — ${g.command} → ${g.kind === 'escaped' ? `ran on dima-ok: ${g.target}` : (g.why ?? g.door)}`}
+                      </Text>
+                  )),
+              ]
+            : [];
+        const fleetLines =
+            holdsLine.length || guardLines.length ? (
+                <Box flexDirection='column' marginTop={1}>
+                    {holdsLine}
+                    {guardLines}
+                </Box>
+            ) : null;
         if (!list)
-            return <Text dimColor>the session registry is unreadable</Text>;
-        if (!list.length) return <Text dimColor>no live sessions</Text>;
+            return (
+                <Box flexDirection='column'>
+                    <Text dimColor>the session registry is unreadable</Text>
+                    {fleetLines}
+                </Box>
+            );
+        if (!list.length)
+            return (
+                <Box flexDirection='column'>
+                    <Text dimColor>no live sessions</Text>
+                    {fleetLines}
+                </Box>
+            );
         const isColour = board.isColour;
         const hues = huesOf(list.map((m) => m.name));
         const row = (m: Member, i: number) => {
@@ -1092,6 +1150,7 @@ export const register: Register = (on) => {
                     </Text>
                 </Box>
                 {list.map(row)}
+                {fleetLines}
                 <Box marginTop={1}>
                     <Text dimColor wrap='truncate-end'>
                         a name opens its session · /board colour flips colour
@@ -1224,33 +1283,6 @@ export const register: Register = (on) => {
         };
         const [first] = groups;
         const many = groups.length > 1;
-        // other sessions' holds in this repo; ⚠ when a session was refused one of this session's files
-        const chipText = [
-            view.holds.warned ? '⚠' : '',
-            view.holds.others ? `🔒 ${view.holds.others}` : '',
-        ]
-            .filter(Boolean)
-            .join(' ');
-        const chipName = [
-            view.holds.warned
-                ? 'a session was refused a file this session holds'
-                : '',
-            view.holds.others
-                ? `${view.holds.others} ${view.holds.others === 1 ? 'file' : 'files'} held by other sessions`
-                : '',
-        ]
-            .filter(Boolean)
-            .join('; ');
-        const holdsChip = chipText
-            ? tip(
-                  'holds',
-                  chipName,
-                  <Text color={view.holds.warned ? ACCENT : undefined}>
-                      {chipText}
-                  </Text>,
-                  { left: [...chipText].length + 1 },
-              )
-            : null;
         // icons only; each card says what a press does (dima)
         const hotLabel = '🔥';
         // one icon; the accent background says afk is on (dima)
@@ -1278,13 +1310,9 @@ export const register: Register = (on) => {
                                   { left: counts.length + 1 },
                               )
                             : null}
-                        {holdsChip}
                     </Box>
                 ) : (
-                    <Box flexDirection='row' gap={1}>
-                        <Text dimColor>no open asks</Text>
-                        {holdsChip}
-                    </Box>
+                    <Text dimColor>no open asks</Text>
                 )}
                 <Box flexDirection='row' gap={1}>
                     {first ? copyButton(first[0], first[1].asks, 'c') : null}
@@ -1349,51 +1377,6 @@ export const register: Register = (on) => {
                 </Box>
             </Box>
         );
-        // guard's run folds into one counter row, shown folded or not, gone once guard has been quiet a while
-        const plural = (n: number, word: string) =>
-            `${n} ${word}${n === 1 ? '' : 's'}`;
-        const refused = view.guards.filter((g) => g.kind === 'refused').length;
-        const escaped = view.guards.length - refused;
-        const counter = [
-            ...(refused ? [plural(refused, 'refusal')] : []),
-            ...(escaped ? [plural(escaped, 'escape')] : []),
-            plural(new Set(view.guards.map((g) => g.sid)).size, 'session'),
-        ].join(' · ');
-        const handleGuardsFlip = async () => {
-            areGuardsOpen = !view.areGuardsOpen;
-            await publish($);
-        };
-        const guardLabel = view.areGuardsOpen ? '▾' : '▸';
-        const shields = view.guards.length
-            ? [
-                  <Box flexDirection='row' gap={1} key='guard'>
-                      <Text>🛡️ {counter}</Text>
-                      {tip(
-                          'guard-toggle',
-                          view.areGuardsOpen
-                              ? 'fold guard refusals'
-                              : 'unfold guard refusals',
-                          <Button
-                              key='guard-toggle'
-                              onPress={handleGuardsFlip}
-                              plain>
-                              {guardLabel}
-                          </Button>,
-                          leftOf(guardLabel, false),
-                      )}
-                  </Box>,
-                  ...(view.areGuardsOpen
-                      ? view.guards.map((g) => (
-                            <Text
-                                dimColor
-                                key={`guard:${g.key}`}
-                                wrap='truncate-end'>
-                                {`${g.name ?? short(g.sid)} — ${g.command} → ${g.kind === 'escaped' ? `ran on dima-ok: ${g.target}` : (g.why ?? g.door)}`}
-                            </Text>
-                        ))
-                      : []),
-              ]
-            : [];
         const away =
             view.digest && (view.digest.needs.length || view.digest.done.length)
                 ? [
@@ -1419,7 +1402,6 @@ export const register: Register = (on) => {
             return (
                 <Box flexDirection='column'>
                     {head}
-                    {shields}
                     {away}
                     {await next(e)}
                 </Box>
@@ -1451,15 +1433,11 @@ export const register: Register = (on) => {
                 </Text>
             )),
         ]);
-        const room = Math.max(
-            1,
-            e.props.maxRows - 1 - shields.length - away.length,
-        );
+        const room = Math.max(1, e.props.maxRows - 1 - away.length);
         const shown = rows.slice(0, room);
         return (
             <Box flexDirection='column'>
                 {head}
-                {shields}
                 {away}
                 {shown}
                 {rows.length > shown.length ? (

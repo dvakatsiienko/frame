@@ -74,6 +74,18 @@ async function band(
     on('session.repo', () => ({ value: null }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    on('ui.panes', () => ({
+        value: [
+            {
+                id: 'fleet-board',
+                isFocused: false,
+                isPlaced: true,
+                isShown: true,
+                plugin: 'x-mod-stash',
+                title: 'fleet board',
+            },
+        ],
+    }));
     await $.session.start({ cwd: '/tmp', isInteractive: true, surface });
     const ui = await $.ui.mount({
         component: 'AbovePrompt',
@@ -88,16 +100,33 @@ async function band(
         },
         surface,
     });
-    const lines = async () =>
-        (await ui.findAll({ text: /🛡️|→/, type: 'Text' })).map((n) => n.text);
+    // the open board's guard lines, drawn fresh at each call
+    const lines = async () => {
+        const pane = await $.ui.mount({
+            component: 'Pane',
+            plugin: 'x-mod-stash',
+            props: {
+                bodyColumns: 100,
+                isFocused: true,
+                placement: 'dock',
+                scroll: { bodyRows: 40, offset: 0 },
+                title: 'fleet board',
+                view: {},
+            },
+            requestId: 'fleet-board',
+            surface,
+        });
+        return (await pane.findAll({ text: /🛡️|→/, type: 'Text' })).map(
+            (n) => n.text,
+        );
+    };
     return { clock, lines, ui };
 }
 
-for (const surface of ['terminal', 'desktop'] as const)
-    test(`four refusals from two sessions show as one counter row on ${surface}`, async ($, on) => {
-        const b = await band($, on, surface, FOUR);
-        expect(await b.lines()).toEqual(['🛡️ 4 refusals · 2 sessions']);
-    });
+test('the band draws no guard row', async ($, on) => {
+    const b = await band($, on, 'desktop', FOUR);
+    expect(await b.ui.find({ text: /🛡️/, type: 'Text' })).toBeUndefined();
+});
 
 const ESCAPED: Event = {
     at: NOW - MIN / 2,
@@ -108,7 +137,7 @@ const ESCAPED: Event = {
     target: 'dist',
 };
 
-test('the counter row stays one folded line when new refusals arrive', async ($, on) => {
+test('the counter updates when new refusals arrive', async ($, on) => {
     const events = { ...FOUR };
     const b = await band($, on, 'terminal', events);
     Object.assign(
@@ -116,48 +145,38 @@ test('the counter row stays one folded line when new refusals arrive', async ($,
         store([refusal(NOW + MIN, 'c3c3c3c3-0000', 'rm -rf cache')]),
     );
     await b.clock.advance(MIN);
-    expect(await b.lines()).toEqual(['🛡️ 5 refusals · 2 sessions']);
+    expect((await b.lines())[0]).toBe('🛡️ 5 refusals · 2 sessions');
 });
 
 test('an escape counts beside the refusals', async ($, on) => {
     const b = await band($, on, 'terminal', { ...FOUR, ...store([ESCAPED]) });
-    expect(await b.lines()).toEqual(['🛡️ 4 refusals · 1 escape · 2 sessions']);
+    expect((await b.lines())[0]).toBe('🛡️ 4 refusals · 1 escape · 2 sessions');
 });
 
-test('an unfolded escape shows what it ran on', async ($, on) => {
+test('an escape shows what it ran on', async ($, on) => {
     const b = await band($, on, 'terminal', store([ESCAPED]));
-    await b.ui.press({ key: 'guard-toggle' });
     expect((await b.lines())[1]).toBe(
         'a1a1a1a1 — rm -rf dist # dima-ok: dist → ran on dima-ok: dist',
     );
 });
 
-test("the counter row's hover card names what the next press does", async ($, on) => {
-    const b = await band($, on, 'terminal', FOUR);
-    await b.ui.press({ key: 'guard-toggle' });
-    const cards = (await b.ui.findAll({ type: 'Box' }))
-        .filter((n) => n.props.display === 'none')
-        .map((n) => n.text);
-    expect(cards).toContain('fold guard refusals');
-});
-
-test('the counter row is gone 30 minutes after the last refusal', async ($, on) => {
+test('the guard lines are gone 30 minutes after the last refusal', async ($, on) => {
     const b = await band($, on, 'terminal', FOUR);
     await b.clock.advance(29 * MIN);
     expect(await b.lines()).toEqual([]);
 });
 
-test('a click on the counter row shows each refusal with its session and reason', async ($, on) => {
-    const b = await band($, on, 'terminal', FOUR);
-    await b.ui.press({ key: 'guard-toggle' });
-    expect(await b.lines()).toEqual([
-        '🛡️ 4 refusals · 2 sessions',
-        'c3c3c3c3 — rm -rf tmp → a recursive rm cannot be undone',
-        'c3c3c3c3 — rm -rf out → a recursive rm cannot be undone',
-        'a1a1a1a1 — rm -rf dist → a recursive rm cannot be undone',
-        '☕️ 🔧 FRM-1 code: x — rm -rf build → a recursive rm cannot be undone',
-    ]);
-});
+for (const surface of ['terminal', 'desktop'] as const)
+    test(`the board shows each refusal with its session and reason on ${surface}`, async ($, on) => {
+        const b = await band($, on, surface, FOUR);
+        expect(await b.lines()).toEqual([
+            '🛡️ 4 refusals · 2 sessions',
+            'c3c3c3c3 — rm -rf tmp → a recursive rm cannot be undone',
+            'c3c3c3c3 — rm -rf out → a recursive rm cannot be undone',
+            'a1a1a1a1 — rm -rf dist → a recursive rm cannot be undone',
+            '☕️ 🔧 FRM-1 code: x — rm -rf build → a recursive rm cannot be undone',
+        ]);
+    });
 
 test('a refusal kept before it carried a reason shows its door', async ($, on) => {
     const { why: _, ...old } = refusal(
@@ -166,7 +185,6 @@ test('a refusal kept before it carried a reason shows its door', async ($, on) =
         'rm -rf dist',
     );
     const b = await band($, on, 'terminal', store([old]));
-    await b.ui.press({ key: 'guard-toggle' });
     expect(await b.lines()).toEqual([
         '🛡️ 1 refusal · 1 session',
         'a1a1a1a1 — rm -rf dist → trash <path>',
