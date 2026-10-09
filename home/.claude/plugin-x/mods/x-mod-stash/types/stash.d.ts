@@ -45,6 +45,8 @@ export type StashMeter = {
     compactAt?: number;
     fiveHour?: { used: number; resetsAt?: number };
     note?: string;
+    // the poll's minute, so an idle band's time left moves on its own
+    minute?: number;
 };
 
 // everything the band draws, written by the poll and the hooks; a render reads it and redraws on a write

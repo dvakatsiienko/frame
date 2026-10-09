@@ -319,6 +319,44 @@ async function saveUsage(
     );
 }
 
+// an idle band stays live: every session shares one 5h window, so the usage file any busy session writes carries its
+// latest reading, and the minute moves the time left; written only when one of the two changed
+async function freshMeter($: EngineInterface) {
+    const was = (await $.state.get(METER)).value ?? {};
+    const raw = await $.fs
+        .read(`${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`)
+        .catch(() => undefined);
+    const window = raw
+        ? (
+              JSON.parse(raw) as {
+                  rate_limits?: {
+                      five_hour?: {
+                          used_percentage?: unknown;
+                          resets_at?: unknown;
+                      } | null;
+                  };
+              }
+          ).rate_limits?.five_hour
+        : undefined;
+    const fiveHour =
+        typeof window?.used_percentage === 'number'
+            ? {
+                  resetsAt:
+                      typeof window.resets_at === 'number'
+                          ? window.resets_at * 1000
+                          : undefined,
+                  used: window.used_percentage,
+              }
+            : was.fiveHour;
+    const next = {
+        ...was,
+        fiveHour,
+        minute: Math.floor((await $.clock.now()) / 60_000),
+    };
+    if (JSON.stringify(next) !== JSON.stringify(was))
+        await $.state.set(METER, next);
+}
+
 // the engine's own compaction point as a % of the window, whatever set it: the project's override, or cc's default
 async function compactAtOf($: EngineInterface, window: number) {
     // the override as cc resolves it for this session: the settings merged for its project (cclio's 70 sits in
@@ -558,38 +596,73 @@ export type BarRun = {
     text: string;
     color?: string;
 };
-// `scale` is the % the ramp turns red at: 100 for the 5h window, the compaction point for the context
+// one bar as cells: the reading filled, one cell marked — the pace on the 5h bar, the compaction point on the context
+// one; each filled cell takes the ramp by its place, so the bar warms as it fills. `scale` is the % the ramp turns red
+// at: 100 for the 5h window, the compaction point for the context
+export function meterCells(
+    percent: number,
+    width: number,
+    mark?: number,
+    scale = 100,
+) {
+    const filled = Math.min(width, Math.round((percent / 100) * width));
+    const at =
+        mark === undefined
+            ? -1
+            : Math.min(
+                  width - 1,
+                  Math.max(0, Math.round((mark / 100) * width)),
+              );
+    return Array.from({ length: width }, (_, i) => {
+        const kind: BarRun['kind'] =
+            i === at ? 'mark' : i < filled ? 'fill' : 'empty';
+        const step = Math.floor(
+            (((i + 0.5) / width) * 100 * BAR_RAMP.length) / scale,
+        );
+        return {
+            color:
+                kind === 'fill'
+                    ? BAR_RAMP[Math.min(BAR_RAMP.length - 1, step)]
+                    : undefined,
+            kind,
+        };
+    });
+}
+// the terminal's bar: one Text per run of like cells, sline's ▮ ▯ glyphs
 export function meterBar(
     percent: number,
     width: number,
     mark?: number,
     scale = 100,
 ) {
-    const cell = (p: number) =>
-        Math.min(width - 1, Math.max(0, Math.round((p / 100) * width)));
-    const filled = Math.min(width, Math.round((percent / 100) * width));
-    const at = mark === undefined ? -1 : cell(mark);
     const runs: BarRun[] = [];
-    for (let i = 0; i < width; i++) {
-        const kind = i === at ? 'mark' : i < filled ? 'fill' : 'empty';
-        const ch = kind === 'mark' ? '┃' : kind === 'fill' ? '█' : '░';
-        const color =
-            kind === 'fill'
-                ? BAR_RAMP[
-                      Math.min(
-                          BAR_RAMP.length - 1,
-                          Math.floor(
-                              (((i + 0.5) / width) * 100 * BAR_RAMP.length) /
-                                  scale,
-                          ),
-                      )
-                  ]
-                : undefined;
+    for (const c of meterCells(percent, width, mark, scale)) {
+        const ch = c.kind === 'mark' ? '┃' : c.kind === 'fill' ? '▮' : '▯';
         const last = runs.at(-1);
-        if (last?.kind === kind && last.color === color) last.text += ch;
-        else runs.push({ color, kind, text: ch });
+        if (last?.kind === c.kind && last.color === c.color) last.text += ch;
+        else runs.push({ color: c.color, kind: c.kind, text: ch });
     }
     return runs;
+}
+// the desktop's bar: a text cell is as big as the font, so the desktop draws real cells — rounded, bordered, spaced
+const CELL = { gap: 2, height: 14, width: 9 } as const;
+export function meterSvg(
+    percent: number,
+    width: number,
+    mark?: number,
+    scale = 100,
+) {
+    const step = CELL.width + CELL.gap;
+    const rects = meterCells(percent, width, mark, scale).map((c, i) => {
+        const x = i * step;
+        return c.kind === 'mark'
+            ? `<rect x="${x + 3}" y="0" width="3" height="${CELL.height}" rx="1.5" fill="#8a8580"/>`
+            : c.kind === 'fill'
+              ? `<rect x="${x + 0.5}" y="0.5" width="${CELL.width - 1}" height="${CELL.height - 1}" rx="2.5" fill="${c.color}" stroke="#000" stroke-opacity="0.18"/>`
+              : `<rect x="${x + 0.5}" y="0.5" width="${CELL.width - 1}" height="${CELL.height - 1}" rx="2.5" fill="#8a8580" fill-opacity="0.12" stroke="#8a8580" stroke-opacity="0.45"/>`;
+    });
+    const w = width * step - CELL.gap;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${CELL.height}" viewBox="0 0 ${w} ${CELL.height}">${rects.join('')}</svg>`;
 }
 // a calm meter's fill: the board's green and blue mid-tones, 3.6:1 or more on white and 4.2:1 on a dark pane
 const METER_TINTS = { calm5h: '#47915a', calmCtx: '#4f83e0' } as const;
@@ -920,6 +993,7 @@ export const register: Register = (on) => {
                 $.clock.after(POLL_MS, async () => {
                     // an open board's view carries the tick's clock, so its «ago» times move on their own
                     await load($);
+                    await freshMeter($).catch(() => undefined);
                     tick();
                 });
             tick();
@@ -1092,6 +1166,7 @@ export const register: Register = (on) => {
                 : was?.compactAt,
             context: e.context.percent,
             fiveHour: w ? { resetsAt, used: w.percentUsed } : was?.fiveHour,
+            minute: was?.minute,
             note: was?.note,
         };
         // a write redraws the band, so only a reading that moved is written
@@ -1529,27 +1604,56 @@ export const register: Register = (on) => {
         const fiveTint = gapTint(gap ?? 0);
         const ctx = meter?.context;
         const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
+        // the desktop draws its bars as svg cells, sized to the band's width; the terminal as ▮ ▯ text
+        const svgCells = Math.max(
+            8,
+            Math.floor(
+                (e.props.bodyColumns * 7.5 - 120) / (CELL.width + CELL.gap),
+            ),
+        );
+        const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
         const barRowJSX = (
             key: string,
             label: string,
-            percent: number | undefined,
             tint: string,
-            runs: BarRun[],
+            bar?: { percent: number; mark?: number; scale?: number },
         ) => (
-            <Box flexDirection='row' gap={1} key={key}>
+            <Box alignItems='center' flexDirection='row' gap={1} key={key}>
                 <Box flexShrink={0} width={6}>
                     <Text wrap='truncate-end'>{label}</Text>
                 </Box>
-                {percent === undefined ? (
+                {bar === undefined ? (
                     <Text dimColor>no reading yet</Text>
                 ) : (
-                    <Box flexDirection='row' gap={1}>
-                        <Box flexDirection='row' flexShrink={0}>
-                            {runsJSX(key, runs)}
-                        </Box>
+                    <Box alignItems='center' flexDirection='row' gap={1}>
+                        {Svg ? (
+                            <Svg
+                                alt={`${label} ${Math.round(bar.percent)}%`}
+                                height={CELL.height}
+                                key={`${key}:svg`}
+                                source={meterSvg(
+                                    bar.percent,
+                                    svgCells,
+                                    bar.mark,
+                                    bar.scale,
+                                )}
+                            />
+                        ) : (
+                            <Box flexDirection='row' flexShrink={0}>
+                                {runsJSX(
+                                    key,
+                                    meterBar(
+                                        bar.percent,
+                                        barWidth,
+                                        bar.mark,
+                                        bar.scale,
+                                    ),
+                                )}
+                            </Box>
+                        )}
                         <Box flexShrink={0} justifyContent='flex-end' width={4}>
                             <Text bold color={tint}>
-                                {Math.round(percent)}%
+                                {Math.round(bar.percent)}%
                             </Text>
                         </Box>
                     </Box>
@@ -1564,7 +1668,6 @@ export const register: Register = (on) => {
                 key='meter:info'
                 minWidth={0}
                 overflow='hidden'>
-                {pace === undefined ? null : <Text dimColor>pace {pace}%</Text>}
                 {gap === undefined ? null : (
                     <Text color={fiveTint}>
                         {gap > 0 ? `+${gap} debt` : `${-gap} spare`}
@@ -1602,23 +1705,20 @@ export const register: Register = (on) => {
                 {barRowJSX(
                     'meter:5h',
                     '🔥 5h',
-                    five?.used,
                     fiveTint,
-                    five ? meterBar(five.used, barWidth, pace) : [],
+                    five ? { mark: pace, percent: five.used } : undefined,
                 )}
                 {barRowJSX(
                     'meter:ctx',
                     '🧠 ctx',
-                    ctx,
                     ctxTint,
                     ctx === undefined
-                        ? []
-                        : meterBar(
-                              ctx,
-                              barWidth,
-                              meter?.compactAt,
-                              meter?.compactAt ?? 100,
-                          ),
+                        ? undefined
+                        : {
+                              mark: meter?.compactAt,
+                              percent: ctx,
+                              scale: meter?.compactAt ?? 100,
+                          },
                 )}
                 {meter?.note ? (
                     <Text color='error' wrap='truncate-end'>

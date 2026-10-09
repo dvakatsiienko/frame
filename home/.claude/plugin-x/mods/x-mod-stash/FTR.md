@@ -178,9 +178,11 @@
   - then no ping is sent, and the clock restarts when that turn ends
 - ⬜ two live meters, full width right under the head (FRM-366)
   - given a session.measure arrives
-  - then `🔥 5h` draws the window's used % as a bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; the head's free middle reads `pace n%`, the gap — `n spare` green, `+n debt` orange up to 10 and red past it — and `↻ 1h 26m`, the time left to the reset
+  - then `🔥 5h` draws the window's used % as a bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; the head's free middle reads the gap — `n spare` green, `+n debt` orange up to 10 and red past it — and `↻ 1h 26m`, the time left to the reset
   - and `🧠 ctx` draws the context % as a bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; the head carries `🗜️` and the point in an `Input` whose Enter reads `✓`
-  - and the bars are solid `█` cells on a `░` track, with desktop air above, between and below them (dima, 19:52: «more breathing room», «denser»)
+  - and the desktop draws each bar as svg cells — rounded, bordered, spaced, bigger than a text cell — with air above, between and below them; the terminal draws sline's `▮ ▯` (dima, 20:04: «keep previous approach, cells a bit bigger, maybe with border»)
+  - decision: no `pace n%` — the gap already says how far off pace (dima, 20:04)
+  - and an idle band stays live: the 4 s poll takes the 5h reading from `cc-usage-window.json`, which any busy session writes, and its minute moves the time left
   - and each filled cell takes sline's bar ramp by its place — green, yellow, orange, red — so a bar warms as it fills; the 5h ramp spans the window, the ctx ramp reaches red at the compaction point
   - and both bars start and end on the same columns: one label width, one bar width, one right-aligned % cell
   - and the meters stay in view under any number of asks: they sit above the asks, which get the rows left after the head and the meters, each counted by the lines it wraps to, the rest folding into `+n more`
