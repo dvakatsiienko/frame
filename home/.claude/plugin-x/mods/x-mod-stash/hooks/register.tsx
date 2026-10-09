@@ -1731,7 +1731,7 @@ export const register: Register = (on) => {
                 key='meters'
                 marginBottom={air ? 0.75 : 0}
                 marginTop={air ? 0.5 : 0}
-                paddingRight={air ? 2 : 0}>
+                paddingRight={air ? 1 : 0}>
                 {barRowJSX(
                     'meter:5h',
                     '🔥 5h',
