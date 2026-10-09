@@ -54,6 +54,11 @@
             "name": "gh"
         },
         {
+            "example": "x plugin bump x --apply",
+            "gist": "our claude code plugins: a release proven in the cache",
+            "name": "plugin"
+        },
+        {
             "example": "x schema lane --level short",
             "gist": "the registry as json",
             "name": "schema"
@@ -72,11 +77,6 @@
             "example": "x trace record --exit 0 --duration 840 -- pnpm x-go:test",
             "gist": "trace lines for commands x did not run",
             "name": "trace"
-        },
-        {
-            "example": "x plugin bump x --apply",
-            "gist": "our claude code plugins: a release proven in the cache",
-            "name": "plugin"
         }
     ],
     "verbs": [
