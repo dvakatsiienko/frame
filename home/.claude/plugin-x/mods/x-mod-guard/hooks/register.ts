@@ -275,6 +275,44 @@ async function liveModOf($: EngineInterface, path: string) {
     return undefined;
 }
 
+// every prompt's origin and fields, the last 20 across sessions, so a probe reads what a session really saw (FRM-358):
+// whether dima's typing can be told from a machine's is a measurement, never a guess from the types
+const ORIGINS = 'origins';
+async function logOrigin(
+    $: EngineInterface,
+    e: {
+        text: string;
+        origin: { kind: string };
+        turnId?: string;
+        wait: boolean;
+        attachments?: readonly unknown[];
+        context?: readonly string[];
+    },
+) {
+    const was = ((await $.store.get(ORIGINS)) ?? []) as {
+        text?: string;
+    }[];
+    // whole code points, and no half pair left from an older cut: a lone surrogate leaves the store file unreadable to jq
+    const whole = (s: string) =>
+        [...s].filter((c) => c.length === 2 || !/[\ud800-\udfff]/.test(c));
+    const head = (s: string) => whole(s).slice(0, 80).join('');
+    const row = {
+        at: await $.clock.now(),
+        attachments: e.attachments?.length ?? 0,
+        context: e.context?.map(head),
+        origin: e.origin,
+        sid: await $.session.id().catch(() => undefined),
+        text: head(e.text),
+        turnId: e.turnId,
+        wait: e.wait,
+    };
+    // a row an older build cut mid-pair is mended on the next write
+    const kept = was.map((r) =>
+        typeof r.text === 'string' ? { ...r, text: head(r.text) } : r,
+    );
+    await $.store.set(ORIGINS, [row, ...kept].slice(0, 20));
+}
+
 const UNREAD_DOOR = 'Read the file first, then Write';
 const UNREAD_WHY = 'a Write replaces a tracked file this session never read';
 
@@ -535,6 +573,7 @@ export const register: Register = (on) => {
     on('prompt.submit', async ($, e, next) => {
         if (TYPED_BY_DIMA.has(e.origin.kind))
             await $.state.set(PROMPT, e.text).catch(() => undefined);
+        await logOrigin($, e).catch(() => undefined);
         return next(e);
     });
 
