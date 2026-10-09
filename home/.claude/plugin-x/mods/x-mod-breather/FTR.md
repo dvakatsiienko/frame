@@ -21,7 +21,8 @@
 - ⬜ the meter wears sline's gruvbox ramp
   - then the bars climb green, yellow, orange (and red at the desktop's top row); an unlit cell is a light gray that follows the theme
   - decision: desktop dark is the gruvbox `#282828` band, desktop light a brighter ramp on a clear band — «light is a bit dim, make it more bright and expressive» (dima, 2026-10-08)
-- ⬜ another mod's redraw never restarts the desktop breath
+- 🔎 another mod's redraw never restarts the desktop breath
+  - dima, 2026-10-09 16:58: board closed, no flicker; board open, no reset, «only a very quick flicker» about every 30 s — the desktop's svg rebuild, claude-code#100797
   - given a turn runs on the desktop and x-mod-stash redraws the band (its 4 s poll)
   - then the meter breathes the whole cycle — full inhale, hold, exhale — and never snaps back to its floor mid-inhale
   - the bug (dima's gif, FRM-354): the breath restarted every ~4.46 s, 6 times in 24 s, one blank frame each, so a 5.5 s inhale never finished

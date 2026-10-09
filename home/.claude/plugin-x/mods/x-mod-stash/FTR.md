@@ -267,7 +267,8 @@
   - when the 4 s poll ticks and nothing on the band changed
   - then the band's `view` is not rewritten, so the band does not redraw, and the board's clock still moves
   - decision: the clock rode in the band's `view` until FRM-354 — every tick redrew the band, and the desktop rebuilt x-mod-breather's svg each time: a blink and a restarted breath every ~4.5 s
-- ⬜ an open board redraws only when what it shows changes
+- 🔎 an open board redraws only when what it shows changes
+  - dima, 2026-10-09 16:58: with the board open the breather blinks about every 30 s, down from every 4 s, and never resets
   - given the board is open
   - when the 4 s poll ticks and no row's facts changed and no span turned its minute
   - then the board's value is not rewritten, so the pane does not redraw
