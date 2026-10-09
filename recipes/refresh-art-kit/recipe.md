@@ -1,6 +1,7 @@
 ---
 kind: refresh
-cadence: on demand, otherwise quarterly
+owner: designer
+cadence: "on demand — «refresh art-kit», a rebrand spotted, a new art job type. otherwise quarterly."
 artifacts:
   - home/.claude/plugin-x/skills/art-kit/
   - ~/frame/gifs/AGENTS.md
@@ -14,7 +15,18 @@ script: none
 Keeps `x:art-kit` current in every branch: gifs, terminal clips, illustration, brand logos, and how
 an svg ships in an app. Born from the 2026-09-30 svg round (three lanes, graded in
 `docs/test-drive/exa.md` + `docs/test-drive/parallel.md`).
-## the want (dima's, 2026-09-30)
+
+## contents
+
+- the want
+- the run
+- vectors
+- artifacts
+- findings
+
+## the want
+
+dima's, 2026-09-30:
 
 > I want access to any SVG of any product, accessible and reliable, and SVGs also must be high
 > quality … The condition is that all icons are up to date, because logos of products change …
@@ -30,19 +42,20 @@ an svg ships in an app. Born from the 2026-09-30 svg round (three lanes, graded 
 
 ## the run
 
-1. re-groom the vectors with dima; drop the branches he does not want this run
+1. re-groom the vectors with dima; drop the branches he does not want this run. done: his word on the list. (open)
 2. one brief file from the kept vectors → `pnpm research:lanes <brief>` (exa + parallel) plus a
    fresh opus source lane that PROBES: the svgl api, the npm versions, which logo each set serves,
    the tool versions on this mac (`ffmpeg -version`, `gifski --version`, `vhs --version`,
-   `yt-dlp --version`) — `habit-research-lanes`
-3. the analysis vectors, run locally while the lanes work
-4. distill: clever-merge into the artifacts, one branch file at a time; raw lane output dies here;
-   bump `x`
-5. grade every lane in its test-drive file; print dima the delta per branch, noop included
+   `yt-dlp --version`) — `habit-research-lanes`. done: every lane returned or marked failed. (script)
+3. the analysis vectors, run locally while the lanes work. done: each vector answered or marked empty. (script)
+4. distill: clever-merge into the artifacts, one branch file at a time; raw lane output stays in
+   `last/` until the next run's distill; bump `x`. done: every kept branch file merged or named «unchanged». (open)
+5. grade every lane in its test-drive file; findings print. done: the grades are in the test-drive files. (template)
+6. log today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
 
-### research vectors (re-groom each run)
+### research
 
 **logos** — `logos.md`, `scripts/logo.ts`
 1. official product logos an agent can fetch with no human: svgl (api, count, freshness, license
@@ -75,7 +88,7 @@ an svg ships in an app. Born from the 2026-09-30 svg round (three lanes, graded 
 10. prompt → image (the unbuilt room, [BYT-70](https://linear.app/x-com/issue/BYT-70)): which
     image models an agent can call now, cost, svg-capable output
 
-### analysis vectors (local evidence)
+### analysis
 
 - art flaws: `grep -il 'art-kit\|gif\|logo\|svg\|atelier' ~/.claude/shelf/flawlog/*.md` since the
   last run — which branch failed, what the doc said
@@ -85,15 +98,13 @@ an svg ships in an app. Born from the 2026-09-30 svg round (three lanes, graded 
   not fetched)
 - coder retros that touched art: what the branch file left unclear
 
-## artifacts (pointed at, never housed)
+## artifacts
 
 - `home/.claude/plugin-x/skills/art-kit/` — `SKILL.md`, `logos.md`, `gifs.md`, `clips.md`,
   `illustration.md`, `scripts/logo.ts`
 - `~/frame/gifs/AGENTS.md` — the gif store contract
-- bytes `apps/atelier` docs (`FTR.md`, `GLOSSARY.md`) — only when vector 9 or 10 changes the studio
+- bytes `apps/atelier` docs (`~/projects/bytes/apps/atelier/FTR.md`, `~/projects/bytes/apps/atelier/GLOSSARY.md`) — only when vector 9 or 10 changes the studio
 
-## cadence
+## findings
 
-on demand — «refresh art-kit», a rebrand spotted, a new art job type. otherwise quarterly.
-
-## log → log.md
+- print dima the delta per branch, noop included

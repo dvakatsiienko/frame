@@ -1,19 +1,21 @@
 ---
 kind: nurture
-cadence: "the mechanical pass on every commit (code, seconds); the full run on dima's word, no timer; the delete digest at every halt (card.md)"
-artifacts: [docs/knowledge/authoring-memory.md, docs/knowledge/authoring-memory-project.md, docs/knowledge/authoring-skill.md, recipes/nurture-memory/card.md]
+owner: coordinator
+cadence: "the mechanical pass on every commit (code, seconds); the full run on dima's word, no timer; the delete digest at every halt (the groom card in authoring-memory.md)"
+artifacts: [docs/knowledge/authoring-memory.md, docs/knowledge/authoring-memory-project.md, docs/knowledge/authoring-skill.md]
 script: none
 ---
 
 # nurture-memory
 
-grooms root `CLAUDE.md`, `rules/`, `~/projects/AGENTS.md`, project `AGENTS.md`, cclio memory and skills — **run it instead of re-planning an inventory**. run #2 ([FRM-267](https://linear.app/x-com/issue/FRM-267)) reads `docs/research/skill-authoring-best-practices.md` first: its checklist is that run's input, these steps the method.
+grooms root `CLAUDE.md`, `rules/`, `~/projects/AGENTS.md`, project `AGENTS.md`, cclio memory and skills — **run it instead of re-planning an inventory**.
 
-contents:
+## contents
+
 - the want
-- standing rules
-- the run, 15 steps
+- the run
 - vectors
+- artifacts
 - findings
 
 ## the want
@@ -45,7 +47,7 @@ his questions, run #1 (2026-08-23 → 08-26), each answered in `authoring-memory
 
 his verdicts, run #1: proxying the research through `writing-for-agents` — no, make it fire first; `writing-for-agents` covers memory files AND skills; skillsmith not needed ([DOT-132](https://linear.app/x-com/issue/DOT-132) canceled).
 
-## standing rules
+## the run
 
 - 📌 **the run order is dima's plan** (written for run #1, moved out of [DOT-73](https://linear.app/x-com/issue/DOT-73)'s body): an agent may improve it, never replace it.
 - **live recipe**: a wrong step or a miss is fixed here the same session; a recipe written afterwards is a memory of a recipe.
@@ -63,8 +65,6 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 - 🚫 **no llm-judge memory audit** (arXiv 2601.11783's numbers: `authoring-memory.md` § upkeep; Offscript, CHIIR 2026: 84.6 % flagged, 22.2 % material after human review). its advice: «delegate all deterministically verifiable logic to code, reserve llms for semantic evaluation.» step 2 is code, step 12 human.
 - **drift latency is under 24 hours**: `rules/dispatch.md` was deleted one morning and two docs described it in the present tense that afternoon — the mechanical pass runs on commit, never on a calendar.
 - 📌 decided 2026-10-02: after run #2 this becomes `cclio:nurture`, user-invoked; run #2 closes with that verdict. `docs/knowledge/authoring-*.md` stay put: every session editing memory or a skill reads them, coders included.
-
-## the run
 
 1. **research first** — no write before it lands. (template)
    - the snapshot diff, first and cheapest: re-download anthropic's two pages as `.md` (append `.md` to the docs url), `diff` against `docs/research/skill-authoring-best-practices/`, read only the delta, replace the snapshots
@@ -111,7 +111,7 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 9. **skills** — the same loop, plus per skill: (template)
    - a completion criterion: a checkable state (a hash, an `ls`, a named list — an eval oracle too), or why none
    - keep / trim / merge / drop + the bucket check; paired skills get symmetric descriptions (a pair-pointer in an unloaded body fires too late)
-   - a description edit is proven by `claude plugin eval`, never by reading (`recipes/nurture-skills/`)
+   - a description edit is proven by `claude plugin eval`, never by reading (`authoring-skill.md` § evals — prior art)
    - the research file's rules 2, 5, 6, 8: steps tagged by freedom, a fragile one is a script · reference files linked from `SKILL.md` · contents past 100 lines · an ordered skill has a checklist and a «return to step N»
    - the groom, proven on 15 skills (2026-08-25): a full taste rewrite · tables → bullets (even «real matrix» claims died on contact) · drop `intended-models` · WHEN leads, WHAT trails · heavy human-only skills get `disable-model-invocation: true` · history to a doc · a doubted trigger gets a TRACER naming the door that fired
    - `writing-for-agents` loads first on any edit: run #1's root pass invoked it zero times across a dozen edits, right after writing the line telling itself to; `rules/authoring-trigger.md` closed that 2026-08-26 (a new file fires nothing), and a bash `cat` read still skips it, so «make it fire» stays open. no hook — dima, 2026-08-25: «what if i want you to surely run x10 skills? bloat settings.json with hardcode? meh»
@@ -120,24 +120,33 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
    - done: every skill verdicted, each changed one past Claude B
 10. **project leaves** — they age apart. `find ~/projects -name AGENTS.md -o -name CLAUDE.md`, skip templates; examine the project (scripts, deps, layout) before the file: environment restated → a pointer, tutorials → delete, keep conventions and gotchas; what a file owes: `authoring-memory-project.md`. a bulk `cat` bypasses the `paths:` authoring trigger (measured) — load `writing-for-agents` by hand. done: every file verdicted. (template)
 11. **the leaf review** — one item per round via `x:step-by-step`, «next» advances: placement first, prose second · every leaf a rewrite candidate (opus-era wording) · a rename is a graph operation: grep before and after (barrel, wikilinks, docs, `plugin-x-cw` symlinks), re-probe the barrel · commit per cluster with pathspecs once dima read the diff. done: every leaf through a round. (open)
-12. **the human gate** — pruning is never delegated: an agent files the candidate with evidence, dima decides that a file exists and that it stops. deletes go out as the `card.md` digest. done: every candidate verdicted. (open)
+12. **the human gate** — pruning is never delegated: an agent files the candidate with evidence, dima decides that a file exists and that it stops. deletes go out as the digest of the groom card (`authoring-memory.md` § the groom card). done: every candidate verdicted. (open)
 13. **self-correction** — a flaw seen twice becomes a check, a script or a hook, never a third prose line. a check firing often is a root to fix, not a gate — dima, 2026-10-02: «if it triggers too much on a repeating answer, it essentially forces you to do additional turns … if a certain assert repeats a lot, then it needs to be fixed instead». `pnpm reply-check:report`: fix a top rule's cause, block only a rare costly one, keep the positive target («every id is a link») and cut enforcement prose («the mechanical scan before sending») once the log shows it holds. done: every repeat has a mechanism or a ticket. (open)
 14. **the cw field** — only when a `<!-- sync: cw -->` section (root `CLAUDE.md`, `rules/*.md`) changed; cw gets cc memory only by dima's paste (the bridge recipe retired 2026-10-02: «it is manual now and no longer automated»). his want: «cc is the source of truth, generally. cw memory is a derived view, never the origin.» · «i dont want a mess there» · «memory must be pretty» · «no poems!». `pnpm memory-sync:map` → `pnpm memory-sync:copy` → he pastes into settings › account › profile › instructions → a new cw thread runs `/x-cw:memory-update check`. done: check passed, or «no synced section changed». (script)
 15. **log** today's line in `log.md`. done: the line is there.
 
 ## vectors
 
-research (re-groomed with dima each run):
+### research
+
 - what changed in cc's memory / import / `paths:` / skill mechanics since the last run
 - new agent-doc craft, dima's channel parses included (theo, matt pocock) via `x:yt-transcript`
 - new memory-hygiene practice and tooling for agent fleets: checks for the loop, anthropic memory features, community approaches
 - the context budget: dima's «what do we do wrong» outranks any token number (his full question in `log.md`, the answer in `authoring-memory.md`)
 
-analysis (local evidence):
+### analysis
+
+- run #2 ([FRM-267](https://linear.app/x-com/issue/FRM-267)) reads `docs/research/skill-authoring-best-practices.md` first: its checklist is that run's input, these steps the method
 - which memories misfired or sat unused — a leaf never load-bearing since the last sweep is a retirement candidate, not a keeper by default
 - did a silent-failure class fire, and does `method-silent-failures` name its shape?
 - placement drift: a leaf past one decision, a fact at the wrong altitude
 - the failure-mode scrape, theo's method — rules written against what broke: `~/.claude/projects/`, `~/.claude/history.jsonl`, `~/.claude/shelf/flawlog/` (the labelled set); each transcript's model first, events not opinions, bucket then count. scripted (duckdb), never an agent reading transcripts, which samples 2 % and reports a total. codex and gpt out of scope
+
+## artifacts
+
+- `docs/knowledge/authoring-memory.md` — the memory authoring craft and the groom card (§ the groom card); the distill folds cc mechanics and our rules in, one layer per file
+- `docs/knowledge/authoring-memory-project.md` — what a project leaf owes; the distill updates it from step 10
+- `docs/knowledge/authoring-skill.md` — the skill authoring craft; the distill updates it from step 9
 
 ## findings
 

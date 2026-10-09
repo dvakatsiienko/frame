@@ -1,5 +1,6 @@
 ---
 kind: refresh
+owner: coordinator
 cadence: "monthly, or at a jev model bump, or when a flow's vet streak breaks twice in a week"
 artifacts:
   - cclio/memory/sys-jev.md
@@ -14,7 +15,8 @@ was: [refresh-branch-classification, refresh-jev, refresh-classification]
 Keeps the fleet's classification branch sharp: our classifier — jev (typesafe.ai) today, the primary
 target of every run unless a better alternative wins — our flows, the craft of writing them, and what
 else exists. Born 2026-10-05 from the skill-router research round.
-## the want (dima's)
+
+## the want
 
 > i dont want another failing jev flows i want jev to be useful (FRM-268, 2026-10-01)
 
@@ -30,24 +32,25 @@ else exists. Born 2026-10-05 from the skill-router research round.
 
 ## the run
 
-1. **research** — one brief from the vectors above; `pnpm research:lanes <brief> <out>` (exa + parallel) + an opus source lane (vectors 2–4 need source reading) — `habit-research-lanes`
-2. **distill** — clever-merge into the guide and the rubrics' comments; raw lane output dies here
-3. **eval + findings** — print dima the delta: what to copy, what to drop, which flow to rebuild; grade every lane in `docs/test-drive/{exa,parallel}.md`
-4. **resolve** — with dima: a rubric change ships as a commit with `RUNS=3` numbers in its body; noop is fine
-5. **a model bump** — before re-pinning `jev-1.13.0`, every flow's fixtures replay on the new model; a drop blocks the pin
+1. **research** — one brief from the vectors above; `pnpm research:lanes <brief> <out>` (exa + parallel) + an opus source lane (vectors 2–4 need source reading) — `habit-research-lanes`. done: every lane returned or marked failed. (script)
+2. **distill** — clever-merge into the guide and the rubrics' comments; raw lane output stays in `last/` until the next run's distill. done: the artifacts carry the merge, or are named «unchanged». (open)
+3. **eval + findings** — grade every lane in `docs/test-drive/{exa,parallel}.md`; findings print. done: the grades are in the test-drive files. (template)
+4. **resolve** — with dima: a rubric change ships as a commit with `RUNS=3` numbers in its body; noop is fine. done: his word on each change. (open)
+5. **a model bump** — before re-pinning `jev-1.13.0`, every flow's fixtures replay on the new model; a drop blocks the pin. done: the replay numbers, or «no bump». (script)
+6. **log** today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
 
-### research vectors (re-groom each run)
+### research
 
 1. jev itself — docs.typesafe.ai, the cookbooks, the changelog, new models since `jev-1.13.0`: what changed, what a cookbook now does that our flows don't
 2. **how to build solid jev flows** — jev's own best-practice docs first (question design, Choice vs Noul, criteria, thresholds, multi-stage flows, evals), then what builders report: the rules that separate a working flow from a half-working one, each with its source
-3. **hunt already built to borrow** — published jev flows and skill/tool routers (github, the awesome-jev index, grep-mcp for `typesafe` / `jev` imports): read their SOURCE, name what to copy. last run's finds: kerpopule/hermes-jev-skills, diet103/claude-code-infrastructure-showcase, juew/Skill-Routing-Kit, zhengyanzhao1997/SkillRouter, aurelio-labs/semantic-router
+3. **hunt already built to borrow** — published jev flows and skill/tool routers (github, the awesome-jev index, grep-mcp for `typesafe` / `jev` imports): read their SOURCE, name what to copy; last run's finds are in `docs/research/skill-router.md` § prior art the lanes found
 4. **hunt already built for inspo** — unusual or high-value classification uses by others that our fleet could adopt (inbox lanes, review triage, flawlog lanes, spawn gating …)
 5. **jev alternatives** — other classifiers for the same jobs: embedding routers, semantic-router, a small model (haiku) with a schema, BM25 + thresholds; cost, latency and accuracy against jev on our fixtures
 6. classification craft — the literature on what makes a typed judgment reliable: context windows (the last turn, never all history), hard negatives, per-route thresholds on held-out data, abstention, multi-label coverage metrics
 
-### analysis vectors (local evidence)
+### analysis
 
 1. the vet: `pnpm jev:vet` streaks and every miss since the last run (`shelf/jev/<flow>.log`) — a miss pattern is a rubric to reword
 2. the router: `pnpm jev:report` health (avg, p95 against the hook's 8 s timeout), `pnpm jev:route --from-log` near-misses, fixture coverage (every skill with ≥ 1 positive, the held-out split)
@@ -60,24 +63,15 @@ else exists. Born 2026-10-05 from the skill-router research round.
 9. **never retire the seat for lack of prior art** — the field is young; a verdict on the seat names the engine it judged, and «retire» is a verdict on an engine, never on the operation
 10. **classification candidates from inside** — scan the flawlog and coder retros for judgment calls agents keep making by hand; each is a candidate flow
 
-## artifacts (pointed at, never housed here)
+## artifacts
 
 - the jev guide — the craft rules a coder loads when touching jev (home: `x:guide-classification`, built after FRM-305 lands; until then `cclio/memory/sys-jev.md` «the rules» sections)
 - `script/lib/jev-questions.ts` — every rubric, model pinned
 - `cclio/memory/sys-jev.md` — cclio's side: the lanes, the vet policy, the sharpening loop
 - `docs/research/skill-router.md` — written by FRM-305 from the 2026-10-05 lanes; dies into the guide
 
-## verify — what a jev change's verifier runs (the 10-05 retros)
+## findings
 
-- unit test + `red-proof` + one live `suggest()` for every ⚠ line; an exit line names the hook timeout the flow must fit (the router hook: 8 s, two sequential calls ~1.5 s)
-- a multi-stage flow ships its per-stage reason (`stage` field) in the first build
-- jev down or out of credit: verify from saved raws — copy the raws, put a stub `claude` first on PATH, unset the jev key
-- «0 requests» is proven by a fetch-stub preload (`NODE_OPTIONS=--import`, every request logged to a file), across scripts and vitest workers
-- a model baseline through `claude -p` runs lean: `--settings '{"disableAllHooks":true,"alwaysThinkingEnabled":false,"claudeMdExcludes":["**/*"]}'` (~17k tokens and 8 s → clean context and 2 s)
-- a replay on mostly synthetic fixtures prints its real-only slice first (94 % → 67 % on real); a vet miss line carries the full prompt
-
-## cadence
-
-monthly, or at a jev model bump, or when a flow's vet streak breaks twice in a week.
-
-## log → log.md
+- print dima the delta: what to copy, what to drop, which flow to rebuild
+- the checklist, re-checked every run: the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named
+- the verify list for a jev change's verifier lives in `cclio/memory/sys-jev.md` (verify — what a jev change's verifier runs)

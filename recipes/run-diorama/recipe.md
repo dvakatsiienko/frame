@@ -8,8 +8,6 @@ script: none
 was: [diorama-draw]
 ---
 
-Contents: the want — dima's words · vectors · artifacts — where they live · the trace · cadence · log → log.md
-
 # run-diorama
 
 the art set for frame, the profile and bytes.
@@ -18,21 +16,27 @@ the art set for frame, the profile and bytes.
 the trace; nothing here is automated yet. the run section is written from the trace only once a
 step repeats unchanged.
 
-## the want — dima's words
+Contents: the want — dima's words · vectors · artifacts — where they live · the trace · cadence · log → log.md
+
+## the want
+
+dima's words:
 
 - «trace what you are doing is to then think about how to automate what we are doing
   eventually, but not yet, because we are still figuring out a recipe.» (2026-09-25)
 - «i want an approximate, or even a higher, level of detail … so the design decision is
   consistent» across the profile, frame and bytes (2026-09-25)
 
-## artifacts — where they live
+## artifacts
 
 - `~/projects/bytes/apps/atelier/art/` — the bible (`story.md`, `dino.md`), `palette.ts`, the generators, `out/`
 - `~/frame/home/.claude/plugin-x/skills/guide-ui-ux/SKILL.md` — ui rules that came out of the studio
 - the studio artifact — https://claude.ai/artifact/4YAEdDqeH5SrSCUWnkB13h (source rebuilt by a
   scratch `build.ts`; move it into frame once the recipe settles)
 
-## the run — the trace of the first run
+## the run
+
+the trace of the first run:
 
 ### 2026-09-25 · FRM-263 · opus 5.5 in cclio
 
@@ -110,15 +114,11 @@ step repeats unchanged.
 
 ## vectors
 
-### analysis vectors — the questions each run answers from local evidence
+### analysis
+
+the questions each run answers from local evidence:
 
 - does every image hold the bible (`bytes/apps/atelier/art/story.md`, `dino.md`, `palette.ts`)?
 - light = day and dark = night on every piece?
 - does the art direction stay quiet: few flowers, no cheer, Oles stern?
 - svg or raster: which one wins per piece, and what does each cost to render and ship?
-
-## cadence
-
-per art change, on dima's word.
-
-## log → log.md

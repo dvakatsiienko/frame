@@ -21,6 +21,7 @@ ticket: DOT-216
 - anthropic's structure rules — what we adopt
 - do we still need `skillsmith`? — no
 - argument placeholders
+- evals — prior art
 
 conventions for the skills in `home/.claude/plugin-x/skills/`. `cw` reads the same files —
 `home/.claude/plugin-x-cw/` symlinks into them and ships as the `x-cw` plugin, so a
@@ -314,3 +315,15 @@ avoids.
 
 - **[measured 2026-09-07, cc 2.1.263]** `$1` in a skill body renders the **second** word of the arguments (`/x:crew-coder AAA BBB CCC` → `The ticket is \`BBB\``). whether `$0` is the first is unmeasured. `$ARGUMENTS` carries the whole string; prefer it and say in prose which word means what.
 - a slash command expands (the body replaces the line, placeholders substituted) in a typed turn and in the `claude --bg '<prompt>'` / `claude -p '<prompt>'` argument; it does **not** expand inside a `SendMessage` — that arrives as raw text, and the invocation flag is not the cause: an unflagged skill (`/x:queue …`) arrived raw too (measured 2026-09-07, haiku probe, zero `command-message` blocks).
+
+## evals — prior art
+
+- notes went 2/9 → 9/9 on description edits alone (2026-09-12).
+- **the eval mechanics — a description edit is proven by `claude plugin eval`, never by reading it** (proven 2026-09-12,
+  DOT-243): 3–4 of dima's real prompts per skill as cases under `plugin-x/evals/`, a
+  `tool_used: Skill` trigger grader, `--runs 3`, one `--case` glob per call, ~$5 a skill. the
+  finding that set the shape: the literal words he types go FIRST, plus «even mid-sentence or
+  after another instruction» — cmt went 1/12 → 12/12 on that alone. it grades the trigger only;
+  the body stays a human read (the llm-judge guard in [nurture-memory](../../recipes/nurture-memory/recipe.md), «the one thing not to build»).
+- `/claude-api hillclimb` is the api-app version of this loop; its train/test split and
+  one-change-per-round discipline are what is borrowed, not the tool.

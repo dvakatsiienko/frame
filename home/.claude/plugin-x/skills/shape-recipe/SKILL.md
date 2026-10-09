@@ -6,49 +6,9 @@ argument-hint: "<recipe name to run, or the thing a new recipe would keep fresh>
 
 # shape-recipe — the recipe engine
 
-A **recipe** is a repeatable procedure that keeps something fresh: it researches, distills into the
-artifacts it owns, prints findings, and logs the run. Some recipes are plain execution scripts.
-This skill holds everything recipes share; each recipe holds only what is its own.
-
-Contents: the folder · recipe.md · log.md · names · running one · the shared vectors · creating one ·
-practices.
-
-## the folder
-
-`~/frame/recipes/<name>/` — readable by every session, cclio and coders alike.
-- `recipe.md` — the recipe (below)
-- `log.md` — one line per run; the run count is its line count
-- `scripts/` — helpers the recipe owns, when it has any
-- `last/` — the last run's raw output, overwritten each run; raw research never piles up
-
-## recipe.md
-
-frontmatter:
-```yaml
-kind: refresh | nurture | run   # research → distill · groom an existing system · plain execution
-cadence: <when it should run>   # «every cc minor», «monthly», «on dima's word»
-artifacts: [<path>, …]          # what it keeps fresh, pointed at, never housed here
-script: <package.json key> | none
-groomed: <yyyy-mm-dd> (dima)    # written only on dima's word; research:lanes refuses a brief under last/ on any other day
-was: [<old name>, …]            # after a rename; the shape test fails while a live file still names one
-```
-the heading is `# <folder name>`, nothing else — the shape test checks it.
-sections, most important first:
-1. **contents** — only when the file passes 100 lines
-2. **the want** — dima's words in «», dated. no want, no recipe: ask him for it
-3. **the run** — numbered steps; each ends on a done-line; a check step carries «go back to step N»; each names its freedom: `script` (exact), `template` (a shape, some room), `open` (judgment)
-4. **vectors** — research vectors in dima's wording, re-groomed with him each run; analysis vectors for local evidence
-5. **findings** — what the run's closing print must cover beyond the shared shape
-
-## log.md
-
-`- YYYY-MM-DD · <outcome in one line> · <minutes> · <agents and tokens or $> · <what changed: artifacts, or «noop»>`
-
-## names
-
-kind-first, then the main artifact it refreshes, so the recipe sits beside its target:
-`refresh-guide-go` → `x:guide-go`, `refresh-monorepo` → the monorepo research; a recipe that keeps one fleet member true is named after the member (`refresh-crew-coordinator`). a recipe's script
-or verb shares the stem (`refresh-agent-ops` ↔ `x fleet ops` ↔ `docs/knowledge/agent-ops.md`).
+The procedure for running, grooming and creating a recipe. **What a recipe is, its folder, the
+`recipe.md` and `log.md` shapes and the names: `~/frame/recipes/AGENTS.md`** — read it first; the
+shape test (`script/lib/recipe-shape.test.ts`) proves it.
 
 ## running one
 
@@ -81,16 +41,14 @@ analysis, our own evidence:
 
 ## the owner — a recipe is shaped by the role that lives off its artifacts
 
-dima, 2026-10-08: «recipes are special, they are not plain scripts, they want intention. but there are
-too many of them, so it is hard for me to update them all — you, the coordinator, should act in a
-special way here.» so:
+dima, 2026-10-08: «there are too many of them, so it is hard for me to update them all — you, the
+coordinator, should act in a special way here.» so:
 
 - **every recipe names its owner** in frontmatter — `owner: coordinator | coder | designer | fleet` —
   the role whose work the artifacts feed. dima writes the want; **the owner writes and grooms the
   vectors from its own seat**: «what would make me better at this job next week?» — never a list of
   topics about the subject
-- **done = the run happened** (dima, 2026-10-08: «exit criteria kind of forces you to make
-  changes, but it is not always needed»): every lane landed or failed out loud, the print reached
+- **done = the run happened** (the want, `recipes/AGENTS.md`): every lane landed or failed out loud, the print reached
   dima, the log line is written. a run that finds nothing to change is a full run; a change is
   adopted on dima's word, never made because the run must produce one. the weight of a recipe is
   its want and its vectors, sharpened at every groom. a vector with no sources prints as `open`
@@ -121,18 +79,16 @@ special way here.» so:
 ## creating one
 
 a branch (design, voice, a tool stack) or a research with several vectors that will run again becomes a
-recipe the same session: the folder, `recipe.md` with dima's want quoted from the thread, an empty
-`log.md`. the tell is writing research vectors from scratch for a subject researched before. its first
+recipe the same session: the folder, `recipe.md` with dima's want quoted from the thread, a
+header-only `log.md`. the tell is writing research vectors from scratch for a subject researched before. its first
 run needs the stamp too: `groomed: <today> (dima)` lands on his word, before any lane.
 
 ## practices
 
-- ✅ one recipe per artifact family; two recipes that refresh one file merge
-- ✅ artifacts live where their readers look; the recipe's `artifacts:` is the map back
 - ✅ a claimed fact in a findings print carries its source or «?»
 - ✅ noop is a real outcome — a run that found nothing new changes nothing
 - ✅ every run asks «can a step here become a script?» and names the step
-- ❌ a recipe that houses its artifact, or keeps raw research past the distill
+- ❌ raw research kept past the distill
 - ❌ a re-groom skipped because «the vectors look fine» — stale vectors give confident answers to old questions
 
 **completion criterion:** for a run — `log.md` holds the line and the findings print reached dima; for a

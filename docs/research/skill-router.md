@@ -125,3 +125,7 @@ held-out third (71 prompts, 32 of them real).
 - the raws behind every number here sit at `~/.claude/shelf/jev/replays/skill-router-2026-10-05.json`
   (local, gitignored): `REPLAY_RAW=<a copy> node script/jev-test.ts skill-router` re-scores all
   five arms with zero calls; a changed fixture file refuses it.
+
+## prior art the lanes found
+
+- last run's finds (hunt already built to borrow): kerpopule/hermes-jev-skills, diet103/claude-code-infrastructure-showcase, juew/Skill-Routing-Kit, zhengyanzhao1997/SkillRouter, aurelio-labs/semantic-router

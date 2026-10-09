@@ -1,5 +1,6 @@
 ---
 kind: refresh
+owner: coordinator
 cadence: "when dima says «refresh read-aloud», when a free tier ends (fish: 2026-11-30), or when the elevenlabs quota runs out two months in a row"
 artifacts:
   - schedule/jobs/x-speak/
@@ -12,7 +13,10 @@ was: [refresh-read-aloud]
 
 Keeps `speak` — dima's F5 read-aloud — on the best voices, models and techniques. Born from
 [FRM-269](https://linear.app/x-com/issue/FRM-269) (2026-09-29).
-## the want (dima's, 2026-09-29)
+
+## the want
+
+dima's, 2026-09-29:
 
 > do an extensive research of current best readaloud tools that would gracefully replace siri …
 > must have generous free tier or maybe kokoro settle
@@ -33,16 +37,17 @@ Keeps `speak` — dima's F5 read-aloud — on the best voices, models and techni
 
 ## the run
 
-1. re-groom the vectors with dima
-2. spawn the lanes; probe any new engine for real (a key, one call, first-byte ms)
-3. if a new voice is a contender: render a blind booth round, dima rates
-4. eval + findings: a TTS overhaul proposal — chain order, new engines, dropped ones, normalizer
-   gaps; noop is a valid outcome
-5. resolve with dima; a coder applies the picks; log the run below
+1. re-groom the vectors with dima. done: his word on the list. (open)
+2. spawn the lanes: exa agent · parallel core · an opus lane that probes (real API calls for first-byte and quality); probe any new engine for real (a key, one call, first-byte ms). done: every lane returned or marked failed. (script)
+3. if a new voice is a contender: render a blind booth round, dima rates. a quality change is proven by a blind listening booth (the 2026-09-29 booth artifact is the
+   template: same text into every engine, loudness-matched, letters shuffled, rated 1–5, decoded after). done: his ratings, or «no contender». (template)
+4. eval + findings print. done: the proposal is printed. (template)
+5. resolve with dima; a coder applies the picks. done: his word on each pick. (open)
+6. log today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
 
-### research vectors (re-groom each run)
+### research
 
 1. voice quality — the current TTS leaderboards (Artificial Analysis arena, TTS Arena): which
    engines and models lead, especially female voices
@@ -57,28 +62,20 @@ Keeps `speak` — dima's F5 read-aloud — on the best voices, models and techni
 7. macOS — new system voices, AVSpeech / SSML changes, privacy-pane or hotkey changes in the new OS
 8. following along — how read-aloud tools highlight the spoken word, inside other apps (accessibility text ranges, overlays) and in their own ui; word timings from engines or forced alignment; where each breaks (electron, web, pdf) (dima, 2026-09-30: «I often follow a text that is read aloud and read myself in parallel»)
 
-### analysis vectors (local evidence)
+### analysis
 
 - the daemon log (`~/.local/share/x-speak/daemon.err.log`): real press → first audio per engine,
   fallthrough counts, quota benches
 - elevenlabs characters used per month vs the 10k free credits
 - dima's own tuning in `config.json` (chain order, favourites) — his taste since the last run
 
-## artifacts (pointed at, never housed)
+## artifacts
 
 - `schedule/jobs/x-speak/` — the daemon and `config.json` (the chain, voices, speed, gain, favourites)
 - `speak/` — the voice admin app, its `FTR.md` and `AGENTS.md`
 - the golden normalizer cases in the daemon's test set
 
-## lanes
+## findings
 
-exa agent · parallel core · an opus lane that probes (real API calls for first-byte and quality).
-a quality change is proven by a blind listening booth (the 2026-09-29 booth artifact is the
-template: same text into every engine, loudness-matched, letters shuffled, rated 1–5, decoded after).
-
-## cadence
-
-when dima says «refresh read-aloud», when a free tier ends (fish: 2026-11-30), or when the
-elevenlabs quota runs out two months in a row.
-
-## log → log.md
+- a TTS overhaul proposal — chain order, new engines, dropped ones, normalizer
+  gaps; noop is a valid outcome

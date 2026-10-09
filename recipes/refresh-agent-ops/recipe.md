@@ -1,6 +1,7 @@
 ---
 kind: refresh
-cadence: every two weeks while on the test drive
+owner: coordinator
+cadence: "every two weeks while on the test drive, then at a model change or a memory sweep. an eval-set activity from the five moves the cadence to its own reruns."
 artifacts:
   - docs/knowledge/agent-ops.md
   - x/go/fleet_ops.go
@@ -11,30 +12,31 @@ script: x fleet ops
 
 📌 on a test drive: the first runs are measured and the verdict decides whether the recipe stays.
 
-## the want (dima's)
+## the want
 
 «i spotted, that coder (especially) and verifier tool call chains are sometimes very long … i want to know hot optimal their tool call chains» · «what i missed? i printed only thoughts/ideas but i clearly can miss something bigger»
 
 ## the run
 
-1. regroom the four vectors with dima; drop what the last run already answered
-2. research: the brief goes through `pnpm research:lanes <brief>` (exa + parallel) and one opus source lane on the papers, the cc docs and `claude plugin eval`, a fresh agent never a fork
-3. analysis: run the chain stats script over the last 7 days, compare with the numbers in the artifact
-4. distill into `docs/knowledge/agent-ops.md`: clever-merge, keep the verdict, update the numbers and the five; raw lane output dies here
-5. overhaul proposal, never silent edits: what is new, what it changes in the fleet, noop included; resolve with dima
+1. regroom the four vectors with dima; drop what the last run already answered. done: his word on the list. (open)
+2. research: the brief goes through `pnpm research:lanes <brief>` (exa + parallel) and one opus source lane on the papers, the cc docs and `claude plugin eval`, a fresh agent never a fork. done: every lane returned or marked failed. (script)
+3. analysis: run the chain stats script over the last 7 days, compare with the numbers in the artifact. done: the numbers set beside the artifact's. (script)
+4. distill into `docs/knowledge/agent-ops.md`: clever-merge, keep the verdict, update the numbers and the five; raw lane output stays in `last/` until the next run's distill. done: the artifact carries the new numbers. (open)
+5. findings print, never silent edits; resolve with dima. done: his word on the proposal. (template)
+6. log today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
 
-### research vectors (dima's wording, regroomed with him each run)
+### research
 
-the four vectors of the brief, as written there:
+the four vectors of the brief, in dima's wording, as written there:
 
 1. is tool-call chain length a useful efficiency signal for coding agents, or a misleading one? what do practitioners and vendors measure instead: wasted steps, dead-end exploration, re-reads, failed-command retries, cost per resolved task?
 2. which recurring maintenance activities for an agent fleet have the best evidence of payoff, with concrete recipes: eval sets of real tasks, transcript failure taxonomies, context and memory trimming, tool and skill description tuning, trigger-accuracy measurement, cost per finished ticket, reviewer-loop calibration?
 3. what is the smallest useful eval harness for a solo developer's agent setup: task set size, how tasks are captured from real work, grading by tests vs an llm judge, how often to rerun?
 4. which known anti-patterns waste agent tokens or steps in long-running coding sessions, and which fixes worked: hooks, tool design, prompt changes, context pointers, subagent delegation?
 
-### analysis vectors (local evidence)
+### analysis
 
 - the flawlog `#dima-caught` lines since the last run: the verifier's true finds, false alarms and misses
 - **doors** (dima, 2026-10-07: «this is very useful data. how/where to automate this check?») — raw calls per external cli (`linear api`, `gh api`, `curl`, inline python) classified by operation; the seed run found 981 `linear api` + 93 curl calls in 30 days and reshaped the `linear` family. each class is a verb candidate. plus:
@@ -48,17 +50,11 @@ the four vectors of the brief, as written there:
   - cost per member and per ticket from the usage fields, the `researcher` agent's saving included
 - the engine is `duckdb` on its test drive (`docs/test-drive/duckdb.md`): each measure is a saved `.sql` file, run in under a second over the transcripts
 
-## artifacts (pointed at, never housed)
+## artifacts
 
 - `docs/knowledge/agent-ops.md` — the verdict, the five activities, the 7-day numbers
 - `x/go/fleet_ops.go` — `x fleet ops`: cost per ticket, cclio code edits, boot cost; gains a doors measure later (the 2026-10-07 seed classifier was a throwaway regex script)
 
-## cadence
+## findings
 
-every two weeks while on the test drive, then at a model change or a memory sweep. an eval-set activity from the five moves the cadence to its own reruns.
-
-## last run
-
-none yet. the seed run was 2026-10-07: three lanes (exa 109 s, parallel 591 s, an opus source lane) distilled into `docs/research/agent-fleet-maintenance.md`, which this recipe's artifact replaces.
-
-## log → log.md
+- overhaul proposal, never silent edits: what is new, what it changes in the fleet, noop included

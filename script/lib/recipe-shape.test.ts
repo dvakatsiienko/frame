@@ -58,6 +58,54 @@ function unquote(value: string) {
     return value.replace(/^[`'"]|[`'"]$/g, '');
 }
 
+const sections = [
+    'contents',
+    'the want',
+    'the run',
+    'vectors',
+    'artifacts',
+    'findings',
+] as const;
+const runSections = [
+    'contents',
+    'the want',
+    'artifacts',
+    'the run',
+    'vectors',
+] as const;
+const vectorSubs = ['research', 'analysis', 'cut'] as const;
+const owners = ['coordinator', 'coder', 'designer', 'fleet'];
+const folderFiles = /^(recipe\.md|log\.md|log-\d{4}\.md|last|scripts)$/;
+const logEntry = /^- \d{4}-\d{2}-\d{2} · [^·]+ · [^·]+ · [^·]+ · [^·]+$/;
+
+// a heading inside a code fence is example text, not structure
+function stripFences(text: string) {
+    return text.replace(/^[ \t]*```[\s\S]*?^[ \t]*```/gm, (block) =>
+        block.replace(/[^\n]/g, ''),
+    );
+}
+
+function h2Blocks(text: string) {
+    const parts = stripFences(text)
+        .replace(/^---\n[\s\S]*?\n---\n/, '')
+        .split(/^## (.+)$/m);
+    return Array.from({ length: (parts.length - 1) / 2 }, (_, index) => ({
+        body: parts[2 + 2 * index] ?? '',
+        title: parts[1 + 2 * index] ?? '',
+    }));
+}
+
+// true when items keep the order of allowed and repeat nothing
+function inOrder(items: string[], allowed: readonly string[]) {
+    let from = 0;
+    for (const item of items) {
+        const at = allowed.indexOf(item, from);
+        if (at === -1) return false;
+        from = at + 1;
+    }
+    return true;
+}
+
 function artifactExists(artifact: string) {
     const skill = artifact.match(
         /^(?<plugin>x|cclio):(?<name>[\w-]+)$/,
@@ -121,24 +169,114 @@ test.each(recipes)('%s has the recipe shape', (name) => {
         `${name}: the heading is the folder name`,
     ).toBe(name);
 
+    expect(existsSync(path.join(dir, 'log.md')), `${name}: log.md`).toBe(true);
+
     if (fields?.draft === 'true') return;
-    const want = text.indexOf('\n## the want');
-    const run = text.indexOf('\n## the run');
-    const vectors = text.indexOf('\n## vectors');
-    expect(want, `${name}: ## the want`).toBeGreaterThan(-1);
-    expect(run, `${name}: ## the run after the want`).toBeGreaterThan(want);
-    if (vectors > -1) {
-        expect(vectors, `${name}: ## vectors after the run`).toBeGreaterThan(
-            run,
-        );
-    }
-    const wantBody = text.slice(want, text.indexOf('\n## ', want + 1));
+    const isRun = fields?.kind === 'run';
+    const blocks = h2Blocks(text);
+    const titles = blocks.map((block) => block.title);
+    const body = (title: string) =>
+        blocks.find((block) => block.title === title)?.body ?? '';
+
+    // R1: the h2s are exactly the shared sections, in order
+    const allowed = isRun ? runSections : sections;
     expect(
-        wantBody,
+        inOrder(titles, allowed),
+        `${name}: h2s must follow [${allowed.join(', ')}], got [${titles.join(', ')}]`,
+    ).toBe(true);
+    const required = isRun
+        ? ['the want', 'the run']
+        : ['the want', 'the run', 'vectors', 'artifacts', 'findings'];
+    expect(
+        required.filter((title) => !titles.includes(title)),
+        `${name}: missing h2`,
+    ).toEqual([]);
+
+    expect(
+        body('the want'),
         `${name}: the want quotes dima in «» or a > block`,
     ).toMatch(/«[^»]+»|^> \S/m);
 
-    expect(existsSync(path.join(dir, 'log.md')), `${name}: log.md`).toBe(true);
+    if (isRun) return;
+
+    // R2: contents appears with the 101st line and not before
+    expect(
+        titles.includes('contents'),
+        `${name}: contents iff the file passes 100 lines`,
+    ).toBe(text.trimEnd().split('\n').length > 100);
+
+    // R3: vectors splits into research, analysis and an optional cut
+    const subs = [...body('vectors').matchAll(/^### (.+)$/gm)].map(
+        (match) => match[1] ?? '',
+    );
+    expect(
+        inOrder(subs, vectorSubs),
+        `${name}: vectors h3s must follow [${vectorSubs.join(', ')}], got [${subs.join(', ')}]`,
+    ).toBe(true);
+    expect(subs, `${name}: vectors has an analysis h3`).toContain('analysis');
+    if (fields?.kind === 'refresh') {
+        expect(subs, `${name}: a refresh has a research h3`).toContain(
+            'research',
+        );
+    }
+
+    // R4
+    expect(owners, `${name}: owner is one seat`).toContain(fields?.owner);
+
+    // R5
+    expect(
+        artifacts.filter((artifact) => !body('artifacts').includes(artifact)),
+        `${name}: frontmatter artifacts missing from ## artifacts`,
+    ).toEqual([]);
+
+    // R6: every step ends on a done: line and the last one logs the run
+    const steps = body('the run')
+        .split(/^(?=\d+\. )/m)
+        .filter((part) => /^\d+\. /.test(part));
+    expect(steps.length, `${name}: the run has numbered steps`).toBeGreaterThan(
+        0,
+    );
+    expect(
+        steps
+            .filter((step) => !step.includes('done:'))
+            .map((s) => s.slice(0, 40)),
+        `${name}: steps without a done: line`,
+    ).toEqual([]);
+    expect(steps.at(-1), `${name}: the last step logs the run`).toContain(
+        'log.md',
+    );
+});
+
+// R7
+test.each(recipes)('%s folder holds only the shape files', (name) => {
+    const stray = readdirSync(path.join(recipesDir, name)).filter(
+        (file) => !folderFiles.test(file),
+    );
+    expect(stray, `${name}: files outside the shape`).toEqual([]);
+});
+
+// L1-L6
+test.each(recipes)('%s log.md has the log shape', (name) => {
+    const text = readFileSync(path.join(recipesDir, name, 'log.md'), 'utf8');
+    if (text.startsWith('\0GITCRYPT')) return;
+    const lines = text.split('\n');
+    expect(lines[0], `${name}: log header`).toBe(`# ${name} — run log`);
+    expect(lines[1] ?? '', `${name}: blank line under the header`).toBe('');
+    const entries = lines.slice(2).filter((line) => line !== '');
+    expect(
+        entries.filter((line) => !logEntry.test(line)),
+        `${name}: entries are «- date · outcome · minutes · lanes · artifacts»`,
+    ).toEqual([]);
+    expect(
+        entries.filter((line) => [...line].length > 280),
+        `${name}: entries past 280 characters`,
+    ).toEqual([]);
+    const dates = entries.map((line) => line.slice(2, 12));
+    expect(dates, `${name}: dates run oldest first`).toEqual([...dates].sort());
+    expect(
+        Buffer.byteLength(text),
+        `${name}: log.md past 8 KB moves its oldest lines to log-<year>.md`,
+    ).toBeLessThanOrEqual(8192);
 });
 
 const history = [

@@ -1,1 +1,3 @@
+# nurture-memory — run log
+
 - 2026-08-26 · run #1 (DOT-216): resident memory 68.4k tokens mapped; root −46 %, cclio 52 → 18 leaves, rules/ halved · 4 sessions · coordinator + phase-0 research spawns · root `CLAUDE.md`, `rules/`, cclio memory, skills, `authoring-memory*.md`
