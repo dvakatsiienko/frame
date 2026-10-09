@@ -18,6 +18,7 @@ var (
 	numbered   = regexp.MustCompile(`^\s*\d+[.)]\s`)
 	postMerge  = regexp.MustCompile(`(?i)\bpost-merge\b`)
 	grillWord  = regexp.MustCompile(`(?i)\b(simplif(?:y|ies|ied|ying|ication)|re-?design(?:s|ed|ing)?|re-?work(?:s|ed|ing)?)\b`)
+	cclioWord  = regexp.MustCompile(`(?i)\bcclio\b`)
 	quotedText = regexp.MustCompile("`[^`\n]*`|«[^»\n]*»|\"[^\"\n]*\"")
 )
 
@@ -67,6 +68,9 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 			}
 			if !surface.MatchString(line.group) && !postMerge.MatchString(line.group) {
 				found = append(found, finding{line.n, "lint", "exit line", "names no surface (a path, a port or a command in backticks) and no «post-merge»"})
+			}
+			if twoOwners(line.group) {
+				found = append(found, finding{line.n, "lint", "exit line", "has two owners, cclio and a coder: the verifier cannot read cclio's half, so split it"})
 			}
 		}
 		if exits == 0 {
@@ -158,6 +162,19 @@ func verbOf(token string, verbs []string) string {
 		}
 	}
 	return ""
+}
+
+// cclio's half beside a surface outside cclio/ (FRM-355's exit 6 always graded «pending»)
+func twoOwners(group string) bool {
+	if !cclioWord.MatchString(group) {
+		return false
+	}
+	for _, match := range codeSpan.FindAllStringSubmatch(group, -1) {
+		if !strings.HasPrefix(strings.TrimSpace(match[1]), "cclio") {
+			return true
+		}
+	}
+	return false
 }
 
 func lineOrLast(f finding) int {

@@ -225,10 +225,19 @@ func TestBriefLintRules(t *testing.T) {
 		{"a relayed approval with its time", "dima approved the cut at 14:59\n", false},
 		{"jev with no budget", "route it through jev\n", true},
 		{"jev with a budget", "route it through jev, budget 200 calls\n", false},
+		{"another member pushes past the skill's door", "/x:crew-coder FRM-1\ncclio pushes when you are done\n", true},
+		{"the coder pushes through the skill's door", "/x:crew-coder FRM-1\npush with `x lane push`\n", false},
+		{"another member pushes under a skill with no push door", "/x:crew-designer\ncclio pushes the canvas\n", false},
+		{"a reuse with nothing to keep", "reuse the FRM-1 coder\n", true},
+		{"a reuse that names what to keep", "reuse the FRM-1 coder, keep its worktree and context\n", false},
+		{"a quoted reuse", "the rule on «reuse» lands here\n", false},
+	}
+	skill := func(name string) string {
+		return map[string]string{"crew-coder": "the push door: `x lane push --apply`", "crew-designer": "draw on the canvas"}[name]
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if found := lint(briefLines(c.brief)); (len(found) > 0) != c.finds {
+			if found := lint(briefLines(c.brief), skill); (len(found) > 0) != c.finds {
 				t.Errorf("found %+v", found)
 			}
 		})

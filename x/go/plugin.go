@@ -27,6 +27,14 @@ func pluginBumpPlan(r *Run, args []string, _ Flags) (any, error) {
 	r.Open(name)
 	var manifest, from, to, market string
 	if err := r.Step("plan", "finding the plugin and its marketplace", func() (string, error) {
+		// a marketplace reads the checkout it was added from, and a worktree's bump would land in a pr
+		// instead of the cache: the release is main's
+		own, _ := gitIn(tree, "rev-parse", "--path-format=absolute", "--git-dir")
+		common, _ := gitIn(tree, "rev-parse", "--path-format=absolute", "--git-common-dir")
+		if own.out != common.out {
+			return "", &Fail{Refused: true, Msg: home(tree) + " is a worktree — a plugin bump runs from the main checkout; nothing written",
+				Next: "x plugin bump " + name + " from " + home(filepath.Dir(common.out))}
+		}
 		var dir string
 		if manifest, dir, from, err = findPlugin(tree, name); err != nil {
 			return "", err

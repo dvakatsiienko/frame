@@ -69,6 +69,24 @@ func TestPluginBumpReleasesIntoTheCache(t *testing.T) {
 	}
 }
 
+func TestPluginBumpRefusesInAWorktree(t *testing.T) {
+	dir, _, log, env := pluginFixture(t)
+	tree := filepath.Join(t.TempDir(), "wt")
+	gitT(t, dir, "worktree", "add", "-q", "-b", "side", tree)
+	manifest := filepath.Join(tree, "plug/.claude-plugin/plugin.json")
+	was := read(t, manifest)
+
+	// the marketplace reads the worktree itself, so only the worktree check stands between it and a write
+	got := xIn(t, tree, append(env("1.2.4"), "FAKE_MARKET="+filepath.Join(tree, "plug")), "plugin", "bump", "demo", "--apply")
+
+	if got.code != 1 || !strings.Contains(got.stdout, "is a worktree") {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+	if read(t, manifest) != was || exists(log) {
+		t.Error("a refused bump wrote the manifest or ran claude")
+	}
+}
+
 func TestPluginBumpFailsWhenTheCacheLacksTheNewVersion(t *testing.T) {
 	for _, stale := range []bool{false, true} {
 		t.Run(map[bool]string{false: "nothing installed", true: "a stale dir for the version"}[stale], func(t *testing.T) {

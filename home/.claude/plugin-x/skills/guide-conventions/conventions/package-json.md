@@ -51,7 +51,7 @@ incomplete, not minimal.
   `test`, `test:watch` · `build`, `build:api`.
 - **family only** — a script that serves one entity wears it as the prefix, and the family needs
   no bare root: `github:agent-token` · `frame:link` · `sline:build` ·
-  `mcp:build` · `plugin:release`.
+  `mcp:build`.
 - **`skill:`** is the family for a script whose only caller is a skill, tail = the skill plus the
   artifact it produces: `skill:cclio-mode-snapshot`, `skill:memory-sync-mirror`.
 
