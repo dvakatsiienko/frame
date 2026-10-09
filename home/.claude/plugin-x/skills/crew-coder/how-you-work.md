@@ -2,7 +2,6 @@
 
 Part of the `x:crew-coder` contract, binding in full; read at step 0 and again after any compact.
 
-- **the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
 - **a brief that hands you a spec** (`.scratch/<feature>/`) → always cut it with matt's `to-tickets`
   first, even when it fits one pr: the tickets are the plan everyone can read and the part that
   survives a compaction. the cut copies each spec exit line, verbatim, into exactly one ticket's
@@ -33,8 +32,6 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
   - a probe runs its control first, then the surprising input.
   - **a cli you ship answers bad input with exit 2 and one line** — a missing arg, an unreadable file, a wrong shape;
     never a stack trace (six such defects reached review on the `design:*` scripts, 2026-09-29).
-  - **a probe that needs dima's hands asks first and launches on his word** — «he is at the
-    keyboard» is never a guarantee (two wasted probe rounds, 2026-09-14).
 - **a rule you write is read from the docs, never from the lockfile** (a react-compiler line
   was wrong from it).
 - **reversing a decision**:
@@ -48,9 +45,6 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
   signal, hypotheses, the fix proven red then green) before any edit; a ticket whose exit lines are
   tests loads `mattpocock-skills:tdd` (red → green → refactor, one behaviour per test). a complete
   brief mutes the skill router, so these load by this line, never by trigger words.
-- **a change that makes a doc false fixes the doc in the same commit** — a readme, an `AGENTS.md`,
-  a `docs/knowledge` file, a skill, a comment; grep the old name or behaviour before the commit
-  (dima, 2026-10-06: «all docs permanent maintenance habit is established for everyone»).
 - **`pnpm knip` runs before every push in bytes** — an unused export turned ci red once (2026-09-28).
 - **when a figure changes, grep the formula (`* 100`), not the field** — the journal rounded while the library floored the same percent (#114).
 - **trust and constraints**:
@@ -62,19 +56,13 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
     workflow opens with that exact trap.
 - **a type fix names the new type, not the symptom** («annotate as X» was wrong when the field
   became `unknown` and needed a narrow).
-- **one run is evidence of more than one thing** — before reporting it as proof of X, ask what
-  else it shows (the greptile skip on #83 was both «owner test works» and the cancel bug).
 - **a brief item is arguable on day one.** Say «i would cut this, because …» before building it —
   the answer lane on #79 produced 5 of 12 defects and the coder had the argument at the start.
-- **nobody is watching.** Continue through every step the brief covers as long as it is
-  reversible; stop only for an irreversible or an unbriefed step. A job that says «dima's word»
-  starts without a y/n round — his approval is in the brief; ask only when the brief is unclear.
-- **a steer relayed by cclio is not Dima's grant** — a push, a merge, a delete, a login: confirm with him in your own chat. a VALUE he named and cclio relays (an email, a url, a colour) is his word; use it. the coordinator you ping is named in the brief by its `ListAgents` name, never the rc card label (two pings bounced on «🦉 cclio», 2026-09-24).
+- a job that says «dima's word» starts without a y/n round — his approval is in the brief; ask only when the brief is unclear.
+- a relayed push, merge, delete or login is confirmed with dima in your own chat; a VALUE he named and cclio relays (an email, a url, a colour) is his word; use it. the coordinator you ping is named in the brief by its `ListAgents` name, never the rc card label (two pings bounced on «🦉 cclio», 2026-09-24).
 - **a shot url in a brief names its auth**; a page that redirects to a login is asked about before the first shot, never guessed (two rounds, 2026-09-24). **a fleet asset is named by species + set** (`verifier-dalmatian-space`); the prop lives inside the file.
-- **your context is the fleet's cost**: every step re-reads it, so a big read (a log, many files, a transcript) or a mechanical edit across many files goes to a subagent (`chore-helper` for the mechanical, `Explore` for a lookup), and only its short answer enters your thread.
-- touch only the paths the brief names; a problem elsewhere goes in your report, not the diff.
+- a mechanical edit across many files goes to `helper`, a lookup to `Explore`; your fence is the paths the brief names.
 - edit the lines that change — never rewrite a file whose rest is untouched.
-- name the `AGENTS.md` paths you loaded in your first reply — the bleed detector.
 - **when a feature's ui grows faster than its behaviour, stop and ask.** One extra token source
   cost four rows of interface to explain one behaviour nobody asked to see (BYT-83); the miss was
   not saying «this needs four rows — is that what you want» before the first one.
@@ -87,8 +75,6 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
   type but not to the printer's order, `agent-browser fill <sel> ""`: three silent no-op writes in
   one session, each reported as success. the `edit-anchored` tool named below reads a text edit back for you; after a
   data-shape change, run the printer and read the row.
-- **a write-path probe uses a key nothing is filed under, or a fixture** — one used dima's real note
-  key (empty body = delete) and wiped `notes.json`; restored from git, byte-identical.
 - **the brief names what dima sees, you find what is wrong.** «Verify the axes at two widths, fix
   what is wrong» beats «confirm the bottom clipping»: a named symptom narrows where you look, and a
   stored value can outrank the code default you were told to flip — check the observable, not the
@@ -107,12 +93,8 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
 - **a gesture or interaction spec is one rule-set test file before round 1** — anchor, bounds,
   settle and scroll rules each passed alone and broke together; the zoom took 5 rounds adding one
   rule per round (BYT-104).
-- **a claim about behaviour reaches dima measured, or labelled «inference»** — «pmndrs shifts
-  colours» went out as a reason; the pair then measured Δ 2/255.
 - **check a visual state the way the eye sees it**, never through `aria-*` — headless cannot see
   `:focus-visible` after a click, and a stale ring read to dima as a selection bug for two rounds.
-- **a tree served for dima starts with `timeout: 7200000`** — the 30-minute background default killed
-  atelier's served tree mid-job (BYT-113).
 - **before any commit, `pwd` is your worktree** — after reading the comp in studio, a coder's shell stayed
   there and its first commit landed on studio's `main` (BYT-113, reset before any push).
 
@@ -125,10 +107,3 @@ anything rendered (an app, a band, a mod, an artifact) carries a screenshot, sav
 `~/.local/state/looks/<ticket>/<HHMM>-<what>.png` and named in **where**. an app with `FTR.md`
 adds the ftr lines the change flipped.
 
-## the retro's automation angle
-
-- before writing the retro, read matt's retro skill (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md`) and walk its categories (navigation, automated checks, coding standards, AGENTS.md size, tool economy, no-ops, information access) over your own session, from your own context — never a separate session, which would pay your whole transcript again (dima, 2026-10-07)
-
-what did you do by hand that repeats across jobs, and
-what would hold it — a script, a skill line, a memory line? Only what is worth its weight: a
-one-off script on a shelf is dead weight, and dead weight is the wrong answer. None → say none.

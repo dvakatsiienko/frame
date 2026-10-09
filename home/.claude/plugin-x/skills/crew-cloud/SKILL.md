@@ -70,7 +70,8 @@ cloud mode — you run on an anthropic vm, not the mac:
 ```
 
 **Without plugin `x` in the environment**, the self-contained brief below carries the core
-rules inline. Fill every `<…>`; the fence body is the prompt.
+rules inline. Fill every `<…>`; the fence body is the prompt. the `<crew-dna>` slot takes
+`crew-dna-cloud`'s output verbatim (plugin-x bin: the dna minus its mac-only lines), never a retyped copy.
 
 ```
 you are a cloud coder for ticket <BYT-N>: <one-line job>.
@@ -81,6 +82,8 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 
 ## exit — done means every line holds
 <3–6 given/when/then lines from the ticket>
+
+<crew-dna>
 
 ## how we code (our fleet rules; the VM does not have them)
 - less is more: delete, derive or inline before you add. no speculative abstraction, no unasked docs.

@@ -12,7 +12,9 @@ are `~/projects/studio/AGENTS.md`; this file is the procedure.
 
 **Solid designs come first.** Every rule below exists to make the spread truly different and
 the pick truly good. Report to whoever started you: dima in this chat, and cclio by one
-`SendMessage` per spread (the canvas link + one line per take) — a plain reply reaches only this chat.
+`SendMessage` per spread (the canvas link + one line per take).
+
+**read `../crew-dna/SKILL.md` first** — the rules every member shares; your first reply quotes its version line.
 
 ## 0. new direction, or a view in an app that has one
 
@@ -27,9 +29,6 @@ an app with a direction: read, in order, and draw inside it — never invent a n
 - the `FTR.md` lines the new view must satisfy — the slice, not the whole file
 
 ## 1. read the brief
-
-**the brief against the world, first.** a brief that contradicts a skill, the spec, the repo or a past verdict → one line to the coordinator before you start («brief says X, <source> says Y»), then follow the brief. the retro is too late for it.
-**stuck on a judgment call → ask cclio**: one message, the choice and its options with your pick, never a silent guess.
 
 - 🎯 full: `jobs/<app>/brief.md`. a blind brief adds `map.md`, and those two files are all you
   read about the app.
@@ -104,8 +103,7 @@ Only then render.
   top-left board three different names, and the cross-canvas review stalled).
 - author each take as a file in `jobs/<app>/takes/` and publish from there. the canvas stays
   private until dima shares it; the files are the source.
-- every word on a board is written with `x:writing-for-humans` loaded — a label says what it does, a
-  caption what to look at, in one short line. the board's copy is what ships.
+- a label says what it does, a caption what to look at, in one short line. the board's copy is what ships.
 - the cheap habits that keep quality: [thrift.md](thrift.md).
 
 ## 5. the pick
@@ -114,16 +112,8 @@ Print the canvas link, then one line per take: its axis position and thesis. Say
 middle take tends to win because it is in the middle, so dima picks the corner he wants.
 
 - **dima picks by commenting on the canvas, never by describing boards in text** (dima, 2026-10-01):
-  a «best …» comment on the part he likes, a steer comment on what to change. cclio's side:
-  1. before he looks, print him the short list of what to judge (one line per surface: page, card,
-     selected state, stats, pill, …) — the list he comments against. **every pointer at a spot on a
-     canvas carries an exact text from that board in bold** («**cut in the last seven days**»): he
-     finds it with ⌘F in the browser; a board title alone is too hard to find (dima, 2026-10-01)
-  2. hoist every comment from every canvas (`ArtifactComments` read, all pages) by its anchor detail — the element it sits on, never just its board — and check the boards
-     for drawn parts no comment touched — those go back to him by name
-  3. write a merge brief: per surface, the board that won and its source, the steers, the open forks
-     as a/b boards; one designer draws ONE merged take from it
-  4. tally the «best» tags per arm in the design-run ledger — the model and effort stats
+  a «best …» comment on the part he likes, a steer comment on what to change. cclio collects the
+  comments and writes the merge brief (her side lives in `craft-spawning`); you draw ONE merged take from it.
 - **the designer asks dima only through design-loupe** (`~/projects/bytes/apps/design-loupe`, read its
   `GLOSSARY.md`): a round of asks in `jobs/<app>/asks.json`, each pinned with `id="ask-N"` on the element
   it is about, a recommendation and why on every ask, ~7 asks a round at most. he opens each by a link,
@@ -164,7 +154,7 @@ window % before and after (`~/.claude/shelf/cc-usage-window.json`, read at the s
 end) · pick minutes · rounds. output tokens come from this session's own footer at the spread's
 end («↓68.4k tokens»); never write «not measurable».
 
-- **last act: a retro, ≤12 lines, written to `~/.claude/shelf/retros/<YYYY-MM-DD>-<app>-designer.md`, never sent as a message** (cclio reads it at the halt; **until 2026-10-15** its last line answers `comms:` — a moment you needed cclio and could not reach her, or a message nobody needed), walked through matt's retro categories (read its SKILL.md). **the designer's standing focus** (dima, 2026-10-08): the brief's fit to the canvas — what the interview missed, what a comp could not say and a word could, where the comment rounds cost the most; a brief's `focus:` line replaces it for one run. then: where the brief was wrong or thin, which steers came late, what the canvas or the tools cost, one automation candidate.
+- **the retro's standing focus** (dima, 2026-10-08): the brief's fit to the canvas — what the interview missed, what a comp could not say and a word could, where the comment rounds cost the most; then where the brief was wrong or thin, which steers came late, what the canvas or the tools cost. the retro file is `<date>-<app>-designer.md`.
 
 ## completion criterion
 

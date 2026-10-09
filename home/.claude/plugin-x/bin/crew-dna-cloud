@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# crew-dna-cloud [dna-file] — prints crew-dna for a cloud brief: frontmatter gone, every line tagged
+# `<!-- mac -->` dropped with what hangs off it (a bullet's indented continuation; a paragraph's block
+# up to the next blank line). every other byte passes through unchanged.
+set -euo pipefail
+
+dna="${1:-$(dirname "$0")/../skills/crew-dna/SKILL.md}"
+[[ -r "$dna" ]] || { echo "crew-dna-cloud: cannot read $dna" >&2; exit 2; }
+
+awk '
+  NR == 1 && $0 == "---" { front = 1; next }
+  front { if ($0 == "---") { front = 0; skipBlank = 1 } ; next }
+  skipBlank && $0 == "" { skipBlank = 0; next }
+  { skipBlank = 0 }
+  drop == "bullet" && /^  / { next }
+  drop == "block" && $0 != "" { next }
+  { drop = "" }
+  /<!-- mac -->/ { drop = ($0 ~ /^ *- /) ? "bullet" : "block"; next }
+  { print }
+' "$dna"

@@ -19,10 +19,30 @@ const skills = skillDirs.flatMap((dir) =>
         .map((entry) => path.join(dir, entry.name, 'SKILL.md')),
 );
 
+// crew-dna rides every member's step 0, so the dna and the role skills it slimmed hold tighter caps
+const crewCaps = {
+    'crew-adviser': 12_000,
+    'crew-designer': 12_000,
+    'crew-dna': 7_000,
+    'crew-verifier': 12_000,
+} as const satisfies Record<string, number>;
+
+const countChars = (file: string) =>
+    [...readFileSync(path.join(root, file), 'utf8')].length;
+
 test.each(skills)('%s fits the compaction re-attach cap', (file) => {
-    const chars = [...readFileSync(path.join(root, file), 'utf8')].length;
+    const chars = countChars(file);
     expect(
         chars,
         `${file}: ${chars} chars, cap ${reattachCap} − ${margin} margin`,
     ).toBeLessThan(reattachCap - margin);
+});
+
+test.each(Object.entries(crewCaps))('%s fits its crew cap', (name, cap) => {
+    const file = `home/.claude/plugin-x/skills/${name}/SKILL.md`;
+    const chars = countChars(file);
+    expect(
+        chars,
+        `${file}: ${chars} chars, crew cap ${cap}`,
+    ).toBeLessThanOrEqual(cap);
 });
