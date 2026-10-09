@@ -17,15 +17,16 @@ import {
     STATE_DIR,
     WAKE_GAP_MS,
     type Wake,
+    armModels,
     armOfDay,
     buildPacket,
     dayOf,
     fail,
-    findSession,
     isCoordinatorTranscript,
     isMode,
     localDay,
     modeList,
+    oneCcrow,
     readLines,
     readState,
     resolveLeaves,
@@ -95,7 +96,7 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     }
     const state = readState();
     // a --bg ccrow takes socket lines; a desktop tab takes only the desktop's own door, so cclio relays
-    const session = findSession();
+    const session = oneCcrow();
     const viaSocket = Boolean(session?.jobId);
     if (state.lastWakeAt && now.getTime() - state.lastWakeAt < WAKE_GAP_MS) {
         skip(
@@ -149,7 +150,11 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     } else {
         writeFileSync(
             RELAY_PATH,
-            JSON.stringify({ ...wakeInfo, line: wakeLine(wakeInfo) }),
+            JSON.stringify({
+                ...wakeInfo,
+                line: wakeLine(wakeInfo),
+                model: armModels[armOfDay(day)],
+            }),
         );
     }
 

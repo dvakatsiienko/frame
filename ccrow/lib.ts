@@ -178,6 +178,21 @@ export function isAlive(pid: number) {
 }
 
 export function findSession(): LiveSession | undefined {
+    return findSessions()[0];
+}
+
+// a tab and a --bg ccrow alive together make every name match a coin flip
+export function oneCcrow(): LiveSession | undefined {
+    const live = findSessions();
+    if (live.length > 1)
+        fail(
+            `two ccrows are live (pids ${live.map((s) => s.pid).join(', ')}): stop the --bg one (pnpm ccrow:stop) or /clear the tab`,
+        );
+    return live[0];
+}
+
+export function findSessions(): LiveSession[] {
+    const found: LiveSession[] = [];
     for (const file of readdirSync(SESSIONS_DIR)) {
         if (!/^\d+\.json$/.test(file)) continue;
         try {
@@ -195,16 +210,17 @@ export function findSession(): LiveSession | undefined {
                 entry.messagingSocketPath &&
                 isAlive(entry.pid)
             ) {
-                return {
+                found.push({
                     cwd: entry.cwd,
                     jobId: entry.jobId,
                     messagingSocketPath: entry.messagingSocketPath,
                     pid: entry.pid,
                     sessionId: entry.sessionId,
-                };
+                });
             }
         } catch {}
     }
+    return found;
 }
 
 // with the user settings source off, the global rules/ dir is not read; a project rules dir is, but
@@ -422,6 +438,14 @@ function lastBlocks(parts: string[]) {
     return `[delta cut: ${dropped} older blocks dropped]\n${text.slice(-DELTA_MAX_CHARS)}`;
 }
 
+// ccrow times its sends off each block; a block whose entry has no timestamp prints none
+function headOf(who: string, timestamp?: string) {
+    const at = timestamp ? new Date(timestamp) : undefined;
+    return at && !Number.isNaN(at.getTime())
+        ? `## ${who} · ${pad(at.getHours())}:${pad(at.getMinutes())}`
+        : `## ${who}`;
+}
+
 export function transcriptDelta(lines: string[], fromLine: number) {
     const stepIds = new Set<string>();
     const parts: string[] = [];
@@ -429,7 +453,8 @@ export function transcriptDelta(lines: string[], fromLine: number) {
         if (entry?.type === 'assistant') {
             if (entry.message?.id) stepIds.add(entry.message.id);
             const text = textOf(entry.message?.content).trim();
-            if (text) parts.push(`## cclio\n${text}`);
+            if (text)
+                parts.push(`${headOf('cclio', entry.timestamp)}\n${text}`);
         }
         // a message dima types while cclio is mid-turn lands as a queued_command attachment, never a user entry
         if (
@@ -438,14 +463,16 @@ export function transcriptDelta(lines: string[], fromLine: number) {
         ) {
             const text = queuedText(entry.attachment.prompt).trim();
             if (text && !text.includes('<cross-session-message'))
-                parts.push(`## dima\n${text}`);
+                parts.push(`${headOf('dima', entry.timestamp)}\n${text}`);
         }
         if (entry?.type === 'user') {
             const text = textOf(entry.message?.content).trim();
             if (!text) continue;
             const who = entry.origin?.kind === 'peer' ? 'peer' : 'dima';
             if (who === 'dima' && entry.isMeta) continue;
-            parts.push(`## ${who}\n${capNotifications(text)}`);
+            parts.push(
+                `${headOf(who, entry.timestamp)}\n${capNotifications(text)}`,
+            );
         }
     }
     return { steps: stepIds.size, text: lastBlocks(parts) };
@@ -482,21 +509,19 @@ export function resolveLeaves(patterns: string[], today: string) {
 
 export function buildPacket({ deltaText, dir, leaves, missing }: PacketInput) {
     mkdirSync(dir, { recursive: true });
-    const names = new Set<string>();
-    for (const path of leaves) {
-        let name = basename(path);
-        for (let n = 2; names.has(name); n++) name = `${n}-${basename(path)}`;
-        names.add(name);
-        copyFileSync(path, join(dir, name));
-    }
-    const missingNote = missing.length
-        ? `\n\n## leaves with no match\n${missing.map((line) => `- ${line}`).join('\n')}`
-        : '';
-    writeFileSync(
-        join(dir, 'delta.md'),
-        `# cclio since the last wake\n\n${deltaText || '(no text)'}${missingNote}\n`,
+    const leafBlocks = leaves.map(
+        (path) => `## leaf · ${path}\n\n${readFileSync(path, 'utf8').trim()}`,
     );
-    return [...names, 'delta.md'];
+    const missingNote = missing.length
+        ? `## leaves with no match\n${missing.map((line) => `- ${line}`).join('\n')}`
+        : '';
+    const body = [
+        `# cclio since the last wake\n\n${deltaText || '(no text)'}`,
+        ...leafBlocks,
+        missingNote,
+    ].filter(Boolean);
+    writeFileSync(join(dir, 'packet.md'), `${body.join('\n\n')}\n`);
+    return ['packet.md'];
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -510,7 +535,7 @@ export function wakeIdOf(date: Date) {
 }
 
 export function wakeLine(wake: Wake) {
-    return `ccrow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id)}`;
+    return `ccrow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')}`;
 }
 
 export function dayOf(firstWakeAt: number, now: number) {

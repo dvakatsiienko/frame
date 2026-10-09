@@ -1,4 +1,4 @@
-import { SESSION_NAME, STATE_DIR, armHot, fail, findSession } from './lib.ts';
+import { SESSION_NAME, STATE_DIR, armHot, fail, oneCcrow } from './lib.ts';
 
 if (process.argv.length > 2) {
     fail(
@@ -7,7 +7,7 @@ if (process.argv.length > 2) {
 }
 
 // ccrow lives in a desktop tab dima opens (mods load there, not under --bg); cclio cannot open one
-const running = findSession();
+const running = oneCcrow();
 if (running) {
     console.log(`ccrow live: pid ${running.pid}`);
     armHot(running.sessionId);

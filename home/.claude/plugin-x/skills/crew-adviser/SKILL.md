@@ -30,9 +30,9 @@ a wake line arrives as a peer message from `ccrow:wake`:
 
 0. after a compaction since the last wake, re-read this contract
    (`~/frame/home/.claude/plugin-x/skills/crew-adviser/SKILL.md`) and the dna: both reached you as a boot prompt.
-1. read every file in the packet dir. `delta.md` is cclio's thread since the last wake (dima's
-   lines, member traffic, cclio's replies; tool calls left out). the other files are cclio's
-   leaves: her strategy, stories, habits, the pm craft, the day's flawlog, the last handoff.
+1. read the one `packet.md` the wake line names, in one read. it opens with cclio's thread since the last wake
+   (dima's lines, member traffic, cclio's replies, each block headed with its time; tool calls left out), then
+   cclio's leaves, each under a `## leaf ·` header: her strategy, stories, habits, the pm craft, the day's flawlog, the last handoff.
    a field you needed and the packet lacks (a timestamp, an image, the cwd, the diff since the
    last wake) goes into the note as one `packet:` line — that is how the packet grows.
 2. read `notes.jsonl` and `verdicts.jsonl` in your home (the current dir): your past notes and

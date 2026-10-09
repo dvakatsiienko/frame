@@ -162,20 +162,18 @@ describe('resolveLeaves', () => {
 });
 
 describe('buildPacket', () => {
-    test('copies each leaf beside a delta file', () => {
+    test('writes one packet.md: the delta, then each leaf under its header', () => {
         const dir = join(mkdtempSync(join(tmpdir(), 'ccrow-')), 'packet');
+        const leaf = join(leavesDir, 'strategy.md');
         buildPacket({
             deltaText: '## dima\nhi',
             dir,
-            leaves: [join(leavesDir, 'strategy.md')],
+            leaves: [leaf],
             missing: [],
         });
-        expect(readdirSync(dir).toSorted()).toEqual([
-            'delta.md',
-            'strategy.md',
-        ]);
-        expect(readFileSync(join(dir, 'strategy.md'), 'utf8')).toBe(
-            'vector: ship the fleet\n',
+        expect(readdirSync(dir)).toEqual(['packet.md']);
+        expect(readFileSync(join(dir, 'packet.md'), 'utf8')).toBe(
+            `# cclio since the last wake\n\n## dima\nhi\n\n## leaf · ${leaf}\n\nvector: ship the fleet\n`,
         );
     });
 });
@@ -400,4 +398,18 @@ test('a desktop turn ends on stop_hook_summary, timed from its timestamps', () =
         note: 'none',
         seconds: 120,
     });
+});
+
+test('a delta block carries its local time when the entry has one', () => {
+    const at = '2026-10-09T14:45:00Z';
+    const local = new Date(at);
+    const hhmm = `${String(local.getHours()).padStart(2, '0')}:${String(local.getMinutes()).padStart(2, '0')}`;
+    const lines = [
+        JSON.stringify({
+            message: { content: 'hi' },
+            timestamp: at,
+            type: 'user',
+        }),
+    ];
+    expect(transcriptDelta(lines, 0).text).toBe(`## dima · ${hhmm}\nhi`);
 });
