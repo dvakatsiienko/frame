@@ -315,6 +315,35 @@ function queuedText(prompt: TranscriptContent | undefined) {
         .join('\n');
 }
 
+const NOTIFICATION_MAX_CHARS = 2_000;
+
+// a task-notification carries a subagent's whole report; ccrow needs its gist and where the rest lives
+function capNotifications(text: string) {
+    return text.replace(
+        /<task-notification>[\s\S]*?<\/task-notification>/g,
+        (block) => {
+            if (block.length <= NOTIFICATION_MAX_CHARS) return block;
+            const file = /<output-file>([^<]*)<\/output-file>/.exec(block)?.[1];
+            return `${block.slice(0, NOTIFICATION_MAX_CHARS)} …[cut${file ? `; full: ${file}` : ''}]`;
+        },
+    );
+}
+
+// the cut drops whole blocks from the head, so a packet never opens on an orphan fragment
+function lastBlocks(parts: string[]) {
+    const kept: string[] = [];
+    let size = 0;
+    for (const part of parts.toReversed()) {
+        if (size + part.length + 2 > DELTA_MAX_CHARS && kept.length > 0) break;
+        kept.unshift(part);
+        size += part.length + 2;
+    }
+    const text = kept.join('\n\n');
+    const dropped = parts.length - kept.length;
+    if (dropped === 0 && text.length <= DELTA_MAX_CHARS) return text;
+    return `[delta cut: ${dropped} older blocks dropped]\n${text.slice(-DELTA_MAX_CHARS)}`;
+}
+
 export function transcriptDelta(lines: string[], fromLine: number) {
     const stepIds = new Set<string>();
     const parts: string[] = [];
@@ -338,17 +367,10 @@ export function transcriptDelta(lines: string[], fromLine: number) {
             if (!text) continue;
             const who = entry.origin?.kind === 'peer' ? 'peer' : 'dima';
             if (who === 'dima' && entry.isMeta) continue;
-            parts.push(`## ${who}\n${text}`);
+            parts.push(`## ${who}\n${capNotifications(text)}`);
         }
     }
-    const text = parts.join('\n\n');
-    return {
-        steps: stepIds.size,
-        text:
-            text.length > DELTA_MAX_CHARS
-                ? `[delta cut to its last ${DELTA_MAX_CHARS} chars]\n${text.slice(-DELTA_MAX_CHARS)}`
-                : text,
-    };
+    return { steps: stepIds.size, text: lastBlocks(parts) };
 }
 
 export function resolveLeaves(patterns: string[], today: string) {

@@ -85,6 +85,34 @@ describe('transcriptDelta', () => {
         expect(transcriptDelta(queued, 0).text).toBe('');
     });
 
+    test('caps a long task notification and names its output file', () => {
+        const report = 'x'.repeat(5_000);
+        const note = [
+            JSON.stringify({
+                message: {
+                    content: `<task-notification><output-file>/tmp/a.output</output-file><result>${report}</result></task-notification>`,
+                },
+                type: 'user',
+            }),
+        ];
+        const text = transcriptDelta(note, 0).text;
+        expect(text.length).toBeLessThan(2_200);
+        expect(text).toContain('full: /tmp/a.output');
+    });
+
+    test('an over-long delta drops whole blocks from its head', () => {
+        const big = Array.from({ length: 4 }, (_, i) =>
+            JSON.stringify({
+                message: { content: `${i}`.repeat(25_000) },
+                type: 'user',
+            }),
+        );
+        const text = transcriptDelta(big, 0).text;
+        expect(
+            text.startsWith('[delta cut: 2 older blocks dropped]\n## dima\n2'),
+        ).toBe(true);
+    });
+
     test('counts one step per assistant message id', () => {
         expect(transcriptDelta(lines, 2).steps).toBe(2);
     });
