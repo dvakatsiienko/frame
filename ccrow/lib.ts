@@ -275,6 +275,84 @@ export function armHot(sessionId: string) {
 
 const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
 
+// a /clear or a reopened desktop tab starts a new transcript in ccrow's project dir; the newest is the live one
+export const RELAY_PATH = join(STATE_DIR, 'relay.json');
+
+export function spawnHarvest(wake: Wake) {
+    spawn(
+        process.execPath,
+        [
+            new URL('harvest.ts', import.meta.url).pathname,
+            wake.id,
+            wake.mode,
+            wake.phase,
+        ],
+        { detached: true, stdio: 'ignore' },
+    ).unref();
+}
+
+export function newestTranscript() {
+    const dir = join(
+        homedir(),
+        '.claude/projects',
+        STATE_DIR.replaceAll(/[/.]/g, '-'),
+    );
+    try {
+        return globSync('*.jsonl', { cwd: dir })
+            .map((f) => join(dir, f))
+            .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
+    } catch {}
+}
+
+// a terminal turn ends on turn_duration, a desktop tab's on stop_hook_summary (no turn_duration there)
+export function readTurn(path: string, marker: string): Run | undefined {
+    const entries = readLines(path).flatMap((line) => parseEntry(line) ?? []);
+    const start = entries.findIndex(
+        (entry) =>
+            entry.type === 'user' &&
+            JSON.stringify(entry.message?.content ?? '').includes(marker),
+    );
+    if (start === -1) return;
+    const end = entries.findIndex(
+        (entry, index) =>
+            index > start &&
+            entry.type === 'system' &&
+            (entry.subtype === 'turn_duration' ||
+                entry.subtype === 'stop_hook_summary'),
+    );
+    if (end === -1) return;
+    const usageById = new Map<string, Usage>();
+    let model: string | null = null;
+    let note = '';
+    for (const entry of entries.slice(start + 1, end)) {
+        if (entry.type !== 'assistant' || !entry.message) continue;
+        model = entry.message.model ?? model;
+        usageById.set(entry.message.id ?? '', entry.message.usage ?? {});
+        const content = entry.message.content;
+        for (const block of typeof content === 'string'
+            ? []
+            : (content ?? [])) {
+            if (block.type === 'text' && block.text?.trim())
+                note = block.text.trim();
+        }
+    }
+    const usages = [...usageById.values()];
+    return {
+        model,
+        note: note || 'none',
+        seconds: Math.round(
+            (entries[end]?.durationMs ??
+                Date.parse(entries[end]?.timestamp ?? '') -
+                    Date.parse(entries[start]?.timestamp ?? '')) / 1000,
+        ),
+        tokensIn: usages.reduce((sum, usage) => sum + tokensIn(usage), 0),
+        tokensOut: usages.reduce(
+            (sum, usage) => sum + (usage.output_tokens ?? 0),
+            0,
+        ),
+    };
+}
+
 export function transcriptPathOf(cwd: string, sessionId: string) {
     return join(
         homedir(),
@@ -703,10 +781,19 @@ export interface Usage {
 
 type TranscriptContent = string | { type: string; text?: string }[];
 
+export interface Run {
+    model: string | null;
+    note: string;
+    seconds: number;
+    tokensIn: number;
+    tokensOut: number;
+}
+
 export interface TranscriptEntry {
     type?: string;
     subtype?: string;
     durationMs?: number;
+    timestamp?: string;
     isMeta?: boolean;
     origin?: { kind?: string };
     attachment?: { type?: string; prompt?: TranscriptContent };

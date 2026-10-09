@@ -66,7 +66,8 @@ skill reaches it as text. a contract change goes there, never here.
   one file shared by every session running stash; the hash is cc's own, so the newest matching file wins.
 - **the registry stores the name with its zero-width joiner as a space** («🐦 ⬛ ccrow»), so
   `findSession` matches the bare name, never a job id: a desktop tab has none, and a stored one outlived its session and sent the 10-09 16:18 wake to a stopped `--bg` ccrow.
-- **the harvester polls ccrow's transcript** for the `turn_duration` after the wake line (5 s,
+- **a desktop tab takes no socket line** (probed 10-09: a live tab with `crossSessionInbound: accept` let a line sit 60 s unseen); only the desktop's own `send_message` reaches it. so `wake.ts` sends to the socket only for a `--bg` ccrow (it has a job id); for a tab it parks the wake in `relay.json`, and cclio's `UserPromptSubmit` hook (`ccrow:relay`) hands the line to cclio's next turn, which forwards it and starts the harvester
+- **the harvester polls the newest transcript in ccrow's project dir** (a `/clear` starts a new one) for the turn end after the wake line: `turn_duration` in a terminal, `stop_hook_summary` in a desktop tab, which writes no `turn_duration` (5 s,
   15 min deadline, a `timeout` note past it); `harvest.log` in the home records each run.
 - **a `claude -p` transcript has no `turn_duration`**: the one-shot's model id is read from its
   assistant entries, found by the run's `session_id`. `runOneShot` and `oneShotModel` in

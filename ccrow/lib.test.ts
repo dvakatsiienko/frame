@@ -21,6 +21,7 @@ import {
     planPrompt,
     readCharter,
     readLines,
+    readTurn,
     resolveLeaves,
     setHot,
     stashModOf,
@@ -366,5 +367,37 @@ describe('isCoordinatorTranscript', () => {
 
     test('a coder transcript under the cclio dir does not', () => {
         expect(isCoordinatorTranscript('/p/bbb.jsonl', sessions)).toBe(false);
+    });
+});
+
+test('a desktop turn ends on stop_hook_summary, timed from its timestamps', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ccrow-turn-'));
+    const path = join(dir, 't.jsonl');
+    const lines = [
+        {
+            message: { content: 'ccrow wake 1 · mode day' },
+            timestamp: '2026-10-09T14:45:00Z',
+            type: 'user',
+        },
+        {
+            message: {
+                content: [{ text: 'none', type: 'text' }],
+                id: 'a',
+                model: 'claude-fable-5-1',
+            },
+            timestamp: '2026-10-09T14:46:00Z',
+            type: 'assistant',
+        },
+        {
+            subtype: 'stop_hook_summary',
+            timestamp: '2026-10-09T14:47:00Z',
+            type: 'system',
+        },
+    ];
+    writeFileSync(path, `${lines.map((l) => JSON.stringify(l)).join('\n')}\n`);
+    expect(readTurn(path, 'ccrow wake 1')).toMatchObject({
+        model: 'claude-fable-5-1',
+        note: 'none',
+        seconds: 120,
     });
 });

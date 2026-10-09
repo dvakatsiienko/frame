@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import {
     closeSync,
     existsSync,
@@ -6,12 +5,14 @@ import {
     readFileSync,
     statSync,
     unlinkSync,
+    writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import {
     MIN_STEPS,
+    RELAY_PATH,
     SILENT_DAYS,
     STATE_DIR,
     WAKE_GAP_MS,
@@ -29,6 +30,7 @@ import {
     readState,
     resolveLeaves,
     sendLine,
+    spawnHarvest,
     transcriptDelta,
     wakeIdOf,
     wakeLine,
@@ -92,8 +94,9 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         skip(`not cclio's thread: ${transcriptPath}`);
     }
     const state = readState();
+    // a --bg ccrow takes socket lines; a desktop tab takes only the desktop's own door, so cclio relays
     const session = findSession();
-    if (!session) skip('ccrow is not running (pnpm ccrow:start opus|fable)');
+    const viaSocket = Boolean(session?.jobId);
     if (state.lastWakeAt && now.getTime() - state.lastWakeAt < WAKE_GAP_MS) {
         skip(
             `last wake ${Math.round((now.getTime() - state.lastWakeAt) / 60_000)} min ago (gap ${WAKE_GAP_MS / 60_000} min)`,
@@ -136,12 +139,19 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         missing: leaves.missing,
     });
 
-    await sendLine(session.messagingSocketPath, wakeLine(wakeInfo)).catch(
-        (error: unknown) =>
-            fail(
-                `cannot reach ccrow's socket: ${error instanceof Error ? error.message : String(error)}`,
-            ),
-    );
+    if (viaSocket && session) {
+        await sendLine(session.messagingSocketPath, wakeLine(wakeInfo)).catch(
+            (error: unknown) =>
+                fail(
+                    `cannot reach ccrow's socket: ${error instanceof Error ? error.message : String(error)}`,
+                ),
+        );
+    } else {
+        writeFileSync(
+            RELAY_PATH,
+            JSON.stringify({ ...wakeInfo, line: wakeLine(wakeInfo) }),
+        );
+    }
 
     writeState({
         ...state,
@@ -150,22 +160,13 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         offsets: { ...state.offsets, [transcriptPath]: lines.length },
     });
 
-    spawn(
-        process.execPath,
-        [
-            new URL('harvest.ts', import.meta.url).pathname,
-            wakeInfo.id,
-            wakeInfo.mode,
-            wakeInfo.phase,
-        ],
-        { detached: true, stdio: 'ignore' },
-    ).unref();
+    if (viaSocket) spawnHarvest(wakeInfo);
 
     const unmatched = leaves.missing.length
         ? `, ${leaves.missing.length} leaves unmatched`
         : '';
     console.log(
-        `woke ${wakeInfo.id}: day ${day} ${wakeInfo.phase}, ${delta.steps} steps, ${files.length} files${unmatched}`,
+        `woke ${wakeInfo.id} (${viaSocket ? 'socket' : 'relay: cclio forwards it'}): day ${day} ${wakeInfo.phase}, ${delta.steps} steps, ${files.length} files${unmatched}`,
     );
     const dayArm = armOfDay(day);
     if (wakeInfo.phase === 'live' && state.arm && state.arm !== dayArm) {
