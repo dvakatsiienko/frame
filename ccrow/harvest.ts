@@ -21,6 +21,7 @@ import {
     runOneShot,
     tokensIn,
     wakeLine,
+    writeState,
 } from './lib.ts';
 
 // spawned detached by wake.ts, stdio ignored: every outcome goes to harvest.log
@@ -61,6 +62,10 @@ async function harvestSession(wake: Wake, arm: Arm) {
         const path = newestTranscript();
         const run = path && readTurn(path, `ccrow wake ${wake.id}`);
         if (run) {
+            // a relayed wake lands after a /clear in a transcript born after the wake keyed its leaves
+            const state = readState();
+            if (state.leavesFor !== path)
+                writeState({ ...state, leavesFor: path });
             appendJsonl(NOTES_PATH, noteOf(wake, arm, 'session', run));
             return log(`session: note logged (${run.seconds} s)`);
         }
