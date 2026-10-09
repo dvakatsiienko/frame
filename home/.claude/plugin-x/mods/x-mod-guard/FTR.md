@@ -135,7 +135,7 @@
 - ✅ a fork must say why it needs the parent context
   - given an `Agent` spawn of type `fork` whose prompt has no `why-fork: <what parent context it needs>` line
   - when x-mod-guard reads the spawn
-  - then it is refused, and the reason opens with the door: a fresh agent with a self-contained brief, or `chore-helper` for a mechanical job
+  - then it is refused, and the reason opens with the door: a fresh agent with a self-contained brief, or `helper` for a mechanical job
   - given the same fork with a `why-fork:` line, then it runs; any other agent type is left alone
   - then the refusal counts in x-mod-stash's 🛡️ counter row (`fork: <description>` when unfolded), like a Bash refusal
   - decision: a required line, never a guess at «mechanical» — a keyword guess was unreliable (51 loose hits, most of them real research); a fork carries the whole parent context, ~220k (FRM-323)

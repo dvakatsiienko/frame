@@ -49,7 +49,7 @@ const FAILED =
 // a fork carries the whole parent context; the line says what of it the fork needs
 const WHY_FORK = /^\s*why-fork:\s*\S/m;
 const FORK_DOOR =
-    'a fresh agent with a self-contained brief, or chore-helper for a mechanical job';
+    'a fresh agent with a self-contained brief, or helper for a mechanical job';
 const FORK_WHY = 'a fork carries the whole parent context (~220k tokens)';
 const FORK_REFUSED = `x-mod-guard stopped this fork. instead: ${FORK_DOOR}. why: ${FORK_WHY}. a fork that truly needs that context says so in a prompt line: why-fork: <what parent context it needs>`;
 

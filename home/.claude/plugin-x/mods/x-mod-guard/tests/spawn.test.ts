@@ -29,7 +29,7 @@ const spawn = (
         tool_use_id: 'tu-1',
     });
 
-test('a fork with no why-fork line is refused with a fresh agent and chore-helper', async ($, on) => {
+test('a fork with no why-fork line is refused with a fresh agent and helper', async ($, on) => {
     world(on);
     const r = await spawn(
         $,
@@ -38,7 +38,7 @@ test('a fork with no why-fork line is refused with a fresh agent and chore-helpe
         'read the log and summarise it',
     );
     expect(r.deny).toContain('a fresh agent');
-    expect(r.deny).toContain('chore-helper');
+    expect(r.deny).toContain('or helper for a mechanical job');
 });
 
 test('a fork with a why-fork line runs', async ($, on) => {
