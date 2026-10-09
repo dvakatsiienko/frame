@@ -56,10 +56,14 @@ export type StashView = {
     areGuardsOpen: boolean;
     digest?: StashDigest;
     isBoardOpen: boolean;
-    // the board's rows and colour switch, read only while it is open
+};
+
+// what only the board pane draws, kept apart from the band's view: its clock moves every poll, and a band that read it
+// would redraw — rebuilding x-mod-breather's svg — every 4 s (FRM-354)
+export type StashBoardView = {
     members?: StashMember[];
     isColour: boolean;
-    // the poll's clock while the board is open, so its «busy 3m» spans move on their own
+    // the poll's clock, so the board's «busy 3m» spans move on their own
     at: number;
 };
 
@@ -76,6 +80,7 @@ declare module 'claude-code' {
         'x-mod-stash': {
             open: boolean;
             view: StashView;
+            board: StashBoardView;
             turn: StashTurn;
         };
     }

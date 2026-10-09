@@ -26,6 +26,7 @@
   - then the meter breathes the whole cycle — full inhale, hold, exhale — and never snaps back to its floor mid-inhale
   - the bug (dima's gif, FRM-354): the breath restarted every ~4.46 s, 6 times in 24 s, one blank frame each, so a 5.5 s inhale never finished
   - decision: each render's svg starts its SMIL clock at the breath's own phase (a negative `begin`), so a remount from any mod resumes mid-breath; the desktop recreating an `Svg` on every redraw, same `key` and `source`, is inferred from the gif, not probed
+  - decision: the 4 s source is gone too — an open board's tick no longer redraws the band (x-mod-stash's `FTR.md`); a redraw from a real band change still rebuilds the svg, and the phase start covers it
 - ✅ a subagent finishing mid-turn keeps the band breathing
   - given a turn spawns a subagent and the subagent finishes while the turn goes on
   - then the band keeps its breath where it was, with no restart and no flicker

@@ -109,7 +109,6 @@ test('the away digest still shows after a reload', async ($, on) => {
         view: {
             afk: false,
             areGuardsOpen: false,
-            at: NOW,
             digest: {
                 done: [{ name: 'd0d0d0d0', sid: 'd0d0d0d0-done' }],
                 needs: [],
@@ -118,7 +117,6 @@ test('the away digest still shows after a reload', async ($, on) => {
             guards: [],
             holds: { others: 0, warned: false },
             isBoardOpen: false,
-            isColour: false,
             isHot: false,
         },
     });
@@ -159,4 +157,24 @@ test('the board draws with no file or process read', async ($, on) => {
         surface: 'desktop',
     });
     expect(s.calls.io - before).toBe(0);
+});
+
+test("an open board's tick leaves the band's view unwritten", async ($, on) => {
+    const state: Record<string, unknown> = {};
+    const s = await reloaded($, on, state, {}, true);
+    await s.clock.advance(4000);
+    const settled = JSON.stringify(state.view);
+    await s.clock.advance(3 * 4000);
+    expect(JSON.stringify(state.view)).toBe(settled);
+});
+
+test("an open board's tick moves the board's clock", async ($, on) => {
+    const state: Record<string, unknown> = {};
+    const s = await reloaded($, on, state, {}, true);
+    await s.clock.advance(4000);
+    const first = (state.board as { at: number } | undefined)?.at;
+    await s.clock.advance(4000);
+    expect((state.board as { at: number } | undefined)?.at).toBe(
+        (first ?? 0) + 4000,
+    );
 });

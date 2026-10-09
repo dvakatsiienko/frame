@@ -61,6 +61,8 @@ const HOT = 'hot:';
 const OPEN = { key: 'open', plugin: 'x-mod-stash' } as const;
 // what the band and the board draw: renders read it, and a write redraws them, no invalidate
 const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
+// what only the board pane draws, its clock included: the band never reads it, so a tick never redraws the band
+const BOARD_VIEW = { key: 'board', plugin: 'x-mod-stash' } as const;
 // the running turn, so a mid-turn reload still knows it is busy
 const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 // a 📄 line's HH:MM — the same shape reply-check.py reads
@@ -330,10 +332,8 @@ async function load($: EngineInterface) {
     await publish($);
 }
 
-// the view the module's values make; the board's rows ride only while it is open
-function viewOf(
-    board: Pick<StashView, 'isBoardOpen' | 'members' | 'isColour' | 'at'>,
-): StashView {
+// the band's view the module's values make
+function viewOf(isBoardOpen: boolean): StashView {
     return {
         afk,
         areGuardsOpen,
@@ -341,9 +341,9 @@ function viewOf(
         entries,
         guards,
         holds,
+        isBoardOpen,
         isHot: Boolean(hot),
         selfId,
-        ...board,
     };
 }
 
@@ -351,15 +351,16 @@ let published = '';
 // writes the view to $.state when it changed; every site that reads it while drawing redraws
 async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);
-    const board = isBoardOpen
-        ? {
-              at: await $.clock.now(),
-              isBoardOpen,
-              isColour: (await $.store.get(COLOUR).catch(() => false)) === true,
-              members: await members($).catch(() => undefined),
-          }
-        : { at: 0, isBoardOpen, isColour: false };
-    const view = viewOf(board);
+    if (isBoardOpen)
+        await $.state
+            .set(BOARD_VIEW, {
+                at: await $.clock.now(),
+                isColour:
+                    (await $.store.get(COLOUR).catch(() => false)) === true,
+                members: await members($).catch(() => undefined),
+            })
+            .catch(() => undefined);
+    const view = viewOf(isBoardOpen);
     const text = JSON.stringify(view);
     if (text === published) return;
     published = text;
@@ -906,14 +907,14 @@ export const register: Register = (on) => {
         const ui = $.ui.resolve(e);
         const { Box, Text, Button, Link } = ui;
         // the poll read the registry into the view; the pane only draws it, so a draw costs no file or process read
-        const view = (await $.state.get(VIEW)).value;
-        const now = view?.at ?? 0;
-        const me = view?.selfId;
-        const list = view?.members;
+        const board = (await $.state.get(BOARD_VIEW)).value;
+        const now = board?.at ?? 0;
+        const me = (await $.state.get(VIEW)).value?.selfId;
+        const list = board?.members;
         if (!list)
             return <Text dimColor>the session registry is unreadable</Text>;
         if (!list.length) return <Text dimColor>no live sessions</Text>;
-        const isColour = view.isColour;
+        const isColour = board.isColour;
         const hues = huesOf(list.map((m) => m.name));
         const row = (m: Member, i: number) => {
             const { tint: stateTint, word: state } = statusOf(m.status);
@@ -1133,9 +1134,7 @@ export const register: Register = (on) => {
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
         if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e);
         // the published view, never the module's values: reading it subscribes this band, and a write redraws it
-        const view =
-            (await $.state.get(VIEW)).value ??
-            viewOf({ at: 0, isBoardOpen: false, isColour: false });
+        const view = (await $.state.get(VIEW)).value ?? viewOf(false);
         const isOpenList = (await $.state.get(OPEN)).value ?? open;
         const groups = Object.entries(view.entries).sort(([a], [b]) =>
             a === view.selfId ? -1 : b === view.selfId ? 1 : 0,

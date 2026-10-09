@@ -275,7 +275,12 @@
 - ✅ the board draws without reading a file
   - given the board is open
   - then the 4 s poll reads the registry, the replies and the colour switch into the `view`, once per tick, and the pane only draws it — a draw spawns no `ps` and reads no file
-  - decision: the poll writes the tick's clock into the `view` while the board is open, so its `busy 3m` spans move on their own (FRM-348)
+  - decision: the poll writes the tick's clock, the rows and the colour switch into a `board` value of their own while the board is open, so its `busy 3m` spans move on their own (FRM-348)
+- ✅ an open board never redraws the band
+  - given the board is open
+  - when the 4 s poll ticks and nothing on the band changed
+  - then the band's `view` is not rewritten, so the band does not redraw, and the board's clock still moves
+  - decision: the clock rode in the band's `view` until FRM-354 — every tick redrew the band, and the desktop rebuilt x-mod-breather's svg each time: a blink and a restarted breath every ~4.5 s
 
 ## spawn hints — the board's name flag only
 
