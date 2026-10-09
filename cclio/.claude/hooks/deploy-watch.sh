@@ -41,8 +41,23 @@ done
 
 # the Deploy run decides what deploys (turbo --affected), so its own log is the list — a path diff of
 # our own guessed wrong twice: a root package.json marks every app, and atelier has no vercel project
-deploy_run=$(gh run list --commit "$sha" --workflow deploy.yml --json databaseId --jq '.[0].databaseId // empty' 2>/dev/null)
-[ -z "$deploy_run" ] && { echo "no Deploy run for $short — nothing was asked to deploy"; exit 0; }
+# the Deploy runs on workflow_run after ci: its headSha is main's head when it fired, so the commit lives only in its
+# title, «deploy <sha>», and a run skipped for one sha carries the next one's headSha (bytes#126, FRM-363). a run is
+# found by its title (or a push run by its head), and a skipped one is never the deploy
+deploy_run=
+n=0
+while :; do
+  found=$(gh run list --workflow deploy.yml --limit 30 --json databaseId,displayTitle,event,headSha,status,conclusion \
+    --jq "[.[] | select(.displayTitle == \"deploy $sha\" or (.event == \"push\" and .headSha == \"$sha\"))
+      | select(.conclusion != \"skipped\")] | .[0] | if . == null then \"\" else \"\\(.databaseId) \\(.status)\" end" 2>/dev/null)
+  case "$found" in
+    *" completed") deploy_run=${found%% *}; break ;;
+  esac
+  n=$((n + 1))
+  [ $n -ge 20 ] && break
+  sleep $tick
+done
+[ -z "$deploy_run" ] && { echo "no Deploy run for $short — nothing was asked to deploy, or it was skipped"; exit 0; }
 decision=$(gh run view "$deploy_run" --log 2>/dev/null | grep -E 'to deploy:|nothing affected that Vercel deploys' | head -1 | sed 's/.*Z //')
 case "$decision" in
   *"to deploy:"*) apps=${decision#*to deploy:} ;;
