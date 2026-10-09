@@ -20,13 +20,13 @@ type palette struct {
 var dark = palette{
 	bg: lipgloss.Color("#17181C"), fg: lipgloss.Color("#D7D9DF"), dim: lipgloss.Color("#9A9DA8"),
 	line: lipgloss.Color("#7C808C"), ok: lipgloss.Color("#9AD59A"), er: lipgloss.Color("#E8696B"),
-	family: []color.Color{lipgloss.Color("#6FA0EA"), lipgloss.Color("#E0A458"), lipgloss.Color("#E8A6D6"), lipgloss.Color("#3FB8A4"), lipgloss.Color("#E6E6A0")},
+	family: []color.Color{lipgloss.Color("#3FB8A4"), lipgloss.Color("#E0A458"), lipgloss.Color("#E8A6D6"), lipgloss.Color("#6FA0EA"), lipgloss.Color("#E6E6A0")},
 }
 
 var light = palette{
 	bg: lipgloss.Color("#FBFBFC"), fg: lipgloss.Color("#24262B"), dim: lipgloss.Color("#5E626C"),
 	line: lipgloss.Color("#7A7E88"), ok: lipgloss.Color("#2A7A3B"), er: lipgloss.Color("#9E1F1F"),
-	family: []color.Color{lipgloss.Color("#1F4A94"), lipgloss.Color("#8A5300"), lipgloss.Color("#7A4FBF"), lipgloss.Color("#006B5B"), lipgloss.Color("#C2185B")},
+	family: []color.Color{lipgloss.Color("#006B5B"), lipgloss.Color("#8A5300"), lipgloss.Color("#7A4FBF"), lipgloss.Color("#1F4A94"), lipgloss.Color("#C2185B")},
 }
 
 type theme struct {
