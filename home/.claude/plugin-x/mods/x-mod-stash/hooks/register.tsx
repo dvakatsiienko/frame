@@ -1704,7 +1704,7 @@ export const register: Register = (on) => {
                     </Text>
                 )}
                 {five?.resetsAt === undefined ? null : (
-                    <Text dimColor>↻ {span(five.resetsAt - now)}</Text>
+                    <Text>↻ {span(five.resetsAt - now)}</Text>
                 )}
                 <Text>🗜️</Text>
                 <Box flexShrink={0} width={8}>
@@ -1731,7 +1731,7 @@ export const register: Register = (on) => {
                 key='meters'
                 marginBottom={air ? 0.75 : 0}
                 marginTop={air ? 0.5 : 0}
-                paddingRight={air ? 0.75 : 0}>
+                paddingRight={air ? 1.5 : 0}>
                 {barRowJSX(
                     'meter:5h',
                     '🔥 5h',
