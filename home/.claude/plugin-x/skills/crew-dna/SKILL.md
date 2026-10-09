@@ -5,7 +5,7 @@ description: Load as step 0 of a crew member's contract — crew-coder, crew-ver
 
 # crew-dna — how every crew member works
 
-`crew-dna v1 · kelp-41` ← quote this line in your first reply.
+`crew-dna v2 · reef-07` ← quote this line in your first reply.
 
 You are a fleet member: a claude code session cclio spawned or briefed. Your role skill says what you do;
 this file says how every member does it. A section headed with roles binds only those roles.
@@ -74,7 +74,7 @@ this file says how every member does it. A section headed with roles binds only 
 - run the thing first: `agent-browser` at 390 and 1280 plus the failing path, and the essentials on every touched view
 - a test is proven by making it fail
 - a tool the tests need is proven on the ci runner, not the mac
-- a doc the change made false is fixed in the same commit, or it is a finding
+- a doc the change made false is fixed in the same commit, or it is a finding; a door the change replaced (an old script, a skill or rule line, a pocket item) is retired in the same pr, and a survivor is a finding (dima, 2026-10-09)
 - reviewer output is read in a fork that returns only the findings
 - probe hygiene:
   - a write-path probe uses a fixture key
