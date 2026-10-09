@@ -198,6 +198,38 @@ func TestPreflightPassesACleanTicket(t *testing.T) {
 	}
 }
 
+func TestTwoOwnersNeedsACclioHalfAndAnother(t *testing.T) {
+	cases := []struct {
+		name, group string
+		two         bool
+	}{
+		{"cclio's step beside a coder's skill", "6. `x:crew-coder`'s final step and cclio's pre-merge step name `x lane review`", true},
+		{"a cclio path beside a coder's path", "1. `cclio/docs/a.md` and `x/go/a.go` agree", true},
+		{"a quoted cclio word", "2. `x lane commit` refuses «cclio pushes»", false},
+		{"cclio's half alone", "3. `cclio/docs/a.md` holds the recipe", false},
+		{"no cclio at all", "4. `x lane commit` prints the sha", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := twoOwners(c.group); got != c.two {
+				t.Errorf("twoOwners = %v", got)
+			}
+		})
+	}
+}
+
+// the push rule reads the real skill through the built x: a wrong root would switch it off with every stubbed test green
+func TestBriefCheckReadsTheCoderSkillsPushDoor(t *testing.T) {
+	brief := filepath.Join(t.TempDir(), "brief.md")
+	write(t, brief, "/x:crew-coder\ncclio pushes when you are done\n")
+
+	got := xIn(t, repo(t), []string{"X_STATE=" + t.TempDir()}, "brief", "check", brief)
+
+	if got.code != 1 || !strings.Contains(got.stdout, "x:crew-coder names `x lane push`") {
+		t.Fatalf("exit %d: %s", got.code, got.stdout)
+	}
+}
+
 func TestPreflightRefusesATicketWithNoExitSection(t *testing.T) {
 	_, got := runPreflight(t, "## want\n\n- `x lane commit` grows a step\n", "FRM-1")
 

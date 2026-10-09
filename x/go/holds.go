@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"math"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -33,9 +34,10 @@ type modHolder struct {
 	IdleSince *int64 `json:"idleSince"`
 }
 
+// named is the path the caller passed, file the held file under it (the same path unless named is a dir)
 type heldPath struct {
-	path, session string
-	since         time.Duration
+	named, file, session string
+	since                time.Duration
 }
 
 // the store dir: X_HOLDS in a test, none under X_TEST without it, cc's plugin store otherwise
@@ -77,7 +79,8 @@ func heldByOthers(tree string, paths []string) []heldPath {
 		for name, value := range store {
 			rest, ok := strings.CutPrefix(name, "hold:")
 			session, file, cut := strings.Cut(rest, ":")
-			if !ok || !cut || file != key || session == self {
+			// a named dir takes every held file under it
+			if !ok || !cut || (file != key && !strings.HasPrefix(file, key+"/")) || session == self {
 				continue
 			}
 			var hold modHold
@@ -91,7 +94,11 @@ func heldByOthers(tree string, paths []string) []heldPath {
 			if holdReleased(holder, hold, now) {
 				continue
 			}
-			held = append(held, heldPath{path, session, now.Sub(time.UnixMilli(hold.At))})
+			file, err := filepath.Rel(tree, hold.File)
+			if err != nil {
+				file = hold.File
+			}
+			held = append(held, heldPath{path, file, session, now.Sub(time.UnixMilli(hold.At))})
 		}
 	}
 	return held
@@ -126,8 +133,9 @@ func holdReleased(holder *modHolder, hold modHold, now time.Time) bool {
 		}
 	}
 	if hold.Landed {
+		// a folder gone or outside git can commit nothing, so it holds nothing — the mod's isClean
 		clean, _ := gitIn(filepath.Dir(hold.File), "status", "--porcelain", "--", hold.File)
-		return clean.ok && clean.out == ""
+		return !clean.ok || clean.out == ""
 	}
 	return false
 }
@@ -136,8 +144,8 @@ func heldFail(held []heldPath, msgFile string, paths []string) *Fail {
 	var msg []string
 	taken := map[string]bool{}
 	for _, h := range held {
-		taken[h.path] = true
-		msg = append(msg, fmt.Sprintf("%s is held by session %s, which took it %d min ago", h.path, h.session[:min(8, len(h.session))], int(h.since.Minutes())))
+		taken[h.named] = true
+		msg = append(msg, fmt.Sprintf("%s is held by session %s, which took it %d min ago", h.file, h.session[:min(8, len(h.session))], int(math.Round(h.since.Minutes()))))
 	}
 	var free []string
 	for _, path := range paths {

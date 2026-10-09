@@ -666,15 +666,11 @@ func pushHome() (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	gitDir, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
+	common, linked, err := worktreeOf(tree)
 	if err != nil {
 		return "", "", err
 	}
-	common, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-common-dir")
-	if err != nil {
-		return "", "", err
-	}
-	if gitDir == common {
+	if !linked {
 		return tree, "main checkout", nil
 	}
 	frameCommon, _ := gitIn(sourceDir(), "rev-parse", "--path-format=absolute", "--git-common-dir")
@@ -682,6 +678,16 @@ func pushHome() (string, string, error) {
 		return tree, "worktree", nil
 	}
 	return filepath.Dir(common), "frame worktree: the mirror gate passes only in the main checkout", nil
+}
+
+// worktreeOf answers the repo's common git dir and whether tree is a linked worktree of it
+func worktreeOf(tree string) (common string, linked bool, err error) {
+	own, err := mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
+	if err != nil {
+		return "", false, err
+	}
+	common, err = mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-common-dir")
+	return common, err == nil && own != common, err
 }
 
 func top() (string, error)  { return mustGit("rev-parse", "rev-parse", "--show-toplevel") }

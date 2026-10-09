@@ -20,7 +20,12 @@ var (
 
 // ftrMissing names the FTR.md files whose app code is staged under paths while they are not
 func ftrMissing(tree string, paths []string) []string {
-	got, _ := gitIn(tree, append([]string{"diff", "--cached", "--name-only", "--diff-filter=ACMRD", "--"}, paths...)...)
+	args := []string{"diff", "--cached", "--name-only", "--diff-filter=ACMRD"}
+	// mid-merge the commit takes the whole index, and so does the gate
+	if !isMerging() {
+		args = append(append(args, "--"), paths...)
+	}
+	got, _ := gitIn(tree, args...)
 	if !got.ok || got.out == "" {
 		return nil
 	}

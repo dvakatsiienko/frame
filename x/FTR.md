@@ -100,7 +100,8 @@
 - ✅ `x lane commit` refuses a path another session holds
   - given a named path x-mod-holds holds for another live session (`~/.claude/plugins/store/x-mod-holds_*.json`)
   - when `x lane commit` runs
-  - then it refuses before staging or formatting, names the path, the holder's session and how long ago it took it, and its next command names the free paths
+  - then it refuses before staging or formatting, names the held file, the holder's session and how long ago it took it, and its next command names the free paths
+  - given a named dir with a held file under it, then the same refusal
   - given the holder idle 30 min, its pid dead, or the hold landed and clean, then the path is free — the mod's own release checks
   - decision: reads the mod's store instead of a diff snapshot (grill 2026-10-09); this session's own holds (`CLAUDE_CODE_SESSION_ID`) never refuse
 - ✅ `x lane push` pushes HEAD's sha and reads the remote back
