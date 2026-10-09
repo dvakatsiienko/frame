@@ -96,7 +96,7 @@ in skill bodies use bare skill names; translate with your own prefix.
   when the writer did not say. A listing reads it back as `<lane> lane · by <author> · <topic>`.
   - Two legacy shapes still parse: `<audience>-<topic>-<ts>` and a timestamp-first name. Neither
     carries a lane or an author, so both report `any` for those. Nothing writes them any more.
-- **Audience** — one lowercase token naming the agent a CST is written FOR: `cclio`, `cw`, `ccli`, or **`any`** when it is for whoever picks it up next. A session knows its own
+- **Audience** — one lowercase token naming the agent a CST is written FOR: `cclio`, `cw`, `ccli`, `coder`, `verifier`, `designer`, `ccrow`, or **`any`** when it is for whoever picks it up next. A session knows its own
   token; `any` matches every reader.
   - 🚨 **A pull NEVER ingests a file addressed to another agent.** It reports what it found and
     whose it is, and stops. Forcing one is possible by naming its slug explicitly — that is the

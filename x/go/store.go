@@ -16,7 +16,7 @@ import (
 // the handoff store: a flat dir of CSTs, named by one grammar (script/lib/handoff-names.json holds its
 // cases). nothing here deletes by age — a stale CST is dima's to see and decide about
 
-var audiences = []string{"any", "ccli", "cclio", "cw"}
+var audiences = []string{"any", "ccli", "cclio", "ccrow", "coder", "cw", "designer", "verifier"}
 
 const staleAfter = 7 * 24 * time.Hour
 

@@ -221,7 +221,7 @@
         {
             "flags": {
                 "for": {
-                    "description": "the reading agent, one of any, ccli, cclio, cw; files addressed to another agent are left alone",
+                    "description": "the reading agent, one of any, ccli, cclio, ccrow, coder, cw, designer, verifier; files addressed to another agent are left alone",
                     "type": "string",
                     "value": "audience"
                 }
@@ -268,7 +268,7 @@
             ],
             "flags": {
                 "for": {
-                    "description": "the reading agent, one of any, ccli, cclio, cw; files addressed to another agent are left alone",
+                    "description": "the reading agent, one of any, ccli, cclio, ccrow, coder, cw, designer, verifier; files addressed to another agent are left alone",
                     "type": "string",
                     "value": "audience"
                 }
@@ -289,7 +289,7 @@
         {
             "flags": {
                 "audience": {
-                    "description": "the agent the CST is for, one of any, ccli, cclio, cw; any (the default) is whoever pulls next",
+                    "description": "the agent the CST is for, one of any, ccli, cclio, ccrow, coder, cw, designer, verifier; any (the default) is whoever pulls next",
                     "type": "string",
                     "value": "audience"
                 },

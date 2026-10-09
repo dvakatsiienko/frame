@@ -44,7 +44,7 @@ func rowOf(e stored, now time.Time) row {
 func readerOf(r *Run, flags Flags) (string, error) {
 	reader, _ := flags["for"].(string)
 	if reader != "" && !slices.Contains(audiences, reader) {
-		return "", usageFail("unknown audience "+reader+" — any, ccli, cclio, cw", "x "+r.verb.Name+" --help")
+		return "", usageFail("unknown audience "+reader+" — "+strings.Join(audiences, ", "), "x "+r.verb.Name+" --help")
 	}
 	return reader, nil
 }
@@ -155,7 +155,7 @@ func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
 	slug := firstArg(args)
 	// a pull that names no reader could take a file another agent waits for, and deletes it
 	if reader == "" {
-		return nil, usageFail("ingest names its reader: --for any, ccli, cclio or cw", "x handoff ingest --for <audience>")
+		return nil, usageFail("ingest names its reader: --for "+strings.Join(audiences, ", "), "x handoff ingest --for <audience>")
 	}
 	var all []stored
 	r.Wait("reading the store", func() { all = listStore(storeRoot()) })
@@ -215,7 +215,7 @@ func handoffIngest(r *Run, args []string, flags Flags) (any, error) {
 func handoffWrite(r *Run, _ []string, flags Flags) (any, error) {
 	audience := cmp.Or(flagString(flags, "audience"), "any")
 	if !slices.Contains(audiences, audience) {
-		return nil, usageFail("unknown audience "+audience+" — any, ccli, cclio, cw", "x handoff write --help")
+		return nil, usageFail("unknown audience "+audience+" — "+strings.Join(audiences, ", "), "x handoff write --help")
 	}
 	if strings.TrimSpace(flagString(flags, "slug")) == "" {
 		return nil, usageFail("write needs --slug <topic>", "x handoff write --help")
