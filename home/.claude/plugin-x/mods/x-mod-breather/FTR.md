@@ -28,7 +28,6 @@
   - the bug (dima's gif, FRM-354): the breath restarted every ~4.46 s, 6 times in 24 s, one blank frame each, so a 5.5 s inhale never finished
   - decision: each render's svg starts its SMIL clock at the breath's own phase (a negative `begin`), so a remount from any mod resumes mid-breath; the desktop recreating an `Svg` on every redraw, same `key` and `source`, is inferred from the gif, not probed
   - decision: the meter draws as an image, not `isInteractive` — the sandboxed frame was rebuilt blank on every redraw of any site, the image survives it and SMIL still runs; with the board open, dima saw no flicker at all (2026-10-09 17:17)
-  - decision: the band reads x-mod-stash's `board` value while drawing, so each board write redraws it with a fresh phase — a rebuild from the last source jumped the breath back to the floor, the same point every time (dima's 16:26 video, board open); the blank frame of the rebuild stays, it is the desktop's (#100797)
   - decision: the 4 s source is gone too — an open board's tick no longer redraws the band (x-mod-stash's `FTR.md`); a redraw from a real band change still rebuilds the svg, and the phase start covers it
 - ✅ a subagent finishing mid-turn keeps the band breathing
   - given a turn spawns a subagent and the subagent finishes while the turn goes on
