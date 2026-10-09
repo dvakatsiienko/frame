@@ -1,0 +1,5 @@
+{
+    // the node scripts beside the mods (writes, live, test, typecheck), checked by `pnpm mods:typecheck`
+    "extends": "../../../../tsconfig.json",
+    "include": ["*.ts"]
+}

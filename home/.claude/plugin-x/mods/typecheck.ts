@@ -1,5 +1,6 @@
-// pnpm mods:typecheck — every mod through tsc against the types the engine wrote for it, then one summary line;
-// exit 1 when any mod is red. a mod whose types the engine has not written yet (a fresh clone) is skipped, never red
+// pnpm mods:typecheck — the scripts beside the mods, then every mod through tsc against the types the engine wrote
+// for it, then one summary line; exit 1 when any is red. a mod whose types the engine has not written yet (a fresh
+// clone) is skipped, never red
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -8,6 +9,9 @@ const root = import.meta.dirname;
 const red: string[] = [];
 const skipped: string[] = [];
 let checked = 0;
+const scripts = spawnSync('tsc', ['-p', root], { encoding: 'utf8' });
+process.stdout.write(`${scripts.stdout}${scripts.stderr}`);
+if (scripts.status !== 0) red.push('the scripts beside the mods');
 for (const mod of readdirSync(root).sort()) {
     const dir = join(root, mod);
     if (!existsSync(join(dir, '.claude-plugin'))) continue;
