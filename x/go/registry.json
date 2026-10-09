@@ -967,7 +967,7 @@
             "purpose": "bump a plugin's patch version, refresh its marketplace and install, and read the new version back from the cache",
             "steps": ["plan", "write", "marketplace", "update", "cache"],
             "touches": [
-                "the plugin cache under $CLAUDE_CONFIG_DIR (~/.claude by default), through claude plugin marketplace update and claude plugin update"
+                "the installed plugins and the plugin cache, through claude plugin list, marketplace update and update"
             ]
         }
     ]

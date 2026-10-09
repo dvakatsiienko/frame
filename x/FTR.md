@@ -319,8 +319,8 @@
 - ✅ `x plugin bump <name> --apply` releases a plugin and proves it reached the cache
   - makes: the patch version moved by one in the plugin's `.claude-plugin/plugin.json`, a line edit
   - given a tracked plugin dir at a.b.c that a tracked marketplace lists by source
-  - when it runs, then the manifest reads a.b.(c+1), `claude plugin marketplace update` and `claude plugin update` run, the plugin cache holds the new version, and the board ends on `next /reload-plugins`
-  - given a cache that lacks the new version (the marketplace reads another checkout), then it exits 1 naming the cache dir
+  - when it runs, then the manifest reads a.b.(c+1), `claude plugin marketplace update` and `claude plugin update` run, `claude plugin list` reports the install at the new version with its cache dir on disk, and the board ends on `next /reload-plugins`
+  - given an install that stays at the old version (the marketplace reads another checkout), then it exits 1 naming the version claude reports — also when a dir for the new version is already in the cache
   - given a plugin not installed from a marketplace (the mods load `@inline`, `x-cw`'s marketplace is never added), then it bumps only and runs nothing
   - given a name no plugin carries, then exit 2 lists the names that exist
 - ✅ `x schema plugin` lists the verb

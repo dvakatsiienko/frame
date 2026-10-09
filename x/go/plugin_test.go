@@ -8,9 +8,9 @@ import (
 )
 
 // pluginFixture plants a marketplace listing a plugin at its root, a mod under it and a sibling only
-// installed @inline, and a fake `claude` that logs its writes and, on `plugin update`, installs into
-// the cache only when told where
-func pluginFixture(t *testing.T) (dir, config, log string, env func(install string) []string) {
+// installed @inline, and a fake `claude` that logs its writes; `plugin update` installs only the
+// version it is handed, and `plugin list` reports what is installed
+func pluginFixture(t *testing.T) (dir, cache, log string, env func(to string) []string) {
 	t.Helper()
 	dir = repo(t)
 	write(t, filepath.Join(dir, "plug/.claude-plugin/plugin.json"), "{\n  \"name\": \"demo\",\n  \"version\": \"1.2.3\",\n  \"description\": \"keeps its shape\"\n}\n")
@@ -21,15 +21,19 @@ func pluginFixture(t *testing.T) (dir, config, log string, env func(install stri
 	gitT(t, dir, "add", ".")
 	gitT(t, dir, "commit", "-q", "-m", "plugins")
 
-	bin, config := t.TempDir(), t.TempDir()
+	bin, cache := t.TempDir(), t.TempDir()
 	log = filepath.Join(t.TempDir(), "claude.log")
 	write(t, filepath.Join(bin, "claude"), `#!/bin/sh
-if [ "$2" = list ]; then echo '[{"id":"demo@mk"},{"id":"m-mod@mk"},{"id":"loose@inline"}]'; exit 0; fi
+v=$(cat "$FAKE_LOG.version" 2>/dev/null || echo 0.0.1)
+if [ "$2" = list ]; then
+  echo "[{\"id\":\"demo@mk\",\"version\":\"$v\",\"installPath\":\"$FAKE_CACHE/$v\"},{\"id\":\"m-mod@mk\",\"version\":\"$v\",\"installPath\":\"$FAKE_CACHE/$v\"},{\"id\":\"loose@inline\"}]"
+  exit 0
+fi
 echo "$*" >> "$FAKE_LOG"
-if [ "$2" = update ] && [ -n "$FAKE_INSTALL" ]; then mkdir -p "$FAKE_INSTALL"; fi
+if [ "$2" = update ] && [ -n "$FAKE_TO" ]; then echo "$FAKE_TO" > "$FAKE_LOG.version"; mkdir -p "$FAKE_CACHE/$FAKE_TO"; fi
 `)
-	return dir, config, log, func(install string) []string {
-		return []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "CLAUDE_CONFIG_DIR=" + config, "FAKE_LOG=" + log, "FAKE_INSTALL=" + install}
+	return dir, cache, log, func(to string) []string {
+		return []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "FAKE_CACHE=" + cache, "FAKE_LOG=" + log, "FAKE_TO=" + to}
 	}
 }
 
@@ -42,12 +46,12 @@ func TestPluginBumpReleasesIntoTheCache(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			dir, config, log, env := pluginFixture(t)
+			dir, _, log, env := pluginFixture(t)
 			manifest := filepath.Join(dir, c.manifest)
 			was, _ := os.ReadFile(manifest)
 			to := strings.Split(c.after, `"`)[3]
 
-			got := xIn(t, dir, env(filepath.Join(config, "plugins/cache/mk", c.name, to)), "plugin", "bump", c.name, "--apply")
+			got := xIn(t, dir, env(to), "plugin", "bump", c.name, "--apply")
 
 			if got.code != 0 || got.data["reload"] != "/reload-plugins" {
 				t.Fatalf("exit %d, reload %v\n%s", got.code, got.data["reload"], got.stdout)
@@ -64,12 +68,19 @@ func TestPluginBumpReleasesIntoTheCache(t *testing.T) {
 }
 
 func TestPluginBumpFailsWhenTheCacheLacksTheNewVersion(t *testing.T) {
-	dir, _, _, env := pluginFixture(t)
+	for _, stale := range []bool{false, true} {
+		t.Run(map[bool]string{false: "nothing installed", true: "a stale dir for the version"}[stale], func(t *testing.T) {
+			dir, cache, _, env := pluginFixture(t)
+			if stale {
+				write(t, filepath.Join(cache, "1.2.4/.keep"), "")
+			}
 
-	got := xIn(t, dir, env(""), "plugin", "bump", "demo", "--apply")
+			got := xIn(t, dir, env(""), "plugin", "bump", "demo", "--apply")
 
-	if got.code != 1 {
-		t.Fatalf("exit %d, want 1\n%s", got.code, got.stdout)
+			if got.code != 1 {
+				t.Fatalf("exit %d, want 1\n%s", got.code, got.stdout)
+			}
+		})
 	}
 }
 

@@ -144,11 +144,10 @@ func linearUpdate(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	switch len(target) {
-	case 0:
+	if len(target) == 0 {
 		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("no project or initiative named %q", name), Next: "x linear api 'query { projects { nodes { name } } }'"}
-	case 1:
-	default:
+	}
+	if len(target) > 1 {
 		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("%q names %d %ss — x will not guess", name, len(target), kind), Next: "x linear api with the update mutation and the id"}
 	}
 	var data map[string]json.RawMessage

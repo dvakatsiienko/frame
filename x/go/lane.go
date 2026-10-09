@@ -17,9 +17,9 @@ import (
 var (
 	cryptMagic = []byte("\x00GITCRYPT\x00")
 	modDir     = regexp.MustCompile(`^home/\.claude/plugin-x/mods/[^/]+/`)
-	// curl's words over https, github's over ssh («remote: Internal Server Error», «[remote rejected] … (Internal Server Error)»);
-	// a 4xx is a refusal that a retry only repeats
-	serverError = regexp.MustCompile(`(?i)returned error: 5\d\d\b|\bHTTP 5\d\d\b|internal server error|bad gateway|service unavailable|gateway time-?out`)
+	// only git's own lines: curl's over https, github's over ssh («remote: Internal Server Error», «[remote rejected] … (Internal Server
+	// Error)»); a pre-push hook's words never match, and a 4xx is a refusal that a retry only repeats
+	serverError = regexp.MustCompile(`(?im)requested URL returned error: 5\d\d\b|RPC failed; HTTP 5\d\d\b|^remote: (internal server error|bad gateway|service unavailable|gateway time-?out)\s*$|\[remote rejected\].*\((internal server error|bad gateway|service unavailable|gateway time-?out)\)`)
 )
 
 const (
@@ -114,19 +114,18 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 
-	onMain := name.out == "main"
-	if !onMain {
-		r.skip("ci")
-	}
-	var committed error
-	if onMain {
-		committed = r.Step("ci", "the ci jobs for the touched paths", func() (string, error) {
+	// the first step that stops the commit: ci or the hooks
+	var stopped error
+	if name.out == "main" {
+		stopped = r.Step("ci", "the ci jobs for the touched paths", func() (string, error) {
 			return runCI(tree, paths)
 		})
+	} else {
+		r.skip("ci")
 	}
 	var sha string
-	if committed == nil {
-		committed = r.Step("commit", "hooks, then the commit", func() (string, error) {
+	if stopped == nil {
+		stopped = r.Step("commit", "hooks, then the commit", func() (string, error) {
 			commitArgs := []string{"commit", "-F", message}
 			if !isMerging() {
 				commitArgs = append(append(commitArgs, "--"), paths...)
@@ -146,7 +145,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 			return plural(len(aside.files), "file") + " back, byte for byte", aside.restore(tree)
 		}); err != nil {
 			// both failed: the hook's words and the held dir are each the caller's next move
-			if refused, ok := errors.AsType[*Fail](committed); ok {
+			if refused, ok := errors.AsType[*Fail](stopped); ok {
 				both := &Fail{Msg: refused.Msg + "; and " + err.Error(), Log: refused.Log}
 				if lost, ok := errors.AsType[*Fail](err); ok {
 					both.Next = lost.Next
@@ -156,8 +155,8 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 			return nil, err
 		}
 	}
-	if committed != nil {
-		return nil, committed
+	if stopped != nil {
+		return nil, stopped
 	}
 	branch, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Done(fmt.Sprintf("%s on %s, %s", short(sha), branch.out, plural(len(present), "path")), "x lane push --apply")
@@ -512,7 +511,7 @@ func ciJobs(tree string, paths []string) []ciJob {
 	ts := false
 	for _, path := range paths {
 		switch filepath.Ext(path) {
-		case ".ts", ".tsx", ".mts":
+		case ".ts", ".tsx":
 			ts = true
 		}
 		if module := goModule(tree, filepath.Dir(filepath.Join(tree, path))); module != "" && !seen[module] {

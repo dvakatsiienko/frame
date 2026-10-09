@@ -244,7 +244,7 @@ func TestCommitRefusesCiphertextAndNamesUnlock(t *testing.T) {
 	}
 }
 
-func TestCommitOnMainRunsTheCiJobsForTheTouchedPaths(t *testing.T) {
+func TestCommitGatesOnTheCiJobsOnlyOnMain(t *testing.T) {
 	goTest := func(pass bool) string {
 		if pass {
 			return "package m\n\nimport \"testing\"\n\nfunc TestM(t *testing.T) {}\n"
@@ -326,14 +326,14 @@ func flakyRemote(t *testing.T, status, fails int) (string, *atomic.Int32) {
 	return server.URL + "/remote.git", &pushes
 }
 
-func TestPushRetriesAServerErrorAndNeverARefusal(t *testing.T) {
+func TestPushRetriesOnlyAServerError(t *testing.T) {
 	cases := []struct {
 		name          string
 		status, fails int
 		pushes        bool
 		requests      int32
 	}{
-		{"a 500 then 200 lands on the retry", http.StatusInternalServerError, 1, true, 0},
+		{"a 500 then 200 lands on the retry", http.StatusInternalServerError, 1, true, 3},
 		{"a 403 is never retried", http.StatusForbidden, 99, false, 1},
 	}
 	for _, c := range cases {
@@ -356,20 +356,23 @@ func TestPushRetriesAServerErrorAndNeverARefusal(t *testing.T) {
 
 func TestServerErrorKnowsGithubsWordsOverSsh(t *testing.T) {
 	cases := []struct {
-		log   string
-		retry bool
+		name, log string
+		retry     bool
 	}{
-		// the FRM-343 push, verbatim
-		{"remote: Internal Server Error        \nremote: Request ID 3E7D:237F88\n ! [remote rejected] 86dd55be05 -> worktree-FRM-343-x-handoff (Internal Server Error)\nerror: failed to push some refs", true},
-		{"error: RPC failed; HTTP 502 curl 22 The requested URL returned error: 502", true},
-		{"fatal: unable to access 'https://example.com/r.git/': The requested URL returned error: 403", false},
-		{" ! [remote rejected] main -> main (protected branch hook declined)\nerror: failed to push some refs", false},
-		{"ERROR: Permission to o/r.git denied to someone.\nfatal: Could not read from remote repository.", false},
+		{"the FRM-343 push, verbatim", "remote: Internal Server Error        \nremote: Request ID 3E7D:237F88\n ! [remote rejected] 86dd55be05 -> worktree-FRM-343-x-handoff (Internal Server Error)\nerror: failed to push some refs", true},
+		{"a rejected ref alone", " ! [remote rejected] main -> main (Bad Gateway)\nerror: failed to push some refs", true},
+		{"curl's 502", "error: RPC failed; HTTP 502 curl 22 The requested URL returned error: 502", true},
+		{"curl's 403", "fatal: unable to access 'https://example.com/r.git/': The requested URL returned error: 403", false},
+		{"a declined hook on the remote", " ! [remote rejected] main -> main (protected branch hook declined)\nerror: failed to push some refs", false},
+		{"a denied key", "ERROR: Permission to o/r.git denied to someone.\nfatal: Could not read from remote repository.", false},
+		{"a pre-push hook naming a 500", "│  test: api answered HTTP 500 — internal server error\nerror: failed to push some refs", false},
 	}
 	for _, c := range cases {
-		if got := serverError.MatchString(c.log); got != c.retry {
-			t.Errorf("retry %v, want %v for %q", got, c.retry, c.log)
-		}
+		t.Run(c.name, func(t *testing.T) {
+			if got := serverError.MatchString(c.log); got != c.retry {
+				t.Errorf("retry %v, want %v for %q", got, c.retry, c.log)
+			}
+		})
 	}
 }
 

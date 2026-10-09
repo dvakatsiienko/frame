@@ -42,7 +42,7 @@ func pluginBumpPlan(r *Run, args []string, _ Flags) (any, error) {
 		if err != nil {
 			return "", err
 		}
-		if id := name + "@" + market; !slices.Contains(installed, id) {
+		if id := name + "@" + market; len(installed[id]) == 0 {
 			market = ""
 			return fmt.Sprintf("%s → %s, %s is not installed: a bump only", from, to, id), nil
 		}
@@ -69,12 +69,8 @@ func pluginBump(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	data := ordered{{"name", name}, {"from", from}, {"to", to}, {"marketplace", market}}
 	if market == "" {
 		r.skip("marketplace", "update", "cache")
-		r.Done(fmt.Sprintf("%s %s, bump only — no marketplace lists it", name, to), "")
+		r.Done(fmt.Sprintf("%s %s, bump only — not installed from a marketplace", name, to), "")
 		return data, nil
-	}
-	cache, err := pluginCache()
-	if err != nil {
-		return nil, err
 	}
 	if err := r.Step("marketplace", "claude plugin marketplace update", func() (string, error) {
 		return market, claudePlugin("marketplace", "update", market)
@@ -87,24 +83,34 @@ func pluginBump(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	installed := filepath.Join(cache, market, name, to)
-	if err := r.Step("cache", "reading the cache back", func() (string, error) {
-		if !exists(installed) {
-			// a marketplace added from the main checkout reads it there, so a worktree's bump never arrives
-			return "", &Fail{Msg: fmt.Sprintf("the cache holds no %s %s at %s", name, to, home(installed)),
-				Next: "claude plugin marketplace list --json — bump where the marketplace's source lives"}
+	var cache string
+	if err := r.Step("cache", "reading the install back", func() (string, error) {
+		installed, err := installedPlugins()
+		if err != nil {
+			return "", err
 		}
-		return home(installed), nil
+		// a stale dir for the same version proves nothing: claude must report the install at that version
+		var versions []string
+		for _, got := range installed[id] {
+			if got.Version == to && exists(got.InstallPath) {
+				cache = got.InstallPath
+				return home(cache), nil
+			}
+			versions = append(versions, got.Version)
+		}
+		// a marketplace added from the main checkout reads it there, so a worktree's bump never arrives
+		return "", &Fail{Msg: fmt.Sprintf("claude reports %s at %s, not %s", id, or(strings.Join(versions, ", "), "nothing"), to),
+			Next: "claude plugin marketplace list --json — bump where the marketplace's source lives"}
 	}); err != nil {
 		return nil, err
 	}
 	r.Done(fmt.Sprintf("%s %s in the cache; binds after a reload", name, to), "/reload-plugins")
-	return append(data, kv{"cache", installed}, kv{"reload", "/reload-plugins"}), nil
+	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}), nil
 }
 
 // findPlugin reads every tracked plugin.json; a name nobody carries lists the ones that exist
 func findPlugin(tree, name string) (manifest, dir, version string, err error) {
-	paths, err := tracked(tree, "plugin.json")
+	paths, err := pluginFiles(tree, "plugin.json")
 	if err != nil {
 		return "", "", "", err
 	}
@@ -126,7 +132,7 @@ func findPlugin(tree, name string) (manifest, dir, version string, err error) {
 
 // marketOf finds the marketplace whose plugin entry's source is the plugin's own dir
 func marketOf(tree, dir string) (string, error) {
-	paths, err := tracked(tree, "marketplace.json")
+	paths, err := pluginFiles(tree, "marketplace.json")
 	if err != nil {
 		return "", err
 	}
@@ -152,7 +158,7 @@ func marketOf(tree, dir string) (string, error) {
 	return "", nil
 }
 
-func tracked(tree, file string) ([]string, error) {
+func pluginFiles(tree, file string) ([]string, error) {
 	out, err := mustGitIn(tree, "ls-files", "ls-files", "--", ":(glob)**/.claude-plugin/"+file)
 	if err != nil || out == "" {
 		return nil, err
@@ -188,34 +194,26 @@ func writeVersion(manifest, from, to string) error {
 	return os.WriteFile(manifest, next, 0o644)
 }
 
-func pluginCache() (string, error) {
-	dir := os.Getenv("CLAUDE_CONFIG_DIR")
-	if dir == "" {
-		if os.Getenv("X_TEST") != "" {
-			return "", &Fail{Msg: "X_TEST without CLAUDE_CONFIG_DIR — no test reads the real plugin cache", Next: "set CLAUDE_CONFIG_DIR to a temp dir"}
-		}
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		dir = filepath.Join(home, ".claude")
-	}
-	return filepath.Join(dir, "plugins", "cache"), nil
+type install struct {
+	Version     string `json:"version"`
+	InstallPath string `json:"installPath"`
 }
 
-func installedPlugins() ([]string, error) {
+// installedPlugins maps each plugin@marketplace to its installs: one id can sit in several scopes
+func installedPlugins() (map[string][]install, error) {
 	listed, _ := run("", nil, "", "claude", "plugin", "list", "--json")
 	var plugins []struct {
+		install
 		ID string `json:"id"`
 	}
 	if !listed.ok || json.Unmarshal([]byte(listed.out), &plugins) != nil {
 		return nil, &Fail{Msg: "claude plugin list --json gave no list — its output is above", Next: "claude plugin list --json", Log: nonBlank(listed.log)}
 	}
-	var ids []string
+	installs := map[string][]install{}
 	for _, plugin := range plugins {
-		ids = append(ids, plugin.ID)
+		installs[plugin.ID] = append(installs[plugin.ID], plugin.install)
 	}
-	return ids, nil
+	return installs, nil
 }
 
 func claudePlugin(args ...string) error {
