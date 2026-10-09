@@ -7,8 +7,9 @@ const SID = 'm1m1m1m1-here';
 const LOCAL = '/proj/.claude/settings.local.json';
 const USAGE = '/home/.claude/shelf/cc-usage-window.json';
 
-// a session in /proj whose engine compacts at 70 % of a 1M window, the files in memory
-function meters(on: On, files: Record<string, string> = {}) {
+// a session in /proj whose engine compacts at 70 % of a 1M window, the files in memory; `override` is the project's
+// CLAUDE_AUTOCOMPACT_PCT_OVERRIDE as the merged settings carry it
+function meters(on: On, files: Record<string, string> = {}, override?: string) {
     const store: Record<string, unknown> = {};
     mock.clock(on, { now: NOW });
     on('store.get', (_$, e) => ({ value: store[e.key] }));
@@ -22,7 +23,14 @@ function meters(on: On, files: Record<string, string> = {}) {
     });
     on('store.keys', () => ({ value: Object.keys(store) }));
     on('session.id', () => ({ value: SID }));
-    on('env.get', () => ({ value: '/home' }));
+    on('env.get', (_$, e) => ({
+        value: e.name === 'HOME' ? '/home' : undefined,
+    }));
+    on('settings.read', () => ({
+        value: override
+            ? { env: { CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: override } }
+            : {},
+    }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/proj' },
@@ -167,6 +175,13 @@ test('a debt past 10 reads red', async ($, on) => {
         color: 'error',
         text: '+15 debt',
     });
+});
+
+test("a project override of the compaction point beats the engine's default", async ($, on) => {
+    meters(on, {}, '55');
+    await measure($, 39, 35);
+    const ui = await band($);
+    expect((await ui.find({ type: 'Input' }))?.props.value).toBe('55');
 });
 
 test('the ctx fill turns amber 10 points before the compaction point', async ($, on) => {

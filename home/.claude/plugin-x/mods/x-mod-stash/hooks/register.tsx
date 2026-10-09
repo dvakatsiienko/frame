@@ -321,6 +321,18 @@ async function saveUsage(
 
 // the engine's own compaction point as a % of the window, whatever set it: the project's override, or cc's default
 async function compactAtOf($: EngineInterface, window: number) {
+    // the override as cc resolves it for this session: the settings merged for its project (cclio's 70 sits in
+    // ~/frame/cclio/.claude/settings.json), then the process env; the engine's breakdown reports its default either way
+    const merged = await $.settings.read().catch(() => undefined);
+    const set =
+        (typeof merged?.env === 'object' && merged.env
+            ? (merged.env as Record<string, unknown>)
+                  .CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
+            : undefined) ??
+        (await $.env.get('CLAUDE_AUTOCOMPACT_PCT_OVERRIDE'));
+    const override = Number(set);
+    if (set !== undefined && Number.isInteger(override) && override > 0)
+        return override;
     const usage = await $.session
         .usage({ breakdown: 'summary' })
         .catch(() => undefined);

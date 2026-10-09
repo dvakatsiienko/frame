@@ -180,7 +180,8 @@
   - given a session.measure arrives
   - then `🔥 5h` draws the window's used % as a bar with a `┃` at the pace (the share of the 5h already gone), then the used %, `pace n%`, the gap — `n spare` green, `+n debt` amber up to 10 and red past it — and `↻ hh:mm`, the reset
   - and `🧠 ctx` draws the context % as a bar with a `┃` at the compaction point, amber from 10 points short of it and red at it, then `compacts at` and the point in an `Input`
-  - source: the point is the engine's own `autoCompactThreshold` over the window (`$.session.usage({ breakdown: 'summary' })`), so it shows the project's override when one is set and cc's default otherwise
+  - source: the point resolves as cc does for the session: `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the settings merged for its project (`$.settings.read()`: local, project, user), then the process env, else cc's default — the engine's `autoCompactThreshold` over the window (`$.session.usage({ breakdown: 'summary' })`)
+  - decision: the engine's breakdown alone showed 97 in cclio's tab while its `.claude/settings.json` sets 70 (dima's screenshot, 19:08) — the breakdown reports the default, never the override
   - decision: the band's meter state is written only when a reading moved, so a measure that changed nothing redraws nothing
 - ⬜ the compaction point is typed live
   - when dima types a whole 10–99 into the ctx row's `Input` and presses Enter
