@@ -34,7 +34,8 @@ func pluginBumpPlan(r *Run, args []string, _ Flags) (any, error) {
 		if to, err = nextPatch(from); err != nil {
 			return "", err
 		}
-		if market, err = marketOf(tree, dir); err != nil || market == "" {
+		var root string
+		if market, root, err = marketOf(tree, dir); err != nil || market == "" {
 			return fmt.Sprintf("%s → %s, no marketplace lists it: a bump only", from, to), err
 		}
 		// a listing is not an install: the mods load @inline and x-cw's marketplace is never added
@@ -45,6 +46,16 @@ func pluginBumpPlan(r *Run, args []string, _ Flags) (any, error) {
 		if id := name + "@" + market; len(installed[id]) == 0 {
 			market = ""
 			return fmt.Sprintf("%s → %s, %s is not installed: a bump only", from, to, id), nil
+		}
+		// a directory marketplace reads the checkout it was added from; a bump in any other tree never
+		// reaches the cache, and the refresh would touch the live install for nothing
+		reads, err := marketPath(market)
+		if err != nil {
+			return "", err
+		}
+		if reads != root {
+			return "", &Fail{Refused: true, Msg: fmt.Sprintf("marketplace %s reads %s, not this tree — nothing written", market, home(reads)),
+				Next: "x plugin bump " + name + " from the checkout holding " + home(reads)}
 		}
 		return fmt.Sprintf("%s → %s, marketplace %s", from, to, market), nil
 	}); err != nil {
@@ -131,10 +142,10 @@ func findPlugin(tree, name string) (manifest, dir, version string, err error) {
 }
 
 // marketOf finds the marketplace whose plugin entry's source is the plugin's own dir
-func marketOf(tree, dir string) (string, error) {
+func marketOf(tree, dir string) (name, root string, err error) {
 	paths, err := pluginFiles(tree, "marketplace.json")
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	for _, path := range paths {
 		var market struct {
@@ -151,8 +162,26 @@ func marketOf(tree, dir string) (string, error) {
 		for _, plugin := range market.Plugins {
 			var source string
 			if json.Unmarshal(plugin.Source, &source) == nil && filepath.Join(root, source) == dir {
-				return market.Name, nil
+				return market.Name, root, nil
 			}
+		}
+	}
+	return "", "", nil
+}
+
+// marketPath is the dir a registered marketplace reads its plugins from
+func marketPath(name string) (string, error) {
+	listed, _ := run("", nil, "", "claude", "plugin", "marketplace", "list", "--json")
+	var markets []struct {
+		Name string `json:"name"`
+		Path string `json:"path"`
+	}
+	if !listed.ok || json.Unmarshal([]byte(listed.out), &markets) != nil {
+		return "", &Fail{Msg: "claude plugin marketplace list --json gave no list — its output is above", Next: "claude plugin marketplace list --json", Log: nonBlank(listed.log)}
+	}
+	for _, market := range markets {
+		if market.Name == name {
+			return market.Path, nil
 		}
 	}
 	return "", nil

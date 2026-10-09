@@ -25,6 +25,7 @@ func pluginFixture(t *testing.T) (dir, cache, log string, env func(to string) []
 	log = filepath.Join(t.TempDir(), "claude.log")
 	write(t, filepath.Join(bin, "claude"), `#!/bin/sh
 v=$(cat "$FAKE_LOG.version" 2>/dev/null || echo 0.0.1)
+if [ "$2 $3" = "marketplace list" ]; then echo "[{\"name\":\"mk\",\"path\":\"$FAKE_MARKET\"}]"; exit 0; fi
 if [ "$2" = list ]; then
   echo "[{\"id\":\"demo@mk\",\"version\":\"$v\",\"installPath\":\"$FAKE_CACHE/$v\"},{\"id\":\"m-mod@mk\",\"version\":\"$v\",\"installPath\":\"$FAKE_CACHE/$v\"},{\"id\":\"loose@inline\"}]"
   exit 0
@@ -33,7 +34,8 @@ echo "$*" >> "$FAKE_LOG"
 if [ "$2" = update ] && [ -n "$FAKE_TO" ]; then echo "$FAKE_TO" > "$FAKE_LOG.version"; mkdir -p "$FAKE_CACHE/$FAKE_TO"; fi
 `)
 	return dir, cache, log, func(to string) []string {
-		return []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "FAKE_CACHE=" + cache, "FAKE_LOG=" + log, "FAKE_TO=" + to}
+		return []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "FAKE_CACHE=" + cache, "FAKE_LOG=" + log, "FAKE_TO=" + to,
+			"FAKE_MARKET=" + filepath.Join(dir, "plug")}
 	}
 }
 
@@ -94,6 +96,18 @@ func TestPluginBumpOfAPluginNotInstalledFromItsMarketplaceBumpsOnly(t *testing.T
 	}
 	if exists(log) {
 		t.Error("claude refreshed a plugin its marketplace never installed")
+	}
+}
+
+func TestPluginBumpRefusesATreeItsMarketplaceDoesNotRead(t *testing.T) {
+	dir, _, log, env := pluginFixture(t)
+	manifest := filepath.Join(dir, "plug/.claude-plugin/plugin.json")
+	was, _ := os.ReadFile(manifest)
+
+	got := xIn(t, dir, append(env("1.2.4"), "FAKE_MARKET="+t.TempDir()), "plugin", "bump", "demo", "--apply")
+
+	if now, _ := os.ReadFile(manifest); got.code != 1 || string(now) != string(was) || exists(log) {
+		t.Fatalf("exit %d, manifest moved %v, claude wrote %v\n%s", got.code, string(now) != string(was), exists(log), got.stdout)
 	}
 }
 
