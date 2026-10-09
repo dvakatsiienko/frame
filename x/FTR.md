@@ -16,7 +16,7 @@
 - ✅ bare `x` lists the families on one screen
   - given dima runs bare `x` in a terminal at 80 and at 120 cols
   - when it renders
-  - then one framed row per family shows a dot and its name in the family colour, its purpose and its verb names, and the whole board fits a 30-row terminal; under 100 cols the verb names fold under the purpose
+  - then one framed row per family shows a dot and its name in the family colour, its purpose and its verb names, and the whole board fits a 30-row terminal; under 100 cols the verb names sit after the purpose when both fit its column, and fold under it when they do not
   - decision: a dot, not a filled chip — filled chips on consecutive rows touched and read as one block; a blank row between families cost 11 rows (dima, 2026-10-09)
   - given an agent or a pipe, then the envelope holds each family with its purpose and verb names only, and `next` names `x schema <family>`
   - decision: families first, verbs one call deeper, as `PRODUCT.md` planned — the full list scrolled (dima, 2026-10-09)
@@ -86,7 +86,15 @@
   - when `x lane commit --hold-unstaged <msg-file> -- <paths>` runs
   - then the hooks see only the index version of the tree, the commit lands, and every held file is back byte for byte — also when a hook refuses
   - decision: the files move into the git dir, never the shared stash stack another session could pop
+- ✅ `x lane commit` on main runs the ci jobs for the touched paths first
+  - given a commit on main whose paths sit in a go module, or name a `.ts`/`.tsx` file
+  - when `x lane commit` runs
+  - then `go test ./...` in that module, and the repo's `pnpm typecheck` and `pnpm test` for ts, run before the hooks; a red job refuses the commit with its output, and HEAD does not move
+  - given any other branch, then no job runs
+  - decision: local, before the commit lands; nothing on github, pr branches untouched (dima, cli grill 2026-10-09)
 - ✅ `x lane push` pushes HEAD's sha and reads the remote back
+  - given a remote that answers a 5xx, then the push tries again, up to 3 tries 2 s and 4 s apart, and lands once the remote recovers
+  - given a 4xx or a hook refusal, then it fails on the first try
 - ⬜ `x lane pr-open` opens a pr as the coder app
 - ✅ `x lane review <pr>` keeps the ci review on the pr head
   - given a pr whose last review round judged an older commit, under the 2-round cap
@@ -292,6 +300,7 @@
 - ✅ `x linear update <project|initiative> --body-file <f> --health <h>` posts a status update
   - given a name that finds exactly one project or initiative, and `--health onTrack|atRisk|offTrack`
   - when it runs, then the update lands on that one with its health; a name that finds none or several writes nothing
+  - given a name that finds a project, then initiatives are never read, so an actor without `initiative:read` (cclio) posts it; a project wins over an initiative of the same name
 - ✅ `x linear api '<graphql>'` is the raw door when no verb fits
   - given any graphql, and `--vars '<json object>'`
   - when it runs, then it goes out as the acting member, and linear's reply prints as it came — exit 1 when it holds errors
@@ -317,6 +326,18 @@
   - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cw — anything without a terminal — then it acts as the cclio app; given dima's own terminal, as dima; `--as coder|cclio|dima` overrides
   - given linear rejects a cached app token (401), then x mints it again and retries once
   - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
+
+## plugin — releases
+
+- ✅ `x plugin bump <name> --apply` releases a plugin and proves it reached the cache
+  - makes: the patch version moved by one in the plugin's `.claude-plugin/plugin.json`, a line edit
+  - given a tracked plugin dir at a.b.c that a tracked marketplace lists by source
+  - when it runs, then the manifest reads a.b.(c+1), `claude plugin marketplace update` and `claude plugin update` run, `claude plugin list` reports the install at the new version with its cache dir on disk, and the board ends on `next /reload-plugins`
+  - given a tree its marketplace does not read (a worktree, when the marketplace was added from the main checkout), then the plan refuses: nothing is written and nothing refreshed
+  - given an install that stays at the old version, then it exits 1 naming the version claude reports — also when a dir for the new version is already in the cache
+  - given a plugin not installed from a marketplace (the mods load `@inline`, `x-cw`'s marketplace is never added), then it bumps only and runs nothing
+  - given a name no plugin carries, then exit 2 lists the names that exist
+- ✅ `x schema plugin` lists the verb
 
 ## fleet — the fleet measuring itself
 

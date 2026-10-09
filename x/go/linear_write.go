@@ -129,28 +129,28 @@ func linearUpdate(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	var data map[string]json.RawMessage
-	r.Wait("finding "+name, func() {
-		data, _, err = gql(actor, `query($name: String!) {
-			projects(first: 2, filter: { name: { eqIgnoreCase: $name } }) { nodes { id name } }
-			initiatives(first: 2, filter: { name: { eqIgnoreCase: $name } }) { nodes { id name } } }`, map[string]any{"name": name})
-	})
+	// projects are read alone first: an app actor without `initiative:read` (cclio) fails the whole
+	// query the moment it names initiatives, so a project update never asks for them
+	kind, mutation, idKey := "project", "projectUpdateCreate", "projectId"
+	target, err := findNamed(r, actor, "projects", name)
+	if err == nil && len(target) == 0 {
+		kind, mutation, idKey = "initiative", "initiativeUpdateCreate", "initiativeId"
+		if target, err = findNamed(r, actor, "initiatives", name); err != nil {
+			// a mistyped project name must not read as a permission problem
+			return nil, &Fail{Refused: true, Msg: fmt.Sprintf("no project named %q, and %s cannot read initiatives (%v)", name, actor, err),
+				Next: "x linear api 'query { projects { nodes { name } } }'"}
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
-	var projects, initiatives connection[idName]
-	_ = json.Unmarshal(data["projects"], &projects)
-	_ = json.Unmarshal(data["initiatives"], &initiatives)
-	switch found := len(projects.Nodes) + len(initiatives.Nodes); {
-	case found == 0:
-		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("no project or initiative named %q", name), Next: "x linear api 'query { projects { nodes { name } } initiatives { nodes { name } } }'"}
-	case found > 1:
-		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("%q names %d projects and initiatives — x will not guess", name, found), Next: "x linear api with the update mutation and the id"}
+	if len(target) == 0 {
+		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("no project or initiative named %q", name), Next: "x linear api 'query { projects { nodes { name } } }'"}
 	}
-	kind, target, mutation, idKey := "project", projects.Nodes, "projectUpdateCreate", "projectId"
-	if len(initiatives.Nodes) == 1 {
-		kind, target, mutation, idKey = "initiative", initiatives.Nodes, "initiativeUpdateCreate", "initiativeId"
+	if len(target) > 1 {
+		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("%q names %d %ss — x will not guess", name, len(target), kind), Next: "x linear api with the update mutation and the id"}
 	}
+	var data map[string]json.RawMessage
 	field := strings.TrimSuffix(mutation, "Create")
 	r.Wait("posting the "+kind+" update as "+actor, func() {
 		data, _, err = gql(actor, fmt.Sprintf("mutation($input: %sInput!) { %s(input: $input) { success %s { url } } }", strings.ToUpper(mutation[:1])+mutation[1:], mutation, field),
@@ -173,4 +173,18 @@ func linearUpdate(r *Run, args []string, flags Flags) (any, error) {
 	_ = json.Unmarshal(result[field], &posted)
 	r.Board(ui.ok.Render("✓ ") + ui.fg.Render(fmt.Sprintf("%s update on %s (%s), as %s  ", kind, target[0].Name, health, actor)) + ui.dim.Render(posted.URL))
 	return ordered{{"actor", actor}, {"health", health}, {"kind", kind}, {"name", target[0].Name}, {"url", posted.URL}}, nil
+}
+
+func findNamed(r *Run, actor, field, name string) ([]idName, error) {
+	var data map[string]json.RawMessage
+	var err error
+	r.Wait("finding "+name+" among "+field, func() {
+		data, _, err = gql(actor, fmt.Sprintf(`query($name: String!) { %s(first: 2, filter: { name: { eqIgnoreCase: $name } }) { nodes { id name } } }`, field),
+			map[string]any{"name": name})
+	})
+	var found connection[idName]
+	if err == nil {
+		_ = json.Unmarshal(data[field], &found)
+	}
+	return found.Nodes, err
 }

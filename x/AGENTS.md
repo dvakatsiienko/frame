@@ -80,5 +80,7 @@ the checks the FRM-340 verifier built by hand; a verifier or coder on `x` starts
   sees the files as unchanged). so the locked set is read again after it, and each file still locked
   is removed and checked out, only while its raw bytes equal its index blob.
 - `lane commit` formats the named paths with the repo's biome before staging — the commit hook only reports, so this is the one place a format writes
+- `lane commit` on main runs the ci jobs for the touched paths after the hold, before the hooks: `go test ./...` per go module a path sits in, the repo's `pnpm typecheck` + `pnpm test` for a `.ts`/`.tsx`. a pr branch skips them — ci sees it before main does
+- `lane push` tries again on a 5xx — curl's `returned error: 5xx` over https, github's `Internal Server Error` over ssh — up to 3 tries; a 4xx or a hook refusal fails on the first
 
 `PRODUCT.md` (the want, what x is not) · `FTR.md` + `GLOSSARY.md` — read your section before changing what x does.

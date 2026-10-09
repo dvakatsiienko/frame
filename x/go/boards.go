@@ -67,8 +67,13 @@ func familiesBoard() string {
 		cells := []string{chip, ui.fg.Render(familyOf(family).Gist), verbs}
 		if isNarrow() {
 			cells = []string{chip, ui.fg.Render(familyOf(family).Gist)}
+			// the verbs ride the gist's row when both fit, so the overview stays one screen as families grow
 			if len(names) > 0 {
-				cells[1] += "\n" + verbs
+				gap := "\n"
+				if lipgloss.Width(cells[1]+"  "+verbs) <= widths[1] {
+					gap = "  "
+				}
+				cells[1] += gap + verbs
 			}
 		}
 		b.rows = append(b.rows, columns(widths, cells...)...)

@@ -71,6 +71,8 @@ func TestCommentSendsTheFileByteForByte(t *testing.T) {
 	}
 }
 
+// updateServer answers each lookup on its own; initiatives "denied" answers the way linear refuses
+// an app actor without initiative:read
 func updateServer(projects, initiatives string) func(gqlCall) string {
 	return func(call gqlCall) string {
 		switch {
@@ -78,8 +80,26 @@ func updateServer(projects, initiatives string) func(gqlCall) string {
 			return `{"data":{"projectUpdateCreate":{"success":true,"projectUpdate":{"url":"https://linear.app/u/1"}}}}`
 		case strings.Contains(call.Query, "initiativeUpdateCreate"):
 			return `{"data":{"initiativeUpdateCreate":{"success":true,"initiativeUpdate":{"url":"https://linear.app/u/2"}}}}`
+		case strings.Contains(call.Query, "initiatives(") && initiatives == "denied":
+			return `{"errors":[{"message":"initiative:read required for app user"}]}`
+		case strings.Contains(call.Query, "initiatives("):
+			return `{"data":{"initiatives":{"nodes":[` + initiatives + `]}}}`
 		}
-		return `{"data":{"projects":{"nodes":[` + projects + `]},"initiatives":{"nodes":[` + initiatives + `]}}}`
+		return `{"data":{"projects":{"nodes":[` + projects + `]}}}`
+	}
+}
+
+func TestUpdateOnAProjectNeverReadsInitiatives(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "u.md")
+	write(t, file, "the week")
+	server := newFakeLinear(t, updateServer(`{"id":"p-cli","name":"cli"}`, "denied"))
+	if _, got := runLinear(t, server, nil, "linear", "update", "cli", "--body-file", file, "--health", "onTrack"); got.code != 0 {
+		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+	for _, call := range server.requests() {
+		if strings.Contains(call.Query, "initiative") {
+			t.Errorf("a project update asked for initiatives: %s", call.Query)
+		}
 	}
 }
 
@@ -110,12 +130,24 @@ func TestUpdatePostsToTheProjectOrTheInitiativeTheNameFinds(t *testing.T) {
 	}
 }
 
+func TestUpdateNamesAMissingProjectWhenInitiativesAreDenied(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "u.md")
+	write(t, file, "the week")
+	server := newFakeLinear(t, updateServer(``, "denied"))
+
+	_, got := runLinear(t, server, nil, "linear", "update", "cli", "--body-file", file, "--health", "onTrack")
+
+	if got.code != 1 || !strings.Contains(got.stdout, `no project named \"cli\"`) {
+		t.Fatalf("exit %d, want the missing project named\n%s", got.code, got.stdout)
+	}
+}
+
 func TestUpdateRefusesANameItCannotPinDown(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "u.md")
 	write(t, file, "the week")
 	for name, reply := range map[string][2]string{
 		"no match":     {``, ``},
-		"two matches":  {`{"id":"p1","name":"cli"}`, `{"id":"i1","name":"cli"}`},
+		"two projects": {`{"id":"p1","name":"cli"},{"id":"p2","name":"cli"}`, ``},
 		"a bad health": {`{"id":"p1","name":"cli"}`, ``},
 	} {
 		t.Run(name, func(t *testing.T) {

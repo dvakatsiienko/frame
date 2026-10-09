@@ -54,6 +54,11 @@
             "name": "gh"
         },
         {
+            "example": "x plugin bump x --apply",
+            "gist": "our claude code plugins: a release proven in the cache",
+            "name": "plugin"
+        },
+        {
             "example": "x schema lane --level short",
             "gist": "the registry as json",
             "name": "schema"
@@ -100,13 +105,14 @@
             },
             "name": "lane commit",
             "needsApply": false,
-            "purpose": "commit only the named paths, print the new sha; mid-merge concludes it; --repo <path> commits on that repo's main",
+            "purpose": "commit only the named paths, print the sha; on main their ci jobs run first; mid-merge concludes it; --repo <path> too",
             "steps": [
                 "tree",
                 "format",
                 "mods",
                 "stage",
                 "hold",
+                "ci",
                 "commit",
                 "restore"
             ]
@@ -980,6 +986,21 @@
             "name": "trace record",
             "needsApply": false,
             "purpose": "write the trace line for a pnpm script dima typed; only the zsh hook calls it, so help hides it"
+        },
+        {
+            "args": [
+                {
+                    "description": "the plugin's name, as its plugin.json names it",
+                    "name": "name"
+                }
+            ],
+            "name": "plugin bump",
+            "needsApply": true,
+            "purpose": "bump a plugin's patch version, refresh its marketplace and install, and read the new version back from the cache",
+            "steps": ["plan", "write", "marketplace", "update", "cache"],
+            "touches": [
+                "the installed plugins and the plugin cache, through claude plugin list, marketplace update and update"
+            ]
         }
     ]
 }
