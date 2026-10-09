@@ -43,7 +43,7 @@ function fleet(
 ) {
     const runs: string[][] = [];
     const copied: string[] = [];
-    mock.clock(on, { now: NOW });
+    const clock = mock.clock(on, { now: NOW });
     mock.store(on, store);
     on('session.id', () => ({ value: HERE }));
     on('env.get', () => ({ value: '/home' }));
@@ -97,7 +97,7 @@ function fleet(
             },
         };
     });
-    return { copied, runs };
+    return { clock, copied, runs };
 }
 
 // the board as the poll leaves it: a session start reads the registry into the view, then the pane draws it
@@ -209,6 +209,16 @@ test('a session inside a long shell command reads busy', async ($, on) => {
 test('an idle session reads idle with its time in that state', async ($, on) => {
     fleet(on);
     expect(await row($, PEER)).toContain('idle 12m');
+});
+
+test("an open board's span moves when its minute turns", async ($, on) => {
+    const f = fleet(on);
+    const ui = await board($);
+    await f.clock.advance(60_000);
+    const peer = (await ui.findAll({ type: 'Box' })).find(
+        (n) => n.key === `m:${PEER}`,
+    );
+    expect(peer?.text).toContain('idle 13m');
 });
 
 test("a reply's 🔭 line shows on its session's row", async ($, on) => {

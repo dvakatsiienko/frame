@@ -165,13 +165,11 @@ test("an open board's tick leaves the band's view unwritten", async ($, on) => {
     expect(JSON.stringify(state.view)).toBe(settled);
 });
 
-test("an open board's tick moves the board's clock", async ($, on) => {
+test("an open board's ticks leave the board unwritten while nothing it shows changes", async ($, on) => {
     const state: Record<string, unknown> = {};
     const s = await reloaded($, on, state, {}, true);
     await s.clock.advance(4000);
-    const first = (state.board as { at: number } | undefined)?.at;
-    await s.clock.advance(4000);
-    expect((state.board as { at: number } | undefined)?.at).toBe(
-        (first ?? 0) + 4000,
-    );
+    const settled = JSON.stringify(state.board);
+    await s.clock.advance(3 * 4000);
+    expect(JSON.stringify(state.board)).toBe(settled);
 });

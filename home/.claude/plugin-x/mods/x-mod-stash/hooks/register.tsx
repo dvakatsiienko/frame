@@ -283,18 +283,31 @@ async function armWake($: EngineInterface) {
 }
 
 let published = '';
+let boardPublished = '';
 // writes the view to $.state when it changed; every site that reads it while drawing redraws
 async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);
-    if (isBoardOpen)
-        await $.state
-            .set(BOARD_VIEW, {
-                at: await $.clock.now(),
-                isColour:
-                    (await $.store.get(COLOUR).catch(() => false)) === true,
-                members: await members($).catch(() => undefined),
-            })
-            .catch(() => undefined);
+    if (isBoardOpen) {
+        // each board write redraws the pane, and the desktop then rebuilds x-mod-breather's svg in the band (a blink and a
+        // restarted breath, FRM-354): it writes only when what the board shows changes — a row's facts, or a span such as
+        // `busy 3m` turning its minute — never for the clock alone
+        const now = await $.clock.now();
+        const board = {
+            at: now,
+            isColour: (await $.store.get(COLOUR).catch(() => false)) === true,
+            members: await members($).catch(() => undefined),
+        };
+        const boardText = JSON.stringify({
+            ...board,
+            at: board.members?.map((m) =>
+                m.statusSince === undefined ? null : span(now - m.statusSince),
+            ),
+        });
+        if (boardText !== boardPublished) {
+            boardPublished = boardText;
+            await $.state.set(BOARD_VIEW, board).catch(() => undefined);
+        }
+    }
     const view = viewOf(isBoardOpen);
     const text = JSON.stringify(view);
     if (text === published) return;
