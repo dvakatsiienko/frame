@@ -63,6 +63,32 @@ go test -count=1 ./...
 - the child of a test runs with `CLAUDECODE` and `AI_AGENT` unset, or x answers in json and the
   human-view assertion lies.
 
+## A red test whose cause is not in the diff — delve
+
+Step through it with `dlv` (brew) before adding a print. It runs headless from an init file in
+the job tmp, one command per line:
+
+```
+break parseRunID
+continue
+print *meta
+next
+locals
+stack
+exit
+```
+
+```bash
+dlv test . --init <file> --allow-non-terminal-interactive=true -- -test.run '^<TestName>$' < /dev/null
+```
+
+- **break on a function name**: the test's own, or better the function under test. A `file:line`
+  with no statement on it prints «could not find statement», the test runs to the end, and dlv
+  still exits 0, so the miss looks like a clean run.
+- `args` prints a pointer as an address; `print *p` prints the value. `locals` stays empty until
+  a variable is assigned, so `next` first.
+- ~4 s with the test binary cached, ~18 s with a build (dlv 1.27.2 on `x/go`, 2026-10-09).
+
 ## Output
 
 - json for machines through one encoder with `SetEscapeHTML(false)` — the default prints `<msg-file>`
