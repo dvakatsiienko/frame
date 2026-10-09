@@ -23,6 +23,7 @@ let config: Config = DEFAULTS;
 let turn: { startedAt: number } | undefined;
 // the breath the band last posted, for the spinner
 let phase: { word: string; exercise: string } | undefined;
+const STASH_BOARD = { key: 'board', plugin: 'x-mod-stash' } as const;
 
 const log =
     ($: { ui: { log: (text: string) => void } }, what: string) =>
@@ -111,6 +112,9 @@ export const register: Register = (on) => {
         const elapsedMs = now - running.startedAt;
         if (elapsedMs < config.delay * 1000) return next(e);
         if (e.surface === 'desktop') {
+            // read to subscribe: the desktop rebuilds this svg on every /board redraw, and a rebuild from a source drawn
+            // earlier jumps the breath back to that moment; with the read, each board write draws a fresh phase (FRM-354)
+            await $.state.get(STASH_BOARD).catch(() => undefined);
             // the desktop refuses a Client module (10 s, csp); an Svg's own SMIL clock needs no host tick
             const { Box, Svg } = $.ui.resolve(e);
             const exercise = exerciseOf(config.exercise);
