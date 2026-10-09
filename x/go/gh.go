@@ -23,6 +23,13 @@ var (
 	nextLink   = regexp.MustCompile(`<([^>]+)>;\s*rel="next"`)
 )
 
+// the three places github keeps a pr's comments; the ci reviewer posts to a different one per round
+var prFeeds = []struct{ key, title, path string }{
+	{"comments", "comments", "/issues/%s/comments"},
+	{"reviews", "reviews", "/pulls/%s/reviews"},
+	{"reviewComments", "review comments", "/pulls/%s/comments"},
+}
+
 type prCheck struct {
 	Name  string `json:"name"`
 	State string `json:"state"`
@@ -30,21 +37,39 @@ type prCheck struct {
 }
 
 type prComment struct {
-	Author string `json:"author"`
-	At     string `json:"at"`
-	Where  string `json:"where,omitempty"`
-	State  string `json:"state,omitempty"`
-	Body   string `json:"body"`
-	URL    string `json:"url"`
-	at     time.Time
+	Author   string `json:"author"`
+	At       string `json:"at"`
+	Where    string `json:"where,omitempty"`
+	Outdated bool   `json:"outdated,omitempty"`
+	State    string `json:"state,omitempty"`
+	Body     string `json:"body"`
+	URL      string `json:"url"`
+	at       time.Time
 }
 
-type ghUser struct {
-	Login string `json:"login"`
+type prRead struct {
+	repo, pr, title, state, branch, head, read, since string
+	checks                                            []prCheck
+	feeds                                             [][]prComment
 }
 
-type ghNote struct {
-	User         ghUser    `json:"user"`
+func (p prRead) envelope() ordered {
+	data := ordered{{"repo", p.repo}, {"pr", p.pr}, {"title", p.title}, {"state", p.state}, {"branch", p.branch},
+		{"head", p.head}, {"read", p.read}}
+	if p.since != "" {
+		data = append(data, kv{"since", p.since})
+	}
+	data = append(data, kv{"checks", p.checks})
+	for i, feed := range prFeeds {
+		data = append(data, kv{feed.key, p.feeds[i]})
+	}
+	return data
+}
+
+type ghComment struct {
+	User struct {
+		Login string `json:"login"`
+	} `json:"user"`
 	Updated      time.Time `json:"updated_at"`
 	Created      time.Time `json:"created_at"`
 	Submitted    time.Time `json:"submitted_at"`
@@ -74,81 +99,76 @@ func ghPr(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	// taken before the reads, so a comment posted while they run is still newer than the next --since
-	read := time.Now().UTC().Format(time.RFC3339)
-	var pr struct {
-		Title  string `json:"title"`
-		State  string `json:"state"`
-		Merged bool   `json:"merged"`
-		Head   struct {
-			Sha string `json:"sha"`
-			Ref string `json:"ref"`
-		} `json:"head"`
+	read := prRead{repo: repo, pr: n, feeds: make([][]prComment, len(prFeeds))}
+	if !since.IsZero() {
+		read.since = since.UTC().Format(time.RFC3339)
 	}
-	var checks []prCheck
-	var feeds [3][]prComment
 	r.Wait("reading #"+n+" in "+repo, func() {
-		base := "/repos/" + repo
-		if err = ghGet(base+"/pulls/"+n, &pr); err != nil {
+		base := githubBase() + "/repos/" + repo
+		var pr struct {
+			Title  string `json:"title"`
+			State  string `json:"state"`
+			Merged bool   `json:"merged"`
+			Head   struct {
+				Sha string `json:"sha"`
+				Ref string `json:"ref"`
+			} `json:"head"`
+		}
+		var header http.Header
+		if header, err = ghFetch(base+"/pulls/"+n, &pr); err != nil {
 			return
 		}
-		if checks, err = checksOf(base, pr.Head.Sha); err != nil {
+		// github's clock, read before the feeds: the next --since misses nothing posted while they ran
+		at, dateErr := http.ParseTime(header.Get("Date"))
+		if dateErr != nil {
+			at = time.Now()
+		}
+		read.read = at.UTC().Format(time.RFC3339)
+		read.title, read.state, read.branch, read.head = pr.Title, pr.State, pr.Head.Ref, pr.Head.Sha
+		if pr.Merged {
+			read.state = "merged"
+		}
+		if read.checks, err = checksOf(base, pr.Head.Sha); err != nil {
 			return
 		}
-		for i, path := range []string{base + "/issues/" + n + "/comments", base + "/pulls/" + n + "/reviews", base + "/pulls/" + n + "/comments"} {
-			var notes []ghNote
-			if notes, err = ghPages[ghNote](path, ""); err != nil {
+		for i, feed := range prFeeds {
+			var comments []ghComment
+			if comments, err = ghPages[ghComment](base+fmt.Sprintf(feed.path, n), ""); err != nil {
 				return
 			}
-			feeds[i] = commentsOf(notes, since)
+			read.feeds[i] = commentsOf(comments, since)
 		}
 	})
 	if err != nil {
 		return nil, err
 	}
-	state := pr.State
-	if pr.Merged {
-		state = "merged"
-	}
-	data := ordered{{"repo", repo}, {"pr", n}, {"title", pr.Title}, {"state", state}, {"branch", pr.Head.Ref},
-		{"head", pr.Head.Sha}, {"read", read}}
-	if !since.IsZero() {
-		data = append(data, kv{"since", since.UTC().Format(time.RFC3339)})
-	}
-	data = append(data, kv{"checks", checks}, kv{"comments", feeds[0]}, kv{"reviews", feeds[1]}, kv{"reviewComments", feeds[2]})
 	if r.human {
-		next := "x gh pr " + n + " --since " + read
-		if flags["repo"] != "" {
+		next := "x gh pr " + n + " --since " + read.read
+		if given, _ := flags["repo"].(string); given != "" {
 			next += " --repo " + repo
 		}
-		r.Page(prBoard(data, checks, feeds, next))
+		r.Page(prBoard(read, next))
 	}
-	return data, nil
+	return read.envelope(), nil
 }
 
 // a comment's time is its last edit: the ci reviewer lands its verdict by editing its «working…» comment
-// (atelier #115). a review with no words and no verdict only wraps its line comments; a pending one is unsent
-func commentsOf(notes []ghNote, since time.Time) []prComment {
+// (atelier #115). github stamps whole seconds, so a comment in the cutoff's own second counts as newer.
+// a review with no words and no verdict only wraps its line comments; a pending one is unsent
+func commentsOf(comments []ghComment, since time.Time) []prComment {
 	out := []prComment{}
-	for _, note := range notes {
-		at := note.Updated
-		for _, t := range []time.Time{note.Created, note.Submitted} {
-			if at.IsZero() {
-				at = t
-			}
-		}
-		silent := note.State == "COMMENTED" && strings.TrimSpace(note.Body) == ""
-		if at.IsZero() || silent || slices.Contains(mutedAuthors, note.User.Login) || !at.After(since) {
+	for _, c := range comments {
+		at := cmp.Or(c.Updated, c.Created, c.Submitted)
+		silent := c.State == "COMMENTED" && strings.TrimSpace(c.Body) == ""
+		if at.IsZero() || silent || slices.Contains(mutedAuthors, c.User.Login) || at.Before(since) {
 			continue
 		}
-		where := ""
-		if line := cmp.Or(note.Line, note.OriginalLine); note.Path != "" && line != nil {
-			where = fmt.Sprintf("%s:%d", note.Path, *line)
-		} else if note.Path != "" {
-			where = note.Path
+		where := c.Path
+		if line := cmp.Or(c.Line, c.OriginalLine); c.Path != "" && line != nil {
+			where = fmt.Sprintf("%s:%d", c.Path, *line)
 		}
-		out = append(out, prComment{Author: note.User.Login, At: at.UTC().Format(time.RFC3339), Where: where,
-			State: note.State, Body: note.Body, URL: note.URL, at: at})
+		out = append(out, prComment{Author: c.User.Login, At: at.UTC().Format(time.RFC3339), Where: where,
+			Outdated: c.Path != "" && c.Line == nil, State: c.State, Body: c.Body, URL: c.URL, at: at})
 	}
 	slices.SortStableFunc(out, func(a, b prComment) int { return b.at.Compare(a.at) })
 	return out
@@ -211,106 +231,90 @@ func repoOf(flags Flags) (string, error) {
 
 /* Github */
 
-// ghGet reads one github api path as the x-coder-cc app, the identity every lane call on github wears
-func ghGet(path string, into any) error {
-	_, err := ghFetch(githubBase()+path, into)
-	return err
-}
-
 // ghPages follows the Link header to the last page; key names the list inside an object page
-func ghPages[T any](path, key string) ([]T, error) {
+func ghPages[T any](target, key string) ([]T, error) {
 	var all []T
-	target := githubBase() + path + "?per_page=100"
+	target += "?per_page=100"
 	for target != "" {
 		var raw json.RawMessage
-		next, err := ghFetch(target, &raw)
+		header, err := ghFetch(target, &raw)
 		if err != nil {
 			return nil, err
 		}
 		if key != "" {
 			var page map[string]json.RawMessage
-			if err := json.Unmarshal(raw, &page); err != nil {
-				return nil, &Fail{Msg: "github answered a page x cannot read at " + path, Next: "x as coder -- gh api " + strings.TrimPrefix(path, "/")}
-			}
+			_ = json.Unmarshal(raw, &page)
 			raw = page[key]
 		}
 		var items []T
 		if err := json.Unmarshal(raw, &items); err != nil {
-			return nil, &Fail{Msg: "github answered a page x cannot read at " + path, Next: "x as coder -- gh api " + strings.TrimPrefix(path, "/")}
+			path := strings.TrimPrefix(target, githubBase()+"/")
+			return nil, &Fail{Msg: "github answered a page x cannot read at " + path, Next: "x as coder -- gh api " + path}
 		}
 		all = append(all, items...)
-		target = next
+		target = ""
+		if match := nextLink.FindStringSubmatch(header.Get("Link")); match != nil {
+			target = match[1]
+		}
 	}
 	return all, nil
 }
 
-func ghFetch(target string, into any) (next string, err error) {
+// ghFetch reads one github api url as the x-coder-cc app, the identity every lane call on github wears
+func ghFetch(target string, into any) (http.Header, error) {
 	token, err := tokenFor("coder", "gh")
 	if err != nil {
-		return "", &Fail{Msg: "no gh token for the coder app: " + err.Error(), Next: "x schema as"}
+		return nil, &Fail{Msg: "no gh token for the coder app: " + err.Error(), Next: "x schema as"}
 	}
 	req, err := http.NewRequest(http.MethodGet, target, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return "", &Fail{Msg: "github is unreachable: " + err.Error(), Next: "x gh pr again once the network is back"}
+		return nil, &Fail{Msg: "github is unreachable: " + err.Error(), Next: "x gh pr again once the network is back"}
 	}
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(resp.Body)
 	path := strings.TrimPrefix(req.URL.Path, "/")
 	switch {
 	case resp.StatusCode == http.StatusNotFound:
-		return "", &Fail{Msg: "github answered 404 for " + path + " — no such pr, or the coder app is not installed on the repo",
+		return nil, &Fail{Msg: "github answered 404 for " + path + " — no such pr, or the coder app is not installed on the repo",
 			Next: "x as coder -- gh api " + path}
 	case resp.StatusCode >= 300:
-		return "", &Fail{Msg: fmt.Sprintf("github answered %d for %s", resp.StatusCode, path), Next: "x as coder -- gh api " + path,
+		return nil, &Fail{Msg: fmt.Sprintf("github answered %d for %s", resp.StatusCode, path), Next: "x as coder -- gh api " + path,
 			Log: nonBlank(string(raw))}
 	}
 	if err := json.Unmarshal(raw, into); err != nil {
-		return "", &Fail{Msg: "github answered json x cannot read at " + path, Next: "x as coder -- gh api " + path}
+		return nil, &Fail{Msg: "github answered json x cannot read at " + path, Next: "x as coder -- gh api " + path}
 	}
-	if match := nextLink.FindStringSubmatch(resp.Header.Get("Link")); match != nil {
-		next = match[1]
-	}
-	return next, nil
+	return resp.Header, nil
 }
 
 /* Board */
-func prBoard(data ordered, checks []prCheck, feeds [3][]prComment, next string) frame {
-	field := func(key string) string {
-		for _, f := range data {
-			if f.key == key {
-				s, _ := f.value.(string)
-				return s
-			}
-		}
-		return ""
-	}
-	n := field("pr")
-	b := frame{width: frameWidth(), titleLeft: titleOf("gh pr"), titleRight: ui.dim.Render("#" + n + " " + field("repo")), padRows: true}
+func prBoard(p prRead, next string) frame {
+	b := frame{width: frameWidth(), titleLeft: titleOf("gh pr"), titleRight: ui.dim.Render("#" + p.pr + " " + p.repo), padRows: true}
 	w := b.inner()
 	state := ui.dim
-	switch field("state") {
+	switch p.state {
 	case "open":
 		state = ui.ok
 	case "merged":
 		state = lipgloss.NewStyle().Foreground(ui.familyColor("gh"))
 	}
-	stateText := state.Bold(true).Render("● " + field("state"))
-	head := ui.bold.Render("#"+n) + "  " + ui.fg.Render(field("title"))
+	stateText := state.Bold(true).Render("● " + p.state)
+	head := ui.bold.Render("#"+p.pr) + "  " + ui.fg.Render(p.title)
 	b.rows = append(b.rows, clip(head, w-lipgloss.Width(stateText)-1)+strings.Repeat(" ", max(w-lipgloss.Width(head)-lipgloss.Width(stateText), 1))+stateText)
-	b.rows = append(b.rows, ui.dim.Render(clip(field("branch")+" at "+short(field("head")), w)))
+	b.rows = append(b.rows, ui.dim.Render(clip(p.branch+" at "+short(p.head), w)))
 
-	b.rows = append(b.rows, "", ui.label.Render(fmt.Sprintf("checks (%d)", len(checks))))
-	if len(checks) == 0 {
+	b.rows = append(b.rows, "", ui.label.Render(fmt.Sprintf("checks (%d)", len(p.checks))))
+	if len(p.checks) == 0 {
 		b.rows = append(b.rows, "  "+ui.dim.Render("none on the head"))
 	}
-	for _, c := range checks {
+	for _, c := range p.checks {
 		mark := ui.dim
 		switch c.State {
 		case "success":
@@ -321,23 +325,25 @@ func prBoard(data ordered, checks []prCheck, feeds [3][]prComment, next string) 
 		b.rows = append(b.rows, "  "+mark.Render("●")+" "+ui.fg.Render(clip(c.Name, w-24))+"  "+mark.Render(c.State))
 	}
 
-	since := field("since")
-	for i, title := range []string{"comments", "reviews", "review comments"} {
-		heading := fmt.Sprintf("%s (%d)", title, len(feeds[i]))
-		if since != "" {
-			heading += ", since " + since
+	for i, feed := range prFeeds {
+		heading := fmt.Sprintf("%s (%d)", feed.title, len(p.feeds[i]))
+		if p.since != "" {
+			heading += ", since " + p.since
 		}
 		b.rows = append(b.rows, "", ui.label.Render(heading))
-		if len(feeds[i]) == 0 {
+		if len(p.feeds[i]) == 0 {
 			b.rows = append(b.rows, "  "+ui.dim.Render("none"))
 		}
-		for _, c := range feeds[i] {
+		for _, c := range p.feeds[i] {
 			meta := []string{c.At}
 			if c.State != "" && c.State != "COMMENTED" {
 				meta = append(meta, strings.ToLower(strings.ReplaceAll(c.State, "_", " ")))
 			}
 			if c.Where != "" {
 				meta = append(meta, c.Where)
+			}
+			if c.Outdated {
+				meta = append(meta, "outdated")
 			}
 			b.rows = append(b.rows, "", "  "+ui.bold.Render(c.Author)+"  "+ui.dim.Render(clip(strings.Join(meta, "  "), w-lipgloss.Width(c.Author)-4)))
 			if strings.TrimSpace(c.Body) != "" {

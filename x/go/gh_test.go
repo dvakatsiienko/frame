@@ -33,6 +33,7 @@ func fakeGithub(t *testing.T, pages map[string]string) (*httptest.Server, func()
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Date", githubNow)
 		_, _ = w.Write([]byte(body))
 	}))
 	t.Cleanup(server.Close)
@@ -40,6 +41,9 @@ func fakeGithub(t *testing.T, pages map[string]string) (*httptest.Server, func()
 }
 
 const repoPath = "/repos/o/r"
+
+// github's clock in the fake, an hour off the fixtures' comments and the test machine's own clock
+const githubNow = "Fri, 09 Oct 2026 14:00:00 GMT"
 
 // the colour codes between words; the board styles each markdown run apart
 var sgr = regexp.MustCompile("\x1b\\[[0-9;]*m")
@@ -72,7 +76,7 @@ func prPages() map[string]string {
 
 type prRun struct {
 	code   int
-	stdout string
+	output string
 	data   struct {
 		Repo           string      `json:"repo"`
 		Head           string      `json:"head"`
@@ -89,7 +93,7 @@ func runGhPr(t *testing.T, pages map[string]string, env []string, argv ...string
 	server, auth := fakeGithub(t, pages)
 	keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
 	got := runAs(t, append([]string{"X_KEYS=" + keys, "X_GITHUB_URL=" + server.URL}, env...), append([]string{"gh", "pr"}, argv...)...)
-	out := prRun{code: got.code, stdout: got.stdout + got.stderr}
+	out := prRun{code: got.code, output: got.stdout + got.stderr}
 	var envelope struct {
 		Data json.RawMessage `json:"data"`
 	}
@@ -107,31 +111,47 @@ func bodies(comments []prComment) string {
 	return strings.Join(out, ",")
 }
 
-func TestGhPrReadsEveryFeedNewestFirstAsTheCoderApp(t *testing.T) {
-	got, auth := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
+func TestGhPrListsEachFeedNewestFirst(t *testing.T) {
+	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
 
-	if got.code != 0 {
-		t.Fatalf("exit %d:\n%s", got.code, got.stdout)
+	feeds := bodies(got.data.Comments) + "|" + bodies(got.data.Reviews) + "|" + bodies(got.data.ReviewComments)
+	if got.code != 0 || feeds != "verdict: clean,later,first|fix it|why?,off by one" {
+		t.Fatalf("exit %d, feeds %q, want every page newest first, the wordless review dropped:\n%s", got.code, feeds, got.output)
 	}
-	if b := bodies(got.data.Comments); b != "verdict: clean,later,first" {
-		t.Errorf("issue comments %q, want all three across both pages, newest first", b)
+}
+
+func TestGhPrNamesTheLineAReviewCommentSitsOn(t *testing.T) {
+	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
+
+	want := []prComment{{Where: "x/go/gh.go:9", Outdated: true}, {Where: "x/go/gh.go:42"}}
+	if len(got.data.ReviewComments) != len(want) {
+		t.Fatalf("exit %d, review comments %+v:\n%s", got.code, got.data.ReviewComments, got.output)
 	}
-	if b := bodies(got.data.Reviews); b != "fix it" {
-		t.Errorf("reviews %q, want the one with words", b)
+	for i, w := range want {
+		if c := got.data.ReviewComments[i]; c.Where != w.Where || c.Outdated != w.Outdated {
+			t.Errorf("comment %q sits at %q outdated %v, want %q outdated %v", c.Body, c.Where, c.Outdated, w.Where, w.Outdated)
+		}
 	}
-	if b := bodies(got.data.ReviewComments); b != "why?,off by one" {
-		t.Errorf("review comments %q", b)
-	}
-	if where := got.data.ReviewComments[1].Where; where != "x/go/gh.go:42" {
-		t.Errorf("where %q, want path:line", where)
-	}
-	if where := got.data.ReviewComments[0].Where; where != "x/go/gh.go:9" {
-		t.Errorf("an outdated comment's where %q, want its original line", where)
+}
+
+func TestGhPrReadsAsTheCoderApp(t *testing.T) {
+	_, auth := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
+
+	if len(auth) == 0 {
+		t.Fatal("no request reached github")
 	}
 	for _, a := range auth {
 		if a != "Bearer ghs_coder" {
 			t.Fatalf("a request went out as %q, want the coder app", a)
 		}
+	}
+}
+
+func TestGhPrTakesTheNextSinceFromGithubsClock(t *testing.T) {
+	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
+
+	if got.code != 0 || got.data.Read != "2026-10-09T14:00:00Z" {
+		t.Fatalf("exit %d, read %q, want github's Date header", got.code, got.data.Read)
 	}
 }
 
@@ -153,21 +173,31 @@ func TestGhPrNeverPrintsTheDeployBots(t *testing.T) {
 	got, _ := runGhPr(t, prPages(), []string{"CLAUDECODE="}, "7", "--repo", "o/r", "--board")
 
 	if got.code != 0 {
-		t.Fatalf("exit %d:\n%s", got.code, got.stdout)
+		t.Fatalf("exit %d:\n%s", got.code, got.output)
 	}
 	for _, bot := range []string{"vercel[bot]", "linear-code[bot]", "deployed", "linked"} {
-		if strings.Contains(got.stdout, bot) {
-			t.Errorf("the board prints %q:\n%s", bot, got.stdout)
+		if strings.Contains(got.output, bot) {
+			t.Errorf("the board prints %q:\n%s", bot, got.output)
 		}
 	}
 }
 
 func TestGhPrSinceKeepsOnlyNewerComments(t *testing.T) {
-	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r", "--since", "2026-10-09T11:30:00Z")
+	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r", "--since", "2026-10-09T11:30:01Z")
 
 	all := bodies(got.data.Comments) + "|" + bodies(got.data.Reviews) + "|" + bodies(got.data.ReviewComments)
 	if got.code != 0 || all != "verdict: clean,later||why?" {
-		t.Fatalf("exit %d, kept %q, want only what came after 11:30", got.code, all)
+		t.Fatalf("exit %d, kept %q, want only what came after 11:30:01", got.code, all)
+	}
+}
+
+// github stamps whole seconds: a comment posted after a read, in the read's own second, carries the
+// cutoff's exact time, and the next poll must still print it
+func TestGhPrSinceKeepsACommentFromTheCutoffsOwnSecond(t *testing.T) {
+	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r", "--since", "2026-10-09T11:30:00Z")
+
+	if b := bodies(got.data.ReviewComments); got.code != 0 || b != "why?,off by one" {
+		t.Fatalf("exit %d, kept %q, want the 11:30:00 comment too", got.code, b)
 	}
 }
 
@@ -192,12 +222,12 @@ func TestGhPrPrintsJSONToAnAgentAndTheBoardOnAsk(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			got, _ := runGhPr(t, prPages(), []string{"CLAUDECODE=1"}, append([]string{"7", "--repo", "o/r"}, c.argv...)...)
 
-			isJSON := json.Valid([]byte(strings.TrimSpace(got.stdout)))
+			isJSON := json.Valid([]byte(strings.TrimSpace(got.output)))
 			if got.code != 0 || isJSON == c.board {
-				t.Fatalf("exit %d, json %v, want board %v:\n%s", got.code, isJSON, c.board, got.stdout)
+				t.Fatalf("exit %d, json %v, want board %v:\n%s", got.code, isJSON, c.board, got.output)
 			}
-			if c.board && !strings.Contains(sgr.ReplaceAllString(got.stdout, ""), "off by one") {
-				t.Errorf("the board does not show the review comment:\n%s", got.stdout)
+			if c.board && !strings.Contains(sgr.ReplaceAllString(got.output, ""), "off by one") {
+				t.Errorf("the board does not show the review comment:\n%s", got.output)
 			}
 		})
 	}
@@ -216,7 +246,7 @@ func TestGhPrRefusesBadInputWithAUsageExit(t *testing.T) {
 			got, auth := runGhPr(t, prPages(), nil, argv...)
 
 			if got.code != 2 || len(auth) != 0 {
-				t.Fatalf("exit %d after %d requests, want 2 before any:\n%s", got.code, len(auth), got.stdout)
+				t.Fatalf("exit %d after %d requests, want 2 before any:\n%s", got.code, len(auth), got.output)
 			}
 		})
 	}
@@ -242,7 +272,7 @@ func TestGhPrReadsTheRepoFromTheOriginRemote(t *testing.T) {
 func TestGhPrNamesAMissingPr(t *testing.T) {
 	got, _ := runGhPr(t, prPages(), nil, "8", "--repo", "o/r")
 
-	if got.code != 1 || !strings.Contains(got.stdout, "404") {
-		t.Fatalf("exit %d, want 1 naming the 404:\n%s", got.code, got.stdout)
+	if got.code != 1 || !strings.Contains(got.output, "404") {
+		t.Fatalf("exit %d, want 1 naming the 404:\n%s", got.code, got.output)
 	}
 }
