@@ -27,6 +27,20 @@ test('a wish is bolded as a noun, never as a verb', () => {
     );
 });
 
+test('a fleet member prints bold with its badge', () => {
+    expect(
+        boldFleetWords('cclio asks ccrow; the coder and two verifiers').text,
+    ).toBe(
+        '**🦉 cclio** asks **🐦‍⬛ ccrow**; the **🔧 coder** and two **🔎 verifiers**',
+    );
+});
+
+test("dima's name takes his badge, a path through a member's dir keeps its own", () => {
+    expect(boldFleetWords("dima's word, read cclio/AGENTS.md").text).toBe(
+        "**🙋‍♂️ dima**'s word, read cclio/AGENTS.md",
+    );
+});
+
 test('a badged word only gains the bold', () => {
     expect(boldFleetWords('a ✨ wisp here').text).toBe('a **✨ wisp** here');
 });

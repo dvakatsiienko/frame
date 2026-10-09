@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing';
 
-import { FLEET_NAME, doorOf, parseAsks, parseWait } from '../hooks/parse.ts';
+import { doorOf, isFleetName, parseAsks, parseWait } from '../hooks/parse.ts';
 
 test('a reply without a 🔭 line waits on nothing', () => {
     expect(parseWait('done.\n\n➡️ next')).toBe(undefined);
@@ -48,7 +48,10 @@ for (const [name, fits] of [
     ['🎯 🔎 BYT-12 verify: atelier', true],
     ['🔎 verify: FRM-268', false],
     ['reply message handler', false],
+    ['🐦 ⬛ ccrow', true],
+    ['ccrow probe', false],
+    ['wisp', false],
 ] as const)
-    test(`the fleet name pattern ${fits ? 'fits' : 'rejects'} «${name}»`, () => {
-        expect(FLEET_NAME.test(name)).toBe(fits);
+    test(`the fleet name check ${fits ? 'passes' : 'flags'} «${name}»`, () => {
+        expect(isFleetName(name)).toBe(fits);
     });

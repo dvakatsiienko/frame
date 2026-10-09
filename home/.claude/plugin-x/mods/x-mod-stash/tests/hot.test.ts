@@ -192,34 +192,23 @@ test('🔥 switched off on the band stays off when the next turn ends', async ($
     ]);
 });
 
-test('🔥 turns itself off after the 5h window resets', async ($, on) => {
+test('🔥 stays on through a 5h window reset', async ($, on) => {
     const s = await started($, on);
     await measure($, 50, 30 * MIN);
     await s.ui.press({ key: 'hot' });
     await endTurn($);
     await s.clock.advance(50 * MIN);
     expect([(await s.button())?.props.variant, s.pings]).toEqual([
-        undefined,
-        [],
+        'secondary',
+        [expect.stringContaining('keep-hot ping')],
     ]);
 });
 
-test('🔥 switched on right after a reload still turns itself off at the reset', async ($, on) => {
-    const s = await started(
-        $,
-        on,
-        {},
-        {
-            fiveHour: { resetsAt: NOW + 30 * MIN },
-        },
-    );
+test('🔥 switched off on the band drops its store key', async ($, on) => {
+    const store: Record<string, unknown> = { [`hot:${SID}`]: { since: NOW } };
+    const s = await started($, on, store);
     await s.ui.press({ key: 'hot' });
-    await endTurn($);
-    await s.clock.advance(50 * MIN);
-    expect([(await s.button())?.props.variant, s.pings]).toEqual([
-        undefined,
-        [],
-    ]);
+    expect(`hot:${SID}` in store).toBe(false);
 });
 
 test('a folded asks list stays folded across a reload', async ($, on) => {
@@ -251,14 +240,5 @@ test('folding the asks writes the fold to $.state', async ($, on) => {
     expect(writes.filter(([key]) => key === 'open').at(-1)).toEqual([
         'open',
         false,
-    ]);
-});
-
-test('a measure writes the 5h reset to $.state', async ($, on) => {
-    const writes = stateWrites(on);
-    await started($, on);
-    await measure($, 50, 30 * MIN);
-    expect(writes.filter(([key]) => key === 'fiveHour')).toEqual([
-        ['fiveHour', { resetsAt: NOW + 30 * MIN }],
     ]);
 });

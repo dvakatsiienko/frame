@@ -10,10 +10,10 @@ import type {
 } from '../types/stash.d.ts';
 import {
     type Door,
-    FLEET_NAME,
     boldFleetWords,
     bulletDots,
     doorOf,
+    isFleetName,
     nestedAsks,
     parseAfter,
     parseAsks,
@@ -59,7 +59,6 @@ const HOT_MS = 50 * 60 * 1000;
 const HOT = 'hot:';
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives here (FRM-320)
 const OPEN = { key: 'open', plugin: 'x-mod-stash' } as const;
-const FIVE_HOUR = { key: 'fiveHour', plugin: 'x-mod-stash' } as const;
 // what the band and the board draw: renders read it, and a write redraws them, no invalidate
 const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
 // the running turn, so a mid-turn reload still knows it is busy
@@ -83,9 +82,8 @@ let turnAfk: boolean | undefined;
 let proc: Proc | undefined;
 let root = '';
 let holds = { others: 0, warned: false };
-// since: the turn end the next ping counts from; until: the 5h reset that turns it off
-let hot: { since: number; until?: number } | undefined;
-let fiveHour: { resetsAt?: number } | undefined;
+// since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
+let hot: { since: number } | undefined;
 let isBusy = false;
 // the model label last written for this session, so a step writes the store only when it changes
 let modelSeen: string | undefined;
@@ -326,7 +324,6 @@ async function load($: EngineInterface) {
                 if (sid !== selfId && !alive.has(sid)) delete next[sid];
     }
     entries = next;
-    await cooled($);
     // an unreadable holds file keeps the last chip
     if (selfId) holds = await chip($, selfId, root).catch(() => holds);
     guards = await guardLines($).catch(() => guards);
@@ -391,25 +388,12 @@ async function saveHot($: EngineInterface) {
     else await $.store.delete(HOT + sid);
 }
 
-// past the 5h reset 🔥 has nothing left to keep warm
-async function cooled($: EngineInterface) {
-    if (!hot?.until || (await $.clock.now()) < hot.until) return false;
-    hot = undefined;
-    hotGen++;
-    await saveHot($);
-    return true;
-}
-
 async function armHot($: EngineInterface) {
     const mine = ++hotGen;
     if (!hot || isBusy) return;
     const wait = hot.since + HOT_MS - (await $.clock.now());
     $.clock.after(Math.max(0, wait), async () => {
         if (!hot || isBusy || mine !== hotGen) return;
-        if (await cooled($)) {
-            await publish($);
-            return;
-        }
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
         await $.prompt.submit({ text: PING });
     });
@@ -605,7 +589,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             asks: isLive(asks, now) ? asks.asks.length : 0,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
             model: text(await $.store.get(MODEL + r.sid)),
-            offPattern: bg && !FLEET_NAME.test(r.name),
+            offPattern: bg && !isFleetName(r.name),
             wait: reply?.wait,
         });
     }
@@ -712,14 +696,12 @@ export const register: Register = (on) => {
         });
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
-            fiveHour: (await $.state.get(FIVE_HOUR)).value,
             open: (await $.state.get(OPEN)).value,
             turn: (await $.state.get(TURN)).value,
             view: (await $.state.get(VIEW)).value,
         };
         await pruneEnded($).catch(() => undefined);
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
-        fiveHour = kept.fiveHour;
         if (kept.open !== undefined) open = kept.open;
         // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
         if (kept.turn) {
@@ -877,14 +859,8 @@ export const register: Register = (on) => {
         return r;
     });
 
-    // the 5h reset 🔥 turns itself off at; the context fill the board shows
+    // the context fill the board shows
     on('session.measure', async ($, e, next) => {
-        const w = e.rateLimits.find((r) => r.kind === 'five_hour');
-        fiveHour = w && {
-            resetsAt: w.resetsAt ? Date.parse(w.resetsAt) : undefined,
-        };
-        if (fiveHour)
-            await $.state.set(FIVE_HOUR, fiveHour).catch(() => undefined);
         const sid = await currentId($);
         if (sid && e.context.percent !== undefined)
             await $.store
@@ -1202,14 +1178,7 @@ export const register: Register = (on) => {
             await publish($);
         };
         const handleHotFlip = async () => {
-            const now = await $.clock.now();
-            const reset = fiveHour?.resetsAt;
-            hot = hot
-                ? undefined
-                : {
-                      since: now,
-                      until: reset && reset > now ? reset : undefined,
-                  };
+            hot = hot ? undefined : { since: await $.clock.now() };
             await saveHot($);
             await armHot($);
             await publish($);

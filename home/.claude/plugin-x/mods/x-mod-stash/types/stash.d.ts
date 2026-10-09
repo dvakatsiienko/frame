@@ -1,6 +1,3 @@
-// the 5h window's reset, as the last `session.measure` reported it
-export type StashFiveHour = { resetsAt?: number };
-
 // one session's open asks, as its last reply left them
 export type StashEntry = {
     label: string;
@@ -78,7 +75,6 @@ declare module 'claude-code' {
     interface PluginState {
         'x-mod-stash': {
             open: boolean;
-            fiveHour: StashFiveHour;
             view: StashView;
             turn: StashTurn;
         };

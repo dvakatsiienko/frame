@@ -43,12 +43,33 @@ export function bulletDots(text: string) {
         .join('\n');
 }
 
-// a fleet word prints bold with its badge glued on (rules/fleet-output-format.md); a bare one in prose is fixed, not policed.
-// fences, quotes, inline code, bold text and links keep theirs; «wish» only as a noun, after a determiner
-const BADGES = { freebie: '🍀', siesta: '🌤️', wish: '🌠', wisp: '✨' } as const;
+// a fleet word or member prints bold with its badge glued on (rules/fleet-output-format.md); a bare one in prose is fixed,
+// not policed. fences, quotes, inline code, bold text and links keep theirs; «wish» only as a noun, after a determiner.
+// members are rules/fleet-identity.md's, minus the names that are plain english too (helper, retro, classifier, checkup,
+// explore, cc) — those would badge a helper function or the retro file
+const MEMBERS = {
+    cclio: '🦉',
+    ccrow: '🐦‍⬛',
+    coder: '🔧',
+    cw: '🤝',
+    designer: '🎨',
+    dima: '🙋‍♂️',
+    researcher: '🐝',
+    sifter: '🪶',
+    verifier: '🔎',
+} as const;
+const BADGES = {
+    ...MEMBERS,
+    freebie: '🍀',
+    siesta: '🌤️',
+    wish: '🌠',
+    wisp: '✨',
+} as const;
 type FleetWord = keyof typeof BADGES;
-const WORD =
-    /(?<![\w\-/.])(?:(?:✨|🌤️|🌠|🍀) )?(wisp|siesta|freebie|wish)(s|es)?(?![\w\-/]|\.\w)/giu;
+const WORD = new RegExp(
+    `(?<![\\w\\-/.])(?:(?:${Object.values(BADGES).join('|')}) )?(${Object.keys(BADGES).join('|')})(s|es)?(?![\\w\\-/]|\\.\\w)`,
+    'giu',
+);
 const DETERMINER =
     /(?:^|\s)(?:a|an|the|his|her|this|that|each|every|one|new|your|my|our|their|dima's)\s+(?:🌠 )?$/i;
 
@@ -181,5 +202,12 @@ export function doorOf(entry: {
     return undefined;
 }
 
-// `<mode> <role emoji> <ticket> <role word>: <what>` — «☕️ 🔧 FRM-303 code: stash keep-hot»
-export const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
+// `<mode> <role emoji> <ticket> <role word>: <what>` — «☕️ 🔧 FRM-303 code: stash keep-hot»; a standing member keeps
+// its own name, badge or not — «🐦‍⬛ ccrow», which the registry writes with a space for the joiner
+const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
+export function isFleetName(name: string) {
+    return (
+        FLEET_NAME.test(name) ||
+        Object.hasOwn(MEMBERS, name.replace(/[^\w\s]/gu, '').trim())
+    );
+}
