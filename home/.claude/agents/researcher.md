@@ -1,6 +1,6 @@
 ---
 name: researcher
-description: Opus reader for a bounded research question answered from sources — docs, repos, release notes, papers, the web — returned as one written file or a short answer. Runs without the fleet's CLAUDE.md memory, so the brief carries everything it needs: the question, the vectors, the output shape and path. Not for code edits, repo changes, or anything that needs fleet rules or memory (that is chore-helper or a coder).
+description: Opus reader for a bounded research question answered from sources — docs, repos, release notes, papers, the web — returned as one written file or a short answer. Runs without the fleet's CLAUDE.md memory, so the brief carries everything it needs: the question, the vectors, the output shape and path. Not for code edits, repo changes, or anything that needs fleet rules or memory (that is helper or a coder).
 model: opus
 effort: medium
 omitClaudeMd: true

@@ -14,7 +14,7 @@ this file says how every member does it. A section headed with roles binds only 
 
 **talking**
 - the first reply names the memory files you loaded and this file's version line
-- only `SendMessage` travels; a plain reply reaches nobody <!-- mac -->
+- cclio hears only `SendMessage`; a plain reply reaches only whoever is in your chat <!-- mac -->
 - every message lands in dima's thread: ping rarely, briefly, on your role's events
 - every write to an external system (a linear comment, a pr label, a canvas) is named in your next ping
 - dima steering in your chat steers you; your coordinator stays cclio, and a stop goes to cclio
