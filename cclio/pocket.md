@@ -1,5 +1,7 @@
 # 🫙 pocket — cclio's local work pool
 
+> 🧊 **FROZEN since 2026-10-09 13:42 — the a/b trial runs in Backlog.md** (`cclio/backlog/`, `backlog task list --plain`). every item here lives there as `pk-N`, its pocket number in the title. no writes here until the trial's verdict; a new item goes to backlog only.
+
 checked before linear, and emptied before linear. every inbox drop lands here as an item. linear holds the long shelf and the record; an item gets a ticket only when a coder takes it; linear work enters the order through an item that points at its ticket, so linear is never starved.
 
 - an item: a `### NN · title` section below, its first line `status · type` (open · claimed · resolved; task · research · grilling · test-drive), then its ticket and `blocked by NN` when they exist
@@ -9,7 +11,7 @@ checked before linear, and emptied before linear. every inbox drop lands here as
 
 ## order
 
-49 (adviser run 2 round 3, lanes running) → 33 (shape `x:crew-lead`, pulled ahead of the sweep — dima 10-08) → 60 (global memory easy wins) → 58 (lane tracker mod, shape first) → 59 (threshold input, grill) → 61 (reset waker, mods lane) → 45 → 39 → 40 → 42 → 05 → 10 → 36 → 37 → 35 (the gate is not open) → 30 (before the halt) → 53 → 55 → 56 → 24 → 12 → 13 → 14 → 15 → 16 → 31
+62 (retros + skills only grow — inbox 🐦‍⬛ first action) → 64 (exit lines, an answer) → 58 (lane tracker mod, shape first) → 59 (threshold input) → 61 (reset waker, mods lane) → 60 (global memory easy wins) → 69 (memory-arch idea, beside 60) → 10 (the sweep, nurture-memory first) → 63 (crew-coder groom — right after nurture-memory, dima 10-09 steering) → 66 (recipes as a product) → 65 (refresh-guide-go + charm) → 67 (`x recipe` verb, after 66) → 68 (signed handoff) → 49 (adviser run 2 round 3) → 33 (shape `x:crew-lead`) → 39 → 05 → 36 → 37 → 30 (before the halt) → 53 → 56 → 24 → 12 → 13 → 14 → 15 → 16 → 31
 
 ## on linear, not here
 
@@ -102,17 +104,6 @@ dima 10-08 13:22: the crew-coordinator as part of a squad (an independent `--bg`
 
 dima 10-07: «instead of spawning a coder you spawn a squad leader (e.g., a coordinator). It is a mini coordinator … it essentially manages a coder and a verifier with the given task by you. It handles communication between the coder and verifier and only reports to you with positive results, issues and disputes, or design questions that I would be interested to answer. This way your thread will be filtered out of the noise». the sweep (ticket 05) cuts `craft-spawning` by trigger first; the squad leader is shaped with `x:shape-idea` from what that cut leaves. its skill name: `x:crew-lead` (dima 10-07 ✓, beside `crew-coder` / `crew-verifier`).
 
-### 35 · purge the plaintext job-market recipe from frame's history
-`open · waiting on github` · history purged 10-07 23:05, support ticket filed 23:15
-
-- done 10-07: filter-repo --sensitive-data-removal on d1bddfb5^..main, 20 commits re-signed, recipe re-added encrypted, force-pushed main (c84402be → f3fc8352; protection opened by dima, restored to no-force), github virtual-assistant ticket filed: remove the commit references of #65, the cached views of d1bddfb5 ae681204 668962e4 32c12a41 ff1aeeb2 c636f2cf
-- left: github's «cleared» mail → `gh api repos/dvakatsiienko/frame/commits/d1bddfb5` answers 404 → trash the backup bundle `/private/tmp/claude-501/-Users-dima-frame-cclio/199ac617-3e2a-4366-b624-e67c8b7578d2/scratchpad/purge/frame-pre-purge.bundle` (it holds the plaintext; /tmp may clear it first, which is fine)
-
-the recipes move (d1bddfb5, 10-07) left `recipes/refresh-job-market/recipe.md` unencrypted in the public repo: his target companies, the miltech branch in his words, a cv path with his email. re-encrypted at 3a310e81; history still holds the plaintext. dima 10-07: «yes» to filter-repo + force-push main after #65 merges.
-- steps: every coder pr merged or rebased-ready; `git filter-repo --path recipes/refresh-job-market --invert-paths` scoped to the plaintext commits only (the encrypted ones stay), or re-encrypt in place across history; force-push main (his word, named); every worktree and clone re-synced (`git worktree list`, `.claude/worktrees/`)
-- a force-push does not delete the blob from github: the old commits stay fetchable by sha and in cached pr/compare views until github support removes them (ccrow, 10-07 — read github's «removing sensitive data» doc before the run) → a support request naming d1bddfb5 and the commits after it that still carry the plaintext
-- done: `git log --all -p -- recipes/refresh-job-market` shows only GITCRYPT blobs, and github's support ticket is filed
-
 ### 36 · ccrow's packet diet
 `open · approved` · tomorrow, after ccrow's own opinion
 
@@ -140,25 +131,6 @@ dima: we went overboard, he is at 69 %. two ways: economic mode, or push to spen
 
   dima: he is at 68 % — what ops could i delegate to cloud agents?
 
-### 40 · «wishes» — he likes the name he invented
-`open · task` · inbox 10-08, 👀 fyi
-
-dima: he liked the «wishes» name. 13:22: «i actually meant a possible new name for the bytes repo» — a rename candidate for the monorepo, decided at the merge (m1–m4), not before; a name grill then.
-
-
-### 42 · matt's retros — how they are collected, the steer, the cost
-`open · research` · inbox 10-08, 🙋‍♂️ question
-
-dima: how do i collect retros from the coder, the verifier and myself, via him? since they are steerable, we could gain more if they are targeted: do i simply ask the coder and verifier for a «retro», or steered? what should the coder, verifier and ccrow retro about — the steer vector? for my own retro he will pick each steer himself. also: the cost of the retro skill — it reads thread transcripts, is it costlier than our previous matt-skill-less retros? remind how matt's retro skill works.
-
-### 45 · recipes revamp — the right shape for any produce, as global memory
-`open · grilling` · inbox 10-08, 🙋‍♂️ question
-
-dima: yesterday we added a «log» for recipes, but he spotted a log (cannot recall which) that was too bloated, told me to check, and i confirmed. how to translate that into global memory so any agent tries to pick the right shape for any produce — a log, a report, a stats report, anything — so «wrong» shapes (too large, too small) appear less often?
-
-
-
-
 ### 49 · ccrow is underutilized — the adviser vector in the coordinator recipe
 `open · task` · inbox 10-08, 🐞 · dima 13:54: the `refresh-crew-coordinator` rerun runs its source lane as a **cloud agent** (`x:crew-cloud`, branch transfer) head-to-head with the opus `researcher`, graded in `docs/test-drive/cc-cloud.md` — after the step-0 groom and his review (48)
 
@@ -182,10 +154,6 @@ dima: «let's try shortcut and ray cmd. i also want a way to set a scheduled 5h 
 open · test-drive
 - dima's yes, 2026-10-08: the next quick-lane ticket spawns `--model sonnet --effort medium` instead of opus; graded against an opus coder on the same lane shape (steps, cost, `#brief` lines, rounds). a fresh `docs/test-drive/sonnet-coder.md` on day 0
 - why: sonnet 5.5 beats opus 5.5 on Terminal-Bench 4.0 (70.6 vs 66.4); anthropic still calls opus stronger on open-ended work
-
-### 55 · crew-coder: name 🪶 sifter for big reads, after a trim
-open · task
-- dima, 2026-10-08: «ensure it is not lost (sifter for coders)». `x:crew-coder` sits at its compaction cap (18,987 of 18,995 chars, `skill-size.test.ts`), so the «hand big reads to subagents» line names `sifter` only after a trim frees room. until then every brief carries the sifter line (FRM-346's does)
 
 ### 56 · count bare fleet words in cclio's replies, mod it if it grows
 open · test-drive
@@ -215,32 +183,8 @@ open · task · planned ahead of the sweep (dima, 2026-10-08)
 
 ## decisions so far
 
-- 2026-10-07: 02 the pocket mirrors to `_hq/pocket.md` after every cclio turn (a Stop hook, `cclio/.claude/hooks/pocket-mirror.sh`, one-way, a read-only banner on top, copies only on a change)
-- 2026-10-07: 27 guard: `obsidian <verb> --help` and a target-less `obsidian delete` are refused (x-mod-guard, 2 tests, proven red)
-- 2026-10-07: 01 matt's chief-of-staff (27 lines, in-progress) is cclio's own shape; two borrows proposed: context pointers in every brief, delegate edits by default
-- 2026-10-07: 18 x-queue folded: cclio's `/queue` lines become pocket items; boot digest, boot + halt skills, README, the snapshot script and habit-shared-files repointed; the empty queue file trashed (cclio 0.3.107)
-- 2026-10-07: 25 done: 4 mod stubs trashed, 3 merged worktrees removed; `FRM-305-router-v2` kept until the jev refill ~10-18; [FRM-329](https://linear.app/x-com/issue/FRM-329) stays open (dima: the board look is not what he wants yet)
-- 2026-10-07: 11 pocket test drive started, to 10-21: baseline in `docs/test-drive/pocket.md` (linear 103 created / 97 closed in 14 days), a reminder, the habit list
-- 2026-10-07: 26 adhd and browserbase verdicts moved to 10-14 (reminders, test-drive files, habit list)
-- 2026-10-07: bytes main checkout back on main (off the dead cloud/knip-sweep), 2 unpushed 10-06 commits rebased on origin, motion 14: trophy-sys builds
-- 2026-10-07: 17 fixed: the stash asks list keeps only sessions the registry has alive, this session always (2 tests, both proven red); live: the dead cclio `91f2a33c`'s 6 asks drop at the next reload
-- 2026-10-07: 19 + 21 resolved in one thread: the linear body is the spec seed (want · why · stories · proposed · decided · open · exit · out · refs), the boundary is in time (linear until dispatch, the spec owns the run, the outcome folds back); dima's flow plan wide → pre-grill → to-spec → to-tickets → dispatch is spec-pipeline run 2, first case the cli plan, to-spec'd live with dima to judge whether the spec lives in linear; user-only skills are run by reading their SKILL.md; tickets stay local (`.scratch/`, gitignored in frame, missing in bytes), die on merge; issue filed: [claude-code#100193](https://github.com/anthropics/claude-code/issues/100193)
-- 2026-10-07: 03 no refs to protected.md anywhere. 04 bun = [FRM-148](https://linear.app/x-com/issue/FRM-148), oxlint = [BYT-38](https://linear.app/x-com/issue/BYT-38), both in monorepo m3 «the tool picks», roadmap step 9; `_hq/dima-roadmap.md` deleted via `obsidian delete path=` into the trash, its two memory mentions gone
-- 2026-10-07: 20 answered: a spec is one feature's decided plan (to-spec), tickets its build order (to-tickets); the pocket borrows the tickets shape but is not a spec. coder and verifier gain most, the designer barely. exit lines name behaviour + real commands/terms, never file paths
-- 2026-10-07: renovate merged: bytes#123 motion 14, frame#62 mcp sdk 1.31 (security)
-- 2026-10-07: ccrow stop is on the halt now (phase 5's last line, `ccrow:stop` after the CST); last night's was stopped at 03:20 by hand
-- 2026-10-07: flowlog → pocket, shaped as matt's local tracker (grill Q1–Q6). the old vault flowlog is archived at `_hq/flowlog-archive-2026-10-07.md`
-- 2026-10-07: 23 gopls + staticcheck come from brew now (go1.27.1 builds, first on PATH); the `go install` copies are in the trash; Brewfile + `x:guide-go` updated
-- 2026-10-07: 07 retargeted: chain length is the wrong target (3 lanes); the five activities and the numbers live in `docs/knowledge/agent-ops.md`, refreshed by `recipes/refresh-agent-ops/recipe.md` (on a test drive)
-- 2026-10-07: 06 + 29 + 08 one measuring pass: `pnpm agent-ops:report` (0 model tokens): cost per ticket median 30.0M tokens / 30 min over 23 tickets; cclio code edits up to 18 in one session; boot full 1.8M tokens / 61 s, mini 1.2M / 43 s (n=1 each, tokens mostly cache reads)
-- 2026-10-07: 28 resolved — `x handoff` owns the whole store, every caller moved, the node script died ([FRM-343](https://linear.app/x-com/issue/FRM-343), frame#64)
-- 2026-10-08: 46 answered — «wishes» works; the drift he named is real, the fold rule landed in craft-pm, dima-signals, fleet-vibe
-- 2026-10-08: 50 the handpicked wishes header is now the inbox template's section (todos → wishes)
-- 2026-10-08: 47 «gremlins» → «wisps» on every surface (4 linear stash tickets, craft-pm, the inbox template + live inbox section); dima: small glowing things to tend, not enemies
-- 2026-10-08: 41 ccrow runs opus 5.5 medium (the day arm); dima: one fable is enough
-- 2026-10-08: 46 answered — wishes works; the fold rule landed (craft-pm, dima-signals, fleet-vibe), 🌠 wish + ✨ wisp badges, bold fleet words fleet-wide
-- 2026-10-08: 48 landed — invariant 10 in root CLAUDE.md, the checkup card (cclio-only), siesta replaces pit stop, the subagents named + badged in fleet-identity (helper, researcher, retro, Explore, checkup), the cli verdict: useful for the fleet (lane commit/push), 8 hand calls by dima; the «is the cli useful» question folds into the cli grill (09)
-- 2026-10-08: 51 landed — one wish, one home at a time; a spec points at its wish; wishes checked at fold time; old verbatims re-folded on touch
+- 2026-10-09: 35 done: all 6 purged shas answer 422 «no commit found» on github; the backup bundle is already gone with its /tmp scratch
+- 2026-10-09: 40 «wishes» as a bytes name lands in [BYT-60](https://linear.app/x-com/issue/BYT-60) (rename bytes), decided at the merge with a name grill
 
 ### 61 · the 5h reset waker, behind a global switch
 open · grilled 10-09 · ticket under FRM-304 at the next mods lane
@@ -248,3 +192,69 @@ open · grilled 10-09 · ticket under FRM-304 at the next mods lane
 - detectable: stash already reads `five_hour` from `session.measure` (`x-mod-stash/hooks/register.tsx:882`), so a reset is a resets-at move it sees
 - off by default; on only by his click; a member not stopped on the cap gets nothing
 
+### 62 · retros: the halt flush, its frequency, and skills that only grow
+open · research + audit · inbox 10-09, 🐦‍⬛ first action · ticket at the audit
+- dima, 2026-10-09: ~15 retros from the day were flushed at once at the halt. go see what the flush dropped (the 10-08 flawlog) and judge how meaningful it was. crew skills keep growing and never shrink; retros carry small stumbles (a jq misuse, a python trick) that get folded into a skill or a fleet hazard, so files only grow with small stuff — «not a good sign». register the problem and run a full skill + habit audit: why only extend, never groom?
+- his ideas: instead of 15 retros read one by one at the halt, one or several subagents gather them at the halt and pass up only the most useful findings, «high-level issue types». does that drop precision? today's retros are the most precise because each runs in its member's hot context; is matt's retro skill even meant to run via a subagent? and how does a `general-purpose` subagent work?
+- «retros batch» (🙋‍♂️): was 15 at one halt too many — process each when its lane finishes instead?
+- memory writes: «you often drop a lot of edit proposals. i simply cannot read so much» — how to balance them
+- merged from 42 (dima, 2026-10-09 boot, the same question family):
+  `42 · matt's retros — how they are collected, the steer, the cost`
+  `open · research` · inbox 10-08, 🙋‍♂️ question
+
+  dima: how do i collect retros from the coder, the verifier and myself, via him? since they are steerable, we could gain more if they are targeted: do i simply ask the coder and verifier for a «retro», or steered? what should the coder, verifier and ccrow retro about — the steer vector? for my own retro he will pick each steer himself. also: the cost of the retro skill — it reads thread transcripts, is it costlier than our previous matt-skill-less retros? remind how matt's retro skill works.
+- linked: 30 (the halt retro reminder), [FRM-362](https://linear.app/x-com/issue/FRM-362) (crew-coder at its char budget, the growth symptom)
+
+### 63 · groom crew-coder: from bleeding to brilliant
+open · task · steering 10-09: right after the nurture-memory recipe · [FRM-362](https://linear.app/x-com/issue/FRM-362)
+- dima, 2026-10-09: «groom and turn from bleeding into brilliant coder skill. it is in rough shape i suppose, i did not open it since its creation. and coder is our main crew member pushing power.»
+- the audit in 62 feeds it: what grew from retros and should leave
+- merged from 55 (dima, 2026-10-09 boot):
+  `55 · crew-coder: name 🪶 sifter for big reads, after a trim`
+  open · task
+  - dima, 2026-10-08: «ensure it is not lost (sifter for coders)». `x:crew-coder` sits at its compaction cap (18,987 of 18,995 chars, `skill-size.test.ts`), so the «hand big reads to subagents» line names `sifter` only after a trim frees room. until then every brief carries the sifter line (FRM-346's does)
+
+### 64 · exit lines — what they are, and «exit lines written» as the whole report
+open · question · inbox 10-09, 🙋‍♂️
+- dima: what is it? sealing a lane needs exit lines; he has no capacity to read them; yesterday he let me write them unasked. proposal: report only «exit lines written», details only when something is interesting. fine? will they be reliable enough?
+- already decided 10-09 in `habit-grill-shape` (cclio's, collapsed to a count); the open part is the reliability answer
+
+### 65 · refresh-guide-go: ever run? seeds guide-go and the charm knowledge
+open · question + task · inbox 10-09, 🙋‍♂️ · after shape-recipe is refreshed (66)
+- dima: did we ever run the refresh go recipe, to seed the `x:guide-go` skill and the charm knowledge? is the knowledge fresh? sharpen it after the shape-recipe skill is refreshed
+- «charm knowledge» (🙋‍♂️): which is better — 1. stay in `docs/knowledge`, or 2. park inside the go skill + a skill-go reference
+- the recipe exists: `recipes/refresh-guide-go/`
+
+### 66 · recipes as a product — your lever on your own learning
+open · grilling · inbox 10-09, 🙋‍♂️ + 🌠 · joins the sweep's recipe line (10)
+- dima, «recipes product»: recipes are a very useful, powerful tool — search wide and deep (several search arms), use the data to find mistakes in our own and the fleet's flows, gain capabilities by borrowing tools and approaches, even whole frameworks. keep sharpening each recipe and the feature itself. how to make it fleet-aware? sharpen its purpose — in a skill? a `PRODUCT.md`?
+- 🌠 «i want recipes to be known»: you are trained on a cut dataset; time moves, your training does not. recipes are your door to more capability — treat the feature as your own lever on your learning. `x:shape-recipe` has to be sharp, the feature well architected. done when:
+  - the recipe purpose is sharpened with his wish
+  - every recipe is reviewed and sharpened (his suggestion: a subagent sweep — how many? one opus, thinking about purpose?)
+  - a structural analysis of all recipes names the common patterns: worth a template, or a check against shape-recipe?
+  - shape-recipe was made for creating recipes, so running them through it is not ideal — split it? how?
+  - the whole feature is reviewed: every part colocated, healthy, not scattered
+- merged from 45 (dima, 2026-10-09 boot, recipe logs were the trigger):
+  `45 · recipes revamp — the right shape for any produce, as global memory`
+  `open · grilling` · inbox 10-08, 🙋‍♂️ question
+
+  dima: yesterday we added a «log» for recipes, but he spotted a log (cannot recall which) that was too bloated, told me to check, and i confirmed. how to translate that into global memory so any agent tries to pick the right shape for any produce — a log, a report, a stats report, anything — so «wrong» shapes (too large, too small) appear less often?
+
+### 67 · `x recipe` — list, preview, edit
+open · wish · cli lane · after 66 settles the recipe shape · [FRM-284](https://linear.app/x-com/issue/FRM-284)
+- dima, 2026-10-09: 1. list — every recipe with its run count and last run date · 2. maybe a preview pane on the right (deferrable, a nice-to-have) · 3. an edit mode · 4. ideally a rendered preview mode (glamour, the charm lib — he could not recall the name)
+
+### 68 · signed handoffs — by and to, for every member
+open · wish · inbox 10-09
+- dima: extend the handoff's `by` field to coder, verifier, cclio, ccrow — everyone; and the `to` field too
+- home: `x handoff` (the store owner since [FRM-343](https://linear.app/x-com/issue/FRM-343)) + `plugin-x/CST-SPEC.md`
+
+### 69 · a memory-arch skill — every memory-editing guide in one
+open · idea · inbox 10-09, 💡 · beside 60 and the sweep (10)
+- dima: one skill that gathers every real memory-editing guide (the authoring-* ones and the rest). how many do we have — or not worth it? propose a pretty name, playful allowed (his was random)
+
+### 70 · a shape-lane skill — the lane-chunk prep as one fixed flow
+`open · idea` · inbox-free, dima 2026-10-09 · shape first (`x:shape-idea`)
+- dima, 2026-10-09: «we had issues with planning … problematic, chaotic planning. maybe it is worth creating something like a shape-lane skill. each time we prep a lane chunk, our flow is fixed for this part, and we then solve chunk-prep issues in the scope of that skill — flow and process are not scattered.»
+- what it must fix, his list: the grill skill was not loaded and the grill improvised; clunky grill outputs to him; hard-to-read grill bodies
+- the parts today: `habit-grill-shape` (cclio leaf), matt `grilling`, `x brief preflight`, the exit-line rules in `craft-spawning` — a skill would own the order (title → body → grill rounds → exit lines → seal) and carry what the leaf holds now

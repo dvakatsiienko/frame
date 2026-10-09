@@ -3,6 +3,10 @@
 `x` in go + charm (bubbletea, bubbles, lipgloss, huh, glamour, log, fang) — the arm dima picked on
 the [FRM-284](https://linear.app/x-com/issue/FRM-284) look probe. The probe's numbers and hard parts: `../compare/c.md`.
 
+📌 **before the first edit to a view** (anything a human sees: a board, a table, a form, a pager), run
+`x knowledge read charm`: the widget per view and the v2 traps live there, and the read is logged, so the
+fleet sees whether the page earns its place (0 of 8 x coders read it, 2026-10-05..09).
+
 ## build, test, gate
 
 - `pnpm x-go:build` → `bin/x` (gitignored); the shim `../bin/x` runs the same build itself when a

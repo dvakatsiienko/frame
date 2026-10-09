@@ -163,3 +163,5 @@ grading: per monitor — fired (y/n), latency from the real event, false positiv
 
 **adopted, 2026-10-08** — a standing lane under `pnpm research:lanes`, beside exa and the opus researcher. 51 rounds, avg grade 3.77, ~235 s, cents a run; the sceptical lane (it was the one that said «first token anchors» is lore). dima: «even when they lose to opus researchers — they are free, so let's have an alternative free opinion, they still can catch something useful». the stress list stops here.
 - 2026-10-08 · research core · «the adviser: craft + comms model» (refresh-crew-coordinator-adviser) · 182 s · 11.6k chars · landed, ungraded until the synthesis
+- 2026-10-09 pocket prior art (local md trackers for agents): 182 s · 8.4k chars · ¢ unsettled · 14 candidates, read the one-file constraint right (keep the file, borrow), the most sceptical; dated beads stable as v1.0.4 while the opus lane read v1.3.1 from gh · 4/5
+- 2026-10-09 todo trackers top 5 (rerun): 138 s · 7.9k chars · ¢ unsettled · cautious, verified little (no breaks confirmed), same keep-backlog verdict · 3/5

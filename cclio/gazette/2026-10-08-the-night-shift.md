@@ -32,3 +32,13 @@ posted: {health: yes}
 - shipped: night shift (BYT-96/100, FRM-342) · FRM-355 lane doors · FRM-356 guard 0.5 · BYT-95 workflow_run deploys · grill shape + sealed exit lines
 - open: tomorrow: prep → mods lane (357 first) → grill mods leftovers + 58 → memory easy wins → FRM-267 via nurture-memory · cli lane on dima's word
 - state: frame + bytes pushed · no coders · ccrow parked (keep-hot test) · x 0.11.247
+
+## pocket decisions
+
+- 2026-10-08: 46 answered — «wishes» works; the drift he named is real, the fold rule landed in craft-pm, dima-signals, fleet-vibe
+- 2026-10-08: 50 the handpicked wishes header is now the inbox template's section (todos → wishes)
+- 2026-10-08: 47 «gremlins» → «wisps» on every surface (4 linear stash tickets, craft-pm, the inbox template + live inbox section); dima: small glowing things to tend, not enemies
+- 2026-10-08: 41 ccrow runs opus 5.5 medium (the day arm); dima: one fable is enough
+- 2026-10-08: 46 answered — wishes works; the fold rule landed (craft-pm, dima-signals, fleet-vibe), 🌠 wish + ✨ wisp badges, bold fleet words fleet-wide
+- 2026-10-08: 48 landed — invariant 10 in root CLAUDE.md, the checkup card (cclio-only), siesta replaces pit stop, the subagents named + badged in fleet-identity (helper, researcher, retro, Explore, checkup), the cli verdict: useful for the fleet (lane commit/push), 8 hand calls by dima; the «is the cli useful» question folds into the cli grill (09)
+- 2026-10-08: 51 landed — one wish, one home at a time; a spec points at its wish; wishes checked at fold time; old verbatims re-folded on touch
