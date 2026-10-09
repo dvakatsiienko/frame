@@ -108,9 +108,11 @@
             "purpose": "commit only the named paths, print the sha; on main their ci jobs run first; mid-merge concludes it; --repo <path> too",
             "steps": [
                 "tree",
+                "holds",
                 "format",
                 "mods",
                 "stage",
+                "ftr",
                 "hold",
                 "ci",
                 "commit",
@@ -997,6 +999,7 @@
             "name": "plugin bump",
             "needsApply": true,
             "purpose": "bump a plugin's patch version, refresh its marketplace and install, and read the new version back from the cache",
+            "replaces": ["script/plugin-release.ts"],
             "steps": ["plan", "write", "marketplace", "update", "cache"],
             "touches": [
                 "the installed plugins and the plugin cache, through claude plugin list, marketplace update and update"

@@ -47,6 +47,10 @@ var (
 	fileLike   = regexp.MustCompile(`^[\w.@~-]+\.(?:md|mdx|ts|tsx|js|mjs|go|json|jsonc|sh|zsh|yml|yaml|toml|swift|css|html|txt|plist|py|svg|png)$`)
 	lineRef    = regexp.MustCompile(`(:\d+(?:-\d+)?|#[\w-]+)$`)
 	jevWord    = regexp.MustCompile(`(?i)\bjev\b`)
+	reuseWord  = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
+	keepWord   = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
+	otherPush  = regexp.MustCompile(`(?i)\b(?:cclio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
+	skillName  = regexp.MustCompile(`\bx:([a-z][\w-]*)`)
 	pnpmScript = regexp.MustCompile(`^pnpm\s+(?:(?:-C|--dir|--filter)\s+(\S+)\s+)?(?:(?:-s|--silent)\s+)?(?:run\s+)?([\w:.-]+)`)
 )
 
@@ -120,7 +124,7 @@ func briefCheck(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	lintFound := lint(lines)
+	lintFound := lint(lines, pluginSkill)
 	if err := r.Step("lint", "the exit lines and the rates", func() (string, error) {
 		return plural(len(lintFound), "finding"), nil
 	}); err != nil {
@@ -350,12 +354,27 @@ func missingTickets(ids map[string]int) ([]string, error) {
 	return absent, nil
 }
 
-// each rule came from a brief that misled a coder (FRM-311); a new miss adds a rule here
-func lint(lines []briefLine) []finding {
+// each rule came from a brief that misled a coder (FRM-311); a new miss adds a rule here. skill reads a
+// named skill's SKILL.md, "" when there is none
+func lint(lines []briefLine, skill func(name string) string) []finding {
 	var found []finding
-	jevAt, hasBudget := 0, false
+	jevAt, pushAt, hasBudget := 0, 0, false
+	var skills []string
 	for _, line := range lines {
 		text := line.text
+		// a brief that quotes a rule is not breaking it
+		prose := quotedText.ReplaceAllString(text, "")
+		if reuseWord.MatchString(prose) && !keepWord.MatchString(prose) {
+			found = append(found, finding{line.n, "lint", "reuse", "a «reuse» names what to keep (the worktree, the branch, the context) on the same line"})
+		}
+		if pushAt == 0 && otherPush.MatchString(prose) {
+			pushAt = line.n
+		}
+		for _, match := range skillName.FindAllStringSubmatch(text, -1) {
+			if !slices.Contains(skills, match[1]) {
+				skills = append(skills, match[1])
+			}
+		}
 		if rate.MatchString(text) && !sampleSize.MatchString(text) {
 			found = append(found, finding{line.n, "lint", strings.TrimSpace(rate.FindString(text)), "a rate names its minimum n"})
 		}
@@ -376,7 +395,19 @@ func lint(lines []briefLine) []finding {
 	if jevAt > 0 && !hasBudget {
 		found = append(found, finding{jevAt, "lint", "jev", "a brief that touches jev names its budget"})
 	}
+	// 4 round trips on a brief that said «cclio pushes» to a coder whose skill pushes with x lane push (2026-10-06)
+	for _, name := range skills {
+		if pushAt > 0 && strings.Contains(skill(name), "x lane push") {
+			found = append(found, finding{pushAt, "lint", "push", "another member pushes here, but x:" + name + " names `x lane push` as the door"})
+			break
+		}
+	}
 	return found
+}
+
+func pluginSkill(name string) string {
+	raw, _ := os.ReadFile(filepath.Join(filepath.Dir(filepath.Dir(sourceDir())), "home/.claude/plugin-x/skills", name, "SKILL.md"))
+	return string(raw)
 }
 
 func findingRows(found []finding, width int) []string {
