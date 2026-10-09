@@ -572,7 +572,7 @@ export function meterBar(
     const runs: BarRun[] = [];
     for (let i = 0; i < width; i++) {
         const kind = i === at ? 'mark' : i < filled ? 'fill' : 'empty';
-        const ch = kind === 'mark' ? '┃' : kind === 'fill' ? '▮' : '▯';
+        const ch = kind === 'mark' ? '┃' : kind === 'fill' ? '█' : '░';
         const color =
             kind === 'fill'
                 ? BAR_RAMP[
@@ -1589,8 +1589,16 @@ export const register: Register = (on) => {
                 </Box>
             </Box>
         );
+        // desktop air between the head, the two bars and the asks; a terminal row cannot be split, so none there
+        const air = surface === 'desktop';
         const meters = (
-            <Box flexDirection='column' flexShrink={0} key='meters'>
+            <Box
+                flexDirection='column'
+                flexShrink={0}
+                key='meters'
+                marginBottom={air ? 0.5 : 0}
+                marginTop={air ? 0.25 : 0}
+                rowGap={air ? 0.35 : 0}>
                 {barRowJSX(
                     'meter:5h',
                     '🔥 5h',

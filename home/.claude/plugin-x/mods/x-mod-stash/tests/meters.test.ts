@@ -131,7 +131,7 @@ test('a bar warms cell by cell from green to red as it fills', async ($, on) => 
     await measure($, 100, 0);
     const ui = await band($);
     const fills = (await ui.findAll({ type: 'Text' }))
-        .filter((t) => t.text?.startsWith('▮'))
+        .filter((t) => t.text?.startsWith('█'))
         .map((t) => t.props.color);
     expect([fills[0], fills.at(-1)]).toEqual(['#a9b665', '#ea6962']);
 });
@@ -272,4 +272,19 @@ test('the meters keep their rows when the asks outgrow the band', async ($, on) 
         texts.includes('+6 more'),
         boxes.includes('meter:5h') && boxes.includes('meter:ctx'),
     ]).toEqual([4, true, true]);
+});
+
+test('the desktop gives the bars air above, between and below them', async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    const ui = await band($);
+    const box = (await ui.findAll({ type: 'Box' })).find(
+        (b) => b.key === 'meters',
+    );
+    const air = [
+        box?.props.marginTop,
+        box?.props.rowGap,
+        box?.props.marginBottom,
+    ];
+    expect(air.every((n) => typeof n === 'number' && n > 0)).toBe(true);
 });
