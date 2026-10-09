@@ -4,7 +4,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { applyBatch, parseBatch } from './edit-batch.ts';
+import {
+    applyBatch,
+    parseBatch,
+} from '../../home/.claude/plugin-x/lib/edit-batch.ts';
 
 const bin = join(
     import.meta.dirname,

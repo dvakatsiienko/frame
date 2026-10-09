@@ -16,7 +16,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
 /* Instruments */
-import { applyBatch, parseBatch } from '../../../../script/lib/edit-batch.ts';
+import { applyBatch, parseBatch } from '../lib/edit-batch.ts';
 
 const [batchFile] = process.argv.slice(2);
 if (!batchFile) {

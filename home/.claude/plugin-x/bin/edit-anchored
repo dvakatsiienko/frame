@@ -20,7 +20,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
 /* Instruments */
-import { editAnchored } from '../../../../script/lib/edit-anchored.ts';
+import { editAnchored } from '../lib/edit-anchored.ts';
 
 const [file, anchorFile, replacementFile] = process.argv.slice(2);
 

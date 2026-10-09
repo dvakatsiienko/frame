@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { editAnchored } from './edit-anchored.ts';
+import { editAnchored } from '../../home/.claude/plugin-x/lib/edit-anchored.ts';
 
 const source = `one
 two

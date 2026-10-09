@@ -18,7 +18,7 @@ import { tmpdir } from 'node:os';
 import { basename, isAbsolute, join, relative } from 'node:path';
 
 /* Instruments */
-import { changed, pull, push } from '../../../../script/lib/scratch-edit.ts';
+import { changed, pull, push } from '../lib/scratch-edit.ts';
 
 const [verb, ...rest] = process.argv.slice(2);
 

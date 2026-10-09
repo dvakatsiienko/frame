@@ -8,7 +8,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { changed, pull, push } from './scratch-edit.ts';
+import {
+    changed,
+    pull,
+    push,
+} from '../../home/.claude/plugin-x/lib/scratch-edit.ts';
 
 const dir = (prefix: string) =>
     realpathSync(mkdtempSync(join(tmpdir(), prefix)));
