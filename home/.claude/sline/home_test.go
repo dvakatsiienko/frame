@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStatePathsLiveUnderTheTestHome(t *testing.T) {
-	for _, p := range []string{slineStatePath(), usagePath(), focusPath("s"), handoffsDir()} {
+	for _, p := range []string{slineStatePath(), focusPath("s"), handoffsDir()} {
 		if !strings.HasPrefix(p, testHome+"/") {
 			t.Errorf("%s is outside the test home %s", p, testHome)
 		}

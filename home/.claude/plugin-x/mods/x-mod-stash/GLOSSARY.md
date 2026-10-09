@@ -41,6 +41,22 @@ _Avoid_: frozen, expired, dead
 The ⏰ switch, one for every session: while on, a session stopped on the 5h cap gets one resume at the reset.
 _Avoid_: alarm, auto-resume, wake-up
 
+**Meter**:
+One of the two full-width bars under the asks: `🔥 5h`, the window against its pace, and `🧠 ctx`, the context against its compaction point.
+_Avoid_: gauge, tracker, progress bar
+
+**Pace**:
+The share of the 5h window already gone; a used % on pace spends the window evenly.
+_Avoid_: budget, target, burn rate
+
+**Debt**:
+How far the 5h used % runs ahead of its pace; its opposite is spare.
+_Avoid_: overage, overspend
+
+**Compaction point**:
+The context % at which cc compacts: the project's `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, else cc's default.
+_Avoid_: threshold, limit, autocompact %
+
 **Wait**:
 What a session is blocked on, from the `🔭` line that ends its last reply; on the board it is a row's second line, absent when the reply has none.
 _Avoid_: blocker, status, watch

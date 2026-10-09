@@ -3,9 +3,11 @@ import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
 import type {
     StashCap,
+    StashCompaction,
     StashDigest,
     StashEntry,
     StashMember,
+    StashMeter,
     StashView,
 } from '../types/stash.d.ts';
 import {
@@ -71,6 +73,10 @@ const PING =
 // the waker: one global switch, off by default; when on, a session stopped on the 5h cap gets one resume at the reset
 const WAKER_KEY = 'waker';
 const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
+// the band's meters, written on every session.measure
+const METER = { key: 'meter', plugin: 'x-mod-stash' } as const;
+// a session's last three compactions, for the board
+const COMPACTIONS = 'compactions:';
 // the 5h cap ends the turn as an API error with this text; the weekly cap and spent credits read otherwise
 // (8 rows in the transcripts, 2026-10-08)
 const CAPPED = /hit your session limit/i;
@@ -92,6 +98,8 @@ let afk = false;
 let isWaker = false;
 // the 5h reset as the last session.measure reported it, and this session's cap state
 let fiveHourResetsAt: number | undefined;
+// the dir the session started in: its project, whose .claude/settings.local.json the threshold input writes
+let projectDir: string | undefined;
 let cap: StashCap | undefined;
 let capGen = 0;
 let turnAfk: boolean | undefined;
@@ -282,6 +290,94 @@ async function armWake($: EngineInterface) {
     });
 }
 
+// the rate-limit mirror every fleet reader takes (cclio's boot, the designer), in sline's old shape: seconds, and
+// `null` for a window the response did not report; this mod is its one writer
+async function saveUsage(
+    $: EngineInterface,
+    limits: { kind: string; percentUsed: number; resetsAt?: string }[],
+) {
+    const window = (kind: string) => {
+        const w = limits.find((l) => l.kind === kind);
+        return w
+            ? {
+                  resets_at: w.resetsAt
+                      ? Math.round(Date.parse(w.resetsAt) / 1000)
+                      : null,
+                  used_percentage: w.percentUsed,
+              }
+            : null;
+    };
+    await $.fs.write(
+        `${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`,
+        JSON.stringify({
+            rate_limits: {
+                five_hour: window('five_hour'),
+                seven_day: window('seven_day'),
+            },
+            written_at: Math.round((await $.clock.now()) / 1000),
+        }),
+    );
+}
+
+// the engine's own compaction point as a % of the window, whatever set it: the project's override, or cc's default
+async function compactAtOf($: EngineInterface, window: number) {
+    const usage = await $.session
+        .usage({ breakdown: 'summary' })
+        .catch(() => undefined);
+    const tokens = usage?.context.breakdown?.autoCompactThreshold;
+    return tokens && window ? Math.round((tokens / window) * 100) : undefined;
+}
+
+// the first response after a compaction measures what it left
+async function settleCompaction(
+    $: EngineInterface,
+    sid: string,
+    percent: number,
+) {
+    const list = (await $.store.get(COMPACTIONS + sid)) as
+        | StashCompaction[]
+        | undefined;
+    const [last, ...rest] = list ?? [];
+    if (!last || last.to !== undefined) return;
+    await $.store
+        .set(COMPACTIONS + sid, [{ ...last, to: percent }, ...rest])
+        .catch(() => undefined);
+}
+
+// a typed compaction point: a whole 10–99 goes into the project's .claude/settings.local.json `env`, keeping every
+// other key; anything else, or a file that is not json, leaves the file alone and says why in one line
+async function setCompactAt($: EngineInterface, text: string) {
+    const was = (await $.state.get(METER)).value ?? {};
+    const keep = (note?: string) =>
+        $.state.set(METER, { ...was, note }).catch(() => undefined);
+    const typed = thresholdOf(text);
+    if ('refusal' in typed) return keep(typed.refusal);
+    if (!projectDir) return keep('no project dir for this session');
+    const path = `${projectDir}/.claude/settings.local.json`;
+    let settings: Record<string, unknown> = {};
+    if (await $.fs.exists(path)) {
+        try {
+            const parsed: unknown = JSON.parse(await $.fs.read(path));
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+                return keep(`${path} is not a json object, left as it is`);
+            settings = parsed as Record<string, unknown>;
+        } catch {
+            return keep(`${path} is not json, left as it is`);
+        }
+    }
+    const env =
+        settings.env && typeof settings.env === 'object'
+            ? (settings.env as Record<string, unknown>)
+            : {};
+    await $.fs.write(
+        path,
+        `${JSON.stringify({ ...settings, env: { ...env, CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: String(typed.value) } }, null, 2)}\n`,
+    );
+    await $.state
+        .set(METER, { ...was, compactAt: typed.value, note: undefined })
+        .catch(() => undefined);
+}
+
 let published = '';
 let boardPublished = '';
 // writes the view to $.state when it changed; every site that reads it while drawing redraws
@@ -415,6 +511,54 @@ const contextTint = (percent: number) =>
 // cache's life; cold past all of it
 const COOLING_MS = [15 * 60_000, 22 * 60_000, 30 * 60_000] as const;
 const COLD_MS = 60 * 60_000;
+
+// the meters: a bar of whole cells, the reading filled and one cell marked — the pace on the 5h bar, the compaction
+// point on the context one; runs of one kind come out joined, so each draws as one Text
+export type BarRun = { kind: 'fill' | 'empty' | 'mark'; text: string };
+export function meterBar(percent: number, width: number, mark?: number) {
+    const cell = (p: number) =>
+        Math.min(width - 1, Math.max(0, Math.round((p / 100) * width)));
+    const filled = Math.min(width, Math.round((percent / 100) * width));
+    const at = mark === undefined ? -1 : cell(mark);
+    const runs: BarRun[] = [];
+    for (let i = 0; i < width; i++) {
+        const kind = i === at ? 'mark' : i < filled ? 'fill' : 'empty';
+        const ch = kind === 'mark' ? '┃' : kind === 'fill' ? '█' : '░';
+        const last = runs.at(-1);
+        if (last?.kind === kind) last.text += ch;
+        else runs.push({ kind, text: ch });
+    }
+    return runs;
+}
+// the 5h window runs five hours; its pace is the share of it already gone, so a used % on pace keeps up exactly
+const FIVE_HOUR_MS = 5 * 60 * 60_000;
+export const paceOf = (resetsAt: number, now: number) =>
+    Math.round(
+        Math.min(100, Math.max(0, (1 - (resetsAt - now) / FIVE_HOUR_MS) * 100)),
+    );
+// used − pace: spare at 0 or under, a debt up to 10 is amber, past it red
+export const gapTint = (gap: number) =>
+    gap <= 0 ? 'success' : gap <= 10 ? 'warning' : 'error';
+// the context fill reads calm until 10 points short of its compaction point, then amber, red at and past it
+export const contextFill = (percent: number, compactAt?: number) =>
+    compactAt === undefined || percent < compactAt - 10
+        ? undefined
+        : percent < compactAt
+          ? 'warning'
+          : 'error';
+// a threshold dima types: a whole 10 to 99, else the one line that refuses it
+export const thresholdOf = (text: string) => {
+    const n = Number(text.trim());
+    return Number.isInteger(n) && n >= 10 && n <= 99
+        ? { value: n }
+        : {
+              refusal: `compaction point must be a whole 10–99, got «${text.trim()}»`,
+          };
+};
+const clockOf = (ms: number) => {
+    const d = new Date(ms);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+};
 const idleTint = (ms: number) =>
     ms >= COOLING_MS[2]
         ? RAMP[2]
@@ -569,6 +713,9 @@ async function members($: EngineInterface): Promise<Member[]> {
         out.push({
             ...r,
             asks: isLive(asks, now) ? asks.asks.length : 0,
+            compactions: (await $.store.get(COMPACTIONS + r.sid)) as
+                | StashCompaction[]
+                | undefined,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
@@ -666,6 +813,7 @@ export const register: Register = (on) => {
     on('session.start', async ($, e, next) => {
         // the repo root, not the cwd: a cd in the shell must not rename the thread
         selfId = await $.session.id();
+        projectDir = e.cwd;
         const top = (await $.session.repo())?.root ?? e.cwd;
         label = basename(top);
         proc = await procOf($).catch(() => {
@@ -866,7 +1014,45 @@ export const register: Register = (on) => {
             await $.store
                 .set(CONTEXT + sid, e.context.percent)
                 .catch(() => undefined);
+        if (e.changed.includes('rateLimits') && e.rateLimits.length)
+            await saveUsage($, e.rateLimits).catch((err) =>
+                $.ui.log(
+                    `x-mod-stash: usage file not written: ${errorText(err)}`,
+                ),
+            );
+        if (sid && e.context.percent !== undefined)
+            await settleCompaction($, sid, e.context.percent);
+        const was = (await $.state.get(METER)).value;
+        const meter: StashMeter = {
+            compactAt: e.changed.includes('context')
+                ? ((await compactAtOf($, e.context.window)) ?? was?.compactAt)
+                : was?.compactAt,
+            context: e.context.percent,
+            fiveHour: w ? { resetsAt, used: w.percentUsed } : was?.fiveHour,
+            note: was?.note,
+        };
+        // a write redraws the band, so only a reading that moved is written
+        if (JSON.stringify(meter) !== JSON.stringify(was))
+            await $.state.set(METER, meter).catch(() => undefined);
         return next(e);
+    });
+
+    // a main-conversation compaction that went through joins the session's last three, its fill before it
+    on('session.compact', async ($, e, next) => {
+        const r = await next(e);
+        if (e.trigger === 'precompute' || e.agentId || 'skip' in r) return r;
+        const sid = await currentId($);
+        if (!sid) return r;
+        const was = ((await $.store.get(COMPACTIONS + sid)) ??
+            []) as StashCompaction[];
+        const from = (await $.state.get(METER)).value?.context;
+        await $.store
+            .set(
+                COMPACTIONS + sid,
+                [{ at: await $.clock.now(), from }, ...was].slice(0, 3),
+            )
+            .catch(() => undefined);
+        return r;
     });
 
     // the board shows each session's model and effort as its main loop's last request named them; a subagent's step never counts
@@ -1065,6 +1251,19 @@ export const register: Register = (on) => {
                                     </Text>
                                 </Box>
                             ) : null}
+                        </Box>
+                    ) : null}
+                    {/* the last three compactions, newest first: when, and the fill before and after */}
+                    {m.compactions?.length ? (
+                        <Box paddingLeft={2}>
+                            <Text dimColor wrap='truncate-end'>
+                                {`compacted ${m.compactions
+                                    .map(
+                                        (c) =>
+                                            `${clockOf(c.at)} ${c.from ?? '?'}→${c.to ?? '…'}%`,
+                                    )
+                                    .join(' · ')}`}
+                            </Text>
                         </Box>
                     ) : null}
                 </Box>
@@ -1361,11 +1560,113 @@ export const register: Register = (on) => {
                       )),
                   ]
                 : [];
+        // the two meters, full width under the asks: the bars share one width so their marks line up
+        const meter = (await $.state.get(METER)).value;
+        const now = await $.clock.now();
+        const barWidth = Math.max(8, Math.min(40, e.props.bodyColumns - 46));
+        const runsJSX = (key: string, runs: BarRun[], tint?: string) =>
+            runs.map((r, i) => {
+                return (
+                    <Text
+                        bold={r.kind === 'mark'}
+                        color={r.kind === 'fill' ? tint : undefined}
+                        dimColor={r.kind === 'empty'}
+                        // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its bar is its identity
+                        key={`${key}:${i}`}>
+                        {r.text}
+                    </Text>
+                );
+            });
+        const five = meter?.fiveHour;
+        const pace =
+            five?.resetsAt === undefined
+                ? undefined
+                : paceOf(five.resetsAt, now);
+        const gap =
+            five && pace !== undefined
+                ? Math.round(five.used - pace)
+                : undefined;
+        const fiveRowJSX = (
+            <Box flexDirection='row' gap={1} key='meter:5h'>
+                <Text>🔥 5h </Text>
+                {five ? (
+                    <Box flexDirection='row' gap={1}>
+                        <Box flexDirection='row'>
+                            {runsJSX(
+                                '5h',
+                                meterBar(five.used, barWidth, pace),
+                                gap === undefined ? undefined : gapTint(gap),
+                            )}
+                        </Box>
+                        <Text bold>{Math.round(five.used)}%</Text>
+                        {pace === undefined ? null : (
+                            <Text dimColor>pace {pace}%</Text>
+                        )}
+                        {gap === undefined ? null : (
+                            <Text color={gapTint(gap)}>
+                                {gap > 0 ? `+${gap} debt` : `${-gap} spare`}
+                            </Text>
+                        )}
+                        {five.resetsAt === undefined ? null : (
+                            <Text dimColor>↻ {clockOf(five.resetsAt)}</Text>
+                        )}
+                    </Box>
+                ) : (
+                    <Text dimColor>no 5h reading yet</Text>
+                )}
+            </Box>
+        );
+        const ctx = meter?.context;
+        const ctxRowJSX = (
+            <Box flexDirection='row' gap={1} key='meter:ctx'>
+                <Text>🧠 ctx</Text>
+                {ctx === undefined ? (
+                    <Text dimColor>no context reading yet</Text>
+                ) : (
+                    <Box flexDirection='row' gap={1}>
+                        <Box flexDirection='row'>
+                            {runsJSX(
+                                'ctx',
+                                meterBar(ctx, barWidth, meter?.compactAt),
+                                contextFill(ctx, meter?.compactAt),
+                            )}
+                        </Box>
+                        <Text bold color={contextFill(ctx, meter?.compactAt)}>
+                            {ctx}%
+                        </Text>
+                    </Box>
+                )}
+                <Text dimColor>compacts at</Text>
+                <ui.Input
+                    key='compact-at'
+                    onSubmit={(value) => void setCompactAt($, value)}
+                    placeholder='70'
+                    submitLabel='set'
+                    value={
+                        meter?.compactAt === undefined
+                            ? ''
+                            : String(meter.compactAt)
+                    }
+                />
+            </Box>
+        );
+        const meters = [
+            fiveRowJSX,
+            ctxRowJSX,
+            ...(meter?.note
+                ? [
+                      <Text color='error' key='meter:note' wrap='truncate-end'>
+                          {meter.note}
+                      </Text>,
+                  ]
+                : []),
+        ];
         if (!isOpenList || !total)
             return (
                 <Box flexDirection='column'>
                     {head}
                     {away}
+                    {meters}
                     {await next(e)}
                 </Box>
             );
@@ -1396,7 +1697,10 @@ export const register: Register = (on) => {
                 </Text>
             )),
         ]);
-        const room = Math.max(1, e.props.maxRows - 1 - away.length);
+        const room = Math.max(
+            1,
+            e.props.maxRows - 1 - away.length - meters.length,
+        );
         const shown = rows.slice(0, room);
         return (
             <Box flexDirection='column'>
@@ -1406,6 +1710,7 @@ export const register: Register = (on) => {
                 {rows.length > shown.length ? (
                     <Text dimColor>+{rows.length - shown.length} more</Text>
                 ) : null}
+                {meters}
                 {await next(e)}
             </Box>
         );

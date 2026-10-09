@@ -176,6 +176,20 @@
 - ✅ a busy session is never pinged
   - given 🔥 is on and a turn is running at the 50-minute mark
   - then no ping is sent, and the clock restarts when that turn ends
+- ⬜ two live meters, full width under the asks (FRM-366)
+  - given a session.measure arrives
+  - then `🔥 5h` draws the window's used % as a bar with a `┃` at the pace (the share of the 5h already gone), then the used %, `pace n%`, the gap — `n spare` green, `+n debt` amber up to 10 and red past it — and `↻ hh:mm`, the reset
+  - and `🧠 ctx` draws the context % as a bar with a `┃` at the compaction point, amber from 10 points short of it and red at it, then `compacts at` and the point in an `Input`
+  - source: the point is the engine's own `autoCompactThreshold` over the window (`$.session.usage({ breakdown: 'summary' })`), so it shows the project's override when one is set and cc's default otherwise
+  - decision: the band's meter state is written only when a reading moved, so a measure that changed nothing redraws nothing
+- ⬜ the compaction point is typed live
+  - when dima types a whole 10–99 into the ctx row's `Input` and presses Enter
+  - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the session's project `.claude/settings.local.json`, every other key kept, and the row shows it
+  - when he types anything else, or the file is not a json object
+  - then one red line under the meters says why, and the file stays untouched
+  - decision: the project is the dir the session started in (cclio's is `~/frame/cclio`), never the repo root and never user settings — every session in that dir shares the point
+- ⬜ x-mod-stash writes `~/.claude/shelf/cc-usage-window.json` on every measure whose rate limits moved, in sline's old shape (`rate_limits.five_hour` / `seven_day`, `used_percentage`, `resets_at` in seconds, `written_at`), from a desktop tab too; sline no longer writes it
+  - 📌 unprobed: that a desktop tab's measure carries `five_hour` — the file held `five_hour: null` from sline at 18:43
 - decision: stash shows no holds and no guard refusals — the 🔒 chip and the 🛡️ row moved to `/board`, then left (dima, 2026-10-09, FRM-354: «too noisy, i dont need this info at all»); 29 of 33 band redraws measured over 4 min were holds churn, each a blink in x-mod-breather. x-mod-holds and x-mod-guard work unchanged; a halt still counts guard's day from guard's own store file
 
 ## /board — the fleet board
@@ -202,6 +216,11 @@
   - then its row reads `busy` and for how long, not `idle`
   - source: the registry's `status` and `statusUpdatedAt`, written by cc for every session; `busy` and `shell` read `busy`, any other word (`idle`, `waiting`, `blocked`, `needs_input`) shows as cc wrote it
   - decision: the registry over a flag each x-mod-stash wrote — that flag read idle through FRM-305's long `shell` (2026-10-05)
+- ⬜ each row lists its session's last 3 compactions (FRM-366)
+  - given a session compacted (auto, `/compact` or a plugin; never a subagent's)
+  - then its row's third line reads `compacted 17:02 72→18% · 15:40 70→21%`, newest first: when, the context % before, and after once the next response measured it (`…` until then)
+  - makes: a `compactions:<session id>` key in x-mod-stash's `$.store`, three entries at most
+  - decision: on trial — dima tries it, and it goes if it clutters (grill 2026-10-09)
 - ⬜ each row shows how cold its session's cache is
   - given the prompt cache lives an hour
   - when the board draws, colour on or off

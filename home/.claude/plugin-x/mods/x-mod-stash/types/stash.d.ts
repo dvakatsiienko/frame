@@ -30,8 +30,21 @@ export type StashMember = {
     wait?: string;
     asks: number;
     context?: number;
+    compactions?: StashCompaction[];
     model?: string;
     offPattern: boolean;
+};
+
+// one compaction of a session: when it fired, its context % before, and after once a response measured it
+export type StashCompaction = { at: number; from?: number; to?: number };
+
+// the band's two meters: this session's context against its compaction point, and the account's 5h window;
+// `note` is the one line a refused threshold leaves
+export type StashMeter = {
+    context?: number;
+    compactAt?: number;
+    fiveHour?: { used: number; resetsAt?: number };
+    note?: string;
 };
 
 // everything the band draws, written by the poll and the hooks; a render reads it and redraws on a write
@@ -69,6 +82,7 @@ declare module 'claude-code' {
             view: StashView;
             board: StashBoardView;
             turn: StashTurn;
+            meter: StashMeter;
             // null: the last main turn did not stop on the cap
             cap: StashCap | null;
         };

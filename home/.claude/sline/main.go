@@ -98,9 +98,6 @@ func readClaudeContext() *ClaudeContext {
 	if json.Unmarshal(input, &ctx) != nil || ctx.SessionID == "" {
 		return nil
 	}
-	if ctx.RateLimits != nil {
-		saveUsage(usagePath(), ctx.RateLimits, time.Now())
-	}
 	return &ctx
 }
 
