@@ -142,7 +142,7 @@ test('every control in the row carries a hover card that names it', async ($, on
     expect(cards).toEqual([
         "copy this thread's asks",
         "keep this session's cache hot: ping every 50 min",
-        'wake every session stopped on the 5h cap when the window resets',
+        'wake every session stopped on the 5h cap',
         'afk: tell fleet that dima is away',
         'unfold fleet board',
         'fold',

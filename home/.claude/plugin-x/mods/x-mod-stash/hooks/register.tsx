@@ -1249,7 +1249,7 @@ export const register: Register = (on) => {
                         'waker',
                         view.isWaker
                             ? 'stop waking capped sessions at the 5h reset'
-                            : 'wake every session stopped on the 5h cap when the window resets',
+                            : 'wake every session stopped on the 5h cap',
                         <Button
                             key='waker'
                             onPress={() => void handleWakerFlip()}

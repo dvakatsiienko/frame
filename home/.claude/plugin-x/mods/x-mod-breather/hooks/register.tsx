@@ -123,7 +123,6 @@ export const register: Register = (on) => {
                     <Svg
                         alt={`breathing guide: ${exercise.name}, ${exercise.pattern}`}
                         height={METER_HEIGHT}
-                        isInteractive
                         key={`meter:${running.startedAt}:${config.exercise}`}
                         source={meterSvg(exercise, elapsedMs - config.delay * 1000)}
                     />

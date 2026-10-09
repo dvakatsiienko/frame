@@ -12,7 +12,7 @@
   - the load lines come from the session's `--debug-file`, never the screen: cc draws on the alternate screen, which keeps no scrollback
   - `pnpm mods:live <mod dir> hover <label>` moves the pointer onto the label's first cell (an SGR motion event) and prints the frame with its hover card
   - stop it with `kill $(cat $TMPDIR/mods-live/<mod>/server.pid)`; the session goes with it
-- the desktop refuses a `Client` module (10 s, csp) — draw desktop art with `Svg` + `isInteractive` (SMIL runs in its sandboxed frame); mods draw only on the host surface, never in a `--remote-control` view ([claude-code#99217](https://github.com/anthropics/claude-code/issues/99217))
+- the desktop refuses a `Client` module (10 s, csp) — draw desktop art with `Svg`: SMIL animates in its default image mode, and an image survives a redraw with no blink, where `isInteractive`'s sandboxed frame is rebuilt blank on every redraw of any site (x-mod-breather, FRM-354, dima's eye 2026-10-09; [claude-code#100797](https://github.com/anthropics/claude-code/issues/100797)) — reach for `isInteractive` only for hover or `:hover`; mods draw only on the host surface, never in a `--remote-control` view ([claude-code#99217](https://github.com/anthropics/claude-code/issues/99217))
 - a mod initialises on `session.start`, never `classic.SessionStart` — a hot reload fires only the first, so a classic-only init reloads empty and draws nothing (x-mod-stash 0.2.0, 2026-10-04)
 - every interactive element in a mod names itself on hover (dima, 2026-10-05) — the hover traps:
   - a hover card is a `Box` with a `key`, holding a child `Box` drawn `position="absolute"` `display="none"` `hover={{ display: 'flex' }}`; the card itself carries no `key`, or it becomes its own scope and never shows
