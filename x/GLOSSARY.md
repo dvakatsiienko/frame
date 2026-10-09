@@ -29,3 +29,4 @@
 - **span** — the days from the first counted trace to the last, both included; what `x stats` names as `days`, never the window asked for
 - **plugin cache** — where claude code installs a released plugin, `~/.claude/plugins/cache/<marketplace>/<name>/<version>`; `x plugin bump` takes `claude plugin list` reporting the install at the new version, its dir on disk, as the proof — a dir alone can be left from an earlier release
 - **head** — what a Bash command runs, past a leading `cd <dir> &&`, variable setup and the wrappers `timeout <n>` and `env …`: the tool's name, plus its verb for `git`, `claude`, `gh` and `pnpm`; `x stats --outside` ranks them
+- **raw head** — a head as `pnpm x:cli-census` counts it, so a raw door and an old door show apart: the verb split for `linear`, `go`, `brew`, `npm`, `npx`, `op` and `x` too, and an interpreter (`node`, `python3`, …) named with its script; one no verb covers that ran ≥5 times is a verb candidate for `cli-drift-check`

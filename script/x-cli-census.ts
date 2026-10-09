@@ -27,7 +27,12 @@ const stats: Stats = x('stats', '--days', String(days));
 const runsOf = new Map(stats.verbs.map((verb) => [verb.name, verb.calls]));
 
 console.log(
-    `x stats: ${stats.calls} calls over ${stats.days} day(s) of traces (${stats.first} → ${stats.last}), dev calls left out\n`,
+    `x stats: ${stats.calls} calls over ${stats.days} day(s) of traces (${stats.first} → ${stats.last}), dev calls left out`,
+);
+console.log(
+    `callers: ${Object.entries(stats.callers)
+        .map(([caller, calls]) => `${caller} ${calls}`)
+        .join(', ')}\n`,
 );
 for (const family of families) {
     const verbs = schema.verbs.filter(
@@ -70,6 +75,7 @@ interface FamilySchema {
 }
 
 interface Stats {
+    callers: Record<string, number>;
     calls: number;
     days: number;
     first: string;
