@@ -316,12 +316,12 @@ test('the desktop gives the bars air above, between and below them', async ($, o
     meters(on);
     await measure($, 39, 35);
     const ui = await band($);
-    const box = (await ui.findAll({ type: 'Box' })).find(
-        (b) => b.key === 'meters',
-    );
+    const boxes = await ui.findAll({ type: 'Box' });
+    const box = boxes.find((b) => b.key === 'meters');
+    const ctx = boxes.find((b) => b.key === 'meter:ctx');
     const air = [
         box?.props.marginTop,
-        box?.props.rowGap,
+        ctx?.props.marginTop,
         box?.props.marginBottom,
     ];
     expect(air.every((n) => typeof n === 'number' && n > 0)).toBe(true);

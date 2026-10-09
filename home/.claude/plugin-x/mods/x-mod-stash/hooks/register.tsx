@@ -1627,7 +1627,7 @@ export const register: Register = (on) => {
         // ~90px, the bar the rest
         const svgCells = Math.max(
             8,
-            Math.floor((e.props.bodyColumns * 7.8 - 90) / CELL_STEP),
+            Math.floor((e.props.bodyColumns * 7.8 - 60) / CELL_STEP),
         );
         const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
         const barRowJSX = (
@@ -1635,19 +1635,27 @@ export const register: Register = (on) => {
             label: string,
             tint: string,
             bar?: { percent: number; mark?: number; scale?: number },
+            marginTop = 0,
         ) => (
             <Box
                 alignItems='center'
                 flexDirection='row'
                 gap={Svg ? 0.5 : 1}
-                key={key}>
+                key={key}
+                marginTop={marginTop}>
                 <Box flexShrink={0} width={Svg ? 5 : 6}>
                     <Text wrap='truncate-end'>{label}</Text>
                 </Box>
                 {bar === undefined ? (
                     <Text dimColor>no reading yet</Text>
                 ) : (
-                    <Box alignItems='center' flexDirection='row' gap={1}>
+                    // the % ends on the band's right edge, under the head's last button
+                    <Box
+                        alignItems='center'
+                        flexDirection='row'
+                        flexGrow={1}
+                        gap={1}
+                        justifyContent='space-between'>
                         {Svg ? (
                             <Svg
                                 alt={`${label} ${Math.round(bar.percent)}%`}
@@ -1721,9 +1729,8 @@ export const register: Register = (on) => {
                 flexDirection='column'
                 flexShrink={0}
                 key='meters'
-                marginBottom={air ? 0.5 : 0}
-                marginTop={air ? 0.25 : 0}
-                rowGap={air ? 0.35 : 0}>
+                marginBottom={air ? 0.75 : 0}
+                marginTop={air ? 0.5 : 0}>
                 {barRowJSX(
                     'meter:5h',
                     '🔥 5h',
@@ -1741,6 +1748,7 @@ export const register: Register = (on) => {
                               percent: ctx,
                               scale: meter?.compactAt ?? 100,
                           },
+                    air ? 0.4 : 0,
                 )}
                 {meter?.note ? (
                     <Text color='error' wrap='truncate-end'>
@@ -1894,7 +1902,7 @@ export const register: Register = (on) => {
                           gap={1}
                           justifyContent='space-between'
                           key={`g:${sid}`}
-                          marginTop={g > 0 && surface === 'desktop' ? 0.5 : 0}>
+                          marginTop={g > 0 && surface === 'desktop' ? 0.75 : 0}>
                           <Text bold>
                               {sid === view.selfId
                                   ? `${title(v)} (here)`
