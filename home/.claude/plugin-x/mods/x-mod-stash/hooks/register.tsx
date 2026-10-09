@@ -1627,7 +1627,7 @@ export const register: Register = (on) => {
         // ~90px, the bar the rest
         const svgCells = Math.max(
             8,
-            Math.floor((e.props.bodyColumns * 7.8 - 60) / CELL_STEP),
+            Math.floor((e.props.bodyColumns * 7.8 - 90) / CELL_STEP),
         );
         const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
         const barRowJSX = (
@@ -1704,9 +1704,9 @@ export const register: Register = (on) => {
                     </Text>
                 )}
                 {five?.resetsAt === undefined ? null : (
-                    <Text>↻ {span(five.resetsAt - now)}</Text>
+                    <Text>🌔 {span(five.resetsAt - now)}</Text>
                 )}
-                <Text>🗜️</Text>
+                <Text>📦</Text>
                 <Box flexShrink={0} width={8}>
                     <ui.Input
                         key='compact-at'
@@ -1731,7 +1731,7 @@ export const register: Register = (on) => {
                 key='meters'
                 marginBottom={air ? 0.75 : 0}
                 marginTop={air ? 0.5 : 0}
-                paddingRight={air ? 1.5 : 0}>
+                paddingRight={air ? 2 : 0}>
                 {barRowJSX(
                     'meter:5h',
                     '🔥 5h',
