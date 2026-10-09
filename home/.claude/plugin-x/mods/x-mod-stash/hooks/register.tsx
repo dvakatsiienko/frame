@@ -4,7 +4,6 @@ import type { EngineInterface, Register, RenderElement } from 'claude-code';
 import type {
     StashDigest,
     StashEntry,
-    StashGuardLine,
     StashMember,
     StashView,
 } from '../types/stash.d.ts';
@@ -24,7 +23,6 @@ import {
 // x-mod-stash: dima's command center above the prompt, one folded row; FTR.md lists every feature.
 // asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
-// holds: a session's first edit of a file holds it; another session's edit is refused
 // keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm; the switch lives in $.store, so a reload keeps it
 // The reply stays the source of truth for asks; this band only shows and copies them.
 
@@ -82,8 +80,6 @@ let isPolling = false;
 let afk = false;
 let turnAfk: boolean | undefined;
 let proc: Proc | undefined;
-let root = '';
-let holds = { others: 0, warned: false };
 // since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
 let hot: { since: number } | undefined;
 let isBusy = false;
@@ -91,14 +87,6 @@ let isBusy = false;
 let modelSeen: string | undefined;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
-
-// x-mod-guard's refusals and escapes: each plugin's $.store is its own file, so the band reads x-mod-guard's file directly
-type GuardLine = StashGuardLine;
-const GUARD_FILE = /^x-mod-guard_.*\.json$/;
-const GUARD_EVENT = 'event:';
-// the board's guard lines age out after this long with no new event
-const GUARD_AGE_MS = 30 * 60_000;
-let guards: GuardLine[] = [];
 
 // what the fleet did while dima was afk, shown in the band where he turned 💨 off until his next prompt
 type Digest = StashDigest;
@@ -114,29 +102,9 @@ const errorText = (err: unknown) =>
 const basename = (path: string) =>
     path.split('/').filter(Boolean).pop() ?? path;
 
-// x-mod-holds keeps the holds in its own store file; the board's 🔒 line reads that file, the way its guard lines read x-mod-guard's.
-// its shapes and keys, as x-mod-holds writes them
-type Hold = { at: number; file: string; top: string; landed?: boolean };
-type Holder = { pid?: number; start?: string; idleSince: number | null };
-type Refusal = { at: number; by: string; path: string };
 type Proc = { pid: number; start: string };
 
-const HOLD = 'hold:';
-const HOLDER = 'holder:';
-const REFUSED = 'refused:';
-const IDLE_MS = 30 * 60 * 1000;
-
-const holdKey = (sid: string, path: string) => `${HOLD}${sid}:${path}`;
 const short = (sid: string) => sid.slice(0, 8);
-
-// a session id carries no ':', so the first one after the prefix ends it
-function parseHoldKey(key: string) {
-    if (!key.startsWith(HOLD)) return null;
-    const cut = key.indexOf(':', HOLD.length);
-    return cut < 0
-        ? null
-        : { path: key.slice(cut + 1), sid: key.slice(HOLD.length, cut) };
-}
 
 // the name ListAgents shows lives in the session registry, keyed by the claude process id
 async function sessionName($: EngineInterface) {
@@ -164,14 +132,6 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
     return r.exitCode === 0 && pid && start
         ? { pid: Number(pid), start }
         : undefined;
-}
-
-// the working tree a path sits in, lowercased; '' outside git
-async function topOf($: EngineInterface, cwd: string) {
-    const r = await $.process
-        .run(['git', 'rev-parse', '--show-toplevel'], { cwd })
-        .catch(() => null);
-    return r?.exitCode === 0 ? r.stdout.trim().toLowerCase() : '';
 }
 
 // a «yes, after X» answer to an open ask lands one line in the queue cclio's boot reads and empties; cclio/pocket.md has one writer
@@ -221,65 +181,6 @@ async function pruneEnded($: EngineInterface) {
     }
 }
 
-const HOLDS_FILE = /^x-mod-holds_.*\.json$/;
-
-// what the row shows: other live sessions' holds in this working tree, and whether this session's hold was wanted.
-// a file mid-write reads as no holds until the next poll
-async function chip($: EngineInterface, sid: string, root: string) {
-    const dir = `${await $.env.get('HOME')}/.claude/plugins/store`;
-    const held: Record<string, unknown> = {};
-    for (const f of await $.fs.list(dir).catch(() => [])) {
-        if (!HOLDS_FILE.test(f.name)) continue;
-        try {
-            Object.assign(
-                held,
-                JSON.parse(await $.fs.read(`${dir}/${f.name}`)),
-            );
-        } catch {}
-    }
-    const now = await $.clock.now();
-    let others = 0;
-    for (const [key, value] of Object.entries(held)) {
-        const h = parseHoldKey(key);
-        if (!h || h.sid === sid) continue;
-        const hold = value as Hold | undefined;
-        const holder = held[HOLDER + h.sid] as Holder | undefined;
-        const idle =
-            holder?.idleSince != null && now - holder.idleSince >= IDLE_MS;
-        if (hold?.top === root && holder && !idle) others++;
-    }
-    const refused = held[REFUSED + sid] as Refusal | undefined;
-    const warned = !!refused && holdKey(sid, refused.path) in held;
-    return { others, warned };
-}
-
-// the current run of guard events, newest first: each one under GUARD_AGE_MS after the next, the newest under it
-// before now. a file mid-write is skipped until the next poll
-async function guardLines($: EngineInterface): Promise<GuardLine[]> {
-    const dir = `${await $.env.get('HOME')}/.claude/plugins/store`;
-    const all: GuardLine[] = [];
-    for (const f of await $.fs.list(dir).catch(() => [])) {
-        if (!GUARD_FILE.test(f.name)) continue;
-        try {
-            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as Record<
-                string,
-                Omit<GuardLine, 'key'>
-            >;
-            for (const [key, event] of Object.entries(v))
-                if (key.startsWith(GUARD_EVENT)) all.push({ ...event, key });
-        } catch {}
-    }
-    all.sort((a, b) => b.at - a.at);
-    let since = await $.clock.now();
-    const run: GuardLine[] = [];
-    for (const g of all) {
-        if (since - g.at >= GUARD_AGE_MS) break;
-        run.push(g);
-        since = g.at;
-    }
-    return run;
-}
-
 // one `words:<yyyy-mm-dd>:<session>` key a day, the fleet words a reply had bolded for it, so a halt reads the hits;
 // a key past WORDS_DAYS is dropped
 const WORDS = 'words:';
@@ -325,9 +226,6 @@ async function load($: EngineInterface) {
                 if (sid !== selfId && !alive.has(sid)) delete next[sid];
     }
     entries = next;
-    // an unreadable holds file keeps the last chip
-    if (selfId) holds = await chip($, selfId, root).catch(() => holds);
-    guards = await guardLines($).catch(() => guards);
     await publish($);
 }
 
@@ -351,8 +249,6 @@ async function publish($: EngineInterface) {
         await $.state
             .set(BOARD_VIEW, {
                 at: await $.clock.now(),
-                guards,
-                holds,
                 isColour:
                     (await $.store.get(COLOUR).catch(() => false)) === true,
                 members: await members($).catch(() => undefined),
@@ -685,8 +581,6 @@ export const register: Register = (on) => {
         selfId = await $.session.id();
         const top = (await $.session.repo())?.root ?? e.cwd;
         label = basename(top);
-        // the working tree, not the repo: a worktree's holds never collide with the main checkout's
-        root = (await topOf($, e.cwd)) || top.toLowerCase();
         proc = await procOf($).catch(() => {
             $.ui.log(
                 'x-mod-stash: no pid for this session, so its row reads no registry name',
@@ -908,70 +802,9 @@ export const register: Register = (on) => {
         const now = board?.at ?? 0;
         const me = (await $.state.get(VIEW)).value?.selfId;
         const list = board?.members;
-        // holds and guard's run live here, never on the band: they move at every edit and refusal anywhere, and each
-        // band redraw rebuilds x-mod-breather's svg (FRM-354)
-        const holdsLine =
-            board && (board.holds.warned || board.holds.others)
-                ? [
-                      <Text
-                          color={board.holds.warned ? ACCENT : undefined}
-                          key='holds'
-                          wrap='truncate-end'>
-                          {[
-                              board.holds.warned
-                                  ? '⚠ a session was refused a file this session holds'
-                                  : '',
-                              board.holds.others
-                                  ? `🔒 ${board.holds.others} ${board.holds.others === 1 ? 'file' : 'files'} held by other sessions`
-                                  : '',
-                          ]
-                              .filter(Boolean)
-                              .join(' · ')}
-                      </Text>,
-                  ]
-                : [];
-        const guardRun = board?.guards ?? [];
-        const plural = (n: number, word: string) =>
-            `${n} ${word}${n === 1 ? '' : 's'}`;
-        const refused = guardRun.filter((g) => g.kind === 'refused').length;
-        const counter = [
-            ...(refused ? [plural(refused, 'refusal')] : []),
-            ...(guardRun.length - refused
-                ? [plural(guardRun.length - refused, 'escape')]
-                : []),
-            plural(new Set(guardRun.map((g) => g.sid)).size, 'session'),
-        ].join(' · ');
-        const guardLines = guardRun.length
-            ? [
-                  <Text key='guard'>🛡️ {counter}</Text>,
-                  ...guardRun.map((g) => (
-                      <Text dimColor key={`guard:${g.key}`} wrap='truncate-end'>
-                          {`${g.name ?? short(g.sid)} — ${g.command} → ${g.kind === 'escaped' ? `ran on dima-ok: ${g.target}` : (g.why ?? g.door)}`}
-                      </Text>
-                  )),
-              ]
-            : [];
-        const fleetLines =
-            holdsLine.length || guardLines.length ? (
-                <Box flexDirection='column' marginTop={1}>
-                    {holdsLine}
-                    {guardLines}
-                </Box>
-            ) : null;
         if (!list)
-            return (
-                <Box flexDirection='column'>
-                    <Text dimColor>the session registry is unreadable</Text>
-                    {fleetLines}
-                </Box>
-            );
-        if (!list.length)
-            return (
-                <Box flexDirection='column'>
-                    <Text dimColor>no live sessions</Text>
-                    {fleetLines}
-                </Box>
-            );
+            return <Text dimColor>the session registry is unreadable</Text>;
+        if (!list.length) return <Text dimColor>no live sessions</Text>;
         const isColour = board.isColour;
         const hues = huesOf(list.map((m) => m.name));
         const row = (m: Member, i: number) => {
@@ -1150,7 +983,6 @@ export const register: Register = (on) => {
                     </Text>
                 </Box>
                 {list.map(row)}
-                {fleetLines}
                 <Box marginTop={1}>
                     <Text dimColor wrap='truncate-end'>
                         a name opens its session · /board colour flips colour

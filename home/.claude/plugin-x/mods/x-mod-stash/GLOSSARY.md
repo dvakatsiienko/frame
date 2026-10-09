@@ -20,7 +20,6 @@ _Avoid_: away mode, shift presence
 The lines the band shows when dima turns afk off: the sessions that left him asks, then the ones that finished, since afk went on.
 _Avoid_: summary, recap, catch-up
 
-**Hold**, **Holder**, **Release**: x-mod-holds' words, defined in its `GLOSSARY.md`; the board's 🔒 line counts them.
 
 **Board**:
 The `/board` pane: every live session, its state as cc wrote it, what it waits on, and its facts.

@@ -78,7 +78,7 @@
 - ✅ every refusal and escape is kept as a guard event
   - makes: one `event:<at>:<session>` key in x-mod-guard's `$.store` (`~/.claude/plugins/store/x-mod-guard_*.json`): session, its registry name, the command cut to 160 characters, refused or escaped, the rule that fired, door, target, and why it was refused; the newest 50 kept
   - given the store write fails, then the verdict stands: a refusal still refuses with its own door, a dima-ok command still runs, and the log reads «x-mod-guard: the event was not kept»
-  - then x-mod-stash's `/board` shows the run as one `🛡️ <n> refusals · <m> sessions` line with each event under it, gone 30 min after the last event, no dismiss — x-mod-stash's `FTR.md`, «guard lines»
+  - decision: nothing draws the events — x-mod-stash's 🛡️ row left in FRM-354 («too noisy»); the refusal itself still reaches the session that ran the command
 - ✅ every day's refusals and escapes are counted past the kept events
   - makes: one `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's `$.store`, `{ refused, escaped, rules: { <rule>: { refused, escaped } } }`, the local day; counts older than 30 days are dropped
   - then `x fleet flow` prints the day's total and a `guard by rule, refused/escaped` line, busiest rule first, so noise and real catches separate (FRM-341)
@@ -137,7 +137,7 @@
   - when x-mod-guard reads the spawn
   - then it is refused, and the reason opens with the door: a fresh agent with a self-contained brief, or `helper` for a mechanical job
   - given the same fork with a `why-fork:` line, then it runs; any other agent type is left alone
-  - then the refusal counts in x-mod-stash's 🛡️ board lines (`fork: <description>`), like a Bash refusal
+  - then the refusal is kept as a guard event (`fork: <description>`), like a Bash refusal
   - decision: a required line, never a guess at «mechanical» — a keyword guess was unreliable (51 loose hits, most of them real research); a fork carries the whole parent context, ~220k (FRM-323)
   - 📌 harness-proven only: a headless `claude -p` offers no `fork` type («Agent type 'fork' not found»), so the live check is a fork from an interactive session
 

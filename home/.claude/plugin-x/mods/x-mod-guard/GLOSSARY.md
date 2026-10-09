@@ -37,7 +37,7 @@ A `why-fork: <what parent context it needs>` line in a fork's prompt; a fork wit
 _Avoid_: fork reason, justification
 
 **Guard event**:
-One refusal or escape kept in x-mod-guard's store, the newest 50; x-mod-stash's `/board` lists a run of them under one 🛡️ line that ages out after 30 min.
+One refusal or escape kept in x-mod-guard's store, the newest 50.
 _Avoid_: log entry, alert
 
 **Job scratch**:

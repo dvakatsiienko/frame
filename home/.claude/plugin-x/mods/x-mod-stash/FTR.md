@@ -162,26 +162,7 @@
 - ✅ a busy session is never pinged
   - given 🔥 is on and a turn is running at the 50-minute mark
   - then no ping is sent, and the clock restarts when that turn ends
-- ✅ holds: `/board` counts other sessions' holds in this repo, below its rows; the band shows none
-  - source: x-mod-holds' own store file, read each poll the way the guard lines read x-mod-guard's; the holds themselves are x-mod-holds' `FTR.md` (FRM-349)
-  - given session A holds 2 files in this repo
-  - when session B's board draws
-  - then it reads `🔒 2 files held by other sessions`; at zero the line is gone
-  - decision: on the board, not the band — the count moves at every edit any session makes, and each band redraw rebuilt x-mod-breather's svg (a blink); 29 of 33 band redraws measured over 4 min were holds (dima, 2026-10-09, FRM-354: «let's try, maybe get rid of these at all»)
-  - decision: «this repo» is this working tree — a worktree's holds never collide with the main checkout's, so they stay out of its count
-  - decision: a holder idle 30 min drops out at once; a dead one at the next turn end of any session
-- ✅ holder warning: the holder's board warns after someone was refused
-  - given A holds `x.ts`
-  - when B's edit of `x.ts` is refused
-  - then A's board reads `⚠ a session was refused a file this session holds`, and A gets no message
-- ✅ guard lines: x-mod-guard's run of refusals shows on `/board`, gone on its own; the band shows none
-  - given x-mod-guard refused commands in any session, or ran one on a `# dima-ok:` escape, each under 30 min after the one before
-  - when the board draws
-  - then one line reads `🛡️ <n> refusals · <m> sessions` (escapes count beside: `· <k> escapes`), and each event shows under it, newest first: `<session> — <command> → <why it was refused>` (an escape: `→ ran on dima-ok: <target>`; an event kept before x-mod-guard wrote a reason: `→ <door>`)
-  - when 30 min pass with no new event
-  - then the lines are gone
-  - decision: on the board, unfolded, no toggle — the band's folded row redrew the band at every refusal anywhere (FRM-354)
-  - decision: the board reads x-mod-guard's own store file (`~/.claude/plugins/store/x-mod-guard_*.json`) — each plugin's `$.store` is a file of its own, so the two mods cannot share keys; the band reads only the last 50 events x-mod-guard keeps there; a halt counts the day from the same file's per-day keys, `day:<yyyy-mm-dd>:<session>` with its refused and escaped counts (kept 30 days), never from the 50 events
+- decision: stash shows no holds and no guard refusals — the 🔒 chip and the 🛡️ row moved to `/board`, then left (dima, 2026-10-09, FRM-354: «too noisy, i dont need this info at all»); 29 of 33 band redraws measured over 4 min were holds churn, each a blink in x-mod-breather. x-mod-holds and x-mod-guard work unchanged; a halt still counts guard's day from guard's own store file
 
 ## /board — the fleet board
 

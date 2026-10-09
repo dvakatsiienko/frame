@@ -6,20 +6,6 @@ export type StashEntry = {
     at: number;
 };
 
-// one x-mod-guard refusal or escape, read from x-mod-guard's own store file
-export type StashGuardLine = {
-    key: string;
-    sid: string;
-    name?: string;
-    command: string;
-    kind: 'refused' | 'escaped';
-    door: string;
-    target: string;
-    at: number;
-    // why it was refused; an event kept before x-mod-guard wrote one shows its door
-    why?: string;
-};
-
 // what the fleet did while dima was afk
 export type StashDigest = {
     needs: { sid: string; name: string; asks: number }[];
@@ -55,13 +41,11 @@ export type StashView = {
     isBoardOpen: boolean;
 };
 
-// what only the board pane draws, kept apart from the band's view: each value here moves often (the clock every poll,
-// holds at every edit any session makes), and a band that read it would redraw — rebuilding x-mod-breather's svg (FRM-354)
+// what only the board pane draws, kept apart from the band's view: its clock moves every poll, and a band that read it
+// would redraw — rebuilding x-mod-breather's svg (FRM-354)
 export type StashBoardView = {
     members?: StashMember[];
     isColour: boolean;
-    holds: { others: number; warned: boolean };
-    guards: StashGuardLine[];
     // the poll's clock, so the board's «busy 3m» spans move on their own
     at: number;
 };

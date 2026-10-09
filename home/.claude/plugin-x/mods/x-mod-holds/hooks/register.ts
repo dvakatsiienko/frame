@@ -2,8 +2,7 @@ import type { EngineInterface, Register } from 'claude-code';
 
 // x-mod-holds: no two sessions write the same file. a session's first Edit or Write of a file holds it until the file
 // is committed, the session ends or sits idle; another session's edit of it, or a Bash write to it, is refused and
-// names the holder. x-mod-guard refuses a Bash write to a held file from this store; x-mod-stash's board reads it for
-// its 🔒 line.
+// names the holder. x-mod-guard refuses a Bash write to a held file from this store.
 
 const errorText = (err: unknown) =>
     err instanceof Error ? err.message : String(err);

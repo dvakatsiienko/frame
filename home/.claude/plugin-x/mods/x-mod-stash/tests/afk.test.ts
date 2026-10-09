@@ -87,3 +87,34 @@ test('a prompt carries the away note only while afk is on', async ($, on) => {
     expect(seen[0] ?? []).not.toContainEqual(expect.stringContaining('afk'));
     expect(seen[1]).toContainEqual(expect.stringContaining('dima is afk'));
 });
+
+test('an afk flip mid-turn reaches the next tool call once', async ($, on) => {
+    mock.clock(on);
+    mock.store(on);
+    on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    on('prompt.submit', (_$, e) => ({ text: e.text }));
+    on('tool.call', () => ({ result: {}, text: 'done' }));
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'terminal',
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props,
+        surface: 'terminal',
+    });
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'go',
+        wait: false,
+    });
+    await ui.press({ key: 'afk' });
+    const bash = () => $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((await bash()).context).toContainEqual(
+        expect.stringContaining('dima is afk'),
+    );
+    expect((await bash()).context ?? []).toHaveLength(0);
+});

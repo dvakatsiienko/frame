@@ -13,7 +13,7 @@ two public hooks already deny an edit from a PreToolUse hook — [agent-coord](h
 and [claude-code-file-lock](https://github.com/nstksean/claude-code-file-lock). neither is reused:
 - a mod imports only its own files and `"claude-code"` — no npm, no foreign hook code
 - neither has our release rules (clean in git, session end, idle since the last turn)
-- it began inside x-mod-stash, which owned the store, the session lifecycle and the row; it moved to its own mod in FRM-349, and its `/board` still draws a 🔒 line (the band's chip left in FRM-354)
+- it began inside x-mod-stash, which owned the store, the session lifecycle and the row; it moved to its own mod in FRM-349; stash's 🔒 chip left in FRM-354, so nothing draws the holds now
 - the rest (mcp_agent_mail, agent-claim-mcp, Dibs, agentlocks) are advisory leases the agent must opt into
 
 cc's own nets stop short: «modified since read» stops a blind overwrite only, and `bgIsolation`
