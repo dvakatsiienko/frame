@@ -1,9 +1,10 @@
 ---
 id: PK-36
 title: 'the plugin monitors run as one-shot background watches, never a 30-min Monitor'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 11:47'
+updated_date: '2026-10-09 13:26'
 due_date: '2026-10-09'
 labels:
   - s
@@ -22,3 +23,9 @@ ccrow 2026-10-09 14:46: pr-watch + ci-watch were re-armed by hand five times tod
 - an event wake re-arms once after handling, silently; a no-event end is never a reply to dima
 - ccrow's bigger move, for later: one loop outside cc (launchd or an x verb) that sends to cclio's socket only on an event, like ccrow:wake's sendLine
 <!-- SECTION:DESCRIPTION:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+watch-once.sh lives in cclio/.claude/hooks; the boot arms a missing watcher as a one-shot background watch that ends on its first event (cclio 0.3.123). open root, filed in notes: the persistent plugin monitors in plugin-cclio/monitors/monitors.json were not running in this session at all — why is unknown; a fresh boot shows whether they start
+<!-- SECTION:FINAL_SUMMARY:END -->

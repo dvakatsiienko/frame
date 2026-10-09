@@ -1,10 +1,10 @@
 ---
 id: PK-13
 title: '[36] ccrow''s packet diet'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-09 14:19'
 labels:
   - m
 dependencies: []
@@ -24,3 +24,9 @@ ccrow's session read 625k chars on 10-07, ~all of it 22 `packets/<wake>/delta.md
 - ccrow 10-07, asked: «yes, drop the tool_result bodies — none of today's catches used them»; the real loss was the 60000-char cut losing dima's lines at a packet's head, a slimmer packet fixes it; she writes each watch item into the note text so a halt restart drops nothing; a cold-cache guard is a keep-hot ping at ~50 min idle, default off, never a skipped wake
 - cold cache, measured 10-07: only the 09:20 start wrote cold; the 48-min pause stayed warm (1h ttl on a main session, per the refresh-crew-coordinator researcher lane). a gap over 1h goes cold silently — a guard is ccrow's call
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+done 10-09 17:2x: sifter measured 31 packets (10-07 + 10-09): tool_result 0 % (already dropped), cclio text 57 %, dima 20 %, task notifications 11-12 %, peers 9-11 %; 5 packets hit the 60k cut mid-block. shipped: notifications capped at 2k with the output path, the cut drops whole blocks. red-proven, committed
+<!-- SECTION:NOTES:END -->

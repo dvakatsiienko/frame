@@ -19,6 +19,7 @@ one file, shaped after matt's local tracker: order · decisions so far · standi
 linear ticket when one exists; a new ticket is made only when a coder takes the item. every inbox
 item lands here at parse time, before any resolution; resolved items leave one line in «decisions
 so far» (the file's end); the halt moves those lines into the day's gazette post and empties the section.
+**an item that gets a ticket carries a `ticket: FRM-N` line**; `pocket-check` (the boot runs it) reds any open item whose ticket linear has closed (dima, 2026-10-09, after pk-44 stayed open behind a closed FRM-371: «keep your pocket up to date»).
 
 ## the stash hierarchy — dima's, 2026-09-27
 

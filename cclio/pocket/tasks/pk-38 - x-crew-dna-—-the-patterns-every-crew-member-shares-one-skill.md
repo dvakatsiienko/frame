@@ -1,10 +1,10 @@
 ---
 id: PK-38
 title: 'x:crew-dna — the patterns every crew member shares, one skill'
-status: claimed
+status: done
 assignee: []
 created_date: '2026-10-09 12:08'
-updated_date: '2026-10-09 12:27'
+updated_date: '2026-10-09 12:43'
 labels:
   - l
 dependencies: []
@@ -35,3 +35,9 @@ cut v1 accepted (dima 15:26): tag ~30 rules with their members, then count · cr
 
 done test accepted (dima 15:27): 1 nonce in the first reply + a Read of crew-dna, red on step-0 deletion · 2 one key term per rule lives only in crew-dna · 3 size test: dna ≤7k (re-checked after draft), verifier/designer/adviser ≤12k · 4 cloud brief byte diff vs dna minus mac-only lines is empty · 5 each conflict's term in exactly one place · 6 designer's coordinator section lives in craft-spawning. SHAPED. build: cclio on main, quick lane — tag map, dna draft, cuts one skill per commit.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+crew-dna v1 shipped in x 0.11.248: 4.6k dna, 4 role skills cut (62.7k → 54.2k total), conflicts settled once, designer's pick in craft-spawning, crew-dna-cloud paste script + 5 tests, per-skill size caps red-proven. done test 1 green on a fresh opus coder (Read of crew-dna + kelp-41 quoted); its red half (step-0 line deleted) not run. finding: the dna's «only SendMessage travels» misreads dima mode, where his chat is the channel.
+<!-- SECTION:FINAL_SUMMARY:END -->

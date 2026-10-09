@@ -36,6 +36,23 @@ describe('checkPocket', () => {
         expect(checkPocket(config, [task({})], today)).toEqual([]);
     });
 
+    test('an open task whose ticket linear closed goes red', () => {
+        const pointing = task({}, 'body\nticket: FRM-371 (the guard rule)');
+        expect(
+            checkPocket(config, [pointing], today, new Set(['FRM-371'])),
+        ).toEqual([
+            'PK-1: its ticket FRM-371 is closed in linear: flip it to done',
+        ]);
+        expect(
+            checkPocket(
+                config,
+                [task({ status: 'done' }, 'ticket: FRM-371')],
+                today,
+                new Set(['FRM-371']),
+            ),
+        ).toEqual([]);
+    });
+
     test.each([
         ['an unknown status', { status: 'blocked' }, 'status «blocked»'],
         ['an unknown priority', { priority: 'urgent' }, 'priority «urgent»'],

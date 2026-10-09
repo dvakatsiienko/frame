@@ -1,10 +1,10 @@
 ---
 id: PK-23
 title: '[61] the 5h reset waker, behind a global switch'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-09 13:26'
 labels:
   - m
 dependencies: []
@@ -22,3 +22,9 @@ pocket 61 · status line was: open · grilled 10-09 · ticket under FRM-304 at t
 - detectable: stash already reads `five_hour` from `session.measure` (`x-mod-stash/hooks/register.tsx:882`), so a reset is a resets-at move it sees
 - off by default; on only by his click; a member not stopped on the cap gets nothing
 <!-- SECTION:DESCRIPTION:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+shipped as FRM-365 (92a80897): ⏰ beside 🔥, off by default; live test is the first real cap
+<!-- SECTION:FINAL_SUMMARY:END -->

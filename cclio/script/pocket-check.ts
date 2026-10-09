@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -5,11 +6,13 @@ import { join } from 'node:path';
 const NOW_CAP = 3;
 const EXPIRING = ['xs', 's'];
 const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
+const TICKET_LINE = /\b(?:ticket|moved to linear):\s*((?:FRM|BYT)-\d+)/gi;
 
 export function checkPocket(
     configText: string,
     tasks: Task[],
     today: string,
+    closedTickets: ReadonlySet<string> = new Set(),
 ): string[] {
     const config = {
         labels: listOf(configText, 'labels'),
@@ -37,6 +40,12 @@ export function checkPocket(
         if (text.includes(ZERO_WIDTH_JOINER))
             report('a joined emoji breaks the board view (Backlog.md #949)');
         if (status === 'done') continue;
+
+        for (const ticket of ticketsOf(text))
+            if (closedTickets.has(ticket))
+                report(
+                    `its ticket ${ticket} is closed in linear: flip it to done`,
+                );
 
         if (!config.priorities.includes(priority))
             report(
@@ -75,6 +84,27 @@ export function checkPocket(
     if (nowCount > NOW_CAP)
         problems.push(`now holds ${nowCount} items, the cap is ${NOW_CAP}`);
     return problems;
+}
+
+export function ticketsOf(text: string): string[] {
+    return [...text.matchAll(TICKET_LINE)].map((match) =>
+        (match[1] ?? '').toUpperCase(),
+    );
+}
+
+function closedOf(ids: string[]): Set<string> {
+    if (ids.length === 0) return new Set();
+    const out = execFileSync('x', ['linear', 'read', ...ids], {
+        encoding: 'utf8',
+    });
+    const tickets = (JSON.parse(out) as LinearRead).data.tickets;
+    return new Set(
+        tickets
+            .filter((ticket) =>
+                ['completed', 'canceled'].includes(ticket.stateType),
+            )
+            .map((ticket) => ticket.id),
+    );
 }
 
 function listOf(configText: string, key: string): string[] {
@@ -121,10 +151,12 @@ if (import.meta.main) {
         .filter((name) => name.endsWith('.md'))
         .map((name) => ({ name, text: readFileSync(join(dir, name), 'utf8') }));
     const today = new Date().toLocaleDateString('sv');
+    const open = tasks.filter(({ text }) => !/^status: done$/m.test(text));
     const problems = checkPocket(
         readFileSync(join(root, 'backlog.config.yml'), 'utf8'),
         tasks,
         today,
+        closedOf([...new Set(open.flatMap(({ text }) => ticketsOf(text)))]),
     );
     if (problems.length === 0)
         console.log(`pocket: ${tasks.length} tasks, all checks green`);
@@ -133,6 +165,10 @@ if (import.meta.main) {
 }
 
 /* Types */
+
+interface LinearRead {
+    data: { tickets: { id: string; stateType: string }[] };
+}
 
 interface Task {
     name: string;

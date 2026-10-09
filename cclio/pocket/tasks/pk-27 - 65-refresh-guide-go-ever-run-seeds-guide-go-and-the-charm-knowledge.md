@@ -1,10 +1,10 @@
 ---
 id: PK-27
 title: '[65] refresh-guide-go: ever run? seeds guide-go and the charm knowledge'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-09 13:46'
 labels:
   - m
 dependencies:
@@ -29,3 +29,9 @@ pocket 65 · status line was: open · question + task · inbox 10-09, dima-quest
 <!-- SECTION:NOTES:BEGIN -->
 answered 10-09: the recipe ran once on 10-07 (docs/knowledge/charm.md verified-on 10-07), its log.md never recorded it — fixed; charm stays in docs/knowledge (dima's pick 1, the recipe wires it). left: sharpen after shape-recipe is refreshed (pk-28).
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+refresh-guide-go ran once (10-07), seeded docs/knowledge/charm.md; dima 10-09: charm stays in docs/knowledge, served by x knowledge read (logged); the next run adds a nonce (pk-44)
+<!-- SECTION:FINAL_SUMMARY:END -->
