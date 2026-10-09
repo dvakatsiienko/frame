@@ -252,6 +252,29 @@ const UNPROVEN_DOOR =
     'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»). a bg session: ask cclio, who asks dima';
 const UNPROVEN_WHY =
     "a # dima-ok marker counts only when dima's last typed prompt names its target";
+// a live mod's hooks reload into every session on save, so while its own tests are red a half-done edit there breaks the fleet
+// (FRM-350: Bash down fleet-wide for ~5 min); the fix goes through a scratch copy and lands only once it is green
+const LIVE_RED_DOOR =
+    'edit a scratch copy: `scratch-edit pull <file>`, get `claude plugin test` green on it, then `scratch-edit push`';
+
+// the live mod dir a path sits under `hooks/` of, from CLAUDE_CODE_PLUGIN_DIRS; real paths on both sides, so a symlinked
+// route into the tree counts too
+async function liveModOf($: EngineInterface, path: string) {
+    const home = await $.env.get('HOME');
+    const dirs = (await $.env.get('CLAUDE_CODE_PLUGIN_DIRS')) ?? '';
+    const real = async (p: string) =>
+        $.fs.stat(p, { resolve: true }).then(
+            (s) => s.realPath ?? p,
+            () => p,
+        );
+    const file = await real(path);
+    for (const entry of dirs.split(':').filter(Boolean)) {
+        const dir = entry.replace(/^~(?=\/|$)/, home ?? '~');
+        if (file.startsWith(`${await real(dir)}/hooks/`)) return dir;
+    }
+    return undefined;
+}
+
 const UNREAD_DOOR = 'Read the file first, then Write';
 const UNREAD_WHY = 'a Write replaces a tracked file this session never read';
 
@@ -442,6 +465,35 @@ export const register: Register = (on) => {
             }
         },
     );
+
+    // an Edit or Write under a live mod's hooks/ waits for that mod's own tests to be green
+    on(
+        'tool.call',
+        { tool: /^(Edit|MultiEdit|Write)$/ },
+        async ($, e, next) => {
+            const path = 'file_path' in e ? e.file_path : undefined;
+            if (typeof path !== 'string') return next(e);
+            const mod = await liveModOf($, path);
+            if (!mod) return next(e);
+            const run = await $.process.run(['claude', 'plugin', 'test', mod], {
+                timeoutMs: 60_000,
+            });
+            if (run.exitCode === 0) return next(e);
+            const name = mod.split('/').filter(Boolean).at(-1) ?? mod;
+            const why = `${name}'s plugin test is red, and a save under its hooks/ reloads into every live session`;
+            await record($, {
+                command: `${e.tool} ${path}`,
+                door: LIVE_RED_DOOR,
+                kind: 'refused',
+                rule: 'live-hook-red',
+                target: path,
+                why,
+            });
+            return {
+                deny: `x-mod-guard stopped this ${e.tool}. instead: ${LIVE_RED_DOOR}. why: ${why}: ${path}`,
+            };
+        },
+    ).catch(() => ({ deny: FAILED }));
 
     // a Write over a tracked file this session never saw replaces what it never read; a Read, Edit or Write marks it seen
     on(

@@ -56,6 +56,7 @@
         "macos:setup": "node ./script/macos-setup.ts",
         "mcp:build": "pnpm --filter mcp-x-cw build",
         "mods:live": "node ./home/.claude/plugin-x/mods/live.ts",
+        "mods:probe": "node ./home/.claude/plugin-x/mods/probe.ts",
         "mods:probe-x-mod-redact": "node ./home/.claude/plugin-x/mods/probe-x-mod-redact.ts",
         "mods:test": "node ./home/.claude/plugin-x/mods/test.ts",
         "mods:typecheck": "node ./home/.claude/plugin-x/mods/typecheck.ts",
