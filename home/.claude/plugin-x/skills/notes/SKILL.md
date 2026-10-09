@@ -10,6 +10,14 @@ pick per op is the cheapest lane that does not break the vault; nothing here is 
 
 ## obsidian
 
+the vault's hazards first (moved from `rules/fleet-hazards.md`, 2026-10-09; the cw leaf
+`/topics/obsidian.md` keeps a hand copy):
+- the vault is **not under git** — no undo, no history; a bad overwrite is gone
+- **writes only when dima asks**; reads anytime
+- 🚫 **icloud sync is whole-file, last-writer-wins, no conflict copy**: never edit before the synced
+  version has arrived (sync lags minutes after obsidian opens; a relaunch often forces the pull), keep
+  obsidian closed on the ipad during a session, and re-read right before every write
+
 - **read · append · property edit → raw files.** `cat`, `>>`, a frontmatter edit in place. 2–5 ms
   per note, payload only, nothing to time out. the vault lives at
   `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/`.
@@ -26,8 +34,6 @@ pick per op is the cheapest lane that does not break the vault; nothing here is 
 - a vault `AGENTS.md`/`CLAUDE.md` never loads — lazy nested memory stops at the working tree, `--add-dir ~` included (probed 2026-09-23). vault knowledge lives here.
 - `property:set` reformats the whole frontmatter (inline lists → yaml lists). fine, diff-noisy.
 - 🚫 the `Local REST API` plugin / any obsidian mcp: 5× the cli, no rename endpoint. not installed.
-- 🚫 icloud sync is whole-file, last-writer-wins: never write while a mobile device may hold a
-  stale copy; re-read right before every write (`rules/fleet-hazards.md`, the vault).
 
 ## notion
 
