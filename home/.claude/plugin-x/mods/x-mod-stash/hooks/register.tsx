@@ -66,6 +66,8 @@ const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
 const BOARD_VIEW = { key: 'board', plugin: 'x-mod-stash' } as const;
 // the running turn, so a mid-turn reload still knows it is busy
 const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
+// when the last main turn ended: 🔥 switched on while idle counts its 50 min from here, so the ping lands inside the cache's hour
+const ENDED = { key: 'ended', plugin: 'x-mod-stash' } as const;
 // a 📄 line's HH:MM — the same shape reply-check.py reads
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
 const PING =
@@ -106,6 +108,7 @@ let turnAfk: boolean | undefined;
 let proc: Proc | undefined;
 // since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
 let hot: { since: number } | undefined;
+let endedAt: number | undefined;
 let isBusy = false;
 // the model label last written for this session, so a step writes the store only when it changes
 let modelSeen: string | undefined;
@@ -979,11 +982,13 @@ export const register: Register = (on) => {
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
             cap: (await $.state.get(CAP)).value,
+            ended: (await $.state.get(ENDED)).value,
             open: (await $.state.get(OPEN)).value,
             turn: (await $.state.get(TURN)).value,
             view: (await $.state.get(VIEW)).value,
         };
         cap = kept.cap ?? undefined;
+        endedAt = kept.ended ?? undefined;
         await pruneEnded($).catch(() => undefined);
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
         if (kept.open !== undefined) open = kept.open;
@@ -1130,6 +1135,8 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         isBusy = false;
+        endedAt = await $.clock.now();
+        await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
         // a stop on the 5h cap waits for the reset; any other end clears it
         cap =
@@ -1538,7 +1545,8 @@ export const register: Register = (on) => {
             await publish($);
         };
         const handleHotFlip = async () => {
-            hot = hot ? undefined : { since: await $.clock.now() };
+            const now = await $.clock.now();
+            hot = hot ? undefined : { since: isBusy ? now : (endedAt ?? now) };
             await saveHot($);
             await armHot($);
             await publish($);

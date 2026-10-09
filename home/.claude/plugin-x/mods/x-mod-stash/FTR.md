@@ -139,6 +139,10 @@
   - given 🔥 is on
   - when two pings fire, or the mod reloads in between
   - then 🔥 is still ticked, and the next ping comes 50 minutes after the last turn ended
+- ✅ 🔥 switched on while idle counts from the last turn end
+  - given the session's last turn ended 17 minutes ago
+  - when dima switches 🔥 on
+  - then the ping comes 33 minutes later, inside the cache's hour; switched on 50 or more minutes after the turn, it pings at once
 - ✅ 🔥 follows its store key at every turn end
   - given another process writes or deletes `hot:<session id>` after `session.start` (ccrow's start script learns its id from the registry, FRM-335)
   - when the session's turn ends

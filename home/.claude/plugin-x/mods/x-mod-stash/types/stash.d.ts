@@ -87,6 +87,8 @@ declare module 'claude-code' {
             meter: StashMeter;
             // null: the last main turn did not stop on the cap
             cap: StashCap | null;
+            // epoch ms of the last main turn end
+            ended: number;
         };
     }
 }
