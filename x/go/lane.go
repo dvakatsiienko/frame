@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -10,11 +11,20 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
 	cryptMagic = []byte("\x00GITCRYPT\x00")
 	modDir     = regexp.MustCompile(`^home/\.claude/plugin-x/mods/[^/]+/`)
+	// curl's words over https, github's over ssh («remote: Internal Server Error», «[remote rejected] … (Internal Server Error)»);
+	// a 4xx is a refusal that a retry only repeats
+	serverError = regexp.MustCompile(`(?i)returned error: 5\d\d\b|\bHTTP 5\d\d\b|internal server error|bad gateway|service unavailable|gateway time-?out`)
+)
+
+const (
+	pushTries = 3
+	pushPause = 2 * time.Second
 )
 
 /* Verbs */
@@ -104,20 +114,32 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 
+	onMain := name.out == "main"
+	if !onMain {
+		r.skip("ci")
+	}
+	var committed error
+	if onMain {
+		committed = r.Step("ci", "the ci jobs for the touched paths", func() (string, error) {
+			return runCI(tree, paths)
+		})
+	}
 	var sha string
-	committed := r.Step("commit", "hooks, then the commit", func() (string, error) {
-		commitArgs := []string{"commit", "-F", message}
-		if !isMerging() {
-			commitArgs = append(append(commitArgs, "--"), paths...)
-		}
-		committed, _ := git(commitArgs...)
-		if !committed.ok {
-			return "", &Fail{Msg: "commit failed — the hook output is above",
-				Next: "x lane commit " + msgFile + " -- " + strings.Join(paths, " "), Log: nonBlank(committed.log)}
-		}
-		sha, err = head()
-		return short(sha) + "  " + firstLine(message), err
-	})
+	if committed == nil {
+		committed = r.Step("commit", "hooks, then the commit", func() (string, error) {
+			commitArgs := []string{"commit", "-F", message}
+			if !isMerging() {
+				commitArgs = append(append(commitArgs, "--"), paths...)
+			}
+			committed, _ := git(commitArgs...)
+			if !committed.ok {
+				return "", &Fail{Msg: "commit failed — the hook output is above",
+					Next: "x lane commit " + msgFile + " -- " + strings.Join(paths, " "), Log: nonBlank(committed.log)}
+			}
+			sha, err = head()
+			return short(sha) + "  " + firstLine(message), err
+		})
+	}
 	// the held files come back whether the hooks passed or refused
 	if aside != nil {
 		if err := r.Step("restore", "putting the held files back", func() (string, error) {
@@ -198,10 +220,21 @@ func push(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	fields := plan.(ordered)
 	name, sha, from := fields[0].value.(string), fields[1].value.(string), fields[2].value.(string)
 	if err := r.Step("push", "git push", func() (string, error) {
-		pushed, _ := gitIn(from, "push", "-q", "origin", sha+":refs/heads/"+name)
+		var pushed result
+		tries := 1
+		for ; ; tries++ {
+			pushed, _ = gitIn(from, "push", "-q", "origin", sha+":refs/heads/"+name)
+			if pushed.ok || tries == pushTries || !serverError.MatchString(pushed.log) {
+				break
+			}
+			time.Sleep(time.Duration(tries) * pushPause)
+		}
 		if !pushed.ok {
-			return "", &Fail{Msg: "push failed — the git and hook output is above",
+			return "", &Fail{Msg: fmt.Sprintf("push failed after %s — the git and hook output is above", plural(tries, "try")),
 				Next: "fix what the pre-push hooks name, then x lane push --apply", Log: nonBlank(pushed.log)}
+		}
+		if tries > 1 {
+			return fmt.Sprintf("origin/%s, on try %d of %d", name, tries, pushTries), nil
 		}
 		return "origin/" + name, nil
 	}); err != nil {
@@ -442,6 +475,84 @@ func validateMods(tree string, paths []string) (string, error) {
 		return "no mod among the paths", nil
 	}
 	return plural(len(seen), "mod") + " valid", nil
+}
+
+type ciJob struct {
+	dir  string
+	env  []string
+	argv []string
+}
+
+// a direct commit on main reaches ci only after the push, so the jobs ci.yml runs for the
+// touched paths run here first: main went red twice on 10-07 from commits ci never saw
+func runCI(tree string, paths []string) (string, error) {
+	jobs := ciJobs(tree, paths)
+	if len(jobs) == 0 {
+		return "no go or ts among the paths", nil
+	}
+	var ran []string
+	for _, job := range jobs {
+		command := strings.Join(job.argv, " ")
+		if job.dir != tree {
+			command = "(" + home(job.dir) + ") " + command
+		}
+		if done, _ := run(job.dir, job.env, "", job.argv[0], job.argv[1:]...); !done.ok {
+			lines := nonBlank(done.log)
+			return "", &Fail{Refused: true, Msg: command + " is red — its output is above; nothing was committed",
+				Next: command, Log: lines[max(0, len(lines)-40):]}
+		}
+		ran = append(ran, command)
+	}
+	return strings.Join(ran, ", ") + " green", nil
+}
+
+func ciJobs(tree string, paths []string) []ciJob {
+	var jobs []ciJob
+	seen := map[string]bool{}
+	ts := false
+	for _, path := range paths {
+		switch filepath.Ext(path) {
+		case ".ts", ".tsx", ".mts":
+			ts = true
+		}
+		if module := goModule(tree, filepath.Dir(filepath.Join(tree, path))); module != "" && !seen[module] {
+			seen[module] = true
+			// the same isolation pnpm x-go:test runs under: no global gitconfig reaches a fixture repo
+			jobs = append(jobs, ciJob{module, []string{"GIT_CONFIG_GLOBAL=/dev/null"}, []string{"go", "test", "./..."}})
+		}
+	}
+	if ts {
+		scripts := packageScripts(tree)
+		for _, script := range []string{"typecheck", "test"} {
+			if scripts[script] != "" {
+				jobs = append(jobs, ciJob{tree, nil, []string{"pnpm", script}})
+			}
+		}
+	}
+	return jobs
+}
+
+// goModule is the nearest dir at or above dir, inside the tree, that holds a go.mod
+func goModule(tree, dir string) string {
+	for dir == tree || strings.HasPrefix(dir, tree+string(filepath.Separator)) {
+		if exists(filepath.Join(dir, "go.mod")) {
+			return dir
+		}
+		if dir == tree {
+			break
+		}
+		dir = filepath.Dir(dir)
+	}
+	return ""
+}
+
+func packageScripts(tree string) map[string]string {
+	var manifest struct {
+		Scripts map[string]string `json:"scripts"`
+	}
+	raw, _ := os.ReadFile(filepath.Join(tree, "package.json"))
+	_ = json.Unmarshal(raw, &manifest)
+	return manifest.Scripts
 }
 
 /* Git */

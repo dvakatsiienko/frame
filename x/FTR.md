@@ -86,7 +86,15 @@
   - when `x lane commit --hold-unstaged <msg-file> -- <paths>` runs
   - then the hooks see only the index version of the tree, the commit lands, and every held file is back byte for byte — also when a hook refuses
   - decision: the files move into the git dir, never the shared stash stack another session could pop
+- ✅ `x lane commit` on main runs the ci jobs for the touched paths first
+  - given a commit on main whose paths sit in a go module, or name a `.ts`/`.tsx` file
+  - when `x lane commit` runs
+  - then `go test ./...` in that module, and the repo's `pnpm typecheck` and `pnpm test` for ts, run before the hooks; a red job refuses the commit with its output, and HEAD does not move
+  - given any other branch, then no job runs
+  - decision: local, before the commit lands; nothing on github, pr branches untouched (dima, cli grill 2026-10-09)
 - ✅ `x lane push` pushes HEAD's sha and reads the remote back
+  - given a remote that answers a 5xx, then the push tries again, up to 3 tries 2 s and 4 s apart, and lands once the remote recovers
+  - given a 4xx or a hook refusal, then it fails on the first try
 - ⬜ `x lane pr-open` opens a pr as the coder app
 - ✅ `x lane review <pr>` keeps the ci review on the pr head
   - given a pr whose last review round judged an older commit, under the 2-round cap
@@ -279,6 +287,7 @@
 - ✅ `x linear update <project|initiative> --body-file <f> --health <h>` posts a status update
   - given a name that finds exactly one project or initiative, and `--health onTrack|atRisk|offTrack`
   - when it runs, then the update lands on that one with its health; a name that finds none or several writes nothing
+  - given a name that finds a project, then initiatives are never read, so an actor without `initiative:read` (cclio) posts it; a project wins over an initiative of the same name
 - ✅ `x linear api '<graphql>'` is the raw door when no verb fits
   - given any graphql, and `--vars '<json object>'`
   - when it runs, then it goes out as the acting member, and linear's reply prints as it came — exit 1 when it holds errors

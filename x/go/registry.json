@@ -94,13 +94,14 @@
             },
             "name": "lane commit",
             "needsApply": false,
-            "purpose": "commit only the named paths, print the new sha; mid-merge concludes it; --repo <path> commits on that repo's main",
+            "purpose": "commit only the named paths, print the sha; on main their ci jobs run first; mid-merge concludes it; --repo <path> too",
             "steps": [
                 "tree",
                 "format",
                 "mods",
                 "stage",
                 "hold",
+                "ci",
                 "commit",
                 "restore"
             ]

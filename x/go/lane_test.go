@@ -3,10 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
+	"net/http/cgi"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -240,6 +244,52 @@ func TestCommitRefusesCiphertextAndNamesUnlock(t *testing.T) {
 	}
 }
 
+func TestCommitOnMainRunsTheCiJobsForTheTouchedPaths(t *testing.T) {
+	goTest := func(pass bool) string {
+		if pass {
+			return "package m\n\nimport \"testing\"\n\nfunc TestM(t *testing.T) {}\n"
+		}
+		return "package m\n\nimport \"testing\"\n\nfunc TestM(t *testing.T) { t.Fatal(\"red\") }\n"
+	}
+	cases := []struct {
+		name, branch, path string
+		plant              map[string]string
+		commits            bool
+	}{
+		{"a red go test refuses", "main", "mod/m.go", map[string]string{"mod/m_test.go": goTest(false)}, false},
+		{"a green go test commits", "main", "mod/m.go", map[string]string{"mod/m_test.go": goTest(true)}, true},
+		{"a red typecheck refuses", "main", "src/a.ts", map[string]string{"package.json": `{"scripts":{"typecheck":"exit 1","test":"exit 0"}}`}, false},
+		{"a red vitest refuses", "main", "src/a.ts", map[string]string{"package.json": `{"scripts":{"typecheck":"exit 0","test":"exit 1"}}`}, false},
+		{"a pr branch skips the jobs", "coder/x", "mod/m.go", map[string]string{"mod/m_test.go": goTest(false)}, true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			dir := repo(t)
+			write(t, filepath.Join(dir, "mod/go.mod"), "module m\n\ngo 1.21\n")
+			for path, body := range c.plant {
+				write(t, filepath.Join(dir, path), body)
+			}
+			gitT(t, dir, "add", ".")
+			gitT(t, dir, "commit", "-q", "-m", "plant")
+			if c.branch != "main" {
+				gitT(t, dir, "switch", "-q", "-c", c.branch)
+			}
+			before := gitT(t, dir, "rev-parse", "HEAD")
+			body := "export const a = 1\n"
+			if strings.HasSuffix(c.path, ".go") {
+				body = "package m\n"
+			}
+			write(t, filepath.Join(dir, c.path), body)
+
+			got := xIn(t, dir, nil, "lane", "commit", message(t), "--", c.path)
+
+			if moved := gitT(t, dir, "rev-parse", "HEAD") != before; moved != c.commits || (got.code == 0) != c.commits {
+				t.Fatalf("committed %v, exit %d, want committed %v\n%s", moved, got.code, c.commits, got.stdout)
+			}
+		})
+	}
+}
+
 func TestUnlockTurnsCiphertextBackIntoPlaintext(t *testing.T) {
 	tree := lockedWorktree(t)
 
@@ -247,6 +297,79 @@ func TestUnlockTurnsCiphertextBackIntoPlaintext(t *testing.T) {
 
 	if body, _ := os.ReadFile(filepath.Join(tree, "secret.txt")); got.code != 0 || string(body) != "plaintext\n" {
 		t.Fatalf("exit %d, secret.txt %q", got.code, body)
+	}
+}
+
+// flakyRemote serves a bare repo over smart http through git's own http-backend, answering
+// the first `fails` push requests (receive-pack) with `status` instead; the plan's ls-remote
+// and the verify read pass untouched
+func flakyRemote(t *testing.T, status, fails int) (string, *atomic.Int32) {
+	t.Helper()
+	root := t.TempDir()
+	gitT(t, root, "init", "-q", "--bare", "remote.git")
+	gitT(t, filepath.Join(root, "remote.git"), "config", "http.receivepack", "true")
+	gitBin, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend := &cgi.Handler{Path: gitBin, Args: []string{"http-backend"}, InheritEnv: []string{"PATH"},
+		Env: []string{"GIT_PROJECT_ROOT=" + root, "GIT_HTTP_EXPORT_ALL=1"}}
+	var pushes atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if strings.Contains(req.URL.String(), "receive-pack") && pushes.Add(1) <= int32(fails) {
+			w.WriteHeader(status)
+			return
+		}
+		backend.ServeHTTP(w, req)
+	}))
+	t.Cleanup(server.Close)
+	return server.URL + "/remote.git", &pushes
+}
+
+func TestPushRetriesAServerErrorAndNeverARefusal(t *testing.T) {
+	cases := []struct {
+		name          string
+		status, fails int
+		pushes        bool
+		requests      int32
+	}{
+		{"a 500 then 200 lands on the retry", http.StatusInternalServerError, 1, true, 0},
+		{"a 403 is never retried", http.StatusForbidden, 99, false, 1},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			url, seen := flakyRemote(t, c.status, c.fails)
+			dir := repo(t)
+			gitT(t, dir, "remote", "add", "origin", url)
+
+			got := xIn(t, dir, nil, "lane", "push", "--apply")
+
+			if (got.code == 0) != c.pushes || (c.pushes && got.data["remote"] != gitT(t, dir, "rev-parse", "HEAD")) {
+				t.Fatalf("exit %d, want pushed %v\n%s", got.code, c.pushes, got.stdout)
+			}
+			if c.requests > 0 && seen.Load() != c.requests {
+				t.Errorf("%d requests reached the remote, want %d", seen.Load(), c.requests)
+			}
+		})
+	}
+}
+
+func TestServerErrorKnowsGithubsWordsOverSsh(t *testing.T) {
+	cases := []struct {
+		log   string
+		retry bool
+	}{
+		// the FRM-343 push, verbatim
+		{"remote: Internal Server Error        \nremote: Request ID 3E7D:237F88\n ! [remote rejected] 86dd55be05 -> worktree-FRM-343-x-handoff (Internal Server Error)\nerror: failed to push some refs", true},
+		{"error: RPC failed; HTTP 502 curl 22 The requested URL returned error: 502", true},
+		{"fatal: unable to access 'https://example.com/r.git/': The requested URL returned error: 403", false},
+		{" ! [remote rejected] main -> main (protected branch hook declined)\nerror: failed to push some refs", false},
+		{"ERROR: Permission to o/r.git denied to someone.\nfatal: Could not read from remote repository.", false},
+	}
+	for _, c := range cases {
+		if got := serverError.MatchString(c.log); got != c.retry {
+			t.Errorf("retry %v, want %v for %q", got, c.retry, c.log)
+		}
 	}
 }
 
