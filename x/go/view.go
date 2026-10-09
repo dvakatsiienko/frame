@@ -83,6 +83,11 @@ func (t theme) chip(family string) string {
 		Padding(0, 1).Render(family)
 }
 
+// a fill-free chip: stacked one-row families never touch
+func (t theme) tag(family string) string {
+	return lipgloss.NewStyle().Foreground(t.familyColor(family)).Bold(true).Render("● " + family)
+}
+
 func (t theme) verb(family, text string) string {
 	return lipgloss.NewStyle().Foreground(t.familyColor(family)).Bold(true).Render(text)
 }

@@ -56,6 +56,7 @@ func familiesBoard() string {
 	b.rows = append(b.rows, columns(widths, head...)...)
 	b.rows = append(b.rows, "")
 	for _, family := range families() {
+		chip := ui.tag(family)
 		var names []string
 		for _, verb := range verbsUnder(family) {
 			if verb.Short() != "" {
@@ -63,9 +64,9 @@ func familiesBoard() string {
 			}
 		}
 		verbs := ui.verb(family, strings.Join(names, "  "))
-		cells := []string{ui.chip(family), ui.fg.Render(familyOf(family).Gist), verbs}
+		cells := []string{chip, ui.fg.Render(familyOf(family).Gist), verbs}
 		if isNarrow() {
-			cells = []string{ui.chip(family), ui.fg.Render(familyOf(family).Gist)}
+			cells = []string{chip, ui.fg.Render(familyOf(family).Gist)}
 			if len(names) > 0 {
 				cells[1] += "\n" + verbs
 			}

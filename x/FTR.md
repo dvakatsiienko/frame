@@ -16,7 +16,8 @@
 - ✅ bare `x` lists the families on one screen
   - given dima runs bare `x` in a terminal at 80 and at 120 cols
   - when it renders
-  - then one framed row per family shows its colour chip, its purpose and its verb names, and the whole board fits a 30-row terminal; under 100 cols the verb names fold under the purpose
+  - then one framed row per family shows a dot and its name in the family colour, its purpose and its verb names, and the whole board fits a 30-row terminal; under 100 cols the verb names fold under the purpose
+  - decision: a dot, not a filled chip — filled chips on consecutive rows touched and read as one block; a blank row between families cost 11 rows (dima, 2026-10-09)
   - given an agent or a pipe, then the envelope holds each family with its purpose and verb names only, and `next` names `x schema <family>`
   - decision: families first, verbs one call deeper, as `PRODUCT.md` planned — the full list scrolled (dima, 2026-10-09)
   - decision: the look is picked by the a/b/c in FRM-284 — TS + gum, TS + ink, go + full charm
