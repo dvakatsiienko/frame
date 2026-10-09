@@ -221,7 +221,11 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     }
 
     // R4
-    expect(owners, `${name}: owner is one seat`).toContain(fields?.owner);
+    const seats = [fields?.owner ?? []].flat();
+    expect(seats.length, `${name}: owner names a seat`).toBeGreaterThan(0);
+    for (const seat of seats) {
+        expect(owners, `${name}: owner seat`).toContain(seat);
+    }
 
     // R5
     expect(

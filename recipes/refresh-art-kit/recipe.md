@@ -1,6 +1,6 @@
 ---
 kind: refresh
-owner: designer
+owner: [designer, coordinator]
 cadence: "on demand — «refresh art-kit», a rebrand spotted, a new art job type. otherwise quarterly."
 artifacts:
   - home/.claude/plugin-x/skills/art-kit/

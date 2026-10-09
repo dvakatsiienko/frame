@@ -1,6 +1,6 @@
 ---
 kind: refresh
-owner: coordinator
+owner: [coder, coordinator]
 cadence: "event-driven: a go minor ships, a charm major lands, or a go change in `x` hits something the guide does not cover. no timer."
 artifacts:
   - home/.claude/plugin-x/skills/guide-go/

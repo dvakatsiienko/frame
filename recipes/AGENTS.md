@@ -39,7 +39,7 @@ frontmatter, in this order:
 
 ```yaml
 kind: refresh | nurture | run   # research → distill · groom an existing system · plain execution
-owner: coordinator | coder | designer | fleet   # the seat whose work the artifacts feed
+owner: <seat> | [<seat>, coordinator]   # coordinator | coder | designer | fleet: the seat whose work the artifacts feed
 cadence: <when it runs, and any extra trigger>   # the only home of the cadence
 artifacts: [<path or x:skill>, …]
 script: <package.json key> | <x verb> | none
