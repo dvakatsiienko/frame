@@ -188,7 +188,8 @@
   - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the session's project `.claude/settings.local.json`, every other key kept, and the row shows it
   - when he types anything else, or the file is not a json object
   - then one red line under the meters says why, and the file stays untouched
-  - decision: the project is the dir the session started in (cclio's is `~/frame/cclio`), never the repo root and never user settings — every session in that dir shares the point
+  - decision: the project is the dir the session launched in, as its registry entry's `cwd` names it (cclio's is `~/frame/cclio`), never the repo root and never user settings — every session in that dir shares the point
+  - decision: the registry's `cwd`, not `session.start`'s — cclio's session.start read `~/frame`, and dima's 90 landed in the repo root's file, lowering every `~/frame` session's point too (19:19)
 - ⬜ x-mod-stash writes `~/.claude/shelf/cc-usage-window.json` on every measure whose rate limits moved, in sline's old shape (`rate_limits.five_hour` / `seven_day`, `used_percentage`, `resets_at` in seconds, `written_at`), from a desktop tab too; sline no longer writes it
   - 📌 unprobed: that a desktop tab's measure carries `five_hour` — the file held `five_hour: null` from sline at 18:43
 - decision: stash shows no holds and no guard refusals — the 🔒 chip and the 🛡️ row moved to `/board`, then left (dima, 2026-10-09, FRM-354: «too noisy, i dont need this info at all»); 29 of 33 band redraws measured over 4 min were holds churn, each a blink in x-mod-breather. x-mod-holds and x-mod-guard work unchanged; a halt still counts guard's day from guard's own store file

@@ -364,8 +364,22 @@ async function setCompactAt($: EngineInterface, text: string) {
         $.state.set(METER, { ...was, note }).catch(() => undefined);
     const typed = thresholdOf(text);
     if ('refusal' in typed) return keep(typed.refusal);
-    if (!projectDir) return keep('no project dir for this session');
-    const path = `${projectDir}/.claude/settings.local.json`;
+    // the launch dir cc keeps in the registry is the project its settings resolve from; session.start's cwd can be a
+    // later one (cclio's read ~/frame while it launched in ~/frame/cclio, 2026-10-09)
+    const launched = proc
+        ? await $.fs
+              .read(
+                  `${await $.env.get('HOME')}/.claude/sessions/${proc.pid}.json`,
+              )
+              .then((raw) => {
+                  const { cwd } = JSON.parse(raw) as { cwd?: unknown };
+                  return typeof cwd === 'string' && cwd ? cwd : undefined;
+              })
+              .catch(() => undefined)
+        : undefined;
+    const dir = launched ?? projectDir;
+    if (!dir) return keep('no project dir for this session');
+    const path = `${dir}/.claude/settings.local.json`;
     let settings: Record<string, unknown> = {};
     if (await $.fs.exists(path)) {
         try {

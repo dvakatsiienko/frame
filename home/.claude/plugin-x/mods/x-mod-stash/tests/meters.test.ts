@@ -148,6 +148,28 @@ test('a submitted compaction point lands in the project settings.local.json, oth
     });
 });
 
+test('a submitted compaction point lands in the launch dir the registry names, not the start cwd', async ($, on) => {
+    const { files } = meters(on, {
+        '/home/.claude/sessions/4649.json': '{"cwd":"/launch"}',
+    });
+    on('process.run', () => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: '4649\nFri Oct  9 09:39:32 2026\n',
+        },
+    }));
+    await measure($, 39, 35);
+    const ui = await band($);
+    await ui.input({ key: 'compact-at', text: '90' });
+    expect([
+        JSON.parse(files['/launch/.claude/settings.local.json'] ?? '{}').env,
+        LOCAL in files,
+    ]).toEqual([{ CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '90' }, false]);
+});
+
 test('a compaction point outside 10–99 is refused and the file stays untouched', async ($, on) => {
     const { files } = meters(on, { [LOCAL]: '{}' });
     await measure($, 39, 35);
