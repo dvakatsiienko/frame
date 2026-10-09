@@ -66,6 +66,11 @@
             "example": "x trace record --exit 0 --duration 840 -- pnpm x-go:test",
             "gist": "trace lines for commands x did not run",
             "name": "trace"
+        },
+        {
+            "example": "x plugin bump x --apply",
+            "gist": "our claude code plugins: a release proven in the cache",
+            "name": "plugin"
         }
     ],
     "verbs": [
@@ -949,6 +954,21 @@
             "name": "trace record",
             "needsApply": false,
             "purpose": "write the trace line for a pnpm script dima typed; only the zsh hook calls it, so help hides it"
+        },
+        {
+            "args": [
+                {
+                    "description": "the plugin's name, as its plugin.json names it",
+                    "name": "name"
+                }
+            ],
+            "name": "plugin bump",
+            "needsApply": true,
+            "purpose": "bump a plugin's patch version, refresh its marketplace and install, and read the new version back from the cache",
+            "steps": ["plan", "write", "marketplace", "update", "cache"],
+            "touches": [
+                "the plugin cache under $CLAUDE_CONFIG_DIR (~/.claude by default), through claude plugin marketplace update and claude plugin update"
+            ]
         }
     ]
 }

@@ -314,6 +314,17 @@
   - given linear rejects a cached app token (401), then x mints it again and retries once
   - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
 
+## plugin — releases
+
+- ✅ `x plugin bump <name> --apply` releases a plugin and proves it reached the cache
+  - makes: the patch version moved by one in the plugin's `.claude-plugin/plugin.json`, a line edit
+  - given a tracked plugin dir at a.b.c that a tracked marketplace lists by source
+  - when it runs, then the manifest reads a.b.(c+1), `claude plugin marketplace update` and `claude plugin update` run, the plugin cache holds the new version, and the board ends on `next /reload-plugins`
+  - given a cache that lacks the new version (the marketplace reads another checkout), then it exits 1 naming the cache dir
+  - given a plugin not installed from a marketplace (the mods load `@inline`, `x-cw`'s marketplace is never added), then it bumps only and runs nothing
+  - given a name no plugin carries, then exit 2 lists the names that exist
+- ✅ `x schema plugin` lists the verb
+
 ## fleet — the fleet measuring itself
 
 - ✅ `x fleet flow` prints the fleet-flow done test

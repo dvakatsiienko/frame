@@ -48,6 +48,7 @@ var impls = map[string]Impl{
 	"lane seed":       {Run: seed, Undone: "the tree is as the hook left it"},
 	"lane review":     {Run: laneReview, Undone: "no review was requested"},
 	"lane pr-body":    {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
+	"plugin bump":     {Plan: pluginBumpPlan, Apply: pluginBump, Undone: "the cache holds the old version", Ask: askPluginBump},
 	"go gate":         {Run: goGate, Undone: "the gate stopped at its first red step"},
 	"handoff list":    {Run: handoffList},
 	"handoff peek":    {Run: handoffPeek},
