@@ -540,8 +540,31 @@ const COLD_MS = 60 * 60_000;
 
 // the meters: a bar of whole cells, the reading filled and one cell marked — the pace on the 5h bar, the compaction
 // point on the context one; runs of one kind come out joined, so each draws as one Text
-export type BarRun = { kind: 'fill' | 'empty' | 'mark'; text: string };
-export function meterBar(percent: number, width: number, mark?: number) {
+// sline's bar ramp, cell by cell — green, yellow, orange, red — so a bar warms as it fills (sline/usage.go `barRamp`)
+const BAR_RAMP = [
+    '#a9b665',
+    '#b5ba61',
+    '#c1b25d',
+    '#cdac5a',
+    '#d8a657',
+    '#e09852',
+    '#e78a4e',
+    '#e87f47',
+    '#e97454',
+    '#ea6962',
+] as const;
+export type BarRun = {
+    kind: 'fill' | 'empty' | 'mark';
+    text: string;
+    color?: string;
+};
+// `scale` is the % the ramp turns red at: 100 for the 5h window, the compaction point for the context
+export function meterBar(
+    percent: number,
+    width: number,
+    mark?: number,
+    scale = 100,
+) {
     const cell = (p: number) =>
         Math.min(width - 1, Math.max(0, Math.round((p / 100) * width)));
     const filled = Math.min(width, Math.round((percent / 100) * width));
@@ -549,10 +572,22 @@ export function meterBar(percent: number, width: number, mark?: number) {
     const runs: BarRun[] = [];
     for (let i = 0; i < width; i++) {
         const kind = i === at ? 'mark' : i < filled ? 'fill' : 'empty';
-        const ch = kind === 'mark' ? '┃' : kind === 'fill' ? '█' : '░';
+        const ch = kind === 'mark' ? '┃' : kind === 'fill' ? '▮' : '▯';
+        const color =
+            kind === 'fill'
+                ? BAR_RAMP[
+                      Math.min(
+                          BAR_RAMP.length - 1,
+                          Math.floor(
+                              (((i + 0.5) / width) * 100 * BAR_RAMP.length) /
+                                  scale,
+                          ),
+                      )
+                  ]
+                : undefined;
         const last = runs.at(-1);
-        if (last?.kind === kind) last.text += ch;
-        else runs.push({ kind, text: ch });
+        if (last?.kind === kind && last.color === color) last.text += ch;
+        else runs.push({ color, kind, text: ch });
     }
     return runs;
 }
@@ -1464,6 +1499,127 @@ export const register: Register = (on) => {
         const afkLabel = '💨';
         const foldLabel = isOpenList ? '📂' : '📁';
 
+        // the meters: two bars right under the head, so they stay in view while the asks below them scroll, and their
+        // readings in the head's free middle, so each bar runs the band's full width
+        const meter = (await $.state.get(METER)).value;
+        const now = await $.clock.now();
+        const barWidth = Math.max(8, e.props.bodyColumns - 13);
+        const runsJSX = (key: string, runs: BarRun[]) =>
+            runs.map((r, i) => {
+                return (
+                    <Text
+                        bold={r.kind === 'mark'}
+                        color={r.color}
+                        dimColor={r.kind === 'empty'}
+                        // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its bar is its identity
+                        key={`${key}:${i}`}>
+                        {r.text}
+                    </Text>
+                );
+            });
+        const five = meter?.fiveHour;
+        const pace =
+            five?.resetsAt === undefined
+                ? undefined
+                : paceOf(five.resetsAt, now);
+        const gap =
+            five && pace !== undefined
+                ? Math.round(five.used - pace)
+                : undefined;
+        const fiveTint = gapTint(gap ?? 0);
+        const ctx = meter?.context;
+        const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
+        const barRowJSX = (
+            key: string,
+            label: string,
+            percent: number | undefined,
+            tint: string,
+            runs: BarRun[],
+        ) => (
+            <Box flexDirection='row' gap={1} key={key}>
+                <Box flexShrink={0} width={6}>
+                    <Text wrap='truncate-end'>{label}</Text>
+                </Box>
+                {percent === undefined ? (
+                    <Text dimColor>no reading yet</Text>
+                ) : (
+                    <Box flexDirection='row' gap={1}>
+                        <Box flexDirection='row' flexShrink={0}>
+                            {runsJSX(key, runs)}
+                        </Box>
+                        <Box flexShrink={0} justifyContent='flex-end' width={4}>
+                            <Text bold color={tint}>
+                                {Math.round(percent)}%
+                            </Text>
+                        </Box>
+                    </Box>
+                )}
+            </Box>
+        );
+        const meterInfoJSX = (
+            <Box
+                flexDirection='row'
+                flexShrink={1}
+                gap={1}
+                key='meter:info'
+                minWidth={0}
+                overflow='hidden'>
+                {pace === undefined ? null : <Text dimColor>pace {pace}%</Text>}
+                {gap === undefined ? null : (
+                    <Text color={fiveTint}>
+                        {gap > 0 ? `+${gap} debt` : `${-gap} spare`}
+                    </Text>
+                )}
+                {five?.resetsAt === undefined ? null : (
+                    <Text dimColor>↻ {span(five.resetsAt - now)}</Text>
+                )}
+                <Text>🗜️</Text>
+                <Box flexShrink={0} width={8}>
+                    <ui.Input
+                        key='compact-at'
+                        onSubmit={(value) => void setCompactAt($, value)}
+                        placeholder='70'
+                        submitLabel='✓'
+                        value={
+                            meter?.compactAt === undefined
+                                ? ''
+                                : String(meter.compactAt)
+                        }
+                    />
+                </Box>
+            </Box>
+        );
+        const meters = (
+            <Box flexDirection='column' flexShrink={0} key='meters'>
+                {barRowJSX(
+                    'meter:5h',
+                    '🔥 5h',
+                    five?.used,
+                    fiveTint,
+                    five ? meterBar(five.used, barWidth, pace) : [],
+                )}
+                {barRowJSX(
+                    'meter:ctx',
+                    '🧠 ctx',
+                    ctx,
+                    ctxTint,
+                    ctx === undefined
+                        ? []
+                        : meterBar(
+                              ctx,
+                              barWidth,
+                              meter?.compactAt,
+                              meter?.compactAt ?? 100,
+                          ),
+                )}
+                {meter?.note ? (
+                    <Text color='error' wrap='truncate-end'>
+                        {meter.note}
+                    </Text>
+                ) : null}
+            </Box>
+        );
+
         // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there
         const head = (
             <Box
@@ -1489,6 +1645,7 @@ export const register: Register = (on) => {
                 ) : (
                     <Text dimColor>no open asks</Text>
                 )}
+                {meterInfoJSX}
                 <Box flexDirection='row' gap={1}>
                     {first ? copyButton(first[0], first[1].asks, 'c') : null}
                     {tip(
@@ -1588,128 +1745,12 @@ export const register: Register = (on) => {
                       )),
                   ]
                 : [];
-        // the two meters, pinned under the asks: one label column, one bar width and one % cell, so both bars start
-        // and end on the same columns
-        const meter = (await $.state.get(METER)).value;
-        const now = await $.clock.now();
-        const barWidth = Math.max(8, Math.min(48, e.props.bodyColumns - 40));
-        const runsJSX = (key: string, runs: BarRun[], tint: string) =>
-            runs.map((r, i) => {
-                return (
-                    <Text
-                        bold={r.kind === 'mark'}
-                        color={r.kind === 'fill' ? tint : undefined}
-                        dimColor={r.kind === 'empty'}
-                        // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its bar is its identity
-                        key={`${key}:${i}`}>
-                        {r.text}
-                    </Text>
-                );
-            });
-        const labelJSX = (label: string) => (
-            <Box flexShrink={0} width={6}>
-                <Text wrap='truncate-end'>{label}</Text>
-            </Box>
-        );
-        const percentJSX = (n: number, tint: string) => (
-            <Box flexShrink={0} justifyContent='flex-end' width={4}>
-                <Text bold color={tint}>
-                    {Math.round(n)}%
-                </Text>
-            </Box>
-        );
-        const five = meter?.fiveHour;
-        const pace =
-            five?.resetsAt === undefined
-                ? undefined
-                : paceOf(five.resetsAt, now);
-        const gap =
-            five && pace !== undefined
-                ? Math.round(five.used - pace)
-                : undefined;
-        const fiveTint = gapTint(gap ?? 0);
-        const fiveRowJSX = (
-            <Box flexDirection='row' gap={1} key='meter:5h'>
-                {labelJSX('🔥 5h')}
-                {five ? (
-                    <Box flexDirection='row' gap={1}>
-                        <Box flexDirection='row' flexShrink={0}>
-                            {runsJSX(
-                                '5h',
-                                meterBar(five.used, barWidth, pace),
-                                fiveTint,
-                            )}
-                        </Box>
-                        {percentJSX(five.used, fiveTint)}
-                        {pace === undefined ? null : (
-                            <Text dimColor>pace {pace}%</Text>
-                        )}
-                        {gap === undefined ? null : (
-                            <Text color={fiveTint}>
-                                {gap > 0 ? `+${gap} debt` : `${-gap} spare`}
-                            </Text>
-                        )}
-                        {five.resetsAt === undefined ? null : (
-                            <Text dimColor>↻ {span(five.resetsAt - now)}</Text>
-                        )}
-                    </Box>
-                ) : (
-                    <Text dimColor>no 5h reading yet</Text>
-                )}
-            </Box>
-        );
-        const ctx = meter?.context;
-        const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
-        const ctxRowJSX = (
-            <Box flexDirection='row' gap={1} key='meter:ctx'>
-                {labelJSX('🧠 ctx')}
-                {ctx === undefined ? (
-                    <Text dimColor>no context reading yet</Text>
-                ) : (
-                    <Box flexDirection='row' gap={1}>
-                        <Box flexDirection='row' flexShrink={0}>
-                            {runsJSX(
-                                'ctx',
-                                meterBar(ctx, barWidth, meter?.compactAt),
-                                ctxTint,
-                            )}
-                        </Box>
-                        {percentJSX(ctx, ctxTint)}
-                    </Box>
-                )}
-                <Text>🗜️</Text>
-                <Box flexShrink={0} width={8}>
-                    <ui.Input
-                        key='compact-at'
-                        onSubmit={(value) => void setCompactAt($, value)}
-                        placeholder='70'
-                        submitLabel='✓'
-                        value={
-                            meter?.compactAt === undefined
-                                ? ''
-                                : String(meter.compactAt)
-                        }
-                    />
-                </Box>
-            </Box>
-        );
-        const meters = (
-            <Box flexDirection='column' flexShrink={0} key='meters'>
-                {fiveRowJSX}
-                {ctxRowJSX}
-                {meter?.note ? (
-                    <Text color='error' wrap='truncate-end'>
-                        {meter.note}
-                    </Text>
-                ) : null}
-            </Box>
-        );
         if (!isOpenList || !total)
             return (
                 <Box flexDirection='column'>
                     {head}
-                    {away}
                     {meters}
+                    {away}
                     {await next(e)}
                 </Box>
             );
@@ -1770,6 +1811,7 @@ export const register: Register = (on) => {
         return (
             <Box flexDirection='column'>
                 {head}
+                {meters}
                 {/* the asks give way, never the meters: a long ask wraps past its row count, and the meters stay in view */}
                 <Box flexDirection='column' flexShrink={1} overflow='hidden'>
                     {away}
@@ -1778,7 +1820,6 @@ export const register: Register = (on) => {
                         <Text dimColor>+{rows.length - shown.length} more</Text>
                     ) : null}
                 </Box>
-                {meters}
                 {await next(e)}
             </Box>
         );

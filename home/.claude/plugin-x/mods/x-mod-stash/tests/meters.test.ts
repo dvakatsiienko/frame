@@ -114,14 +114,26 @@ async function part($: Engine, start: RegExp) {
     return t ? { color: t.props.color, text: t.text } : 'no text';
 }
 
-test('the 5h row shows used, pace, the gap and the reset', async ($, on) => {
+test('the 5h bar ends in its used %, and the head reads pace, the gap and the time left', async ($, on) => {
     meters(on);
     await measure($, 39, 35);
     const ui = await band($);
-    const row = (await ui.findAll({ type: 'Box' })).find(
-        (n) => n.key === 'meter:5h',
-    );
-    expect(row?.text).toMatch(/39%.*pace 40%.*1 spare.*↻ 3h 0m/);
+    const boxes = await ui.findAll({ type: 'Box' });
+    const text = (key: string) => boxes.find((n) => n.key === key)?.text;
+    expect([text('meter:5h'), text('meter:info')]).toEqual([
+        expect.stringMatching(/39%$/),
+        expect.stringMatching(/pace 40%.*1 spare.*↻ 3h 0m/),
+    ]);
+});
+
+test('a bar warms cell by cell from green to red as it fills', async ($, on) => {
+    meters(on);
+    await measure($, 100, 0);
+    const ui = await band($);
+    const fills = (await ui.findAll({ type: 'Text' }))
+        .filter((t) => t.text?.startsWith('▮'))
+        .map((t) => t.props.color);
+    expect([fills[0], fills.at(-1)]).toEqual(['#a9b665', '#ea6962']);
 });
 
 test("the ctx row shows the fill and the engine's compaction point", async ($, on) => {
