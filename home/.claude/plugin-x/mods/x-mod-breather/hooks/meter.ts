@@ -22,9 +22,12 @@ const STYLE =
     ':root{color-scheme:light dark}.bg{fill:none}.off{fill:#cfcfcf;opacity:.5}.r0{stop-color:#7fb83a}.r1{stop-color:#f2b400}.r2{stop-color:#ff7a1a}.r3{stop-color:#f2364d}' +
     '@media (prefers-color-scheme:dark){.bg{fill:#282828}.off{fill:#504945;opacity:.45}.r0{stop-color:#a9b665}.r1{stop-color:#d8a657}.r2{stop-color:#e78a4e}.r3{stop-color:#ea6962}}';
 
-export function meterSvg(ex: Exercise): string {
+// the desktop rebuilds an Svg on every band redraw (x-mod-stash polls every 4 s), restarting its SMIL clock; a negative
+// begin at the breath's own phase makes each rebuild resume mid-breath instead of snapping to the floor (FRM-354)
+export function meterSvg(ex: Exercise, breathMs = 0): string {
     const total = cycleMs(ex);
     const dur = `${(total / 1000).toFixed(2)}s`;
+    const begin = `-${((breathMs % total) / 1000).toFixed(2)}s`;
     const cols = Math.floor((WIDTH + GAP) / STEP);
     const gridWidth = cols * STEP - GAP;
     const x0 = Math.floor((WIDTH - gridWidth) / 2);
@@ -41,7 +44,7 @@ export function meterSvg(ex: Exercise): string {
         }
         ys.push(ys[0]!);
         // evenly spaced values need no keyTimes; linear glides between them
-        bars += `<rect x="${x0 + c * STEP}" y="${ys[0]}" width="${CELL}" height="${GRID_HEIGHT}"><animate attributeName="y" values="${ys.join(';')}" calcMode="linear" dur="${dur}" repeatCount="indefinite"/></rect>`;
+        bars += `<rect x="${x0 + c * STEP}" y="${ys[0]}" width="${CELL}" height="${GRID_HEIGHT}"><animate attributeName="y" values="${ys.join(';')}" calcMode="linear" dur="${dur}" begin="${begin}" repeatCount="indefinite"/></rect>`;
     }
 
     const ramp = [3, 2, 1, 0, 1, 2, 3]

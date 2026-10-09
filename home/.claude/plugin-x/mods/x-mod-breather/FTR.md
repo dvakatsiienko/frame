@@ -21,6 +21,11 @@
 - ⬜ the meter wears sline's gruvbox ramp
   - then the bars climb green, yellow, orange (and red at the desktop's top row); an unlit cell is a light gray that follows the theme
   - decision: desktop dark is the gruvbox `#282828` band, desktop light a brighter ramp on a clear band — «light is a bit dim, make it more bright and expressive» (dima, 2026-10-08)
+- ⬜ another mod's redraw never restarts the desktop breath
+  - given a turn runs on the desktop and x-mod-stash redraws the band (its 4 s poll)
+  - then the meter breathes the whole cycle — full inhale, hold, exhale — and never snaps back to its floor mid-inhale
+  - the bug (dima's gif, FRM-354): the breath restarted every ~4.46 s, 6 times in 24 s, one blank frame each, so a 5.5 s inhale never finished
+  - decision: each render's svg starts its SMIL clock at the breath's own phase (a negative `begin`), so a remount from any mod resumes mid-breath; the desktop recreating an `Svg` on every redraw, same `key` and `source`, is inferred from the gif, not probed
 - ✅ a subagent finishing mid-turn keeps the band breathing
   - given a turn spawns a subagent and the subagent finishes while the turn goes on
   - then the band keeps its breath where it was, with no restart and no flicker

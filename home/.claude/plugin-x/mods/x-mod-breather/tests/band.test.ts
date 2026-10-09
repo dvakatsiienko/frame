@@ -32,6 +32,17 @@ test("a subagent finishing mid-turn keeps the band's breath going", async ($, on
     expect(band?.props.props).toEqual({ elapsedMs: 5000, exercise: 'hrv' });
 });
 
+test('a desktop band drawn mid-turn starts its breath at the turn\'s phase', async ($, on) => {
+    const clock = mock.clock(on);
+    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    on('turn.start', (_$, e) => ({ turnId: e.turnId }));
+    await $.turn.start({ text: 'go', turnId: 't1' });
+    await clock.advance(7000);
+    const ui = await $.ui.mount({ component: 'AbovePrompt', plugin: 'x-mod-breather', props: working, surface: 'desktop' });
+    const svg = await ui.find({ type: 'Svg' });
+    expect(String(svg?.props.source)).toContain('begin="-7.00s"');
+});
+
 test('draws nothing while claude is idle', async ($, on) => {
     mock.clock(on);
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));

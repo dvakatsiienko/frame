@@ -121,7 +121,7 @@ export const register: Register = (on) => {
                         height={METER_HEIGHT}
                         isInteractive
                         key={`meter:${running.startedAt}:${config.exercise}`}
-                        source={meterSvg(exercise)}
+                        source={meterSvg(exercise, elapsedMs - config.delay * 1000)}
                     />
                     {await next(e)}
                 </Box>
