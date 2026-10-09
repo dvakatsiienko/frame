@@ -1,10 +1,10 @@
 ---
 id: PK-24
 title: '[62] retros: the halt flush, its frequency, and skills that only grow'
-status: open
+status: claimed
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-09 11:53'
 labels:
   - m
 dependencies: []

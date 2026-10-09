@@ -4,7 +4,7 @@ title: '[10] plan the memory sweep'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-09 11:50'
 labels:
   - l
 dependencies: []
@@ -37,4 +37,6 @@ planned 10-07: `.scratch/memory-sweep/` — the spec + nine phase tickets (01 ba
 
 <!-- SECTION:NOTES:BEGIN -->
 sweep exit test (from pk-31, 10-09): one door for memory edits — today the guidance lives in rules/authoring-trigger.md, habit-memory-edits, matt's writing-for-agents, and the pocket/leaf rules in cclio memory.
+
+sweep inventory (dima, 10-09): re-check all 10 frame ADRs (docs/adr + docs/tracker/adr) against reality, each kept, amended or superseded.
 <!-- SECTION:NOTES:END -->

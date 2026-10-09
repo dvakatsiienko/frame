@@ -16,6 +16,8 @@ the linear workspace (`x-com`) domain. one term per concept, per TRK adrs. opera
 - **doc** — research/deliverable attached to a ticket or project the moment it is born (task outputs are ephemeral). title is the interface: topic — kind — date.
 - **project overview** — a project's content field, the standing description of what it is and where it stands. a tracked surface: the coordinator maintains it for dima, it is never left to rot.
 - **coordinator** — the session that owns tracker work: creates, updates, closes, triages, and never writes product code. **`cclio`** holds it (a ccli session in `~/frame/cclio`) — the DOT-188 trial resolved in its favor 2026-08-31.
+- **pocket** — the coordinator's local pool of by-hand work for its next sessions, read before linear; an item gets a linear ticket only when a coder takes it. _avoid_: queue, flowlog, and «inbox», which is dima's drop point that feeds the pocket.
+- **spec ticket** — one build step of a spec, the unit a coder claims and closes during a spec run; local and short-lived, while the linear ticket keeps the record. _avoid_: issue, and a bare «ticket», which means the linear one.
 - **health update** — a linear project update. cadence is weekly per active project plus event-driven on real state changes (TRK-0003). ticket ids do not auto-link there, so every id is a markdown link — mandatory, not style.
 
 ## channel
