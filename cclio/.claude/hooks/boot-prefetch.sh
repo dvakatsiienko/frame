@@ -84,7 +84,9 @@ grep '^⏰📌' "$HOME/frame/cclio/memory/_reminders.md" 2>/dev/null || echo "no
 
 echo "-- fleet: live sessions · worktrees · coder prs --"
 # the name is what SendMessage and the board use; a cwd count alone hid a peer editing frame (2026-09-27)
-live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
+# an interactive session that is not cclio is one dima opened himself (desktop or remote control): 👤, never on a stop list.
+# the fleet's own (coders, verifiers, ccrow, probes) are spawned with --bg
+live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")\(if .kind == "interactive" and ((.name // "") | test("cclio") | not) then " · 👤 dima'"'"'s — never stop" else "" end)"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
 [ -n "$live" ] && echo "$live" || echo "no live sessions registered"
 wt=$(git -C "$HOME/projects/bytes" worktree list 2>/dev/null | grep -v '^/Users/dima/projects/bytes ' )
 [ -n "$wt" ] && echo "$wt" || echo "no bytes worktrees"

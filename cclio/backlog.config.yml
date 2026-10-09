@@ -2,8 +2,8 @@ project_name: "cclio-pocket"
 default_status: "open"
 statuses: ["open", "claimed", "waiting", "done"]
 labels: ["xs", "s", "m", "l"]
-priorities: ["now", "next", "later"]
 types: ["task", "research", "grill", "test-drive", "idea", "wish", "question"]
+priorities: ["now", "next", "later"]
 date_format: yyyy-mm-dd
 max_column_width: 20
 default_editor: "nvim"

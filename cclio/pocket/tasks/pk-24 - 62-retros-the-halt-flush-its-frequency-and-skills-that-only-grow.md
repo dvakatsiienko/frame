@@ -1,10 +1,10 @@
 ---
 id: PK-24
 title: '[62] retros: the halt flush, its frequency, and skills that only grow'
-status: claimed
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:53'
+updated_date: '2026-10-09 12:05'
 labels:
   - m
 dependencies: []
@@ -29,3 +29,9 @@ pocket 62 · status line was: open · research + audit · inbox 10-09, first-act
   dima: how do i collect retros from the coder, the verifier and myself, via him? since they are steerable, we could gain more if they are targeted: do i simply ask the coder and verifier for a «retro», or steered? what should the coder, verifier and ccrow retro about — the steer vector? for my own retro he will pick each steer himself. also: the cost of the retro skill — it reads thread transcripts, is it costlier than our previous matt-skill-less retros? remind how matt's retro skill works.
 - linked: 30 (the halt retro reminder), [FRM-362](https://linear.app/x-com/issue/FRM-362) (crew-coder at its char budget, the growth symptom)
 <!-- SECTION:DESCRIPTION:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+audit 10-09 (.scratch/retro-audit.md): the 10-08 flush added 14 statements, cut none; 5 fleet-level, 3 one-lane stumbles, 5 duplicates. 30 days: crew-coder 3.6x, craft-spawning 3.2x, zero grooming commits. dima's verdicts: fold per lane, a halt gatherer, an entry rule, add → read whole → groom on every edit, ≤5 proposals per flush — written into habit-memory-edits
+<!-- SECTION:FINAL_SUMMARY:END -->

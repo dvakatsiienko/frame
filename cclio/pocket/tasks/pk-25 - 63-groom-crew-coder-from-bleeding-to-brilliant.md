@@ -4,15 +4,16 @@ title: '[63] groom crew-coder: from bleeding to brilliant'
 status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-09 12:08'
 labels:
   - m
-dependencies: []
+dependencies:
+  - PK-38
 references:
   - 'https://linear.app/x-com/issue/FRM-362'
-priority: next
+priority: now
 type: task
-ordinal: 17000
+ordinal: 2500
 ---
 
 ## Description

@@ -25,6 +25,7 @@ one short message, then straight into phase 1:
   — every hit without the `standing` label gets one line: «closable, because …» (his word
   closes, with a closing word in the body) or «stays, because …». a ticket whose pr merged
   with asks left open moves to Todo, never closes
+- **the stop list holds only members the fleet spawned with `--bg`**; a session the digest marks 👤 is dima's own (desktop or remote control) and stays as he left it.
 - **the coder roster, two questions per coder: retro filed in `~/.claude/shelf/retros/`? `claude stop <id>` done?** a coder
   has outlived a halt before; `claude agents --json` is the check, never memory. **a coder the CST
   calls «warm» is verified alive at write time** (a registry entry in `~/.claude/sessions/` +

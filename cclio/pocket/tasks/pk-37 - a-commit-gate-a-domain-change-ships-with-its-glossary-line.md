@@ -4,7 +4,7 @@ title: 'a commit gate: a domain change ships with its glossary line'
 status: open
 assignee: []
 created_date: '2026-10-09 11:51'
-updated_date: '2026-10-09 11:53'
+updated_date: '2026-10-09 12:05'
 labels:
   - m
 dependencies: []
@@ -27,4 +27,6 @@ dima, 2026-10-09: «why you missed this drift? if i did not remind you it would 
 
 <!-- SECTION:NOTES:BEGIN -->
 dima 10-09: bytes too — its apps carry their own GLOSSARY.md (app-essentials). so the gate is one x verb both repos' lefthook call, the way x linear push already runs in both; each repo's GLOSSARY-MAP.md (bytes needs one) names its contexts and their contract files.
+
+dima 10-09, the same gate family: a commit to a crew-* or guide-* SKILL.md that only grows it is refused unless the message carries «groom: read whole — <what was cut, or why nothing>». his rule: add → review the skill as a whole → groom, never a drop into a pile
 <!-- SECTION:NOTES:END -->
