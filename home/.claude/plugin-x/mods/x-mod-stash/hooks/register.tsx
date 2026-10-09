@@ -556,6 +556,8 @@ export function meterBar(percent: number, width: number, mark?: number) {
     }
     return runs;
 }
+// a calm meter's fill: the board's green and blue mid-tones, 3.6:1 or more on white and 4.2:1 on a dark pane
+const METER_TINTS = { calm5h: '#47915a', calmCtx: '#4f83e0' } as const;
 // the 5h window runs five hours; its pace is the share of it already gone, so a used % on pace keeps up exactly
 const FIVE_HOUR_MS = 5 * 60 * 60_000;
 export const paceOf = (resetsAt: number, now: number) =>
@@ -564,14 +566,14 @@ export const paceOf = (resetsAt: number, now: number) =>
     );
 // used − pace: spare at 0 or under, a debt up to 10 is amber, past it red
 export const gapTint = (gap: number) =>
-    gap <= 0 ? 'success' : gap <= 10 ? 'warning' : 'error';
+    gap <= 0 ? METER_TINTS.calm5h : gap <= 10 ? RAMP[1] : RAMP[2];
 // the context fill reads calm until 10 points short of its compaction point, then amber, red at and past it
 export const contextFill = (percent: number, compactAt?: number) =>
     compactAt === undefined || percent < compactAt - 10
-        ? undefined
+        ? METER_TINTS.calmCtx
         : percent < compactAt
-          ? 'warning'
-          : 'error';
+          ? RAMP[1]
+          : RAMP[2];
 // a threshold dima types: a whole 10 to 99, else the one line that refuses it
 export const thresholdOf = (text: string) => {
     const n = Number(text.trim());
@@ -1586,11 +1588,12 @@ export const register: Register = (on) => {
                       )),
                   ]
                 : [];
-        // the two meters, full width under the asks: the bars share one width so their marks line up
+        // the two meters, pinned under the asks: one label column, one bar width and one % cell, so both bars start
+        // and end on the same columns
         const meter = (await $.state.get(METER)).value;
         const now = await $.clock.now();
-        const barWidth = Math.max(8, Math.min(40, e.props.bodyColumns - 46));
-        const runsJSX = (key: string, runs: BarRun[], tint?: string) =>
+        const barWidth = Math.max(8, Math.min(48, e.props.bodyColumns - 40));
+        const runsJSX = (key: string, runs: BarRun[], tint: string) =>
             runs.map((r, i) => {
                 return (
                     <Text
@@ -1603,6 +1606,18 @@ export const register: Register = (on) => {
                     </Text>
                 );
             });
+        const labelJSX = (label: string) => (
+            <Box flexShrink={0} width={6}>
+                <Text wrap='truncate-end'>{label}</Text>
+            </Box>
+        );
+        const percentJSX = (n: number, tint: string) => (
+            <Box flexShrink={0} justifyContent='flex-end' width={4}>
+                <Text bold color={tint}>
+                    {Math.round(n)}%
+                </Text>
+            </Box>
+        );
         const five = meter?.fiveHour;
         const pace =
             five?.resetsAt === undefined
@@ -1612,29 +1627,30 @@ export const register: Register = (on) => {
             five && pace !== undefined
                 ? Math.round(five.used - pace)
                 : undefined;
+        const fiveTint = gapTint(gap ?? 0);
         const fiveRowJSX = (
             <Box flexDirection='row' gap={1} key='meter:5h'>
-                <Text>🔥 5h </Text>
+                {labelJSX('🔥 5h')}
                 {five ? (
                     <Box flexDirection='row' gap={1}>
-                        <Box flexDirection='row'>
+                        <Box flexDirection='row' flexShrink={0}>
                             {runsJSX(
                                 '5h',
                                 meterBar(five.used, barWidth, pace),
-                                gap === undefined ? undefined : gapTint(gap),
+                                fiveTint,
                             )}
                         </Box>
-                        <Text bold>{Math.round(five.used)}%</Text>
+                        {percentJSX(five.used, fiveTint)}
                         {pace === undefined ? null : (
                             <Text dimColor>pace {pace}%</Text>
                         )}
                         {gap === undefined ? null : (
-                            <Text color={gapTint(gap)}>
+                            <Text color={fiveTint}>
                                 {gap > 0 ? `+${gap} debt` : `${-gap} spare`}
                             </Text>
                         )}
                         {five.resetsAt === undefined ? null : (
-                            <Text dimColor>↻ {clockOf(five.resetsAt)}</Text>
+                            <Text dimColor>↻ {span(five.resetsAt - now)}</Text>
                         )}
                     </Box>
                 ) : (
@@ -1643,50 +1659,51 @@ export const register: Register = (on) => {
             </Box>
         );
         const ctx = meter?.context;
+        const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
         const ctxRowJSX = (
             <Box flexDirection='row' gap={1} key='meter:ctx'>
-                <Text>🧠 ctx</Text>
+                {labelJSX('🧠 ctx')}
                 {ctx === undefined ? (
                     <Text dimColor>no context reading yet</Text>
                 ) : (
                     <Box flexDirection='row' gap={1}>
-                        <Box flexDirection='row'>
+                        <Box flexDirection='row' flexShrink={0}>
                             {runsJSX(
                                 'ctx',
                                 meterBar(ctx, barWidth, meter?.compactAt),
-                                contextFill(ctx, meter?.compactAt),
+                                ctxTint,
                             )}
                         </Box>
-                        <Text bold color={contextFill(ctx, meter?.compactAt)}>
-                            {ctx}%
-                        </Text>
+                        {percentJSX(ctx, ctxTint)}
                     </Box>
                 )}
-                <Text dimColor>compacts at</Text>
-                <ui.Input
-                    key='compact-at'
-                    onSubmit={(value) => void setCompactAt($, value)}
-                    placeholder='70'
-                    submitLabel='set'
-                    value={
-                        meter?.compactAt === undefined
-                            ? ''
-                            : String(meter.compactAt)
-                    }
-                />
+                <Text>🗜️</Text>
+                <Box flexShrink={0} width={8}>
+                    <ui.Input
+                        key='compact-at'
+                        onSubmit={(value) => void setCompactAt($, value)}
+                        placeholder='70'
+                        submitLabel='✓'
+                        value={
+                            meter?.compactAt === undefined
+                                ? ''
+                                : String(meter.compactAt)
+                        }
+                    />
+                </Box>
             </Box>
         );
-        const meters = [
-            fiveRowJSX,
-            ctxRowJSX,
-            ...(meter?.note
-                ? [
-                      <Text color='error' key='meter:note' wrap='truncate-end'>
-                          {meter.note}
-                      </Text>,
-                  ]
-                : []),
-        ];
+        const meters = (
+            <Box flexDirection='column' flexShrink={0} key='meters'>
+                {fiveRowJSX}
+                {ctxRowJSX}
+                {meter?.note ? (
+                    <Text color='error' wrap='truncate-end'>
+                        {meter.note}
+                    </Text>
+                ) : null}
+            </Box>
+        );
         if (!isOpenList || !total)
             return (
                 <Box flexDirection='column'>
@@ -1723,19 +1740,44 @@ export const register: Register = (on) => {
                 </Text>
             )),
         ]);
-        const room = Math.max(
-            1,
-            e.props.maxRows - 1 - away.length - meters.length,
+        // the band holds maxRows lines and the host scrolls the rest away, the meters first: the asks get what is left
+        // after the head, the digest, the meters and a `+n more` line, each ask counted by the lines it wraps to
+        const heights = groups.flatMap(([, v]) => [
+            ...(many ? [1] : []),
+            ...v.asks.map((ask, i) =>
+                Math.max(
+                    1,
+                    Math.ceil(
+                        [...`${i + 1}. ${ask}`].length / e.props.bodyColumns,
+                    ),
+                ),
+            ),
+        ]);
+        const budget =
+            e.props.maxRows - 1 - away.length - (meter?.note ? 3 : 2);
+        const fits = (room: number) => {
+            let used = 0;
+            let n = 0;
+            while (n < heights.length && used + (heights[n] ?? 1) <= room)
+                used += heights[n++] ?? 1;
+            return n;
+        };
+        const all = fits(budget);
+        const shown = rows.slice(
+            0,
+            Math.max(1, all === rows.length ? all : fits(budget - 1)),
         );
-        const shown = rows.slice(0, room);
         return (
             <Box flexDirection='column'>
                 {head}
-                {away}
-                {shown}
-                {rows.length > shown.length ? (
-                    <Text dimColor>+{rows.length - shown.length} more</Text>
-                ) : null}
+                {/* the asks give way, never the meters: a long ask wraps past its row count, and the meters stay in view */}
+                <Box flexDirection='column' flexShrink={1} overflow='hidden'>
+                    {away}
+                    {shown}
+                    {rows.length > shown.length ? (
+                        <Text dimColor>+{rows.length - shown.length} more</Text>
+                    ) : null}
+                </Box>
                 {meters}
                 {await next(e)}
             </Box>

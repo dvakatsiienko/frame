@@ -178,8 +178,11 @@
   - then no ping is sent, and the clock restarts when that turn ends
 - ⬜ two live meters, full width under the asks (FRM-366)
   - given a session.measure arrives
-  - then `🔥 5h` draws the window's used % as a bar with a `┃` at the pace (the share of the 5h already gone), then the used %, `pace n%`, the gap — `n spare` green, `+n debt` amber up to 10 and red past it — and `↻ hh:mm`, the reset
-  - and `🧠 ctx` draws the context % as a bar with a `┃` at the compaction point, amber from 10 points short of it and red at it, then `compacts at` and the point in an `Input`
+  - then `🔥 5h` draws the window's used % as a bar with a `┃` at the pace (the share of the 5h already gone), then the used %, `pace n%`, the gap — `n spare` green, `+n debt` orange up to 10 and red past it — and `↻ 1h 26m`, the time left to the reset
+  - and `🧠 ctx` draws the context % as a bar with a `┃` at the compaction point, blue while calm, orange from 10 points short of it and red at it, then `🗜️` and the point in an `Input` whose Enter reads `✓`
+  - and both bars start and end on the same columns: one label width, one bar width, one right-aligned % cell
+  - and the meters stay in view under any number of asks: the asks get the band's rows left after the head and the meters, each counted by the lines it wraps to, and the rest fold into `+n more`
+  - decision: the fills are the board's mid-tone hexes and sline's ramp, not theme keys — the theme's `success` drew a dark green and a calm ctx drew black (dima's screenshots, 19:25)
   - source: the point resolves as cc does for the session: `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the settings merged for its project (`$.settings.read()`: local, project, user), then the process env, else cc's default — the engine's `autoCompactThreshold` over the window (`$.session.usage({ breakdown: 'summary' })`)
   - decision: the engine's breakdown alone showed 97 in cclio's tab while its `.claude/settings.json` sets 70 (dima's screenshot, 19:08) — the breakdown reports the default, never the override
   - decision: the band's meter state is written only when a reading moved, so a measure that changed nothing redraws nothing

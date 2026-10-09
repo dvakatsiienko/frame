@@ -84,7 +84,7 @@ const measure = (
         ],
     });
 
-async function band($: Engine) {
+async function band($: Engine, maxRows = 12) {
     await $.session.start({
         cwd: '/proj',
         isInteractive: true,
@@ -97,7 +97,7 @@ async function band($: Engine) {
             bodyColumns: 100,
             hasSurvey: false,
             isWorking: false,
-            maxRows: 12,
+            maxRows,
             scroll: { bodyRows: 40, offset: 0 },
             view: {},
         },
@@ -121,7 +121,7 @@ test('the 5h row shows used, pace, the gap and the reset', async ($, on) => {
     const row = (await ui.findAll({ type: 'Box' })).find(
         (n) => n.key === 'meter:5h',
     );
-    expect(row?.text).toMatch(/39%.*pace 40%.*1 spare.*↻ \d\d:\d\d/);
+    expect(row?.text).toMatch(/39%.*pace 40%.*1 spare.*↻ 3h 0m/);
 });
 
 test("the ctx row shows the fill and the engine's compaction point", async ($, on) => {
@@ -185,7 +185,7 @@ test('a debt up to 10 reads amber', async ($, on) => {
     meters(on);
     await measure($, 45, 35);
     expect(await part($, /debt$/)).toEqual({
-        color: 'warning',
+        color: '#d9661a',
         text: '+5 debt',
     });
 });
@@ -194,7 +194,7 @@ test('a debt past 10 reads red', async ($, on) => {
     meters(on);
     await measure($, 55, 35);
     expect(await part($, /debt$/)).toEqual({
-        color: 'error',
+        color: '#e5484d',
         text: '+15 debt',
     });
 });
@@ -209,7 +209,7 @@ test("a project override of the compaction point beats the engine's default", as
 test('the ctx fill turns amber 10 points before the compaction point', async ($, on) => {
     meters(on);
     await measure($, 39, 60);
-    expect(await part($, /^60%$/)).toEqual({ color: 'warning', text: '60%' });
+    expect(await part($, /^60%$/)).toEqual({ color: '#d9661a', text: '60%' });
 });
 
 test('a measure writes the 5h window to the usage file in seconds', async ($, on) => {
@@ -233,4 +233,31 @@ test('a compaction is kept with its fill before and after', async ($, on) => {
     expect(store[`compactions:${SID}`]).toEqual([
         { at: NOW, from: 72, to: 18 },
     ]);
+});
+
+test('the meters keep their rows when the asks outgrow the band', async ($, on) => {
+    meters(on);
+    on('classic.Stop', () => ({}));
+    await measure($, 39, 35);
+    await $.session.start({
+        cwd: '/proj',
+        isInteractive: true,
+        surface: 'desktop',
+    });
+    const asks = Array.from(
+        { length: 10 },
+        (_, i) => `${i + 1}. ask ${i + 1} ➡️ yes`,
+    );
+    await $.classic.Stop({
+        last_assistant_message: `⏳ waiting on your word:\n\n\`\`\`\nlane\n${asks.join('\n')}\n\`\`\``,
+        stop_hook_active: false,
+    });
+    const ui = await band($, 8);
+    const texts = (await ui.findAll({ type: 'Text' })).map((t) => t.text ?? '');
+    const boxes = (await ui.findAll({ type: 'Box' })).map((b) => b.key);
+    expect([
+        texts.filter((t) => /^\d+\. ask/.test(t)).length,
+        texts.includes('+6 more'),
+        boxes.includes('meter:5h') && boxes.includes('meter:ctx'),
+    ]).toEqual([4, true, true]);
 });
