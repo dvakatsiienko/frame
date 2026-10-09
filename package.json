@@ -79,6 +79,7 @@
         "x-go:vuln": "cd ./x/go && govulncheck ./...",
         "x-go:test": "cd ./x/go && GIT_CONFIG_GLOBAL=/dev/null go test ./...",
         "x-go:gate": "cd ./x/go && test -z \"$(gofmt -l .)\" && go vet ./... && staticcheck ./... && go fix -diff ./... && GIT_CONFIG_GLOBAL=/dev/null go test ./...",
+        "x:cli-census": "node ./script/x-cli-census.ts",
         "x-ray:icon-generate": "node ./script/x-ray-icon-generate.ts",
         "typecheck": "tsc --noEmit && pnpm -r typecheck",
         "test": "vitest run",
