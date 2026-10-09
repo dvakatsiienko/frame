@@ -14,9 +14,9 @@ read the ticket's wish block and its `decided` section (or the pocket item's not
 
 ## 1 · the chunk card
 
-a card is an h4 heading and two plain lines (dima, 2026-10-09, after a fence, a `·` and a blockquote of bullets each broke it): no fence (a fence means «copy me»), no blockquote, no bullets, no `·`. the shape, as raw markdown:
+a card is an h2 heading and two plain lines (dima, 2026-10-09, after a fence, a `·` and a blockquote of bullets each broke it, and an h4 read too small): no fence (a fence means «copy me»), no blockquote, no bullets, no `·`. the shape, as raw markdown:
 
-    #### 🔥 <chunk title> — <ticket link>
+    ## 🔥 <chunk title> — <ticket link>
 
     **why we have it** — <one line>
 
