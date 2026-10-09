@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
     copyFileSync,
     globSync,
@@ -507,17 +508,47 @@ export function resolveLeaves(patterns: string[], today: string) {
     return { found, missing };
 }
 
-export function buildPacket({ deltaText, dir, leaves, missing }: PacketInput) {
+// ccrow holds a leaf it read earlier in the same transcript; a /clear starts a new one and gets every leaf again
+export function leavesToSend(
+    paths: string[],
+    state: State,
+    ccrowTranscript: string | undefined,
+) {
+    const known =
+        state.leavesFor === ccrowTranscript ? (state.leafHashes ?? {}) : {};
+    const hashes: Record<string, string> = {};
+    const changed: string[] = [];
+    const unchanged: string[] = [];
+    for (const path of paths) {
+        hashes[path] = createHash('sha1')
+            .update(readFileSync(path))
+            .digest('hex');
+        (known[path] === hashes[path] ? unchanged : changed).push(path);
+    }
+    return { changed, hashes, unchanged };
+}
+
+export function buildPacket({
+    deltaText,
+    dir,
+    leaves,
+    missing,
+    unchanged = [],
+}: PacketInput) {
     mkdirSync(dir, { recursive: true });
     const leafBlocks = leaves.map(
         (path) => `## leaf · ${path}\n\n${readFileSync(path, 'utf8').trim()}`,
     );
+    const unchangedNote = unchanged.length
+        ? `## leaves unchanged since your last read\n${unchanged.map((path) => `- ${path}`).join('\n')}`
+        : '';
     const missingNote = missing.length
         ? `## leaves with no match\n${missing.map((line) => `- ${line}`).join('\n')}`
         : '';
     const body = [
         `# cclio since the last wake\n\n${deltaText || '(no text)'}`,
         ...leafBlocks,
+        unchangedNote,
         missingNote,
     ].filter(Boolean);
     writeFileSync(join(dir, 'packet.md'), `${body.join('\n\n')}\n`);
@@ -786,6 +817,8 @@ export interface State {
     firstWakeAt?: number;
     lastWakeAt?: number;
     offsets: Record<string, number>;
+    leafHashes?: Record<string, string>;
+    leavesFor?: string;
 }
 
 export interface LiveSession {
@@ -833,6 +866,7 @@ export interface TranscriptEntry {
 interface PacketInput {
     dir: string;
     leaves: string[];
+    unchanged?: string[];
     missing: string[];
     deltaText: string;
 }

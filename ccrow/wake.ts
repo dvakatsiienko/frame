@@ -24,8 +24,10 @@ import {
     fail,
     isCoordinatorTranscript,
     isMode,
+    leavesToSend,
     localDay,
     modeList,
+    newestTranscript,
     oneCcrow,
     readLines,
     readState,
@@ -133,11 +135,14 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         ).split('\n');
     } catch {}
     const leaves = resolveLeaves(leafPatterns, localDay(now));
+    const ccrowTranscript = newestTranscript();
+    const toSend = leavesToSend(leaves.found, state, ccrowTranscript);
     const files = buildPacket({
         deltaText: delta.text,
         dir: join(STATE_DIR, 'packets', wakeInfo.id),
-        leaves: leaves.found,
+        leaves: toSend.changed,
         missing: leaves.missing,
+        unchanged: toSend.unchanged,
     });
 
     if (viaSocket && session) {
@@ -162,6 +167,8 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         ...state,
         firstWakeAt,
         lastWakeAt: now.getTime(),
+        leafHashes: toSend.hashes,
+        leavesFor: ccrowTranscript,
         offsets: { ...state.offsets, [transcriptPath]: lines.length },
     });
 

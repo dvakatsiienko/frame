@@ -110,6 +110,11 @@ jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
 
 fi
 
+echo "-- go vulns in x/go (pnpm x-go:vuln, ~3 s) --"
+vuln=$(cd "$HOME/frame" && pnpm --silent x-go:vuln 2>&1)
+vulns=$(printf '%s\n' "$vuln" | grep -c '^Vulnerability #')
+if [ "$vulns" = 0 ]; then echo "x/go: no reachable vulns"; else echo "x/go: $vulns reachable vulns — fixed in: $(printf '%s\n' "$vuln" | sed -n 's/.*Fixed in: //p' | sort -u | tr '\n' ' ')"; fi
+
 echo "-- usage (x-mod-stash writes rate_limits to shelf/cc-usage-window.json on every session.measure, terminal and desktop) --"
 jq -r --argjson now "$(date +%s)" '
   def left(t): ((t - $now) / 3600 | floor | tostring) + " h";

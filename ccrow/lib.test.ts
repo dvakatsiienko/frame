@@ -17,6 +17,7 @@ import {
     buildPacket,
     isCoordinatorTranscript,
     isLocated,
+    leavesToSend,
     planNotes,
     planPrompt,
     readCharter,
@@ -412,4 +413,16 @@ test('a delta block carries its local time when the entry has one', () => {
         }),
     ];
     expect(transcriptDelta(lines, 0).text).toBe(`## dima · ${hhmm}\nhi`);
+});
+
+test('a leaf goes again only when it changed, or when ccrow started a new transcript', () => {
+    const leaf = join(leavesDir, 'strategy.md');
+    const first = leavesToSend([leaf], { offsets: {} }, 't1');
+    expect(first.changed).toEqual([leaf]);
+    const state = { leafHashes: first.hashes, leavesFor: 't1', offsets: {} };
+    expect(leavesToSend([leaf], state, 't1')).toMatchObject({
+        changed: [],
+        unchanged: [leaf],
+    });
+    expect(leavesToSend([leaf], state, 't2').changed).toEqual([leaf]);
 });
