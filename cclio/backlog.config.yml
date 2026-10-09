@@ -1,0 +1,19 @@
+project_name: "cclio-pocket"
+default_status: "open"
+statuses: ["open", "claimed", "blocked", "waiting", "done"]
+labels: ["xs", "s", "m", "l"]
+priorities: ["now", "next", "later"]
+types: ["task", "research", "grill", "test-drive", "idea", "wish", "question"]
+date_format: yyyy-mm-dd
+max_column_width: 20
+default_editor: "nvim"
+auto_open_browser: false
+default_port: 6420
+remote_operations: false
+auto_commit: false
+filesystem_only: false
+bypass_git_hooks: false
+check_active_branches: false
+active_branch_days: 30
+task_prefix: "pk"
+backlog_directory: "pocket"

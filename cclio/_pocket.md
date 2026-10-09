@@ -1,6 +1,6 @@
 # 🫙 pocket — cclio's local work pool
 
-> 🧊 **FROZEN since 2026-10-09 13:42 — the a/b trial runs in Backlog.md** (`cclio/backlog/`, `backlog task list --plain`). every item here lives there as `pk-N`, its pocket number in the title. no writes here until the trial's verdict; a new item goes to backlog only.
+> 🧊 **FROZEN since 2026-10-09 13:42 — the a/b trial runs in Backlog.md** (`cclio/pocket/`, `pk task list --plain`). every item here lives there as `pk-N`, its pocket number in the title. no writes here until the trial's verdict; a new item goes to backlog only.
 
 checked before linear, and emptied before linear. every inbox drop lands here as an item. linear holds the long shelf and the record; an item gets a ticket only when a coder takes it; linear work enters the order through an item that points at its ticket, so linear is never starved.
 

@@ -2,7 +2,7 @@
 
 Ticket: none · window 2026-10-09 → 2026-10-23 · verdict date lives here only
 
-the trial: brew `backlog-md` 1.53.0, project `cclio/backlog/` (prefix `pk`, no auto-commit, no agent files, no branch scan); `pocket.md` frozen. our contract in its config: statuses open · claimed · blocked · waiting · done; priority now · next · later; labels xs · s · m · l; types task · research · grill · test-drive · idea · wish · question. 32 pocket items migrated as `pk-N`, pocket number in the title.
+the trial: brew `backlog-md` 1.53.0, project `cclio/pocket/` + `cclio/backlog.config.yml` (prefix `pk`, alias `pk`, no auto-commit, no agent files, no branch scan); the old file frozen as `cclio/_pocket.md`. our contract in its config: statuses open · claimed · blocked · waiting · done; priority now · next · later; labels xs · s · m · l; types task · research · grill · test-drive · idea · wish · question. 32 pocket items migrated as `pk-N`, pocket number in the title.
 
 research (3 lanes, 2026-10-09): `cclio/.scratch/todo-trackers-top5.md` (opus source lane), the exa + parallel runs. all three: keep Backlog.md, add our own validator + stale check as a boot hook. runner-ups: beads (most mechanisms, a Dolt db — unreadable in obsidian), tasks-axi (new, one file, fixed line form, expiring holds, 64 stars).
 
