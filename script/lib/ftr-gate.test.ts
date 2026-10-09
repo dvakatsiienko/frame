@@ -33,8 +33,8 @@ const write = (repo: string, file: string, note = 'seed') => {
     writeFileSync(join(repo, file), `// ${file} ${note}\n`);
 };
 
-// commits `committed`, stages `staged`, runs the gate; resolves to its exit status
-const gateStatus = (committed: string[], staged: string[]) => {
+// commits `committed`, stages `staged`, runs the gate on `msg`; resolves to its exit status and its message
+const gate = (committed: string[], staged: string[], msg = 'change\n') => {
     const repo = mkdtempSync(join(tmpdir(), 'ftr-gate-'));
     git(repo, 'init', '-q');
     for (const file of committed) write(repo, file);
@@ -43,18 +43,22 @@ const gateStatus = (committed: string[], staged: string[]) => {
     for (const file of staged) write(repo, file, 'staged');
     git(repo, 'add', '-A');
     const msgFile = join(repo, '.git', 'COMMIT_EDITMSG');
-    writeFileSync(msgFile, 'change\n');
+    writeFileSync(msgFile, msg);
     try {
         execFileSync('bash', [script, msgFile], {
             cwd: repo,
             env,
             stdio: 'pipe',
         });
-        return 0;
+        return { output: '', status: 0 };
     } catch (error) {
-        return (error as { status: number }).status;
+        const e = error as { status: number; stdout: Buffer };
+        return { output: e.stdout.toString(), status: e.status };
     }
 };
+
+const gateStatus = (committed: string[], staged: string[]) =>
+    gate(committed, staged).status;
 
 const MOD_FILE = 'home/.claude/plugin-x/mods/m/hooks/a.ts';
 const MOD_FTR = 'home/.claude/plugin-x/mods/m/FTR.md';
@@ -66,6 +70,12 @@ describe('ftr-gate', () => {
 
     it('passes a staged mod file together with its FTR.md', () => {
         expect(gateStatus([MOD_FTR], [MOD_FILE, MOD_FTR])).toBe(0);
+    });
+
+    it('names a bare line when «ftr: none» sits in a bullet', () => {
+        expect(
+            gate([MOD_FTR], [MOD_FILE], 'change\n\n- ftr: none\n').output,
+        ).toContain('a bare line');
     });
 
     it('passes a staged file under .claude/worktrees', () => {

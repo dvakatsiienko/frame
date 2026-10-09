@@ -40,6 +40,6 @@ done <<<"$staged"
 
 [ -z "$missing" ] && exit 0
 sort -u <<<"$missing" | sed '/^$/d' | while read -r ftr; do
-    echo "ftr-gate: $(dirname "$ftr")'s code is staged without $ftr — stage its ftr line, or add a line «ftr: none» to the commit body when no feature changed"
+    echo "ftr-gate: $(dirname "$ftr")'s code is staged without $ftr — stage its ftr line, or add a bare line «ftr: none» to the commit body when no feature changed — no bullet, no indent"
 done
 exit 1
