@@ -35,6 +35,8 @@ type Peeled = {
     writes: string[];
     appends: string[];
     reads: string[];
+    // where its stdout lands when redirected: `>`, `1>`, `&>` and their `>>`, `/dev/null` included
+    stdouts: string[];
 };
 // feeders: the commands whose output reaches this one, through `$( … )` or a pipe
 export type Command = Peeled & { sep: Sep; dir: string; feeders: Peeled[] };
@@ -110,6 +112,9 @@ const writes = (words: Word[]) =>
         (to) => !to.startsWith('/dev/'),
     );
 export const reads = (words: Word[]) => redirected(words, READ, READ_JOINED);
+const STDOUT = /^[1&]?>>?$/;
+const STDOUT_JOINED = /^[1&]?>>?([^>&].*)$/;
+const stdouts = (words: Word[]) => redirected(words, STDOUT, STDOUT_JOINED);
 function dropRedirects(words: Word[]) {
     const out: Word[] = [];
     for (let i = 0; i < words.length; i++) {
@@ -153,6 +158,7 @@ export function peel(raw: Word[]): Peeled {
         assigns,
         name: first ? basename(first.text) : '',
         reads: reads(raw),
+        stdouts: stdouts(raw),
         wrappers,
         writes: writes(raw),
     };

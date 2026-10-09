@@ -41,6 +41,30 @@ const LINTS = [
         'sed -n 1p .github/workflows/ci.yml',
     ],
     [
+        'a knowledge read sent to /dev/null',
+        'x knowledge read charm >/dev/null',
+        'read it plainly',
+        'x knowledge read charm',
+    ],
+    [
+        'a knowledge read sent to a file',
+        'x knowledge read charm > out.txt',
+        'read it plainly',
+        'x knowledge read charm | head -40',
+    ],
+    [
+        'a knowledge read with stdout spaced off to /dev/null',
+        'x knowledge read charm 1> /dev/null',
+        'read it plainly',
+        'x knowledge read charm 2> /dev/null',
+    ],
+    [
+        'a knowledge read with both streams to /dev/null',
+        'x knowledge read charm &>/dev/null',
+        'read it plainly',
+        'x knowledge read charm 2>/dev/null',
+    ],
+    [
         'a trailing &',
         'pnpm dev &',
         'add wait',
@@ -123,6 +147,15 @@ function world(on: On) {
     on('env.get', () => ({ value: '/home' }));
     // every path a command names exists, but the fresh file a near miss writes to
     on('fs.exists', (_$, e) => ({ value: e.path !== '/repo/out.txt' }));
+    on('fs.stat', (_$, e) => ({
+        value: {
+            isLink: false,
+            kind: 'file' as const,
+            mtimeMs: 0,
+            realPath: e.path,
+            size: 1,
+        },
+    }));
     on('tool.call', () => ({ result: {}, text: 'ran' }));
 }
 

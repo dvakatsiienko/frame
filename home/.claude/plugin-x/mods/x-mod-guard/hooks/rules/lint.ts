@@ -57,6 +57,19 @@ export function lint(
     const ops = operands(c.args);
     const pipedTo =
         c.sep === '|' && next && GREPS.has(next.name) ? next.name : undefined;
+    // a knowledge read is logged as read: one whose text never reaches the session fakes the proof (FRM-371)
+    if (
+        c.name === 'x' &&
+        ops[0] === 'knowledge' &&
+        ops[1] === 'read' &&
+        c.stdouts.length
+    )
+        return {
+            door: `read it plainly: x knowledge read ${ops[2] ?? '<name>'}, its text in the session (| head is fine)`,
+            rule: 'knowledge-read-hidden',
+            targets: [ops[2] ?? 'knowledge'],
+            why: `its stdout goes to ${c.stdouts.join(', ')}, so the read is logged and nothing reaches the session`,
+        };
     if (c.name === 'sd') {
         const hasEnd = c.args.some((w) => w.text === '--');
         const positional: Word[] = [];
