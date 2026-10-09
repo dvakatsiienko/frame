@@ -20,8 +20,9 @@ live. `write` takes the CST on stdin — heredoc it. x owns the filename, the pe
 timestamp; never build a path by hand. Each verb answers in one json envelope: the written path
 is `data.path`, a refusal is `error` plus the `next` command.
 
-`<audience>` = who the CST is FOR: nobody in particular → `any`; a specific agent → its token
-(`cclio` for a coordinator session, `ccli` for a plain one, `cw`). `--shared` when
+`<audience>` = who the CST is FOR: nobody in particular → `any`; a specific agent → its seat's token:
+`cclio`, `coder`, `verifier`, `designer`, `ccrow`, `cw`, and `ccli` only for a plain session with no seat.
+a member handing off to its own successor names its own seat (a coder's CST is `coder`). `--shared` when
 several threads will pull it.
 
 `--author` = who is WRITING it — this session's own token, always passed. `--lane` = the kind of
