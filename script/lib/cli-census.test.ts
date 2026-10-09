@@ -7,7 +7,7 @@ import { bashCommands, commandHead, rawHeads } from './cli-census.ts';
 
 const cover = {
     rawDoors: ['x linear api'],
-    replaces: ['script/linear-read.ts', 'linear:read'],
+    replaces: ['script/old-door.ts', 'old:door'],
 };
 
 function plantProjects(calls: { command: string; daysAgo: number }[]) {
@@ -45,8 +45,8 @@ test('the census counts only the raw heads no verb covers', () => {
         ...times(5, 'FOO=1 timeout 5 gh api repos/x/y'),
         ...times(5, "cd ~/frame && linear api '{ viewer { id } }'"),
         ...times(5, 'x lane commit msg.txt -- a.ts'),
-        ...times(5, 'node ~/frame/script/linear-read.ts FRM-1'),
-        ...times(5, 'pnpm --silent linear:read FRM-1'),
+        ...times(5, 'node ~/frame/script/old-door.ts FRM-1'),
+        ...times(5, 'pnpm --silent old:door FRM-1'),
     ]);
 
     expect(rawHeads(bashCommands(projects, 14), cover)).toEqual([
@@ -94,10 +94,7 @@ test.each([
     ['export A=1\nenv B=2 timeout 30 gh api x', 'gh api'],
     ['# note\nls -la', 'ls'],
     ['/Users/dima/frame/x/bin/x lane push', 'x lane'],
-    [
-        'node ~/frame/script/skill-handoff-store.ts list',
-        'node skill-handoff-store.ts',
-    ],
+    ['node ~/frame/script/fixture-store.ts list', 'node fixture-store.ts'],
     ['node --no-warnings ./script/toolchain-sync.ts', 'node toolchain-sync.ts'],
     ['python3 -c "import json"', 'python3'],
     ['grep -rn "a && b" .', 'grep'],
