@@ -128,17 +128,24 @@ test('the 5h bar ends in its used %, and the head reads the gap and the time lef
     ]);
 });
 
-test('a desktop bar is svg cells warming from green to red as it fills', async ($, on) => {
+test('a full desktop bar lights every cell through the ramp', async ($, on) => {
     meters(on);
     await measure($, 100, 0);
     const ui = await band($);
-    const svg = (await ui.findAll({ type: 'Svg' }))[0];
-    const fills = [
-        ...String(svg?.props.source).matchAll(
-            /fill="(#[0-9a-f]{6})" stroke="#000"/g,
-        ),
-    ].map((m) => m[1]);
-    expect([fills[0], fills.at(-1)]).toEqual(['#a9b665', '#ea6962']);
+    const five = String((await ui.findAll({ type: 'Svg' }))[0]?.props.source);
+    expect([five.includes('url(#ramp)'), five.includes('class="off"')]).toEqual(
+        [true, false],
+    );
+});
+
+test("the ctx bar's ramp reaches red at the compaction point", async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    const ui = await band($);
+    const ctx = String((await ui.findAll({ type: 'Svg' }))[1]?.props.source);
+    const width = Number(ctx.match(/width="([\d.]+)"/)?.[1]);
+    const red = Number(ctx.match(/x2="([\d.]+)"/)?.[1]);
+    expect(Math.round((red / width) * 100)).toBe(70);
 });
 
 test('a terminal bar is sline ▮ ▯ cells', () => {

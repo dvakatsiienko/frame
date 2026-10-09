@@ -644,25 +644,43 @@ export function meterBar(
     }
     return runs;
 }
-// the desktop's bar: a text cell is as big as the font, so the desktop draws real cells — rounded, bordered, spaced
-const CELL = { gap: 2, height: 14, width: 9 } as const;
+// the desktop's bar in x-mod-breather's design language: its 5px cells, 2px gaps and light and dark palettes, the
+// ramp painted through the lit cells; two cell rows tall, so it still reads as a bar
+const CELL = { gap: 2, rows: 2, size: 5 } as const;
+const CELL_STEP = CELL.size + CELL.gap;
+export const BAR_HEIGHT = CELL.rows * CELL_STEP - CELL.gap;
+const BAR_STYLE =
+    ':root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.5}.mark{fill:#7c7670}.r0{stop-color:#7fb83a}.r1{stop-color:#f2b400}.r2{stop-color:#ff7a1a}.r3{stop-color:#f2364d}' +
+    '@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.45}.mark{fill:#a89984}.r0{stop-color:#a9b665}.r1{stop-color:#d8a657}.r2{stop-color:#e78a4e}.r3{stop-color:#ea6962}}';
 export function meterSvg(
     percent: number,
     width: number,
     mark?: number,
     scale = 100,
 ) {
-    const step = CELL.width + CELL.gap;
-    const rects = meterCells(percent, width, mark, scale).map((c, i) => {
-        const x = i * step;
-        return c.kind === 'mark'
-            ? `<rect x="${x + 3}" y="0" width="3" height="${CELL.height}" rx="1.5" fill="#8a8580"/>`
-            : c.kind === 'fill'
-              ? `<rect x="${x + 0.5}" y="0.5" width="${CELL.width - 1}" height="${CELL.height - 1}" rx="2.5" fill="${c.color}" stroke="#000" stroke-opacity="0.18"/>`
-              : `<rect x="${x + 0.5}" y="0.5" width="${CELL.width - 1}" height="${CELL.height - 1}" rx="2.5" fill="#8a8580" fill-opacity="0.12" stroke="#8a8580" stroke-opacity="0.45"/>`;
+    const w = width * CELL_STEP - CELL.gap;
+    // the ramp reaches red where `scale` sits on the bar: the whole bar for the 5h window, the compaction point for ctx
+    const redAt = Math.max(CELL_STEP, (Math.min(scale, 100) / 100) * w);
+    const cells = meterCells(percent, width, mark, scale).flatMap((c, i) => {
+        const x = i * CELL_STEP;
+        if (c.kind === 'mark')
+            return [
+                `<rect class="mark" x="${x + 1.5}" y="0" width="2" height="${BAR_HEIGHT}" rx="1"/>`,
+            ];
+        return Array.from({ length: CELL.rows }, (_, r) => {
+            const y = r * CELL_STEP;
+            return c.kind === 'fill'
+                ? `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>`
+                : `<rect class="off" x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1"/>`;
+        });
     });
-    const w = width * step - CELL.gap;
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${CELL.height}" viewBox="0 0 ${w} ${CELL.height}">${rects.join('')}</svg>`;
+    return (
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${BAR_HEIGHT}" viewBox="0 0 ${w} ${BAR_HEIGHT}">` +
+        `<style>${BAR_STYLE}</style>` +
+        `<defs><linearGradient id="ramp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${redAt.toFixed(1)}" y2="0">` +
+        '<stop class="r0" offset="0"/><stop class="r1" offset=".45"/><stop class="r2" offset=".75"/><stop class="r3" offset="1"/>' +
+        `</linearGradient></defs>${cells.join('')}</svg>`
+    );
 }
 // a calm meter's fill: the board's green and blue mid-tones, 3.6:1 or more on white and 4.2:1 on a dark pane
 const METER_TINTS = { calm5h: '#47915a', calmCtx: '#4f83e0' } as const;
@@ -1605,11 +1623,11 @@ export const register: Register = (on) => {
         const ctx = meter?.context;
         const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
         // the desktop draws its bars as svg cells, sized to the band's width; the terminal as ▮ ▯ text
+        // the desktop band runs ~7.8px a column (measured off dima's 20:22 shot); the label, the % and their gaps take
+        // ~90px, the bar the rest
         const svgCells = Math.max(
             8,
-            Math.floor(
-                (e.props.bodyColumns * 7.5 - 120) / (CELL.width + CELL.gap),
-            ),
+            Math.floor((e.props.bodyColumns * 7.8 - 90) / CELL_STEP),
         );
         const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
         const barRowJSX = (
@@ -1618,8 +1636,12 @@ export const register: Register = (on) => {
             tint: string,
             bar?: { percent: number; mark?: number; scale?: number },
         ) => (
-            <Box alignItems='center' flexDirection='row' gap={1} key={key}>
-                <Box flexShrink={0} width={6}>
+            <Box
+                alignItems='center'
+                flexDirection='row'
+                gap={Svg ? 0.5 : 1}
+                key={key}>
+                <Box flexShrink={0} width={Svg ? 5 : 6}>
                     <Text wrap='truncate-end'>{label}</Text>
                 </Box>
                 {bar === undefined ? (
@@ -1629,7 +1651,7 @@ export const register: Register = (on) => {
                         {Svg ? (
                             <Svg
                                 alt={`${label} ${Math.round(bar.percent)}%`}
-                                height={CELL.height}
+                                height={BAR_HEIGHT}
                                 key={`${key}:svg`}
                                 source={meterSvg(
                                     bar.percent,
