@@ -1,6 +1,6 @@
 # ccrow — cclio's parked adviser
 
-a long-lived `--bg` session «🐦‍⬛ ccrow» that reads cclio's thread on a wake and returns one note
+a long-lived session «🐦‍⬛ ccrow», a desktop Code tab dima opens in `~/.local/state/ccrow/` (mods load there, not under `--bg`; pk-39), that reads cclio's thread on a wake and returns one note
 or `none`. built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
 silence bar, note shape, timing, holdout, the consult) is the `x:crew-adviser` skill, which
 `readCharter` sends as the boot prompt with its frontmatter cut — ccrow loads no plugins, so the
@@ -10,8 +10,8 @@ skill reaches it as text. a contract change goes there, never here.
 
 - ccrow lives one cclio session: cclio's boot runs `pnpm ccrow:ensure`, its halt runs
   `pnpm ccrow:stop` (FRM-335).
-  - `pnpm ccrow:ensure` — starts ccrow on the day's arm unless one is live; a live one is left alone.
-  - `pnpm ccrow:start opus|fable` — the same start on a named arm; refuses while one is live.
+  - `pnpm ccrow:ensure` — finds the live tab by name and writes its 🔥 key; no tab → one line asking dima to open it (cclio cannot open a desktop tab).
+  - `pnpm ccrow:start opus|fable` — the old `--bg` start, a fallback when no tab can be opened; refuses while one is live.
   - `pnpm ccrow:stop` — `claude stop <jobId>`, switches 🔥 off, waits until the process is gone.
     it harvests nothing; the halt reads `notes.jsonl` and `verdicts.jsonl` itself.
 - a start is `--bg --remote-control` from `~/.local/state/ccrow/`, effort medium. that home is
@@ -65,7 +65,7 @@ skill reaches it as text. a contract change goes there, never here.
   `CLAUDE_CODE_PLUGIN_DIRS`, never by its dir. its store is `~/.claude/plugins/store/<name>_inline-<hash>.json`,
   one file shared by every session running stash; the hash is cc's own, so the newest matching file wins.
 - **the registry stores the name with its zero-width joiner as a space** («🐦 ⬛ ccrow»), so
-  `findSession` matches a bare name or the saved `jobId`.
+  `findSession` matches the bare name, never a job id: a desktop tab has none, and a stored one outlived its session and sent the 10-09 16:18 wake to a stopped `--bg` ccrow.
 - **the harvester polls ccrow's transcript** for the `turn_duration` after the wake line (5 s,
   15 min deadline, a `timeout` note past it); `harvest.log` in the home records each run.
 - **a `claude -p` transcript has no `turn_duration`**: the one-shot's model id is read from its

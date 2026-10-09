@@ -1,24 +1,18 @@
-import {
-    armOfDay,
-    dayOf,
-    fail,
-    findSession,
-    readState,
-    startCcrow,
-} from './lib.ts';
+import { SESSION_NAME, STATE_DIR, armHot, fail, findSession } from './lib.ts';
 
 if (process.argv.length > 2) {
     fail(
-        'ccrow:ensure — start ccrow on the day’s arm unless one already runs; takes no arguments',
+        'ccrow:ensure — find the live ccrow tab and keep it 🔥 hot; takes no arguments',
     );
 }
 
+// ccrow lives in a desktop tab dima opens (mods load there, not under --bg); cclio cannot open one
 const running = findSession();
 if (running) {
-    console.log(
-        `ccrow live: pid ${running.pid}, job ${running.jobId ?? 'unknown'}`,
-    );
+    console.log(`ccrow live: pid ${running.pid}`);
+    armHot(running.sessionId);
 } else {
-    const now = Date.now();
-    await startCcrow(armOfDay(dayOf(readState().firstWakeAt ?? now, now)));
+    console.log(
+        `ccrow not live: dima opens a desktop Code tab in ${STATE_DIR} named «${SESSION_NAME}»`,
+    );
 }

@@ -178,15 +178,14 @@ export function isAlive(pid: number) {
 }
 
 export function findSession(): LiveSession | undefined {
-    const { jobId } = readState();
     for (const file of readdirSync(SESSIONS_DIR)) {
         if (!/^\d+\.json$/.test(file)) continue;
         try {
             const entry: Partial<LiveSession> = JSON.parse(
                 readFileSync(join(SESSIONS_DIR, file), 'utf8'),
             );
+            // by name: a desktop tab has no job id, and a stored one outlives its session
             const isOurs =
-                (jobId !== undefined && entry.jobId === jobId) ||
                 bareName(entry.name ?? '') === bareName(SESSION_NAME);
             if (
                 isOurs &&
@@ -248,11 +247,6 @@ export async function startCcrow(arm: Arm) {
         `ccrow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}`,
     );
 
-    const store = stash && storeOf(stash.name);
-    if (!stash || !store) {
-        console.log('🔥 off: no stash mod or store file');
-        return;
-    }
     // --bg ignores --session-id, so the id is known only once the registry lists ccrow
     let live = findSession();
     for (let i = 0; i < 30 && !live; i++) {
@@ -263,9 +257,19 @@ export async function startCcrow(arm: Arm) {
         console.log('🔥 off: ccrow not in the registry after 30 s');
         return;
     }
-    setHot(store, live.sessionId, Date.now());
+    armHot(live.sessionId);
+}
+
+export function armHot(sessionId: string) {
+    const stash = stashModOf(userPluginDirs());
+    const store = stash && storeOf(stash.name);
+    if (!store) {
+        console.log('🔥 off: no stash mod or store file');
+        return;
+    }
+    setHot(store, sessionId, Date.now());
     console.log(
-        `🔥 key hot:${live.sessionId} written; stash re-reads it at ccrow's next turn end and pings 50 min after`,
+        `🔥 key hot:${sessionId} written; stash re-reads it at ccrow's next turn end and pings 50 min after`,
     );
 }
 
