@@ -36,6 +36,8 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer» copied from the 10-01 lane plan; he read it as a designer being spawned (2026-10-01). a plan for tomorrow stays tomorrow's.
 
+**The ⏳ block carries a `next` section** (dima, 2026-10-09: «when you do steps like this, prepare also next steps options … few lines of what goes next so i see your plan»): a `next:` block right ABOVE the «⏳ waiting on your word» line (dima, 2026-10-09: «before, not after»), never inside the fence (the stash mod reads every fence line after an ask as that ask's nested lines), 2–4 numbered lines of the plan after the asks, in order, so he steers the sequence, not only the current ask. **they are pickable options, never a recap**: each line is a concrete next item he can answer with its number in the same reply (dima, 2026-10-09: a turn printing only the ask cost him a «what's next?» turn, then a pick turn — three turns where one would do).
+
 **Flag overload instead of absorbing it.** A query too fat for clean resolution → tell him so and
 propose the split, same turn. His words when this duty went unmet: *«why did not you told me even
 once how i could improve my prompt?»*
