@@ -130,6 +130,18 @@ func TestUpdatePostsToTheProjectOrTheInitiativeTheNameFinds(t *testing.T) {
 	}
 }
 
+func TestUpdateNamesAMissingProjectWhenInitiativesAreDenied(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "u.md")
+	write(t, file, "the week")
+	server := newFakeLinear(t, updateServer(``, "denied"))
+
+	_, got := runLinear(t, server, nil, "linear", "update", "cli", "--body-file", file, "--health", "onTrack")
+
+	if got.code != 1 || !strings.Contains(got.stdout, `no project named \"cli\"`) {
+		t.Fatalf("exit %d, want the missing project named\n%s", got.code, got.stdout)
+	}
+}
+
 func TestUpdateRefusesANameItCannotPinDown(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "u.md")
 	write(t, file, "the week")

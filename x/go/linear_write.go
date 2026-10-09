@@ -135,7 +135,11 @@ func linearUpdate(r *Run, args []string, flags Flags) (any, error) {
 	target, err := findNamed(r, actor, "projects", name)
 	if err == nil && len(target) == 0 {
 		kind, mutation, idKey = "initiative", "initiativeUpdateCreate", "initiativeId"
-		target, err = findNamed(r, actor, "initiatives", name)
+		if target, err = findNamed(r, actor, "initiatives", name); err != nil {
+			// a mistyped project name must not read as a permission problem
+			return nil, &Fail{Refused: true, Msg: fmt.Sprintf("no project named %q, and %s cannot read initiatives (%v)", name, actor, err),
+				Next: "x linear api 'query { projects { nodes { name } } }'"}
+		}
 	}
 	if err != nil {
 		return nil, err
