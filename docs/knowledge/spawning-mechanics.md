@@ -8,7 +8,7 @@ procedure: recipes/refresh-crew-coordinator/recipe.md
 # spawn mechanics — what is actually true
 
 the evidence base for every way a claude code session can start another worker. the resident
-distillate is `cclio/memory/craft-spawning.md`; this is the on-demand detail behind it.
+distillate is `home/.claude/plugin-x/skills/crew-lead/`; this is the on-demand detail behind it.
 
 claim tags: **[verified]** ran it, observed the result · **[schema]** read from a tool definition
 or `--help` · **[docs]** anthropic documentation only · **[inferred]** reasoning, not evidence ·
@@ -254,7 +254,7 @@ visible at claude.ai/code, model and effort settable, non-blocking, stopped by t
 
 ## 10b. facts the coordinator no longer keeps resident
 
-moved out of `cclio/memory/craft-spawning.md`: true, measured, but none of them changes a spawn decision on its own. re-probe with the suite in §13.
+moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none of them changes a spawn decision on its own. re-probe with the suite in §13.
 
 - ⚠️ **a subagent starts in the parent's bash cwd and inherits cclio's whole stack regardless
   of it** (2.1.258 and 2.1.283; flipped on each of the three builds before — re-probe every build). keep every
@@ -297,7 +297,7 @@ moved out of `cclio/memory/craft-spawning.md`: true, measured, but none of them 
   (fresh spare, clean — the known-good side). the day-old side needs a spare left warm for 24 h
   and then claimed; that probe costs a day of waiting, not a session. the build names a
   `stale-spare` retire reason [inferred, strings only], which may be the upstream fix or may be
-  older. the spawn preflight in `craft-spawning` stays until a day-old claim is measured.
+  older. the spawn preflight in `x:crew-lead` stays until a day-old claim is measured.
 
 ## 11b. compaction — the hooks an unattended member leans on
 

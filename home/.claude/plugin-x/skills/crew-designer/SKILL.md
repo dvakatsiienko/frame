@@ -113,7 +113,7 @@ middle take tends to win because it is in the middle, so dima picks the corner h
 
 - **dima picks by commenting on the canvas, never by describing boards in text** (dima, 2026-10-01):
   a «best …» comment on the part he likes, a steer comment on what to change. cclio collects the
-  comments and writes the merge brief (her side lives in `craft-spawning`); you draw ONE merged take from it.
+  comments and writes the merge brief (her side lives in `x:crew-lead`); you draw ONE merged take from it.
 - **the designer asks dima only through design-loupe** (`~/projects/bytes/apps/design-loupe`, read its
   `GLOSSARY.md`): a round of asks in `jobs/<app>/asks.json`, each pinned with `id="ask-N"` on the element
   it is about, a recommendation and why on every ask, ~7 asks a round at most. he opens each by a link,

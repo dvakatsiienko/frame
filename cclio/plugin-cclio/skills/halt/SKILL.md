@@ -107,9 +107,9 @@ line per item — name · state (vetting n/14, open, due) · days left · today'
 four sources, each read, never recalled: `shelf/jev/vet.json` (the flows, after today's verdicts),
 the open files in `docs/test-drive/` (a file without a verdict line is open), the 🔬/👁️ trial reminders in
 `memory/_reminders.md`, and the model/effort trials (`docs/knowledge/models.md`, the spawn defaults in
-`craft-spawning`). ⏰ leads any line due within 3 days; an item with no evidence today still gets its
+`x:crew-lead`). ⏰ leads any line due within 3 days; an item with no evidence today still gets its
 line — a trial nobody names is being dropped by default.
-**then the spawn base:** the first-request `cache_read_input_tokens` / `cache_creation_input_tokens` of the day's fresh agents (their transcripts' first assistant `usage`) — a base that moved re-sizes the grid in `craft-spawning`.
+**then the spawn base:** the first-request `cache_read_input_tokens` / `cache_creation_input_tokens` of the day's fresh agents (their transcripts' first assistant `usage`) — a base that moved re-sizes the grid in `x:crew-lead`.
 
 ## phase 3.5 — milestones, before the board
 

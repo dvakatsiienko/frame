@@ -48,7 +48,7 @@ cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '☁️ cloud: <ti
 
 - **`-n` comes before `--cloud`** — `--cloud` takes the brief as its own value; `--cloud -n …` dies
   on «--cloud requires a description» (measured 2026-09-28, «☁️ cloud: name probe» landed as the
-  title). the name is type-first like every spawn (`craft-spawning`); an unnamed session titles
+  title). the name is type-first like every spawn (`x:crew-lead`); an unnamed session titles
   itself from the brief and is unfindable in the sidebar.
 - the log ends with `Created cloud session: <title>`, `View: <url>` and `Resume with: claude
   --teleport <session_id>`. Keep all three; the session shows in `ListAgents` as `cloud`.
@@ -108,7 +108,7 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 
 ## step 4 — watch and read
 
-- **the pr is the signal.** arm the pr watch from `craft-spawning`, keyed on the ticket id in the
+- **the pr is the signal.** arm the pr watch from `x:crew-lead`, keyed on the ticket id in the
   pr body (`gh pr list --state all --search '<BYT-N> in:body'`), never on the head branch: a cloud
   session is pinned to its own `claude/<slug>` branch and ignores the brief's `coder/…` name
   (BYT-97, 2026-09-28: the head-keyed watch saw nothing while #105 sat open).

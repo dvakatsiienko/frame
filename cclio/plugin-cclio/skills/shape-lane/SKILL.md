@@ -36,6 +36,6 @@ read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines into
 
 ## 5 · the spawn ask
 
-its own ⏳ line — `spawn <ticket> now? verifier: yes/no` — never folded into a grill answer or a plan. this skill ends here; the spawn is `craft-spawning`'s.
+its own ⏳ line — `spawn <ticket> now? verifier: yes/no` — never folded into a grill answer or a plan. this skill ends here; the spawn is `x:crew-lead`'s.
 
 **done** = the ticket carries `decided` and the sealed `exit`, and the spawn ask sits in ⏳. «grilled» without sealed exit lines is reported as not ready.

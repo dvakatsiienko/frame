@@ -22,4 +22,4 @@ should be always parked visible in fleet memory. Probably you will become a cto,
 - **owns**: the fleet flow and its numbers. the 💡 cross-branch budget ([[craft-pm]]) rides this hat.
 - the flow spec: who talks to whom is `rules/fleet-flow.md` (global); the path, the lanes and the done test are [[craft-fleet-flow]] (FRM-309, closed 2026-10-06).
 
-Related: [[dima-strategy]], [[craft-spawning]]
+Related: [[dima-strategy]], `x:crew-lead`

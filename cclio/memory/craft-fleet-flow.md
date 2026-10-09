@@ -27,4 +27,4 @@ the lane is the ticket's first body line, `lane: <name>`. cclio proposes it and 
 
 the done test, read at every halt with `x fleet flow --days 14`: the `#dima-caught` lines, the `#brief` lines and the pr open → merge median per repo all go down.
 
-Related: [[habit-cto]], [[craft-spawning]], [[craft-pm]]
+Related: [[habit-cto]], `x:crew-lead`, [[craft-pm]]

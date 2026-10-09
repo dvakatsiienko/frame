@@ -1,7 +1,7 @@
 ---
 kind: refresh
 cadence: the tools half on a cc minor version, a new claude model or a spawn behaving against a [verified] row; the whole run on dima's word or when the crew changes; no timer
-artifacts: [cclio/memory/craft-spawning.md, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, docs/knowledge/spawning-mechanics.md, docs/knowledge/models.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md]
+artifacts: [home/.claude/plugin-x/skills/crew-lead/, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, docs/knowledge/spawning-mechanics.md, docs/knowledge/models.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md]
 script: none
 owner: coordinator
 was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning, refresh-coordinator]
@@ -63,10 +63,10 @@ the tracker and the CTO hat (dima's, standing):
 4. **distill** into the artifacts:
    - `spawning-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
    - `models.md` — THE model reference; claim tags ([dima] / [bench] / [vendor] / [community] / [?]) updated, never deleted; dima's [dima] calls never overwritten, outside evidence sits beside them
-   - `craft-spawning`, `craft-fleet-flow`, `craft-pm`, `habit-cto` — a finding changes a line only through the memory-edit habit (announced; deletions and his words need his word first)
+   - `x:crew-lead`, `craft-fleet-flow`, `craft-pm`, `habit-cto` — a finding changes a line only through the memory-edit habit (announced; deletions and his words need his word first)
    - `rules/fleet-flow.md`, `rules/fleet-identity.md` — the crew list and who talks to whom; a role added or retired is his word first
    - raw research dies after the distill. done: every artifact touched, or named «unchanged» with the finding that left it so. (open)
-5. **re-size the grid**: the spawn base measured from our own sessions times the run's prices → the spawn-or-reuse grid in `craft-spawning`. then read `craft-spawning` against both docs line by line. done: the grid's numbers equal this run's base and prices, and no line disagrees with a doc — else go back to step 4. (template)
+5. **re-size the grid**: the spawn base measured from our own sessions times the run's prices → the spawn-or-reuse grid in `x:crew-lead`. then read `x:crew-lead` against both docs line by line. done: the grid's numbers equal this run's base and prices, and no line disagrees with a doc — else go back to step 4. (template)
 6. **thin-data check**: a model in scope under ~4 weeks old, or a lane that found no independent measurement → a dated re-run **12 weeks** out in `cclio/memory/_reminders.md`. done: the reminder is written, or «no thin data». (script)
 7. **findings print** (below), then resolve with dima by outcome; noop is first-class. done: printed, each item verdicted. (open)
 8. **log** today's line in `log.md`. done: the line is there.
@@ -96,7 +96,7 @@ tools — spawn mechanics:
 - watch, not a vector: the cclio-stack bleed into a `--bg` session — unreproduced since 2026-09-02; a coder's first-reply AGENTS.md line is the detector
 
 tools — models:
-- **scope rule: the latest anthropic version of each line plus one generation back** — opus, fable, sonnet, haiku, plus any announced-but-unshipped successor. (dima, 2026-10-01)
+- **scope rule: only the latest anthropic version of each line** — opus, fable, sonnet, haiku, plus any announced-but-unshipped successor. a new generation REPLACES the old card in `docs/knowledge/models.md` and `x:crew-lead/models.md` in the same run, never sits beside it (dima, 2026-10-09; was «plus one generation back», 2026-10-01)
 - capabilities, benchmarks, price, latency (tok/s, TTFT), context, lifecycle — per model in scope. price: input, 5m and 1h cache writes, the cache-hit multiplier per model, output, long-context billing
 - **effort levels per model:** the supported levels, the vendor default per surface (API vs Claude Code), the vendor's starting points per task type, the lowest-reasoning setting, any independent effort-vs-score and effort-vs-cost curve
 - **model per job:** one verdict per model with evidence for each job we spawn — coding, verifying, codebase exploration, mechanical edits under opus review, research by genre — plus what it must NOT be used for; the output is the task → model map in `models.md`

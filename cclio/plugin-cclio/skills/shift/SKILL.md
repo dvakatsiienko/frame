@@ -52,7 +52,7 @@ Every decision is one of three:
 - events go to the plan file's `## log` (time · who · what · evidence), never to chat. when `near`,
   dima's lane messages still get normal replies; shift events stay out of them
 - **the ⏳ block is suspended** while a shift runs: decide, log and park instead of asking; the report carries the decisions
-- watch per `craft-spawning`: a watch lives until its pr merges; every idle notice is a check
+- watch per `x:crew-lead`: a watch lives until its pr merges; every idle notice is a check
 
 ## 3 · end — the report
 

@@ -43,4 +43,4 @@ and only one fires a scoped rule. A null result is a claim about your instrument
 **A CST's live-state claims are candidates, verified before use** — tickets by query, sessions by
 pid, files by `ls`. Lives in `CST-SPEC.md`; costs ~three shell calls.
 
-Related: [[method-report-verify]], [[craft-spawning]], [[method-silent-failures]]
+Related: [[method-report-verify]], `x:crew-lead`, [[method-silent-failures]]

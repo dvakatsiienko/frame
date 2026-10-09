@@ -7,7 +7,7 @@ ticket: DOT-130
 # Models — the full reference
 
 **Read on demand when a model-selection question opens.** The distilled version cclio acts on
-lives in `cclio/memory/craft-spawning.md`; the two must agree line by line.
+lives in `home/.claude/plugin-x/skills/crew-lead/`; the two must agree line by line.
 
 📌 This file stays evergreen — [DOT-130](https://linear.app/x-com/issue/DOT-130) owns that, and
 `recipes/refresh-crew-coordinator/recipe.md` runs it. Add measurements and Dima's live
@@ -59,7 +59,7 @@ output. Fast mode $8/$40 (API only).
 
 ## fable-5.1 — `claude-fable-5-1` · the escalation
 
-Launched 2026-09-01, successor to fable-5 at the same **$10/$50**, cache reads **$0.25** (a
+Launched 2026-09-01 at **$10/$50**, cache reads **$0.25** (a
 quarter of input). 1M / 128K. Mythos 5.1 is the same model for Project Glasswing only.
 
 - Effort defaults to `high`; thinking is always on; single turns on hard tasks can run many
@@ -75,27 +75,10 @@ quarter of input). 1M / 128K. Mythos 5.1 is the same model for Project Glasswing
   a tested higher effort still falls short. **[vendor]**
 - One user report: fresh frontend designs strong, adapting an existing design system weaker.
   **[community]** — one anecdote.
-- **Dima's reads of fable-5 carry forward** until he says otherwise: all-round writing, PM and
+- **Dima's reads of the fable line carry forward** until he says otherwise: all-round writing, PM and
   coordination; «opus picks pragmatically, fable = flavour». **[dima]**
 - **Pick it for** — anything Dima reads where flavour matters, verdict-shaped deliverables, and the
   job opus-5.5 measurably missed. Never spawned without his word.
-
-## opus-5 — `claude-opus-5` · previous default, still served
-
-Launched 2026-07-24. $5/$25, 1M / 128K, effort default `high`.
-
-- **Best at** — under-the-hood engineering: features, CI, ssh debugging. **[dima]**
-- SWE-bench Verified 96.0 %, SWE-bench Pro 79.2 %. **[bench]**
-- ⚠️ **Weak at** — prose: overlong, over-clever, invents jargon, writes unasked docs, commits to
-  assumptions instead of asking. **Not a PM.** **[dima]** **[community]** — said of opus-5; the
-  card above tracks whether 5.5 kept it.
-
-## fable-5 — `claude-fable-5` · superseded by 5.1
-
-Launched 2026-06-09 (suspended 06-12, redeployed 07-01). $10/$50. SWE-bench Pro 80.0 %. **[bench]**
-All-round work, codes no worse than opus, differently. **[dima]** Cyber / bio-chem /
-distillation-flagged queries could route to Opus 4.8 mid-session; 30-day retention mandatory.
-**[vendor]**
 
 ## sonnet-5.5 — `claude-sonnet-5-5` · the helper
 
@@ -122,21 +105,6 @@ Launched 2026-09-28. **$2/$10**, cache writes $2.50, **cache reads $0.20 (same a
   diff + check output, both at `medium`; retrieval sub-lanes under an opus synthesiser.
 - **Never** — the main coder, the sole verifier, design work, or `xhigh`/`max`.
 
-## sonnet-5 — `claude-sonnet-5` · previous sonnet, still served
-
-Launched 2026-06-30. **$2/$10 — the introductory price was made permanent** (the planned
-September rise to $3/$15 did not happen). 1M / 128K, effort default `high`. Superseded by
-sonnet-5.5 at the same price; active to ≥2027-06-30. **[vendor]**
-
-- **Weaker fallback** — quota pressure or simple ops. **[dima]**
-- The most agentic Sonnet: plans, uses browser and terminal, follows through; at higher effort
-  matches Opus 4.8 on some tasks; `medium` ≈ Sonnet 4.6 at `high`. Its launch compared it to Opus
-  4.8, not to the 5.5 generation. **[vendor]**
-- SWE-bench Pro **63.2 %** (a secondary leaderboard snapshot, BenchLM) — **26 points under
-  opus-5.5**. **[bench]**
-- **Pick it for** — routine, well-specified coding and high-volume work. **Avoid** for hard
-  multi-step engineering.
-
 ## haiku-5.5 — `claude-haiku-5-5`
 
 Shipped 2026-10-07. $0.10 / $0.50 per MTok for prompts ≤100K, **1M** context, effort supported, needs cc
@@ -150,18 +118,6 @@ Shipped 2026-10-07. $0.10 / $0.50 per MTok for prompts ≤100K, **1M** context, 
 - as a classifier engine: unmeasured. the 4.5 arm on our skill router read 27 % precision, 6.6–9.6 s per
   call through `claude -p` (`docs/research/skill-router.md`) **[verified, 4.5 only]**. re-measure rides the
   2026-10-15 and 2026-10-22 research reminders.
-
-## haiku-4.5 — `claude-haiku-4-5` (retiring 2026-10-15)
-
-Launched 2025-10-15. $1/$5, **200K** context, 64K output, **no effort dial** (manual extended
-thinking only). **[vendor]**
-
-- SWE-bench Verified 73.3 % (Anthropic, 2025). **[bench]** 📌 a 4.x-era number — never compare it
-  to the 5-generation lines above.
-- **Pick it for** — subagents, classification, summarization, retrieval, bulk processing.
-- Haiku 5.5 was announced 2026-09-28 for «the coming weeks», undated. **[vendor]** 4.5 stays
-  active: retirement not before 2026-10-15, with ≥60 days' notice. **[vendor]**
-- Since cc 2.1.198 Explore no longer runs on haiku — it inherits the session model. **[verified]**
 
 ## anthropic's own advice — the 5.5 family webinar, 2026-10-01 [vendor]
 

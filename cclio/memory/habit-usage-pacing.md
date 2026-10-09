@@ -8,4 +8,4 @@ dima, 2026-10-08 (boot line): «for 5h window — keep an eye on it and pace it 
 - **over the line → pause the parallel lanes, never their cache**: a paused coder gets a one-line hold and a keep-hot ping before its 1h cache would cool; it resumes when the window loosens. the main lane keeps going at a chill pace.
 - weekly: spend the window fully on the most needed work (dima leans to «spend it all + the weekly reset» over economic mode); going overboard is not waste, idling is.
 
-Related: [[craft-spawning]] (spawn costs), [[habit-dima-comms-pacing]] (siestas)
+Related: `x:crew-lead` (spawn costs), [[habit-dima-comms-pacing]] (siestas)

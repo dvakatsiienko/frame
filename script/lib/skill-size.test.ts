@@ -25,6 +25,7 @@ const crewCaps = {
     'crew-coder': 12_000,
     'crew-designer': 12_000,
     'crew-dna': 7_000,
+    'crew-lead': 12_000,
     'crew-verifier': 12_000,
 } as const satisfies Record<string, number>;
 
