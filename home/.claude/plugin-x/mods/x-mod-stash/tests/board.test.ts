@@ -39,10 +39,12 @@ function fleet(
         bg = [] as number[],
         patch = {} as Record<number, Record<string, unknown>>,
         isBoardOpen = true,
+        files = undefined as string[] | undefined,
     } = {},
 ) {
     const runs: string[][] = [];
     const copied: string[] = [];
+    if (files) on('fs.exists', (_$, e) => ({ value: files.includes(e.path) }));
     const clock = mock.clock(on, { now: NOW });
     mock.store(on, store);
     on('session.id', () => ({ value: HERE }));
@@ -189,6 +191,24 @@ test('a session started under a minute ago gets no row', async ($, on) => {
 test('a session that has lived a minute gets its row', async ($, on) => {
     fleet(on, {}, { patch: { 2: { startedAt: NOW - MIN } } });
     expect(Object.keys(await rowsBySid($))).toEqual([HERE, PEER]);
+});
+
+const PROJECT = '/home/.claude/projects/-home-frame';
+const inFrame = { patch: { 2: { cwd: '/home/frame' } } };
+
+test('a session with no transcript yet gets no row', async ($, on) => {
+    fleet(on, {}, { ...inFrame, files: [PROJECT] });
+    expect(await row($, PEER)).toBe('no row');
+});
+
+test('a session with its transcript gets its row', async ($, on) => {
+    fleet(on, {}, { ...inFrame, files: [PROJECT, `${PROJECT}/${PEER}.jsonl`] });
+    expect(await row($, PEER)).toContain('FRM-1');
+});
+
+test('a session whose project folder is missing keeps its row', async ($, on) => {
+    fleet(on, {}, { ...inFrame, files: [] });
+    expect(await row($, PEER)).toContain('FRM-1');
 });
 
 test('every row draws the same fact columns, empty ones included', async ($, on) => {

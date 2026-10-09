@@ -466,6 +466,7 @@ type Registered = {
     pid: number;
     bg: boolean;
     isAlive: boolean;
+    cwd?: string;
     startedAt?: number;
     base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince' | 'door'>;
 };
@@ -507,6 +508,7 @@ async function registry($: EngineInterface): Promise<Registered[]> {
                             : undefined,
                 },
                 bg,
+                cwd: text(v.cwd),
                 pid: v.pid,
                 startedAt:
                     typeof v.startedAt === 'number' ? v.startedAt : undefined,
@@ -531,6 +533,22 @@ async function registry($: EngineInterface): Promise<Registered[]> {
     return rows.map((r) => ({ ...r, isAlive: alive.has(r.pid) }));
 }
 
+// a session that never ran a turn has no transcript yet: the desktop's warm spares sit in the registry like this
+// (cclio-9a, 2026-10-09); a missing project folder keeps the row, since cc hashes the folder name of a long path
+async function isUnstarted(
+    $: EngineInterface,
+    home: string | undefined,
+    cwd: string | undefined,
+    sid: string,
+) {
+    if (!home || !cwd) return false;
+    const dir = `${home}/.claude/projects/${cwd.replace(/[^a-zA-Z0-9]/g, '-')}`;
+    return (
+        (await $.fs.exists(dir).catch(() => false)) &&
+        !(await $.fs.exists(`${dir}/${sid}.jsonl`).catch(() => true))
+    );
+}
+
 // live sessions from the registry, each with what its own stash wrote
 async function members($: EngineInterface): Promise<Member[]> {
     const out: Member[] = [];
@@ -541,7 +559,9 @@ async function members($: EngineInterface): Promise<Member[]> {
             !HEADLESS.test(r.base.name) &&
             !(r.startedAt !== undefined && now - r.startedAt < SHORT_MS),
     );
-    for (const { bg, base: r } of shown) {
+    const home = await $.env.get('HOME');
+    for (const { bg, cwd, base: r } of shown) {
+        if (await isUnstarted($, home, cwd, r.sid)) continue;
         const reply = (await $.store.get(REPLY + r.sid)) as
             | Partial<Reply>
             | undefined;
