@@ -24,7 +24,7 @@ import {
     wakeIdOf,
 } from './lib.ts';
 
-const usage = `ccrow:plan <plan file>
+const usage = `ccrow:plan-critique <plan file>
 
   a fresh claude -p review of one plan, on the day's arm at effort high: pass 1 sees only the
   want / constraints / done test sections, pass 2 the whole plan on the fixed template. each
@@ -135,5 +135,5 @@ for (const note of notes) {
     );
 }
 console.log(
-    `review: ${runDir}/review.json · vet: pnpm ccrow:vet ok|miss <id> <why>`,
+    `review: ${runDir}/review.json · vet: pnpm ccrow:note-vet ok|miss <id> <why>`,
 );

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 
 import { NOTES_PATH, VERDICTS_PATH, appendJsonl, fail } from './lib.ts';
 
-const usage = `ccrow:vet <ok|miss> <note-id> <why…> — log a verdict on one note to ${VERDICTS_PATH}`;
+const usage = `ccrow:note-vet <ok|miss> <note-id> <why…> — log a verdict on one note to ${VERDICTS_PATH}`;
 
 const [value, id, ...why] = process.argv.slice(2);
 if ((value !== 'ok' && value !== 'miss') || !id || why.length === 0)

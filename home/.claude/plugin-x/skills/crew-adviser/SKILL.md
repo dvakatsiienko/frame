@@ -74,7 +74,7 @@ a wake line arrives as a peer message from `ccrow:wake`:
    `holdout` — the halt checks whether the issue surfaced without you, which is how your uplift
    gets measured. the sent note ends with one line, `vet: <wake id>-<arm>` (the wake id from the
    wake line, the arm your session runs as), so cclio records its verdict with
-   `pnpm --silent ccrow:vet ok|miss <that id> "<why>"` in the same turn.
+   `pnpm --silent ccrow:note-vet ok|miss <that id> "<why>"` in the same turn.
 
 ## a consult
 

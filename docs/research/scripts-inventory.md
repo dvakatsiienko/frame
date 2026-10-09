@@ -54,11 +54,11 @@ admission rule in `x/PRODUCT.md`.
 - speak:admin · `speak/server.ts` «the voice admin's server» · x-speak-admin launchd plist, speak skills, speak/AGENTS.md, README.md · app-dev · the app's serve step, run by launchd
 - speak:admin-dev · `pnpm --filter speak dev` · speak-run skill, speak/AGENTS.md, speak/FTR.md · app-dev · a package lifecycle (dev)
 - speak:admin-build · `pnpm --filter speak build` · x-speak-admin plist, speak skills, speak/AGENTS.md · app-dev · a package lifecycle (build)
-- ccrow:ensure · `ccrow/ensure.ts` (no header comment; usage «start ccrow on the day's arm unless one already runs») · ccrow/AGENTS.md (cclio's boot runs it) · app-dev · one surface (cclio), ccrow is on test drive
+- ccrow:keep-cache-hot · `ccrow/keep-cache-hot.ts` (no header comment; usage «start ccrow on the day's arm unless one already runs») · ccrow/AGENTS.md (cclio's boot runs it) · app-dev · one surface (cclio), ccrow is on test drive
 - ccrow:start · `ccrow/start.ts` (no header comment; usage «park ccrow, cclio's adviser, on that arm») · ccrow/AGENTS.md, ensure.ts, wake.ts · app-dev · one surface; `--help` path ran clean
 - ccrow:stop · `ccrow/stop.ts` «the registry entry goes before the process does» · ccrow/AGENTS.md (cclio's halt runs it) · app-dev · one surface (cclio)
 - ccrow:wake · `ccrow/wake.ts` «a Stop hook and a PreCompact hook can fire in the same second» · ccrow/AGENTS.md, charter.md · app-dev · one surface; the hook wiring is not in the global settings, so it sits in cclio's; `--help` ran clean
-- ccrow:vet · `ccrow/vet.ts` (no header comment; usage «log a verdict on one note») · ccrow/AGENTS.md, ccrow test drive · app-dev · one surface (cclio)
+- ccrow:note-vet · `ccrow/note-vet.ts` (no header comment; usage «log a verdict on one note») · ccrow/AGENTS.md, ccrow test drive · app-dev · one surface (cclio)
 - design:contrast · `design/contrast.ts` (no header comment; usage «every fg and ui role on every bg») · crew-designer skill · app-dev · a designer instrument (AGENTS.md: `pnpm design:*`); `--help` ran clean
 - design:comp-render · `design/comp-render.ts` (usage «a Claude Design canvas's boards as pngs») · crew-coder skill, design-run test drive · app-dev · a render; `--help` ran clean
 - design:cvd · `design/cvd.ts` (usage «can every fg and ui role still be told apart») · crew-designer skill, x/go/view.go comment · app-dev · a designer instrument; `--help` ran clean

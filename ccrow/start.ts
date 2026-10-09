@@ -12,7 +12,7 @@ const usage = `ccrow:start <${armList.join('|')}> — park ccrow, cclio's advise
 
   starts a --bg --remote-control session «${SESSION_NAME}» from ${STATE_DIR}, effort medium,
   user settings off, only the stash mod loaded with 🔥 keep-hot on, peer lines accepted.
-  refuses while one already runs; pnpm ccrow:ensure picks the day's arm and never refuses.`;
+  refuses while one already runs; pnpm ccrow:keep-cache-hot picks the day's arm and never refuses.`;
 
 const [arm] = process.argv.slice(2);
 if (!isArm(arm)) fail(usage);

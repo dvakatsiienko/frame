@@ -8,9 +8,9 @@ skill reaches it as text. a contract change goes there, never here.
 
 ## how it runs
 
-- ccrow lives one cclio session: cclio's boot runs `pnpm ccrow:ensure`, its halt runs
+- ccrow lives one cclio session: cclio's boot runs `pnpm ccrow:keep-cache-hot`, its halt runs
   `pnpm ccrow:stop` (FRM-335).
-  - `pnpm ccrow:ensure` — finds the live tab by name and writes its 🔥 key; no tab → one line asking dima to open it (cclio cannot open a desktop tab).
+  - `pnpm ccrow:keep-cache-hot` — finds the live tab by name and writes its 🔥 key; no tab → one line asking dima to open it (cclio cannot open a desktop tab).
   - `pnpm ccrow:start opus|fable` — the old `--bg` start, a fallback when no tab can be opened; refuses while one is live.
   - `pnpm ccrow:stop` — `claude stop <jobId>`, switches 🔥 off, waits until the process is gone.
     it harvests nothing; the halt reads `notes.jsonl` and `verdicts.jsonl` itself.
@@ -27,17 +27,17 @@ skill reaches it as text. a contract change goes there, never here.
   to log the note. live from day 1 (dima, 2026-10-06; the 3 silent days were cut after day 1 proved the notes worth reading live); a silent phase would have the other arm answer the same
   packet as a `claude -p` one-shot. live days alternate the arm (day 4 opus, day 5 fable, …);
   `wake` prints the restart line when the running arm is the wrong one, it never restarts ccrow.
-- `pnpm ccrow:plan <plan file>` — the plan review at `x:shape-idea` step 4 (FRM-336, the
+- `pnpm ccrow:plan-critique <plan file>` — the plan review at `x:shape-idea` step 4 (FRM-336, the
   FRM-287 template). never ccrow's own session, which has read
-  cclio's thread: two fresh `claude -p` one-shots on the day's arm (the `ccrow:ensure` pick),
+  cclio's thread: two fresh `claude -p` one-shots on the day's arm (the `ccrow:keep-cache-hot` pick),
   effort high, cwd a fresh `plans/<run>/` in the home. pass 1 gets only the sections whose heading
   says want, constraints, not or done test; pass 2 gets the whole plan plus pass 1's take and a
   `--json-schema` for the template. both run with `--tools ''`: a one-shot that can read reaches
   cclio's transcripts and the earlier verdicts through the `~` extra dir. each finding is one
   `channel: plan` line in `notes.jsonl` (id `plan-<run>-<n>`, `-0` for a clean run) with the arm,
   the model, the run's cost, and `located` — whether its quote is really in the plan. accepted is a
-  `ccrow:vet` on that id; the full review sits in `plans/<run>/review.json`.
-- `pnpm ccrow:vet ok|miss <note-id> <why>` — appends the verdict to `verdicts.jsonl`, keyed by
+  `ccrow:note-vet` on that id; the full review sits in `plans/<run>/review.json`.
+- `pnpm ccrow:note-vet ok|miss <note-id> <why>` — appends the verdict to `verdicts.jsonl`, keyed by
   note id; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
 - `leaves.txt`: one glob per line, `{today}` → `YYYY-MM-DD`, a `latest ` prefix keeps the newest
   match only. cclio owns it; the builder never reads under `cclio/`.
@@ -70,7 +70,7 @@ skill reaches it as text. a contract change goes there, never here.
   15 min deadline, a `timeout` note past it); `harvest.log` in the home records each run.
 - **a `claude -p` transcript has no `turn_duration`**: the one-shot's model id is read from its
   assistant entries, found by the run's `session_id`. `runOneShot` and `oneShotModel` in
-  `lib.ts` are the one path for both the silent arm and `ccrow:plan`.
+  `lib.ts` are the one path for both the silent arm and `ccrow:plan-critique`.
 - **`claude -p --json-schema` answers in `structured_output`** beside `result` in the json output
   (haiku probe, 2026-10-06); `total_cost_usd` is there too.
 - dates (`{today}`, the wake id) are local time; `wake.lock` keeps two hooks firing in one second

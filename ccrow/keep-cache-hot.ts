@@ -2,7 +2,7 @@ import { SESSION_NAME, STATE_DIR, armHot, fail, findSession } from './lib.ts';
 
 if (process.argv.length > 2) {
     fail(
-        'ccrow:ensure — find the live ccrow tab and keep it 🔥 hot; takes no arguments',
+        'ccrow:keep-cache-hot — find the live ccrow tab and keep it 🔥 hot; takes no arguments',
     );
 }
 

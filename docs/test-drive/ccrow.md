@@ -8,7 +8,7 @@ opus 5.5 medium vs fable 5.1 medium. live from day 1 since 2026-10-06 (dima: «e
 
 ## what each run logs (`~/.local/state/ccrow/notes.jsonl`)
 
-arm, the exact model id from the transcript, effort, tokens in/out, seconds, mode, the note or `none`. verdicts: `pnpm ccrow:vet ok|miss <note-id> <why>` → `verdicts.jsonl`.
+arm, the exact model id from the transcript, effort, tokens in/out, seconds, mode, the note or `none`. verdicts: `pnpm ccrow:note-vet ok|miss <note-id> <why>` → `verdicts.jsonl`.
 
 ## stress list
 

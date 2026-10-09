@@ -797,7 +797,7 @@ export interface PlanRun {
     at: string;
 }
 
-// one line per finding; accepted is a `ccrow:vet` verdict on its id, never a field here
+// one line per finding; accepted is a `ccrow:note-vet` verdict on its id, never a field here
 export interface PlanNote extends Omit<PlanRun, 'planText'> {
     id: string;
     channel: 'plan';
