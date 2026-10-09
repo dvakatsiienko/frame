@@ -67,7 +67,7 @@ const BADGES = {
 } as const;
 type FleetWord = keyof typeof BADGES;
 const WORD = new RegExp(
-    `(?<![\\w\\-/.])(?:(?:${Object.values(BADGES).join('|')}) )?(${Object.keys(BADGES).join('|')})(s|es)?(?![\\w\\-/]|\\.\\w)`,
+    `(?<![\\w\\-/.])(?:(${Object.values(BADGES).join('|')}) )?(${Object.keys(BADGES).join('|')})(s|es)?(?![\\w\\-/]|[.:]\\w)`,
     'giu',
 );
 const DETERMINER =
@@ -79,20 +79,23 @@ export function boldFleetWords(text: string) {
     const lines = text.split('\n').map((line) => {
         if (/^\s*```/.test(line)) isFence = !isFence;
         if (isFence || /^\s*>/.test(line)) return line;
-        // masked at the same length, so match offsets land on the real line
+        // masked at the same length, so match offsets land on the real line; a «quote» stays as typed, and a session
+        // name (`☕️ 🔧 mods coder`) keeps its own role emoji
         const masked = line.replace(
-            /`[^`\n]*`|\*\*[^*\n]+\*\*|\]\([^)\n]*\)|https?:\/\/\S+/g,
+            /`[^`\n]*`|\*\*[^*\n]+\*\*|\]\([^)\n]*\)|https?:\/\/\S+|«[^»\n]*»|(?:☕️?|🎯) \S+ [^\n,;)»]*/gu,
             (m) => '\0'.repeat(m.length),
         );
         let out = '';
         let from = 0;
         for (const m of masked.matchAll(WORD)) {
             const at = m.index ?? 0;
-            const word = (m[1] ?? '').toLowerCase() as FleetWord;
+            const word = (m[2] ?? '').toLowerCase() as FleetWord;
             if (word === 'wish' && !DETERMINER.test(masked.slice(0, at)))
                 continue;
             const badge = BADGES[word];
-            const shown = m[0].replace(/^\S+ /u, '');
+            // another word's badge before it is someone else's label: leave both
+            if (m[1] && m[1] !== badge) continue;
+            const shown = m[0].slice(m[1] ? m[1].length + 1 : 0);
             out += `${line.slice(from, at)}**${badge} ${shown}**`;
             from = at + m[0].length;
             hits[word] = (hits[word] ?? 0) + 1;

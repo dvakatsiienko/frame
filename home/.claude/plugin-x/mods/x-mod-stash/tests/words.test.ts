@@ -41,6 +41,16 @@ test("dima's name takes his badge, a path through a member's dir keeps its own",
     );
 });
 
+test("a skill name, a quote, a session name and another member's badge keep their words", () => {
+    const text = [
+        'run cclio:halt',
+        '«dima, 2026-10-08»',
+        'ask ☕️ 🔧 mods coder',
+        'a 🔎 coder',
+    ].join('\n');
+    expect(boldFleetWords(text).text).toBe(text);
+});
+
 test('a badged word only gains the bold', () => {
     expect(boldFleetWords('a ✨ wisp here').text).toBe('a **✨ wisp** here');
 });
