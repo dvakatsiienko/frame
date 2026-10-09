@@ -122,10 +122,10 @@ for ceremony.
   Nothing is merged before that word. The done-report names every pass and what each returned, and
   the retro says which layer found what nobody else did.
 - **babysit your PR until it closes — the watcher is armed in the same turn the PR opens.** ONE
-  persistent `Monitor`, 60 s poll, three feeds: `gh pr checks <n>`, the conversation comments
-  (`issues/<n>/comments?since=…`) and the **review comments on diff lines** (`pulls/<n>/comments?since=…`,
-  where Dima's questions usually land). A red check → fix and push; a comment from Dima or a review bot
-  (claude) → answer on the thread and act; `vercel[bot]` and `linear-code[bot]` are filtered out. The PR
+  persistent `Monitor`, 60 s poll, one read: `x gh pr <n> --since <the last read's read field>` — the
+  checks and all three comment feeds, the **review comments on diff lines** included (where Dima's
+  questions usually land), with `vercel[bot]` and `linear-code[bot]` already dropped. A red check → fix and
+  push; a comment from Dima or a review bot (claude) → answer on the thread and act. The PR
   merged or closed → `TaskStop` the monitor. Main moved under you → rebase onto `origin/main` before the
   next push.
 - freebies and tiny changes go to `main` — the brief says which; unsure → ask once, up front.

@@ -48,6 +48,12 @@
             "name": "as"
         },
         {
+            "example": "x gh pr 12 --since 2026-10-09T15:00:00Z",
+            "gist": "github reads in one call: a pr's checks and its comment feeds",
+            "identity": "every read acts as the x-coder-cc app, its token from the keychain (keys.go); writes stay with x as coder -- gh",
+            "name": "gh"
+        },
+        {
             "example": "x schema lane --level short",
             "gist": "the registry as json",
             "name": "schema"
@@ -813,6 +819,32 @@
             "touches": [
                 "the macos keychain — the oauth pairs, the github app keys, the minted-token cache ($X_KEYS in tests)",
                 "1password dev/linear-golden through the x-fleet service account — dima's linear key"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the pr number, never inferred",
+                    "name": "pr"
+                }
+            ],
+            "flags": {
+                "repo": {
+                    "description": "owner/name; the cwd's origin remote when absent",
+                    "type": "string",
+                    "value": "owner/name"
+                },
+                "since": {
+                    "description": "only comments newer than this RFC 3339 time; a read's `read` field is the next poll's value",
+                    "type": "string",
+                    "value": "time"
+                }
+            },
+            "name": "gh pr",
+            "needsApply": false,
+            "purpose": "read a pr's checks and its three comment feeds in one call, newest first; deploy-bot comments never print",
+            "touches": [
+                "github's rest api ($X_GITHUB_URL in tests), as the x-coder-cc app"
             ]
         },
         {
