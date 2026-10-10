@@ -1,10 +1,10 @@
 ---
 id: PK-3
 title: a better vpn
-status: open
+status: claimed
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-10 08:08'
+updated_date: '2026-10-10 09:29'
 labels:
   - m
 dependencies: []
@@ -25,4 +25,6 @@ dima 09-27: hide.me not liked; test drive another later. picks: https://claude.a
 
 <!-- SECTION:NOTES:BEGIN -->
 back from linear (FRM-376 canceled) on dima's word, 2026-10-10: wanted soon, linear is the long shelf
+
+dima hunts it himself in a separate thread (2026-10-10), from the prompt cclio printed
 <!-- SECTION:NOTES:END -->

@@ -139,3 +139,5 @@ Store contract: the `remind` skill. Both tiers die only when Dima drops them.
 ⏰ 🔬 refresh-speak, 2026-11-23: the fish free tier ends 11-30; run `recipes/refresh-speak/recipe.md`
 
 ⏰ 🔬 refresh-writing-for-humans, 2026-10-27: ~2 months from 08-27; run `recipes/refresh-writing-for-humans/recipe.md`
+
+⏰📌 🦉🎨 the next atelier touch carries [BYT-127](https://linear.app/x-com/issue/BYT-127) (lottie / rive test drive) into its brief — dima, 2026-10-10: «pick it up next time we touch atelier, but do not forget». dies when BYT-127 starts — set 2026-10-10
