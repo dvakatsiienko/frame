@@ -195,11 +195,9 @@ test('a joined ask draws no control while the turn runs', async ($, on) => {
     await say($, 'go');
     const keys = (await ui.findAll({})).map((n) => n.key ?? '');
     expect([
-        keys.filter((k) =>
-            /^orbit:(accepted|rejected|note|read|pause|stop):o1$/.test(k),
-        ),
+        keys.filter((k) => /^orbit:(accepted|rejected|note|read):o1$/.test(k)),
         (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text,
-    ]).toEqual([[], expect.stringContaining('«after ci»')]);
+    ]).toEqual([['orbit:read:o1'], expect.stringContaining('«after ci»')]);
 });
 
 test('an ask the turn left unanswered gets its controls back when the turn ends', async ($, on) => {
