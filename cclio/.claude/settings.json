@@ -46,7 +46,7 @@
             "type": "command",
             "if": "Bash(claude *)",
             "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
-            "timeout": 10
+            "timeout": 30
           }
         ]
       }
