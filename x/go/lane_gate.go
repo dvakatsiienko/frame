@@ -14,8 +14,8 @@ import (
 // that passes it on purpose, so the gate refuses a forgotten step, never a decision
 
 var (
-	glossaryUnchanged = regexp.MustCompile(`(?m)^glossary: unchanged — \S`)
-	groomed           = regexp.MustCompile(`(?m)^groom: read whole — \S`)
+	glossaryUnchanged = regexp.MustCompile(`(?m)^glossary: unchanged (—|--?) \S`)
+	groomed           = regexp.MustCompile(`(?m)^groom: read whole (—|--?) \S`)
 	contextRow        = regexp.MustCompile(`^- \*\*([^*]+)\*\*`)
 	tickSpan          = regexp.MustCompile("`([^`]+)`")
 	gatedSkill        = regexp.MustCompile(`(^|/)skills/(crew|guide)-[^/]+/`)
@@ -70,14 +70,19 @@ func laneGate(r *Run, args []string, _ Flags) (any, error) {
 	return nil, nil
 }
 
-type stagedFile struct{ status, name string }
+// a rename keeps its old name, so its growth is read against the file it was
+type stagedFile struct{ status, name, old string }
 
 func gateStaged(tree string) []stagedFile {
-	got, _ := gitIn(tree, "diff", "--cached", "--name-status", "--no-renames")
+	got, _ := gitIn(tree, "diff", "--cached", "--name-status", "-M")
 	var files []stagedFile
 	for row := range strings.SplitSeq(got.out, "\n") {
-		if status, name, ok := strings.Cut(row, "\t"); ok {
-			files = append(files, stagedFile{status, name})
+		cols := strings.Split(row, "\t")
+		switch {
+		case len(cols) == 3:
+			files = append(files, stagedFile{cols[0][:1], cols[2], cols[1]})
+		case len(cols) == 2:
+			files = append(files, stagedFile{cols[0], cols[1], ""})
 		}
 	}
 	return files
@@ -200,7 +205,11 @@ func skillRefusals(tree string, staged []stagedFile) []string {
 			refusals = append(refusals, fmt.Sprintf("%s is a new file in a crew-/guide- skill — read the skill whole and fold it in, or add «groom: read whole — <what was cut>» to the message", f.name))
 			continue
 		}
-		got, _ := gitIn(tree, "diff", "--cached", "-U0", "--", f.name)
+		paths := []string{f.name}
+		if f.old != "" {
+			paths = append(paths, f.old)
+		}
+		got, _ := gitIn(tree, append([]string{"diff", "--cached", "-M", "-U0", "--"}, paths...)...)
 		added, removed := 0, 0
 		for row := range strings.SplitSeq(got.out, "\n") {
 			switch {

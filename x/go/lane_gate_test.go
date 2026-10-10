@@ -147,6 +147,40 @@ func TestGateRefusesASkillThatOnlyGrows(t *testing.T) {
 	}
 }
 
+func TestGateReadsARenamedSkillFileByItsChange(t *testing.T) {
+	cases := map[string]struct {
+		body string
+		code int
+	}{
+		"moved as is":          {"# coder\none\ntwo\nthree\n", 0},
+		"moved and grown by 3": {"# coder\none\ntwo\nthree\na\nb\nc\n", 1},
+	}
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			dir := gateRepo(t, nil)
+			gitT(t, dir, "mv", "skills/crew-coder/SKILL.md", "skills/crew-coder/CODER.md")
+			write(t, filepath.Join(dir, "skills/crew-coder/CODER.md"), c.body)
+			gitT(t, dir, "add", "-A")
+
+			got := gate(t, dir, "change\n")
+
+			if got.code != c.code {
+				t.Errorf("exit %d, output %q; want %d", got.code, got.stdout, c.code)
+			}
+		})
+	}
+}
+
+func TestGateTakesAnAsciiDashInAPassLine(t *testing.T) {
+	dir := gateRepo(t, map[string]string{"app/api.ts": "changed\n"})
+
+	got := gate(t, dir, "change\n\nglossary: unchanged - a comment moved\n")
+
+	if got.code != 0 {
+		t.Errorf("exit %d, output %q; want 0", got.code, got.stdout)
+	}
+}
+
 func TestGatePassesAGrownSkillTheMessageGroomed(t *testing.T) {
 	dir := gateRepo(t, map[string]string{"skills/crew-coder/SKILL.md": "# coder\none\ntwo\nthree\na\nb\nc\n"})
 
