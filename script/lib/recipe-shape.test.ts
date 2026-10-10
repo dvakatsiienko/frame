@@ -66,13 +66,6 @@ const sections = [
     'artifacts',
     'findings',
 ] as const;
-const runSections = [
-    'contents',
-    'the want',
-    'artifacts',
-    'the run',
-    'vectors',
-] as const;
 const vectorSubs = ['research', 'analysis', 'cut'] as const;
 const owners = ['coordinator', 'coder', 'designer', 'fleet'];
 const folderFiles = /^(recipe\.md|log\.md|log-\d{4}\.md|last|scripts)$/;
@@ -106,6 +99,91 @@ function inOrder(items: string[], allowed: readonly string[]) {
     return true;
 }
 
+const skillsDir = path.join(root, 'home/.claude/plugin-x/skills');
+const engine = readFileSync(
+    path.join(skillsDir, 'shape-recipe/SKILL.md'),
+    'utf8',
+);
+const reminders = readFileSync(
+    path.join(root, 'cclio/memory/_reminders.md'),
+    'utf8',
+);
+const topLevel = new Set(readdirSync(root));
+
+function engineSection(title: string) {
+    return engine.split(/^## /m).find((part) => part.startsWith(title)) ?? '';
+}
+
+// the bullets of x:shape-recipe's shared vectors, bold label and text, and its numbered run steps up to done:
+export const sharedLines = [
+    ...[
+        ...engineSection('the shared vectors').matchAll(
+            /^- (\*\*[^*]+\*\* — .+)$/gm,
+        ),
+    ].map((m) => m[1] ?? ''),
+    ...[...engineSection('running one').matchAll(/^\d+\. (.+)$/gm)].map(
+        (m) => (m[1] ?? '').split(' done:')[0] ?? '',
+    ),
+].filter(Boolean);
+
+// a cadence that leans on a ⏰ needs a reminder line naming the recipe, or nothing ever fires it
+export function reminderMissing(
+    name: string,
+    cadence: string,
+    reminderText: string,
+) {
+    return /⏰|reminder/i.test(cadence) && !reminderText.includes(name);
+}
+
+// a recipe names x:shape-recipe's shared parts, never restates them; a copy drifts from the engine
+export function sharedCopies(text: string, shared: string[]) {
+    return text
+        .split('\n')
+        .flatMap((line, index) =>
+            shared.some((part) => line.includes(part))
+                ? [`line ${index + 1}: ${line.slice(0, 60)}`]
+                : [],
+        );
+}
+
+// a backticked repo path or x:<skill> must exist; a ~/projects path only when that repo is on this machine.
+// a relative path counts when its first part is a top-level entry of frame, so `owner/repo` never does
+export function deadPointers(
+    text: string,
+    exists: (pointer: string) => boolean | undefined,
+) {
+    const dead: string[] = [];
+    for (const match of text.matchAll(/`([^`\s]+)`/g)) {
+        const pointer = (match[1] ?? '')
+            .replace(/(:\d[\d-]*|#\S*)$/, '')
+            .replace(/[.,]$/, '');
+        if (/[*<>{}$]/.test(pointer) || dead.includes(pointer)) continue;
+        if (exists(pointer) === false) dead.push(pointer);
+    }
+    return dead;
+}
+
+// true, false, or undefined for a token that is no repo pointer
+function pointerExists(pointer: string) {
+    const skill = pointer.match(/^x:([\w-]+)$/)?.[1];
+    if (skill) return existsSync(path.join(skillsDir, skill, 'SKILL.md'));
+    if (pointer.startsWith('~/frame/'))
+        return existsSync(path.join(root, pointer.slice(8)));
+    if (pointer.startsWith('~/projects/')) {
+        const repo = path.join(
+            homedir(),
+            'projects',
+            pointer.split('/')[2] ?? '',
+        );
+        return existsSync(repo)
+            ? existsSync(path.join(homedir(), pointer.slice(2)))
+            : undefined;
+    }
+    if (pointer.includes('/') && topLevel.has(pointer.split('/')[0] ?? ''))
+        return existsSync(path.join(root, pointer));
+    return undefined;
+}
+
 function artifactExists(artifact: string) {
     const skill = artifact.match(
         /^(?<plugin>x|cclio):(?<name>[\w-]+)$/,
@@ -135,12 +213,24 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     if (text.startsWith('\0GITCRYPT')) return;
     const fields = frontmatter(text);
     expect(fields, `${name}: recipe.md opens with frontmatter`).not.toBeNull();
-    expect(['refresh', 'nurture', 'run']).toContain(fields?.kind);
+    expect(['refresh', 'nurture']).toContain(fields?.kind);
     expect(
         name.startsWith(`${fields?.kind}-`),
         `${name}: kind-first name`,
     ).toBe(true);
     expect(fields?.cadence, `${name}: cadence`).toBeTruthy();
+    expect(
+        reminderMissing(name, String(fields?.cadence), reminders),
+        `${name}: cadence leans on a ⏰ that cclio/memory/_reminders.md never names`,
+    ).toBe(false);
+    expect(
+        sharedCopies(text, sharedLines),
+        `${name}: lines restating x:shape-recipe`,
+    ).toEqual([]);
+    expect(
+        deadPointers(text, pointerExists),
+        `${name}: pointers at paths or skills that do not exist`,
+    ).toEqual([]);
     expect(Array.isArray(fields?.artifacts), `${name}: artifacts list`).toBe(
         true,
     );
@@ -172,21 +262,23 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     expect(existsSync(path.join(dir, 'log.md')), `${name}: log.md`).toBe(true);
 
     if (fields?.draft === 'true') return;
-    const isRun = fields?.kind === 'run';
     const blocks = h2Blocks(text);
     const titles = blocks.map((block) => block.title);
     const body = (title: string) =>
         blocks.find((block) => block.title === title)?.body ?? '';
 
     // R1: the h2s are exactly the shared sections, in order
-    const allowed = isRun ? runSections : sections;
     expect(
-        inOrder(titles, allowed),
-        `${name}: h2s must follow [${allowed.join(', ')}], got [${titles.join(', ')}]`,
+        inOrder(titles, sections),
+        `${name}: h2s must follow [${sections.join(', ')}], got [${titles.join(', ')}]`,
     ).toBe(true);
-    const required = isRun
-        ? ['the want', 'the run']
-        : ['the want', 'the run', 'vectors', 'artifacts', 'findings'];
+    const required = [
+        'the want',
+        'the run',
+        'vectors',
+        'artifacts',
+        'findings',
+    ];
     expect(
         required.filter((title) => !titles.includes(title)),
         `${name}: missing h2`,
@@ -196,8 +288,6 @@ test.each(recipes)('%s has the recipe shape', (name) => {
         body('the want'),
         `${name}: the want quotes dima in «» or a > block`,
     ).toMatch(/«[^»]+»|^> \S/m);
-
-    if (isRun) return;
 
     // R2: contents appears with the 101st line and not before
     expect(
@@ -249,6 +339,42 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     expect(steps.at(-1), `${name}: the last step logs the run`).toContain(
         'log.md',
     );
+});
+
+test('a cadence on a ⏰ with no reminder line is caught', () => {
+    expect(
+        reminderMissing(
+            'refresh-x',
+            'quarterly, held by its ⏰',
+            '- other: monthly',
+        ),
+    ).toBe(true);
+    expect(
+        reminderMissing(
+            'refresh-x',
+            'quarterly, held by its ⏰',
+            '- refresh-x: quarterly',
+        ),
+    ).toBe(false);
+});
+
+test('a line restating x:shape-recipe is caught', () => {
+    const copied = `# refresh-x\n\n- ${sharedLines[0]}\n`;
+
+    expect(sharedCopies(copied, sharedLines)).toEqual([
+        `line 3: - ${sharedLines[0]?.slice(0, 58)}`,
+    ]);
+});
+
+test('a pointer at a missing path or skill is caught', () => {
+    const text =
+        '`docs/knowledge/nope.md`, `x:guide-nope`, `~/frame/x/nope.go`, `x:guide-go`, `owner/repo`, `recipes/<name>/`';
+
+    expect(deadPointers(text, pointerExists)).toEqual([
+        'docs/knowledge/nope.md',
+        'x:guide-nope',
+        '~/frame/x/nope.go',
+    ]);
 });
 
 // R7

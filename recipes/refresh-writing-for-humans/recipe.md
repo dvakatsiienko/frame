@@ -63,7 +63,7 @@ the running agent is the instrument:
 - `docs/knowledge/writing-for-humans.md` — the distilled knowledge: existing art, techniques,
   detector landscape
 - `home/.claude/plugin-x/skills/writing-for-humans/` (+ `references/dima-voice.md`)
-- `home/.claude/plugin-x/skills/humanize/` + `humanize-audit/` — the borrowed copies
+- the humanize pair (`humanize:humanize`, `humanize:ai-check`) — auto-updated from the upstream marketplace since 2026-09-27: read, never edited
 
 ## findings
 

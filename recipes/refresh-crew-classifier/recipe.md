@@ -63,7 +63,7 @@ keeps the classifier seat true: the engine (jev today, unless a better one wins)
 
 ## artifacts
 
-- `cclio/memory/sys-jev.md`: the rules a coder loads when touching jev, the lanes, the vet policy, the sharpening loop; the rules move to `x:guide-classification` once it exists
+- `cclio/memory/sys-jev.md`: the rules a coder loads when touching jev, the lanes, the vet policy, the sharpening loop; the rules move to a `guide-classification` skill once it exists
 - `script/lib/jev-questions.ts` — every rubric, model pinned
 - `docs/research/skill-router.md` — written by FRM-305 from the 2026-10-05 lanes; dies into the guide
 

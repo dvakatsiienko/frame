@@ -50,7 +50,7 @@ the four vectors of the brief, in dima's wording, as written there:
   - skill loads per session (`Skill` tool calls): a skill nobody loads in 30 days is a delete candidate; ground truth for jev's router
   - dima's wait: from his prompt to the reply, per session and per kind of ask
   - cost per member and per ticket from the usage fields, the `researcher` agent's saving included
-- the engine is `duckdb` on its test drive (`docs/test-drive/duckdb.md`, verdict 2026-10-21); each analysis vector becomes a `.sql` in `recipes/refresh-agent-ops/scripts/` the first time it runs
+- the engine is `duckdb` on its test drive (`docs/test-drive/duckdb.md`, verdict 2026-10-21); each analysis vector becomes a `.sql` in this recipe's own `scripts/` the first time it runs
 
 ## artifacts
 

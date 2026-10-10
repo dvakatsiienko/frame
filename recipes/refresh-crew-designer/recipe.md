@@ -83,11 +83,11 @@ dima's asks from the thread:
 8. adhd / frame branching for design — new evidence (neuroarxiv lane)
 9. anti-patterns — how design work goes wrong upstream, the gates against it
 10. reference galleries — which public galleries are alive and good right now (godly, land-book, dribbble search, …) for the designer's after-the-pick references; paid doors (mobbin, refero) stay out (dima, 2026-09-30)
-11. the design comms loop — is there now a simpler door than design-loupe? his words are in the want (2026-10-02), the problem it exists for in the analysis below. check each run: can an agent open a pinned thread on the canvas now (`comments` capability, `composer_only`), does the editor read a url anchor or focus param, did Figma or another canvas ship agent-placed pins with a decision UI, does the Code-tab pane offer something native. the evidence so far: `~/frame/docs/research/design-review-comms.md`, `bytes/apps/design-loupe/PRODUCT.md`. a simpler door found → propose retiring design-loupe
+11. the design comms loop — is there now a simpler door than design-loupe? his words are in the want (2026-10-02), the problem it exists for in the analysis below. check each run: can an agent open a pinned thread on the canvas now (`comments` capability, `composer_only`), does the editor read a url anchor or focus param, did Figma or another canvas ship agent-placed pins with a decision UI, does the Code-tab pane offer something native. the evidence so far: `bytes/apps/design-loupe/PRODUCT.md`. a simpler door found → propose retiring design-loupe
 
 ### analysis
 
-- the design comms loop's cost to dima: rounds, minutes and sticky hunts per spread in `docs/test-drive/design-run.md`; the bar a simpler door must beat (the story: `docs/research/design-review-comms.md`)
+- the design comms loop's cost to dima: rounds, minutes and sticky hunts per spread in `docs/test-drive/design-run.md`; the bar a simpler door must beat
 - the run ledger (`docs/test-drive/design-run.md`): tokens, minutes, usage-window % per spread, pick time,
   mash-up requests, rounds past 3 — did the recipe's rules hold?
 - dima's verdicts on past picks: which brief lines caused a choice, which axes produced mash-ups

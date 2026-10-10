@@ -51,7 +51,7 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 
 - 📌 **the run order is dima's plan**: an agent may improve it, never replace it.
 - **live recipe**: a wrong step or a miss is fixed here the same session; a recipe written afterwards is a memory of a recipe.
-- **run state lives in a run file, never in chat**. linear holds what outlives the run, `cclio/pocket.md` cross-session carry-over only.
+- **run state lives in a run file, never in chat**. linear holds what outlives the run, `cclio/pocket/` cross-session carry-over only.
 - **the coordinator executes**, booted in `~/frame/cclio` (dima's approach b): it holds every leaf resident, a spawn pays ~50k to rebuild a worse copy. spawns only for judgment-free bulk reads (outer project files) and research. it may ask for a fresh session mid-run (cold boot ~115k in run #1), saying why.
 - run #1's working rules, binding until dima changes them: no auto-commit, he reads the diffs and commits · step by step · trace well, fix in place · objections welcome · one fresh session, start to finish.
 - **the per-item report**, never a wall; expand only on his ask, then print the diff:

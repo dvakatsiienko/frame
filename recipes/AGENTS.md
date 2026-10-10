@@ -38,7 +38,7 @@ two recipes that refresh one file merge.
 frontmatter, in this order:
 
 ```yaml
-kind: refresh | nurture | run   # research → distill · groom an existing system · plain execution
+kind: refresh | nurture   # research → distill · groom an existing system
 owner: <seat> | [<seat>, coordinator]   # coordinator | coder | designer | fleet: the seat whose work the artifacts feed
 cadence: <when it runs, and any extra trigger>   # the only home of the cadence
 artifacts: [<path or x:skill>, …]
@@ -58,8 +58,6 @@ body, in this order. each section holds only its own kind of line:
 6. `## artifacts` — one bullet per `artifacts:` entry: what it holds, how the distill treats it. never the artifact's content
 7. `## findings` — what this recipe's print adds to the shared parts, and its checklist, re-checked every run. never past verdicts
 
-`kind: run` (`run-diorama`) needs only the frontmatter, the heading, `## the want` and `## the run`; when it carries more, the order is the want, artifacts, the run, vectors (a run reads its artifacts before it draws).
-
 ## log.md
 
 ```
@@ -75,4 +73,4 @@ body, in this order. each section holds only its own kind of line:
 
 ## the check
 
-`script/lib/recipe-shape.test.ts` runs in the pre-commit `pnpm test` and proves this file's shape on every recipe. a change to the shape here lands with its check in the same commit.
+`script/lib/recipe-shape.test.ts` runs in the pre-commit `pnpm test` and proves this file's shape on every recipe. it also catches drift in content: a cadence on a ⏰ that `cclio/memory/_reminders.md` never names, a line restating `x:shape-recipe`'s shared vectors or run steps, and a backticked repo path or `x:<skill>` that does not exist. a change to the shape here lands with its check in the same commit.

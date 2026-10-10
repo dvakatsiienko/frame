@@ -43,7 +43,7 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 
 ### research
 
-1. the official surface — the mods reference + changelog since the last run: new events, `$` methods, render sites, limits, surfaces; then the generated types in `.claude-plugin/types/` as the authority for our build
+1. the official surface — the mods reference + changelog since the last run: new events, `$` methods, render sites, limits, surfaces; then the generated types in each `<mod>/.claude-plugin/types/` as the authority for our build
 2. **hunt already built to borrow** — published mods and hook plugins (the catalogue at mods.aidojo.si, claudemods.ai, ray-amjad/awesome-claude-code-function-hooks, anthropics/claude-code-playground mods): read the source of the ones near our needs, one «borrow» line each
 3. **hunt already built for inspo** — unusual or high-value uses we have not thought of (guards, dashboards, presence, cost, privacy)
 4. best practices and pitfalls — hot paths, state lifetimes, reload, composition with other mods and with cc built-ins, testing
