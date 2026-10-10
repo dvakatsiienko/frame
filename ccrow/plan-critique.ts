@@ -1,5 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 
 import {
     NOTES_PATH,
@@ -55,7 +55,13 @@ const id = `${wakeIdOf(now)}${String(now.getSeconds()).padStart(2, '0')}`;
 const runDir = `${STATE_DIR}/plans/${id}`;
 mkdirSync(runDir, { recursive: true });
 // no tools: a one-shot that can read would reach cclio's transcripts and the earlier verdicts
-const args = [...claudeArgs(arm, '', effort), '--tools', ''];
+const args = [
+    ...claudeArgs(arm, '', effort),
+    '--tools',
+    '',
+    '-n',
+    `🐦‍⬛ critic: ${basename(planPath)}`,
+];
 const passes: OneShotResult[] = [];
 
 const sections = blindSections(planText);

@@ -144,7 +144,7 @@ between. a release post on the project's blog beats the github release body when
 
 ## 5. act on his word — «approve evergreen» is the whole round
 
-a plain «approve evergreen» (or a 🤩 on its orbit ask) means: **every ➡️ merge in the report AND
+a plain «approve evergreen» (or a 🛎️ on its orbit ask) means: **every ➡️ merge in the report AND
 `brew upgrade` (all outdated, pinned never) run now, by cclio, no second ask.** steers inside the
 same message («hold #61») subtract from the round.
 

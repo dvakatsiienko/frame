@@ -171,14 +171,14 @@ file he names.
   session. not blocked → no 🔭 line, or the marker rots into decoration.
 - **where**: the LAST line, after the ➡️. ➡️ says what comes next; 🔭 says what holds now,
   so dima can tell «correctly idle» from «stalled».
-- **shape**: what is waited on + how the answer arrives — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70) — the pr watcher wakes me`.
+- **shape**: `🔭 waiting on <who>`, nothing more — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70)`; the band shows this line, so how the answer arrives stays out (dima, 2026-10-10).
   - a thing with a page is a link labelled with an emoji and a short word; several things, one per line
   - a member is bold with its role emoji, no link: **🦉 cclio**, **🔧 coder**, **🔎 verifier**,
     **🎨 designer**, **🐝 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**
 
 ### 🪐 open asks — orbit
 - **asks go to orbit through its tool, `mcp__x-mod-stash__orbit`, never into a reply.** orbit is
-  this session's list in the fleet board: dima ticks 🤩 to take your pick, 👎🏼 to reject, adds a
+  this session's list in the fleet board: dima rings 🛎️ to take your pick (order up, ready for pickup), ↩️ to send it back, adds a
   note, and the marked asks reach you as model-only context; an unmarked ask means nothing yet.
 - 📌 a background (`--bg`) session draws no board, so its orbit stays unseen: its asks go to its
   coordinator in its ping, as its role's contract says.
