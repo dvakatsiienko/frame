@@ -1,6 +1,6 @@
 # x-mod-stash
 
-dima's command center: one folded row above the prompt that every live cc session shares.
+dima's command center: one row above the prompt that every live cc session shares, and the fleet board.
 
 ## Language
 
@@ -9,11 +9,11 @@ The shared row and the one store behind it; every feature below lives in it.
 _Avoid_: deck, band, dock
 
 **Ask**:
-An open question a session put to dima in its ⏳ block, live until he verdicts it.
+An open question a session put to dima through orbit's tool: one line, its pick and a hidden note, live until the session resolves it.
 _Avoid_: question, todo, pending
 
 **Orbit** 🪐:
-One session's own list of asks to dima, in the board; he ticks, rejects or notes an ask, and the marked ones join his next prompt. Supersedes the reply-parsed ask list.
+One session's own list of asks to dima, in the board; he ticks, rejects or notes an ask, and the marked ones join his next prompt, or the running turn. Replaced the reply-parsed ask list.
 _Avoid_: asks box, wfyb, inbox
 
 **Planned actions** 📝:
@@ -50,7 +50,7 @@ The ⏰ switch, one for every session: while on, a session stopped on the 5h cap
 _Avoid_: alarm, auto-resume, wake-up
 
 **Meter**:
-One of the two full-width bars under the asks: `🔥 5h`, the window against its pace, and `🧠 ctx`, the context against its compaction point.
+One of the two short bars in the row: `🔥 5h`, the window against its pace, and `🧠 ctx`, the context against its compaction point.
 _Avoid_: gauge, tracker, progress bar
 
 **Pace**:

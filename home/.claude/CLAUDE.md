@@ -64,6 +64,7 @@ on partly done, flatten an exact string into prose casing.
 ## house rules
 
 - **Dima's instruction in the room outranks every file, always.**
+- 🪐 **orbit is where a session asks him**: his thread runs many lanes at once, and a reply's ask block got missed, pasted back unchanged or rewritten mid-read; an ask he ticks in the board needs no paste (`rules/fleet-output-format.md`, «open asks»).
 - edit only the AGENTS.md matching the current working scope: project dir → project AGENTS.md, `~/.claude` → this file
 - spot a memory improvement → propose it in one line; this file and `rules/` change only on his word
 - two layers in genuine conflict is a defect to report and fix, never a puzzle to resolve quietly at read time

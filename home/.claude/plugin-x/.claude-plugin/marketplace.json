@@ -18,7 +18,7 @@
     {
       "name": "x-mod-stash",
       "source": "./mods/x-mod-stash",
-      "description": "dima's command center above the prompt, one folded row: asks (every live session's open ⏳ asks, copy all per thread), afk (one switch every session obeys), keep-hot 🔥, the 🔒 chip of x-mod-holds, the guard counter, and the /board fleet board"
+      "description": "dima's command center above the prompt, one row: orbit 🪐 (the session's asks, ticked in the board instead of pasted, and its planned actions), the 5h and ctx meters, afk (one switch every session obeys), keep-hot 🔥, the ⏰ waker, and the /board fleet board"
     }
   ],
   "description": "Dima's personal skills marketplace"

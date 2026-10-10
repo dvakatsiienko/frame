@@ -9,7 +9,18 @@ function world(on: On) {
     const contexts: string[][] = [];
     const appended: string[] = [];
     mock.clock(on, { now: new Date(2026, 9, 10, 19, 0).getTime() });
-    mock.store(on, {});
+    // a store in memory the test reads back: the shared store other sessions' boards count from
+    const store = new Map<string, unknown>();
+    on('store.get', (_$, e) => ({ value: store.get(e.key) }));
+    on('store.set', (_$, e) => {
+        store.set(e.key, e.value);
+        return { value: undefined };
+    });
+    on('store.keys', () => ({ value: [...store.keys()] }));
+    on('store.delete', (_$, e) => {
+        store.delete(e.key);
+        return { value: undefined };
+    });
     on('session.id', () => ({ value: SID }));
     on('env.get', () => ({ value: '/home' }));
     on('ui.log', () => ({ value: undefined }));
@@ -33,7 +44,7 @@ function world(on: On) {
     });
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
-    return { appended, contexts };
+    return { appended, contexts, store };
 }
 
 const start = ($: Engine) =>
@@ -304,5 +315,16 @@ test('a plan untouched for three turns reads stale', async ($, on) => {
     ]).toEqual([
         expect.stringContaining('stale'),
         expect.stringMatching(/plan set 3 turns ago, stale/),
+    ]);
+});
+
+test("orbit's open asks reach the shared store the board counts from", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($, 'go');
+    await add($, ['push FRM-1', 'yes'], ['trash the probe', 'yes']);
+    await orbit($, { ids: ['o1'], op: 'resolve' });
+    expect((w.store.get(`asks:${SID}`) as { asks: string[] }).asks).toEqual([
+        'trash the probe',
     ]);
 });

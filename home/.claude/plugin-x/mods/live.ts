@@ -1,6 +1,7 @@
 // pnpm mods:live <mod> — a dev server for a mod: a real cc session in a pty with the mod loaded, a text frame of its
 // screen after every save, and a reload verdict. pnpm mods:live <mod> hover <label> moves the pointer onto a label
-// in the running session and saves the frame with its hover card.
+// in the running session and saves the frame with its hover card; click <label> presses it; type <text> types the
+// text and Enter into the prompt (a prompt, or a slash command such as /board).
 import { spawnSync } from 'node:child_process';
 import {
     chmodSync,
@@ -25,16 +26,21 @@ const COLS = 140;
 const ROWS = 40;
 const QUIET_MS = 600;
 const RELOAD_MS = 8000;
-const HOVER_MS = 10000;
+// a typed prompt answers only once its turn quiets down
+const ACT_MS = 60_000;
 
+const VERBS = ['hover', 'click', 'type'] as const;
+type Verb = (typeof VERBS)[number];
+const isVerb = (v: string): v is Verb =>
+    (VERBS as readonly string[]).includes(v);
 const [modArg, verb, ...rest] = process.argv.slice(2);
 const usage = () => {
     console.error(
-        'usage: pnpm mods:live <mod dir>, or pnpm mods:live <mod dir> hover <label>',
+        'usage: pnpm mods:live <mod dir>, or pnpm mods:live <mod dir> hover|click <label>, or … type <text>',
     );
     process.exit(2);
 };
-if (!modArg || (verb && verb !== 'hover') || (verb && !rest.length)) usage();
+if (!modArg || (verb && (!isVerb(verb) || !rest.length))) usage();
 const mod = resolve(modArg as string);
 const manifest = join(mod, '.claude-plugin/plugin.json');
 if (!existsSync(manifest)) {
@@ -58,10 +64,10 @@ const isServing = () => {
     }
 };
 
-if (verb === 'hover') await hover(rest.join(' '));
+if (verb && isVerb(verb)) await act(verb, rest.join(' '));
 else await serve();
 
-async function hover(label: string) {
+async function act(what: Verb, label: string) {
     if (!isServing()) {
         console.error(
             `mods:live: no session serves ${name}; start pnpm mods:live ${modArg}`,
@@ -69,8 +75,8 @@ async function hover(label: string) {
         process.exit(2);
     }
     rmSync(response, { force: true });
-    writeFileSync(request, label);
-    const until = Date.now() + HOVER_MS;
+    writeFileSync(request, JSON.stringify({ label, what }));
+    const until = Date.now() + ACT_MS;
     while (Date.now() < until) {
         if (existsSync(response)) {
             const r = JSON.parse(readFileSync(response, 'utf8')) as {
@@ -79,7 +85,7 @@ async function hover(label: string) {
             };
             console.log(
                 r.found
-                    ? `hovered «${label}»: ${r.frame}`
+                    ? `${what} «${label}»: ${r.frame}`
                     : `«${label}» is not on screen: ${r.frame}`,
             );
             console.log(readFileSync(r.frame, 'utf8'));
@@ -87,7 +93,7 @@ async function hover(label: string) {
         }
         await sleep(100);
     }
-    console.error(`mods:live: no answer from the ${name} session in 10 s`);
+    console.error(`mods:live: no answer from the ${name} session in 60 s`);
     process.exit(1);
 }
 
@@ -242,19 +248,34 @@ async function serve() {
         timer = setTimeout(() => void onSave(), 300);
     });
 
-    // a hover request from the client verb: the label's first cell gets an SGR pointer move
+    // a request from a client verb: hover moves the pointer onto the label's first cell (an SGR motion), click presses
+    // and releases there, type writes the text, then Enter once the prompt has drawn it
     watch(dir, async (_event, file) => {
         if (file !== 'hover.request' || !existsSync(request)) return;
-        const label = readFileSync(request, 'utf8');
+        const { label, what } = JSON.parse(readFileSync(request, 'utf8')) as {
+            label: string;
+            what: Verb;
+        };
         rmSync(request, { force: true });
-        const at = cellOf(term, label);
-        if (at) session.write(`\x1b[<35;${at.x + 1};${at.y + 1}M`);
+        const at = what === 'type' ? undefined : cellOf(term, label);
+        const cell = at && `${at.x + 1};${at.y + 1}`;
+        if (what === 'hover' && cell) session.write(`\x1b[<35;${cell}M`);
+        if (what === 'click' && cell)
+            session.write(`\x1b[<0;${cell}M\x1b[<0;${cell}m`);
+        if (what === 'type') {
+            session.write(label);
+            await sleep(300);
+            session.write('\r');
+        }
         lastData = Date.now();
         await settle();
         // written whole, then renamed in, so the client never reads half an answer
         writeFileSync(
             `${response}.tmp`,
-            JSON.stringify({ found: !!at, frame: frame('hover') }),
+            JSON.stringify({
+                found: what === 'type' || !!at,
+                frame: frame(what),
+            }),
         );
         renameSync(`${response}.tmp`, response);
     });

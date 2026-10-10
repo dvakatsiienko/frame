@@ -1,7 +1,7 @@
 # x-mod-stash — dima's command center above the prompt
 
-one folded row over every live session: its open ⏳ asks, the afk switch, keep-hot 🔥, and the `/board`
-fleet board. what each does, and every decision behind it: `FTR.md`.
+one row over every live session: orbit's and the plan's counts, the meters, the afk switch, keep-hot 🔥, and
+the `/board` fleet board, where orbit 🪐 holds the session's asks. what each does, and every decision behind it: `FTR.md`.
 the words: `GLOSSARY.md`.
 
 ## keep-hot — the want (2026-10-04)

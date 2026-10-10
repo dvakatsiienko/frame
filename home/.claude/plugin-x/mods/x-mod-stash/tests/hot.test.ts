@@ -224,35 +224,3 @@ test('🔥 switched off on the band drops its store key', async ($, on) => {
     await s.ui.press({ key: 'hot' });
     expect(`hot:${SID}` in store).toBe(false);
 });
-
-test('a folded asks list stays folded across a reload', async ($, on) => {
-    const s = await started(
-        $,
-        on,
-        { [`asks:${SID}`]: { asks: ['ship it'], at: NOW, label: 'frame' } },
-        { open: false },
-    );
-    expect(await s.ui.find({ text: /ship it/, type: 'Text' })).toBe(undefined);
-});
-
-// what a reload will read back, recorded as it is written
-function stateWrites(on: On) {
-    const writes: [string, unknown][] = [];
-    on('state.set', (_$, e) => {
-        writes.push([e.key, e.value]);
-        return { value: { isSet: true, version: 1 } };
-    });
-    return writes;
-}
-
-test('folding the asks writes the fold to $.state', async ($, on) => {
-    const writes = stateWrites(on);
-    const s = await started($, on, {
-        [`asks:${SID}`]: { asks: ['ship it'], at: NOW, label: 'frame' },
-    });
-    await s.ui.press({ key: 'asks-toggle' });
-    expect(writes.filter(([key]) => key === 'open').at(-1)).toEqual([
-        'open',
-        false,
-    ]);
-});

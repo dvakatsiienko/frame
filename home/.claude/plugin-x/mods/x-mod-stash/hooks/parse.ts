@@ -1,7 +1,5 @@
 import type { StashDoor } from '../types/stash.d.ts';
 
-const HEADER = /⏳\s*waiting on your word/i;
-
 // a ·-joined list in prose, rewritten as bullets the way the output rules want it (reply-check blocks the dot);
 // fences, inline code and the 📄 stamp line keep theirs
 export function bulletDots(text: string) {
@@ -103,57 +101,6 @@ export function boldFleetWords(text: string) {
         return out + line.slice(from);
     });
     return { hits, text: lines.join('\n') };
-}
-
-// dima's «yes, after X» verdicts, each with the open ask its number names; a plain yes is not one
-export function parseAfter(prompt: string, asks: string[]) {
-    return prompt.split('\n').flatMap((line) => {
-        const m = line.match(/^\s*(\d+)\.\s.*?\byes,?\s+after\s+(.+?)\s*$/i);
-        const ask = m && asks[Number(m[1]) - 1];
-        return m?.[2] && ask ? [{ after: m[2], ask }] : [];
-    });
-}
-
-// The asks of a reply's ⏳ block, in order; null when the reply carries no block.
-export function parseAsks(reply: string): string[] | null {
-    const start = reply.search(HEADER);
-    if (start < 0) return null;
-    const fence = reply.indexOf('```', start);
-    if (fence < 0) return null;
-    const end = reply.indexOf('```', fence + 3);
-    const body = reply.slice(
-        reply.indexOf('\n', fence) + 1,
-        end < 0 ? undefined : end,
-    );
-    const asks: string[] = [];
-    for (const line of body.split('\n')) {
-        if (/^\s*wispr adds\s*$/i.test(line)) break;
-        const m = line.match(/^\s*\d+\.\s+(.+?)\s*$/);
-        if (m?.[1]) asks.push(m[1]);
-    }
-    return asks;
-}
-
-// The numbers of the ⏳ asks that carry lines under them; the rule is one line per item, so «c» copies it whole.
-export function nestedAsks(reply: string): string[] {
-    const start = reply.search(HEADER);
-    if (start < 0) return [];
-    const fence = reply.indexOf('```', start);
-    if (fence < 0) return [];
-    const end = reply.indexOf('```', fence + 3);
-    const body = reply.slice(
-        reply.indexOf('\n', fence) + 1,
-        end < 0 ? undefined : end,
-    );
-    const nested = new Set<string>();
-    let item: string | undefined;
-    for (const line of body.split('\n')) {
-        if (/^\s*wispr adds\s*$/i.test(line)) break;
-        const m = line.match(/^\s*(\d+)\.\s+\S/);
-        if (m?.[1]) item = m[1];
-        else if (line.trim() && item) nested.add(item);
-    }
-    return [...nested];
 }
 
 // a reply line as a person reads it: links reduced to their labels, no bold or code marks, no list or heading marker

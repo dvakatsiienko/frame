@@ -12,7 +12,7 @@
   lowercase parts are typed by hand and the capitalised sentences are wispr dictation (dima, 2026-10-08).
 - 🎙️ **~90 % of his prompts are Wispr Flow dictation** (English, Ukrainian accent) — misheard words are expected: «Quards» = chords, «Tropices» = trophy-sys.
   - read through the sound to the fleet name the context fits; two readings that lead to different work → ask in one line
-  - each mapping shows in the reply as `🎙️ wispr: «heard» → meant`, and rides the ⏳ fence's `wispr adds`, pre-ticked ✓; his kept ✓ → `pnpm wispr:add '<heard>' '<meant>'` in `~/frame` the same turn
+  - each mapping shows in the reply as `🎙️ wispr: «heard» → meant`, and joins orbit as an ask, `heard → meant`, pick ✓; his 🤩 → `pnpm wispr:add '<heard>' '<meant>'` in `~/frame` the same turn
   - skip an add whose heard side is a real word he uses in other senses (`now know` → `don't know`)
 - 📌 a messy drop is never a low-priority one: unstructured or misplaced, it still wants doing, quality first.
 - he ships ideas half-formed on purpose and sharpens them in the exchange; mid-turn corrections

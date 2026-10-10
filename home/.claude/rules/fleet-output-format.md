@@ -156,8 +156,8 @@ file he names.
 ## questions, options, and the ➡️ cta
 
 - every question round ends with a ➡️ recommendation.
-- **one home for the next move**: the ⏳ fence holds it, as an ask he answers with one word; no
-  fence → one ➡️ line; never both. a quick answer carries neither.
+- **one home for the next move**: an orbit ask holds it, one he ticks; nothing to ask → one ➡️
+  line; never both. a quick answer carries neither.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
 - **a questionnaire dima fills in holds one item per line**, numbered `1.` `2.`: the item, the ➡️
@@ -169,44 +169,33 @@ file he names.
 ### 🔭 blocked on something external
 - **when**: only while a review bot, ci, a background job or another agent genuinely holds the
   session. not blocked → no 🔭 line, or the marker rots into decoration.
-- **where**: the LAST line, after the ➡️ and the ⏳ block. ➡️ says what comes next; 🔭 says what holds now,
+- **where**: the LAST line, after the ➡️. ➡️ says what comes next; 🔭 says what holds now,
   so dima can tell «correctly idle» from «stalled».
 - **shape**: what is waited on + how the answer arrives — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70) — the pr watcher wakes me`.
   - a thing with a page is a link labelled with an emoji and a short word; several things, one per line
   - a member is bold with its role emoji, no link: **🦉 cclio**, **🔧 coder**, **🔎 verifier**,
     **🎨 designer**, **🐝 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**
 
-### ⏳ open asks
-- **open asks ride a «⏳ waiting on your word:» block at the very end of the reply**, repeated in
-  every following reply to HIS message until he verdicts each. an ask that appeared once is an ask
-  he never saw.
-- **ONE live bucket.** every print carries every open ask, renumbered from 1; an ask leaves only on
-  his verdict. a new ask joins the bucket, never a second partial block.
-- the header sits OUTSIDE the fence as a plain line; the fence holds only what he answers.
-- **«ok» or «all» answers the whole fence** with its recommendations; he never pastes it back.
-- **one fence, one copy**: the asks under a bare `lane` line; Wispr adds (`rules/dima-signals.md`)
-  in the same fence under `wispr adds`, after a blank line, each pre-ticked ✓. no adds, no section.
-- a line under the fence points at the last report, the name bold; his **`rewind`** reprints it.
-
-      ⏳ waiting on your word:
-
-      ```
-      lane
-      1. <ask> ➡️ <recommendation>
-      2. <ask> ➡️ <recommendation>
-
-      wispr adds
-      1. <heard> → <meant> ✓
-      ```
-
-      📄 last report: **<topic>**, <HH:MM>
+### 🪐 open asks — orbit
+- **asks go to orbit through its tool, `mcp__x-mod-stash__orbit`, never into a reply.** orbit is
+  this session's list in the fleet board: dima ticks 🤩 to take your pick, 👎🏼 to reject, adds a
+  note, and the marked asks reach you as model-only context; an unmarked ask means nothing yet.
+- 📌 a background (`--bg`) session draws no board, so its orbit stays unseen: its asks go to its
+  coordinator in its ping, as its role's contract says.
+- an ask is one line that reads alone after 20 more pile up: what is asked, your pick, a hidden
+  note for yourself; an irreversible one leads with ⚠️ and names its exact target.
+- answer a marked ask in that reply, then `resolve` it; one that needs another round is `follow`ed,
+  same id, new text. orbit lives as long as the session, so an ask is added once.
+- a Wispr add (`rules/dima-signals.md`) is an ask too: `heard → meant`, pick ✓.
+- `plan` sets your next ≤5 moves at each turn end; the board shows them, stale after 3 turns.
+- a `📄 last report: **<topic>**, <HH:MM>` line ends a report; his **`rewind`** reprints it.
 
 ## reply skeletons
 
 - **default report** — anything non-trivial:
   - bolded verdict line
   - bullets carrying the substance
-  - the next move: the ⏳ fence, or one ➡️ line
+  - the next move: an orbit ask, or one ➡️ line
 - **plan report** — you wrote a plan file and are summarising it. the reply is the trailer, not
   the movie:
   - bare path to the file

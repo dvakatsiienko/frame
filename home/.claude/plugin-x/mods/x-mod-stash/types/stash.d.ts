@@ -1,4 +1,4 @@
-// one session's open asks, as its last reply left them
+// one session's open asks, as its orbit holds them
 export type StashEntry = {
     label: string;
     name?: string;
@@ -48,7 +48,8 @@ export type StashMeter = {
 // everything the band draws, written by the poll and the hooks; a render reads it and redraws on a write
 export type StashView = {
     selfId?: string;
-    entries: Record<string, StashEntry>;
+    // what this session's last reply waits on, its 🔭 line
+    wait?: string;
     afk: boolean;
     isHot: boolean;
     isWaker: boolean;
@@ -99,7 +100,6 @@ export type StashOrbit = {
 declare module 'claude-code' {
     interface PluginState {
         'x-mod-stash': {
-            open: boolean;
             view: StashView;
             board: StashBoardView;
             turn: StashTurn;

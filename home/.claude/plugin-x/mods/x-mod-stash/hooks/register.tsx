@@ -17,18 +17,15 @@ import {
     bulletDots,
     doorOf,
     isFleetName,
-    nestedAsks,
-    parseAfter,
-    parseAsks,
     parseWait,
     ticketOf,
 } from './parse.ts';
 
-// x-mod-stash: dima's command center above the prompt, one folded row; FTR.md lists every feature.
-// asks: every live session's open ⏳ asks, mirrored from each last reply into $.store (one key per session).
+// x-mod-stash: dima's command center above the prompt, one row; FTR.md lists every feature.
+// orbit: the session's asks to dima and its plan, written through its own tool, ticked in the board; its open asks are
+// mirrored into $.store (one key per session), so the board counts every session's.
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
 // keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm; the switch lives in $.store, so a reload keeps it
-// The reply stays the source of truth for asks; this band only shows and copies them.
 
 // label: the repo; name: the session's registry name, when it has one
 type Entry = StashEntry;
@@ -38,9 +35,8 @@ type Reply = { at: number; name?: string; wait?: string; ended?: number };
 const PREFIX = 'asks:';
 const AFK_KEY = 'afk';
 const AWAY_NOTE =
-    'dima is afk: nothing waits on him. take reversible steps and log them, park every ask for his return, send no ⏳ block and no ping.';
-const BACK_NOTE =
-    'dima is back from afk: asks and the ⏳ block reach him again.';
+    'dima is afk: nothing waits on him. take reversible steps and log them, park every ask in orbit for his return, send no ping.';
+const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
 const POLL_MS = 4000;
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
 const BOARD = 'fleet-board';
@@ -59,8 +55,7 @@ const STALE_MS = 24 * 60 * 60 * 1000;
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
 const HOT_MS = 50 * 60 * 1000;
 const HOT = 'hot:';
-// a reload keeps `$.state` and resets the module: what must outlive a mod save lives here (FRM-320)
-const OPEN = { key: 'open', plugin: 'x-mod-stash' } as const;
+// a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
 // what the band and the board draw: renders read it, and a write redraws them, no invalidate
 const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
 // what only the board pane draws, its clock included: the band never reads it, so a tick never redraws the band
@@ -93,7 +88,7 @@ const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
 const PLAN_MAX = 5;
 const STALE_TURNS = 3;
 const ORBIT_ABOUT = [
-    "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context.",
+    "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     'op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»); pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.',
     'op resolve, ids: the asks you answered this turn; they leave orbit when the turn ends.',
     'op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text and a «changed» mark.',
@@ -102,10 +97,9 @@ const ORBIT_ABOUT = [
 
 let selfId: string | undefined;
 let label = 'session';
-let entries: Record<string, Entry> = {};
-// the asks list's fold: only dima's click changes it — new asks, cleared asks and a new turn never do
-let open = true;
 let isUserTurn = false;
+// what this session's last reply waits on, its 🔭 line
+let wait: string | undefined;
 let pinged = false;
 let isPolling = false;
 let afk = false;
@@ -135,6 +129,8 @@ const EMPTY_ORBIT: StashOrbit = { asks: [], next: 1, turns: 0 };
 // mirrors `$.state`'s orbit, which survives a reload: a get inside one dispatch reads the moment it began
 let orbit: StashOrbit = EMPTY_ORBIT;
 
+// kept in $.state for this session, and its open asks mirrored into the store, where the board's `⏳ n` and the away
+// digest count every session's
 async function saveOrbit($: EngineInterface, next: StashOrbit) {
     orbit = next;
     await $.state
@@ -142,6 +138,19 @@ async function saveOrbit($: EngineInterface, next: StashOrbit) {
         .catch((err) =>
             $.ui.log(`x-mod-stash: orbit was not kept: ${errorText(err)}`),
         );
+    const sid = await currentId($);
+    if (!sid) return;
+    const asks = orbit.asks.filter((a) => !a.isResolved).map((a) => a.text);
+    if (asks.length)
+        await $.store
+            .set(PREFIX + sid, {
+                asks,
+                at: await $.clock.now(),
+                label,
+                name: await sessionName($),
+            } satisfies Entry)
+            .catch(() => undefined);
+    else await $.store.delete(PREFIX + sid).catch(() => undefined);
 }
 
 const markWord = (mark: OrbitAsk['mark']) =>
@@ -356,22 +365,6 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
         : undefined;
 }
 
-// a «yes, after X» answer to an open ask lands one line in the queue cclio's boot reads and empties; cclio/pocket.md has one writer
-async function queueAfter($: EngineInterface, prompt: string) {
-    const entry = (await $.store.get(PREFIX + (await $.session.id()))) as
-        | Entry
-        | undefined;
-    const found = parseAfter(prompt, entry?.asks ?? []);
-    if (!found.length) return;
-    const path = `${await $.env.get('HOME')}/.claude/shelf/stash/pocket-queue.md`;
-    const d = new Date(await $.clock.now());
-    const two = (n: number) => String(n).padStart(2, '0');
-    const at = `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())} ${two(d.getHours())}:${two(d.getMinutes())}`;
-    const was = await $.fs.read(path).catch(() => '');
-    const lines = found.map((f) => `- ${at} · after ${f.after} · ${f.ask}\n`);
-    await $.fs.write(path, `${was}${lines.join('')}`);
-}
-
 // everything this mod keeps for one conversation
 async function forget($: EngineInterface, sid: string) {
     await $.store.delete(PREFIX + sid);
@@ -422,36 +415,21 @@ async function countWords($: EngineInterface, hits: Record<string, number>) {
 }
 
 async function load($: EngineInterface) {
-    const now = await $.clock.now();
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
     afk = flag?.on === true;
     const waker = (await $.store.get(WAKER_KEY)) as
         | { on?: boolean }
         | undefined;
     isWaker = waker?.on === true;
-    const next: Record<string, Entry> = {};
-    for (const key of await $.store.keys()) {
-        if (!key.startsWith(PREFIX)) continue;
-        const v = (await $.store.get(key)) as Entry | undefined;
-        if (isLive(v, now)) next[key.slice(PREFIX.length)] = v;
-    }
     // after a /clear the process goes on under a new id, and no session.start fires
     selfId = await $.session.id().catch(() => selfId);
-    // a session that died without its exit hook leaves its asks in the store: show only sessions still running
-    if (Object.keys(next).some((sid) => sid !== selfId)) {
-        const alive = await registry($)
-            .then(
-                (rows) =>
-                    new Set(
-                        rows.filter((r) => r.isAlive).map((r) => r.base.sid),
-                    ),
-            )
-            .catch(() => undefined);
-        if (alive)
-            for (const sid of Object.keys(next))
-                if (sid !== selfId && !alive.has(sid)) delete next[sid];
-    }
-    entries = next;
+    // the band's 🔭 line: what this session's last reply said it waits on
+    const reply = selfId
+        ? ((await $.store.get(REPLY + selfId).catch(() => undefined)) as
+              | Partial<Reply>
+              | undefined)
+        : undefined;
+    wait = reply?.wait;
     await publish($);
 }
 
@@ -460,11 +438,11 @@ function viewOf(isBoardOpen: boolean): StashView {
     return {
         afk,
         digest,
-        entries,
         isBoardOpen,
         isHot: Boolean(hot),
         isWaker,
         selfId,
+        wait,
     };
 }
 
@@ -834,6 +812,8 @@ export function meterBar(
 const CELL = { gap: 2, rows: 2, size: 5 } as const;
 const CELL_STEP = CELL.size + CELL.gap;
 export const BAR_HEIGHT = CELL.rows * CELL_STEP - CELL.gap;
+// a band bar's width in cells: short, so both bars fit the one row beside the switches
+const BAR_CELLS = 10;
 const BAR_STYLE =
     ':root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.5}.mark{fill:#7c7670}.r0{stop-color:#7fb83a}.r1{stop-color:#f2b400}.r2{stop-color:#ff7a1a}.r3{stop-color:#f2364d}' +
     '@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.45}.mark{fill:#a89984}.r0{stop-color:#a9b665}.r1{stop-color:#d8a657}.r2{stop-color:#e78a4e}.r3{stop-color:#ea6962}}';
@@ -1160,7 +1140,6 @@ export const register: Register = (on) => {
         const kept = {
             cap: (await $.state.get(CAP)).value,
             ended: (await $.state.get(ENDED)).value,
-            open: (await $.state.get(OPEN)).value,
             orbit: (await $.state.get(ORBIT)).value,
             turn: (await $.state.get(TURN)).value,
             view: (await $.state.get(VIEW)).value,
@@ -1205,7 +1184,6 @@ export const register: Register = (on) => {
         endedAt = kept.ended ?? undefined;
         await pruneEnded($).catch(() => undefined);
         hot = (await $.store.get(HOT + selfId)) as typeof hot;
-        if (kept.open !== undefined) open = kept.open;
         // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
         if (kept.turn) {
             isBusy = kept.turn.isBusy;
@@ -1249,10 +1227,6 @@ export const register: Register = (on) => {
         isBusy = true;
         hotGen++;
         await load($);
-        if (isUserTurn)
-            await queueAfter($, e.text).catch(() =>
-                $.ui.log('x-mod-stash: a «yes, after» verdict was not queued'),
-            );
         turnAfk = afk;
         await keepTurn($);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
@@ -1325,43 +1299,19 @@ export const register: Register = (on) => {
 
     on('classic.Stop', async ($, e, next) => {
         const r = await next(e);
-        const reply = e.last_assistant_message ?? '';
         // a keep-hot ping's one-character reply never clears what the session waits on
         if (!pinged)
             await $.store
                 .set(REPLY + e.session_id, {
                     at: await $.clock.now(),
                     name: await sessionName($),
-                    wait: parseWait(reply),
+                    wait: parseWait(e.last_assistant_message ?? ''),
                 } satisfies Reply)
                 .catch(() => undefined);
-        const asks = parseAsks(reply);
-        // a reply to dima with no block means nothing is open; a reply woken by a peer keeps the old list
-        if (asks !== null || isUserTurn) {
-            const key = PREFIX + e.session_id;
-            if (asks?.length)
-                await $.store.set(key, {
-                    asks,
-                    at: await $.clock.now(),
-                    label,
-                    name: await sessionName($),
-                });
-            else await $.store.delete(key);
-            await load($);
-        }
         isUserTurn = false;
         await keepTurn($);
-        // warn, never block: the note reaches the model with the event
-        const nested = nestedAsks(reply);
-        if (!nested.length) return r;
-        const items = nested.map((n) => `item ${n}`).join(', ');
-        return {
-            ...r,
-            additionalContext: [
-                ...(r.additionalContext ?? []),
-                `x-mod-stash: the ⏳ block's ${items} carries nested lines — one line per item (rules/fleet-output-format.md, ⏳ open asks), so «c» copies it whole; fold the detail into the line or move it above the block`,
-            ],
-        };
+        await load($);
+        return r;
     });
 
     on('turn.complete', async ($, e, next) => {
@@ -1843,39 +1793,15 @@ export const register: Register = (on) => {
         };
     });
 
+    // the band: one row — orbit's and the plan's counts, the meters' readings and bars, the switches — plus a 🔭 line
+    // only while the session waits on something, the away digest and a refused threshold's one line
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
         if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e);
-        // the published view, never the module's values: reading it subscribes this band, and a write redraws it
+        // the published view and orbit, never the module's values: reading them subscribes this band, and a write redraws it
         const view = (await $.state.get(VIEW)).value ?? viewOf(false);
-        const isOpenList = (await $.state.get(OPEN)).value ?? open;
-        const groups = Object.entries(view.entries).sort(([a], [b]) =>
-            a === view.selfId ? -1 : b === view.selfId ? 1 : 0,
-        );
-        const total = groups.reduce((n, [, v]) => n + v.asks.length, 0);
+        const o = (await $.state.get(ORBIT)).value ?? orbit;
         const ui = $.ui.resolve(e);
         const { Box, Text, Button } = ui;
-        const surface = e.surface;
-        // a thread reads its session name; the repo joins only when two sessions share one
-        const title = (v: Entry) => {
-            const base = v.name ?? v.label;
-            const shared = groups.filter(
-                ([, o]) => (o.name ?? o.label) === base,
-            ).length;
-            return shared > 1 && v.name ? `${base} · ${v.label}` : base;
-        };
-        // the head stays short; the per-session breakdown lives in its hover card
-        const here = view.entries[view.selfId ?? '']?.asks.length ?? 0;
-        const counts = `here ${here}, parallel ${total - here}`;
-        const breakdown = groups
-            .map(
-                ([sid, e]) =>
-                    `${sid === view.selfId ? `${title(e)} (here)` : title(e)} ${e.asks.length}`,
-            )
-            .join(', ');
-        const handleFoldToggle = () => {
-            open = !isOpenList;
-            void $.state.set(OPEN, open).catch(() => undefined);
-        };
         const handleAfkFlip = async () => {
             const was = (await $.store.get(AFK_KEY)) as
                 | { at?: number; on?: boolean }
@@ -1918,56 +1844,35 @@ export const register: Register = (on) => {
         const leftOf = (label: string, chrome: boolean) => ({
             right: [...label].length + (chrome ? 4 : 0) + 1,
         });
-        // only the head's copy takes `c`: two Buttons on one key clash, and the later wins
-        const copyButton = (sid: string, asks: string[], hotkey?: string) => {
-            const handleCopy = () =>
-                void $.ui.copy({
-                    surface,
-                    text: [
-                        'lane',
-                        ...asks.map((a, i) => `${i + 1}. ${a}`),
-                    ].join('\n'),
-                });
-            return tip(
-                `copy:${sid}`,
-                "copy this thread's asks",
-                <Button
-                    key={`copy:${sid}`}
-                    onPress={handleCopy}
-                    variant='secondary'>
-                    📋
-                </Button>,
-                leftOf('📋', true),
-                hotkey ? { hotkey, onPress: handleCopy } : undefined,
-            );
-        };
-        const [first] = groups;
-        const many = groups.length > 1;
-        // icons only; each card says what a press does (dima)
-        const hotLabel = '🔥';
-        const wakerLabel = '⏰';
-        // one icon; the accent background says afk is on (dima)
-        const afkLabel = '💨';
-        const foldLabel = isOpenList ? '📂' : '📁';
 
-        // the meters: two bars right under the head, so they stay in view while the asks below them scroll, and their
-        // readings in the head's free middle, so each bar runs the band's full width
+        // the chips: text, never a control — 🚦 already opens the board, where orbit and the plan live (dima, 2026-10-10)
+        const openAsks = o.asks.filter((a) => !a.isResolved).length;
+        const chips = (
+            <Box flexShrink={0} key='chips'>
+                <Text
+                    bold={openAsks > 0}
+                    color={openAsks ? ACCENT : undefined}
+                    dimColor={!openAsks}>
+                    {`🪐 ${openAsks} · 📝 ${o.plan?.lines.length ?? 0}`}
+                </Text>
+            </Box>
+        );
+
+        // the meters: two short bars in the row, each ending in its %; the readings sit beside them
         const meter = (await $.state.get(METER)).value;
         const now = await $.clock.now();
-        const barWidth = Math.max(8, e.props.bodyColumns - 13);
+        const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
         const runsJSX = (key: string, runs: BarRun[]) =>
-            runs.map((r, i) => {
-                return (
-                    <Text
-                        bold={r.kind === 'mark'}
-                        color={r.color}
-                        dimColor={r.kind === 'empty'}
-                        // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its bar is its identity
-                        key={`${key}:${i}`}>
-                        {r.text}
-                    </Text>
-                );
-            });
+            runs.map((r, i) => (
+                <Text
+                    bold={r.kind === 'mark'}
+                    color={r.color}
+                    dimColor={r.kind === 'empty'}
+                    // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its bar is its identity
+                    key={`${key}:${i}`}>
+                    {r.text}
+                </Text>
+            ));
         const five = meter?.fiveHour;
         const pace =
             five?.resetsAt === undefined
@@ -1980,71 +1885,52 @@ export const register: Register = (on) => {
         const fiveTint = gapTint(gap ?? 0);
         const ctx = meter?.context;
         const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
-        // the desktop draws its bars as svg cells, sized to the band's width; the terminal as ▮ ▯ text
-        // the desktop band runs ~7.8px a column (measured off dima's 20:22 shot); the label, the % and their gaps take
-        // ~90px, the bar the rest
-        const svgCells = Math.max(
-            8,
-            Math.floor((e.props.bodyColumns * 7.8 - 90) / CELL_STEP),
-        );
-        const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
-        const barRowJSX = (
+        const barJSX = (
             key: string,
             label: string,
             tint: string,
             bar?: { percent: number; mark?: number; scale?: number },
-            marginTop = 0,
         ) => (
             <Box
                 alignItems='center'
                 flexDirection='row'
+                flexShrink={0}
                 gap={Svg ? 0.5 : 1}
-                key={key}
-                marginTop={marginTop}>
-                <Box flexShrink={0} width={Svg ? 5 : 6}>
-                    <Text wrap='truncate-end'>{label}</Text>
-                </Box>
+                key={key}>
+                <Text>{label}</Text>
                 {bar === undefined ? (
-                    <Text dimColor>no reading yet</Text>
+                    <Text dimColor>–</Text>
                 ) : (
-                    // the % ends on the band's right edge, under the head's last button
-                    <Box
-                        alignItems='center'
-                        flexDirection='row'
-                        flexGrow={1}
-                        gap={1}
-                        justifyContent='space-between'>
-                        {Svg ? (
+                    [
+                        Svg ? (
                             <Svg
                                 alt={`${label} ${Math.round(bar.percent)}%`}
                                 height={BAR_HEIGHT}
                                 key={`${key}:svg`}
                                 source={meterSvg(
                                     bar.percent,
-                                    svgCells,
+                                    BAR_CELLS,
                                     bar.mark,
                                     bar.scale,
                                 )}
                             />
                         ) : (
-                            <Box flexDirection='row' flexShrink={0}>
+                            <Box flexDirection='row' key={`${key}:cells`}>
                                 {runsJSX(
                                     key,
                                     meterBar(
                                         bar.percent,
-                                        barWidth,
+                                        BAR_CELLS,
                                         bar.mark,
                                         bar.scale,
                                     ),
                                 )}
                             </Box>
-                        )}
-                        <Box flexShrink={0} justifyContent='flex-end' width={4}>
-                            <Text bold color={tint}>
-                                {Math.round(bar.percent)}%
-                            </Text>
-                        </Box>
-                    </Box>
+                        ),
+                        <Text bold color={tint} key={`${key}:pct`}>
+                            {`${Math.round(bar.percent)}%`}
+                        </Text>,
+                    ]
                 )}
             </Box>
         );
@@ -2080,25 +1966,87 @@ export const register: Register = (on) => {
                 </Box>
             </Box>
         );
-        // desktop air between the head, the two bars and the asks; a terminal row cannot be split, so none there
-        const air = surface === 'desktop';
-        const meters = (
+        const switches = (
+            <Box flexDirection='row' flexShrink={0} gap={1} key='switches'>
+                {tip(
+                    'hot',
+                    view.isHot
+                        ? "stop keeping this session's cache hot"
+                        : "keep this session's cache hot: ping every 50 min",
+                    <Button
+                        key='hot'
+                        onPress={() => void handleHotFlip()}
+                        {...(view.isHot
+                            ? { variant: 'secondary' as const }
+                            : { plain: true as const })}>
+                        🔥
+                    </Button>,
+                    leftOf('🔥', !!view.isHot),
+                )}
+                {tip(
+                    'waker',
+                    view.isWaker
+                        ? 'stop waking capped sessions at the 5h reset'
+                        : 'wake every session stopped on the 5h cap',
+                    <Button
+                        key='waker'
+                        onPress={() => void handleWakerFlip()}
+                        {...(view.isWaker
+                            ? { variant: 'secondary' as const }
+                            : { plain: true as const })}>
+                        ⏰
+                    </Button>,
+                    leftOf('⏰', view.isWaker),
+                )}
+                {tip(
+                    'afk',
+                    view.afk
+                        ? 'back: tell fleet that dima is here'
+                        : 'afk: tell fleet that dima is away',
+                    <Button
+                        key='afk'
+                        onPress={() => void handleAfkFlip()}
+                        {...(view.afk
+                            ? { variant: 'secondary' as const }
+                            : { plain: true as const })}>
+                        💨
+                    </Button>,
+                    leftOf('💨', view.afk),
+                )}
+                {tip(
+                    'board',
+                    boardOpen ? 'fold fleet board' : 'unfold fleet board',
+                    <Button
+                        key='board'
+                        onPress={() => void handleBoardFlip()}
+                        {...(boardOpen
+                            ? { variant: 'secondary' as const }
+                            : { plain: true as const })}>
+                        🚦
+                    </Button>,
+                    leftOf('🚦', boardOpen),
+                    { hotkey: 'b', onPress: () => void handleBoardFlip() },
+                )}
+            </Box>
+        );
+        const row = (
             <Box
-                flexDirection='column'
-                flexShrink={0}
-                key='meters'
-                marginBottom={air ? 0.75 : 0}
-                marginTop={air ? 0.5 : 0}
-                paddingRight={air ? 1 : 0}>
-                {barRowJSX(
+                alignItems='center'
+                flexDirection='row'
+                gap={1}
+                justifyContent='space-between'
+                key='row'>
+                {chips}
+                {meterInfoJSX}
+                {barJSX(
                     'meter:5h',
                     '🔥 5h',
                     fiveTint,
                     five ? { mark: pace, percent: five.used } : undefined,
                 )}
-                {barRowJSX(
+                {barJSX(
                     'meter:ctx',
-                    '🧠 ctx',
+                    '🧠',
                     ctxTint,
                     ctx === undefined
                         ? undefined
@@ -2107,118 +2055,8 @@ export const register: Register = (on) => {
                               percent: ctx,
                               scale: meter?.compactAt ?? 100,
                           },
-                    air ? 0.4 : 0,
                 )}
-                {meter?.note ? (
-                    <Text color='error' wrap='truncate-end'>
-                        {meter.note}
-                    </Text>
-                ) : null}
-            </Box>
-        );
-
-        // ~4px under the head on desktop when the asks show; a terminal cell is a whole line, so none there
-        const head = (
-            <Box
-                flexDirection='row'
-                justifyContent='space-between'
-                marginBottom={
-                    isOpenList && total && surface === 'desktop' ? 0.25 : 0
-                }>
-                {first ? (
-                    <Box flexDirection='row' gap={1}>
-                        <Text bold color={ACCENT}>
-                            ⏳ {total} open
-                        </Text>
-                        {many
-                            ? tip(
-                                  'counts',
-                                  breakdown,
-                                  <Text dimColor>{counts}</Text>,
-                                  { left: counts.length + 1 },
-                              )
-                            : null}
-                    </Box>
-                ) : (
-                    <Text dimColor>no open asks</Text>
-                )}
-                {meterInfoJSX}
-                <Box flexDirection='row' gap={1}>
-                    {first ? copyButton(first[0], first[1].asks, 'c') : null}
-                    {tip(
-                        'hot',
-                        view.isHot
-                            ? "stop keeping this session's cache hot"
-                            : "keep this session's cache hot: ping every 50 min",
-                        <Button
-                            key='hot'
-                            onPress={() => void handleHotFlip()}
-                            {...(view.isHot
-                                ? { variant: 'secondary' as const }
-                                : { plain: true as const })}>
-                            {hotLabel}
-                        </Button>,
-                        leftOf(hotLabel, !!view.isHot),
-                    )}
-                    {tip(
-                        'waker',
-                        view.isWaker
-                            ? 'stop waking capped sessions at the 5h reset'
-                            : 'wake every session stopped on the 5h cap',
-                        <Button
-                            key='waker'
-                            onPress={() => void handleWakerFlip()}
-                            {...(view.isWaker
-                                ? { variant: 'secondary' as const }
-                                : { plain: true as const })}>
-                            {wakerLabel}
-                        </Button>,
-                        leftOf(wakerLabel, view.isWaker),
-                    )}
-                    {tip(
-                        'afk',
-                        view.afk
-                            ? 'back: tell fleet that dima is here'
-                            : 'afk: tell fleet that dima is away',
-                        <Button
-                            key='afk'
-                            onPress={() => void handleAfkFlip()}
-                            {...(view.afk
-                                ? { variant: 'secondary' as const }
-                                : { plain: true as const })}>
-                            {afkLabel}
-                        </Button>,
-                        leftOf(afkLabel, view.afk),
-                    )}
-                    {tip(
-                        'board',
-                        boardOpen ? 'fold fleet board' : 'unfold fleet board',
-                        <Button
-                            key='board'
-                            onPress={() => void handleBoardFlip()}
-                            {...(boardOpen
-                                ? { variant: 'secondary' as const }
-                                : { plain: true as const })}>
-                            🚦
-                        </Button>,
-                        leftOf('🚦', boardOpen),
-                        { hotkey: 'b', onPress: () => void handleBoardFlip() },
-                    )}
-                    {first
-                        ? tip(
-                              'asks-toggle',
-                              isOpenList ? 'fold' : 'unfold',
-                              <Button
-                                  key='asks-toggle'
-                                  onPress={handleFoldToggle}
-                                  plain>
-                                  {foldLabel}
-                              </Button>,
-                              leftOf(foldLabel, false),
-                              { hotkey: 'f', onPress: handleFoldToggle },
-                          )
-                        : null}
-                </Box>
+                {switches}
             </Box>
         );
         const away =
@@ -2242,81 +2080,20 @@ export const register: Register = (on) => {
                       )),
                   ]
                 : [];
-        if (!isOpenList || !total)
-            return (
-                <Box flexDirection='column'>
-                    {head}
-                    {meters}
-                    {away}
-                    {await next(e)}
-                </Box>
-            );
-
-        // one thread needs no name; with several, the head copies the first and each other one copies beside its name
-        const rows = groups.flatMap(([sid, v], g) => [
-            ...(many
-                ? [
-                      <Box
-                          flexDirection='row'
-                          gap={1}
-                          justifyContent='space-between'
-                          key={`g:${sid}`}
-                          marginTop={g > 0 && surface === 'desktop' ? 0.75 : 0}>
-                          <Text bold>
-                              {sid === view.selfId
-                                  ? `${title(v)} (here)`
-                                  : title(v)}
-                          </Text>
-                          {g > 0 ? copyButton(sid, v.asks) : null}
-                      </Box>,
-                  ]
-                : []),
-            ...v.asks.map((ask, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: an ask's number is its identity in the numbered ⏳ list
-                <Text key={`a:${sid}:${i + 1}`}>
-                    {i + 1}. {ask}
-                </Text>
-            )),
-        ]);
-        // the band holds maxRows lines and the host scrolls the rest away, the meters first: the asks get what is left
-        // after the head, the digest, the meters and a `+n more` line, each ask counted by the lines it wraps to
-        const heights = groups.flatMap(([, v]) => [
-            ...(many ? [1] : []),
-            ...v.asks.map((ask, i) =>
-                Math.max(
-                    1,
-                    Math.ceil(
-                        [...`${i + 1}. ${ask}`].length / e.props.bodyColumns,
-                    ),
-                ),
-            ),
-        ]);
-        const budget =
-            e.props.maxRows - 1 - away.length - (meter?.note ? 3 : 2);
-        const fits = (room: number) => {
-            let used = 0;
-            let n = 0;
-            while (n < heights.length && used + (heights[n] ?? 1) <= room)
-                used += heights[n++] ?? 1;
-            return n;
-        };
-        const all = fits(budget);
-        const shown = rows.slice(
-            0,
-            Math.max(1, all === rows.length ? all : fits(budget - 1)),
-        );
         return (
             <Box flexDirection='column'>
-                {head}
-                {meters}
-                {/* the asks give way, never the meters: a long ask wraps past its row count, and the meters stay in view */}
-                <Box flexDirection='column' flexShrink={1} overflow='hidden'>
-                    {away}
-                    {shown}
-                    {rows.length > shown.length ? (
-                        <Text dimColor>+{rows.length - shown.length} more</Text>
-                    ) : null}
-                </Box>
+                {row}
+                {view.wait ? (
+                    <Text dimColor key='wait' wrap='truncate-end'>
+                        {`🔭 ${view.wait}`}
+                    </Text>
+                ) : null}
+                {meter?.note ? (
+                    <Text color='error' wrap='truncate-end'>
+                        {meter.note}
+                    </Text>
+                ) : null}
+                {away}
                 {await next(e)}
             </Box>
         );

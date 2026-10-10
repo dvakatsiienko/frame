@@ -2,16 +2,28 @@ import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 const HERE = 'h1h1h1h1-here';
-const block = (ask: string) =>
-    `⏳ waiting on your word:\n\n\`\`\`\nlane\n1. ${ask} ➡️ yes\n\`\`\``;
 
 const SESSIONS = '/home/.claude/sessions';
 
 // one session's band; `stop` ends a reply in any session, `afk` presses 💨, `digest` reads the digest's lines in order.
 // `busy` names the sessions the registry shows running when dima comes back
-async function band($: Engine, on: On, busy: string[] = []) {
+async function band(
+    $: Engine,
+    on: On,
+    busy: string[] = [],
+    asks: Record<string, string> = {},
+) {
     const clock = mock.clock(on);
-    mock.store(on);
+    // another session's orbit holds an open ask: its stash mirrors it into the shared store
+    mock.store(
+        on,
+        Object.fromEntries(
+            Object.entries(asks).map(([sid, ask]) => [
+                `asks:${sid}`,
+                { asks: [ask], at: clock.now(), label: 'frame' },
+            ]),
+        ),
+    );
     on('env.get', () => ({ value: '/home' }));
     on('fs.list', (_$, e) => ({
         value:
@@ -104,10 +116,10 @@ const end = (
     });
 
 test('the away digest lists what needs dima before what finished', async ($, on) => {
-    const b = await band($, on);
+    const b = await band($, on, [], { 'n1n1n1n1-asks': 'merge it' });
     await b.afk();
     await b.stop('d0d0d0d0-done', 'shipped the fix.');
-    await b.stop('n1n1n1n1-asks', block('merge it'));
+    await b.stop('n1n1n1n1-asks', 'one ask is in orbit.');
     await b.afk();
     expect(await b.digest()).toEqual([
         'needs you · n1n1n1n1 · ⏳ 1',
