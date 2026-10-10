@@ -97,6 +97,15 @@ export type StashOrbit = {
     plan?: { lines: string[]; at: number };
 };
 
+// the prompt enhancer: the box at the last press and the enhanced text as last seen (his edits kept), the call's
+// state, and why the last press left the box alone
+export type StashEnhancer = {
+    original?: string;
+    latest?: string;
+    status: 'idle' | 'running';
+    error?: string;
+};
+
 declare module 'claude-code' {
     interface PluginState {
         'x-mod-stash': {
@@ -111,6 +120,7 @@ declare module 'claude-code' {
             orbit: StashOrbit;
             // dima is on mobile: the reminder asks for the asks fence instead of orbit
             mobile: boolean;
+            enhancer: StashEnhancer;
         };
     }
 }

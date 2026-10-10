@@ -5,6 +5,7 @@ import type {
     OrbitAsk,
     StashCap,
     StashDigest,
+    StashEnhancer,
     StashEntry,
     StashMember,
     StashMeter,
@@ -90,6 +91,12 @@ const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
 const BACK_AT_MAC = /\bback at the mac\b/i;
+// the prompt enhancer: Haiku rewrites the box on a press; prev and new swap the two texts back with no call
+const ENHANCER = { key: 'enhancer', plugin: 'x-mod-stash' } as const;
+const ENHANCE_MODEL = 'claude-haiku-5-5';
+const ENHANCE_MS = 30_000;
+const WISPR_DB = 'Library/Application Support/Wispr Flow/flow.sqlite';
+let isEnhancing = false;
 const PLAN_MAX = 5;
 const STALE_TURNS = 3;
 // a plan line's lead word, one short word before its colon
@@ -230,6 +237,112 @@ function mobileReminder(o: StashOrbit) {
     const open = o.asks.filter((a) => !a.isResolved);
     const ids = open.length ? ` (${open.map((a) => a.id).join(', ')})` : '';
     return `dima is on mobile, where the board draws nothing: end the reply with the asks fence, «⏳ waiting on your word:» and every open orbit ask${ids} with its id and pick, and write his answer by id back through ${ORBIT_TOOL} the same turn.`;
+}
+
+const enhancerOf = async ($: EngineInterface): Promise<StashEnhancer> =>
+    (await $.state.get(ENHANCER)).value ?? { status: 'idle' };
+const saveEnhancer = ($: EngineInterface, next: StashEnhancer) =>
+    $.state.set(ENHANCER, next).catch(() => undefined);
+
+// what Haiku reads beside the prompt: the rules, every slash command by name, and dima's wispr dictionary
+async function enhancerSystem($: EngineInterface) {
+    const rules = await $.fs.read(`${$.plugin.root}/enhancer.md`);
+    const commands = (await $.command.list().catch(() => []))
+        .map((c) => `/${c.name} — ${c.description}`)
+        .join('\n');
+    const dictionary = await $.process
+        .run([
+            'sqlite3',
+            '-readonly',
+            '-separator',
+            ' → ',
+            `${await $.env.get('HOME')}/${WISPR_DB}`,
+            'select phrase, replacement from Dictionary where isDeleted = 0 and replacement is not null',
+        ])
+        .catch(() => undefined);
+    const heard =
+        dictionary?.exitCode === 0 ? dictionary.stdout : '(unreadable now)';
+    return [
+        { text: rules },
+        { text: `the slash commands:\n${commands}` },
+        {
+            cache: true as const,
+            text: `dima's dictionary, heard → meant:\n${heard}`,
+        },
+    ];
+}
+
+// one call per press; a keystroke while it runs keeps his text and drops the answer, an error leaves the box alone
+async function enhance($: EngineInterface) {
+    // set before any await, so a second press in the same moment finds it
+    if (isEnhancing) return;
+    isEnhancing = true;
+    try {
+        await enhanceOnce($);
+    } finally {
+        isEnhancing = false;
+    }
+}
+
+async function enhanceOnce($: EngineInterface) {
+    const before = await enhancerOf($);
+    const pressed = (await $.prompt.read()).text;
+    if (!pressed.trim()) return;
+    await saveEnhancer($, { ...before, error: undefined, status: 'running' });
+    const stop = new AbortController();
+    const timer = $.clock.after(ENHANCE_MS, () => stop.abort());
+    let answer: string | undefined;
+    let failure: string | undefined;
+    try {
+        const r = await $.model.complete(
+            {
+                maxTokens: 2048,
+                model: ENHANCE_MODEL,
+                prompt: pressed,
+                system: await enhancerSystem($),
+            },
+            { signal: stop.signal },
+        );
+        if (r.isAnswered && r.text.trim()) answer = r.text.trim();
+        else
+            failure = stop.signal.aborted
+                ? `Haiku took over ${ENHANCE_MS / 1000} s`
+                : `Haiku gave no prompt back (${r.isAnswered ? 'empty' : r.reason})`;
+    } catch (err) {
+        failure = errorText(err);
+    }
+    timer.cancel();
+    if ((await $.prompt.read()).text !== pressed)
+        return saveEnhancer($, { ...before, status: 'idle' });
+    if (answer === undefined)
+        return saveEnhancer($, {
+            ...before,
+            error: `enhance: ${failure}; your text is untouched`,
+            status: 'idle',
+        });
+    await saveEnhancer($, {
+        latest: answer,
+        original: pressed,
+        status: 'idle',
+    });
+    await $.prompt.fill({ text: answer });
+}
+
+// prev keeps whatever he changed in the enhanced text, so new brings his edits back with it
+async function enhancePrev($: EngineInterface) {
+    const s = await enhancerOf($);
+    if (s.status === 'running' || s.original === undefined) return;
+    const box = (await $.prompt.read()).text;
+    const latest = box === s.original ? s.latest : box;
+    await saveEnhancer($, { ...s, error: undefined, latest });
+    await $.prompt.fill({ text: s.original });
+}
+
+async function enhanceNew($: EngineInterface) {
+    const s = await enhancerOf($);
+    if (s.status === 'running' || s.latest === undefined) return;
+    await saveEnhancer($, { ...s, error: undefined });
+    await $.prompt.fill({ text: s.latest });
 }
 
 const oneLine = (v: unknown) =>
@@ -1906,6 +2019,9 @@ export const register: Register = (on) => {
         if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e);
         // the published view and orbit, never the module's values: reading them subscribes this band, and a write redraws it
         const view = (await $.state.get(VIEW)).value ?? viewOf(false);
+        const enhancer = (await $.state.get(ENHANCER)).value ?? {
+            status: 'idle' as const,
+        };
         const o = (await $.state.get(ORBIT)).value ?? orbit;
         const ui = $.ui.resolve(e);
         const { Box, Text, Button } = ui;
@@ -2198,6 +2314,56 @@ export const register: Register = (on) => {
         );
         // the readings pack left after the chips, then this session's 🔭 mark, always drawn; the switches hold the right
         // edge (dima's o6 and o7, 22:03)
+        // enhance | prev | new, beside the switches; a static label while the call runs, no spinner (no repainting)
+        const isEnhancing = enhancer.status === 'running';
+        const enhancerJSX = (
+            <Box flexDirection='row' flexShrink={0} gap={1} key='enhancer'>
+                {tip(
+                    'enh:enhance',
+                    isEnhancing
+                        ? 'Haiku is rewriting your prompt; type to keep yours'
+                        : 'swap in a cleaned-up prompt: names, skills, ticket ids',
+                    <Button
+                        key='enh:enhance'
+                        onPress={() => void enhance($)}
+                        plain>
+                        {isEnhancing ? '✨ enhancing…' : '✨ enhance'}
+                    </Button>,
+                    // ✨ draws two cells wide
+                    {
+                        right:
+                            [...(isEnhancing ? '✨ enhancing…' : '✨ enhance')]
+                                .length + 2,
+                    },
+                )}
+                {enhancer.original !== undefined && !isEnhancing
+                    ? tip(
+                          'enh:prev',
+                          'bring your own text back',
+                          <Button
+                              key='enh:prev'
+                              onPress={() => void enhancePrev($)}
+                              plain>
+                              prev
+                          </Button>,
+                          leftOf('prev', false),
+                      )
+                    : null}
+                {enhancer.latest !== undefined && !isEnhancing
+                    ? tip(
+                          'enh:new',
+                          'bring the enhanced text back, your edits kept',
+                          <Button
+                              key='enh:new'
+                              onPress={() => void enhanceNew($)}
+                              plain>
+                              new
+                          </Button>,
+                          leftOf('new', false),
+                      )
+                    : null}
+            </Box>
+        );
         const row = (
             <Box
                 alignItems='center'
@@ -2221,6 +2387,7 @@ export const register: Register = (on) => {
                         </Text>
                     </Box>
                 </Box>
+                {enhancerJSX}
                 {switches}
             </Box>
         );
@@ -2281,6 +2448,11 @@ export const register: Register = (on) => {
             <Box flexDirection='column'>
                 {row}
                 {meters}
+                {enhancer.error ? (
+                    <Text color='error' key='enh:error' wrap='truncate-end'>
+                        {enhancer.error}
+                    </Text>
+                ) : null}
                 {meter?.note ? (
                     <Text color='error' wrap='truncate-end'>
                         {meter.note}

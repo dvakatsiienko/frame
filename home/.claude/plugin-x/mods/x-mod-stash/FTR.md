@@ -344,6 +344,29 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the session gets a short model-only note: the open asks, the tool to answer with, the plan's age
   - decision: the contract is mechanical — the reminder and the tool's own text, no new skill (dima, 2026-10-10: «we have too many of them … yagni»)
 
+## the prompt enhancer — enhance | prev | new
+
+- ✅ enhance swaps in a cleaned-up prompt
+  - makes: the box's text, rewritten; `enhancer.md` beside the hooks is what Haiku reads as its rules
+  - given dima typed or dictated a prompt
+  - when he presses `✨ enhance` in the band
+  - then Haiku 5.5 is called once with the rules, every slash command and his wispr dictionary, and the box holds its answer: misheard names fixed, a skill he asks for as its `/name`, ticket ids written `FRM-N`
+  - decision: a static «✨ enhancing…» label while it runs, not a spinner — the brief's spinner loses to the no-repainting rule
+- ✅ prev and new swap back with no call
+  - given he pressed enhance
+  - when he presses `prev`, then `new`
+  - then prev puts back his own text exactly as he typed it, and new brings the enhanced text back with any edits he made to it; a second `enhance` makes exactly one more call
+  - 📌 on the desktop a fill drops a trailing newline (FRM-382 step 0), so «exactly» holds for any text that does not end in one
+- ✅ his typing wins
+  - given enhance is running
+  - when he types in the box, or presses enhance again
+  - then the answer is dropped and his text stays; the second press makes no call
+  - decision: the drop reads the box when Haiku answers, not each keystroke: the test harness raises no `prompt.edit`, and the call itself runs to its end (a few cents of Haiku)
+- ✅ an error leaves his text alone
+  - given Haiku errors, answers nothing, or takes over 30 s
+  - when the call ends
+  - then the box keeps his text and the band names the reason in one red line
+
 ## mobile mode — the asks fence
 
 - ✅ `/mobile-mode` brings the asks fence back while dima is away from the board

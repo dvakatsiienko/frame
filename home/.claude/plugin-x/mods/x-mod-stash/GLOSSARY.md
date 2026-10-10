@@ -65,6 +65,10 @@ _Avoid_: overage, overspend
 The context % at which cc compacts: the project's `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, else cc's default.
 _Avoid_: threshold, limit, autocompact %
 
+**Enhancer**:
+The band's `✨ enhance` `prev` `new`: Haiku rewrites the prompt box once per press; prev and new swap his own text and the enhanced one back without a call.
+_Avoid_: prompt rewriter, polish
+
 **Mobile mode**:
 Dima away from the board, on the phone: while on, the per-prompt reminder asks for the asks fence instead of orbit; `/mobile-mode` turns it on, «back at the mac», `/mobile-mode off` or a board press off.
 _Avoid_: phone mode, away mode
