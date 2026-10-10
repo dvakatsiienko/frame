@@ -87,7 +87,7 @@ const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
 const PLAN_MAX = 5;
 const STALE_TURNS = 3;
-// the note field starts past an ask row's two toggles, under its id
+// the note field starts past an ask row's two toggles, under its text
 const NOTE_INDENT = 6;
 const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
@@ -1481,11 +1481,12 @@ export const register: Register = (on) => {
                     ) : (
                         [markJSX(a, 'accepted'), markJSX(a, 'rejected')]
                     )}
-                    <Box flexShrink={0}>
-                        <Text dimColor>{a.id}</Text>
-                    </Box>
+                    {/* the id leads the ask's own text, bold, so the two read as one line (dima, 19:59) */}
                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
-                        <Text>{`${a.text} ➡️ ${a.pick}`}</Text>
+                        <Text>
+                            <Text bold>{a.id}</Text>
+                            {`: ${a.text} ➡️ ${a.pick}`}
+                        </Text>
                     </Box>
                     {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
                     {a.isResolved ? <Text dimColor>answered</Text> : null}
@@ -1497,7 +1498,7 @@ export const register: Register = (on) => {
                         </Box>
                     ) : null
                 ) : Input ? (
-                    <Box flexGrow={1} paddingLeft={NOTE_INDENT}>
+                    <Box paddingLeft={NOTE_INDENT} width='100%'>
                         <Input
                             key={`orbit:note:${a.id}`}
                             onInput={(value: string) => handleNote(a.id, value)}
@@ -1534,7 +1535,7 @@ export const register: Register = (on) => {
                                 )
                             }
                             plain>
-                            ☑ check all
+                            ✅
                         </Button>
                     ) : null}
                 </Box>
