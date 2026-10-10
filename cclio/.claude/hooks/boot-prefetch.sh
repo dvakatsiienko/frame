@@ -63,6 +63,9 @@ else
   fail "inbox unreadable (icloud not mounted?)"
 fi
 
+# the resident roadmap outline, refreshed in both modes: memory/_roadmap.md rides the barrel import
+"$HOME/frame/cclio/.claude/hooks/roadmap-prefetch.sh" --outline > /dev/null
+
 if [ -z "${COMPACT:-}" ]; then
 echo "-- jev vet (pnpm jev:vet ok|miss <flow> <note> records a verdict; a miss restarts the window) --"
 node "$HOME/frame/script/jev-vet.ts" 2>/dev/null || fail "jev vet registry unreadable"
