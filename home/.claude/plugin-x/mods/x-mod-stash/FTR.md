@@ -401,6 +401,23 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when dima says «back at the mac», types `/mobile-mode off`, or presses anything in the board's orbit
   - then the next prompt carries the orbit reminder again; a hot reload keeps the mode as it was
 
+## /board — assumed
+
+- ✅ the session's assumptions show under orbit
+  - given a session adds assumptions through the orbit tool (`op assume`)
+  - when dima looks at the board
+  - then at most 3 rows show under an «assumed» section below the asks, hidden while empty; a fourth in one turn is refused
+  - decision: only unasked choices that would cost a redo; the 10-turn trial read 3 rows over ~25 turns, two right, one caught (dima's o92)
+- ✅ 🛎️ clears, ↩️ sends back
+  - given an assumption shows
+  - when dima presses its 🛎️, or its ↩️ with a note
+  - then 🛎️ removes the row; ↩️ joins his next prompt model-only as «wrong assumption: … · his note: «…»» and the row leaves
+  - decision: the orbit pair, 🛎️ / ↩️ (dima's o101)
+- ✅ an unmarked assumption fades
+  - given nobody marked an assumption
+  - when its third turn ends, the turn it was made in counted
+  - then the row leaves
+
 ## /board — 🌔 phases
 
 - ✅ phases: the session's next 5 moves, live

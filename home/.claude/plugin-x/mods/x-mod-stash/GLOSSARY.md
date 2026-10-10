@@ -65,6 +65,10 @@ _Avoid_: overage, overspend
 The context % at which cc compacts: the project's `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, else cc's default.
 _Avoid_: threshold, limit, autocompact %
 
+**Assumption**:
+A choice the session made without asking that would cost a redo if wrong, shown under «assumed» in orbit; at most 3 a turn, 🛎️ clears it, ↩️ sends it back with a note, an unmarked one fades after 3 turns.
+_Avoid_: guess, assumed ask
+
 **Enhancer**:
 The band's `🪄` enhance, `⏪` prev and `⏩` new: Haiku rewrites the prompt box once per press; prev and new swap his own text and the enhanced one back without a call.
 _Avoid_: prompt rewriter, polish

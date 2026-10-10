@@ -88,10 +88,21 @@ export type OrbitAsk = {
     isResolved?: boolean;
 };
 
+// one choice the session made without asking, that costs a redo if wrong: born at a turn count; dima's send-back
+// button marks it wrong, with his note
+export type OrbitAssumption = {
+    id: string;
+    text: string;
+    at: number;
+    isWrong?: boolean;
+    note?: string;
+};
+
 // the session's orbit: its asks oldest first, the next id's number, the main turns ended so far, and the plan with
 // the turn count it was set at
 export type StashOrbit = {
     asks: OrbitAsk[];
+    assumed?: OrbitAssumption[];
     next: number;
     turns: number;
     plan?: { lines: string[]; at: number };

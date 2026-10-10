@@ -713,3 +713,85 @@ test('with x down a prompt carries no ticket line', async ($, on) => {
         'read from linear',
     );
 });
+
+const assume = ($: Engine, ...texts: string[]) =>
+    orbit($, { op: 'assume', texts });
+
+test('an assumption shows under «assumed» below the asks', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await assume($, 'kept the old port, 7373');
+    expect([
+        (await ui.find({ text: 'assumed', type: 'Text' }))?.text,
+        (await ui.find({ key: 'orbit:assumption:a1', type: 'Box' }))?.text,
+    ]).toEqual([
+        'assumed',
+        expect.stringContaining('a1: kept the old port, 7373'),
+    ]);
+});
+
+test('a fourth assumption in one turn is refused', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'go');
+    await assume($, 'one', 'two', 'three');
+    const r = await assume($, 'four');
+    expect((r as { deny?: string }).deny).toMatch(
+        /at most 3 a turn, 3 already/,
+    );
+});
+
+test('🛎️ clears an assumption', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await assume($, 'kept the old port');
+    await ui.press({ key: 'orbit:right:a1' });
+    expect(await ui.find({ key: 'orbit:assumption:a1', type: 'Box' })).toBe(
+        undefined,
+    );
+});
+
+test('↩️ with a note joins the next prompt as a wrong assumption', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await assume($, 'kept the old port');
+    await ui.press({ key: 'orbit:wrong:a1' });
+    await ui.input({ key: 'orbit:anote:a1', kind: 'change', text: 'use 7374' });
+    await say($, 'next');
+    expect((w.contexts.at(-1) ?? []).join('\n')).toContain(
+        '- a1 wrong assumption: kept the old port · his note: «use 7374»',
+    );
+});
+
+test('an unmarked assumption leaves after three turns', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await say($, 'go');
+    await assume($, 'kept the old port');
+    for (let i = 0; i < 3; i++) {
+        await endTurn($);
+        await say($, 'more');
+    }
+    expect(await ui.find({ key: 'orbit:assumption:a1', type: 'Box' })).toBe(
+        undefined,
+    );
+});
+
+test('an assumption still shows two turns on', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await say($, 'go');
+    await assume($, 'kept the old port');
+    for (let i = 0; i < 2; i++) {
+        await endTurn($);
+        await say($, 'more');
+    }
+    expect(await ui.find({ key: 'orbit:assumption:a1', type: 'Box' })).not.toBe(
+        undefined,
+    );
+});

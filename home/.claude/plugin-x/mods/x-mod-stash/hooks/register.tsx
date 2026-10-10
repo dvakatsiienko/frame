@@ -3,6 +3,7 @@ import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
 import type {
     OrbitAsk,
+    OrbitAssumption,
     StashCap,
     StashDigest,
     StashEnhancer,
@@ -108,6 +109,9 @@ const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
 const LINE_GAP = 0.25;
 // an ask, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
 const ORBIT_TEXT_MAX = 90;
+// at most this many assumptions a turn, and on the board at once (FRM-382 exit 2: under one a turn on average)
+const ASSUMED_MAX = 3;
+const ASSUMED_TURNS = 3;
 // a ticket id inside an ask or a phase; split keeps the id as every odd part
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
@@ -115,6 +119,7 @@ const ORBIT_ABOUT = [
     `op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»), ≤${ORBIT_TEXT_MAX} chars, subject first, detail in hiddenNote; pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.`,
     'op resolve, ids: the asks you answered this turn; they leave orbit when the turn ends.',
     `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a «changed» mark.`,
+    `op assume, texts: choices you made without asking that would cost a redo if wrong, at most ${ASSUMED_MAX} a turn and ≤${ORBIT_TEXT_MAX} chars each; never routine ones. dima's 🛎️ clears one, ↩️ sends it back with his note.`,
     `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone and ≤${ORBIT_TEXT_MAX} chars; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
 ].join('\n');
 
@@ -205,6 +210,17 @@ async function currentOrbit($: EngineInterface) {
 
 const markWord = (mark: OrbitAsk['mark']) =>
     mark === 'accepted' ? '🛎️ accepted' : '↩️ rejected';
+
+// what the session reads for each assumption dima sent back: the assumption and his note
+const wrongText = (wrong: OrbitAssumption[]) =>
+    [
+        `orbit: dima marked ${wrong.length === 1 ? 'an assumption' : `${wrong.length} assumptions`} wrong; take it into account in this reply.`,
+        ...wrong.map(
+            (x) =>
+                `- ${x.id} wrong assumption: ${x.text}` +
+                (x.note ? ` · his note: «${x.note}»` : ''),
+        ),
+    ].join('\n');
 
 // what the session reads for each marked ask: the mark, the ask, its pick, both notes
 function joinText(asks: OrbitAsk[]) {
@@ -415,6 +431,22 @@ const idsOf = (v: unknown) =>
 // dima marks or notes asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs
 // rides that turn's next tool result (the tool.call hook); one the turn never reaches rides his next prompt — a
 // hidden message appended instead started a turn of its own when it landed after the last read (dima, 20:31)
+// 🛎️ clears an assumption, ↩️ and its note mark it wrong; a press means dima is at the mac
+async function changeAssumed(
+    $: EngineInterface,
+    change: (x: OrbitAssumption) => OrbitAssumption | undefined,
+) {
+    await $.state.set(MOBILE, false).catch(() => undefined);
+    const o = await currentOrbit($);
+    await saveOrbit($, {
+        ...o,
+        assumed: (o.assumed ?? []).flatMap((x) => {
+            const changed = change(x);
+            return changed ? [changed] : [];
+        }),
+    });
+}
+
 async function markAsks($: EngineInterface, change: (a: OrbitAsk) => OrbitAsk) {
     // a press in the board means dima is at the mac
     await $.state.set(MOBILE, false).catch(() => undefined);
@@ -470,6 +502,36 @@ function orbitOp(
             return {
                 orbit: { ...o, asks: [...o.asks, ...added], next },
                 result: `added ${added.map((a) => a.id).join(', ')} to dima's orbit; never repeat them in the reply`,
+            };
+        }
+        case 'assume': {
+            const texts = (Array.isArray(input.texts) ? input.texts : [])
+                .map(oneLine)
+                .filter(Boolean);
+            if (!texts.length)
+                return { deny: 'orbit assume: texts needs one or more' };
+            const tooLong = overCap('assume', texts);
+            if (tooLong) return tooLong;
+            const born = isTurn ? o.turns + 1 : o.turns;
+            const kept = o.assumed ?? [];
+            const already = kept.filter((x) => x.at === born).length;
+            if (already + texts.length > ASSUMED_MAX)
+                return {
+                    deny: `orbit assume: at most ${ASSUMED_MAX} a turn, ${already} already; keep the ones that would cost a redo`,
+                };
+            let next = o.next;
+            const added: OrbitAssumption[] = texts.map((text) => ({
+                at: born,
+                id: `a${next++}`,
+                text,
+            }));
+            return {
+                orbit: {
+                    ...o,
+                    assumed: [...kept, ...added].slice(-ASSUMED_MAX),
+                    next,
+                },
+                result: `assumed ${added.map((x) => x.id).join(', ')}; dima sees them under orbit`,
             };
         }
         case 'resolve': {
@@ -1389,11 +1451,18 @@ export const register: Register = (on) => {
                         ids: { items: { type: 'string' }, type: 'array' },
                         lines: { items: { type: 'string' }, type: 'array' },
                         op: {
-                            enum: ['add', 'resolve', 'follow', 'plan'],
+                            enum: [
+                                'add',
+                                'assume',
+                                'resolve',
+                                'follow',
+                                'plan',
+                            ],
                             type: 'string',
                         },
                         pick: { type: 'string' },
                         text: { type: 'string' },
+                        texts: { items: { type: 'string' }, type: 'array' },
                     },
                     required: ['op'],
                     type: 'object',
@@ -1470,13 +1539,18 @@ export const register: Register = (on) => {
         const marked = isUserTurn
             ? orbit.asks.filter((a) => a.mark && !a.isLocked && !a.isResolved)
             : [];
-        if (marked.length) {
+        // an assumption dima sent back joins his prompt once and leaves orbit
+        const wrong = isUserTurn
+            ? (orbit.assumed ?? []).filter((x) => x.isWrong)
+            : [];
+        if (marked.length || wrong.length) {
             const ids = new Set(marked.map((a) => a.id));
             await saveOrbit($, {
                 ...orbit,
                 asks: orbit.asks.map((a) =>
                     ids.has(a.id) ? { ...a, isLocked: true } : a,
                 ),
+                assumed: (orbit.assumed ?? []).filter((x) => !x.isWrong),
             });
         }
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
@@ -1490,6 +1564,7 @@ export const register: Register = (on) => {
                 clock,
                 ...(afk ? [AWAY_NOTE] : []),
                 ...(marked.length ? [joinText(marked)] : []),
+                ...(wrong.length ? [wrongText(wrong)] : []),
                 ...(reminder ? [reminder] : []),
                 ...(tickets ? [tickets] : []),
             ],
@@ -1567,6 +1642,11 @@ export const register: Register = (on) => {
             asks: done.asks
                 .filter((a) => !a.isResolved)
                 .map((a) => (a.isLocked ? { ...a, isLocked: false } : a)),
+            // an unmarked assumption leaves at its third turn end, the turn it was made in counted; one sent back waits
+            // for his prompt
+            assumed: (done.assumed ?? []).filter(
+                (x) => x.isWrong || done.turns + 2 - x.at < ASSUMED_TURNS,
+            ),
             turns: done.turns + 1,
         });
         endedAt = await $.clock.now();
@@ -1699,6 +1779,10 @@ export const register: Register = (on) => {
                 {mark === 'accepted' ? '🛎️' : '↩️'}
             </Button>
         );
+        const handleAssumedNote = (id: string, value: string) =>
+            void changeAssumed($, (y) =>
+                y.id === id ? { ...y, note: value.trim() || undefined } : y,
+            );
         // the note keeps every keystroke, no Enter needed
         const handleNote = (id: string, value: string) =>
             void markAsks($, (x) =>
@@ -1828,6 +1912,87 @@ export const register: Register = (on) => {
                 </Box>
                 {/* an answered ask stays until its turn ends, so dima sees it go */}
                 {o.asks.map(askJSX)}
+                {o.assumed?.length ? (
+                    <Box
+                        flexDirection='column'
+                        key='orbit:assumed'
+                        marginTop={1}
+                        rowGap={LINE_GAP}>
+                        <Text bold>assumed</Text>
+                        {o.assumed.map((x) => {
+                            return (
+                                <Box
+                                    flexDirection='column'
+                                    key={`orbit:assumption:${x.id}`}
+                                    rowGap={LINE_GAP}>
+                                    <Text>
+                                        <Text bold>{x.id}</Text>
+                                        {`: ${x.text}`}
+                                    </Text>
+                                    <Box
+                                        alignItems='center'
+                                        flexDirection='row'
+                                        gap={1}>
+                                        <Button
+                                            key={`orbit:right:${x.id}`}
+                                            onPress={() =>
+                                                void changeAssumed($, (y) =>
+                                                    y.id === x.id
+                                                        ? undefined
+                                                        : y,
+                                                )
+                                            }
+                                            plain>
+                                            🛎️
+                                        </Button>
+                                        <Button
+                                            key={`orbit:wrong:${x.id}`}
+                                            onPress={() =>
+                                                void changeAssumed($, (y) =>
+                                                    y.id === x.id
+                                                        ? {
+                                                              ...y,
+                                                              isWrong:
+                                                                  !y.isWrong,
+                                                          }
+                                                        : y,
+                                                )
+                                            }
+                                            {...(x.isWrong
+                                                ? {
+                                                      variant:
+                                                          'secondary' as const,
+                                                  }
+                                                : { plain: true as const })}>
+                                            ↩️
+                                        </Button>
+                                        {Input ? (
+                                            <Box flexShrink={1} minWidth={0}>
+                                                <Input
+                                                    key={`orbit:anote:${x.id}`}
+                                                    onInput={(value: string) =>
+                                                        handleAssumedNote(
+                                                            x.id,
+                                                            value,
+                                                        )
+                                                    }
+                                                    onSubmit={(value: string) =>
+                                                        handleAssumedNote(
+                                                            x.id,
+                                                            value,
+                                                        )
+                                                    }
+                                                    placeholder='note'
+                                                    value={x.note ?? ''}
+                                                />
+                                            </Box>
+                                        ) : null}
+                                    </Box>
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                ) : null}
                 {o.plan ? (
                     <Box flexDirection='column' marginTop={1} rowGap={LINE_GAP}>
                         <Text bold>
