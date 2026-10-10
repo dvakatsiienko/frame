@@ -280,12 +280,18 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given 20 asks have piled up
   - when dima reads orbit
   - then every line says what is asked and cclio's pick in one line, with no «above» or «this» pointing at a reply
-- ✅ tick, reject, note, check all
+- ✅ accept, reject, note, check all
   - given orbit shows asks
-  - when dima presses an ask's box (☐ flips to ☑ 🤩), its 👎🏼, types in its note, or presses check all
-  - then the ask shows accepted or rejected with its note kept; an unmarked ask stays parked and means nothing
+  - when dima presses an ask's 🤩 or 👎🏼, types in its note, or presses check all
+  - then the pressed toggle is lit (the `secondary` chip, like `🚦`) and a second press puts it out; the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
   - decision: 🤩 / 👎🏼 (dima, 2026-10-10)
+  - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
+  - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
   - decision: an ask for something irreversible (trash, push, close, merge) leads its row with ⚠️ and names the exact target; one tick still approves it (dima, 2026-10-10)
+- 🐞 a press in the desktop board lands on the first click
+  - given the board is open in the desktop Code tab
+  - when dima clicks an ask's 🤩 once
+  - then it lights; today it takes a second click (dima, 19:45) — the terminal pty session lit on one click, so the first desktop click likely goes to the pane, an inference, unprobed
 - ✅ marked asks join the next prompt
   - given one or more asks are accepted or rejected
   - when dima sends a prompt from the prompt box
@@ -299,7 +305,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
-  - then those asks can't be unticked or edited until it ends
+  - then those rows draw no control at all — their mark and note show as dim text after a `🔒` — until it ends, when the controls come back
+  - decision: no control rather than a disabled one — the mod api's `Button` and `Input` take no `disabled` (dima asked for one, 19:46)
 - ✅ a resolved ask leaves, a follow-up changes in place
   - given cclio answered a marked ask
   - when the turn ends

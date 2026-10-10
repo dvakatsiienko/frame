@@ -1436,27 +1436,44 @@ export const register: Register = (on) => {
         const Input = 'Input' in ui ? ui.Input : undefined;
         const open = o.asks.filter((a) => !a.isResolved);
         const age = planAge(o);
+        // 🤩 and 👎🏼 are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
+        const markJSX = (a: OrbitAsk, mark: 'accepted' | 'rejected') => (
+            <Button
+                key={`orbit:${mark}:${a.id}`}
+                onPress={() =>
+                    void markAsks($, (x) =>
+                        x.id === a.id
+                            ? {
+                                  ...x,
+                                  isChanged: false,
+                                  mark: x.mark === mark ? undefined : mark,
+                              }
+                            : x,
+                    )
+                }
+                {...(a.mark === mark
+                    ? { variant: 'secondary' as const }
+                    : { plain: true as const })}>
+                {mark === 'accepted' ? '🤩' : '👎🏼'}
+            </Button>
+        );
+        // the note keeps every keystroke, no Enter needed
+        const handleNote = (id: string, value: string) =>
+            void markAsks($, (x) =>
+                x.id === id ? { ...x, note: value.trim() || undefined } : x,
+            );
+        // a locked ask is the running turn's: no control at all, its mark and note as dim text (the api has no disabled)
         const askJSX = (a: OrbitAsk) => (
             <Box flexDirection='row' gap={1} key={`orbit:ask:${a.id}`}>
-                <Button
-                    key={`orbit:tick:${a.id}`}
-                    onPress={() =>
-                        void markAsks($, (x) =>
-                            x.id === a.id
-                                ? {
-                                      ...x,
-                                      isChanged: false,
-                                      mark:
-                                          x.mark === 'accepted'
-                                              ? undefined
-                                              : 'accepted',
-                                  }
-                                : x,
-                        )
-                    }
-                    plain>
-                    {a.mark === 'accepted' ? '☑ 🤩' : '☐'}
-                </Button>
+                {a.isLocked ? (
+                    <Box flexShrink={0}>
+                        <Text dimColor>
+                            {`🔒 ${a.mark === 'accepted' ? '🤩' : '👎🏼'}`}
+                        </Text>
+                    </Box>
+                ) : (
+                    [markJSX(a, 'accepted'), markJSX(a, 'rejected')]
+                )}
                 <Box flexShrink={0}>
                     <Text dimColor>{a.id}</Text>
                 </Box>
@@ -1464,45 +1481,24 @@ export const register: Register = (on) => {
                     <Text>{`${a.text} ➡️ ${a.pick}`}</Text>
                 </Box>
                 {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
-                {a.isLocked ? <Text dimColor>🔒</Text> : null}
                 {a.isResolved ? <Text dimColor>answered</Text> : null}
-                <Button
-                    key={`orbit:reject:${a.id}`}
-                    onPress={() =>
-                        void markAsks($, (x) =>
-                            x.id === a.id
-                                ? {
-                                      ...x,
-                                      isChanged: false,
-                                      mark:
-                                          x.mark === 'rejected'
-                                              ? undefined
-                                              : 'rejected',
-                                  }
-                                : x,
-                        )
-                    }
-                    {...(a.mark === 'rejected'
-                        ? { variant: 'secondary' as const }
-                        : { plain: true as const })}>
-                    👎🏼
-                </Button>
-                {Input ? (
+                {a.isLocked ? (
+                    a.note ? (
+                        <Box flexShrink={0} width={16}>
+                            <Text dimColor wrap='truncate-end'>
+                                {`«${a.note}»`}
+                            </Text>
+                        </Box>
+                    ) : null
+                ) : Input ? (
                     <Box flexShrink={0} width={16}>
                         <Input
                             key={`orbit:note:${a.id}`}
+                            onInput={(value: string) => handleNote(a.id, value)}
                             onSubmit={(value: string) =>
-                                void markAsks($, (x) =>
-                                    x.id === a.id
-                                        ? {
-                                              ...x,
-                                              note: value.trim() || undefined,
-                                          }
-                                        : x,
-                                )
+                                handleNote(a.id, value)
                             }
                             placeholder='note'
-                            submitLabel='✓'
                             value={a.note ?? ''}
                         />
                     </Box>

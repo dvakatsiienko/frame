@@ -127,7 +127,7 @@ test('a ticked ask joins the next prompt as model-only context', async ($, on) =
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes'], ['trash the probe', 'yes']);
-    await ui.press({ key: 'orbit:tick:o2' });
+    await ui.press({ key: 'orbit:accepted:o2' });
     await say($, 'go on');
     expect(joined(w.contexts).join('\n')).toMatch(
         /o2 🤩 accepted: trash the probe \(your pick: yes\)/,
@@ -139,7 +139,7 @@ test('an unmarked ask joins no prompt', async ($, on) => {
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes'], ['trash the probe', 'yes']);
-    await ui.press({ key: 'orbit:tick:o2' });
+    await ui.press({ key: 'orbit:accepted:o2' });
     await say($, 'go on');
     expect(joined(w.contexts).join('\n')).not.toContain('o1');
 });
@@ -149,7 +149,7 @@ test("a rejected ask joins with dima's note and cclio's hidden note", async ($, 
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
-    await ui.press({ key: 'orbit:reject:o1' });
+    await ui.press({ key: 'orbit:rejected:o1' });
     await ui.input({ key: 'orbit:note:o1', text: 'wait for ci' });
     await say($, 'next');
     expect(joined(w.contexts).join('\n')).toMatch(
@@ -176,7 +176,7 @@ test("a peer's prompt carries no marked ask", async ($, on) => {
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
-    await ui.press({ key: 'orbit:tick:o1' });
+    await ui.press({ key: 'orbit:accepted:o1' });
     await $.prompt.submit({
         origin: { kind: 'peer-send-message' } as never,
         text: 'status?',
@@ -185,17 +185,57 @@ test("a peer's prompt carries no marked ask", async ($, on) => {
     expect(joined(w.contexts)).toEqual([]);
 });
 
-test('a joined ask is locked while the turn runs', async ($, on) => {
+test('a joined ask draws no control while the turn runs', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await ui.input({ key: 'orbit:note:o1', text: 'after ci' });
+    await say($, 'go');
+    const keys = (await ui.findAll({})).map((n) => n.key ?? '');
+    expect([
+        keys.filter((k) => /^orbit:(accepted|rejected|note):o1$/.test(k)),
+        (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text,
+    ]).toEqual([[], expect.stringContaining('«after ci»')]);
+});
+
+test('an ask the turn left unanswered gets its controls back when the turn ends', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'go');
+    await endTurn($);
+    expect(await ui.find({ key: 'orbit:accepted:o1' })).toBeTruthy();
+});
+
+test('a pressed 🤩 is lit and a second press puts it out', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    const lit = (await ui.find({ key: 'orbit:accepted:o1' }))?.props.variant;
+    await ui.press({ key: 'orbit:accepted:o1' });
+    const out = (await ui.find({ key: 'orbit:accepted:o1' }))?.props.variant;
+    expect([lit, out]).toEqual(['secondary', undefined]);
+});
+
+test('a note is kept as it is typed, with no Enter', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
-    await ui.press({ key: 'orbit:tick:o1' });
-    await say($, 'go');
-    await ui.press({ key: 'orbit:tick:o1' });
-    await endTurn($);
-    await say($, 'again');
-    expect(joined(w.contexts).join('\n')).toContain('o1 🤩');
+    await ui.press({ key: 'orbit:rejected:o1' });
+    await ui.input({
+        key: 'orbit:note:o1',
+        kind: 'change',
+        text: 'wait for ci',
+    });
+    await say($, 'next');
+    expect(joined(w.contexts).join('\n')).toContain('his note: «wait for ci»');
 });
 
 test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
@@ -203,7 +243,7 @@ test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes'], ['trash the probe', 'yes']);
-    await ui.press({ key: 'orbit:tick:o1' });
+    await ui.press({ key: 'orbit:accepted:o1' });
     await say($, 'go');
     await orbit($, { ids: ['o1'], op: 'resolve' });
     await endTurn($);
@@ -240,7 +280,7 @@ test('a tick while the turn runs reaches that turn, and its resolve takes it out
     const ui = await board($);
     await add($, ['name a bird', 'pelican']);
     await say($, 'run the long job');
-    await ui.press({ key: 'orbit:tick:o1' });
+    await ui.press({ key: 'orbit:accepted:o1' });
     await orbit($, { ids: ['o1'], op: 'resolve' });
     await endTurn($);
     expect([w.appended.join('\n'), await asksShown(ui)]).toEqual([
@@ -257,7 +297,7 @@ test('a tick the turn never answered stays marked and joins the next prompt', as
     const ui = await board($);
     await add($, ['name a bird', 'pelican']);
     await say($, 'run the long job');
-    await ui.press({ key: 'orbit:tick:o1' });
+    await ui.press({ key: 'orbit:accepted:o1' });
     await endTurn($);
     await say($, 'next');
     expect(joined(w.contexts).join('\n')).toContain('o1 🤩 accepted');
