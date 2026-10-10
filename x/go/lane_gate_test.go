@@ -227,6 +227,22 @@ func TestGateRefusesAppCodeWithoutItsFtr(t *testing.T) {
 	}
 }
 
+func TestGateReadsAMapThatLinksItsGlossaries(t *testing.T) {
+	dir := gateRepo(t, nil)
+	write(t, filepath.Join(dir, "GLOSSARY-MAP.md"), "# Context Map\n\n- [web](./web/GLOSSARY.md) — a site\n  - contract: none yet\n")
+	write(t, filepath.Join(dir, "web/GLOSSARY.md"), "- **page** — a page\n")
+	gitT(t, dir, "add", "-A")
+	gitT(t, dir, "commit", "-q", "-m", "linked map")
+	write(t, filepath.Join(dir, "web/page.tsx"), "export const Page = 3;\n")
+	gitT(t, dir, "add", "-A")
+
+	got := gate(t, dir, "change\n\nftr: none\n")
+
+	if got.code != 0 || !strings.Contains(got.stdout, "web has no contract list yet") {
+		t.Errorf("exit %d, output %q; want 0 and the web nudge", got.code, got.stdout)
+	}
+}
+
 func TestGateSkipsAMergeCommit(t *testing.T) {
 	dir := gateRepo(t, nil)
 	gitT(t, dir, "checkout", "-q", "-b", "side")

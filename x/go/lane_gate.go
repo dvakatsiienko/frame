@@ -17,8 +17,10 @@ var (
 	glossaryUnchanged = regexp.MustCompile(`(?m)^glossary: unchanged (—|--?) \S`)
 	groomed           = regexp.MustCompile(`(?m)^groom: read whole (—|--?) \S`)
 	contextRow        = regexp.MustCompile(`^- \*\*([^*]+)\*\*`)
-	tickSpan          = regexp.MustCompile("`([^`]+)`")
-	gatedSkill        = regexp.MustCompile(`(^|/)skills/(crew|guide)-[^/]+/`)
+	// bytes' map links each glossary: `- [name](./apps/name/GLOSSARY.md) — …`
+	contextLink = regexp.MustCompile(`^- \[([^\]]+)\]\((?:\./)?([^)]*GLOSSARY\.md)\)`)
+	tickSpan    = regexp.MustCompile("`([^`]+)`")
+	gatedSkill  = regexp.MustCompile(`(^|/)skills/(crew|guide)-[^/]+/`)
 )
 
 // skill growth past this many non-blank lines asks for a read of the whole skill
@@ -97,6 +99,10 @@ func glossaryContexts(tree string) []glossaryContext {
 	}
 	var contexts []glossaryContext
 	for row := range strings.SplitSeq(got.out, "\n") {
+		if m := contextLink.FindStringSubmatch(row); m != nil {
+			contexts = append(contexts, glossaryContext{name: m[1], glossary: m[2]})
+			continue
+		}
 		if m := contextRow.FindStringSubmatch(row); m != nil {
 			c := glossaryContext{name: m[1]}
 			for _, span := range tickSpan.FindAllStringSubmatch(row, -1) {

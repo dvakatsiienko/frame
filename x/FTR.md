@@ -125,6 +125,7 @@
   - given an app's code (the nearest dir holding `FTR.md`, or an ftr whose `claims:` names the path) staged without that `FTR.md`, then it exits 1 naming it; a bare line «ftr: none» passes it
   - given a merge in progress, then it passes untouched
   - then a pass line takes an em dash or an ascii `-`/`--` before its why
+  - then a map row names its context as `**name**` with its glossary in backticks (frame) or as a link to the glossary (bytes)
   - decision: each half has a message line that passes it on purpose, so the gate refuses a forgotten step, never a decision; the root repo context carries no `contract:` line, since every commit touches it (FRM-367)
 - ✅ `x lane pr-body <pr> <file>` writes a pr body by number and reads it back
   - given no pr number, or a file where the number goes
