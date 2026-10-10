@@ -27,3 +27,9 @@ terminal `claude` → `/plugin` → Installed → «Show disabled» → `cc-plug
 ## log
 
 one line per round: date · session · card topic · useful / known / noise · tokens · note
+
+- 2026-10-10 · store + transcripts, cc 2.1.296 · 32 sessions tracked, cards in 26 · all `entrypoint: cli`, 31 of them cclio `--bg` crew spawns dima never reads; 0 of 6 desktop sessions since the first tracked one · cost ≤ ~$21 api-equivalent: the gap between each session's `cost-state` and its logged main-thread usage, 4.9 % of their $427 opus, ~1.1 % of $1,910 across 229 sessions since 10-06 — an upper bound, the gap holds other side calls too · it forks far less than every 6th step would predict (~16 % of cache reads vs a 2.8 % gap)
+
+## verdict
+
+dropped, 2026-10-10 — turned off in `settings.json`. not because of the feature: dima likes it and wants it, but he works in the desktop app ~99 % of the time, where it never fires, and in the terminal it only reaches unattended `--bg` sessions. it goes back on the day it works in the desktop app.
