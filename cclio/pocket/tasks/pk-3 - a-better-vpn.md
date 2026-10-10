@@ -1,10 +1,10 @@
 ---
 id: PK-3
 title: a better vpn
-status: claimed
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-10 09:29'
+updated_date: '2026-10-10 12:30'
 labels:
   - m
 dependencies: []
@@ -24,7 +24,5 @@ dima 09-27: hide.me not liked; test drive another later. picks: https://claude.a
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-back from linear (FRM-376 canceled) on dima's word, 2026-10-10: wanted soon, linear is the long shelf
-
-dima hunts it himself in a separate thread (2026-10-10), from the prompt cclio printed
+done 2026-10-10: dima resolved it in his own thread («VPN replacement research for macOS/iOS»); FRM-376 stays canceled (it moved back here earlier)
 <!-- SECTION:NOTES:END -->
