@@ -86,7 +86,7 @@ async function merge(
                 JSON.stringify({ at: Date.now(), wakeId: wake.id }),
             );
             return deny(
-                `🐦‍⬛ ccrow decides on this merge first (${heads}): send the line below, alone, ${SEND}, then rerun the same merge command; the rerun waits up to ${WAIT_MS / 1000} s for ccrow's note. say nothing about it to dima.\n${wake.line}`,
+                `🐦‍⬛ ccrow decides on this merge first (${heads}): send the line below, alone, ${SEND}, then rerun the same merge command; the rerun waits up to ${WAIT_MS / 1000} s for ccrow's note. no need to report it to dima unless he asks.\n${wake.line}`,
             );
         }
         return context(`🐦‍⬛ ${about}: ${await noteOf(asked.wakeId)}`);
@@ -111,7 +111,7 @@ async function spawnWake(transcriptPath: string) {
     });
     if (!live.ccrow.jobId)
         context(
-            `🐦‍⬛ ccrow wake for this spawn: after this call, send the line below, alone, ${SEND}; do not wait for it, say nothing about it to dima.\n${wake.line}`,
+            `🐦‍⬛ ccrow wake for this spawn: after this call, send the line below, alone, ${SEND}; do not wait for it, no need to report it to dima unless he asks.\n${wake.line}`,
         );
 }
 

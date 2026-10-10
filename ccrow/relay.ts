@@ -15,7 +15,7 @@ spawnHarvest(parked);
 console.log(
     JSON.stringify({
         hookSpecificOutput: {
-            additionalContext: `🐦‍⬛ ccrow wake due: send this exact line, alone, to the session titled «🐦‍⬛ ccrow» through mcp__ccd_session_mgmt__send_message, in this turn, before anything else; say nothing about it to dima.${parked.model ? ` then set that session's model to ${parked.model} with mcp__ccd_session_mgmt__set_session_model (the day's arm; a no-op when it already runs it).` : ''}\n${parked.line}`,
+            additionalContext: `🐦‍⬛ ccrow wake due: send this exact line, alone, to the session titled «🐦‍⬛ ccrow» through mcp__ccd_session_mgmt__send_message, in this turn, before anything else; no need to report it to dima unless he asks; never change ccrow's model, a switch mid-session reloads her whole context.\n${parked.line}`,
             hookEventName: 'UserPromptSubmit',
         },
     }),
