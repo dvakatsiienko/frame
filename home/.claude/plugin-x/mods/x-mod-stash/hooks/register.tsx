@@ -87,6 +87,8 @@ const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
 const PLAN_MAX = 5;
 const STALE_TURNS = 3;
+// the note field starts past an ask row's two toggles, under its id
+const NOTE_INDENT = 6;
 const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     'op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»); pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.',
@@ -1463,35 +1465,39 @@ export const register: Register = (on) => {
                 x.id === id ? { ...x, note: value.trim() || undefined } : x,
             );
         // a locked ask is the running turn's: no control at all, its mark and note as dim text (the api has no disabled)
-        const askJSX = (a: OrbitAsk) => (
-            <Box flexDirection='row' gap={1} key={`orbit:ask:${a.id}`}>
-                {a.isLocked ? (
+        // the note runs full width under its ask, past the toggles; a full row of air between asks (dima, 19:52)
+        const askJSX = (a: OrbitAsk, i: number) => (
+            <Box
+                flexDirection='column'
+                key={`orbit:ask:${a.id}`}
+                marginTop={i > 0 ? 1 : 0}>
+                <Box flexDirection='row' gap={1}>
+                    {a.isLocked ? (
+                        <Box flexShrink={0}>
+                            <Text dimColor>
+                                {`🔒 ${a.mark === 'accepted' ? '🤩' : '👎🏼'}`}
+                            </Text>
+                        </Box>
+                    ) : (
+                        [markJSX(a, 'accepted'), markJSX(a, 'rejected')]
+                    )}
                     <Box flexShrink={0}>
-                        <Text dimColor>
-                            {`🔒 ${a.mark === 'accepted' ? '🤩' : '👎🏼'}`}
-                        </Text>
+                        <Text dimColor>{a.id}</Text>
                     </Box>
-                ) : (
-                    [markJSX(a, 'accepted'), markJSX(a, 'rejected')]
-                )}
-                <Box flexShrink={0}>
-                    <Text dimColor>{a.id}</Text>
+                    <Box flexGrow={1} flexShrink={1} minWidth={0}>
+                        <Text>{`${a.text} ➡️ ${a.pick}`}</Text>
+                    </Box>
+                    {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
+                    {a.isResolved ? <Text dimColor>answered</Text> : null}
                 </Box>
-                <Box flexGrow={1} flexShrink={1} minWidth={0}>
-                    <Text>{`${a.text} ➡️ ${a.pick}`}</Text>
-                </Box>
-                {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
-                {a.isResolved ? <Text dimColor>answered</Text> : null}
                 {a.isLocked ? (
                     a.note ? (
-                        <Box flexShrink={0} width={16}>
-                            <Text dimColor wrap='truncate-end'>
-                                {`«${a.note}»`}
-                            </Text>
+                        <Box paddingLeft={NOTE_INDENT}>
+                            <Text dimColor>{`«${a.note}»`}</Text>
                         </Box>
                     ) : null
                 ) : Input ? (
-                    <Box flexShrink={0} width={16}>
+                    <Box flexGrow={1} paddingLeft={NOTE_INDENT}>
                         <Input
                             key={`orbit:note:${a.id}`}
                             onInput={(value: string) => handleNote(a.id, value)}

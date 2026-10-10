@@ -287,6 +287,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: 🤩 / 👎🏼 (dima, 2026-10-10)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
+  - decision: the note runs full width under its ask, and a full row of air sits between asks (dima, 19:52)
+  - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
   - decision: an ask for something irreversible (trash, push, close, merge) leads its row with ⚠️ and names the exact target; one tick still approves it (dima, 2026-10-10)
 - 🐞 a press in the desktop board lands on the first click
   - given the board is open in the desktop Code tab
