@@ -85,6 +85,11 @@ const ACCENT = '#d97757';
 // its own tool, never a reply block
 const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
+// mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
+const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
+const MOBILE_SKILL = /(^|:)mobile-mode$/;
+const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
+const BACK_AT_MAC = /\bback at the mac\b/i;
 const PLAN_MAX = 5;
 const STALE_TURNS = 3;
 // a plan line's lead word, one short word before its colon
@@ -220,6 +225,13 @@ function orbitReminder(o: StashOrbit) {
     return `${asks}; ${plan}. asks and the plan go through ${ORBIT_TOOL}, never into a reply.`;
 }
 
+// on mobile the asks reach dima only through the reply: the asks fence, its header line kept as the skill prints it
+function mobileReminder(o: StashOrbit) {
+    const open = o.asks.filter((a) => !a.isResolved);
+    const ids = open.length ? ` (${open.map((a) => a.id).join(', ')})` : '';
+    return `dima is on mobile, where the board draws nothing: end the reply with the asks fence, «⏳ waiting on your word:» and every open orbit ask${ids} with its id and pick, and write his answer by id back through ${ORBIT_TOOL} the same turn.`;
+}
+
 const oneLine = (v: unknown) =>
     typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
 const idsOf = (v: unknown) =>
@@ -229,6 +241,8 @@ const idsOf = (v: unknown) =>
 // rides that turn's next tool result (the tool.call hook); one the turn never reaches rides his next prompt — a
 // hidden message appended instead started a turn of its own when it landed after the last read (dima, 20:31)
 async function markAsks($: EngineInterface, change: (a: OrbitAsk) => OrbitAsk) {
+    // a press in the board means dima is at the mac
+    await $.state.set(MOBILE, false).catch(() => undefined);
     const o = await currentOrbit($);
     const asks = o.asks.map((a) =>
         a.isLocked || a.isResolved ? a : change(a),
@@ -1225,6 +1239,15 @@ export const register: Register = (on) => {
         return next(e);
     });
 
+    // `/mobile-mode` turns the asks fence on, `/mobile-mode off` turns it off
+    on('skill.prompt', async ($, e, next) => {
+        if (MOBILE_SKILL.test(e.skill))
+            await $.state
+                .set(MOBILE, !MOBILE_OFF.test(e.text))
+                .catch(() => undefined);
+        return next(e);
+    });
+
     // only dima's own hands make his turn; a reply to any other origin may drop the block
     on('prompt.submit', async ($, e, next) => {
         isUserTurn =
@@ -1233,6 +1256,8 @@ export const register: Register = (on) => {
         pinged = e.text === PING;
         // dima read the away digest once he types again
         if (isUserTurn) digest = undefined;
+        if (isUserTurn && BACK_AT_MAC.test(e.text))
+            await $.state.set(MOBILE, false).catch(() => undefined);
         isBusy = true;
         hotGen++;
         await load($);
@@ -1254,7 +1279,9 @@ export const register: Register = (on) => {
                 ),
             });
         }
-        const reminder = orbitReminder(orbit);
+        const reminder = (await $.state.get(MOBILE)).value
+            ? mobileReminder(orbit)
+            : orbitReminder(orbit);
         return next({
             ...e,
             context: [

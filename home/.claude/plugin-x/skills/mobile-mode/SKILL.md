@@ -35,5 +35,6 @@ dima is on a small screen with a software keyboard, often lying down. every repl
       o9. <ask> ➡️ <pick>
       ```
 
-mode ends only on dima's word. a new topic does not end it; at «back at the mac» the fence goes and
-the asks live in orbit again.
+mode ends on dima's word: «back at the mac», `/mobile-mode off`, or any press in the board (he is at the mac). a
+new topic does not end it; once it ends the fence goes and the asks live in orbit again. x-mod-stash keeps the flag and
+swaps the per-prompt orbit reminder for the asks-fence one while it is on.

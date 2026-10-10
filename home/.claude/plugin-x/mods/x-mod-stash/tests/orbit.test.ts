@@ -45,6 +45,7 @@ function world(on: On) {
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
+    on('skill.prompt', (_$, e) => ({ text: e.text }));
     return { appended, contexts, store };
 }
 
@@ -524,4 +525,76 @@ test("a plan line's lead word prints bold", async ($, on) => {
         true,
         false,
     ]);
+});
+
+const mobile = ($: Engine, args = '') =>
+    $.skill.prompt({
+        skill: 'x:mobile-mode',
+        text: `# mobile-mode${args ? `\n\nARGUMENTS: ${args}` : ''}`,
+    });
+
+const lastContext = (contexts: string[][]) =>
+    (contexts.at(-1) ?? []).join('\n');
+
+test('after /mobile-mode the next prompt asks for the asks fence with the ids', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await mobile($);
+    await say($, 'hi');
+    expect(lastContext(w.contexts)).toMatch(/asks fence.*\(o1\)/s);
+});
+
+test('/mobile-mode off brings the orbit reminder back', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await mobile($);
+    await mobile($, 'off');
+    await say($, 'hi');
+    expect(lastContext(w.contexts)).not.toContain('asks fence');
+});
+
+test('«back at the mac» ends mobile mode', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await mobile($);
+    await say($, 'ok, back at the mac');
+    await endTurn($);
+    await say($, 'hi');
+    expect(lastContext(w.contexts)).not.toContain('asks fence');
+});
+
+test('a board press ends mobile mode', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await mobile($);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'hi');
+    expect(lastContext(w.contexts)).not.toContain('asks fence');
+});
+
+test('mobile mode survives a reload', async ($, on) => {
+    const w = world(on);
+    const state: Record<string, unknown> = {
+        mobile: true,
+        orbit: {
+            asks: [{ id: 'o3', pick: 'yes', text: 'kept' }],
+            next: 4,
+            turns: 2,
+        },
+    };
+    on('state.get', (_$, e) => ({
+        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state[e.key] = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    await start($);
+    await say($, 'hi');
+    expect(lastContext(w.contexts)).toMatch(/asks fence.*\(o3\)/s);
 });

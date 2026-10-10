@@ -109,6 +109,8 @@ declare module 'claude-code' {
             // epoch ms of the last main turn end
             ended: number;
             orbit: StashOrbit;
+            // dima is on mobile: the reminder asks for the asks fence instead of orbit
+            mobile: boolean;
         };
     }
 }

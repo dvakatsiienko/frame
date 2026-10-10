@@ -65,6 +65,14 @@ _Avoid_: overage, overspend
 The context % at which cc compacts: the project's `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, else cc's default.
 _Avoid_: threshold, limit, autocompact %
 
+**Mobile mode**:
+Dima away from the board, on the phone: while on, the per-prompt reminder asks for the asks fence instead of orbit; `/mobile-mode` turns it on, «back at the mac», `/mobile-mode off` or a board press off.
+_Avoid_: phone mode, away mode
+
+**Asks fence**:
+The block a reply ends with in mobile mode: the line «⏳ waiting on your word:» and a fence holding every open orbit ask as `<id>. <ask> ➡️ <pick>`.
+_Avoid_: ⏳ block, wfyb
+
 **Wait**:
 What a session is blocked on, from the `🔭` line that ends its last reply; on the board it is a row's second line, absent when the reply has none.
 _Avoid_: blocker, status, watch

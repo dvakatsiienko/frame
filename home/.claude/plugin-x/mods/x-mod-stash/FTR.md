@@ -342,6 +342,18 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the session gets a short model-only note: the open asks, the tool to answer with, the plan's age
   - decision: the contract is mechanical — the reminder and the tool's own text, no new skill (dima, 2026-10-10: «we have too many of them … yagni»)
 
+## mobile mode — the asks fence
+
+- ✅ `/mobile-mode` brings the asks fence back while dima is away from the board
+  - given dima types `/mobile-mode`
+  - when his next prompt arrives
+  - then the per-prompt reminder tells the session to end its reply with the asks fence — «⏳ waiting on your word:» and every open orbit ask with its id and pick — instead of the orbit reminder
+  - decision: on mobile mods draw nothing, so orbit is invisible there; orbit stays the one store and the session writes his answers back by id (dima, 2026-10-10)
+- ✅ mobile mode ends at the mac
+  - given mobile mode is on
+  - when dima says «back at the mac», types `/mobile-mode off`, or presses anything in the board's orbit
+  - then the next prompt carries the orbit reminder again; a hot reload keeps the mode as it was
+
 ## /board — 🌔 phases
 
 - ✅ phases: the session's next 5 moves, live
