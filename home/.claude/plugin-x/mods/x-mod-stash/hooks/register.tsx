@@ -877,10 +877,11 @@ const COLUMNS = {
 } as const;
 
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
-const isCoordinator = (name: string) => /\bcclio\b/.test(name);
-// cclio, then ccrow, then everyone else (dima, 2026-10-10)
+// a member is the name's last word: a coder named «… + ccrow at decisions» is not ccrow (2026-10-10)
+const isCoordinator = (name: string) => /(^|\s)cclio$/.test(name);
+// cclio, then ccrow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 const pinOf = (name: string) =>
-    isCoordinator(name) ? 0 : /\bccrow\b/.test(name) ? 1 : 2;
+    isCoordinator(name) ? 0 : /(^|\s)ccrow$/.test(name) ? 1 : 2;
 const doorGlyph = (door: Door) => (door.kind === 'open' ? '↗' : '📋');
 
 async function isOpen($: EngineInterface) {
@@ -1264,8 +1265,8 @@ export const register: Register = (on) => {
                                     ●
                                 </Text>
                             </Box>
-                            {/* the whole name is the control; the coordinator's name stays bold text, since a Button label takes no weight */}
-                            {door && !isCoordinator(m.name) ? (
+                            {/* the whole name is the control; a pinned name stays bold text, since a Button label takes no weight */}
+                            {door && pinOf(m.name) === 2 ? (
                                 <Button
                                     key={`door:${m.sid}`}
                                     onPress={(p) =>
@@ -1276,12 +1277,12 @@ export const register: Register = (on) => {
                                 </Button>
                             ) : (
                                 <Text
-                                    bold={isCoordinator(m.name)}
+                                    bold={pinOf(m.name) < 2}
                                     wrap='truncate-end'>
                                     {name}
                                 </Text>
                             )}
-                            {door && isCoordinator(m.name) ? (
+                            {door && pinOf(m.name) < 2 ? (
                                 <Button
                                     key={`door:${m.sid}`}
                                     onPress={(p) =>

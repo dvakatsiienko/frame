@@ -215,7 +215,7 @@
   - given cclio, two coders and a verifier are live
   - when dima types `/board`
   - then a pane lists each by its session name, its state on the right, a full empty row between members
-  - decision: cclio is pinned to the top, its name always bold; ccrow, her adviser, is pinned second (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
+  - decision: cclio is pinned to the top, its name always bold; ccrow, her adviser, is pinned second and bold too, a member matched by the name's last word so a coder naming ccrow is not pinned (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
   - decision: cc's registry stores «🐦‍⬛ ccrow» with the zero-width joiner as a space, so the board puts the joiner back for that one sequence — a plain string fix, no emoji parser (FRM-325)
   - decision: a session younger than a minute, counted from the registry's `startedAt`, gets no row — a probe that exits within a minute never shows; one that lives on gets its row once it is a minute old (FRM-325)

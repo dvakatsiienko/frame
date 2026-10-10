@@ -178,9 +178,28 @@ test('the coordinator is pinned to the top of the board', async ($, on) => {
     expect(order).toEqual([`m:${HERE}`, `m:${PEER}`]);
 });
 
-test("the coordinator's adviser is pinned second, above the rest", async ($, on) => {
-    fleet(on, {}, { alive: [1, 2, 3], patch: { 3: { name: '🐦‍⬛ ccrow' } } });
+test("the coordinator's adviser is pinned second, above a coder whose name only mentions it", async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            patch: {
+                2: { name: '☕️ 🔧 FRM-1 code: head + ccrow at decisions' },
+                3: { name: '🐦 ⬛ ccrow' },
+            },
+        },
+    );
     expect(Object.keys(await rowsBySid($))).toEqual([HERE, GONE, PEER]);
+});
+
+test("the coordinator's adviser's name is bold, like the coordinator's", async ($, on) => {
+    fleet(on, {}, { alive: [1, 2, 3], patch: { 3: { name: '🐦 ⬛ ccrow' } } });
+    const ui = await board($);
+    const name = (await ui.findAll({ type: 'Text' })).find((t) =>
+        (t.text ?? '').endsWith(' ccrow'),
+    );
+    expect(name?.props.bold).toBe(true);
 });
 
 test('a headless run named t-<hex> gets no row', async ($, on) => {
