@@ -34,4 +34,4 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 - 🦡 **`retro`** — opus: matt's retro over finished transcripts, fixes to the agents' environment ranked by severity. global.
 - 🪶 **`sifter`** — haiku 5.5 medium, no fleet memory (`omitClaudeMd`), read-only: pulls counts, fields and lines out of big logs, transcripts and json, so the raw output never enters the caller's context. `home/.claude/agents/sifter.md`, global; on a test drive to 10-22 (`docs/test-drive/sifter.md`).
 - 🦊 **`Explore`** — the built-in search agent, overridden onto sonnet 5.5 (`home/.claude/agents/explore.md`); keeps its built-in name so the override holds.
-- 🐦 **`checkup`** — opus, read-only: cclio's siesta reviewer over what a sweep just changed, ≤10 lines. `cclio/.claude/agents/`, cclio-only — a siesta habit, not a reviewer for other members.
+- 🐬 **`wish-review`** — opus, read-only: did dima's wish land — a siesta batch against its tickets' want, or the boot inbox against its landing spots, ≤5 lines. `cclio/.claude/agents/`, cclio-only — a siesta habit, not a reviewer for other members.

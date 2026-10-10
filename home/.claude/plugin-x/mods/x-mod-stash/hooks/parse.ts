@@ -45,7 +45,7 @@ export function bulletDots(text: string) {
 
 // a fleet word or member prints bold with its badge glued on (rules/fleet-output-format.md); a bare one in prose is fixed,
 // not policed. fences, quotes, inline code, bold text and links keep theirs; «wish» only as a noun, after a determiner.
-// members are rules/fleet-identity.md's, minus the names that are plain english too (helper, retro, classifier, checkup,
+// members are rules/fleet-identity.md's, minus the names that are plain english too (helper, retro, classifier,
 // explore, cc) — those would badge a helper function or the retro file
 const MEMBERS = {
     cclio: '🦉',

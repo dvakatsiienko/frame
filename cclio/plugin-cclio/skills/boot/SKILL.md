@@ -43,6 +43,7 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
   smallest aside included — gets an item in the pocket (`~/frame/cclio/pocket.md`, its head says the format)
   and a place in its «order». the checklist line is the completeness
   guarantee; resolution is paced later. **deletion happens at the halt, never here.**
+- then the double check (dima, 2026-10-10: data loss of his drops is the worst outcome): spawn `wish-review` 🐬 in boot mode with the raw inbox text and each item's landing spot (pocket id, ticket, or answer); every finding is folded before the opening board prints.
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 
 ## 4. continuity

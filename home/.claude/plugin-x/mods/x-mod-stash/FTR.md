@@ -103,7 +103,7 @@
   - then the drawing and the stored row both read **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**; a word already badged only gains the bold
   - given a reply names a fleet member from `rules/fleet-identity.md` plain: `cclio`, `ccrow`, `coder`, `verifier`, `designer`, `researcher`, `sifter`, `cw`, `dima`, or their plurals
   - then it reads **🦉 cclio**, **🐦‍⬛ ccrow**, **🔧 coder**, **🔎 verifier**, **🎨 designer**, **🐝 researcher**, **🪶 sifter**, **🤝 cw**, **🙋‍♂️ dima** (FRM-357)
-  - decision: members that are plain english too stay out — `helper`, `retro`, `classifier`, `checkup`, `Explore`, `cc` would badge a helper function, the retro file or the verb
+  - decision: members that are plain english too stay out — `helper`, `retro`, `classifier`, `Explore`, `cc` would badge a helper function, the retro file or the verb
   - then a fence, a `>` quote, a «quote», inline code, bold text, a link or url, a session name (`☕️ 🔧 mods coder`), a word behind another word's badge (`🔎 coder`), and a name like `x-mod-wisp`, `wisp.md` or `cclio:halt` keep theirs; «i wish» stays a verb; «lane» is never touched
   - makes: one `words:<yyyy-mm-dd>:<session>` key in x-mod-stash's `$.store`, `{ <word>: <rewrites> }`, counted from the stored row only (a redraw never counts); keys older than 30 days are dropped
   - decision: fixed in the output, never policed — cclio wrote «that becomes a wisp» plain at 17:43 and dima wanted it fixed in place (2026-10-08)

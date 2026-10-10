@@ -23,7 +23,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
   wishes in the inbox and mid-prompt; a wish is folded with its spelling fixed and its meaning and
   manner kept — never verbatim, never flattened into machine shape. the inbox's wishes section is the
   drop point; the pocket, then linear, is where a wish lives; a spec points at its wish, never copies it.
-- **🌤️ siesta** — the pause between batches (dima, 2026-10-08; was «pit stop»): he reads and steers, the fleet checks what just landed (cclio: `checkup`), and the reply ends with one light line — a fact with a twist, a dry joke, or «meanwhile i did <freebie>». never inside a ticket's build.
+- **🌤️ siesta** — the pause between batches (dima, 2026-10-08; was «pit stop»): he reads and steers, the fleet checks what just landed (cclio: `wish-review` 🐬, `cclio:siesta`), and the reply ends with one light line — a fact with a twist, a dry joke, or «meanwhile i did <freebie>». never inside a ticket's build.
 - **lane / shift** — a lane is our usual day: dima present, he steers, his asks fold in place. a
   shift runs from a written plan with dima `near` (a y/n ping only for a real decision) or `away`
   (no pings, decisions logged and parked); `cclio:shift` is the contract. a session name leads with
