@@ -183,7 +183,8 @@ test("a peer's prompt carries no marked ask", async ($, on) => {
         text: 'status?',
         wait: false,
     });
-    expect(joined(w.contexts)).toEqual([]);
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect([joined(w.contexts), r.context ?? []]).toEqual([[], []]);
 });
 
 test('a joined ask draws no control while the turn runs', async ($, on) => {

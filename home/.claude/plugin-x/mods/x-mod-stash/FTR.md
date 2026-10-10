@@ -282,7 +282,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ orbit lists this session's open asks, oldest first
   - given cclio ends a turn with something for dima to decide
   - when the turn ends
-  - then each ask is one line in orbit, its id dim beside it, and the reply holds no ⏳ block
+  - then each ask is one line in orbit, its bold id leading it, and the reply holds no ⏳ block
   - decision: one orbit per session; other sessions' asks never show in it (dima, 2026-10-10)
   - decision: a new ask only appends at the bottom, never mixed in or prepended (dima, 2026-10-10)
 - ✅ an ask reads alone

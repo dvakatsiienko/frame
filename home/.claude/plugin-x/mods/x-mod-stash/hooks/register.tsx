@@ -1854,11 +1854,11 @@ export const register: Register = (on) => {
             turnAfk = afk;
             notes.push(afk ? AWAY_NOTE : BACK_NOTE);
         }
-        // a mark dima made while this turn runs joins it here, model-only, and locks
+        // a mark dima made while his own turn runs joins it here, model-only, and locks; a peer's turn never takes it
         const o = await currentOrbit($);
-        const fresh = o.asks.filter(
-            (a) => a.mark && !a.isLocked && !a.isResolved,
-        );
+        const fresh = isUserTurn
+            ? o.asks.filter((a) => a.mark && !a.isLocked && !a.isResolved)
+            : [];
         if (fresh.length) {
             const ids = new Set(fresh.map((a) => a.id));
             await saveOrbit($, {
