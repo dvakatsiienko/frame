@@ -373,13 +373,6 @@ test("a row shows its session's context fill", async ($, on) => {
     expect(await row($, HERE)).toContain('ctx 43%');
 });
 
-test("a row lists its session's last compactions with the fill before and after", async ($, on) => {
-    fleet(on, {
-        [`compactions:${PEER}`]: [{ at: NOW, from: 72, to: 18 }],
-    });
-    expect(await row($, PEER)).toMatch(/compacted \d\d:\d\d 72→18%/);
-});
-
 test("a row links the ticket in its session's name", async ($, on) => {
     fleet(on);
     const ui = await board($);

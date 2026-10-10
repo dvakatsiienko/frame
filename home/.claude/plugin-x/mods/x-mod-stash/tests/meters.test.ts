@@ -271,20 +271,6 @@ test('a measure writes the 5h window to the usage file in seconds', async ($, on
     });
 });
 
-test('a compaction is kept with its fill before and after', async ($, on) => {
-    const { store } = meters(on);
-    await band($);
-    await measure($, 39, 72);
-    await $.session.compact({
-        messages: [{ role: 'user', text: 'hi', toolUses: [] }],
-        trigger: 'auto',
-    });
-    await measure($, 39, 18);
-    expect(store[`compactions:${SID}`]).toEqual([
-        { at: NOW, from: 72, to: 18 },
-    ]);
-});
-
 test('the meters keep their rows when the asks outgrow the band', async ($, on) => {
     meters(on);
     on('classic.Stop', () => ({}));

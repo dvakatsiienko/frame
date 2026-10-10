@@ -3,7 +3,6 @@ import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
 import type {
     StashCap,
-    StashCompaction,
     StashDigest,
     StashEntry,
     StashMember,
@@ -77,8 +76,6 @@ const WAKER_KEY = 'waker';
 const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
 // the band's meters, written on every session.measure
 const METER = { key: 'meter', plugin: 'x-mod-stash' } as const;
-// a session's last three compactions, for the board
-const COMPACTIONS = 'compactions:';
 // the 5h cap ends the turn as an API error with this text; the weekly cap and spent credits read otherwise
 // (8 rows in the transcripts, 2026-10-08)
 const CAPPED = /hit your session limit/i;
@@ -379,22 +376,6 @@ async function compactAtOf($: EngineInterface, window: number) {
         .catch(() => undefined);
     const tokens = usage?.context.breakdown?.autoCompactThreshold;
     return tokens && window ? Math.round((tokens / window) * 100) : undefined;
-}
-
-// the first response after a compaction measures what it left
-async function settleCompaction(
-    $: EngineInterface,
-    sid: string,
-    percent: number,
-) {
-    const list = (await $.store.get(COMPACTIONS + sid)) as
-        | StashCompaction[]
-        | undefined;
-    const [last, ...rest] = list ?? [];
-    if (!last || last.to !== undefined) return;
-    await $.store
-        .set(COMPACTIONS + sid, [{ ...last, to: percent }, ...rest])
-        .catch(() => undefined);
 }
 
 // a typed compaction point: a whole 10–99 goes into the project's .claude/settings.local.json `env`, keeping every
@@ -712,10 +693,6 @@ export const thresholdOf = (text: string) => {
               refusal: `compaction point must be a whole 10–99, got «${text.trim()}»`,
           };
 };
-const clockOf = (ms: number) => {
-    const d = new Date(ms);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-};
 const idleTint = (ms: number) =>
     ms >= COOLING_MS[2]
         ? RAMP[2]
@@ -870,9 +847,6 @@ async function members($: EngineInterface): Promise<Member[]> {
         out.push({
             ...r,
             asks: isLive(asks, now) ? asks.asks.length : 0,
-            compactions: (await $.store.get(COMPACTIONS + r.sid)) as
-                | StashCompaction[]
-                | undefined,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
@@ -1182,8 +1156,6 @@ export const register: Register = (on) => {
                     `x-mod-stash: usage file not written: ${errorText(err)}`,
                 ),
             );
-        if (sid && e.context.percent !== undefined)
-            await settleCompaction($, sid, e.context.percent);
         const was = (await $.state.get(METER)).value;
         const meter: StashMeter = {
             compactAt: e.changed.includes('context')
@@ -1198,24 +1170,6 @@ export const register: Register = (on) => {
         if (JSON.stringify(meter) !== JSON.stringify(was))
             await $.state.set(METER, meter).catch(() => undefined);
         return next(e);
-    });
-
-    // a main-conversation compaction that went through joins the session's last three, its fill before it
-    on('session.compact', async ($, e, next) => {
-        const r = await next(e);
-        if (e.trigger === 'precompute' || e.agentId || 'skip' in r) return r;
-        const sid = await currentId($);
-        if (!sid) return r;
-        const was = ((await $.store.get(COMPACTIONS + sid)) ??
-            []) as StashCompaction[];
-        const from = (await $.state.get(METER)).value?.context;
-        await $.store
-            .set(
-                COMPACTIONS + sid,
-                [{ at: await $.clock.now(), from }, ...was].slice(0, 3),
-            )
-            .catch(() => undefined);
-        return r;
     });
 
     // the board shows each session's model and effort as its main loop's last request named them; a subagent's step never counts
@@ -1414,19 +1368,6 @@ export const register: Register = (on) => {
                                     </Text>
                                 </Box>
                             ) : null}
-                        </Box>
-                    ) : null}
-                    {/* the last three compactions, newest first: when, and the fill before and after */}
-                    {m.compactions?.length ? (
-                        <Box paddingLeft={2}>
-                            <Text dimColor wrap='truncate-end'>
-                                {`compacted ${m.compactions
-                                    .map(
-                                        (c) =>
-                                            `${clockOf(c.at)} ${c.from ?? '?'}→${c.to ?? '…'}%`,
-                                    )
-                                    .join(' · ')}`}
-                            </Text>
                         </Box>
                     ) : null}
                 </Box>

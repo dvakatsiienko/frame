@@ -30,13 +30,9 @@ export type StashMember = {
     wait?: string;
     asks: number;
     context?: number;
-    compactions?: StashCompaction[];
     model?: string;
     offPattern: boolean;
 };
-
-// one compaction of a session: when it fired, its context % before, and after once a response measured it
-export type StashCompaction = { at: number; from?: number; to?: number };
 
 // the band's two meters: this session's context against its compaction point, and the account's 5h window;
 // `note` is the one line a refused threshold leaves
