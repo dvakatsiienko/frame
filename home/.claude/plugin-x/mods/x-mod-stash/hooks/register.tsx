@@ -1492,8 +1492,8 @@ export const register: Register = (on) => {
                         '🔊',
                         { op: 'read', text: `${a.text}. pick: ${a.pick}` },
                     ],
-                    ['pause', '⏯', { op: 'pause' }],
-                    ['stop', '⏹', { op: 'stop' }],
+                    ['pause', '⏯️', { op: 'pause' }],
+                    ['stop', '⏹️', { op: 'stop' }],
                 ] as const
             ).map(([what, glyph, request]) => (
                 <Button
@@ -1530,11 +1530,8 @@ export const register: Register = (on) => {
                     ) : (
                         [
                             Input ? (
-                                <Box
-                                    flexGrow={1}
-                                    flexShrink={1}
-                                    key='note'
-                                    minWidth={0}>
+                                // no grow: the buttons sit right after the note, never pushed to the row's end (dima, 20:17)
+                                <Box flexShrink={1} key='note' minWidth={0}>
                                     <Input
                                         key={`orbit:note:${a.id}`}
                                         onInput={(value: string) =>

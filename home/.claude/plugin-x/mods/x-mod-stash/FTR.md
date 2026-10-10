@@ -292,11 +292,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: 🤩 / 👎🏼 (dima, 2026-10-10)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
-  - decision: the ask on its own line; under it one row: the note, 🤩 👎🏼, then 🔊 ⏯ ⏹; a full row of air between asks (dima, 19:52, 20:08)
+  - decision: the ask on its own line; under it one row: the note, then right after it 🤩 👎🏼 🔊 ⏯ ⏹; a full row of air between asks (dima, 19:52, 20:08, 20:17)
   - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
   - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one `✅` button (dima, 19:59)
   - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
-- ⬜ 🔊 reads an ask aloud through speak, ⏯ pauses or resumes, ⏹ stops
+- 🔎 🔊 reads an ask aloud through speak, ⏯ pauses or resumes, ⏹ stops
   - given orbit shows an ask and x-speak runs
   - when dima presses its 🔊
   - then speak reads the ask and its pick through the chain F4 uses, cutting off whatever plays; ⏯ and ⏹ act on any read
