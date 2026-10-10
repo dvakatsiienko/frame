@@ -343,6 +343,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when dima presses an ask's box (☐ flips to ☑ 🤩), its 👎🏼, types in its note, or presses check all
   - then the ask shows accepted or rejected with its note kept; an unmarked ask stays parked and means nothing
   - decision: 🤩 / 👎🏼 (dima, 2026-10-10)
+  - decision: an ask for something irreversible (trash, push, close, merge) leads its row with ⚠️ and names the exact target; one tick still approves it (dima, 2026-10-10)
 - 🧭 marked asks join the next prompt
   - given one or more asks are accepted or rejected
   - when dima sends a prompt from the prompt box
