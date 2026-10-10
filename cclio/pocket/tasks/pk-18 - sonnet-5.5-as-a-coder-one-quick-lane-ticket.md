@@ -1,10 +1,10 @@
 ---
 id: PK-18
 title: 'sonnet 5.5 as a coder, one quick-lane ticket'
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-10 10:53'
+updated_date: '2026-10-10 11:13'
 due_date: '2026-10-14'
 labels:
   - s
@@ -24,3 +24,9 @@ pocket 53 · status line was: open · test-drive
 - dima's yes, 2026-10-08: the next quick-lane ticket spawns `--model sonnet --effort medium` instead of opus; graded against an opus coder on the same lane shape (steps, cost, `#brief` lines, rounds). a fresh `docs/test-drive/sonnet-coder.md` on day 0
 - why: sonnet 5.5 beats opus 5.5 on Terminal-Bench 4.0 (70.6 vs 66.4); anthropic still calls opus stronger on open-ended work
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+round 1 logged in docs/test-drive/sonnet-coder.md: PK-47, 18M tok / 54 min, clean; the default-model call is dima's
+<!-- SECTION:NOTES:END -->

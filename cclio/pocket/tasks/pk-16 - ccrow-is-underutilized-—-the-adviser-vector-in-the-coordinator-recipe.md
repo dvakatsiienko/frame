@@ -1,10 +1,10 @@
 ---
 id: PK-16
-title: 'ccrow is underutilized — the adviser vector in the coordinator recipe'
-status: open
+title: ccrow is underutilized — the adviser vector in the coordinator recipe
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-10 11:13'
 labels:
   - m
 dependencies: []
@@ -21,3 +21,9 @@ pocket 49 · status line was: `open · task` · inbox 10-08, 🐞 · dima 13:54:
 
 dima: add a research vector to the coordinator recipe to hunt solid adviser-model behaviour — what would a good adviser model want to do to be a very good adviser? what do i, as coordinator, pm and cto, want from an adviser model? consider the crow taxonomy and the ctx budget; do not ask it to code — coding is disapproved, not banned; it can explore at least. enable his mod for crow and enable the retro recipe. when the recipe is updated, run it, and propose a good update for the adviser model — consult the adviser model itself, ask his question and mine. what to search for: how to build a good adviser model, the best model fit (opus? fable?), the baseline effort.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+done: refresh-crew-coordinator-adviser run 2 (10-08) carries this want verbatim, consulted ccrow and set keep + hunts; refresh-crew-coordinator reads its verdicts (vector 'the adviser'); ccrow runs in a desktop tab where mods load (pk-39)
+<!-- SECTION:NOTES:END -->

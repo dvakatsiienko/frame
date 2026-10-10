@@ -21,6 +21,8 @@ window: 2026-10-07 → 2026-10-21. the pocket (`cclio/pocket.md`) replaced the v
 - `pnpm flow:report --days 14`: `#dima-caught` 6, `#brief` 4, pr open → merge median frame 26 min / bytes 21 min
 - pocket items resolved: no baseline (the flowlog kept no resolve count); day 0 resolved 03, 04, 17, 19, 20, 21, 26
 
+📌 at the verdict, revisit beads (dima, 2026-10-10): could one beads db hold every spec, instead of each repo's `.scratch`? how would it work for us, and would a fluent ui over it beat Backlog.md?
+
 ## log
 
 one line per halt: date · items resolved · tickets opened · «what's next?» asks · items lost

@@ -31,7 +31,7 @@ wish heavily optimised into raw shape loses the want (the 16-file pocket, the re
 comparison brief).
 
 - **the fold**: a wish lands in his language with the spelling fixed, the fluff out, the manner kept
-  (`rules/dima-signals.md`); wordier than machine text, and that is justified — his word.
+  ([dima-wishes](dima-wishes.md)); wordier than machine text, and that is justified — his word.
 - **one home at a time**: inbox → pocket item → linear ticket. the moment a ticket exists, the pocket
   item becomes a pointer to it, and the ticket body opens with a `wish` block in his cleaned words —
   linear is the human-readable record of his wants (reference, history, housekeeping).
@@ -67,6 +67,7 @@ dima, 2026-09-03, after an alias prune ran on one word and its review drowned in
 steer.»* three habits, his approve:
 
 - **the ⏳ block carries every open ask until he verdicts it** — shape and repeat rule in
+- **an ask about outside state is re-read before every reprint** — a pr, ci, a session: one `gh pr view` or list call the same turn. #84 sat merged under five reprints of «merge it» (2026-10-10).
   `rules/fleet-output-format.md`. silence resolves nothing; he never scrolls back.
 - **the sweep class is propose-only** — the fleet word is **`granular`** (`fleet-identity.md`,
   linear label `granular`): anything touching his tools (aliases, gitconfig, nvim, the vault) or

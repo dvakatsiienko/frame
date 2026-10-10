@@ -16,6 +16,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🧭 the full roadmap is the linear initiative «roadmap», printed by the full boot. rules for using it: `dima-strategy`
 - 🧭 @dima-strategy.md — the vector (always: streamline the fleet · the mil: make fleet good · his finish line: cv + portfolio), the initiative + milestones as the lane driver, then the branch notes
 - 🗞️ @../gazette/_trail.md — 3 lines per post for the 5 freshest gazette days (shipped / open / state), regenerated at every post; the full posts sit in `gazette/`, read on demand
+- 📌 @dima-wishes.md — his words reach a file folded, never raw; an old verbatim met on any touch is re-folded
 - 📖 @dima-stories.md — what actually happened, so the rules keep their reasons. append, never rewrite
 
 ## running the work
