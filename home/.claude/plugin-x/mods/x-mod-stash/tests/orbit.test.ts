@@ -656,3 +656,60 @@ test('a ticket id in a phase line opens its linear page', async ($, on) => {
     await orbit($, { lines: ['now: build BYT-12'], op: 'plan' });
     expect(await hrefs(ui)).toContain('https://linear.app/x-com/issue/BYT-12');
 });
+
+// x answers ticket reads for FRM-381; down, it fails
+const linear = (on: On, isDown = false) => {
+    const runs: string[][] = [];
+    on('process.run', (_$, e) => {
+        runs.push([...e.argv]);
+        return {
+            value: {
+                exitCode: isDown ? 1 : 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: JSON.stringify({
+                    data: {
+                        tickets: [
+                            {
+                                id: 'FRM-381',
+                                state: 'Done',
+                                title: 'stash: orbit',
+                                url: 'https://linear.app/x-com/issue/FRM-381/stash-orbit',
+                            },
+                        ],
+                    },
+                }),
+            },
+        };
+    });
+    return runs;
+};
+
+test('a prompt naming a ticket hands the session its title, state and link', async ($, on) => {
+    const w = world(on);
+    linear(on);
+    await start($);
+    await say($, 'look at FRM-381 again');
+    expect((w.contexts.at(-1) ?? []).join('\n')).toContain(
+        'FRM-381: stash: orbit · Done · https://linear.app/x-com/issue/FRM-381/stash-orbit',
+    );
+});
+
+test('a peer prompt naming a ticket looks nothing up', async ($, on) => {
+    world(on);
+    const runs = linear(on);
+    await start($);
+    await say($, 'status of FRM-381?', 'peer-send-message' as never);
+    expect(runs.filter((r) => r.includes('linear'))).toEqual([]);
+});
+
+test('with x down a prompt carries no ticket line', async ($, on) => {
+    const w = world(on);
+    linear(on, true);
+    await start($);
+    await say($, 'look at FRM-381 again');
+    expect((w.contexts.at(-1) ?? []).join('\n')).not.toContain(
+        'read from linear',
+    );
+});

@@ -9,7 +9,6 @@ function world(
     box: {
         text: string;
         refusal?: 'dialog';
-        isXDown?: boolean;
         painted?: string[];
     },
 ) {
@@ -42,29 +41,17 @@ function world(
             },
         ],
     }));
-    // sqlite3 answers the dictionary; x answers ticket reads, FRM-381 known, FRM-999 not
+    // sqlite3 answers the dictionary
     const runs: string[][] = [];
     on('process.run', (_$, e) => {
         runs.push([...e.argv]);
-        const isX = e.argv[0]?.endsWith('/x') ?? false;
         return {
             value: {
-                exitCode: box.isXDown && isX ? 1 : 0,
+                exitCode: 0,
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
                 stderr: '',
-                stdout: isX
-                    ? JSON.stringify({
-                          data: {
-                              tickets: [
-                                  {
-                                      id: 'FRM-381',
-                                      url: 'https://linear.app/x-com/issue/FRM-381/stash-orbit',
-                                  },
-                              ],
-                          },
-                      })
-                    : 'quards → chords\n',
+                stdout: 'quards → chords\n',
             },
         };
     });
@@ -249,7 +236,7 @@ test('an answer equal to his text says there was nothing to change', async ($, o
     );
 });
 
-test('a ticket id linear knows stays plain text, painted as a link', async ($, on) => {
+test('a ticket id in the answer stays plain text in the box', async ($, on) => {
     const box: Parameters<typeof world>[1] = {
         text: 'use the shape idea skill on frm 381',
     };
@@ -257,29 +244,5 @@ test('a ticket id linear knows stays plain text, painted as a link', async ($, o
     w.answers.push(async () => answered('/x:shape-idea on FRM-381'));
     const ui = await band($);
     await ui.press({ key: 'enh:enhance' });
-    expect([box.text, box.painted]).toEqual([
-        '/x:shape-idea on FRM-381',
-        ['FRM-381'],
-    ]);
-});
-
-test('an id linear does not know is left unpainted', async ($, on) => {
-    const box: Parameters<typeof world>[1] = { text: 'see frm 999' };
-    const w = world(on, box);
-    w.answers.push(async () => answered('see FRM-999'));
-    const ui = await band($);
-    await ui.press({ key: 'enh:enhance' });
-    expect([box.text, box.painted]).toEqual(['see FRM-999', []]);
-});
-
-test('with x down the answer lands unpainted', async ($, on) => {
-    const box: Parameters<typeof world>[1] = {
-        isXDown: true,
-        text: 'on frm 381',
-    };
-    const w = world(on, box);
-    w.answers.push(async () => answered('on FRM-381'));
-    const ui = await band($);
-    await ui.press({ key: 'enh:enhance' });
-    expect([box.text, box.painted]).toEqual(['on FRM-381', []]);
+    expect([box.text, box.painted]).toEqual(['/x:shape-idea on FRM-381', []]);
 });
