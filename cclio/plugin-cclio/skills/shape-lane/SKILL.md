@@ -28,7 +28,7 @@ load `mattpocock-skills:grilling` and ask in its round shape (❓ **Qn** - **tit
 
 ## 3 · the exit lines
 
-read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines into the ticket's `exit` section, the turn the last round lands. the last line is the **want line**: it replays dima's want or the incident behind the ticket, and the verifier grades it apart from the rest. the lines are cclio's; dima reads only the want line, and only on a `feature` or `app` lane (a test drive from 2026-10-10: if it proves too much or redundant, the want line is fully delegated too). a line that carries a decision he never made goes back to him as a grill question instead.
+read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines into the ticket's `exit` section, the turn the last round lands. the last line is the **want line**: it replays dima's want or the incident behind the ticket, and the verifier grades it apart from the rest. the lines are cclio's; dima reads only the want line (a test drive from 2026-10-10, `docs/test-drive/want-line.md`): it is printed to him as `want line n/5 · useful?` with the count from that file, his answer is logged there, and at 5/5 the reply asks his verdict — keep it, or delegate the want line fully too. a line that carries a decision he never made goes back to him as a grill question instead.
 
 then the **blind critic**, on every lane, quick ones too (`docs/research/exit-lines-delegation.md`: 17 of 20 flagged lines passed the lint and missed the want): write the want plus the lines to a file and run `pnpm -C ~/frame ccrow:plan-critique <file>` — a fresh one-shot that sees only that file. each finding is folded or answered in one line before the seal.
 
