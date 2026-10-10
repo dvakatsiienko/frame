@@ -125,7 +125,7 @@ test('the 5h bar ends in its used %, and the head reads the gap and the time lef
     const text = (key: string) => boxes.find((n) => n.key === key)?.text;
     expect([text('meter:5h'), text('meter:info')]).toEqual([
         expect.stringMatching(/39%$/),
-        expect.stringMatching(/^\+1% pace.*⏳ 3h 0m/),
+        expect.stringMatching(/^🔋 \+1%.*⏳ 3h 0m/u),
     ]);
 });
 
@@ -235,31 +235,31 @@ test('a compaction point outside 10–99 is refused and the file stays untouched
     ]).toEqual(['{}', true]);
 });
 
-test('a pace behind by up to 10 reads amber', async ($, on) => {
+test('a small overrun of the pace already reads 🪫 in red', async ($, on) => {
     meters(on);
     await measure($, 45, 35);
-    expect(await part($, /pace$/)).toEqual({
-        color: '#d9661a',
-        text: '-5% pace',
+    expect(await part($, /^🪫/u)).toEqual({
+        color: '#e5484d',
+        text: '🪫 -5%',
     });
 });
 
-test('the pace word prints bold', async ($, on) => {
+test('the pace chip prints bold', async ($, on) => {
     meters(on);
     await measure($, 39, 35);
     const ui = await band($);
     const pace = (await ui.findAll({ type: 'Text' })).find((n) =>
-        /pace$/.test(n.text ?? ''),
+        /^🔋/u.test(n.text ?? ''),
     );
     expect(pace?.props.bold).toBe(true);
 });
 
-test('a pace behind by more than 10 reads red', async ($, on) => {
+test('room under the pace reads 🔋 in green', async ($, on) => {
     meters(on);
-    await measure($, 55, 35);
-    expect(await part($, /pace$/)).toEqual({
-        color: '#e5484d',
-        text: '-15% pace',
+    await measure($, 30, 35);
+    expect(await part($, /^🔋/u)).toEqual({
+        color: '#47915a',
+        text: '🔋 +10%',
     });
 });
 

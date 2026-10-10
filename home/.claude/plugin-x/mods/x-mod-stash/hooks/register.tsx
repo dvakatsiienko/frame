@@ -2064,8 +2064,11 @@ export const register: Register = (on) => {
                           gap > 0
                               ? 'behind the 5h pace'
                               : 'ahead of the 5h pace',
-                          <Text bold color={fiveTint}>
-                              {gap > 0 ? `-${gap}% pace` : `+${-gap}% pace`}
+                          // room reads 🔋 green, over the pace 🪫 red at any size (dima's o46, 21:37)
+                          <Text
+                              bold
+                              color={gap > 0 ? RAMP[2] : METER_TINTS.calm5h}>
+                              {gap > 0 ? `🪫 -${gap}%` : `🔋 +${-gap}%`}
                           </Text>,
                           { left: 10 },
                       )}

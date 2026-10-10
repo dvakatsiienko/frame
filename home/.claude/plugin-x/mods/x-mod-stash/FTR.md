@@ -139,7 +139,7 @@
   - then no ping is sent, and the clock restarts when that turn ends
 - ⬜ two live meters, full width under the row (FRM-366)
   - given a session.measure arrives
-  - then `🔥 5h` draws the window's used % as a full-width bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; beside it the gap reads as one bold word (dima, 21:08), the sign and colour telling it apart — `+n% pace` green ahead, `-n% pace` orange behind by up to 10 and red past it (dima, 2026-10-10: «one word pace, but number and color is differentiator») — and `⏳ 1h 26m`, the time left to the reset (⏳ since dima, 21:10; the phases took 🌔), at full strength (dima, 20:53: «not dimmed»)
+  - then `🔥 5h` draws the window's used % as a full-width bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; beside it the gap reads bold, `🔋 +n%` green while there is room and `🪫 -n%` red at any overrun of the pace (dima's o46, 21:37: the word «pace» goes, the hover keeps it) — and `⏳ 1h 26m`, the time left to the reset (⏳ since dima, 21:10; the phases took 🌔), at full strength (dima, 20:53: «not dimmed»)
   - and `🧠 ctx` draws the context % as a full-width bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` carries the point in an `Input` whose Enter reads `✓`
   - and the desktop draws each bar in x-mod-breather's design language — its 5px cells, 2px gaps, light and dark palettes and ramp, two cell rows tall; the terminal draws sline's `▮ ▯` (dima, 20:22: «make them the same design language … bars are slightly different because they are bars»)
   - decision: no `pace n%` — the gap already says how far off pace (dima, 20:04)
