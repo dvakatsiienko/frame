@@ -16,7 +16,7 @@ ordinal: 108000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-check: dima says the plan changed (a bigger anthropic plan)
+**waiting for:** dima says the plan changed (a bigger anthropic plan)
 
 pocket 31 · status line was: `open · test-drive` · parked until the budget allows (dima 10-07: «maybe if i get a $200 anthropic plan»)
 

@@ -87,11 +87,11 @@ describe('checkPocket', () => {
             checkPocket(config, [task({ status: 'waiting' })], today).join(
                 '\n',
             ),
-        ).toContain('`check:` first line');
+        ).toContain('`**waiting for:**` first line');
         expect(
             checkPocket(
                 config,
-                [task({ status: 'waiting' }, 'check: gh pr view 1')],
+                [task({ status: 'waiting' }, '**waiting for:** gh pr view 1')],
                 today,
             ),
         ).toEqual([]);
@@ -152,7 +152,7 @@ describe('checkPocket', () => {
                 [
                     task(
                         { labels: ['s'], status: 'waiting' },
-                        'check: gh pr view 1',
+                        '**waiting for:** gh pr view 1',
                     ),
                 ],
                 today,

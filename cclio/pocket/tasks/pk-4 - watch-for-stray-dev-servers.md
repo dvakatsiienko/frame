@@ -17,7 +17,7 @@ ordinal: 106000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-check: the boot digest names no stray dev server through 2026-10-11 (the trial end)
+**waiting for:** the boot digest names no stray dev server through 2026-10-11 (the trial end)
 
 pocket 13 · status line was: `open · test-drive`
 

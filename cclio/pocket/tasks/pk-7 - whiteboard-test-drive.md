@@ -16,7 +16,7 @@ ordinal: 107000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-check: the next review that needs a board
+**waiting for:** the next review that needs a board
 
 pocket 16 · status line was: `claimed · test-drive`
 

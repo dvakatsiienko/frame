@@ -16,7 +16,7 @@ ordinal: 111000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-check: the next quick-lane coder spawn — it goes out as --model sonnet --effort medium
+**waiting for:** the next quick-lane coder spawn — it goes out as --model sonnet --effort medium
 
 pocket 53 · status line was: open · test-drive
 

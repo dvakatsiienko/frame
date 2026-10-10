@@ -16,7 +16,7 @@ ordinal: 10500
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-check: the next to-spec run on a ticket
+**waiting for:** the next to-spec run on a ticket
 dima, 2026-10-09: «let's try» the pk + matt chain; asked «how to have it as a habit, so this part is not missed?»
 - the habit is the file: docs/agents/issue-tracker.md now says Backlog, and every matt skill in frame (to-spec, to-tickets, implement-spec, triage, wayfinder) reads it before publishing or fetching — no memory needed
 - frame: .backlog/ (prefix SP, gitignored, the pocket's statuses + sizes + the triage roles as labels)

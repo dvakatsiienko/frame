@@ -16,7 +16,7 @@ ordinal: 109000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-check: `ls .scratch/_archive | wc -l` reaches 5 archived specs
+**waiting for:** `ls .scratch/_archive | wc -l` reaches 5 archived specs
 
 pocket 34 · status line was: `open · parked` · after enough spec runs
 

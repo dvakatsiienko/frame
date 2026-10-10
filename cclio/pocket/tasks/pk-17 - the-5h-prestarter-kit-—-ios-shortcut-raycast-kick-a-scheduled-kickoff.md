@@ -16,7 +16,7 @@ ordinal: 110000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-check: dima picked a door (ios shortcut, raycast kick or a scheduled kickoff)
+**waiting for:** dima picked a door (ios shortcut, raycast kick or a scheduled kickoff)
 
 pocket 52 · status line was: `standing · task` (his word 13:05: stays until he tried every door and picked one) · dima 10-08, from 38 · research: `scratchpad/research-5h-window.md` (this session's scratch; the facts are in the exa/parallel/researcher logs)
 

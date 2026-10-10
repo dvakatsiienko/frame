@@ -80,9 +80,9 @@ export function checkPocket(
             );
         if (
             status === 'waiting' &&
-            !firstDescriptionLine(text).startsWith('check:')
+            !firstDescriptionLine(text).startsWith('**waiting for:**')
         )
-            report('waiting without a `check:` first line');
+            report('waiting without a `**waiting for:**` first line');
 
         const due = front.scalars.due_date;
         const isExpiring = sizes.some((size) => EXPIRING.includes(size));
