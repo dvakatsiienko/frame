@@ -238,6 +238,7 @@
   - given the board draws
   - then a head reads `🚦 sessions on this mac · n` with `n busy` on its right, each row leads with a `●` state dot, the second line sits under the name and is dim
   - decision: no footer hint — «a name opens its session · /board colour flips colour» is gone (dima, 21:12)
+  - decision: a quarter row of air between the lines of one block — a member's two lines, an ask and its buttons, the phases — on the desktop; the terminal rounds it to none (dima, 21:22: 0 too dense, 0.5 too big)
   - decision: no new controls — the reference's run buttons stay out (dima: «no need functionality buttons»)
   - decision: the full row between members stays, dima's call of 2026-10-05, though the reference packs its rows
 - ⬜ `/board colour` tries colour as an MVP

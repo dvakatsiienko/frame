@@ -90,6 +90,8 @@ const STALE_TURNS = 3;
 // a plan line's lead word, one short word before its colon
 const PLAN_LEAD = /^[a-z]{2,10}:/i;
 const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
+// a quarter row between a block's lines: the desktop draws the fraction, the terminal rounds it away (dima, 21:22)
+const LINE_GAP = 0.25;
 const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     'op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»); pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.',
@@ -1499,7 +1501,8 @@ export const register: Register = (on) => {
             <Box
                 flexDirection='column'
                 key={`orbit:ask:${a.id}`}
-                marginTop={i > 0 ? 1 : 0}>
+                marginTop={i > 0 ? 1 : 0}
+                rowGap={LINE_GAP}>
                 <Box flexDirection='row' gap={1}>
                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
                         {/* the id and the pick bold, so the proposal stands out (dima, 20:30) */}
@@ -1579,7 +1582,7 @@ export const register: Register = (on) => {
                 {/* an answered ask stays until its turn ends, so dima sees it go */}
                 {o.asks.map(askJSX)}
                 {o.plan ? (
-                    <Box flexDirection='column' marginTop={1}>
+                    <Box flexDirection='column' marginTop={1} rowGap={LINE_GAP}>
                         <Text bold>
                             {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
                         </Text>
@@ -1650,7 +1653,8 @@ export const register: Register = (on) => {
                 <Box
                     flexDirection='column'
                     key={`m:${m.sid}`}
-                    marginTop={i > 0 ? 1 : 0}>
+                    marginTop={i > 0 ? 1 : 0}
+                    rowGap={LINE_GAP}>
                     <Box
                         flexDirection='row'
                         gap={1}
