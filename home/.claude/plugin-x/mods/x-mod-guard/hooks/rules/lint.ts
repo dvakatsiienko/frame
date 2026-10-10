@@ -8,10 +8,7 @@ import {
     hasFlag,
     isFlag,
     operands,
-    or,
-    reads,
 } from './command.ts';
-import { edits } from './rewrite.ts';
 
 const GREPS = new Set([
     'grep',
@@ -151,18 +148,14 @@ export function lint(
         };
     const isListing =
         hasFlag(c.args, LISTING) || ops.includes('list') || ops.includes('ls');
-    const isXGate = c.name === 'x' && ops[0] === 'go' && ops[1] === 'gate';
     const isGate =
         !isListing &&
-        (isXGate ||
-            ['tsc', 'vitest'].includes(c.name) ||
+        (['tsc', 'vitest'].includes(c.name) ||
             (['pnpm', 'npm', 'yarn', 'bun'].includes(c.name) &&
                 ops.some((o) => GATE.test(o))));
     if (pipedTo && isGate)
         return {
-            door: isXGate
-                ? 'run it unpiped and read the GATE line'
-                : 'run the gate unpiped and read its exit code',
+            door: 'run the gate unpiped and read its exit code',
             rule: 'gate-pipe',
             targets: [pipedTo],
             why: `| ${pipedTo} turns a red gate quiet`,
