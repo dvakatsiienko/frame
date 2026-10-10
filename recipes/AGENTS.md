@@ -58,7 +58,7 @@ body, in this order. each section holds only its own kind of line:
 6. `## artifacts` — one bullet per `artifacts:` entry: what it holds, how the distill treats it. never the artifact's content
 7. `## findings` — what this recipe's print adds to the shared parts, and its checklist, re-checked every run. never past verdicts
 
-`kind: run` (`run-diorama`) needs only the frontmatter, the heading, `## the want` and `## the run`.
+`kind: run` (`run-diorama`) needs only the frontmatter, the heading, `## the want` and `## the run`; when it carries more, the order is the want, artifacts, the run, vectors (a run reads its artifacts before it draws).
 
 ## log.md
 
