@@ -106,6 +106,8 @@ const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
 const LINE_GAP = 0.25;
 // an ask, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
 const ORBIT_TEXT_MAX = 90;
+// a ticket id inside an ask or a phase; split keeps the id as every odd part
+const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     `op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»), ≤${ORBIT_TEXT_MAX} chars, subject first, detail in hiddenNote; pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.`,
@@ -1656,6 +1658,18 @@ export const register: Register = (on) => {
                     {glyph}
                 </Button>
             ));
+        // a ticket id in an ask or a phase opens its linear page, as a session row's does (dima's o62, 22:13)
+        const linkedJSX = (text: string, key: string) =>
+            text.split(TICKET_IDS).map((part, i) => {
+                if (i % 2 === 0) return part;
+                return (
+                    <Link
+                        href={`https://linear.app/x-com/issue/${part}`}
+                        key={`${key}:${i}`}>
+                        {part}
+                    </Link>
+                );
+            });
         // the ask on its own line, the bold id leading it; under it one row: the note, 🤩 👎🏼, then speak's 🔊 ⏯ ⏹
         // (dima, 20:08); a full row of air between asks (dima, 19:52)
         const askJSX = (a: OrbitAsk, i: number) => (
@@ -1672,8 +1686,12 @@ export const register: Register = (on) => {
                         <Text>
                             {a.isResolved ? '👀 ' : ''}
                             <Text bold>{a.id}</Text>
-                            {`: ${a.text} ➡️ `}
-                            <Text bold>{a.pick}</Text>
+                            {': '}
+                            {linkedJSX(a.text, `ask:${a.id}`)}
+                            {' ➡️ '}
+                            <Text bold>
+                                {linkedJSX(a.pick, `pick:${a.id}`)}
+                            </Text>
                         </Text>
                     </Box>
                     {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
@@ -1768,7 +1786,12 @@ export const register: Register = (on) => {
                                             {lead[0]}
                                         </Text>
                                     ) : null}
-                                    {lead ? line.slice(lead[0].length) : line}
+                                    {linkedJSX(
+                                        lead
+                                            ? line.slice(lead[0].length)
+                                            : line,
+                                        `plan:${i}`,
+                                    )}
                                 </Text>
                             );
                         })}

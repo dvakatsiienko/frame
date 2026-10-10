@@ -296,6 +296,10 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when the orbit tool takes it
   - then the tool refuses it in one line naming the text and its length, and orbit keeps what it had
   - decision: ≤90 chars, subject first, the detail in the hidden note (dima's o60, 22:13)
+- ✅ a ticket id in an ask or a phase is a link
+  - given an ask, its pick or a phase line names `FRM-N` or `BYT-N`
+  - when dima looks at the board
+  - then the id opens its linear page, as a session row's ticket does (dima's o62, 22:13)
 - ✅ accept, reject, note, check all
   - given orbit shows asks
   - when dima presses an ask's 🤩 or 👎🏼, types in its note, or presses check all

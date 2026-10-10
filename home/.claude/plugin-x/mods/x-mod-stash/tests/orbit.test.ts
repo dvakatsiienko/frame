@@ -118,10 +118,10 @@ test("an ask's row reads its text and cclio's pick", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
-    await add($, ['push FRM-1 to main', 'yes, now']);
+    await add($, ['push the branch to main', 'yes, now']);
     expect(
         (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text,
-    ).toContain('push FRM-1 to main ➡️ yes, now');
+    ).toContain('push the branch to main ➡️ yes, now');
 });
 
 test('a ticked ask joins the next prompt as model-only context', async ($, on) => {
@@ -263,7 +263,7 @@ test('a follow-up keeps its id and place with new text and a changed mark', asyn
         id: 'o1',
         op: 'follow',
         pick: 'after ci',
-        text: 'push FRM-1 once ci is green',
+        text: 'push the branch once ci is green',
     });
     await endTurn($);
     expect([
@@ -272,7 +272,7 @@ test('a follow-up keeps its id and place with new text and a changed mark', asyn
     ]).toEqual([
         ['o1', 'o2'],
         expect.stringMatching(
-            /push FRM-1 once ci is green ➡️ after ci.*changed/,
+            /push the branch once ci is green ➡️ after ci.*changed/,
         ),
     ]);
 });
@@ -633,4 +633,26 @@ test('an ask text of exactly 90 chars is taken', async ($, on) => {
     await start($);
     const r = await add($, ['x'.repeat(90), 'yes']);
     expect((r as { deny?: string }).deny).toBe(undefined);
+});
+
+const hrefs = async (ui: {
+    findAll: (q: {
+        type: string;
+    }) => Promise<{ props: Record<string, unknown> }[]>;
+}) => (await ui.findAll({ type: 'Link' })).map((n) => n.props.href);
+
+test('a ticket id in an ask opens its linear page', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['close FRM-381 after the verifier', 'yes']);
+    expect(await hrefs(ui)).toContain('https://linear.app/x-com/issue/FRM-381');
+});
+
+test('a ticket id in a phase line opens its linear page', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: build BYT-12'], op: 'plan' });
+    expect(await hrefs(ui)).toContain('https://linear.app/x-com/issue/BYT-12');
 });
