@@ -4,7 +4,7 @@ title: 'the spec ↔ linear body relation, from the archive'
 status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-10 11:16'
+updated_date: '2026-10-10 11:37'
 due_date: '2026-10-12'
 labels:
   - s
@@ -30,4 +30,6 @@ dima 10-07: «do not delete specs we create, but move them into an archive somew
 10-10: 5 specs archived (mods-round, x-handoff, x-linear, x-stats-board, x-telemetry), the wait is over
 
 done 10-10: verdict keep (docs/test-drive/spec-pipeline.md log) — specs local, archived at land, linear keeps want + closing word; x-stats-board was unbuilt and went back to .scratch; FRM-329 closed bare
+
+10-10, dima: the one-rule fix folds into FRM-267's pm review (.scratch/memory-sweep/issues/085-pm-review.md), with the bloat cut; ticket: FRM-267
 <!-- SECTION:NOTES:END -->
