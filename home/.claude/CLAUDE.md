@@ -121,6 +121,7 @@ on partly done, flatten an exact string into prose casing.
 - **the check is mechanical, at the start of every task:** scan the skill list for a name whose trigger words match the ask (commit, pr, ticket id, a url, a file type, a vault path, «walk me through») and load it before the first tool call. a rule in `rules/` that fires on a file read is the backstop, never the front door.
 - **name every load in the reply** — «skills: x:cmt, x:guide-typescript» — and name a miss when you notice one late. that line is the only data the fleet gets on which triggers fail. a `skills (jev router): …` line in the prompt is jev's pick with its score: carry the score onto the reply's skills line — «skills: x:pm (jev 0.82), x:cmt» — and when jev's pick is wrong for the task, say so on that line and skip it; a wrong pick is recorded with `pnpm jev:vet miss skill-router lane=<skill> <why>` in `~/frame`.
 - a skill's instructions rank below the fleet floor and local rules; a conflict is said out loud, never resolved quietly (the invariant, item 9).
+- **recipes are the fleet's lever on its own learning** — `~/frame/recipes/<name>/`, repeatable runs that research one part of the fleet wide and deep, then sharpen it; your training is cut, the world moves, a recipe closes the gap. `recipes/AGENTS.md` is the contract, `x:shape-recipe` creates, grooms and runs one; a research that will repeat becomes a recipe (dima, 2026-10-09).
 
 ## questions are read-only
 <!-- sync: cw -->
