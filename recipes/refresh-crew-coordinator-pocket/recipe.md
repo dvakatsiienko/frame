@@ -7,6 +7,7 @@ artifacts:
   - cclio/backlog.config.yml
   - docs/test-drive/pocket.md
 script: none
+groomed: 2026-10-10 (dima)
 ---
 
 # refresh-crew-coordinator-pocket
@@ -20,6 +21,8 @@ born 2026-10-10 from PK-34.
 - shaped with dima, 2026-10-09: no drift, no clutter, easy items never parked, pulled often. «readable on your phone is not the requirement for pocket»
 - «the pocket is for things to be done first, and for things not meant for the long shelf. linear is the long shelf, for bigger settled wishes i allow to wait. moving an item from the pocket to linear is postponing, not solving. keeping items in the pocket is fine; cluttering it is not» (dima, 2026-10-10)
 - «pocket must reflect true state always — i often look at it, stale state is not allowed» (dima, 2026-10-10)
+- «pocket must be efficient for you to function over it, and convent for me to peek inside, and edit pocket content. ideally it is an agent-friendly framework for managint todos right on my fs, so your access there is fast and quick.» (dima, 2026-10-10)
+- «pocket is flexible, allowing customization - pocket items types, labels, connections — having everyting that a good ticket management tool an agent would ever want.» (dima, 2026-10-10)
 
 ## the run
 
@@ -39,6 +42,8 @@ born 2026-10-10 from PK-34.
 - new agent-facing trackers since the last run, and what they borrow from human ones
 - intake triage: how users of agent trackers turn a fat drop into ordered items without losing one
 - staleness: how others detect an item nobody touched, and what they do with it
+- the full feature set a ticket tool gives an agent: types, labels, relations and dependencies, milestones, ordering, custom fields; which ones Backlog.md has, which we use, which we miss
+- the human side of an agent-first tracker on the fs: board and web views, editor integration, how a person peeks and edits without breaking the agent's files
 
 ### analysis
 
@@ -47,6 +52,8 @@ born 2026-10-10 from PK-34.
 - created vs resolved per week; the open count against the cap of 5
 - items that went to linear without dima's word (a postponement posing as a solve)
 - `#dima-caught` flawlog lines about the pocket since the last run
+- the agent's cost per pocket op: boot tokens for the pocket, cli calls vs raw file reads, failed or retried `backlog` calls in transcripts
+- dima's own touches: his edits to pocket files (commits without an `Agent:` trailer) and his «what's next?» asks the order should have answered
 
 ## artifacts
 
