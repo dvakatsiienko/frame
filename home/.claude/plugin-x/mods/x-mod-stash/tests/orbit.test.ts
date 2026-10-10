@@ -337,7 +337,7 @@ test('an empty orbit adds no reminder', async ($, on) => {
     expect((w.contexts.at(-1) ?? []).join('\n')).not.toContain('orbit');
 });
 
-test('the planned actions show in the board, at most five', async ($, on) => {
+test('the phases show in the board, a moon each, at most five', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -348,8 +348,24 @@ test('the planned actions show in the board, at most five', async ($, on) => {
     expect(
         (await ui.findAll({ type: 'Text' }))
             .map((t) => t.text)
-            .filter((t) => /^\d\. /.test(t ?? '')),
-    ).toEqual(['1. now: a', '2. next: b', '3. then: c', '4. d', '5. e']);
+            .filter((t) => /^[🌕🌔🌓🌒🌑] (?!phases)/u.test(t ?? '')),
+    ).toEqual(['🌕 now: a', '🌔 next: b', '🌓 then: c', '🌒 d', '🌑 e']);
+});
+
+test('a phase fades with its distance from now', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a', 'next: b', 'then: c'], op: 'plan' });
+    expect(
+        (await ui.findAll({ type: 'Text' }))
+            .filter((t) => /^[🌕🌔🌓] (?!phases)/u.test(t.text ?? ''))
+            .map((t) => [Boolean(t.props.bold), Boolean(t.props.dimColor)]),
+    ).toEqual([
+        [true, false],
+        [false, false],
+        [false, true],
+    ]);
 });
 
 test('a plan untouched for three turns reads stale', async ($, on) => {
@@ -363,7 +379,7 @@ test('a plan untouched for three turns reads stale', async ($, on) => {
         await say($, 'more');
     }
     expect([
-        (await ui.find({ text: /^📝/, type: 'Text' }))?.text,
+        (await ui.find({ text: /^🌔 phases/, type: 'Text' }))?.text,
         (w.contexts.at(-1) ?? []).join('\n'),
     ]).toEqual([
         expect.stringContaining('stale'),

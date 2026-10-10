@@ -7,7 +7,7 @@
 
 ## the row
 
-- ✅ one row of `🪐 <open asks>` `📝 <planned>` chips, the pace and time left, `📦` and the compaction point, then `🔥`, `⏰`, `💨` and `🚦`; the two meters run full width under it
+- ✅ one row of `🪐 <open asks>` `📝 <phases>` chips, the pace and time left, `📦` and the compaction point, then `🔥`, `⏰`, `💨` and `🚦`; the two meters run full width under it
   - given the band draws
   - when dima looks above the prompt
   - then it is that row plus the two meter rows, and the chips do nothing on a press
@@ -38,7 +38,7 @@
 - ⬜ every chip and reading in the row names itself on hover, five words or fewer
   - given the row draws
   - when dima hovers `🪐 n`, `📝 n`, the pace, `🌔`, `📦`, its field, `🔥 5h` or `🧠`
-  - then a dim card reads «n open asks for you», «n planned moves», «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «auto-compact at this context %», «type a %, ✓ saves», «5h window used», «context window used» (dima, 20:13)
+  - then a dim card reads «n open asks for you», «n phases», «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «auto-compact at this context %», «type a %, ✓ saves», «5h window used», «context window used» (dima, 20:13)
   - 📌 harness-proven words; the reveal on the desktop is dima's eye
 - ✅ `/clear` and `/resume` empty the conversation's orbit in the same turn
   - given orbit holds asks
@@ -339,17 +339,22 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the session gets a short model-only note: the open asks, the tool to answer with, the plan's age
   - decision: the contract is mechanical — the reminder and the tool's own text, no new skill (dima, 2026-10-10: «we have too many of them … yagni»)
 
-## /board — 📝 planned actions
+## /board — 🌔 phases
 
-- ✅ planned actions: the session's next 5 moves, live
-  - given cclio has set a plan
+- ✅ phases: the session's next 5 moves, live
+  - given the session has set its phases
   - when dima looks at the board
-  - then up to 5 lines show what is now, next and then, each readable on its own
+  - then up to 5 lines under `🌔 phases` show what is now, next and then, each readable on its own
   - decision: each line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
-- ✅ a stale plan is named
-  - given the plan was not touched for 3 turns
+- ✅ a phase's moon fills by nearness
+  - given the session has set 5 phases
+  - when dima looks at the board
+  - then the lines lead with 🌕 🌔 🌓 🌒 🌑 in order; the 🌕 line prints bold, the 🌔 line plain, the rest dim
+  - decision: the moon replaces the line number (dima, 20:58)
+- ✅ stale phases are named
+  - given the phases were not touched for 3 turns
   - when the next prompt goes
-  - then the board marks the plan stale and the session's reminder says so in one line
+  - then the board marks them stale and the session's reminder says so in one line
 
 ## spawn hints — the board's name flag only
 

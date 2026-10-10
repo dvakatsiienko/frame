@@ -107,7 +107,7 @@ test('every control in the row carries a hover card that names it', async ($, on
         .map((n) => n.text);
     expect(cards).toEqual([
         '0 open asks for you',
-        '0 planned moves',
+        '0 phases',
         'auto-compact at this context %',
         'type a %, ✓ saves',
         "keep this session's cache hot: ping every 50 min",

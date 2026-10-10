@@ -16,9 +16,9 @@ _Avoid_: question, todo, pending
 One session's own list of asks to dima, in the board; he ticks, rejects or notes an ask, and the marked ones join his next prompt, or the running turn. Replaced the reply-parsed ask list.
 _Avoid_: asks box, wfyb, inbox
 
-**Planned actions** 📝:
-The session's next moves, at most 5, kept live in the board by the session itself.
-_Avoid_: next block, todo
+**Phases** 🌔:
+The session's next moves, at most 5, kept live in the board by the session itself; each leads with a moon that fills by nearness, 🌕 now to 🌑 last.
+_Avoid_: planned actions, next block, todo
 
 **Afk**:
 Dima's away switch; while on, every session's prompt carries an away note.

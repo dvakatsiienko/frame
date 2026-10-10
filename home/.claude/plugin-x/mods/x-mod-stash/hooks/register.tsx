@@ -89,6 +89,7 @@ const PLAN_MAX = 5;
 const STALE_TURNS = 3;
 // a plan line's lead word, one short word before its colon
 const PLAN_LEAD = /^[a-z]{2,10}:/i;
+const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
 const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     'op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»); pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.',
@@ -1580,15 +1581,19 @@ export const register: Register = (on) => {
                 {o.plan ? (
                     <Box flexDirection='column' marginTop={1}>
                         <Text bold>
-                            {`📝 planned${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
+                            {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
                         </Text>
                         {o.plan.lines.map((line, i) => {
                             // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
                             const lead = line.match(PLAN_LEAD);
                             return (
-                                // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
-                                <Text key={`plan:${i}`}>
-                                    {`${i + 1}. `}
+                                // the moon fills by nearness: the now line bold, the then lines dim (dima, 20:58)
+                                <Text
+                                    bold={i === 0}
+                                    dimColor={i > 1}
+                                    // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
+                                    key={`plan:${i}`}>
+                                    {`${PHASE_MOONS[i]} `}
                                     {lead ? <Text bold>{lead[0]}</Text> : null}
                                     {lead ? line.slice(lead[0].length) : line}
                                 </Text>
@@ -1933,7 +1938,7 @@ export const register: Register = (on) => {
                 )}
                 {tip(
                     'chip:plan',
-                    `${planned} planned move${planned === 1 ? '' : 's'}`,
+                    `${planned} phase${planned === 1 ? '' : 's'}`,
                     <Text dimColor={!planned}>{planChip}</Text>,
                     { left: [...planChip].length + 1 },
                 )}
