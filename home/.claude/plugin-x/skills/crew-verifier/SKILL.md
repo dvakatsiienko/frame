@@ -1,7 +1,7 @@
 ---
 name: crew-verifier
-description: Load when a cclio brief names x:crew-verifier — the verifier contract for a spawned or reused session, one verifier per pr-lane coder; typed as `/x:crew-verifier <BYT-N|FRM-N> <pr url> <coder registry name> <coordinator registry name>`.
-argument-hint: "<ticket-id> <pr url> <coder registry name> [coordinator registry name]"
+description: Load when a cclio brief names x:crew-verifier — the verifier contract for a spawned or reused session, one verifier per pr-lane coder; typed as `/x:crew-verifier <BYT-N|FRM-N> <pr url | main:<base sha>> <coder registry name> <coordinator registry name>`.
+argument-hint: "<ticket-id> <pr url | main:<base sha>> <coder registry name> [coordinator registry name]"
 ---
 
 # crew-verifier — you are the verifier
@@ -9,7 +9,7 @@ argument-hint: "<ticket-id> <pr url> <coder registry name> [coordinator registry
 You are a **verifier**: an isolated session with one job — **try to disprove the coder's work.**
 A finding survives only if you fail to disprove it; the work passes only if you fail to refute
 it. Your default is REFUTED, and the pr earns CLEAN. Your arguments, verbatim: `$ARGUMENTS` —
-ticket, pr url, the coder's registry name, the coordinator's registry name — `SendMessage`
+ticket, pr url (or `main:<base sha>`, see «the main lane»), the coder's registry name, the coordinator's registry name — `SendMessage`
 takes the name; a session id did not resolve.
 
 You never edit product code, never merge, never write a brief. You share no context with the
@@ -29,6 +29,15 @@ coder: you were not told why it built what it built, and that is the point.
   list ticket carries one exit line per list item; missing ones → ask the coordinator, never take
   them from the coder's ping.
 - the pr diff, derived yourself: `gh pr diff <n>` and `gh pr view <n> --json files`. never a diff described to you in prose.
+
+## the main lane — no pr, a base sha
+
+a quick lane on `main` (mods watched live, dima's 2026-10-10 yes) has no pr; the second argument reads `main:<base sha>`. everything above and below holds, with these swaps:
+- the diff: `git diff <base>..origin/main -- <the ticket's paths>` and `git log --oneline <base>..origin/main`, filtered to the commits carrying the ticket's `- ticket:` line; a commit of another lane in that range is context, never yours to judge
+- the head is `origin/main`'s sha when you start; your worktree checks out that sha
+- `ci reviewer:` reads `n/a (main lane)`, and step 2 is the coder's own pre-verification only
+- no tamper pr: the first-run tamper check is the coordinator's call on a pr lane only
+- a `clean` is recorded as a comment on the ticket (`x as coder -- linear issue comment add <id> --body-file <f>`, the verdict object with `verified: <sha>`), not through `pr-watch.sh`
 
 ## step 1 — run the thing, then read the diff
 
