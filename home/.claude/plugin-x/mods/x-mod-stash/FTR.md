@@ -245,7 +245,7 @@
 - ⬜ `/board colour` tries colour as an MVP
   - given colour is off, the default
   - when dima types `/board colour`
-  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), `blocked` red, `waiting` and `needs_input` amber, `ctx n%` dim under 50, then sline's bar ramp: yellow from 50, orange from 65, red from 80; the model stays dim and orange is left to `⏳ n` alone; typed again, it goes back
+  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), `blocked` red, `waiting` and `needs_input` amber, `ctx n%` dim under 50, then sline's bar ramp: yellow from 50, orange from 65, red from 80; the model stays dim and orange is left to `🪐 n` alone; typed again, it goes back
   - decision: calm by default, a colour only where something is live — the first MVP put the same orange on the busy dot, the busy word, the head and the asks, and painted a calm context green (dima, 2026-10-08: «colors like in SS»)
   - decision: the head leads with `🚦`, the board's own button in the row, not the reference's `◆` (dima, 2026-10-08: «dont' like the diamond»); the context climbs sline's ramp, not the theme's dull amber (dima: «pick prettier color ctx filling»)
   - decision: theme keys (`success`, `warning`, `error`) for every state colour, so light and dark both read; the six dot hues are fixed mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane, with no coral beside the asks' orange
