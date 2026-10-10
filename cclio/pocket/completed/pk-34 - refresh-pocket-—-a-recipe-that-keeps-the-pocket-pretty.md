@@ -1,10 +1,10 @@
 ---
 id: PK-34
 title: refresh-crew-coordinator-pocket — a recipe that keeps the pocket pretty
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 11:06'
-updated_date: '2026-10-10 10:11'
+updated_date: '2026-10-10 10:18'
 labels:
   - m
 dependencies:
@@ -30,4 +30,6 @@ dima, 2026-10-09, shaped with him via x:shape-recipe. want: no drift, no clutter
 closed by the 10-10 sweep: pocket-check's contract (done listed, size gate, the 5-item cap) enforces no drift and no clutter mechanically, no recipe needed
 
 reopened 10-10 on dima's word: finish it now that pk-28 (recipes) is settled; cadence line is retired with every recipe
+
+done 10-10: recipes/refresh-crew-coordinator-pocket born; first run waits on dima's groom
 <!-- SECTION:NOTES:END -->
