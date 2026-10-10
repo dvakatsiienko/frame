@@ -4,7 +4,7 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 const SID = 'e1e1e1e1-enhancer';
 
 // the prompt box as one string behind read and fill; Haiku answers from a queue, each call counted
-function world(on: On, box: { text: string }) {
+function world(on: On, box: { text: string; refusal?: 'dialog' }) {
     mock.clock(on);
     mock.store(on);
     const calls: { prompt: unknown; system: unknown }[] = [];
@@ -47,6 +47,7 @@ function world(on: On, box: { text: string }) {
         value: { cursor: box.text.length, text: box.text },
     }));
     on('prompt.fill', (_$, e) => {
+        if (box.refusal) return { isFilled: false, refusal: box.refusal };
         box.text = e.text;
         onFill();
         return { isFilled: true };
@@ -193,4 +194,29 @@ test('a Haiku error leaves his text and the band names the reason', async ($, on
         box.text,
         (await ui.find({ text: /^enhance:/, type: 'Text' }))?.text,
     ]).toEqual(['draft', expect.stringMatching(/api-error.*untouched/)]);
+});
+
+test('a box that refuses the answer says so in the band', async ($, on) => {
+    const box = { refusal: 'dialog' as const, text: 'draft' };
+    world(on, box);
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    expect([
+        box.text,
+        (await ui.find({ text: /^enhance:/, type: 'Text' }))?.text,
+    ]).toEqual([
+        'draft',
+        expect.stringMatching(/did not take the answer.*press new to retry/),
+    ]);
+});
+
+test('an answer equal to his text says there was nothing to change', async ($, on) => {
+    const box = { text: 'already clean' };
+    const w = world(on, box);
+    w.answers.push(async () => answered('already clean'));
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    expect((await ui.find({ text: /^enhance:/, type: 'Text' }))?.text).toBe(
+        'enhance: Haiku found nothing to change',
+    );
 });

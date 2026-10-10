@@ -324,12 +324,22 @@ async function enhanceOnce($: EngineInterface) {
             error: `enhance: ${failure}; your text is untouched`,
             status: 'idle',
         });
+    if (answer === pressed)
+        return saveEnhancer($, {
+            ...before,
+            error: 'enhance: Haiku found nothing to change',
+            status: 'idle',
+        });
+    const filled = await $.prompt.fill({ text: answer });
+    // a refused fill keeps the answer, so new can try the box again
     await saveEnhancer($, {
+        error: filled.isFilled
+            ? undefined
+            : `enhance: the box did not take the answer (${filled.refusal ?? 'a hook kept it out'}); press new to retry`,
         latest: answer,
         original: pressed,
         status: 'idle',
     });
-    await $.prompt.fill({ text: answer });
 }
 
 // prev keeps whatever he changed in the enhanced text, so new brings his edits back with it
@@ -345,8 +355,13 @@ async function enhancePrev($: EngineInterface) {
 async function enhanceNew($: EngineInterface) {
     const s = await enhancerOf($);
     if (s.status === 'running' || s.latest === undefined) return;
-    await saveEnhancer($, { ...s, error: undefined });
-    await $.prompt.fill({ text: s.latest });
+    const filled = await $.prompt.fill({ text: s.latest });
+    await saveEnhancer($, {
+        ...s,
+        error: filled.isFilled
+            ? undefined
+            : `enhance: the box did not take the text (${filled.refusal ?? 'a hook kept it out'})`,
+    });
 }
 
 const oneLine = (v: unknown) =>
