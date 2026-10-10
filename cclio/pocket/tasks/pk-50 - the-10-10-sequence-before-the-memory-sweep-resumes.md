@@ -21,6 +21,8 @@ dima, 2026-10-10 14:50, folded. sequential, one at a time, no parallel lanes yet
 2. [x] big picture, overall (dima: the roadmap initiative; cli moved off the order into a parallel track, its evolve contract in the initiative body)
 3. [ ] mods that solve the comms issues and improve his ux (dima 15:18: mods first, the cli after)
    - mod idea (dima, 15:50): the trackers he reads but never answers (🔭 / 🛰️ / ⏲️ who we wait on, the stat boards, the 📄 stamp) move out of the replies into a mod; groom, grill, test drive
+   - mod flaw (dima, 16:28): x-mod-stash checks the ⏳ fence in a Stop hook, after the reply, so a fix costs a second print and a turn; it should warn before the answer goes out, and accept sections split by a blank line (one line per item stays)
+   - the mods brief names the bundled `plugin-authoring` skill as step 0 (dima 16:38: 7 loads in a week, 1 of them a coder)
    - the reply analysis (`~/frame/.scratch/reply-analysis-2026-10-10.md`) proposals 4 and 8: the ⏳ fence in a side pane with accept-all, the add-ons (skills line, 🔥) to a log
    - input (dima, 15:13: «keep this report in mind when we start planning mods»): the [Operator Ledger](https://claude.ai/artifact/CJmBAGi8tJ9wyh8FW3kx9o) and the comms answer of 10-10 15:2x, numbers in `x fleet flow` and the ledger: 495 bare approvals, 637 questions, 127 plugin reloads, 57 re-asks
 4. [ ] big picture, cli: review the cli's state, read its PRODUCT.md, a few turns of high-level planning

@@ -2,15 +2,16 @@
 kind: refresh
 owner: coordinator
 artifacts:
-  - docs/knowledge/comms.md
+  - docs/knowledge/operator-agent-comms-optimization.md
   - home/.claude/rules/fleet-output-format.md
   - home/.claude/output-styles/output-fun.md
   - cclio/memory/habit-dima-comms-pacing.md
 script: none
 groomed: 2026-10-10 (dima)
+was: [refresh-comms]
 ---
 
-# refresh-comms
+# refresh-operator-agent-comms-optimization
 
 keeps the talk between dima and the fleet cheap to read and cheap to steer: what he asks, how the replies land, what costs him turns.
 
@@ -28,9 +29,9 @@ dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-
 - dima's own trackers (🔭, the stat boards, the 📄 stamp) are info he reads, never cut as noise (dima, 2026-10-10)
 - cheap by default (dima, 2026-10-10: «the scrape is big and expensive, how to optimize it»; the first run cost ~830k sonnet tokens of labelling and ~350k opus of reading):
   - the extract and every number are `jq` + `duckdb`, free; a model only labels or reads
-  - incremental: only prompts since the last run get labelled; labels persist in `~/.local/state/refresh-comms/labels.parquet`, never re-bought
+  - incremental: only prompts since the last run get labelled; labels persist in `~/.local/state/refresh-operator-agent-comms-optimization/labels.parquet`, never re-bought
   - free labels first: bare approvals, slash commands and status words by pattern; the model labels the rest from the first 330 characters
-  - the cheapest model that matches: haiku against the stored sonnet labels on one chunk, kept when they agree on 85 % or more; jev takes the labelling when its credit is back
+  - the model labels only pushback and the gap (4–7 values, where agreement holds); the 9 kinds come from patterns where mechanical (approve, command, status); the cheapest model that agrees 85 % with the gold set does it, jev when its credit is back
   - the reply read samples 100 pairs, opus only there
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the vectors. (open)
@@ -41,7 +42,7 @@ dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-
    - labels use the SWE-chat pushback kinds (correction, rejection, failure report) beside ours, so rates compare with published ones, and tag the communication challenge a prompt shows (what can the agent do, what is it doing, did it land, which past decision applies)
    - a 50-prompt gold set, hand-checked by cclio once and kept in the label store: a labelling lane counts only at 85 % agreement or more
    - the relational numbers come from `duckdb`, no model: ask → answer latency, unanswered asks, the repair span after a correction, turns per decision, a new agent message before his reply
-5. distill into `docs/knowledge/comms.md` (the ledger, its trend against the last run) and propose the rule, style and habit lines the run showed wrong; a rule changes only on his word. done: every artifact read and touched or named «unchanged». (open)
+5. distill into `docs/knowledge/operator-agent-comms-optimization.md` (the ledger, its trend against the last run) and propose the rule, style and habit lines the run showed wrong; a rule changes only on his word. done: every artifact read and touched or named «unchanged». (open)
 6. findings print, the shared parts plus this recipe's checklist. done: printed. (template)
 7. log today's line in `log.md`. done: the line is there. (open)
 
@@ -50,10 +51,11 @@ dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-
 ### research
 
 1. how to improve communication between a human operator and a fleet of coding agents: reading load, reply length, batching asks, decision fatigue, approval queues — what is proven, by whom
-2. how practitioners and vendors measure the quality of human ↔ agent communication from transcripts: metrics, taxonomies, the signals that a reply failed
-3. prior art: tools and ui patterns that move agent status, asks and trackers out of the chat (side panes, notification queues, inboxes, status bars) in Claude Code, Cursor, Devin, Factory, Conductor and others
+2. how practitioners and vendors measure the quality of human ↔ agent communication from transcripts: metrics, taxonomies, the signals that a reply failed, and how to check an LLM judge on a small gold set
+3. prior art: fleet views and verdict UIs a Claude Code mod can borrow (side panes, ask queues, inboxes, status bars) from Claude Code, Cursor, Devin, Factory, Conductor and others
 4. a non-native English operator who dictates by voice: plain-language and readability practice that cuts load without losing precision
 5. interruption and async research: when an agent should interrupt a human, how to batch, what a good digest holds
+6. how an agent should ask: defaults, structured choices, when not to ask at all
 
 ### analysis
 
@@ -64,17 +66,26 @@ dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-
 - **fatigue against the hour**: when corrections spike
 - **wispr misses**: misheard words not yet in the dictionary
 - **repeated asks and repeated agent commands**: the same shape asked or run by hand again, each an `x` verb or a raycast candidate
-- **skill misses**: an ask a skill covers where the skill never loaded
 - **his felt-sense catches**: a story or a hazard line waiting to be written
+- **pushback by published kind**: correction, rejection, failure report, comparable with the SWE-chat rates
+- **status lines vs his status-check prompts**: do the trackers answer «are bg agents ok?» before he asks
+- **re-asks against recorded decisions**: a re-ask matched to the pocket's decisions and memory, so the decision log gets consulted
+- **member reports that reach him**: the length of coder and verifier reports in his thread (an output style never reaches them)
+
+### cut
+
+- skill misses (dima, 2026-10-10): the skill-router vet already counts them
 
 ## artifacts
 
-- `docs/knowledge/comms.md` — the ledger: the numbers, their trend run over run, the open levers; the distill merges, never appends a second copy
+- `docs/knowledge/operator-agent-comms-optimization.md` — the ledger: the numbers, their trend run over run, the open levers; the distill merges, never appends a second copy
 - `home/.claude/rules/fleet-output-format.md` — the reply shape; the run proposes line changes, dima approves
 - `home/.claude/output-styles/output-fun.md` — the voice; same, his word only
 - `cclio/memory/habit-dima-comms-pacing.md` — cclio's pacing habits; proposals announced, edited on his word
 
 ## findings
+
+the print is a report, never a bare list (dima, 2026-10-10): the research results, the facts he would find interesting, what was off in our previous shape and why, and what the new findings let us improve.
 
 this recipe's print adds:
 - the ledger delta: each number against the last run, the direction named

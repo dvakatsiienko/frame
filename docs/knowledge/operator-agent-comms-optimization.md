@@ -1,6 +1,6 @@
 # comms — the ledger of dima ↔ fleet talk
 
-kept by `recipes/refresh-comms`; each run merges its numbers here and names the direction against the last run. the page view of the first run: [Operator Ledger](https://claude.ai/artifact/CJmBAGi8tJ9wyh8FW3kx9o).
+kept by `recipes/refresh-operator-agent-comms-optimization`; each run merges its numbers here and names the direction against the last run. the page view of the first run: [Operator Ledger](https://claude.ai/artifact/CJmBAGi8tJ9wyh8FW3kx9o).
 
 ## his prompts — 2026-09-03 → 2026-10-10 (37 days)
 
@@ -17,6 +17,17 @@ kept by `recipes/refresh-comms`; each run merges its numbers here and names the 
 - by week: median 1,000 → 1,357 → 1,251 → 1,518; asks per reply 1.0 → 2.3; bullets 4 → 8
 - 58 of 136 ask fences came back pasted whole and unchanged; 42 ignored; 36 steered
 - 15 of 179 sampled next prompts stop to decode a label; commit hashes in 45 of 179
+
+## with context (run 1 calibration, 305 stratified prompts, weighted back to the whole set)
+
+- the first labels judged each prompt alone; with the turn before it, the picture moves:
+  - the first pass counted corrections alone, one flag, no context: 8 %. with the turn before each prompt and the three published kinds, pushback is ~28 % (opus-judged, no human gold set yet)
+  - re-asks with one turn of context: ~8 %, about 200 in 37 days, against 57 first counted; still an estimate, the decision-log match is not run yet
+  - 36 % of prompts show a communication gap: «what can the system do or does» 16 %, a lost decision 6 %, unreadable output, «did it land», «is it stuck»
+- the context-free kind label agreed with the opus context label on 65 % of prompts; most flips were approvals, wishes and corrections that were really steers
+- labelling models against an opus reference: sonnet 77 % on kind, 86 % on pushback, 78 % on gap; haiku 65 %, 82 %, 65 % and more tokens than sonnet (450k vs 312k) — accuracy retires haiku; no model clears 85 % on the 9-way kind, so the model labels pushback and the gap only, and the kinds go to patterns where they are mechanical (approve, command, status)
+- free numbers (duckdb, 3 weeks): 71 % of replies end with an ask fence; he answers those in a median 2.6 min (p90 11) against 1.3 min without; 1 fence in 5 gets an answer of another shape; 322 replies carried a 🔭 tracker and he still asked for status 98 times
+- reply length vs a correction next: 8.5 → 6.1 → 8.1 → 9.7 % by length quartile, a weak link
 
 ## levers
 

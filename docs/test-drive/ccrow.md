@@ -79,5 +79,8 @@ verdict question: borrow its timing (consult before an approach / before done) i
 ### round 8 · 2026-10-10 15:36 · before the fold / scope / reply-analysis report
 - advisor: the fold apply waits on dima's pick (his words, approval-first), strip the guessing proposals first (est → established, a tense change, the «vet means» restructure), take opus + the sonnet-only union; the linear half is undone so the 06 line stays; the 8 style proposals are a batch for his word (rules/ + his recent asks reversed, the numbers beside each), park the 2 mod-shaped ones to PK-50 step 3, publish the analysis, and write this reply under the budget it proposes. acted on: all. usage read before the spawns this time (27 % at 15:26)
 
-### round 9 · 2026-10-10 16:10 · before the refresh-comms findings print
+### round 9 · 2026-10-10 16:10 · before the refresh-operator-agent-comms-optimization findings print
 - advisor: answer the model question first (it was ccrow's tab, set by the wake hook's text; the «say nothing to dima» clause is a defect, and the set is a repeated no-op that belongs once per boot), the precision answer in five buckets (exact, approximate, guessed, sampled, missing), one free number to show the sharpened recipe (correction rate by reply-length quartile: 8.5 → 6.1 → 8.1 → 9.7 %, a weak link), the siesta commit is due on his yes. acted on: all. ccrow this session: 3 wakes, 2 notes, both vetted ok
+
+### round 10 · 2026-10-10 16:42 · before the run-1 report
+- advisor: the 8 → 28 % claim changed two things at once (context and the kind scheme), say both; there is no human gold set, so every agreement number is agreement with opus; no model clears 85 % on the 9-way kind, so the fix is the label scheme, not the model; haiku's token count is no reason, its accuracy is; persist the context labels. acted on: all. ccrow: 4 wakes this session
