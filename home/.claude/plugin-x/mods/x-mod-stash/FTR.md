@@ -198,6 +198,7 @@
 - ⬜ the compaction point is typed live
   - when dima types a whole 10–99 into the ctx row's `Input` and presses Enter
   - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the launch dir's `.claude/settings.json` when that dir is the repo top, its `.claude/settings.local.json` otherwise, every other key kept, and the row shows it
+  - makes: at a repo top, a change in the tracked `.claude/settings.json` that waits in git to be committed; anywhere else an untracked local file
   - decision: a repo top's own local file outranks every subdir's, its shared file does not (probed 2026-10-10) — so frame's 92 sits in the shared file and cclio's 70 in `~/frame/cclio` wins for her (dima, 11:25: «for cclio, it should be tied to that 70 value, her local override»)
   - when he types anything else, or the file is not a json object
   - then one red line under the meters says why, and the file stays untouched
