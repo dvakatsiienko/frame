@@ -172,6 +172,14 @@ async function saveOrbit($: EngineInterface, next: StashOrbit) {
     else await $.store.delete(PREFIX + sid).catch(() => undefined);
 }
 
+// the orbit as $.state holds it now: a reload can run a hook before session.start reads it back, and a module copy
+// that never loaded would write an empty orbit over the kept one (FRM-381: «coder wiped the orbit»)
+async function currentOrbit($: EngineInterface) {
+    const kept = (await $.state.get(ORBIT).catch(() => undefined))?.value;
+    if (kept) orbit = kept;
+    return orbit;
+}
+
 const markWord = (mark: OrbitAsk['mark']) =>
     mark === 'accepted' ? '🤩 accepted' : '👎🏼 rejected';
 
@@ -212,36 +220,15 @@ const oneLine = (v: unknown) =>
 const idsOf = (v: unknown) =>
     Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
 
-// dima marks or notes asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs joins
-// that turn as a hidden message without starting one, and locks; a refused join waits for his next prompt
+// dima marks or notes asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs
+// rides that turn's next tool result (the tool.call hook); one the turn never reaches rides his next prompt — a
+// hidden message appended instead started a turn of its own when it landed after the last read (dima, 20:31)
 async function markAsks($: EngineInterface, change: (a: OrbitAsk) => OrbitAsk) {
-    const was = orbit.asks;
-    const asks = was.map((a) => (a.isLocked || a.isResolved ? a : change(a)));
-    await saveOrbit($, { ...orbit, asks });
-    if (!isBusy) return;
-    const fresh = asks.filter(
-        (a, i) => a.mark && a.mark !== was[i]?.mark && !a.isLocked,
+    const o = await currentOrbit($);
+    const asks = o.asks.map((a) =>
+        a.isLocked || a.isResolved ? a : change(a),
     );
-    if (!fresh.length) return;
-    const r = await $.session
-        .append({
-            message: {
-                content: [{ text: joinText(fresh), type: 'text' }],
-                type: 'user',
-            },
-        })
-        .catch((err: unknown) => ({ deny: errorText(err) }));
-    if (r.deny !== undefined) {
-        $.ui.log(`x-mod-stash: orbit's mid-turn join was refused: ${r.deny}`);
-        return;
-    }
-    const ids = new Set(fresh.map((a) => a.id));
-    await saveOrbit($, {
-        ...orbit,
-        asks: orbit.asks.map((a) =>
-            ids.has(a.id) ? { ...a, isLocked: true } : a,
-        ),
-    });
+    await saveOrbit($, { ...o, asks });
 }
 
 // the tool's ops on orbit; `isTurn` decides whether a plan set now counts from this turn's end or the last one
@@ -1251,6 +1238,7 @@ export const register: Register = (on) => {
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const clock = `now ${new Date(await $.clock.now()).toTimeString().slice(0, 5)}`;
         // only dima's own prompt carries his marks; each joins once and locks until the turn ends
+        await currentOrbit($);
         const marked = isUserTurn
             ? orbit.asks.filter((a) => a.mark && !a.isLocked && !a.isResolved)
             : [];
@@ -1339,12 +1327,13 @@ export const register: Register = (on) => {
         if (e.agentId) return r;
         isBusy = false;
         // the turn's answers leave; a marked ask it never resolved unlocks and rides dima's next prompt
+        const done = await currentOrbit($);
         await saveOrbit($, {
-            ...orbit,
-            asks: orbit.asks
+            ...done,
+            asks: done.asks
                 .filter((a) => !a.isResolved)
                 .map((a) => (a.isLocked ? { ...a, isLocked: false } : a)),
-            turns: orbit.turns + 1,
+            turns: done.turns + 1,
         });
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
@@ -1512,9 +1501,11 @@ export const register: Register = (on) => {
                 marginTop={i > 0 ? 1 : 0}>
                 <Box flexDirection='row' gap={1}>
                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
+                        {/* the id and the pick bold, so the proposal stands out (dima, 20:30) */}
                         <Text>
                             <Text bold>{a.id}</Text>
-                            {`: ${a.text} ➡️ ${a.pick}`}
+                            {`: ${a.text} ➡️ `}
+                            <Text bold>{a.pick}</Text>
                         </Text>
                     </Box>
                     {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
@@ -1824,19 +1815,39 @@ export const register: Register = (on) => {
     // mid-turn: the next tool result carries the new state once
     on('tool.call', async ($, e, next) => {
         if ((e.tool as string) === ORBIT_TOOL) {
-            const op = orbitOp(orbit, e as Record<string, unknown>, isBusy);
+            const op = orbitOp(
+                await currentOrbit($),
+                e as Record<string, unknown>,
+                isBusy,
+            );
             if ('deny' in op) return { deny: op.deny };
             await saveOrbit($, op.orbit);
             return { result: op.result } as never;
         }
         const r = await next(e);
-        if (turnAfk === undefined || turnAfk === afk || r.deny !== undefined)
-            return r;
-        turnAfk = afk;
-        return {
-            ...r,
-            context: [...(r.context ?? []), afk ? AWAY_NOTE : BACK_NOTE],
-        };
+        if (r.deny !== undefined || e.agentId) return r;
+        const notes: string[] = [];
+        if (turnAfk !== undefined && turnAfk !== afk) {
+            turnAfk = afk;
+            notes.push(afk ? AWAY_NOTE : BACK_NOTE);
+        }
+        // a mark dima made while this turn runs joins it here, model-only, and locks
+        const o = await currentOrbit($);
+        const fresh = o.asks.filter(
+            (a) => a.mark && !a.isLocked && !a.isResolved,
+        );
+        if (fresh.length) {
+            const ids = new Set(fresh.map((a) => a.id));
+            await saveOrbit($, {
+                ...o,
+                asks: o.asks.map((a) =>
+                    ids.has(a.id) ? { ...a, isLocked: true } : a,
+                ),
+            });
+            notes.push(joinText(fresh));
+        }
+        if (!notes.length) return r;
+        return { ...r, context: [...(r.context ?? []), ...notes] };
     });
 
     // the band: one row — orbit's and the plan's counts, the meters' readings and bars, the switches — plus a 🔭 line

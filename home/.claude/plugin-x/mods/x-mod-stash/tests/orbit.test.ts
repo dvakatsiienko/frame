@@ -44,6 +44,7 @@ function world(on: On) {
     });
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
+    on('tool.call', () => ({ result: {}, text: 'done' }));
     return { appended, contexts, store };
 }
 
@@ -281,14 +282,26 @@ test('a tick while the turn runs reaches that turn, and its resolve takes it out
     await add($, ['name a bird', 'pelican']);
     await say($, 'run the long job');
     await ui.press({ key: 'orbit:accepted:o1' });
+    const r = await $.tool.call({ command: 'sleep 20', tool: 'Bash' });
     await orbit($, { ids: ['o1'], op: 'resolve' });
     await endTurn($);
-    expect([w.appended.join('\n'), await asksShown(ui)]).toEqual([
+    expect([(r.context ?? []).join('\n'), await asksShown(ui)]).toEqual([
         expect.stringMatching(
             /o1 🤩 accepted: name a bird \(your pick: pelican\)/,
         ),
         [],
     ]);
+});
+
+test('a tick the running turn never reads starts no turn of its own', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await say($, 'answer in one line');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await endTurn($);
+    expect([w.appended, w.contexts.length]).toEqual([[], 1]);
 });
 
 test('a tick the turn never answered stays marked and joins the next prompt', async ($, on) => {
@@ -416,4 +429,39 @@ test("orbit's asks survive a reload", async ($, on) => {
     await start($);
     await say($, 'hi');
     expect((w.contexts.at(-1) ?? []).join('\n')).toContain('(o3)');
+});
+
+test("a turn that ends before a reloaded module's start keeps orbit", async ($, on) => {
+    world(on);
+    const kept = {
+        asks: [{ id: 'o3', pick: 'yes', text: 'kept across a reload' }],
+        next: 4,
+        turns: 2,
+    };
+    const state: Record<string, unknown> = { orbit: kept };
+    on('state.get', (_$, e) => ({
+        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state[e.key] = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    // the reload lands at the turn's end: turn.complete reaches the fresh module before its session.start
+    await endTurn($);
+    expect(
+        (state.orbit as { asks: { id: string }[] }).asks.map((a) => a.id),
+    ).toEqual(['o3']);
+});
+
+test("an ask's pick is drawn bold", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes, after ci']);
+    // the pick is its own nested Text; ui.find would return the line around it first
+    expect(
+        (await ui.findAll({ type: 'Text' })).find(
+            (n) => n.text === 'yes, after ci',
+        )?.props.bold,
+    ).toBe(true);
 });

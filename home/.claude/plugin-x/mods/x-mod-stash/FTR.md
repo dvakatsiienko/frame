@@ -296,6 +296,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
   - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one `✅` button (dima, 19:59)
   - decision: the header reads `🪐 orbit · n`, the number alone (dima, 20:19)
+  - decision: the pick is bold like the id, so the proposal stands out (dima, 20:30)
   - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
 - 🔎 🔊 reads an ask aloud through speak, ⏯ pauses or resumes, ⏹ stops
   - given orbit shows an ask and x-speak runs
@@ -318,6 +319,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given cclio is mid-turn
   - when dima ticks an ask
   - then cclio's reply in that turn covers it; a tick that lands too late for the turn stays ticked and joins the next prompt
+  - decision: the tick rides the turn's next tool result as model-only context; one that no tool result reaches waits for dima's next prompt — a hidden appended message started a turn of its own when it landed after the turn's last read (dima, 20:31)
+  - decision: every orbit write reads the orbit back from `$.state` first — a reload landing at a turn's end ran `turn.complete` before `session.start` and saved an empty orbit (dima, 20:20: «coder wiped the orbit»)
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
