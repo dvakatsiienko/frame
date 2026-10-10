@@ -13,7 +13,7 @@ labels:
 dependencies: []
 priority: next
 type: wish
-ordinal: 110000
+ordinal: 23000
 ---
 
 ## Description
