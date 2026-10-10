@@ -73,6 +73,29 @@ export type StashTurn = {
     afk?: boolean;
 };
 
+// one ask to dima in orbit: what is asked and cclio's pick, the note cclio keeps for herself, dima's mark and note;
+// locked while the turn it joined runs, changed after a follow-up, resolved until that turn ends
+export type OrbitAsk = {
+    id: string;
+    text: string;
+    pick: string;
+    hiddenNote?: string;
+    mark?: 'accepted' | 'rejected';
+    note?: string;
+    isLocked?: boolean;
+    isChanged?: boolean;
+    isResolved?: boolean;
+};
+
+// the session's orbit: its asks oldest first, the next id's number, the main turns ended so far, and the plan with
+// the turn count it was set at
+export type StashOrbit = {
+    asks: OrbitAsk[];
+    next: number;
+    turns: number;
+    plan?: { lines: string[]; at: number };
+};
+
 declare module 'claude-code' {
     interface PluginState {
         'x-mod-stash': {
@@ -85,6 +108,7 @@ declare module 'claude-code' {
             cap: StashCap | null;
             // epoch ms of the last main turn end
             ended: number;
+            orbit: StashOrbit;
         };
     }
 }

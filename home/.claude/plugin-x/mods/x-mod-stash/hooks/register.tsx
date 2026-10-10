@@ -2,11 +2,13 @@
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
 import type {
+    OrbitAsk,
     StashCap,
     StashDigest,
     StashEntry,
     StashMember,
     StashMeter,
+    StashOrbit,
     StashView,
 } from '../types/stash.d.ts';
 import {
@@ -84,6 +86,19 @@ const RESUME =
 // a few seconds past the reset, so the window has turned before the resume goes out
 const WAKE_SLACK_MS = 5000;
 const ACCENT = '#d97757';
+// 🪐 orbit: the session's asks to dima, ticked in the board instead of pasted back; the session writes them through
+// its own tool, never a reply block
+const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
+const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
+const PLAN_MAX = 5;
+const STALE_TURNS = 3;
+const ORBIT_ABOUT = [
+    "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context.",
+    'op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»); pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.',
+    'op resolve, ids: the asks you answered this turn; they leave orbit when the turn ends.',
+    'op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text and a «changed» mark.',
+    `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
+].join('\n');
 
 let selfId: string | undefined;
 let label = 'session';
@@ -115,6 +130,189 @@ let hotGen = 0;
 // what the fleet did while dima was afk, shown in the band where he turned 💨 off until his next prompt
 type Digest = StashDigest;
 let digest: Digest | undefined;
+
+const EMPTY_ORBIT: StashOrbit = { asks: [], next: 1, turns: 0 };
+// mirrors `$.state`'s orbit, which survives a reload: a get inside one dispatch reads the moment it began
+let orbit: StashOrbit = EMPTY_ORBIT;
+
+async function saveOrbit($: EngineInterface, next: StashOrbit) {
+    orbit = next;
+    await $.state
+        .set(ORBIT, orbit)
+        .catch((err) =>
+            $.ui.log(`x-mod-stash: orbit was not kept: ${errorText(err)}`),
+        );
+}
+
+const markWord = (mark: OrbitAsk['mark']) =>
+    mark === 'accepted' ? '🤩 accepted' : '👎🏼 rejected';
+
+// what the session reads for each marked ask: the mark, the ask, its pick, both notes
+function joinText(asks: OrbitAsk[]) {
+    const lines = asks.map(
+        (a) =>
+            `- ${a.id} ${markWord(a.mark)}: ${a.text} (your pick: ${a.pick})` +
+            (a.note ? ` · his note: «${a.note}»` : '') +
+            (a.hiddenNote ? ` · your note: «${a.hiddenNote}»` : ''),
+    );
+    return [
+        `orbit: dima marked ${asks.length === 1 ? 'an ask' : `${asks.length} asks`}. answer each in this reply, then call ${ORBIT_TOOL}: resolve the answered ids, or follow one that needs another round.`,
+        ...lines,
+    ].join('\n');
+}
+
+const planAge = (o: StashOrbit) =>
+    o.plan === undefined ? undefined : o.turns - o.plan.at;
+
+// the per-prompt note that keeps the habit through a compaction; none while orbit is empty
+function orbitReminder(o: StashOrbit) {
+    const open = o.asks.filter((a) => !a.isResolved);
+    const age = planAge(o);
+    if (!open.length && age === undefined) return undefined;
+    const asks = open.length
+        ? `orbit holds ${open.length} open ask${open.length === 1 ? '' : 's'} (${open.map((a) => a.id).join(', ')})`
+        : 'orbit holds no open ask';
+    const plan =
+        age === undefined
+            ? 'no plan set'
+            : `plan set ${age} turn${age === 1 ? '' : 's'} ago${age >= STALE_TURNS ? ', stale: set it again' : ''}`;
+    return `${asks}; ${plan}. asks and the plan go through ${ORBIT_TOOL}, never into a reply.`;
+}
+
+const oneLine = (v: unknown) =>
+    typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
+const idsOf = (v: unknown) =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+
+// dima marks or notes asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs joins
+// that turn as a hidden message without starting one, and locks; a refused join waits for his next prompt
+async function markAsks($: EngineInterface, change: (a: OrbitAsk) => OrbitAsk) {
+    const was = orbit.asks;
+    const asks = was.map((a) => (a.isLocked || a.isResolved ? a : change(a)));
+    await saveOrbit($, { ...orbit, asks });
+    if (!isBusy) return;
+    const fresh = asks.filter(
+        (a, i) => a.mark && a.mark !== was[i]?.mark && !a.isLocked,
+    );
+    if (!fresh.length) return;
+    const r = await $.session
+        .append({
+            message: {
+                content: [{ text: joinText(fresh), type: 'text' }],
+                type: 'user',
+            },
+        })
+        .catch((err: unknown) => ({ deny: errorText(err) }));
+    if (r.deny !== undefined) {
+        $.ui.log(`x-mod-stash: orbit's mid-turn join was refused: ${r.deny}`);
+        return;
+    }
+    const ids = new Set(fresh.map((a) => a.id));
+    await saveOrbit($, {
+        ...orbit,
+        asks: orbit.asks.map((a) =>
+            ids.has(a.id) ? { ...a, isLocked: true } : a,
+        ),
+    });
+}
+
+// the tool's ops on orbit; `isTurn` decides whether a plan set now counts from this turn's end or the last one
+function orbitOp(
+    o: StashOrbit,
+    input: Record<string, unknown>,
+    isTurn: boolean,
+): { orbit: StashOrbit; result: string } | { deny: string } {
+    switch (input.op) {
+        case 'add': {
+            const raw = Array.isArray(input.asks) ? input.asks : [];
+            const added: OrbitAsk[] = [];
+            let next = o.next;
+            for (const item of raw) {
+                const v = (item ?? {}) as Record<string, unknown>;
+                const text = oneLine(v.text);
+                if (!text) continue;
+                const hiddenNote = oneLine(v.hiddenNote);
+                added.push({
+                    hiddenNote: hiddenNote || undefined,
+                    id: `o${next++}`,
+                    pick: oneLine(v.pick) || 'no pick',
+                    text,
+                });
+            }
+            if (!added.length)
+                return {
+                    deny: 'orbit add: asks needs one { text, pick } or more',
+                };
+            return {
+                orbit: { ...o, asks: [...o.asks, ...added], next },
+                result: `added ${added.map((a) => a.id).join(', ')} to dima's orbit; never repeat them in the reply`,
+            };
+        }
+        case 'resolve': {
+            const ids = idsOf(input.ids);
+            const unknown = ids.filter(
+                (id) => !o.asks.some((a) => a.id === id),
+            );
+            const asks = o.asks.map((a) =>
+                ids.includes(a.id) ? { ...a, isResolved: true } : a,
+            );
+            return {
+                orbit: {
+                    ...o,
+                    asks: isTurn ? asks : asks.filter((a) => !a.isResolved),
+                },
+                result: `resolved ${ids.filter((id) => !unknown.includes(id)).join(', ') || 'nothing'}${unknown.length ? `; no ask ${unknown.join(', ')}` : ''}`,
+            };
+        }
+        case 'follow': {
+            const id = typeof input.id === 'string' ? input.id : '';
+            const text = oneLine(input.text);
+            if (!o.asks.some((a) => a.id === id) || !text)
+                return {
+                    deny: `orbit follow: needs a known id and a text, got «${id}»`,
+                };
+            return {
+                orbit: {
+                    ...o,
+                    asks: o.asks.map((a) =>
+                        a.id === id
+                            ? {
+                                  ...a,
+                                  isChanged: true,
+                                  isResolved: false,
+                                  mark: undefined,
+                                  pick: oneLine(input.pick) || a.pick,
+                                  text,
+                              }
+                            : a,
+                    ),
+                },
+                result: `${id} changed in place`,
+            };
+        }
+        case 'plan': {
+            const lines = (Array.isArray(input.lines) ? input.lines : [])
+                .map(oneLine)
+                .filter(Boolean)
+                .slice(0, PLAN_MAX);
+            return {
+                orbit: {
+                    ...o,
+                    plan: lines.length
+                        ? { at: isTurn ? o.turns + 1 : o.turns, lines }
+                        : undefined,
+                },
+                result: lines.length
+                    ? `plan set, ${lines.length} line${lines.length === 1 ? '' : 's'}`
+                    : 'plan cleared',
+            };
+        }
+        default:
+            return {
+                deny: `orbit: op is add, resolve, follow or plan, got «${String(input.op)}»`,
+            };
+    }
+}
 
 // a thread's asks show while it has any and they are under a day old
 const isLive = (v: Entry | undefined, now: number): v is Entry =>
@@ -963,9 +1161,46 @@ export const register: Register = (on) => {
             cap: (await $.state.get(CAP)).value,
             ended: (await $.state.get(ENDED)).value,
             open: (await $.state.get(OPEN)).value,
+            orbit: (await $.state.get(ORBIT)).value,
             turn: (await $.state.get(TURN)).value,
             view: (await $.state.get(VIEW)).value,
         };
+        orbit = kept.orbit ?? EMPTY_ORBIT;
+        await $.tool
+            .register({
+                description: ORBIT_ABOUT,
+                inputSchema: {
+                    properties: {
+                        asks: {
+                            items: {
+                                properties: {
+                                    hiddenNote: { type: 'string' },
+                                    pick: { type: 'string' },
+                                    text: { type: 'string' },
+                                },
+                                required: ['text', 'pick'],
+                                type: 'object',
+                            },
+                            type: 'array',
+                        },
+                        id: { type: 'string' },
+                        ids: { items: { type: 'string' }, type: 'array' },
+                        lines: { items: { type: 'string' }, type: 'array' },
+                        op: {
+                            enum: ['add', 'resolve', 'follow', 'plan'],
+                            type: 'string',
+                        },
+                        pick: { type: 'string' },
+                        text: { type: 'string' },
+                    },
+                    required: ['op'],
+                    type: 'object',
+                },
+                name: 'orbit',
+            })
+            .catch(() =>
+                $.ui.log('x-mod-stash: the orbit tool was not registered'),
+            );
         cap = kept.cap ?? undefined;
         endedAt = kept.ended ?? undefined;
         await pruneEnded($).catch(() => undefined);
@@ -1022,9 +1257,29 @@ export const register: Register = (on) => {
         await keepTurn($);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const clock = `now ${new Date(await $.clock.now()).toTimeString().slice(0, 5)}`;
+        // only dima's own prompt carries his marks; each joins once and locks until the turn ends
+        const marked = isUserTurn
+            ? orbit.asks.filter((a) => a.mark && !a.isLocked && !a.isResolved)
+            : [];
+        if (marked.length) {
+            const ids = new Set(marked.map((a) => a.id));
+            await saveOrbit($, {
+                ...orbit,
+                asks: orbit.asks.map((a) =>
+                    ids.has(a.id) ? { ...a, isLocked: true } : a,
+                ),
+            });
+        }
+        const reminder = orbitReminder(orbit);
         return next({
             ...e,
-            context: [...(e.context ?? []), clock, ...(afk ? [AWAY_NOTE] : [])],
+            context: [
+                ...(e.context ?? []),
+                clock,
+                ...(afk ? [AWAY_NOTE] : []),
+                ...(marked.length ? [joinText(marked)] : []),
+                ...(reminder ? [reminder] : []),
+            ],
         });
     });
 
@@ -1114,6 +1369,14 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         isBusy = false;
+        // the turn's answers leave; a marked ask it never resolved unlocks and rides dima's next prompt
+        await saveOrbit($, {
+            ...orbit,
+            asks: orbit.asks
+                .filter((a) => !a.isResolved)
+                .map((a) => (a.isLocked ? { ...a, isLocked: false } : a)),
+            turns: orbit.turns + 1,
+        });
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
@@ -1217,10 +1480,142 @@ export const register: Register = (on) => {
         const board = (await $.state.get(BOARD_VIEW)).value;
         const now = board?.at ?? 0;
         const me = (await $.state.get(VIEW)).value?.selfId;
+        // the board's lower half: this session's orbit and its plan, read here so a mark or a tool call redraws it
+        const o = (await $.state.get(ORBIT)).value ?? orbit;
+        // mobile draws no Input: its notes wait for another surface
+        const Input = 'Input' in ui ? ui.Input : undefined;
+        const open = o.asks.filter((a) => !a.isResolved);
+        const age = planAge(o);
+        const askJSX = (a: OrbitAsk) => (
+            <Box flexDirection='row' gap={1} key={`orbit:ask:${a.id}`}>
+                <Button
+                    key={`orbit:tick:${a.id}`}
+                    onPress={() =>
+                        void markAsks($, (x) =>
+                            x.id === a.id
+                                ? {
+                                      ...x,
+                                      isChanged: false,
+                                      mark:
+                                          x.mark === 'accepted'
+                                              ? undefined
+                                              : 'accepted',
+                                  }
+                                : x,
+                        )
+                    }
+                    plain>
+                    {a.mark === 'accepted' ? '☑ 🤩' : '☐'}
+                </Button>
+                <Box flexShrink={0}>
+                    <Text dimColor>{a.id}</Text>
+                </Box>
+                <Box flexGrow={1} flexShrink={1} minWidth={0}>
+                    <Text>{`${a.text} ➡️ ${a.pick}`}</Text>
+                </Box>
+                {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
+                {a.isLocked ? <Text dimColor>🔒</Text> : null}
+                {a.isResolved ? <Text dimColor>answered</Text> : null}
+                <Button
+                    key={`orbit:reject:${a.id}`}
+                    onPress={() =>
+                        void markAsks($, (x) =>
+                            x.id === a.id
+                                ? {
+                                      ...x,
+                                      isChanged: false,
+                                      mark:
+                                          x.mark === 'rejected'
+                                              ? undefined
+                                              : 'rejected',
+                                  }
+                                : x,
+                        )
+                    }
+                    {...(a.mark === 'rejected'
+                        ? { variant: 'secondary' as const }
+                        : { plain: true as const })}>
+                    👎🏼
+                </Button>
+                {Input ? (
+                    <Box flexShrink={0} width={16}>
+                        <Input
+                            key={`orbit:note:${a.id}`}
+                            onSubmit={(value: string) =>
+                                void markAsks($, (x) =>
+                                    x.id === a.id
+                                        ? {
+                                              ...x,
+                                              note: value.trim() || undefined,
+                                          }
+                                        : x,
+                                )
+                            }
+                            placeholder='note'
+                            submitLabel='✓'
+                            value={a.note ?? ''}
+                        />
+                    </Box>
+                ) : null}
+            </Box>
+        );
+        const orbitJSX = (
+            <Box flexDirection='column' key='orbit' marginTop={1}>
+                <Box flexDirection='row' justifyContent='space-between'>
+                    <Text bold>
+                        {open.length
+                            ? `🪐 orbit · ${open.length} open`
+                            : '🪐 orbit · no open asks'}
+                    </Text>
+                    {open.some((a) => !a.mark && !a.isLocked) ? (
+                        <Button
+                            key='orbit:all'
+                            onPress={() =>
+                                void markAsks($, (x) =>
+                                    x.mark
+                                        ? x
+                                        : {
+                                              ...x,
+                                              isChanged: false,
+                                              mark: 'accepted',
+                                          },
+                                )
+                            }
+                            plain>
+                            ☑ check all
+                        </Button>
+                    ) : null}
+                </Box>
+                {/* an answered ask stays until its turn ends, so dima sees it go */}
+                {o.asks.map(askJSX)}
+                {o.plan ? (
+                    <Box flexDirection='column' marginTop={1}>
+                        <Text bold>
+                            {`📝 planned${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
+                        </Text>
+                        {o.plan.lines.map((line, i) => (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
+                            <Text key={`plan:${i}`}>{`${i + 1}. ${line}`}</Text>
+                        ))}
+                    </Box>
+                ) : null}
+            </Box>
+        );
         const list = board?.members;
         if (!list)
-            return <Text dimColor>the session registry is unreadable</Text>;
-        if (!list.length) return <Text dimColor>no live sessions</Text>;
+            return (
+                <Box flexDirection='column'>
+                    <Text dimColor>the session registry is unreadable</Text>
+                    {orbitJSX}
+                </Box>
+            );
+        if (!list.length)
+            return (
+                <Box flexDirection='column'>
+                    <Text dimColor>no live sessions</Text>
+                    {orbitJSX}
+                </Box>
+            );
         const isColour = board.isColour;
         const hues = huesOf(list.map((m) => m.name));
         const row = (m: Member, i: number) => {
@@ -1400,6 +1795,7 @@ export const register: Register = (on) => {
                     </Text>
                 </Box>
                 {list.map(row)}
+                {orbitJSX}
                 <Box marginTop={1}>
                     <Text dimColor wrap='truncate-end'>
                         a name opens its session · /board colour flips colour
@@ -1423,12 +1819,20 @@ export const register: Register = (on) => {
         const left = await currentId($);
         const r = await next(e);
         if (left) await forget($, left).catch(() => undefined);
+        await saveOrbit($, EMPTY_ORBIT);
         await load($);
         return r;
     });
 
-    // afk flipped mid-turn: the next tool result carries the new state once
-    on('tool.call', async (_$, e, next) => {
+    // orbit's write door, where the session adds, resolves and follows up its asks and sets its plan; and afk flipped
+    // mid-turn: the next tool result carries the new state once
+    on('tool.call', async ($, e, next) => {
+        if ((e.tool as string) === ORBIT_TOOL) {
+            const op = orbitOp(orbit, e as Record<string, unknown>, isBusy);
+            if ('deny' in op) return { deny: op.deny };
+            await saveOrbit($, op.orbit);
+            return { result: op.result } as never;
+        }
         const r = await next(e);
         if (turnAfk === undefined || turnAfk === afk || r.deny !== undefined)
             return r;
