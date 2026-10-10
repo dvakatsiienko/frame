@@ -362,9 +362,24 @@ test('a phase fades with its distance from now', async ($, on) => {
             .filter((t) => /^[🌕🌔🌓] (?!phases)/u.test(t.text ?? ''))
             .map((t) => [Boolean(t.props.bold), Boolean(t.props.dimColor)]),
     ).toEqual([
-        [true, false],
+        [false, false],
         [false, false],
         [false, true],
+    ]);
+});
+
+test('only the now lead word reads green', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
+    expect(
+        (await ui.findAll({ type: 'Text' }))
+            .filter((t) => t.text === 'now:' || t.text === 'next:')
+            .map((t) => [t.text, Boolean(t.props.color)]),
+    ).toEqual([
+        ['now:', true],
+        ['next:', false],
     ]);
 });
 

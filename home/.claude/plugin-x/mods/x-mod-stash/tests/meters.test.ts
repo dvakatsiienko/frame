@@ -244,6 +244,16 @@ test('a pace behind by up to 10 reads amber', async ($, on) => {
     });
 });
 
+test('the pace word prints bold', async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    const ui = await band($);
+    const pace = (await ui.findAll({ type: 'Text' })).find((n) =>
+        /pace$/.test(n.text ?? ''),
+    );
+    expect(pace?.props.bold).toBe(true);
+});
+
 test('a pace behind by more than 10 reads red', async ($, on) => {
     meters(on);
     await measure($, 55, 35);

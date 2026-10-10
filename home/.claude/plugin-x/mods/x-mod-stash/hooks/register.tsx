@@ -1587,14 +1587,23 @@ export const register: Register = (on) => {
                             // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
                             const lead = line.match(PLAN_LEAD);
                             return (
-                                // the moon fills by nearness: the now line bold, the then lines dim (dima, 20:58)
+                                // the moon fills by nearness, the then lines dim (dima, 20:58); only the now lead is green (21:08)
                                 <Text
-                                    bold={i === 0}
                                     dimColor={i > 1}
                                     // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
                                     key={`plan:${i}`}>
                                     {`${PHASE_MOONS[i]} `}
-                                    {lead ? <Text bold>{lead[0]}</Text> : null}
+                                    {lead ? (
+                                        <Text
+                                            bold
+                                            color={
+                                                i === 0
+                                                    ? METER_TINTS.calm5h
+                                                    : undefined
+                                            }>
+                                            {lead[0]}
+                                        </Text>
+                                    ) : null}
                                     {lead ? line.slice(lead[0].length) : line}
                                 </Text>
                             );
@@ -2056,7 +2065,7 @@ export const register: Register = (on) => {
                           gap > 0
                               ? 'behind the 5h pace'
                               : 'ahead of the 5h pace',
-                          <Text color={fiveTint}>
+                          <Text bold color={fiveTint}>
                               {gap > 0 ? `-${gap}% pace` : `+${-gap}% pace`}
                           </Text>,
                           { left: 10 },
