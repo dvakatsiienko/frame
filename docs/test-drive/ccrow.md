@@ -53,3 +53,7 @@ verdict question: borrow its timing (consult before an approach / before done) i
 - the split: advisor reviewed the whole plan before work (process advice); ccrow caught a wrong steer in the reply (a fact check). no overlap.
 
 - 📌 the switch: the conversation that ran `/advisor` keeps opus as its advisor until the next `/compact`; the fable rounds start after it, and stress item 6 checks the tool is still listed then
+
+### round 2 · 2026-10-10 11:53 · a batch plan (11 verdicts, ccrow borrow, two questions)
+- advisor (opus, see the switch note): fired on cclio's call after orientation; ~450 words, 6 points — apply the 11 verdicts and drop them from ⏳; the job-market sites sit behind his login, so the door is his mail; flip the stale `/advisor opus` lines; list `advisor` in habit-test-drive; the ccrow borrow is approved ideas, not a sealed lane — shape-lane it, fold idea 1 with FRM-380, log a «ccrow changed» line; answer drift and run-diorama, don't build. acted on: all six. one catch cclio had missed: the stale opus text in two files. 5h meter: 64 % after the round (no clean before-read; next round reads both)
+- 📌 desktop finding (dima, 12:06): the Code tab shows no `Advising` line and no advice text; two consults (11:31, 11:53) reached cclio as tool results only. visibility for the operator = cclio relays each advice in the reply

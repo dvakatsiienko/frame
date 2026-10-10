@@ -14,6 +14,7 @@ only that file.
 - **terminal → clip** (a scripted shell session for a readme) → [clips.md](clips.md).
 - **code → illustration** (a diorama, a readme hero, a spot, an icon, a badge) →
   [illustration.md](illustration.md). the studio is `atelier`.
+- **a diorama** (the paper art set for frame, the profile, bytes) → [diorama.md](diorama.md): the procedure, the bible, the checks.
 - **brand → logo** (a product's official mark: vite, cursor, chrome, a stack row) →
   [logos.md](logos.md). fetched, the brand's own file.
 - **prompt → image** (a real image model) → not built yet: [BYT-70](https://linear.app/x-com/issue/BYT-70)

@@ -55,6 +55,9 @@ dima's, 2026-09-30:
 
 ### research
 
+**dioramas** — `diorama.md`
+- how high-quality paper dioramas and layered illustrations are drawn: composition and depth, paper and card texture, lighting and shadow between sheets, detail level, motion loops, the tools and libraries that do it best; read against `diorama.md`'s procedure and checks. dima, 2026-10-10: «whenever i ask you to run a diorama, or find best practices for how to actually draw high-quality dioramas, you run that research and find the approaches»
+
 **logos** — `logos.md`, `scripts/logo.ts`
 1. official product logos an agent can fetch with no human: svgl (api, count, freshness, license
    terms), simple-icons, iconify sets, devicon, any new source or agent-built cli/mcp — coverage,

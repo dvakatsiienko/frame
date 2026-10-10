@@ -38,7 +38,7 @@ one bounded change → render again. iterate privately; dima sees takes, not eve
 - draw on a grid of size/16 units and check the pixel view at 16 px before any polish — half-pixel
   pills, a shadow smearing a gap and an off-grid sun cost the atelier favicon most of its rounds (#117)
 
-## pitfalls met (from run-diorama)
+## pitfalls met (from the diorama runs, [diorama.md](diorama.md))
 
 - a group AND its child both given the same z doubles the depth: the birds sat behind the sky. extras are built at z 0 and only their group is placed
 - the stage's dev server hot-reloads while a loop exports: never edit files it serves until the export lands (checked by frame-to-frame diff — no spike, no reload)

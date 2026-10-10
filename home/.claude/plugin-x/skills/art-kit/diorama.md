@@ -1,28 +1,6 @@
----
-kind: run
-owner: designer
-cadence: per art change, on dima's word
-artifacts:
-  - ~/projects/bytes/apps/atelier/art/
-  - ~/frame/home/.claude/plugin-x/skills/guide-ui-ux/SKILL.md
-script: none
-was: [diorama-draw]
----
+# diorama — drawing the art set
 
-# run-diorama
-
-the art set for frame, the profile and bytes.
-
-📌 **status: draft trace.** we are still finding the recipe. every session that draws appends to
-the trace; nothing here is automated yet. the run section is written from the trace only once a
-step repeats unchanged.
-
-## contents
-
-- the want
-- artifacts
-- the run
-- vectors
+the art set for frame, the profile and bytes, drawn as paper dioramas in atelier at one consistent level of detail. moved here from the `run-diorama` recipe (2026-10-10); the research side — how high-quality dioramas are drawn — is a vector of `refresh-art-kit`.
 
 ## the want
 
@@ -33,15 +11,13 @@ dima's words:
 - «i want an approximate, or even a higher, level of detail … so the design decision is
   consistent» across the profile, frame and bytes (2026-09-25)
 
-## artifacts
+## where it lives
 
 - `~/projects/bytes/apps/atelier/art/` — the bible (`story.md`, `dino.md`), `palette.ts`, the generators, `out/`
 - `~/frame/home/.claude/plugin-x/skills/guide-ui-ux/SKILL.md` — ui rules that came out of the studio
-- the studio artifact: https://claude.ai/artifact/4YAEdDqeH5SrSCUWnkB13h (its `build.ts`, `look.sh` and `bake.sh` land in `recipes/run-diorama/scripts/` the next session that draws)
+- the studio artifact: https://claude.ai/artifact/4YAEdDqeH5SrSCUWnkB13h (its `build.ts`, `look.sh` and `bake.sh` land in atelier (`bytes/apps/atelier/art/`) the next session that draws)
 
-## the run
-
-the trace of the first run:
+## the procedure — the trace of the first runs
 
 ### 2026-09-25 · FRM-263 · opus 5.5 in cclio
 
@@ -96,15 +72,15 @@ the trace of the first run:
 
 ### pitfalls met
 
-→ `x:art-kit` `illustration.md`, «pitfalls met (from run-diorama)».
+→ «pitfalls met (from run-diorama)» in [illustration.md](illustration.md).
 
-## vectors
-
-### analysis
-
-the questions each run answers from local evidence:
+## the checks — every drawing session answers these
 
 - does every image hold the bible (`bytes/apps/atelier/art/story.md`, `dino.md`, `palette.ts`)?
 - light = day and dark = night on every piece?
 - does the art direction stay quiet: few flowers, no cheer, Oles stern?
 - svg or raster: which one wins per piece, and what does each cost to render and ship?
+
+## runs
+
+- 2026-09-25 · stage 0.03: panel, tone mapping, scene picker, bakes, day/night/drift loops
