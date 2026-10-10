@@ -123,7 +123,7 @@ test('the 5h bar ends in its used %, and the head reads the gap and the time lef
     const boxes = await ui.findAll({ type: 'Box' });
     const text = (key: string) => boxes.find((n) => n.key === key)?.text;
     expect([text('meter:5h'), text('meter:info')]).toEqual([
-        expect.stringMatching(/^🔥 5h39%/),
+        expect.stringMatching(/39%$/),
         expect.stringMatching(/^1% spare🌔 3h 0m/),
     ]);
 });
@@ -171,7 +171,7 @@ test('an idle band takes the 5h reading another session wrote', async ($, on) =>
     const five = (await ui.findAll({ type: 'Box' })).find(
         (n) => n.key === 'meter:5h',
     );
-    expect(five?.text).toMatch(/^🔥 5h52%/);
+    expect(five?.text).toMatch(/52%$/);
 });
 
 test("the ctx row shows the fill and the engine's compaction point", async ($, on) => {
@@ -325,29 +325,4 @@ test('the desktop gives the bars air above, between and below them', async ($, o
         box?.props.marginBottom,
     ];
     expect(air.every((n) => typeof n === 'number' && n > 0)).toBe(true);
-});
-
-// the harness cannot hover; it reads the hidden card's words, and `pnpm mods:live … hover` checks the reveal
-const cardTexts = async ($: Engine) =>
-    (await (await band($)).findAll({ type: 'Text' }))
-        .map((t) => t.text ?? '')
-        .filter((t) => t.includes('┃'));
-
-test("the 5h bar's card names its tick as the on-pace mark", async ($, on) => {
-    meters(on);
-    await measure($, 39, 35);
-    expect(await cardTexts($)).toContain(
-        'used 39% · ┃ on pace at 40% · 1% spare',
-    );
-});
-
-test("the ctx bar's card names its tick as the compaction point", async ($, on) => {
-    meters(on);
-    await measure($, 39, 35);
-    expect(await cardTexts($)).toContain('context 35% · ┃ compacts at 70%');
-});
-
-test('a band with no reading draws no card', async ($, on) => {
-    meters(on);
-    expect(await cardTexts($)).toEqual([]);
 });

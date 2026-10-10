@@ -696,11 +696,6 @@ export const paceOf = (resetsAt: number, now: number) =>
 // used − pace: spare at 0 or under, a debt up to 10 is amber, past it red
 export const gapTint = (gap: number) =>
     gap <= 0 ? METER_TINTS.calm5h : gap <= 10 ? RAMP[1] : RAMP[2];
-// the 5h bar's hover card: the tick is where the fill ends at 0 spare
-export const fiveCard = (used: number, pace?: number, gap?: number) =>
-    pace === undefined || gap === undefined
-        ? `used ${Math.round(used)}%`
-        : `used ${Math.round(used)}% · ┃ on pace at ${Math.round(pace)}% · ${gap > 0 ? `+${gap}% debt` : `${-gap}% spare`}`;
 // the context fill reads calm until 10 points short of its compaction point, then amber, red at and past it
 export const contextFill = (percent: number, compactAt?: number) =>
     compactAt === undefined || percent < compactAt - 10
@@ -1647,12 +1642,7 @@ export const register: Register = (on) => {
             key: string,
             label: string,
             tint: string,
-            bar?: {
-                percent: number;
-                mark?: number;
-                scale?: number;
-                card: string;
-            },
+            bar?: { percent: number; mark?: number; scale?: number },
             marginTop = 0,
         ) => (
             <Box
@@ -1667,15 +1657,13 @@ export const register: Register = (on) => {
                 {bar === undefined ? (
                     <Text dimColor>no reading yet</Text>
                 ) : (
-                    // the % ends on the band's right edge, under the head's last button; a hover names the bar's tick
-                    // over the bar's empty right end, since a one-row band clips a card above or below
+                    // the % ends on the band's right edge, under the head's last button
                     <Box
                         alignItems='center'
                         flexDirection='row'
                         flexGrow={1}
                         gap={1}
-                        justifyContent='space-between'
-                        key={`${key}:hover`}>
+                        justifyContent='space-between'>
                         {Svg ? (
                             <Svg
                                 alt={`${label} ${Math.round(bar.percent)}%`}
@@ -1705,15 +1693,6 @@ export const register: Register = (on) => {
                             <Text bold color={tint}>
                                 {Math.round(bar.percent)}%
                             </Text>
-                        </Box>
-                        {/* last, so it paints over the cells; drawn first, the bar overwrote all but its end */}
-                        <Box
-                            display='none'
-                            hover={{ display: 'flex' }}
-                            position='absolute'
-                            right={5}
-                            top={0}>
-                            <Text>{bar.card}</Text>
                         </Box>
                     </Box>
                 )}
@@ -1765,13 +1744,7 @@ export const register: Register = (on) => {
                     'meter:5h',
                     '🔥 5h',
                     fiveTint,
-                    five
-                        ? {
-                              card: fiveCard(five.used, pace, gap),
-                              mark: pace,
-                              percent: five.used,
-                          }
-                        : undefined,
+                    five ? { mark: pace, percent: five.used } : undefined,
                 )}
                 {barRowJSX(
                     'meter:ctx',
@@ -1780,7 +1753,6 @@ export const register: Register = (on) => {
                     ctx === undefined
                         ? undefined
                         : {
-                              card: `context ${Math.round(ctx)}% · ┃ compacts at ${meter?.compactAt ?? 'the default'}%`,
                               mark: meter?.compactAt,
                               percent: ctx,
                               scale: meter?.compactAt ?? 100,
