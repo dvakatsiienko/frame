@@ -1520,47 +1520,48 @@ export const register: Register = (on) => {
                     {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
                     {a.isResolved ? <Text dimColor>answered</Text> : null}
                 </Box>
+                {/* the buttons lead, the note follows them (dima, 20:19) */}
                 <Box alignItems='center' flexDirection='row' gap={1}>
                     {a.isLocked ? (
-                        <Box flexGrow={1} flexShrink={1} minWidth={0}>
-                            <Text dimColor wrap='truncate-end'>
-                                {`🔒 ${a.mark === 'accepted' ? '🤩' : '👎🏼'}${a.note ? ` «${a.note}»` : ''}`}
+                        <Box flexShrink={0}>
+                            <Text dimColor>
+                                {`🔒 ${a.mark === 'accepted' ? '🤩' : '👎🏼'}`}
                             </Text>
                         </Box>
                     ) : (
-                        [
-                            Input ? (
-                                // no grow: the buttons sit right after the note, never pushed to the row's end (dima, 20:17)
-                                <Box flexShrink={1} key='note' minWidth={0}>
-                                    <Input
-                                        key={`orbit:note:${a.id}`}
-                                        onInput={(value: string) =>
-                                            handleNote(a.id, value)
-                                        }
-                                        onSubmit={(value: string) =>
-                                            handleNote(a.id, value)
-                                        }
-                                        placeholder='note'
-                                        value={a.note ?? ''}
-                                    />
-                                </Box>
-                            ) : null,
-                            markJSX(a, 'accepted'),
-                            markJSX(a, 'rejected'),
-                        ]
+                        [markJSX(a, 'accepted'), markJSX(a, 'rejected')]
                     )}
                     {speakJSX(a)}
+                    {a.isLocked ? (
+                        a.note ? (
+                            <Box flexShrink={1} minWidth={0}>
+                                <Text dimColor wrap='truncate-end'>
+                                    {`«${a.note}»`}
+                                </Text>
+                            </Box>
+                        ) : null
+                    ) : Input ? (
+                        <Box flexShrink={1} minWidth={0}>
+                            <Input
+                                key={`orbit:note:${a.id}`}
+                                onInput={(value: string) =>
+                                    handleNote(a.id, value)
+                                }
+                                onSubmit={(value: string) =>
+                                    handleNote(a.id, value)
+                                }
+                                placeholder='note'
+                                value={a.note ?? ''}
+                            />
+                        </Box>
+                    ) : null}
                 </Box>
             </Box>
         );
         const orbitJSX = (
             <Box flexDirection='column' key='orbit' marginTop={1}>
                 <Box flexDirection='row' justifyContent='space-between'>
-                    <Text bold>
-                        {open.length
-                            ? `🪐 orbit · ${open.length} open`
-                            : '🪐 orbit · no open asks'}
-                    </Text>
+                    <Text bold>{`🪐 orbit · ${open.length}`}</Text>
                     {open.some((a) => !a.mark && !a.isLocked) ? (
                         <Button
                             key='orbit:all'
