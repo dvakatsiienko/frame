@@ -151,14 +151,6 @@
   - then the tree is gone and the shims point at the main checkout
   - decision: dima's `decamp` alias stays `git worktree remove` until he says otherwise (cclio, 2026-10-08)
 
-## go — x's own checks
-
-- ✅ `x go gate [dir]` runs gofmt, vet, staticcheck, go fix and the tests in one call
-  - given a go module with a gofmt finding
-  - when `x go gate <dir>` runs
-  - then it prints `GATE red: gofmt` and exits non-zero
-  - decision: piped into head, tail or grep it is refused by x-mod-guard, whose fix is reading the GATE line — no process controls a pipeline's exit (cclio, 2026-10-08)
-
 ## handoff — the CST store
 
 - ✅ `x handoff` lists, peeks and ingests CSTs from the shared store
