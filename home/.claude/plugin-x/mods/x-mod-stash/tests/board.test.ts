@@ -369,9 +369,7 @@ test("pressing an unbridged background session's name copies its attach command"
 test('a terminal session with no door has nothing to press', async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const doors = (await ui.findAll({ type: 'Button' }))
-        .map((n) => n.key)
-        .filter((k) => String(k).startsWith('door:'));
+    const doors = (await ui.findAll({ type: 'Button' })).map((n) => n.key);
     expect(doors).toEqual([`door:${HERE}`]);
 });
 
@@ -399,14 +397,11 @@ test("a row shows its session's context fill", async ($, on) => {
     expect(await row($, HERE)).toContain('ctx 43%');
 });
 
-test("a row's ticket opens in the Linear app", async ($, on) => {
-    const { runs } = fleet(on);
+test("a row links the ticket in its session's name", async ($, on) => {
+    fleet(on);
     const ui = await board($);
-    const button = (await ui.findAll({ type: 'Button' })).find((n) =>
-        String(n.key ?? '').startsWith('app:row:'),
-    );
-    await ui.press({ key: String(button?.key) });
-    expect(runs).toContainEqual(['open', 'linear://x-com/issue/FRM-1']);
+    const link = await ui.find({ type: 'Link' });
+    expect(link?.props.href).toBe('https://linear.app/x-com/issue/FRM-1');
 });
 
 // cc's registry keeps «🐦‍⬛ ccrow» with its zero-width joiner turned into a space

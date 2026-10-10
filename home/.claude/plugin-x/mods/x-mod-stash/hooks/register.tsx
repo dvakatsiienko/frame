@@ -109,8 +109,6 @@ const LINE_GAP = 0.25;
 const ORBIT_TEXT_MAX = 90;
 // a ticket id inside an ask or a phase; split keeps the id as every odd part
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
-// a mod Link takes https only; a button runs `open` on the Linear app's own scheme, no browser round trip (dima's o9)
-const LINEAR_APP = 'linear://x-com/issue/';
 const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     `op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»), ≤${ORBIT_TEXT_MAX} chars, subject first, detail in hiddenNote; pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.`,
@@ -1724,30 +1722,6 @@ export const register: Register = (on) => {
                     </Link>
                 );
             });
-        const openIssue = (id: string) =>
-            void $.process
-                .run(['open', `${LINEAR_APP}${id}`])
-                .catch(() => undefined);
-        // one ↗ per ticket id the texts name, each opening it in the Linear app
-        const appJSX = (texts: string[], key: string) => {
-            const ids = [
-                ...new Set(
-                    texts.flatMap((x) =>
-                        x.split(TICKET_IDS).filter((_, i) => i % 2 === 1),
-                    ),
-                ),
-            ];
-            return ids.map((id) => {
-                return (
-                    <Button
-                        key={`app:${key}:${id}`}
-                        onPress={() => openIssue(id)}
-                        plain>
-                        {`↗ ${id}`}
-                    </Button>
-                );
-            });
-        };
         // the ask on its own line, the bold id leading it; under it one row: the note, 🤩 👎🏼, then speak's 🔊 ⏯ ⏹
         // (dima, 20:08); a full row of air between asks (dima, 19:52)
         const askJSX = (a: OrbitAsk, i: number) => (
@@ -1772,7 +1746,6 @@ export const register: Register = (on) => {
                             </Text>
                         </Text>
                     </Box>
-                    {appJSX([a.text, a.pick], `ask:${a.id}`)}
                     {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
                 </Box>
                 {/* the buttons lead, the note follows them (dima, 20:19) */}
@@ -1849,33 +1822,29 @@ export const register: Register = (on) => {
                             const lead = line.match(PLAN_LEAD);
                             return (
                                 // the moon fills by nearness, the then lines dim (dima, 20:58); only the now lead is green (21:08)
-                                // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
-                                <Box
-                                    flexDirection='row'
-                                    gap={1}
+                                <Text
+                                    dimColor={i > 1}
+                                    // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
                                     key={`plan:${i}`}>
-                                    <Text dimColor={i > 1}>
-                                        {`${PHASE_MOONS[i]} `}
-                                        {lead ? (
-                                            <Text
-                                                bold
-                                                color={
-                                                    i === 0
-                                                        ? METER_TINTS.calm5h
-                                                        : undefined
-                                                }>
-                                                {lead[0]}
-                                            </Text>
-                                        ) : null}
-                                        {linkedJSX(
-                                            lead
-                                                ? line.slice(lead[0].length)
-                                                : line,
-                                            `plan:${i}`,
-                                        )}
-                                    </Text>
-                                    {appJSX([line], `plan:${i}`)}
-                                </Box>
+                                    {`${PHASE_MOONS[i]} `}
+                                    {lead ? (
+                                        <Text
+                                            bold
+                                            color={
+                                                i === 0
+                                                    ? METER_TINTS.calm5h
+                                                    : undefined
+                                            }>
+                                            {lead[0]}
+                                        </Text>
+                                    ) : null}
+                                    {linkedJSX(
+                                        lead
+                                            ? line.slice(lead[0].length)
+                                            : line,
+                                        `plan:${i}`,
+                                    )}
+                                </Text>
                             );
                         })}
                     </Box>
@@ -1984,12 +1953,12 @@ export const register: Register = (on) => {
                                 width={COLUMNS.ticket}>
                                 {ticket ? (
                                     // never wraps: `FRM-306` broke at its hyphen in the desktop font
-                                    <Button
-                                        key={`app:row:${m.sid}`}
-                                        onPress={() => openIssue(ticket)}
-                                        plain>
-                                        {ticket}
-                                    </Button>
+                                    <Text dimColor wrap='truncate-end'>
+                                        <Link
+                                            href={`https://linear.app/x-com/issue/${ticket}`}>
+                                            {ticket}
+                                        </Link>
+                                    </Text>
                                 ) : null}
                             </Box>
                             <Box
