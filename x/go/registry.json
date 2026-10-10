@@ -6,11 +6,6 @@
             "name": "lane"
         },
         {
-            "example": "x go gate",
-            "gist": "x's own go checks, one GATE line",
-            "name": "go"
-        },
-        {
             "example": "x handoff peek cli-arms",
             "gist": "the shared CST store, one door for cc and cw",
             "name": "handoff"
@@ -198,6 +193,23 @@
         {
             "args": [
                 {
+                    "description": "the commit message file, git's commit-msg argv",
+                    "name": "msg-file"
+                }
+            ],
+            "hidden": true,
+            "name": "lane gate",
+            "needsApply": false,
+            "purpose": "commit-msg door: contract changes carry their glossary, skills never only grow, app code carries its FTR.md",
+            "replaces": [
+                "home/.claude/plugin-x/bin/ftr-gate",
+                "script/lib/ftr-gate.test.ts",
+                "x go gate"
+            ]
+        },
+        {
+            "args": [
+                {
                     "description": "the pr number, never inferred",
                     "name": "pr"
                 },
@@ -211,19 +223,6 @@
             "purpose": "write a file as the body of the numbered pr as the x-coder-cc app, then read it back",
             "steps": ["plan", "write", "verify"],
             "touches": ["github — the pr's body, as the x-coder-cc app"]
-        },
-        {
-            "args": [
-                {
-                    "description": "the go module dir; x's own module when absent",
-                    "isOptional": true,
-                    "name": "dir"
-                }
-            ],
-            "name": "go gate",
-            "needsApply": false,
-            "purpose": "run gofmt, vet, staticcheck, go fix and the tests on x's module; GATE ok, or GATE red naming the step",
-            "steps": ["gofmt", "vet", "staticcheck", "fix", "test"]
         },
         {
             "flags": {

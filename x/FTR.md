@@ -93,7 +93,7 @@
   - given any other branch, then no job runs
   - decision: local, before the commit lands; nothing on github, pr branches untouched (dima, cli grill 2026-10-09)
 - ✅ `x lane commit` adds `ftr: none` when an app's code moves without its ftr
-  - given a commit whose named paths change an app's code (the paths `ftr-gate` counts) and not that app's `FTR.md`
+  - given a commit whose named paths change an app's code (the paths `x lane gate`'s ftr half counts) and not that app's `FTR.md`
   - when `x lane commit` runs
   - then the commit body carries a bare `ftr: none` line in its own paragraph, before the `Agent:` trailer, and the caller's message file is unchanged
   - given the same commit also names the app's `FTR.md`, or the message already says `ftr: none`, then the body is the message as written
@@ -117,6 +117,16 @@
   - given 2 rounds already ran and neither holds, then it requests nothing, exits 1 and names dima's approval of the pr as the way past
   - given the label came off and the add failed, then the failure says the pr now holds no review label
   - decision: no `--apply` — the verb's own checks (staleness, the cap) are the guard, and the coder's «final» ping runs it as one call (FRM-355)
+- ✅ `x lane gate <msg-file>` holds a commit at commit-msg, in frame and bytes
+  - given a commit that changes a file a context lists as its `contract:` in `GLOSSARY-MAP.md`, without that context's `GLOSSARY.md` or a file in its adr dir, then it exits 1 naming the context and the missing glossary; a message line «glossary: unchanged — <why>» passes it
+  - given a commit touching a context whose `contract:` reads «none yet», then it exits 0 with one line naming that context; a context with no `contract:` line stays quiet
+  - given a listed contract path the index no longer holds, then it exits 1 naming the path and the map
+  - given a `crew-*` or `guide-*` skill file whose non-blank additions exceed its non-blank removals by 3 or more, or a new file under such a skill dir, then it exits 1; «groom: read whole — <what was cut>» passes it; a file renamed inside its own skill counts only its line change, a move in from anywhere else is a new file
+  - given an app's code (the nearest dir holding `FTR.md`, or an ftr whose `claims:` names the path) staged without that `FTR.md`, then it exits 1 naming it; a bare line «ftr: none» passes it
+  - given a merge in progress, then it passes untouched
+  - then a pass line takes an em dash or an ascii `-`/`--` before its why
+  - then a map row names its context as `**name**` with its glossary in backticks (frame) or as a link to the glossary (bytes)
+  - decision: each half has a message line that passes it on purpose, so the gate refuses a forgotten step, never a decision; the root repo context carries no `contract:` line, since every commit touches it (FRM-367)
 - ✅ `x lane pr-body <pr> <file>` writes a pr body by number and reads it back
   - given no pr number, or a file where the number goes
   - when `x lane pr-body` runs
@@ -142,14 +152,6 @@
   - when `x lane decamp <path> --apply` runs
   - then the tree is gone and the shims point at the main checkout
   - decision: dima's `decamp` alias stays `git worktree remove` until he says otherwise (cclio, 2026-10-08)
-
-## go — x's own checks
-
-- ✅ `x go gate [dir]` runs gofmt, vet, staticcheck, go fix and the tests in one call
-  - given a go module with a gofmt finding
-  - when `x go gate <dir>` runs
-  - then it prints `GATE red: gofmt` and exits non-zero
-  - decision: piped into head, tail or grep it is refused by x-mod-guard, whose fix is reading the GATE line — no process controls a pipeline's exit (cclio, 2026-10-08)
 
 ## handoff — the CST store
 

@@ -117,7 +117,8 @@ Role, priority and estimate are **always filled and current** — monitoring the
   reorder in the same turn, and verify the project's milestone order before reporting done.
 - On any scope change to an existing ticket: re-eval both, propose the delta.
 - **Structural tracker change** (project born/dissolved, term decided, label vocabulary shift) →
-  `~/frame/docs/tracker/GLOSSARY.md` / TRK adr updated **in the same batch**, never later.
+  `~/frame/docs/tracker/GLOSSARY.md` / TRK adr updated **in the same batch**, never later; a contract
+  file that `GLOSSARY-MAP.md` lists is held at commit by `x lane gate`.
 - Approval is **batched and diff-shaped**: one bullet list per edit batch, one `field: old → new` line per change, one approve — never N sequential confirms. Silence on a line in Dima's reply = accepted.
 
 ## The assumption gate — run before every estimate

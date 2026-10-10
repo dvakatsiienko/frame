@@ -61,7 +61,8 @@ sat in four places on 2026-09-19). the one crossing: a feature's scheduled **dae
 - Anything directly under `script/` is a runnable entrypoint with a matching `pnpm` script;
   `script/lib/` is library code, never invoked directly.
 - Formatter and linter is **biome** (`pnpm check`). Git hooks run through **lefthook** — biome on
-  staged files plus `pnpm typecheck` and `pnpm test` at commit, `frame-link` at push. Nothing in
+  staged files plus `pnpm typecheck` and `pnpm test` at commit, both on a temp copy of the index
+  (`script/index-run.sh`), `frame-link` at push. Nothing in
   a hook writes to your files. 📌 `pnpm check` itself WRITES repo-wide — run biome on your own
   paths only; lefthook already formats what you stage (it reformatted `hotkeys/map.html`
   under a coder, 2026-09-15).
@@ -93,7 +94,8 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
   Glossary vocabulary is binding in outputs (titles, proposals, test names); an output
   contradicting an ADR surfaces the conflict, never silently overrides.
 - **an app with `FTR.md` updates its ftr line, and any new domain word its `GLOSSARY.md`
-  entry, in the same commit as the code** (`x:ftr`).
+  entry, in the same commit as the code** (`x:ftr`) — `x lane gate` holds both at commit-msg: the ftr
+  line always, the glossary for the files a context lists as its `contract:` in `GLOSSARY-MAP.md`.
 - **Research** — `docs/research/<subject>.md`, subject-first filename, never a ticket-id prefix, so
   a doc survives the ticket that prompted it. `Ticket: FRM-N` on its own line at the top, mandatory — a doc no ticket owns writes `Ticket: none`. **Every research doc carries `dies-when:` frontmatter at creation** — the condition that
   retires it (distilled into an artifact, hatched into a skill/rule, or acted on). Reading a doc
@@ -136,7 +138,7 @@ multi-context: `GLOSSARY-MAP.md` lists every `GLOSSARY.md`. See `docs/agents/dom
 ## hazards that bite this repo
 
 - **a pre-commit `test` red in under 1 s on the first commit after staging is the known flake** — vitest needs ~2.5 s, and the identical retry went green both times (2026-10-04); retry once, a second red is real. guard: none, cause unknown
-- **frame's lefthook stashes unstaged changes only for PARTIALLY staged files** — a fully-unstaged wip file stays live during `pnpm test` and can fail the gate (the cw `/profile.md#fleet` size check, 2026-09-23); wrap the commit in a path-limited `git stash push -- <files>`
+- **the pre-commit typecheck, test and mods gates read a temp copy of the index** (`script/index-run.sh`, FRM-367) — a peer's unstaged edit never reaches them; the copy holds git-crypt ciphertext and is deleted after each gate (dima, 2026-10-10)
 - a frame worktree pushes only through `x lane push` (it pushes from the main checkout; a plain `git push` there dies on the `mirror` gate, which reads `~` symlinks that point at the main checkout)
 - **the encrypted set is `.gitattributes`** (the `filter=git-crypt` lines) — read it before calling a task git-crypt-blocked; every other file works in a fresh clone or a cloud session with no key (a «frame is git-crypt, so no cloud» call was wrong on 2026-09-28: the set was one file). a commit that moves a file out of the set is refused by the `git-crypt-rename` pre-commit check — the new path needs its own filter line
 - a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`, and `x lane seed <path>` runs that same hook on a hand-made tree (unlock, mod types and tsconfigs, install); doing it by hand, a `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, `x lane unlock` — the unlock with both filters off (it runs `git status`, which dies on the clean filter; the chords-run probe, 2026-09-27), plus a remove + checkout per file still encrypted after it — a real frame tree decrypts on the unlock, a fresh fixture keeps the ciphertext (FRM-285). a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe ONLY after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob — same ciphertext, nothing plaintext can be staged
