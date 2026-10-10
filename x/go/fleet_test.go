@@ -308,8 +308,8 @@ func TestCoderTurnsSumEverySessionOfATicketAndSkipTheVerifier(t *testing.T) {
 	}
 }
 
-// a home holding one coder transcript of n turns for FRM-9, and a fake linear answering its state
-func opsWorld(t *testing.T, n int, stateType string) (string, *fakeLinear) {
+// a home holding one coder transcript of n turns for FRM-9, and a fake linear answering with reply
+func opsWorld(t *testing.T, n int, reply string) (string, *fakeLinear) {
 	t.Helper()
 	home := t.TempDir()
 	dir := filepath.Join(home, ".claude", "projects", "-frame")
@@ -323,40 +323,50 @@ func opsWorld(t *testing.T, n int, stateType string) (string, *fakeLinear) {
 	if err := os.WriteFile(filepath.Join(dir, "s.jsonl"), []byte(jsonLines(t, lines...)+"\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	server := newFakeLinear(t, func(gqlCall) string {
-		return `{"data":{"t0":{"estimate":2,"state":{"type":"` + stateType + `"}}}}`
-	})
-	return home, server
+	return home, newFakeLinear(t, func(gqlCall) string { return reply })
+}
+
+// linear's answer for FRM-9 as an S in the given state, closed at the given time
+func sizedS(stateType string, completedAt time.Time) string {
+	return `{"data":{"t0":{"estimate":2,"completedAt":"` + completedAt.UTC().Format(time.RFC3339) + `","state":{"type":"` + stateType + `"}}}}`
+}
+
+func opsSizeData(t *testing.T, home string, server *fakeLinear) map[string]any {
+	t.Helper()
+	envelope, got := runLinear(t, server, []string{"HOME=" + home}, "fleet", "ops", "--days", "1", "--min-kb", "0")
+	data, ok := envelope["data"].(map[string]any)
+	if !ok {
+		t.Fatalf("no data in the envelope:\n%s\n%s", got.stdout, got.stderr)
+	}
+	return data
 }
 
 func TestFleetOpsPrintsAClosedTicketPastItsSizeAsAMiss(t *testing.T) {
-	home, server := opsWorld(t, 600, "completed")
-	envelope, got := runLinear(t, server, []string{"HOME=" + home}, "fleet", "ops", "--days", "1", "--min-kb", "0")
-	data, _ := envelope["data"].(map[string]any)
-	if want := `[{"line":400,"size":"S","ticket":"FRM-9","turns":600}]`; marshal(data["size_misses"]) != want {
-		t.Errorf("size_misses %s, want %s\nstderr: %s", marshal(data["size_misses"]), want, got.stderr)
+	home, server := opsWorld(t, 600, sizedS("completed", time.Now()))
+	if got, want := marshal(opsSizeData(t, home, server)["size_misses"]), `[{"line":400,"size":"S","ticket":"FRM-9","turns":600}]`; got != want {
+		t.Errorf("size_misses %s, want %s", got, want)
+	}
+}
+
+func TestFleetOpsLeavesOutATicketClosedBeforeTheWindow(t *testing.T) {
+	home, server := opsWorld(t, 600, sizedS("completed", time.Now().Add(-72*time.Hour)))
+	if got := marshal(opsSizeData(t, home, server)["size_misses"]); got != `[]` {
+		t.Errorf("size_misses %s — a miss the last halt already reported came back", got)
 	}
 }
 
 func TestFleetOpsNamesASizeCheckLinearCouldNotAnswer(t *testing.T) {
-	home := t.TempDir()
-	world, _ := opsWorld(t, 600, "completed")
-	if err := os.Rename(filepath.Join(world, ".claude"), filepath.Join(home, ".claude")); err != nil {
-		t.Fatal(err)
-	}
-	server := newFakeLinear(t, func(gqlCall) string { return "not json" })
-	envelope, _ := runLinear(t, server, []string{"HOME=" + home}, "fleet", "ops", "--days", "1", "--min-kb", "0")
-	data, _ := envelope["data"].(map[string]any)
-	if data["size_error"] == nil || marshal(data["size_misses"]) != `[]` {
+	home, server := opsWorld(t, 600, "not json")
+	if data := opsSizeData(t, home, server); data["size_error"] == nil || marshal(data["size_misses"]) != `[]` {
 		t.Errorf("size_error %v, size_misses %s — want the error named and no misses", data["size_error"], marshal(data["size_misses"]))
 	}
 }
 
 func TestFleetOpsPrintsNoSizeSectionWithoutAClosedTicket(t *testing.T) {
-	home, server := opsWorld(t, 600, "started")
+	home, server := opsWorld(t, 600, sizedS("started", time.Time{}))
 	_, got := runLinear(t, server, []string{"HOME=" + home}, "fleet", "ops", "--days", "1", "--min-kb", "0", "--board")
-	if strings.Contains(got.stdout+got.stderr, "size misses") {
-		t.Errorf("the board names a size section with no closed ticket:\n%s", got.stdout+got.stderr)
+	if asked := len(server.requests()); asked != 1 || strings.Contains(got.stdout+got.stderr, "size misses") {
+		t.Errorf("linear asked %d times (want 1: the check ran); board:\n%s", asked, got.stdout+got.stderr)
 	}
 }
 

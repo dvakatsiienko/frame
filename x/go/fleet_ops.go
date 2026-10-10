@@ -99,7 +99,7 @@ type opsData struct {
 	SessionsRead int          `json:"sessions_read"`
 }
 
-// a closed ticket whose coder sessions took more turns than its estimate's size allows
+// a ticket closed in the window whose coder turns reached its estimate's size line
 type sizeMiss struct {
 	Ticket string `json:"ticket"`
 	Size   string `json:"size"`
@@ -142,7 +142,8 @@ func fleetOps(r *Run, _ []string, flags Flags) (any, error) {
 			return nil, err
 		}
 		// a linear outage leaves the transcript numbers standing; the miss check names why it is empty
-		if sizes, err := ticketSizes(actor, slices.Sorted(maps.Keys(turns))); err != nil {
+		since := time.Now().Add(-time.Duration(days) * 24 * time.Hour)
+		if sizes, err := ticketSizes(actor, slices.Sorted(maps.Keys(turns)), since); err != nil {
 			data.SizeError = err.Error()
 		} else {
 			data.SizeMisses = sizeMisses(turns, sizes)
@@ -355,12 +356,13 @@ func sizeMisses(turns map[string]int, sizes map[string]ticketSize) []sizeMiss {
 	return misses
 }
 
-// one aliased request for every ticket; an id linear does not know comes back null and is left out
-func ticketSizes(actor string, tickets []string) (map[string]ticketSize, error) {
+// one aliased request for every ticket; an id linear does not know comes back null and is left out.
+// closed means closed inside the window, so the next halt never reports the same miss again
+func ticketSizes(actor string, tickets []string, since time.Time) (map[string]ticketSize, error) {
 	var query strings.Builder
 	query.WriteString("query {")
 	for i, id := range tickets {
-		fmt.Fprintf(&query, " t%d: issue(id: %q) { estimate state { type } }", i, id)
+		fmt.Fprintf(&query, " t%d: issue(id: %q) { estimate completedAt state { type } }", i, id)
 	}
 	query.WriteString(" }")
 	data, _, err := gql(actor, query.String(), nil)
@@ -370,15 +372,16 @@ func ticketSizes(actor string, tickets []string) (map[string]ticketSize, error) 
 	sizes := map[string]ticketSize{}
 	for i, id := range tickets {
 		var issue *struct {
-			Estimate *float64 `json:"estimate"`
-			State    struct {
+			Estimate    *float64  `json:"estimate"`
+			CompletedAt time.Time `json:"completedAt"`
+			State       struct {
 				Type string `json:"type"`
 			} `json:"state"`
 		}
 		if json.Unmarshal(data[fmt.Sprintf("t%d", i)], &issue) != nil || issue == nil {
 			continue
 		}
-		size := ticketSize{Closed: issue.State.Type == "completed"}
+		size := ticketSize{Closed: issue.State.Type == "completed" && !issue.CompletedAt.Before(since)}
 		if issue.Estimate != nil {
 			size.Estimate = int(*issue.Estimate)
 		}
@@ -417,10 +420,14 @@ func opsLines(d opsData) []string {
 		lines = append(lines, fmt.Sprintf("%s median over %d: %s tokens, %ds", kind, len(bootTokens), millions(median(bootTokens)), roundHalfUp(median(seconds))))
 	}
 	if d.SizeError != "" {
-		lines = append(lines, "", "== size misses: not checked, linear: "+d.SizeError+" ==")
+		lines = append(lines, "", "== size misses: not checked — "+d.SizeError+" ==")
 	}
 	if len(d.SizeMisses) > 0 {
-		lines = append(lines, "", "== size misses: closed tickets whose coder turns crossed their size (XS 80, S 400) ==")
+		var bounds []string
+		for _, estimate := range slices.Sorted(maps.Keys(sizeLines)) {
+			bounds = append(bounds, fmt.Sprintf("%s %d", sizeLines[estimate].name, sizeLines[estimate].line))
+		}
+		lines = append(lines, "", "== size misses: tickets closed in the window whose coder turns reached their size line ("+strings.Join(bounds, ", ")+") ==")
 		for _, m := range d.SizeMisses {
 			lines = append(lines, fmt.Sprintf("%s\t%s\t%d turns (line %d)", m.Ticket, m.Size, m.Turns, m.Line))
 		}
