@@ -41,7 +41,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🔬 @habit-research-lanes.md — every research runs exa + parallel (`pnpm research:lanes`) + an opus source lane at once, one brief, one reply
 - 🧪 @habit-test-drive.md — a tool on trial: docs research + stress list on day 0, reached first on every fitting ask, widest over deepest
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit
-- 💸 @habit-load-balancing.md — the 5h window paces lane starts: ahead of pace, no new lane, running ones finish; read at every spawn, done and siesta, never printed; weekly ~15 %/day is a one-line ping, never a stop
+- 💸 @habit-ctx-load-balancing.md — the 5h window paces lane starts: ahead of pace, no new lane, running ones finish; read at every spawn, done and siesta, never printed; weekly ~15 %/day is a one-line ping, never a stop
 
 ## the system itself
 - @sys-skills.md — `x:*` runs anywhere, `cclio:*` is coordinator-only; the test is WHERE it runs

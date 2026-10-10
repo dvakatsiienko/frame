@@ -40,6 +40,8 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **Routine asks leave the fence** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged): push and commit ride one line per siesta — «at the halt unless you say stop: push frame». a close and a trash stay asked per target, in the fence (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
 
+**A spotted fix rides the fence as an ask** (dima, 2026-10-10, after a ⚠️ biome cpu line went out as info: «whenever you spot things worth fixing, leave them as options in waiting for your word»): a hazard, a slip or a stray found in passing gets an ask with its fix and a pick, never a bare report line.
+
 **His trackers stay** (dima, 2026-10-10): 🔭, the stat boards and the 📄 stamp are read as info, never replied to; they are mod candidates (pocket PK-50 step 3), not cuts.
 
 **Flag overload instead of absorbing it.** A query too fat for clean resolution → tell him so and
