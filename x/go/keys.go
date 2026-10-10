@@ -111,7 +111,7 @@ func mintLinear(store secrets, app string) (string, time.Time, error) {
 		return "", time.Time{}, err
 	}
 	form := url.Values{"client_id": {id}, "client_secret": {secret}, "grant_type": {"client_credentials"},
-		"scope": {"read,write,app:assignable,app:mentionable"}}
+		"scope": {"read,write,app:assignable,app:mentionable,initiative:read,initiative:write"}}
 	var minted struct {
 		Token   string `json:"access_token"`
 		Expires int64  `json:"expires_in"`
