@@ -67,7 +67,7 @@ test('the index copy leaves nothing behind', () => {
     const run = spawnSync('bash', [join(root, 'script/index-run.sh'), 'true'], {
         cwd: root,
         encoding: 'utf8',
-        env: { ...process.env, TMPDIR: scratch },
+        env: { ...env, TMPDIR: scratch },
     });
 
     expect(run.status, run.stderr).toBe(0);
