@@ -73,6 +73,9 @@ guides (`guide-react`) sit on top of this one.
   board unshrinkable at 768 while «no overflow» stood from an earlier commit, 2026-09-20)
 - **a control is measured in its enabled state** — the disabled one is grey on purpose and hides
   a primary button at 1.16:1 (shipped through a polish pass, 2026-09-20)
+- **a new visual style ships on one screen first** — it scales to the other screens only after
+  dima approves that one, and each approved screen becomes a reference the next brief links, so the
+  design language settles from refs, not re-steers (dima, 2026-10-10: x's stats board)
 - **a visual fix is measured, never eyeballed** — before the change, read the computed geometry of
   the element and its container (bounding boxes, at 390 / 768 / 1280); state the delta in px; make
   ONE change that closes it; re-measure. three guessed offsets on one emoji is the failure this kills
