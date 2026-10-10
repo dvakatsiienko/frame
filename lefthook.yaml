@@ -20,15 +20,17 @@ pre-commit:
       # actual cause scrolls off above lefthook's summary — the commit looks
       # like it just did not happen. That has cost two sessions.
       run: pnpm exec biome check --no-errors-on-unmatched --max-diagnostics=5 {staged_files}
+    # typecheck, test and mods read a temp copy of the index (script/index-run.sh): a peer session's half-done
+    # edit in the shared checkout never blocks another session's commit (FRM-367)
     typecheck:
-      run: pnpm typecheck
+      run: script/index-run.sh pnpm typecheck
     test:
-      run: pnpm test
+      run: script/index-run.sh pnpm test
     mods:
       # the mods sit outside vitest and the root tsconfig: their own runner and their engine-written types gate them.
       # a cc bump made fields required and 11 test fixtures went untyped for days before this ran (2026-10-08)
       glob: "home/.claude/plugin-x/mods/**"
-      run: pnpm mods:typecheck && pnpm mods:test
+      run: script/index-run.sh sh -c 'pnpm mods:typecheck && pnpm mods:test'
     fleet-hazards:
       # a stumble becomes a guard, never a note (FRM-314): a hazard line added or reworded names its guard
       glob: "home/.claude/rules/fleet-hazards.md"

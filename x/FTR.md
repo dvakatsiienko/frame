@@ -121,7 +121,7 @@
   - given a commit that changes a file a context lists as its `contract:` in `GLOSSARY-MAP.md`, without that context's `GLOSSARY.md` or a file in its adr dir, then it exits 1 naming the context and the missing glossary; a message line «glossary: unchanged — <why>» passes it
   - given a commit touching a context whose `contract:` reads «none yet», then it exits 0 with one line naming that context; a context with no `contract:` line stays quiet
   - given a listed contract path the index no longer holds, then it exits 1 naming the path and the map
-  - given a `crew-*` or `guide-*` skill file whose non-blank additions exceed its non-blank removals by 3 or more, or a new file under such a skill dir, then it exits 1; «groom: read whole — <what was cut>» passes it; a renamed file counts only its line change
+  - given a `crew-*` or `guide-*` skill file whose non-blank additions exceed its non-blank removals by 3 or more, or a new file under such a skill dir, then it exits 1; «groom: read whole — <what was cut>» passes it; a file renamed inside its own skill counts only its line change, a move in from anywhere else is a new file
   - given an app's code (the nearest dir holding `FTR.md`, or an ftr whose `claims:` names the path) staged without that `FTR.md`, then it exits 1 naming it; a bare line «ftr: none» passes it
   - given a merge in progress, then it passes untouched
   - then a pass line takes an em dash or an ascii `-`/`--` before its why

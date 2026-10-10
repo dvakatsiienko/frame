@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -149,17 +150,22 @@ func TestGateRefusesASkillThatOnlyGrows(t *testing.T) {
 
 func TestGateReadsARenamedSkillFileByItsChange(t *testing.T) {
 	cases := map[string]struct {
-		body string
-		code int
+		from, to, body string
+		code           int
 	}{
-		"moved as is":          {"# coder\none\ntwo\nthree\n", 0},
-		"moved and grown by 3": {"# coder\none\ntwo\nthree\na\nb\nc\n", 1},
+		"moved as is":                 {"skills/crew-coder/SKILL.md", "skills/crew-coder/CODER.md", "# coder\none\ntwo\nthree\n", 0},
+		"moved and grown by 3":        {"skills/crew-coder/SKILL.md", "skills/crew-coder/CODER.md", "# coder\none\ntwo\nthree\na\nb\nc\n", 1},
+		"moved into another skill":    {"skills/crew-coder/SKILL.md", "skills/guide-go/stolen.md", "# coder\none\ntwo\nthree\n", 1},
+		"moved in from outside crews": {"skills/notes/SKILL.md", "skills/crew-coder/notes.md", "# notes\n", 1},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			dir := gateRepo(t, nil)
-			gitT(t, dir, "mv", "skills/crew-coder/SKILL.md", "skills/crew-coder/CODER.md")
-			write(t, filepath.Join(dir, "skills/crew-coder/CODER.md"), c.body)
+			if err := os.MkdirAll(filepath.Join(dir, filepath.Dir(c.to)), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			gitT(t, dir, "mv", c.from, c.to)
+			write(t, filepath.Join(dir, c.to), c.body)
 			gitT(t, dir, "add", "-A")
 
 			got := gate(t, dir, "change\n")

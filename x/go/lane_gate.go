@@ -195,13 +195,21 @@ func contractNudges(tree string, staged []stagedFile) []string {
 	return nudges
 }
 
+func skillDir(file string) string {
+	if loc := gatedSkill.FindStringIndex(file); loc != nil {
+		return file[:loc[1]]
+	}
+	return ""
+}
+
 func skillRefusals(tree string, staged []stagedFile) []string {
 	var refusals []string
 	for _, f := range staged {
 		if !gatedSkill.MatchString(f.name) {
 			continue
 		}
-		if f.status == "A" {
+		// a rename counts as one only inside its own skill; a move in from anywhere else lands a new file
+		if f.status == "A" || f.old != "" && skillDir(f.old) != skillDir(f.name) {
 			refusals = append(refusals, fmt.Sprintf("%s is a new file in a crew-/guide- skill — read the skill whole and fold it in, or add «groom: read whole — <what was cut>» to the message", f.name))
 			continue
 		}
