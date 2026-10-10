@@ -21,11 +21,11 @@ kept by `recipes/refresh-operator-agent-comms-optimization`; each run merges its
 ## with context (run 1 calibration, 305 stratified prompts, weighted back to the whole set)
 
 - the first labels judged each prompt alone; with the turn before it, the picture moves:
-  - the first pass counted corrections alone, one flag, no context: 8 %. with the turn before each prompt and the three published kinds, pushback is ~28 % (opus-judged, no human gold set yet)
+  - the first pass counted corrections alone, one flag, no context: 8 %. with the turn before each prompt and the three published kinds, pushback is ~27 %: corrections 18 %, failure reports 6 %, rejections 2 % (gold set below)
   - re-asks with one turn of context: ~8 %, about 200 in 37 days, against 57 first counted; still an estimate, the decision-log match is not run yet
-  - 36 % of prompts show a communication gap: «what can the system do or does» 16 %, a lost decision 6 %, unreadable output, «did it land», «is it stuck»
+  - 42 % of prompts show a communication gap: «what can the system do or does» 17 %, «did it land» 9 %, then a lost decision, unreadable output, «is it stuck», a misread intent
 - the context-free kind label agreed with the opus context label on 65 % of prompts; most flips were approvals, wishes and corrections that were really steers
-- labelling models against an opus reference: sonnet 77 % on kind, 86 % on pushback, 78 % on gap; haiku 65 %, 82 %, 65 % and more tokens than sonnet (450k vs 312k) — accuracy retires haiku; no model clears 85 % on the 9-way kind, so the model labels pushback and the gap only, and the kinds go to patterns where they are mechanical (approve, command, status)
+- the gold set: the 93 prompts where opus and sonnet split, labelled by cclio from their context; the 212 where they agreed count as settled (a known bias). against it: opus 94 % pushback / 89 % gap, sonnet 91 % / 89 %, haiku 81 % / 68 %. sonnet clears the 85 % gate and stays the labeller; haiku is out; no model clears it on the 9-way kind, so kinds go to patterns where mechanical (approve, command, status). the set lives in the recipe's label store
 - free numbers (duckdb, 3 weeks): 71 % of replies end with an ask fence; he answers those in a median 2.6 min (p90 11) against 1.3 min without; 1 fence in 5 gets an answer of another shape; 322 replies carried a 🔭 tracker and he still asked for status 98 times
 - reply length vs a correction next: 8.5 → 6.1 → 8.1 → 9.7 % by length quartile, a weak link
 
