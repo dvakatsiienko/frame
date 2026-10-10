@@ -1531,7 +1531,7 @@ export const register: Register = (on) => {
                     ) : (
                         [markJSX(a, 'accepted'), markJSX(a, 'rejected')]
                     )}
-                    {speakJSX(a)}
+                    {a.isLocked ? null : speakJSX(a)}
                     {a.isLocked ? (
                         a.note ? (
                             <Box flexShrink={1} minWidth={0}>

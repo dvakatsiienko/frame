@@ -195,7 +195,9 @@ test('a joined ask draws no control while the turn runs', async ($, on) => {
     await say($, 'go');
     const keys = (await ui.findAll({})).map((n) => n.key ?? '');
     expect([
-        keys.filter((k) => /^orbit:(accepted|rejected|note):o1$/.test(k)),
+        keys.filter((k) =>
+            /^orbit:(accepted|rejected|note|read|pause|stop):o1$/.test(k),
+        ),
         (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text,
     ]).toEqual([[], expect.stringContaining('«after ci»')]);
 });

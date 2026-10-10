@@ -321,7 +321,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
-  - then those rows draw no control at all — their mark and note show as dim text after a `🔒` — until it ends, when the controls come back
+  - then those rows draw no control at all, 🔊 ⏯️ ⏹️ included — their mark and note show as dim text after a `🔒` — until it ends, when the controls come back (dima, 20:24)
   - decision: no control rather than a disabled one — the mod api's `Button` and `Input` take no `disabled` (dima asked for one, 19:46)
 - ✅ a resolved ask leaves, a follow-up changes in place
   - given cclio answered a marked ask
