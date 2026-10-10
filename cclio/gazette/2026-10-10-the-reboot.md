@@ -30,3 +30,7 @@ posted: {health: no}
 - shipped: pocket do-first + pocket-check rules · FRM-379/380 · PK-47 preflight verbs · to-spec in shape-lane · recipes cadence out · dima-wishes leaf
 - open: memory sweep FRM-267 (06.5 flush, 08.5 pm review) · cli batch PK-49 + PK-48 · PK-35 on that batch
 - state: frame pushed at the halt · no coders · ccrow stopped · reboot from scratch
+
+⸻ upd 18:55 · checkpoint 1
+- shipped: the operator ledger + reply analysis (artifact v2) · reply budget + style batch + model versions rule · the verbatim fold (83 quotes) · roadmap: cli as a parallel track · recipe refresh-operator-agent-comms-optimization born, run 1 + gold set (pushback ~27 %) · refresh-cc-mods groomed + run · cclio app initiative scope · ccrow wake hook fixed · index-run test fixed · evergreen day → wednesday · orbit shaped, FRM-381 sealed and spawned
+- open: FRM-381 coder running · verifier-on-main for mods (ccrow) · chunks 2–3 of the comms mods (PK-20) · the cli big picture (PK-50 step 4) · tails (step 5) · the memory sweep (step 6) · fold half 2: the linear wish blocks
