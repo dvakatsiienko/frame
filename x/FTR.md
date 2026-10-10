@@ -370,6 +370,12 @@
   - given the session transcripts of the last `--days` (default 7) of at least `--min-kb` (default 200)
   - when `x fleet ops` runs
   - then it prints tokens and wall time per ticket (coder + verifier, each step once), cclio's code edits per session, and the cost of a cclio boot (full and mini), each with its median
+- ✅ `x fleet ops` names each size miss
+  - given a ticket linear closed inside the `--days` window, sized XS or S, whose coder turns in that window reached its line (XS 80, S 400)
+  - when `x fleet ops` runs
+  - then it prints one line per size miss — ticket, size, turns, the line — most turns first; no size miss, no section; linear unreachable, one line saying the check did not run
+  - decision: the check lives in `x fleet ops`, which already reads the coder transcripts, not in a duckdb query beside it (FRM-379)
+  - decision: closed inside the window, so a halt never reports the last halt's miss again; the cost is an undercount for a ticket whose coder sessions started before the window, and sessions under `--min-kb` are not read
 - ✅ a bad `--days` or `--min-kb` exits 2 with the command that works
 
 ## stats — telemetry

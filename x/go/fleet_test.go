@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -269,6 +271,102 @@ func TestOpsAddsTheCoderAndVerifierOfOneTicket(t *testing.T) {
 	})
 	if want := `[{"ticket":"FRM-9","tokens":400,"wall_ms":900000}]`; marshal(costs) != want {
 		t.Errorf("costs %s, want %s", marshal(costs), want)
+	}
+}
+
+func TestSizeMissesFlagAClosedTicketPastItsLine(t *testing.T) {
+	cases := []struct {
+		name  string
+		turns int
+		size  ticketSize
+		want  string
+	}{
+		{"a closed S past 400", 600, ticketSize{Estimate: 2, Closed: true}, `[{"ticket":"FRM-9","size":"S","turns":600,"line":400}]`},
+		{"a closed S under 400", 399, ticketSize{Estimate: 2, Closed: true}, `[]`},
+		{"a closed XS at 80", 80, ticketSize{Estimate: 1, Closed: true}, `[{"ticket":"FRM-9","size":"XS","turns":80,"line":80}]`},
+		{"an open S past 400", 600, ticketSize{Estimate: 2}, `[]`},
+		{"a closed M has no line", 900, ticketSize{Estimate: 3, Closed: true}, `[]`},
+		{"a closed ticket with no estimate", 900, ticketSize{Closed: true}, `[]`},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := marshal(sizeMisses(map[string]int{"FRM-9": c.turns}, map[string]ticketSize{"FRM-9": c.size})); got != c.want {
+				t.Errorf("misses %s, want %s", got, c.want)
+			}
+		})
+	}
+}
+
+func TestCoderTurnsSumEverySessionOfATicketAndSkipTheVerifier(t *testing.T) {
+	turns := coderTurns([]opsSession{
+		{Role: "coder", Ticket: "FRM-9", Steps: 300},
+		{Role: "coder", Ticket: "FRM-9", Steps: 200},
+		{Role: "verifier", Ticket: "FRM-9", Steps: 900},
+	})
+	if marshal(turns) != `{"FRM-9":500}` {
+		t.Errorf("turns %s, want FRM-9 at 500", marshal(turns))
+	}
+}
+
+// a home holding one coder transcript of n turns for FRM-9, and a fake linear answering with reply
+func opsWorld(t *testing.T, n int, reply string) (string, *fakeLinear) {
+	t.Helper()
+	home := t.TempDir()
+	dir := filepath.Join(home, ".claude", "projects", "-frame")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	lines := []any{map[string]any{"type": "custom-title", "customTitle": "☕️ 🔧 FRM-9 code: x"}}
+	for i := range n {
+		lines = append(lines, assistantStep(fmt.Sprintf("m%d", i), "2026-10-10T10:00:00Z", map[string]int{"output_tokens": 1}, "tool_use"))
+	}
+	if err := os.WriteFile(filepath.Join(dir, "s.jsonl"), []byte(jsonLines(t, lines...)+"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return home, newFakeLinear(t, func(gqlCall) string { return reply })
+}
+
+// linear's answer for FRM-9 as an S in the given state, closed at the given time
+func sizedS(stateType string, completedAt time.Time) string {
+	return `{"data":{"t0":{"estimate":2,"completedAt":"` + completedAt.UTC().Format(time.RFC3339) + `","state":{"type":"` + stateType + `"}}}}`
+}
+
+func opsSizeData(t *testing.T, home string, server *fakeLinear) map[string]any {
+	t.Helper()
+	envelope, got := runLinear(t, server, []string{"HOME=" + home}, "fleet", "ops", "--days", "1", "--min-kb", "0")
+	data, ok := envelope["data"].(map[string]any)
+	if !ok {
+		t.Fatalf("no data in the envelope:\n%s\n%s", got.stdout, got.stderr)
+	}
+	return data
+}
+
+func TestFleetOpsPrintsAClosedTicketPastItsSizeAsAMiss(t *testing.T) {
+	home, server := opsWorld(t, 600, sizedS("completed", time.Now()))
+	if got, want := marshal(opsSizeData(t, home, server)["size_misses"]), `[{"line":400,"size":"S","ticket":"FRM-9","turns":600}]`; got != want {
+		t.Errorf("size_misses %s, want %s", got, want)
+	}
+}
+
+func TestFleetOpsLeavesOutATicketClosedBeforeTheWindow(t *testing.T) {
+	home, server := opsWorld(t, 600, sizedS("completed", time.Now().Add(-72*time.Hour)))
+	if got := marshal(opsSizeData(t, home, server)["size_misses"]); got != `[]` {
+		t.Errorf("size_misses %s — a miss the last halt already reported came back", got)
+	}
+}
+
+func TestFleetOpsNamesASizeCheckLinearCouldNotAnswer(t *testing.T) {
+	home, server := opsWorld(t, 600, "not json")
+	if data := opsSizeData(t, home, server); data["size_error"] == nil || marshal(data["size_misses"]) != `[]` {
+		t.Errorf("size_error %v, size_misses %s — want the error named and no misses", data["size_error"], marshal(data["size_misses"]))
+	}
+}
+
+func TestFleetOpsPrintsNoSizeSectionWithoutAClosedTicket(t *testing.T) {
+	home, server := opsWorld(t, 600, sizedS("started", time.Time{}))
+	_, got := runLinear(t, server, []string{"HOME=" + home}, "fleet", "ops", "--days", "1", "--min-kb", "0", "--board")
+	if asked := len(server.requests()); asked != 1 || strings.Contains(got.stdout+got.stderr, "size misses") {
+		t.Errorf("linear asked %d times (want 1: the check ran); board:\n%s", asked, got.stdout+got.stderr)
 	}
 }
 

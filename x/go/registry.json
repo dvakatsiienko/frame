@@ -806,10 +806,11 @@
             },
             "name": "fleet ops",
             "needsApply": false,
-            "purpose": "agent ops off the transcripts: tokens and wall time per ticket, cclio's code edits per session, a cclio boot's cost",
+            "purpose": "agent ops off the transcripts: tokens and wall time per ticket, cclio's code edits, boot cost, size misses",
             "replaces": ["script/agent-ops.ts"],
             "touches": [
-                "~/.claude/projects/ — the session transcripts, one level deep"
+                "~/.claude/projects/ — the session transcripts, one level deep",
+                "linear's graphql api — the estimate and state of each ticket a coder worked in the window"
             ]
         },
         {

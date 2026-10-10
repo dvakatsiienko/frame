@@ -29,6 +29,8 @@
 - **span** — the days from the first counted trace to the last, both included; what `x stats` names as `days`, never the window asked for
 - **plugin cache** — where claude code installs a released plugin, `~/.claude/plugins/cache/<marketplace>/<name>/<version>`; `x plugin bump` takes `claude plugin list` reporting the install at the new version, its dir on disk, as the proof — a dir alone can be left from an earlier release
 - **head** — what a Bash command runs, past a leading `cd <dir> &&`, variable setup and the wrappers (`timeout <n>`, `env …`, …): the tool's name, plus its verb for `git`, `claude`, `gh`, `pnpm`, `linear`, `go`, `brew`, `npm`, `npx` and `op`, and an interpreter (`node`, `python3`, …) named with its script; `x stats --outside` ranks them, the one parser of them
+- **coder turn** — one distinct assistant `message.id` in a coder transcript (a model step in `fleet-vibe`'s words), summed over every coder session of a ticket; the unit the size lines are written in (XS < 80, S < 400)
+- **size miss** — a closed ticket whose coder turns reached its estimate's size line; `x fleet ops` lists them, an M has no line
 - **cover** — the x door that already does a head's job: a family's raw door, or the verb that `replaces:` the script or pnpm name the command runs
 - **contract** — the files a context's glossary defines, listed under the context in `GLOSSARY-MAP.md`; a change to one lands with the glossary or an adr, or the message says why not — `x lane gate` holds it
 - **groom** — reading a crew-/guide- skill whole and cutting before a commit that grows it; `x lane gate` asks for it past 3 net non-blank lines, «groom: read whole — <what was cut>» records it
