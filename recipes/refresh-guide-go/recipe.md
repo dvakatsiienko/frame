@@ -28,15 +28,18 @@ two languages at full scale is fine (dima, FRM-284), so go gets the same care as
 
 ## the run
 
-1. re-groom the vectors with dima. done: his word on the list. (open)
+1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. one research round per `habit-research-lanes` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)
-3. findings print. done: the proposal is printed. (template)
-4. dima's word → a coder lane, or the guide edit. done: the lane spawned or the guide edited. (open)
-5. log today's line in `log.md`. done: the line is there. (open)
+3. distill into `x:guide-go` and `charm.md` (`x:shape-recipe` step 4). done: each touched or named «unchanged». (open)
+4. findings print. done: the proposal is printed. (template)
+5. dima's word → a coder lane, or the guide edit. done: the lane spawned or the guide edited. (open)
+6. log today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
 
 ### research
+
+every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 
 from the v1.1 coder's retro, 2026-10-06:
 
@@ -52,7 +55,7 @@ from the v1.1 coder's retro, 2026-10-06:
 
 ### analysis
 
-- 2026-10-09 · the 10-07 log line said `x:guide-go` points at `docs/knowledge/charm.md`; a grep of `guide-go/SKILL.md` finds no reference — check at the next run
+- go coder and verifier retros since the last run (`shelf/retros/*` on `x/go` tickets): every trap the guide did not warn of is a guide line
 - `x --json` start-up time against the budget in `x/FTR.md`
 - the go gate (`pnpm x-go:gate`) green on the current toolchain
 - `go list -m -u all` in `x/go`: what is behind
@@ -66,4 +69,5 @@ from the v1.1 coder's retro, 2026-10-06:
 
 ## findings
 
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - an overhaul proposal: what is new, what it changes in `x:guide-go` and `x/go`, noop included

@@ -1,5 +1,6 @@
 ---
 kind: run
+owner: designer
 cadence: per art change, on dima's word
 artifacts:
   - ~/projects/bytes/apps/atelier/art/
@@ -16,7 +17,12 @@ the art set for frame, the profile and bytes.
 the trace; nothing here is automated yet. the run section is written from the trace only once a
 step repeats unchanged.
 
-Contents: the want — dima's words · vectors · artifacts — where they live · the trace · cadence · log → log.md
+## contents
+
+- the want
+- artifacts
+- the run
+- vectors
 
 ## the want
 
@@ -31,8 +37,7 @@ dima's words:
 
 - `~/projects/bytes/apps/atelier/art/` — the bible (`story.md`, `dino.md`), `palette.ts`, the generators, `out/`
 - `~/frame/home/.claude/plugin-x/skills/guide-ui-ux/SKILL.md` — ui rules that came out of the studio
-- the studio artifact — https://claude.ai/artifact/4YAEdDqeH5SrSCUWnkB13h (source rebuilt by a
-  scratch `build.ts`; move it into frame once the recipe settles)
+- the studio artifact: https://claude.ai/artifact/4YAEdDqeH5SrSCUWnkB13h (its `build.ts`, `look.sh` and `bake.sh` land in `recipes/run-diorama/scripts/` the next session that draws)
 
 ## the run
 
@@ -91,26 +96,7 @@ the trace of the first run:
 
 ### pitfalls met
 
-- a group AND its child both given the same z doubles the depth: the birds sat behind the sky. extras are built at z 0 and only their group is placed
-- the stage's dev server hot-reloads while a loop exports: never edit files it serves until the export lands (checked by frame-to-frame diff — no spike, no reload)
-
-- three.js `PointsMaterial.size` is `size × (canvas height / 2) / distance`: at 20 units away
-  0.16 draws ~2 px. size a point in world units for the bake height, then check the preview
-- scene modules shared with the browser stay free of node apis: the font loads as a json import
-  (`with { type: 'json' }`), never `readFileSync`; the stage's own tsconfig includes them and
-  proves it
-
-- `agent-browser wait <selector>` waits for a *visible* element: an empty `#done` div never
-  counts, so every wait ran its whole timeout and a 1 s render read as «100 s». a page signals
-  through its title, read with `wait --fn`
-
-- biome sorts object keys on write: an order that matters (the readme's app rows) needs an
-  explicit list, never `Object.keys`
-- a filter rect over the whole canvas paints a faint box around a transparent sign: clip the
-  grain to the shape
-- a new `.ts` dir is outside `tsconfig.json` `include` until added; the gate caught a bad cast
-  the moment it was
-- sky and far mountains must not receive shadows in the raster, or the edge pines paint the sky
+→ `x:art-kit` `illustration.md`, «pitfalls met (from run-diorama)».
 
 ## vectors
 

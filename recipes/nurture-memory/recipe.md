@@ -49,9 +49,9 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 
 ## the run
 
-- 📌 **the run order is dima's plan** (written for run #1, moved out of [DOT-73](https://linear.app/x-com/issue/DOT-73)'s body): an agent may improve it, never replace it.
+- 📌 **the run order is dima's plan**: an agent may improve it, never replace it.
 - **live recipe**: a wrong step or a miss is fixed here the same session; a recipe written afterwards is a memory of a recipe.
-- **run state lives in a run file, never in chat** (run #1 took four sessions; run #2: `.scratch/memory-sweep/` + `docs/test-drive/memory-sweep.md`). linear holds what outlives the run, `cclio/pocket.md` cross-session carry-over only.
+- **run state lives in a run file, never in chat**. linear holds what outlives the run, `cclio/pocket.md` cross-session carry-over only.
 - **the coordinator executes**, booted in `~/frame/cclio` (dima's approach b): it holds every leaf resident, a spawn pays ~50k to rebuild a worse copy. spawns only for judgment-free bulk reads (outer project files) and research. it may ask for a fresh session mid-run (cold boot ~115k in run #1), saying why.
 - run #1's working rules, binding until dima changes them: no auto-commit, he reads the diffs and commits · step by step · trace well, fix in place · objections welcome · one fresh session, start to finish.
 - **the per-item report**, never a wall; expand only on his ask, then print the diff:
@@ -64,7 +64,6 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 - ⭐ **a file being rethought gets two drafts, dima picks** (`authoring-memory.md` § the method).
 - 🚫 **no llm-judge memory audit** (arXiv 2601.11783's numbers: `authoring-memory.md` § upkeep; Offscript, CHIIR 2026: 84.6 % flagged, 22.2 % material after human review). its advice: «delegate all deterministically verifiable logic to code, reserve llms for semantic evaluation.» step 2 is code, step 12 human.
 - **drift latency is under 24 hours**: `rules/dispatch.md` was deleted one morning and two docs described it in the present tense that afternoon — the mechanical pass runs on commit, never on a calendar.
-- 📌 decided 2026-10-02: after run #2 this becomes `cclio:nurture`, user-invoked; run #2 closes with that verdict. `docs/knowledge/authoring-*.md` stay put: every session editing memory or a skill reads them, coders included.
 
 1. **research first** — no write before it lands. (template)
    - the snapshot diff, first and cheapest: re-download anthropic's two pages as `.md` (append `.md` to the docs url), `diff` against `docs/research/skill-authoring-best-practices/`, read only the delta, replace the snapshots
@@ -129,15 +128,16 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 
 ### research
 
+- every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 - what changed in cc's memory / import / `paths:` / skill mechanics since the last run
 - new agent-doc craft, dima's channel parses included (theo, matt pocock) via `x:yt-transcript`
 - new memory-hygiene practice and tooling for agent fleets: checks for the loop, anthropic memory features, community approaches
-- the context budget: dima's «what do we do wrong» outranks any token number (his full question in `log.md`, the answer in `authoring-memory.md`)
+- the context budget: dima's «what do we do wrong» (the want) outranks any token number; the answer lives in `authoring-memory.md`
 
 ### analysis
 
-- run #2 ([FRM-267](https://linear.app/x-com/issue/FRM-267)) reads `docs/research/skill-authoring-best-practices.md` first: its checklist is that run's input, these steps the method
-- which memories misfired or sat unused — a leaf never load-bearing since the last sweep is a retirement candidate, not a keeper by default
+- `docs/research/skill-authoring-best-practices.md`'s checklist against our files: an unchecked item is a finding
+- which memories misfired or sat unused: read `refresh-agent-ops`' skill-load measure, never re-measured here; a leaf never load-bearing since the last sweep is a retirement candidate
 - did a silent-failure class fire, and does `method-silent-failures` name its shape?
 - placement drift: a leaf past one decision, a fact at the wrong altitude
 - the failure-mode scrape, theo's method — rules written against what broke: `~/.claude/projects/`, `~/.claude/history.jsonl`, `~/.claude/shelf/flawlog/` (the labelled set); each transcript's model first, events not opinions, bucket then count. scripted (duckdb), never an agent reading transcripts, which samples 2 % and reports a total. codex and gpt out of scope
@@ -151,6 +151,7 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 ## findings
 
 beyond the shared shape:
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - resident tokens before → after, on disk, per layer
 - what moved, merged and died, each with its reason
 - each mechanical check's precision, and any new check earned

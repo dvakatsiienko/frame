@@ -1,7 +1,7 @@
 ---
 kind: refresh
 owner: coordinator
-cadence: at every turbo minor, before each merge milestone starts (m1 on 2026-10-08), or when dima asks
+cadence: at every turbo minor, before each merge milestone starts (BYT-109, BYT-124), or when dima asks
 artifacts:
   - docs/research/monorepo-agents.md
   - cclio/memory/_reminders.md
@@ -11,7 +11,7 @@ was: [refresh-branch-monorepo]
 
 # refresh-monorepo
 
-Keeps the fleet's monorepo craft current: how bytes (pnpm + turborepo) is run by agents, what to do and what never to do, and how the frame → bytes merge proceeds. Born 2026-10-05. The cookbook it keeps fresh is `docs/research/monorepo-agents.md` (do / don't / easy wins).
+keeps the fleet's monorepo craft true: how agents run bytes (pnpm + turborepo), the do / don't / easy wins, and the order of the frame → bytes merge. born 2026-10-05.
 
 ## the want
 
@@ -27,15 +27,18 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 
 ## the run
 
-1. **research** — one brief from the vectors; `pnpm research:lanes <brief> <out>` + an opus source lane (turbo docs + both repos, measured) + a blind `advise-project-approach` lane for the merge. done: every lane returned or marked failed. (script)
-2. **distill** — merge into `docs/research/monorepo-agents.md`; raw lane output stays in `last/` until the next run's distill. done: the cookbook carries the merge, or is named «unchanged». (open)
-3. **eval + findings** — grade the lanes in `docs/test-drive/{exa,parallel}.md`; findings print. done: the grades are in the test-drive files. (template)
-4. **resolve** — with dima; each win becomes a merge slice or a line on its ticket; noop is fine. done: his word on each win. (open)
-5. **log** today's line in `log.md`. done: the line is there. (open)
+1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
+2. **research** — one brief from the vectors; `pnpm research:lanes <brief> <out>` + an opus source lane (turbo docs + both repos, measured) + a blind `advise-project-approach` lane for the merge. done: every lane returned or marked failed. (script)
+3. **distill** — merge into `docs/research/monorepo-agents.md`; raw lane output stays in `last/` until the next run's distill. done: the cookbook carries the merge, or is named «unchanged». (open)
+4. **eval + findings** — grade the lanes in `docs/test-drive/{exa,parallel}.md`; findings print. done: the grades are in the test-drive files. (template)
+5. **resolve** — with dima; each win becomes a merge slice or a line on its ticket; noop is fine. done: his word on each win. (open)
+6. **log** today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
 
 ### research
+
+every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 
 1. **power usage** — turbo with coding agents: task graphs as agent gates, `--affected` / `turbo query affected`, local and remote cache, `turbo watch`, boundaries, generators, `futureFlags`, task `description`s, the turbo ai guide and its agent skill
 2. **pitfalls and don'ts** — cache poisoning, env vars outside the hash, worktrees sharing a cache (absolute paths in outputs), remote cache from worktrees, lockfile churn marking everything affected, context bloat
@@ -51,6 +54,7 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 3. the merge's path blast radius — `rg -l '/Users/dima/frame|~/frame|\$HOME/frame'`, the home symlinks, the plists, cc's path-keyed state; the count per run
 4. worktree health — does a fresh bytes worktree pass its gates with frame's hooks merged in
 5. turbo version vs latest, and what the next minor changes (`agentGuidance` writes into `AGENTS.md`)
+6. the merge slices since the last run (FRM-330–333, BYT-106/125/126): which broke a gate or a worktree, and why
 
 ## artifacts
 
@@ -60,4 +64,5 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 
 ## findings
 
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - print dima the delta: new wins, new don'ts, a moved merge order

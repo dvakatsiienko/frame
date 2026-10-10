@@ -37,3 +37,23 @@ one bounded change → render again. iterate privately; dima sees takes, not eve
 
 - draw on a grid of size/16 units and check the pixel view at 16 px before any polish — half-pixel
   pills, a shadow smearing a gap and an off-grid sun cost the atelier favicon most of its rounds (#117)
+
+## pitfalls met (from run-diorama)
+
+- a group AND its child both given the same z doubles the depth: the birds sat behind the sky. extras are built at z 0 and only their group is placed
+- the stage's dev server hot-reloads while a loop exports: never edit files it serves until the export lands (checked by frame-to-frame diff — no spike, no reload)
+- three.js `PointsMaterial.size` is `size × (canvas height / 2) / distance`: at 20 units away
+  0.16 draws ~2 px. size a point in world units for the bake height, then check the preview
+- scene modules shared with the browser stay free of node apis: the font loads as a json import
+  (`with { type: 'json' }`), never `readFileSync`; the stage's own tsconfig includes them and
+  proves it
+- `agent-browser wait <selector>` waits for a *visible* element: an empty `#done` div never
+  counts, so every wait ran its whole timeout and a 1 s render read as «100 s». a page signals
+  through its title, read with `wait --fn`
+- biome sorts object keys on write: an order that matters (the readme's app rows) needs an
+  explicit list, never `Object.keys`
+- a filter rect over the whole canvas paints a faint box around a transparent sign: clip the
+  grain to the shape
+- a new `.ts` dir is outside `tsconfig.json` `include` until added; the gate caught a bad cast
+  the moment it was
+- sky and far mountains must not receive shadows in the raster, or the edge pines paint the sky

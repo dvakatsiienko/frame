@@ -16,7 +16,7 @@ was: [refresh-ccrow, refresh-adviser, refresh-coordinator-adviser]
 
 keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, which arm runs it, and whether the whole adviser idea still earns its place.
 
-📌 co-owned with the adviser: the frontmatter owner once read `coordinator + adviser`; the enum holds one seat, so the adviser's share is this line and step 1.
+📌 co-owned with the adviser: it consults at step 1 and self-reports at step 5.
 
 ## the want
 
@@ -31,7 +31,7 @@ keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, w
 1. **groom** (step 0 of `x:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «read first: this recipe (`recipes/refresh-crew-coordinator-adviser/recipe.md`), `x:crew-adviser`, `ccrow/AGENTS.md`, your `notes.jsonl` + `verdicts.jsonl`, and the last findings in `last/`. then: what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why» — the adviser co-owns the recipe and answers from its whole contract, never blind (dima, 2026-10-08). its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
 2. **distill the last run's `last/`** before any new lane; name what it already answered. done: a list of answered vs open vectors.
 3. **lanes, from one brief**: `researcher` (sources, papers, code) + `pnpm research:lanes` (exa + parallel); `neuroarxiv` when the prior-art vector is open. done: every lane landed or failed out loud. (template)
-4. **the `/advisor` head-to-head**: a day with cc's built-in `/advisor opus` on cclio beside ccrow; both log every note, whether cclio acted on it, and its tokens into `docs/test-drive/ccrow.md`. done: one verdict — borrow its best parts into ccrow, or switch to it. (template)
+4. **the built-in head-to-head**, only while `docs/test-drive/ccrow.md` has no `/advisor` verdict: a day of `/advisor fable` beside ccrow, both logging notes, acted-on and tokens. done: the verdict, or «settled <date>». (template)
 5. **the self-report**: after the lanes land, ping the adviser for what it lacked, would drop or would hunt, as evidence for the analysis (step 6). done: its answer in `last/consult-report.md`. (script)
 6. **analysis**: `notes.jsonl` + `verdicts.jsonl` per arm (notes vs `none`, ok vs miss, latency to the catch, tokens per wake), the flawlog since the last run (what it caught first, what it never caught), `steers.md` obeyed or not. done: the numbers in the findings print. (script)
 7. **the critical review of the whole setup**: keep, revamp, or retire the adviser — written as a verdict with its evidence, every run. done: one line, never skipped. (open)
@@ -41,6 +41,8 @@ keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, w
 ## vectors
 
 ### research
+
+every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 
 the owner's vectors, in the outside world:
 - what a good adviser agent does: prior art on critic, reflection and devil's-advocate roles in multi-agent systems — when it speaks and when it says `none`, what it reads (timing, the operator's state, the thread's own numbers), how it earns trust; one bullet on the idea's standing (who runs one, who dropped it and why)
@@ -59,7 +61,7 @@ our own evidence:
 - operator overload: the signals (reply gaps, message length, rounds on one item) are only the trigger — the note's value is the remedy it proposes (split the batch, hold member traffic, collapse the asks), judged by whether the next replies shrink (dima: «what would be truly useful is to propose how to resolve it, not only spotting it») (park: the signal list + the remedy list)
 - day mode against systematic mode: which hunts fire in which, from `notes.jsonl`; a hunt that never fires in a mode leaves that mode's charter
 - the cost of a wrong note: notes cclio acted on whose action was later undone (disruption), beside ok and miss — the number that says whether the adviser pays
-- the signal it should hunt: the class of cclio's errors it has never caught (the flawlog since 10-06 against its notes); today's four catches as the baseline
+- the signal it should hunt: the class of cclio's errors it has never caught (the flawlog since the last run against its notes); the baseline is the last run's catch count in `docs/test-drive/ccrow.md`
 - the arm verdict from `verdicts.jsonl`: ok vs miss per arm, latency to the catch, packet tokens per wake, hits per $
 - the consult (step 5): ccrow's own answer, weighed against the research
 
@@ -77,5 +79,7 @@ settled: «the comms model: pings or reads» — it reads her transcript on a wa
 ## findings
 
 done = the run happened (the `x:shape-recipe` rule). the print always carries the setup verdict (keep / revamp / retire) — the adviser is experimental, so every run reviews it whole.
+
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 
 the print carries the parts of `x:shape-recipe`: decisions · facts that move something · prior art (only what is interesting) · the checklist (`x:crew-adviser`, hunt by hunt: fired · caught · never fired) · open.

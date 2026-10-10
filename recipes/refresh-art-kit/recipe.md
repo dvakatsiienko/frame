@@ -1,7 +1,7 @@
 ---
 kind: refresh
 owner: [designer, coordinator]
-cadence: "on demand — «refresh art-kit», a rebrand spotted, a new art job type. otherwise quarterly."
+cadence: "on demand: «refresh art-kit», a rebrand spotted, a new art job type; quarterly, held by its ⏰ in cclio/memory/_reminders.md"
 artifacts:
   - home/.claude/plugin-x/skills/art-kit/
   - ~/frame/gifs/AGENTS.md
@@ -12,9 +12,7 @@ script: none
 
 # refresh-art-kit
 
-Keeps `x:art-kit` current in every branch: gifs, terminal clips, illustration, brand logos, and how
-an svg ships in an app. Born from the 2026-09-30 svg round (three lanes, graded in
-`docs/test-drive/exa.md` + `docs/test-drive/parallel.md`).
+keeps `x:art-kit` true in every branch: gifs, terminal clips, illustration, brand logos, and how an svg ships in an app. born 2026-09-30 from the svg round.
 
 ## contents
 
@@ -42,7 +40,7 @@ dima's, 2026-09-30:
 
 ## the run
 
-1. re-groom the vectors with dima; drop the branches he does not want this run. done: his word on the list. (open)
+1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. one brief file from the kept vectors → `pnpm research:lanes <brief>` (exa + parallel) plus a
    fresh opus source lane that PROBES: the svgl api, the npm versions, which logo each set serves,
    the tool versions on this mac (`ffmpeg -version`, `gifski --version`, `vhs --version`,
@@ -56,6 +54,8 @@ dima's, 2026-09-30:
 ## vectors
 
 ### research
+
+every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 
 **logos** — `logos.md`, `scripts/logo.ts`
 1. official product logos an agent can fetch with no human: svgl (api, count, freshness, license
@@ -107,4 +107,5 @@ dima's, 2026-09-30:
 
 ## findings
 
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - print dima the delta per branch, noop included

@@ -129,3 +129,13 @@ Store contract: the `remind` skill. Both tiers die only when Dima drops them.
 ⏰ 🫙 the pocket a/b — Backlog.md is live (`cclio/pocket/`, brew `backlog-md`, alias `pk`), the old file frozen as `_pocket.md`. every boot reads `pk task list --plain --sort ordinal` (without the flag it sorts by id) and `pk doctor` (from a script: `BACKLOG_CWD=~/frame/cclio backlog …`) instead of it; every inbox drop becomes a `pk task create`; the halt writes one a/b line into `docs/test-drive/backlog-md.md`. dies at the trial verdict. dima 2026-10-09: «go fully setup backlog.md side by side to pocket, for ab test» — set 2026-10-09
 
 ⏰ 🦡 before every halt: dima runs his own retro in this thread, and in ccrow's window he types «read /Users/dima/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md and run it over cclio's session from your packets; focus: <his steer>» (`ls ~/.claude/plugins/cache/mattpocock/mattpocock-skills/` names the version). cclio reminds him, then runs its own retro beside it, one flush. dima 2026-10-07: «yes remind me» · «i want to gather retro from ccrow myself next time» — set 2026-10-07, moved from the pocket 2026-10-09
+
+⏰ 🔬 refresh-art-kit, 2026-12-30: quarterly; run `recipes/refresh-art-kit/recipe.md`
+
+⏰ 🔬 refresh-crew-designer, 2026-12-29: quarterly; run `recipes/refresh-crew-designer/recipe.md`
+
+⏰ 🔬 refresh-job-market, 2026-11-06: monthly while dima applies; run `recipes/refresh-job-market/recipe.md`
+
+⏰ 🔬 refresh-speak, 2026-11-23: the fish free tier ends 11-30; run `recipes/refresh-speak/recipe.md`
+
+⏰ 🔬 refresh-writing-for-humans, 2026-10-27: ~2 months from 08-27; run `recipes/refresh-writing-for-humans/recipe.md`

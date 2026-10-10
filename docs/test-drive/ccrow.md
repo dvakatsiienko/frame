@@ -31,3 +31,23 @@ one line per day: date · arm · wakes · notes / none · ok / miss · tokens ·
 
 - 2026-10-08 · run 2 of refresh-crew-coordinator-adviser landed: the contract moved into `x:crew-adviser` (timing hold + `also held`, `predicts:` lines, 4 new or reshaped hunts, a 1-in-5 holdout to 10-20). 19:16 live note (5h wall) → ok, acted on. effort stays medium on both arms (dima: fable high is too much)
 - 2026-10-09 keep-hot, parked overnight (session 9c8d2cd8): the stash ping fired every 50 min from 01:47 to ~11:51 local; after the 03:27 ping the turn read 299,003 cached and wrote 95, so the cache held warm across each gap. it pinged a parked session all night, ~11 pings × ~299k cache reads (cost inferred, not measured)
+
+## /advisor head-to-head — day 0, 2026-10-10
+
+docs ([advisor](https://code.claude.com/docs/en/advisor.md), experimental): a server tool that reads the full transcript, every tool call and result; the main model decides when to consult it (before an approach, on a recurring error, before «done»), no setting forces or caps a call; advice lands inside the main turn (an `Advising` line, Ctrl+O shows it); the advisor model must rank at or above the main model; billed at the advisor's rates against the plan; its transcript read is never cached, re-read on every call; hooks see no `tool.call`, mods see it in `result.serverToolUses`. silent: latency, tokens per call, whether it survives `/clear` or `/compact`. our env: no telemetry or non-essential-traffic switch set, `advisorModel` unset.
+
+stress list — each run in cclio's tab beside ccrow, same fields for both (fired · note · acted on · tokens · seconds):
+1. enable: `/advisor opus` in the desktop Code tab — the `Advising` line appears on the first consult; numbers: consults per hour
+2. a decision turn (a lane pick, a grill pick): does it fire before the pick, and does its note change the pick — vs ccrow's wake note on the same turn
+3. a recurring error (a guard refusal twice): does it fire, and say anything the refusal did not
+4. a «done» report: does it catch an unverified claim (the post-clean commit case, FRM-380) — ccrow caught that one at 10:55
+5. cost: `/usage` and `get_usage` deltas over one hour with it on vs off; the per-call transcript re-read at ~200k context
+6. persistence: `/compact` and a restart — is it still on
+7. quiet hours: a turn of plain chat — does it stay silent (ccrow's silence bar is «none»)
+verdict question: borrow its timing (consult before an approach / before done) into ccrow, or replace ccrow, or keep both.
+
+### round 1 · 2026-10-10 11:31 · a plan turn (pk-28's audit about to land)
+- setup: dima set `/advisor fable` at 11:30; the running conversation keeps **Opus 5.5** as its advisor until `/clear` or `/compact` (the command's own line), so round 1 ran on opus — the fable rounds start after the next compaction (stress item 6 checks the tool is still listed then)
+- advisor: fired on cclio's call before the approach; ~600 words; 5 located points — triage the researcher's edits into three buckets (apply · propose with the original · one list for his word), treat a script move or the skill split like a delete (grep the old name, bump), prune only what pk-28 resolved from FRM-267 under the ask-guard, log this round honestly, drop a resolved ask. acted on: all five. tokens / seconds: not yet measured (a sifter pass over `result.serverToolUses` in the transcript); the 5h meter moved 51 → 59 % over 11:15–11:32, mixed with other work, so no isolation
+- ccrow, same window (wake 11:26): one located note — cclio steered dima from fable to opus on an unknown the docs answer (fable ranks above opus 5.5), and opus would confound the head-to-head since ccrow runs fable. acted on: yes (the ask is dropped, fable stays)
+- the split: advisor reviewed the whole plan before work (process advice); ccrow caught a wrong steer in the reply (a fact check). no overlap.

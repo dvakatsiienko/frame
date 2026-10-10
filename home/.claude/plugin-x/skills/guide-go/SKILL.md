@@ -27,6 +27,7 @@ go test -count=1 ./...
 - `go fix ./...` applies what `-diff` shows; its fixes are safe by contract (`go tool fix help`).
 - `go doc <pkg>` answers a stdlib question in one call; a charm module's source sits under
   `~/go/pkg/mod/charm.land/<module>@<version>/`; ctx7 carries `/charmbracelet/{bubbletea,lipgloss,huh,glamour,fang}`.
+- the stack page: `docs/knowledge/charm.md` (each charm lib, its job, our gotchas)
 
 ## Module layout
 

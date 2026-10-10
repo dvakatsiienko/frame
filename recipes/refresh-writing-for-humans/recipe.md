@@ -22,10 +22,8 @@ dima's, confirmed 2026-08-27:
 
 ## the run
 
-1. re-groom the research vectors below with Dima before spawning anything. done: his word on the list. (open)
-2. spawn two researchers (skills+techniques · detectors), same split as run #1; think
-   alongside them too — Dima's standing note: rely on existing solutions, but add your own
-   read on how the skill should work. done: every researcher returned or marked failed. (template)
+1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
+2. lanes from two briefs (skills + techniques · detectors): the `researcher` agent + `pnpm research:lanes`; add your own read on how the skill should work (dima's standing note). done: every lane landed or failed out loud. (template)
 3. distill: clever-merge findings into `docs/knowledge/writing-for-humans.md` (useful old stays,
    useful new enters, no bloat, completeness first); raw researcher output stays in `last/` until the next run's distill. done: the doc carries the merge, or is named «unchanged». (open)
 4. eval + findings print. done: the findings are printed. (template)
@@ -41,13 +39,14 @@ dima's, confirmed 2026-08-27:
 
 ### research
 
+every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
+
 dima's wording:
 
 - best in class already existing skills for instructing you to print clever human-voiced
   messages, using clever techniques — so we not invent something from scratch
 - if skill not found, hunt clever techniques to create home-baked skill
 - best (ideally free) llm-has-written-this-message tools; free tiers and apis first
-- (added 2026-08-27) has harshaneel/humanize moved — new levers, new tells, new references?
 - (added 2026-10-02) published style guides as rule sources: ASD-STE100 Simplified Technical
   English, Google's developer documentation style guide, Apple's style guide — which of their
   rules sharpen the skill, above all for ui text (labels, captions, empty states)
@@ -60,7 +59,6 @@ the running agent is the instrument:
   machinic, and what tell slipped through?
 - do the three skills still route correctly against real asks — drafting → writing-for-humans,
   rewriting → humanize, scoring → humanize-audit?
-- have the borrowed copies drifted from their recorded upstream commit?
 
 ## artifacts
 
@@ -71,4 +69,5 @@ the running agent is the instrument:
 
 ## findings
 
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - anything new to try out? skill refresh needed? upstream humanize moved?

@@ -10,6 +10,8 @@ script: x fleet ops
 
 # refresh-agent-ops
 
+keeps the fleet's upkeep measured: which recurring checks pay, and what our tool-call chains and raw doors cost.
+
 📌 on a test drive: the first runs are measured and the verdict decides whether the recipe stays.
 
 ## the want
@@ -18,9 +20,9 @@ script: x fleet ops
 
 ## the run
 
-1. regroom the four vectors with dima; drop what the last run already answered. done: his word on the list. (open)
+1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. research: the brief goes through `pnpm research:lanes <brief>` (exa + parallel) and one opus source lane on the papers, the cc docs and `claude plugin eval`, a fresh agent never a fork. done: every lane returned or marked failed. (script)
-3. analysis: run the chain stats script over the last 7 days, compare with the numbers in the artifact. done: the numbers set beside the artifact's. (script)
+3. analysis: `x fleet ops` plus each saved duckdb measure over the last 7 days, set beside the artifact's numbers. done: the numbers side by side. (script)
 4. distill into `docs/knowledge/agent-ops.md`: clever-merge, keep the verdict, update the numbers and the five; raw lane output stays in `last/` until the next run's distill. done: the artifact carries the new numbers. (open)
 5. findings print, never silent edits; resolve with dima. done: his word on the proposal. (template)
 6. log today's line in `log.md`. done: the line is there. (open)
@@ -28,6 +30,8 @@ script: x fleet ops
 ## vectors
 
 ### research
+
+every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 
 the four vectors of the brief, in dima's wording, as written there:
 
@@ -39,7 +43,7 @@ the four vectors of the brief, in dima's wording, as written there:
 ### analysis
 
 - the flawlog `#dima-caught` lines since the last run: the verifier's true finds, false alarms and misses
-- **doors** (dima, 2026-10-07: «this is very useful data. how/where to automate this check?») — raw calls per external cli (`linear api`, `gh api`, `curl`, inline python) classified by operation; the seed run found 981 `linear api` + 93 curl calls in 30 days and reshaped the `linear` family. each class is a verb candidate. plus:
+- **doors** (dima, 2026-10-07: «this is very useful data. how/where to automate this check?») — raw calls per external cli (`linear api`, `gh api`, `curl`, inline python) classified by operation; each class is a verb candidate. plus:
   - repeated chains: the same 2–3 command sequence across sessions
   - Bash writes: heredoc and python edits that skip `Edit`/`Write` and their hooks
   - re-reads: the same ticket or doc read again in one session (a context gap)
@@ -48,13 +52,14 @@ the four vectors of the brief, in dima's wording, as written there:
   - skill loads per session (`Skill` tool calls): a skill nobody loads in 30 days is a delete candidate; ground truth for jev's router
   - dima's wait: from his prompt to the reply, per session and per kind of ask
   - cost per member and per ticket from the usage fields, the `researcher` agent's saving included
-- the engine is `duckdb` on its test drive (`docs/test-drive/duckdb.md`): each measure is a saved `.sql` file, run in under a second over the transcripts
+- the engine is `duckdb` on its test drive (`docs/test-drive/duckdb.md`, verdict 2026-10-21); each analysis vector becomes a `.sql` in `recipes/refresh-agent-ops/scripts/` the first time it runs
 
 ## artifacts
 
 - `docs/knowledge/agent-ops.md` — the verdict, the five activities, the 7-day numbers
-- `x/go/fleet_ops.go` — `x fleet ops`: cost per ticket, cclio code edits, boot cost; gains a doors measure later (the 2026-10-07 seed classifier was a throwaway regex script)
+- `x/go/fleet_ops.go` — `x fleet ops`: cost per ticket, cclio code edits, boot cost; gains a doors measure later
 
 ## findings
 
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - overhaul proposal, never silent edits: what is new, what it changes in the fleet, noop included

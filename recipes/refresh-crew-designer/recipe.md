@@ -1,7 +1,7 @@
 ---
 kind: refresh
-owner: coordinator
-cadence: "when dima says «refresh the design branch», before a big design job after a quiet month, or when Claude Design / Cowork ships a major update"
+owner: [designer, coordinator]
+cadence: "when dima says «refresh the design branch», before a big design job after a quiet month, or when Claude Design / Cowork ships a major update; or quarterly, held by its ⏰ in cclio/memory/_reminders.md"
 artifacts:
   - home/.claude/plugin-x/skills/crew-designer-interview/SKILL.md
   - home/.claude/plugin-x/skills/crew-designer/SKILL.md
@@ -16,6 +16,14 @@ was: [refresh-branch-design]
 
 Keeps the fleet's design flow current: the brief, the designer, the tools and the evidence
 behind them. Born from the 2026-09-29 design research ([FRM-244](https://linear.app/x-com/issue/FRM-244)).
+
+## contents
+
+- the want
+- the run
+- vectors
+- artifacts
+- findings
 
 ## the want
 
@@ -46,7 +54,7 @@ dima, 2026-10-02, on the design comms loop:
 
 ## the run
 
-1. re-groom the vectors with dima; add what changed in the tools since the last run. done: his word on the list. (open)
+1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. spawn the lanes on one brief (per habit-test-drive: reach for the live test drives first): exa agent (effort set explicitly) · parallel core · an opus lane that reads sources (skills,
    prompts, npm) · neuroarxiv for the papers · `advise-project-approach` when the flow itself is in
    question. one shared brief file; the reply waits for all lanes (habit-dima-comms-pacing: a fan-out answers once). done: every lane returned or marked failed. (template)
@@ -58,6 +66,8 @@ dima, 2026-10-02, on the design comms loop:
 ## vectors
 
 ### research
+
+every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 
 dima's asks from the thread:
 
@@ -79,7 +89,7 @@ dima's asks from the thread:
 
 ### analysis
 
-- 2026-10-02 · why the design comms loop exists: the Claude Design canvas lets only a person open a comment, so a designer's asks had no home on the canvas — dima hunted stickies with ⌘F, hopped across canvases, spent 1.5 h juggling elements, and the design «half-landed» in his mind; his target is in the want
+- the design comms loop's cost to dima: rounds, minutes and sticky hunts per spread in `docs/test-drive/design-run.md`; the bar a simpler door must beat (the story: `docs/research/design-review-comms.md`)
 - the run ledger (`docs/test-drive/design-run.md`): tokens, minutes, usage-window % per spread, pick time,
   mash-up requests, rounds past 3 — did the recipe's rules hold?
 - dima's verdicts on past picks: which brief lines caused a choice, which axes produced mash-ups
@@ -96,4 +106,5 @@ dima's asks from the thread:
 
 ## findings
 
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - an overhaul proposal for dima — what changes in the brief, the designer, the gallery, the scripts; noop is a valid outcome

@@ -68,9 +68,9 @@ one run, two halves whose lanes run in parallel and land in one findings print:
 a trigger that touches only the tools (a cc minor, a new model) runs the tools half and names the craft
 half skipped, with the reason — the shared rule of `x:shape-recipe`.
 
-1. **re-groom** every vector list below with dima, plus the shared vectors of `x:shape-recipe`; step 0 of the skill first. done: his word on the list. (open)
+1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. **probe the mechanics** (tools): execute `spawning-mechanics.md`'s «the test suite» section against the current build. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
-3. **research, both halves at once** — before any new lane, distill what the last run's `last/` still holds and name what it already answered; a lane re-runs only for what is unanswered or dated. this run (2026-10-08): the craft brief runs a cloud agent (`x:crew-cloud`, branch transfer) beside `researcher`, `get_usage` weekly + 5h read before the launch and after it lands, both graded in `docs/test-drive/cc-cloud.md`. then: one brief per half, each through the `researcher` agent + `pnpm research:lanes`; prices read from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. **each brief quotes the want block and every vector line verbatim; before launch, diff the brief against this file and fix any line that re-describes a seat** (the 10-08 brief called the classifier «a fast typed-judgment model, currently frozen», and every lane answered «retire»). done: every lane landed or failed out loud, and every vector lists ≥1 source or is printed `open`. (template)
+3. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `x:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
 4. **distill** into the artifacts:
    - `spawning-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
    - `models.md` — THE model reference; claim tags ([dima] / [bench] / [vendor] / [community] / [?]) updated, never deleted; dima's [dima] calls never overwritten, outside evidence sits beside them
@@ -85,6 +85,8 @@ half skipped, with the reason — the shared rule of `x:shape-recipe`.
 ## vectors
 
 ### research
+
+every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 
 on top of the shared vectors of `x:shape-recipe` (the delta covers the cc changelog since the last run's build; prior art and established patterns cover coordination frameworks and orchestrator tools).
 
@@ -122,7 +124,6 @@ on top of the shared vectors of `x:shape-recipe` (the delta covers the cc change
 ### analysis
 
 on top of the shared three:
-- 2026-10-07 · run #4 distilled into `last/distill.md` (gitignored); whether it reached `spawning-mechanics.md` and `models.md` is unchecked — re-check at step 3
 - the flow numbers (`x fleet flow --days 14`): `#dima-caught`, `#brief`, the pr open → merge median — which stage and which member keep failing
 - each member's retros since the last run: what a role keeps missing, and whether a new role would have caught it
 - which bundled skills does this cc build ship, gated ones included? name any new one to dima
@@ -143,13 +144,10 @@ on top of the shared three:
 
 **the craft half's done-test: ≤3 verdicts** — a role to add, merge or retire · a practice to adopt and what it replaces · a thing to drop — each with its evidence against our own flow numbers, or `noop`. `noop` is valid only when every craft vector names its sources; a vector with none prints as `open`, never as `noop`. the tools half's done-test is the rows flipped and the grid re-sized.
 
-**the verdicts are the decisions, never the whole print.** the print carries four parts:
-- **decisions** — the verdicts, each with its evidence
-- **facts that move something** — uncapped: every fact that changes a pick, a price, a default or a date, with its source and the artifact line it moves (a model retiring, a cache ttl, a cost ratio)
-- **the checklists** — the crew, seat by seat (still needed · merged · missing); the classifier seat (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named)
-- **open** — every vector left unanswered, by name
+the print carries the parts of `x:shape-recipe`; its checklists here: the crew, seat by seat (still needed · merged · missing), and the classifier seat (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named).
 
 beyond that shape, the print answers:
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - a role to add, merge or retire, with the evidence
 - a coordination or ticket practice to adopt, and what it replaces
 - any [verified] row flipped? the build it flipped on, and the row's new tag

@@ -37,7 +37,7 @@ dima's, 2026-09-29:
 
 ## the run
 
-1. re-groom the vectors with dima. done: his word on the list. (open)
+1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. spawn the lanes: exa agent · parallel core · an opus lane that probes (real API calls for first-byte and quality); probe any new engine for real (a key, one call, first-byte ms). done: every lane returned or marked failed. (script)
 3. if a new voice is a contender: render a blind booth round, dima rates. a quality change is proven by a blind listening booth (the 2026-09-29 booth artifact is the
    template: same text into every engine, loudness-matched, letters shuffled, rated 1–5, decoded after). done: his ratings, or «no contender». (template)
@@ -49,10 +49,12 @@ dima's, 2026-09-29:
 
 ### research
 
+every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
+
 1. voice quality — the current TTS leaderboards (Artificial Analysis arena, TTS Arena): which
    engines and models lead, especially female voices
 2. free tiers and prices — elevenlabs, fish, gemini, cartesia, azure, google, new entrants;
-   what changed since the last run (promos ending: fish `s2.1-pro-free` ran to 2026-11-30)
+   what changed since the last run
 3. local models on Apple Silicon — kokoro and its successors, mlx-audio / FluidAudio, time to
    first audio, uk and ru support
 4. technical-text normalization — engines that now read ids, versions, units, code natively;
@@ -77,5 +79,6 @@ dima's, 2026-09-29:
 
 ## findings
 
+- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - a TTS overhaul proposal — chain order, new engines, dropped ones, normalizer
   gaps; noop is a valid outcome
