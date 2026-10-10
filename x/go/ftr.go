@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// the rule is ftr-gate's (`home/.claude/plugin-x/bin/ftr-gate`, the commit-msg hook): staged code under
+// the rule is the ftr half of `x lane gate` (the commit-msg hook): staged code under
 // an app's FTR.md lands with that FTR.md, or the body carries a bare «ftr: none». lane commit adds the
 // line itself, so the gate never refuses a commit that changed no feature
 

@@ -77,10 +77,11 @@ pre-push:
 
 commit-msg:
   commands:
-    ftr-gate:
-      # an app's code lands with its FTR.md, or the body says «ftr: none» — docs drift is caught at commit time,
-      # for every session. one script for frame and bytes; frame owns it, so it runs by path and fails loud
-      run: home/.claude/plugin-x/bin/ftr-gate {1}
+    lane-gate:
+      # a remembered rule fails, a gate does not (FRM-367): a context's contract lands with its glossary or adr,
+      # a crew-/guide- skill never only grows, an app's code lands with its FTR.md — each half has a message line
+      # that passes it on purpose. bytes runs the same verb; an x missing from PATH fails loud (exit 127)
+      run: x lane gate {1}
     session-trailer:
       # The desktop harness asks every session to end commit messages with a
       # `Claude-Session: https://claude.ai/...` trailer. Nobody reads it — the

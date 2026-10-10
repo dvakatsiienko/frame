@@ -30,4 +30,6 @@
 - **plugin cache** — where claude code installs a released plugin, `~/.claude/plugins/cache/<marketplace>/<name>/<version>`; `x plugin bump` takes `claude plugin list` reporting the install at the new version, its dir on disk, as the proof — a dir alone can be left from an earlier release
 - **head** — what a Bash command runs, past a leading `cd <dir> &&`, variable setup and the wrappers (`timeout <n>`, `env …`, …): the tool's name, plus its verb for `git`, `claude`, `gh`, `pnpm`, `linear`, `go`, `brew`, `npm`, `npx` and `op`, and an interpreter (`node`, `python3`, …) named with its script; `x stats --outside` ranks them, the one parser of them
 - **cover** — the x door that already does a head's job: a family's raw door, or the verb that `replaces:` the script or pnpm name the command runs
+- **contract** — the files a context's glossary defines, listed under the context in `GLOSSARY-MAP.md`; a change to one lands with the glossary or an adr, or the message says why not — `x lane gate` holds it
+- **groom** — reading a crew-/guide- skill whole and cutting before a commit that grows it; `x lane gate` asks for it past 3 net non-blank lines, «groom: read whole — <what was cut>» records it
 - **raw head** — a head no x door covers and no shell basic, ≥5 runs: a verb candidate for `cli-drift-check`, listed by `pnpm x:cli-census`

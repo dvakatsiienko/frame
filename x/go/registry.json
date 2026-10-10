@@ -198,6 +198,22 @@
         {
             "args": [
                 {
+                    "description": "the commit message file, git's commit-msg argv",
+                    "name": "msg-file"
+                }
+            ],
+            "hidden": true,
+            "name": "lane gate",
+            "needsApply": false,
+            "purpose": "commit-msg door: contract changes carry their glossary, skills never only grow, app code carries its FTR.md",
+            "replaces": [
+                "home/.claude/plugin-x/bin/ftr-gate",
+                "script/lib/ftr-gate.test.ts"
+            ]
+        },
+        {
+            "args": [
+                {
                     "description": "the pr number, never inferred",
                     "name": "pr"
                 },

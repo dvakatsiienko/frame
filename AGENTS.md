@@ -93,7 +93,8 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
   Glossary vocabulary is binding in outputs (titles, proposals, test names); an output
   contradicting an ADR surfaces the conflict, never silently overrides.
 - **an app with `FTR.md` updates its ftr line, and any new domain word its `GLOSSARY.md`
-  entry, in the same commit as the code** (`x:ftr`).
+  entry, in the same commit as the code** (`x:ftr`) — `x lane gate` holds both at commit-msg: the ftr
+  line always, the glossary for the files a context lists as its `contract:` in `GLOSSARY-MAP.md`.
 - **Research** — `docs/research/<subject>.md`, subject-first filename, never a ticket-id prefix, so
   a doc survives the ticket that prompted it. `Ticket: FRM-N` on its own line at the top, mandatory — a doc no ticket owns writes `Ticket: none`. **Every research doc carries `dies-when:` frontmatter at creation** — the condition that
   retires it (distilled into an artifact, hatched into a skill/rule, or acted on). Reading a doc
