@@ -1708,7 +1708,7 @@ export const register: Register = (on) => {
                 overflow='hidden'>
                 {gap === undefined ? null : (
                     <Text color={fiveTint}>
-                        {gap > 0 ? `+${gap}% debt` : `${-gap}% spare`}
+                        {gap > 0 ? `-${gap}% pace` : `+${-gap}% pace`}
                     </Text>
                 )}
                 {five?.resetsAt === undefined ? null : (

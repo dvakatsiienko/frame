@@ -124,7 +124,7 @@ test('the 5h bar ends in its used %, and the head reads the gap and the time lef
     const text = (key: string) => boxes.find((n) => n.key === key)?.text;
     expect([text('meter:5h'), text('meter:info')]).toEqual([
         expect.stringMatching(/39%$/),
-        expect.stringMatching(/^1% spare🌔 3h 0m/),
+        expect.stringMatching(/^\+1% pace🌔 3h 0m/),
     ]);
 });
 
@@ -231,21 +231,21 @@ test('a compaction point outside 10–99 is refused and the file stays untouched
     ]).toEqual(['{}', true]);
 });
 
-test('a debt up to 10 reads amber', async ($, on) => {
+test('a pace behind by up to 10 reads amber', async ($, on) => {
     meters(on);
     await measure($, 45, 35);
-    expect(await part($, /debt$/)).toEqual({
+    expect(await part($, /pace$/)).toEqual({
         color: '#d9661a',
-        text: '+5% debt',
+        text: '-5% pace',
     });
 });
 
-test('a debt past 10 reads red', async ($, on) => {
+test('a pace behind by more than 10 reads red', async ($, on) => {
     meters(on);
     await measure($, 55, 35);
-    expect(await part($, /debt$/)).toEqual({
+    expect(await part($, /pace$/)).toEqual({
         color: '#e5484d',
-        text: '+15% debt',
+        text: '-15% pace',
     });
 });
 
