@@ -1931,7 +1931,7 @@ export const register: Register = (on) => {
         // every chip names itself on hover in five words or fewer (dima, 20:13)
         const planned = o.plan?.lines.length ?? 0;
         const asksChip = `🪐 ${openAsks}`;
-        const planChip = `📝 ${planned}`;
+        const planChip = `🌔 ${planned}`;
         const chips = (
             <Box flexDirection='row' flexShrink={0} gap={1} key='chips'>
                 {tip(
@@ -2075,7 +2075,7 @@ export const register: Register = (on) => {
                     : tip(
                           'reset',
                           'until the 5h window resets',
-                          <Text>🌔 {span(five.resetsAt - now)}</Text>,
+                          <Text>⏳ {span(five.resetsAt - now)}</Text>,
                           { left: 9 },
                       )}
                 {tip(

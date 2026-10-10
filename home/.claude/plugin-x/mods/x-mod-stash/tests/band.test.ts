@@ -70,8 +70,8 @@ test("the chips count orbit's open asks and the plan's lines", async ($, on) => 
     await orbit($, { lines: ['now: a', 'next: b', 'then: c'], op: 'plan' });
     expect([
         (await ui.find({ text: /^🪐/, type: 'Text' }))?.text,
-        (await ui.find({ text: /^📝/, type: 'Text' }))?.text,
-    ]).toEqual(['🪐 2', '📝 3']);
+        (await ui.find({ text: /^🌔/, type: 'Text' }))?.text,
+    ]).toEqual(['🪐 2', '🌔 3']);
 });
 
 test('the chips are text, never a control', async ($, on) => {

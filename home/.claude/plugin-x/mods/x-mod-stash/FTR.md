@@ -7,7 +7,7 @@
 
 ## the row
 
-- ✅ one row of `🪐 <open asks>` `📝 <phases>` chips, the pace and time left, `📦` and the compaction point, then `🔥`, `⏰`, `💨` and `🚦`; the two meters run full width under it
+- ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, the pace and time left, `📦` and the compaction point, then `🔥`, `⏰`, `💨` and `🚦`; the two meters run full width under it
   - given the band draws
   - when dima looks above the prompt
   - then it is that row plus the two meter rows, and the chips do nothing on a press
@@ -37,13 +37,13 @@
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
 - ⬜ every chip and reading in the row names itself on hover, five words or fewer
   - given the row draws
-  - when dima hovers `🪐 n`, `📝 n`, the pace, `🌔`, `📦`, its field, `🔥 5h` or `🧠`
+  - when dima hovers `🪐 n`, `🌔 n`, the pace, `⏳`, `📦`, its field, `🔥 5h` or `🧠`
   - then a dim card reads «n open asks for you», «n phases», «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «auto-compact at this context %», «type a %, ✓ saves», «5h window used», «context window used» (dima, 20:13)
   - 📌 harness-proven words; the reveal on the desktop is dima's eye
 - ✅ `/clear` and `/resume` empty the conversation's orbit in the same turn
   - given orbit holds asks
   - when dima runs `/clear` or `/resume`
-  - then the row reads `🪐 0 · 📝 0` at once; another session's asks stay in the store
+  - then the row reads `🪐 0 · 🌔 0` at once; another session's asks stay in the store
   - decision: one `command.run` hook drops the conversation's orbit, holds, 🔭 wait, context fill and keep-hot key — the same set `session.end` drops — and x-mod-redact empties its vault on the same command (FRM-325)
 - ✅ every prompt carries the local clock
   - given dima's prompt, or a peer's
@@ -139,7 +139,7 @@
   - then no ping is sent, and the clock restarts when that turn ends
 - ⬜ two live meters, full width under the row (FRM-366)
   - given a session.measure arrives
-  - then `🔥 5h` draws the window's used % as a full-width bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; beside it the gap reads as one bold word (dima, 21:08), the sign and colour telling it apart — `+n% pace` green ahead, `-n% pace` orange behind by up to 10 and red past it (dima, 2026-10-10: «one word pace, but number and color is differentiator») — and `🌔 1h 26m`, the time left to the reset, at full strength (dima, 20:53: «not dimmed»)
+  - then `🔥 5h` draws the window's used % as a full-width bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; beside it the gap reads as one bold word (dima, 21:08), the sign and colour telling it apart — `+n% pace` green ahead, `-n% pace` orange behind by up to 10 and red past it (dima, 2026-10-10: «one word pace, but number and color is differentiator») — and `⏳ 1h 26m`, the time left to the reset (⏳ since dima, 21:10; the phases took 🌔), at full strength (dima, 20:53: «not dimmed»)
   - and `🧠 ctx` draws the context % as a full-width bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` carries the point in an `Input` whose Enter reads `✓`
   - and the desktop draws each bar in x-mod-breather's design language — its 5px cells, 2px gaps, light and dark palettes and ramp, two cell rows tall; the terminal draws sline's `▮ ▯` (dima, 20:22: «make them the same design language … bars are slightly different because they are bars»)
   - decision: no `pace n%` — the gap already says how far off pace (dima, 20:04)
