@@ -107,7 +107,7 @@ Role, priority and estimate are **always filled and current** — monitoring the
   `printf '{"session_id":"%s","prompt":"claim FRM-N"}' "$CLAUDE_CODE_SESSION_ID" | ~/.claude/shelf/hooks/sline-focus.sh` — that hook is the ONLY writer of the slot, and it also kicks off the status fetch a raw write skips (`shelf/hooks/FOCUS-SPEC.md`)
 - 📌 `--label` **replaces** the whole label set rather than adding to it. Always pass role AND
   kind together, or one of them is silently dropped.
-- On create: propose priority (1–4) + estimate (1–5) + project + **parent and milestone** — a
+- On create: propose priority (p3 by default) + estimate (XS · S · M, `references/workspace.md` § fields) + project + **parent and milestone** — a
   ticket with a parent inherits the parent's milestone unless the body says why not; no milestone
   means invisible on the «where are we» board. Projectless is legal for one-offs and idea pools —
   do not force one.

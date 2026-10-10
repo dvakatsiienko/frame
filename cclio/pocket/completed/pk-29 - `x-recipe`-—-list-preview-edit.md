@@ -1,10 +1,10 @@
 ---
 id: PK-29
 title: '`x recipe` — list, preview, edit'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-10 07:55'
 labels:
   - m
 dependencies:
@@ -23,3 +23,9 @@ pocket 67 · status line was: open · wish · cli lane · after 66 settles the r
 
 - dima, 2026-10-09: 1. list — every recipe with its run count and last run date · 2. maybe a preview pane on the right (deferrable, a nice-to-have) · 3. an edit mode · 4. ideally a rendered preview mode (glamour, the charm lib — he could not recall the name)
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+moved to linear: FRM-378 (the 10-10 pocket sweep; dima's words folded into the ticket body)
+<!-- SECTION:NOTES:END -->

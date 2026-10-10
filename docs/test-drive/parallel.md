@@ -165,3 +165,5 @@ grading: per monitor — fired (y/n), latency from the real event, false positiv
 - 2026-10-08 · research core · «the adviser: craft + comms model» (refresh-crew-coordinator-adviser) · 182 s · 11.6k chars · landed, ungraded until the synthesis
 - 2026-10-09 pocket prior art (local md trackers for agents): 182 s · 8.4k chars · ¢ unsettled · 14 candidates, read the one-file constraint right (keep the file, borrow), the most sceptical; dated beads stable as v1.0.4 while the opus lane read v1.3.1 from gh · 4/5
 - 2026-10-09 todo trackers top 5 (rerun): 138 s · 7.9k chars · ¢ unsettled · cautious, verified little (no breaks confirmed), same keep-backlog verdict · 3/5
+
+- 2026-10-10 pk-46 estimates + priorities: 183 s · 11.6k chars · cents · 3/5 — sceptical, closest to the pick (order over labels, split l); no local data

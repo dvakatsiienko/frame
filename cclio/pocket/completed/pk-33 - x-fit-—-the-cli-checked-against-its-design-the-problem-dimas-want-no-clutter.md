@@ -3,10 +3,10 @@ id: PK-33
 title: >-
   x-fit — the cli checked against its design: the problem, dima's want, no
   clutter
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 11:06'
-updated_date: '2026-10-09 18:35'
+updated_date: '2026-10-10 07:55'
 labels:
   - m
 dependencies: []
@@ -30,5 +30,5 @@ dima, 2026-10-09: a census script + a project skill instead of a recipe. «the s
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-ticket: FRM-372 (census + cli-drift-check, sealed 4 exits)
+closed by the 10-10 sweep: the cli-drift-check skill is the x-fit skill (FRM-372)
 <!-- SECTION:NOTES:END -->

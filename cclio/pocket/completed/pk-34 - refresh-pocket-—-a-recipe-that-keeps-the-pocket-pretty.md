@@ -1,10 +1,10 @@
 ---
 id: PK-34
 title: refresh-crew-coordinator-pocket — a recipe that keeps the pocket pretty
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 11:06'
-updated_date: '2026-10-09 11:48'
+updated_date: '2026-10-10 07:55'
 labels:
   - m
 dependencies: []
@@ -22,3 +22,9 @@ dima, 2026-10-09, shaped with him via x:shape-recipe. want: no drift, no clutter
 - output: adopt / borrow / skip + one pocket-health line in the recipe log
 - cadence: a Backlog.md minor release, or every 2 weeks during the trial
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+closed by the 10-10 sweep: pocket-check's contract (done listed, size gate, the 5-item cap) enforces no drift and no clutter mechanically, no recipe needed
+<!-- SECTION:NOTES:END -->

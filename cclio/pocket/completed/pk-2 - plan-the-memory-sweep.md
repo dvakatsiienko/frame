@@ -1,10 +1,10 @@
 ---
 id: PK-2
-title: 'plan the memory sweep'
-status: open
+title: plan the memory sweep
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 12:16'
+updated_date: '2026-10-10 07:55'
 labels:
   - l
 dependencies: []
@@ -36,9 +36,5 @@ planned 10-07: `.scratch/memory-sweep/` — the spec + nine phase tickets (01 ba
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-sweep exit test (from pk-31, 10-09): one door for memory edits — today the guidance lives in rules/authoring-trigger.md, habit-memory-edits, matt's writing-for-agents, and the pocket/leaf rules in cclio memory.
-
-sweep inventory (dima, 10-09): re-check all 10 frame ADRs (docs/adr + docs/tracker/adr) against reality, each kept, amended or superseded.
-
-dima 10-09: today's forced grooms (crew-dna pk-38, crew-coder pk-25) are emergency cuts because the skills bleed; the sweep still reviews and re-grooms them
+moved to linear: FRM-267 (the 10-10 pocket sweep; dima's words folded into the ticket body)
 <!-- SECTION:NOTES:END -->

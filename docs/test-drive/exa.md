@@ -349,3 +349,5 @@ date · feature · ask · hit · seconds · chars · $ · vs parallel / opus
 - 2026-10-08 · agent run · «the adviser: craft + comms model» (refresh-crew-coordinator-adviser) · landed, ungraded until the synthesis
 - 2026-10-09 pocket prior art (local md trackers for agents): 109 s · 10.2k chars · $0.10 · 17 candidates, widest list (found tickets.md, ait), but recommended adopting Backlog.md without checking the one-file constraint or that Backlog keeps done files · 3/5
 - 2026-10-09 todo trackers top 5 (rerun, multi-file allowed): 108 s · 10.9k chars · $0.10 · ranked beads first, found the backlog auto-commit sweep (#795) and the web-ui slowdown (#807) — the only lane with Backlog.md breaks · 4/5
+
+- 2026-10-10 pk-46 estimates + priorities: 93 s · 15.6k chars · $0.10 · 3/5 — broad, a heavy scheme (6 fields, monthly review); the opus lane with local transcript data decided it

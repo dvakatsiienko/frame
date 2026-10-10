@@ -100,9 +100,14 @@ combines with a role (different groups).
 
 ## fields
 
-- **priority** 1 Urgent · 2 High · 3 Medium · 4 Low. p1 is **rare** — priority says how much a
-  ticket matters. must-land-before-another is a `blocks` relation, never a priority bump.
-- **estimate** 1–5 = complexity and uncertainty, **not** wall-clock. 5 = design-heavy, 1 = mechanical.
+- **priority** defaults to p3. p1 only for a real interrupt (prod, security, a hard deadline), with its reason and expiry in the body; p2 / p4 only when the ticket's importance truly differs. **what runs next is the order** — `sortOrder` in linear, `ordinal` in the pocket — never the label; must-land-before-another is a `blocks` relation (pk-46, 2026-10-10: the last 50 done FRM tickets were all p2/p3, p2 only meant bigger).
+- **estimate** — T-Shirt on both teams, three sizes in agent sessions, the same words as the pocket's size label (pk-46, measured on 34 coder transcripts: estimate 1 ran 27–84 turns, 2 and 3 could not be told apart):
+  - **XS** (api `1`) — minutes, a freebie, under ~80 turns
+  - **S** (api `2`) — one coder session, under ~400 turns
+  - **M** (api `3`) — more than one session: split it before a spawn
+  - L and XL are never set; an old 4/5 is resized when the ticket is touched, never swept
+  - each estimate names its closest done ticket in the body (`size: S, like FRM-372`); an open question blocks the estimate (the assumption gate), never inflates it
+  - calibration: the halt flags a closed ticket whose coder turns crossed its size line ([FRM-379](https://linear.app/x-com/issue/FRM-379), to build)
 
 ## execution order — `sortOrder`, the native field
 

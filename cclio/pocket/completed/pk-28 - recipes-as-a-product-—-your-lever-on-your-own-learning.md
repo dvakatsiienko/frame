@@ -1,10 +1,10 @@
 ---
 id: PK-28
-title: 'recipes as a product — your lever on your own learning'
-status: open
+title: recipes as a product — your lever on your own learning
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-10 07:55'
 labels:
   - l
 dependencies: []
@@ -31,3 +31,9 @@ pocket 66 · status line was: open · grilling · inbox 10-09, dima-question + �
 
   dima: yesterday we added a «log» for recipes, but he spotted a log (cannot recall which) that was too bloated, told me to check, and i confirmed. how to translate that into global memory so any agent tries to pick the right shape for any produce — a log, a report, a stats report, anything — so «wrong» shapes (too large, too small) appear less often?
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+moved to linear: FRM-267 (the 10-10 pocket sweep; dima's words folded into the ticket body)
+<!-- SECTION:NOTES:END -->

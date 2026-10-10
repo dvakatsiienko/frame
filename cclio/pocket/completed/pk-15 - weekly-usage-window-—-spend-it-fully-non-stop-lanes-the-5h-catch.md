@@ -1,10 +1,10 @@
 ---
 id: PK-15
 title: 'weekly usage window — spend it fully, non-stop lanes, the 5h catch'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-10 07:55'
 labels:
   - m
 dependencies: []
@@ -28,3 +28,9 @@ dima: we went overboard, he is at 69 %. two ways: economic mode, or push to spen
 
   dima: he is at 68 % — what ops could i delegate to cloud agents?
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+closed by the 10-10 sweep: habit-usage-pacing's weekly line is the answer (spend the window fully, the weekly reset)
+<!-- SECTION:NOTES:END -->

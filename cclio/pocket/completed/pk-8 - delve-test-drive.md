@@ -1,10 +1,10 @@
 ---
 id: PK-8
-title: 'delve test drive'
-status: open
+title: delve test drive
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 19:16'
+updated_date: '2026-10-10 07:55'
 labels:
   - m
 dependencies: []
@@ -24,5 +24,5 @@ dima 10-06 opener: `docs/test-drive/delve.md`.
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-ticket: FRM-372 — the delve recipe landed in x:guide-go (95f5b36c); the census counts dlv runs per coder, that is the test drive
+closed by the 10-10 sweep: x:guide-go carries delve, docs/test-drive/delve.md holds the drive
 <!-- SECTION:NOTES:END -->

@@ -1,10 +1,10 @@
 ---
 id: PK-46
 title: estimates and priorities in linear and the pocket mean something
-status: open
+status: done
 assignee: []
 created_date: '2026-10-10 07:21'
-updated_date: '2026-10-10 07:33'
+updated_date: '2026-10-10 07:56'
 due_date: '2026-10-11'
 labels:
   - s
@@ -23,5 +23,5 @@ dima, 2026-10-10: «research how to teach you set proper estimates in linear and
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-dima, 2026-10-10 10:25: «teach you properly set prios?» — priorities join estimates in the same research and grill.
+landed 10-10: T-Shirt XS·S·M on both teams (dima set it), the scheme in x:pm references/workspace.md § fields + docs/tracker/GLOSSARY.md, the pocket's l size retired, calibration → FRM-379
 <!-- SECTION:NOTES:END -->

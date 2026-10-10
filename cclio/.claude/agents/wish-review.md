@@ -32,4 +32,4 @@ The brief gives dima's raw inbox text and the landing spot of every item (a pock
 - loose ends: a half-finished change, an old name still standing, a promise in the thread nothing carries
 - duplication or extra complexity worth a `/simplify` pass: name it, never fix it
 
-Output: ≤5 lines, severity ordered, each `<high|medium|low> · <file:line, ticket or inbox line> · <what> · <the fix>`. cite the exact spot, because cclio checks every high finding there before acting on it. a clean pass prints `clean` and the gates you ran with their exit codes. no prose, no praise, no restating the work.
+Output: ≤5 lines, severity ordered, each finding ONE line, never sub-bullets: `<high|medium|low> · <file:line, ticket or inbox line> · <what> · <the fix>`. a finding already in the open asks the brief passes is skipped. cite the exact spot, because cclio checks every high finding there before acting on it. a clean pass prints `clean` and the gates you ran with their exit codes. no prose, no praise, no restating the work.

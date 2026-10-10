@@ -1,10 +1,12 @@
 ---
 id: PK-20
-title: "a live lane tracker in the fleet board — resolve with no second lane distractions"
-status: open
+title: >-
+  a live lane tracker in the fleet board — resolve with no second lane
+  distractions
+status: done
 assignee: []
-created_date: "2026-10-09 10:38"
-updated_date: '2026-10-09 20:47'
+created_date: '2026-10-09 10:38'
+updated_date: '2026-10-10 07:55'
 labels:
   - l
 dependencies: []
@@ -12,8 +14,10 @@ priority: next
 type: idea
 ordinal: 22000
 ---
+
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 <!-- SECTION:DESCRIPTION:BEGIN -->
 
 pocket 58 · status line was: open · idea · shape-idea first
@@ -175,3 +179,10 @@ think of all my asks as a whole. how to make it work efficiently, fluently and w
 - some time ago, while we were grooming the process of running night shift lanes, you told that you will create a kind of «lane progress file», to keep track of the lane progress as an autocompact surviving backup. but never created one, and we even launched few night shift lanes already. maybe connect it somehow?
 - i proposed 3 «progress trackers» kinds of mods. think how to best unify them. my take: probably two views: one is a lane progress (active only for second lanes), and your's — almost always active.
 - ideally i want it to be least effort for yourself. this wish should not put additional burden for you. how to make it useful for you too?
+<!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+moved to linear: FRM-377 (the 10-10 pocket sweep; dima's words folded into the ticket body)
+<!-- SECTION:NOTES:END -->
