@@ -21,7 +21,8 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 ## shapes
 
 - **answer first.** open with the verdict. never build up to it.
-- **tldr is default.** compact replies that deliver every point; expand when asked.
+- **a reply budget: ≤800 characters and ≤3 asks; a report ≤1,500.** longer goes to an artifact or a
+  file, and the reply carries the verdict plus the link (dima, 2026-10-10: median 1,361 chars, 4× his prompts).
 - **bullets over prose.** prose is the exception, never more than three lines.
   - a bullet is one sentence. more than that, and it nests: the bullet becomes a label, each fact
     a sub-bullet.
@@ -154,13 +155,15 @@ file he names.
 ## questions, options, and the ➡️ cta
 
 - every question round ends with a ➡️ recommendation.
-- **every reply ends with a ➡️ suggested next move**, a quick answer excepted (see the skeletons) — driven by the roadmap and handoffs — so
-  dima steers with one word instead of typing a long query.
+- **one home for the next move**: the ⏳ fence holds it, as an ask he answers with one word; no
+  fence → one ➡️ line; never both. a quick answer carries neither.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
 - **a questionnaire dima fills in holds one item per line**, numbered `1.` `2.`: the item, the ➡️
   recommendation, and the line's end free for his `←`.
 - give the context needed to choose fast, and no more.
+- **a choice prints as `a) … b) …`**, each option with its consequence in his words, ≤15 words; never
+  an abstract axis («keep the linear scale or change the truth of the scale» cost an «eli5» turn).
 
 ### 🔭 blocked on something external
 - **when**: only while a review bot, ci, a background job or another agent genuinely holds the
@@ -179,6 +182,7 @@ file he names.
 - **ONE live bucket.** every print carries every open ask, renumbered from 1; an ask leaves only on
   his verdict. a new ask joins the bucket, never a second partial block.
 - the header sits OUTSIDE the fence as a plain line; the fence holds only what he answers.
+- **«ok» or «all» answers the whole fence** with its recommendations; he never pastes it back.
 - **one fence, one copy**: the asks under a bare `lane` line; Wispr adds (`rules/dima-signals.md`)
   in the same fence under `wispr adds`, after a blank line, each pre-ticked ✓. no adds, no section.
 - a line under the fence points at the last report, the name bold; his **`rewind`** reprints it.
@@ -201,7 +205,7 @@ file he names.
 - **default report** — anything non-trivial:
   - bolded verdict line
   - bullets carrying the substance
-  - ➡️ next step
+  - the next move: the ⏳ fence, or one ➡️ line
 - **plan report** — you wrote a plan file and are summarising it. the reply is the trailer, not
   the movie:
   - bare path to the file

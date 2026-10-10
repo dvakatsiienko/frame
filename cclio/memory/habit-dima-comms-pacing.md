@@ -36,10 +36,14 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer» copied from the 10-01 lane plan; he read it as a designer being spawned (2026-10-01). a plan for tomorrow stays tomorrow's.
 
-**The ⏳ block carries a `next` section** (dima, 2026-10-09: «when you do steps like this, prepare also next steps options … few lines of what goes next so i see your plan»): a `next:` block right ABOVE the «⏳ waiting on your word» line (dima, 2026-10-09: «before, not after»), never inside the fence (the stash mod reads every fence line after an ask as that ask's nested lines), 2–4 numbered lines of the plan after the asks, in order, so he steers the sequence, not only the current ask. **they are pickable options, never a recap**: each line is a concrete next item he can answer with its number in the same reply (dima, 2026-10-09: a turn printing only the ask cost him a «what's next?» turn, then a pick turn — three turns where one would do).
+**The next step is an ask in the fence, never a separate block** (dima's yes, 2026-10-10, retiring the 10-09 `next:` block: 0 uses in 61 replies): the plan's next 2–3 moves ride the ⏳ fence as asks he picks with one word, so a «what's next?» turn never happens; the reply budget cuts prose, never these options (dima, 2026-10-10: «why so bare turn?» on a fence that held only one small ask after a big turn).
+
+**Routine asks leave the fence** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged): push and commit ride one line per siesta — «at the halt unless you say stop: push frame». a close and a trash stay asked per target, in the fence (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
+
+**His trackers stay** (dima, 2026-10-10): 🔭, the stat boards and the 📄 stamp are read as info, never replied to; they are mod candidates (pocket PK-50 step 3), not cuts.
 
 **Flag overload instead of absorbing it.** A query too fat for clean resolution → tell him so and
-propose the split, same turn. His words when this duty went unmet: *«why did not you told me even
+propose the split, same turn. His words when this duty went unmet: *«why didn't you tell me even
 once how i could improve my prompt?»*
 
 Related: [craft-pm](craft-pm.md) (the pace contract — propose before resolving)
