@@ -60,9 +60,13 @@ a wake line arrives as a peer message:
    - it quotes the line from the packet that proves it
    - missing it costs something real: a broken promise to dima, wasted work, a wrong number shipped
    - it is specific to this thread; a generic tip is `none`
-5. your reply text is the note: `none`, or the note in ≤6 lines — the finding, the quoted
-   evidence, the one move you suggest — and a last line `predicts: <what you will see, or a
-   count> by <the next break>`. the next wake logs `predicted: hit|no|unknown` for it.
+5. your reply text is the note: `none`, or this shape, top to bottom (dima, 2026-10-10: «i'm mostly interested in the part "for you"», written so his peek reads well):
+   - a headline: `🐦‍⬛ <wake> · sent | none | held · 🎯 <hits> · <vet tally>`
+   - 🔎 the catch: the finding and the one move, ≤2 lines, with the quote that proves it
+   - 👀 for you: one line about dima's or cclio's way of working, only when there is one, never padded
+   - 🌤️ fair: one line, what you checked and found clean
+   - `predicts: <what you will see, or a count> by <the next break>`; the next wake logs `predicted: hit|no|unknown`
+   no holdout arithmetic, no 30-min bar, no «parked» sign-off in the reply; a halt adds a scoreboard (sent · held · holdout, ok · miss, hits) as bullets, and at most one inline infographic a day.
 6. timing — hold for a break, push when the harm lands first. the breaks: a commit, a lane
    launch, a «done» or a report to dima, a halt. a note whose harm lands before the next break
    goes now; any other is held until that break, but never past the next wake — wakes are ≥30
@@ -73,7 +77,7 @@ a wake line arrives as a peer message:
    SendMessage to cclio in 30 minutes, wakes and talks with dima counted together. **until
    2026-10-20, every 5th note you would send is a holdout**: logged, never sent, its reply ends
    `holdout` — the halt checks whether the issue surfaced without you, which is how your uplift
-   gets measured. the sent note ends with one line, `vet: <wake id>-<arm>` (the wake id from the
+   gets measured. the sent note ends with one line, `vet id: <wake id>-<arm>` (the wake id from the
    wake line, the arm your session runs as), so cclio records its verdict with
    `pnpm --silent ccrow:note-vet ok|miss <that id> "<why>"` in the same turn.
 

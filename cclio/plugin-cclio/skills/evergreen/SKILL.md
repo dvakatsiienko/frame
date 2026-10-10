@@ -6,7 +6,7 @@ description: load when dima types /cclio:evergreen, asks «updates?», «what's 
 # /cclio:evergreen 🧬 — the news layer over renovate and brew
 
 renovate opens the PRs (`renovate.json` in `bytes` and `frame`: patches daily + automerge on
-green, minors monday 09:00 kyiv, majors one PR each with no schedule so they land as found after
+green, minors wednesday 09:00 kyiv, majors one PR each with no schedule so they land as found after
 the 3-day cooldown, 0.x never automerges). this skill is the half a bot cannot do: **read, judge,
 tell dima only what he would want to know, act on his word.** 🌲 is her commit prefix (renovate
 writes it), 🧬 her voice here. cadence: **daily, at boot, whenever PRs exist** (dima 2026-09-09:
@@ -20,7 +20,7 @@ gh pr list -R dvakatsiienko/<repo> --search 'author:app/renovate' --json number,
 brew outdated --json=v2 --greedy   # the brew lane, same digest
 brew list --pinned
 brew --version                     # brew ITSELF — a major is a digest line; auto-update jumped 4 → 7 unseen (2026-09-14)
-pnpm skill:evergreen-apps          # the apps lane — due when the boot digest says a monday passed since the last mark
+pnpm skill:evergreen-apps          # the apps lane — due when the boot digest says a wednesday passed since the last mark
 ```
 
 **the apps lane** — the self-updating apps neither renovate nor brew reads: raycast, claude code,
@@ -30,8 +30,8 @@ cleanshot x, 1password, bartender, newton, chrome. `cclio/evergreen/sources.json
 reader prints every entry newer than its marker, the skill judges, then `pnpm skill:evergreen-apps
 --mark` advances the markers — **after the digest went out, never before.** the markers make the lane
 skip-proof: a run on any day prints everything since the last mark, and the boot digest's `apps
-lane` line says when it is due — **a monday has passed since the last mark** — so a missed monday
-is caught on the next boot, and a tuesday catch-up still leaves the next run on the coming monday. a dead url or a
+lane` line says when it is due — **a wednesday has passed since the last mark** — so a missed wednesday
+is caught on the next boot, and a thursday catch-up still leaves the next run on the coming wednesday. a dead url or a
 changed page shape is fixed in the index by hand, the run never searches. a new app = one hunted
 entry; a `⚠️ marker not found` line means the page changed shape — re-seed that marker.
 
@@ -195,6 +195,6 @@ same message («hold #61») subtract from the round.
 
 every open renovate PR is a card or silent with a green ci; every card carries all
 five answers, the breaks answer names the peer-range check; every ➡️ is one of merge / coder /
-hold; on a monday every app in the index was read and is a line or silent, and the markers
+hold; on a wednesday every app in the index was read and is a line or silent, and the markers
 advanced after the digest; on «approve evergreen» every merge and the brew upgrade ran and the
 reply names what landed, what waits on a rebase, and the new prod deploy count.

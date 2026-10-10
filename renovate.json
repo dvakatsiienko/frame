@@ -27,17 +27,17 @@
             "schedule": ["* 0-5 * * *"]
         },
         {
-            "description": "minors: one grouped pr on monday morning, merged by hand",
+            "description": "minors: one grouped pr on wednesday morning, merged by hand",
             "groupName": "minors",
             "matchUpdateTypes": ["minor"],
-            "schedule": ["* 9-12 * * 1"]
+            "schedule": ["* 9-12 * * 3"]
         },
         {
             "automerge": false,
-            "description": "0.x never automerges: semver lets a 0.x package break in a patch, so these ride the monday pr for a human to read. renovate's own matchUpdateTypes docs say to do this. last rule on purpose — later rules win, so this overrides the patch tier above. matchCurrentVersion prefers the locked version, so it catches a 0.x behind a range too.",
+            "description": "0.x never automerges: semver lets a 0.x package break in a patch, so these ride the wednesday pr for a human to read. renovate's own matchUpdateTypes docs say to do this. last rule on purpose — later rules win, so this overrides the patch tier above. matchCurrentVersion prefers the locked version, so it catches a 0.x behind a range too.",
             "groupName": "minors",
             "matchCurrentVersion": "/^0\\./",
-            "schedule": ["* 9-12 * * 1"]
+            "schedule": ["* 9-12 * * 3"]
         }
     ],
     "postUpdateOptions": ["gomodTidy"],
