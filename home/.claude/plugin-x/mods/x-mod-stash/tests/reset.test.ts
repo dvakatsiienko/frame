@@ -76,7 +76,7 @@ for (const command of ['clear', 'resume'] as const)
     test(`/${command} empties orbit in the same turn`, async ($, on) => {
         const s = await session($, on);
         await run($, command);
-        expect(await s.chips()).toBe('🪐 0 · 📝 0');
+        expect(await s.chips()).toBe('🪐 0');
     });
 
 test("/clear leaves another session's asks in the store", async ($, on) => {

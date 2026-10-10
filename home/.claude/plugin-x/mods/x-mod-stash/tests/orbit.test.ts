@@ -368,3 +368,31 @@ test("orbit's open asks reach the shared store the board counts from", async ($,
         'trash the probe',
     ]);
 });
+
+test("🔊 sends the ask's text to speak's control socket", async ($, on) => {
+    world(on);
+    const runs: string[][] = [];
+    on('process.run', (_$, e) => {
+        runs.push([...e.argv]);
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: '{"ok":true}',
+            },
+        };
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.press({ key: 'orbit:read:o1' });
+    const sent = runs.find((argv) =>
+        argv.includes('/home/.local/share/x-speak/control.sock'),
+    );
+    expect(JSON.parse(sent?.[4] ?? '{}')).toEqual({
+        op: 'read',
+        text: 'name a bird. pick: pelican',
+    });
+});

@@ -164,6 +164,15 @@ final class Control: @unchecked Sendable {
             let hold = request.seconds ?? 5
             DispatchQueue.main.async { Thread.sleep(forTimeInterval: hold) }
             return ["ok": true]
+        // a text read as F4 reads a selection: the per-language chain, cutting off whatever plays (a mod's 🔊, FRM-381)
+        case "read":
+            guard let text = request.text else { return ["error": "read needs text"] }
+            let parts = chunks(normalize(text))
+            guard !parts.isEmpty else { return ["error": "read: nothing to say"] }
+            configFile.refresh()
+            speaker.stop()
+            speaker.speak(parts, only: nil, pressed: .now)
+            return ["ok": true]
         case "preview":
             guard let engine = request.engine.flatMap(Engine.init), let text = request.text else { return ["error": "preview needs engine and text"] }
             speaker.preview(text, with: engine, settings: request.settings ?? config[engine])

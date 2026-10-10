@@ -125,7 +125,7 @@ test('the 5h bar ends in its used %, and the head reads the gap and the time lef
     const text = (key: string) => boxes.find((n) => n.key === key)?.text;
     expect([text('meter:5h'), text('meter:info')]).toEqual([
         expect.stringMatching(/39%$/),
-        expect.stringMatching(/^\+1% pace🌔 3h 0m/),
+        expect.stringMatching(/^\+1% pace.*🌔 3h 0m/),
     ]);
 });
 

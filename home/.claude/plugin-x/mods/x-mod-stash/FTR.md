@@ -34,6 +34,11 @@
   - when dima hovers `🔥`, `⏰`, `💨` or `🚦`
   - then a dim line beside it says what a press does now: «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «wake every session stopped on the 5h cap» or «stop waking …», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
+- ⬜ every chip and reading in the row names itself on hover, five words or fewer
+  - given the row draws
+  - when dima hovers `🪐 n`, `📝 n`, the pace, `🌔`, `📦`, its field, `🔥 5h` or `🧠`
+  - then a dim card reads «n open asks for you», «n planned moves», «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «auto-compact at this context %», «type a %, ✓ saves», «5h window used», «context window used» (dima, 20:13)
+  - 📌 harness-proven words; the reveal on the desktop is dima's eye
 - ✅ `/clear` and `/resume` empty the conversation's orbit in the same turn
   - given orbit holds asks
   - when dima runs `/clear` or `/resume`
@@ -287,14 +292,21 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: 🤩 / 👎🏼 (dima, 2026-10-10)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
-  - decision: the note runs full width under its ask, and a full row of air sits between asks (dima, 19:52)
+  - decision: the ask on its own line; under it one row: the note, 🤩 👎🏼, then 🔊 ⏯ ⏹; a full row of air between asks (dima, 19:52, 20:08)
+  - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
   - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one `✅` button (dima, 19:59)
   - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
+- ⬜ 🔊 reads an ask aloud through speak, ⏯ pauses or resumes, ⏹ stops
+  - given orbit shows an ask and x-speak runs
+  - when dima presses its 🔊
+  - then speak reads the ask and its pick through the chain F4 uses, cutting off whatever plays; ⏯ and ⏹ act on any read
+  - decision: buttons, because a mod's text can't be selected for F4 on the desktop ([claude-code#101090](https://github.com/anthropics/claude-code/issues/101090)) — a workaround, `mods/workarounds.md`
+  - 📌 harness-proven that the press sends `read` with the text; the voice itself is dima's ear
   - decision: an ask for something irreversible (trash, push, close, merge) leads its row with ⚠️ and names the exact target; one tick still approves it (dima, 2026-10-10)
 - 🐞 a press in the desktop board lands on the first click
   - given the board is open in the desktop Code tab
   - when dima clicks an ask's 🤩 once
-  - then it lights; today it takes a second click (dima, 19:45) — the terminal pty session lit on one click, so the first desktop click likely goes to the pane, an inference, unprobed
+  - then it lights; today it takes a second click (dima, 19:45) — upstream: [claude-code#99395](https://github.com/anthropics/claude-code/issues/99395), the desktop's first click on a pane button only moves focus
 - ✅ marked asks join the next prompt
   - given one or more asks are accepted or rejected
   - when dima sends a prompt from the prompt box

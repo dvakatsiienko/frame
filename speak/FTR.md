@@ -156,6 +156,11 @@ claims: `schedule/jobs/x-speak/`
   - when the user presses ⇧F4
   - then the speech pauses and the pill's button reads ▶; ⇧F4 again resumes it where it stopped
   - decision: pause has two doors — F4 on an empty selection and ⇧F4 always — so a selection left on screen never blocks a pause (dima, 2026-09-30)
+- ⬜ the control socket's `read` reads a given text the way F4 reads a selection
+  - given the daemon runs
+  - when a client sends `{"op":"read","text":"…"}` to `~/.local/share/x-speak/control.sock`
+  - then the text plays through the chain for its language, cutting off whatever plays; `pause` and `stop` act on it as on any read
+  - decision: a door for text no selection reaches — a mod's pane text can't be selected on the desktop ([claude-code#101090](https://github.com/anthropics/claude-code/issues/101090)), so x-mod-stash orbit's 🔊 sends its ask here (FRM-381)
 - ✅ F5 stops the speech
   - given a read playing on any engine
   - when the user presses F5

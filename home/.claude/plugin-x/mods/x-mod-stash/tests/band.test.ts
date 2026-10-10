@@ -65,9 +65,10 @@ test("the chips count orbit's open asks and the plan's lines", async ($, on) => 
         op: 'add',
     });
     await orbit($, { lines: ['now: a', 'next: b', 'then: c'], op: 'plan' });
-    expect((await ui.find({ text: /^🪐/, type: 'Text' }))?.text).toBe(
-        '🪐 2 · 📝 3',
-    );
+    expect([
+        (await ui.find({ text: /^🪐/, type: 'Text' }))?.text,
+        (await ui.find({ text: /^📝/, type: 'Text' }))?.text,
+    ]).toEqual(['🪐 2', '📝 3']);
 });
 
 test('the chips are text, never a control', async ($, on) => {
@@ -102,6 +103,12 @@ test('every control in the row carries a hover card that names it', async ($, on
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
     expect(cards).toEqual([
+        '0 open asks for you',
+        '0 planned moves',
+        'auto-compact at this context %',
+        'type a %, ✓ saves',
+        '5h window used',
+        'context window used',
         "keep this session's cache hot: ping every 50 min",
         'wake every session stopped on the 5h cap',
         'afk: tell fleet that dima is away',

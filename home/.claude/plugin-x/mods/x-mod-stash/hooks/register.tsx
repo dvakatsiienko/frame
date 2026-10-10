@@ -87,8 +87,6 @@ const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
 const PLAN_MAX = 5;
 const STALE_TURNS = 3;
-// the note field starts past an ask row's two toggles, under its text
-const NOTE_INDENT = 6;
 const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     'op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»); pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.',
@@ -130,6 +128,25 @@ let digest: Digest | undefined;
 const EMPTY_ORBIT: StashOrbit = { asks: [], next: 1, turns: 0 };
 // mirrors `$.state`'s orbit, which survives a reload: a get inside one dispatch reads the moment it began
 let orbit: StashOrbit = EMPTY_ORBIT;
+
+// one json line to x-speak's control socket; the text rides argv, never the shell's words
+async function speak($: EngineInterface, request: Record<string, string>) {
+    const socket = `${await $.env.get('HOME')}/.local/share/x-speak/control.sock`;
+    const r = await $.process
+        .run([
+            'sh',
+            '-c',
+            'printf "%s\\n" "$1" | nc -U -w 2 "$2"',
+            'sh',
+            JSON.stringify(request),
+            socket,
+        ])
+        .catch(() => undefined);
+    if (!r || r.exitCode !== 0 || r.stdout.includes('"error"'))
+        $.ui.log(
+            `x-mod-stash orbit: speak did not take ${request.op}: ${r?.stdout.trim() || r?.stderr.trim() || 'no answer'}`,
+        );
+}
 
 // kept in $.state for this session, and its open asks mirrored into the store, where the board's `⏳ n` and the away
 // digest count every session's
@@ -1465,23 +1482,35 @@ export const register: Register = (on) => {
                 x.id === id ? { ...x, note: value.trim() || undefined } : x,
             );
         // a locked ask is the running turn's: no control at all, its mark and note as dim text (the api has no disabled)
-        // the note runs full width under its ask, past the toggles; a full row of air between asks (dima, 19:52)
+        // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
+        // (claude-code#101090) — a workaround, see mods/workarounds.md
+        const speakJSX = (a: OrbitAsk) =>
+            (
+                [
+                    [
+                        'read',
+                        '🔊',
+                        { op: 'read', text: `${a.text}. pick: ${a.pick}` },
+                    ],
+                    ['pause', '⏯', { op: 'pause' }],
+                    ['stop', '⏹', { op: 'stop' }],
+                ] as const
+            ).map(([what, glyph, request]) => (
+                <Button
+                    key={`orbit:${what}:${a.id}`}
+                    onPress={() => void speak($, request)}
+                    plain>
+                    {glyph}
+                </Button>
+            ));
+        // the ask on its own line, the bold id leading it; under it one row: the note, 🤩 👎🏼, then speak's 🔊 ⏯ ⏹
+        // (dima, 20:08); a full row of air between asks (dima, 19:52)
         const askJSX = (a: OrbitAsk, i: number) => (
             <Box
                 flexDirection='column'
                 key={`orbit:ask:${a.id}`}
                 marginTop={i > 0 ? 1 : 0}>
                 <Box flexDirection='row' gap={1}>
-                    {a.isLocked ? (
-                        <Box flexShrink={0}>
-                            <Text dimColor>
-                                {`🔒 ${a.mark === 'accepted' ? '🤩' : '👎🏼'}`}
-                            </Text>
-                        </Box>
-                    ) : (
-                        [markJSX(a, 'accepted'), markJSX(a, 'rejected')]
-                    )}
-                    {/* the id leads the ask's own text, bold, so the two read as one line (dima, 19:59) */}
                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
                         <Text>
                             <Text bold>{a.id}</Text>
@@ -1491,25 +1520,40 @@ export const register: Register = (on) => {
                     {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
                     {a.isResolved ? <Text dimColor>answered</Text> : null}
                 </Box>
-                {a.isLocked ? (
-                    a.note ? (
-                        <Box paddingLeft={NOTE_INDENT}>
-                            <Text dimColor>{`«${a.note}»`}</Text>
+                <Box alignItems='center' flexDirection='row' gap={1}>
+                    {a.isLocked ? (
+                        <Box flexGrow={1} flexShrink={1} minWidth={0}>
+                            <Text dimColor wrap='truncate-end'>
+                                {`🔒 ${a.mark === 'accepted' ? '🤩' : '👎🏼'}${a.note ? ` «${a.note}»` : ''}`}
+                            </Text>
                         </Box>
-                    ) : null
-                ) : Input ? (
-                    <Box paddingLeft={NOTE_INDENT} width='100%'>
-                        <Input
-                            key={`orbit:note:${a.id}`}
-                            onInput={(value: string) => handleNote(a.id, value)}
-                            onSubmit={(value: string) =>
-                                handleNote(a.id, value)
-                            }
-                            placeholder='note'
-                            value={a.note ?? ''}
-                        />
-                    </Box>
-                ) : null}
+                    ) : (
+                        [
+                            Input ? (
+                                <Box
+                                    flexGrow={1}
+                                    flexShrink={1}
+                                    key='note'
+                                    minWidth={0}>
+                                    <Input
+                                        key={`orbit:note:${a.id}`}
+                                        onInput={(value: string) =>
+                                            handleNote(a.id, value)
+                                        }
+                                        onSubmit={(value: string) =>
+                                            handleNote(a.id, value)
+                                        }
+                                        placeholder='note'
+                                        value={a.note ?? ''}
+                                    />
+                                </Box>
+                            ) : null,
+                            markJSX(a, 'accepted'),
+                            markJSX(a, 'rejected'),
+                        ]
+                    )}
+                    {speakJSX(a)}
+                </Box>
             </Box>
         );
         const orbitJSX = (
@@ -1850,14 +1894,29 @@ export const register: Register = (on) => {
 
         // the chips: text, never a control — 🚦 already opens the board, where orbit and the plan live (dima, 2026-10-10)
         const openAsks = o.asks.filter((a) => !a.isResolved).length;
+        // every chip names itself on hover in five words or fewer (dima, 20:13)
+        const planned = o.plan?.lines.length ?? 0;
+        const asksChip = `🪐 ${openAsks}`;
+        const planChip = `📝 ${planned}`;
         const chips = (
-            <Box flexShrink={0} key='chips'>
-                <Text
-                    bold={openAsks > 0}
-                    color={openAsks ? ACCENT : undefined}
-                    dimColor={!openAsks}>
-                    {`🪐 ${openAsks} · 📝 ${o.plan?.lines.length ?? 0}`}
-                </Text>
+            <Box flexDirection='row' flexShrink={0} gap={1} key='chips'>
+                {tip(
+                    'chip:asks',
+                    `${openAsks} open ask${openAsks === 1 ? '' : 's'} for you`,
+                    <Text
+                        bold={openAsks > 0}
+                        color={openAsks ? ACCENT : undefined}
+                        dimColor={!openAsks}>
+                        {asksChip}
+                    </Text>,
+                    { left: [...asksChip].length + 1 },
+                )}
+                {tip(
+                    'chip:plan',
+                    `${planned} planned move${planned === 1 ? '' : 's'}`,
+                    <Text dimColor={!planned}>{planChip}</Text>,
+                    { left: [...planChip].length + 1 },
+                )}
             </Box>
         );
 
@@ -1891,6 +1950,7 @@ export const register: Register = (on) => {
         const barJSX = (
             key: string,
             label: string,
+            words: string,
             tint: string,
             bar?: { percent: number; mark?: number; scale?: number },
         ) => (
@@ -1900,7 +1960,9 @@ export const register: Register = (on) => {
                 flexShrink={0}
                 gap={Svg ? 0.5 : 1}
                 key={key}>
-                <Text>{label}</Text>
+                {tip(key, words, <Text>{label}</Text>, {
+                    left: [...label].length + 1,
+                })}
                 {bar === undefined ? (
                     <Text dimColor>–</Text>
                 ) : (
@@ -1943,30 +2005,51 @@ export const register: Register = (on) => {
                 flexShrink={1}
                 gap={1}
                 key='meter:info'
-                minWidth={0}
-                overflow='hidden'>
-                {gap === undefined ? null : (
-                    <Text color={fiveTint}>
-                        {gap > 0 ? `-${gap}% pace` : `+${-gap}% pace`}
-                    </Text>
+                minWidth={0}>
+                {gap === undefined
+                    ? null
+                    : tip(
+                          'pace',
+                          gap > 0
+                              ? 'behind the 5h pace'
+                              : 'ahead of the 5h pace',
+                          <Text color={fiveTint}>
+                              {gap > 0 ? `-${gap}% pace` : `+${-gap}% pace`}
+                          </Text>,
+                          { left: 10 },
+                      )}
+                {five?.resetsAt === undefined
+                    ? null
+                    : tip(
+                          'reset',
+                          'until the 5h window resets',
+                          <Text>🌔 {span(five.resetsAt - now)}</Text>,
+                          { left: 9 },
+                      )}
+                {tip(
+                    'compact',
+                    'auto-compact at this context %',
+                    <Text>📦</Text>,
+                    { left: 3 },
                 )}
-                {five?.resetsAt === undefined ? null : (
-                    <Text>🌔 {span(five.resetsAt - now)}</Text>
+                {tip(
+                    'compact-at',
+                    'type a %, ✓ saves',
+                    <Box flexShrink={0} width={8}>
+                        <ui.Input
+                            key='compact-at'
+                            onSubmit={(value) => void setCompactAt($, value)}
+                            placeholder='70'
+                            submitLabel='✓'
+                            value={
+                                meter?.compactAt === undefined
+                                    ? ''
+                                    : String(meter.compactAt)
+                            }
+                        />
+                    </Box>,
+                    { left: 9 },
                 )}
-                <Text>📦</Text>
-                <Box flexShrink={0} width={8}>
-                    <ui.Input
-                        key='compact-at'
-                        onSubmit={(value) => void setCompactAt($, value)}
-                        placeholder='70'
-                        submitLabel='✓'
-                        value={
-                            meter?.compactAt === undefined
-                                ? ''
-                                : String(meter.compactAt)
-                        }
-                    />
-                </Box>
             </Box>
         );
         const switches = (
@@ -2044,12 +2127,14 @@ export const register: Register = (on) => {
                 {barJSX(
                     'meter:5h',
                     '🔥 5h',
+                    '5h window used',
                     fiveTint,
                     five ? { mark: pace, percent: five.used } : undefined,
                 )}
                 {barJSX(
                     'meter:ctx',
                     '🧠',
+                    'context window used',
                     ctxTint,
                     ctx === undefined
                         ? undefined
