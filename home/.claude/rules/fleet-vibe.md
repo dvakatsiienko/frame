@@ -19,6 +19,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **✨ wisp** — a bug: a small glow to tend before it burns, a will-o'-the-wisp that leads the app
   astray (dima, 2026-10-08, replacing «gremlins»). each app keeps a «<app> wisps» stash ticket; the
   inbox's ✨ section is the drop point. printed as **✨ wisp**, badge and word together, never a bare ✨.
+- **🪐 orbit** — the board list of cclio's asks and planned moves, ticked instead of pasted (FRM-381, 2026-10-10); printed as **🪐 orbit**, bold with its badge (dima, 2026-10-10).
 - **🌠 wish** — what dima wants, in his words (dima, 2026-10-08: the word replaces «todo»). he prints
   wishes in the inbox and mid-prompt; a wish is folded with its spelling fixed and its meaning and
   manner kept — never verbatim, never flattened into machine shape. the inbox's wishes section is the
