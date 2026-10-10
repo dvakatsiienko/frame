@@ -292,6 +292,10 @@ else
   fail "pocket-check could not run: $(printf '%s' "$out" | head -1)"
 fi
 echo "now: $(BACKLOG_CWD="$HOME/frame/cclio" backlog task list --plain --priority now 2>/dev/null | grep -c 'PK-') · ready: $(BACKLOG_CWD="$HOME/frame/cclio" backlog task list --plain --ready 2>/dev/null | grep -c 'PK-')"
+for f in "$HOME"/frame/cclio/pocket/tasks/*.md; do
+  grep -q '^status: waiting' "$f" || continue
+  awk '/^id: /{id=$2} /SECTION:DESCRIPTION:BEGIN/{getline; print "⏸️ " id " · " $0; exit}' "$f"
+done
 
 echo "-- flawlog (the day's file; the 🥊 pair rides the CST) --"
 today="$HOME/.claude/shelf/flawlog/$(date +%Y-%m-%d)"
