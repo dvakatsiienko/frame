@@ -15,7 +15,8 @@ sources and nowhere else.
 1. `x/PRODUCT.md`: the **want** is every `>` quote and every bullet under `## the want`; the
    **admission rule** is the section `## what x is not — the admission rule`.
 2. `pnpm --silent x:cli-census` (script: `script/x-cli-census.ts`): per family its verbs and
-   their runs from `x stats`, the callers, then the top raw Bash heads no verb covers.
+   their runs from `x stats`, the callers, then the top raw Bash heads no x door covers
+   (`x stats --outside`, filtered).
 3. the chunks under review, when the args name tickets: `x linear read <ids…>`, the body is
    the spec.
 

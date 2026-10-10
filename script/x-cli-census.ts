@@ -1,12 +1,10 @@
 /**
  * x-cli-census — the cli's facts for a drift check: per family its verbs and their runs
- * (`x stats`), then the raw Bash heads in cc transcripts that no verb covers. no model.
+ * (`x stats`), then the raw Bash heads in cc transcripts that no x door covers (`x stats --outside`). no model.
  */
 import { execFileSync } from 'node:child_process';
-import { homedir } from 'node:os';
-import path from 'node:path';
 
-import { bashCommands, rawHeads, shellBasics } from './lib/cli-census.ts';
+import { type Head, rawHeads, shellBasics } from './lib/cli-census.ts';
 
 const days = 14;
 
@@ -19,10 +17,6 @@ const schema: Schema = x('schema');
 const families = [
     ...new Set(schema.verbs.map((verb) => verb.name.split(' ')[0] ?? '')),
 ];
-const rawDoors = families.flatMap((family) => {
-    const door = x<FamilySchema>('schema', family).rawDoor;
-    return door ? [door] : [];
-});
 const stats: Stats = x('stats', '--days', String(days));
 const runsOf = new Map(stats.verbs.map((verb) => [verb.name, verb.calls]));
 
@@ -43,18 +37,20 @@ for (const family of families) {
         console.log(`  ${verb.name}  ${runsOf.get(verb.name) ?? 0}`);
 }
 
-const heads = rawHeads(
-    bashCommands(path.join(homedir(), '.claude/projects'), days),
-    {
-        rawDoors,
-        replaces: schema.verbs.flatMap((verb) => verb.replaces ?? []),
-    },
+const outside: { heads: Head[] } = x(
+    'stats',
+    '--outside',
+    '--days',
+    String(days),
+    '--top',
+    '500',
 );
 console.log(
-    `\nraw Bash heads no x verb covers, last ${days} days, ≥5 runs, top 20`,
+    `\nraw Bash heads no x door covers, last ${days} days, ≥5 runs, top 20 (x stats --outside --days ${days})`,
 );
 console.log(`  (shell basics left out: ${[...shellBasics].join(' ')})`);
-for (const { head, runs } of heads) console.log(`  ${runs}  ${head}`);
+for (const { calls, name } of rawHeads(outside.heads))
+    console.log(`  ${calls}  ${name}`);
 
 function x<T>(...args: string[]): T {
     const out = execFileSync('x', [...args, '--json'], {
@@ -67,11 +63,7 @@ function x<T>(...args: string[]): T {
 /* Types */
 
 interface Schema {
-    verbs: { name: string; replaces?: string[] }[];
-}
-
-interface FamilySchema {
-    rawDoor?: string;
+    verbs: { name: string }[];
 }
 
 interface Stats {

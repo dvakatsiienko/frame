@@ -19,6 +19,8 @@ import (
 type headCount struct {
 	Name  string `json:"name"`
 	Calls int    `json:"calls"`
+	// the x door that does this job, when one does: the head went around it
+	Cover string `json:"cover,omitempty"`
 }
 
 type outsideData struct {
@@ -47,10 +49,14 @@ type ccLine struct {
 	} `json:"message"`
 }
 
-const topHeads = 25
-
 // a tool whose second word is its verb is counted by both words
-var twoWord = map[string]bool{"git": true, "claude": true, "gh": true, "pnpm": true}
+var twoWord = map[string]bool{"git": true, "claude": true, "gh": true, "pnpm": true, "brew": true, "go": true,
+	"linear": true, "npm": true, "npx": true, "op": true}
+
+// an interpreter's head names the script it runs, so two scripts count apart
+var interpreters = map[string]bool{"bash": true, "node": true, "python": true, "python3": true, "sh": true, "zsh": true}
+
+var scriptFile = regexp.MustCompile(`^[\w./~-]+\.(js|mjs|py|sh|ts)$`)
 
 // flags that take the next word as their value, so the verb sits after it
 var valueFlags = map[string]bool{"-C": true, "-c": true, "--dir": true, "--filter": true, "-F": true, "-R": true, "--repo": true}
@@ -58,13 +64,13 @@ var valueFlags = map[string]bool{"-C": true, "-c": true, "--dir": true, "--filte
 var assignment = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*=`)
 
 // statsOutside ranks the Bash command heads cc ran by hand in the window, x's own calls left out
-func statsOutside(r *Run, days int) (any, error) {
+func statsOutside(r *Run, days, top int) (any, error) {
 	started := time.Now()
 	cut := time.Now().AddDate(0, 0, 1-days).Format(time.DateOnly)
 	cutTime, _ := time.ParseInLocation(time.DateOnly, cut, time.Local)
 	home, _ := os.UserHomeDir()
 	seen := map[string]bool{}
-	counts := map[string]int{}
+	counts := map[headCount]int{}
 	var read window
 	data := outsideData{Heads: []headCount{}}
 	filepath.WalkDir(filepath.Join(home, ".claude", "projects"), func(path string, entry fs.DirEntry, err error) error {
@@ -102,7 +108,7 @@ func statsOutside(r *Run, days int) (any, error) {
 						case "x":
 							data.XCalls++
 						default:
-							counts[head]++
+							counts[headCount{Name: head, Cover: cover(block.Input.Command, head)}]++
 						}
 					}
 				}
@@ -112,10 +118,11 @@ func statsOutside(r *Run, days int) (any, error) {
 			}
 		}
 	})
-	names := slices.Collect(maps.Keys(counts))
-	slices.SortFunc(names, byCalls(func(s string) int { return counts[s] }, func(s string) string { return s }))
-	for _, name := range names[:min(topHeads, len(names))] {
-		data.Heads = append(data.Heads, headCount{Name: name, Calls: counts[name]})
+	heads := slices.Collect(maps.Keys(counts))
+	slices.SortFunc(heads, byCalls(func(h headCount) int { return counts[h] }, func(h headCount) string { return h.Name + " " + h.Cover }))
+	for _, head := range heads[:min(top, len(heads))] {
+		head.Calls = counts[head]
+		data.Heads = append(data.Heads, head)
 	}
 	data.Days, data.First, data.Last = read.span(), read.first, read.last
 	data.Elapsed = time.Since(started).Milliseconds()
@@ -136,6 +143,12 @@ func commandHead(command string) string {
 	tool := filepath.Base(words[i])
 	if tool == "x" {
 		return "x"
+	}
+	if interpreters[tool] {
+		if j := pastFlags(words, i+1); j < len(words) && scriptFile.MatchString(words[j]) {
+			return tool + " " + filepath.Base(words[j])
+		}
+		return tool
 	}
 	if !twoWord[tool] {
 		return tool
@@ -159,8 +172,27 @@ func commandHead(command string) string {
 	return tool
 }
 
+// cover names the x door that does a head's job: a family's raw door (`x linear api` for `linear api`),
+// or the verb that replaces the script the command runs or the pnpm script it names
+func cover(command, head string) string {
+	for _, family := range familyList {
+		if family.RawDoor != "" && head == strings.TrimPrefix(family.RawDoor, "x ") {
+			return family.RawDoor
+		}
+	}
+	for _, verb := range verbs {
+		for _, door := range verb.Replaces {
+			if strings.Contains(door, "/") && strings.Contains(command, door) || head == "pnpm "+door {
+				return "x " + verb.Name
+			}
+		}
+	}
+	return ""
+}
+
 // the index of the first word past the leading `cd <dir> &&`, `NAME=value;`, `export NAME=value;`,
-// and the wrappers `timeout <n>` and `env …` that only run the command after them
+// a `source`, `pushd` or `set` line, and the wrappers `timeout <n>`, `env …`, `command`, `exec` and
+// `time` that only run the command after them
 func pastSetup(words []string) int {
 	i := 0
 	for i < len(words) && isSeparator(words[i]) {
@@ -176,7 +208,9 @@ func pastSetup(words []string) int {
 			i = pastFlags(words, i+1, "-s", "--signal", "-k", "--kill-after") + 1
 		case words[i] == "env":
 			i = pastFlags(words, i+1, "-u", "--unset", "-C", "--chdir")
-		case words[i] == "cd":
+		case words[i] == "command" || words[i] == "exec" || words[i] == "time":
+			i = pastFlags(words, i+1)
+		case words[i] == "cd" || words[i] == "source" || words[i] == "pushd" || words[i] == "set":
 			next := slices.IndexFunc(words[i:], isSeparator)
 			if next < 0 {
 				return i
@@ -256,6 +290,11 @@ func shellWords(command string) []string {
 				}
 			}
 			inWord = true
+		case c == '#' && !inWord:
+			// a comment runs to the end of its line, which still ends the command
+			for i+1 < len(runes) && runes[i+1] != '\n' {
+				i++
+			}
 		case c == '\\' && i+1 < len(runes):
 			i++
 			word.WriteRune(runes[i])
@@ -289,9 +328,13 @@ func outsideBoard(data outsideData) string {
 		titleRight: ui.dim.Render(spanTitle("Bash calls", data.Calls, data.Days, data.First, data.Last)),
 		footLeft:   ui.dim.Render(fmt.Sprintf("%d transcripts read in %.1fs", data.Transcripts, float64(data.Elapsed)/1000)),
 		footRight:  ui.dim.Render(fmt.Sprintf("%d x calls left out", data.XCalls)), padRows: true}
-	widths := []int{8, b.inner() - 8}
+	widths := []int{8, b.inner() - 8 - 22, 22}
 	for _, h := range data.Heads {
-		b.rows = append(b.rows, columns(widths, ui.bold.Render(strconv.Itoa(h.Calls)), ui.fg.Render(h.Name))...)
+		door := ""
+		if h.Cover != "" {
+			door = ui.dim.Render("→ " + h.Cover)
+		}
+		b.rows = append(b.rows, columns(widths, ui.bold.Render(strconv.Itoa(h.Calls)), ui.fg.Render(h.Name), door)...)
 	}
 	if len(data.Heads) == 0 {
 		b.rows = append(b.rows, ui.dim.Render("no Bash calls in the window"))

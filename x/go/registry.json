@@ -961,8 +961,13 @@
                     "type": "boolean"
                 },
                 "outside": {
-                    "description": "rank the Bash command heads cc ran outside x, from its session transcripts, top 25; prints its own elapsed time",
+                    "description": "rank the Bash command heads cc ran outside x, from its session transcripts, each with the x door that covers it; prints its own elapsed time",
                     "type": "boolean"
+                },
+                "top": {
+                    "description": "with --outside, how many heads to keep (default 25)",
+                    "type": "string",
+                    "value": "n"
                 }
             },
             "name": "stats",

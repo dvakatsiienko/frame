@@ -90,11 +90,21 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 	if days > keepDays {
 		return nil, usageFail(fmt.Sprintf("the traces keep %d days, not %d", keepDays, days), fmt.Sprintf("x stats --days %d", keepDays))
 	}
+	topValue, _ := flags["top"].(string)
+	if topValue != "" && flags["outside"] != true {
+		return nil, usageFail("--top ranks the --outside heads; x's own verbs are all listed", "x stats --outside --top 25")
+	}
 	if flags["outside"] == true {
 		if flags["dev"] == true {
 			return nil, usageFail("--dev counts x's own dev builds; --outside reads cc transcripts, which have none", "x stats --outside")
 		}
-		return statsOutside(r, days)
+		top := 25
+		if topValue != "" {
+			if top, err = strconv.Atoi(topValue); err != nil || top < 1 {
+				return nil, usageFail("--top is a whole number of heads ≥ 1, not "+topValue, "x stats --outside --top 25")
+			}
+		}
+		return statsOutside(r, days, top)
 	}
 	trashed := trashOld()
 	dev := flags["dev"] == true

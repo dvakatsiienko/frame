@@ -44,21 +44,69 @@ func TestStatsOutsideRanksTheBashHeadsOfTheWindow(t *testing.T) {
 	}
 }
 
-func TestStatsOutsideKeepsTheTop25Heads(t *testing.T) {
+func TestStatsOutsideKeepsTheTopHeads(t *testing.T) {
 	home := t.TempDir()
 	var calls []bashCall
-	for n := range 26 {
-		for range 26 - n {
+	for n := range 27 {
+		for range 27 - n {
 			calls = append(calls, bashCall{fmt.Sprintf("%d-%d", n, len(calls)), fmt.Sprintf("tool%02d", n), 0})
 		}
 	}
 	transcript(t, home, "p/s.jsonl", calls...)
+	cases := []struct {
+		args []string
+		want int
+	}{{nil, 25}, {[]string{"--top", "26"}, 26}, {[]string{"--top", "99"}, 27}}
+	for _, c := range cases {
+		t.Run(fmt.Sprint(c.args), func(t *testing.T) {
+			got := xIn(t, repo(t), []string{"HOME=" + home}, append([]string{"stats", "--outside"}, c.args...)...)
 
-	got := xIn(t, repo(t), []string{"HOME=" + home}, "stats", "--outside")
+			heads := marshal(got.data["heads"])
+			if strings.Count(heads, `"name"`) != c.want || strings.Contains(heads, fmt.Sprintf("tool%02d", c.want)) {
+				t.Errorf("heads %s, want tool00..tool%02d", heads, c.want-1)
+			}
+		})
+	}
+}
 
-	heads := marshal(got.data["heads"])
-	if strings.Count(heads, `"name"`) != 25 || strings.Contains(heads, "tool25") {
-		t.Errorf("heads %s, want tool00..tool24", heads)
+func TestStatsOutsideTopIsAWholeNumber(t *testing.T) {
+	for _, value := range []string{"0", "-3", "ten"} {
+		t.Run(value, func(t *testing.T) {
+			got := xIn(t, repo(t), []string{"HOME=" + t.TempDir()}, "stats", "--outside", "--top", value)
+
+			if got.code != 2 {
+				t.Errorf("exit %d, want 2", got.code)
+			}
+		})
+	}
+}
+
+// a head an x verb covers names that verb, so a census can tell a missing verb from an unused one
+func TestStatsOutsideNamesTheVerbThatCoversAHead(t *testing.T) {
+	// the dead doors come from the registry: a literal here would be a caller the dead-door test finds
+	read, _, _ := findVerb([]string{"linear", "read"})
+	script, name := read.Replaces[0], read.Replaces[len(read.Replaces)-1]
+	cases := []struct{ command, head, cover string }{
+		{"linear api '{ viewer { id } }'", "linear api", "x linear api"},
+		{"pnpm --silent " + name + " FRM-1", "pnpm " + name, "x linear read"},
+		{"node ~/frame/" + script + " FRM-1", "node " + filepath.Base(script), "x linear read"},
+		{"gh pr view 12", "gh pr", ""},
+	}
+	for _, c := range cases {
+		t.Run(c.command, func(t *testing.T) {
+			home := t.TempDir()
+			transcript(t, home, "p/s.jsonl", bashCall{"a", c.command, 0})
+
+			got := xIn(t, repo(t), []string{"HOME=" + home}, "stats", "--outside")
+
+			want := fmt.Sprintf(`[{"calls":1,"name":%q}]`, c.head)
+			if c.cover != "" {
+				want = fmt.Sprintf(`[{"calls":1,"cover":%q,"name":%q}]`, c.cover, c.head)
+			}
+			if marshal(got.data["heads"]) != want {
+				t.Errorf("heads %s, want %s", marshal(got.data["heads"]), want)
+			}
+		})
 	}
 }
 
@@ -89,6 +137,20 @@ func TestStatsOutsideHeadsSkipTheSetup(t *testing.T) {
 		{"cd /a && timeout 9 env -u CLAUDECODE FOO=1 claude plugin list", "claude plugin"},
 		{"env -i PATH=/bin ls", "ls"},
 		{"for f in *; do ls $f; done", "for"},
+		{"brew upgrade staticcheck", "brew upgrade"},
+		{"go -C x/go test ./...", "go test"},
+		{"op read op://dev/a/credential", "op read"},
+		{"npx -y vitest run", "npx vitest"},
+		{"node ~/frame/script/fixture-store.ts list", "node fixture-store.ts"},
+		{"node --no-warnings ./script/toolchain-sync.ts", "node toolchain-sync.ts"},
+		{`python3 -c "import json"`, "python3"},
+		{"bash", "bash"},
+		{"# note\nls -la", "ls"},
+		{"ls # a trailing note", "ls"},
+		{"git log --grep '#1'", "git log"},
+		{"command -v jq", "jq"},
+		{"time pnpm test", "pnpm test"},
+		{"source ~/.zshrc && gh pr view 1", "gh pr"},
 	}
 	for _, c := range cases {
 		t.Run(c.command, func(t *testing.T) {
