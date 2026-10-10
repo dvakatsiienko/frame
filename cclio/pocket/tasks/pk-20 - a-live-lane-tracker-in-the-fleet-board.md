@@ -220,6 +220,12 @@ think of all my asks as a whole. how to make it work efficiently, fluently and w
 - the biggest failure point is a habit: cclio must know this mod cold, since it becomes the main comms place; the plan names where that knowledge lives so it is never forgotten
 - ? 🤔 earlier said «prepended, never appended», today «what i select from mods is appended»: which end of the prompt?
 
+
+(2026-10-10 17:37–17:48, dima in ccrow's window, relayed by ccrow) — folded:
+- a **ccrow strip** in the stash: her last headline, the 🎯 streak and the vet tally; a click opens her window. the data already sits in `notes.jsonl` and `verdicts.jsonl`, so it is a render, not a pipeline; same reader and glance as the trackers and the asks box
+- dima: «how could you shape your replies so they could be interesting and useful for me too, if i ever peek into your window?» → he approved her new shape (headline, 🔎 the catch, 👀 for you, 🌤️ fair, predicts + the vet id) and asked cclio to propose her own ideas for making ccrow's output pretty and worth a peek; «we will shape everything in one planning»
+- the shape lands in `ccrow/AGENTS.md` at the next siesta (ccrow never edits her charter); a steer: `vet:` → `vet id:` so the line needs no explanation
+
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes

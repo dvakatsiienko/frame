@@ -43,7 +43,7 @@
     - a `.catch` gets 1 s, then is absent and the hook beneath runs — harness, ≈1018 ms; types: `HookBudget`
     - `$.process.run` 30 s by default, ten minutes at most — types: `ProcessRunInit`
     - ui invalidations: ten a second at most, thirty in the terminal for its shown pane, expanded band and prompt hint — types: `$.ui.invalidate`'s doc
-    - `prompt.edit` has no shorter budget than any hook — no 50 ms in the types or the binary, and a 120 ms hook still rewrote in the harness
+    - `prompt.edit` has no shorter budget than any hook — no 50 ms in the types or the binary, and a 120 ms hook still rewrote in the harness — ⚠️ flagged 2026-10-10: the mods reference's limits table now lists 50 ms for `prompt.edit` (refresh-cc-mods); re-probe on the current build
   - a rewritten event replaces the old one, never patches it — harness: `next({ command, tool, tool_use_id })` reached the hook beneath without `description` and `timeout`; pass `next({ ...e, field })`. a rewrite that drops a pinned key (`tool`, `tool_use_id`, `agentId`) gets the whole hook skipped
   - a hook that throws is skipped and the chain goes on (fail-open) — harness: «hook was skipped: HooksError: boom»; types: `EngineCreateResult`. a guard meant to fail closed attaches `.catch` and answers `{ deny }` — harness: «hook failed closed … its .catch answered»
   - `AbovePrompt` is shared: put `{await next(e)}` in your tree or the next mod's band vanishes — harness: a band without it hid the one beneath (x-mod-stash and x-mod-breather both carry it)
@@ -61,4 +61,4 @@
 - `CLAUDE_CODE_PLUGIN_DIRS` order is the chain order, first outermost: x-mod-redact stays last, so every mod above it reads placeholders and only the tool gets the key. a hook adds `context` notes but cannot rewrite one from beneath, so a mod below redact that quotes the command leaks it for good (guard's «it ran:» did, live probe 2026-10-08)
 - a throwing op mock is skipped by the harness, never thrown — test a failure by forcing the real failing path (FRM-307)
 - a declaration a mod needs (a vault, a store shape) sits in a `types` contract the manifest names, never inline — `claude plugin validate` goes red otherwise; stop on that red before committing (FRM-307)
-- what a mod cannot reach (measured, so nobody retries it): the queued-prompt `queue-operation` record is written before any hook (x-mod-redact); the «<mod> reloaded (n hooks)» line is the terminal's `InfoNotice`, not a mod site; the desktop draws cc's own prompt suggestion, so a mod suggestion races it (dropped, FRM-303)
+- what a mod cannot reach (measured, so nobody retries it): the queued-prompt `queue-operation` record is written before any hook (x-mod-redact; ⚠️ flagged 2026-10-10: cc 2.1.295 fixed rewritten prompts being saved raw, re-probe); the «<mod> reloaded (n hooks)» line is the terminal's `InfoNotice`, not a mod site; the desktop draws cc's own prompt suggestion, so a mod suggestion races it (dropped, FRM-303)

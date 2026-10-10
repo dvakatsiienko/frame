@@ -87,3 +87,9 @@ verdict question: borrow its timing (consult before an approach / before done) i
 
 ### round 11 · 2026-10-10 17:03 · before the mods want (shape-idea step 1)
 - advisor: read stash's PRODUCT.md first (this is a re-shape of the stash, not a new mod; the 10-05 «asks as a source of truth» is open on FRM-304), keep the want (his words, folded) apart from the why (the ledger), step 1 ends with one ask, the hot traces must not jump to solutions before the grill; flags: FRM-304's recipe pointer is stale. acted on: all
+
+### round 12 · 2026-10-10 17:18 · before the mods playback (PK-20 + the two drops)
+- advisor: five pieces in his order, a re-shape of x-mod-stash; ask only what discriminates (checked + text, silence flips from yes to not-agreed, «universal» means one box per session, who marks the missed pieces, the planned list moves from reply to mod, the codename to adhd); hold feasibility and stores for prior art (the prepend-on-send is already proven by the ccrow relay hook, the mid-turn join is the unknown). acted on: all
+
+### round 13 · 2026-10-10 17:52 · before the refresh-cc-mods findings
+- advisor: read mods/AGENTS.md and flag the two stale lines (not fix, no probe), name the test drive unchanged; the write door (a mod tool + `$.state`) is the headline, it answers the cost and habit unknowns; prepend vs append collapses to visible vs hidden; the grill opens next turn in card shape; ccrow's relay carries three asks for dima's word. acted on: all. ccrow: 5 wakes, 3 notes vetted ok, plus one relay of dima's word

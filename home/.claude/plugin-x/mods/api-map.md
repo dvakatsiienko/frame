@@ -102,6 +102,17 @@ cclio folds dima's picks into a ticket; a built idea leaves this list.
 - a pr + ci column on the board — one `gh api graphql` query per pr on a 60 s `$.clock.every`, pr urls caught from prompts, replies and `gh pr create` output (from sezaakgun/cc-pr-tracker `hooks/register.tsx`, FRM-319); its cost is the per-tick `gh` call x-mod-stash's FTR already names
 - parked: spawn gating — `agent.spawn` refusing or rerouting a spawn the fleet rules forbid; the warn-only hints it grew from were dropped: «0 for 1 on its first real fire, and a toast never reaches the session it corrects» (dima, 2026-10-05)
 
+## comms pieces — what the api gives (refresh-cc-mods, 2026-10-10, cc 2.1.296; «?» = unprobed by us)
+
+- **agent → mod**: a mod-registered tool is the agent's write door (set the plan, add an ask, clear an ask); the mod keeps it in `$.state` per session and the pane redraws, so no reply text is parsed
+- **checkbox**: no native checkbox; a `Button` whose label flips ☐ / ☑ stands in (`inline-next-steps` does it); `Input` takes a note, on desktop by the types, unused by our mods yet «?»
+- **joining the prompt**: `prompt.submit` rewrites `e.text` (visible, either end) or appends `e.context` (model-only, after the prompt only)
+- **turn state**: a pane is not told whether a turn runs; a lock while mid-turn needs a flag the mod keeps from `turn.start` / `turn.complete`
+- **mid-turn join**: `$.session.append` adds a hidden user message without starting a turn (grill, human-in-the-loop use it); a message that lands during the final reply is never read, and human-in-the-loop then starts a turn — our rule forbids that, so a 🤔 piece rides the next prompt «?»
+- **copy**: `$.ui.copy` on desktop is contradictory in the types «?»
+- **contract**: a `prompt.submit` reminder in `e.context` is the one layer that holds every turn and through compaction; a third-party comment claims the desktop app skips the system-prompt event mods use «?»
+- **borrow**: `next-steps` (planned actions), `todo-bar` (lane progress), `where-am-i` (goal · now · waiting on you · next), `pinboard` (a durable list), `blast-radius` (accept / reject buttons), `prompt-drafts` (the user owns the send), `review-inbox` (age and severity)
+
 ## undocumented doors (may break on an app bump)
 
 - desktop deep link to a session, found in Claude.app's asar, in no doc (FRM-306, 2026-10-05): `claude://code/continue?session=local_…` for a desktop-born session, `claude://code/session_…` for a bridged bg one; an unbridged bg job has no door — copy `claude attach <jobId>`. re-check at every desktop bump
