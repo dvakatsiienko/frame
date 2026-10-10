@@ -4,6 +4,9 @@ import { join } from 'node:path';
 
 // the pocket's contract on top of Backlog.md (grill 2026-10-09); allowed values come from its own config
 const NOW_CAP = 3;
+const OPEN_CAP = 5;
+const MINUTES = 'xs';
+const PARKED_LINE = /^parked:\s*\S/m;
 const EXPIRING = ['xs', 's'];
 const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
 const TICKET_LINE = /\b(?:ticket|moved to linear):\s*((?:FRM|BYT)-\d+)/gi;
@@ -22,6 +25,7 @@ export function checkPocket(
     };
     const problems: string[] = [];
     let nowCount = 0;
+    let openCount = 0;
 
     for (const { name, text } of tasks) {
         const front = frontmatter(text);
@@ -39,7 +43,14 @@ export function checkPocket(
             );
         if (text.includes(ZERO_WIDTH_JOINER))
             report('a joined emoji breaks the board view (Backlog.md #949)');
-        if (status === 'done') continue;
+        if (status === 'done') {
+            report(
+                'done but still listed: `backlog task complete` it this turn',
+            );
+            continue;
+        }
+        const parked = PARKED_LINE.test(text);
+        if (status !== 'waiting' && !parked) openCount += 1;
 
         for (const ticket of ticketsOf(text))
             if (closedTickets.has(ticket))
@@ -74,6 +85,16 @@ export function checkPocket(
         )
             report('waiting without a `check:` first line');
 
+        if (
+            sizes.length === 1 &&
+            !sizes.includes(MINUTES) &&
+            status !== 'waiting' &&
+            !parked &&
+            ticketsOf(text).length === 0
+        )
+            report(
+                'bigger than minutes: give it a `ticket:` line, or a `parked:` reason',
+            );
         const due = front.scalars.due_date;
         const isExpiring = sizes.some((size) => EXPIRING.includes(size));
         if (isExpiring && status !== 'waiting' && !due)
@@ -83,6 +104,10 @@ export function checkPocket(
     }
     if (nowCount > NOW_CAP)
         problems.push(`now holds ${nowCount} items, the cap is ${NOW_CAP}`);
+    if (openCount > OPEN_CAP)
+        problems.push(
+            `${openCount} open items, the cap is ${OPEN_CAP}: solve, ticket or park before the main lane`,
+        );
     return problems;
 }
 

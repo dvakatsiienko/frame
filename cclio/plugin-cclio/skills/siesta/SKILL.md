@@ -16,7 +16,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 ## the flow, in one turn
 
 1. **wish-review**, unless the batch is small (under 3 files and no memory, rule or skill file): spawn the `wish-review` agent 🐬 in the background, siesta mode, with the commit range since the last siesta and the ticket ids that landed — nothing more; it reads the tickets' want itself
-2. **meanwhile, the pick**: exhaust the pocket first (`backlog task list --plain`, open and ready), then open linear tickets cclio could take. pick 1–2 🍀 freebies or almost-freebies, and the next main-lane item. estimates are not a filter (pk-46)
+2. **meanwhile, the pick, in this order** (dima, 2026-10-10): due reminders first, then the pocket (`node script/pocket-check.ts` red = the pocket is the next item, never the main lane), then the main lane. the one exception: a pocket left with only small items runs the main lane plus one pocket item per batch
 3. **the 5h window**: read it (`habit-usage-pacing`) and print its one line
 4. **check before acting**: every high finding from wish-review is opened at its cited spot first; one not checked is printed as `unchecked`
 5. **the card**, one reply when wish-review is back:

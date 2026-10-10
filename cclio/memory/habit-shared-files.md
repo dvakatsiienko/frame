@@ -19,6 +19,7 @@ one file, shaped after matt's local tracker: order · decisions so far · standi
 linear ticket when one exists; a new ticket is made only when a coder takes the item. every inbox
 item lands here at parse time, before any resolution; resolved items leave one line in «decisions
 so far» (the file's end); the halt moves those lines into the day's gazette post and empties the section.
+**the birth gate** (dima, 2026-10-10, after a 60-item pocket ate a whole day): an item gets its fate the turn it is born — `xs` (minutes) is solved now or at the next siesta; anything bigger gets a linear ticket and a `ticket:` line, or a `parked: <reason>` line; blocked goes to waiting with its `check:` line. a done item is `backlog task complete`d the turn it closes — dima reads the pocket often, a stale state is not allowed. `pocket-check` reds every breach, and more than 5 open items.
 **an item that gets a ticket carries a `ticket: FRM-N` line**; `pocket-check` (the boot runs it) reds any open item whose ticket linear has closed (dima, 2026-10-09, after pk-44 stayed open behind a closed FRM-371: «keep your pocket up to date»).
 
 ## the stash hierarchy — dima's, 2026-09-27

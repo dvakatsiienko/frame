@@ -11,7 +11,10 @@ const config = [
 
 const today = '2026-10-09';
 
-function task(fields: Record<string, string | string[]>, description = 'body') {
+function task(
+    fields: Record<string, string | string[]>,
+    description = 'ticket: FRM-1',
+) {
     const rows = Object.entries({
         id: 'PK-1',
         labels: ['m'],
@@ -50,7 +53,9 @@ describe('checkPocket', () => {
                 today,
                 new Set(['FRM-371']),
             ),
-        ).toEqual([]);
+        ).toEqual([
+            'PK-1: done but still listed: `backlog task complete` it this turn',
+        ]);
     });
 
     test.each([
@@ -111,14 +116,36 @@ describe('checkPocket', () => {
         ]);
     });
 
-    test('a done task is checked for its status only', () => {
+    test('a done task still listed goes red for that alone', () => {
         expect(
             checkPocket(
                 config,
                 [task({ due_date: '2026-10-01', labels: [], status: 'done' })],
                 today,
             ),
+        ).toEqual([
+            'PK-1: done but still listed: `backlog task complete` it this turn',
+        ]);
+    });
+
+    test('an item bigger than minutes needs a ticket or a parked reason', () => {
+        const bare = task({}, 'body');
+        expect(checkPocket(config, [bare], today)).toEqual([
+            'PK-1: bigger than minutes: give it a `ticket:` line, or a `parked:` reason',
+        ]);
+        expect(
+            checkPocket(config, [task({}, 'parked: waits on m1')], today),
         ).toEqual([]);
+    });
+
+    test('more than five open items goes red', () => {
+        const six = Array.from({ length: 6 }, (_, n) =>
+            task({ id: `PK-${n}` }),
+        );
+        expect(checkPocket(config, six, today)).toEqual([
+            '6 open items, the cap is 5: solve, ticket or park before the main lane',
+        ]);
+        expect(checkPocket(config, six.slice(1), today)).toEqual([]);
     });
 
     test('a waiting small item needs its check, not a due date', () => {
