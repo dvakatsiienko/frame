@@ -36,7 +36,7 @@
 - **fable-5.1** — spawned only on his word, at `medium`; for design work «not lower than medium, maybe high, not extrahigh, not max» (dima, 2026-10-01 — the 09-06 «always low» rule is retired); Dima spends that budget
   on his own turns. Anything Dima reads → fable flavour: *«opus picks pragmatically, fable =
   flavour»*.
-- **sonnet-5.5** — routine, fully specified work and the `helper` card; never hard multi-step.
+- **sonnet-5.5** — **the quick-lane coder default** (dima, 2026-10-10, after PK-47: 18M tokens, 54 min, clean; `docs/test-drive/sonnet-coder.md`): `--model sonnet --effort medium`; feature and app lanes stay opus. also routine, fully specified work and the `helper` card; never hard multi-step.
 - **haiku-5.5** — the haiku pick since 2026-10-08 (dima): retrieval, extraction, bulk transforms, a sidekick subagent under an opus lead, bare probes. `--model haiku` resolves to `claude-haiku-5-5` on cc 2.1.294 (probed 2026-10-08). 📌 not for complex agentic coding (Terminal-Bench 4.0 39.2 %), not at low effort on long prompts; as a classifier engine it is unmeasured.
 - Full cards and prices: `docs/knowledge/models.md`, on demand.
 - 🪶 **a number read off a transcript, a log or a json dump goes to `sifter`** (haiku 5.5, read-only, returns the answer + the command) — cclio never `jq`s it by hand in its own context (dima's yes, 2026-10-08: its first round caught my hand `jq` summing streaming snapshots, ~$4.75 read for ~$1.17). briefs name it for a coder's big reads too.

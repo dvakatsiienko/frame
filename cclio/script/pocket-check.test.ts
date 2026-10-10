@@ -164,6 +164,16 @@ describe('checkPocket', () => {
         ).toEqual([]);
     });
 
+    test('a fresh task with no updated date reads its created date', () => {
+        expect(
+            checkPocket(
+                config,
+                [task({ created_date: '2026-10-09 09:00', updated_date: '' })],
+                today,
+            ),
+        ).toEqual([]);
+    });
+
     test('a waiting task needs a due date', () => {
         expect(
             checkPocket(

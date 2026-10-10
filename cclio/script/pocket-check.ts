@@ -42,7 +42,11 @@ export function checkPocket(
             );
         if (text.includes(ZERO_WIDTH_JOINER))
             report('a joined emoji breaks the board view (Backlog.md #949)');
-        const touched = (front.scalars.updated_date ?? '').slice(0, 10);
+        const touched = (
+            front.scalars.updated_date ||
+            front.scalars.created_date ||
+            ''
+        ).slice(0, 10);
         if (status === 'done') {
             if (touched < today)
                 report(

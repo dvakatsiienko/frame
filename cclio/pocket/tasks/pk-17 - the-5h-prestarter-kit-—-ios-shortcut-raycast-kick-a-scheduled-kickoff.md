@@ -1,10 +1,10 @@
 ---
 id: PK-17
 title: 'the 5h prestarter kit — ios shortcut, raycast kick, a scheduled kickoff'
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-10 10:53'
+updated_date: '2026-10-10 11:29'
 due_date: '2026-10-17'
 labels:
   - m
@@ -30,3 +30,9 @@ dima: «let's try shortcut and ray cmd. i also want a way to set a scheduled 5h 
 
   dima: the 5h window starts on the first token spent, so when he boots me the window opens and our token plan spreads over those 5h. but if at boot the window is already at, say, 2:30, we can code more densely in the shorter window. how to set up a 5h autokicker properly? a tiny probe that sends 1 token to claude.ai so the window is always moving, and he starts at any time but always with less than 5h? alternative: a 1-click door to a 5h prestarter — he roughly plans when he boots me and opens the window 1–2 h before. must: 1. good ux · 2. preferably works on his mobiles · 3. preferably 1-click · 4. maybe a complementary useful feature or two · 5. ideally pretty. «search and propose».
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+done 10-10 on dima's word: the two raycast commands (5h kick, 5h kick at) and their lib + test are deleted, x-ray rebuilt in raycast; no launchd job, log dir or pmset wake was left. dima sets the schedule himself in the cw schedule tab.
+<!-- SECTION:NOTES:END -->
