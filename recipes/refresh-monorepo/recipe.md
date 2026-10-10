@@ -19,7 +19,7 @@ keeps the fleet's monorepo craft true: how agents run bytes (pnpm + turborepo), 
 
 > and this research would also allow to answer a frame→bytes merge questions — should we do it? how to correctly research this? (2026-10-05)
 
-> we use turborepo — why don't we exploit it? … it's actually an orchestration tool! Why don't you befriend turborepo? (the big prompt, T5)
+> we use turborepo — why don't we exploit it? … it's actually an orchestration tool! Why don't you befriend turborepo? (the big prompt, T5, ~2026-10-01)
 
 > plan bytes merge in a way, so it is gradual, mixed between our lanes, part by part and not folded into a long shelf (2026-10-05)
 

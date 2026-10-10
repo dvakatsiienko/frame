@@ -33,7 +33,7 @@ the checkup, his idea in run #1's plan (2026-08), so he never prints a checkup p
 > the start (fresh sess), and in parallel to all other activities write / evergreenify the checkup
 > plan — and fix-improve it in place while we go and open new discoveries?»
 
-run #1's finding: opus writes long by default, its own internals included; asked who the long version served, it answered «the user». dima: **«i do not need 90% of it, it only overwhelms me. i tell you when i want it expanded.»** ~70 % of written text is not needed, in skills, rules and `CLAUDE.md` too. his spec for those files, verbatim and complete:
+dima, run #1 (2026-08): **«i do not need 90% of it, it only overwhelms me. i tell you when i want it expanded.»** his spec for those files, verbatim and complete:
 
 > info that is useful to **you**, in a format appropriate to **you**
 
@@ -135,6 +135,7 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 
 ### analysis
 
+- run #1's finding, to re-check: opus writes long by default, its own internals included (asked who the long version served, it answered «the user»); ~70 % of written text was not needed, in skills, rules and `CLAUDE.md` too
 - `docs/research/skill-authoring-best-practices.md`'s checklist against our files: an unchecked item is a finding
 - which memories misfired or sat unused: read `refresh-agent-ops`' skill-load measure, never re-measured here; a leaf never load-bearing since the last sweep is a retirement candidate
 - did a silent-failure class fire, and does `method-silent-failures` name its shape?

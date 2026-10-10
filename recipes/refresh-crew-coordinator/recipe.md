@@ -47,13 +47,9 @@ model picks (dima's, 2026-08-27):
 
 > «i want you and myself to be aware of right models picks. know strengths and weaknesses of each. best types of work each model is best at. the outcome lives at models.md. the data is for me, and for you as a coordinator to pick the right model.»
 
-dima, 2026-09-28: «refresh models.md specifically with information about fable 5.1 and opus 5.5»
-
 the cards against the ladder (dima's, 2026-10-08):
 
 > «we have a few subagents — a helper, a researcher, an explorer — and we use specific models for them: the helper is sonnet 5.5, meant for a quick one-off job it does well at less spend than opus (opus is for granular, sophisticated changes where thoughtful decisions are needed). this is a checkup across every subagent and crew member: do we still have the right model for what each is meant to do, at the right effort? is chores on sonnet 5.5 medium still the right pick, or would opus 5.5 medium be better? the recipe gathers our settled baseline picks and searches whether they hold.»
-
-the adviser (dima's, 2026-10-08): the want lives in `recipes/refresh-crew-coordinator-adviser/recipe.md`; this run reads that recipe's latest verdicts and never re-researches it.
 
 the tracker and the CTO hat (dima's, standing):
 > «optimize the fleet flow.»

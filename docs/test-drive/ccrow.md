@@ -37,7 +37,7 @@ one line per day: date · arm · wakes · notes / none · ok / miss · tokens ·
 docs ([advisor](https://code.claude.com/docs/en/advisor.md), experimental): a server tool that reads the full transcript, every tool call and result; the main model decides when to consult it (before an approach, on a recurring error, before «done»), no setting forces or caps a call; advice lands inside the main turn (an `Advising` line, Ctrl+O shows it); the advisor model must rank at or above the main model; billed at the advisor's rates against the plan; its transcript read is never cached, re-read on every call; hooks see no `tool.call`, mods see it in `result.serverToolUses`. silent: latency, tokens per call, whether it survives `/clear` or `/compact`. our env: no telemetry or non-essential-traffic switch set, `advisorModel` unset.
 
 stress list — each run in cclio's tab beside ccrow, same fields for both (fired · note · acted on · tokens · seconds):
-1. enable: `/advisor opus` in the desktop Code tab — the `Advising` line appears on the first consult; numbers: consults per hour
+1. enable: `/advisor fable` in the desktop Code tab — the `Advising` line appears on the first consult; numbers: consults per hour
 2. a decision turn (a lane pick, a grill pick): does it fire before the pick, and does its note change the pick — vs ccrow's wake note on the same turn
 3. a recurring error (a guard refusal twice): does it fire, and say anything the refusal did not
 4. a «done» report: does it catch an unverified claim (the post-clean commit case, FRM-380) — ccrow caught that one at 10:55
@@ -51,3 +51,5 @@ verdict question: borrow its timing (consult before an approach / before done) i
 - advisor: fired on cclio's call before the approach; ~600 words; 5 located points — triage the researcher's edits into three buckets (apply · propose with the original · one list for his word), treat a script move or the skill split like a delete (grep the old name, bump), prune only what pk-28 resolved from FRM-267 under the ask-guard, log this round honestly, drop a resolved ask. acted on: all five. tokens / seconds: not yet measured (a sifter pass over `result.serverToolUses` in the transcript); the 5h meter moved 51 → 59 % over 11:15–11:32, mixed with other work, so no isolation
 - ccrow, same window (wake 11:26): one located note — cclio steered dima from fable to opus on an unknown the docs answer (fable ranks above opus 5.5), and opus would confound the head-to-head since ccrow runs fable. acted on: yes (the ask is dropped, fable stays)
 - the split: advisor reviewed the whole plan before work (process advice); ccrow caught a wrong steer in the reply (a fact check). no overlap.
+
+- 📌 the switch: the conversation that ran `/advisor` keeps opus as its advisor until the next `/compact`; the fable rounds start after it, and stress item 6 checks the tool is still listed then

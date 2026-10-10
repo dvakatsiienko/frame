@@ -22,11 +22,11 @@ dima's, 2026-10-06:
 
 > «i like go with bubbletea the most … cli must look pretty and look prod grade. and use all bubbletea components when applicable — spinners, loaders, huh and other components … it should be agents and user friendly»
 
-two languages at full scale is fine (dima, FRM-284), so go gets the same care as typescript: `x:guide-go` stays current, and the cli's stack moves with its upstreams.
-
 > «would it be useful to create a «charmbracelet toolkit» reference for cli coders?» · «where i could peek into all tools installed? e.g. bubbletea, harmonica? … with links to quickly navigate to related gh page?» · «the standard best practices, powerusage recipes, do's don'ts etc» (dima, 2026-10-07)
 
 ## the run
+
+- go gets the same care as typescript: two languages at full scale is fine, so `x:guide-go` stays current and the cli's stack moves with its upstreams (dima, FRM-284)
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. one research round per `habit-research-lanes` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)
