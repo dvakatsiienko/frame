@@ -153,7 +153,7 @@ async function speak($: EngineInterface, request: Record<string, string>) {
         );
 }
 
-// kept in $.state for this session, and its open asks mirrored into the store, where the board's `⏳ n` and the away
+// kept in $.state for this session, and its open asks mirrored into the store, where the board's `🪐 n` and the away
 // digest count every session's
 async function saveOrbit($: EngineInterface, next: StashOrbit) {
     orbit = next;
@@ -1055,7 +1055,7 @@ const span = (ms: number) => {
     return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 };
 
-// each fact column's width in cells, sized to its usual reading — `⏳ 12`, `FRM-306`, `ctx 54%`, `idle 12m` — so little slack shows between columns; a longer one is cut at its end
+// each fact column's width in cells, sized to its usual reading — `🪐 12`, `FRM-306`, `ctx 54%`, `idle 12m` — so little slack shows between columns; a longer one is cut at its end
 const COLUMNS = {
     asks: 4,
     context: 7,
@@ -1758,12 +1758,12 @@ export const register: Register = (on) => {
                                     {stateText}
                                 </Text>
                             </Box>
-                            {/* the asks close the row, always drawn: `⏳ 0` dimmed when none (dima, 2026-10-05) */}
+                            {/* the asks close the row, always drawn: `🪐 0` dimmed when none (dima, 2026-10-05) */}
                             <Box justifyContent='flex-end' width={COLUMNS.asks}>
                                 <Text
                                     color={m.asks ? ACCENT : undefined}
                                     dimColor={!m.asks}>
-                                    ⏳ {m.asks}
+                                    🪐 {m.asks}
                                 </Text>
                             </Box>
                         </Box>
@@ -2218,7 +2218,7 @@ export const register: Register = (on) => {
                       </Text>,
                       ...view.digest.needs.map((n) => (
                           <Text key={`away:n:${n.sid}`} wrap='truncate-end'>
-                              {`needs you · ${n.name} · ⏳ ${n.asks}`}
+                              {`needs you · ${n.name} · 🪐 ${n.asks}`}
                           </Text>
                       )),
                       ...view.digest.done.map((d) => (

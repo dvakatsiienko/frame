@@ -122,7 +122,7 @@ test('the away digest lists what needs dima before what finished', async ($, on)
     await b.stop('n1n1n1n1-asks', 'one ask is in orbit.');
     await b.afk();
     expect(await b.digest()).toEqual([
-        'needs you · n1n1n1n1 · ⏳ 1',
+        'needs you · n1n1n1n1 · 🪐 1',
         'done · d0d0d0d0',
     ]);
 });

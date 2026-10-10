@@ -75,7 +75,7 @@
 - ⬜ an away digest when 💨 turns off: what needs dima first, then what finished
   - given afk is on and two sessions end a reply, one with an open orbit ask and one without
   - when dima turns 💨 off
-  - then the band he pressed it in shows «while you were away», a `needs you · <session> · ⏳ n` line per session with asks, then a `done · <session>` line per session that only finished
+  - then the band he pressed it in shows «while you were away», a `needs you · <session> · 🪐 n` line per session with asks, then a `done · <session>` line per session that only finished
   - and a reply that ended before afk went on stays out
   - and a session the registry shows busy when 💨 turns off is not done yet, so it stays out
   - and a session that ended its reply, then exited, while afk was on is listed as done
@@ -220,13 +220,14 @@
 - 🔎 each row carries its facts beside the state
   - given a session has open asks, a context reading or a ticket in its name
   - when the board draws
-  - then its row shows the ticket as a link to linear, `ctx n%`, its state and `⏳ n`, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
-  - decision: `⏳ n` closes the row and is always drawn, `⏳ 0` dimmed — dima reads it first, at the far right (2026-10-05)
+  - then its row shows the ticket as a link to linear, `ctx n%`, its state and `🪐 n`, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
+  - decision: `🪐 n` closes the row and is always drawn, `🪐 0` dimmed — dima reads it first, at the far right (2026-10-05)
+  - decision: the count reads 🪐 like the band's chip, never ⏳, which is the 5h reset timer (dima, 21:20)
   - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
   - decision: each column is sized to its usual reading, so little slack shows between columns (dima asked for ~8px gaps, 2026-10-05)
   - decision: the name side gives way and clips, so a long name never pushes a row's columns out of line (dima saw one drift, 2026-10-05)
   - decision: no «sent» column — the time since a session last messaged another one; dima reads the state's idle time instead (2026-10-05)
-  - source: `⏳ n` each session's open orbit asks, which its x-mod-stash mirrors into the store · the ticket from the session name · `ctx n%` the session's `session.measure`, kept by its x-mod-stash
+  - source: `🪐 n` each session's open orbit asks, which its x-mod-stash mirrors into the store · the ticket from the session name · `ctx n%` the session's `session.measure`, kept by its x-mod-stash
   - decision: no pr, ci or cost yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306
 - ⬜ each row names its session's model, version and effort
   - given a session's main loop sent a model request on `claude-opus-5-5` at `medium`
@@ -274,7 +275,7 @@
 ## /board — 🪐 orbit
 
 the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «current stash asks implementation doesn't work for me»).
-- makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `⏳ n` and the away digest count them; orbit itself lives in the session's `$.state`
+- makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` and the away digest count them; orbit itself lives in the session's `$.state`
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt
 - 📌 the desktop Code tab's look (the pane's lower half, the note `Input`) is dima's eye
 

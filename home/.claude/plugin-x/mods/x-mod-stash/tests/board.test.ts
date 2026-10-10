@@ -377,14 +377,14 @@ test('asks over a day old are not counted on the board', async ($, on) => {
     fleet(on, {
         [`asks:${PEER}`]: { asks: ['a'], at: NOW - 25 * 60 * MIN, label: 'x' },
     });
-    expect(await row($, PEER)).toContain('⏳ 0');
+    expect(await row($, PEER)).toContain('🪐 0');
 });
 
 test("a row counts its session's open asks", async ($, on) => {
     fleet(on, {
         [`asks:${PEER}`]: { asks: ['a', 'b'], at: NOW, label: 'frame' },
     });
-    expect(await row($, PEER)).toContain('⏳ 2');
+    expect(await row($, PEER)).toContain('🪐 2');
 });
 
 test("a row shows its session's context fill", async ($, on) => {
