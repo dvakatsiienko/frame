@@ -480,7 +480,7 @@ describe('decisionOf', () => {
             'cd ~/frame && claude --bg -n "☕️ 🔧 x" "/x:crew-coder FRM-1"',
             'spawn',
         ],
-        ['env A=1 claude --bg hi', 'spawn'],
+        ['A=1 claude --bg hi', 'spawn'],
         ['x lane commit -m "gh pr merge 3"', undefined],
         ["echo 'claude --bg'", undefined],
         ['gh pr view 82', undefined],

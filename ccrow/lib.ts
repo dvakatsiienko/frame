@@ -573,7 +573,7 @@ export function buildPacket({
 }
 
 // the words of each command in a shell line, quotes honoured, so a merge quoted in a commit message is no merge
-export function shellCommands(line: string) {
+function shellCommands(line: string) {
     const commands: string[][] = [];
     let words: string[] = [];
     let word = '';
@@ -617,9 +617,7 @@ export function shellCommands(line: string) {
 // a merge waits for ccrow's note; a member spawn wakes it and runs on; anything else is no decision
 export function decisionOf(line: string): Decision | undefined {
     for (const command of shellCommands(line)) {
-        const words = command.slice(
-            command.findIndex((w) => w !== 'env' && !/^\w+=/.test(w)),
-        );
+        const words = command.slice(command.findIndex((w) => !/^\w+=/.test(w)));
         if (words[0] === 'gh' && words[1] === 'pr' && words[2] === 'merge')
             return { args: words.slice(3), kind: 'merge' };
         if (words[0] === 'claude' && words.includes('--bg'))
@@ -663,12 +661,14 @@ export function prViewArgs(mergeArgs: string[]) {
     ];
 }
 
-export const VERIFIED_PATH = join(homedir(), '.claude/shelf/pr-verified.json');
+const VERIFIED_PATH = join(homedir(), '.claude/shelf/pr-verified.json');
 
 // written by the verifier on clean (`pr-watch.sh --verified`), keyed `owner/repo#n`
-export function verifiedHead(key: string, path = VERIFIED_PATH) {
+export function verifiedHead(key: string) {
     try {
-        const sha: unknown = JSON.parse(readFileSync(path, 'utf8'))[key];
+        const sha: unknown = JSON.parse(readFileSync(VERIFIED_PATH, 'utf8'))[
+            key
+        ];
         return typeof sha === 'string' && sha ? sha : undefined;
     } catch {}
 }

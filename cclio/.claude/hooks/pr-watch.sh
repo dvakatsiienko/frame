@@ -37,14 +37,15 @@ pass() {
           [ -n "$(seen "$key:head")" ] && echo "🟡 ${r#*/}#$n new commit $sha · $title · $url"
           mark "$key:head" "$sha"
         fi
-        if [ "$state" = green ] && [ "$(seen "$key:green")" != "$sha" ]; then
-          v=$(verified "$key")
+        # keyed on head and verified sha both: a clean that lands after a delta line still prints «ready»
+        v=$(verified "$key")
+        if [ "$state" = green ] && [ "$(seen "$key:green")" != "$sha@$v" ]; then
           if [ -n "$v" ] && [ "${v:0:8}" != "$sha" ]; then
-            echo "🟠 ${r#*/}#$n verified ${v:0:8}, head $sha: unverified delta — the verifier never saw this head ·$title · $url"
+            echo "🟠 ${r#*/}#$n verified ${v:0:8}, head $sha: unverified delta — the verifier never saw this head · $title · $url"
           else
             echo "🟢 ${r#*/}#$n green on $sha, ready to merge · $title · $url"
           fi
-          mark "$key:green" "$sha"
+          mark "$key:green" "$sha@$v"
         fi
         if [ "$conflict" = conflict ] && [ "$(seen "$key:conflict")" != "$sha" ]; then
           echo "🔴 ${r#*/}#$n conflict on $sha — it cannot merge until it is rebased onto its base · $title · $url"

@@ -113,6 +113,23 @@ describe('pr-watch', () => {
         );
     });
 
+    it('calls a delta head ready once the verifier clears it', () => {
+        const dir = bin({ 'prs.json': clean });
+        const verify = (sha: string) =>
+            run(
+                'pr-watch.sh',
+                ['--verified', 'dvakatsiienko/frame', '7', sha],
+                dir,
+            );
+        verify('aaaaaaaa');
+        run('pr-watch.sh', ['--once'], dir);
+        verify('bbbbbbbb1234567890');
+        const lines = frameLines(run('pr-watch.sh', ['--once'], dir));
+        expect(lines.filter((l) => l.includes('ready to merge')).length).toBe(
+            1,
+        );
+    });
+
     it('refuses a verified record without a sha', () => {
         const dir = bin({});
         expect(() =>

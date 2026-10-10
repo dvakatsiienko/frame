@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import {
     chmodSync,
+    existsSync,
     mkdirSync,
     mkdtempSync,
     readFileSync,
@@ -11,8 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
 
-// the hook runs as cclio's PreToolUse would run it, against a fixture home: a registry naming cclio and a
-// ccrow whose socket this test owns, a stub gh, and a verified store; the live ccrow is never touched
+// a fixture home with a ccrow socket this test owns, so the live ccrow is never touched
 const HOOK = join(import.meta.dirname, 'decision.ts');
 const servers: Server[] = [];
 afterEach(() => {
@@ -62,6 +62,10 @@ function home({ tab = false } = {}) {
 // a fake ccrow: records every wake line, and answers a merge wake by writing its note file
 function ccrow(socket: string, note?: string) {
     const lines: string[] = [];
+    let heard: (line: string) => void = () => {};
+    const first = new Promise<string>((done) => {
+        heard = done;
+    });
     const server = createServer((conn) => {
         let buffer = '';
         conn.on('data', (chunk) => {
@@ -72,11 +76,16 @@ function ccrow(socket: string, note?: string) {
             lines.push(line);
             const path = / · note (\S+)$/.exec(line)?.[1];
             if (path && note) writeFileSync(path, note);
+            heard(line);
         });
     }).listen(socket);
     servers.push(server);
-    return lines;
+    return { first, lines };
 }
+
+// every wake writes state.json, so its absence after the hook exits is the signal that none fired
+const stateOf = (fixture: ReturnType<typeof home>) =>
+    join(fixture.dir, '.local/state/ccrow/state.json');
 
 function hook(
     fixture: ReturnType<typeof home>,
@@ -121,7 +130,10 @@ function hook(
 describe('a merge in the coordinator session', () => {
     test('wakes ccrow once with the pr, the verified head and the current head', async () => {
         const fixture = home();
-        const lines = ccrow(fixture.socket, 'hold: two commits past the clean');
+        const { lines } = ccrow(
+            fixture.socket,
+            'hold: two commits past the clean',
+        );
         await hook(fixture, 'gh pr merge 82 -R dvakatsiienko/frame --squash');
         expect(
             lines.map((line) =>
@@ -181,47 +193,56 @@ describe('a merge in the coordinator session', () => {
 });
 
 describe('a spawn in the coordinator session', () => {
-    test('wakes ccrow once and waits 0 s', async () => {
+    const spawnLine =
+        'cd ~/frame && claude --bg -n "☕️ 🔧 x" "/x:crew-coder FRM-1"';
+
+    test('wakes ccrow with a spawn line', async () => {
         const fixture = home();
-        const lines = ccrow(fixture.socket);
-        const { ms, out } = await hook(
-            fixture,
-            'cd ~/frame && claude --bg -n "☕️ 🔧 x" "/x:crew-coder FRM-1"',
+        const { first } = ccrow(fixture.socket);
+        await hook(fixture, spawnLine);
+        expect(await first).toMatch(/ · mode decision · .* · spawn$/);
+    });
+
+    test('hands cclio the spawn line to relay to a tab ccrow', async () => {
+        const fixture = home({ tab: true });
+        const { out } = await hook(fixture, spawnLine);
+        expect(out?.hookSpecificOutput.additionalContext).toMatch(
+            /\nccrow wake \S+ · mode decision · .* · spawn$/,
         );
-        await new Promise((done) => setTimeout(done, 100));
-        expect([
-            lines.filter((line) => line.endsWith(' · spawn')).length,
-            out,
-            ms < 3_000,
-        ]).toEqual([1, undefined, true]);
+    });
+
+    test('runs on without waiting for a note', async () => {
+        const fixture = home();
+        ccrow(fixture.socket);
+        const { ms, out } = await hook(fixture, spawnLine, 60_000);
+        expect([out, ms < 10_000]).toEqual([undefined, true]);
     });
 });
 
 describe('a push to main', () => {
     test('wakes nothing', async () => {
         const fixture = home();
-        const lines = ccrow(fixture.socket, 'x');
+        ccrow(fixture.socket, 'x');
         const { out } = await hook(fixture, 'x lane push --apply');
-        await new Promise((done) => setTimeout(done, 100));
-        expect([lines.length, out]).toEqual([0, undefined]);
+        expect([existsSync(stateOf(fixture)), out]).toEqual([false, undefined]);
     });
 });
 
 test('a session other than cclio wakes nothing', async () => {
     const fixture = home();
-    const lines = ccrow(fixture.socket, 'x');
+    ccrow(fixture.socket, 'x');
     writeFileSync(
         join(fixture.dir, '.claude/sessions/1.json'),
         JSON.stringify({ name: '☕️ 🔧 coder', sessionId: 'cclio-1' }),
     );
     await hook(fixture, 'gh pr merge 82');
-    expect(lines.length).toBe(0);
+    expect(existsSync(stateOf(fixture))).toBe(false);
 });
 
 test('a decision wake leaves the Stop wake’s 30-min clock alone', async () => {
     const fixture = home();
     ccrow(fixture.socket, 'none');
-    const state = join(fixture.dir, '.local/state/ccrow/state.json');
+    const state = stateOf(fixture);
     writeFileSync(state, JSON.stringify({ lastWakeAt: 5, offsets: {} }));
     await hook(fixture, 'gh pr merge 82');
     expect(JSON.parse(readFileSync(state, 'utf8')).lastWakeAt).toBe(5);

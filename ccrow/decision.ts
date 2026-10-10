@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import {
+    type LiveSession,
     SESSION_NAME,
     STATE_DIR,
     type Wake,
@@ -23,8 +24,8 @@ import {
     writeState,
 } from './lib.ts';
 
-// cclio's PreToolUse hook on Bash: a merge waits up to 90 s for ccrow's note, a spawn wakes ccrow and runs on.
 // a PreToolUse exit 2 or timeout blocks the merge, so every failure prints context and exits 0
+// cclio's settings give the merge hook 120 s, so this wait stays under it
 const WAIT_MS = Number(process.env.CCROW_DECISION_WAIT_MS ?? 90_000);
 const MARKER_TTL_MS = 10 * 60_000;
 const SEND = `through mcp__ccd_session_mgmt__send_message to the session titled «${SESSION_NAME}»`;
@@ -38,7 +39,7 @@ if (
 ) {
     try {
         if (decision.kind === 'merge')
-            await merge(decision.args, input.transcript_path);
+            await merge(decision.args, input.transcript_path, input.cwd);
         else await spawnWake(input.transcript_path);
     } catch (error) {
         context(
@@ -47,32 +48,38 @@ if (
     }
 }
 
-async function merge(args: string[], transcriptPath: string) {
+async function merge(
+    args: string[],
+    transcriptPath: string,
+    cwd: string | undefined,
+) {
     const pr: Pr = JSON.parse(
-        execFileSync('gh', prViewArgs(args), {
-            cwd: input.cwd,
-            encoding: 'utf8',
-        }),
+        execFileSync('gh', prViewArgs(args), { cwd, encoding: 'utf8' }),
     );
     const repo = /github\.com\/([^/]+\/[^/]+)\/pull\//.exec(pr.url)?.[1] ?? '?';
     const verified = verifiedHead(`${repo}#${pr.number}`);
-    const head = pr.headRefOid.slice(0, 8);
-    const heads = `verified ${verified?.slice(0, 8) ?? 'none'}, head ${head}${verified && verified.slice(0, 8) !== head ? ': unverified delta' : ''}`;
+    const head = shortSha(pr.headRefOid);
+    const isDelta = verified !== undefined && shortSha(verified) !== head;
+    const heads = `verified ${verified ? shortSha(verified) : 'none'}, head ${head}${isDelta ? ': unverified delta' : ''}`;
     const about = `${repo}#${pr.number} (${heads})`;
     const fields = `merge ${repo}#${pr.number} · verified ${verified ?? 'none'} · head ${pr.headRefOid}`;
 
-    const ccrow = liveCcrow();
-    if (typeof ccrow === 'string') return context(`🐦‍⬛ ${about}: ${ccrow}`);
+    const live = liveCcrow();
+    if ('skip' in live) return context(`🐦‍⬛ ${about}: ${live.skip}`);
 
     const marker = join(
         STATE_DIR,
         'decisions',
         `${repo.replace('/', '-')}-${pr.number}-${head}.json`,
     );
-    if (!ccrow.jobId) {
+    if (!live.ccrow.jobId) {
         const asked = readMarker(marker);
         if (!asked) {
-            const wake = await wakeCcrow(transcriptPath, fields, true);
+            const wake = await wakeCcrow({
+                fields,
+                transcriptPath,
+                withNote: true,
+            });
             mkdirSync(join(STATE_DIR, 'decisions'), { recursive: true });
             writeFileSync(
                 marker,
@@ -84,35 +91,51 @@ async function merge(args: string[], transcriptPath: string) {
         }
         return context(`🐦‍⬛ ${about}: ${await noteOf(asked.wakeId)}`);
     }
-    const wake = await wakeCcrow(transcriptPath, fields, true, ccrow);
+    const wake = await wakeCcrow({
+        fields,
+        socket: live.ccrow,
+        transcriptPath,
+        withNote: true,
+    });
     context(`🐦‍⬛ ${about}: ${await noteOf(wake.id)}`);
 }
 
 async function spawnWake(transcriptPath: string) {
-    const ccrow = liveCcrow();
-    if (typeof ccrow === 'string') return;
-    const wake = await wakeCcrow(transcriptPath, 'spawn', false, ccrow);
-    if (!ccrow.jobId)
+    const live = liveCcrow();
+    if ('skip' in live) return;
+    const wake = await wakeCcrow({
+        fields: 'spawn',
+        socket: live.ccrow,
+        transcriptPath,
+        withNote: false,
+    });
+    if (!live.ccrow.jobId)
         context(
             `🐦‍⬛ ccrow wake for this spawn: after this call, send the line below, alone, ${SEND}; do not wait for it, say nothing about it to dima.\n${wake.line}`,
         );
 }
 
-function liveCcrow(): LiveCcrow | string {
-    if (existsSync(join(STATE_DIR, 'paused'))) return 'ccrow is paused';
-    const live = findSessions();
-    if (live.length === 0) return 'ccrow is not running';
-    if (live.length > 1) return 'two ccrows are live, none was woken';
-    return live[0] as LiveCcrow;
+function shortSha(sha: string) {
+    return sha.slice(0, 8);
+}
+
+// oneCcrow exits 2 on two live ccrows, which here would block the merge
+function liveCcrow(): { ccrow: LiveSession } | { skip: string } {
+    if (existsSync(join(STATE_DIR, 'paused')))
+        return { skip: 'ccrow is paused' };
+    const [ccrow, ...more] = findSessions();
+    if (!ccrow) return { skip: 'ccrow is not running' };
+    if (more.length) return { skip: 'two ccrows are live, none was woken' };
+    return { ccrow };
 }
 
 // a decision wake skips the 30-min and step gates and leaves lastWakeAt alone: the Stop cadence is the charter's
-async function wakeCcrow(
-    transcriptPath: string,
-    fields: string,
-    hasNote: boolean,
-    socketCcrow?: LiveCcrow,
-) {
+async function wakeCcrow({
+    fields,
+    socket,
+    transcriptPath,
+    withNote,
+}: WakeInput) {
     const now = new Date();
     const state = readState();
     const lines = readLines(transcriptPath);
@@ -133,10 +156,9 @@ async function wakeCcrow(
         transcriptPath,
         wakeId: wake.id,
     });
-    const note = hasNote ? ` · note ${notePath(wake.id)}` : '';
+    const note = withNote ? ` · note ${notePath(wake.id)}` : '';
     const line = `${wakeLine(wake)} · ${fields}${note}`;
-    if (socketCcrow?.jobId)
-        await sendLine(socketCcrow.messagingSocketPath, line);
+    if (socket?.jobId) await sendLine(socket.messagingSocketPath, line);
     writeState(packed.state);
     spawnHarvest(wake);
     return { ...wake, line };
@@ -207,4 +229,9 @@ interface Marker {
     wakeId: string;
 }
 
-type LiveCcrow = ReturnType<typeof findSessions>[number];
+interface WakeInput {
+    fields: string;
+    socket?: LiveSession;
+    transcriptPath: string;
+    withNote: boolean;
+}
