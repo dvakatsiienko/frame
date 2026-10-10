@@ -86,7 +86,7 @@ const KEPT = [
     "x as coder -- linear api 'query { viewer { id } }'",
     "x as cclio -- linear api 'query { viewer { id } }'",
     'linear issue view FRM-1',
-    'gh api repos/x/y/pulls',
+    'gh api repos/x/y/issues',
 ] as const;
 
 for (const command of KEPT)

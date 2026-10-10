@@ -2,6 +2,7 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context } from './rules/command.ts';
+import { hints } from './rules/hint.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
 import {
@@ -433,6 +434,7 @@ export const register: Register = (on) => {
                       ]
                     : []),
                 ...(drift && result.isError ? [drift] : []),
+                ...hints(command, cwd, ctx),
             ];
             if (!context.length) return result;
             return {

@@ -28,6 +28,12 @@
   - then quoted text, heredoc bodies, a `-s` after `--` and `a=b` run as typed
   - ⬜ given a command `linear api …`, then it runs as `x linear api …` with the one context line `` `linear` → `x linear` ``; `x linear api`, `x as <member> -- linear api`, `gh api`, quoted text and a heredoc body run as typed (FRM-370: 60 raw calls against 15 through x on 10-08, each skipping x's actor, ids and trace)
   - decision: a mod's `tool.call` rewrite runs before the classic PreToolUse hooks, so `zsh-equals-guard.py` sees the quoted word and stays the backstop — probed live 2026-10-08 (FRM-337 comment); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each
+- ⬜ a raw pr read or a raw git add or commit gets a hint toward its x verb (FRM-374)
+  - given a Bash call reads a pr with `gh pr view`, `gh pr checks`, or a `gh api` GET on a `pulls` path
+  - then it runs as typed, and the model gets one context line naming `x gh pr <n>`
+  - given a `git add` or `git commit` whose repo is frame or bytes (the cwd, a `cd`, or `-C`), then it runs with one line naming `x lane commit`; in any other repo no line is added
+  - then `x gh pr`, `x lane commit`, `x as <member> -- gh …`, a `gh api` with a body or a non-GET method, quoted text and a heredoc body get no line
+  - decision: a hint, never a rewrite — `x gh pr` covers only reads, and `x lane commit` adds a format step a raw commit lacks; the git-sweep refusal still stops a commit with no `--` paths
 - ✅ a git add of a missing path is refused before git runs
   - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left
   - then it is refused, the reason names the missing path, and the door is «stage only paths that exist; a deleted file stages with git rm <path>»

@@ -12,6 +12,10 @@ _Avoid_: block, deny (alone), veto
 x-mod-guard fixing a command that has one right spelling (`pnpm -s` → `--silent`, an unquoted `=`-word or `--include=*.ts` quoted) before it runs, with one context line telling the model what ran.
 _Avoid_: autofix, correction
 
+**Hint**:
+One context line x-mod-guard adds to a command that runs as typed, naming the x verb that already covers it (`x gh pr`, `x lane commit`).
+_Avoid_: nudge, tip, warning
+
 **Door**:
 The safe way to do what the refused command meant — `trash`, `git stash -u`, the Edit tool; «ask cclio» only where no safe way exists.
 _Avoid_: fix, alternative, suggestion
