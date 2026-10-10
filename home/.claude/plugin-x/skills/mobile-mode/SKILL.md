@@ -23,4 +23,15 @@ dima is on a small screen with a software keyboard, often lying down. every repl
   - `x or y?`
   - `agree?`
 
-mode ends only on dima's word. a new topic does not end it.
+- **the ⏳ fence comes back** (dima, 2026-10-10: mods draw nothing on mobile, so orbit is invisible
+  there). every reply ends with every open ask, the orbit ones included, renumbered from 1; he
+  answers by number, and each answer resolves its orbit ask too:
+
+      ⏳ waiting on your word:
+
+      ```
+      1. <ask> ➡️ <pick>
+      ```
+
+mode ends only on dima's word. a new topic does not end it; at «back at the mac» the fence goes and
+the asks live in orbit again.
