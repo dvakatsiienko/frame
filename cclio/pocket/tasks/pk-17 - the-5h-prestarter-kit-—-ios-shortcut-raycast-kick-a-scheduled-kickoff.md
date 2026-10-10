@@ -4,7 +4,8 @@ title: 'the 5h prestarter kit — ios shortcut, raycast kick, a scheduled kickof
 status: waiting
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:35'
+updated_date: '2026-10-10 10:53'
+due_date: '2026-10-17'
 labels:
   - m
 dependencies: []

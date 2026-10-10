@@ -2,9 +2,13 @@ project_name: "cclio-pocket"
 default_status: "open"
 statuses: ["open", "claimed", "waiting", "done"]
 labels: ["xs", "s", "m"]
-# types (dima, 2026-10-10): wish = born from dima's ask, his words kept (the ask-guard holds) · task = cclio's own chore
-# research = a question answered from sources · grill = a decision shaped with dima · test-drive = a tool on trial
-# idea = not yet shaped, worth keeping · question = something dima asked, answered in place
+# types (dima, 2026-10-10): wish = born from dima's ask, his words kept (the ask-guard holds)
+# task = cclio's own chore
+# research = a question answered from sources
+# grill = a decision shaped with dima
+# test-drive = a tool on trial
+# idea = not yet shaped, worth keeping
+# question = something dima asked, answered in place
 types: ["task", "research", "grill", "test-drive", "idea", "wish", "question"]
 priorities: ["now", "next", "later"]
 date_format: yyyy-mm-dd
@@ -20,3 +24,5 @@ check_active_branches: false
 active_branch_days: 30
 task_prefix: "pk"
 backlog_directory: "pocket"
+# a red pocket-check after any status move raises a notification (backlog swallows the hook's stdout, probed 2026-10-10)
+onStatusChange: 'node /Users/dima/frame/cclio/script/pocket-check.ts > /dev/null || osascript -e "display notification \"$TASK_ID moved to $NEW_STATUS — run pocket-check\" with title \"🔴 pocket\""'

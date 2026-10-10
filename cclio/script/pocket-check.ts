@@ -42,10 +42,12 @@ export function checkPocket(
             );
         if (text.includes(ZERO_WIDTH_JOINER))
             report('a joined emoji breaks the board view (Backlog.md #949)');
+        const touched = (front.scalars.updated_date ?? '').slice(0, 10);
         if (status === 'done') {
-            report(
-                'done but still listed: `backlog task complete` it this turn',
-            );
+            if (touched < today)
+                report(
+                    `done since ${touched || '?'} and still listed: \`backlog task complete\` it (the halt completes the day's done items)`,
+                );
             continue;
         }
         const parked = PARKED_LINE.test(text);
@@ -88,6 +90,12 @@ export function checkPocket(
         const isExpiring = sizes.some((size) => EXPIRING.includes(size));
         if (isExpiring && status !== 'waiting' && !due)
             report('an xs/s item needs a due date');
+        if (status === 'waiting' && !due)
+            report('waiting without a due date: when does the wait expire?');
+        if (status !== 'waiting' && !parked && touched < dayBefore(today))
+            report(
+                `untouched since ${touched || '?'}: work it, wait it or park it`,
+            );
         if (due && due < today) report(`expired on ${due}`);
         if (priority === 'now') nowCount += 1;
     }
@@ -98,6 +106,12 @@ export function checkPocket(
             `${openCount} open items, the cap is ${OPEN_CAP}: solve, ticket or park before the main lane`,
         );
     return problems;
+}
+
+function dayBefore(day: string): string {
+    const date = new Date(`${day}T12:00:00Z`);
+    date.setUTCDate(date.getUTCDate() - 1);
+    return date.toISOString().slice(0, 10);
 }
 
 export function ticketsOf(text: string): string[] {

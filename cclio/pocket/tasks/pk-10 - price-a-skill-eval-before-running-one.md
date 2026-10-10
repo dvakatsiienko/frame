@@ -1,10 +1,11 @@
 ---
 id: PK-10
-title: 'price a skill eval before running one'
+title: price a skill eval before running one
 status: waiting
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:14'
+updated_date: '2026-10-10 10:53'
+due_date: '2026-10-17'
 labels:
   - s
 dependencies: []

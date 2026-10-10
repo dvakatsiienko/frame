@@ -22,6 +22,7 @@ function task(
         priority: 'next',
         status: 'open',
         type: 'task',
+        updated_date: '2026-10-09 10:00',
         ...fields,
     }).map(([key, value]) =>
         Array.isArray(value)
@@ -53,9 +54,7 @@ describe('checkPocket', () => {
                 today,
                 new Set(['FRM-371']),
             ),
-        ).toEqual([
-            'PK-1: done but still listed: `backlog task complete` it this turn',
-        ]);
+        ).toEqual([]);
     });
 
     test.each([
@@ -91,7 +90,12 @@ describe('checkPocket', () => {
         expect(
             checkPocket(
                 config,
-                [task({ status: 'waiting' }, '**waiting for:** gh pr view 1')],
+                [
+                    task(
+                        { due_date: '2026-10-12', status: 'waiting' },
+                        '**waiting for:** gh pr view 1',
+                    ),
+                ],
                 today,
             ),
         ).toEqual([]);
@@ -116,15 +120,59 @@ describe('checkPocket', () => {
         ]);
     });
 
-    test('a done task still listed goes red for that alone', () => {
+    test('a task done before today and still listed goes red for that alone', () => {
         expect(
             checkPocket(
                 config,
-                [task({ due_date: '2026-10-01', labels: [], status: 'done' })],
+                [
+                    task({
+                        due_date: '2026-10-01',
+                        labels: [],
+                        status: 'done',
+                        updated_date: '2026-10-08 22:00',
+                    }),
+                ],
                 today,
             ),
         ).toEqual([
-            'PK-1: done but still listed: `backlog task complete` it this turn',
+            "PK-1: done since 2026-10-08 and still listed: `backlog task complete` it (the halt completes the day's done items)",
+        ]);
+    });
+
+    test('a task done today stays listed until the halt', () => {
+        expect(
+            checkPocket(config, [task({ labels: [], status: 'done' })], today),
+        ).toEqual([]);
+    });
+
+    test('an open task untouched for more than a day goes red', () => {
+        expect(
+            checkPocket(
+                config,
+                [task({ updated_date: '2026-10-07 09:00' })],
+                today,
+            ),
+        ).toEqual([
+            'PK-1: untouched since 2026-10-07: work it, wait it or park it',
+        ]);
+        expect(
+            checkPocket(
+                config,
+                [task({ updated_date: '2026-10-08 09:00' })],
+                today,
+            ),
+        ).toEqual([]);
+    });
+
+    test('a waiting task needs a due date', () => {
+        expect(
+            checkPocket(
+                config,
+                [task({ status: 'waiting' }, '**waiting for:** gh pr view 1')],
+                today,
+            ),
+        ).toEqual([
+            'PK-1: waiting without a due date: when does the wait expire?',
         ]);
     });
 
@@ -151,7 +199,11 @@ describe('checkPocket', () => {
                 config,
                 [
                     task(
-                        { labels: ['s'], status: 'waiting' },
+                        {
+                            due_date: '2026-10-12',
+                            labels: ['s'],
+                            status: 'waiting',
+                        },
                         '**waiting for:** gh pr view 1',
                     ),
                 ],

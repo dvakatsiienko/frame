@@ -4,7 +4,8 @@ title: spec-pipeline run 3 on Backlog — to-tickets writes SP tasks in .backlog
 status: waiting
 assignee: []
 created_date: '2026-10-09 11:45'
-updated_date: '2026-10-10 07:55'
+updated_date: '2026-10-10 10:53'
+due_date: '2026-10-17'
 labels:
   - m
 dependencies: []

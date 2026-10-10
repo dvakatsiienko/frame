@@ -4,7 +4,8 @@ title: 'sonnet 5.5 as a coder, one quick-lane ticket'
 status: waiting
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-09 11:14'
+updated_date: '2026-10-10 10:53'
+due_date: '2026-10-14'
 labels:
   - s
 dependencies: []
