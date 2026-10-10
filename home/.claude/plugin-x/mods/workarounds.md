@@ -22,6 +22,14 @@ the workaround in place, the undo.
 - undo when fixed: drop the three buttons and the `speak` call; keep the socket's `read` op only if another reader
   uses it
 
+## ticket links that open the app
+
+- want: a click on a ticket id opens it straight in the Linear app, no browser round trip (dima, 2026-10-10, FRM-382)
+- issue: no upstream issue yet — a mod `Link` takes `https:` (or `http://localhost`) only; a `linear://` href draws as
+  plain text, and a `Button` can't sit inside a line of `Text`, so an inline app link has no shape
+- workaround: none; the ids stay https links (a ↗ button beside each id was tried and dropped, dima 22:34)
+- undo when fixed: switch `href` to `linear://x-com/issue/<id>` (the scheme resolves to Linear.app on this mac)
+
 ## the board's first click
 
 - issue: [claude-code#99395](https://github.com/anthropics/claude-code/issues/99395) — on the desktop, the first
