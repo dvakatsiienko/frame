@@ -66,7 +66,7 @@ The context % at which cc compacts: the project's `CLAUDE_AUTOCOMPACT_PCT_OVERRI
 _Avoid_: threshold, limit, autocompact %
 
 **Enhancer**:
-The band's `✨ enhance` `prev` `new`: Haiku rewrites the prompt box once per press; prev and new swap his own text and the enhanced one back without a call.
+The band's `🪄` enhance, `⏪` prev and `⏩` new: Haiku rewrites the prompt box once per press; prev and new swap his own text and the enhanced one back without a call.
 _Avoid_: prompt rewriter, polish
 
 **Mobile mode**:

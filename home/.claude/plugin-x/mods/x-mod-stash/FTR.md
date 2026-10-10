@@ -357,11 +357,12 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 ## the prompt enhancer — enhance | prev | new
 
 - ✅ enhance swaps in a cleaned-up prompt
+  - decision: the buttons are 🪄 ⏪ ⏩, named on hover «enhance prompt», «your text», «enhanced text» (dima, 23:13)
   - makes: the box's text, rewritten; `enhancer.md` beside the hooks is what Haiku reads as its rules
   - given dima typed or dictated a prompt
-  - when he presses `✨ enhance` in the band
+  - when he presses `🪄` in the band
   - then Haiku 5.5 is called once with the rules, every slash command and his wispr dictionary, and the box holds its answer: misheard names fixed, a skill he asks for as its `/name`, ticket ids written `FRM-N`
-  - decision: a static «✨ enhancing…» label while it runs, not a spinner — the brief's spinner loses to the no-repainting rule
+  - decision: a static «🪄…» label while it runs, not a spinner — the brief's spinner loses to the no-repainting rule
 - ✅ a prompt that names a ticket hands the session the ticket
   - given dima sends a prompt naming `FRM-N` or `BYT-N`, typed or enhanced
   - when it reaches the session
@@ -369,7 +370,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: the session needs the ticket, not a link to it — a link in the box was long and never clickable, a painted id was only paint (dima's o14, 23:07)
 - ✅ prev and new swap back with no call
   - given he pressed enhance
-  - when he presses `prev`, then `new`
+  - when he presses `⏪`, then `⏩`
   - then prev puts back his own text exactly as he typed it, and new brings the enhanced text back with any edits he made to it; a second `enhance` makes exactly one more call
   - 📌 on the desktop a fill drops a trailing newline (FRM-382 step 0), so «exactly» holds for any text that does not end in one
 - ✅ his typing wins

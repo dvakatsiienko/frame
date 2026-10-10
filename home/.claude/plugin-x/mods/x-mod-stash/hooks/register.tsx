@@ -2417,52 +2417,49 @@ export const register: Register = (on) => {
         );
         // the readings pack left after the chips, then this session's 🔭 mark, always drawn; the switches hold the right
         // edge (dima's o6 and o7, 22:03)
-        // enhance | prev | new, beside the switches; a static label while the call runs, no spinner (no repainting)
+        // 🪄 ⏪ ⏩, beside the switches, each named on hover in a few words (dima, 23:13); a static label while the call
+        // runs, no spinner (no repainting); each emoji draws two cells, so its card sits two past it
         const isEnhancing = enhancer.status === 'running';
+        const enhanceLabel = isEnhancing ? '🪄…' : '🪄';
         const enhancerJSX = (
             <Box flexDirection='row' flexShrink={0} gap={1} key='enhancer'>
                 {tip(
                     'enh:enhance',
                     isEnhancing
-                        ? 'Haiku is rewriting your prompt; type to keep yours'
-                        : 'swap in a cleaned-up prompt: names, skills, ticket ids',
+                        ? 'enhancing; type to cancel'
+                        : 'enhance prompt',
                     <Button
                         key='enh:enhance'
                         onPress={() => void enhance($)}
                         plain>
-                        {isEnhancing ? '✨ enhancing…' : '✨ enhance'}
+                        {enhanceLabel}
                     </Button>,
-                    // ✨ draws two cells wide
-                    {
-                        right:
-                            [...(isEnhancing ? '✨ enhancing…' : '✨ enhance')]
-                                .length + 2,
-                    },
+                    { right: [...enhanceLabel].length + 2 },
                 )}
                 {enhancer.original !== undefined && !isEnhancing
                     ? tip(
                           'enh:prev',
-                          'bring your own text back',
+                          'your text',
                           <Button
                               key='enh:prev'
                               onPress={() => void enhancePrev($)}
                               plain>
-                              prev
+                              ⏪
                           </Button>,
-                          leftOf('prev', false),
+                          { right: 3 },
                       )
                     : null}
                 {enhancer.latest !== undefined && !isEnhancing
                     ? tip(
                           'enh:new',
-                          'bring the enhanced text back, your edits kept',
+                          'enhanced text',
                           <Button
                               key='enh:new'
                               onPress={() => void enhanceNew($)}
                               plain>
-                              new
+                              ⏩
                           </Button>,
-                          leftOf('new', false),
+                          { right: 3 },
                       )
                     : null}
             </Box>
