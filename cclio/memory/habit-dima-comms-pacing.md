@@ -36,7 +36,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer» copied from the 10-01 lane plan; he read it as a designer being spawned (2026-10-01). a plan for tomorrow stays tomorrow's.
 
-**The next moves live in orbit** (FRM-381, 2026-10-10, retiring the ⏳ fence): every ask goes in through the orbit tool's `add`, the plan's next 5 moves through its `plan` at each turn end, so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why so bare turn?» on a reply whose next moves were thin).
+**The next moves live in orbit** (FRM-381, 2026-10-10, retiring the ⏳ fence): every ask goes in through the orbit tool's `add`, the plan's next 5 moves through its `plan` at each turn end, planned siestas included as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why so bare turn?» on a reply whose next moves were thin).
 
 **Routine asks stay out of orbit** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged): push and commit ride one line per siesta — «at the halt unless you say stop: push frame». a close and a trash stay asked per target, as an orbit ask that leads with ⚠️ and names the target (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
 

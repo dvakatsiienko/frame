@@ -36,4 +36,9 @@ dima, 2026-10-10 14:50, folded. sequential, one at a time, no parallel lanes yet
 
 standing: use the advisor actively, above all during planning; ccrow comes later.
 - step 4 note (dima, 2026-10-10): FRM-360, the frame around interactive screens, joins the nearest cli chunk while he is here, instead of waiting for him to drive x
+- cli chunk 2 (lane gaps) line (dima's 🤩, 2026-10-10): `x linear body --set` refuses an empty or near-empty file — it let cclio blank FRM-382 for a minute
+- cli chunk 1 `verify`, decided (grill round 1, 2026-10-10 20:49): V1 one `x verify` family, `red` (red-proof ported, the bash bin dies in the same commit) + `mutate` · V2 a build or type error reads «broken», never «red» · V3 every mutation runs in a temp copy of the tree with `X_VERIFY=1` set · V5 the runner is picked from the file, `--` overrides · V6 feature lane, one go coder · V4 a mutation is exact anchor → replacement pairs, a pairs file for many, no perl or regex
+- cli chunk 2 lane gaps, decided (grill round 1, 2026-10-10 21:07): L1 three doors — `x lane new` (worktree + seed), `x lane restore <path>`, `x retro write` · L2 `x lane gate <cmd>` keeps the full log in a file, prints status + the last lines · L3 a restore saves the current file to the job tmp first · L4 `x linear body --set` refuses a file under a fifth of the pulled size, the pull prints its path loudly · L5 feature lane, the same go coder right after FRM-383
+- every cli chunk that lands prints the x LOC diff, lines added and removed (dima's curiosity, 2026-10-10): `pnpm x-cli-go:loc` before and after
+- pre-prepped for chunk 3: PK-48 + PK-49 with `.scratch/x-stats-board/spec.md` (14 stories, never built), and FRM-360 (grilled rounds 1–2, mock-first exits)
 <!-- SECTION:DESCRIPTION:END -->

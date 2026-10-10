@@ -19,6 +19,7 @@ should always be parked visible in fleet memory. Probably you'll become a cto, a
   `rules/fleet-hazards.md`, so the resident rules shrink as the guards grow. the halt read checks the
   day's new hazard lines: a Bash-shaped one moves into the `x-mod-guard` mod.
 - **a landed verb clears what it solved, the same turn** (dima, 2026-10-09: «while the cli grows and solves existing problems — clear the problems right away … while scripts migrate to the cli, clear the old irrelevant parts too — don't leave stale tales in place»): at every cli merge, grep for the problem's other homes — the old `package.json` script, a hazard or tooling line, a skill or memory line, a pocket item — and retire each in that turn, or name it in the merge report with its owner
+- **every cli chunk that lands prints the x LOC diff** — lines added and removed, `pnpm x-cli-go:loc` before and after (dima's curiosity, 2026-10-10; baseline 14,956 code lines over 73 files)
 - **owns**: the fleet flow and its numbers. the 💡 cross-branch budget ([[craft-pm]]) rides this hat.
 - the flow spec: who talks to whom is `rules/fleet-flow.md` (global); the path, the lanes and the done test are [[craft-fleet-flow]] (FRM-309, closed 2026-10-06).
 
