@@ -246,3 +246,23 @@ test('a ticket id in the answer stays plain text in the box', async ($, on) => {
     await ui.press({ key: 'enh:enhance' });
     expect([box.text, box.painted]).toEqual(['/x:shape-idea on FRM-381', []]);
 });
+
+test('⏪ and ⏩ stay drawn while 🪄 runs', async ($, on) => {
+    const box: Parameters<typeof world>[1] = { text: 'draft' };
+    const w = world(on, box);
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    let release = () => {};
+    w.answers.push(
+        () =>
+            new Promise((done) => {
+                release = () => done(answered('again'));
+            }),
+    );
+    await ui.press({ key: 'enh:enhance' });
+    const keys = (await ui.findAll({ type: 'Button' })).map((n) => n.key);
+    const filled = w.nextFill();
+    release();
+    await filled;
+    expect(keys).toEqual(expect.arrayContaining(['enh:prev', 'enh:new']));
+});

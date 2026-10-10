@@ -163,3 +163,24 @@ test("a toggle's hover card names what the next press does", async ($, on) => {
         'unfold fleet board',
     ]);
 });
+
+test('a reply with no 🔭 line names its background work in the row', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await $.classic.Stop({
+        background_tasks: [
+            {
+                description: 'critic',
+                id: 't1',
+                status: 'running',
+                type: 'subagent',
+            },
+        ],
+        last_assistant_message: 'spawned the critic.',
+        session_id: SID,
+        stop_hook_active: false,
+    });
+    expect((await ui.find({ text: /^🔭/, type: 'Text' }))?.text).toBe(
+        '🔭 waiting on critic',
+    );
+});

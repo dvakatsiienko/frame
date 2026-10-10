@@ -26,6 +26,11 @@
   - when the band draws
   - then the row's 🔭 mark, after the compaction point and in the theme grey, names the wait and how the answer arrives; with no wait it reads «🔭 not waiting»
   - decision: in the row, always drawn, darker than dim, so dima sees every session's state at a glance (dima's o7, 22:03)
+- ✅ 🔭 names the session's background work when the reply sets no wait
+  - given a reply ends with no 🔭 line while a background shell, monitor, subagent or workflow still runs
+  - when the turn stops
+  - then the row reads «🔭 waiting on <who>», the first task in three words at most, «+n» for the rest; a reply's own 🔭 line wins
+  - decision: short, «waiting on <who>», nothing more (dima's o88, 23:15)
   - decision: the band, not the board — slim enough, and dima wants it visible (dima, 2026-10-10)
 - ✅ a mid-turn reload keeps the turn and what only the band held
   - given a turn is running and dima's away digest shows
@@ -358,6 +363,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 
 - ✅ enhance swaps in a cleaned-up prompt
   - decision: the buttons are 🪄 ⏪ ⏩, named on hover «enhance prompt», «your text», «enhanced text» (dima, 23:13)
+  - decision: ⏪ ⏩ stay drawn while 🪄 runs, so the row never jumps; a press on them waits out the call (dima, 23:17)
   - makes: the box's text, rewritten; `enhancer.md` beside the hooks is what Haiku reads as its rules
   - given dima typed or dictated a prompt
   - when he presses `🪄` in the band

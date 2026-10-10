@@ -14,6 +14,7 @@ import type {
 } from '../types/stash.d.ts';
 import {
     type Door,
+    backgroundWait,
     boldFleetWords,
     bulletDots,
     doorOf,
@@ -1537,7 +1538,9 @@ export const register: Register = (on) => {
                 .set(REPLY + e.session_id, {
                     at: await $.clock.now(),
                     name: await sessionName($),
-                    wait: parseWait(e.last_assistant_message ?? ''),
+                    wait:
+                        parseWait(e.last_assistant_message ?? '') ??
+                        backgroundWait(e.background_tasks),
                 } satisfies Reply)
                 .catch(() => undefined);
         isUserTurn = false;
@@ -2436,7 +2439,7 @@ export const register: Register = (on) => {
                     </Button>,
                     { right: [...enhanceLabel].length + 2 },
                 )}
-                {enhancer.original !== undefined && !isEnhancing
+                {enhancer.original !== undefined
                     ? tip(
                           'enh:prev',
                           'your text',
@@ -2449,7 +2452,7 @@ export const register: Register = (on) => {
                           { right: 3 },
                       )
                     : null}
-                {enhancer.latest !== undefined && !isEnhancing
+                {enhancer.latest !== undefined
                     ? tip(
                           'enh:new',
                           'enhanced text',

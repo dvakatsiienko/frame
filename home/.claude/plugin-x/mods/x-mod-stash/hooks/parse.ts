@@ -124,6 +124,22 @@ export function parseWait(reply: string): string | undefined {
     return waits.length ? waits.join('; ') : undefined;
 }
 
+// with no 🔭 line, the session's own background work is what it waits on: the first task in three words at most,
+// «waiting on <who>», and +n for the rest (dima's o88: short, nothing more)
+export function backgroundWait(
+    tasks: readonly { name?: string; description: string }[] | undefined,
+): string | undefined {
+    const first = tasks?.[0];
+    if (!first) return undefined;
+    const who = (first.name ?? first.description)
+        .trim()
+        .split(/\s+/)
+        .slice(0, 3)
+        .join(' ');
+    const more = tasks.length > 1 ? ` +${tasks.length - 1}` : '';
+    return `waiting on ${who}${more}`;
+}
+
 export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
 
 // the desktop's url handler accepts only these id shapes (Claude.app 2.1.289)

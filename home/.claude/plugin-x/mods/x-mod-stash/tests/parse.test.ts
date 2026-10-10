@@ -1,6 +1,11 @@
 import { expect, test } from 'claude-code/testing';
 
-import { doorOf, isFleetName, parseWait } from '../hooks/parse.ts';
+import {
+    backgroundWait,
+    doorOf,
+    isFleetName,
+    parseWait,
+} from '../hooks/parse.ts';
 
 test('a reply without a 🔭 line waits on nothing', () => {
     expect(parseWait('done.\n\n➡️ next')).toBe(undefined);
@@ -38,3 +43,23 @@ for (const [name, fits] of [
     test(`the fleet name check ${fits ? 'passes' : 'flags'} «${name}»`, () => {
         expect(isFleetName(name)).toBe(fits);
     });
+
+test('no background work waits on nothing', () => {
+    expect(backgroundWait([])).toBe(undefined);
+});
+
+test('one background task reads as waiting on it, three words at most', () => {
+    expect(
+        backgroundWait([{ description: 'critic reads the plan file' }]),
+    ).toBe('waiting on critic reads the');
+});
+
+test('more background tasks add a count', () => {
+    expect(
+        backgroundWait([
+            { description: 'critic', name: undefined },
+            { description: 'tests' },
+            { description: 'build' },
+        ]),
+    ).toBe('waiting on critic +2');
+});
