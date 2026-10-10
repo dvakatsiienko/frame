@@ -69,6 +69,73 @@ describe('pr-watch', () => {
             second.includes('conflict'),
         ]).toEqual([true, false]);
     });
+
+    // the stub gh answers every repo with the same pr; the verified record is frame's
+    const frameLines = (out: string) =>
+        out.split('\n').filter((l) => l.includes('frame#7 '));
+    const clean = [
+        {
+            ...conflicted[0],
+            headRefOid: 'bbbbbbbb1234567890',
+            mergeStateStatus: 'CLEAN',
+            mergeable: 'MERGEABLE',
+        },
+    ];
+
+    it('names a head past the verified one as an unverified delta, never ready', () => {
+        const dir = bin({ 'prs.json': clean });
+        run(
+            'pr-watch.sh',
+            ['--verified', 'dvakatsiienko/frame', '7', 'aaaaaaaa'],
+            dir,
+        );
+        const lines = frameLines(run('pr-watch.sh', ['--once'], dir));
+        expect([
+            lines.filter((l) =>
+                l.includes(
+                    'verified aaaaaaaa, head bbbbbbbb: unverified delta',
+                ),
+            ).length,
+            lines.filter((l) => l.includes('ready')).length,
+        ]).toEqual([1, 0]);
+    });
+
+    it('calls a pr ready when the verified head is the current one', () => {
+        const dir = bin({ 'prs.json': clean });
+        run(
+            'pr-watch.sh',
+            ['--verified', 'dvakatsiienko/frame', '7', 'bbbbbbbb1234567890'],
+            dir,
+        );
+        const lines = frameLines(run('pr-watch.sh', ['--once'], dir));
+        expect(lines.filter((l) => l.includes('ready to merge')).length).toBe(
+            1,
+        );
+    });
+
+    it('calls a delta head ready once the verifier clears it', () => {
+        const dir = bin({ 'prs.json': clean });
+        const verify = (sha: string) =>
+            run(
+                'pr-watch.sh',
+                ['--verified', 'dvakatsiienko/frame', '7', sha],
+                dir,
+            );
+        verify('aaaaaaaa');
+        run('pr-watch.sh', ['--once'], dir);
+        verify('bbbbbbbb1234567890');
+        const lines = frameLines(run('pr-watch.sh', ['--once'], dir));
+        expect(lines.filter((l) => l.includes('ready to merge')).length).toBe(
+            1,
+        );
+    });
+
+    it('refuses a verified record without a sha', () => {
+        const dir = bin({});
+        expect(() =>
+            run('pr-watch.sh', ['--verified', 'dvakatsiienko/frame', '7'], dir),
+        ).toThrow(/usage/);
+    });
 });
 
 describe('deploy-watch', () => {

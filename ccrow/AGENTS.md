@@ -27,6 +27,16 @@ skill reaches it as text. a contract change goes there, never here.
   to log the note. live from day 1 (dima, 2026-10-06; the 3 silent days were cut after day 1 proved the notes worth reading live); a silent phase would have the other arm answer the same
   packet as a `claude -p` one-shot. live days alternate the arm (day 4 opus, day 5 fable, …);
   `wake` prints the restart line when the running arm is the wrong one, it never restarts ccrow.
+- `pnpm ccrow:decision` — cclio's `PreToolUse` hook on Bash, filtered by `if` to `gh pr merge*` and `claude *`
+  (FRM-380). a merge or a `claude --bg` spawn gets a `mode decision` wake outside the gates (no 30-min gap, no step
+  count, `lastWakeAt` untouched); a push to main gets none. the merge line carries `merge <repo>#<n> · verified · head ·
+  note <path>`, the verified sha read from `~/.claude/shelf/pr-verified.json` (the verifier writes it through
+  `pr-watch.sh --verified`). a `--bg` ccrow gets the line on its socket and the merge waits ≤ 90 s for the note file;
+  a tab gets none, so the first merge is denied with the line for cclio to `send_message`, and a rerun within 10 min
+  (`decisions/<repo>-<n>-<head>.json`) waits for the note instead. a spawn never waits. every failure exits 0 with
+  a context line: a PreToolUse exit 2 or timeout would block the merge.
+- every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
+  transcript; ccrow reads its tail only then.
 - `pnpm ccrow:plan-critique <plan file>` — the plan review at `x:shape-idea` step 4 (FRM-336, the
   FRM-287 template). never ccrow's own session, which has read
   cclio's thread: two fresh `claude -p` one-shots on the day's arm (the `ccrow:keep-cache-hot` pick),
