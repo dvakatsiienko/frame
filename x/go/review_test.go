@@ -189,7 +189,7 @@ func runPreflight(t *testing.T, body string, id string) (map[string]any, asRun) 
 }
 
 func TestPreflightPassesACleanTicket(t *testing.T) {
-	body := "## want\n\nthe «redesign» word quoted is a name, not a plan\n\n## exit\n\n1. `x lane brand-new <pr>` prints ok\n2. post-merge: dima reads the board\n"
+	body := "## want\n\nthe «redesign» word quoted is a name, not a plan\n\n## exit\n\n1. `x lane brand-new <pr>` (new) prints ok\n2. post-merge: dima reads the board\n"
 
 	_, got := runPreflight(t, body, "FRM-1")
 
