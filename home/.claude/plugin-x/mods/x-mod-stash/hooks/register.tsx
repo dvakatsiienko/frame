@@ -1500,6 +1500,18 @@ export const register: Register = (on) => {
                 key={`orbit:ask:${a.id}`}
                 marginTop={i > 0 ? 1 : 0}>
                 <Box flexDirection='row' gap={1}>
+                    {/* an ask cclio answered this turn leads with 👀 until the turn ends (dima, 20:34) */}
+                    {a.isResolved
+                        ? hoverTip(
+                              ui,
+                              `seen:${a.id}`,
+                              'seen',
+                              <Text>👀</Text>,
+                              {
+                                  left: 3,
+                              },
+                          )
+                        : null}
                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
                         {/* the id and the pick bold, so the proposal stands out (dima, 20:30) */}
                         <Text>
@@ -1509,7 +1521,6 @@ export const register: Register = (on) => {
                         </Text>
                     </Box>
                     {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
-                    {a.isResolved ? <Text dimColor>answered</Text> : null}
                 </Box>
                 {/* the buttons lead, the note follows them (dima, 20:19) */}
                 <Box alignItems='center' flexDirection='row' gap={1}>

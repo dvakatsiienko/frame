@@ -330,7 +330,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given cclio answered a marked ask
   - when the turn ends
   - then the ask leaves orbit; one cclio has a follow-up on keeps its place and id, with new text and a «changed» mark
-  - decision: an answered ask stays in orbit, marked «answered», until its turn ends, so dima sees it go
+  - decision: an answered ask stays in orbit until its turn ends, led by 👀 whose card reads «seen», so dima sees it go (dima, 20:34: an icon, not the word «answered»)
 - ✅ every prompt reminds the session of orbit
   - given orbit holds open asks or a plan
   - when any prompt goes to the session

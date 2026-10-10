@@ -465,3 +465,14 @@ test("an ask's pick is drawn bold", async ($, on) => {
         )?.props.bold,
     ).toBe(true);
 });
+
+test('an ask answered this turn leads with 👀 and a «seen» card until the turn ends', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'go');
+    await orbit($, { ids: ['o1'], op: 'resolve' });
+    const row = await ui.find({ key: 'orbit:ask:o1', type: 'Box' });
+    expect(row?.text?.startsWith('👀seen')).toBe(true);
+});
