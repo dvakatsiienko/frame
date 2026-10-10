@@ -21,18 +21,18 @@ grooms root `CLAUDE.md`, `rules/`, `~/projects/AGENTS.md`, project `AGENTS.md`, 
 
 dima's, 2026-08-27:
 
-> «i want fleet memory system to be pristine. every bit of memory should live in its place
-> vertically. the memory must not be a poem, nor the bytecode. as slim as possible to do its
-> job, natural for me to sometimes peek, trim, tweak. primarily maintained by fleet. no
-> useless, stale memories. i am the owner overall, carrier of the ideas. skill-wise: same.»
+> «i want the fleet memory system to be pristine. every bit of memory should live in its place
+> vertically. the memory must not be a poem, nor bytecode. as slim as possible to do its
+> job, natural for me to sometimes peek, trim, tweak. primarily maintained by the fleet. no
+> useless, stale memories. i am the owner overall, the carrier of the ideas. skill-wise: same.»
 
 the checkup, his idea in run #1's plan (2026-08), so he never prints a checkup plan again:
 
 > «what do you think about creating a major cc system checkup based on this run? enable tracing at
-> the start (fresh sess), and in parallel to all other activities write / evergreenify the checkup
-> plan — and fix-improve it in place while we go and open new discoveries?»
+> the start (fresh sess), and in parallel to all other activities, write / evergreenify the checkup
+> plan — and fix-improve it in place as we go and make new discoveries?»
 
-dima, run #1 (2026-08): **«i do not need 90% of it, it only overwhelms me. i tell you when i want it expanded.»** his spec for those files, verbatim and complete:
+dima, run #1 (2026-08): **«i don't need 90% of it, it only overwhelms me. i'll tell you when i want it expanded.»** his spec for those files, verbatim and complete:
 
 > info that is useful to **you**, in a format appropriate to **you**
 
@@ -40,7 +40,7 @@ the enforceable ruleset: [DOT-127](https://linear.app/x-com/issue/DOT-127).
 
 his questions, run #1 (2026-08-23 → 08-26), each answered in `authoring-memory.md` — every run re-asks whether the answer still holds:
 
-> «what is the current target best practice of keeping the ctx size for an llm to perform well? previously it was ~120k tok — a number after which performance starts to lower. what is the number now? which number to hunt? your current boot ctx is 115k, and after first boot it becomes ~200k. 120k target is not realistic. **what do we do wrong?**»
+> «what's the current best-practice target for the ctx size an llm needs to perform well? previously it was ~120k tok — the number after which performance starts to drop. what's the number now? which number to hunt? your current boot ctx is 115k, and after the first boot it becomes ~200k. a 120k target is not realistic. **what do we do wrong?**»
 
 > «how do you teach agents to properly write and maintain skills and memory?» · «who is better at writing skills and mems — a human or an agent?» · «writing-for-agents most likely is only good for skills»
 
@@ -59,7 +59,7 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
   issue
   suggestion how to solve
   ```
-- **a fold is scoped to what was said, not to what is actionable now**: run #1's plan lost a block marked «to be done after setting up you as coordinator» to a summary whose agent-written ordering read finished. a future-dated block is written in full, marked deferred.
+- **a fold is scoped to what was said, not to what is actionable now**: run #1's plan lost a block marked «to be done after setting you up as coordinator» to a summary whose agent-written ordering read finished. a future-dated block is written in full, marked deferred.
 - ⭐ **a file being rethought gets two drafts, dima picks** (`authoring-memory.md` § the method).
 - 🚫 **no llm-judge memory audit** (arXiv 2601.11783's numbers: `authoring-memory.md` § upkeep; Offscript, CHIIR 2026: 84.6 % flagged, 22.2 % material after human review). its advice: «delegate all deterministically verifiable logic to code, reserve llms for semantic evaluation.» step 2 is code, step 12 human.
 - **drift latency is under 24 hours**: `rules/dispatch.md` was deleted one morning and two docs described it in the present tense that afternoon — the mechanical pass runs on commit, never on a calendar.
@@ -96,7 +96,7 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
    - a memory that is really a skill is named on sight, or a second round follows; effort ≈ 60 % mems / 40 % skills: mems are the mess, skills «+- ok»
    - cclio is the pm lead, everyone else a senior contributor, not a junior: ticket links reach everyone, linear milestones only cclio; lean slightly global
    - `~/projects/AGENTS.md` is a deliberate stub ([DOT-195](https://linear.app/x-com/issue/DOT-195)), a bucket of its own
-   - open, dima's: the `guide-*` split — «basically the info at those files is what ccli code do when codifying. this was my intention when i asked ccli opus to create these at a skill lvl. but i was looking far, with idea of modularization — pick right tool at right time. reality is when you do code, then it is 90% typescript and/or react, and both are code. 🤔» his counter: skills cost nothing at rest; his call: observe, move as we go
+   - open, dima's: the `guide-*` split — «basically the info in those files is what ccli code does when codifying. that was my intention when i asked ccli opus to create these at a skill lvl. but i was looking far ahead, with the idea of modularization — pick the right tool at the right time. the reality is, when you code, it's 90% typescript and/or react, and both are code. 🤔» his counter: skills cost nothing at rest; his call: observe, move as we go
    - open, barrels: a hand-written barrel can lie (the rot that killed membank v1); generating it from frontmatter waits for the bucketing or bakes today's layout in, and fixes no hook. it defers nothing (3,333 tokens, run #1) — folding the leaves removes it, dima's call. `rules/` has no index; is cclio's index-authoritative model (a leaf loads only if imported) the fleet-wide one?
    - done: every item placed or verdicted
 8. **deferral** — `paths:` is the only lever that keeps a file out of context (`authoring-memory.md`: the `Read`-tool trigger, the `globs:` no-op). (template)
@@ -120,7 +120,7 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 11. **the leaf review** — one item per round via `x:step-by-step`, «next» advances: placement first, prose second · every leaf a rewrite candidate (opus-era wording) · a rename is a graph operation: grep before and after (barrel, wikilinks, docs, `plugin-x-cw` symlinks), re-probe the barrel · commit per cluster with pathspecs once dima read the diff. done: every leaf through a round. (open)
 12. **the human gate** — pruning is never delegated: an agent files the candidate with evidence, dima decides that a file exists and that it stops. deletes go out as the digest of the groom card (`authoring-memory.md` § the groom card). done: every candidate verdicted. (open)
 13. **self-correction** — a flaw seen twice becomes a check, a script or a hook, never a third prose line. a check firing often is a root to fix, not a gate — dima, 2026-10-02: «if it triggers too much on a repeating answer, it essentially forces you to do additional turns … if a certain assert repeats a lot, then it needs to be fixed instead». `pnpm reply-check:report`: fix a top rule's cause, block only a rare costly one, keep the positive target («every id is a link») and cut enforcement prose («the mechanical scan before sending») once the log shows it holds. done: every repeat has a mechanism or a ticket. (open)
-14. **the cw field** — only when a `<!-- sync: cw -->` section (root `CLAUDE.md`, `rules/*.md`) changed; cw gets cc memory only by dima's paste (the bridge recipe retired 2026-10-02: «it is manual now and no longer automated»). his want: «cc is the source of truth, generally. cw memory is a derived view, never the origin.» · «i dont want a mess there» · «memory must be pretty» · «no poems!». `pnpm memory-sync:map` → `pnpm memory-sync:copy` → he pastes into settings › account › profile › instructions → a new cw thread runs `/x-cw:memory-update check`. done: check passed, or «no synced section changed». (script)
+14. **the cw field** — only when a `<!-- sync: cw -->` section (root `CLAUDE.md`, `rules/*.md`) changed; cw gets cc memory only by dima's paste (the bridge recipe retired 2026-10-02: «it is manual now and no longer automated»). his want: «cc is the source of truth, generally. cw memory is a derived view, never the origin.» · «i don't want a mess there» · «memory must be pretty» · «no poems!». `pnpm memory-sync:map` → `pnpm memory-sync:copy` → he pastes into settings › account › profile › instructions → a new cw thread runs `/x-cw:memory-update check`. done: check passed, or «no synced section changed». (script)
 15. **log** today's line in `log.md`. done: the line is there.
 
 ## vectors

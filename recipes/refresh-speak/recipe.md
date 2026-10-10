@@ -61,7 +61,7 @@ dima's, 2026-09-29:
 5. latency — streaming APIs, first-byte numbers, websocket vs http, warm-connection tricks
 6. Ukrainian and Russian — which engines read them well now
 7. macOS — new system voices, AVSpeech / SSML changes, privacy-pane or hotkey changes in the new OS
-8. following along — how read-aloud tools highlight the spoken word, inside other apps (accessibility text ranges, overlays) and in their own ui; word timings from engines or forced alignment; where each breaks (electron, web, pdf) (dima, 2026-09-30: «I often follow a text that is read aloud and read myself in parallel»)
+8. following along — how read-aloud tools highlight the spoken word, inside other apps (accessibility text ranges, overlays) and in their own ui; word timings from engines or forced alignment; where each breaks (electron, web, pdf) (dima, 2026-09-30: «I often follow a text that is read aloud while reading it myself in parallel»)
 
 ### analysis
 

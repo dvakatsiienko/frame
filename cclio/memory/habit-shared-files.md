@@ -36,7 +36,7 @@ line is in front of cclio every boot. The stashes stay even after the shift flow
 
 ❗ no data loss, the pocket above all: a stash line moves or dies only on his word.
 
-**no copies** (dima, 2026-09-27: «make sure that these stashes will not accumulate redundant stuff») — most
+**no copies** (dima, 2026-09-27: «make sure these stashes don't accumulate redundant stuff») — most
 of the 09-27 exhaust was copies: 11 of 17 flowlog lines and 5 of 14 reminders already lived in a ticket.
 before a stash line is written, grep the other stashes and linear for it; a line dies the moment a ticket,
 a rule or another stash carries it. a watch that a parallel monitor runs keeps only its action in

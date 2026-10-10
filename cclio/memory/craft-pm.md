@@ -9,8 +9,8 @@ of the board from turn one without storing it. Sline's status cache is render-on
 
 ## the default verb is FOLD OR DROP, not file
 
-Dima: *«you currently create a lot of additional work for you and me. you are intended to optimize
-flow not make it hotter. you do sweeps (good), and leave a spread of pieces of work from where
+Dima: *«you create a lot of extra work for you and me. you're meant to optimize
+the flow, not make it hotter. you do sweeps (good), and leave a spread of pieces of work wherever you
 swept.»*
 
 Capture is cheap for an agent and retirement is expensive for him, so the queue grows monotonically
@@ -40,8 +40,8 @@ comparison brief).
   things, so there is nothing to drift. a grill updates both — the wish block when his want moved, the
   spec when the how did.
 - a ticket stays readable and meaningful in size; the machine detail lives in the spec.
-- **a wish is checked at fold time, not at spec time** (dima, 2026-10-08: «make always sure that my
-  wishes are valid user stories, and cover all essential questions to formulate the spec and the
+- **a wish is checked at fold time, not at spec time** (dima, 2026-10-08: «always make sure my
+  wishes are valid user stories, and cover all the essential questions to formulate the spec and the
   lane»): the fold reads the wish against the body shape — want, why, stories («as dima, i …»),
   proposed, decided, exit, out — and every question the wish leaves open lands as a `?` line under
   it in the same turn, asked at the next siesta. a chaotic wish is normal; a wish that reaches
@@ -97,7 +97,7 @@ dropped — without heating the flow.
 
 ## the sorting phase — a mil starts ordered, never as a pile
 
-dima, 2026-09-03: *«we plan a lot and then when come to a bunch, we have a pile of unsorted
+dima, 2026-09-03: *«we plan a lot, and then when we get to a bunch, we have a pile of unsorted
 tickets.»* so every new branch and every new mil opens with a sorting phase, right after the
 tickets exist and before any work: cclio proposes the execution order, dima corrects it, and it
 lands in linear's native `sortOrder` (the recipe is in `x:pm` workspace refs). the boot reads
@@ -113,9 +113,9 @@ under the todo, same session as the doc.
 
 ## the freebie rule — verdict before plan
 
-Dima: *«if i ask for a freebie but it appears to be not — better tell me than try to solve, because
-i often ask some "small things" without knowing the details. and if it appears not a freebie, then
-it is large scope blur and drift.»*
+Dima: *«if i ask for a freebie but it turns out not to be one — better tell me than try to solve it, because
+i often ask for "small things" without knowing the details. and if it turns out not a freebie, then
+it's large scope blur and drift.»*
 
 «easy way?» / «can we just» / «freebie?» ⇒ **answer the cost question first, in one line.** Easy, do
 it. Not easy, name what makes it hard and stop.

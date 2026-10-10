@@ -1,7 +1,7 @@
 # test drive — a tool on trial is used as often as possible, measured every time
 
-dima, 2026-09-28: «encourage yourself to proactively use all vetted tools and to ensure the widest
-vetted tools exploration … explore strong and weak sides, upfront.» sharpened 2026-09-29: «vet means
+dima, 2026-09-28: «encourage yourself to proactively use all vetted tools and ensure the widest
+exploration of vetted tools … explore strong and weak sides, upfront.» sharpened 2026-09-29: «vet means
 - try to use it as much as possible, not just «park» there and wait until vet period ends … each vet
 is measured as much as possible, to have numbers.»
 

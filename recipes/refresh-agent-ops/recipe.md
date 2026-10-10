@@ -15,7 +15,7 @@ keeps the fleet's upkeep measured: which recurring checks pay, and what our tool
 
 ## the want
 
-«i spotted, that coder (especially) and verifier tool call chains are sometimes very long … i want to know how optimal their tool call chains» · «what i missed? i printed only thoughts/ideas but i clearly can miss something bigger» (2026-10-07)
+«i spotted that coder (especially) and verifier tool call chains are sometimes very long … i want to know how optimal their tool call chains are» · «what did i miss? i printed only thoughts/ideas, but i can clearly miss something bigger» (2026-10-07)
 
 ## the run
 

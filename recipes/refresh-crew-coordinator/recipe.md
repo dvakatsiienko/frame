@@ -26,25 +26,25 @@ coordination and the crew (dima's, 2026-10-07):
 > I want this recipe to research the coordination in framework overall: how a
 > coordinator agent should work in general and how to coordinate efficiently. Which types of essential crew members do we miss to have a full crew est?»
 >
-> «The landscape shifts all the time: models improve, so as their capabilities. The base
-> crew shape can drift too with time because new crew members or roles may appear, or existing crew
+> «The landscape shifts all the time: models improve, and so do their capabilities. The base
+> crew shape can drift over time too, because new crew members or roles may appear, or existing crew
 > roles can become obsolete.»
 >
-> «search for efficient ticket management tools knowledge, coordination, pm strategies.
+> «search for knowledge on efficient ticket management tools, coordination, pm strategies.
 > how to create efficient agentic workflows?»
 
 spawn mechanics (dima's, 2026-10-07):
 
 > «i want you, the coordinator, to coordinate spawns (subagents, --bg sessions) efficiently and precisely.
-> you should be keen to pick correct delegation method: --bg session, subagent or a fork. and pick
-> deliberately — a memory-aware subagent, a bare, or subagent with `omitClaudeMd: true` flag. when it is better to pick bares?
-> you are the spawns owner — i want you to take care of entire spawns lifecycle, starting from
-> spawn initialization, ending with graceful spawn winddown, including collecting post-mortem retro
+> you should be keen to pick the correct delegation method: a --bg session, a subagent or a fork. and pick
+> deliberately — a memory-aware subagent, a bare, or a subagent with the `omitClaudeMd: true` flag. when is it better to pick bares?
+> you are the spawns owner — i want you to take care of the entire spawn lifecycle, starting from
+> spawn initialization, ending with a graceful spawn wind-down, including collecting post-mortem retro
 > feedback to improve the comms, flow, contract, and yourself.»
 
 model picks (dima's, 2026-08-27):
 
-> «i want you and myself to be aware of right models picks. know strengths and weaknesses of each. best types of work each model is best at. the outcome lives at models.md. the data is for me, and for you as a coordinator to pick the right model.»
+> «i want you and me to be aware of the right model picks. know the strengths and weaknesses of each, and the types of work each model is best at. the outcome lives in models.md. the data is for me, and for you as a coordinator to pick the right model.»
 
 the cards against the ladder (dima's, 2026-10-08):
 
@@ -52,7 +52,7 @@ the cards against the ladder (dima's, 2026-10-08):
 
 the tracker and the CTO hat (dima's, standing):
 > «optimize the fleet flow.»
-> «i want you to identify ineficiencies and resolve problems from the root.»
+> «i want you to identify inefficiencies and resolve problems from the root.»
 
 ## the run
 

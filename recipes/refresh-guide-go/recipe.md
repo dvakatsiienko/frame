@@ -19,9 +19,9 @@ keeps `x:guide-go` and the cli's go stack current.
 
 dima's, 2026-10-06:
 
-> «i like go with bubbletea the most … cli must look pretty and look prod grade. and use all bubbletea components when applicable — spinners, loaders, huh and other components … it should be agents and user friendly»
+> «i like go with bubbletea the most … the cli must look pretty and prod grade. and use all bubbletea components when applicable — spinners, loaders, huh and other components … it should be agent- and user-friendly»
 
-> «would it be useful to create a «charmbracelet toolkit» reference for cli coders?» · «where i could peek into all tools installed? e.g. bubbletea, harmonica? … with links to quickly navigate to related gh page?» · «the standard best practices, powerusage recipes, do's don'ts etc» (dima, 2026-10-07)
+> «would it be useful to create a «charmbracelet toolkit» reference for cli coders?» · «where could i peek into all the installed tools? e.g. bubbletea, harmonica? … with links to quickly navigate to the related gh page?» · «the standard best practices, power-usage recipes, do's and don'ts etc» (dima, 2026-10-07)
 
 ## the run
 

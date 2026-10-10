@@ -4,8 +4,8 @@ Date every new entry in its heading (`· yyyy-mm-dd`); entries without a date pr
 Cap ~12: at the cap, cclio drops the oldest story itself, no ask (Dima, 2026-09-12).
 
 ## why he wants the stories kept
-His reason, in his words: «because of even moments like now — realizing that i do wrong thing but
-my lazy tech inside only realized imprecise move.» He often *feels* a move is off before he can
+His reason, in his words: «because of moments like now — realizing that i'm doing the wrong thing, but
+my lazy tech inside only realized it was an imprecise move.» He often *feels* a move is off before he can
 name why. The stories are how the felt sense gets recovered later as a reason. So when he makes an
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
@@ -17,13 +17,13 @@ the admin, both daily), the friction (a forgotten selection turns pause into «r
 goes (nothing — the providers are his playground). each answer moved the design: ⇧F4 pause came out of
 one question, the pill's volume and speed popovers out of another, word highlight turned from a nice-to-have
 into «I follow the text while it reads». his note after it: «a grilling session before design has incredible
-value … if we would not grill but just start a design randomly» — the day shape-idea became an invariant. → `x:shape-idea`, `fleet-identity`
+value … if we didn't grill and just started a design randomly» — the day shape-idea became an invariant. → `x:shape-idea`, `fleet-identity`
 
 ## «why not here?» · 2026-09-30
 the atelier lens ring was built from the comp and clean in the verifier's eyes. on his wide screen the art sat
 letterboxed, and he circled the empty dark band above it: «why not here?». two rounds moved the pills toward the band,
 and each still felt off to him; then he named it — sticking them to the art's edge «reads off … they break out of a
-horizontal rhythm compared to other pills». the comp had drawn only one window shape, where the art fills the screen,
+horizontal rhythm compared to the other pills». the comp had drawn only one window shape, where the art fills the screen,
 so nobody had designed the letterbox case; his eye was the spec. → «The One Frame Rule» in atelier's `DESIGN.md`, the
 window-shapes question in `crew-designer-interview`
 
@@ -38,7 +38,7 @@ the control socket. his felt sense read the claim's timeframe before I did. → 
 ## «today was chaotic for me» · 2026-10-01
 three designers drew speak at full fidelity, 25 boards each, and he reviewed all of it by hopping across canvases, hunting the spots my messages named while the boards carried three naming schemes. late in the evening he named the feeling first, «designing is a bit chaotic … because of this rough back-and-forth with scattered places», and only then the cause: «initially we planned a design flow like this, split into four phases … that phase idea got buried somewhere». the first spread had asked layout, colour, copy and states in one go, so every comment was a polish comment on everything; and the canvas lets only a human open a thread, so every question came back to him as words to search for. his felt sense read the process before the cost did ($63 on one fable session). → `x:crew-designer` four phases, ballot ([FRM-293](https://linear.app/x-com/issue/FRM-293)), `docs/research/design-review-comms.md`
 
-## «why you were waiting for already completed and green pr?» · 2026-10-02
+## «why were you waiting on an already completed, green pr?» · 2026-10-02
 he had said «merge once ready», and bytes #120 sat in his browser with «All checks have passed» and a live squash button while I told him the merge waited on the ci review. my pr watch printed «green, ready to merge» once per head, and it had fired on the final head before the required `review:clean` check even existed; when the review went green on the same head, the watch stayed silent. he sent a screenshot, «looks clean to me», then asked why I was waiting at all. his eye on the page read the state my watch had stopped reading. → `pr-watch.sh` keys on github's merge state `CLEAN`, and a green-but-blocked head prints once
 
 ## «why does biome so often prevent you from committing?» · 2026-10-04
@@ -61,4 +61,4 @@ he was grooming `refresh-craft-spawning`, the recipe that keeps my spawning true
 
 
 ## «you are either rushing, or choosing the wrong shape» · 2026-10-09
-past midnight he asked me to grill the next cli chunks, and I packed seven decisions into the ⏳ block as one wall of numbered lines, each with my pick. he sent a screenshot with a red box around it: «what is this? … is that a grill?» then, before I had fixed it: «why do not use grill shape from a skill?» matt's grilling skill was in the list the whole time, and its round shape (one question, its context, a pick) exists so he can steer each line. he added the shape he wanted from then on: a title naming the ticket or lane, the rounds, a pre-filled answer fence he only steers. an hour later he named the next gap himself: «a grill assumes exit lines too», so a chunk is sealed, not grilled. his eye read the shape before the cost showed. → `cclio:shape-lane`, «rushing, or the wrong shape»
+past midnight he asked me to grill the next cli chunks, and I packed seven decisions into the ⏳ block as one wall of numbered lines, each with my pick. he sent a screenshot with a red box around it: «what is this? … is that a grill?» then, before I had fixed it: «why not use the grill shape from the skill?» matt's grilling skill was in the list the whole time, and its round shape (one question, its context, a pick) exists so he can steer each line. he added the shape he wanted from then on: a title naming the ticket or lane, the rounds, a pre-filled answer fence he only steers. an hour later he named the next gap himself: «a grill assumes exit lines too», so a chunk is sealed, not grilled. his eye read the shape before the cost showed. → `cclio:shape-lane`, «rushing, or the wrong shape»

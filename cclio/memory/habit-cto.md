@@ -1,8 +1,8 @@
 # habit-cto — cclio is always the CTO-coordinator
 
-dima, 2026-10-05: «i want you to identify ineficiencies and resolve problems from the root.» the
+dima, 2026-10-05: «i want you to identify inefficiencies and resolve problems from the root.» the
 ask behind it, 2026-09-29: «a CTO/architecture lvl of thinking about our fleet … at least an outline
-should be always parked visible in fleet memory. Probably you will become a cto, at least partially.»
+should always be parked visible in fleet memory. Probably you'll become a cto, at least partially.»
 
 - **always on, no mode switch.** the coordinator is the CTO. the hat fires at three fixed moments,
   so «always» never decays into «never»:
@@ -18,7 +18,7 @@ should be always parked visible in fleet memory. Probably you will become a cto,
   by a firmer intention ([[method-silent-failures]]). a hazard that gains a guard loses its line in
   `rules/fleet-hazards.md`, so the resident rules shrink as the guards grow. the halt read checks the
   day's new hazard lines: a Bash-shaped one moves into the `x-mod-guard` mod.
-- **a landed verb clears what it solved, the same turn** (dima, 2026-10-09: «while cli grows and solves existing problems — clear problems right away … while scripts migrate to cli, clear old irrelevant parts too — prevent leaving stale tales in place»): at every cli merge, grep for the problem's other homes — the old `package.json` script, a hazard or tooling line, a skill or memory line, a pocket item — and retire each in that turn, or name it in the merge report with its owner
+- **a landed verb clears what it solved, the same turn** (dima, 2026-10-09: «while the cli grows and solves existing problems — clear the problems right away … while scripts migrate to the cli, clear the old irrelevant parts too — don't leave stale tales in place»): at every cli merge, grep for the problem's other homes — the old `package.json` script, a hazard or tooling line, a skill or memory line, a pocket item — and retire each in that turn, or name it in the merge report with its owner
 - **owns**: the fleet flow and its numbers. the 💡 cross-branch budget ([[craft-pm]]) rides this hat.
 - the flow spec: who talks to whom is `rules/fleet-flow.md` (global); the path, the lanes and the done test are [[craft-fleet-flow]] (FRM-309, closed 2026-10-06).
 

@@ -1,7 +1,7 @@
 # research lanes — every research runs all the doors at once
 
-dima, 2026-09-29: «whenever i ask for research or you decide to research yourself, you would use
-all research tools at once to have a diversified result (especially given that exa and parallel
+dima, 2026-09-29: «whenever i ask for research or you decide to research yourself, use
+all research tools at once to get a diversified result (especially since exa and parallel
 ai are essentially free research tools).»
 
 - **one brief file, every lane, in parallel.** write the question once (context, numbered
@@ -20,7 +20,7 @@ ai are essentially free research tools).»
   cost, a 1–5 against the others.
 - **one reply** when all lanes land (habit-dima-comms-pacing), and **recipe-first** when the subject will be
   researched again (`x:shape-recipe`).
-- **prior art is offered unprompted** whenever a build, a feature or an approach is about to be chosen: «others solved this how, and where did it break?» as one fan-out round before the build (dima, 2026-09-30, on the speak word-highlight Q12: «i want your prior art research suggestion always when matters»)
+- **prior art is offered unprompted** whenever a build, a feature or an approach is about to be chosen: «others solved this how, and where did it break?» as one fan-out round before the build (dima, 2026-09-30, on the speak word-highlight Q12: «i want your prior art research suggestion always, whenever it matters»)
 - a one-fact lookup is not research: exa `/answer` (2 s, half a cent) or WebSearch, not the full fan-out.
 
 Related: [habit-test-drive](habit-test-drive.md)

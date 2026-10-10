@@ -10,4 +10,4 @@ simplify his activity or improve how it feels to use you.
 
 📌 The incident behind this: a surface spent three days spawning agents to edit `dotfiles` while
 holding a tool that could mount the directory and edit it directly. Nobody said so. Dima's words:
-*«you had arms cut off for 3 days.»*
+*«you had your arms cut off for 3 days.»*
