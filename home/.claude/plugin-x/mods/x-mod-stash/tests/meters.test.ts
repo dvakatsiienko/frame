@@ -326,3 +326,28 @@ test('the desktop gives the bars air above, between and below them', async ($, o
     ];
     expect(air.every((n) => typeof n === 'number' && n > 0)).toBe(true);
 });
+
+// the harness cannot hover; it reads the hidden card's words, and `pnpm mods:live … hover` checks the reveal
+const cardTexts = async ($: Engine) =>
+    (await (await band($)).findAll({ type: 'Text' }))
+        .map((t) => t.text ?? '')
+        .filter((t) => t.includes('┃'));
+
+test("the 5h bar's card names its tick as the on-pace mark", async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    expect(await cardTexts($)).toContain(
+        'used 39% · ┃ on pace at 40% · 1% spare',
+    );
+});
+
+test("the ctx bar's card names its tick as the compaction point", async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    expect(await cardTexts($)).toContain('context 35% · ┃ compacts at 70%');
+});
+
+test('a band with no reading draws no card', async ($, on) => {
+    meters(on);
+    expect(await cardTexts($)).toEqual([]);
+});
