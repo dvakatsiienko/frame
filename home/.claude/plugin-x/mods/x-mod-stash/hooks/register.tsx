@@ -1807,11 +1807,6 @@ export const register: Register = (on) => {
                 </Box>
                 {list.map(row)}
                 {orbitJSX}
-                <Box marginTop={1}>
-                    <Text dimColor wrap='truncate-end'>
-                        a name opens its session · /board colour flips colour
-                    </Text>
-                </Box>
             </Box>
         );
     });

@@ -236,7 +236,8 @@
   - decision: on the second line, not beside the name — in the narrow pane a long name wrapped to three lines or cut the model (the live look, FRM-329)
 - ⬜ the board borrows the reference's look (dima's dark screenshot on FRM-329)
   - given the board draws
-  - then a head reads `🚦 sessions on this mac · n` with `n busy` on its right, each row leads with a `●` state dot, the second line sits under the name and is dim, and a dim footer says what a press does
+  - then a head reads `🚦 sessions on this mac · n` with `n busy` on its right, each row leads with a `●` state dot, the second line sits under the name and is dim
+  - decision: no footer hint — «a name opens its session · /board colour flips colour» is gone (dima, 21:12)
   - decision: no new controls — the reference's run buttons stay out (dima: «no need functionality buttons»)
   - decision: the full row between members stays, dima's call of 2026-10-05, though the reference packs its rows
 - ⬜ `/board colour` tries colour as an MVP
