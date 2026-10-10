@@ -2352,7 +2352,6 @@ export const register: Register = (on) => {
                             }
                             onSubmit={(value) => void setCompactAt($, value)}
                             placeholder='70'
-                            submitLabel=''
                             value={
                                 meter?.compactAt === undefined
                                     ? ''
