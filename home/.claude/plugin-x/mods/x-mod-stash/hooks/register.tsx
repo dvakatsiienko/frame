@@ -775,12 +775,18 @@ async function compactAtOf($: EngineInterface, window: number) {
 
 // a typed compaction point: a whole 10–99 goes into the launch dir's .claude settings `env`, keeping every
 // other key; anything else, or a file that is not json, leaves the file alone and says why in one line
-async function setCompactAt($: EngineInterface, text: string) {
+// typing saves each valid value as it lands; a half-typed one («8» on the way to «85») is skipped quietly, and only
+// Enter names a refusal (dima, 23:31)
+async function setCompactAt(
+    $: EngineInterface,
+    text: string,
+    isTyping = false,
+) {
     const was = (await $.state.get(METER)).value ?? {};
     const keep = (note?: string) =>
         $.state.set(METER, { ...was, note }).catch(() => undefined);
     const typed = thresholdOf(text);
-    if ('refusal' in typed) return keep(typed.refusal);
+    if ('refusal' in typed) return isTyping ? undefined : keep(typed.refusal);
     // the launch dir cc keeps in the registry is the project its settings resolve from; session.start's cwd can be a
     // later one (cclio's read ~/frame while it launched in ~/frame/cclio, 2026-10-09)
     const launched = proc
@@ -2337,13 +2343,16 @@ export const register: Register = (on) => {
                 )}
                 {tip(
                     'compact-at',
-                    'type a %, ✓ saves',
+                    'type a %, it saves as you type',
                     <Box flexShrink={0} width={8}>
                         <ui.Input
                             key='compact-at'
+                            onInput={(value) =>
+                                void setCompactAt($, value, true)
+                            }
                             onSubmit={(value) => void setCompactAt($, value)}
                             placeholder='70'
-                            submitLabel='✓'
+                            submitLabel=''
                             value={
                                 meter?.compactAt === undefined
                                     ? ''

@@ -131,7 +131,7 @@ test('every control in the row carries a hover card that names it', async ($, on
         '0 open asks for you',
         '0 phases',
         'auto-compact at this context %',
-        'type a %, ✓ saves',
+        'type a %, it saves as you type',
         'enhance prompt',
         "keep this session's cache hot: ping every 50 min",
         'wake every session stopped on the 5h cap',

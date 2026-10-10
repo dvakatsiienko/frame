@@ -45,7 +45,7 @@
 - ⬜ every chip and reading in the row names itself on hover, five words or fewer
   - given the row draws
   - when dima hovers `🪐 n`, `🌔 n`, the pace, `⏳`, `📦`, its field, `🔥 5h` or `🧠`
-  - then a dim card reads «n open asks for you», «n phases», «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «auto-compact at this context %», «type a %, ✓ saves», «5h window used», «context window used» (dima, 20:13)
+  - then a dim card reads «n open asks for you», «n phases», «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «auto-compact at this context %», «type a %, it saves as you type», «5h window used», «context window used» (dima, 20:13)
   - 📌 harness-proven words; the reveal on the desktop is dima's eye
 - ✅ `/clear` and `/resume` empty the conversation's orbit in the same turn
   - given orbit holds asks
@@ -147,7 +147,7 @@
 - ⬜ two live meters, full width under the row (FRM-366)
   - given a session.measure arrives
   - then `🔥 5h` draws the window's used % as a full-width bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; beside it the gap reads bold, `🔋 +n%` green while there is room and `🪫 -n%` red at any overrun of the pace (dima's o46, 21:37: the word «pace» goes, the hover keeps it) — and `⏳ 1h 26m`, the time left to the reset (⏳ since dima, 21:10; the phases took 🌔), at full strength (dima, 20:53: «not dimmed»)
-  - and `🧠 ctx` draws the context % as a full-width bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` carries the point in an `Input` whose Enter reads `✓`
+  - and `🧠 ctx` draws the context % as a full-width bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` carries the point in an `Input` that saves each valid value as dima types; a half-typed one saves nothing, Enter names a refusal (dima, 23:31: no ✓)
   - and the desktop draws each bar in x-mod-breather's design language — its 5px cells, 2px gaps, light and dark palettes and ramp, two cell rows tall; the terminal draws sline's `▮ ▯` (dima, 20:22: «make them the same design language … bars are slightly different because they are bars»)
   - decision: no `pace n%` — the gap already says how far off pace (dima, 20:04)
   - and both bars start and end on the same columns: one label width, one bar width, one right-aligned % cell; desktop air 0.5 above the meters and 0.4 between them

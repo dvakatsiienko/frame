@@ -309,3 +309,24 @@ test('a terminal meter runs the band to its right edge', async ($, on) => {
     const bar = (await ui.find({ key: 'meter:5h', type: 'Box' }))?.text ?? '';
     expect([...bar.replace(/[^▮▯┃]/g, '')].length).toBe(87);
 });
+
+test('typing a compaction point saves it with no Enter', async ($, on) => {
+    const { files } = meters(on, { [SHARED]: '{}' });
+    await measure($, 39, 35);
+    const ui = await band($);
+    await ui.input({ key: 'compact-at', kind: 'change', text: '85' });
+    expect(JSON.parse(files[SHARED] ?? '{}').env).toEqual({
+        CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '85',
+    });
+});
+
+test('a half-typed compaction point saves nothing and names no refusal', async ($, on) => {
+    const { files } = meters(on, { [LOCAL]: '{}' });
+    await measure($, 39, 35);
+    const ui = await band($);
+    await ui.input({ key: 'compact-at', kind: 'change', text: '8' });
+    expect([files[LOCAL], await part($, /^compaction point must/)]).toEqual([
+        '{}',
+        'no text',
+    ]);
+});
