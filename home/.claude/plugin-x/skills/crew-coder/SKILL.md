@@ -87,7 +87,7 @@ for ceremony.
   cc's EnterWorktree hook does it for a tree it made). The main checkout stays on `main` — it is one shared tree and your
   `git switch` would move every session.
 - **a dirty shared checkout (`main` lane)**: if your change sits on someone's uncommitted work and the hunks are not separable, carry it and name it in the body — never ask mid-flight. commit with a pathspec, `git commit -F msg.txt -- <paths>`: it commits the INDEX for those paths and leaves the rest of the index alone; `git add .` + a bare commit would sweep dima's staged renames into yours (measured 2026-09-19).
-- **the PR opens at your first push** (`lane pr-open`; `lane` has no empty-commit verb):
+- **the PR opens at your first push** (`x lane pr-open`; `x lane` has no empty-commit verb):
   `gh pr create` — a real PR, never a draft; title in the `x:cmt` shape (`🔧 <scope>: <what>`),
   because the squash commit takes the PR title and body verbatim; body `- ticket: <id>` (`Closes
   <id>` only when the ticket ends). Paste the url in your chat and in your ping. Dima sees the job

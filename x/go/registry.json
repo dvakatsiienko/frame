@@ -106,6 +106,7 @@
             "name": "lane commit",
             "needsApply": false,
             "purpose": "commit only the named paths, print the sha; on main their ci jobs run first; mid-merge concludes it; --repo <path> too",
+            "replaces": ["home/.claude/plugin-x/bin/lane"],
             "steps": [
                 "tree",
                 "holds",
@@ -123,6 +124,7 @@
             "name": "lane push",
             "needsApply": true,
             "purpose": "push HEAD's sha to its branch and read the remote back; a frame worktree pushes from the main checkout",
+            "replaces": ["home/.claude/plugin-x/bin/lane"],
             "steps": ["tree", "plan", "push", "verify"]
         },
         {
@@ -139,18 +141,21 @@
             "name": "lane pr-open",
             "needsApply": true,
             "purpose": "open a pr from the pushed branch onto main as the x-coder-cc app",
+            "replaces": ["home/.claude/plugin-x/bin/lane"],
             "steps": ["plan", "open"]
         },
         {
             "name": "lane merge-main",
             "needsApply": false,
             "purpose": "fetch and merge origin/main into this branch; a conflict prints the files and stops",
+            "replaces": ["home/.claude/plugin-x/bin/lane"],
             "steps": ["fetch", "merge"]
         },
         {
             "name": "lane unlock",
             "needsApply": false,
             "purpose": "decrypt the git-crypt files of a worktree that holds ciphertext, so staging stops dying",
+            "replaces": ["home/.claude/plugin-x/bin/lane"],
             "steps": ["scan", "decrypt", "verify"]
         },
         {

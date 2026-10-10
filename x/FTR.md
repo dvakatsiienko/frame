@@ -402,7 +402,7 @@
   - given cc session transcripts under `~/.claude/projects/`, subagents included
   - when `x stats --outside --days 7` runs
   - then it ranks the top 25 Bash command heads of that window with counts, each call once however many transcripts copy it; `x` calls are left out and counted apart as `x_calls`
-  - then a head skips a leading `cd <dir> &&`, a subshell `(`, variable setup (`J=…;`, `S=$(…);`, `export S=…;`, `FOO=1 cmd`) and the wrappers `timeout <n>` and `env …`, so `cd` and `S=` never top the list and the wrapped command ranks; `for` stays its own head; `git`, `claude`, `gh` and `pnpm` count two words (`git log`, `pnpm <script>`); the `lane` shim counts as an `x` call
+  - then a head skips a leading `cd <dir> &&`, a subshell `(`, variable setup (`J=…;`, `S=$(…);`, `export S=…;`, `FOO=1 cmd`) and the wrappers `timeout <n>` and `env …`, so `cd` and `S=` never top the list and the wrapped command ranks; `for` stays its own head; `git`, `claude`, `gh` and `pnpm` count two words (`git log`, `pnpm <script>`)
   - given `--outside --dev`, then it exits 2: cc transcripts hold no dev builds
   - then it prints its own elapsed time — no speed bar; slow over 7 days becomes a ✨ wisp
   - decision: cc transcripts only — dima's own typing is already traced by `x-trace.zsh`; grouping heads into operations is a later round (dima, 2026-10-08)

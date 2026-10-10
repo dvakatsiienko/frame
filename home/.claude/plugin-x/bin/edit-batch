@@ -6,7 +6,7 @@
  * ?
  * ? The batch format lives in script/lib/edit-batch.ts. Every anchor is checked in memory
  * ? first; one miss writes nothing. A worktree coder runs it by path, so no command text names
- * ? git and the isolation guard lets it through — the same door as `lane` and `edit-anchored`.
+ * ? git and the isolation guard lets it through — the same door as `x lane` and `edit-anchored`.
  * ?
  * ? Exit codes: 0 all written (one `<file>:<line>` per edit), 1 an edit refused or a write did
  * ? not land, 2 the arguments or the batch are malformed.

@@ -72,8 +72,6 @@ the checks the FRM-340 verifier built by hand; a verifier or coder on `x` starts
 
 ## lane
 
-- `home/.claude/plugin-x/bin/lane` is a shim kept for running coders: it adds `--apply`, because
-  the old `lane` published without asking.
 - `lane push` from a frame worktree pushes from the main checkout: the pre-push mirror gate reads
   `~` symlinks that point there, so a worktree push always failed. same sha, shared objects.
 - `lane commit` refuses while git-crypt files hold ciphertext; `lane unlock` decrypts them. in a real

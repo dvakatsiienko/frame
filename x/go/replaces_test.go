@@ -29,8 +29,13 @@ func TestReplacedDoorsAreDead(t *testing.T) {
 			if _, err := os.Stat(filepath.Join(root, door)); strings.Contains(door, "/") && err == nil {
 				t.Errorf("%s replaces %s, and the file still exists", verb.Name, door)
 			}
-			// the basename, because a caller may build the path in parts: join(frame, 'script', '<name>')
-			c := exec.Command("git", append([]string{"grep", "-l", "-F", "-e", filepath.Base(door), "--", "."}, notCallers...)...)
+			// the basename, because a caller may build the path in parts: join(frame, 'script', '<name>');
+			// a bin shim keeps its dir, since its bare name (`lane`) is also a family's name
+			needle := filepath.Base(door)
+			if filepath.Base(filepath.Dir(door)) == "bin" {
+				needle = "bin/" + needle
+			}
+			c := exec.Command("git", append([]string{"grep", "-l", "-F", "-e", needle, "--", "."}, notCallers...)...)
 			c.Dir, c.Env = root, cleanEnv()
 			out, err := c.Output()
 			// git grep exits 1 for «no match»; anything else is a broken search, never a pass

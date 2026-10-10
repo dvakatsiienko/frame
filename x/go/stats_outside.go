@@ -126,7 +126,7 @@ func statsOutside(r *Run, days int) (any, error) {
 }
 
 // commandHead names what a Bash command runs, past any `cd <dir> &&` and variable setup;
-// an `x` call, or the `lane` shim that runs one, reads "x", since x traces itself; setup alone reads ""
+// an `x` call reads "x", since x traces itself; setup alone reads ""
 func commandHead(command string) string {
 	words := shellWords(command)
 	i := pastSetup(words)
@@ -134,7 +134,7 @@ func commandHead(command string) string {
 		return ""
 	}
 	tool := filepath.Base(words[i])
-	if tool == "x" || tool == "lane" {
+	if tool == "x" {
 		return "x"
 	}
 	if !twoWord[tool] {

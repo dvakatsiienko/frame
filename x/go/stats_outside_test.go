@@ -78,7 +78,6 @@ func TestStatsOutsideHeadsSkipTheSetup(t *testing.T) {
 		{"cd && ls", "ls"},
 		{"(cd a && ls)", "ls"},
 		{"claude -p --model haiku 'say hi'", "claude"},
-		{"/Users/a/plugin-x/bin/lane push", ""},
 		{"S=$(cat f); git push", "git push"},
 		{"J=$(jq -r '.a' \"$(dirname f)\") && gh pr view $J", "gh pr"},
 		{"T=`date`; ls", "ls"},
