@@ -167,3 +167,5 @@ grading: per monitor — fired (y/n), latency from the real event, false positiv
 - 2026-10-09 todo trackers top 5 (rerun): 138 s · 7.9k chars · ¢ unsettled · cautious, verified little (no breaks confirmed), same keep-backlog verdict · 3/5
 
 - 2026-10-10 pk-46 estimates + priorities: 183 s · 11.6k chars · cents · 3/5 — sceptical, closest to the pick (order over labels, split l); no local data
+
+- 2026-10-10 exit-lines delegation: exit 0 · ~12k chars · cents · 3/5 — sceptical, freeze criteria before coding, a 10% sample as a start; no local data

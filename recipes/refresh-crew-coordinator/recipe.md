@@ -94,6 +94,7 @@ on top of the shared vectors of `x:shape-recipe` (the delta covers the cc change
 - role drift: roles that appear as capabilities grow, roles that go obsolete as models improve
 - ticket management for an agent coordinator: tools and strategies (linear, local spec trackers, the pocket, matt's pipeline), what keeps the loop chill
 - estimates and priorities an agent coordinator sets: what a size means when agents do the work, a rubric an agent applies the same way every time, order vs priority labels, calibration against actuals, and the failure modes (everything «high», fields set once and never read); seed: `docs/research/estimates-and-priorities.md` (dima, 2026-10-10)
+- acceptance criteria an agent writes and an agent grades: who writes, who checks, what an independent oracle looks like (a blind critic, frozen criteria, red-first tests, a risk tier that keeps dima's word), and our own miss rate per lane; seed: `docs/research/exit-lines-delegation.md` (dima, 2026-10-10)
 - agentic workflows overall: spec-driven runs, shifts vs lanes, review loops — what is proven
 - operator overload, the coordinator's half: how a coordinator paces one human — batching, collapsing asks, holding member traffic, the siesta — and which remedies measurably shrank his load (dima, 2026-10-08: the thread spam; the adviser recipe researches the detector, this one the remedy)
 

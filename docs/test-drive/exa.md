@@ -351,3 +351,5 @@ date · feature · ask · hit · seconds · chars · $ · vs parallel / opus
 - 2026-10-09 todo trackers top 5 (rerun, multi-file allowed): 108 s · 10.9k chars · $0.10 · ranked beads first, found the backlog auto-commit sweep (#795) and the web-ui slowdown (#807) — the only lane with Backlog.md breaks · 4/5
 
 - 2026-10-10 pk-46 estimates + priorities: 93 s · 15.6k chars · $0.10 · 3/5 — broad, a heavy scheme (6 fields, monthly review); the opus lane with local transcript data decided it
+
+- 2026-10-10 exit-lines delegation: completed · ~15k chars · $0.10 · 3/5 — broad, the clearest «draft yes, authority no» line; no local data
