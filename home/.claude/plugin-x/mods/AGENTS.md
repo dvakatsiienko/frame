@@ -24,6 +24,7 @@
   - an `Svg` `<title>` (`isInteractive`) does not show in the desktop (x-mod-stash holds chip, 2026-10-05)
   - the test harness keeps `hover` out of `FoundElement.props` and cannot hover — test the hidden card and its words; the reveal is checked with `pnpm mods:live <mod dir> hover <label>`
   - `ui.find({ text })` matches a wrapper `Box` too, whose text joins its card's — add `type: 'Text'` to reach the label alone (FRM-303)
+- `workarounds.md` — every mods want the engine can't do yet: the want, the upstream issue, the workaround, the undo; a coder who hits a new engine gap adds its entry in the same commit as the workaround (dima, 2026-10-10). cclio watches it: the boot's gh watch reads its links, `refresh-cc-mods` re-checks it each run
 - `api-map.md` — every hook event by name, and the fleet ideas; at a cc bump diff its list against `EngineEventOf`
 - `x-mod-stash/FTR.md` + `x-mod-stash/GLOSSARY.md` — read your section before changing what x-mod-stash does; the same pair in `x-mod-redact/` for the secret masker, in `x-mod-guard/` for the Bash floor, in `x-mod-holds/` for file holds, and in `x-mod-breather/` for the breathing meter
 - `$.store` is one file per plugin (`~/.claude/plugins/store/<plugin>_<source>-<hash>.json`, plain json) — two mods never share keys; a mod reads another's events from that file with `$.fs` (x-mod-stash read x-mod-guard's, FRM-321, until FRM-354)

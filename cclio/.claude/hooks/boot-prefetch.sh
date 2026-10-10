@@ -177,7 +177,7 @@ else
   echo "bytes checker not found — skipped"
 fi
 
-echo "-- gh watch (every github issue/pr link in _reminders.md + every issue dima filed outside his repos; a change prints once, state in gh-watch-seen.tsv) --"
+echo "-- gh watch (every github issue/pr link in _reminders.md and mods/workarounds.md + every issue dima filed outside his repos; a change prints once, state in gh-watch-seen.tsv) --"
 GH_SEEN="$HOME/.claude/shelf/gh-watch-seen.tsv"
 touch "$GH_SEEN"
 # an authored issue is watched while open, plus the one boot that sees it close
@@ -188,7 +188,7 @@ authored=$(timeout 15 gh search issues --author dvakatsiienko --limit 100 --json
       printf '%s\n' "$u"
     fi
   done)
-gh_urls=$( { grep -o 'https://github.com/[^/)]*/[^/)]*/\(issues\|pull\)/[0-9]*' "$HOME/frame/cclio/memory/_reminders.md"; printf '%s\n' "$authored"; } | grep . | sort -u)
+gh_urls=$( { grep -ho 'https://github.com/[^/)]*/[^/)]*/\(issues\|pull\)/[0-9]*' "$HOME/frame/cclio/memory/_reminders.md" "$HOME/frame/home/.claude/plugin-x/mods/workarounds.md"; printf '%s\n' "$authored"; } | grep . | sort -u)
 gh_ok=0 gh_changed=0 gh_state=""
 for url in $gh_urls; do
   api=$(printf '%s' "$url" | sed -E 's#https://github.com/([^/]+)/([^/]+)/(issues|pull)/([0-9]+)#repos/\1/\2/issues/\4#')

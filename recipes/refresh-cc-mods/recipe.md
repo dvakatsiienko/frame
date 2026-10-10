@@ -5,6 +5,7 @@ artifacts:
   - home/.claude/plugin-x/mods/AGENTS.md
   - home/.claude/plugin-x/mods/api-map.md
   - docs/test-drive/mods.md
+  - home/.claude/plugin-x/mods/workarounds.md
 script: none
 was: [refresh-branch-mods, refresh-mods]
 groomed: 2026-10-10 (dima)
@@ -76,8 +77,10 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 - `home/.claude/plugin-x/mods/AGENTS.md` — the authoring rules and traps (the one home, dima's call)
 - `home/.claude/plugin-x/mods/api-map.md` — every event with its line in the types file, and the fleet ideas
 - `docs/test-drive/mods.md` — the running measurement, verdict 2026-10-19
+- `home/.claude/plugin-x/mods/workarounds.md` — dima's mods wants the engine can't do yet; an entry the cc changelog shows landed is printed with its undo, and leaves once the undo ships
 - [FRM-304](https://linear.app/x-com/issue/FRM-304) — the open list; every round of work is a child ticket
 
 ## findings
 
 - print dima: what is essential and not built, what to borrow, what to drop
+- checklist, every run: each entry in `home/.claude/plugin-x/mods/workarounds.md` against the cc changelog since the last run — landed, or still missing (dima, 2026-10-10)

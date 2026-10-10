@@ -31,7 +31,9 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
 - the two verbs, his framing: `/compact` describes what to **keep**, `/checkpoint` describes
   what to **drop** — everything useful carries over, only fluff goes
 - always kept, unlisted: the boot ingest, the inbox items and their homes, every open ask in his
-  words, the coder roster, my own pending suggestions, the pocket and queue state
+  words, the coder roster, my own pending suggestions, the pocket and queue state, the day's done asks
+  (so a sent thing never comes back as «never sent») and the flawlog habit (ccrow, 2026-10-10: three
+  slips after one compact)
 
 ## 2. land, same as a halt's middle
 
@@ -63,7 +65,7 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
 📋 **copy → this session** 📋
 
 ```
-/compact keep the boot ingest, the inbox items and their homes, every open ask, the coder roster and the open orbit asks; drop <his drop list, one clause each>
+/compact keep the boot ingest, the inbox items and their homes, every open ask, the coder roster, the open orbit asks, the day's done asks and the flawlog habit (a #dima-caught catch gets its line the same turn); drop <his drop list, one clause each>
 /x:handoff-ingest <runid>-checkpoint-<n>
 ```
 
