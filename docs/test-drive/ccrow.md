@@ -61,3 +61,7 @@ verdict question: borrow its timing (consult before an approach / before done) i
 
 ### round 3 · 2026-10-10 12:36 · before declaring a research verdict
 - advisor (opus): 6 points — commit the doc with the recipe edit (the pointer check would block it, the 12:11 shape again), open one cited count before relaying, report 4/19 without implying improvement, strike-and-reword FRM-380 exit 2 in the ticket body (two specs otherwise), name the want-line conflict to dima as one ask with its cost, check `ccrow:plan-critique` before building a critic. acted on: all six; the plan-critique check removed a build. no usage before-read again (missed); next round.
+
+### round 4 · 2026-10-10 14:18 · before the PK-11 approach
+- advisor (opus): 5 points — PK-11 checks the settled `x:pm` relation, never re-decides it; only 3 of 5 archived dirs hold a spec (premise off by two); a ~6-file cclio read, no coder, so release the kept PK-47 coder; log this round; announce the new leaf and probe the barrel import. acted on all 5; following the premise check found `x-stats-board` archived but never built, moved back. usage before/after: ? (not read)
+- the gap it names: the three stretches before it (to-spec fix, pocket recipe, pocket-check rules) ran with no consult — the trial rule was missed, not the tool

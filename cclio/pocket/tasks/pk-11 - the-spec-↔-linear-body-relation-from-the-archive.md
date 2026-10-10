@@ -1,10 +1,10 @@
 ---
 id: PK-11
 title: 'the spec ↔ linear body relation, from the archive'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-10 10:53'
+updated_date: '2026-10-10 11:16'
 due_date: '2026-10-12'
 labels:
   - s
@@ -28,4 +28,6 @@ dima 10-07: «do not delete specs we create, but move them into an archive somew
 
 <!-- SECTION:NOTES:BEGIN -->
 10-10: 5 specs archived (mods-round, x-handoff, x-linear, x-stats-board, x-telemetry), the wait is over
+
+done 10-10: verdict keep (docs/test-drive/spec-pipeline.md log) — specs local, archived at land, linear keeps want + closing word; x-stats-board was unbuilt and went back to .scratch; FRM-329 closed bare
 <!-- SECTION:NOTES:END -->
