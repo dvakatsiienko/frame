@@ -35,4 +35,5 @@ dima, 2026-10-10 14:50, folded. sequential, one at a time, no parallel lanes yet
 6. [ ] resume the memory sweep, his steers first
 
 standing: use the advisor actively, above all during planning; ccrow comes later.
+- step 4 note (dima, 2026-10-10): FRM-360, the frame around interactive screens, joins the nearest cli chunk while he is here, instead of waiting for him to drive x
 <!-- SECTION:DESCRIPTION:END -->
