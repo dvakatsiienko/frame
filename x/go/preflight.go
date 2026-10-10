@@ -102,9 +102,12 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 			if !line.exit {
 				continue
 			}
-			for _, match := range codeSpan.FindAllStringSubmatch(line.group, -1) {
-				token := strings.TrimSpace(match[1])
+			for _, at := range codeSpan.FindAllStringSubmatchIndex(line.group, -1) {
+				token := strings.TrimSpace(line.group[at[2]:at[3]])
 				if verb := verbOf(token, verbsOnMain); verb != "" {
+					if !claimsToAdd(line.group, at[0], at[1]) {
+						continue
+					}
 					found = append(found, finding{line.n, "main", "x " + verb, "is already a verb on main — does this line already hold?"})
 				} else if isPathLike(token) && len(shipped) > 0 {
 					if commit := touchedBy(repo, id, token); commit != "" {
@@ -290,6 +293,16 @@ func mainVerbs(repo string) []string {
 		names = append(names, verb.Name)
 	}
 	return names
+}
+
+// a verb already on main is a finding only where the line claims to add it; a verb named as a tool is not
+var addClaim = regexp.MustCompile(`(?i)\b(?:adds?|new verb|introduc(?:e|es|ed))\b`)
+
+// the claim word sits within 40 bytes of the span, on either side
+func claimsToAdd(group string, from, to int) bool {
+	before := group[max(0, from-40):from]
+	after := group[to:min(len(group), to+40)]
+	return addClaim.MatchString(before) || addClaim.MatchString(after)
 }
 
 // verbOf answers the verb an `x …` token calls, two words before one: `x lane review <pr>` → lane review

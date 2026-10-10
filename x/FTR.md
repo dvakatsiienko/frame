@@ -208,7 +208,7 @@
   - when it runs
   - then each finding names its line and the rule
 - ✅ `x brief preflight <ticket>` reads a ticket against main before a lane
-  - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (cclio's half beside a backticked surface outside `cclio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has, or a path a main commit for this ticket already changed
+  - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (cclio's half beside a backticked surface outside `cclio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has on a line that claims to add it («adds», «new verb», «introduces» within 40 characters; a verb named as a tool passes), or a path a main commit for this ticket already changed
   - when `x brief preflight <ticket>` runs
   - then it fails naming each one with its line, and lists every main commit whose body carries `ticket: <id>`
   - given a clean ticket, then it prints ok

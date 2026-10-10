@@ -239,7 +239,7 @@ func TestPreflightRefusesATicketWithNoExitSection(t *testing.T) {
 }
 
 func TestPreflightNamesEveryProblem(t *testing.T) {
-	body := "## the board redesign\n\nwe rework the board\n\n## exit\n\n- `other.md` lists the rest\n2. it works\n3. `x lane unlock` runs in a locked tree\n4. `docs/shipped.md` says done\n5. `x:crew-coder`'s final step and cclio's pre-merge step name it\n"
+	body := "## the board redesign\n\nwe rework the board\n\n## exit\n\n- `other.md` lists the rest\n2. it works\n3. adds `x lane unlock` for a locked tree\n4. `docs/shipped.md` says done\n5. `x:crew-coder`'s final step and cclio's pre-merge step name it\n"
 	want := []string{
 		"line 11: lint exit line — has two owners",
 		"line 1: grill redesign",
