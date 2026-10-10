@@ -7,7 +7,8 @@
 
 ## the row
 
-- ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, the pace and time left, `📦` and the compaction point, then `🔥`, `⏰`, `💨` and `🚦`; the two meters run full width under it
+- ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, packed left with the pace, the time left, `📦` and the compaction point, then the 🔭 mark; `🔥`, `⏰`, `💨` and `🚦` hold the right edge; the two meters run full width under it
+  - decision: the readings pack left after the chips, the switches stay right (dima's o6, 22:03)
   - given the band draws
   - when dima looks above the prompt
   - then it is that row plus the two meter rows, and the chips do nothing on a press
@@ -23,7 +24,8 @@
 - ✅ 🔭 what this session waits on, in the band
   - given the session's last reply ends with a `🔭` line (a coder, ci, a review, a merge)
   - when the band draws
-  - then one 🔭 line under the row names the wait and how the answer arrives; no line when the last reply has none
+  - then the row's 🔭 mark, after the compaction point and in the theme grey, names the wait and how the answer arrives; with no wait it reads «🔭 not waiting»
+  - decision: in the row, always drawn, darker than dim, so dima sees every session's state at a glance (dima's o7, 22:03)
   - decision: the band, not the board — slim enough, and dima wants it visible (dima, 2026-10-10)
 - ✅ a mid-turn reload keeps the turn and what only the band held
   - given a turn is running and dima's away digest shows

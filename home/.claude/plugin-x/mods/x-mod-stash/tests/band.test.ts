@@ -90,12 +90,34 @@ test('a reply that waits on something draws its 🔭 line under the row', async 
     );
 });
 
-test('a reply that waits on nothing draws no 🔭 line', async ($, on) => {
+test('the 🔭 line reads in the theme grey, not dimmed', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await reply($, 'pushed.\n\n🔭 waiting on ci — the watcher wakes me');
+    const line = await ui.find({ text: /^🔭/, type: 'Text' });
+    expect([line?.props.color, Boolean(line?.props.dimColor)]).toEqual([
+        'inactive',
+        false,
+    ]);
+});
+
+test('a reply that waits on nothing keeps the 🔭 mark as «not waiting»', async ($, on) => {
     world(on);
     const ui = await band($);
     await reply($, 'pushed.\n\n🔭 waiting on ci — the watcher wakes me');
     await reply($, 'ci is green, all done.');
-    expect(await ui.find({ text: /^🔭/, type: 'Text' })).toBe(undefined);
+    expect((await ui.find({ text: /^🔭/, type: 'Text' }))?.text).toBe(
+        '🔭 not waiting',
+    );
+});
+
+test('the 🔭 wait sits in the row, after the compact field', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await reply($, 'pushed.\n\n🔭 waiting on ci — the watcher wakes me');
+    expect((await ui.find({ key: 'row', type: 'Box' }))?.text).toMatch(
+        /📦.*🔭 waiting on ci/su,
+    );
 });
 
 test('every control in the row carries a hover card that names it', async ($, on) => {

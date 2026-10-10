@@ -1900,8 +1900,8 @@ export const register: Register = (on) => {
         return { ...r, context: [...(r.context ?? []), ...notes] };
     });
 
-    // the band: one row — orbit's and the plan's counts, the meters' readings and bars, the switches — plus a 🔭 line
-    // only while the session waits on something, the away digest and a refused threshold's one line
+    // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars,
+    // the away digest and a refused threshold's one line
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
         if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e);
         // the published view and orbit, never the module's values: reading them subscribes this band, and a write redraws it
@@ -2196,6 +2196,8 @@ export const register: Register = (on) => {
                 )}
             </Box>
         );
+        // the readings pack left after the chips, then this session's 🔭 mark, always drawn; the switches hold the right
+        // edge (dima's o6 and o7, 22:03)
         const row = (
             <Box
                 alignItems='center'
@@ -2203,8 +2205,22 @@ export const register: Register = (on) => {
                 gap={1}
                 justifyContent='space-between'
                 key='row'>
-                {chips}
-                {meterInfoJSX}
+                <Box
+                    alignItems='center'
+                    flexDirection='row'
+                    flexGrow={1}
+                    flexShrink={1}
+                    gap={1}
+                    key='row:readings'
+                    minWidth={0}>
+                    {chips}
+                    {meterInfoJSX}
+                    <Box flexShrink={1} key='wait' minWidth={0}>
+                        <Text color='inactive' wrap='truncate-end'>
+                            {`🔭 ${view.wait ?? 'not waiting'}`}
+                        </Text>
+                    </Box>
+                </Box>
                 {switches}
             </Box>
         );
@@ -2265,11 +2281,6 @@ export const register: Register = (on) => {
             <Box flexDirection='column'>
                 {row}
                 {meters}
-                {view.wait ? (
-                    <Text dimColor key='wait' wrap='truncate-end'>
-                        {`🔭 ${view.wait}`}
-                    </Text>
-                ) : null}
                 {meter?.note ? (
                     <Text color='error' wrap='truncate-end'>
                         {meter.note}
