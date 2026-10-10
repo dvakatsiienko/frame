@@ -4,6 +4,7 @@ import {
     mkdirSync,
     mkdtempSync,
     readFileSync,
+    readdirSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -58,4 +59,17 @@ test("the hook's typecheck passes a commit while a peer's unstaged edit is broke
     });
 
     expect(run.status, run.stdout + run.stderr).toBe(0);
+});
+
+test('the index copy leaves nothing behind', () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'index-run-tmp-'));
+
+    const run = spawnSync('bash', [join(root, 'script/index-run.sh'), 'true'], {
+        cwd: root,
+        encoding: 'utf8',
+        env: { ...process.env, TMPDIR: scratch },
+    });
+
+    expect(run.status, run.stderr).toBe(0);
+    expect(readdirSync(scratch)).toEqual([]);
 });

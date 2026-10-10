@@ -6,8 +6,9 @@
 # tsconfig and engine types are copied in.
 set -euo pipefail
 repo=$(git rev-parse --show-toplevel)
-tmp=$(mktemp -d)
-trap 'trash "$tmp" 2>/dev/null' EXIT
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/index-run.XXXXXX")
+# the copy is ~21 MB a gate, three gates a commit: it is deleted, never trashed (dima, 2026-10-10)
+trap 'rm -rf "$tmp"' EXIT
 
 # git-crypt files stay ciphertext, as on the ci runner: no plaintext secret lands in a temp dir or the Trash
 git -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false checkout-index -a --prefix="$tmp/"
