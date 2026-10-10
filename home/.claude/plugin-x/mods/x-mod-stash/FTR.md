@@ -303,12 +303,12 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: https links only, no ↗ app buttons beside them — a mod Link refuses `linear://`, and a button can't sit inside a line of text; app links wait on the engine (dima, 22:34)
 - ✅ accept, reject, note, check all
   - given orbit shows asks
-  - when dima presses an ask's 🤩 or 👎🏼, types in its note, or presses check all
+  - when dima presses an ask's 🛎️ or ↩️, types in its note, or presses check all
   - then the pressed toggle is lit (the `secondary` chip, like `🚦`) and a second press puts it out; the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
-  - decision: 🤩 / 👎🏼 (dima, 2026-10-10)
+  - decision: 🛎️ / ↩️, the waiter lens — 🛎️ order up, ready for the session to pick up; ↩️ back to the kitchen (dima's o79, 23:05; was 🤩 / 👎🏼)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
-  - decision: the ask on its own line; under it one row: 🤩 👎🏼 🔊 ⏯️ ⏹️, then the note; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
+  - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ⏯️ ⏹️, then the note; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
   - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
   - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one `✅` button (dima, 19:59)
   - decision: the header reads `🪐 orbit: n`, the number alone (dima, 20:19, 20:48)
@@ -323,7 +323,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: an ask for something irreversible (trash, push, close, merge) leads its row with ⚠️ and names the exact target; one tick still approves it (dima, 2026-10-10)
 - 🐞 a press in the desktop board lands on the first click
   - given the board is open in the desktop Code tab
-  - when dima clicks an ask's 🤩 once
+  - when dima clicks an ask's 🛎️ once
   - then it lights; today it takes a second click (dima, 19:45) — upstream: [claude-code#99395](https://github.com/anthropics/claude-code/issues/99395), the desktop's first click on a pane button only moves focus
 - ✅ marked asks join the next prompt
   - given one or more asks are accepted or rejected

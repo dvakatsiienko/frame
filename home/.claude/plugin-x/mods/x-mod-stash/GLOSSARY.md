@@ -13,7 +13,7 @@ An open question a session put to dima through orbit's tool: one line, its pick 
 _Avoid_: question, todo, pending
 
 **Orbit** 🪐:
-One session's own list of asks to dima, in the board; he ticks, rejects or notes an ask, and the marked ones join his next prompt, or the running turn. Replaced the reply-parsed ask list.
+One session's own list of asks to dima, in the board; he rings 🛎️ (order up: take the pick), sends ↩️ (back to the kitchen) or notes an ask, and the marked ones join his next prompt, or the running turn. Replaced the reply-parsed ask list.
 _Avoid_: asks box, wfyb, inbox
 
 **Phases** 🌔:

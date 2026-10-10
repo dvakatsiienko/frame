@@ -132,7 +132,7 @@ test('a ticked ask joins the next prompt as model-only context', async ($, on) =
     await ui.press({ key: 'orbit:accepted:o2' });
     await say($, 'go on');
     expect(joined(w.contexts).join('\n')).toMatch(
-        /o2 🤩 accepted: trash the probe \(your pick: yes\)/,
+        /o2 🛎️ accepted: trash the probe \(your pick: yes\)/,
     );
 });
 
@@ -155,7 +155,7 @@ test("a rejected ask joins with dima's note and cclio's hidden note", async ($, 
     await ui.input({ key: 'orbit:note:o1', text: 'wait for ci' });
     await say($, 'next');
     expect(joined(w.contexts).join('\n')).toMatch(
-        /o1 👎🏼 rejected: push FRM-1 \(your pick: yes\) · his note: «wait for ci» · your note: «came from push FRM-1»/,
+        /o1 ↩️ rejected: push FRM-1 \(your pick: yes\) · his note: «wait for ci» · your note: «came from push FRM-1»/,
     );
 });
 
@@ -169,8 +169,8 @@ test('check all accepts every open ask', async ($, on) => {
     expect(
         joined(w.contexts)
             .join('\n')
-            .match(/o\d 🤩/g),
-    ).toEqual(['o1 🤩', 'o2 🤩']);
+            .match(/o\d 🛎️/g),
+    ).toEqual(['o1 🛎️', 'o2 🛎️']);
 });
 
 test("a peer's prompt carries no marked ask", async ($, on) => {
@@ -214,7 +214,7 @@ test('an ask the turn left unanswered gets its controls back when the turn ends'
     expect(await ui.find({ key: 'orbit:accepted:o1' })).toBeTruthy();
 });
 
-test('a pressed 🤩 is lit and a second press puts it out', async ($, on) => {
+test('a pressed 🛎️ is lit and a second press puts it out', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -289,7 +289,7 @@ test('a tick while the turn runs reaches that turn, and its resolve takes it out
     await endTurn($);
     expect([(r.context ?? []).join('\n'), await asksShown(ui)]).toEqual([
         expect.stringMatching(
-            /o1 🤩 accepted: name a bird \(your pick: pelican\)/,
+            /o1 🛎️ accepted: name a bird \(your pick: pelican\)/,
         ),
         [],
     ]);
@@ -315,7 +315,7 @@ test('a tick the turn never answered stays marked and joins the next prompt', as
     await ui.press({ key: 'orbit:accepted:o1' });
     await endTurn($);
     await say($, 'next');
-    expect(joined(w.contexts).join('\n')).toContain('o1 🤩 accepted');
+    expect(joined(w.contexts).join('\n')).toContain('o1 🛎️ accepted');
 });
 
 test('every prompt reminds the session of its open asks and the tool', async ($, on) => {

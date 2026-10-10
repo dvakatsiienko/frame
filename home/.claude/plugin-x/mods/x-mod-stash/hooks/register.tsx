@@ -112,7 +112,7 @@ const ORBIT_TEXT_MAX = 90;
 // a ticket id inside an ask or a phase; split keeps the id as every odd part
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
-    "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
+    "orbit is dima's list of your asks to him, in the fleet board: he rings 🛎️ when your pick is good to go, sends ↩️ back for another round, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     `op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»), ≤${ORBIT_TEXT_MAX} chars, subject first, detail in hiddenNote; pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.`,
     'op resolve, ids: the asks you answered this turn; they leave orbit when the turn ends.',
     `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a «changed» mark.`,
@@ -205,7 +205,7 @@ async function currentOrbit($: EngineInterface) {
 }
 
 const markWord = (mark: OrbitAsk['mark']) =>
-    mark === 'accepted' ? '🤩 accepted' : '👎🏼 rejected';
+    mark === 'accepted' ? '🛎️ accepted' : '↩️ rejected';
 
 // what the session reads for each marked ask: the mark, the ask, its pick, both notes
 function joinText(asks: OrbitAsk[]) {
@@ -1685,7 +1685,7 @@ export const register: Register = (on) => {
         const Input = 'Input' in ui ? ui.Input : undefined;
         const open = o.asks.filter((a) => !a.isResolved);
         const age = planAge(o);
-        // 🤩 and 👎🏼 are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
+        // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
         const markJSX = (a: OrbitAsk, mark: 'accepted' | 'rejected') => (
             <Button
                 key={`orbit:${mark}:${a.id}`}
@@ -1703,7 +1703,7 @@ export const register: Register = (on) => {
                 {...(a.mark === mark
                     ? { variant: 'secondary' as const }
                     : { plain: true as const })}>
-                {mark === 'accepted' ? '🤩' : '👎🏼'}
+                {mark === 'accepted' ? '🛎️' : '↩️'}
             </Button>
         );
         // the note keeps every keystroke, no Enter needed
@@ -1745,7 +1745,7 @@ export const register: Register = (on) => {
                     </Link>
                 );
             });
-        // the ask on its own line, the bold id leading it; under it one row: the note, 🤩 👎🏼, then speak's 🔊 ⏯ ⏹
+        // the ask on its own line, the bold id leading it; under it one row: the note, 🛎️ ↩️, then speak's 🔊 ⏯ ⏹
         // (dima, 20:08); a full row of air between asks (dima, 19:52)
         const askJSX = (a: OrbitAsk, i: number) => (
             <Box
@@ -1776,7 +1776,7 @@ export const register: Register = (on) => {
                     {a.isLocked ? (
                         <Box flexShrink={0}>
                             <Text dimColor>
-                                {`🔒 ${a.mark === 'accepted' ? '🤩' : '👎🏼'}`}
+                                {`🔒 ${a.mark === 'accepted' ? '🛎️' : '↩️'}`}
                             </Text>
                         </Box>
                     ) : (
