@@ -1,5 +1,5 @@
 ---
-dies-when: dima decides how exit lines are written and reviewed, and the habit lands in cclio:shape-lane
+dies-when: the next refresh-crew-coordinator run distills it (the habit landed in cclio:shape-lane, 2026-10-10)
 ---
 Ticket: none
 

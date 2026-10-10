@@ -26,11 +26,11 @@ a card is an h2 heading and two plain lines (dima, 2026-10-09, after a fence, a 
 
 load `mattpocock-skills:grilling` and ask in its round shape (❓ **Qn** - **title**: body, ➡️ pick, `---`). a fact the environment holds is looked up, never asked. the round ends with a pre-filled fence under «⏳ waiting on your word:», one line per question — `Qn. <short title> ➡️ <pick> ⬅️` — so dima types only his steer; an empty steer agrees. his answers fold into `decided` the same turn, then the next round recomputes the frontier.
 
-a `feature` or `app` lane adds the blind plan critic (`pnpm -C ~/frame ccrow:plan-critique <plan file>`) after the last round; a quick lane skips it.
-
 ## 3 · the exit lines
 
-read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines into the ticket's `exit` section, the turn the last round lands. they are cclio's: dima never reviews them. a line that carries a decision he never made goes back to him as a grill question instead.
+read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines into the ticket's `exit` section, the turn the last round lands. the last line is the **want line**: it replays dima's want or the incident behind the ticket, and the verifier grades it apart from the rest. the lines are cclio's; dima reads only the want line, and only on a `feature` or `app` lane (a test drive from 2026-10-10: if it proves too much or redundant, the want line is fully delegated too). a line that carries a decision he never made goes back to him as a grill question instead.
+
+then the **blind critic**, on every lane, quick ones too (`docs/research/exit-lines-delegation.md`: 17 of 20 flagged lines passed the lint and missed the want): write the want plus the lines to a file and run `pnpm -C ~/frame ccrow:plan-critique <file>` — a fresh one-shot that sees only that file. each finding is folded or answered in one line before the seal.
 
 ## 4 · the seal
 
