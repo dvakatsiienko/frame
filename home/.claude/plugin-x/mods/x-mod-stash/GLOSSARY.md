@@ -50,7 +50,7 @@ The ⏰ switch, one for every session: while on, a session stopped on the 5h cap
 _Avoid_: alarm, auto-resume, wake-up
 
 **Meter**:
-One of the two short bars in the row: `🔥 5h`, the window against its pace, and `🧠 ctx`, the context against its compaction point.
+One of the two full-width bars under the row: `🔥 5h`, the window against its pace, and `🧠 ctx`, the context against its compaction point.
 _Avoid_: gauge, tracker, progress bar
 
 **Pace**:

@@ -274,3 +274,28 @@ test('a measure writes the 5h window to the usage file in seconds', async ($, on
         used_percentage: 39,
     });
 });
+
+test('a terminal meter runs the band to its right edge', async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    await $.session.start({
+        cwd: '/proj',
+        isInteractive: true,
+        surface: 'terminal',
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 100,
+            hasSurvey: false,
+            isWorking: false,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface: 'terminal',
+    });
+    const bar = (await ui.find({ key: 'meter:5h', type: 'Box' }))?.text ?? '';
+    expect([...bar.replace(/[^▮▯┃]/g, '')].length).toBe(87);
+});

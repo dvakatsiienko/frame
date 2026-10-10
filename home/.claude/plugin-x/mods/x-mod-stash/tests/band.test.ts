@@ -45,13 +45,16 @@ const reply = ($: Engine, text: string) =>
     });
 
 for (const surface of ['terminal', 'desktop'] as const)
-    test(`the band is one row on ${surface}`, async ($, on) => {
+    test(`the band is its row and the two meters on ${surface}`, async ($, on) => {
         world(on);
         const ui = await band($, surface);
         await orbit($, { asks: [{ pick: 'yes', text: 'ship it' }], op: 'add' });
         const texts = (await ui.findAll({ type: 'Text' })).map((t) => t.text);
-        const row = (await ui.find({ key: 'row', type: 'Box' }))?.text ?? '';
-        expect(texts.filter((t) => t && !row.includes(t))).toEqual([]);
+        const shown = [
+            (await ui.find({ key: 'row', type: 'Box' }))?.text ?? '',
+            (await ui.find({ key: 'meters', type: 'Box' }))?.text ?? '',
+        ].join('');
+        expect(texts.filter((t) => t && !shown.includes(t))).toEqual([]);
     });
 
 test("the chips count orbit's open asks and the plan's lines", async ($, on) => {
@@ -107,12 +110,12 @@ test('every control in the row carries a hover card that names it', async ($, on
         '0 planned moves',
         'auto-compact at this context %',
         'type a %, ✓ saves',
-        '5h window used',
-        'context window used',
         "keep this session's cache hot: ping every 50 min",
         'wake every session stopped on the 5h cap',
         'afk: tell fleet that dima is away',
         'unfold fleet board',
+        '5h window used',
+        'context window used',
     ]);
 });
 
@@ -132,7 +135,7 @@ test("a toggle's hover card names what the next press does", async ($, on) => {
     const cards = (await ui.findAll({ type: 'Box' }))
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
-    expect(cards.slice(-2)).toEqual([
+    expect(cards.slice(-4, -2)).toEqual([
         'back: tell fleet that dima is here',
         'unfold fleet board',
     ]);

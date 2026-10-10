@@ -820,8 +820,6 @@ export function meterBar(
 const CELL = { gap: 2, rows: 2, size: 5 } as const;
 const CELL_STEP = CELL.size + CELL.gap;
 export const BAR_HEIGHT = CELL.rows * CELL_STEP - CELL.gap;
-// a band bar's width in cells: short, so both bars fit the one row beside the switches
-const BAR_CELLS = 10;
 const BAR_STYLE =
     ':root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.5}.mark{fill:#7c7670}.r0{stop-color:#7fb83a}.r1{stop-color:#f2b400}.r2{stop-color:#ff7a1a}.r3{stop-color:#f2364d}' +
     '@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.45}.mark{fill:#a89984}.r0{stop-color:#a9b665}.r1{stop-color:#d8a657}.r2{stop-color:#e78a4e}.r3{stop-color:#ea6962}}';
@@ -1969,55 +1967,73 @@ export const register: Register = (on) => {
         const fiveTint = gapTint(gap ?? 0);
         const ctx = meter?.context;
         const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
+        // the meters run the band's full width, one bar a row under the row (dima, 20:45: «bring back old wide meters»);
+        // the desktop band runs ~7.8px a column (measured off dima's 20:22 shot): the label, the % and gaps take ~90px
+        const barWidth = Math.max(8, e.props.bodyColumns - 13);
+        const svgCells = Math.max(
+            8,
+            Math.floor((e.props.bodyColumns * 7.8 - 90) / CELL_STEP),
+        );
         const barJSX = (
             key: string,
             label: string,
             words: string,
             tint: string,
             bar?: { percent: number; mark?: number; scale?: number },
+            marginTop = 0,
         ) => (
             <Box
                 alignItems='center'
                 flexDirection='row'
-                flexShrink={0}
                 gap={Svg ? 0.5 : 1}
-                key={key}>
-                {tip(key, words, <Text>{label}</Text>, {
-                    left: [...label].length + 1,
-                })}
+                key={key}
+                marginTop={marginTop}>
+                <Box flexShrink={0} width={Svg ? 5 : 6}>
+                    {tip(key, words, <Text wrap='truncate-end'>{label}</Text>, {
+                        left: [...label].length + 1,
+                    })}
+                </Box>
                 {bar === undefined ? (
-                    <Text dimColor>–</Text>
+                    <Text dimColor>no reading yet</Text>
                 ) : (
-                    [
-                        Svg ? (
+                    // the % ends on the band's right edge, under the row's last button
+                    <Box
+                        alignItems='center'
+                        flexDirection='row'
+                        flexGrow={1}
+                        gap={1}
+                        justifyContent='space-between'>
+                        {Svg ? (
                             <Svg
                                 alt={`${label} ${Math.round(bar.percent)}%`}
                                 height={BAR_HEIGHT}
                                 key={`${key}:svg`}
                                 source={meterSvg(
                                     bar.percent,
-                                    BAR_CELLS,
+                                    svgCells,
                                     bar.mark,
                                     bar.scale,
                                 )}
                             />
                         ) : (
-                            <Box flexDirection='row' key={`${key}:cells`}>
+                            <Box flexDirection='row' flexShrink={0}>
                                 {runsJSX(
                                     key,
                                     meterBar(
                                         bar.percent,
-                                        BAR_CELLS,
+                                        barWidth,
                                         bar.mark,
                                         bar.scale,
                                     ),
                                 )}
                             </Box>
-                        ),
-                        <Text bold color={tint} key={`${key}:pct`}>
-                            {`${Math.round(bar.percent)}%`}
-                        </Text>,
-                    ]
+                        )}
+                        <Box flexShrink={0} justifyContent='flex-end' width={4}>
+                            <Text bold color={tint}>
+                                {`${Math.round(bar.percent)}%`}
+                            </Text>
+                        </Box>
+                    </Box>
                 )}
             </Box>
         );
@@ -2146,6 +2162,18 @@ export const register: Register = (on) => {
                 key='row'>
                 {chips}
                 {meterInfoJSX}
+                {switches}
+            </Box>
+        );
+        // desktop air above and between the bars; a terminal row cannot be split, so none there
+        const air = e.surface === 'desktop';
+        const meters = (
+            <Box
+                flexDirection='column'
+                flexShrink={0}
+                key='meters'
+                marginTop={air ? 0.5 : 0}
+                paddingRight={air ? 1 : 0}>
                 {barJSX(
                     'meter:5h',
                     '🔥 5h',
@@ -2155,7 +2183,7 @@ export const register: Register = (on) => {
                 )}
                 {barJSX(
                     'meter:ctx',
-                    '🧠',
+                    '🧠 ctx',
                     'context window used',
                     ctxTint,
                     ctx === undefined
@@ -2165,8 +2193,8 @@ export const register: Register = (on) => {
                               percent: ctx,
                               scale: meter?.compactAt ?? 100,
                           },
+                    air ? 0.4 : 0,
                 )}
-                {switches}
             </Box>
         );
         const away =
@@ -2193,6 +2221,7 @@ export const register: Register = (on) => {
         return (
             <Box flexDirection='column'>
                 {row}
+                {meters}
                 {view.wait ? (
                     <Text dimColor key='wait' wrap='truncate-end'>
                         {`🔭 ${view.wait}`}

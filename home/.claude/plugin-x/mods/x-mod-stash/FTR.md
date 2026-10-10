@@ -7,10 +7,11 @@
 
 ## the row
 
-- ✅ one slim row: `🪐 <open asks> · 📝 <planned>` chips, the pace and time left, `📦` and the compaction point, two short 5h and ctx bars, then `🔥`, `⏰`, `💨` and `🚦`
+- ✅ one row of `🪐 <open asks>` `📝 <planned>` chips, the pace and time left, `📦` and the compaction point, then `🔥`, `⏰`, `💨` and `🚦`; the two meters run full width under it
   - given the band draws
   - when dima looks above the prompt
-  - then it is one row high, and the chips do nothing on a press
+  - then it is that row plus the two meter rows, and the chips do nothing on a press
+  - decision: the meters went back to full width, one a row — the short bars in the row read too small (dima, 20:45: «bring back old wide meters as they were before you started»)
   - decision: chips stay text — the traffic-light icon already opens the board (dima, 2026-10-10)
   - decision: the reply-parsed asks list, its per-thread names and counts, `📋 copy all` and the fold folder left with it — orbit, in the board, holds the asks now (FRM-381)
   - decision: icons only, no words — each control's hover card says what it does (dima, 2026-10-05)
@@ -136,13 +137,13 @@
 - ✅ a busy session is never pinged
   - given 🔥 is on and a turn is running at the 50-minute mark
   - then no ping is sent, and the clock restarts when that turn ends
-- ⬜ two live meters in the row (FRM-366, slimmed in FRM-381)
+- ⬜ two live meters, full width under the row (FRM-366)
   - given a session.measure arrives
-  - then `🔥 5h` draws the window's used % as a short bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; beside it the gap reads as one word, the sign and colour telling it apart — `+n% pace` green ahead, `-n% pace` orange behind by up to 10 and red past it (dima, 2026-10-10: «one word pace, but number and color is differentiator») — and `🌔 1h 26m`, the time left to the reset, at full strength (dima, 20:53: «not dimmed»)
-  - and `🧠` draws the context % as a short bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` carries the point in an `Input` whose Enter reads `✓`
+  - then `🔥 5h` draws the window's used % as a full-width bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; beside it the gap reads as one word, the sign and colour telling it apart — `+n% pace` green ahead, `-n% pace` orange behind by up to 10 and red past it (dima, 2026-10-10: «one word pace, but number and color is differentiator») — and `🌔 1h 26m`, the time left to the reset, at full strength (dima, 20:53: «not dimmed»)
+  - and `🧠 ctx` draws the context % as a full-width bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` carries the point in an `Input` whose Enter reads `✓`
   - and the desktop draws each bar in x-mod-breather's design language — its 5px cells, 2px gaps, light and dark palettes and ramp, two cell rows tall; the terminal draws sline's `▮ ▯` (dima, 20:22: «make them the same design language … bars are slightly different because they are bars»)
   - decision: no `pace n%` — the gap already says how far off pace (dima, 20:04)
-  - decision: ten cells a bar, so both fit the one row beside the switches (FRM-381: the row went from three lines to one)
+  - and both bars start and end on the same columns: one label width, one bar width, one right-aligned % cell; desktop air 0.5 above the meters and 0.4 between them
   - and an idle band stays live: the 4 s poll takes the 5h reading from `cc-usage-window.json`, which any busy session writes, and its minute moves the time left
   - and each filled cell takes sline's bar ramp by its place — green, yellow, orange, red — so a bar warms as it fills; the 5h ramp spans the window, the ctx ramp reaches red at the compaction point
   - decision: the fills are the board's mid-tone hexes and sline's ramp, not theme keys — the theme's `success` drew a dark green and a calm ctx drew black (dima's screenshots, 19:25)
