@@ -83,6 +83,17 @@ func TestGatePassesAContractChangeThatCarriesItsGlossaryOrAdr(t *testing.T) {
 	}
 }
 
+func TestGateRefusesAContractFileRenamedAway(t *testing.T) {
+	dir := gateRepo(t, nil)
+	gitT(t, dir, "mv", "app/schema/user.json", "app/user.json")
+
+	got := gate(t, dir, "change\n")
+
+	if got.code != 1 || !strings.Contains(got.stdout, "app/schema/user.json") {
+		t.Errorf("exit %d, output %q; want 1 naming app/schema/user.json", got.code, got.stdout)
+	}
+}
+
 func TestGatePassesAContractChangeTheMessageExplains(t *testing.T) {
 	dir := gateRepo(t, map[string]string{"app/api.ts": "changed\n"})
 
@@ -184,6 +195,33 @@ func TestGateTakesAnAsciiDashInAPassLine(t *testing.T) {
 
 	if got.code != 0 {
 		t.Errorf("exit %d, output %q; want 0", got.code, got.stdout)
+	}
+}
+
+func TestGateCountsARemovedRuleLine(t *testing.T) {
+	dir := gateRepo(t, map[string]string{"skills/guide-x/SKILL.md": "---\nname: x\n---\none\n"})
+	gitT(t, dir, "commit", "-q", "-m", "guide", "--no-verify")
+	write(t, filepath.Join(dir, "skills/guide-x/SKILL.md"), "name: x\none\na\nb\nc\n")
+	gitT(t, dir, "add", "-A")
+
+	got := gate(t, dir, "change\n")
+
+	if got.code != 0 {
+		t.Errorf("exit %d, output %q; want 0: 3 added, 2 `---` rows cut", got.code, got.stdout)
+	}
+}
+
+func TestGateTracesARefusalAsRefused(t *testing.T) {
+	dir := gateRepo(t, map[string]string{"app/api.ts": "changed\n"})
+	msg := filepath.Join(t.TempDir(), "COMMIT_EDITMSG")
+	write(t, msg, "change\n")
+	state := t.TempDir()
+
+	xIn(t, dir, tracing(state), "lane", "gate", msg)
+
+	lines := traces(t, state)
+	if len(lines) != 1 || lines[0]["error.type"] != "refused" {
+		t.Errorf("traces %v, want one line of error.type refused", lines)
 	}
 }
 

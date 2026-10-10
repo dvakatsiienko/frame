@@ -67,7 +67,8 @@ func laneGate(r *Run, args []string, _ Flags) (any, error) {
 		fmt.Println("lane gate: " + line)
 	}
 	if len(refusals) > 0 {
-		r.code = 1
+		// a passthrough verb exits by code, so the refusal kind is set on the trace by hand
+		r.code, traced.Kind = 1, "refused"
 	}
 	return nil, nil
 }
@@ -145,8 +146,10 @@ func contractRefusals(tree string, staged []stagedFile) []string {
 				carries = true
 			}
 			for _, listed := range c.contract {
-				if underPath(f.name, listed) && !slices.Contains(touched, f.name) {
-					touched = append(touched, f.name)
+				for _, name := range []string{f.name, f.old} {
+					if name != "" && underPath(name, listed) && !slices.Contains(touched, name) {
+						touched = append(touched, name)
+					}
 				}
 			}
 		}
@@ -224,10 +227,12 @@ func skillRefusals(tree string, staged []stagedFile) []string {
 			paths = append(paths, f.old)
 		}
 		got, _ := gitIn(tree, append([]string{"diff", "--cached", "-M", "-U0", "--"}, paths...)...)
-		added, removed := 0, 0
+		added, removed, inHunk := 0, 0, false
 		for row := range strings.SplitSeq(got.out, "\n") {
+			// the ---/+++ file headers sit before the first hunk; inside one, a `---` row is a content line
+			inHunk = inHunk || strings.HasPrefix(row, "@@")
 			switch {
-			case strings.HasPrefix(row, "+++"), strings.HasPrefix(row, "---"):
+			case !inHunk:
 			case strings.HasPrefix(row, "+") && strings.TrimSpace(row[1:]) != "":
 				added++
 			case strings.HasPrefix(row, "-") && strings.TrimSpace(row[1:]) != "":
