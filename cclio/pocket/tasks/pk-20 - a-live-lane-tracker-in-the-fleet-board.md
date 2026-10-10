@@ -3,12 +3,12 @@ id: PK-20
 title: >-
   a live lane tracker in the fleet board — resolve with no second lane
   distractions
-status: done
+status: open
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-10 07:55'
+updated_date: '2026-10-10 08:08'
 labels:
-  - l
+  - m
 dependencies: []
 priority: next
 type: idea
@@ -184,5 +184,5 @@ think of all my asks as a whole. how to make it work efficiently, fluently and w
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-moved to linear: FRM-377 (the 10-10 pocket sweep; dima's words folded into the ticket body)
+back from linear (FRM-377 canceled) on dima's word, 2026-10-10: wanted soon, linear is the long shelf
 <!-- SECTION:NOTES:END -->

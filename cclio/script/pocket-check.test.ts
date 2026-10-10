@@ -128,14 +128,11 @@ describe('checkPocket', () => {
         ]);
     });
 
-    test('an item bigger than minutes needs a ticket or a parked reason', () => {
-        const bare = task({}, 'body');
-        expect(checkPocket(config, [bare], today)).toEqual([
-            'PK-1: bigger than minutes: give it a `ticket:` line, or a `parked:` reason',
-        ]);
-        expect(
-            checkPocket(config, [task({}, 'parked: waits on m1')], today),
-        ).toEqual([]);
+    test('a parked item stays out of the open cap', () => {
+        const six = Array.from({ length: 6 }, (_, n) =>
+            task({ id: `PK-${n}` }, n === 0 ? 'parked: waits on m1' : 'body'),
+        );
+        expect(checkPocket(config, six, today)).toEqual([]);
     });
 
     test('more than five open items goes red', () => {

@@ -1,7 +1,7 @@
 ---
 id: PK-29
 title: '`x recipe` — list, preview, edit'
-status: done
+status: open
 assignee: []
 created_date: '2026-10-09 10:38'
 updated_date: '2026-10-10 07:55'
@@ -27,5 +27,5 @@ pocket 67 · status line was: open · wish · cli lane · after 66 settles the r
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-moved to linear: FRM-378 (the 10-10 pocket sweep; dima's words folded into the ticket body)
+back from linear (FRM-378 canceled) on dima's word, 2026-10-10: wanted soon, linear is the long shelf
 <!-- SECTION:NOTES:END -->

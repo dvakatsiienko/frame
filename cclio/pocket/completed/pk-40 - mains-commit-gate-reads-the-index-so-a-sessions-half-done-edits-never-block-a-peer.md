@@ -3,10 +3,10 @@ id: PK-40
 title: >-
   main's commit gate reads the index, so a session's half-done edits never block
   a peer
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-09 12:49'
-updated_date: '2026-10-09 13:40'
+updated_date: '2026-10-10 08:07'
 due_date: '2026-10-10'
 labels:
   - s
@@ -26,7 +26,5 @@ ccrow 10-09 15:47: the mods coder's FRM-354 commit was refused by pnpm test over
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-grill r1 (dima 16:35, as recommended): Q1 the gates run in a temp copy of the index (checkout-index + symlinked node_modules), no stash of a peer's files · Q2 frame first, bytes after a measured frame · Q3 one chunk with pk-37 under x lane gate. scope note: the block happens only on main (cclio + the mods coder + quick-lane coders share it); worktree sessions never block each other
-
-moved to linear 10-09 16:40: FRM-367 (x lane gate), sealed with pk-37 + pk-40 together
+closed 10-10: FRM-367 landed, frame's gates run on a temp copy of the index (script/index-run.sh)
 <!-- SECTION:NOTES:END -->

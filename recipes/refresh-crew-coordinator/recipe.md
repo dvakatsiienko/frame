@@ -97,6 +97,7 @@ on top of the shared vectors of `x:shape-recipe` (the delta covers the cc change
 - the review shape: what a review subagent reads (the wish and spec, not only the diff), its output cap, its model tier, checking a finding at its cited line before acting, and whether cleanup is a separate pass (`/simplify`) — measured where a source measured it
 - role drift: roles that appear as capabilities grow, roles that go obsolete as models improve
 - ticket management for an agent coordinator: tools and strategies (linear, local spec trackers, the pocket, matt's pipeline), what keeps the loop chill
+- estimates and priorities an agent coordinator sets: what a size means when agents do the work, a rubric an agent applies the same way every time, order vs priority labels, calibration against actuals, and the failure modes (everything «high», fields set once and never read); seed: `docs/research/estimates-and-priorities.md` (dima, 2026-10-10)
 - agentic workflows overall: spec-driven runs, shifts vs lanes, review loops — what is proven
 - operator overload, the coordinator's half: how a coordinator paces one human — batching, collapsing asks, holding member traffic, the siesta — and which remedies measurably shrank his load (dima, 2026-10-08: the thread spam; the adviser recipe researches the detector, this one the remedy)
 

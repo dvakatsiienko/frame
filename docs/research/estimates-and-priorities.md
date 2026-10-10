@@ -1,5 +1,5 @@
 ---
-dies-when: dima decides the scheme and it lands in x:pm and the pocket config
+dies-when: the next refresh-crew-coordinator run distills it (the scheme already landed in x:pm, 2026-10-10)
 ---
 Ticket: none (pocket pk-46)
 

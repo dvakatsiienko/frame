@@ -5,7 +5,6 @@ import { join } from 'node:path';
 // the pocket's contract on top of Backlog.md (grill 2026-10-09); allowed values come from its own config
 const NOW_CAP = 3;
 const OPEN_CAP = 5;
-const MINUTES = 'xs';
 const PARKED_LINE = /^parked:\s*\S/m;
 const EXPIRING = ['xs', 's'];
 const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
@@ -85,16 +84,6 @@ export function checkPocket(
         )
             report('waiting without a `check:` first line');
 
-        if (
-            sizes.length === 1 &&
-            !sizes.includes(MINUTES) &&
-            status !== 'waiting' &&
-            !parked &&
-            ticketsOf(text).length === 0
-        )
-            report(
-                'bigger than minutes: give it a `ticket:` line, or a `parked:` reason',
-            );
         const due = front.scalars.due_date;
         const isExpiring = sizes.some((size) => EXPIRING.includes(size));
         if (isExpiring && status !== 'waiting' && !due)
