@@ -10,15 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «the question we covered in a grill makes the design totally different» · 2026-09-30
-speak was built on a random ask the day before and never shaped. the re-shape grill took four
-questions: why (he hears 90 % of his text, F4 is his most-used hotkey), what the product is (the pill and
-the admin, both daily), the friction (a forgotten selection turns pause into «read this instead»), what
-goes (nothing — the providers are his playground). each answer moved the design: ⇧F4 pause came out of
-one question, the pill's volume and speed popovers out of another, word highlight turned from a nice-to-have
-into «I follow the text while it reads». his note after it: «a grilling session before design has incredible
-value … if we didn't grill and just started a design randomly» — the day shape-idea became an invariant. → `x:shape-idea`, `fleet-identity`
-
 ## «why not here?» · 2026-09-30
 the atelier lens ring was built from the comp and clean in the verifier's eyes. on his wide screen the art sat
 letterboxed, and he circled the empty dark band above it: «why not here?». two rounds moved the pills toward the band,
@@ -62,3 +53,7 @@ he was grooming `refresh-craft-spawning`, the recipe that keeps my spawning true
 
 ## «you are either rushing, or choosing the wrong shape» · 2026-10-09
 past midnight he asked me to grill the next cli chunks, and I packed seven decisions into the ⏳ block as one wall of numbered lines, each with my pick. he sent a screenshot with a red box around it: «what is this? … is that a grill?» then, before I had fixed it: «why not use the grill shape from the skill?» matt's grilling skill was in the list the whole time, and its round shape (one question, its context, a pick) exists so he can steer each line. he added the shape he wanted from then on: a title naming the ticket or lane, the rounds, a pre-filled answer fence he only steers. an hour later he named the next gap himself: «a grill assumes exit lines too», so a chunk is sealed, not grilled. his eye read the shape before the cost showed. → `cclio:shape-lane`, «rushing, or the wrong shape»
+
+## «why do we build a workaround via cli overall?» · 2026-10-10
+past 23:00 he approved all three picks for cli chunk 6, the github door: `x gh pr` grows diff and merge, a new `x gh read`, guard hints, all priced from 501 raw `gh` calls. then, in the same message: «are you sure these cli verbs will be useful for everyone? … github cli is a mature, advanced cli … why do we build a workaround via cli overall?». I re-checked each verb against x's own admission rule: diff was a thin alias, and `x gh read` was one `Accept` header away in plain `gh`, proven on cli/cli's readme in a minute. the chunk dissolved into one exit line (the CLEAN merge guard) and one tip; he then asked the same of the linear verbs, and those held, each hiding a trap. the call counts had read as demand; his felt sense read the tool's maturity first. → `x/PRODUCT.md` admission rule, `x:github-contrib` raw-read tip
+

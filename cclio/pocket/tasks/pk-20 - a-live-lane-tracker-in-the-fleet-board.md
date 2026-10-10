@@ -324,6 +324,8 @@ ticket: FRM-386 (sealed 22:25, 7 exit lines, preflight green; spec `.scratch/sta
 - ccrow freebie left: her ledger line at the packet head (sent n · holdout next in k · last send · hits)
 - rider o102: ⏰ turned on after a reset still wakes the sessions that reset left capped (armWake reads the switch only at fire time, `register.tsx` ~677)
 - rider o103: the band's ⏳ rounds up like cc's «resets in 1 min»
+- last item of tomorrow's mods lane (dima, 2026-10-10 23:54, folded): mods are configurable right from slash commands (`/board colour` toggles the board's colour). when every planned mods chunk is done and dima takes over the mods coder, remind him to ask it: which mods are configurable today, and how — the full interface. then, once the mods reach their final shape, a small grill on the knobs he wants: only the essential ones useful to him, never a zoo of configs; he brings his own, cclio proposes hers too. not for today
+- mods asks from 23:54: phases hold 7 lines instead of 5 (a try); the band's 🔭 prints who we wait on in bold
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes
