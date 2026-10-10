@@ -42,6 +42,16 @@ describe('the · rule', () => {
         expect(stop(reply)).toBe('');
     });
 
+    it('blocks a 🔭 line that waits on a ccrow wake', () => {
+        expect(stop('done.\n\n🔭 waiting on 🐦‍⬛ ccrow’s 22:16 wake')).toContain(
+            'a wake never holds the session',
+        );
+    });
+
+    it('passes a 🔭 line that waits on a real block', () => {
+        expect(stop('done.\n\n🔭 waiting on ci for the pushed head')).toBe('');
+    });
+
     it('lets a second stop through, so a block never loops', () => {
         expect(stop('a · b · c', true)).toBe('');
     });

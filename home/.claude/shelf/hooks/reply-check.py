@@ -20,6 +20,8 @@ MIDDOT = re.compile(r"\w[^\n·]*\s·\s[^\n·]*\w")
 CIRCLED = re.compile(r"[①-⑳]")
 HASH = re.compile(r"(?<![\w/.-])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}(?![\w/.-])")
 REPORT_STAMP = re.compile(r"📄[^\n]*?\b(\d{1,2}):(\d{2})\b")
+# a ccrow wake is a Stop-hook side effect, never a block: a 🔭 line naming it read as a hang (dima, 2026-10-10)
+WAIT_ON_CCROW = re.compile(r"^.*🔭.*ccrow.*$", re.M)
 
 
 def minutes_now() -> int:
@@ -76,6 +78,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("circled-digits", m.group(0)) for m in CIRCLED.finditer(prose)]
     found += [("commit-hash", m.group(0)) for m in HASH.finditer(URL.sub("", prose))]
     found += [("future-stamp", stamp) for stamp in future_stamps(prose)]
+    found += [("wait-on-ccrow", m.group(0)[:40]) for m in WAIT_ON_CCROW.finditer(prose)]
     return found
 
 
@@ -101,6 +104,7 @@ def main() -> None:
             log.write(f"{stamp}\t{session}\t{where}\t{rule}\t{clean}\n")
     late = [snippet for rule, snippet in hits if rule == "future-stamp"]
     dots = [snippet for rule, snippet in hits if rule == "middot"]
+    crow = [snippet for rule, snippet in hits if rule == "wait-on-ccrow"]
     # the two blocking rules: logging alone changed nothing (28 stamp hits in a day, dima 2026-10-06; the · list, dima 2026-10-08); a second stop passes, so a block never loops
     reasons: list[str] = []
     if late:
@@ -108,6 +112,8 @@ def main() -> None:
         reasons.append(f"the 📄 stamp {', '.join(late)} is later than now ({now}). run `date` and reprint the 📄 line with the real time.")
     if dots:
         reasons.append(f"a ·-joined list in prose («{dots[0]}»): three things in a row are three bullets. reprint it as one `- ` line per item.")
+    if crow:
+        reasons.append("a 🔭 line names ccrow: a wake never holds the session. drop the 🔭 line, or name what really holds it (a ci run, a coder).")
     if reasons and not event.get("stop_hook_active"):
         print(json.dumps({"decision": "block", "reason": " ".join(reasons)}))
 
