@@ -466,7 +466,7 @@ test("an ask's pick is drawn bold", async ($, on) => {
     ).toBe(true);
 });
 
-test('an ask answered this turn leads with 👀 and a «seen» card until the turn ends', async ($, on) => {
+test('an ask answered this turn leads its line with 👀 until the turn ends', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -474,5 +474,22 @@ test('an ask answered this turn leads with 👀 and a «seen» card until the tu
     await say($, 'go');
     await orbit($, { ids: ['o1'], op: 'resolve' });
     const row = await ui.find({ key: 'orbit:ask:o1', type: 'Box' });
-    expect(row?.text?.startsWith('👀seen')).toBe(true);
+    expect(row?.text?.startsWith('👀 o1:')).toBe(true);
+});
+
+test("a plan line's lead word prints bold", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, {
+        lines: ['now: the slim row', 'no lead here'],
+        op: 'plan',
+    });
+    const bold = (await ui.findAll({ type: 'Text' }))
+        .filter((n) => n.props.bold)
+        .map((n) => n.text);
+    expect([bold.includes('now:'), bold.includes('no lead here')]).toEqual([
+        true,
+        false,
+    ]);
 });

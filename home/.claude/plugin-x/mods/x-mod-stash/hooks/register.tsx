@@ -87,6 +87,8 @@ const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
 const PLAN_MAX = 5;
 const STALE_TURNS = 3;
+// a plan line's lead word, one short word before its colon
+const PLAN_LEAD = /^[a-z]{2,10}:/i;
 const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     'op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»); pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.',
@@ -1500,21 +1502,12 @@ export const register: Register = (on) => {
                 key={`orbit:ask:${a.id}`}
                 marginTop={i > 0 ? 1 : 0}>
                 <Box flexDirection='row' gap={1}>
-                    {/* an ask cclio answered this turn leads with 👀 until the turn ends (dima, 20:34) */}
-                    {a.isResolved
-                        ? hoverTip(
-                              ui,
-                              `seen:${a.id}`,
-                              'seen',
-                              <Text>👀</Text>,
-                              {
-                                  left: 3,
-                              },
-                          )
-                        : null}
                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
                         {/* the id and the pick bold, so the proposal stands out (dima, 20:30) */}
+                        {/* an ask answered this turn leads its line with 👀 until the turn ends — inline, so the row keeps its left
+                            edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
                         <Text>
+                            {a.isResolved ? '👀 ' : ''}
                             <Text bold>{a.id}</Text>
                             {`: ${a.text} ➡️ `}
                             <Text bold>{a.pick}</Text>
@@ -1591,10 +1584,18 @@ export const register: Register = (on) => {
                         <Text bold>
                             {`📝 planned${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
                         </Text>
-                        {o.plan.lines.map((line, i) => (
-                            // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
-                            <Text key={`plan:${i}`}>{`${i + 1}. ${line}`}</Text>
-                        ))}
+                        {o.plan.lines.map((line, i) => {
+                            // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
+                            const lead = line.match(PLAN_LEAD);
+                            return (
+                                // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
+                                <Text key={`plan:${i}`}>
+                                    {`${i + 1}. `}
+                                    {lead ? <Text bold>{lead[0]}</Text> : null}
+                                    {lead ? line.slice(lead[0].length) : line}
+                                </Text>
+                            );
+                        })}
                     </Box>
                 ) : null}
             </Box>

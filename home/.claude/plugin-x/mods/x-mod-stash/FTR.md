@@ -319,6 +319,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given cclio is mid-turn
   - when dima ticks an ask
   - then cclio's reply in that turn covers it; a tick that lands too late for the turn stays ticked and joins the next prompt
+  - proven live on the desktop 2026-10-10 20:40: dima ticked o21 while cclio ran a tool, and that same turn's reply answered it
   - decision: the tick rides the turn's next tool result as model-only context; one that no tool result reaches waits for dima's next prompt — a hidden appended message started a turn of its own when it landed after the turn's last read (dima, 20:31)
   - decision: every orbit write reads the orbit back from `$.state` first — a reload landing at a turn's end ran `turn.complete` before `session.start` and saved an empty orbit (dima, 20:20: «coder wiped the orbit»)
 - ✅ marked asks lock while cclio works on them
@@ -330,7 +331,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given cclio answered a marked ask
   - when the turn ends
   - then the ask leaves orbit; one cclio has a follow-up on keeps its place and id, with new text and a «changed» mark
-  - decision: an answered ask stays in orbit until its turn ends, led by 👀 whose card reads «seen», so dima sees it go (dima, 20:34: an icon, not the word «answered»)
+  - decision: an answered ask stays in orbit until its turn ends, its line led by 👀 (`👀 o20: …`), so dima sees it go — an icon, not the word «answered», inline so the row keeps its left edge; no «seen» card, since a card needs a box of its own (dima, 20:34, 20:39)
 - ✅ every prompt reminds the session of orbit
   - given orbit holds open asks or a plan
   - when any prompt goes to the session
@@ -343,6 +344,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given cclio has set a plan
   - when dima looks at the board
   - then up to 5 lines show what is now, next and then, each readable on its own
+  - decision: each line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
 - ✅ a stale plan is named
   - given the plan was not touched for 3 turns
   - when the next prompt goes
