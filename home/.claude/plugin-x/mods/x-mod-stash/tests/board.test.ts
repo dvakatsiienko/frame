@@ -178,6 +178,11 @@ test('the coordinator is pinned to the top of the board', async ($, on) => {
     expect(order).toEqual([`m:${HERE}`, `m:${PEER}`]);
 });
 
+test("the coordinator's adviser is pinned second, above the rest", async ($, on) => {
+    fleet(on, {}, { alive: [1, 2, 3], patch: { 3: { name: '🐦‍⬛ ccrow' } } });
+    expect(Object.keys(await rowsBySid($))).toEqual([HERE, GONE, PEER]);
+});
+
 test('a headless run named t-<hex> gets no row', async ($, on) => {
     fleet(on, {}, { alive: [1, 2, 3], patch: { 3: { name: 't-70' } } });
     expect(Object.keys(await rowsBySid($))).toEqual([HERE, PEER]);

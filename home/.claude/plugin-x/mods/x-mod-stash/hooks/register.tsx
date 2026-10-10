@@ -856,11 +856,9 @@ async function members($: EngineInterface): Promise<Member[]> {
             wait: reply?.wait,
         });
     }
-    // the coordinator first, the rest by name
+    // the coordinator first, her adviser second, the rest by name
     return out.sort(
-        (a, b) =>
-            Number(isCoordinator(b.name)) - Number(isCoordinator(a.name)) ||
-            a.name.localeCompare(b.name),
+        (a, b) => pinOf(a.name) - pinOf(b.name) || a.name.localeCompare(b.name),
     );
 }
 
@@ -880,6 +878,9 @@ const COLUMNS = {
 
 // the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
 const isCoordinator = (name: string) => /\bcclio\b/.test(name);
+// cclio, then ccrow, then everyone else (dima, 2026-10-10)
+const pinOf = (name: string) =>
+    isCoordinator(name) ? 0 : /\bccrow\b/.test(name) ? 1 : 2;
 const doorGlyph = (door: Door) => (door.kind === 'open' ? '↗' : '📋');
 
 async function isOpen($: EngineInterface) {
