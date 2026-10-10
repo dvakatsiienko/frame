@@ -396,3 +396,24 @@ test("🔊 sends the ask's text to speak's control socket", async ($, on) => {
         text: 'name a bird. pick: pelican',
     });
 });
+
+test("orbit's asks survive a reload", async ($, on) => {
+    const w = world(on);
+    const kept = {
+        asks: [{ id: 'o3', pick: 'yes', text: 'kept across a reload' }],
+        next: 4,
+        turns: 2,
+    };
+    // a reload: the engine keeps $.state, and session.start runs again in a fresh module
+    const state: Record<string, unknown> = { orbit: kept };
+    on('state.get', (_$, e) => ({
+        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state[e.key] = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    await start($);
+    await say($, 'hi');
+    expect((w.contexts.at(-1) ?? []).join('\n')).toContain('(o3)');
+});
