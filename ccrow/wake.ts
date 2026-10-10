@@ -2,7 +2,6 @@ import {
     closeSync,
     existsSync,
     openSync,
-    readFileSync,
     statSync,
     unlinkSync,
     writeFileSync,
@@ -19,19 +18,15 @@ import {
     type Wake,
     armModels,
     armOfDay,
-    buildPacket,
     dayOf,
     fail,
     isCoordinatorTranscript,
     isMode,
-    leavesToSend,
-    localDay,
     modeList,
-    newestTranscript,
     oneCcrow,
+    packWake,
     readLines,
     readState,
-    resolveLeaves,
     sendLine,
     spawnHarvest,
     transcriptDelta,
@@ -127,22 +122,13 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         mode: wakeMode,
         phase: day <= SILENT_DAYS ? 'silent' : 'live',
     };
-    let leafPatterns: string[] = [];
-    try {
-        leafPatterns = readFileSync(
-            join(STATE_DIR, 'leaves.txt'),
-            'utf8',
-        ).split('\n');
-    } catch {}
-    const leaves = resolveLeaves(leafPatterns, localDay(now));
-    const ccrowTranscript = newestTranscript();
-    const toSend = leavesToSend(leaves.found, state, ccrowTranscript);
-    const files = buildPacket({
-        deltaText: delta.text,
-        dir: join(STATE_DIR, 'packets', wakeInfo.id),
-        leaves: toSend.changed,
-        missing: leaves.missing,
-        unchanged: toSend.unchanged,
+    const packed = packWake({
+        delta,
+        lines,
+        now,
+        state,
+        transcriptPath,
+        wakeId: wakeInfo.id,
     });
 
     if (viaSocket && session) {
@@ -164,21 +150,18 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     }
 
     writeState({
-        ...state,
+        ...packed.state,
         firstWakeAt,
         lastWakeAt: now.getTime(),
-        leafHashes: toSend.hashes,
-        leavesFor: ccrowTranscript,
-        offsets: { ...state.offsets, [transcriptPath]: lines.length },
     });
 
     if (viaSocket) spawnHarvest(wakeInfo);
 
-    const unmatched = leaves.missing.length
-        ? `, ${leaves.missing.length} leaves unmatched`
+    const unmatched = packed.missing.length
+        ? `, ${packed.missing.length} leaves unmatched`
         : '';
     console.log(
-        `woke ${wakeInfo.id} (${viaSocket ? 'socket' : 'relay: cclio forwards it'}): day ${day} ${wakeInfo.phase}, ${delta.steps} steps, ${files.length} files${unmatched}`,
+        `woke ${wakeInfo.id} (${viaSocket ? 'socket' : 'relay: cclio forwards it'}): day ${day} ${wakeInfo.phase}, ${delta.steps} steps, ${packed.files.length} files${unmatched}`,
     );
     const dayArm = armOfDay(day);
     if (wakeInfo.phase === 'live' && state.arm && state.arm !== dayArm) {

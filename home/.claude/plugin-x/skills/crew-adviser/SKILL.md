@@ -25,14 +25,16 @@ it is not a wake: answer `.` and do nothing else.
 
 ## a wake
 
-a wake line arrives as a peer message from `ccrow:wake`:
-`ccrow wake <id> · mode <day|systematic> · <silent|live> · packet <file> · charter <path>`
+a wake line arrives as a peer message:
+`ccrow wake <id> · mode <day|systematic|decision> · live · packet <file> · charter <path>`
 
 0. a session that never ran the boot (dima cleared it) runs the boot first, from the charter path the wake line names. after a compaction since the last wake, re-read this contract
    (`~/frame/home/.claude/plugin-x/skills/crew-adviser/SKILL.md`) and the dna: both reached you as a boot prompt.
 1. read the one `packet.md` the wake line names with a single `Read` call, never Bash (Bash persists output past ~30 KB and splits the read). it opens with cclio's thread since the last wake
    (dima's lines, member traffic, cclio's replies, each block headed with its time; tool calls left out), then
    cclio's leaves that changed since your last read, each under a `## leaf ·` header (strategy, stories, habits, the pm craft, the day's flawlog, the last handoff); the ones listed as unchanged you already hold.
+   a `cut:` line at its head means the size cap dropped blocks or tool output: read the tail of the
+   transcript it names (`tail -n 400`) for what was hidden. no `cut:` line, the packet is whole and the transcript stays unread.
    a field you needed and the packet lacks (a timestamp, an image, the cwd, the diff since the
    last wake) goes into the note as one `packet:` line — that is how the packet grows.
 2. read `notes.jsonl` and `verdicts.jsonl` in your home (the current dir): your past notes and
@@ -67,14 +69,22 @@ a wake line arrives as a peer message from `ccrow:wake`:
    min apart and your cache cools at 60 (dima, 2026-10-08) — then it goes or dies with a reason. you hold one note; a stronger one takes its place, and the note you send
    ends with `also held: <n> · <titles>` for the ones it displaced (all of them stay in
    `notes.jsonl`).
-7. sending. `live` → send the note to «🦉 cclio» with SendMessage at its time. `silent` → send
-   nothing; the note is logged for the trial only. `none` is never sent. never more than one
+7. sending. send the note to «🦉 cclio» with SendMessage at its time; `none` is never sent. never more than one
    SendMessage to cclio in 30 minutes, wakes and talks with dima counted together. **until
    2026-10-20, every 5th note you would send is a holdout**: logged, never sent, its reply ends
    `holdout` — the halt checks whether the issue surfaced without you, which is how your uplift
    gets measured. the sent note ends with one line, `vet: <wake id>-<arm>` (the wake id from the
    wake line, the arm your session runs as), so cclio records its verdict with
    `pnpm --silent ccrow:note-vet ok|miss <that id> "<why>"` in the same turn.
+
+## a decision wake
+
+`mode decision` fires as cclio acts, outside the 30-min cadence; the line ends with the act:
+
+- `merge <repo>#<n> · verified <sha|none> · head <sha> · note <path>` — her merge waits ≤ 90 s for your note
+  file, so read only the packet (steps 1–4). a head past the verified one is an unverified delta. write `none` or
+  the note to the note path with `Write`, reply the same text, no SendMessage and no holdout: the hook carries it.
+- `spawn` — the spawn already ran; a wake like any other.
 
 ## a consult
 

@@ -104,10 +104,6 @@ const engine = readFileSync(
     path.join(skillsDir, 'shape-recipe/SKILL.md'),
     'utf8',
 );
-const reminders = readFileSync(
-    path.join(root, 'cclio/memory/_reminders.md'),
-    'utf8',
-);
 const topLevel = new Set(readdirSync(root));
 
 function engineSection(title: string) {
@@ -125,15 +121,6 @@ export const sharedLines = [
         (m) => (m[1] ?? '').split(' done:')[0] ?? '',
     ),
 ].filter(Boolean);
-
-// a cadence that leans on a ⏰ needs a reminder line naming the recipe, or nothing ever fires it
-export function reminderMissing(
-    name: string,
-    cadence: string,
-    reminderText: string,
-) {
-    return /⏰|reminder/i.test(cadence) && !reminderText.includes(name);
-}
 
 // a recipe names x:shape-recipe's shared parts, never restates them; a copy drifts from the engine
 export function sharedCopies(text: string, shared: string[]) {
@@ -218,11 +205,6 @@ test.each(recipes)('%s has the recipe shape', (name) => {
         name.startsWith(`${fields?.kind}-`),
         `${name}: kind-first name`,
     ).toBe(true);
-    expect(fields?.cadence, `${name}: cadence`).toBeTruthy();
-    expect(
-        reminderMissing(name, String(fields?.cadence), reminders),
-        `${name}: cadence leans on a ⏰ that cclio/memory/_reminders.md never names`,
-    ).toBe(false);
     expect(
         sharedCopies(text, sharedLines),
         `${name}: lines restating x:shape-recipe`,
@@ -339,23 +321,6 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     expect(steps.at(-1), `${name}: the last step logs the run`).toContain(
         'log.md',
     );
-});
-
-test('a cadence on a ⏰ with no reminder line is caught', () => {
-    expect(
-        reminderMissing(
-            'refresh-x',
-            'quarterly, held by its ⏰',
-            '- other: monthly',
-        ),
-    ).toBe(true);
-    expect(
-        reminderMissing(
-            'refresh-x',
-            'quarterly, held by its ⏰',
-            '- refresh-x: quarterly',
-        ),
-    ).toBe(false);
 });
 
 test('a line restating x:shape-recipe is caught', () => {

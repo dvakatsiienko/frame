@@ -130,14 +130,4 @@ Store contract: the `remind` skill. Both tiers die only when Dima drops them.
 
 ⏰ 🦡 before every halt: dima runs his own retro in this thread, and in ccrow's window he types «read /Users/dima/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md and run it over cclio's session from your packets; focus: <his steer>» (`ls ~/.claude/plugins/cache/mattpocock/mattpocock-skills/` names the version). cclio reminds him, then runs its own retro beside it, one flush. dima 2026-10-07: «yes remind me» · «i want to gather retro from ccrow myself next time» — set 2026-10-07, moved from the pocket 2026-10-09
 
-⏰ 🔬 refresh-art-kit, 2026-12-30: quarterly; run `recipes/refresh-art-kit/recipe.md`
-
-⏰ 🔬 refresh-crew-designer, 2026-12-29: quarterly; run `recipes/refresh-crew-designer/recipe.md`
-
-⏰ 🔬 refresh-job-market, 2026-11-06: monthly while dima applies; run `recipes/refresh-job-market/recipe.md`
-
-⏰ 🔬 refresh-speak, 2026-11-23: the fish free tier ends 11-30; run `recipes/refresh-speak/recipe.md`
-
-⏰ 🔬 refresh-writing-for-humans, 2026-10-27: ~2 months from 08-27; run `recipes/refresh-writing-for-humans/recipe.md`
-
 ⏰📌 🦉🎨 the next atelier touch carries [BYT-127](https://linear.app/x-com/issue/BYT-127) (lottie / rive test drive) into its brief — dima, 2026-10-10: «pick it up next time we touch atelier, but do not forget». dies when BYT-127 starts — set 2026-10-10

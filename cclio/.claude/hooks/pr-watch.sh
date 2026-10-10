@@ -6,14 +6,19 @@
 # it conflicts with its base (DIRTY or CONFLICTING; bytes#126 sat conflicted over an hour, FRM-363). a cloud/* branch prints when it gains a commit: a cloud session sends no idle
 # notice, so its brief ends by pushing its report there (x:crew-cloud). silence is the normal state.
 # the watch belongs to the pr, never to the coder that opened it (2026-09-28: #112 sat green 30 min
-# after its coder's watch was stopped).
+# after its coder's watch was stopped). a «ready» needs the verifier's clean on that very head: a pr whose
+# verified sha (written by the verifier, `--verified`) differs prints «unverified delta» instead (#82 merged
+# two commits past its clean, FRM-380); a pr with no verifier record prints «ready» as before.
 
 REPOS="dvakatsiienko/frame dvakatsiienko/bytes"
 SEEN="$HOME/.claude/shelf/pr-watch-seen.json"
+VERIFIED="$HOME/.claude/shelf/pr-verified.json"
 [ -s "$SEEN" ] || echo '{}' > "$SEEN"
+[ -s "$VERIFIED" ] || echo '{}' > "$VERIFIED"
 
 seen() { jq -r --arg k "$1" '.[$k] // ""' "$SEEN"; }
 mark() { jq --arg k "$1" --arg v "$2" '.[$k] = $v' "$SEEN" > "$SEEN.tmp" && mv "$SEEN.tmp" "$SEEN"; }
+verified() { jq -r --arg k "$1" '.[$k] // ""' "$VERIFIED"; }
 
 pass() {
   for r in $REPOS; do
@@ -32,9 +37,15 @@ pass() {
           [ -n "$(seen "$key:head")" ] && echo "🟡 ${r#*/}#$n new commit $sha · $title · $url"
           mark "$key:head" "$sha"
         fi
-        if [ "$state" = green ] && [ "$(seen "$key:green")" != "$sha" ]; then
-          echo "🟢 ${r#*/}#$n green on $sha, ready to merge · $title · $url"
-          mark "$key:green" "$sha"
+        # keyed on head and verified sha both: a clean that lands after a delta line still prints «ready»
+        v=$(verified "$key")
+        if [ "$state" = green ] && [ "$(seen "$key:green")" != "$sha@$v" ]; then
+          if [ -n "$v" ] && [ "${v:0:8}" != "$sha" ]; then
+            echo "🟠 ${r#*/}#$n verified ${v:0:8}, head $sha: unverified delta — the verifier never saw this head · $title · $url"
+          else
+            echo "🟢 ${r#*/}#$n green on $sha, ready to merge · $title · $url"
+          fi
+          mark "$key:green" "$sha@$v"
         fi
         if [ "$conflict" = conflict ] && [ "$(seen "$key:conflict")" != "$sha" ]; then
           echo "🔴 ${r#*/}#$n conflict on $sha — it cannot merge until it is rebased onto its base · $title · $url"
@@ -58,6 +69,11 @@ pass() {
 }
 
 case "${1:---watch}" in
+  --verified)
+    [[ "$2" == */* && "$3" =~ ^[0-9]+$ && "$4" =~ ^[0-9a-f]{8,40}$ ]] ||
+      { echo "usage: pr-watch.sh --verified <owner/repo> <pr> <head sha>" >&2; exit 2; }
+    jq --arg k "$2#$3" --arg v "$4" '.[$k] = $v' "$VERIFIED" > "$VERIFIED.tmp" && mv "$VERIFIED.tmp" "$VERIFIED"
+    echo "verified: $4 on $2#$3" ;;
   --once) pass ;;
   --watch) while true; do pass; sleep 60; done ;;
 esac

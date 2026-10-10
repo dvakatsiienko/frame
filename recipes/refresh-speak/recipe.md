@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: coordinator
-cadence: "when dima says «refresh read-aloud», when a free tier ends (fish: 2026-11-30), or when the elevenlabs quota runs out two months in a row"
 artifacts:
   - schedule/jobs/x-speak/
   - speak/
@@ -36,6 +35,8 @@ dima's, 2026-09-29:
 > techniques, models, best practices, and tools, and suggest a text-to-speech overhaul
 
 ## the run
+
+- suggest a run when: a free tier ends (fish: 2026-11-30), the elevenlabs quota runs out two months in a row
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. spawn the lanes: exa agent · parallel core · an opus lane that probes (real API calls for first-byte and quality); probe any new engine for real (a key, one call, first-byte ms). done: every lane returned or marked failed. (script)

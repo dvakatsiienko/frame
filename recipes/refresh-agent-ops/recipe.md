@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: coordinator
-cadence: "every two weeks while on the test drive, then at a model change or a memory sweep. an eval-set activity from the five moves the cadence to its own reruns."
 artifacts:
   - docs/knowledge/agent-ops.md
   - x/go/fleet_ops.go
@@ -19,6 +18,8 @@ keeps the fleet's upkeep measured: which recurring checks pay, and what our tool
 «i spotted, that coder (especially) and verifier tool call chains are sometimes very long … i want to know how optimal their tool call chains» · «what i missed? i printed only thoughts/ideas but i clearly can miss something bigger» (2026-10-07)
 
 ## the run
+
+- suggest a run when: a model changes, a memory sweep lands
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. research: the brief goes through `pnpm research:lanes <brief>` (exa + parallel) and one opus source lane on the papers, the cc docs and `claude plugin eval`, a fresh agent never a fork. done: every lane returned or marked failed. (script)

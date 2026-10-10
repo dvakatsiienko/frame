@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: coordinator
-cadence: "monthly, or at a jev model bump, or when a flow's vet streak breaks twice in a week"
 artifacts:
   - cclio/memory/sys-jev.md
   - script/lib/jev-questions.ts
@@ -29,6 +28,8 @@ keeps the classifier seat true: the engine (jev today, unless a better one wins)
 > the seat is called «classifier», not jev, on purpose: jev is just a model, a tool, and we could find another model for classification some day. what matters is the type of operation. the field looks bare because jev and classification are very new; jev is frozen only because we overspent, and it is useful. (2026-10-08)
 
 ## the run
+
+- suggest a run when: a jev model bump ships, a flow's vet streak breaks twice in a week
 
 1. **research**: after the groom (`x:shape-recipe` step 0), one brief from the vectors below; `pnpm research:lanes <brief> <out>` (exa + parallel) + an opus source lane (vectors 2–4 need source reading) — `habit-research-lanes`. done: every lane returned or marked failed. (script)
 2. **distill** — clever-merge into the guide and the rubrics' comments; raw lane output stays in `last/` until the next run's distill. done: the artifacts carry the merge, or are named «unchanged». (open)

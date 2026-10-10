@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: coordinator
-cadence: "at the trial verdict (2026-10-20), then at every new anthropic model release or a cc change to mods, advisor or cross-session messaging; the whole setup reviewed critically at every run — the adviser is experimental"
 artifacts:
   - home/.claude/plugin-x/skills/crew-adviser/SKILL.md
   - ccrow/AGENTS.md
@@ -26,6 +25,8 @@ keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, w
 - «search for a communication model between the adviser and you — the approach changes, and the overall adviser shape is vague: it is a new, recent idea in the ecosystem, not an established practice, a lab-type approach. from what i saw it is useful, so let's keep it, but treat it as experimental and critically review the whole adviser setup each time, so we can revamp it or change it in any way whenever we find a better shape.» (2026-10-08)
 
 ## the run
+
+- suggest a run when: the trial verdict (2026-10-20), a new anthropic model ships, a cc change to mods, advisor or cross-session messaging
 
 1. **groom** (step 0 of `x:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «read first: this recipe (`recipes/refresh-crew-coordinator-adviser/recipe.md`), `x:crew-adviser`, `ccrow/AGENTS.md`, your `notes.jsonl` + `verdicts.jsonl`, and the last findings in `last/`. then: what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why» — the adviser co-owns the recipe and answers from its whole contract, never blind (dima, 2026-10-08). its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
 2. **distill the last run's `last/`** before any new lane; name what it already answered. done: a list of answered vs open vectors.

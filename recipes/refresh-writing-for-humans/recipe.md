@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: coordinator
-cadence: "~2 months, held by the ⏰ reminder in cclio's `_reminders.md` (skill-copies freshness). Also fires early if a run of the skill produces «machinic» output Dima flags."
 artifacts:
   - docs/knowledge/writing-for-humans.md
   - home/.claude/plugin-x/skills/writing-for-humans/
@@ -21,6 +20,8 @@ dima's, confirmed 2026-08-27:
 > a robot; and i don't want to re-print the same research asks every time the tech moves.
 
 ## the run
+
+- suggest a run when: a run of the skill produces «machinic» output dima flags
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. lanes from two briefs (skills + techniques · detectors): the `researcher` agent + `pnpm research:lanes`; add your own read on how the skill should work (dima's standing note). done: every lane landed or failed out loud. (template)

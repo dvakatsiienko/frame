@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: [designer, coordinator]
-cadence: "on demand: «refresh art-kit», a rebrand spotted, a new art job type; quarterly, held by its ⏰ in cclio/memory/_reminders.md"
 artifacts:
   - home/.claude/plugin-x/skills/art-kit/
   - ~/frame/gifs/AGENTS.md
@@ -39,6 +38,8 @@ dima's, 2026-09-30:
 > time we pass through a recipe to update it.
 
 ## the run
+
+- suggest a run when: a rebrand is spotted, a new art job type appears
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. one brief file from the kept vectors → `pnpm research:lanes <brief>` (exa + parallel) plus a
