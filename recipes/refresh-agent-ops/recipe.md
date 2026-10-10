@@ -31,8 +31,6 @@ keeps the fleet's upkeep measured: which recurring checks pay, and what our tool
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 the four vectors of the brief, in dima's wording, as written there:
 
 1. is tool-call chain length a useful efficiency signal for coding agents, or a misleading one? what do practitioners and vendors measure instead: wasted steps, dead-end exploration, re-reads, failed-command retries, cost per resolved task?
@@ -61,5 +59,4 @@ the four vectors of the brief, in dima's wording, as written there:
 
 ## findings
 
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - overhaul proposal, never silent edits: what is new, what it changes in the fleet, noop included

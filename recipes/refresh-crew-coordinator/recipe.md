@@ -86,8 +86,6 @@ half skipped, with the reason — the shared rule of `x:shape-recipe`.
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 on top of the shared vectors of `x:shape-recipe` (the delta covers the cc changelog since the last run's build; prior art and established patterns cover coordination frameworks and orchestrator tools).
 
 **craft — the coordinator:**
@@ -147,7 +145,6 @@ on top of the shared three:
 the print carries the parts of `x:shape-recipe`; its checklists here: the crew, seat by seat (still needed · merged · missing), and the classifier seat (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named).
 
 beyond that shape, the print answers:
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - a role to add, merge or retire, with the evidence
 - a coordination or ticket practice to adopt, and what it replaces
 - any [verified] row flipped? the build it flipped on, and the row's new tag

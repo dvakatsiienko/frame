@@ -43,8 +43,6 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 1. the official surface — the mods reference + changelog since the last run: new events, `$` methods, render sites, limits, surfaces; then the generated types in `.claude-plugin/types/` as the authority for our build
 2. **hunt already built to borrow** — published mods and hook plugins (the catalogue at mods.aidojo.si, claudemods.ai, ray-amjad/awesome-claude-code-function-hooks, anthropics/claude-code-playground mods): read the source of the ones near our needs, one «borrow» line each
 3. **hunt already built for inspo** — unusual or high-value uses we have not thought of (guards, dashboards, presence, cost, privacy)
@@ -70,5 +68,4 @@ every vector's finding is read against our flows: name the step, file or habit o
 
 ## findings
 
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - print dima: what is essential and not built, what to borrow, what to drop

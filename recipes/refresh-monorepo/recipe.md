@@ -38,8 +38,6 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 1. **power usage** — turbo with coding agents: task graphs as agent gates, `--affected` / `turbo query affected`, local and remote cache, `turbo watch`, boundaries, generators, `futureFlags`, task `description`s, the turbo ai guide and its agent skill
 2. **pitfalls and don'ts** — cache poisoning, env vars outside the hash, worktrees sharing a cache (absolute paths in outputs), remote cache from worktrees, lockfile churn marking everything affected, context bloat
 3. **easy wins** — the few changes with the most gain per effort, ranked
@@ -64,5 +62,4 @@ every vector's finding is read against our flows: name the step, file or habit o
 
 ## findings
 
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - print dima the delta: new wins, new don'ts, a moved merge order

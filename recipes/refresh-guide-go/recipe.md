@@ -39,8 +39,6 @@ two languages at full scale is fine (dima, FRM-284), so go gets the same care as
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 from the v1.1 coder's retro, 2026-10-06:
 
 - each go minor's release notes: new stdlib (e.g. `errors.AsType`, `strings.SplitSeq`) and the new `go fix` analyzers
@@ -69,5 +67,4 @@ from the v1.1 coder's retro, 2026-10-06:
 
 ## findings
 
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - an overhaul proposal: what is new, what it changes in `x:guide-go` and `x/go`, noop included

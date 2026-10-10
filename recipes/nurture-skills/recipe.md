@@ -35,5 +35,4 @@ measures whether a skill fires and is followed, and improves it against the meas
 
 ### research
 
-- every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 - prior art: see `docs/knowledge/authoring-skill.md` § evals — prior art

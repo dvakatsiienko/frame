@@ -49,8 +49,6 @@ dima's, 2026-09-29:
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 1. voice quality — the current TTS leaderboards (Artificial Analysis arena, TTS Arena): which
    engines and models lead, especially female voices
 2. free tiers and prices — elevenlabs, fish, gemini, cartesia, azure, google, new entrants;
@@ -79,6 +77,5 @@ every vector's finding is read against our flows: name the step, file or habit o
 
 ## findings
 
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - a TTS overhaul proposal — chain order, new engines, dropped ones, normalizer
   gaps; noop is a valid outcome

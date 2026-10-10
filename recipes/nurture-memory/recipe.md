@@ -128,7 +128,6 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 
 ### research
 
-- every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
 - what changed in cc's memory / import / `paths:` / skill mechanics since the last run
 - new agent-doc craft, dima's channel parses included (theo, matt pocock) via `x:yt-transcript`
 - new memory-hygiene practice and tooling for agent fleets: checks for the loop, anthropic memory features, community approaches
@@ -151,7 +150,6 @@ his verdicts, run #1: proxying the research through `writing-for-agents` — no,
 ## findings
 
 beyond the shared shape:
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - resident tokens before → after, on disk, per layer
 - what moved, merged and died, each with its reason
 - each mechanical check's precision, and any new check earned

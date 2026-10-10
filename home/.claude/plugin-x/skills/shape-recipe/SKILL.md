@@ -17,12 +17,14 @@ shape test (`script/lib/recipe-shape.test.ts`) proves it.
 2. re-groom the vectors with dima: print them with the shared vectors below, he cuts and adds. done: his word on the list. (open)
 3. research, all lanes at once from one brief: the `researcher` agent (sources, code, docs) + `pnpm research:lanes <brief>` (exa + parallel). raw output → `last/`. done: every lane landed or failed out loud
 4. distill — clever-merge into each artifact: keep what still holds, add only what is new and useful, delete what the run proved stale. raw research never lands in an artifact. done: every artifact in `artifacts:` read and touched or named «unchanged»
-5. the findings print, one message to dima: what is new · what it changes in our setup · tools to try (a test drive, `habit-test-drive`) · steps that could become a script · the recipe's own weak spots. a noop run says «noop» and stops there. done: printed
+5. the findings print, one message to dima: what is new · our mistakes (every flow step, file or habit a vector showed wrong, with the vector that showed it) · what it changes in our setup · tools to try (a test drive, `habit-test-drive`) · steps that could become a script · the recipe's own weak spots. a noop run says «noop» and stops there. done: printed
 6. append the log line, update `recipe.md` only where the run proved it wrong. done: `log.md` has today's line
 
 ## the shared vectors — every refresh run asks these on top of its own
 
 skip one only by naming why it does not fit (a job-market run has no «agent use» of a tool).
+
+every vector's finding, shared or the recipe's own, is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing» — the want's «use what comes back to find mistakes in our own and the fleet's flows» (`recipes/AGENTS.md`).
 
 research, the outside world:
 - **the delta** — changelogs, release notes, new versions and rebrands since the last run's date

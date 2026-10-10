@@ -55,8 +55,6 @@ dima's, 2026-09-30:
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 **logos** — `logos.md`, `scripts/logo.ts`
 1. official product logos an agent can fetch with no human: svgl (api, count, freshness, license
    terms), simple-icons, iconify sets, devicon, any new source or agent-built cli/mcp — coverage,
@@ -107,5 +105,4 @@ every vector's finding is read against our flows: name the step, file or habit o
 
 ## findings
 
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - print dima the delta per branch, noop included

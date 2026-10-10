@@ -42,8 +42,6 @@ keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, w
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 the owner's vectors, in the outside world:
 - what a good adviser agent does: prior art on critic, reflection and devil's-advocate roles in multi-agent systems — when it speaks and when it says `none`, what it reads (timing, the operator's state, the thread's own numbers), how it earns trust; one bullet on the idea's standing (who runs one, who dropped it and why)
 - the communication model between an adviser and its coordinator: push (it reads the thread and speaks), pull (she asks), or both; message shape, cadence, what a note must carry to be acted on; what others built and where it broke
@@ -79,7 +77,5 @@ settled: «the comms model: pings or reads» — it reads her transcript on a wa
 ## findings
 
 done = the run happened (the `x:shape-recipe` rule). the print always carries the setup verdict (keep / revamp / retire) — the adviser is experimental, so every run reviews it whole.
-
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 
 the print carries the parts of `x:shape-recipe`: decisions · facts that move something · prior art (only what is interesting) · the checklist (`x:crew-adviser`, hunt by hunt: fired · caught · never fired) · open.

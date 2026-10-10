@@ -67,8 +67,6 @@ dima, 2026-10-02, on the design comms loop:
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 dima's asks from the thread:
 
 1. prod-grade design protos — how the top AI design tools work now (Claude Design, paper.design,
@@ -106,5 +104,4 @@ dima's asks from the thread:
 
 ## findings
 
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - an overhaul proposal for dima — what changes in the brief, the designer, the gallery, the scripts; noop is a valid outcome

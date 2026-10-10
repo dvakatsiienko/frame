@@ -39,8 +39,6 @@ dima's, confirmed 2026-08-27:
 
 ### research
 
-every vector's finding is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing».
-
 dima's wording:
 
 - best in class already existing skills for instructing you to print clever human-voiced
@@ -69,5 +67,4 @@ the running agent is the instrument:
 
 ## findings
 
-- our mistakes: every flow step, file or habit a vector showed wrong, with the vector that showed it
 - anything new to try out? skill refresh needed? upstream humanize moved?
