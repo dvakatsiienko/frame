@@ -226,6 +226,37 @@ think of all my asks as a whole. how to make it work efficiently, fluently and w
 - dima: «how could you shape your replies so they could be interesting and useful for me too, if i ever peek into your window?» → he approved her new shape (headline, 🔎 the catch, 👀 for you, 🌤️ fair, predicts + the vet id) and asked cclio to propose her own ideas for making ccrow's output pretty and worth a peek; «we will shape everything in one planning»
 - the shape lands in `ccrow/AGENTS.md` at the next siesta (ccrow never edits her charter); a steer: `vet:` → `vet id:` so the line needs no explanation
 
+
+(2026-10-10 18:02) — dima, the two flows and the join, folded:
+- joined asks go model-only (hidden context after his words); he doesn't need to see them in his prompt
+- flow 1: cclio ends a turn and fills the asks box → he checks the ones he agrees with (optional steer notes), crosses the ones he rejects, leaves the rest unmarked (parked) → he sends a prompt: his text plus the checked and crossed items reach cclio, the unmarked stay
+- flow 2: he sends a prompt without touching the box → cclio starts the turn → mid-turn he spots a forgotten checkbox and checks it → it joins the running turn → the reply covers it → when the turn ends the item leaves the box if resolved, or changes if cclio has a follow-up or something is off
+- order: finish the preps, plan the mods chunk fully so a coder can be dispatched, then checkpoint and dispatch (or dispatch, then checkpoint while the coder runs)
+
+
+## decided — mods grill round 1 (2026-10-10 18:16)
+- Q1 the write door: the mod registers its own tool; cclio adds, resolves and sets through it, never by printed markers
+- Q2 the ask id: cclio's call (dima: «not a must, your judgment») → a short id per session plus a hidden note the mod stores and returns on the join
+- Q3 mid-turn tick: joins the running turn; one cclio has not resolved by the turn's end stays ticked and rides the next prompt; a too-late tick just parks, «that's fine»
+- Q4 the cut: chunk 1 = orbit (the asks box) + planned actions + the contract; chunk 2 = the lane tracker + the ccrow strip; chunk 3 = «what did you miss» + the terminal bars
+- Q5 where: the fleet board pane's empty lower half; the stash band stays as slim as possible («as the text box grows, your thread hides from me»); the band's empty space above the prompt is optional
+- Q6 terminal: replicate for now; dima steers terminal cuts later if needed
+- Q7 the codename: 🪐 orbit
+- Q8 accept / reject: 🤩 / 👎🏼
+
+
+## decided — mods grill round 2 (2026-10-10 18:27)
+- Q1 lane tracker: his note box per step (joins the next prompt, or the running turn), the waits on the current step, 🤔 per step; plus a 🔭 «what this session waits on» in the board, current session only (the sessions list on top already covers the others)
+- Q2 slim stash: try the one-row band of chips with thin meters, but the chips are text only, no click (the traffic-light icon already opens the board)
+- Q3 the contract: mechanical, no new skill (yagni, the memory sweep runs): the format rule's ⏳ section rewritten, a per-prompt reminder from the mod, the tool descriptions carrying the contract, and one root `CLAUDE.md` line on why orbit exists
+- Q4 the lane runs on main, not a worktree, so dima sees the mod change live; the ⏳ block dies in the same change that ships orbit
+- Q5 planned actions: set through the tool at each turn end; after 3 untouched turns the reminder says they're stale; the tool's own text explains stale concisely, nothing extra in context
+- Q6 a resolved ask leaves; a follow-up keeps its id, new text and a «changed» mark; new asks only ever append at the bottom, never mixed in or prepended
+
+- steer (dima, 18:34): the 🔭 «what this session waits on» line moves from the board into the band — slim enough, and he wants it visible; shown only while the session waits
+
+ticket: FRM-381 (chunk 1: orbit + planned actions + the band row); chunks 2 and 3 stay here
+
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes

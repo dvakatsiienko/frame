@@ -93,3 +93,6 @@ verdict question: borrow its timing (consult before an approach / before done) i
 
 ### round 13 · 2026-10-10 17:52 · before the refresh-cc-mods findings
 - advisor: read mods/AGENTS.md and flag the two stale lines (not fix, no probe), name the test drive unchanged; the write door (a mod tool + `$.state`) is the headline, it answers the cost and habit unknowns; prepend vs append collapses to visible vs hidden; the grill opens next turn in card shape; ccrow's relay carries three asks for dima's word. acted on: all. ccrow: 5 wakes, 3 notes vetted ok, plus one relay of dima's word
+
+### round 14 · 2026-10-10 18:36 · before the orbit chunk outputs, ticket and spec
+- advisor: record the 🔭 band steer first; on main there is no pr, so the verifier answer is «no, the ftr recipe + dima's 🔎»; FTR lines as user-visible checks with decision lines, old asks lines die in the coder's commit; the ticket in Triage as a child of FRM-304; read to-spec / to-tickets / issue-tracker before writing; the brief names scratch-edit, plugin-authoring, mods:live and the live-reload hazard. acted on: all; the blind critic (Fable 5.1, $1.49) then found 5 more, 4 folded, 1 went to dima as an ask

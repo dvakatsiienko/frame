@@ -13,3 +13,12 @@ the words: `GLOSSARY.md`.
   price (2×); a warm ping reads it at 0.05× — four pings over a 3.5 h wait cost about a tenth of
   one cold write (pricing from the claude-api skill; how the 5h meter counts cache reads is unmeasured)
 - out: pinging a busy session, auto-on without dima's click, any window but the 5h one
+
+## orbit — the want (2026-10-10)
+
+> the main thread is chaotic and multi-lane, so i often miss data in your messages that i don't want to miss. … each of your asks is a checkbox line; checked means i agree and accept your proposal … this way i do not need to copy-paste.
+
+- why: 71 % of cclio's replies ended with an ask block, he pasted 58 of 136 back unchanged, and the block broke whenever a second lane changed it mid-read (the comms ledger, `docs/knowledge/operator-agent-comms-optimization.md`)
+- the full want, the grill and the chunks: cclio's pocket PK-20
+- out: other sessions' asks in one list, a turn started by the mod, a new skill for the contract
+

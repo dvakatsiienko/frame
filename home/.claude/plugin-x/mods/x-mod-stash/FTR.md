@@ -43,6 +43,16 @@
   - then a dim line beside it says what a press does now: «copy this thread's asks» with its `c` badge, «keep this session's cache hot: ping every 50 min» or «stop keeping this session's cache hot», «afk: tell fleet that dima is away» or «back: tell fleet that dima is here», «unfold fleet board» or «fold fleet board» with its `b` badge, «fold» or «unfold» with its `f` badge
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
   - dima, 2026-10-05: seen in the desktop Code tab and in Warp
+- 🧭 one slim row: `🪐 <open asks> · 📝 <planned>` chips and thin 5h and ctx meters, text only
+  - given the band draws
+  - when dima looks above the prompt
+  - then it is one row high, and the chips do nothing on a press
+  - decision: chips stay text — the traffic-light icon already opens the board (dima, 2026-10-10)
+- 🧭 🔭 what this session waits on, in the band
+  - given the session waits on something outside it (a coder, ci, a review, a merge)
+  - when the band draws
+  - then one 🔭 line names the wait and how the answer arrives; no line when nothing is awaited
+  - decision: the band, not the board — slim enough, and dima wants it visible (dima, 2026-10-10)
 - 🔎 asks: every live session's open asks, «no open asks» when empty
   - decision: a session that dies without its exit hook keeps its asks in the store, so the list shows only sessions the registry has alive, and this session always (dima, 2026-10-07: «why i have double stash? i just spawned you»)
 - ✅ only dima's own prompts clear asks
@@ -313,6 +323,60 @@
   - when a span turns its minute (`idle 12m` → `idle 13m`)
   - then the board redraws with it
   - decision: a pane redraw also rebuilds x-mod-breather's svg in the band on the desktop (dima, 2026-10-09: «breather only resets while board is open»; a video measured a blank frame every 4.04 s, the poll's beat); the svg rebuild is the desktop's, [claude-code#100797](https://github.com/anthropics/claude-code/issues/100797)
+
+## /board — 🪐 orbit
+
+the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it supersedes the «asks» lines in the row above (cross-thread, parsed from reply text): they leave in the change that ships orbit (dima, 2026-10-10: «current stash asks implementation doesn't work for me»).
+
+- 🧭 orbit lists this session's open asks, oldest first
+  - given cclio ends a turn with something for dima to decide
+  - when the turn ends
+  - then each ask is one line in orbit, its id dim beside it, and the reply holds no ⏳ block
+  - decision: one orbit per session; other sessions' asks never show in it (dima, 2026-10-10)
+  - decision: a new ask only appends at the bottom, never mixed in or prepended (dima, 2026-10-10)
+- 🧭 an ask reads alone
+  - given 20 asks have piled up
+  - when dima reads orbit
+  - then every line says what is asked and cclio's pick in one line, with no «above» or «this» pointing at a reply
+- 🧭 tick, reject, note, check all
+  - given orbit shows asks
+  - when dima presses an ask's box (☐ flips to ☑ 🤩), its 👎🏼, types in its note, or presses check all
+  - then the ask shows accepted or rejected with its note kept; an unmarked ask stays parked and means nothing
+  - decision: 🤩 / 👎🏼 (dima, 2026-10-10)
+- 🧭 marked asks join the next prompt
+  - given one or more asks are accepted or rejected
+  - when dima sends a prompt from the prompt box
+  - then cclio receives his text plus each marked ask with its id and note, model-only: his prompt shows only what he typed; unmarked asks stay
+  - decision: model-only context, never a rewrite of his text — a rewrite once destroyed his typed prompt (the copy-all decision above)
+  - decision: only the prompt box starts a turn; orbit never does (dima, 2026-10-10)
+- 🧭 a tick while cclio works joins the running turn
+  - given cclio is mid-turn
+  - when dima ticks an ask
+  - then cclio's reply in that turn covers it; a tick that lands too late for the turn stays ticked and joins the next prompt
+- 🧭 marked asks lock while cclio works on them
+  - given marked asks joined a prompt or a running turn
+  - when the turn runs
+  - then those asks can't be unticked or edited until it ends
+- 🧭 a resolved ask leaves, a follow-up changes in place
+  - given cclio answered a marked ask
+  - when the turn ends
+  - then the ask leaves orbit; one cclio has a follow-up on keeps its place and id, with new text and a «changed» mark
+- 🧭 every prompt reminds the session of orbit
+  - given orbit holds open asks or a plan
+  - when any prompt goes to the session
+  - then the session gets a short model-only note: the open asks, the tool to answer with, the plan's age
+  - decision: the contract is mechanical — the reminder and the tool's own text, no new skill (dima, 2026-10-10: «we have too many of them … yagni»)
+
+## /board — 📝 planned actions
+
+- 🧭 planned actions: the session's next 5 moves, live
+  - given cclio has set a plan
+  - when dima looks at the board
+  - then up to 5 lines show what is now, next and then, each readable on its own
+- 🧭 a stale plan is named
+  - given the plan was not touched for 3 turns
+  - when the next prompt goes
+  - then the board marks the plan stale and the session's reminder says so in one line
 
 ## spawn hints — the board's name flag only
 

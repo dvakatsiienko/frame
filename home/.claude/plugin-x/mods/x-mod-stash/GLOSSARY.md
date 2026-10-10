@@ -12,6 +12,14 @@ _Avoid_: deck, band, dock
 An open question a session put to dima in its ⏳ block, live until he verdicts it.
 _Avoid_: question, todo, pending
 
+**Orbit** 🪐:
+One session's own list of asks to dima, in the board; he ticks, rejects or notes an ask, and the marked ones join his next prompt. Supersedes the reply-parsed ask list.
+_Avoid_: asks box, wfyb, inbox
+
+**Planned actions** 📝:
+The session's next moves, at most 5, kept live in the board by the session itself.
+_Avoid_: next block, todo
+
 **Afk**:
 Dima's away switch; while on, every session's prompt carries an away note.
 _Avoid_: away mode, shift presence
