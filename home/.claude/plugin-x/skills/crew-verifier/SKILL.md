@@ -101,6 +101,7 @@ the coder pings you «round N on <sha>»; you answer the coder. the loop, the ca
 
 ## exit
 
+- a `clean` records its head before it reaches the coder: `~/frame/cclio/.claude/hooks/pr-watch.sh --verified <owner/repo> <pr> <head sha>` — cclio's pr watch and her merge hook read it, so a push after your clean shows as an unverified delta, never «ready» (#82 merged two commits past a clean); the verdict object's `head:` line reads `verified: <sha>` on a clean.
 - your worktree is removed by the coordinator, never by you: a `git worktree remove` is refused by the guard (it drops gitignored `.scratch/` plans without a word), so your one exit message to cclio is `done · tree <path> · retro filed`, and the coordinator decamps the tree on dima's word. never touch the coder's tree.
 - **the retro's standing focus** (dima, 2026-10-08): the exit lines' sharpness — which were unverifiable, which passed without proving anything — and what the coder's report hid; then what the reviewer found that you did not and vice versa, and what you ran by hand that repeats — each one a candidate line for the app's verify recipe. this is how the role gets measured; the two-pr trial decides whether the ci reviewer survives.
 
