@@ -21,7 +21,7 @@ CIRCLED = re.compile(r"[①-⑳]")
 HASH = re.compile(r"(?<![\w/.-])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}(?![\w/.-])")
 REPORT_STAMP = re.compile(r"📄[^\n]*?\b(\d{1,2}):(\d{2})\b")
 # a ccrow wake is a Stop-hook side effect, never a block: a 🔭 line naming it read as a hang (dima, 2026-10-10)
-WAIT_ON_CCROW = re.compile(r"^.*🔭.*ccrow.*$", re.M)
+WAIT_ON_CCROW = re.compile(r"^\s*🔭.*ccrow.*$", re.M)
 
 
 def minutes_now() -> int:

@@ -48,6 +48,10 @@ describe('the · rule', () => {
         );
     });
 
+    it('passes prose that mentions the 🔭 rule and ccrow', () => {
+        expect(stop('🔔 ccrow: my 🔭 line named its wake, and a wake holds nothing.')).toBe('');
+    });
+
     it('passes a 🔭 line that waits on a real block', () => {
         expect(stop('done.\n\n🔭 waiting on ci for the pushed head')).toBe('');
     });
