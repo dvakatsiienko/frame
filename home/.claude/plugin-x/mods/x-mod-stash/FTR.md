@@ -296,7 +296,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: the ask on its own line; under it one row: 🤩 👎🏼 🔊 ⏯️ ⏹️, then the note; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
   - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
   - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one `✅` button (dima, 19:59)
-  - decision: the header reads `🪐 orbit · n`, the number alone (dima, 20:19)
+  - decision: the header reads `🪐 orbit: n`, the number alone (dima, 20:19, 20:48)
   - decision: the pick is bold like the id, so the proposal stands out (dima, 20:30)
   - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
 - 🔎 🔊 reads an ask aloud through speak, ⏯ pauses or resumes, ⏹ stops

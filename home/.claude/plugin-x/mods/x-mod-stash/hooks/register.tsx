@@ -1555,7 +1555,7 @@ export const register: Register = (on) => {
         const orbitJSX = (
             <Box flexDirection='column' key='orbit' marginTop={1}>
                 <Box flexDirection='row' justifyContent='space-between'>
-                    <Text bold>{`🪐 orbit · ${open.length}`}</Text>
+                    <Text bold>{`🪐 orbit: ${open.length}`}</Text>
                     {open.some((a) => !a.mark && !a.isLocked) ? (
                         <Button
                             key='orbit:all'
