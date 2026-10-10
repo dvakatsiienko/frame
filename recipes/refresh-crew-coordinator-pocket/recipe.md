@@ -21,8 +21,8 @@ born 2026-10-10 from PK-34.
 - shaped with dima, 2026-10-09: no drift, no clutter, easy items never parked, pulled often. «readable on your phone is not the requirement for pocket»
 - «the pocket is for things to be done first, and for things not meant for the long shelf. linear is the long shelf, for bigger settled wishes i allow to wait. moving an item from the pocket to linear is postponing, not solving. keeping items in the pocket is fine; cluttering it is not» (dima, 2026-10-10)
 - «pocket must reflect true state always — i often look at it, stale state is not allowed» (dima, 2026-10-10)
-- «pocket must be efficient for you to function over it, and convent for me to peek inside, and edit pocket content. ideally it is an agent-friendly framework for managint todos right on my fs, so your access there is fast and quick.» (dima, 2026-10-10)
-- «pocket is flexible, allowing customization - pocket items types, labels, connections — having everyting that a good ticket management tool an agent would ever want.» (dima, 2026-10-10)
+- «the pocket must be efficient for you to work over, and convenient for me to peek inside and edit. ideally it is an agent-friendly framework for managing todos right on my fs, so your access there is fast.» (dima, 2026-10-10)
+- «the pocket is flexible and customizable — item types, labels, connections: everything a good ticket management tool could give an agent.» (dima, 2026-10-10)
 
 ## the run
 

@@ -9,11 +9,11 @@ each stage names its gate, its owner, its door and its wait budget.
 1. **drop** — gate: every item gets a pocket item with a status and a place in its order; owner: cclio; door: `cclio:boot`; wait: the session it lands
 2. **shape** — gate: dima says «shaped», skipped only on his word; owner: dima and cclio; door: `x:shape-idea`, `grilling`, `research:lanes`; wait: one session
 3. **design** — gate: dima's pick on the boards; owner: the designer; door: `x:crew-designer-interview`, `x:crew-designer`; wait: first in the day, on a fresh 5 h window
-4. **ticket** — gate: cclio writes and preflights the exit lines (`x brief preflight` passes; never dima's to review, 2026-10-09), and no exit lines means no spawn; owner: cclio; door: `cclio:shape-lane`, `x:pm`; wait: the turn the work is agreed
+4. **ticket** — gate: cclio writes and preflights the exit lines (`x brief preflight` passes; never dima's to review, 2026-10-09), a feature or app lane runs `to-spec` → `to-tickets` first and seals its exit lines from the spec, and no exit lines means no spawn; owner: cclio; door: `cclio:shape-lane`, `x:pm`; wait: the turn the work is agreed
 5. **brief** — gate: `x brief check` passes and the verifier yes/no is asked; owner: cclio; door: the spawn preflight; wait: before the spawn
 6. **build** — gate: the exit lines pass, each test proven by making it fail; owner: the coder; door: `x lane commit`, `mods:live`, `run-<app>`; wait: the ticket's estimate, then a ping
 7. **verify** — gate: the verifier says clean, or its round-3 stop goes to cclio; owner: the verifier; door: `x:crew-verifier`; wait: 3 rounds
-8. **land** — gate: merge state clean and the deploy Ready, where «no run» is never green; owner: dima merges, cclio pushes; door: `x lane ci-wait`; wait: the pr median
+8. **land** — gate: merge state clean and the deploy Ready, where «no run» is never green; owner: dima merges, cclio pushes; door: `x lane ci-wait`; the lane's spec dir moves to `.scratch/_archive/<feature>/` the turn it lands; wait: the pr median
 9. **look** — gate: one look card (what, where, try, proven, not checked — never empty), with a shot for anything rendered; owner: dima; door: `SendUserFile`; wait: his next time at the keyboard
 10. **fold** — gate: a repeat lesson leaves as a guard, a verb, a check or a ticket, and a stopgap line carries `until: <ticket>`; owner: cclio; door: `cclio:halt`, `x fleet flow`; wait: the same day
 

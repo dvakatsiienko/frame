@@ -26,6 +26,10 @@ a card is an h2 heading and two plain lines (dima, 2026-10-09, after a fence, a 
 
 load `mattpocock-skills:grilling` and ask in its round shape (❓ **Qn** - **title**: body, ➡️ pick, `---`). a fact the environment holds is looked up, never asked. the round ends with a pre-filled fence under «⏳ waiting on your word:», one line per question — `Qn. <short title> ➡️ <pick> ⬅️` — so dima types only his steer; an empty steer agrees. his answers fold into `decided` the same turn, then the next round recomputes the frontier.
 
+## 2.5 · the spec — feature and app lanes only
+
+the grill's `open` section is empty → read matt's `to-spec`, then `to-tickets`, and follow them (`sys-skills`: a user-only skill is plain text): the spec in `.scratch/<feature>/spec.md` carries `wish: <ticket>`, the tickets land as Backlog.md tasks per `docs/agents/issue-tracker.md`. the exit lines below are sealed from the spec. a quick lane and a freebie skip it, said in one line (dima, 2026-10-10, after the stage was named nowhere and every lane skipped it).
+
 ## 3 · the exit lines
 
 read [exit-lines.md](exit-lines.md), then write 3–6 given/when/then lines into the ticket's `exit` section, the turn the last round lands. the last line is the **want line**: it replays dima's want or the incident behind the ticket, and the verifier grades it apart from the rest. the lines are cclio's; dima reads only the want line (a test drive from 2026-10-10, `docs/test-drive/want-line.md`): it is printed to him as `want line n/5 · useful?` with the count from that file, his answer is logged there, and at 5/5 the reply asks his verdict — keep it, or delegate the want line fully too. a line that carries a decision he never made goes back to him as a grill question instead.
