@@ -51,7 +51,7 @@ Every decision is one of three:
 - a coder's premise doubt is built and flagged the same minute, never found at review
 - events go to the plan file's `## log` (time · who · what · evidence), never to chat. when `near`,
   dima's lane messages still get normal replies; shift events stay out of them
-- **the ⏳ block is suspended** while a shift runs: decide, log and park instead of asking; the report carries the decisions
+- **orbit asks are suspended** while a shift runs: decide, log and park instead of asking; the report carries the decisions
 - watch per `x:crew-lead`: a watch lives until its pr merges; every idle notice is a check
 
 ## 3 · end — the report
@@ -74,7 +74,7 @@ In the plan file, then one chat message:
   - **ticket readiness**: which tickets ran straight, which exit lines were rewritten mid-lane and why
   - **anything else** dima would want: one line or `none`
 
-Retros in, members stopped, the plan's `status:` flipped to `done`, the ⏳ block back on.
+Retros in, members stopped, the plan's `status:` flipped to `done`, orbit asks back on.
 
 Then the hand-over, because dima returns to a cold cache: his first question to a long shift thread re-writes the whole context at the 1h write price.
 

@@ -124,7 +124,7 @@ between. a release post on the project's blog beats the github release body when
 
 📋 copy → terminal 📋   ```brew upgrade```   ✂️ end ✂️   ← kept for the day he wants his own hands on it
 
-⏳ waiting on your word: (the ⏳ fence) 1. merge round: <pkgs> ➡️ yes  2. brew upgrade ➡️ yes
+(two orbit asks) merge round: <pkgs> ➡️ yes, and brew upgrade ➡️ yes
 ```
 
 - the four labels are fixed words in a fixed order so his eye lands on the same spot per card.
@@ -138,13 +138,13 @@ between. a release post on the project's blog beats the github release body when
   chip per borrow (shipped · waiting · queued), the brew lines worth reading, the count line,
   and a chart where a perf claim has numbers. its source lives at
   `cclio/evergreen/page.html` — read it, swap the content, keep the design. the chat carries
-  the link, one verdict line, and the ⏳ fence.
+  the link and one verdict line; the merge and brew asks go to orbit.
 - his knob: «too much» / «missed X» → tighten or widen in `memory/craft-evergreen.md` (create on
   first steer, one line per rule).
 
 ## 5. act on his word — «approve evergreen» is the whole round
 
-a plain «approve evergreen» (or «ok» on the ⏳ fence) means: **every ➡️ merge in the report AND
+a plain «approve evergreen» (or a 🤩 on its orbit ask) means: **every ➡️ merge in the report AND
 `brew upgrade` (all outdated, pinned never) run now, by cclio, no second ask.** steers inside the
 same message («hold #61») subtract from the round.
 

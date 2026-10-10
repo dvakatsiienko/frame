@@ -56,14 +56,14 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
 - **the drop list as pointers**: one line per dropped topic naming the file that holds it — a
   dropped topic is reachable, never remembered
 - the coder roster with ids and status
-- the ⏳ block as it last stood
+- the orbit asks as they last stood (orbit itself survives the compact in the mod's state)
 
 ## 4. hand him the two lines
 
 📋 **copy → this session** 📋
 
 ```
-/compact keep the boot ingest, the inbox items and their homes, every open ask, the coder roster and the current ⏳ block; drop <his drop list, one clause each>
+/compact keep the boot ingest, the inbox items and their homes, every open ask, the coder roster and the open orbit asks; drop <his drop list, one clause each>
 /x:handoff-ingest <runid>-checkpoint-<n>
 ```
 

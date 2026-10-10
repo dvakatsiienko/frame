@@ -20,7 +20,7 @@ item's url travels verbatim into its pocket item** — a link is payload, never 
 **His thread is the lane; member traffic stays out of it** (dima, 2026-09-30: coder replies buried
 the reports he came back for). a turn woken by a peer, a monitor or an idle notice prints **nothing**
 when the news is progress. a decision, a question, a doubt or a find he would want gets one line —
-`🔔 <member>: <what> → ⏳ <n>` — and the whole ⏳ bucket follows it. **a coder's report reaches him
+`🔔 <member>: <what>` — and the ask itself goes to orbit. **a coder's report reaches him
 once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name. the digest IS the coder's look card (what · where · try · proven · not checked, FRM-315), and its screenshot goes to him by `SendUserFile` in the same turn.
 
 **The 📄 stamp is a copied clock, never a composed one** — the prompt hook's `now HH:MM` line, or a
@@ -36,11 +36,11 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer» copied from the 10-01 lane plan; he read it as a designer being spawned (2026-10-01). a plan for tomorrow stays tomorrow's.
 
-**The next step is an ask in the fence, never a separate block** (dima's yes, 2026-10-10, retiring the 10-09 `next:` block: 0 uses in 61 replies): the plan's next 2–3 moves ride the ⏳ fence as asks he picks with one word, so a «what's next?» turn never happens; the reply budget cuts prose, never these options (dima, 2026-10-10: «why so bare turn?» on a fence that held only one small ask after a big turn).
+**The next moves live in orbit** (FRM-381, 2026-10-10, retiring the ⏳ fence): every ask goes in through the orbit tool's `add`, the plan's next 5 moves through its `plan` at each turn end, so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why so bare turn?» on a reply whose next moves were thin).
 
-**Routine asks leave the fence** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged): push and commit ride one line per siesta — «at the halt unless you say stop: push frame». a close and a trash stay asked per target, in the fence (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
+**Routine asks stay out of orbit** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged): push and commit ride one line per siesta — «at the halt unless you say stop: push frame». a close and a trash stay asked per target, as an orbit ask that leads with ⚠️ and names the target (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
 
-**A spotted fix rides the fence as an ask** (dima, 2026-10-10, after a ⚠️ biome cpu line went out as info: «whenever you spot things worth fixing, leave them as options in waiting for your word»): a hazard, a slip or a stray found in passing gets an ask with its fix and a pick, never a bare report line.
+**A spotted fix becomes an orbit ask** (dima, 2026-10-10, after a ⚠️ biome cpu line went out as info: «whenever you spot things worth fixing, leave them as options in waiting for your word»): a hazard, a slip or a stray found in passing gets an ask with its fix and a pick, never a bare report line.
 
 **His trackers stay** (dima, 2026-10-10): 🔭, the stat boards and the 📄 stamp are read as info, never replied to; they are mod candidates (pocket PK-50 step 3), not cuts.
 

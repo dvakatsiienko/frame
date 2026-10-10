@@ -24,7 +24,7 @@ a card is an h2 heading and two plain lines (dima, 2026-10-09, after a fence, a 
 
 ## 2 · the grill
 
-load `mattpocock-skills:grilling` and ask in its round shape (❓ **Qn** - **title**: body, ➡️ pick, `---`). a fact the environment holds is looked up, never asked. the round ends with a pre-filled fence under «⏳ waiting on your word:», one line per question — `Qn. <short title> ➡️ <pick> ⬅️` — so dima types only his steer; an empty steer agrees. his answers fold into `decided` the same turn, then the next round recomputes the frontier.
+load `mattpocock-skills:grilling` and ask in its round shape (❓ **Qn** - **title**: body, ➡️ pick, `---`). a fact the environment holds is looked up, never asked. each question also goes to orbit as one ask — `Qn <short title>` with the pick — so dima ticks to agree and notes to steer; an unmarked question stays open. his answers fold into `decided` the same turn, then the next round recomputes the frontier.
 
 ## 2.5 · the spec — feature and app lanes only
 
@@ -42,6 +42,6 @@ then the **blind critic**, on every lane, quick ones too (`docs/research/exit-li
 
 ## 5 · the spawn ask
 
-its own ⏳ line — `spawn <ticket> now? verifier: yes/no` — never folded into a grill answer or a plan. this skill ends here; the spawn is `x:crew-lead`'s.
+its own orbit ask — `spawn <ticket> now? verifier: yes/no` — never folded into a grill answer or a plan. this skill ends here; the spawn is `x:crew-lead`'s.
 
-**done** = the ticket carries `decided` and the sealed `exit`, and the spawn ask sits in ⏳. «grilled» without sealed exit lines is reported as not ready.
+**done** = the ticket carries `decided` and the sealed `exit`, and the spawn ask sits in orbit. «grilled» without sealed exit lines is reported as not ready.

@@ -66,9 +66,9 @@ dima, 2026-09-03, after an alias prune ran on one word and its review drowned in
 *«you should repeat things you want to do and ask me infinitely until i approve/disapprove/
 steer.»* three habits, his approve:
 
-- **the ⏳ block carries every open ask until he verdicts it** — shape and repeat rule in
-  `rules/fleet-output-format.md`. silence resolves nothing; he never scrolls back.
-- **an ask about outside state is re-read before every reprint** — a pr, ci, a session, a worktree: one `gh pr view`, list or `git log` call the same turn, and never «possibly yours» before that read. #84 sat merged under five reprints of «merge it», and an agent's worktree went to dima as «possibly yours» (2026-10-10).
+- **orbit carries every open ask until he verdicts it** — the stash's orbit tool, contract in its
+  own description (FRM-381). an unmarked ask is parked, never consent; silence resolves nothing.
+- **an ask about outside state is re-read before it is added or followed in orbit** — a pr, ci, a session, a worktree: one `gh pr view`, list or `git log` call the same turn, and never «possibly yours» before that read. #84 sat merged under five reprints of «merge it», and an agent's worktree went to dima as «possibly yours» (2026-10-10).
 - **the sweep class is propose-only** — the fleet word is **`granular`** (`fleet-identity.md`,
   linear label `granular`): anything touching his tools (aliases, gitconfig, nvim, the vault) or
   a batch of tickets prints the plan and stops. one word per item, or «all».
