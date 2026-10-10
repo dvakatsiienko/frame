@@ -36,3 +36,27 @@ the workaround in place, the undo.
   click on a pane button only moves focus; `$.ui.open({ focus: true })` helps until the next turn
 - workaround: none in the code; the FTR's 🐞 line tracks it
 - undo when fixed: flip that line
+
+## hover cards in the board
+
+- want: a board row's count names itself on hover, «1 open ask for you», as the band's chips do (dima, 2026-10-10)
+- issue: no upstream issue — a hover card in a `Pane` is an absolute box that wraps in a narrow row and draws over
+  its neighbours (two rounds, FRM-306); the recipe holds on the one-row band only
+- workaround: none; the band's `🪐 n` chip carries the card
+- undo when fixed: give the row's `🪐 n` the band's hover card
+
+## mods on mobile and in remote control
+
+- want: the band and the board where dima is — the phone, a `--remote-control` view (dima, 2026-10-10)
+- issue: [claude-code#99217](https://github.com/anthropics/claude-code/issues/99217) — mods draw only on the host
+  surface; a remote-control view and the phone draw nothing
+- workaround: `/mobile-mode` swaps the orbit reminder for the asks fence, so the asks reach him in the reply
+- undo when fixed: retire the asks fence and the mobile flag; orbit alone again
+
+## no flicker when the board redraws
+
+- want: the breather's svg in the band stays still while the board is open (dima, 2026-10-09)
+- issue: [claude-code#100797](https://github.com/anthropics/claude-code/issues/100797) — on the desktop a pane
+  redraw rebuilds every svg on the screen, so the breather blinks about every 30 s while the board is open
+- workaround: none; the board redraws only on its poll and on a press
+- undo when fixed: nothing to undo; drop the decision line in `x-mod-stash/FTR.md` that names the blink
