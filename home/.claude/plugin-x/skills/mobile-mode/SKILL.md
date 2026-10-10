@@ -24,13 +24,15 @@ dima is on a small screen with a software keyboard, often lying down. every repl
   - `agree?`
 
 - **the ⏳ fence comes back** (dima, 2026-10-10: mods draw nothing on mobile, so orbit is invisible
-  there). every reply ends with every open ask, the orbit ones included, renumbered from 1; he
-  answers by number, and each answer resolves its orbit ask too:
+  there). orbit stays the one store: every reply ends with every open orbit ask printed with its
+  id, and his answer by id is written back the same turn (`resolve` or `follow`), so the board is
+  current the moment he is back at the mac. an orbit mark that reaches a prompt in mobile mode
+  still counts, it was made on the mac:
 
       ⏳ waiting on your word:
 
       ```
-      1. <ask> ➡️ <pick>
+      o9. <ask> ➡️ <pick>
       ```
 
 mode ends only on dima's word. a new topic does not end it; at «back at the mac» the fence goes and
