@@ -93,6 +93,7 @@ and neither is one merged when the request said report and ask.
 ## github api reads
 
 - **a ci watcher waits for the run to exist before `gh run watch`** — github creates the run a few seconds after the push; asked at +15 s for the head sha it answered nothing and the watcher died on a 404 (2026-09-23). poll `gh run list --commit <sha>` until an id appears, then watch that id
+- **a file from another repo reads raw with one header** — `gh api -H "Accept: application/vnd.github.raw+json" repos/<o>/<r>/contents/<path>` prints the file itself, no base64 and no jq (proven on cli/cli's README, 2026-10-10); a dir still answers a json list
 - `gh api --paginate` emits one json array PER PAGE — `.[0]` reads the first 30 items and looks
   complete; fold with `jq -s add` (a review guard nearly read half the threads, 2026-09-11)
 - a poller that seeds its window at «now» is blind to everything that made it worth starting —
