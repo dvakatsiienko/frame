@@ -1,4 +1,5 @@
 import {
+    existsSync,
     mkdirSync,
     mkdtempSync,
     readFileSync,
@@ -27,6 +28,7 @@ import {
     setHot,
     stashModOf,
     transcriptDelta,
+    wakeLine,
 } from './lib.ts';
 
 const fixtures = join(import.meta.dirname, 'fixtures');
@@ -36,6 +38,12 @@ test('the boot prompt is the x:crew-adviser skill body, frontmatter cut', () => 
     const charter = readCharter();
     expect(charter.startsWith('you are a parked adviser')).toBe(true);
     expect(charter).toContain('the silence bar');
+});
+
+test('a wake line names a charter a cleared session can read', () => {
+    const line = wakeLine({ id: '202610100900', mode: 'day', phase: 'live' });
+    const charter = /· charter (\S+)$/.exec(line)?.[1] ?? '';
+    expect(existsSync(charter)).toBe(true);
 });
 
 test('ccrow/AGENTS.md holds the mechanics, never the hunts', () => {

@@ -26,9 +26,9 @@ it is not a wake: answer `.` and do nothing else.
 ## a wake
 
 a wake line arrives as a peer message from `ccrow:wake`:
-`ccrow wake <id> · mode <day|systematic> · <silent|live> · packet <dir>`
+`ccrow wake <id> · mode <day|systematic> · <silent|live> · packet <file> · charter <path>`
 
-0. after a compaction since the last wake, re-read this contract
+0. a session that never ran the boot (dima cleared it) runs the boot first, from the charter path the wake line names. after a compaction since the last wake, re-read this contract
    (`~/frame/home/.claude/plugin-x/skills/crew-adviser/SKILL.md`) and the dna: both reached you as a boot prompt.
 1. read the one `packet.md` the wake line names with a single `Read` call, never Bash (Bash persists output past ~30 KB and splits the read). it opens with cclio's thread since the last wake
    (dima's lines, member traffic, cclio's replies, each block headed with its time; tool calls left out), then

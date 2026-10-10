@@ -102,6 +102,12 @@ export function clearHot(storePath: string, sessionId: string) {
 }
 
 // ccrow runs without user plugins, so its contract arrives as the boot prompt, frontmatter cut
+// a /clear drops the boot prompt, so every wake line names the charter a fresh session reads first
+const CHARTER_PATH = join(
+    homedir(),
+    'frame/home/.claude/plugin-x/skills/crew-adviser/SKILL.md',
+);
+
 export function readCharter() {
     const skill = readFileSync(
         new URL(
@@ -566,7 +572,7 @@ export function wakeIdOf(date: Date) {
 }
 
 export function wakeLine(wake: Wake) {
-    return `ccrow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')}`;
+    return `ccrow wake ${wake.id} · mode ${wake.mode} · ${wake.phase} · packet ${join(STATE_DIR, 'packets', wake.id, 'packet.md')} · charter ${CHARTER_PATH}`;
 }
 
 export function dayOf(firstWakeAt: number, now: number) {
