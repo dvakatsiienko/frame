@@ -1676,14 +1676,6 @@ export const register: Register = (on) => {
                         gap={1}
                         justifyContent='space-between'
                         key={`${key}:hover`}>
-                        <Box
-                            display='none'
-                            hover={{ display: 'flex' }}
-                            position='absolute'
-                            right={5}
-                            top={0}>
-                            <Text>{bar.card}</Text>
-                        </Box>
                         {Svg ? (
                             <Svg
                                 alt={`${label} ${Math.round(bar.percent)}%`}
@@ -1713,6 +1705,15 @@ export const register: Register = (on) => {
                             <Text bold color={tint}>
                                 {Math.round(bar.percent)}%
                             </Text>
+                        </Box>
+                        {/* last, so it paints over the cells; drawn first, the bar overwrote all but its end */}
+                        <Box
+                            display='none'
+                            hover={{ display: 'flex' }}
+                            position='absolute'
+                            right={5}
+                            top={0}>
+                            <Text>{bar.card}</Text>
                         </Box>
                     </Box>
                 )}

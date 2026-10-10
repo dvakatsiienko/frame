@@ -123,7 +123,7 @@ test('the 5h bar ends in its used %, and the head reads the gap and the time lef
     const boxes = await ui.findAll({ type: 'Box' });
     const text = (key: string) => boxes.find((n) => n.key === key)?.text;
     expect([text('meter:5h'), text('meter:info')]).toEqual([
-        expect.stringMatching(/39%$/),
+        expect.stringMatching(/^🔥 5h39%/),
         expect.stringMatching(/^1% spare🌔 3h 0m/),
     ]);
 });
@@ -171,7 +171,7 @@ test('an idle band takes the 5h reading another session wrote', async ($, on) =>
     const five = (await ui.findAll({ type: 'Box' })).find(
         (n) => n.key === 'meter:5h',
     );
-    expect(five?.text).toMatch(/52%$/);
+    expect(five?.text).toMatch(/^🔥 5h52%/);
 });
 
 test("the ctx row shows the fill and the engine's compaction point", async ($, on) => {
