@@ -31,6 +31,11 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 - **the Code tab door (dima opens, cclio briefs)** — the flow that ran eight coders on 2026-09-06: dima opens a session in the app dir (root when the job crosses apps), pastes a one-line pointer to a brief file in cclio's scratchpad, the coder pings back through `mcp__ccd_session_mgmt__send_message`. a brief that says «dima's word» starts without a y/n round; a steer relayed by cclio is NOT his grant to the coder (the coder confirms with him — by our own rule). every brief starts from `x:crew-coder` (dima types it in the coder's session; cclio pastes the file body into a `--bg` prompt).
   📌 **desktop auto-archive (on since 2026-09-28) ends a Code-tab session the moment its pr merges or closes** — it archives AND stops it. measured on 4 probes: a desktop-made local session went at its merge; `--bg` and `--cloud` sessions stayed, merged or closed; docs: «only applies to local sessions that have finished running». so a job that may need rounds after its merge spawns `--bg`, never from the Code tab; cloud cards are archived by hand (`x:crew-cloud` step 5).
 - **cloud (`claude --cloud`)** — a coder on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the whole procedure is `x:crew-cloud`.
+- **a pick-up is a spawn** (dima, 2026-10-10, after a restarted mods coder got a brief with no `plugin-authoring`): when dima reinits a member (a big context, a Code-tab restart so he sees its mods) or opens a thread and says «pick it up», the first message inits it by role, the same as a fresh brief — the handoff ingest never replaces it. per role:
+  - mods coder: `x:crew-coder`, the bundled `plugin-authoring` skill, `home/.claude/plugin-x/mods/AGENTS.md` whole, `mods/api-map.md`
+  - cli coder: `x:crew-coder`, `x:guide-go`, `x/AGENTS.md`, `x/PRODUCT.md`
+  - bytes coder: `x:crew-coder`, `x:guide-typescript` + `x:guide-react`, the app's essentials (preflight 0.7)
+  - ccrow: her boot from `ccrow/AGENTS.md` and the `x:crew-adviser` charter
 - **`/fork [prompt]`** — a third door (dima, 2026-09-05): copies THIS conversation into a new
   background session, no brief, the coder starts knowing everything cclio knows. reach for it
   when the job needs the session's context (a design bundle discussed here → `theme.css`, a
