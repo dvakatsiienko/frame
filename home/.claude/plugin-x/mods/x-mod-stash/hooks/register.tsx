@@ -97,6 +97,7 @@ const ENHANCE_MODEL = 'claude-haiku-5-5';
 const ENHANCE_MS = 30_000;
 const WISPR_DB = 'Library/Application Support/Wispr Flow/flow.sqlite';
 let isEnhancing = false;
+const TICKET_ID_ALL = /(?<!\[)\b(?:FRM|BYT)-\d+\b(?!\])/g;
 const PLAN_MAX = 5;
 const STALE_TURNS = 3;
 // a plan line's lead word, one short word before its colon
@@ -278,6 +279,41 @@ async function enhancerSystem($: EngineInterface) {
     ];
 }
 
+// every ticket id in the answer becomes a link to its real page, resolved by `x linear`, never by Haiku; an id x
+// cannot resolve stays plain
+async function linkTickets($: EngineInterface, text: string) {
+    const ids = [...new Set(text.match(TICKET_ID_ALL) ?? [])];
+    if (!ids.length) return text;
+    const r = await $.process
+        .run([
+            `${await $.env.get('HOME')}/.local/bin/x`,
+            'linear',
+            'read',
+            ...ids,
+        ])
+        .catch(() => undefined);
+    if (r?.exitCode !== 0) return text;
+    let urls: Map<string, string>;
+    try {
+        const tickets = (
+            JSON.parse(r.stdout) as {
+                data?: { tickets?: { id?: string; url?: string }[] };
+            }
+        ).data?.tickets;
+        urls = new Map(
+            (tickets ?? []).flatMap((x) =>
+                x.id && x.url ? [[x.id, x.url] as const] : [],
+            ),
+        );
+    } catch {
+        return text;
+    }
+    return text.replace(TICKET_ID_ALL, (id) => {
+        const url = urls.get(id);
+        return url ? `[${id}](${url})` : id;
+    });
+}
+
 // one call per press; a keystroke while it runs keeps his text and drops the answer, an error leaves the box alone
 async function enhance($: EngineInterface) {
     // set before any await, so a second press in the same moment finds it
@@ -309,7 +345,8 @@ async function enhanceOnce($: EngineInterface) {
             },
             { signal: stop.signal },
         );
-        if (r.isAnswered && r.text.trim()) answer = r.text.trim();
+        if (r.isAnswered && r.text.trim())
+            answer = await linkTickets($, r.text.trim());
         else
             failure = stop.signal.aborted
                 ? `Haiku took over ${ENHANCE_MS / 1000} s`

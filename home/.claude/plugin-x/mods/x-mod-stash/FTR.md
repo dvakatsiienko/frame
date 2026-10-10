@@ -366,6 +366,10 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when he presses `✨ enhance` in the band
   - then Haiku 5.5 is called once with the rules, every slash command and his wispr dictionary, and the box holds its answer: misheard names fixed, a skill he asks for as its `/name`, ticket ids written `FRM-N`
   - decision: a static «✨ enhancing…» label while it runs, not a spinner — the brief's spinner loses to the no-repainting rule
+- ✅ a ticket id in the answer becomes its real link
+  - given Haiku's answer names `FRM-N` or `BYT-N`
+  - when the answer lands in the box
+  - then each id reads `[FRM-N](https://linear.app/x-com/issue/FRM-N/<its real slug>)`, resolved by the mod through `x linear`, never by Haiku; an id x cannot find, or x down, leaves it plain
 - ✅ prev and new swap back with no call
   - given he pressed enhance
   - when he presses `prev`, then `new`

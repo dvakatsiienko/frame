@@ -4,7 +4,10 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 const SID = 'e1e1e1e1-enhancer';
 
 // the prompt box as one string behind read and fill; Haiku answers from a queue, each call counted
-function world(on: On, box: { text: string; refusal?: 'dialog' }) {
+function world(
+    on: On,
+    box: { text: string; refusal?: 'dialog'; isXDown?: boolean },
+) {
     mock.clock(on);
     mock.store(on);
     const calls: { prompt: unknown; system: unknown }[] = [];
@@ -34,15 +37,32 @@ function world(on: On, box: { text: string; refusal?: 'dialog' }) {
             },
         ],
     }));
-    on('process.run', () => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout: 'quards → chords\n',
-        },
-    }));
+    // sqlite3 answers the dictionary; x answers ticket reads, FRM-381 known, FRM-999 not
+    const runs: string[][] = [];
+    on('process.run', (_$, e) => {
+        runs.push([...e.argv]);
+        const isX = e.argv[0]?.endsWith('/x') ?? false;
+        return {
+            value: {
+                exitCode: box.isXDown && isX ? 1 : 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: isX
+                    ? JSON.stringify({
+                          data: {
+                              tickets: [
+                                  {
+                                      id: 'FRM-381',
+                                      url: 'https://linear.app/x-com/issue/FRM-381/stash-orbit',
+                                  },
+                              ],
+                          },
+                      })
+                    : 'quards → chords\n',
+            },
+        };
+    });
     on('prompt.read', () => ({
         value: { cursor: box.text.length, text: box.text },
     }));
@@ -59,7 +79,7 @@ function world(on: On, box: { text: string; refusal?: 'dialog' }) {
             value: next ? await next() : answered('enhanced'),
         };
     });
-    return { answers, calls, nextFill };
+    return { answers, calls, nextFill, runs };
 }
 
 const usage = {
@@ -219,4 +239,33 @@ test('an answer equal to his text says there was nothing to change', async ($, o
     expect((await ui.find({ text: /^enhance:/, type: 'Text' }))?.text).toBe(
         'enhance: Haiku found nothing to change',
     );
+});
+
+test('a ticket id in the answer becomes a link to its real page', async ($, on) => {
+    const box = { text: 'use the shape idea skill on frm 381' };
+    const w = world(on, box);
+    w.answers.push(async () => answered('use /x:shape-idea on FRM-381'));
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    expect(box.text).toBe(
+        'use /x:shape-idea on [FRM-381](https://linear.app/x-com/issue/FRM-381/stash-orbit)',
+    );
+});
+
+test('an id x cannot resolve stays plain', async ($, on) => {
+    const box = { text: 'see frm 999' };
+    const w = world(on, box);
+    w.answers.push(async () => answered('see FRM-999'));
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    expect(box.text).toBe('see FRM-999');
+});
+
+test('with x down the ids stay plain and the answer still lands', async ($, on) => {
+    const box = { isXDown: true, text: 'on frm 381' };
+    const w = world(on, box);
+    w.answers.push(async () => answered('on FRM-381'));
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    expect(box.text).toBe('on FRM-381');
 });
