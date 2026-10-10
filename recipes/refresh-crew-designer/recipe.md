@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: [designer, coordinator]
-cadence: "when dima says «refresh the design branch», before a big design job after a quiet month, or when Claude Design / Cowork ships a major update; or quarterly, held by its ⏰ in cclio/memory/_reminders.md"
 artifacts:
   - home/.claude/plugin-x/skills/crew-designer-interview/SKILL.md
   - home/.claude/plugin-x/skills/crew-designer/SKILL.md
@@ -53,6 +52,8 @@ dima, 2026-10-02, on the design comms loop:
 > you print a link and I click it. It directly opens your comment … and reply to you there … very close to me in the UI, like a Speak pill
 
 ## the run
+
+- suggest a run when: a big design job is about to start, Claude Design or Cowork ships a major update
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. spawn the lanes on one brief (per habit-test-drive: reach for the live test drives first): exa agent (effort set explicitly) · parallel core · an opus lane that reads sources (skills,

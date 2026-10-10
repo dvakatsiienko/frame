@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: coordinator
-cadence: at every cc minor that touches mods, at the test-drive verdict (2026-10-19), or when dima asks
 artifacts:
   - home/.claude/plugin-x/mods/AGENTS.md
   - home/.claude/plugin-x/mods/api-map.md
@@ -31,6 +30,8 @@ what the api can do now, what others built, and whether anything useful is left 
 his standing calls: session.measure «not yet, i don't need another ctx meter»; spoken pings «not yet … speak only when i press f4»; sline stays a statusline, not a mod; a mod-authoring skill → no, `mods/AGENTS.md` is the home.
 
 ## the run
+
+- suggest a run when: a cc minor touches mods, the test-drive verdict (2026-10-19)
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. **research** — one brief from the vectors; `pnpm research:lanes <brief> <out>` + an opus lane when source must be read (vector 2). done: every lane returned or marked failed. (script)

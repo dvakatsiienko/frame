@@ -2,7 +2,6 @@
 draft: true   # the want is owed by dima; the shape test skips want and run until it lands
 kind: nurture
 owner: coordinator
-cadence: on dima's word
 artifacts: []
 script: none
 was: [nurture-skills-hillclimb]
@@ -11,7 +10,7 @@ was: [nurture-skills-hillclimb]
 # nurture-skills
 
 ⏸️ **parked, not a recipe yet.** written when there is a real run to do — until then this is the
-shape, nothing more. the want, vectors and cadence are filled at
+shape, nothing more. the want and vectors are filled at
 that first run, the want in dima's words.
 
 sibling of [nurture-memory](../nurture-memory/recipe.md): that one grooms what a skill says, this one

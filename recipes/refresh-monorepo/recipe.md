@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: coordinator
-cadence: at every turbo minor, before each merge milestone starts (BYT-109, BYT-124), or when dima asks
 artifacts:
   - docs/research/monorepo-agents.md
   - cclio/memory/_reminders.md
@@ -26,6 +25,8 @@ keeps the fleet's monorepo craft true: how agents run bytes (pnpm + turborepo), 
 his standing calls: turbo's want is a + b (the task graph and cache for gates; fleet scripts as a graph), the clock stays `launchd`; the merge is incremental, one slice per lane; bun and oxc stay out of the merge.
 
 ## the run
+
+- suggest a run when: a turbo minor ships, a merge milestone starts (BYT-109, BYT-124)
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. **research** — one brief from the vectors; `pnpm research:lanes <brief> <out>` + an opus source lane (turbo docs + both repos, measured) + a blind `advise-project-approach` lane for the merge. done: every lane returned or marked failed. (script)

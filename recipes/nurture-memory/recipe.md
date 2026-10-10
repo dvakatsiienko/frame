@@ -1,7 +1,6 @@
 ---
 kind: nurture
 owner: coordinator
-cadence: "the mechanical pass on every commit (code, seconds); the full run on dima's word, no timer; the delete digest at every halt (the groom card in authoring-memory.md)"
 artifacts: [docs/knowledge/authoring-memory.md, docs/knowledge/authoring-memory-project.md, docs/knowledge/authoring-skill.md]
 script: none
 ---

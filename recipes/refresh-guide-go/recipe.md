@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: [coder, coordinator]
-cadence: "event-driven: a go minor ships, a charm major lands, or a go change in `x` hits something the guide does not cover. no timer."
 artifacts:
   - home/.claude/plugin-x/skills/guide-go/
   - docs/knowledge/charm.md
@@ -27,6 +26,7 @@ dima's, 2026-10-06:
 ## the run
 
 - go gets the same care as typescript: two languages at full scale is fine, so `x:guide-go` stays current and the cli's stack moves with its upstreams (dima, FRM-284)
+- suggest a run when: a go minor ships, a charm major lands, a go change in `x` hits something the guide does not cover
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. one research round per `habit-research-lanes` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)

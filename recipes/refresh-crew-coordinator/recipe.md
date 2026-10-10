@@ -1,7 +1,6 @@
 ---
 kind: refresh
 owner: coordinator
-cadence: the tools half on a cc minor version, a new claude model or a spawn behaving against a [verified] row; the whole run on dima's word or when the crew changes; no timer
 artifacts: [home/.claude/plugin-x/skills/crew-lead/, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, docs/knowledge/spawning-mechanics.md, docs/knowledge/models.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md]
 script: none
 was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning, refresh-coordinator]
@@ -63,6 +62,7 @@ one run, two halves whose lanes run in parallel and land in one findings print:
 
 a trigger that touches only the tools (a cc minor, a new model) runs the tools half and names the craft
 half skipped, with the reason — the shared rule of `x:shape-recipe`.
+- suggest a run when: a cc minor ships, a new claude model ships, a spawn behaves against a [verified] row, the crew changes
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. **probe the mechanics** (tools): execute `spawning-mechanics.md`'s «the test suite» section against the current build. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
