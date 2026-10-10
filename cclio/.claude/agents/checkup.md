@@ -1,6 +1,6 @@
 ---
 name: checkup
-description: cclio's pit-stop reviewer — an opus read-only pass over what a lane just changed (a memory split, a spec run, a multi-file edit batch), returned as ≤10 lines ranked by severity. Runs after every noticeable sweep, never mid-edit. Project-scoped to cclio.
+description: cclio's siesta reviewer — an opus read-only pass over what a lane just changed (a memory split, a spec run, a multi-file edit batch), returned as ≤10 lines ranked by severity. Runs after every noticeable sweep, never mid-edit. Project-scoped to cclio.
 model: opus
 effort: medium
 tools: Read, Grep, Glob, Bash
