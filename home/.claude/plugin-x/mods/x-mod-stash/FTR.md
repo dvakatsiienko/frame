@@ -222,7 +222,7 @@
 - 🔎 each row carries its facts beside the state
   - given a session has open asks, a context reading or a ticket in its name
   - when the board draws
-  - then its row shows the ticket as a link to linear, `ctx n%`, its state and `🪐 n`, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
+  - then its row shows the ticket as a button that opens it in the Linear app, `ctx n%`, its state and `🪐 n`, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
   - decision: `🪐 n` closes the row and is always drawn, `🪐 0` dimmed — dima reads it first, at the far right (2026-10-05)
   - decision: the count reads 🪐 like the band's chip, never ⏳, which is the 5h reset timer (dima, 21:20)
   - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
@@ -300,6 +300,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given an ask, its pick or a phase line names `FRM-N` or `BYT-N`
   - when dima looks at the board
   - then the id opens its linear page, as a session row's ticket does (dima's o62, 22:13)
+- ✅ ↗ opens a ticket in the Linear app
+  - given an ask, its pick or a phase line names `FRM-N` or `BYT-N`, or a session row carries a ticket
+  - when dima presses `↗ FRM-N` beside it, or the row's ticket
+  - then the Linear app opens on that issue (`open linear://x-com/issue/<id>`), no browser in between
+  - decision: a mod `Link` takes https only, so the in-text id stays a web link and the button is the app door (dima's o9, 22:23)
 - ✅ accept, reject, note, check all
   - given orbit shows asks
   - when dima presses an ask's 🤩 or 👎🏼, types in its note, or presses check all
