@@ -14,15 +14,14 @@ try {
 } catch {
     fail(`no notes yet: ${NOTES_PATH}`);
 }
-const isKnown = notes.split('\n').some((line) => {
+let headline: string | undefined;
+for (const line of notes.split('\n')) {
     try {
-        const note: { id?: unknown } = JSON.parse(line);
-        return note.id === id;
-    } catch {
-        return false;
-    }
-});
-if (!isKnown) fail(`no note with id ${id}`);
+        const note: { id?: unknown; note?: unknown } = JSON.parse(line);
+        if (note.id === id) headline = String(note.note ?? '').split('\n')[0];
+    } catch {}
+}
+if (headline === undefined) fail(`no note with id ${id}`);
 
 appendJsonl(VERDICTS_PATH, {
     at: new Date().toISOString(),
@@ -30,4 +29,4 @@ appendJsonl(VERDICTS_PATH, {
     value,
     why: why.join(' '),
 });
-console.log(`${id}: ${value}`);
+console.log(`${id}: ${value}${headline ? ` · ${headline}` : ''}`);

@@ -6,15 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: "2026-10-09 10:38"
-updated_date: '2026-10-10 10:50'
+updated_date: '2026-10-10 20:43'
 labels:
   - m
 dependencies: []
 priority: next
 type: idea
 ordinal: 22000
----
-## Description
+---## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
 <!-- SECTION:DESCRIPTION:BEGIN -->
@@ -255,8 +254,76 @@ think of all my asks as a whole. how to make it work efficiently, fluently and w
 
 - steer (dima, 18:34): the 🔭 «what this session waits on» line moves from the board into the band — slim enough, and he wants it visible; shown only while the session waits
 
-ticket: FRM-381 (chunk 1: orbit + planned actions + the band row); chunks 2 and 3 stay here
+chunk 1 shipped as FRM-381 (orbit + planned actions + the band row), closed clean; chunks 2 and 3 stay here
 
+## chunk 1b — two mods from the AI Labs video
+
+ticket: FRM-382 (dima, 2026-10-10 19:16–19:45)
+
+source: the AI Labs «Claude mods» video, read via transit, 9 stills in `~/Desktop/screenshots` (18:35–18:38, all the prompt enhancer). the same orbit coder builds both after FRM-381 (dima: a + b, same coder). shape through `x:shape-idea` before the build.
+
+- **assumption rows** — orbit rows of what cclio assumed; 👎🏼 on a wrong one joins the next prompt. rides orbit, never a new surface. plus one per-prompt usage line in the stash's prompt context (5h used vs pace), so load balancing reads it every turn for free
+- **prompt enhancer** — a band button; the mod sends the prompt box to Haiku 5.5 through its model call with `enhancer.md`, our editable instruction file (change the file, change the behaviour); the result lands in the box for review. ? writing back into the box is unprobed
+  - v1 starts simple (dima): wispr fixes from the wispr dictionary, and skill words → `/skill-name`
+  - decided — three buttons, `enhance | prev | new`, dima's flow: he types, presses enhance and the box takes the enhanced text («new» active); prev brings his own text back; new brings the enhanced one back without a rerun; enhance again reruns Haiku and replaces «new»
+  - ticket ids print as the full linear link with its slug, `[FRM-381](https://linear.app/x-com/issue/FRM-381/<slug>)` (dima's example)
+  - candidates for after v1: fleet names → exact session names · paths · the screenshot shelf («on the screenshot» → the latest file) · a question tag (a «why/should/can» prompt gets «question, answer only» so no edits run) · fat-drop split · «done looks like»
+
+## decided — chunk 1b grill round 1 (2026-10-10 20:17; Q1–Q3, Q5, Q6 skipped = picks accepted)
+
+- Q1: write-back fails → the enhanced text shows in the band with a copy button
+- Q2: «new» brings back his edited version; only enhance reruns Haiku
+- Q3: ~1–3 s of Haiku 5.5 per press, spinner on the button; on error his text stays and the band says why
+- Q4: an assumption = a choice made without his word that costs a redo if wrong; checked facts don't count. dima: «make it work — i don't want to see 100 assumptions, don't spam me, only the important and interesting ones»
+- Q5: rows only on turns that acted on a guess, max 3 per turn, 0 is normal
+- Q6: 👍 removes, 👎🏼 + note joins the next prompt, unmarked fades after 3 turns, own «assumed» section under the asks
+- Q7: `/mobile-mode` sets a stash flag that flips the per-prompt reminder to «print the fence with orbit ids»
+- Q8 (round 2): the flag clears on any tick or press on the board, on «back at the mac», or on `/mobile-mode off`
+
+## exit — chunk 1b (sealed 2026-10-10 20:30 after the blind critic, plan 20261010202310; preflight runs at the spawn, on its ticket)
+
+0. step 0, before any build: (a) the write-back probe on both surfaces — set the box text from a mod, type one character after it, read back a text with CRLF, a trailing newline and an emoji byte-for-byte; the verdict is one line in the mods `AGENTS.md` naming the cc version. (b) a prompt-only trial: for 10 real turns cclio reports its assumptions as orbit asks prefixed «assumed:»; dima grades each; under one a turn and mostly «important» means the rows design holds, otherwise it goes back to him before code
+1. given dima typed a prompt, when he presses enhance, then Haiku 5.5 is called once with `enhancer.md`, the skill list and the wispr dictionary; ticket ids come out plain (o13, o14) and the mod hands the session the ticket's title, state and link on send; the box holds the result; prev restores the press-time text byte-identical, new restores the enhanced text including his edits with no second call, enhance again makes exactly one more call; a keystroke during the call cancels the swap; a Haiku error or timeout leaves his text untouched and the band names the reason (plugin tests on call count and texts, red-proven). fallback, if step 0a fails: the same three buttons switch the text shown in the band, and «send without retyping» becomes one copy and one paste
+2. given cclio adds assumptions through the orbit tool, when the turn ends, then at most 3 rows show under an «assumed» section below the asks; 🛎️ removes a row, ↩️ with a note joins the next prompt model-only as «wrong assumption: …», an unmarked row leaves after 3 turns (plugin test, red-proven)
+3. given dima types `/mobile-mode`, when his next prompt arrives, then the stash's per-prompt reminder tells cclio to print the open orbit asks as a ⏳ fence with their ids; any board press, «back at the mac» or `/mobile-mode off` restores the orbit reminder (plugin test, red-proven)
+4. given any push to the stash, when it lands on `main`, then `pnpm mods:typecheck` and `pnpm mods:test` exit 0 before it, every hooks edit went through `scratch-edit`, and orbit's open asks and the mobile flag survive the hot reload (a test)
+5. want line: given dima dictates «use the shape idea skill on frm 381» into the box, when he presses enhance, then the box holds `/x:shape-idea` and `FRM-381` and he sends it without retyping, the session getting FRM-381's real title and link; and over a working evening the assumption rows he sees average under one a turn, each one he grades important at the look
+
+- assumptions trial (FRM-382 «before the build»), tally: turn 1 (21:23) 2 rows, 2 right (o38, o39); turn 2 (22:07) 1 row, wrong and caught (o56); then dropped by cclio (flawlog 23:16). dima's yes at 23:18 (o92): build on these 3 rows
+
+## chunk 2 — 🛼 lane + the ccrow strip
+
+ticket: FRM-385 (sealed 22:10, 7 exit lines, preflight green; spec `.scratch/stash-lane/spec.md`; slices SP-3.1–3.4, dima ok o61); spawn ask after FRM-382 lands, dima opens the Code tab
+
+## decided — chunk 2 grill round 1 (2026-10-10 21:59, all picks accepted, notes folded)
+
+- Q1 store: a `lane` op on the orbit tool writes a file under `~/.claude/shelf/`; it survives a compaction and is cclio's own progress log
+- Q2 depth: up to 5 items per lane, written by cclio in plain words for dima, no tech detail; an item may map to a ticket or not (one-to-one won't always fit); an item naming a ticket shows it as a link that opens linear. dima: «easy for me to understand what the lane is about and where we are in it … don't overload it»
+- Q3 the pointer: cclio moves it through the tool at every member's done and at each turn end; a stale nag after 3 untouched turns, like phases; linear auto-check later. dima: the lane always holds its whole scope; a done item never leaves, only its state changes. unlike phases, where «now» is always first and drops off when it moves
+- Q4 lifetime: shows only while a lane is set, one per session; gone when cclio ends it or the last item checks
+- Q5 board order: 🌔 phases, 🛼 lane, 🪐 orbit, the ccrow strip (dima: «let's try, i'll probably steer»)
+- Q6 ccrow strip: a test drive, simple and useful for him; step 0 probes a click that opens her window, no click if it fails
+- Q7 name: 🛼 lane (dima: the fleet word is already good, no new codename)
+- the 🔭 waits ride the band (chunk 1, round 2)
+- critic round (plan 20261010220027, 5 findings vetted): one note box, on the current item only (dima, o58, reversing a box per step); a finished lane stays listed, all done, until cclio ends it at the next siesta (dima, o57); a timestamped pointer history in the lane file; the ccrow strip shows her headline verbatim, vet counts from `verdicts.jsonl` only; one test per exit clause
+## chunk 3 — 🐠 catch («what did you miss»)
+
+ticket: FRM-386 (sealed 22:25, 7 exit lines, preflight green; spec `.scratch/stash-catch/spec.md`); slices SP-4.1–4.3 (dima ok, o69), spawn after FRM-385
+
+## decided — chunk 3 grill round 1 (2026-10-10 22:16, all picks accepted)
+- settled before: buttons clear, copy, 🤔 (explain next turn); a note box per piece for the steer; joins model-only like an orbit note (resolves the old prepend/append ?); never starts a turn; an experiment, a simple mvp
+- Q1 cclio adds the pieces through the orbit tool at turn end, max 2 per turn, 0 is normal
+- Q2 name: 🐠 catch
+- Q3 a piece stays until dima clears it; max 5, the oldest drops
+- Q4 its own section under orbit, hidden while empty
+- critic (plan 20261010221702, 5 vetted): the tool description says when to catch; a piece quotes text already printed; at 5 held a 6th is refused (dima, o68, reversing Q3); the store counts 🤔, clears and refusals, keep-or-kill read 2026-10-17; the copy fallback appends after his draft
+- Q5 the terminal-bars half is dropped after one look in dima's terminal: FRM-366 already draws the meters there (`FTR.md` meters line), and the band's 🔋 chip covers the sline pace idea
+
+## tomorrow — FRM-382 resume (dima, 2026-10-10 23:47–23:49)
+- SP-2.5 assumption rows landed anyway at 23:49 (50bef031, already built when the pause landed); the verifier on the whole ticket, base the parent of 4694ec05, head 50bef031
+- ccrow freebie left: her ledger line at the packet head (sent n · holdout next in k · last send · hits)
+- rider o102: ⏰ turned on after a reset still wakes the sessions that reset left capped (armWake reads the switch only at fire time, `register.tsx` ~677)
+- rider o103: the band's ⏳ rounds up like cc's «resets in 1 min»
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes

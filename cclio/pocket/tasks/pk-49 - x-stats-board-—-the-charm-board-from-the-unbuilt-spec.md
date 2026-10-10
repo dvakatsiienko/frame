@@ -15,5 +15,5 @@ ordinal: 15500
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-dima, 2026-10-10: «revive it as a pocket item, so it is not forgotten». the spec .scratch/x-stats-board/spec.md (14 stories, parent FRM-14) was never built: stats.go has no sparkline or bubbletea view, only a plain --board. it rides the next cli batch with PK-48 (x stats size) and is that lane's first pass through cclio:shape-lane step 2.5, where PK-35 fires.
+dima, 2026-10-10: «revive it as a pocket item, so it is not forgotten». the spec .scratch/x-stats-board/spec.md (14 stories, parent FRM-14) was never built: stats.go has no sparkline or bubbletea view, only a plain --board. it rides the next cli batch with PK-48 (x stats size) and goes through cclio:shape-lane step 2.5 (PK-35 now fires on FRM-381 instead).
 <!-- SECTION:DESCRIPTION:END -->
