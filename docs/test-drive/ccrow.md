@@ -84,3 +84,6 @@ verdict question: borrow its timing (consult before an approach / before done) i
 
 ### round 10 · 2026-10-10 16:42 · before the run-1 report
 - advisor: the 8 → 28 % claim changed two things at once (context and the kind scheme), say both; there is no human gold set, so every agreement number is agreement with opus; no model clears 85 % on the 9-way kind, so the fix is the label scheme, not the model; haiku's token count is no reason, its accuracy is; persist the context labels. acted on: all. ccrow: 4 wakes this session
+
+### round 11 · 2026-10-10 17:03 · before the mods want (shape-idea step 1)
+- advisor: read stash's PRODUCT.md first (this is a re-shape of the stash, not a new mod; the 10-05 «asks as a source of truth» is open on FRM-304), keep the want (his words, folded) apart from the why (the ledger), step 1 ends with one ask, the hot traces must not jump to solutions before the grill; flags: FRM-304's recipe pointer is stale. acted on: all

@@ -38,6 +38,7 @@ for colour, which the terminal cannot render.
   brand and product names (`linear`, `github`, `notion`), which stay lowercase; the backticks do the
   standing-out a capital used to do.
 - **bold** — key assertions, outcomes, decisions, numbers that matter, and peer and agent names.
+- **a model always carries its version** — **Opus 5.5**, **Sonnet 5.5**, **Haiku 5.5**, **Fable 5.1**, read from the run (a transcript's `model` field), never a bare «opus» (dima, 2026-10-10: «especially when it is about a fleet»).
 - no italics.
 
 highlight the load-bearing part of a sentence so it scans. never ship flat prose.
