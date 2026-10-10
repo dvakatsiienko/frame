@@ -362,10 +362,12 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when he presses `✨ enhance` in the band
   - then Haiku 5.5 is called once with the rules, every slash command and his wispr dictionary, and the box holds its answer: misheard names fixed, a skill he asks for as its `/name`, ticket ids written `FRM-N`
   - decision: a static «✨ enhancing…» label while it runs, not a spinner — the brief's spinner loses to the no-repainting rule
-- ✅ a ticket id in the answer becomes its real link
+- ✅ a ticket id in the answer is painted as a link
   - given Haiku's answer names `FRM-N` or `BYT-N`
   - when the answer lands in the box
-  - then each id reads `[FRM-N](https://linear.app/x-com/issue/FRM-N/<its real slug>)`, resolved by the mod through `x linear`, never by Haiku; an id x cannot find, or x down, leaves it plain
+  - then each id linear knows stays plain `FRM-N`, painted blue and underlined, and stays painted while dima types; the mod checks it through `x linear`, never Haiku; an id x cannot find, or x down, stays unpainted
+  - decision: no markdown link — a fill can paint a span but never make a link, the markdown one was long and never clickable, and a prompt that opens with a /command refuses links (dima's o13, 22:54)
+  - 📌 the paint while typing rides `prompt.edit`, which the harness cannot raise: dima's eye
 - ✅ prev and new swap back with no call
   - given he pressed enhance
   - when he presses `prev`, then `new`

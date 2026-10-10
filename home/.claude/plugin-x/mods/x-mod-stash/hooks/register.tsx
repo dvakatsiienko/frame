@@ -97,6 +97,8 @@ const ENHANCE_MODEL = 'claude-haiku-5-5';
 const ENHANCE_MS = 30_000;
 const WISPR_DB = 'Library/Application Support/Wispr Flow/flow.sqlite';
 let isEnhancing = false;
+// every id the enhancer checked against linear this session; the box paints them while dima types
+const linkedIds = new Set<string>();
 const TICKET_ID_ALL = /(?<!\[)\b(?:FRM|BYT)-\d+\b(?!\])/g;
 const PLAN_MAX = 5;
 const STALE_TURNS = 3;
@@ -277,11 +279,10 @@ async function enhancerSystem($: EngineInterface) {
     ];
 }
 
-// every ticket id in the answer becomes a link to its real page, resolved by `x linear`, never by Haiku; an id x
-// cannot resolve stays plain
-async function linkTickets($: EngineInterface, text: string) {
+// the ticket ids `x linear` knows, checked by the mod, never by Haiku; x down or an unknown id adds nothing
+async function knownTickets($: EngineInterface, text: string) {
     const ids = [...new Set(text.match(TICKET_ID_ALL) ?? [])];
-    if (!ids.length) return text;
+    if (!ids.length) return [];
     const r = await $.process
         .run([
             `${await $.env.get('HOME')}/.local/bin/x`,
@@ -290,27 +291,30 @@ async function linkTickets($: EngineInterface, text: string) {
             ...ids,
         ])
         .catch(() => undefined);
-    if (r?.exitCode !== 0) return text;
-    let urls: Map<string, string>;
+    if (r?.exitCode !== 0) return [];
     try {
         const tickets = (
             JSON.parse(r.stdout) as {
                 data?: { tickets?: { id?: string; url?: string }[] };
             }
         ).data?.tickets;
-        urls = new Map(
-            (tickets ?? []).flatMap((x) =>
-                x.id && x.url ? [[x.id, x.url] as const] : [],
-            ),
-        );
+        return (tickets ?? []).flatMap((x) => (x.id && x.url ? [x.id] : []));
     } catch {
-        return text;
+        return [];
     }
-    return text.replace(TICKET_ID_ALL, (id) => {
-        const url = urls.get(id);
-        return url ? `[${id}](${url})` : id;
-    });
 }
+
+// a known id stays plain text, painted as a link: a fill can colour a span but never make one, and a markdown link
+// in the box is long, never clickable, and breaks a prompt that opens with a /command (dima's o13, 22:54)
+const idPaint = (text: string) =>
+    [...text.matchAll(TICKET_ID_ALL)]
+        .filter((m) => linkedIds.has(m[0]))
+        .map((m) => ({
+            color: METER_TINTS.calmCtx,
+            end: m.index + m[0].length,
+            start: m.index,
+            underline: true,
+        }));
 
 // one call per press; a keystroke while it runs keeps his text and drops the answer, an error leaves the box alone
 async function enhance($: EngineInterface) {
@@ -343,8 +347,7 @@ async function enhanceOnce($: EngineInterface) {
             },
             { signal: stop.signal },
         );
-        if (r.isAnswered && r.text.trim())
-            answer = await linkTickets($, r.text.trim());
+        if (r.isAnswered && r.text.trim()) answer = r.text.trim();
         else
             failure = stop.signal.aborted
                 ? `Haiku took over ${ENHANCE_MS / 1000} s`
@@ -367,7 +370,11 @@ async function enhanceOnce($: EngineInterface) {
             error: 'enhance: Haiku found nothing to change',
             status: 'idle',
         });
-    const filled = await $.prompt.fill({ text: answer });
+    for (const id of await knownTickets($, answer)) linkedIds.add(id);
+    const filled = await $.prompt.fill({
+        decorations: idPaint(answer),
+        text: answer,
+    });
     // a refused fill keeps the answer, so new can try the box again
     await saveEnhancer($, {
         error: filled.isFilled
@@ -386,13 +393,19 @@ async function enhancePrev($: EngineInterface) {
     const box = (await $.prompt.read()).text;
     const latest = box === s.original ? s.latest : box;
     await saveEnhancer($, { ...s, error: undefined, latest });
-    await $.prompt.fill({ text: s.original });
+    await $.prompt.fill({
+        decorations: idPaint(s.original),
+        text: s.original,
+    });
 }
 
 async function enhanceNew($: EngineInterface) {
     const s = await enhancerOf($);
     if (s.status === 'running' || s.latest === undefined) return;
-    const filled = await $.prompt.fill({ text: s.latest });
+    const filled = await $.prompt.fill({
+        decorations: idPaint(s.latest),
+        text: s.latest,
+    });
     await saveEnhancer($, {
         ...s,
         error: filled.isFilled
@@ -1425,6 +1438,16 @@ export const register: Register = (on) => {
             tick();
         }
         return next(e);
+    });
+
+    // a decoration lasts until the next edit, so every edit paints the known ids again
+    on('prompt.edit', async ($, e, next) => {
+        const r = await next(e);
+        if (!linkedIds.size) return r;
+        return {
+            ...r,
+            decorations: [...(r.decorations ?? []), ...idPaint(r.text)],
+        };
     });
 
     // `/mobile-mode` turns the asks fence on, `/mobile-mode off` turns it off

@@ -6,7 +6,12 @@ const SID = 'e1e1e1e1-enhancer';
 // the prompt box as one string behind read and fill; Haiku answers from a queue, each call counted
 function world(
     on: On,
-    box: { text: string; refusal?: 'dialog'; isXDown?: boolean },
+    box: {
+        text: string;
+        refusal?: 'dialog';
+        isXDown?: boolean;
+        painted?: string[];
+    },
 ) {
     mock.clock(on);
     mock.store(on);
@@ -69,6 +74,9 @@ function world(
     on('prompt.fill', (_$, e) => {
         if (box.refusal) return { isFilled: false, refusal: box.refusal };
         box.text = e.text;
+        box.painted = (e.decorations ?? []).map((d) =>
+            d.underline ? e.text.slice(d.start, d.end) : '',
+        );
         onFill();
         return { isFilled: true };
     });
@@ -241,31 +249,37 @@ test('an answer equal to his text says there was nothing to change', async ($, o
     );
 });
 
-test('a ticket id in the answer becomes a link to its real page', async ($, on) => {
-    const box = { text: 'use the shape idea skill on frm 381' };
+test('a ticket id linear knows stays plain text, painted as a link', async ($, on) => {
+    const box: Parameters<typeof world>[1] = {
+        text: 'use the shape idea skill on frm 381',
+    };
     const w = world(on, box);
-    w.answers.push(async () => answered('use /x:shape-idea on FRM-381'));
+    w.answers.push(async () => answered('/x:shape-idea on FRM-381'));
     const ui = await band($);
     await ui.press({ key: 'enh:enhance' });
-    expect(box.text).toBe(
-        'use /x:shape-idea on [FRM-381](https://linear.app/x-com/issue/FRM-381/stash-orbit)',
-    );
+    expect([box.text, box.painted]).toEqual([
+        '/x:shape-idea on FRM-381',
+        ['FRM-381'],
+    ]);
 });
 
-test('an id x cannot resolve stays plain', async ($, on) => {
-    const box = { text: 'see frm 999' };
+test('an id linear does not know is left unpainted', async ($, on) => {
+    const box: Parameters<typeof world>[1] = { text: 'see frm 999' };
     const w = world(on, box);
     w.answers.push(async () => answered('see FRM-999'));
     const ui = await band($);
     await ui.press({ key: 'enh:enhance' });
-    expect(box.text).toBe('see FRM-999');
+    expect([box.text, box.painted]).toEqual(['see FRM-999', []]);
 });
 
-test('with x down the ids stay plain and the answer still lands', async ($, on) => {
-    const box = { isXDown: true, text: 'on frm 381' };
+test('with x down the answer lands unpainted', async ($, on) => {
+    const box: Parameters<typeof world>[1] = {
+        isXDown: true,
+        text: 'on frm 381',
+    };
     const w = world(on, box);
     w.answers.push(async () => answered('on FRM-381'));
     const ui = await band($);
     await ui.press({ key: 'enh:enhance' });
-    expect(box.text).toBe('on FRM-381');
+    expect([box.text, box.painted]).toEqual(['on FRM-381', []]);
 });
