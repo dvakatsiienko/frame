@@ -97,7 +97,7 @@ let afk = false;
 let isWaker = false;
 // the 5h reset as the last session.measure reported it, and this session's cap state
 let fiveHourResetsAt: number | undefined;
-// the dir the session started in: its project, whose .claude/settings.local.json the threshold input writes
+// the dir the session started in: its project, whose .claude settings the threshold input writes
 let projectDir: string | undefined;
 let cap: StashCap | undefined;
 let capGen = 0;
@@ -378,7 +378,7 @@ async function compactAtOf($: EngineInterface, window: number) {
     return tokens && window ? Math.round((tokens / window) * 100) : undefined;
 }
 
-// a typed compaction point: a whole 10–99 goes into the project's .claude/settings.local.json `env`, keeping every
+// a typed compaction point: a whole 10–99 goes into the launch dir's .claude settings `env`, keeping every
 // other key; anything else, or a file that is not json, leaves the file alone and says why in one line
 async function setCompactAt($: EngineInterface, text: string) {
     const was = (await $.state.get(METER)).value ?? {};
@@ -401,7 +401,10 @@ async function setCompactAt($: EngineInterface, text: string) {
         : undefined;
     const dir = launched ?? projectDir;
     if (!dir) return keep('no project dir for this session');
-    const path = `${dir}/.claude/settings.local.json`;
+    // a repo top's own settings.local.json outranks every subdir's, its shared settings.json does not (probed
+    // 2026-10-10): the top writes the shared file, so a subdir session (cclio in ~/frame/cclio) keeps its own value
+    const root = (await $.session.repo().catch(() => undefined))?.root;
+    const path = `${dir}/.claude/${dir === root ? 'settings.json' : 'settings.local.json'}`;
     let settings: Record<string, unknown> = {};
     if (await $.fs.exists(path)) {
         try {

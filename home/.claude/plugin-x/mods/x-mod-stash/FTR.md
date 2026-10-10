@@ -197,7 +197,8 @@
   - decision: the band's meter state is written only when a reading moved, so a measure that changed nothing redraws nothing
 - ⬜ the compaction point is typed live
   - when dima types a whole 10–99 into the ctx row's `Input` and presses Enter
-  - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the session's project `.claude/settings.local.json`, every other key kept, and the row shows it
+  - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the launch dir's `.claude/settings.json` when that dir is the repo top, its `.claude/settings.local.json` otherwise, every other key kept, and the row shows it
+  - decision: a repo top's own local file outranks every subdir's, its shared file does not (probed 2026-10-10) — so frame's 92 sits in the shared file and cclio's 70 in `~/frame/cclio` wins for her (dima, 11:25: «for cclio, it should be tied to that 70 value, her local override»)
   - when he types anything else, or the file is not a json object
   - then one red line under the meters says why, and the file stays untouched
   - decision: the project is the dir the session launched in, as its registry entry's `cwd` names it (cclio's is `~/frame/cclio`), never the repo root and never user settings — every session in that dir shares the point

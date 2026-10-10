@@ -7,6 +7,7 @@ const NOW = 10_000_000;
 const HOUR = 60 * 60 * 1000;
 const SID = 'm1m1m1m1-here';
 const LOCAL = '/proj/.claude/settings.local.json';
+const SHARED = '/proj/.claude/settings.json';
 const USAGE = '/home/.claude/shelf/cc-usage-window.json';
 
 // a session in /proj whose engine compacts at 70 % of a 1M window, the files in memory; `override` is the project's
@@ -185,20 +186,23 @@ test("the ctx row shows the fill and the engine's compaction point", async ($, o
     ]).toEqual([true, '70']);
 });
 
-test('a submitted compaction point lands in the project settings.local.json, other keys kept', async ($, on) => {
+test("a repo top's compaction point lands in its shared settings.json, other keys kept", async ($, on) => {
     const { files } = meters(on, {
-        [LOCAL]: '{"permissions":{"allow":["Bash"]}}',
+        [SHARED]: '{"permissions":{"allow":["Bash"]}}',
     });
     await measure($, 39, 35);
     const ui = await band($);
     await ui.input({ key: 'compact-at', text: '80' });
-    expect(JSON.parse(files[LOCAL] ?? '{}')).toEqual({
-        env: { CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '80' },
-        permissions: { allow: ['Bash'] },
-    });
+    expect([JSON.parse(files[SHARED] ?? '{}'), LOCAL in files]).toEqual([
+        {
+            env: { CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '80' },
+            permissions: { allow: ['Bash'] },
+        },
+        false,
+    ]);
 });
 
-test('a submitted compaction point lands in the launch dir the registry names, not the start cwd', async ($, on) => {
+test("a subdir session's compaction point lands in its own settings.local.json, not the repo top's", async ($, on) => {
     const { files } = meters(on, {
         '/home/.claude/sessions/4649.json': '{"cwd":"/launch"}',
     });
