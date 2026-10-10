@@ -291,6 +291,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given 20 asks have piled up
   - when dima reads orbit
   - then every line says what is asked and cclio's pick in one line, with no «above» or «this» pointing at a reply
+- ✅ a long ask is refused at the door
+  - given a session sends an ask, a follow-up or a phase line over 90 characters
+  - when the orbit tool takes it
+  - then the tool refuses it in one line naming the text and its length, and orbit keeps what it had
+  - decision: ≤90 chars, subject first, the detail in the hidden note (dima's o60, 22:13)
 - ✅ accept, reject, note, check all
   - given orbit shows asks
   - when dima presses an ask's 🤩 or 👎🏼, types in its note, or presses check all

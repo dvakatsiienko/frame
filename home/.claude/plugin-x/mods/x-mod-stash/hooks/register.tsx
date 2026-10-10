@@ -104,12 +104,14 @@ const PLAN_LEAD = /^[a-z]{2,10}:/i;
 const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
 // a quarter row between a block's lines: the desktop draws the fraction, the terminal rounds it away (dima, 21:22)
 const LINE_GAP = 0.25;
+// an ask, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
+const ORBIT_TEXT_MAX = 90;
 const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he ticks 🤩 to accept your pick, 👎🏼 to reject, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
-    'op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»); pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.',
+    `op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»), ≤${ORBIT_TEXT_MAX} chars, subject first, detail in hiddenNote; pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.`,
     'op resolve, ids: the asks you answered this turn; they leave orbit when the turn ends.',
-    'op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text and a «changed» mark.',
-    `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
+    `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a «changed» mark.`,
+    `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone and ≤${ORBIT_TEXT_MAX} chars; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
 ].join('\n');
 
 let selfId: string | undefined;
@@ -364,6 +366,16 @@ async function markAsks($: EngineInterface, change: (a: OrbitAsk) => OrbitAsk) {
 }
 
 // the tool's ops on orbit; `isTurn` decides whether a plan set now counts from this turn's end or the last one
+// the first text over the cap, named with its length, so the session can shorten that one
+function overCap(op: string, texts: string[]) {
+    const long = texts.find((x) => [...x].length > ORBIT_TEXT_MAX);
+    return long === undefined
+        ? undefined
+        : {
+              deny: `orbit ${op}: «${[...long].slice(0, 40).join('')}…» is ${[...long].length} chars; keep it ≤${ORBIT_TEXT_MAX}, subject first, detail in hiddenNote`,
+          };
+}
+
 function orbitOp(
     o: StashOrbit,
     input: Record<string, unknown>,
@@ -390,6 +402,11 @@ function orbitOp(
                 return {
                     deny: 'orbit add: asks needs one { text, pick } or more',
                 };
+            const tooLong = overCap(
+                'add',
+                added.map((a) => a.text),
+            );
+            if (tooLong) return tooLong;
             return {
                 orbit: { ...o, asks: [...o.asks, ...added], next },
                 result: `added ${added.map((a) => a.id).join(', ')} to dima's orbit; never repeat them in the reply`,
@@ -418,6 +435,8 @@ function orbitOp(
                 return {
                     deny: `orbit follow: needs a known id and a text, got «${id}»`,
                 };
+            const tooLong = overCap('follow', [text]);
+            if (tooLong) return tooLong;
             return {
                 orbit: {
                     ...o,
@@ -442,6 +461,8 @@ function orbitOp(
                 .map(oneLine)
                 .filter(Boolean)
                 .slice(0, PLAN_MAX);
+            const tooLong = overCap('plan', lines);
+            if (tooLong) return tooLong;
             return {
                 orbit: {
                     ...o,

@@ -598,3 +598,39 @@ test('mobile mode survives a reload', async ($, on) => {
     await say($, 'hi');
     expect(lastContext(w.contexts)).toMatch(/asks fence.*\(o3\)/s);
 });
+
+const long = 'x'.repeat(91);
+
+test('an ask text over 90 chars is refused with its length', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await add($, [long, 'yes']);
+    expect((r as { deny?: string }).deny).toMatch(/91 chars; keep it ≤90/);
+});
+
+test('a follow text over 90 chars is refused', async ($, on) => {
+    world(on);
+    await start($);
+    await add($, ['short', 'yes']);
+    const r = await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'yes',
+        text: long,
+    });
+    expect((r as { deny?: string }).deny).toMatch(/orbit follow: .*91 chars/);
+});
+
+test('a phase line over 90 chars is refused', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await orbit($, { lines: ['now: short', long], op: 'plan' });
+    expect((r as { deny?: string }).deny).toMatch(/orbit plan: .*91 chars/);
+});
+
+test('an ask text of exactly 90 chars is taken', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await add($, ['x'.repeat(90), 'yes']);
+    expect((r as { deny?: string }).deny).toBe(undefined);
+});
