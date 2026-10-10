@@ -31,6 +31,7 @@ one line per day: date · arm · wakes · notes / none · ok / miss · tokens ·
 
 - 2026-10-08 · run 2 of refresh-crew-coordinator-adviser landed: the contract moved into `x:crew-adviser` (timing hold + `also held`, `predicts:` lines, 4 new or reshaped hunts, a 1-in-5 holdout to 10-20). 19:16 live note (5h wall) → ok, acted on. effort stays medium on both arms (dima: fable high is too much)
 - 2026-10-09 keep-hot, parked overnight (session 9c8d2cd8): the stash ping fired every 50 min from 01:47 to ~11:51 local; after the 03:27 ping the turn read 299,003 cached and wrote 95, so the cache held warm across each gap. it pinged a parked session all night, ~11 pings × ~299k cache reads (cost inferred, not measured)
+- 2026-10-10 · ccrow changed ([FRM-380](https://linear.app/x-com/issue/FRM-380)), the /advisor borrow: a `mode decision` wake at cclio's `gh pr merge` (the merge waits ≤ 90 s for the note; a tab ccrow denies the first merge and the rerun carries the note) and at a `claude --bg` spawn (no wait); a push to main stays with the Stop wake. a packet that lost blocks or tool output carries a `cut:` line with the transcript path, and ccrow reads the tail only then. measure from here: decision wakes per day, notes vs `none`, the seconds a merge waited
 
 ## /advisor head-to-head — day 0, 2026-10-10
 

@@ -30,6 +30,7 @@
         "ccrow:stop": "node ./ccrow/stop.ts",
         "ccrow:plan-critique": "node ./ccrow/plan-critique.ts",
         "ccrow:wake": "node ./ccrow/wake.ts",
+        "ccrow:decision": "node ./ccrow/decision.ts",
         "ccrow:relay": "node ./ccrow/relay.ts",
         "ccrow:note-vet": "node ./ccrow/note-vet.ts",
         "design:contrast": "node ./design/contrast.ts",

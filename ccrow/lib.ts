@@ -1,7 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
-    copyFileSync,
     globSync,
     mkdirSync,
     readFileSync,
@@ -27,7 +26,7 @@ const DELTA_MAX_CHARS = 60_000;
 const SESSIONS_DIR = join(homedir(), '.claude/sessions');
 
 export const armList = ['opus', 'fable'] as const;
-export const modeList = ['day', 'systematic'] as const;
+export const modeList = ['day', 'systematic', 'decision'] as const;
 
 export const armModels = {
     fable: 'claude-fable-5-1',
@@ -420,14 +419,17 @@ const NOTIFICATION_MAX_CHARS = 2_000;
 
 // a task-notification carries a subagent's whole report; ccrow needs its gist and where the rest lives
 function capNotifications(text: string) {
-    return text.replace(
+    let capped = 0;
+    const kept = text.replace(
         /<task-notification>[\s\S]*?<\/task-notification>/g,
         (block) => {
             if (block.length <= NOTIFICATION_MAX_CHARS) return block;
+            capped++;
             const file = /<output-file>([^<]*)<\/output-file>/.exec(block)?.[1];
             return `${block.slice(0, NOTIFICATION_MAX_CHARS)} …[cut${file ? `; full: ${file}` : ''}]`;
         },
     );
+    return { capped, text: kept };
 }
 
 // the cut drops whole blocks from the head, so a packet never opens on an orphan fragment
@@ -440,9 +442,9 @@ function lastBlocks(parts: string[]) {
         size += part.length + 2;
     }
     const text = kept.join('\n\n');
-    const dropped = parts.length - kept.length;
-    if (dropped === 0 && text.length <= DELTA_MAX_CHARS) return text;
-    return `[delta cut: ${dropped} older blocks dropped]\n${text.slice(-DELTA_MAX_CHARS)}`;
+    const dropped =
+        parts.length - kept.length + (text.length > DELTA_MAX_CHARS ? 1 : 0);
+    return { dropped, text: text.slice(-DELTA_MAX_CHARS) };
 }
 
 // ccrow times its sends off each block; a block whose entry has no timestamp prints none
@@ -456,6 +458,7 @@ function headOf(who: string, timestamp?: string) {
 export function transcriptDelta(lines: string[], fromLine: number) {
     const stepIds = new Set<string>();
     const parts: string[] = [];
+    let outputs = 0;
     for (const entry of lines.slice(fromLine).map(parseEntry)) {
         if (entry?.type === 'assistant') {
             if (entry.message?.id) stepIds.add(entry.message.id);
@@ -477,12 +480,19 @@ export function transcriptDelta(lines: string[], fromLine: number) {
             if (!text) continue;
             const who = entry.origin?.kind === 'peer' ? 'peer' : 'dima';
             if (who === 'dima' && entry.isMeta) continue;
-            parts.push(
-                `${headOf(who, entry.timestamp)}\n${capNotifications(text)}`,
-            );
+            const notified = capNotifications(text);
+            outputs += notified.capped;
+            parts.push(`${headOf(who, entry.timestamp)}\n${notified.text}`);
         }
     }
-    return { steps: stepIds.size, text: lastBlocks(parts) };
+    const { dropped, text } = lastBlocks(parts);
+    return { cut: { blocks: dropped, outputs }, steps: stepIds.size, text };
+}
+
+// a packet that lost blocks or tool output names the transcript, so ccrow reads its tail only then
+export function cutLine(cut: Cut, transcriptPath: string) {
+    if (cut.blocks === 0 && cut.outputs === 0) return '';
+    return `cut: ${cut.blocks} older blocks dropped, ${cut.outputs} tool outputs capped · transcript ${transcriptPath}`;
 }
 
 export function resolveLeaves(patterns: string[], today: string) {
@@ -535,6 +545,7 @@ export function leavesToSend(
 }
 
 export function buildPacket({
+    cut = '',
     deltaText,
     dir,
     leaves,
@@ -552,13 +563,153 @@ export function buildPacket({
         ? `## leaves with no match\n${missing.map((line) => `- ${line}`).join('\n')}`
         : '';
     const body = [
-        `# cclio since the last wake\n\n${deltaText || '(no text)'}`,
+        `# cclio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
         ...leafBlocks,
         unchangedNote,
         missingNote,
     ].filter(Boolean);
     writeFileSync(join(dir, 'packet.md'), `${body.join('\n\n')}\n`);
     return ['packet.md'];
+}
+
+// the words of each command in a shell line, quotes honoured, so a merge quoted in a commit message is no merge
+export function shellCommands(line: string) {
+    const commands: string[][] = [];
+    let words: string[] = [];
+    let word = '';
+    let hasWord = false;
+    let quote = '';
+    const endWord = () => {
+        if (hasWord) words.push(word);
+        word = '';
+        hasWord = false;
+    };
+    const endCommand = () => {
+        endWord();
+        if (words.length) commands.push(words);
+        words = [];
+    };
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i] ?? '';
+        if (quote) {
+            if (char === quote) quote = '';
+            else if (char === '\\' && quote === '"') word += line[++i] ?? '';
+            else word += char;
+        } else if (char === '"' || char === "'") {
+            quote = char;
+            hasWord = true;
+        } else if (char === '\\') {
+            word += line[++i] ?? '';
+            hasWord = true;
+        } else if (/[;|&\n()]/.test(char)) {
+            endCommand();
+        } else if (/\s/.test(char)) {
+            endWord();
+        } else {
+            word += char;
+            hasWord = true;
+        }
+    }
+    endCommand();
+    return commands;
+}
+
+// a merge waits for ccrow's note; a member spawn wakes it and runs on; anything else is no decision
+export function decisionOf(line: string): Decision | undefined {
+    for (const command of shellCommands(line)) {
+        const words = command.slice(
+            command.findIndex((w) => w !== 'env' && !/^\w+=/.test(w)),
+        );
+        if (words[0] === 'gh' && words[1] === 'pr' && words[2] === 'merge')
+            return { args: words.slice(3), kind: 'merge' };
+        if (words[0] === 'claude' && words.includes('--bg'))
+            return { kind: 'spawn' };
+    }
+}
+
+const MERGE_VALUE_FLAGS = new Set([
+    '-A',
+    '--author-email',
+    '-b',
+    '--body',
+    '-F',
+    '--body-file',
+    '--match-head-commit',
+    '-R',
+    '--repo',
+    '-t',
+    '--subject',
+]);
+
+// `gh pr view` takes the same selector and repo the merge was given
+export function prViewArgs(mergeArgs: string[]) {
+    let selector: string | undefined;
+    let repo: string | undefined;
+    for (let i = 0; i < mergeArgs.length; i++) {
+        const arg = mergeArgs[i] ?? '';
+        const [flag = '', inline] = arg.split(/=(.*)/s);
+        const value = inline ?? mergeArgs[i + 1];
+        if (flag === '-R' || flag === '--repo') repo = value;
+        if (MERGE_VALUE_FLAGS.has(flag) && inline === undefined) i++;
+        else if (!arg.startsWith('-')) selector ??= arg;
+    }
+    return [
+        'pr',
+        'view',
+        ...(selector ? [selector] : []),
+        ...(repo ? ['--repo', repo] : []),
+        '--json',
+        'number,headRefOid,url',
+    ];
+}
+
+export const VERIFIED_PATH = join(homedir(), '.claude/shelf/pr-verified.json');
+
+// written by the verifier on clean (`pr-watch.sh --verified`), keyed `owner/repo#n`
+export function verifiedHead(key: string, path = VERIFIED_PATH) {
+    try {
+        const sha: unknown = JSON.parse(readFileSync(path, 'utf8'))[key];
+        return typeof sha === 'string' && sha ? sha : undefined;
+    } catch {}
+}
+
+// one packet for any wake: the delta since the last one, plus the leaves changed since ccrow last read them
+export function packWake({
+    delta,
+    lines,
+    now,
+    state,
+    transcriptPath,
+    wakeId,
+}: PackInput) {
+    let leafPatterns: string[] = [];
+    try {
+        leafPatterns = readFileSync(
+            join(STATE_DIR, 'leaves.txt'),
+            'utf8',
+        ).split('\n');
+    } catch {}
+    const leaves = resolveLeaves(leafPatterns, localDay(now));
+    const ccrowTranscript = newestTranscript();
+    const toSend = leavesToSend(leaves.found, state, ccrowTranscript);
+    const files = buildPacket({
+        cut: cutLine(delta.cut, transcriptPath),
+        deltaText: delta.text,
+        dir: join(STATE_DIR, 'packets', wakeId),
+        leaves: toSend.changed,
+        missing: leaves.missing,
+        unchanged: toSend.unchanged,
+    });
+    return {
+        files,
+        missing: leaves.missing,
+        state: {
+            ...state,
+            leafHashes: toSend.hashes,
+            leavesFor: ccrowTranscript,
+            offsets: { ...state.offsets, [transcriptPath]: lines.length },
+        } satisfies State,
+    };
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -869,7 +1020,24 @@ export interface TranscriptEntry {
     };
 }
 
+export type Decision = { kind: 'merge'; args: string[] } | { kind: 'spawn' };
+
+interface PackInput {
+    delta: ReturnType<typeof transcriptDelta>;
+    lines: string[];
+    now: Date;
+    state: State;
+    transcriptPath: string;
+    wakeId: string;
+}
+
+export interface Cut {
+    blocks: number;
+    outputs: number;
+}
+
 interface PacketInput {
+    cut?: string;
     dir: string;
     leaves: string[];
     unchanged?: string[];

@@ -16,11 +16,14 @@ import {
     blindPrompt,
     blindSections,
     buildPacket,
+    cutLine,
+    decisionOf,
     isCoordinatorTranscript,
     isLocated,
     leavesToSend,
     planNotes,
     planPrompt,
+    prViewArgs,
     readCharter,
     readLines,
     readTurn,
@@ -117,10 +120,10 @@ describe('transcriptDelta', () => {
                 type: 'user',
             }),
         );
-        const text = transcriptDelta(big, 0).text;
-        expect(
-            text.startsWith('[delta cut: 2 older blocks dropped]\n## dima\n2'),
-        ).toBe(true);
+        const delta = transcriptDelta(big, 0);
+        expect([delta.text.startsWith('## dima\n2'), delta.cut.blocks]).toEqual(
+            [true, 2],
+        );
     });
 
     test('counts one step per assistant message id', () => {
@@ -184,6 +187,38 @@ describe('buildPacket', () => {
         expect(readFileSync(join(dir, 'packet.md'), 'utf8')).toBe(
             `# cclio since the last wake\n\n## dima\nhi\n\n## leaf · ${leaf}\n\nvector: ship the fleet\n`,
         );
+    });
+
+    const packetOf = (deltaLines: string[]) => {
+        const dir = join(mkdtempSync(join(tmpdir(), 'ccrow-')), 'packet');
+        const delta = transcriptDelta(deltaLines, 0);
+        buildPacket({
+            cut: cutLine(delta.cut, '/t/cclio.jsonl'),
+            deltaText: delta.text,
+            dir,
+            leaves: [],
+            missing: [],
+        });
+        return readFileSync(join(dir, 'packet.md'), 'utf8');
+    };
+
+    test('a cut packet carries one cut line naming the transcript', () => {
+        const report = 'x'.repeat(5_000);
+        const packet = packetOf([
+            JSON.stringify({
+                message: {
+                    content: `<task-notification><result>${report}</result></task-notification>`,
+                },
+                type: 'user',
+            }),
+        ]);
+        expect(packet.match(/^cut: .*$/gm)).toEqual([
+            'cut: 0 older blocks dropped, 1 tool outputs capped · transcript /t/cclio.jsonl',
+        ]);
+    });
+
+    test('an uncut packet carries no cut line', () => {
+        expect(packetOf(lines)).not.toMatch(/^cut:/m);
     });
 });
 
@@ -433,4 +468,48 @@ test('a leaf goes again only when it changed, or when ccrow started a new transc
         unchanged: [leaf],
     });
     expect(leavesToSend([leaf], state, 't2').changed).toEqual([leaf]);
+});
+
+describe('decisionOf', () => {
+    test.each([
+        ['gh pr merge 82 -R dvakatsiienko/frame --squash', 'merge'],
+        ['x lane push --apply && gh pr merge 82', 'merge'],
+        ['GH_TOKEN=x gh pr merge 5', 'merge'],
+        ['gh pr merge --subject "a; claude --bg" 82', 'merge'],
+        [
+            'cd ~/frame && claude --bg -n "☕️ 🔧 x" "/x:crew-coder FRM-1"',
+            'spawn',
+        ],
+        ['env A=1 claude --bg hi', 'spawn'],
+        ['x lane commit -m "gh pr merge 3"', undefined],
+        ["echo 'claude --bg'", undefined],
+        ['gh pr view 82', undefined],
+        ['claude -p hi', undefined],
+        ['x lane push --apply', undefined],
+        ['git log | grep "gh pr merge"', undefined],
+    ])('%s → %s', (line, kind) => {
+        expect(decisionOf(line)?.kind).toBe(kind);
+    });
+});
+
+describe('prViewArgs', () => {
+    const json = ['--json', 'number,headRefOid,url'];
+    test.each([
+        ['82 -R o/r --squash', ['82', '--repo', 'o/r']],
+        [
+            '--repo=o/r https://github.com/o/r/pull/9',
+            ['https://github.com/o/r/pull/9', '--repo', 'o/r'],
+        ],
+        ['-t "x y" -b z --squash 3', ['3']],
+        ['--squash', []],
+        ['--subject 82 7', ['7']],
+    ])('gh pr merge %s', (args, view) => {
+        const merge = decisionOf(`gh pr merge ${args}`);
+        expect(merge?.kind === 'merge' && prViewArgs(merge.args)).toEqual([
+            'pr',
+            'view',
+            ...view,
+            ...json,
+        ]);
+    });
 });

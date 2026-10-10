@@ -32,6 +32,25 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(gh pr merge*)",
+            "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "if": "Bash(claude *)",
+            "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
