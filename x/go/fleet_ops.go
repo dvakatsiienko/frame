@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -93,8 +94,29 @@ type opsData struct {
 	Tickets      []ticketCost `json:"tickets"`
 	CclioEdits   []cclioEdits `json:"cclio_edits"`
 	Boots        []opsBoot    `json:"boots"`
+	SizeMisses   []sizeMiss   `json:"size_misses"`
+	SizeError    string       `json:"size_error,omitempty"`
 	SessionsRead int          `json:"sessions_read"`
 }
+
+// a closed ticket whose coder sessions took more turns than its estimate's size allows
+type sizeMiss struct {
+	Ticket string `json:"ticket"`
+	Size   string `json:"size"`
+	Turns  int    `json:"turns"`
+	Line   int    `json:"line"`
+}
+
+type ticketSize struct {
+	Estimate int
+	Closed   bool
+}
+
+// the size lines in agent turns (x:pm references/workspace.md § fields); M has none, it is split before a spawn
+var sizeLines = map[int]struct {
+	name string
+	line int
+}{1: {"XS", 80}, 2: {"S", 400}}
 
 // fleetOps reads agent ops off the transcripts, no model tokens: tokens and wall time per ticket (coder
 // + verifier), cclio's own code edits per session, the cost of a cclio boot
@@ -113,7 +135,19 @@ func fleetOps(r *Run, _ []string, flags Flags) (any, error) {
 	for _, path := range sessionFiles(time.Now().Add(-time.Duration(days)*24*time.Hour), int64(minKB)*1024) {
 		sessions = append(sessions, parseOpsSession(transcriptLines(path), path))
 	}
-	data := opsData{Days: days, MinKB: minKB, Tickets: costPerTicket(sessions), CclioEdits: []cclioEdits{}, Boots: []opsBoot{}, SessionsRead: len(sessions)}
+	data := opsData{Days: days, MinKB: minKB, Tickets: costPerTicket(sessions), CclioEdits: []cclioEdits{}, Boots: []opsBoot{}, SizeMisses: []sizeMiss{}, SessionsRead: len(sessions)}
+	if turns := coderTurns(sessions); len(turns) > 0 {
+		actor, err := actorOf(flags)
+		if err != nil {
+			return nil, err
+		}
+		// a linear outage leaves the transcript numbers standing; the miss check names why it is empty
+		if sizes, err := ticketSizes(actor, slices.Sorted(maps.Keys(turns))); err != nil {
+			data.SizeError = err.Error()
+		} else {
+			data.SizeMisses = sizeMisses(turns, sizes)
+		}
+	}
 	var cclio []opsSession
 	for _, s := range sessions {
 		if s.Role == "cclio" {
@@ -297,6 +331,62 @@ func costPerTicket(sessions []opsSession) []ticketCost {
 	return costs
 }
 
+// coder turns (distinct assistant message ids) summed per ticket over every session that worked it
+func coderTurns(sessions []opsSession) map[string]int {
+	turns := map[string]int{}
+	for _, s := range sessions {
+		if s.Role == "coder" && s.Ticket != "" {
+			turns[s.Ticket] += s.Steps
+		}
+	}
+	return turns
+}
+
+func sizeMisses(turns map[string]int, sizes map[string]ticketSize) []sizeMiss {
+	misses := []sizeMiss{}
+	for ticket, n := range turns {
+		size, known := sizes[ticket]
+		line, sized := sizeLines[size.Estimate]
+		if known && size.Closed && sized && n >= line.line {
+			misses = append(misses, sizeMiss{Ticket: ticket, Size: line.name, Turns: n, Line: line.line})
+		}
+	}
+	slices.SortFunc(misses, func(a, b sizeMiss) int { return cmp.Or(b.Turns-a.Turns, strings.Compare(a.Ticket, b.Ticket)) })
+	return misses
+}
+
+// one aliased request for every ticket; an id linear does not know comes back null and is left out
+func ticketSizes(actor string, tickets []string) (map[string]ticketSize, error) {
+	var query strings.Builder
+	query.WriteString("query {")
+	for i, id := range tickets {
+		fmt.Fprintf(&query, " t%d: issue(id: %q) { estimate state { type } }", i, id)
+	}
+	query.WriteString(" }")
+	data, _, err := gql(actor, query.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	sizes := map[string]ticketSize{}
+	for i, id := range tickets {
+		var issue *struct {
+			Estimate *float64 `json:"estimate"`
+			State    struct {
+				Type string `json:"type"`
+			} `json:"state"`
+		}
+		if json.Unmarshal(data[fmt.Sprintf("t%d", i)], &issue) != nil || issue == nil {
+			continue
+		}
+		size := ticketSize{Closed: issue.State.Type == "completed"}
+		if issue.Estimate != nil {
+			size.Estimate = int(*issue.Estimate)
+		}
+		sizes[id] = size
+	}
+	return sizes, nil
+}
+
 func opsLines(d opsData) []string {
 	millions := func(n float64) string { return fixed1(n/1e6) + "M" }
 	minutes := func(ms float64) string { return fixed1(ms/60000) + "min" }
@@ -325,6 +415,15 @@ func opsLines(d opsData) []string {
 			bootTokens, seconds = append(bootTokens, float64(b.Tokens)), append(seconds, b.Seconds)
 		}
 		lines = append(lines, fmt.Sprintf("%s median over %d: %s tokens, %ds", kind, len(bootTokens), millions(median(bootTokens)), roundHalfUp(median(seconds))))
+	}
+	if d.SizeError != "" {
+		lines = append(lines, "", "== size misses: not checked, linear: "+d.SizeError+" ==")
+	}
+	if len(d.SizeMisses) > 0 {
+		lines = append(lines, "", "== size misses: closed tickets whose coder turns crossed their size (XS 80, S 400) ==")
+		for _, m := range d.SizeMisses {
+			lines = append(lines, fmt.Sprintf("%s\t%s\t%d turns (line %d)", m.Ticket, m.Size, m.Turns, m.Line))
+		}
 	}
 	return lines
 }
