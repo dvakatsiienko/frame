@@ -208,11 +208,16 @@
   - when it runs
   - then each finding names its line and the rule
 - ✅ `x brief preflight <ticket>` reads a ticket against main before a lane
-  - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (cclio's half beside a backticked surface outside `cclio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has, or a path a main commit for this ticket already changed
+  - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (cclio's half beside a backticked surface outside `cclio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has on a line that claims to add it («adds», «new verb», «introduces» within 40 characters; a verb named as a tool passes), or a path a main commit for this ticket already changed
   - when `x brief preflight <ticket>` runs
   - then it fails naming each one with its line, and lists every main commit whose body carries `ticket: <id>`
   - given a clean ticket, then it prints ok
   - decision: a path counts as shipped only through a commit for this ticket, never by existing — most exit lines edit files main has (cclio, 2026-10-09)
+- ✅ `x brief preflight <ticket>` checks every `x` verb and flag an exit line names, statically
+  - given an exit section whose backticks or fenced lines name an `x` verb, a sub-verb or a flag the registry lacks (`x lane gaet`, `x lane gate --dry`)
+  - when `x brief preflight <ticket>` runs
+  - then it fails naming each verb or flag with its line, and runs nothing from the ticket; the segments of `|`, `&&` and `;` that do not start with `x` are skipped, `-h`, `--help`, a global flag and `--flag=value` pass, and a span or flag followed by `(new)` passes
+  - decision: static against the embedded registry, never a subprocess — a ticket's text is data (dima, 2026-10-10)
 
 ## probe
 

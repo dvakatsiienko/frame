@@ -20,6 +20,9 @@ var (
 	grillWord  = regexp.MustCompile(`(?i)\b(simplif(?:y|ies|ied|ying|ication)|re-?design(?:s|ed|ing)?|re-?work(?:s|ed|ing)?)\b`)
 	cclioWord  = regexp.MustCompile(`(?i)\bcclio\b`)
 	quotedText = regexp.MustCompile("`[^`\n]*`|«[^»\n]*»|\"[^\"\n]*\"")
+	// a <placeholder> or quoted string is one ignored argument, spaces and separators inside included
+	argument = regexp.MustCompile(`<[^<>\n]*>|"[^"\n]*"|'[^'\n]*'`)
+	shellSep = regexp.MustCompile(`\|\||&&|[|;&]`)
 )
 
 func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
@@ -81,6 +84,14 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
+	if err := r.Step("verbs", "each x verb and flag the exit lines name", func() (string, error) {
+		before := len(found)
+		found = append(found, xCommandFindings(body, verbs)...)
+		return plural(len(found)-before, "finding"), nil
+	}); err != nil {
+		return nil, err
+	}
+
 	var shipped []string
 	if err := r.Step("main", "what origin/main already holds", func() (string, error) {
 		_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
@@ -91,9 +102,12 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 			if !line.exit {
 				continue
 			}
-			for _, match := range codeSpan.FindAllStringSubmatch(line.group, -1) {
-				token := strings.TrimSpace(match[1])
+			for _, at := range codeSpan.FindAllStringSubmatchIndex(line.group, -1) {
+				token := strings.TrimSpace(line.group[at[2]:at[3]])
 				if verb := verbOf(token, verbsOnMain); verb != "" {
+					if !claimsToAdd(line.group, at[0], at[1]) {
+						continue
+					}
 					found = append(found, finding{line.n, "main", "x " + verb, "is already a verb on main — does this line already hold?"})
 				} else if isPathLike(token) && len(shipped) > 0 {
 					if commit := touchedBy(repo, id, token); commit != "" {
@@ -128,6 +142,137 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	return ordered{{"ticket", id}, {"exits", exits}, {"repo", repo}}, nil
 }
 
+// xCommandFindings checks every `x …` command the exit lines name against the registry, statically:
+// nothing in the ticket runs. a span the ticket marks (new) is exempt, and so is a flag marked (new)
+func xCommandFindings(body string, registry []Verb) []finding {
+	var found []finding
+	seen := map[string]bool{}
+	refs, newSpans, newFlags := exitCommands(body)
+	for _, ref := range refs {
+		if newSpans[ref.text] {
+			continue
+		}
+		for _, f := range xSegmentFindings(ref, registry, newFlags) {
+			if key := fmt.Sprint(f.Line, f.Kind, f.What); !seen[key] {
+				seen[key] = true
+				found = append(found, f)
+			}
+		}
+	}
+	return found
+}
+
+type commandRef struct {
+	line int
+	text string
+}
+
+// the commands of the exit sections: backticked spans and fenced lines. a span followed by (new) is
+// declared by the ticket anywhere in its body, not only under exit
+func exitCommands(body string) (refs []commandRef, newSpans, newFlags map[string]bool) {
+	newSpans, newFlags = map[string]bool{}, map[string]bool{}
+	fenced, inExit := false, false
+	for i, line := range strings.Split(body, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "```") {
+			fenced = !fenced
+			continue
+		}
+		if fenced {
+			if inExit {
+				refs = append(refs, commandRef{i + 1, strings.TrimPrefix(strings.TrimSpace(line), "$ ")})
+			}
+			continue
+		}
+		if heading.MatchString(line) {
+			inExit = strings.Contains(strings.ToLower(line), "exit")
+			continue
+		}
+		for _, at := range codeSpan.FindAllStringSubmatchIndex(line, -1) {
+			span := strings.TrimSpace(line[at[2]:at[3]])
+			switch {
+			case newMark.MatchString(line[at[1]:]) && strings.HasPrefix(span, "x "):
+				newSpans[span] = true
+			case newMark.MatchString(line[at[1]:]):
+				for word := range strings.FieldsSeq(span) {
+					if name := flagName(word); name != "" {
+						newFlags[name] = true
+					}
+				}
+			case inExit:
+				refs = append(refs, commandRef{i + 1, span})
+			}
+		}
+	}
+	return refs, newSpans, newFlags
+}
+
+// `--dry=yes` → dry; "" for a word that is no flag, a bare - or the -- that ends the flags
+func flagName(word string) string {
+	if !strings.HasPrefix(word, "-") {
+		return ""
+	}
+	name, _, _ := strings.Cut(strings.TrimLeft(word, "-"), "=")
+	return name
+}
+
+func xSegmentFindings(ref commandRef, registry []Verb, newFlags map[string]bool) []finding {
+	var found []finding
+	for _, segment := range shellSep.Split(argument.ReplaceAllString(ref.text, "_"), -1) {
+		words := strings.Fields(segment)
+		if len(words) == 0 || words[0] != "x" {
+			continue
+		}
+		found = append(found, xWalk(ref.line, words[1:], registry, newFlags)...)
+	}
+	return found
+}
+
+// the walk consumes registry tokens: after a family the next word must be one of its verbs
+func xWalk(line int, words []string, registry []Verb, newFlags map[string]bool) []finding {
+	hasPrefix := func(name string) bool {
+		return slices.ContainsFunc(registry, func(v Verb) bool { return v.Name == name || strings.HasPrefix(v.Name, name+" ") })
+	}
+	isVerb := func(name string) bool {
+		return slices.ContainsFunc(registry, func(v Verb) bool { return v.Name == name })
+	}
+	current := ""
+	for _, word := range words {
+		if strings.HasPrefix(word, "-") {
+			continue
+		}
+		next := strings.TrimSpace(current + " " + word)
+		if hasPrefix(next) {
+			current = next
+			continue
+		}
+		if isVerb(current) || word == "_" {
+			break
+		}
+		if first, _, _ := strings.Cut(current, " "); familyOf(first).RawDoor != "" {
+			return nil
+		}
+		return []finding{{line, "verb", strings.TrimSpace("x " + next), "no such x verb (x --help lists them)"}}
+	}
+	verb, _, ok := findVerb(strings.Fields(current))
+	if !ok || verb.Name != current {
+		return nil
+	}
+	var found []finding
+	for _, word := range words {
+		if word == "--" {
+			break
+		}
+		name := flagName(word)
+		if name == "" || name == "h" || slices.Contains(globalFlagNames, name) || newFlags[name] {
+			continue
+		}
+		if _, own := verb.Flags[name]; !own {
+			found = append(found, finding{line, "flag", strings.SplitN(word, "=", 2)[0], "x " + verb.Name + " has no such flag (x schema " + verb.Name + " lists them)"})
+		}
+	}
+	return found
+}
+
 // the verb names on origin/main, read from git: the running x may be a worktree's, which already
 // holds the verbs a ticket asks for. the ticket's repo holds x when it is frame; any other repo reads frame's
 func mainVerbs(repo string) []string {
@@ -148,6 +293,16 @@ func mainVerbs(repo string) []string {
 		names = append(names, verb.Name)
 	}
 	return names
+}
+
+// a verb already on main is a finding only where the line claims to add it; a verb named as a tool is not
+var addClaim = regexp.MustCompile(`(?i)\b(?:adds?|new verb|introduc(?:e|es|ed))\b`)
+
+// the claim word sits within 40 bytes of the span, on either side
+func claimsToAdd(group string, from, to int) bool {
+	before := group[max(0, from-40):from]
+	after := group[to:min(len(group), to+40)]
+	return addClaim.MatchString(before) || addClaim.MatchString(after)
 }
 
 // verbOf answers the verb an `x …` token calls, two words before one: `x lane review <pr>` → lane review

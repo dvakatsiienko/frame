@@ -9,7 +9,7 @@
 - **the human view** — what dima sees on a tty: the T2 dense-family design; a pipe or `--json` gets the envelope instead
 - **brief** — the markdown a coder is spawned with; `x brief check` reads its backticked names and its exit lines
 - **stamp** — the file a passing `brief check` writes, keyed by the brief's sha256, so a spawn guard can ask «was this brief checked»
-- **preflight** — the read of a ticket before a lane spawns anyone: exit lines a verifier can grade, nothing main already holds, no redesign slipping into an unattended lane; `x brief preflight`
+- **preflight** — the read of a ticket before a lane spawns anyone: exit lines a verifier can grade, every `x` verb and flag they name real in the registry, nothing main already holds, no redesign slipping into an unattended lane; `x brief preflight`
 - **comment feed** — one of the three github endpoints a pr's comments land on: `comments` (the conversation), `reviews` (a verdict with its words), `reviewComments` (a line in the diff); the ci reviewer posts to a different one per round, so `x gh pr` reads all three
 - **review round** — one successful `review.yml` run on a pr's branch in bytes, started by the `🤖 review:requested` label; two per pr, a third only past dima's approval. the **judged commit** is the head sha of the last round; a verdict is **stale** when the pr head moved past it
 - **probe** — a `claude -p` session run from a dir no repo owns, so our setup cannot answer for it: `bare` (no setup at all) or `session` (named, with a settings json, resumable)
