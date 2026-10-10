@@ -68,7 +68,7 @@ for ceremony.
   the plan now. progress, acks and «resumed» stay in your commits and chat; a push request rides
   the next ping.
 - **github is a ledger, not a chat**: every line written there is read back into your context on every
-  later turn (bytes #84). the pr body is ≤ ~25 lines — what changed, what was measured, links to the runs;
+  later turn (bytes #84). the pr body follows `mattpocock-skills:pr` in ≤ ~25 lines;
   a reviewer thread is answered in ≤ 3 lines (fixed in `<sha>` / declined: why / answered: fact).
 
 ## the git lane

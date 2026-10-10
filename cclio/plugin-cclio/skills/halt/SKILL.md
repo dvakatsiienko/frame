@@ -55,6 +55,7 @@ goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without
 the same pass prunes the pocket first: every resolved item leaves one line in `pocket.md`'s «decisions so far» and its section goes; the gazette post (phase 4.5) carries the day's decision lines and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost), then the section empties; then the
 inbox clears — before the CST is written, every halt, both lanes (the 09-20 halt skipped the prune
 and dima found six done lines at the next boot).
+**size misses** (FRM-379): the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
 ## phase 1.7 — github notifications, cleared unasked
 mark done every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr: `gh api notifications`, then `PATCH /notifications/threads/<id>`. what stays is an open pr's review ask. dima's yes, 2026-09-28.

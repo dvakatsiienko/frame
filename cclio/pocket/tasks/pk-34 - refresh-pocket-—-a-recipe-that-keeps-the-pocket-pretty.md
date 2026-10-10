@@ -1,13 +1,14 @@
 ---
 id: PK-34
 title: refresh-crew-coordinator-pocket — a recipe that keeps the pocket pretty
-status: done
+status: open
 assignee: []
 created_date: '2026-10-09 11:06'
-updated_date: '2026-10-10 07:55'
+updated_date: '2026-10-10 10:11'
 labels:
   - m
-dependencies: []
+dependencies:
+  - PK-28
 priority: next
 type: research
 ordinal: 15000
@@ -20,11 +21,13 @@ dima, 2026-10-09, shaped with him via x:shape-recipe. want: no drift, no clutter
 - outside hunt: Backlog.md / beads / tasks-axi releases that close our gaps (stale check, sizes, custom fields), new agent trackers, how users run intake triage and staleness
 - own data per run: frontmatter drift count, item age spread, created vs resolved per week, easy items older than a session, #dima-caught lines about the pocket
 - output: adopt / borrow / skip + one pocket-health line in the recipe log
-- cadence: a Backlog.md minor release, or every 2 weeks during the trial
+- suggest a run when: a Backlog.md minor release, or pocket-check goes red twice in a week
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
 closed by the 10-10 sweep: pocket-check's contract (done listed, size gate, the 5-item cap) enforces no drift and no clutter mechanically, no recipe needed
+
+reopened 10-10 on dima's word: finish it now that pk-28 (recipes) is settled; cadence line is retired with every recipe
 <!-- SECTION:NOTES:END -->
