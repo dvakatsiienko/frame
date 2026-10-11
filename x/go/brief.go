@@ -50,7 +50,9 @@ var (
 	reuseWord  = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
 	keepWord   = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
 	otherPush  = regexp.MustCompile(`(?i)\b(?:cclio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
-	skillName  = regexp.MustCompile(`\bx:([a-z][\w-]*)`)
+	skillName  = regexp.MustCompile("\\b(?:x:|mattpocock-skills:|matt's `?)([a-z][\\w-]*)")
+	userQuiz   = regexp.MustCompile(`(?i)quiz the user|until the user approves`)
+	quizSkip   = regexp.MustCompile(`(?i)\b(?:skip|no)\b[^\n]*\b(?:quiz|approv)`)
 	pnpmScript = regexp.MustCompile(`^pnpm\s+(?:(?:-C|--dir|--filter)\s+(\S+)\s+)?(?:(?:-s|--silent)\s+)?(?:run\s+)?([\w:.-]+)`)
 )
 
@@ -358,8 +360,9 @@ func missingTickets(ids map[string]int) ([]string, error) {
 // named skill's SKILL.md, "" when there is none
 func lint(lines []briefLine, skill func(name string) string) []finding {
 	var found []finding
-	jevAt, pushAt, hasBudget := 0, 0, false
+	jevAt, pushAt, hasBudget, skipsQuiz := 0, 0, false, false
 	var skills []string
+	skillAt := map[string]int{}
 	for _, line := range lines {
 		text := line.text
 		// a brief that quotes a rule is not breaking it
@@ -373,8 +376,10 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 		for _, match := range skillName.FindAllStringSubmatch(text, -1) {
 			if !slices.Contains(skills, match[1]) {
 				skills = append(skills, match[1])
+				skillAt[match[1]] = line.n
 			}
 		}
+		skipsQuiz = skipsQuiz || quizSkip.MatchString(text)
 		if rate.MatchString(text) && !sampleSize.MatchString(text) {
 			found = append(found, finding{line.n, "lint", strings.TrimSpace(rate.FindString(text)), "a rate names its minimum n"})
 		}
@@ -402,11 +407,26 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 			break
 		}
 	}
+	// a coder parked on four asks under to-tickets' «quiz the user» while dima was away (FRM-392, 2026-10-11 12:03)
+	for _, name := range skills {
+		if !skipsQuiz && userQuiz.MatchString(skill(name)) {
+			found = append(found, finding{skillAt[name], "quiz", name, "its step waits on the user's approval; add a line that skips it («skip the quiz step of " + name + "»)"})
+		}
+	}
 	return found
 }
 
+// a skill's SKILL.md: plugin-x's own, else matt's newest cached version; "" when there is none
 func pluginSkill(name string) string {
-	raw, _ := os.ReadFile(filepath.Join(filepath.Dir(filepath.Dir(sourceDir())), "home/.claude/plugin-x/skills", name, "SKILL.md"))
+	if raw, err := os.ReadFile(filepath.Join(filepath.Dir(filepath.Dir(sourceDir())), "home/.claude/plugin-x/skills", name, "SKILL.md")); err == nil {
+		return string(raw)
+	}
+	home, _ := os.UserHomeDir()
+	found, _ := filepath.Glob(filepath.Join(home, ".claude/plugins/cache/mattpocock/mattpocock-skills/*/skills/*", name, "SKILL.md"))
+	if len(found) == 0 {
+		return ""
+	}
+	raw, _ := os.ReadFile(slices.Max(found))
 	return string(raw)
 }
 

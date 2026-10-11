@@ -231,9 +231,18 @@ func TestBriefLintRules(t *testing.T) {
 		{"a reuse with nothing to keep", "reuse the FRM-1 coder\n", true},
 		{"a reuse that names what to keep", "reuse the FRM-1 coder, keep its worktree and context\n", false},
 		{"a quoted reuse", "the rule on «reuse» lands here\n", false},
+		{"matt's skill with a user quiz and no skip line", "cut it with matt's `to-tickets` for FRM-1\n", true},
+		{"matt's skill with a user quiz, its quiz skipped", "cut it with matt's `to-tickets` for FRM-1\nskip its quiz step, dima approved the cut at 12:03\n", false},
+		{"a prefixed skill with a user quiz", "run mattpocock-skills:to-tickets on the spec\n", true},
+		{"a skill whose body asks no approval", "load matt's `tdd` first\n", false},
 	}
 	skill := func(name string) string {
-		return map[string]string{"crew-coder": "the push door: `x lane push --apply`", "crew-designer": "draw on the canvas"}[name]
+		return map[string]string{
+			"crew-coder":    "the push door: `x lane push --apply`",
+			"crew-designer": "draw on the canvas",
+			"tdd":           "red, green, refactor",
+			"to-tickets":    "### 4. Quiz the user\n\nIterate until the user approves the breakdown.",
+		}[name]
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

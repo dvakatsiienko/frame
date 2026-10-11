@@ -207,6 +207,11 @@
   - given a rate with no n, an exit line with no surface, an exit line into `cclio/`, a relayed approval with no time, jev with no budget, «cclio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
   - when it runs
   - then each finding names its line and the rule
+- ✅ `x brief check` refuses a skill that waits on the user's approval
+  - given a brief names a skill (`x:<name>`, `mattpocock-skills:<name>`, or matt's `<name>`) whose `SKILL.md` asks to «quiz the user» or iterate «until the user approves», and no line skips it («skip … quiz», «no … approval»)
+  - when it runs
+  - then a `quiz` finding names the skill on its line; with a skip line the brief passes
+  - decision: a coder parked on four asks under `to-tickets`' quiz while dima was away (FRM-392, 2026-10-11 12:03)
 - ✅ `x brief preflight <ticket>` reads a ticket against main before a lane
   - given a ticket with no exit lines, an exit line without a number, an exit line with no surface and no «post-merge», an exit line with two owners (cclio's half beside a backticked surface outside `cclio/`), a simplify / redesign / rework outside quotes, an `x` verb origin/main already has on a line that claims to add it («adds», «new verb», «introduces» within 40 characters; a verb named as a tool passes), or a path a main commit for this ticket already changed
   - when `x brief preflight <ticket>` runs
