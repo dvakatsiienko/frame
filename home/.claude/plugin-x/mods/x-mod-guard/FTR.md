@@ -155,6 +155,12 @@
   - then the rewrite still runs and no note joins the model's context; a refusal and a warn-only «would refuse» still speak, the floor untouched
   - decision: guard reads stash's file rather than keeping its own knob — one 🎛️ view, the store is one file per plugin (`mods/AGENTS.md`)
 
+- ⬜ `CI=1 pnpm` with a frozen lockfile is flagged, warn-only (FRM-393)
+  - given `CI=1 pnpm add|remove …`, or `CI=1 pnpm install` while `git diff --name-only HEAD` in its dir names a `package.json` or `pnpm-workspace.yaml`, with no `--no-frozen-lockfile`
+  - then the guard names the flag: `CI=1` freezes the lockfile, the dep change never reaches it and the commit ships half
+  - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
+  - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the `fleet-hazards.md` line left with this rule
+
 ## every Agent spawn
 
 - ⬜ an agent brief passes `x brief check` before the agent runs (FRM-392)

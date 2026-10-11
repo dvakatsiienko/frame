@@ -8,6 +8,7 @@ import { rewrite } from './rules/rewrite.ts';
 import {
     addedPaths,
     check,
+    installDirs,
     message,
     namesWhole,
     removedTrees,
@@ -165,7 +166,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 
 // a new refusing rule ships warn-only: the call runs and the model reads what would have been refused, until the rule's
 // verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
-const WARN_ONLY: ReadonlySet<string> = new Set([]);
+const WARN_ONLY: ReadonlySet<string> = new Set(['frozen-lockfile']);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (verifier, 15:08)
 async function isWarnOnly($: EngineInterface, rule: string) {
@@ -420,6 +421,19 @@ async function isCleanTree($: EngineInterface, tree: string) {
     return !!orphans && orphans.exitCode === 0 && orphans.stdout.trim() === '';
 }
 
+// a manifest the working tree changed since HEAD: `CI=1 pnpm install` would freeze the lockfile against it
+async function isManifestChanged($: EngineInterface, dir: string) {
+    const r = await $.process
+        .run(['git', 'diff', '--name-only', 'HEAD'], { cwd: dir })
+        .catch(() => null);
+    if (!r || r.exitCode !== 0) return false;
+    return r.stdout
+        .split('\n')
+        .some((f) =>
+            /(^|\/)(package\.json|pnpm-workspace\.yaml)$/.test(f.trim()),
+        );
+}
+
 // parallel Reads in one step each add their path: a write that lost the race reads again
 async function markSeen($: EngineInterface, path: string) {
     for (let tries = 0; tries < 3; tries++) {
@@ -463,11 +477,15 @@ export const register: Register = (on) => {
         for (const path of briefPaths(command, cwd, ctx))
             if (await $.fs.exists(path))
                 briefs.set(path, await readBrief($, path, ctx.home));
+        const manifestDirs = new Set<string>();
+        for (const dir of installDirs(command, cwd, ctx))
+            if (await isManifestChanged($, dir)) manifestDirs.add(dir);
         const verdict = check(command, cwd, {
             ...ctx,
             briefs,
             cleanTrees,
             kinds,
+            manifestDirs,
             missing,
         });
         // a worktree session whose shell `cd`ed out (`cd ~/frame && …`) is refused for the wrong tree; the root still names its own

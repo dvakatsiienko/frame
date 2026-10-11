@@ -16,6 +16,7 @@ import {
 import { floor } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
 import { background, lint, unbraced } from './rules/lint.ts';
+import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
 import { landings, overwrite } from './rules/overwrite.ts';
 import { parse } from './shell.ts';
 
@@ -115,6 +116,7 @@ export function refusals(
         const found =
             floor(c, ctx) ??
             hazard(c, ctx) ??
+            lockfile(c, ctx) ??
             overwrite(c, ctx) ??
             lint(c, list[i + 1]) ??
             missingAdd(c, ctx) ??
@@ -190,4 +192,9 @@ export function check(
 }
 export function message(r: Refusal) {
     return `nothing in this command ran — x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. only after dima's word, end the command with # dima-ok: ${r.targets.join(' ')}`;
+}
+
+// the dirs a `CI=1 pnpm install` in this command runs in, for the caller to check for a changed manifest
+export function installDirs(command: string, cwd: string, ctx: Context = {}) {
+    return frozenInstallDirs(commands(parse(command), cwd), ctx);
 }

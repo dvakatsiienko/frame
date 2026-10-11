@@ -19,6 +19,8 @@ export type Context = {
     isCclio?: boolean;
     // the trees looked up and found safe to drop: no `.scratch/`, no commit only their HEAD reaches
     cleanTrees?: Set<string>;
+    // the dirs whose working tree changed a package.json or pnpm-workspace.yaml since HEAD (FRM-393)
+    manifestDirs?: Set<string>;
 };
 // a spawn's brief file as found on disk: whether it names the coder skill, and whether x brief check stamped its bytes
 export type Brief = { isCoder: boolean; isStamped: boolean };
