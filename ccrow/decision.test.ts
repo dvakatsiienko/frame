@@ -87,9 +87,10 @@ function ccrow(socket: string, note?: string) {
 const stateOf = (fixture: ReturnType<typeof home>) =>
     join(fixture.dir, '.local/state/ccrow/state.json');
 
+// a string is a Bash command at PreToolUse; a write lands at PostToolUse
 function hook(
     fixture: ReturnType<typeof home>,
-    command: string,
+    call: string | { tool: string; path: string },
     waitMs = 5_000,
 ) {
     const child = spawn(process.execPath, [HOOK], {
@@ -103,8 +104,18 @@ function hook(
     child.stdin.end(
         JSON.stringify({
             cwd: fixture.dir,
-            tool_input: { command },
             transcript_path: fixture.transcript,
+            ...(typeof call === 'string'
+                ? {
+                      hook_event_name: 'PreToolUse',
+                      tool_input: { command: call },
+                      tool_name: 'Bash',
+                  }
+                : {
+                      hook_event_name: 'PostToolUse',
+                      tool_input: { file_path: call.path },
+                      tool_name: call.tool,
+                  }),
         }),
     );
     let out = '';
@@ -216,6 +227,80 @@ describe('a spawn in the coordinator session', () => {
         ccrow(fixture.socket);
         const { ms, out } = await hook(fixture, spawnLine, 60_000);
         expect([out, ms < 10_000]).toEqual([undefined, true]);
+    });
+});
+
+describe('a proposal cclio writes', () => {
+    function proposal(fixture: ReturnType<typeof home>) {
+        const path = join(fixture.dir, '.scratch/sweep/step-4-proposal.md');
+        mkdirSync(join(fixture.dir, '.scratch/sweep'), { recursive: true });
+        writeFileSync(path, '# step 4\n\ncut the rules sweep in two\n');
+        return path;
+    }
+
+    test('wakes ccrow with a proposal line', async () => {
+        const fixture = home();
+        const path = proposal(fixture);
+        const { first } = ccrow(fixture.socket);
+        await hook(fixture, { path, tool: 'Write' });
+        expect(await first).toMatch(
+            new RegExp(` · mode decision · .* · proposal ${path}$`),
+        );
+    });
+
+    test('puts the proposal file whole into the packet', async () => {
+        const fixture = home();
+        const path = proposal(fixture);
+        const { first } = ccrow(fixture.socket);
+        await hook(fixture, { path, tool: 'Edit' });
+        const packet = / · packet (\S+) /.exec(await first)?.[1] ?? '';
+        expect(readFileSync(packet, 'utf8')).toContain(
+            `## proposal · ${path}\n\n# step 4\n\ncut the rules sweep in two\n`,
+        );
+    });
+
+    test('runs on without waiting for a note', async () => {
+        const fixture = home();
+        const path = proposal(fixture);
+        ccrow(fixture.socket);
+        const { ms, out } = await hook(
+            fixture,
+            { path, tool: 'Write' },
+            60_000,
+        );
+        expect([out, ms < 10_000]).toEqual([undefined, true]);
+    });
+
+    test('hands cclio the proposal line to relay to a tab ccrow', async () => {
+        const fixture = home({ tab: true });
+        const path = proposal(fixture);
+        const { out } = await hook(fixture, { path, tool: 'Write' });
+        expect(out?.hookSpecificOutput).toEqual({
+            additionalContext: expect.stringMatching(
+                new RegExp(
+                    `\\nccrow wake \\S+ · mode decision · .* · proposal ${path}$`,
+                ),
+            ),
+            hookEventName: 'PostToolUse',
+        });
+    });
+
+    test('wakes nothing on a write to any other file', async () => {
+        const fixture = home();
+        ccrow(fixture.socket, 'x');
+        const path = join(fixture.dir, '.scratch/sweep/spec.md');
+        mkdirSync(join(fixture.dir, '.scratch/sweep'), { recursive: true });
+        writeFileSync(path, 'a spec');
+        await hook(fixture, { path, tool: 'Write' });
+        expect(existsSync(stateOf(fixture))).toBe(false);
+    });
+
+    test('wakes nothing on a read of a proposal', async () => {
+        const fixture = home();
+        const path = proposal(fixture);
+        ccrow(fixture.socket, 'x');
+        await hook(fixture, { path, tool: 'Read' });
+        expect(existsSync(stateOf(fixture))).toBe(false);
     });
 });
 

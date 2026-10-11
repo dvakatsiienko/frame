@@ -565,9 +565,13 @@ export function buildPacket({
     dir,
     leaves,
     missing,
+    proposal,
     unchanged = [],
 }: PacketInput) {
     mkdirSync(dir, { recursive: true });
+    const proposalBlock = proposal
+        ? `## proposal · ${proposal}\n\n${readFileSync(proposal, 'utf8').trim()}`
+        : '';
     const leafBlocks = leaves.map(
         (path) => `## leaf · ${path}\n\n${readFileSync(path, 'utf8').trim()}`,
     );
@@ -579,6 +583,7 @@ export function buildPacket({
         : '';
     const body = [
         `# cclio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
+        proposalBlock,
         ...leafBlocks,
         unchangedNote,
         missingNote,
@@ -640,6 +645,17 @@ export function decisionOf(line: string): Decision | undefined {
     }
 }
 
+// a proposal cclio writes for dima wakes ccrow before he ticks it; any other write is no decision
+export function proposalOf(
+    tool: string | undefined,
+    path: string | undefined,
+): Decision | undefined {
+    if ((tool === 'Write' || tool === 'Edit') && path && PROPOSAL.test(path))
+        return { kind: 'proposal', path };
+}
+
+const PROPOSAL = /(^|\/)\.scratch\/(.+\/)?[^/]+-proposal\.md$/;
+
 const MERGE_VALUE_FLAGS = new Set([
     '-A',
     '--author-email',
@@ -693,6 +709,7 @@ export function packWake({
     delta,
     lines,
     now,
+    proposal,
     state,
     transcriptPath,
     wakeId,
@@ -713,6 +730,7 @@ export function packWake({
         dir: join(STATE_DIR, 'packets', wakeId),
         leaves: toSend.changed,
         missing: leaves.missing,
+        proposal,
         unchanged: toSend.unchanged,
     });
     return {
@@ -1039,12 +1057,16 @@ export interface TranscriptEntry {
     };
 }
 
-export type Decision = { kind: 'merge'; args: string[] } | { kind: 'spawn' };
+export type Decision =
+    | { kind: 'merge'; args: string[] }
+    | { kind: 'spawn' }
+    | { kind: 'proposal'; path: string };
 
 interface PackInput {
     delta: ReturnType<typeof transcriptDelta>;
     lines: string[];
     now: Date;
+    proposal?: string;
     state: State;
     transcriptPath: string;
     wakeId: string;
@@ -1061,6 +1083,7 @@ interface PacketInput {
     leaves: string[];
     unchanged?: string[];
     missing: string[];
+    proposal?: string;
     deltaText: string;
 }
 

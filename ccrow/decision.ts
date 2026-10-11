@@ -13,6 +13,7 @@ import {
     isCoordinatorTranscript,
     packWake,
     prViewArgs,
+    proposalOf,
     readLines,
     readState,
     sendLine,
@@ -31,7 +32,9 @@ const MARKER_TTL_MS = 10 * 60_000;
 const SEND = `through mcp__ccd_session_mgmt__send_message to the session titled «${SESSION_NAME}»`;
 
 const input: HookInput = JSON.parse(readFileSync(0, 'utf8'));
-const decision = decisionOf(input.tool_input?.command ?? '');
+const decision =
+    decisionOf(input.tool_input?.command ?? '') ??
+    proposalOf(input.tool_name, input.tool_input?.file_path);
 if (
     decision &&
     input.transcript_path &&
@@ -40,7 +43,13 @@ if (
     try {
         if (decision.kind === 'merge')
             await merge(decision.args, input.transcript_path, input.cwd);
-        else await spawnWake(input.transcript_path);
+        else if (decision.kind === 'proposal')
+            await noWaitWake(
+                `proposal ${decision.path}`,
+                input.transcript_path,
+                decision.path,
+            );
+        else await noWaitWake('spawn', input.transcript_path);
     } catch (error) {
         context(
             `🐦‍⬛ ccrow decision hook failed, nothing waited: ${error instanceof Error ? error.message : String(error)}`,
@@ -100,18 +109,24 @@ async function merge(
     context(`🐦‍⬛ ${about}: ${await noteOf(wake.id)}`);
 }
 
-async function spawnWake(transcriptPath: string) {
+// a spawn has already run and a proposal is already written: ccrow is woken, nothing waits on its note
+async function noWaitWake(
+    fields: string,
+    transcriptPath: string,
+    proposal?: string,
+) {
     const live = liveCcrow();
     if ('skip' in live) return;
     const wake = await wakeCcrow({
-        fields: 'spawn',
+        fields,
+        proposal,
         socket: live.ccrow,
         transcriptPath,
         withNote: false,
     });
     if (!live.ccrow.jobId)
         context(
-            `🐦‍⬛ ccrow wake for this spawn: after this call, send the line below, alone, ${SEND}; do not wait for it, no need to report it to dima unless he asks.\n${wake.line}`,
+            `🐦‍⬛ ccrow wake for this ${fields.split(' ')[0]}: after this call, send the line below, alone, ${SEND}; do not wait for it, no need to report it to dima unless he asks.\n${wake.line}`,
         );
 }
 
@@ -132,6 +147,7 @@ function liveCcrow(): { ccrow: LiveSession } | { skip: string } {
 // a decision wake skips the 30-min and step gates and leaves lastWakeAt alone: the Stop cadence is the charter's
 async function wakeCcrow({
     fields,
+    proposal,
     socket,
     transcriptPath,
     withNote,
@@ -152,6 +168,7 @@ async function wakeCcrow({
         delta,
         lines,
         now,
+        proposal,
         state,
         transcriptPath,
         wakeId: wake.id,
@@ -192,7 +209,7 @@ function context(additionalContext: string) {
         JSON.stringify({
             hookSpecificOutput: {
                 additionalContext,
-                hookEventName: 'PreToolUse',
+                hookEventName: input.hook_event_name ?? 'PreToolUse',
             },
         }),
     );
@@ -214,8 +231,10 @@ function deny(reason: string) {
 
 interface HookInput {
     cwd?: string;
+    hook_event_name?: string;
     transcript_path?: string;
-    tool_input?: { command?: string };
+    tool_name?: string;
+    tool_input?: { command?: string; file_path?: string };
 }
 
 interface Pr {
@@ -231,6 +250,7 @@ interface Marker {
 
 interface WakeInput {
     fields: string;
+    proposal?: string;
     socket?: LiveSession;
     transcriptPath: string;
     withNote: boolean;

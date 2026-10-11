@@ -35,6 +35,9 @@ skill reaches it as text. a contract change goes there, never here.
   a tab gets none, so the first merge is denied with the line for cclio to `send_message`, and a rerun within 10 min
   (`decisions/<repo>-<n>-<head>.json`) waits for the note instead. a spawn never waits. every failure exits 0 with
   a context line: a PreToolUse exit 2 or timeout would block the merge.
+  the same script is cclio's `PostToolUse` hook on `Write|Edit` (FRM-396): a write to `.scratch/**/*-proposal.md` gets a
+  `mode decision` wake ending `proposal <path>`, the file whole under a `## proposal ·` block in the packet; it never
+  waits, like a spawn, and any other file wakes nothing. every Edit of a proposal wakes ccrow again.
 - every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
   transcript; ccrow reads its tail only then.
 - `pnpm ccrow:plan-critique <plan file>` — the plan review at `x:shape-idea` step 4 (FRM-336, the
