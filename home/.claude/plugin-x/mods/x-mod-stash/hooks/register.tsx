@@ -2,12 +2,14 @@
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
 import type {
+    LaneItem,
     OrbitAsk,
     OrbitAssumption,
     StashCap,
     StashDigest,
     StashEnhancer,
     StashEntry,
+    StashLane,
     StashMember,
     StashMeter,
     StashOrbit,
@@ -105,6 +107,7 @@ const PARTS = [
     { group: 'stash · board', key: 'stash.orbit', label: '🪐 orbit asks' },
     { group: 'stash · board', key: 'stash.assumed', label: 'assumed section' },
     { group: 'stash · board', key: 'stash.phases', label: '🌔 phases' },
+    { group: 'stash · board', key: 'stash.lane', label: '🛼 lane' },
     {
         group: 'stash · board',
         key: 'stash.speak',
@@ -172,6 +175,13 @@ const NUDGE_AT = 3;
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 // a board card folded to its head row, per session (dima's o5, 17:16)
 const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
+// 🛼 lane (FRM-385): kept in the session's state and in a file under ~/.claude/shelf/lanes, so a compaction or a reload
+// reads it back whole; at most 5 plain items, each ≤60 chars, stale after 8 turns with nothing moved
+const LANE = { key: 'lane', plugin: 'x-mod-stash' } as const;
+const LANE_MAX = 5;
+const LANE_TEXT_MAX = 60;
+const LANE_STALE = 8;
+const LANE_TICKET = /^[A-Z]{2,5}-\d+$/;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
 const BACK_AT_MAC = /\bback at the mac\b/i;
@@ -209,6 +219,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a ${CHANGED_MARK} mark before its id.`,
     `op assume, texts: choices you made without asking that would cost a redo if wrong, at most ${ASSUMED_MAX} a turn and ≤${ORBIT_TEXT_MAX} chars each; never routine ones. dima's 🛎️ clears one, ↩️ sends it back with his note.`,
     `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone and ≤${ORBIT_TEXT_MAX} chars; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
+    `op lane, title, items [{ text, ticket, done }], current: the lane you run, its whole scope as 1–${LANE_MAX} items dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; current is the index we are on, and moving it past an item marks that item done. call it again at every member's done and at turn end. a finished lane stays on the board through the next turn end; op lane with end: true ends it sooner. nothing moved for ${LANE_STALE} turns reads stale.`,
 ].join('\n');
 
 let selfId: string | undefined;
@@ -583,6 +594,116 @@ function overCap(op: string, texts: string[]) {
         : {
               deny: `orbit ${op}: «${[...long].slice(0, 40).join('')}…» is ${[...long].length} chars; keep it ≤${ORBIT_TEXT_MAX}, subject first, detail in hiddenNote`,
           };
+}
+
+// the lane op: validate, then keep the pointer honest — every item before it done, never on a done one
+export function laneOp(
+    prior: StashLane | null,
+    input: Record<string, unknown>,
+    turns: number,
+    now: number,
+): { lane: StashLane | null; result: string } | { deny: string } {
+    if (input.end === true)
+        return prior
+            ? { lane: null, result: `lane «${prior.title}» ended` }
+            : { deny: 'orbit lane: no lane is running to end' };
+    const title = oneLine(input.title);
+    if (!title) return { deny: 'orbit lane: a title names the lane' };
+    const raw = Array.isArray(input.items) ? input.items : [];
+    if (raw.length < 1 || raw.length > LANE_MAX)
+        return {
+            deny: `orbit lane: 1 to ${LANE_MAX} items, got ${raw.length}`,
+        };
+    const items: LaneItem[] = [];
+    for (const item of raw) {
+        const v = (item ?? {}) as Record<string, unknown>;
+        const text = oneLine(v.text);
+        if (!text) return { deny: 'orbit lane: every item needs its text' };
+        if ([...text].length > LANE_TEXT_MAX)
+            return {
+                deny: `orbit lane: «${[...text].slice(0, 30).join('')}…» is ${[...text].length} chars; keep it ≤${LANE_TEXT_MAX}, plain words`,
+            };
+        const ticket = oneLine(v.ticket);
+        if (ticket && !LANE_TICKET.test(ticket))
+            return {
+                deny: `orbit lane: ticket «${ticket}» is not an id like FRM-12`,
+            };
+        items.push({
+            isDone: v.done === true,
+            text,
+            ...(ticket ? { ticket } : {}),
+        });
+    }
+    const at = input.current;
+    if (
+        typeof at !== 'number' ||
+        !Number.isInteger(at) ||
+        at < 0 ||
+        at >= items.length
+    )
+        return {
+            deny: `orbit lane: current is an index from 0 to ${items.length - 1}`,
+        };
+    // the pointer moves past what is done, and everything behind it is done
+    let current = at;
+    while (current < items.length && items[current]?.isDone) current++;
+    const marked = items.map((x, i) => ({
+        ...x,
+        isDone: x.isDone || i < current,
+    }));
+    const doneCount = marked.filter((x) => x.isDone).length;
+    const isSame = prior?.title === title;
+    const wasDone = isSame ? prior.items.filter((x) => x.isDone).length : -1;
+    const isMoved =
+        !isSame || prior.current !== current || wasDone !== doneCount;
+    const isFinished = current >= marked.length;
+    const lane: StashLane = {
+        current,
+        history: [
+            ...(isSame ? prior.history : []),
+            ...(isMoved ? [{ at: now, current, done: doneCount }] : []),
+        ],
+        items: marked,
+        movedAt: isMoved ? turns : prior.movedAt,
+        title,
+        ...(isFinished
+            ? { doneAt: (isSame ? prior.doneAt : undefined) ?? turns }
+            : {}),
+        ...(isSame && prior.current === current && prior.note
+            ? { note: prior.note }
+            : {}),
+    };
+    return {
+        lane,
+        result: isFinished
+            ? `lane «${title}» done: it stays on the board through the next turn end`
+            : `lane set: ${doneCount} of ${marked.length} done, on «${marked[current]?.text}»`,
+    };
+}
+
+const laneFile = (home: string | undefined, sid: string) =>
+    `${home}/.claude/shelf/lanes/${sid}.json`;
+
+// the state the board reads, and the file a compaction or a reload reads back; an ended lane's file records the end
+async function saveLane(
+    $: EngineInterface,
+    lane: StashLane | null,
+    ended?: StashLane,
+) {
+    await $.state.set(LANE, lane).catch(() => undefined);
+    const sid = await currentId($);
+    if (!sid) return;
+    const home = await $.env.get('HOME').catch(() => undefined);
+    const body =
+        lane ?? (ended ? { ...ended, endedAt: await $.clock.now() } : null);
+    if (!body) return;
+    await $.fs
+        .write(laneFile(home, sid), `${JSON.stringify(body, null, 2)}\n`)
+        .catch((err) =>
+            $.ui.log(
+                `x-mod-stash: the lane file was not kept: ${errorText(err)}`,
+            ),
+        );
 }
 
 function orbitOp(
@@ -1682,6 +1803,21 @@ export const register: Register = (on) => {
             view: (await $.state.get(VIEW)).value,
         };
         orbit = kept.orbit ?? EMPTY_ORBIT;
+        // a compaction keeps the state, a restart does not: the lane reads back from its file unless it ended
+        if (
+            !(await $.state.get(LANE).catch(() => undefined))?.value &&
+            selfId
+        ) {
+            const home = await $.env.get('HOME').catch(() => undefined);
+            const text = await $.fs
+                .read(laneFile(home, selfId))
+                .catch(() => undefined);
+            try {
+                const kept = text ? JSON.parse(text) : undefined;
+                if (kept?.title && Array.isArray(kept.items) && !kept.endedAt)
+                    await $.state.set(LANE, kept as StashLane);
+            } catch {}
+        }
         await $.tool
             .register({
                 description: ORBIT_ABOUT,
@@ -1699,8 +1835,22 @@ export const register: Register = (on) => {
                             },
                             type: 'array',
                         },
+                        current: { type: 'number' },
+                        end: { type: 'boolean' },
                         id: { type: 'string' },
                         ids: { items: { type: 'string' }, type: 'array' },
+                        items: {
+                            items: {
+                                properties: {
+                                    done: { type: 'boolean' },
+                                    text: { type: 'string' },
+                                    ticket: { type: 'string' },
+                                },
+                                required: ['text'],
+                                type: 'object',
+                            },
+                            type: 'array',
+                        },
                         lines: { items: { type: 'string' }, type: 'array' },
                         op: {
                             enum: [
@@ -1709,12 +1859,14 @@ export const register: Register = (on) => {
                                 'resolve',
                                 'follow',
                                 'plan',
+                                'lane',
                             ],
                             type: 'string',
                         },
                         pick: { type: 'string' },
                         text: { type: 'string' },
                         texts: { items: { type: 'string' }, type: 'array' },
+                        title: { type: 'string' },
                     },
                     required: ['op'],
                     type: 'object',
@@ -1822,6 +1974,18 @@ export const register: Register = (on) => {
             : orbitReminder(orbit);
         const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
         isPrimed = true;
+        // the lane: stale after LANE_STALE turns with nothing moved; dima's note on the current item rides his prompt once
+        const lane = (await $.state.get(LANE)).value ?? null;
+        const laneAge = lane ? orbit.turns - lane.movedAt : 0;
+        const laneStale =
+            lane && laneAge >= LANE_STALE
+                ? `lane «${lane.title}» moved nothing for ${laneAge} turns, stale: move its pointer or end it through ${ORBIT_TOOL} op lane.`
+                : undefined;
+        const laneNote =
+            isUserTurn && lane?.note
+                ? `lane note from dima on «${lane.items[lane.current]?.text ?? lane.title}»: «${lane.note}»`
+                : undefined;
+        if (laneNote && lane) await saveLane($, { ...lane, note: undefined });
         return next({
             ...e,
             context: [
@@ -1832,6 +1996,8 @@ export const register: Register = (on) => {
                 ...(wrong.length ? [wrongText(wrong)] : []),
                 ...(isFirst ? [PHASES_START] : []),
                 ...(reminder ? [reminder] : []),
+                ...(laneStale ? [laneStale] : []),
+                ...(laneNote ? [laneNote] : []),
                 ...(tickets ? [tickets] : []),
             ],
         });
@@ -1935,6 +2101,10 @@ export const register: Register = (on) => {
             ),
             turns: done.turns + 1,
         });
+        // a finished lane stays through the turn end after the one it finished in, then leaves; its file records the end
+        const lane = (await $.state.get(LANE)).value ?? null;
+        if (lane?.doneAt !== undefined && done.turns + 1 >= lane.doneAt + 2)
+            await saveLane($, null, lane);
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
@@ -2566,6 +2736,81 @@ export const register: Register = (on) => {
                 ) : null}
             </Box>
         );
+        // 🛼 lane (FRM-385): the whole scope in order, done items kept and marked, the current one «← we are here»
+        const lane = (await $.state.get(LANE)).value ?? null;
+        const laneJSX =
+            lane && isPartOn('stash.lane') ? (
+                <Box
+                    borderColor={cardBorder(e.surface)}
+                    borderStyle='round'
+                    flexDirection='column'
+                    key='lane'
+                    marginTop={1}
+                    paddingX={1}
+                    paddingY={0.5}
+                    rowGap={LINE_GAP}>
+                    <Box flexDirection='row' justifyContent='space-between'>
+                        <Text bold>{`🛼 ${lane.title}`}</Text>
+                        {foldJSX('lane')}
+                    </Box>
+                    {folds.lane
+                        ? null
+                        : lane.items.map((item, i) => (
+                              <Box
+                                  alignItems='center'
+                                  flexDirection='row'
+                                  gap={1}
+                                  // biome-ignore lint/suspicious/noArrayIndexKey: a lane item's place is its identity
+                                  key={`lane:${i}`}>
+                                  <Text
+                                      bold={i === lane.current}
+                                      dimColor={item.isDone}>
+                                      {item.isDone
+                                          ? '✅'
+                                          : i === lane.current
+                                            ? '🛼'
+                                            : '⬜'}{' '}
+                                      {item.text}
+                                  </Text>
+                                  {item.ticket ? (
+                                      <Link
+                                          href={`https://linear.app/x-com/issue/${item.ticket}`}
+                                          key={`lane:t:${i}`}>
+                                          {item.ticket}
+                                      </Link>
+                                  ) : null}
+                                  {i === lane.current ? (
+                                      <Text bold>← we are here</Text>
+                                  ) : null}
+                                  {i === lane.current && Input ? (
+                                      <Box flexShrink={1} minWidth={0}>
+                                          <Input
+                                              key='lane:note'
+                                              onInput={(value: string) =>
+                                                  void $.state.set(LANE, {
+                                                      ...lane,
+                                                      note:
+                                                          value.trim() ||
+                                                          undefined,
+                                                  })
+                                              }
+                                              onSubmit={(value: string) =>
+                                                  void $.state.set(LANE, {
+                                                      ...lane,
+                                                      note:
+                                                          value.trim() ||
+                                                          undefined,
+                                                  })
+                                              }
+                                              placeholder='note'
+                                              value={lane.note ?? ''}
+                                          />
+                                      </Box>
+                                  ) : null}
+                              </Box>
+                          ))}
+                </Box>
+            ) : null;
         // the phases stick to the board's bottom: a docked board fills its rows and a gap grows above them (dima, 11:07)
         const phasesJSX = o.plan
             ? [
@@ -2624,6 +2869,7 @@ export const register: Register = (on) => {
                 <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>the session registry is unreadable</Text>
                     {isPartOn('stash.orbit') ? orbitJSX : null}
+                    {laneJSX}
                     {isPartOn('stash.phases') ? phasesJSX : null}
                 </Box>
             );
@@ -2632,6 +2878,7 @@ export const register: Register = (on) => {
                 <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>no live sessions</Text>
                     {isPartOn('stash.orbit') ? orbitJSX : null}
+                    {laneJSX}
                     {isPartOn('stash.phases') ? phasesJSX : null}
                 </Box>
             );
@@ -2828,6 +3075,7 @@ export const register: Register = (on) => {
                     {folds.sessions ? null : list.map(row)}
                 </Box>
                 {isPartOn('stash.orbit') ? orbitJSX : null}
+                {laneJSX}
                 {isPartOn('stash.phases') ? phasesJSX : null}
             </Box>
         );
@@ -2857,6 +3105,25 @@ export const register: Register = (on) => {
     // orbit's write door, where the session adds, resolves and follows up its asks and sets its plan; and afk flipped
     // mid-turn: the next tool result carries the new state once
     on('tool.call', async ($, e, next) => {
+        if (
+            (e.tool as string) === ORBIT_TOOL &&
+            (e as Record<string, unknown>).op === 'lane'
+        ) {
+            const prior = (await $.state.get(LANE)).value ?? null;
+            const op = laneOp(
+                prior,
+                e as Record<string, unknown>,
+                (await currentOrbit($)).turns,
+                await $.clock.now(),
+            );
+            if ('deny' in op) return { deny: op.deny };
+            await saveLane(
+                $,
+                op.lane,
+                op.lane ? undefined : (prior ?? undefined),
+            );
+            return { result: op.result } as never;
+        }
         if ((e.tool as string) === ORBIT_TOOL) {
             // the turn as $.state holds it: a call that lands before a mid-turn reload's start reads a default isBusy
             const isTurn = (await $.state.get(TURN)).value?.isBusy ?? isBusy;

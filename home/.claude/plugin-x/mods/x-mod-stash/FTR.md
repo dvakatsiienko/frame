@@ -488,6 +488,22 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when the next prompt goes
   - then the board marks them stale and the session's reminder says so in one line
 
+## /board — 🛼 lane (FRM-385)
+
+- ⬜ a running lane shows its whole scope on the board
+  - given a session calls orbit op `lane` with a title, 1–5 items (plain text, an optional ticket id, a done flag) and a current index
+  - then a `🛼 <title>` card draws between 🪐 orbit and 🌔 phases: every item in order, a done one `✅` and dim but still listed, the current one `🛼`, bold and «← we are here», the rest `⬜`; a ticket id is a link into linear; one note box sits on the current item, and its text joins dima's next prompt once, model-only
+  - and a 6th item, an empty list, an index out of range, an item over 60 chars or a malformed ticket id is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
+  - and moving the index past an item marks it done; the pointer never sits behind or on a done item
+  - and the card folds with its own `📂` like the others, and its `🛼 lane` 🎛️ switch hides it (exit 4c)
+- ⬜ the lane survives a reload, a compaction and a restart, and ends by itself
+  - given a lane, then it lives in the session's state and in `~/.claude/shelf/lanes/<session>.json`, every pointer move in its history with the time; a fresh start reads it back unless the file records an end
+  - when the last item checks, then the finished lane stays on the board through the next turn end, then leaves, and the file records `endedAt`; op `lane` with `end: true` ends it at once
+- ⬜ a lane that moved nothing for 8 turns reads stale
+  - given the pointer and the done flags unmoved for 8 turns, then dima's next prompt carries «lane «…» moved nothing for n turns, stale»; a re-call that moves nothing keeps the count; with no lane, no lane text
+  - decision: 8, not phases' 3 — a lane item spans many turns (the ticket's exit 3)
+- 🧭 the ccrow strip (exits 0, 4, 4b) waits for dima's look at the lane card — one screen first (the ticket's decided)
+
 ## spawn hints — the board's name flag only
 
 - decision: no spawn-time hints — the chore-helper word match and the short general-purpose brief warning are gone, with their `agent.spawn` toast: 0 for 1 on its first real fire, and a toast never reaches the session it corrects (dima, 2026-10-05)

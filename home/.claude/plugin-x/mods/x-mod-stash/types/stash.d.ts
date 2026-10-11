@@ -105,6 +105,21 @@ export type StashOrbit = {
     plan?: { lines: string[]; at: number };
 };
 
+// 🛼 lane (FRM-385): a running lane's whole scope, ≤5 plain items, its pointer and what moved it; done ones stay listed
+export type LaneItem = { text: string; ticket?: string; isDone: boolean };
+export type StashLane = {
+    title: string;
+    items: LaneItem[];
+    // the item we are on; items.length once every item is done
+    current: number;
+    // orbit's turn count when the pointer or a done flag last moved, and when the last item checked
+    movedAt: number;
+    doneAt?: number;
+    // dima's note on the current item, joining his next prompt once
+    note?: string;
+    history: { at: number; current: number; done: number }[];
+};
+
 // the prompt enhancer: the box at the last press and the enhanced text as last seen (his edits kept), the call's
 // state, and why the last press left the box alone
 export type StashEnhancer = {
@@ -129,6 +144,8 @@ declare module 'claude-code' {
             // dima is on mobile: the reminder asks for the asks fence instead of orbit
             mobile: boolean;
             enhancer: StashEnhancer;
+            // the running lane, null once it ended or before one is set
+            lane: StashLane | null;
             // the board's cards folded to their head row, by card: sessions, orbit, phases
             folds: Record<string, boolean>;
         };
