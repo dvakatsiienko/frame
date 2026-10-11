@@ -139,8 +139,9 @@ export type StashLane = {
     movedAt: number;
     // the linked members' session ids; a re-link of a role replaces the old one
     members: Partial<Record<LaneRole, string>>;
-    // dima's note on the current step, joining cclio's next prompt once
+    // dima's note on the current step: a draft until his take, then it joins cclio's next prompt or running turn once
     note?: string;
+    isNoteTaken?: boolean;
     history: { at: number; act: string; current: number; done: number }[];
     endedAt?: number;
 };

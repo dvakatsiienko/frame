@@ -764,8 +764,8 @@ export function laneOp(
             items: stepped.items,
             movedAt: isMoved ? turns : lane.movedAt,
             ...(stepped.current === lane.current && lane.note
-                ? { note: lane.note }
-                : { note: undefined }),
+                ? { isNoteTaken: lane.isNoteTaken, note: lane.note }
+                : { isNoteTaken: undefined, note: undefined }),
         },
         laneSummary(lane.id, lane.title, stepped),
     );
@@ -923,6 +923,25 @@ async function markRemote(
         [ask.id]: { ...prior, ...change, at: await $.clock.now() },
     });
     await showLanes($, await readLanes($));
+}
+
+// the lane notes dima took with 🛎️, as cclio reads them; each leaves the lane once read
+async function takeLaneNotes($: EngineInterface, lanes: StashLane[]) {
+    const taken = lanes.filter((l) => !l.endedAt && l.note && l.isNoteTaken);
+    if (!taken.length) return [];
+    const ids = new Set(taken.map((l) => l.id));
+    await writeLanes(
+        $,
+        lanes.map((l) =>
+            ids.has(l.id)
+                ? { ...l, isNoteTaken: undefined, note: undefined }
+                : l,
+        ),
+    );
+    return taken.map(
+        (l) =>
+            `lane note from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${l.note}»`,
+    );
 }
 
 // the registry names the coordinator, so a handoff's new 🦉 cclio keeps the lanes
@@ -2216,18 +2235,7 @@ export const register: Register = (on) => {
                 (l) =>
                     `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op lane.`,
             );
-        const noted = isUserTurn ? live.filter((l) => l.note) : [];
-        const laneNotes = noted.map(
-            (l) =>
-                `lane note from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${l.note}»`,
-        );
-        if (noted.length)
-            await writeLanes(
-                $,
-                lanes.map((l) =>
-                    l.note && !l.endedAt ? { ...l, note: undefined } : l,
-                ),
-            );
+        const laneNotes = isUserTurn ? await takeLaneNotes($, lanes) : [];
         return next({
             ...e,
             context: [
@@ -3054,6 +3062,17 @@ export const register: Register = (on) => {
                 ),
             );
         };
+        const handleLaneTake = async (id: string) => {
+            const all = await readLanes($);
+            await writeLanes(
+                $,
+                all.map((l) =>
+                    l.id === id
+                        ? { ...l, isNoteTaken: !l.isNoteTaken || undefined }
+                        : l,
+                ),
+            );
+        };
         const laneJSX = isPartOn('stash.lane')
             ? lanes.map((lane) => (
                   <Box
@@ -3115,6 +3134,17 @@ export const register: Register = (on) => {
                                                 value={lane.note ?? ''}
                                             />
                                         </Box>
+                                    ) : null}
+                                    {i === lane.current ? (
+                                        // the note waits as a draft until 🛎️ take sends it; no redo, a note has nothing to redo (dima, 20:51)
+                                        <Button
+                                            key={`lane:${lane.id}:take`}
+                                            onPress={() =>
+                                                void handleLaneTake(lane.id)
+                                            }
+                                            variant='primary'>
+                                            {`${lane.isNoteTaken ? '✅' : '🛎️'} take`}
+                                        </Button>
                                     ) : null}
                                 </Box>
                             ))}
@@ -3484,6 +3514,9 @@ export const register: Register = (on) => {
             });
             notes.push(joinText(fresh));
         }
+        // a lane note dima took while cclio's turn runs joins it here too, as an orbit mark does
+        if (!isPing && (await isLaneOwner($)))
+            notes.push(...(await takeLaneNotes($, await readLanes($))));
         if (
             !isNudged &&
             ++turnTools >= NUDGE_AT &&

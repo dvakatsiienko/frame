@@ -493,7 +493,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ⬜ every board draws the fleet's live lanes
   - given 🦉 cclio calls orbit op `lane` act `create` with a title and 1–5 steps (plain text, an optional ticket id, a done flag)
   - then every session's board draws a `🛼 <title>` card right above 🌔 phases: every step in order, a done one `✅` and dim but still listed, the current one `➡️` and bold, the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
-  - and one note box sits on the current step, on any board; its text joins cclio's next prompt once, model-only, and no other session's, and the box clears once it did
+  - and one note box with a 🛎️ take sits on the current step, on any board; the text stays a draft until take, then joins cclio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the take clear once it did
+  - decision: take only, no redo — a note has nothing to redo; a peer's prompt never carries it (dima, 20:51)
   - decision: ➡️ marks the current step, no «← we are here» (dima's o9 note, o10)
   - and nothing of a lane enters a member's model context
   - and each card folds with its own `📂`, and the `🛼 lane` 🎛️ switch hides every lane card
