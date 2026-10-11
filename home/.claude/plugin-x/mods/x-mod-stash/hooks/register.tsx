@@ -51,10 +51,9 @@ const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
 const POLL_MS = 4000;
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
 const BOARD = 'fleet-board';
-// 🎛️ home mocks (FRM-391, dima 15:59 «try multiple approaches at once»): its own pane, which the surface tabs beside 🚦;
-// a dialog-mannered pane; and a tab inside 🚦 itself; the band keeps a compact grid
+// 🎛️ is a pane of its own, which the surface tabs beside 🚦: the band is capped by cc, the list outgrew it (dima's pick a of
+// four homes, 16:20); a tab row inside a pane was proven too, kept as an idea in api-map.md
 const SETTINGS_PANE = 'stash-settings';
-const SETTINGS_DIALOG = 'stash-settings-dialog';
 const REPLY = 'reply:';
 const CONTEXT = 'context:';
 // the model and effort of a session's main loop, as its last model request named them
@@ -187,8 +186,6 @@ let afk = false;
 let isWaker = false;
 let shown: Record<string, boolean> = {};
 let isSettingsOpen = false;
-// which tab the 🚦 board shows: its sessions or the 🎛️ mock
-let boardTab: 'sessions' | 'settings' = 'sessions';
 // the main thread's tool calls this turn, and whether its one phases nudge went out
 let turnTools = 0;
 let isNudged = false;
@@ -1494,7 +1491,7 @@ async function isOpen($: EngineInterface) {
 }
 
 async function openBoard($: EngineInterface) {
-    await $.ui.open({ closeOnEscape: true, id: BOARD, title: 'fleet board' });
+    await $.ui.open({ closeOnEscape: true, id: BOARD, title: '🚦 board' });
 }
 
 async function pressDoor(
@@ -1520,13 +1517,12 @@ async function flipPart($: EngineInterface, key: string) {
     await publish($);
 }
 
-// the one switch list every 🎛️ home draws: a column per group, or a wrapping grid where rows are dear (the band)
+// the 🎛️ pane's switch list: a column per group
 function settingsListJSX(
     $: EngineInterface,
     ui: ReturnType<EngineInterface['ui']['resolve']>,
     shownNow: Record<string, boolean>,
     air: boolean,
-    isGrid = false,
 ) {
     const { Box, Text, Button } = ui;
     const groups = [...new Set(PARTS.map((p) => p.group))];
@@ -1536,11 +1532,7 @@ function settingsListJSX(
             key={`settings:${group}`}
             rowGap={air ? 0.3 : 0}>
             <Text bold>{group}</Text>
-            <Box
-                columnGap={1}
-                flexDirection={isGrid ? 'row' : 'column'}
-                flexWrap={isGrid ? 'wrap' : 'nowrap'}
-                rowGap={air ? 0.3 : 0}>
+            <Box flexDirection='column' rowGap={air ? 0.3 : 0}>
                 {PARTS.filter((p) => p.group === group).map((p) => (
                     <Box flexDirection='row' key={`settings:row:${p.key}`}>
                         <Button
@@ -1960,35 +1952,64 @@ export const register: Register = (on) => {
     // the row's 🚦 shows whether the board is open
     on('ui.close', async ($, e, next) => {
         const r = await next(e);
-        if (e.id === BOARD) {
-            boardTab = 'sessions';
+        if (e.id === BOARD) await publish($);
+        if (e.id === SETTINGS_PANE) {
+            isSettingsOpen = false;
             await publish($);
         }
         return r;
     });
 
-    // mocks a and c: the 🎛️ list in a pane of its own, plain or with a dialog's manners
-    on('ui.render', { component: 'Pane' }, async ($, e, next) => {
-        if (e.requestId !== SETTINGS_PANE && e.requestId !== SETTINGS_DIALOG)
-            return next(e);
-        const ui = $.ui.resolve(e);
-        const { Box, Text } = ui;
-        return (
-            <Box flexDirection='column' gap={1}>
-                <Text dimColor>
-                    {e.requestId === SETTINGS_DIALOG
-                        ? 'c · a dialog: esc closes it'
-                        : 'a · its own pane, tabbed beside 🚦'}
-                </Text>
-                {settingsListJSX(
-                    $,
-                    ui,
-                    (await $.state.get(VIEW)).value?.shown ?? {},
-                    e.surface === 'desktop',
-                )}
-            </Box>
-        );
-    });
+    // 🎛️: the switch list, then the auto-compact point, in a pane of its own (dima's pick a, 16:20)
+    on(
+        'ui.render',
+        { component: 'Pane', requestId: SETTINGS_PANE },
+        async ($, e) => {
+            const ui = $.ui.resolve(e);
+            const { Box, Text } = ui;
+            const meter = (await $.state.get(METER)).value;
+            // mobile draws no Input
+            const Input = 'Input' in ui ? ui.Input : undefined;
+            // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
+            const compactJSX = Input ? (
+                <Box flexDirection='column' key='settings:compact'>
+                    <Text bold>context</Text>
+                    <Box alignItems='center' flexDirection='row' gap={1}>
+                        <Text>📦 auto-compact at</Text>
+                        <Box flexShrink={0} width={8}>
+                            <Input
+                                key='compact-at'
+                                onInput={(value) =>
+                                    void setCompactAt($, value, true)
+                                }
+                                onSubmit={(value) =>
+                                    void setCompactAt($, value)
+                                }
+                                placeholder='70'
+                                value={
+                                    meter?.compactAt === undefined
+                                        ? ''
+                                        : String(meter.compactAt)
+                                }
+                            />
+                        </Box>
+                        <Text dimColor>% of the context window</Text>
+                    </Box>
+                </Box>
+            ) : null;
+            return (
+                <Box flexDirection='column' gap={1} key='settings:view'>
+                    {settingsListJSX(
+                        $,
+                        ui,
+                        (await $.state.get(VIEW)).value?.shown ?? {},
+                        e.surface === 'desktop',
+                    )}
+                    {compactJSX}
+                </Box>
+            );
+        },
+    );
 
     on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
         const ui = $.ui.resolve(e);
@@ -2293,46 +2314,9 @@ export const register: Register = (on) => {
         const fill =
             e.props.placement === 'dock' ? e.props.scroll.bodyRows : undefined;
         const list = board?.members;
-        // mock b (dima, 15:59 «tabs?»): two tabs at the board's top, its sessions or the 🎛️ list
-        const flipTab = (tab: typeof boardTab) => {
-            boardTab = tab;
-            $.ui.invalidate('ui.render');
-        };
-        const tabsJSX = (
-            <Box flexDirection='row' gap={1} key='board:tabs' marginBottom={1}>
-                {(
-                    [
-                        ['sessions', '🚦 sessions'],
-                        ['settings', '🎛️ settings'],
-                    ] as const
-                ).map(([tab, label]) => (
-                    <Button
-                        key={`tab:${tab}`}
-                        onPress={() => flipTab(tab)}
-                        {...(boardTab === tab
-                            ? { variant: 'primary' as const }
-                            : { plain: true as const })}>
-                        {label}
-                    </Button>
-                ))}
-            </Box>
-        );
-        if (boardTab === 'settings')
-            return (
-                <Box flexDirection='column' gap={1} minHeight={fill}>
-                    {tabsJSX}
-                    {settingsListJSX(
-                        $,
-                        ui,
-                        (await $.state.get(VIEW)).value?.shown ?? {},
-                        e.surface === 'desktop',
-                    )}
-                </Box>
-            );
         if (!list)
             return (
                 <Box flexDirection='column' minHeight={fill}>
-                    {tabsJSX}
                     <Text dimColor>the session registry is unreadable</Text>
                     {orbitJSX}
                     {phasesJSX}
@@ -2341,7 +2325,6 @@ export const register: Register = (on) => {
         if (!list.length)
             return (
                 <Box flexDirection='column' minHeight={fill}>
-                    {tabsJSX}
                     <Text dimColor>no live sessions</Text>
                     {orbitJSX}
                     {phasesJSX}
@@ -2510,7 +2493,6 @@ export const register: Register = (on) => {
         ).length;
         return (
             <Box flexDirection='column' minHeight={fill}>
-                {tabsJSX}
                 {/* the head: what the pane holds on the left, how many work right now on the right */}
                 <Box
                     flexDirection='row'
@@ -2659,25 +2641,10 @@ export const register: Register = (on) => {
         const isShown = (key: string) => view.shown?.[key] !== false;
         const handleSettingsFlip = async () => {
             isSettingsOpen = !view.isSettingsOpen;
-            await publish($);
-        };
-        const openSettingsAt = async (home: 'pane' | 'dialog' | 'board') => {
-            if (home === 'pane')
+            if (isSettingsOpen)
                 await $.ui.open({ id: SETTINGS_PANE, title: '🎛️ settings' });
-            if (home === 'dialog')
-                await $.ui.open({
-                    closeOnEscape: true,
-                    focus: true,
-                    holdToasts: true,
-                    id: SETTINGS_DIALOG,
-                    rows: 30,
-                    title: '🎛️ settings',
-                });
-            if (home === 'board') {
-                boardTab = 'settings';
-                await openBoard($);
-                $.ui.invalidate('ui.render');
-            }
+            else await $.ui.close({ id: SETTINGS_PANE });
+            await publish($);
         };
         const handleBoardFlip = async () => {
             if (await isOpen($)) await $.ui.close({ id: BOARD });
@@ -2833,31 +2800,6 @@ export const register: Register = (on) => {
                           </Text>,
                           { left: 9 },
                       )}
-            </Box>
-        );
-        // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
-        const compactJSX = (
-            <Box flexDirection='column' key='settings:compact'>
-                <Text bold>context</Text>
-                <Box alignItems='center' flexDirection='row' gap={1}>
-                    <Text>📦 auto-compact at</Text>
-                    <Box flexShrink={0} width={8}>
-                        <ui.Input
-                            key='compact-at'
-                            onInput={(value) =>
-                                void setCompactAt($, value, true)
-                            }
-                            onSubmit={(value) => void setCompactAt($, value)}
-                            placeholder='70'
-                            value={
-                                meter?.compactAt === undefined
-                                    ? ''
-                                    : String(meter.compactAt)
-                            }
-                        />
-                    </Box>
-                    <Text dimColor>% of the context window</Text>
-                </Box>
             </Box>
         );
         const switches = (
@@ -3102,42 +3044,8 @@ export const register: Register = (on) => {
                       )),
                   ]
                 : [];
-        // 🎛️ folds out the home mocks dima tries side by side (15:59): a row that opens each other home, then the band's
-        // own take, a compact wrapping grid; no hover cards, the view explains itself (dima, 15:36)
-        const settingsJSX = view.isSettingsOpen ? (
-            <Box
-                borderDimColor
-                borderStyle='round'
-                flexDirection='column'
-                gap={air ? 0.6 : 0}
-                key='settings:view'
-                paddingX={1}>
-                <Box flexDirection='row' gap={1} key='settings:homes'>
-                    <Text bold>🎛️ try a home:</Text>
-                    <Button
-                        key='home:pane'
-                        onPress={() => void openSettingsAt('pane')}>
-                        a · own pane, tabbed beside 🚦
-                    </Button>
-                    <Button
-                        key='home:board'
-                        onPress={() => void openSettingsAt('board')}>
-                        b · a tab inside 🚦
-                    </Button>
-                    <Button
-                        key='home:dialog'
-                        onPress={() => void openSettingsAt('dialog')}>
-                        c · dialog, esc closes
-                    </Button>
-                    <Text dimColor>d · this grid</Text>
-                </Box>
-                {settingsListJSX($, ui, view.shown ?? {}, air, true)}
-                {compactJSX}
-            </Box>
-        ) : null;
         return (
             <Box flexDirection='column'>
-                {settingsJSX}
                 {row}
                 {/* the terminal reads the 5h and ctx on sline's line; the desktop keeps the bars (dima, 15:06) */}
                 {Svg ? meters : null}

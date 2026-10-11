@@ -106,6 +106,23 @@ async function band($: Engine, maxRows = 12) {
     });
 }
 
+// the 🎛️ pane, where the auto-compact point lives (FRM-391, dima's pick a)
+const settingsPane = ($: Engine) =>
+    $.ui.mount({
+        component: 'Pane',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 80,
+            isFocused: false,
+            placement: 'dock',
+            scroll: { bodyRows: 40, offset: 0 },
+            title: '🎛️ settings',
+            view: {},
+        },
+        requestId: 'stash-settings',
+        surface: 'desktop',
+    });
+
 // the Text whose words start a row's part, with its colour
 async function part($: Engine, start: RegExp) {
     const ui = await band($);
@@ -181,8 +198,8 @@ test('an idle band takes the 5h reading another session wrote', async ($, on) =>
 test("the ctx row shows the fill and the engine's compaction point", async ($, on) => {
     meters(on);
     await measure($, 39, 35);
-    const ui = await band($);
-    await ui.press({ key: 'settings' });
+    await band($);
+    const ui = await settingsPane($);
     const input = await ui.find({ type: 'Input' });
     expect([
         (await part($, /^35%$/)) !== 'no text',
@@ -195,8 +212,8 @@ test("a repo top's compaction point lands in its shared settings.json, other key
         [SHARED]: '{"permissions":{"allow":["Bash"]}}',
     });
     await measure($, 39, 35);
-    const ui = await band($);
-    await ui.press({ key: 'settings' });
+    await band($);
+    const ui = await settingsPane($);
     await ui.input({ key: 'compact-at', text: '80' });
     expect([JSON.parse(files[SHARED] ?? '{}'), LOCAL in files]).toEqual([
         {
@@ -221,8 +238,8 @@ test("a subdir session's compaction point lands in its own settings.local.json, 
         },
     }));
     await measure($, 39, 35);
-    const ui = await band($);
-    await ui.press({ key: 'settings' });
+    await band($);
+    const ui = await settingsPane($);
     await ui.input({ key: 'compact-at', text: '90' });
     expect([
         JSON.parse(files['/launch/.claude/settings.local.json'] ?? '{}').env,
@@ -233,8 +250,8 @@ test("a subdir session's compaction point lands in its own settings.local.json, 
 test('a compaction point outside 10–99 is refused and the file stays untouched', async ($, on) => {
     const { files } = meters(on, { [LOCAL]: '{}' });
     await measure($, 39, 35);
-    const ui = await band($);
-    await ui.press({ key: 'settings' });
+    await band($);
+    const ui = await settingsPane($);
     await ui.input({ key: 'compact-at', text: '5' });
     expect([
         files[LOCAL],
@@ -273,8 +290,8 @@ test('room under the pace reads 🔋 in green', async ($, on) => {
 test("a project override of the compaction point beats the engine's default", async ($, on) => {
     meters(on, {}, '55');
     await measure($, 39, 35);
-    const ui = await band($);
-    await ui.press({ key: 'settings' });
+    await band($);
+    const ui = await settingsPane($);
     expect((await ui.find({ type: 'Input' }))?.props.value).toBe('55');
 });
 
@@ -296,8 +313,8 @@ test('a measure writes the 5h window to the usage file in seconds', async ($, on
 test('typing a compaction point saves it with no Enter', async ($, on) => {
     const { files } = meters(on, { [SHARED]: '{}' });
     await measure($, 39, 35);
-    const ui = await band($);
-    await ui.press({ key: 'settings' });
+    await band($);
+    const ui = await settingsPane($);
     await ui.input({ key: 'compact-at', kind: 'change', text: '85' });
     expect(JSON.parse(files[SHARED] ?? '{}').env).toEqual({
         CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '85',
@@ -311,8 +328,8 @@ test('a refused compaction point takes back what typing saved on the way to it',
         '70',
     );
     await measure($, 39, 35);
-    const ui = await band($);
-    await ui.press({ key: 'settings' });
+    await band($);
+    const ui = await settingsPane($);
     for (const text of ['1', '10', '100'])
         await ui.input({ key: 'compact-at', kind: 'change', text });
     await ui.input({ key: 'compact-at', text: '100' });
@@ -324,8 +341,8 @@ test('a refused compaction point takes back what typing saved on the way to it',
 test('a half-typed compaction point saves nothing and names no refusal', async ($, on) => {
     const { files } = meters(on, { [LOCAL]: '{}' });
     await measure($, 39, 35);
-    const ui = await band($);
-    await ui.press({ key: 'settings' });
+    await band($);
+    const ui = await settingsPane($);
     await ui.input({ key: 'compact-at', kind: 'change', text: '8' });
     expect([files[LOCAL], await part($, /^compaction point must/)]).toEqual([
         '{}',

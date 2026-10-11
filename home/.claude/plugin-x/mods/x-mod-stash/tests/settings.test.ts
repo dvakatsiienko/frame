@@ -29,7 +29,17 @@ function world(on: On) {
     on('tool.register', (_$, e) => ({
         value: { tool: `mcp__x-mod-stash__${e.name}` },
     }));
-    return { appended, clock, store };
+    const opened: string[] = [];
+    const closed: string[] = [];
+    on('ui.open', (_$, e) => {
+        opened.push(e.id);
+        return { value: { isPlaced: true } };
+    });
+    on('ui.close', (_$, e) => {
+        closed.push(e.id);
+        return { value: undefined };
+    });
+    return { appended, clock, closed, opened, store };
 }
 
 async function band($: Engine) {
@@ -56,30 +66,62 @@ async function band($: Engine) {
 const hasEnhancer = async (ui: Awaited<ReturnType<typeof band>>) =>
     (await ui.find({ key: 'enh:enhance', type: 'Button' })) !== undefined;
 
-test('🎛️ folds out a switch per part, grouped under its mod', async ($, on) => {
+// the 🎛️ pane, mounted once per test (a second mount of the same requestId throws)
+const pane = ($: Engine) =>
+    $.ui.mount({
+        component: 'Pane',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 80,
+            isFocused: false,
+            placement: 'dock',
+            scroll: { bodyRows: 40, offset: 0 },
+            title: '🎛️ settings',
+            view: {},
+        },
+        requestId: 'stash-settings',
+        surface: 'terminal',
+    });
+
+test('🎛️ opens the settings pane: a switch per part, grouped under its mod', async ($, on) => {
+    const { opened } = world(on);
+    const ui = await band($);
+    await ui.press({ key: 'settings' });
+    const view = await pane($);
+    expect([
+        opened.includes('stash-settings'),
+        (await view.find({ text: 'stash · band', type: 'Text' }))?.text,
+        (await view.find({ key: 'part:stash.enhancer', type: 'Button' }))?.text,
+    ]).toEqual([true, 'stash · band', '🪄 ⏪ ⏩ enhancer']);
+});
+
+test('the band draws no settings of its own', async ($, on) => {
     world(on);
     const ui = await band($);
     await ui.press({ key: 'settings' });
     expect([
-        (await ui.find({ text: 'stash · band', type: 'Text' }))?.text,
-        (await ui.find({ key: 'part:stash.enhancer', type: 'Button' }))?.text,
-    ]).toEqual(['stash · band', '🪄 ⏪ ⏩ enhancer']);
+        await ui.find({ key: 'part:stash.enhancer' }),
+        await ui.find({ key: 'compact-at' }),
+    ]).toEqual([undefined, undefined]);
 });
 
 test('a shown part is an accent button, a hidden one dim, with no shown or hidden words', async ($, on) => {
     world(on);
-    const ui = await band($);
-    await ui.press({ key: 'settings' });
+    await band($);
+    const view = await pane($);
     const look = async () => {
-        const b = await ui.find({ key: 'part:stash.enhancer', type: 'Button' });
-        const row = await ui.find({
+        const b = await view.find({
+            key: 'part:stash.enhancer',
+            type: 'Button',
+        });
+        const row = await view.find({
             key: 'settings:row:stash.enhancer',
             type: 'Box',
         });
         return [b?.props.variant, b?.props.dimColor, row?.text];
     };
     const before = await look();
-    await ui.press({ key: 'part:stash.enhancer' });
+    await view.press({ key: 'part:stash.enhancer' });
     expect([before, await look()]).toEqual([
         ['primary', undefined, '🪄 ⏪ ⏩ enhancer'],
         [undefined, true, '🪄 ⏪ ⏩ enhancer'],
@@ -88,33 +130,31 @@ test('a shown part is an accent button, a hidden one dim, with no shown or hidde
 
 test('the 📦 auto-compact field is the last section of 🎛️', async ($, on) => {
     world(on);
-    const ui = await band($);
-    const closed = await ui.find({ key: 'compact-at' });
-    await ui.press({ key: 'settings' });
-    const view = (await ui.find({ key: 'settings:view', type: 'Box' }))?.text;
-    expect([
-        closed,
-        /📦 auto-compact at.*% of the context window$/su.test(view ?? ''),
-    ]).toEqual([undefined, true]);
+    await band($);
+    const view = await pane($);
+    const text = (await view.find({ key: 'settings:view', type: 'Box' }))?.text;
+    expect(
+        /📦 auto-compact at.*% of the context window$/su.test(text ?? ''),
+    ).toBe(true);
 });
 
-test('a second 🎛️ press folds the view away and leaves no transcript rows', async ($, on) => {
-    const { appended } = world(on);
+test('a second 🎛️ press closes the pane and leaves no transcript rows', async ($, on) => {
+    const { appended, closed } = world(on);
     const ui = await band($);
     const before = appended.length;
     await ui.press({ key: 'settings' });
     await ui.press({ key: 'settings' });
     expect([
-        await ui.find({ text: 'stash · band', type: 'Text' }),
+        closed.includes('stash-settings'),
         appended.length - before,
-    ]).toEqual([undefined, 0]);
+    ]).toEqual([true, 0]);
 });
 
 test('hiding the enhancer takes its buttons off the band and saves the switch', async ($, on) => {
     const { store } = world(on);
     const ui = await band($);
-    await ui.press({ key: 'settings' });
-    await ui.press({ key: 'part:stash.enhancer' });
+    const view = await pane($);
+    await view.press({ key: 'part:stash.enhancer' });
     expect([await hasEnhancer(ui), store.get('shown')]).toEqual([
         false,
         { 'stash.enhancer': false },
@@ -133,8 +173,8 @@ test('one flip back brings the enhancer buttons again', async ($, on) => {
     const { store } = world(on);
     store.set('shown', { 'stash.enhancer': false });
     const ui = await band($);
-    await ui.press({ key: 'settings' });
-    await ui.press({ key: 'part:stash.enhancer' });
+    const view = await pane($);
+    await view.press({ key: 'part:stash.enhancer' });
     expect(await hasEnhancer(ui)).toBe(true);
 });
 
@@ -171,49 +211,12 @@ test('a switch saved before the session starts holds from its first draw', async
 
 test("a flip keeps another session's switch it has not polled yet", async ($, on) => {
     const { store } = world(on);
-    const ui = await band($);
+    await band($);
+    const view = await pane($);
     store.set('shown', { 'stash.chips': false });
-    await ui.press({ key: 'settings' });
-    await ui.press({ key: 'part:stash.enhancer' });
+    await view.press({ key: 'part:stash.enhancer' });
     expect(store.get('shown')).toEqual({
         'stash.chips': false,
         'stash.enhancer': false,
     });
 });
-
-// the home mocks dima tries side by side (15:59): a and c open a pane of their own, b a tab inside 🚦
-for (const [home, id] of [
-    ['pane', 'stash-settings'],
-    ['dialog', 'stash-settings-dialog'],
-    ['board', 'fleet-board'],
-] as const)
-    test(`🎛️ home ${home} opens the switch list in ${id}`, async ($, on) => {
-        world(on);
-        const opened: string[] = [];
-        on('ui.open', (_$, e) => {
-            opened.push(e.id);
-            return { value: { isPlaced: true } };
-        });
-        const ui = await band($);
-        await ui.press({ key: 'settings' });
-        await ui.press({ key: `home:${home}` });
-        const pane = await $.ui.mount({
-            component: 'Pane',
-            plugin: 'x-mod-stash',
-            props: {
-                bodyColumns: 80,
-                isFocused: false,
-                placement: 'dock',
-                scroll: { bodyRows: 40, offset: 0 },
-                title: '🎛️ settings',
-                view: {},
-            },
-            requestId: id,
-            surface: 'terminal',
-        });
-        expect([
-            opened.includes(id),
-            (await pane.find({ key: 'part:stash.enhancer', type: 'Button' }))
-                ?.text,
-        ]).toEqual([true, '🪄 ⏪ ⏩ enhancer']);
-    });

@@ -100,6 +100,7 @@ cclio folds dima's picks into a ticket; a built idea leaves this list.
 - a reset on `/clear` and `/resume` — `command.run { command: ['clear','resume'] }` as the one point x-mod-stash and x-mod-redact drop per-session state; today x-mod-stash notices a new `$.session.id()` at its next poll (borrowed from Charlie0113-T/claude-agent-flow `hooks/register.ts`, FRM-319)
 - a «while you were away» digest — when `💨` turns off, each session's «needs you first, then done» (from augbastos/afkswitch's README, FRM-319)
 - a pr + ci column on the board — one `gh api graphql` query per pr on a 60 s `$.clock.every`, pr urls caught from prompts, replies and `gh pr create` output (from sezaakgun/cc-pr-tracker `hooks/register.tsx`, FRM-319); its cost is the per-tick `gh` call x-mod-stash's FTR already names
+- tabs inside a pane — a row of `Button`s at a pane's top, the picked one `variant='primary'`, each drawing its own body: proven in 🚦 as FRM-391's mock b (dima, 16:20: «very useful knowledge, keep it for future parts of the board if there is not enough space»); the surface also tabs every open pane on its own, which is how 🎛️ sits beside 🚦
 - parked: spawn gating — `agent.spawn` refusing or rerouting a spawn the fleet rules forbid; the warn-only hints it grew from were dropped: «0 for 1 on its first real fire, and a toast never reaches the session it corrects» (dima, 2026-10-05)
 
 ## comms pieces — what the api gives (refresh-cc-mods, 2026-10-10, cc 2.1.296; «?» = unprobed by us)

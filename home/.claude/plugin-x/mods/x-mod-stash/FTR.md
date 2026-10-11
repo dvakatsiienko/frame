@@ -152,12 +152,12 @@
 - ✅ a busy session is never pinged
   - given 🔥 is on and a turn is running at the 50-minute mark
   - then no ping is sent, and the clock restarts when that turn ends
-- ⬜ 🎛️ folds out a show/hide switch per part (FRM-391 slice 05)
-  - given the band's 🎛️, the first of its switches
-  - when dima presses it, then a bordered view folds out above the row: a bold `🎛️ settings` title, a bold heading per group (`stash · band`), and a vertical list, one row per part — a button with the part's label, accent while shown and dim while hidden, nothing beside it; the desktop puts a small gap between rows (0.3 row); a second press folds it away, and neither adds a row to the transcript
-  - 🧪 home mocks (dima, 15:59: the band is capped by cc's `maxRows`, the list scrolled out of sight; «try multiple approaches at once»): the fold-out opens with `🎛️ try a home:` and three buttons — a · its own pane, which the surface tabs beside 🚦; b · a `🎛️ settings` tab at the top of 🚦, beside `🚦 sessions`; c · a dialog-mannered pane (focus, esc closes, toasts held) — then d · the band's own take, the parts as a wrapping grid; every home draws the same switch list; the losers leave once dima picks
-  - and the view's last section, `context`, holds `📦 auto-compact at` its `Input` `% of the context window`; the band's row no longer carries it
-  - decision: a vertical list of on/off buttons, no ☑/☐, more air, full-strength labels (dima, 15:31 «looks ugly», 15:35 «print as a vertical list»); no hover cards inside the view, it explains itself (dima, 15:36); no shown/hidden words, the button says it (dima, 15:50); the 📦 field moves in (dima, 15:35)
+- ⬜ 🎛️ opens a settings pane with a show/hide switch per part (FRM-391 slice 05)
+  - given the band's 🎛️, right before 🚦
+  - when dima presses it, then a `🎛️ settings` pane opens, which the surface tabs beside the `🚦 board` pane; a bold heading per group (`stash · band`) over a vertical list, one row per part — a button with the part's label, accent while shown and dim while hidden, nothing beside it; the desktop puts a small gap between rows (0.3 row); a second press closes the pane, and neither adds a row to the transcript
+  - and the pane's last section, `context`, holds `📦 auto-compact at` its `Input` `% of the context window`; the band draws no setting of its own
+  - decision: a pane of its own, dima's pick a of four homes tried side by side (16:20); the band is capped by cc's `maxRows` and the fold-out scrolled the list out of sight, the grid in the band would still shift the layout as parts grow, a dialog-mannered pane looked the same as a plain one, and a tab row inside 🚦 is kept as an idea (`../api-map.md`)
+  - decision: a vertical list of on/off buttons, no ☑/☐, more air, full-strength labels (dima, 15:31 «looks ugly», 15:35 «print as a vertical list»); no hover cards inside the pane, it explains itself (dima, 15:36); no shown/hidden words, the button says it (dima, 15:50); the 📦 field moves in (dima, 15:35)
   - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
   - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
   - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
