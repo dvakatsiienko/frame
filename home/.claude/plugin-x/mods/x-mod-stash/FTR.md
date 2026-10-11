@@ -431,6 +431,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when dima looks at the board
   - then up to 7 lines under `🌔 phases` show what is now, next and then, each readable on its own
   - decision: each line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
+- ⬜ phases stick to the board's bottom
+  - given the session has set its phases and the board is docked
+  - when dima looks at the board
+  - then `🌔 phases` sits at the bottom of the pane, below orbit, with the free space above it
+  - decision: a try, dima may revert (dima, 2026-10-11 11:07: «can stick to bot?»)
 - ✅ a phase's moon fills by nearness
   - given the session has set 7 phases
   - when dima looks at the board

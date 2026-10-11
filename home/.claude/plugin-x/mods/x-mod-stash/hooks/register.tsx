@@ -2018,58 +2018,68 @@ export const register: Register = (on) => {
                         })}
                     </Box>
                 ) : null}
-                {o.plan ? (
-                    <Box flexDirection='column' marginTop={1} rowGap={LINE_GAP}>
-                        <Text bold>
-                            {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
-                        </Text>
-                        {o.plan.lines.map((line, i) => {
-                            // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
-                            const lead = line.match(PLAN_LEAD);
-                            return (
-                                // the moon fills by nearness, the then lines dim (dima, 20:58); only the now lead is green (21:08)
-                                <Text
-                                    dimColor={i > 1}
-                                    // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
-                                    key={`plan:${i}`}>
-                                    {`${PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
-                                    {lead ? (
-                                        <Text
-                                            bold
-                                            color={
-                                                i === 0
-                                                    ? METER_TINTS.calm5h
-                                                    : undefined
-                                            }>
-                                            {lead[0]}
-                                        </Text>
-                                    ) : null}
-                                    {linkedJSX(
-                                        lead
-                                            ? line.slice(lead[0].length)
-                                            : line,
-                                        `plan:${i}`,
-                                    )}
-                                </Text>
-                            );
-                        })}
-                    </Box>
-                ) : null}
             </Box>
         );
+        // the phases stick to the board's bottom: a docked board fills its rows and a gap grows above them (dima, 11:07)
+        const phasesJSX = o.plan
+            ? [
+                  <Box flexGrow={1} key='phases:gap' />,
+                  <Box
+                      flexDirection='column'
+                      key='phases'
+                      marginTop={1}
+                      rowGap={LINE_GAP}>
+                      <Text bold>
+                          {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
+                      </Text>
+                      {o.plan.lines.map((line, i) => {
+                          // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
+                          const lead = line.match(PLAN_LEAD);
+                          return (
+                              // the moon fills by nearness, the then lines dim (dima, 20:58); only the now lead is green (21:08)
+                              <Text
+                                  dimColor={i > 1}
+                                  // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
+                                  key={`plan:${i}`}>
+                                  {`${PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
+                                  {lead ? (
+                                      <Text
+                                          bold
+                                          color={
+                                              i === 0
+                                                  ? METER_TINTS.calm5h
+                                                  : undefined
+                                          }>
+                                          {lead[0]}
+                                      </Text>
+                                  ) : null}
+                                  {linkedJSX(
+                                      lead ? line.slice(lead[0].length) : line,
+                                      `plan:${i}`,
+                                  )}
+                              </Text>
+                          );
+                      })}
+                  </Box>,
+              ]
+            : null;
+        const fill =
+            e.props.placement === 'dock' ? e.props.scroll.bodyRows : undefined;
         const list = board?.members;
         if (!list)
             return (
-                <Box flexDirection='column'>
+                <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>the session registry is unreadable</Text>
                     {orbitJSX}
+                    {phasesJSX}
                 </Box>
             );
         if (!list.length)
             return (
-                <Box flexDirection='column'>
+                <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>no live sessions</Text>
                     {orbitJSX}
+                    {phasesJSX}
                 </Box>
             );
         const isColour = board.isColour;
@@ -2234,7 +2244,7 @@ export const register: Register = (on) => {
             (m) => statusOf(m.status).word === 'busy',
         ).length;
         return (
-            <Box flexDirection='column'>
+            <Box flexDirection='column' minHeight={fill}>
                 {/* the head: what the pane holds on the left, how many work right now on the right */}
                 <Box
                     flexDirection='row'
@@ -2253,6 +2263,7 @@ export const register: Register = (on) => {
                 </Box>
                 {list.map(row)}
                 {orbitJSX}
+                {phasesJSX}
             </Box>
         );
     });

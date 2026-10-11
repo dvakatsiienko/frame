@@ -362,6 +362,20 @@ test('the phases show in the board, a moon each, at most seven', async ($, on) =
     ]);
 });
 
+test('the phases stick to the bottom of a docked board', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
+    const boxes = await ui.findAll({ type: 'Box' });
+    const gap = boxes.findIndex((b) => b.key === 'phases:gap');
+    expect([
+        boxes[0]?.props.minHeight,
+        boxes[gap]?.props.flexGrow,
+        boxes[gap + 1]?.key,
+    ]).toEqual([40, 1, 'phases']);
+});
+
 test('a phase fades with its distance from now', async ($, on) => {
     world(on);
     await start($);
