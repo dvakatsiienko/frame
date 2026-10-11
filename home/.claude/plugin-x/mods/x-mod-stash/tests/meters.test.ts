@@ -423,3 +423,48 @@ test('a desktop band keeps both bars', async ($, on) => {
     const ui = await bandOn($, 'desktop', false);
     expect((await ui.findAll({ type: 'Svg' })).length).toBe(2);
 });
+
+// each desktop meter part, drawn by default and gone under its switch
+const METER_PARTS: [
+    string,
+    (ui: Awaited<ReturnType<typeof band>>) => Promise<boolean>,
+][] = [
+    [
+        'stash.5h',
+        async (ui) =>
+            (await ui.findAll({ type: 'Box' })).some(
+                (n) => n.key === 'meter:5h',
+            ),
+    ],
+    [
+        'stash.ctx',
+        async (ui) =>
+            (await ui.findAll({ type: 'Box' })).some(
+                (n) => n.key === 'meter:ctx',
+            ),
+    ],
+    [
+        'stash.pace',
+        async (ui) =>
+            (await ui.findAll({ type: 'Text' })).some((n) =>
+                /^🔋/u.test(n.text ?? ''),
+            ),
+    ],
+    [
+        'stash.reset',
+        async (ui) =>
+            (await ui.findAll({ type: 'Text' })).some((n) =>
+                /^⏳/u.test(n.text ?? ''),
+            ),
+    ],
+];
+for (const [key, drawn] of METER_PARTS)
+    test(`the ${key} switch hides its part`, async ($, on) => {
+        const { clock, store } = meters(on);
+        await measure($, 39, 35);
+        const ui = await band($);
+        const before = await drawn(ui);
+        store.shown = { [key]: false };
+        await clock.advance(4000);
+        expect([before, await drawn(ui)]).toEqual([true, false]);
+    });

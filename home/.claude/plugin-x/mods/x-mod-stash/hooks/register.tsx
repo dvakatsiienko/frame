@@ -66,8 +66,31 @@ const SHOWN = 'shown';
 const PARTS = [
     {
         group: 'stash · band',
+        key: 'stash.chips',
+        label: '🪐 🌔 asks and phases chips',
+    },
+    { group: 'stash · band', key: 'stash.pace', label: '🔋 🪫 pace gap' },
+    {
+        group: 'stash · band',
+        key: 'stash.reset',
+        label: '⏳ time to the 5h reset',
+    },
+    { group: 'stash · band', key: 'stash.wait', label: '🔭 wait line' },
+    {
+        group: 'stash · band',
         key: 'stash.enhancer',
         label: '🪄 ⏪ ⏩ enhancer',
+    },
+    { group: 'stash · band', key: 'stash.hot', label: '🔥 keep-hot' },
+    { group: 'stash · band', key: 'stash.waker', label: '⏰ waker' },
+    { group: 'stash · band', key: 'stash.afk', label: '💨 afk' },
+    { group: 'stash · band', key: 'stash.board', label: '🚦 board button' },
+    { group: 'stash · band', key: 'stash.5h', label: '🔥 5h bar (desktop)' },
+    { group: 'stash · band', key: 'stash.ctx', label: '🧠 ctx bar (desktop)' },
+    {
+        group: 'stash · band',
+        key: 'stash.digest',
+        label: 'while you were away',
     },
 ] as const;
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
@@ -2652,7 +2675,7 @@ export const register: Register = (on) => {
                 gap={1}
                 key='meter:info'
                 minWidth={0}>
-                {gap === undefined
+                {!isShown('stash.pace') || gap === undefined
                     ? null
                     : tip(
                           'pace',
@@ -2667,7 +2690,9 @@ export const register: Register = (on) => {
                           </Text>,
                           { left: 10 },
                       )}
-                {five?.resetsAt === undefined || five.resetsAt <= now
+                {!isShown('stash.reset') ||
+                five?.resetsAt === undefined ||
+                five.resetsAt <= now
                     ? null
                     : tip(
                           'reset',
@@ -2727,65 +2752,76 @@ export const register: Register = (on) => {
                     </Button>,
                     leftOf('🎛️', view.isSettingsOpen),
                 )}
-                {tip(
-                    'hot',
-                    view.isHot
-                        ? "stop keeping this session's cache hot"
-                        : "keep this session's cache hot: ping every 50 min",
-                    <Button
-                        key='hot'
-                        onPress={() => void handleHotFlip()}
-                        {...(view.isHot
-                            ? { variant: 'secondary' as const }
-                            : { plain: true as const })}>
-                        🔥
-                    </Button>,
-                    leftOf('🔥', !!view.isHot),
-                )}
-                {tip(
-                    'waker',
-                    view.isWaker
-                        ? 'stop waking capped sessions at the 5h reset'
-                        : 'wake every session stopped on the 5h cap',
-                    <Button
-                        key='waker'
-                        onPress={() => void handleWakerFlip()}
-                        {...(view.isWaker
-                            ? { variant: 'secondary' as const }
-                            : { plain: true as const })}>
-                        ⏰
-                    </Button>,
-                    leftOf('⏰', view.isWaker),
-                )}
-                {tip(
-                    'afk',
-                    view.afk
-                        ? 'back: tell fleet that dima is here'
-                        : 'afk: tell fleet that dima is away',
-                    <Button
-                        key='afk'
-                        onPress={() => void handleAfkFlip()}
-                        {...(view.afk
-                            ? { variant: 'secondary' as const }
-                            : { plain: true as const })}>
-                        💨
-                    </Button>,
-                    leftOf('💨', view.afk),
-                )}
-                {tip(
-                    'board',
-                    boardOpen ? 'fold fleet board' : 'unfold fleet board',
-                    <Button
-                        key='board'
-                        onPress={() => void handleBoardFlip()}
-                        {...(boardOpen
-                            ? { variant: 'secondary' as const }
-                            : { plain: true as const })}>
-                        🚦
-                    </Button>,
-                    leftOf('🚦', boardOpen),
-                    { hotkey: 'b', onPress: () => void handleBoardFlip() },
-                )}
+                {!isShown('stash.hot')
+                    ? null
+                    : tip(
+                          'hot',
+                          view.isHot
+                              ? "stop keeping this session's cache hot"
+                              : "keep this session's cache hot: ping every 50 min",
+                          <Button
+                              key='hot'
+                              onPress={() => void handleHotFlip()}
+                              {...(view.isHot
+                                  ? { variant: 'secondary' as const }
+                                  : { plain: true as const })}>
+                              🔥
+                          </Button>,
+                          leftOf('🔥', !!view.isHot),
+                      )}
+                {!isShown('stash.waker')
+                    ? null
+                    : tip(
+                          'waker',
+                          view.isWaker
+                              ? 'stop waking capped sessions at the 5h reset'
+                              : 'wake every session stopped on the 5h cap',
+                          <Button
+                              key='waker'
+                              onPress={() => void handleWakerFlip()}
+                              {...(view.isWaker
+                                  ? { variant: 'secondary' as const }
+                                  : { plain: true as const })}>
+                              ⏰
+                          </Button>,
+                          leftOf('⏰', view.isWaker),
+                      )}
+                {!isShown('stash.afk')
+                    ? null
+                    : tip(
+                          'afk',
+                          view.afk
+                              ? 'back: tell fleet that dima is here'
+                              : 'afk: tell fleet that dima is away',
+                          <Button
+                              key='afk'
+                              onPress={() => void handleAfkFlip()}
+                              {...(view.afk
+                                  ? { variant: 'secondary' as const }
+                                  : { plain: true as const })}>
+                              💨
+                          </Button>,
+                          leftOf('💨', view.afk),
+                      )}
+                {!isShown('stash.board')
+                    ? null
+                    : tip(
+                          'board',
+                          boardOpen ? 'fold fleet board' : 'unfold fleet board',
+                          <Button
+                              key='board'
+                              onPress={() => void handleBoardFlip()}
+                              {...(boardOpen
+                                  ? { variant: 'secondary' as const }
+                                  : { plain: true as const })}>
+                              🚦
+                          </Button>,
+                          leftOf('🚦', boardOpen),
+                          {
+                              hotkey: 'b',
+                              onPress: () => void handleBoardFlip(),
+                          },
+                      )}
             </Box>
         );
         // the readings pack left after the chips, then this session's 🔭 mark, always drawn; the switches hold the right
@@ -2867,14 +2903,16 @@ export const register: Register = (on) => {
                     gap={1}
                     key='row:readings'
                     minWidth={0}>
-                    {chips}
+                    {isShown('stash.chips') ? chips : null}
                     {meterInfoJSX}
-                    <Box flexShrink={1} key='wait' minWidth={0}>
-                        <Text color='inactive' wrap='truncate-end'>
-                            {'🔭 '}
-                            {view.wait ? waitJSX(view.wait) : 'not waiting'}
-                        </Text>
-                    </Box>
+                    {isShown('stash.wait') ? (
+                        <Box flexShrink={1} key='wait' minWidth={0}>
+                            <Text color='inactive' wrap='truncate-end'>
+                                {'🔭 '}
+                                {view.wait ? waitJSX(view.wait) : 'not waiting'}
+                            </Text>
+                        </Box>
+                    ) : null}
                 </Box>
                 {isShown('stash.enhancer') ? enhancerJSX : null}
                 {switches}
@@ -2889,31 +2927,37 @@ export const register: Register = (on) => {
                 key='meters'
                 marginTop={air ? 0.5 : 0}
                 paddingRight={air ? 1 : 0}>
-                {barJSX(
-                    'meter:5h',
-                    '🔥 5h',
-                    '5h window used',
-                    fiveTint,
-                    five ? { mark: pace, percent: five.used } : undefined,
-                )}
-                {barJSX(
-                    'meter:ctx',
-                    '🧠 ctx',
-                    'context window used',
-                    ctxTint,
-                    ctx === undefined
-                        ? undefined
-                        : {
-                              mark: meter?.compactAt,
-                              percent: ctx,
-                              scale: meter?.compactAt ?? 100,
-                          },
-                    air ? 0.4 : 0,
-                )}
+                {!isShown('stash.5h')
+                    ? null
+                    : barJSX(
+                          'meter:5h',
+                          '🔥 5h',
+                          '5h window used',
+                          fiveTint,
+                          five ? { mark: pace, percent: five.used } : undefined,
+                      )}
+                {!isShown('stash.ctx')
+                    ? null
+                    : barJSX(
+                          'meter:ctx',
+                          '🧠 ctx',
+                          'context window used',
+                          ctxTint,
+                          ctx === undefined
+                              ? undefined
+                              : {
+                                    mark: meter?.compactAt,
+                                    percent: ctx,
+                                    scale: meter?.compactAt ?? 100,
+                                },
+                          air ? 0.4 : 0,
+                      )}
             </Box>
         );
         const away =
-            view.digest && (view.digest.needs.length || view.digest.done.length)
+            isShown('stash.digest') &&
+            view.digest &&
+            (view.digest.needs.length || view.digest.done.length)
                 ? [
                       <Text dimColor key='away'>
                           while you were away

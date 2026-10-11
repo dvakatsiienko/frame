@@ -156,7 +156,8 @@
   - when dima presses it, then a view folds out above the row, a bold dim heading per group (`stash · band`) over one switch per part, `☑ <part>` shown or `☐ <part>` hidden, each naming its next press on hover; a second press folds it away, and neither adds a row to the transcript
   - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
   - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
-  - decision: the first batch carries the enhancer switch alone, the other approved parts join once dima has seen the view (the advisor's small-batch call, 2026-10-11 15:30)
+  - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
+  - decision: the band's 12 parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; cclio's «build the rest of slice 05 meanwhile»)
   - decision: the switches live in stash's own store, the one the 💨 and ⏰ switches already share across sessions — a separate file joins only if another mod's parts do
 - ⬜ two live meters, full width under the row on the desktop (FRM-366)
   - given the terminal, then no bars draw: sline's own line carries the 5h, the week and the context, the pace number with them (dima, 2026-10-11 15:06); the row's 🔋/🪫 pace and ⏳ reset stay

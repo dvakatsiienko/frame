@@ -105,3 +105,46 @@ test('one flip back brings the enhancer buttons again', async ($, on) => {
     await ui.press({ key: 'part:stash.enhancer' });
     expect(await hasEnhancer(ui)).toBe(true);
 });
+
+// each band part: drawn by default, gone one poll after another session hides it
+const BAND_PARTS: [string, { key?: string; text?: RegExp }][] = [
+    ['stash.chips', { text: /^🪐 \d+$/ }],
+    ['stash.wait', { text: /^🔭 / }],
+    ['stash.hot', { key: 'hot' }],
+    ['stash.waker', { key: 'waker' }],
+    ['stash.afk', { key: 'afk' }],
+    ['stash.board', { key: 'board' }],
+];
+for (const [part, query] of BAND_PARTS)
+    test(`the ${part} switch hides its part in every band`, async ($, on) => {
+        const { clock, store } = world(on);
+        const ui = await band($);
+        const drawn = async () =>
+            (await ui.find(
+                query.key
+                    ? { key: query.key, type: 'Button' }
+                    : { text: query.text, type: 'Text' },
+            )) !== undefined;
+        const before = await drawn();
+        store.set('shown', { [part]: false });
+        await clock.advance(4000);
+        expect([before, await drawn()]).toEqual([true, false]);
+    });
+
+test('a switch saved before the session starts holds from its first draw', async ($, on) => {
+    const { store } = world(on);
+    store.set('shown', { 'stash.enhancer': false });
+    expect(await hasEnhancer(await band($))).toBe(false);
+});
+
+test("a flip keeps another session's switch it has not polled yet", async ($, on) => {
+    const { store } = world(on);
+    const ui = await band($);
+    store.set('shown', { 'stash.chips': false });
+    await ui.press({ key: 'settings' });
+    await ui.press({ key: 'part:stash.enhancer' });
+    expect(store.get('shown')).toEqual({
+        'stash.chips': false,
+        'stash.enhancer': false,
+    });
+});

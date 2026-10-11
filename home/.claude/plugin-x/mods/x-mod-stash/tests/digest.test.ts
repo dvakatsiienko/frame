@@ -12,18 +12,19 @@ async function band(
     on: On,
     busy: string[] = [],
     asks: Record<string, string> = {},
+    seed: Record<string, unknown> = {},
 ) {
     const clock = mock.clock(on);
     // another session's orbit holds an open ask: its stash mirrors it into the shared store
-    mock.store(
-        on,
-        Object.fromEntries(
+    mock.store(on, {
+        ...Object.fromEntries(
             Object.entries(asks).map(([sid, ask]) => [
                 `asks:${sid}`,
                 { asks: [ask], at: clock.now(), label: 'frame' },
             ]),
         ),
-    );
+        ...seed,
+    });
     on('env.get', () => ({ value: '/home' }));
     on('fs.list', (_$, e) => ({
         value:
@@ -165,4 +166,12 @@ test('a session that exited during afk is listed as done', async ($, on) => {
     await end($, 'd0d0d0d0-done');
     await b.afk();
     expect(await b.digest()).toEqual(['done · d0d0d0d0']);
+});
+
+test('the digest switch keeps the away digest off the band', async ($, on) => {
+    const b = await band($, on, [], {}, { shown: { 'stash.digest': false } });
+    await b.afk();
+    await b.stop('d0d0d0d0-done', 'shipped the fix.');
+    await b.afk();
+    expect(await b.digest()).toEqual([]);
 });
