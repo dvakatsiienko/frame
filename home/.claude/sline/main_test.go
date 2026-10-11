@@ -5,6 +5,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -724,3 +725,33 @@ func TestRefreshDueIgnoresEmptyPin(t *testing.T) {
 		t.Error("past the TTL is due")
 	}
 }
+
+func TestFormatWindowPace(t *testing.T) {
+	// 2 h into the 5 h window the pace is 40 %: used past it is a debt, under it room, as stash's band reads it
+	inThree := time.Now().Unix() + 3*3600
+	cases := []struct {
+		name   string
+		label  string
+		window *RateLimitWindow
+		want   string
+		absent bool
+	}{
+		{"room under the pace", "5h", &RateLimitWindow{UsedPercentage: 38, ResetsAt: inThree}, "🔋 +2%", false},
+		{"a debt over the pace", "5h", &RateLimitWindow{UsedPercentage: 42, ResetsAt: inThree}, "🪫 -2%", false},
+		{"a rolled-over window", "5h", &RateLimitWindow{UsedPercentage: 101, ResetsAt: 1000}, "🔋", true},
+		{"no reset time", "5h", &RateLimitWindow{UsedPercentage: 42}, "🔋", true},
+		{"the week window", "week", &RateLimitWindow{UsedPercentage: 42, ResetsAt: inThree}, "🪫", true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := stripANSI(formatWindow(c.label, c.window))
+			if strings.Contains(got, c.want) == c.absent {
+				t.Errorf("got %q, want %q present=%v", got, c.want, !c.absent)
+			}
+		})
+	}
+}
+
+var ansi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func stripANSI(s string) string { return ansi.ReplaceAllString(s, "") }

@@ -77,6 +77,20 @@ func formatResetIn(seconds int64) string {
 	return fmt.Sprintf("%dd %dh %02dm", minutes/(24*60), (minutes%(24*60))/60, minutes%60)
 }
 
+const fiveHours = 5 * 3600
+
+// paceGap is the 5h window's used share against its elapsed share, as x-mod-stash's band reads it: 🔋 +n% is room
+// under the even pace, 🪫 -n% a debt over it (dima, 2026-10-11 15:06). ADR 0001's carve-out: the arithmetic of two
+// server fields and the clock, no rate extrapolated
+func paceGap(used float64, resetIn int64) string {
+	pace := math.Round(min(100, max(0, (1-float64(resetIn)/fiveHours)*100)))
+	gap := int(math.Round(used - pace))
+	if gap > 0 {
+		return paintf(UsageCritColor, "🪫 -%d%%", gap)
+	}
+	return paintf(AddColor, "🔋 +%d%%", -gap)
+}
+
 func formatWindow(label string, window *RateLimitWindow) string {
 	if window == nil {
 		return ""
@@ -95,6 +109,10 @@ func formatWindow(label string, window *RateLimitWindow) string {
 	}
 
 	segment := label + " " + progressBar(pct) + " " + paintf(usageColor(pct), "%.0f%%", pct)
+
+	if label == "5h" && resetIn > 0 {
+		segment += " " + paceGap(pct, resetIn)
+	}
 
 	if resetIn > 0 {
 		if formatted := formatResetIn(resetIn); formatted != "" {
