@@ -12,6 +12,7 @@ his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 ## findings — patterns, mistakes, tips (one line per round that shows one; step 10's retro reads this first)
 
 ### flaw classes to hunt
+- a measured fact retired an example still resident: `method-rule-proof` says `cat` and `Read` differ for a scoped rule; cc 2.1.296 loads it on both (authoring-memory § the mechanics) → step 10 drift hunt
 - stories and lineage loaded at boot: `dima-stories` 10 KB every turn, incidents inside rule lines → a comment or off the boot (r19–r20, r31)
 - a line restating a guard or a skill: the pocket breach list beside `pocket-check`, the typecheck line beside the parent AGENTS (r28, r31)
 - the same fact in two layers: x-ray vs `schedule/README.md`, `Related:` footers between leaves that all load anyway (r28, r31)
