@@ -1,8 +1,6 @@
 import type { On, SessionContextBreakdown } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { meterBar } from '../hooks/register.tsx';
-
 const NOW = 10_000_000;
 const HOUR = 60 * 60 * 1000;
 const SID = 'm1m1m1m1-here';
@@ -161,13 +159,6 @@ test("the ctx bar's ramp reaches red at the compaction point", async ($, on) => 
     expect(Math.round((red / width) * 100)).toBe(70);
 });
 
-test('a terminal bar is sline ▮ ▯ cells', () => {
-    const text = meterBar(50, 10)
-        .map((r) => r.text)
-        .join('');
-    expect(text).toBe('▮▮▮▮▮▯▯▯▯▯');
-});
-
 test('an idle band takes the 5h reading another session wrote', async ($, on) => {
     const { clock, files } = meters(on);
     await measure($, 39, 35);
@@ -297,31 +288,6 @@ test('a measure writes the 5h window to the usage file in seconds', async ($, on
     });
 });
 
-test('a terminal meter runs the band to its right edge', async ($, on) => {
-    meters(on);
-    await measure($, 39, 35);
-    await $.session.start({
-        cwd: '/proj',
-        isInteractive: true,
-        surface: 'terminal',
-    });
-    const ui = await $.ui.mount({
-        component: 'AbovePrompt',
-        plugin: 'x-mod-stash',
-        props: {
-            bodyColumns: 100,
-            hasSurvey: false,
-            isWorking: false,
-            maxRows: 12,
-            scroll: { bodyRows: 40, offset: 0 },
-            view: {},
-        },
-        surface: 'terminal',
-    });
-    const bar = (await ui.find({ key: 'meter:5h', type: 'Box' }))?.text ?? '';
-    expect([...bar.replace(/[^▮▯┃]/g, '')].length).toBe(87);
-});
-
 test('typing a compaction point saves it with no Enter', async ($, on) => {
     const { files } = meters(on, { [SHARED]: '{}' });
     await measure($, 39, 35);
@@ -389,36 +355,6 @@ const frameOf = async (ui: Awaited<ReturnType<typeof bandOn>>) =>
         ]),
     );
 
-test('mid-turn the terminal bars breathe: two frames apart differ', async ($, on) => {
-    const { clock } = meters(on);
-    await measure($, 39, 35);
-    const ui = await bandOn($, 'terminal', true);
-    const first = await frameOf(ui);
-    await clock.advance(3000);
-    expect(await frameOf(ui)).not.toBe(first);
-});
-
-test('idle the terminal bars stand still: two frames apart are equal', async ($, on) => {
-    const { clock } = meters(on);
-    await measure($, 39, 35);
-    const ui = await bandOn($, 'terminal', false);
-    const first = await frameOf(ui);
-    await clock.advance(1000);
-    expect(await frameOf(ui)).toBe(first);
-});
-
-test('mid-turn the terminal bars keep the idle glyphs, labels and values', async ($, on) => {
-    const { clock } = meters(on);
-    await measure($, 39, 35);
-    // the runs split where a spark's styling starts, so the band's text is compared joined
-    const textOf = async (ui: Awaited<ReturnType<typeof bandOn>>) =>
-        (await ui.findAll({ type: 'Text' })).map((t) => t.text).join('');
-    const idle = await textOf(await bandOn($, 'terminal', false));
-    const working = await bandOn($, 'terminal', true);
-    await clock.advance(3000);
-    expect(await textOf(working)).toBe(idle);
-});
-
 test('mid-turn the desktop bars carry their breathing, idle ones none', async ($, on) => {
     meters(on);
     await measure($, 39, 35);
@@ -470,18 +406,20 @@ test('/board breathe keeps the bars breathing while idle, for refining the look'
     ).toEqual([true, true]);
 });
 
-test('mid-turn the terminal bars redraw at 60 Hz, more often than 10 Hz could', async ($, on) => {
-    const { clock } = meters(on);
+test('a terminal band draws no 5h or ctx bars and keeps its pace reading', async ($, on) => {
+    meters(on);
     await measure($, 39, 35);
     const ui = await bandOn($, 'terminal', true);
-    let last = await frameOf(ui);
-    let changes = 0;
-    // 90 samples 17 ms apart: 10 Hz could change at most 16 times in those 1.53 s
-    for (let i = 0; i < 90; i++) {
-        await clock.advance(17);
-        const now = await frameOf(ui);
-        if (now !== last) changes++;
-        last = now;
-    }
-    expect(changes).toBeGreaterThan(16);
+    const texts = (await ui.findAll({ type: 'Text' })).map((t) => t.text);
+    expect([
+        texts.some((t) => t === '🔥 5h' || t === '🧠 ctx'),
+        texts.some((t) => /^(🔋 \+|🪫 -)\d+%$/.test(t)),
+    ]).toEqual([false, true]);
+});
+
+test('a desktop band keeps both bars', async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    const ui = await bandOn($, 'desktop', false);
+    expect((await ui.findAll({ type: 'Svg' })).length).toBe(2);
 });

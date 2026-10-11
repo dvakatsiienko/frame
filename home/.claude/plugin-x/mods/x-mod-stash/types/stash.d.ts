@@ -132,8 +132,6 @@ declare module 'claude-code' {
             // dima is on mobile: the reminder asks for the asks fence instead of orbit
             mobile: boolean;
             enhancer: StashEnhancer;
-            // epoch ms of the terminal bars' last breath tick: only the band reads it, so a tick redraws only the band
-            breath: number;
         };
     }
 }

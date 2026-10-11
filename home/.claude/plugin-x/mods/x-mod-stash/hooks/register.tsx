@@ -51,7 +51,6 @@ const MODEL = 'model:';
 const COLOUR = 'board-colour';
 // `/board breathe`: the bars breathe idle too, while dima refines the look (2026-10-11 12:20); off by default, a try
 const BREATH_PREVIEW = 'breath-preview';
-const BREATH = { key: 'breath', plugin: 'x-mod-stash' } as const;
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
 // a session younger than this, counted from the registry's `startedAt`, is a probe: it gets no row until it outlives it
@@ -1127,34 +1126,6 @@ export function emberOf(cell: number, row: number) {
         periodMs: BREATH_MS * (0.2 + seeded(k * 3 + 2) * 0.35),
     };
 }
-/** how bright a cell's spark is at clock `t`, 0..1 */
-export function emberGlow(cell: number, row: number, t: number) {
-    const e = emberOf(cell, row);
-    if (!e.isOn) return 0;
-    const p = ((t + e.offsetMs) % e.periodMs) / e.periodMs;
-    for (let j = 1; j < EMBER_KEYS.length; j++) {
-        const a = EMBER_KEYS[j - 1] ?? 0;
-        const b = EMBER_KEYS[j] ?? 1;
-        if (p > b) continue;
-        const from = EMBER_GLOW[j - 1] ?? 0;
-        const to = EMBER_GLOW[j] ?? 0;
-        return from + ((to - from) * (p - a)) / (b - a);
-    }
-    return 0;
-}
-// the terminal redraws the band this often while a turn runs; the desktop's svg runs its own clock. 60 Hz is dima's
-// pick from the slice-02 A/B (14:57): 10, 30 and 60 cost the same gpu, 51–56 %, within noise
-const BREATH_TICK_MS = 1000 / 60;
-let isBreathTicking = false;
-// one timer at a time; its write of the breath clock redraws only what reads it, never every x-mod-stash render
-function tickBreath($: EngineInterface) {
-    if (isBreathTicking) return;
-    isBreathTicking = true;
-    $.clock.after(BREATH_TICK_MS, async () => {
-        isBreathTicking = false;
-        await $.state.set(BREATH, await $.clock.now());
-    });
-}
 // one bar as cells: the reading filled, one cell marked — the pace on the 5h bar, the compaction point on the context
 // one; each filled cell takes the ramp by its place, so the bar warms as it fills. `scale` is the % the ramp turns red
 // at: 100 for the 5h window, the compaction point for the context
@@ -1186,48 +1157,6 @@ export function meterCells(
             kind,
         };
     });
-}
-// the terminal's bar: one Text per run of like cells, sline's ▮ ▯ glyphs
-export function meterBar(
-    percent: number,
-    width: number,
-    mark?: number,
-    scale = 100,
-    breathAt?: number,
-) {
-    const runs: BarRun[] = [];
-    let i = 0;
-    for (const c of meterCells(percent, width, mark, scale)) {
-        const ch = c.kind === 'mark' ? '┃' : c.kind === 'fill' ? '▮' : '▯';
-        // a sparking cell flashes bold in the ember's white-gold, then cools bold two ramp steps warmer than its own
-        let tone: BarRun['tone'];
-        let color: string | undefined = c.color;
-        if (c.kind === 'fill' && breathAt !== undefined) {
-            const glow = emberGlow(i, 1, breathAt);
-            if (glow > 0.5) {
-                tone = 'hi';
-                color = EMBER_COLOR;
-            } else if (glow > 0.2) {
-                tone = 'hi';
-                const step = BAR_RAMP.indexOf(
-                    c.color as (typeof BAR_RAMP)[number],
-                );
-                color = BAR_RAMP[Math.min(BAR_RAMP.length - 1, step + 2)];
-            }
-        }
-        i++;
-        const last = runs.at(-1);
-        if (last?.kind === c.kind && last.color === color && last.tone === tone)
-            last.text += ch;
-        else
-            runs.push({
-                color,
-                kind: c.kind,
-                text: ch,
-                ...(tone ? { tone } : {}),
-            });
-    }
-    return runs;
 }
 // the desktop's bar in the retired breather's design language: its 5px cells, 2px gaps and light and dark palettes, the
 // ramp painted through the lit cells; two cell rows tall, so it still reads as a bar
@@ -2585,21 +2514,6 @@ export const register: Register = (on) => {
         const isBreathing =
             Boolean(e.props.isWorking) ||
             (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
-        const breath = isBreathing ? now : undefined;
-        // the terminal moves the embers by redrawing the band; reading the tick subscribes only this band to it
-        await $.state.get(BREATH);
-        if (isBreathing && !Svg) tickBreath($);
-        const runsJSX = (key: string, runs: BarRun[]) =>
-            runs.map((r, i) => (
-                <Text
-                    bold={r.kind === 'mark' || r.tone === 'hi'}
-                    color={r.color}
-                    dimColor={r.kind === 'empty'}
-                    // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its bar is its identity
-                    key={`${key}:${i}`}>
-                    {r.text}
-                </Text>
-            ));
         const five = meter?.fiveHour;
         const pace =
             five?.resetsAt === undefined
@@ -2614,7 +2528,6 @@ export const register: Register = (on) => {
         const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
         // the meters run the band's full width, one bar a row under the row (dima, 20:45: «bring back old wide meters»);
         // the desktop band runs ~7.8px a column (measured off dima's 20:22 shot): the label, the % and gaps take ~90px
-        const barWidth = Math.max(8, e.props.bodyColumns - 13);
         const svgCells = Math.max(
             8,
             Math.floor((e.props.bodyColumns * 7.8 - 90) / CELL_STEP),
@@ -2661,20 +2574,7 @@ export const register: Register = (on) => {
                                     isBreathing ? now : undefined,
                                 )}
                             />
-                        ) : (
-                            <Box flexDirection='row' flexShrink={0}>
-                                {runsJSX(
-                                    key,
-                                    meterBar(
-                                        bar.percent,
-                                        barWidth,
-                                        bar.mark,
-                                        bar.scale,
-                                        breath,
-                                    ),
-                                )}
-                            </Box>
-                        )}
+                        ) : null}
                         <Box flexShrink={0} justifyContent='flex-end' width={4}>
                             <Text bold color={tint}>
                                 {`${Math.round(bar.percent)}%`}
@@ -2960,7 +2860,8 @@ export const register: Register = (on) => {
         return (
             <Box flexDirection='column'>
                 {row}
-                {meters}
+                {/* the terminal reads the 5h and ctx on sline's line; the desktop keeps the bars (dima, 15:06) */}
+                {Svg ? meters : null}
                 {enhancer.error ? (
                     <Text color='error' key='enh:error' wrap='truncate-end'>
                         {enhancer.error}

@@ -150,12 +150,13 @@
 - ✅ a busy session is never pinged
   - given 🔥 is on and a turn is running at the 50-minute mark
   - then no ping is sent, and the clock restarts when that turn ends
-- ⬜ two live meters, full width under the row (FRM-366)
+- ⬜ two live meters, full width under the row on the desktop (FRM-366)
+  - given the terminal, then no bars draw: sline's own line carries the 5h, the week and the context, the pace number with them (dima, 2026-10-11 15:06); the row's 🔋/🪫 pace and ⏳ reset stay
   - given a session.measure arrives
   - then `🔥 5h` draws the window's used % as a full-width bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; beside it the gap reads bold, `🔋 +n%` green while there is room and `🪫 -n%` red at any overrun of the pace (dima's o46, 21:37: the word «pace» goes, the hover keeps it) — and `⏳ 1h 26m`, the time left to the reset (⏳ since dima, 21:10; the phases took 🌔), at full strength (dima, 20:53: «not dimmed»)
   - and `⏳` rounds up to the next minute like cc's own «resets in 1 min», so under a minute reads `⏳ 1m`, never `0m`; once the reset has passed it leaves the row until the next measure names the new one (o103)
   - and `🧠 ctx` draws the context % as a full-width bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` carries the point in an `Input` that saves each valid value as dima types; a half-typed one saves nothing, Enter names a refusal (dima, 23:31: no ✓); a refused text takes back what typing saved on the way to it, so «100» never leaves «10» behind
-  - and the desktop draws each bar in the retired breather's design language — 5px cells, 2px gaps, light and dark palettes and ramp, two cell rows tall; the terminal draws sline's `▮ ▯` (dima, 20:22: «make them the same design language … bars are slightly different because they are bars»)
+  - and the desktop draws each bar in the retired breather's design language — 5px cells, 2px gaps, light and dark palettes and ramp, two cell rows tall (dima, 20:22: «make them the same design language … bars are slightly different because they are bars»)
   - decision: no `pace n%` — the gap already says how far off pace (dima, 20:04)
 - ⬜ the bars breathe while a turn runs (FRM-391)
   - given a turn runs
@@ -167,7 +168,7 @@
   - given the turn ends
   - then the bars stand still: no wave, no redraw tick
   - decision: `/board breathe` makes the bars breathe idle too while dima refines the look, off by default, a try that leaves with the 🎛️ knobs (dima, 2026-10-11 12:20)
-  - decision: the terminal bars redraw at 60 Hz — dima's pick from a live A/B of 10, 30 and 60 Hz, which cost the same gpu within noise (51–56 % by ioreg); the desktop's svg runs at the display's own rate (dima, 14:57). the A/B (`/board ab`) and a spinner take (embers in cc's spinner row, seen live, «useless for us», 14:47) were built for the pick and removed after it
+  - decision: the terminal bars redrew at 60 Hz (dima's pick, 14:57) until the terminal dropped its bars for sline's line (dima, 15:06); the desktop's svg runs at the display's own rate
 - ⬜ the compaction point is typed live
   - when dima types a whole 10–99 into the ctx row's `Input` and presses Enter
   - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the launch dir's `.claude/settings.json` when that dir is the repo top, its `.claude/settings.local.json` otherwise, every other key kept, and the row shows it

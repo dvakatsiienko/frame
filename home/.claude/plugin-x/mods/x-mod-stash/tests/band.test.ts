@@ -152,8 +152,6 @@ test('every control in the row carries a hover card that names it', async ($, on
         'wake every session stopped on the 5h cap',
         'afk: tell fleet that dima is away',
         'unfold fleet board',
-        '5h window used',
-        'context window used',
     ]);
 });
 
@@ -173,7 +171,7 @@ test("a toggle's hover card names what the next press does", async ($, on) => {
     const cards = (await ui.findAll({ type: 'Box' }))
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
-    expect(cards.slice(-4, -2)).toEqual([
+    expect(cards.slice(-2)).toEqual([
         'back: tell fleet that dima is here',
         'unfold fleet board',
     ]);
