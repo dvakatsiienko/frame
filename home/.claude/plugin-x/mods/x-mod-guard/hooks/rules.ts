@@ -198,3 +198,26 @@ export function message(r: Refusal) {
 export function installDirs(command: string, cwd: string, ctx: Context = {}) {
     return frozenInstallDirs(commands(parse(command), cwd), ctx);
 }
+
+// a foreground `claude -p` holds the session's thread until it ends: a probe of eight runs blocked cclio for 3 minutes
+// (dima's o102, FRM-395); `# fg-ok: <why>` lets a real need through, and a background run is never judged
+export function foregroundClaude(
+    command: string,
+    cwd: string,
+): Refusal | undefined {
+    const parsed = parse(command);
+    if (parsed.comments.some((c) => /^\s*fg-ok:\s*\S/.test(c)))
+        return undefined;
+    const isClaudeP = commands(parsed, cwd).some(
+        (c) =>
+            c.name === 'claude' &&
+            c.args.some((w) => w.text === '-p' || w.text === '--print'),
+    );
+    if (!isClaudeP) return undefined;
+    return {
+        door: 'run the same command with run_in_background: true, or end it with # fg-ok: <why> for a real need',
+        rule: 'foreground-claude',
+        targets: ['claude -p'],
+        why: 'a foreground claude -p holds this session until it ends',
+    };
+}

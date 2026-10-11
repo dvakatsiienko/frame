@@ -165,6 +165,12 @@
   - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the `fleet-hazards.md` line left with this rule
 
+- ⬜ a foreground `claude -p` is refused (FRM-395)
+  - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `run_in_background`
+  - given the same call with `run_in_background`, or ending in `# fg-ok: <why>`, then it runs; a foreground `sleep`, `gh run watch` or any command with no `claude -p` is untouched
+  - decision: a refusal, never warn-only — a warning fires after the block it means to prevent (dima's o102; cclio, 18:16)
+  - decision: its own escape, `# fg-ok:`, never `# dima-ok:` — a real need is the session's call, as with a wait
+
 ## every Agent spawn
 
 - ⬜ an agent brief passes `x brief check` before the agent runs (FRM-392)

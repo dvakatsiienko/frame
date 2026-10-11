@@ -8,6 +8,7 @@ import { rewrite } from './rules/rewrite.ts';
 import {
     addedPaths,
     check,
+    foregroundClaude,
     installDirs,
     message,
     namesWhole,
@@ -521,6 +522,24 @@ export const register: Register = (on) => {
         // a file another live session holds (x-mod-holds) is refused before any other rule; holds has no escape
         const held = await heldBy($, command, cwd, ctx).catch(() => undefined);
         if (held) return deny(held);
+        // a refusal, never a warning: a warn would fire after the block it means to prevent (dima's o102)
+        const fg =
+            e.tool === 'Bash' && e.run_in_background !== true
+                ? foregroundClaude(command, cwd)
+                : undefined;
+        if (fg) {
+            await record($, {
+                command,
+                door: fg.door,
+                kind: 'refused',
+                rule: fg.rule,
+                target: fg.targets[0] ?? '',
+                why: fg.why,
+            });
+            return deny(
+                `nothing in this command ran — x-mod-guard stopped this one command. instead: ${fg.door}. why: ${fg.why}.`,
+            );
+        }
         if (verdict.kind === 'run') return go();
         if (verdict.kind === 'refused') {
             const { refusal } = verdict;
