@@ -2595,18 +2595,33 @@ export const register: Register = (on) => {
         const speakAssumed =
             (await $.store.get(SPEAK_ASSUMED).catch(() => undefined)) !== false;
         const folds = (await $.state.get(FOLDS)).value ?? {};
+        // one fold rule for every card: open until folded, but a glide card's member subcard starts folded to its count
+        const foldedOf = (kept: Record<string, boolean>, card: string) =>
+            kept[card] ?? /^lane:[^:]+:(coder|verifier)$/.test(card);
+        const isFolded = (card: string) => foldedOf(folds, card);
         // 📂 sits at the far right of each card's head line and folds the card to that line, then reads 📁 (dima's o5, 17:21)
         const foldJSX = (card: string) => (
             <Button
                 key={`fold:${card}`}
                 onPress={async () => {
                     const was = (await $.state.get(FOLDS)).value ?? {};
-                    await $.state.set(FOLDS, { ...was, [card]: !was[card] });
+                    await $.state.set(FOLDS, {
+                        ...was,
+                        [card]: !foldedOf(was, card),
+                    });
                 }}
                 plain>
-                {folds[card] ? '📁' : '📂'}
+                {isFolded(card) ? '📁' : '📂'}
             </Button>
         );
+        // every card's frame; a card adds its key, its margin and its row gap
+        const cardProps = {
+            borderColor: cardBorder(e.surface),
+            borderStyle: 'round',
+            flexDirection: 'column',
+            paddingX: 1,
+            paddingY: 0.5,
+        } as const;
         const speakJSX = (id: string, text: string) =>
             !isPartOn('stash.speak')
                 ? []
@@ -2714,15 +2729,7 @@ export const register: Register = (on) => {
             </Box>
         );
         const orbitJSX = (
-            <Box
-                borderColor={cardBorder(e.surface)}
-                borderStyle='round'
-                flexDirection='column'
-                key='orbit'
-                marginTop={1}
-                paddingX={1}
-                paddingY={0.5}
-                rowGap={0.5}>
+            <Box key='orbit' {...cardProps} marginTop={1} rowGap={0.5}>
                 <Box flexDirection='row' justifyContent='space-between'>
                     <Text bold>🪐 orbit</Text>
                     <Box alignItems='center' flexDirection='row' gap={1}>
@@ -2751,8 +2758,8 @@ export const register: Register = (on) => {
                     </Box>
                 </Box>
                 {/* an answered ask stays until its turn ends, so dima sees it go */}
-                {folds.orbit ? null : o.asks.map((a, i) => askJSX(a, i))}
-                {!folds.orbit &&
+                {isFolded('orbit') ? null : o.asks.map((a, i) => askJSX(a, i))}
+                {!isFolded('orbit') &&
                 o.assumed?.length &&
                 isPartOn('stash.assumed') ? (
                     <Box
@@ -2859,26 +2866,14 @@ export const register: Register = (on) => {
             if (!sid) return null;
             const asks = laneAsks[sid] ?? [];
             const card = `lane:${lane.id}:${role}`;
-            const isOpen = folds[card] === false;
+            const isOpen = !isFolded(card);
             const badge = role === 'coder' ? '🔧' : '🔎';
             return (
                 <Box flexDirection='column' key={card} rowGap={LINE_GAP}>
                     <Box alignItems='center' flexDirection='row' gap={1}>
                         <Text
                             bold>{`${badge} ${role} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}</Text>
-                        <Button
-                            key={`fold:${card}`}
-                            onPress={async () => {
-                                const was =
-                                    (await $.state.get(FOLDS)).value ?? {};
-                                await $.state.set(FOLDS, {
-                                    ...was,
-                                    [card]: was[card] === false,
-                                });
-                            }}
-                            plain>
-                            {isOpen ? '📂' : '📁'}
-                        </Button>
+                        {foldJSX(card)}
                     </Box>
                     {isOpen
                         ? asks.map((a, i) =>
@@ -2916,19 +2911,15 @@ export const register: Register = (on) => {
         const laneJSX = isPartOn('stash.glide')
             ? lanes.map((lane) => (
                   <Box
-                      borderColor={cardBorder(e.surface)}
-                      borderStyle='round'
-                      flexDirection='column'
                       key={`lane:${lane.id}`}
+                      {...cardProps}
                       marginTop={1}
-                      paddingX={1}
-                      paddingY={0.5}
                       rowGap={LINE_GAP}>
                       <Box flexDirection='row' justifyContent='space-between'>
                           <Text bold>{`🛼 ${lane.title}`}</Text>
                           {foldJSX(`lane:${lane.id}`)}
                       </Box>
-                      {folds[`lane:${lane.id}`]
+                      {isFolded(`lane:${lane.id}`)
                           ? null
                           : lane.items.map((item, i) => (
                                 <Box
@@ -2988,7 +2979,7 @@ export const register: Register = (on) => {
                                     ) : null}
                                 </Box>
                             ))}
-                      {folds[`lane:${lane.id}`]
+                      {isFolded(`lane:${lane.id}`)
                           ? null
                           : LANE_ROLES.map((role) => memberJSX(lane, role))}
                   </Box>
@@ -2996,77 +2987,77 @@ export const register: Register = (on) => {
             : null;
         // the lanes and the phases stick to the board's bottom, the lanes on top of the phases: a docked board fills its rows
         // and a gap grows above them (dima, 11:07; the lanes, 20:12)
-        const phasesJSX = o.plan
-            ? [
-                  <Box
-                      borderColor={cardBorder(e.surface)}
-                      borderStyle='round'
-                      flexDirection='column'
-                      key='phases'
-                      marginTop={1}
-                      paddingX={1}
-                      paddingY={0.5}
-                      rowGap={LINE_GAP}>
-                      <Box flexDirection='row' justifyContent='space-between'>
-                          <Text bold>
-                              {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
-                          </Text>
-                          {foldJSX('phases')}
-                      </Box>
-                      {(folds.phases ? [] : o.plan.lines).map((line, i) => {
-                          // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
-                          const lead = line.match(PLAN_LEAD);
-                          return (
-                              // the moon fills by nearness, the then lines dim (dima, 20:58); only the now lead is green (21:08)
-                              <Text
-                                  dimColor={i > 1}
-                                  // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
-                                  key={`plan:${i}`}>
-                                  {`${PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
-                                  {lead ? (
-                                      <Text
-                                          bold
-                                          color={
-                                              i === 0
-                                                  ? METER_TINTS.calm5h
-                                                  : undefined
-                                          }>
-                                          {lead[0]}
-                                      </Text>
-                                  ) : null}
-                                  {linkedJSX(
-                                      lead ? line.slice(lead[0].length) : line,
-                                      `plan:${i}`,
-                                  )}
+        const phasesJSX =
+            o.plan && isPartOn('stash.phases')
+                ? [
+                      <Box
+                          key='phases'
+                          {...cardProps}
+                          marginTop={1}
+                          rowGap={LINE_GAP}>
+                          <Box
+                              flexDirection='row'
+                              justifyContent='space-between'>
+                              <Text bold>
+                                  {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
                               </Text>
-                          );
-                      })}
-                  </Box>,
-              ]
-            : null;
+                              {foldJSX('phases')}
+                          </Box>
+                          {(isFolded('phases') ? [] : o.plan.lines).map(
+                              (line, i) => {
+                                  // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
+                                  const lead = line.match(PLAN_LEAD);
+                                  return (
+                                      // the moon fills by nearness, the then lines dim (dima, 20:58); only the now lead is green (21:08)
+                                      <Text
+                                          dimColor={i > 1}
+                                          // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
+                                          key={`plan:${i}`}>
+                                          {`${PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
+                                          {lead ? (
+                                              <Text
+                                                  bold
+                                                  color={
+                                                      i === 0
+                                                          ? METER_TINTS.calm5h
+                                                          : undefined
+                                                  }>
+                                                  {lead[0]}
+                                              </Text>
+                                          ) : null}
+                                          {linkedJSX(
+                                              lead
+                                                  ? line.slice(lead[0].length)
+                                                  : line,
+                                              `plan:${i}`,
+                                          )}
+                                      </Text>
+                                  );
+                              },
+                          )}
+                      </Box>,
+                  ]
+                : null;
         const fill =
             e.props.placement === 'dock' ? e.props.scroll.bodyRows : undefined;
+        // the board top to bottom: what the sessions part shows, orbit, then a gap that docks the glide and phase cards at
+        // the bottom (dima's shot, 20:12)
+        const arranged = (top: RenderElement) => (
+            <Box flexDirection='column' minHeight={fill}>
+                {top}
+                {isPartOn('stash.orbit') ? orbitJSX : null}
+                <Box flexGrow={1} key='phases:gap' />
+                {laneJSX}
+                {phasesJSX}
+            </Box>
+        );
         const list = board?.members;
         if (!list)
-            return (
-                <Box flexDirection='column' minHeight={fill}>
-                    <Text dimColor>the session registry is unreadable</Text>
-                    {isPartOn('stash.orbit') ? orbitJSX : null}
-                    <Box flexGrow={1} key='phases:gap' />
-                    {laneJSX}
-                    {isPartOn('stash.phases') ? phasesJSX : null}
-                </Box>
+            return arranged(
+                <Text dimColor>the session registry is unreadable</Text>,
             );
         if (!list.length)
-            return (
-                <Box flexDirection='column' minHeight={fill}>
-                    <Text dimColor>no live sessions</Text>
-                    {isPartOn('stash.orbit') ? orbitJSX : null}
-                    <Box flexGrow={1} key='phases:gap' />
-                    {laneJSX}
-                    {isPartOn('stash.phases') ? phasesJSX : null}
-                </Box>
-            );
+            return arranged(<Text dimColor>no live sessions</Text>);
         const isColour = board.isColour;
         const hues = huesOf(list.map((m) => m.name));
         const row = (m: Member, i: number) => {
@@ -3227,44 +3218,32 @@ export const register: Register = (on) => {
         const busyCount = list.filter(
             (m) => statusOf(m.status).word === 'busy',
         ).length;
-        return (
-            <Box flexDirection='column' minHeight={fill}>
+        return arranged(
+            <Box key='sessions' {...cardProps}>
+                {/* the head: what the pane holds on the left, how many work right now on the right */}
                 <Box
-                    borderColor={cardBorder(e.surface)}
-                    borderStyle='round'
-                    flexDirection='column'
-                    key='sessions'
-                    paddingX={1}
-                    paddingY={0.5}>
-                    {/* the head: what the pane holds on the left, how many work right now on the right */}
-                    <Box
-                        flexDirection='row'
-                        justifyContent='space-between'
-                        marginBottom={folds.sessions ? 0 : 1}>
-                        <Text bold>🌌 sessions</Text>
-                        <Box alignItems='center' flexDirection='row' gap={1}>
-                            {/* the mock's head: the count and the busy on the right, the busy bold (dima, 17:00) */}
-                            <Text>
-                                <Text
-                                    dimColor>{`${list.length} on this mac · `}</Text>
-                                <Text
-                                    bold
-                                    color={
-                                        busyCount ? STATUS.busy.tint : undefined
-                                    }>
-                                    {`${busyCount} busy`}
-                                </Text>
+                    flexDirection='row'
+                    justifyContent='space-between'
+                    marginBottom={isFolded('sessions') ? 0 : 1}>
+                    <Text bold>🌌 sessions</Text>
+                    <Box alignItems='center' flexDirection='row' gap={1}>
+                        {/* the mock's head: the count and the busy on the right, the busy bold (dima, 17:00) */}
+                        <Text>
+                            <Text
+                                dimColor>{`${list.length} on this mac · `}</Text>
+                            <Text
+                                bold
+                                color={
+                                    busyCount ? STATUS.busy.tint : undefined
+                                }>
+                                {`${busyCount} busy`}
                             </Text>
-                            {foldJSX('sessions')}
-                        </Box>
+                        </Text>
+                        {foldJSX('sessions')}
                     </Box>
-                    {folds.sessions ? null : list.map(row)}
                 </Box>
-                {isPartOn('stash.orbit') ? orbitJSX : null}
-                <Box flexGrow={1} key='phases:gap' />
-                {laneJSX}
-                {isPartOn('stash.phases') ? phasesJSX : null}
-            </Box>
+                {isFolded('sessions') ? null : list.map(row)}
+            </Box>,
         );
     });
 

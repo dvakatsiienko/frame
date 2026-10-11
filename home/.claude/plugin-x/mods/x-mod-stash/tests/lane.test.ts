@@ -645,3 +645,31 @@ interface KeptLane {
     history: { act: string; at: number; current: number; done: number }[];
     endedAt?: number;
 }
+
+test('every board card folds by one rule: open until folded, a member subcard folded until opened', async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK]);
+    await start($);
+    await $.tool.call({
+        lines: ['probe: one'],
+        op: 'plan',
+        tool: TOOL,
+    } as never);
+    const ui = await board($);
+    const label = async (card: string) =>
+        (await ui.find({ key: `fold:${card}`, type: 'Button' }))?.text;
+    // the subcard first: a folded glide card hides it
+    const cards = ['lane:l1:coder', 'orbit', 'phases'];
+    const before = await Promise.all(cards.map(label));
+    const after: (string | undefined)[] = [];
+    for (const card of cards) {
+        await ui.press({ key: `fold:${card}` });
+        after.push(await label(card));
+    }
+    await ui.press({ key: 'fold:lane:l1' });
+    expect([before, after, await label('lane:l1')]).toEqual([
+        ['📁', '📂', '📂'],
+        ['📂', '📁', '📁'],
+        '📁',
+    ]);
+});
