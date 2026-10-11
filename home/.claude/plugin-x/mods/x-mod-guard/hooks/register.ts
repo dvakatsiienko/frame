@@ -53,29 +53,6 @@ const FORK_DOOR =
     'a fresh agent with a self-contained brief, or helper for a mechanical job';
 const FORK_WHY = 'a fork carries the whole parent context (~220k tokens)';
 const FORK_REFUSED = `x-mod-guard stopped this fork. instead: ${FORK_DOOR}. why: ${FORK_WHY}. a fork that truly needs that context says so in a prompt line: why-fork: <what parent context it needs>`;
-// an Agent prompt naming a ticket id, a backticked path or file, or one of matt's skills is a brief (FRM-392); the id
-// shape copies brief.go's ticketID, which a mod cannot import. a SendMessage is never checked: reports name skills and
-// example paths on purpose, and the verifier's verdict was refused three times live (13:40)
-const BRIEF_SIGN =
-    /\b(?:FRM|BYT|DOT)-\d+\b|`[^`\n]*\/[^`\n]*`|`[\w.@~-]+\.[a-z]{1,5}`|\bmattpocock-skills:|\bmatt's `?[a-z]/;
-// of x brief check's findings only a missing path and a skill's user quiz refuse; a quoted code term is a message's own
-const BRIEF_REFUSES = /^line \d+: (?:path|quiz) .+$/gm;
-
-// the findings that stop a brief, or none; it throws when x breaks, and the spawn goes then (fail open, unlike the
-// floor): this runs on every Agent of every session, cclio's included
-async function briefFindings($: EngineInterface, text: string) {
-    if (!BRIEF_SIGN.test(text)) return [];
-    const repo = await $.session.root().catch(() => $.session.cwd());
-    const run = await $.process.run(
-        ['x', 'brief', 'check', '/dev/stdin', '--repo', repo, '--json'],
-        { stdin: text, timeoutMs: 8000 },
-    );
-    const out = JSON.parse(run.stdout) as { error?: unknown };
-    return typeof out.error === 'string'
-        ? (out.error.match(BRIEF_REFUSES) ?? [])
-        : [];
-}
-
 // what x brief check stamps: sha256 over the file's raw bytes, under $X_STATE or ~/.local/state/x (x/go/brief.go)
 async function readBrief(
     $: EngineInterface,
@@ -620,21 +597,6 @@ export const register: Register = (on) => {
     });
 
     on('agent.spawn', async ($, e, next) => {
-        const found = await briefFindings($, e.prompt).catch(() => []);
-        if (found.length) {
-            const why = found.join('; ');
-            await record($, {
-                command: `Agent: ${e.description}`,
-                door: 'fix what x brief check names',
-                kind: 'refused',
-                rule: 'brief',
-                target: found[0] ?? '',
-                why,
-            }).catch(() => undefined);
-            return {
-                deny: `x-mod-guard stopped this brief. instead: fix what x brief check names, then spawn again. why: ${why}`,
-            };
-        }
         if (!e.fork || WHY_FORK.test(e.prompt)) return next(e);
         await record($, {
             command: `fork: ${e.description}`,

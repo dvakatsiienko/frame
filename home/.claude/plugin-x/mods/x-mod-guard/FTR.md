@@ -143,7 +143,8 @@
 
 ## every Agent spawn
 
-- ✅ an agent brief passes `x brief check` before the agent runs (FRM-392)
+- 🧭 an agent brief passes `x brief check` before the agent runs (FRM-392)
+  - 📌 off on main (dima's o65, 13:47): it refused plain reports live; it comes back from `.scratch/brief-guard/` only with a fix the verifier passes
   - given an `Agent` prompt that names a ticket id, a backticked path or file name, or one of matt's skills
   - when x-mod-guard runs `x brief check` on it, over stdin, against the session's repo root
   - then a missing path or a skill whose step waits on the user's approval refuses it, and the reason carries the check's own line, so the next try fixes the brief; the refusal is kept as a guard event
