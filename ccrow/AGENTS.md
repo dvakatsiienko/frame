@@ -39,6 +39,9 @@ skill reaches it as text. a contract change goes there, never here.
   `mode decision` wake ending `proposal <path>`, the file whole under a `## proposal ·` block in the packet; it never
   waits, like a spawn, and any other file wakes nothing. one wake per proposal file per turn (o178): `decisions/proposal-<hash>.json` keys the
   turn by cclio's last prompt line, so a draft's later Edits stay quiet until her next prompt.
+- every packet opens with ccrow's ledger line (FRM-397): notes sent today, the holdout's next send in k (until 10-20), the
+  last send's time, today's ok verdicts — `ledgerLine` in `lib.ts`, the one source; every `appendJsonl` rewrites it to
+  `ledger.txt`, which the board's ccrow strip reads (a mod cannot import from here)
 - every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
   transcript; ccrow reads its tail only then.
 - `pnpm ccrow:plan-critique <plan file>` — the plan review at `x:shape-idea` step 4 (FRM-336, the

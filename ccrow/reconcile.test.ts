@@ -169,6 +169,18 @@ test('logs ccrow’s one answer under the note’s id', async () => {
     ]);
 });
 
+test('a logged answer rewrites the ledger line the board reads', async () => {
+    const fixture = home();
+    await reconcile(fixture, NOTE_ID, 'the verifier re-ran on b0b0');
+    await loggedAnswer(fixture.notes);
+    expect(
+        readFileSync(
+            join(fixture.dir, '.local/state/ccrow/ledger.txt'),
+            'utf8',
+        ),
+    ).toMatch(/^📒 \d+ sent today \| /);
+});
+
 test('refuses a note id that was never logged', async () => {
     const fixture = home();
     const { status, stderr } = await reconcile(fixture, 'nope-opus', 'x');

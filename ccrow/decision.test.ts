@@ -260,6 +260,17 @@ describe('a proposal cclio writes', () => {
         );
     });
 
+    test('opens the packet with ccrow’s ledger line', async () => {
+        const fixture = home();
+        const path = proposal(fixture);
+        const { first } = ccrow(fixture.socket);
+        await hook(fixture, { path, tool: 'Write' });
+        const packet = / · packet (\S+) /.exec(await first)?.[1] ?? '';
+        expect(readFileSync(packet, 'utf8').split('\n')[0]).toMatch(
+            /^📒 \d+ sent today \| .*🎯 \d+ ok today$/,
+        );
+    });
+
     test('runs on without waiting for a note', async () => {
         const fixture = home();
         const path = proposal(fixture);

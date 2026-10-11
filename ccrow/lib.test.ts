@@ -21,6 +21,7 @@ import {
     isCoordinatorTranscript,
     isLocated,
     leavesToSend,
+    ledgerLine,
     planNotes,
     planPrompt,
     prViewArgs,
@@ -538,5 +539,59 @@ describe('prViewArgs', () => {
             ...view,
             ...json,
         ]);
+    });
+});
+
+describe('ledgerLine', () => {
+    const NOW = new Date(2026, 9, 11, 21, 0);
+    const at = (h: number, m: number, day = 11) =>
+        new Date(2026, 9, day, h, m).toISOString();
+    function files(notes: object[], verdicts: object[] = []) {
+        const dir = mkdtempSync(join(tmpdir(), 'ccrow-ledger-'));
+        const jsonl = (rows: object[]) =>
+            rows.map((r) => JSON.stringify(r)).join('\n');
+        writeFileSync(join(dir, 'notes.jsonl'), jsonl(notes));
+        writeFileSync(join(dir, 'verdicts.jsonl'), jsonl(verdicts));
+        return [join(dir, 'notes.jsonl'), join(dir, 'verdicts.jsonl')] as const;
+    }
+    const session = (note: string, time: string) => ({
+        at: time,
+        channel: 'session',
+        note,
+    });
+
+    test('counts today sent notes, never a none, a holdout or another day', () => {
+        const [n, v] = files([
+            session('🐦‍⬛ **a** | sent | x', at(9, 0)),
+            session('none', at(10, 0)),
+            session('🐦‍⬛ **b** | held | y\nholdout', at(11, 0)),
+            session('🐦‍⬛ **c** | sent | z', at(9, 0, 10)),
+            { at: at(12, 0), channel: 'plan', note: 'p' },
+            session('🐦‍⬛ **d** | sent | w', at(20, 56)),
+        ]);
+        expect(ledgerLine(NOW, n, v)).toBe(
+            '📒 2 sent today | holdout in 1 | last 20:56 | 🎯 0 ok today',
+        );
+    });
+
+    test("counts only today's ok verdicts", () => {
+        const [n, v] = files(
+            [],
+            [
+                { at: at(9, 0), id: 'a', value: 'ok' },
+                { at: at(9, 0), id: 'b', value: 'miss' },
+                { at: at(9, 0, 10), id: 'c', value: 'ok' },
+            ],
+        );
+        expect(ledgerLine(NOW, n, v)).toBe(
+            '📒 0 sent today | holdout in 5 | last none | 🎯 1 ok today',
+        );
+    });
+
+    test('drops the holdout after its last day', () => {
+        const [n, v] = files([]);
+        expect(ledgerLine(new Date(2026, 9, 21, 9, 0), n, v)).toBe(
+            '📒 0 sent today | last none | 🎯 0 ok today',
+        );
     });
 });

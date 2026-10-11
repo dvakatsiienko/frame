@@ -19,6 +19,10 @@ const STORE_DIR = join(homedir(), '.claude/plugins/store');
 const HOT = 'hot:';
 export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');
 export const VERDICTS_PATH = join(STATE_DIR, 'verdicts.jsonl');
+// the ledger line, rewritten at every notes or verdicts append, so the board's ccrow strip reads it without importing this file
+export const LEDGER_PATH = join(STATE_DIR, 'ledger.txt');
+// every 5th note ccrow would send is a holdout until this day (x:crew-adviser, the holdout)
+const HOLDOUT_UNTIL = '2026-10-20';
 export const WAKE_GAP_MS = 30 * 60_000;
 export const MIN_STEPS = 10;
 export const SILENT_DAYS = 0; // dima 2026-10-06: live from day 1 — the silent notes were worth reading live
@@ -569,6 +573,7 @@ export function buildPacket({
     deltaText,
     dir,
     leaves,
+    ledger,
     missing,
     proposal,
     unchanged = [],
@@ -587,6 +592,7 @@ export function buildPacket({
         ? `## leaves with no match\n${missing.map((line) => `- ${line}`).join('\n')}`
         : '';
     const body = [
+        ...(ledger ? [ledger] : []),
         `# cclio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
         proposalBlock,
         ...leafBlocks,
@@ -748,6 +754,7 @@ export function packWake({
         deltaText: delta.text,
         dir: join(STATE_DIR, 'packets', wakeId),
         leaves: toSend.changed,
+        ledger: ledgerLine(now),
         missing: leaves.missing,
         proposal,
         unchanged: toSend.unchanged,
@@ -808,6 +815,53 @@ export function appendJsonl(
 ) {
     mkdirSync(STATE_DIR, { recursive: true });
     writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
+    writeFileSync(LEDGER_PATH, `${ledgerLine(new Date())}\n`);
+}
+
+// ccrow's day in one line: notes sent today, the holdout's next send in k, the last send's time, today's ok verdicts
+export function ledgerLine(
+    now: Date,
+    notesPath = NOTES_PATH,
+    verdictsPath = VERDICTS_PATH,
+) {
+    const today = localDay(now);
+    const notes = jsonlOf<{ at?: string; channel?: string; note?: string }>(
+        notesPath,
+    )
+        .filter((n) => n.channel === 'session' && typeof n.note === 'string')
+        .map((n) => ({ at: new Date(n.at ?? 0), note: (n.note ?? '').trim() }));
+    const wouldSend = notes.filter((n) => n.note !== 'none' && n.note !== '');
+    const isHeld = (n: { note: string }) => /holdout\s*$/.test(n.note);
+    const sent = wouldSend.filter((n) => !isHeld(n));
+    const sentToday = sent.filter((n) => localDay(n.at) === today).length;
+    const last = sent.at(-1)?.at;
+    const hits = jsonlOf<{ at?: string; value?: string }>(verdictsPath).filter(
+        (v) => v.value === 'ok' && localDay(new Date(v.at ?? 0)) === today,
+    ).length;
+    return [
+        `📒 ${sentToday} sent today`,
+        ...(today <= HOLDOUT_UNTIL
+            ? [`holdout in ${5 - (wouldSend.length % 5)}`]
+            : []),
+        `last ${last ? `${pad(last.getHours())}:${pad(last.getMinutes())}` : 'none'}`,
+        `🎯 ${hits} ok today`,
+    ].join(' | ');
+}
+
+function jsonlOf<T>(path: string): T[] {
+    let text = '';
+    try {
+        text = readFileSync(path, 'utf8');
+    } catch {
+        return [];
+    }
+    return text.split('\n').flatMap((line) => {
+        try {
+            return line.trim() ? [JSON.parse(line) as T] : [];
+        } catch {
+            return [];
+        }
+    });
 }
 
 export function tokensIn(usage: Usage) {
@@ -1106,6 +1160,7 @@ interface PacketInput {
     unchanged?: string[];
     missing: string[];
     proposal?: string;
+    ledger?: string;
     deltaText: string;
 }
 
