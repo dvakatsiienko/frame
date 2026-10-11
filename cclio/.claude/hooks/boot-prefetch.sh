@@ -83,13 +83,23 @@ fi
 fi
 
 echo "-- stuck reminders (raise every one in the opening board) --"
-grep '^⏰📌' "$HOME/frame/cclio/memory/_reminders.md" 2>/dev/null || echo "none"
+reminders="${REMINDERS_FILE:-$HOME/frame/cclio/memory/_reminders.md}"
+grep '^⏰📌' "$reminders" 2>/dev/null || echo "none"
+
+echo "-- due reminders (a plain ⏰ line whose \`due:\` date has come; raise each in the opening board) --"
+# a dated ⏰ line sat silent past its date until a groom read the file (NPSSO, 2026-10-11)
+today=$(date +%F)
+due_lines=$(grep '^⏰' "$reminders" 2>/dev/null | grep -v '^⏰📌' | while IFS= read -r line; do
+  d=$(printf '%s' "$line" | grep -o 'due: [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}' | head -1 | cut -c6-)
+  [ -n "$d" ] && [[ ! "$d" > "$today" ]] && printf '%s\n' "${line:0:220}"
+done)
+[ -n "$due_lines" ] && echo "$due_lines" || echo "none"
 
 echo "-- fleet: live sessions · worktrees · coder prs --"
 # the name is what SendMessage and the board use; a cwd count alone hid a peer editing frame (2026-09-27)
 # an interactive session that is not cclio is one dima opened himself (desktop or remote control): 👤, never on a stop list.
-# the fleet's own (coders, verifiers, ccrow, probes) are spawned with --bg
-live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")\(if .kind == "interactive" and ((.name // "") | test("cclio") | not) then " · 👤 dima'"'"'s — never stop" else "" end)"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
+# the fleet's own (coders, verifiers, probes) are spawned with --bg; ccrow is a desktop tab the halt stops, matched by name
+live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind // "?")\(if (.name // "") | test("ccrow") then " · the fleet'"'"'s — the halt stops her" elif .kind == "interactive" and ((.name // "") | test("cclio") | not) then " · 👤 dima'"'"'s — never stop" else "" end)"' "$HOME"/.claude/sessions/*.json 2>/dev/null | sort)
 [ -n "$live" ] && echo "$live" || echo "no live sessions registered"
 wt=$(git -C "$HOME/projects/bytes" worktree list 2>/dev/null | grep -v '^/Users/dima/projects/bytes ' )
 [ -n "$wt" ] && echo "$wt" || echo "no bytes worktrees"

@@ -3,18 +3,21 @@ id: PK-20
 title: >-
   a live lane tracker in the fleet board — resolve with no second lane
   distractions
-status: open
+status: done
 assignee: []
-created_date: "2026-10-09 10:38"
-updated_date: '2026-10-10 20:43'
+created_date: '2026-10-09 10:38'
+updated_date: '2026-10-11 18:03'
 labels:
   - m
 dependencies: []
 priority: next
 type: idea
 ordinal: 22000
----## Description
+---
 
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
 <!-- SECTION:DESCRIPTION:BEGIN -->
 <!-- SECTION:DESCRIPTION:BEGIN -->
 
@@ -24,7 +27,7 @@ pocket 58 · status line was: open · idea · shape-idea first
 - what it shows: now · next · then — the thread's lane (researching the adviser → cli groom → night-shift grill), one line each, plus the 🔭 waits
 - two sources, a grill picks one: the pocket's «order» plus a `now:` line cclio keeps · or a `📍 now:` line in cclio's replies, which x-mod-stash already parses (it reads the ⏳ block today), so no new file
 - owner: x-mod-stash's board (the mods coder); FRM-349 kept the board in stash, so this is its home
-- dima, 2026-10-09 (screenshot, the board's empty lower half): «what I wanted is a live list of a lane with checkboxes (ordered tasks, organized by lane if several lanes run at once), so I could see a kind of progress live.» the `📍 now:` reply line was «naive, it will display poorly». a file the mod reads from has to exist, but never a stray one: it serves several purposes at once — cclio's live progress log during a lane (the one planned before) and the board's render. «a bigger thing to plan» → a granular grill tomorrow, then a ticket
+- dima, 2026-10-09 (screenshot, the board's empty lower half): «what I wanted is a live list of a lane with checkboxes (ordered tasks, organized by lane if several lanes run at once), so I could see the progress live.» the `📍 now:` reply line was «naive, it will display poorly». a file the mod reads from has to exist, but never a stray one: it serves several purposes at once — cclio's live progress log during a lane (the one planned before) and the board's render. «a bigger thing to plan» → a granular grill tomorrow, then a ticket
 
 (2026-10-9) — newest, process through shape-idea skill
 dima's wish:
@@ -103,7 +106,7 @@ how i want you to answer right now (prettier shape):
 
 waiting for your word as usual.
 
-but to peek into your next action, i still have to wait for a turn, and also, you often forgot to print. you can spawn a haiku to find how many times i printed «whats next?» «where we at»? «next?», and you will be surprised with the number.
+but to peek into your next action, i still have to wait for a turn, and also, you often forgot to print. you can spawn a haiku to find how many times i printed «what's next?» «where we at»? «next?», and you will be surprised with the number.
 
 so: i want a mod stash place (likely in a board), where the «planned actions» are parked always, and you maintain it in live mode, never stale. whenever i want to peek into you plan i go look and see, and steer you.
 
@@ -194,7 +197,6 @@ think of all my asks as a whole. how to make it work efficiently, fluently and w
 - ideally i want it to be least effort for yourself. this wish should not put additional burden for you. how to make it useful for you too?
 - maybe task list --json --watch ?
 
-
 (2026-10-10 17:14, written during the 10-09 power outage, after the block above) — dima's additions, folded:
 
 - **why the asks box exists**: the main thread is chaotic and multi-lane, so i often miss data in your messages that i don't want to miss. the stash tries to solve that
@@ -203,7 +205,6 @@ think of all my asks as a whole. how to make it work efficiently, fluently and w
 - **correction for the asks box**: can it work universally, in any cc session, one asks box per session?
 
 - **nice to have, when the mods coder starts** (dima, 2026-10-10 17:17, terminal screenshot): in the terminal, the stash's 5h and ctx bars do not show (they stay in the desktop app only); the «+14 % pace» figure moves into `sline` instead, same colour and idea, terminal only
-
 
 (2026-10-10 17:29) — dima's verdicts on the playback, folded:
 - the five pieces read right: lane tracker, planned actions, the asks box, checkbox asks, «what did you miss»
@@ -219,19 +220,16 @@ think of all my asks as a whole. how to make it work efficiently, fluently and w
 - the biggest failure point is a habit: cclio must know this mod cold, since it becomes the main comms place; the plan names where that knowledge lives so it is never forgotten
 - ? 🤔 earlier said «prepended, never appended», today «what i select from mods is appended»: which end of the prompt?
 
-
 (2026-10-10 17:37–17:48, dima in ccrow's window, relayed by ccrow) — folded:
 - a **ccrow strip** in the stash: her last headline, the 🎯 streak and the vet tally; a click opens her window. the data already sits in `notes.jsonl` and `verdicts.jsonl`, so it is a render, not a pipeline; same reader and glance as the trackers and the asks box
 - dima: «how could you shape your replies so they could be interesting and useful for me too, if i ever peek into your window?» → he approved her new shape (headline, 🔎 the catch, 👀 for you, 🌤️ fair, predicts + the vet id) and asked cclio to propose her own ideas for making ccrow's output pretty and worth a peek; «we will shape everything in one planning»
 - the shape lands in `ccrow/AGENTS.md` at the next siesta (ccrow never edits her charter); a steer: `vet:` → `vet id:` so the line needs no explanation
-
 
 (2026-10-10 18:02) — dima, the two flows and the join, folded:
 - joined asks go model-only (hidden context after his words); he doesn't need to see them in his prompt
 - flow 1: cclio ends a turn and fills the asks box → he checks the ones he agrees with (optional steer notes), crosses the ones he rejects, leaves the rest unmarked (parked) → he sends a prompt: his text plus the checked and crossed items reach cclio, the unmarked stay
 - flow 2: he sends a prompt without touching the box → cclio starts the turn → mid-turn he spots a forgotten checkbox and checks it → it joins the running turn → the reply covers it → when the turn ends the item leaves the box if resolved, or changes if cclio has a follow-up or something is off
 - order: finish the preps, plan the mods chunk fully so a coder can be dispatched, then checkpoint and dispatch (or dispatch, then checkpoint while the coder runs)
-
 
 ## decided — mods grill round 1 (2026-10-10 18:16)
 - Q1 the write door: the mod registers its own tool; cclio adds, resolves and sets through it, never by printed markers
@@ -242,7 +240,6 @@ think of all my asks as a whole. how to make it work efficiently, fluently and w
 - Q6 terminal: replicate for now; dima steers terminal cuts later if needed
 - Q7 the codename: 🪐 orbit
 - Q8 accept / reject: 🤩 / 👎🏼
-
 
 ## decided — mods grill round 2 (2026-10-10 18:27)
 - Q1 lane tracker: his note box per step (joins the next prompt, or the running turn), the waits on the current step, 🤔 per step; plus a 🔭 «what this session waits on» in the board, current session only (the sessions list on top already covers the others)
@@ -332,10 +329,12 @@ ticket: FRM-386 (sealed 22:25, 7 exit lines, preflight green; spec `.scratch/sta
 - tail before FRM-385's spawn (2026-10-11): reshape FRM-385 as the live tracker's first slice (dima's o19 order) and reseal its exit lines; plus the ccrow ledger freebie from the 10-10 CST (her ledger line at the packet head: sent n, holdout next in k, last send, hits) rides FRM-385's ccrow strip
 - mod ideas round (dima to the mods coder, 2026-10-11 11:06: «try them all, keep what's truly useful»), after the current mods slice. step 0, a ~10 min headless probe: which engine rows the desktop really lets a mod redraw. then: ToolResult folds a noisy test or lint dump to its verdict line, expandable · TurnDuration adds the turn's cost and the 5h % it burned · PromptHint, a dim line under the prompt with the top orbit ask · Spinner carries breather's meter while a turn runs · prompt.autocomplete suggests live FRM-/BYT- ids with titles · prompt.mention «@FRM-382» pulls the ticket body into context · ToolUse shows the guard's verdict inline on a Bash call · $.audio.play chimes when a background session goes idle or asks something
 <!-- SECTION:DESCRIPTION:END -->
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-
 back from linear (FRM-377 canceled) on dima's word, 2026-10-10: wanted soon, linear is the long shelf
+
+done 21:05: the lane tracker shipped as FRM-385 (closed 20:25); its chunk 3, 🐠 catch, lives on FRM-386; the polish round runs as lane l2.
 <!-- SECTION:NOTES:END -->

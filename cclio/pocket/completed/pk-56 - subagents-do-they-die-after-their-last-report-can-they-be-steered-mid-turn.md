@@ -17,7 +17,7 @@ ordinal: 1200
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-inbox 2026-10-11, dima: «remind me — do subagents die once they write their last report? can you steer them during their mid turn?»
+inbox 2026-10-11, dima: «remind me — do subagents die once they write their last report? can you steer them mid-turn?»
 answered in place at the first siesta, each claim with its source opened (the Agent tool doc: SendMessage resumes a finished agent with its context — covers «die after last report» only); «steer mid-turn» needs its own doc line opened, or goes out labelled an inference
 <!-- SECTION:DESCRIPTION:END -->
 

@@ -4,6 +4,7 @@ title: the 10-10 sequence before the memory sweep resumes
 status: claimed
 assignee: []
 created_date: '2026-10-10 11:52'
+updated_date: '2026-10-11 21:12'
 labels:
   - m
 dependencies: []
@@ -37,7 +38,7 @@ dima, 2026-10-10 14:50, folded. sequential, one at a time, no parallel lanes yet
 - step 4 note (dima, 2026-10-10): FRM-360, the frame around interactive screens, joins the nearest cli chunk while he is here, instead of waiting for him to drive x
 - cli chunk 2 (lane gaps) line (dima's 🤩, 2026-10-10): `x linear body --set` refuses an empty or near-empty file — it let cclio blank FRM-382 for a minute
 - next cli chunk line (dima o101, 2026-10-11: «if it's a small thing or a freebie, fold it into the next cli chunk»; folded into [FRM-384](https://linear.app/x-com/issue/FRM-384) (x lane gaps) as decided + exit 9 (o111)): `x lane commit` stamps the `Agent: <role>` trailer itself — the harness now bans attribution lines written by the model, so coder commits (2ed31061) carry none and `git who` went blind
-- mods wake queue (2026-10-11, after the 15:33 park): batch 3 (landed c7659171), slice 06 (o74 0d2d4ff4 + o75 640d95fe had landed at 15:15, my queue was stale), then [FRM-393](https://linear.app/x-com/issue/FRM-393) (the CI=1 guard rule, estimate 1), [FRM-394](https://linear.app/x-com/issue/FRM-394) (the gojq hint), [FRM-395](https://linear.app/x-com/issue/FRM-395) (the foreground claude -p rule, o102), and o112's mod half: `mobileReminder` in x-mod-stash asks for the plan's next 3 moves under the asks fence and keeps the stale-plan note (the skill line landed 16:15); no verifier for now (dima, 17:10: «let's keep the mods coder without a verifier for now … more mods content instead, i'd like to have the lane tracker too»); after FRM-395: FRM-385 🛼 lane tracker (resealed 17:30: o19 toggles + the ccrow ledger) → FRM-396 (o126, «ok, delegate to the mods coder»); its first round: 14f10329, 1a9c10b1, eed8a6a9 on base 76598cf9 (🎛️ as its own pane beside 🚦, dima's home a, 16:20), handover in .scratch/stash-settings/issues/05-settings-foldout.md
+- mods queue (2026-10-12 00:15): FRM-385, FRM-391/392/396, FRM-400 landed; left — FRM-386 🐠 catch, a coder on dima's word during the sweep (dima 00:10), then PK-66 · was (2026-10-11 18:24): landed — batch 3 (c7659171), slice 06, o112's mod half (f0f2000d), FRM-393/394/395 (Done 18:20); next — FRM-385 🛼 lane tracker (resealed, o57 kept) → FRM-396 (o126) → FRM-386 🐠 catch; no verifier for now (dima 17:10); the coder is reinitialized after cclio's checkpoint 3 (dima 18:20)
 - cli chunk 1 `verify`, decided (grill round 1, 2026-10-10 20:49): V1 one `x verify` family, `red` (red-proof ported, the bash bin dies in the same commit) + `mutate` · V2 a build or type error reads «broken», never «red» · V3 every mutation runs in a temp copy of the tree with `X_VERIFY=1` set · V5 the runner is picked from the file, `--` overrides · V6 feature lane, one go coder · V4 a mutation is exact anchor → replacement pairs, a pairs file for many, no perl or regex
 - cli chunk 2 lane gaps, decided (grill round 1, 2026-10-10 21:07): L1 three doors — `x lane new` (worktree + seed), `x lane restore <path>`, `x retro write` · L2 `x lane gate <cmd>` keeps the full log in a file, prints status + the last lines · L3 a restore saves the current file to the job tmp first · L4 `x linear body --set` refuses a file under a fifth of the pulled size, the pull prints its path loudly · L5 feature lane, the same go coder right after FRM-383
 - every cli chunk that lands prints the x LOC diff, lines added and removed (dima's curiosity, 2026-10-10): `pnpm x-cli-go:loc` before and after
@@ -68,3 +69,9 @@ dima, 2026-10-10 14:50, folded. sequential, one at a time, no parallel lanes yet
   5. `x retro gather` — retros grouped by type for the halt's fold
   - python3 tops the census at 1,694 raw runs (inferred: mostly inline edits that skip edit hooks); 1 and 2 absorb part of it
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-10-12 00:15: the mods queue line is current (FRM-386 🐠 catch left, on dima's word); step 6 runs on, the sweep resumes at the next boot
+<!-- SECTION:NOTES:END -->
