@@ -31,7 +31,7 @@ reader prints every entry newer than its marker, the skill judges, then `pnpm sk
 --mark` advances the markers — **after the digest went out, never before.** the markers make the lane
 skip-proof: a run on any day prints everything since the last mark, and the boot digest's `apps
 lane` line says when it is due — **a wednesday has passed since the last mark** — so a missed wednesday
-is caught on the next boot, and a thursday catch-up still leaves the next run on the coming wednesday. a dead url or a
+becomes one ask at the next boot — the run fires by itself on a wednesday boot only (dima, 2026-10-11) — and a thursday catch-up still leaves the next run on the coming wednesday. a dead url or a
 changed page shape is fixed in the index by hand, the run never searches. a new app = one hunted
 entry; a `⚠️ marker not found` line means the page changed shape — re-seed that marker.
 

@@ -8,6 +8,7 @@ read at step 4 of `shape-lane`, before the first line is drafted. each rule is a
 - a line names **behaviour, real commands and glossary words** (`pnpm typecheck`, `⇧F4`), never a file path: lines feed matt's spec, which bans paths as stale-prone
 - a line is **checked against main at prep time**: «ignoreBuildErrors gone» was already true there
 - a line that **rests on a fact about the world** (who refuses, which file outranks which, a count) carries the command and its output from seal time: «a repo top's shared settings outrank a subfolder's» was false, and FRM-366's line 2 was fixed after Done
+- **an A/B for dima's eye is sealed only after a one-shot measurement shows the options differ**: a worry (gpu, speed, size) is measured at seal, never handed to his eye as a test. FRM-391 exit 2 sent four frame rates to his band over a gpu worry; all four read 51–56 %, and he lost half an hour (2026-10-11)
 - every **literal command** in a line is run once at seal (dry where it writes) and its exit code noted beside the line
 - a line is **checked against the real surface**: `del` on a board with no del key, «no scroll» on a page with a footer, each cost a decision round
 - a browser line names only **Chrome**, never Safari «for coverage»: `safaridriver` opened real windows on dima's screen. a check that cannot run headless warns first and asks before each run (BYT-116)
@@ -27,7 +28,7 @@ read at step 4 of `shape-lane`, before the first line is drafted. each rule is a
 - a **cross-repo** line names where each half lands and which merges first: a hook calling the other repo's verb cannot push before the verb is on main (FRM-344)
 - a **rename of stored data** says «migrate» or «read both», or two lines pull against each other
 - a line that writes under `cclio/` is cclio's own, never the coder's: frame `AGENTS.md` bars a coder from that dir
-- **one owner and one gradeable surface per line**: a hand-off to cclio or dima goes to `out` or a pocket item, never an exit line — the verifier cannot read the other half (FRM-355, 359, 372)
+- **one owner and one gradeable surface per line**: a hand-off to cclio or dima goes to `out` or a pocket item, never an exit line — the verifier cannot read the other half (FRM-355, 359, 372). a half only dima can grade (his eye, his evening) is split off at seal as its own line marked `pending: dima`, so the verifier can still reach «clean» on the rest (FRM-382 exit 5)
 
 ## once sealed, it changes in the open
 

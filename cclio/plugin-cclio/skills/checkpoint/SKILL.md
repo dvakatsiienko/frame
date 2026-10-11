@@ -60,6 +60,10 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
 - the coder roster with ids and status
 - the orbit asks as they last stood (orbit itself survives the compact in the mod's state)
 
+## 3.5 the CST check — before the two lines
+
+`wishkeeper` 🐬 reads the CST draft against the live state: every open orbit ask, every open pocket item, every unfinished groom-list line and each member's queue is present; nothing done is carried as open; a step that needs a fresh session says so as a first-act. each finding is folded into the CST before it is saved (ccrow, 2026-10-11, o143: checkpoint 2's CST lost the pm review's «dedicated session», queued two landed asks and dropped a reseal).
+
 ## 4. hand him the two lines
 
 📋 **copy → this session** 📋

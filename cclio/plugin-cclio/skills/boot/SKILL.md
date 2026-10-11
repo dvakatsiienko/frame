@@ -43,7 +43,7 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
   smallest aside included — gets an item in the pocket (`~/frame/cclio/pocket.md`, its head says the format)
   and a place in its «order». the checklist line is the completeness
   guarantee; resolution is paced later. **deletion happens at the halt, never here.**
-- then the double check (dima, 2026-10-10: data loss of his drops is the worst outcome): spawn `wish-review` 🐬 in boot mode with the raw inbox text and each item's landing spot (pocket id, ticket, or answer); every finding is folded before the opening board prints.
+- then the double check (dima, 2026-10-10: data loss of his drops is the worst outcome): spawn `wishkeeper` 🐬 in boot mode, in the foreground, with the raw inbox text and each item's landing spot (pocket id, ticket, or answer); every finding is folded before the opening board prints. the boot is ONE turn: ccrow's wake fires at cclio's turn end, so a boot that ends a turn early wakes her on half a boot (2026-10-11, her 10:41 packet held 2 minutes and caught nothing).
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 
 ## 4. continuity
@@ -62,8 +62,10 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
   with the session.
 - 📡 **the two plugin monitors must run**: `ps -ax -o command | grep -c '[p]r-watch.sh\|[c]i-watch.sh'` prints 2. less → arm each missing one as a one-shot background watch: Bash `run_in_background`, `~/frame/cclio/.claude/hooks/watch-once.sh ~/frame/cclio/.claude/hooks/<pr|ci>-watch.sh # deadline: 6 h inside the wrapper` — it ends on the first event line, so only a real event wakes a turn; after handling it, re-arm once, silently, and a no-event end is never a reply to dima. say so on the board. without pr-watch a cloud report branch lands in silence, and silence reads as «still running» (2026-10-08: the adviser cloud lane sat done, unseen).
 - 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:keep-cache-hot` — it finds dima's desktop tab by name and writes its 🔥 key; no tab → it prints one line, and the board asks dima to open the tab.
-- 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or the apps lane
-  says DUE → fire the `/cclio:evergreen` digest as a fork DURING the boot**, report-only, and say
+- 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or a Wednesday boot
+  whose apps lane says DUE → fire the `/cclio:evergreen` digest as a fork DURING the boot**: the apps
+  lane runs on Wednesdays only, as the full changelog since the last `--mark` (dima, 2026-10-11); DUE
+  on another day is one orbit ask, «missed Wednesday: run the apps lane now?», never a fire. report-only, and say
   so on the board; the report lands as its own message and waits for his word. it never queues
   behind the session plan (2026-09-21: it sat behind a 40-min flush until dima asked). zero and
   not due → say nothing.

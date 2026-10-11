@@ -106,7 +106,7 @@ sharpened, not because it was watched. the boot prints every flow's streak.
 **then the trial board — everything on trial, not only jev** (dima, 2026-09-25, «let's try»): one
 line per item — name · state (vetting n/14, open, due) · days left · today's evidence — built from
 four sources, each read, never recalled: `shelf/jev/vet.json` (the flows, after today's verdicts),
-the open files in `docs/test-drive/` (a file without a verdict line is open), the 🔬/👁️ trial reminders in
+`pnpm test-drive:list` (each test-drive file's own `status:` and `until:`, o139), the 🔬/👁️ reminders left in
 `memory/_reminders.md`, and the model/effort trials (`docs/knowledge/models.md`, the spawn defaults in
 `x:crew-lead`). ⏰ leads any line due within 3 days; an item with no evidence today still gets its
 line — a trial nobody names is being dropped by default.
