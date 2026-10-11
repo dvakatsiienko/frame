@@ -50,7 +50,9 @@ var (
 	reuseWord  = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
 	keepWord   = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
 	otherPush  = regexp.MustCompile(`(?i)\b(?:cclio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
-	skillName  = regexp.MustCompile("(?:\\b(?:x:|mattpocock-skills:|matt's `?)|(?:^|\\s)/(?:x:)?)([a-z][\\w-]*)|\\b([a-z][\\w-]*)`? skill\\b")
+	// a skill however it is named: prefixed, a slash command, «the <name> skill», or any hyphenated word (`to-tickets`);
+	// a word naming no skill reads no file
+	skillName  = regexp.MustCompile("(?:\\b(?:x:|mattpocock-skills:|matt's `?)|(?:^|\\s)/(?:x:)?)([a-z][\\w-]*)|\\b([a-z][\\w-]*)`? skill\\b|\\b([a-z]+(?:-[a-z]+)+)\\b")
 	userQuiz   = regexp.MustCompile(`(?i)quiz the user|until the user approves`)
 	quizSkip   = regexp.MustCompile(`(?i)\bskip\b[^\n]*\bquiz`)
 	pnpmScript = regexp.MustCompile(`^pnpm\s+(?:(?:-C|--dir|--filter)\s+(\S+)\s+)?(?:(?:-s|--silent)\s+)?(?:run\s+)?([\w:.-]+)`)
@@ -374,7 +376,7 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 			pushAt = line.n
 		}
 		for _, match := range skillName.FindAllStringSubmatch(text, -1) {
-			name := cmp.Or(match[1], match[2])
+			name := cmp.Or(match[1], match[2], match[3])
 			if !slices.Contains(skills, name) {
 				skills = append(skills, name)
 				skillAt[name] = line.n

@@ -236,6 +236,7 @@ func TestBriefLintRules(t *testing.T) {
 		{"a prefixed skill with a user quiz", "run mattpocock-skills:to-tickets on the spec\n", true},
 		{"a bare skill with a user quiz", "FRM-1: run the to-tickets skill on the spec\n", true},
 		{"a slash skill with a user quiz", "FRM-1: run /to-tickets on the spec\n", true},
+		{"a skill named in a plain verb phrase", "FRM-1: use to-tickets on the spec\n", true},
 		{"a skill whose body asks no approval", "load matt's `tdd` first\n", false},
 		{"a skill with a user quiz beside an unrelated approval", "cut it with matt's `to-tickets` for FRM-1\nno push until dima approves at 13:00\n", true},
 	}
