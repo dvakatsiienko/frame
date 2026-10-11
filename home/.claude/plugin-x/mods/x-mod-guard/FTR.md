@@ -141,6 +141,14 @@
   - then it is refused with the door `x lane push` (it pushes HEAD's sha and reads the remote back); `# dima-ok: <refspec>` lets it run
   - given a plain `git push`, or the same refspec outside those two repos, then it runs
 
+- ⬜ a new rule warns before it refuses (dima's o70)
+  - given a rule listed in `WARN_ONLY`, or set to «warn» in the store's `rule-mode:<rule>`
+  - when it fires on a Bash call, then the command runs and the model gets «x-mod-guard would refuse this (rule …, warn-only until its verifier says clean): <the refusal>»
+  - when it fires on an Agent spawn, then the agent runs — a spawn takes no note
+  - then the event is kept as `warned`, and the day's tally counts it apart
+  - given «enforce» in the store, then the rule refuses even while listed
+  - decision: a refusing hook reaches every session at its next turn end; FRM-392's guard refused three verifier verdicts before anyone saw it
+
 ## every Agent spawn
 
 - ⬜ an agent brief passes `x brief check` before the agent runs (FRM-392)

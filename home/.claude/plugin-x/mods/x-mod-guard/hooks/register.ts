@@ -21,7 +21,8 @@ export type GuardEvent = {
     sid: string;
     name?: string;
     command: string;
-    kind: 'refused' | 'escaped';
+    // warned: a warn-only rule fired and the call ran
+    kind: 'refused' | 'escaped' | 'warned';
     door: string;
     target: string;
     // why it was refused, the line x-mod-stash shows unfolded; an escape names every rule it stepped past
@@ -30,7 +31,7 @@ export type GuardEvent = {
     rule: string;
 };
 
-type Tally = { refused: number; escaped: number };
+type Tally = { refused: number; escaped: number; warned?: number };
 // rules: the same tally split by the rule that fired, so noise and real catches separate
 export type DayCount = Tally & { rules?: Record<string, Tally> };
 
@@ -157,7 +158,21 @@ async function record(
 const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
     escaped: (was?.escaped ?? 0) + (kind === 'escaped' ? 1 : 0),
     refused: (was?.refused ?? 0) + (kind === 'refused' ? 1 : 0),
+    ...(kind === 'warned' || was?.warned
+        ? { warned: (was?.warned ?? 0) + (kind === 'warned' ? 1 : 0) }
+        : {}),
 });
+
+// a new refusing rule ships warn-only: the call runs and the model reads what would have been refused, until the rule's
+// verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
+const WARN_ONLY: ReadonlySet<string> = new Set([]);
+// the store's `rule-mode:<rule>` («warn» or «enforce») outranks the set, so a 🎛️ knob can flip a rule with no commit
+async function isWarnOnly($: EngineInterface, rule: string) {
+    const mode = await $.store.get(`rule-mode:${rule}`).catch(() => undefined);
+    return mode === 'warn' || (mode !== 'enforce' && WARN_ONLY.has(rule));
+}
+const wouldRefuse = (rule: string, text: string) =>
+    `x-mod-guard would refuse this (rule ${rule}, warn-only until its verifier says clean): ${text}`;
 
 // the local day, `yyyy-mm-dd`
 function day(at: number) {
@@ -472,15 +487,26 @@ export const register: Register = (on) => {
         if (verdict.kind === 'run') return go();
         if (verdict.kind === 'refused') {
             const { refusal } = verdict;
+            const isWarn = await isWarnOnly($, refusal.rule);
             await record($, {
                 command,
                 door: refusal.door,
-                kind: 'refused',
+                kind: isWarn ? 'warned' : 'refused',
                 rule: refusal.rule,
                 target: refusal.targets[0] ?? '',
                 why: refusal.why,
             });
-            return deny(message(refusal));
+            if (!isWarn) return deny(message(refusal));
+            const ran = await go();
+            return ran.deny !== undefined
+                ? ran
+                : {
+                      ...ran,
+                      context: [
+                          ...(ran.context ?? []),
+                          wouldRefuse(refusal.rule, message(refusal)),
+                      ],
+                  };
         }
         // the marker is only a claim: dima's own last prompt must name every target the refusals named
         const { value: said = '' } = await $.state.get(PROMPT);
@@ -625,27 +651,31 @@ export const register: Register = (on) => {
         const found = await briefFindings($, e.prompt).catch(() => []);
         if (found.length) {
             const why = found.join('; ');
+            // a spawn takes no note, so a warn-only rule is seen in the kept events alone
+            const isWarn = await isWarnOnly($, 'brief');
             await record($, {
                 command: `Agent: ${e.description}`,
                 door: 'fix what x brief check names',
-                kind: 'refused',
+                kind: isWarn ? 'warned' : 'refused',
                 rule: 'brief',
                 target: found[0] ?? '',
                 why,
             }).catch(() => undefined);
+            if (isWarn) return next(e);
             return {
                 deny: `x-mod-guard stopped this brief. instead: fix what x brief check names, then spawn again${found.some((f) => RELATIVE_MISS.test(f)) ? '; a path from another repo: write it absolute or ~/' : ''}. why: ${why}`,
             };
         }
         if (!e.fork || WHY_FORK.test(e.prompt)) return next(e);
+        const isWarn = await isWarnOnly($, 'fork');
         await record($, {
             command: `fork: ${e.description}`,
             door: FORK_DOOR,
-            kind: 'refused',
+            kind: isWarn ? 'warned' : 'refused',
             rule: 'fork',
             target: 'why-fork',
             why: FORK_WHY,
         });
-        return { deny: FORK_REFUSED };
+        return isWarn ? next(e) : { deny: FORK_REFUSED };
     }).catch(() => ({ deny: FAILED }));
 };
