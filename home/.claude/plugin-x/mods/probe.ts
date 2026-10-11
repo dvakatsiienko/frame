@@ -17,6 +17,18 @@ export function swapDir(
     return at === -1 ? [...dirs, dev] : dirs.with(at, dev);
 }
 
+// the folder the engine read the mod's hooks from, out of the child's debug lines; undefined when it never loaded
+export function loadedFrom(lines: string[], name: string) {
+    const read = new RegExp(
+        `Read hooks\\.json for plugin ${name} \\([^)]*\\): (.+)/hooks/hooks\\.json$`,
+    );
+    for (const l of lines) {
+        const dir = l.match(read)?.[1];
+        if (dir) return dir;
+    }
+    return undefined;
+}
+
 if (import.meta.main) {
     const [modArg, prompt, ...rest] = process.argv.slice(2);
     const fail = (line: string): never => {
@@ -75,11 +87,13 @@ if (import.meta.main) {
         : [];
     console.log(`\n-- debug lines naming ${name} (${debugFile}) --`);
     for (const l of lines) console.log(l);
-    const loaded = lines.some((l) => /hooks module .*loaded/.test(l));
+    // the verdict reads the folder the engine took, never assumes it: a «loaded» once hid that main's copy ran (FRM-392)
+    const from = loadedFrom(lines, name);
+    const isDev = from !== undefined && realpathSync(from) === dev;
     console.log(
-        loaded
+        isDev
             ? `mods:probe: ${name} loaded from ${dev}`
-            : `mods:probe: no load line for ${name} — the dev copy did not load`,
+            : `mods:probe: ${name} loaded from ${from ?? 'nowhere'}, not the dev copy ${dev}`,
     );
-    process.exit(loaded ? (run.status ?? 1) : 1);
+    process.exit(isDev ? (run.status ?? 1) : 1);
 }
