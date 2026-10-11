@@ -1034,3 +1034,22 @@ test('an assumption still shows two turns on', async ($, on) => {
         undefined,
     );
 });
+
+test('a plan of fewer than 7 lines is set with a nudge to fill it', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
+    expect((r as { result?: unknown }).result).toBe(
+        'plan set, 2 lines — plan has 2 of 7, fill to 7',
+    );
+});
+
+test('a full plan of 7 lines is set with no nudge', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await orbit($, {
+        lines: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+        op: 'plan',
+    });
+    expect((r as { result?: unknown }).result).toBe('plan set, 7 lines');
+});

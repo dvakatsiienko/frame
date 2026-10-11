@@ -465,6 +465,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given a session's first prompt
   - then it carries one model-only line: phases are the live plan, set them with orbit's plan op and keep them current
   - given a `/clear` or a resume, then the next conversation's first prompt carries the line again — the process outlives the conversation (o59)
+  - given a plan set with fewer than 7 lines, then the plan op's answer adds «plan has N of 7, fill to 7»; 7 lines get none (o74)
   - given a turn has run 3 tool calls and set no phases this turn
   - when the third result comes back
   - then it carries «no phases yet — set them with orbit plan» (or «phases not set this turn» when older ones exist), once a turn

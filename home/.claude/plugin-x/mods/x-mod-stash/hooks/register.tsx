@@ -622,8 +622,9 @@ function orbitOp(
                         ? { at: isTurn ? o.turns + 1 : o.turns, lines }
                         : undefined,
                 },
+                // the board shows 7 phases; a shorter plan leaves dima guessing past it (dima's o74)
                 result: lines.length
-                    ? `plan set, ${lines.length} line${lines.length === 1 ? '' : 's'}`
+                    ? `plan set, ${lines.length} line${lines.length === 1 ? '' : 's'}${lines.length < PLAN_MAX ? ` — plan has ${lines.length} of ${PLAN_MAX}, fill to ${PLAN_MAX}` : ''}`
                     : 'plan cleared',
             };
         }
