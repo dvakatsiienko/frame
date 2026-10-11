@@ -1562,6 +1562,11 @@ export const register: Register = (on) => {
         pinged = e.text === PING;
         // dima read the away digest once he types again
         if (isUserTurn) digest = undefined;
+        // a sent box ends the enhance: ⏪ ⏩ leave the band (dima's o11, 11:11)
+        if (isUserTurn) {
+            const { status } = await enhancerOf($);
+            await saveEnhancer($, { status });
+        }
         if (isUserTurn && BACK_AT_MAC.test(e.text))
             await $.state.set(MOBILE, false).catch(() => undefined);
         isBusy = true;

@@ -180,6 +180,23 @@ test('after a send empties the box, ⏪ then ⏩ brings the enhanced text back',
     ]);
 });
 
+test('a sent prompt hides ⏪ and ⏩', async ($, on) => {
+    const box = { text: 'draft' };
+    world(on, box);
+    on('prompt.submit', (_$, e) => ({ text: e.text }));
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: box.text,
+        wait: false,
+    });
+    expect([
+        await ui.find({ key: 'enh:prev' }),
+        await ui.find({ key: 'enh:new' }),
+    ]).toEqual([undefined, undefined]);
+});
+
 test('enhance again makes exactly one more call', async ($, on) => {
     const box = { text: 'draft' };
     const w = world(on, box);

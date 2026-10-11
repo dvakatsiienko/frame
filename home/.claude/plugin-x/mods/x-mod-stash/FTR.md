@@ -387,6 +387,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when he presses `⏪`, then `⏩`
   - then prev puts back his own text exactly as he typed it, and new brings the enhanced text back with any edits he made to it, and an emptied box (a sent prompt) is never taken for an edit; a second `enhance` makes exactly one more call
   - 📌 on the desktop a fill drops a trailing newline (FRM-382 step 0), so «exactly» holds for any text that does not end in one
+  - given he sent the box
+  - then ⏪ and ⏩ leave the band until the next enhance (dima's o11, 2026-10-11 11:11)
 - ✅ his typing wins
   - given enhance is running
   - when he types in the box, or presses enhance again
