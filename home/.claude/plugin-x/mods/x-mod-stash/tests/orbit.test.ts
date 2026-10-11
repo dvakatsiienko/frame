@@ -301,6 +301,23 @@ test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
     expect(await asksShown(ui)).toEqual(['o2']);
 });
 
+test("a follow-up clears dima's note on the old question", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.input({ key: 'orbit:note:o1', text: 'tastaet' });
+    await say($, 'go');
+    await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'after ci',
+        text: 'push the branch once ci is green',
+    });
+    await endTurn($);
+    expect((await ui.find({ key: 'orbit:note:o1' }))?.props.value).toBe('');
+});
+
 test('a follow-up keeps its id and place with new text, led by 🆕', async ($, on) => {
     world(on);
     await start($);

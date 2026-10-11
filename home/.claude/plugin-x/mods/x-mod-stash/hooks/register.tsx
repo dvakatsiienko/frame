@@ -597,6 +597,8 @@ function orbitOp(
                                   isChanged: true,
                                   isResolved: false,
                                   mark: undefined,
+                                  // his note answered the old question
+                                  note: undefined,
                                   pick: oneLine(input.pick) || a.pick,
                                   text,
                               }
