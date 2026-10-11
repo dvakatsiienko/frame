@@ -51,7 +51,7 @@ function world(
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
                 stderr: '',
-                stdout: 'quards → chords\n',
+                stdout: '0 → quards → chords\n1 → my email → a long snippet\nits second line\n',
             },
         };
     });
@@ -130,6 +130,18 @@ test('Haiku reads the rules, the slash commands and the wispr dictionary', async
     expect(JSON.stringify(w.calls[0]?.system)).toMatch(
         /the rules.*\/x:shape-idea.*quards → chords/s,
     );
+});
+
+test('Haiku reads no wispr snippet, only the mishearing rows', async ($, on) => {
+    const box = { text: 'quards please' };
+    const w = world(on, box);
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    const system = JSON.stringify(w.calls[0]?.system);
+    expect([
+        /heard → meant:\\nquards → chords/.test(system),
+        /my email|second line/.test(system),
+    ]).toEqual([true, false]);
 });
 
 test('prev brings back the press-time text byte for byte', async ($, on) => {

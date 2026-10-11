@@ -281,11 +281,19 @@ async function enhancerSystem($: EngineInterface) {
             '-separator',
             ' → ',
             `${await $.env.get('HOME')}/${WISPR_DB}`,
-            'select phrase, replacement from Dictionary where isDeleted = 0 and replacement is not null',
+            'select coalesce(isSnippet, 0), phrase, replacement from Dictionary where isDeleted = 0 and replacement is not null',
         ])
         .catch(() => undefined);
+    // only the mishearing rows: wispr flags a snippet (a short cue for a long text), whose extra lines lead with no flag
+    // (dima, 2026-10-11 11:11)
     const heard =
-        dictionary?.exitCode === 0 ? dictionary.stdout : '(unreadable now)';
+        dictionary?.exitCode === 0
+            ? dictionary.stdout
+                  .split('\n')
+                  .filter((l) => l.startsWith('0 → '))
+                  .map((l) => l.slice('0 → '.length))
+                  .join('\n')
+            : '(unreadable now)';
     return [
         { text: rules },
         { text: `the slash commands:\n${commands}` },
