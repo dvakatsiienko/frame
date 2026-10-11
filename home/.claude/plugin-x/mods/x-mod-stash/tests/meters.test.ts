@@ -433,3 +433,26 @@ test("the breathing keeps every bar's cells and colours", async ($, on) => {
     expect(still.length).toBe(2);
     expect(still.map(strip)).toEqual(still);
 });
+
+test('/board breathe keeps the bars breathing while idle, for refining the look', async ($, on) => {
+    meters(on);
+    on('command.run', () => ({ text: '' }));
+    await measure($, 39, 35);
+    await $.session.start({
+        cwd: '/proj',
+        isInteractive: true,
+        surface: 'desktop',
+    });
+    await $.command.run({
+        args: 'breathe',
+        command: 'board',
+        origin: { kind: 'composer' },
+        presentation: { columns: 80, isFullscreen: false },
+    });
+    const ui = await bandOn($, 'desktop', false);
+    expect(
+        (await ui.findAll({ type: 'Svg' })).map((n) =>
+            String(n.props.source).includes('<animate'),
+        ),
+    ).toEqual([true, true]);
+});

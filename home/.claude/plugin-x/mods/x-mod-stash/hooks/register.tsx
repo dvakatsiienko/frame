@@ -49,6 +49,8 @@ const CONTEXT = 'context:';
 const MODEL = 'model:';
 // the board's colour MVP: one fleet-wide switch, `/board colour`, off by default (FRM-329)
 const COLOUR = 'board-colour';
+// `/board breathe`: the bars breathe idle too, while dima refines the look (2026-10-11 12:20); off by default, a try
+const BREATH_PREVIEW = 'breath-preview';
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
 // a session younger than this, counted from the registry's `startedAt`, is a probe: it gets no row until it outlives it
@@ -1830,6 +1832,14 @@ export const register: Register = (on) => {
 
     // `/board colour` flips the colour MVP for every session's board, and opens it to look
     on('command.run', { command: 'board' }, async ($, e) => {
+        if (e.args.trim() === 'breathe') {
+            const isOn = !(await $.store.get(BREATH_PREVIEW));
+            await $.store.set(BREATH_PREVIEW, isOn);
+            $.ui.invalidate('ui.render');
+            return {
+                text: `bars breathe ${isOn ? 'all the time' : 'only while a turn runs'}`,
+            };
+        }
         const isColourFlip = /^colou?r$/.test(e.args.trim());
         if (isColourFlip)
             await $.store.set(COLOUR, !(await $.store.get(COLOUR)));
@@ -2512,7 +2522,9 @@ export const register: Register = (on) => {
         const meter = (await $.state.get(METER)).value;
         const now = await $.clock.now();
         const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
-        const isBreathing = Boolean(e.props.isWorking);
+        const isBreathing =
+            Boolean(e.props.isWorking) ||
+            (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
         const crest = isBreathing ? (now % BREATH_MS) / BREATH_MS : undefined;
         // the terminal moves the crest by redrawing the band while a turn runs; one timer at a time
         if (isBreathing && !Svg && !isBreathTicking) {

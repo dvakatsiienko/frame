@@ -161,6 +161,7 @@
   - then a soft wave of brightness travels along the lit cells of the 5h and ctx bars, one pass every 3.2 s — on the desktop the lit cells dip and swell in opacity, in the terminal a three-cell crest passes in bold; the bars' length, hue, labels and values stay as they are
   - given the turn ends
   - then the bars stand still: no wave, no redraw tick
+  - decision: `/board breathe` makes the bars breathe idle too while dima refines the look, off by default, a try that leaves with the 🎛️ knobs (dima, 2026-10-11 12:20)
   - decision: the desktop wave runs inside each bar's svg, no host tick, and a rebuild resumes at the breath's phase; the terminal redraws the band every 100 ms while working — the rates are an A/B dima picks by eye (FRM-391 slice 02)
   - and both bars start and end on the same columns: one label width, one bar width, one right-aligned % cell; desktop air 0.5 above the meters and 0.4 between them
   - and an idle band stays live: the 4 s poll takes the 5h reading from `cc-usage-window.json`, which any busy session writes, and its minute moves the time left
