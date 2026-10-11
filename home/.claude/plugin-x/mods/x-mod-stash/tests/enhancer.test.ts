@@ -229,6 +229,30 @@ test('enhance again makes exactly one more call', async ($, on) => {
     expect(w.calls.length).toBe(2);
 });
 
+test('🪄 rests dimmed while Haiku answers, its label unchanged', async ($, on) => {
+    const box = { text: 'draft' };
+    const w = world(on, box);
+    let release = () => {};
+    w.answers.push(
+        () =>
+            new Promise((done) => {
+                release = () => done(answered('enhanced'));
+            }),
+    );
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    const running = await ui.find({ key: 'enh:enhance' });
+    const filled = w.nextFill();
+    release();
+    await filled;
+    const idle = await ui.find({ key: 'enh:enhance' });
+    expect([
+        running?.text,
+        Boolean(running?.props.dimColor),
+        Boolean(idle?.props.dimColor),
+    ]).toEqual(['🪄', true, false]);
+});
+
 test('a press while the call runs makes no second call', async ($, on) => {
     const box = { text: 'draft' };
     const w = world(on, box);

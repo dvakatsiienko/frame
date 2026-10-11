@@ -376,7 +376,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when he presses `🪄` in the band
   - then Haiku 5.5 is called once with the rules, every slash command and his wispr dictionary's mishearing rows (never a snippet), and the box holds its answer: misheard names fixed, a skill he asks for as its `/name`, ticket ids written `FRM-N`
   - decision: only wispr's mishearing rows reach Haiku, picked by wispr's own `isSnippet` flag — a snippet once expanded «my email address» into the literal address (dima, 2026-10-11 11:11)
-  - decision: a static «🪄…» label while it runs, not a spinner — the brief's spinner loses to the no-repainting rule
+  - decision: while it runs 🪄 rests dimmed as if disabled, no spinner and no «🪄…» — the api has no `disabled`, a press then does nothing, and a spinner breaks the no-repainting rule (dima, 2026-10-11 11:56)
 - ✅ a prompt that names a ticket hands the session the ticket
   - given dima sends a prompt naming `FRM-N` or `BYT-N`, typed or enhanced
   - when it reaches the session

@@ -2696,10 +2696,10 @@ export const register: Register = (on) => {
         );
         // the readings pack left after the chips, then this session's 🔭 mark, always drawn; the switches hold the right
         // edge (dima's o6 and o7, 22:03)
-        // 🪄 ⏪ ⏩, beside the switches, each named on hover in a few words (dima, 23:13); a static label while the call
-        // runs, no spinner (no repainting); each emoji draws two cells, so its card sits two past it
+        // 🪄 ⏪ ⏩, beside the switches, each named on hover in a few words (dima, 23:13); while the call runs 🪄 rests
+        // dimmed as if disabled, the api has no `disabled` and a press then is a no-op (dima, 2026-10-11 11:56); each emoji
+        // draws two cells, so its card sits two past it
         const isEnhancing = enhancer.status === 'running';
-        const enhanceLabel = isEnhancing ? '🪄…' : '🪄';
         const enhancerJSX = (
             <Box flexDirection='row' flexShrink={0} gap={1} key='enhancer'>
                 {tip(
@@ -2708,12 +2708,13 @@ export const register: Register = (on) => {
                         ? 'enhancing; type to cancel'
                         : 'enhance prompt',
                     <Button
+                        dimColor={isEnhancing}
                         key='enh:enhance'
                         onPress={() => void enhance($)}
                         plain>
-                        {enhanceLabel}
+                        🪄
                     </Button>,
-                    { right: [...enhanceLabel].length + 2 },
+                    { right: 3 },
                 )}
                 {enhancer.original !== undefined
                     ? tip(
