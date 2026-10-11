@@ -497,9 +497,9 @@ test("the lanes stick to the board's bottom, on top of the phases (dima, 20:12)"
     ]).toEqual([true, true]);
 });
 
-/* exit 4 — an ask in 2 rows */
+/* an ask: its line, the pick on its own line, the buttons under it (dima, 20:23) */
 
-test("an ask's pick and its buttons share one row", async ($, on) => {
+test("an ask's buttons sit on the line under its pick, never beside it", async ($, on) => {
     world(on);
     await start($);
     await $.tool.call({
@@ -507,10 +507,13 @@ test("an ask's pick and its buttons share one row", async ($, on) => {
         op: 'add',
         tool: TOOL,
     } as never);
-    const ui = await board($);
-    expect((await ui.find({ key: 'orbit:row:o1', type: 'Box' }))?.text).toMatch(
-        /➡️ cut it.*take.*redo/su,
-    );
+    const row = (
+        await (await board($)).find({ key: 'orbit:row:o1', type: 'Box' })
+    )?.text;
+    expect([row?.includes('take'), row?.includes('cut it')]).toEqual([
+        true,
+        false,
+    ]);
 });
 
 /* exit 5 — the stale nag, cclio's turns only */

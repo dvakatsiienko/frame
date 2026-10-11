@@ -2792,23 +2792,21 @@ export const register: Register = (on) => {
                             {': '}
                             {linkedJSX(a.text, `ask:${a.id}`)}
                         </Text>
-                    </Box>
-                </Box>
-                {/* the pick leads the one row its buttons and the note share, so an ask takes 2 rows, not 4 (FRM-385 exit 4,
-                    dima's 19:31 shot) */}
-                <Box
-                    alignItems='center'
-                    flexDirection='row'
-                    gap={1}
-                    key={`orbit:row:${a.id}`}>
-                    <Box flexShrink={1} minWidth={0}>
-                        <Text wrap='truncate-end'>
+                        {/* the pick on a line of its own, the mock's card shape (dima, 17:00) */}
+                        <Text>
                             {'➡️ '}
                             <Text bold>
                                 {linkedJSX(a.pick, `pick:${a.id}`)}
                             </Text>
                         </Text>
                     </Box>
+                </Box>
+                {/* the buttons lead, the note follows them, on the line under the pick — never beside it (dima, 20:19; 20:23) */}
+                <Box
+                    alignItems='center'
+                    flexDirection='row'
+                    gap={1}
+                    key={`orbit:row:${a.id}`}>
                     {/* a joined ask keeps both buttons; the held one reads 🔓 while the turn holds it (dima, 17:42) */}
                     {[markJSX(a, 'accepted'), markJSX(a, 'rejected')]}
                     {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
