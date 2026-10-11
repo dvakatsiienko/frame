@@ -53,8 +53,10 @@ const FORK_DOOR =
     'a fresh agent with a self-contained brief, or helper for a mechanical job';
 const FORK_WHY = 'a fork carries the whole parent context (~220k tokens)';
 const FORK_REFUSED = `x-mod-guard stopped this fork. instead: ${FORK_DOOR}. why: ${FORK_WHY}. a fork that truly needs that context says so in a prompt line: why-fork: <what parent context it needs>`;
-// a prompt or message naming a ticket id or a backticked path is a brief (FRM-392)
-const BRIEF_SIGN = /\b(?:FRM|BYT|DOT)-\d+\b|`[^`\n]*\/[^`\n]*`/;
+// a prompt or message naming a ticket id, a backticked path or file, or one of matt's skills is a brief (FRM-392); the
+// id shape copies brief.go's ticketID, which a mod cannot import
+const BRIEF_SIGN =
+    /\b(?:FRM|BYT|DOT)-\d+\b|`[^`\n]*\/[^`\n]*`|`[\w.@~-]+\.[a-z]{1,5}`|\bmattpocock-skills:|\bmatt's `?[a-z]/;
 // of x brief check's findings only a missing path and a skill's user quiz refuse; a quoted code term is a message's own
 const BRIEF_REFUSES = /^line \d+: (?:path|quiz) .+$/gm;
 
@@ -72,8 +74,23 @@ async function briefFindings($: EngineInterface, text: string) {
         ? (out.error.match(BRIEF_REFUSES) ?? [])
         : [];
 }
-const briefRefused = (found: string[]) =>
-    `x-mod-guard stopped this brief. instead: fix what x brief check names, then send it again. why: ${found.join('; ')}`;
+// keeps the refusal as a guard event and words it, the same for an agent and a message
+async function refuseBrief(
+    $: EngineInterface,
+    command: string,
+    found: string[],
+) {
+    const why = found.join('; ');
+    await record($, {
+        command,
+        door: 'fix what x brief check names',
+        kind: 'refused',
+        rule: 'brief',
+        target: found[0] ?? '',
+        why,
+    }).catch(() => undefined);
+    return `x-mod-guard stopped this brief. instead: fix what x brief check names, then send it again. why: ${why}`;
+}
 
 // what x brief check stamps: sha256 over the file's raw bytes, under $X_STATE or ~/.local/state/x (x/go/brief.go)
 async function readBrief(
@@ -267,7 +284,7 @@ async function isReleased(
             cwd: hold.file.slice(0, hold.file.lastIndexOf('/')) || '/',
         })
         .catch(() => null);
-    return !git || git.exitCode !== 0 || git.stdout.trim() === '';
+    return git?.exitCode !== 0 || git.stdout.trim() === '';
 }
 
 const isUnder = (path: string, dir: string) =>
@@ -622,30 +639,18 @@ export const register: Register = (on) => {
         if (e.origin.kind !== 'model') return next(e);
         const found = await briefFindings($, e.text).catch(() => []);
         if (!found.length) return next(e);
-        await record($, {
-            command: `SendMessage to ${e.to}`,
-            door: 'fix what x brief check names',
-            kind: 'refused',
-            rule: 'brief',
-            target: found[0] ?? '',
-            why: found.join('; '),
-        }).catch(() => undefined);
-        return { isDelivered: false, reason: briefRefused(found) };
+        return {
+            isDelivered: false,
+            reason: await refuseBrief($, `SendMessage to ${e.to}`, found),
+        };
     });
 
     on('agent.spawn', async ($, e, next) => {
         const found = await briefFindings($, e.prompt).catch(() => []);
-        if (found.length) {
-            await record($, {
-                command: `Agent: ${e.description}`,
-                door: 'fix what x brief check names',
-                kind: 'refused',
-                rule: 'brief',
-                target: found[0] ?? '',
-                why: found.join('; '),
-            }).catch(() => undefined);
-            return { deny: briefRefused(found) };
-        }
+        if (found.length)
+            return {
+                deny: await refuseBrief($, `Agent: ${e.description}`, found),
+            };
         if (!e.fork || WHY_FORK.test(e.prompt)) return next(e);
         await record($, {
             command: `fork: ${e.description}`,

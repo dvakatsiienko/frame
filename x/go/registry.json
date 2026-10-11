@@ -382,7 +382,12 @@
             },
             "name": "brief check",
             "purpose": "check that every backticked path, script, verb and id in a brief exists, and lint its exit lines; a pass stamps it",
-            "steps": ["read", "exist", "lint", "stamp"]
+            "steps": ["read", "exist", "lint", "stamp"],
+            "touches": [
+                "linear — the ticket ids, read",
+                "~/.claude/plugins/cache/mattpocock — a named matt skill's SKILL.md, read",
+                "~/.local/state/x/briefs — the pass stamp"
+            ]
         },
         {
             "args": [

@@ -52,7 +52,7 @@ var (
 	otherPush  = regexp.MustCompile(`(?i)\b(?:cclio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
 	skillName  = regexp.MustCompile("\\b(?:x:|mattpocock-skills:|matt's `?)([a-z][\\w-]*)")
 	userQuiz   = regexp.MustCompile(`(?i)quiz the user|until the user approves`)
-	quizSkip   = regexp.MustCompile(`(?i)\b(?:skip|no)\b[^\n]*\b(?:quiz|approv)`)
+	quizSkip   = regexp.MustCompile(`(?i)\bskip\b[^\n]*\bquiz`)
 	pnpmScript = regexp.MustCompile(`^pnpm\s+(?:(?:-C|--dir|--filter)\s+(\S+)\s+)?(?:(?:-s|--silent)\s+)?(?:run\s+)?([\w:.-]+)`)
 )
 
@@ -426,7 +426,16 @@ func pluginSkill(name string) string {
 	if len(found) == 0 {
 		return ""
 	}
-	raw, _ := os.ReadFile(slices.Max(found))
+	// the newest install, never the text-largest version: 1.10.0 sorts below 1.9.0
+	newest := slices.MaxFunc(found, func(a, b string) int {
+		at, _ := os.Stat(a)
+		bt, _ := os.Stat(b)
+		if at == nil || bt == nil {
+			return 0
+		}
+		return at.ModTime().Compare(bt.ModTime())
+	})
+	raw, _ := os.ReadFile(newest)
 	return string(raw)
 }
 

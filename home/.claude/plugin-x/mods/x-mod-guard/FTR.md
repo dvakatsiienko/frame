@@ -144,7 +144,7 @@
 ## every Agent spawn and SendMessage
 
 - ✅ a brief passes `x brief check` before it leaves (FRM-392)
-  - given an `Agent` prompt, or the model's own `SendMessage`, that names a ticket id or a backticked path
+  - given an `Agent` prompt, or the model's own `SendMessage`, that names a ticket id, a backticked path or file name, or one of matt's skills
   - when x-mod-guard runs `x brief check` on it, over stdin, against the session's repo root
   - then a missing path or a skill whose step waits on the user's approval refuses it, and the reason carries the check's own line, so the next try fixes the brief; the refusal is kept as a guard event
   - given the brief with the path fixed, or a line that skips the quiz, then it goes

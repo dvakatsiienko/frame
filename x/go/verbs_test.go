@@ -235,6 +235,7 @@ func TestBriefLintRules(t *testing.T) {
 		{"matt's skill with a user quiz, its quiz skipped", "cut it with matt's `to-tickets` for FRM-1\nskip its quiz step, dima approved the cut at 12:03\n", false},
 		{"a prefixed skill with a user quiz", "run mattpocock-skills:to-tickets on the spec\n", true},
 		{"a skill whose body asks no approval", "load matt's `tdd` first\n", false},
+		{"a skill with a user quiz beside an unrelated approval", "cut it with matt's `to-tickets` for FRM-1\nno push until dima approves at 13:00\n", true},
 	}
 	skill := func(name string) string {
 		return map[string]string{
