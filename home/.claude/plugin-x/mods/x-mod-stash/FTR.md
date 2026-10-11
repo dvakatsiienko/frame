@@ -169,8 +169,8 @@
   - decision: `/board breathe` makes the bars breathe idle too while dima refines the look, off by default, a try that leaves with the 🎛️ knobs (dima, 2026-10-11 12:20)
 - ⬜ `/board ab` compares the bars' frame rate live, with the gpu it costs (FRM-391 slice 02)
   - given dima runs `/board ab`
-  - then the bars breathe idle too, and a row under the meters holds ⏱ (off, 10, 20, 30 Hz), a press that applies in every band with no reload, and `gpu <rate> <n>%` — the mean of the last ten 2 s `ioreg` reads, in the session that ran it
-  - given the desktop, then ⏱ reads «⏱ display rate», no button, and a rate left at «off» never stills the bars: the svg embers run at the display's rate
+  - then the bars breathe idle too, and a row under the meters holds ⏱ (10, 30, 60 Hz — dima 14:52, so the steps read apart; the terminal may cap a band near 30 redraws a second), a press that applies in every band with no reload, and `gpu <rate> <n>%` — the mean of the last ten 2 s `ioreg` reads, in the session that ran it
+  - given the desktop, then ⏱ reads «⏱ display rate», no button: the svg embers run at the display's rate
   - decision: a spinner take (the embers in cc's spinner row, and a preview of it in the band) was built and seen live, then cut: it shows only between tool calls, so it flickers in a working turn (dima, 14:47 «it is useless for us»)
   - decision: a try; once dima picks, the losing rates go and the rate stays as the 🎛️ frame-rate knob's default
 - ⬜ the compaction point is typed live

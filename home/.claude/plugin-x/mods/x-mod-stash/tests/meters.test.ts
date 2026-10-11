@@ -473,7 +473,7 @@ test('/board breathe keeps the bars breathing while idle, for refining the look'
 // the slice-02 A/B (FRM-391): /board ab, the ⏱ rate chip, the gpu % in the owner session
 const setAb = (
     store: Record<string, unknown>,
-    hz: 0 | 10 | 20 | 30,
+    hz: 10 | 30 | 60,
     owner = SID,
 ) => {
     store['breath-ab'] = { hz, owner };
@@ -518,7 +518,7 @@ test('the ⏱ chip steps the rate to the next one', async ($, on) => {
     setAb(store, 10);
     const ui = await bandOn($, 'terminal', false);
     await ui.press({ key: 'ab:rate' });
-    expect(store['breath-ab']).toEqual({ hz: 20, owner: SID });
+    expect(store['breath-ab']).toEqual({ hz: 30, owner: SID });
 });
 
 // how many of 90 samples, 34 ms apart (3.06 s), show a frame the last one did not: 10 Hz can change at most 31 times
@@ -545,26 +545,6 @@ test('at 30 Hz the terminal bars change more often than 10 Hz ever can', async (
 test('at 10 Hz the terminal bars change at most ten times a second', async ($, on) => {
     const n = await changesAt($, on, 10);
     expect([n > 0, n <= 31]).toEqual([true, true]);
-});
-
-test('the rate off stands the terminal bars still', async ($, on) => {
-    const { clock, store } = meters(on);
-    await measure($, 39, 35);
-    setAb(store, 0);
-    const ui = await bandOn($, 'terminal', true);
-    const first = await frameOf(ui);
-    await clock.advance(3000);
-    expect(await frameOf(ui)).toBe(first);
-});
-
-test('the desktop bars breathe whatever the terminal rate says', async ($, on) => {
-    const { store } = meters(on);
-    await measure($, 39, 35);
-    setAb(store, 0);
-    expect(await svgsAnimate(await bandOn($, 'desktop', false))).toEqual([
-        true,
-        true,
-    ]);
 });
 
 test('the owner session shows the gpu % its setting costs', async ($, on) => {

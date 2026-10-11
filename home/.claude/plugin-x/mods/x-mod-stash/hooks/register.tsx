@@ -56,7 +56,8 @@ const BREATH_PREVIEW = 'breath-preview';
 const BREATH_AB = 'breath-ab';
 // the owner session's gpu samples per setting, in its own state: a write redraws only its band
 const GPU = { key: 'gpu', plugin: 'x-mod-stash' } as const;
-const AB_RATES = [0, 10, 20, 30] as const;
+// dima 14:52: «make hz steps 10, 30, 60 so i see the difference clearly»
+const AB_RATES = [10, 30, 60] as const;
 type BreathAb = {
     hz: (typeof AB_RATES)[number];
     owner: string;
@@ -1166,7 +1167,7 @@ function abOf(v: unknown): BreathAb | undefined {
         ? { hz, owner: o.owner }
         : undefined;
 }
-export const abSetting = (ab: BreathAb) => (ab.hz ? `${ab.hz} Hz` : 'off');
+export const abSetting = (ab: BreathAb) => `${ab.hz} Hz`;
 const mean = (xs: number[]) =>
     Math.round(xs.reduce((a, b) => a + b, 0) / xs.length);
 // the A/B owner reads the whole gpu's utilisation every 2 s and files it under the setting it ran at; ioreg needs no sudo
@@ -2658,7 +2659,7 @@ export const register: Register = (on) => {
         const ab = abOf(await $.store.get(BREATH_AB).catch(() => undefined));
         // while the A/B runs the bars breathe idle too, so dima sees each setting without a turn
         const isBreathing = ab
-            ? Boolean(Svg) || ab.hz > 0
+            ? true
             : Boolean(e.props.isWorking) ||
               (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
         const breath = isBreathing ? now : undefined;
@@ -2995,7 +2996,7 @@ export const register: Register = (on) => {
                   .map(([setting, xs]) => `${setting} ${mean(xs)}%`)
                   .join(' · ')
             : '';
-        const rateLabel = ab?.hz ? `⏱ ${ab.hz} Hz` : '⏱ off';
+        const rateLabel = `⏱ ${ab?.hz ?? 10} Hz`;
         const abRow = ab ? (
             <Box flexDirection='row' gap={1} key='ab'>
                 {Svg
@@ -3007,7 +3008,7 @@ export const register: Register = (on) => {
                       )
                     : tip(
                           'ab:rate',
-                          'bars frame rate: off, 10, 20, 30 Hz',
+                          'bars frame rate: 10, 30, 60 Hz',
                           <Button
                               key='ab:rate'
                               onPress={() =>
@@ -3016,7 +3017,7 @@ export const register: Register = (on) => {
                                           AB_RATES[
                                               (AB_RATES.indexOf(ab.hz) + 1) %
                                                   AB_RATES.length
-                                          ] ?? 0,
+                                          ] ?? 10,
                                   })
                               }
                               plain>
