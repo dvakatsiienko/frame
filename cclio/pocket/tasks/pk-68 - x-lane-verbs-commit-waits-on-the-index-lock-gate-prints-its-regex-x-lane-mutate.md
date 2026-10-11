@@ -6,13 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-11 21:17'
+updated_date: '2026-10-11 21:28'
 due_date: '2026-10-14'
 labels:
   - m
 dependencies: []
 priority: next
 type: task
-ordinal: 114000
+ordinal: 61000
 ---
 
 ## Description
@@ -23,3 +24,9 @@ from the 10-11 halt flush (gather clusters 4, 5, 11):
 - `x lane gate` prints its exact regex on refusal and names a leading `- ` (two lanes paid the same retry)
 - `x lane mutate`: anchor-replace + test + restore, a table out (every wrong-reason test on 10-11 was found only by mutating the claimed line; moved here from PK-65)
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+parked: waits for the next cli coder, on dima's word
+<!-- SECTION:NOTES:END -->

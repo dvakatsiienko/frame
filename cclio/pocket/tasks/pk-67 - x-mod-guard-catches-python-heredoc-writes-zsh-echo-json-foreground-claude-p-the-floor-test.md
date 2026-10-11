@@ -6,13 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-11 21:17'
+updated_date: '2026-10-11 21:28'
 due_date: '2026-10-14'
 labels:
   - m
 dependencies: []
 priority: next
 type: task
-ordinal: 113000
+ordinal: 60000
 ---
 
 ## Description
@@ -23,3 +24,9 @@ from the 10-11 halt flush (gather clusters 7, 12, 21, 10), for the mods coder af
 - a warning on zsh `echo` of json (two verifiers hit it) and on `claude -p` inside `while read` or in a foreground call (the 15:41 dima-caught)
 - a standing test that writes the guard store and expects `rm` refused (FRM-391 verifier; the probe route if a harness test cannot reach the hook)
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+parked: waits for the next mods coder, after FRM-386 🐠 catch, on dima's word
+<!-- SECTION:NOTES:END -->
