@@ -58,7 +58,7 @@ export type StashView = {
 };
 
 // what only the board pane draws, kept apart from the band's view: its clock moves every poll, and a band that read it
-// would redraw — rebuilding x-mod-breather's svg (FRM-354)
+// would redraw — rebuilding the bars' svg (FRM-354)
 export type StashBoardView = {
     members?: StashMember[];
     isColour: boolean;
@@ -132,6 +132,10 @@ declare module 'claude-code' {
             // dima is on mobile: the reminder asks for the asks fence instead of orbit
             mobile: boolean;
             enhancer: StashEnhancer;
+            // epoch ms of the terminal bars' last breath tick: only the band reads it, so a tick redraws only the band
+            breath: number;
+            // the /board ab owner's gpu utilisation samples, per «<rate> · <place>» setting
+            gpu: Record<string, number[]>;
         };
     }
 }

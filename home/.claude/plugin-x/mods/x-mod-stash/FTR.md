@@ -167,6 +167,12 @@
   - given the turn ends
   - then the bars stand still: no wave, no redraw tick
   - decision: `/board breathe` makes the bars breathe idle too while dima refines the look, off by default, a try that leaves with the 🎛️ knobs (dima, 2026-10-11 12:20)
+- ⬜ `/board ab` compares the bars' frame rate and where the breath sits, live, with the gpu it costs (FRM-391 slice 02)
+  - given dima runs `/board ab`
+  - then the bars breathe idle too, and a row under the meters holds ⏱ (off, 10, 20, 30 Hz) and 📍 (bars or cc's spinner line), each a press that applies in every band with no reload, and `gpu <setting> <n>%` — the mean of the last ten 2 s `ioreg` reads, in the session that ran it
+  - given 📍 spinner, then the bars stand still and a 12-cell ember strip leads the spinner line; that line's time and tokens are gone while it shows
+  - decision: the rate is the terminal's — the desktop's svg embers run at the display's own rate, so on the desktop the A/B is the place and the gpu (dima's eye test runs in his live band, `mods:live` is a text pty)
+  - decision: a try; once dima picks, the losing place and rates go and the rate stays as the 🎛️ frame-rate knob's default
   - decision: the desktop wave runs inside each bar's svg, no host tick, and a rebuild resumes at the breath's phase; the terminal redraws the band every 100 ms while working — the rates are an A/B dima picks by eye (FRM-391 slice 02)
   - and both bars start and end on the same columns: one label width, one bar width, one right-aligned % cell; desktop air 0.5 above the meters and 0.4 between them
   - and an idle band stays live: the 4 s poll takes the 5h reading from `cc-usage-window.json`, which any busy session writes, and its minute moves the time left
