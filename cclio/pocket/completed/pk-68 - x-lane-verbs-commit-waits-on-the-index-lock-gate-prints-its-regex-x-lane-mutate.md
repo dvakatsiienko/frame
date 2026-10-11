@@ -3,10 +3,10 @@ id: PK-68
 title: >-
   x lane verbs: commit waits on the index lock, gate prints its regex, x lane
   mutate
-status: open
+status: done
 assignee: []
 created_date: '2026-10-11 21:17'
-updated_date: '2026-10-11 21:28'
+updated_date: '2026-10-11 21:36'
 due_date: '2026-10-14'
 labels:
   - m
@@ -29,4 +29,6 @@ from the 10-11 halt flush (gather clusters 4, 5, 11):
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: waits for the next cli coder, on dima's word
+
+folded 2026-10-12 (o308): the lock wait and the gate regex ride FRM-384, x lane mutate is FRM-383's x verify red --pairs
 <!-- SECTION:NOTES:END -->

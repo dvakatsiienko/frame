@@ -4,7 +4,7 @@ title: phases nudge fires only on turns that did real work
 status: open
 assignee: []
 created_date: '2026-10-11 21:28'
-updated_date: '2026-10-11 21:29'
+updated_date: '2026-10-11 21:36'
 due_date: '2026-10-13'
 labels:
   - s
@@ -30,4 +30,6 @@ dima 2026-10-12 00:28, on cclio's mod idea: «will this reduce the number of red
 parked: a rider on FRM-386 🐠 catch, the next mods coder (dima 00:28)
 
 dima 00:29: «2% is a bit too much for all the mods that I use, but mods are incredibly useful — orbit is a game changer, as well as phases; glide is useful too». goal: orbit's share of output tokens under 1 % (2 % measured 10-11). levers: this nudge (641 of 1,739 orbit calls were plan), and cclio's hidden notes to one line (the add inputs held ~242k chars)
+
+rides FRM-386 🐠 catch (o309)
 <!-- SECTION:NOTES:END -->

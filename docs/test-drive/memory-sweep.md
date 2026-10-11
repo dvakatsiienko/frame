@@ -20,6 +20,7 @@ his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 - a missing entry is drift too: the chords route list lacked `/api/stats` (r28)
 
 ### mistakes
+- the fold pass covered memory, rules, recipes and the pocket, and «the sweep is done» let dima read linear as covered too; name which surfaces a pass did NOT touch (00:35)
 - a split by string index took the roadmap section and the pacing check off the boot; check every heading the proposal says stays (r31, wishkeeper)
 - an addition applied without its tick (r5, wishkeeper)
 - eleven rounds graded «keep unless proven dead» because the recipe never carried dima's 10-07 delete-first brief (r17–r28, ccrow)
@@ -301,3 +302,5 @@ born place: a **terminal** `claude` in `~/frame/cclio` (not the Code tab), monit
 - 2026-10-12 00:13 · halt started (dima 00:10): pocket green (14 done filed, PK-66), inbox reset, 0 gh notifications · the recipe matches dima's 00:12 outline: step 10 = the drift hunt → gates → the retro on this trace (findings, mistakes, how the recipe improves)
 - 2026-10-12 00:16 · dima: «trace as you go» was buried at line 97 → hoisted to the run section's first bullet (line 82); shape test green
 - 2026-10-12 00:18 · halt flush applied (o302): PK-67 guard catches, PK-68 x lane verbs, PK-69 reply-check catches, PK-65 +4 lines; 3 skill lines merged (cclio:checkpoint, x:crew-lead, cclio:shape-lane), the mods/AGENTS one dropped (line 6 holds it); FRM-396 Done; 2 stale research docs trashed, 4 kept (live pointers); 8 retros folded + trashed; story appended, the drop held for dima's word on the cap · o301: trace rule gains findings, ## findings seeded
+- 2026-10-12 00:36 · dima 00:35: «I want my verbatims clear on all surfaces» → dima-wishes' fold scope widened to every surface (skills, docs, app product files, linear); fold pass 2 (linear) drafting in the background, no edits · FRM-339 detached from done FRM-327, rides FRM-386 with FRM-389, PK-67, PK-70 · 79 closed tickets archived (237 → 158) · PK-48/49/68 folded into FRM-387/383/384
+- 2026-10-12 00:42 · fold pass 2 applied on dima's word (00:38, afk): 95 folds over 43 open tickets, 0 skipped, exact match once each, two read back live (FRM-266 peek, FRM-353 test-drive); 6 garbled quotes flagged to orbit
