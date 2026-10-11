@@ -517,7 +517,7 @@ test('the ⏱ chip steps the rate to the next one', async ($, on) => {
     const { store } = meters(on);
     await measure($, 39, 35);
     setAb(store, 10, 'bars');
-    const ui = await bandOn($, 'desktop', false);
+    const ui = await bandOn($, 'terminal', false);
     await ui.press({ key: 'ab:rate' });
     expect(store['breath-ab']).toEqual({ hz: 20, owner: SID, place: 'bars' });
 });
@@ -562,10 +562,9 @@ test('📍 spinner takes the breath off the bars', async ($, on) => {
     const { store } = meters(on);
     await measure($, 39, 35);
     setAb(store, 10, 'spinner');
-    expect(await svgsAnimate(await bandOn($, 'desktop', true))).toEqual([
-        false,
-        false,
-    ]);
+    expect(
+        (await svgsAnimate(await bandOn($, 'desktop', true))).slice(0, 2),
+    ).toEqual([false, false]);
 });
 
 test("📍 spinner draws the embers before cc's spinner word", async ($, on) => {
@@ -620,4 +619,36 @@ test('a session that does not own the A/B never reads the gpu', async ($, on) =>
     await bandOn($, 'desktop', false);
     await clock.advance(4000);
     expect(ran.filter((c) => c === 'ioreg')).toEqual([]);
+});
+
+test('📍 spinner keeps a preview of the spinner line in the idle band', async ($, on) => {
+    const { store } = meters(on);
+    await measure($, 39, 35);
+    setAb(store, 10, 'spinner');
+    const ui = await bandOn($, 'desktop', false);
+    expect([
+        (await ui.find({ text: 'spinner preview', type: 'Text' }))?.text,
+        (await svgsAnimate(ui)).at(-1),
+    ]).toEqual(['spinner preview', true]);
+});
+
+test('📍 bars shows no spinner preview', async ($, on) => {
+    const { store } = meters(on);
+    await measure($, 39, 35);
+    setAb(store, 10, 'bars');
+    const ui = await bandOn($, 'desktop', false);
+    expect(
+        await ui.find({ text: 'spinner preview', type: 'Text' }),
+    ).toBeUndefined();
+});
+
+test('the desktop A/B names its rate as the display rate, with no rate button', async ($, on) => {
+    const { store } = meters(on);
+    await measure($, 39, 35);
+    setAb(store, 10, 'bars');
+    const ui = await bandOn($, 'desktop', false);
+    expect([
+        (await ui.find({ text: '⏱ display rate', type: 'Text' }))?.text,
+        await ui.find({ key: 'ab:rate', type: 'Button' }),
+    ]).toEqual(['⏱ display rate', undefined]);
 });

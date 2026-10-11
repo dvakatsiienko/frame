@@ -1611,6 +1611,38 @@ function hoverTip(
     );
 }
 
+// the A/B's spinner place: a short strip of embers, the same in cc's spinner line and in the band's preview of it
+function emberStrip(
+    ui: ReturnType<EngineInterface['ui']['resolve']>,
+    isDesktop: boolean,
+    now: number,
+) {
+    const { Box, Text } = ui;
+    const Svg = isDesktop && 'Svg' in ui ? ui.Svg : undefined;
+    return Svg ? (
+        <Svg
+            alt='breathing'
+            height={BAR_HEIGHT}
+            key='spin:svg'
+            source={meterSvg(100, SPIN_CELLS, undefined, undefined, now)}
+        />
+    ) : (
+        <Box flexDirection='row' flexShrink={0} key='spin:bar'>
+            {meterBar(100, SPIN_CELLS, undefined, undefined, now).map(
+                (r, i) => (
+                    <Text
+                        bold={r.tone === 'hi'}
+                        color={r.color}
+                        // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its strip is its identity
+                        key={`spin:${i}`}>
+                        {r.text}
+                    </Text>
+                ),
+            )}
+        </Box>
+    );
+}
+
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
@@ -3004,27 +3036,32 @@ export const register: Register = (on) => {
         const placeLabel = `📍 ${ab?.place ?? 'bars'}`;
         const abRow = ab ? (
             <Box flexDirection='row' gap={1} key='ab'>
-                {tip(
-                    'ab:rate',
-                    Svg
-                        ? 'terminal rate: off, 10, 20, 30 Hz; the svg runs at the display rate'
-                        : 'bars frame rate: off, 10, 20, 30 Hz',
-                    <Button
-                        key='ab:rate'
-                        onPress={() =>
-                            void handleAbChange({
-                                hz:
-                                    AB_RATES[
-                                        (AB_RATES.indexOf(ab.hz) + 1) %
-                                            AB_RATES.length
-                                    ] ?? 0,
-                            })
-                        }
-                        plain>
-                        {rateLabel}
-                    </Button>,
-                    leftOf(rateLabel, false),
-                )}
+                {Svg
+                    ? tip(
+                          'ab:rate',
+                          'the desktop draws the embers at the display rate; ⏱ steps the terminal only',
+                          <Text dimColor>⏱ display rate</Text>,
+                          { left: 16 },
+                      )
+                    : tip(
+                          'ab:rate',
+                          'bars frame rate: off, 10, 20, 30 Hz',
+                          <Button
+                              key='ab:rate'
+                              onPress={() =>
+                                  void handleAbChange({
+                                      hz:
+                                          AB_RATES[
+                                              (AB_RATES.indexOf(ab.hz) + 1) %
+                                                  AB_RATES.length
+                                          ] ?? 0,
+                                  })
+                              }
+                              plain>
+                              {rateLabel}
+                          </Button>,
+                          leftOf(rateLabel, false),
+                      )}
                 {tip(
                     'ab:place',
                     ab.place === 'bars'
@@ -3047,6 +3084,16 @@ export const register: Register = (on) => {
                         ? `gpu ${gpuWords || 'reading…'}`
                         : 'gpu reads in the session that ran /board ab'}
                 </Text>
+            </Box>
+        ) : null;
+        // cc's spinner line shows only mid-turn: while 📍 says spinner the band keeps a copy of it, so dima sees it idle
+        const isSpinPreview = ab?.place === 'spinner' && ab.hz > 0;
+        if (isSpinPreview && !Svg) tickBreath($, ab?.hz);
+        const spinPreview = isSpinPreview ? (
+            <Box alignItems='center' flexDirection='row' gap={1} key='ab:spin'>
+                <Text dimColor>spinner preview</Text>
+                {emberStrip(ui, Boolean(Svg), now)}
+                <Text>Baking…</Text>
             </Box>
         ) : null;
         const meters = (
@@ -3105,6 +3152,7 @@ export const register: Register = (on) => {
                 {row}
                 {meters}
                 {abRow}
+                {spinPreview}
                 {enhancer.error ? (
                     <Text color='error' key='enh:error' wrap='truncate-end'>
                         {enhancer.error}
@@ -3127,32 +3175,11 @@ export const register: Register = (on) => {
         if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e);
         const ab = abOf(await $.store.get(BREATH_AB).catch(() => undefined));
         if (ab?.place !== 'spinner' || !ab.hz) return next(e);
-        const { Box, Text } = $.ui.resolve(e);
-        const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
+        const ui = $.ui.resolve(e);
+        const { Box, Text } = ui;
         const now = await $.clock.now();
         const word = `${e.props.message ?? e.props.word}${e.props.suffix}`;
-        const strip = Svg ? (
-            <Svg
-                alt='breathing'
-                height={BAR_HEIGHT}
-                key='spin:svg'
-                source={meterSvg(100, SPIN_CELLS, undefined, undefined, now)}
-            />
-        ) : (
-            <Box flexDirection='row' flexShrink={0} key='spin:bar'>
-                {meterBar(100, SPIN_CELLS, undefined, undefined, now).map(
-                    (r, i) => (
-                        <Text
-                            bold={r.tone === 'hi'}
-                            color={r.color}
-                            // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its strip is its identity
-                            key={`spin:${i}`}>
-                            {r.text}
-                        </Text>
-                    ),
-                )}
-            </Box>
-        );
+        const strip = emberStrip(ui, e.surface === 'desktop', now);
         if (e.surface === 'terminal') {
             await $.state.get(BREATH);
             tickBreath($, ab.hz);
