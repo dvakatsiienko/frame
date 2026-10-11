@@ -32,6 +32,8 @@
   - when the turn stops
   - then the row reads «🔭 waiting on <who>», the first task in three words at most, «+n» for the rest; a reply's own 🔭 line wins
   - decision: short, «waiting on <who>», nothing more (dima's o88, 23:15)
+  - given the only tasks running are cclio's standing pr/ci watches («Arm the one-shot pr/ci watch»), then the 🔭 reads «not waiting»; beside a real wait they are not counted in the +n
+  - decision: the standing watches run all day and are no wait (dima's o52, 2026-10-11)
   - decision: the band, not the board — slim enough, and dima wants it visible (dima, 2026-10-10)
 - ✅ a mid-turn reload keeps the turn and what only the band held
   - given a turn is running and dima's away digest shows

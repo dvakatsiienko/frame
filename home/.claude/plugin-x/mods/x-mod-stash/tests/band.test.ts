@@ -199,3 +199,47 @@ test('a reply with no 🔭 line names its background work in the row', async ($,
         '🔭 waiting on critic',
     );
 });
+
+const standingWatch = (id: string) => ({
+    description: 'Arm the one-shot pr/ci watch',
+    id,
+    status: 'running',
+    type: 'shell',
+});
+
+test("cclio's standing pr/ci watches are not counted as waits", async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await $.classic.Stop({
+        background_tasks: [
+            standingWatch('w1'),
+            standingWatch('w2'),
+            {
+                description: 'critic',
+                id: 't1',
+                status: 'running',
+                type: 'subagent',
+            },
+        ],
+        last_assistant_message: 'spawned the critic.',
+        session_id: SID,
+        stop_hook_active: false,
+    });
+    expect((await ui.find({ text: /^🔭/, type: 'Text' }))?.text).toBe(
+        '🔭 waiting on critic',
+    );
+});
+
+test('a session running only the standing watches reads not waiting', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await $.classic.Stop({
+        background_tasks: [standingWatch('w1'), standingWatch('w2')],
+        last_assistant_message: 'done.',
+        session_id: SID,
+        stop_hook_active: false,
+    });
+    expect((await ui.find({ text: /^🔭/, type: 'Text' }))?.text).toBe(
+        '🔭 not waiting',
+    );
+});

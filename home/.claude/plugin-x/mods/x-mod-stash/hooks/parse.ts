@@ -125,11 +125,14 @@ export function parseWait(reply: string): string | undefined {
 }
 
 // with no 🔭 line, the session's own background work is what it waits on: the first task in three words at most,
-// «waiting on <who>», and +n for the rest (dima's o88: short, nothing more)
+// «waiting on <who>», and +n for the rest (dima's o88: short, nothing more); cclio's standing pr/ci watches
+// (`watch-once.sh`) run all day and are no wait (dima's o52)
+const STANDING_WATCH = /^Arm the one-shot pr\/ci watch/i;
 export function backgroundWait(
-    tasks: readonly { name?: string; description: string }[] | undefined,
+    all: readonly { name?: string; description: string }[] | undefined,
 ): string | undefined {
-    const first = tasks?.[0];
+    const tasks = all?.filter((t) => !STANDING_WATCH.test(t.description)) ?? [];
+    const first = tasks[0];
     if (!first) return undefined;
     const who = (first.name ?? first.description)
         .trim()
