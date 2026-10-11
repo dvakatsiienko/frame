@@ -51,6 +51,10 @@ const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
 const POLL_MS = 4000;
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
 const BOARD = 'fleet-board';
+// 🎛️ home mocks (FRM-391, dima 15:59 «try multiple approaches at once»): its own pane, which the surface tabs beside 🚦;
+// a dialog-mannered pane; and a tab inside 🚦 itself; the band keeps a compact grid
+const SETTINGS_PANE = 'stash-settings';
+const SETTINGS_DIALOG = 'stash-settings-dialog';
 const REPLY = 'reply:';
 const CONTEXT = 'context:';
 // the model and effort of a session's main loop, as its last model request named them
@@ -183,6 +187,8 @@ let afk = false;
 let isWaker = false;
 let shown: Record<string, boolean> = {};
 let isSettingsOpen = false;
+// which tab the 🚦 board shows: its sessions or the 🎛️ mock
+let boardTab: 'sessions' | 'settings' = 'sessions';
 // the main thread's tool calls this turn, and whether its one phases nudge went out
 let turnTools = 0;
 let isNudged = false;
@@ -1506,6 +1512,52 @@ async function pressDoor(
 }
 
 // every control names itself on hover; the card stays on the control's row, since a one-row site clips the rest
+// re-read before the write: another session may have flipped a part since this one's poll
+async function flipPart($: EngineInterface, key: string) {
+    const now = shownOf(await $.store.get(SHOWN).catch(() => undefined));
+    shown = { ...now, [key]: now[key] === false };
+    await $.store.set(SHOWN, shown);
+    await publish($);
+}
+
+// the one switch list every 🎛️ home draws: a column per group, or a wrapping grid where rows are dear (the band)
+function settingsListJSX(
+    $: EngineInterface,
+    ui: ReturnType<EngineInterface['ui']['resolve']>,
+    shownNow: Record<string, boolean>,
+    air: boolean,
+    isGrid = false,
+) {
+    const { Box, Text, Button } = ui;
+    const groups = [...new Set(PARTS.map((p) => p.group))];
+    return groups.map((group) => (
+        <Box
+            flexDirection='column'
+            key={`settings:${group}`}
+            rowGap={air ? 0.3 : 0}>
+            <Text bold>{group}</Text>
+            <Box
+                columnGap={1}
+                flexDirection={isGrid ? 'row' : 'column'}
+                flexWrap={isGrid ? 'wrap' : 'nowrap'}
+                rowGap={air ? 0.3 : 0}>
+                {PARTS.filter((p) => p.group === group).map((p) => (
+                    <Box flexDirection='row' key={`settings:row:${p.key}`}>
+                        <Button
+                            key={`part:${p.key}`}
+                            onPress={() => void flipPart($, p.key)}
+                            {...(shownNow[p.key] !== false
+                                ? { variant: 'primary' as const }
+                                : { dimColor: true })}>
+                            {p.label}
+                        </Button>
+                    </Box>
+                ))}
+            </Box>
+        </Box>
+    ));
+}
+
 function hoverTip(
     ui: ReturnType<EngineInterface['ui']['resolve']>,
     key: string,
@@ -1908,8 +1960,34 @@ export const register: Register = (on) => {
     // the row's 🚦 shows whether the board is open
     on('ui.close', async ($, e, next) => {
         const r = await next(e);
-        if (e.id === BOARD) await publish($);
+        if (e.id === BOARD) {
+            boardTab = 'sessions';
+            await publish($);
+        }
         return r;
+    });
+
+    // mocks a and c: the 🎛️ list in a pane of its own, plain or with a dialog's manners
+    on('ui.render', { component: 'Pane' }, async ($, e, next) => {
+        if (e.requestId !== SETTINGS_PANE && e.requestId !== SETTINGS_DIALOG)
+            return next(e);
+        const ui = $.ui.resolve(e);
+        const { Box, Text } = ui;
+        return (
+            <Box flexDirection='column' gap={1}>
+                <Text dimColor>
+                    {e.requestId === SETTINGS_DIALOG
+                        ? 'c · a dialog: esc closes it'
+                        : 'a · its own pane, tabbed beside 🚦'}
+                </Text>
+                {settingsListJSX(
+                    $,
+                    ui,
+                    (await $.state.get(VIEW)).value?.shown ?? {},
+                    e.surface === 'desktop',
+                )}
+            </Box>
+        );
     });
 
     on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
@@ -2215,9 +2293,46 @@ export const register: Register = (on) => {
         const fill =
             e.props.placement === 'dock' ? e.props.scroll.bodyRows : undefined;
         const list = board?.members;
+        // mock b (dima, 15:59 «tabs?»): two tabs at the board's top, its sessions or the 🎛️ list
+        const flipTab = (tab: typeof boardTab) => {
+            boardTab = tab;
+            $.ui.invalidate('ui.render');
+        };
+        const tabsJSX = (
+            <Box flexDirection='row' gap={1} key='board:tabs' marginBottom={1}>
+                {(
+                    [
+                        ['sessions', '🚦 sessions'],
+                        ['settings', '🎛️ settings'],
+                    ] as const
+                ).map(([tab, label]) => (
+                    <Button
+                        key={`tab:${tab}`}
+                        onPress={() => flipTab(tab)}
+                        {...(boardTab === tab
+                            ? { variant: 'primary' as const }
+                            : { plain: true as const })}>
+                        {label}
+                    </Button>
+                ))}
+            </Box>
+        );
+        if (boardTab === 'settings')
+            return (
+                <Box flexDirection='column' gap={1} minHeight={fill}>
+                    {tabsJSX}
+                    {settingsListJSX(
+                        $,
+                        ui,
+                        (await $.state.get(VIEW)).value?.shown ?? {},
+                        e.surface === 'desktop',
+                    )}
+                </Box>
+            );
         if (!list)
             return (
                 <Box flexDirection='column' minHeight={fill}>
+                    {tabsJSX}
                     <Text dimColor>the session registry is unreadable</Text>
                     {orbitJSX}
                     {phasesJSX}
@@ -2226,6 +2341,7 @@ export const register: Register = (on) => {
         if (!list.length)
             return (
                 <Box flexDirection='column' minHeight={fill}>
+                    {tabsJSX}
                     <Text dimColor>no live sessions</Text>
                     {orbitJSX}
                     {phasesJSX}
@@ -2394,6 +2510,7 @@ export const register: Register = (on) => {
         ).length;
         return (
             <Box flexDirection='column' minHeight={fill}>
+                {tabsJSX}
                 {/* the head: what the pane holds on the left, how many work right now on the right */}
                 <Box
                     flexDirection='row'
@@ -2544,14 +2661,23 @@ export const register: Register = (on) => {
             isSettingsOpen = !view.isSettingsOpen;
             await publish($);
         };
-        // re-read before the write: another session may have flipped a part since this one's poll
-        const handlePartFlip = async (key: string) => {
-            const now = shownOf(
-                await $.store.get(SHOWN).catch(() => undefined),
-            );
-            shown = { ...now, [key]: now[key] === false };
-            await $.store.set(SHOWN, shown);
-            await publish($);
+        const openSettingsAt = async (home: 'pane' | 'dialog' | 'board') => {
+            if (home === 'pane')
+                await $.ui.open({ id: SETTINGS_PANE, title: '🎛️ settings' });
+            if (home === 'dialog')
+                await $.ui.open({
+                    closeOnEscape: true,
+                    focus: true,
+                    holdToasts: true,
+                    id: SETTINGS_DIALOG,
+                    rows: 30,
+                    title: '🎛️ settings',
+                });
+            if (home === 'board') {
+                boardTab = 'settings';
+                await openBoard($);
+                $.ui.invalidate('ui.render');
+            }
         };
         const handleBoardFlip = async () => {
             if (await isOpen($)) await $.ui.close({ id: BOARD });
@@ -2976,41 +3102,36 @@ export const register: Register = (on) => {
                       )),
                   ]
                 : [];
-        // the 🎛️ view folds out above the row, where the breather drew: a vertical list, one button per part, accent while
-        // shown and dim while hidden, the button alone says which; no hover cards, no shown/hidden words (dima, 15:31–15:50)
-        const groups = [...new Set(PARTS.map((p) => p.group))];
+        // 🎛️ folds out the home mocks dima tries side by side (15:59): a row that opens each other home, then the band's
+        // own take, a compact wrapping grid; no hover cards, the view explains itself (dima, 15:36)
         const settingsJSX = view.isSettingsOpen ? (
             <Box
                 borderDimColor
                 borderStyle='round'
                 flexDirection='column'
-                gap={1}
+                gap={air ? 0.6 : 0}
                 key='settings:view'
-                paddingX={2}
-                paddingY={air ? 1 : 0}>
-                <Text bold>🎛️ settings · press a part to show or hide it</Text>
-                {groups.map((group) => (
-                    <Box
-                        flexDirection='column'
-                        key={`settings:${group}`}
-                        rowGap={air ? 0.3 : 0}>
-                        <Text bold>{group}</Text>
-                        {PARTS.filter((p) => p.group === group).map((p) => (
-                            <Box
-                                flexDirection='row'
-                                key={`settings:row:${p.key}`}>
-                                <Button
-                                    key={`part:${p.key}`}
-                                    onPress={() => void handlePartFlip(p.key)}
-                                    {...(isShown(p.key)
-                                        ? { variant: 'primary' as const }
-                                        : { dimColor: true })}>
-                                    {p.label}
-                                </Button>
-                            </Box>
-                        ))}
-                    </Box>
-                ))}
+                paddingX={1}>
+                <Box flexDirection='row' gap={1} key='settings:homes'>
+                    <Text bold>🎛️ try a home:</Text>
+                    <Button
+                        key='home:pane'
+                        onPress={() => void openSettingsAt('pane')}>
+                        a · own pane, tabbed beside 🚦
+                    </Button>
+                    <Button
+                        key='home:board'
+                        onPress={() => void openSettingsAt('board')}>
+                        b · a tab inside 🚦
+                    </Button>
+                    <Button
+                        key='home:dialog'
+                        onPress={() => void openSettingsAt('dialog')}>
+                        c · dialog, esc closes
+                    </Button>
+                    <Text dimColor>d · this grid</Text>
+                </Box>
+                {settingsListJSX($, ui, view.shown ?? {}, air, true)}
                 {compactJSX}
             </Box>
         ) : null;

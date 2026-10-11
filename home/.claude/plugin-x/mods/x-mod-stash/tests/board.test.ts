@@ -392,7 +392,9 @@ test("pressing an unbridged background session's name copies its attach command"
 test('a terminal session with no door has nothing to press', async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const doors = (await ui.findAll({ type: 'Button' })).map((n) => n.key);
+    const doors = (await ui.findAll({ type: 'Button' }))
+        .map((n) => n.key)
+        .filter((k) => k?.startsWith('door:'));
     expect(doors).toEqual([`door:${HERE}`]);
 });
 

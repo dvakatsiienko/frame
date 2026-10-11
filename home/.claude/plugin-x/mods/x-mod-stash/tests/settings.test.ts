@@ -180,3 +180,40 @@ test("a flip keeps another session's switch it has not polled yet", async ($, on
         'stash.enhancer': false,
     });
 });
+
+// the home mocks dima tries side by side (15:59): a and c open a pane of their own, b a tab inside 🚦
+for (const [home, id] of [
+    ['pane', 'stash-settings'],
+    ['dialog', 'stash-settings-dialog'],
+    ['board', 'fleet-board'],
+] as const)
+    test(`🎛️ home ${home} opens the switch list in ${id}`, async ($, on) => {
+        world(on);
+        const opened: string[] = [];
+        on('ui.open', (_$, e) => {
+            opened.push(e.id);
+            return { value: { isPlaced: true } };
+        });
+        const ui = await band($);
+        await ui.press({ key: 'settings' });
+        await ui.press({ key: `home:${home}` });
+        const pane = await $.ui.mount({
+            component: 'Pane',
+            plugin: 'x-mod-stash',
+            props: {
+                bodyColumns: 80,
+                isFocused: false,
+                placement: 'dock',
+                scroll: { bodyRows: 40, offset: 0 },
+                title: '🎛️ settings',
+                view: {},
+            },
+            requestId: id,
+            surface: 'terminal',
+        });
+        expect([
+            opened.includes(id),
+            (await pane.find({ key: 'part:stash.enhancer', type: 'Button' }))
+                ?.text,
+        ]).toEqual([true, '🪄 ⏪ ⏩ enhancer']);
+    });
