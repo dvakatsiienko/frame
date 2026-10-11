@@ -208,7 +208,7 @@
   - when it runs
   - then each finding names its line and the rule
 - ✅ `x brief check` refuses a skill that waits on the user's approval
-  - given a brief names a skill (`x:<name>`, `mattpocock-skills:<name>`, or matt's `<name>`) whose `SKILL.md` asks to «quiz the user» or iterate «until the user approves», and no line skips it («skip … quiz»; an unrelated «no push until dima approves» does not)
+  - given a brief names a skill (`x:<name>`, `mattpocock-skills:<name>`, matt's `<name>`, `/<name>`, or «the <name> skill») whose `SKILL.md` asks to «quiz the user» or iterate «until the user approves», and no line skips it («skip … quiz»; an unrelated «no push until dima approves» does not)
   - when it runs
   - then a `quiz` finding names the skill on its line; with a skip line the brief passes
   - decision: a coder parked on four asks under `to-tickets`' quiz while dima was away (FRM-392, 2026-10-11 12:03)

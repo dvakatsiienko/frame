@@ -141,16 +141,18 @@
   - then it is refused with the door `x lane push` (it pushes HEAD's sha and reads the remote back); `# dima-ok: <refspec>` lets it run
   - given a plain `git push`, or the same refspec outside those two repos, then it runs
 
-## every Agent spawn and SendMessage
+## every Agent spawn
 
-- ✅ a brief passes `x brief check` before it leaves (FRM-392)
-  - given an `Agent` prompt, or the model's own `SendMessage`, that names a ticket id, a backticked path or file name, or one of matt's skills
+- ✅ an agent brief passes `x brief check` before the agent runs (FRM-392)
+  - given an `Agent` prompt that names a ticket id, a backticked path or file name, or one of matt's skills
   - when x-mod-guard runs `x brief check` on it, over stdin, against the session's repo root
   - then a missing path or a skill whose step waits on the user's approval refuses it, and the reason carries the check's own line, so the next try fixes the brief; the refusal is kept as a guard event
   - given the brief with the path fixed, or a line that skips the quiz, then it goes
-  - given a plain steer (no ticket id, no backticked path), or a plugin's own send, then it goes unchecked
+  - given a plain prompt (no ticket id, no backticked path or file, no matt skill), then it runs unchecked
+  - given a `SendMessage`, then it is never checked
+  - decision: messages left the check after it refused the verifier's verdict three times live — a report names a skill or an example path on purpose (FRM-392 round 1, 13:40); which messages count as briefs is dima's call
   - decision: the check's other findings (an unknown backticked term, a relayed approval with no time, the exit-line lints) never refuse — a message quotes code on purpose (a verifier's mutation); only a path and the quiz stopped work (dima's o40, 2026-10-11)
-  - decision: fail open — a check that breaks, times out or answers oddly lets the brief go, unlike the floor: these hooks run on every Agent and SendMessage of every session, cclio's included
+  - decision: fail open — a check that breaks, times out or answers oddly lets the brief go, unlike the floor: this runs on every Agent of every session, cclio's included
   - proven live 2026-10-11 13:24: a headless `mods:probe` brief to Explore naming a guessed path came back «Subagent spawn denied by a plugin: x-mod-guard stopped this brief … no such path»
   - 📌 a brief naming paths of another repo than the session's is refused — the check reads the session's root
 - ✅ a fork must say why it needs the parent context

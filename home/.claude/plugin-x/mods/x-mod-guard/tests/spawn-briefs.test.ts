@@ -77,11 +77,9 @@ const spawn = ($: Engine, prompt: string) =>
         tool_use_id: 'tu-1',
     });
 
-const send = ($: Engine, text: string, isPlugin = false) =>
+const send = ($: Engine, text: string) =>
     $.session.send({
-        origin: isPlugin
-            ? { kind: 'plugin', name: 'x-mod-stash' }
-            : { kind: 'model' },
+        origin: { kind: 'model' },
         text,
         to: '☕️ 🔧 FRM-1 code: x',
     });
@@ -104,37 +102,28 @@ test('the same agent brief with the path fixed runs once checked', async ($, on)
     expect([r.deny, checked.length, logs]).toEqual([undefined, 1, []]);
 });
 
-test('a message naming to-tickets with no skip line is refused naming the quiz', async ($, on) => {
+test('an agent brief naming to-tickets with no skip line is refused naming the quiz', async ($, on) => {
     world(on);
-    const r = await send($, `cut the spec with ${QUIZ}`);
-    expect(r).toEqual({
-        isDelivered: false,
-        reason: expect.stringContaining('quiz to-tickets'),
-    });
+    const r = await spawn($, `cut the spec with ${QUIZ}`);
+    expect(r.deny).toContain('quiz to-tickets');
 });
 
-test('a message naming to-tickets with a skip line is sent once checked', async ($, on) => {
+test('an agent brief naming to-tickets with a skip line runs once checked', async ($, on) => {
     const { checked, logs } = world(on);
-    const r = await send($, `cut the spec with ${QUIZ}\nskip its quiz step`);
-    expect([r.isDelivered, checked.length, logs]).toEqual([true, 1, []]);
+    const r = await spawn($, `cut the spec with ${QUIZ}\nskip its quiz step`);
+    expect([r.deny, checked.length, logs]).toEqual([undefined, 1, []]);
 });
 
-test('a plain steer with no id and no path is sent unchecked', async ($, on) => {
+test('a plain agent brief with no id and no path runs unchecked', async ($, on) => {
     const { checked } = world(on);
-    const r = await send($, 'nice, carry on with the next slice');
-    expect([r.isDelivered, checked]).toEqual([true, []]);
+    const r = await spawn($, 'summarise the last three commits');
+    expect([r.deny, checked]).toEqual([undefined, []]);
 });
 
 test('a backticked code term the repo lacks never refuses', async ($, on) => {
     const { checked, logs } = world(on);
-    const r = await send($, 'round 2 on FRM-1: red under `const z = 1;`');
-    expect([r.isDelivered, checked.length, logs]).toEqual([true, 1, []]);
-});
-
-test('a brief check that breaks lets the send through', async ($, on) => {
-    world(on, 'breaks');
-    const r = await send($, `FRM-1: read ${MISSING} first`);
-    expect(r.isDelivered).toBe(true);
+    const r = await spawn($, 'FRM-1: mutate `const z = 1;` and rerun');
+    expect([r.deny, checked.length, logs]).toEqual([undefined, 1, []]);
 });
 
 test('a brief check that breaks lets the agent run', async ($, on) => {
@@ -143,8 +132,8 @@ test('a brief check that breaks lets the agent run', async ($, on) => {
     expect(r.deny).toBeUndefined();
 });
 
-test("a plugin's own send is never checked", async ($, on) => {
+test('a message naming a skill and a missing path is sent unchecked', async ($, on) => {
     const { checked } = world(on);
-    const r = await send($, `FRM-1: read ${MISSING} first`, true);
+    const r = await send($, `FRM-1 round 1: ${QUIZ} and ${MISSING} came up`);
     expect([r.isDelivered, checked]).toEqual([true, []]);
 });
