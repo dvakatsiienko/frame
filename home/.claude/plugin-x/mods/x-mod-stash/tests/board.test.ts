@@ -43,7 +43,6 @@ function fleet(
     } = {},
 ) {
     const runs: string[][] = [];
-    const copied: string[] = [];
     if (files) on('fs.exists', (_$, e) => ({ value: files.includes(e.path) }));
     const clock = mock.clock(on, { now: NOW });
     mock.store(on, store);
@@ -59,10 +58,6 @@ function fleet(
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
     if (isBoardOpen) panes(on, true);
-    on('ui.copy', (_$, e) => {
-        copied.push(e.text);
-        return { value: { isCopied: true as const } };
-    });
     on('fs.list', () => ({
         value: ['1.json', '2.json', '3.json', 'x.key'].map((name) => ({
             isLink: false,
@@ -99,7 +94,7 @@ function fleet(
             },
         };
     });
-    return { clock, copied, runs };
+    return { clock, runs };
 }
 
 // the board as the poll leaves it: a session start reads the registry into the view, then the pane draws it
@@ -144,29 +139,17 @@ const stop = ($: Engine, reply: string) =>
         stop_hook_active: false,
     });
 
-// the control right of a session's name
-const pressName = async ($: Engine, sid: string) =>
-    (await board($)).press({ key: `door:${sid}` });
-
-test('a session with a door is pressed by its whole name', async ($, on) => {
-    fleet(
-        on,
-        {},
-        { bg: [2], patch: { 2: { bridgeSessionId: 'session_01YZ' } } },
-    );
-    const ui = await board($);
-    const name = await ui.find({ key: `door:${PEER}` });
-    expect(name?.text).toBe('☕️ 🔧 FRM-1 code: x');
-});
-
-test('every name is bold and is its own door, with no ↗ beside it', async ($, on) => {
+test('every name is bold text, and a row holds no control', async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const [name, door] = await Promise.all([
+    const [name, doors] = await Promise.all([
         ui.find({ text: '🦉 cclio (here)', type: 'Text' }),
-        ui.find({ key: `door:${HERE}` }),
+        ui.findAll({ type: 'Button' }),
     ]);
-    expect([name?.props.bold, door?.text]).toEqual([true, '🦉 cclio (here)']);
+    expect([
+        name?.props.bold,
+        doors.filter((d) => d.key?.startsWith('door:')).length,
+    ]).toEqual([true, 0]);
 });
 
 test('the sessions head reads its count and a bold busy on the right', async ($, on) => {
@@ -372,41 +355,6 @@ test("a keep-hot ping's reply keeps what the session waits on", async ($, on) =>
     });
     await stop($, '.');
     expect(await row($, HERE)).toContain('🔭 waiting on ci — a ping');
-});
-
-test("pressing a desktop session's name opens it in the desktop", async ($, on) => {
-    const { runs } = fleet(on);
-    await pressName($, HERE);
-    expect(runs.filter(([cmd]) => cmd === 'open')).toEqual([
-        ['open', 'claude://code/continue?session=local_abc-1'],
-    ]);
-});
-
-test("pressing a bridged background session's name opens its claude.ai session", async ($, on) => {
-    const { runs } = fleet(
-        on,
-        {},
-        { bg: [2], patch: { 2: { bridgeSessionId: 'session_01YZ' } } },
-    );
-    await pressName($, PEER);
-    expect(runs.filter(([cmd]) => cmd === 'open')).toEqual([
-        ['open', 'claude://code/session_01YZ'],
-    ]);
-});
-
-test("pressing an unbridged background session's name copies its attach command", async ($, on) => {
-    const { copied } = fleet(on, {}, { bg: [2] });
-    await pressName($, PEER);
-    expect(copied).toEqual(['claude attach fef31d31']);
-});
-
-test('a terminal session with no door has nothing to press', async ($, on) => {
-    fleet(on);
-    const ui = await board($);
-    const doors = (await ui.findAll({ type: 'Button' }))
-        .map((n) => n.key)
-        .filter((k) => k?.startsWith('door:'));
-    expect(doors).toEqual([`door:${HERE}`]);
 });
 
 test('asks over a day old are not counted on the board', async ($, on) => {

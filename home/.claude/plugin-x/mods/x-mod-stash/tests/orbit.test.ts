@@ -248,7 +248,7 @@ test('a ping turn a reload kept in state still takes no tick', async ($, on) => 
     expect((r.context ?? []).join('\n')).not.toMatch(/accepted/);
 });
 
-test('a joined ask draws no control while the turn runs', async ($, on) => {
+test('a joined ask keeps its buttons but no note field while the turn runs', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -260,19 +260,24 @@ test('a joined ask draws no control while the turn runs', async ($, on) => {
     expect([
         keys.filter((k) => /^orbit:(accepted|rejected|note|read):o1$/.test(k)),
         (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text,
-    ]).toEqual([['orbit:read:o1'], expect.stringContaining('«after ci»')]);
+    ]).toEqual([
+        ['orbit:accepted:o1', 'orbit:rejected:o1', 'orbit:read:o1'],
+        expect.stringContaining('«after ci»'),
+    ]);
 });
 
-test("a joined ask's 🔒 mark leads its own line", async ($, on) => {
+test("a joined ask's held button reads 🔓, and a press changes nothing", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
     await ui.press({ key: 'orbit:accepted:o1' });
     await say($, 'go');
-    expect((await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text).toMatch(
-        /^🔒🛎️ o1: push .*FRM-1➡️ yes🔊/u,
-    );
+    const take = async () =>
+        (await ui.find({ key: 'orbit:accepted:o1', type: 'Button' }))?.text;
+    const held = await take();
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect([held, await take()]).toEqual(['🔓 take', '🔓 take']);
 });
 
 test('an ask the turn left unanswered gets its controls back when the turn ends', async ($, on) => {

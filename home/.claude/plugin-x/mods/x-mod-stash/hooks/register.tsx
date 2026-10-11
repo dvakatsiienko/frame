@@ -14,12 +14,10 @@ import type {
     StashView,
 } from '../types/stash.d.ts';
 import {
-    type Door,
     backgroundWait,
     backgroundWaits,
     boldFleetWords,
     bulletDots,
-    doorOf,
     isFleetName,
     parseWait,
     ticketOf,
@@ -559,7 +557,7 @@ async function markAsks(
     change: (a: OrbitAsk) => OrbitAsk,
     isMark = false,
 ) {
-    // only a 🛎️ or ↩️ press means dima is at the mac: a note, a speak press or a row's ↗ never ends mobile mode (dima, 11:16)
+    // only a 🛎️ or ↩️ press means dima is at the mac: a note or a speak press never ends mobile mode (dima, 11:16)
     if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
     const o = await currentOrbit($);
     const asks = o.asks.map((a) =>
@@ -1384,7 +1382,7 @@ type Registered = {
     isAlive: boolean;
     cwd?: string;
     startedAt?: number;
-    base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince' | 'door'>;
+    base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince'>;
 };
 
 // cc's registry stores the black bird's zero-width joiner as a space: «🐦 ⬛ ccrow» for «🐦‍⬛ ccrow»
@@ -1407,12 +1405,6 @@ async function registry($: EngineInterface): Promise<Registered[]> {
             const bg = v.kind === 'bg';
             rows.push({
                 base: {
-                    door: doorOf({
-                        bg,
-                        bridgeSessionId: text(v.bridgeSessionId),
-                        hostSessionId: text(v.hostSessionId),
-                        jobId: text(v.jobId),
-                    }),
                     name:
                         text(v.name)?.replaceAll(SPLIT_CROW, CROW) ??
                         short(v.sessionId),
@@ -1521,7 +1513,6 @@ const isCoordinator = (name: string) => /(^|\s)cclio$/.test(name);
 // cclio, then ccrow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(^|\s)ccrow$/.test(name) ? 1 : 2;
-const doorGlyph = (door: Door) => (door.kind === 'open' ? '↗' : '📋');
 
 async function isOpen($: EngineInterface) {
     const panes = await $.ui.panes().catch(() => []);
@@ -1530,20 +1521,6 @@ async function isOpen($: EngineInterface) {
 
 async function openBoard($: EngineInterface) {
     await $.ui.open({ closeOnEscape: true, id: BOARD, title: '🚦 board' });
-}
-
-async function pressDoor(
-    $: EngineInterface,
-    door: Door,
-    surface: Parameters<EngineInterface['ui']['copy']>[0]['surface'],
-) {
-    if (door.kind === 'copy') {
-        await $.ui.copy({ surface, text: door.text });
-        return;
-    }
-    const r = await $.process.run(['open', door.url]).catch(() => null);
-    if (r?.exitCode !== 0)
-        $.ui.log(`x-mod-stash board: could not open ${door.url}`);
 }
 
 // every control names itself on hover; the card stays on the control's row, since a one-row site clips the rest
@@ -1603,8 +1580,12 @@ function settingsListJSX(
     const groups = [...new Set(PARTS.map((p) => p.group))];
     return groups.map((group) => (
         <Box
+            borderColor={cardBorder(air ? 'desktop' : 'terminal')}
+            borderStyle='round'
             flexDirection='column'
             key={`settings:${group}`}
+            paddingX={1}
+            paddingY={air ? 0.5 : 0}
             rowGap={air ? 0.3 : 0}>
             <Text bold>{group}</Text>
             <Box flexDirection='column' rowGap={air ? 0.3 : 0}>
@@ -2125,8 +2106,12 @@ export const register: Register = (on) => {
             const air = e.surface === 'desktop';
             const knobsJSX = (
                 <Box
+                    borderColor={cardBorder(e.surface)}
+                    borderStyle='round'
                     flexDirection='column'
                     key='settings:knobs'
+                    paddingX={1}
+                    paddingY={air ? 0.5 : 0}
                     rowGap={air ? 0.3 : 0}>
                     <Text bold>stash · knobs</Text>
                     {switchJSX(
@@ -2166,7 +2151,13 @@ export const register: Register = (on) => {
             );
             // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
             const compactJSX = Input ? (
-                <Box flexDirection='column' key='settings:compact'>
+                <Box
+                    borderColor={cardBorder(e.surface)}
+                    borderStyle='round'
+                    flexDirection='column'
+                    key='settings:compact'
+                    paddingX={1}
+                    paddingY={e.surface === 'desktop' ? 0.5 : 0}>
                     <Text bold>context</Text>
                     <Box alignItems='center' flexDirection='row' gap={1}>
                         <Text>📦 auto-compact at</Text>
@@ -2192,15 +2183,20 @@ export const register: Register = (on) => {
                 </Box>
             ) : null;
             return (
-                <Box flexDirection='column' gap={1} key='settings:view'>
-                    {settingsListJSX(
-                        $,
-                        ui,
-                        (await $.state.get(VIEW)).value?.shown ?? {},
-                        e.surface === 'desktop',
-                    )}
-                    {knobsJSX}
-                    {compactJSX}
+                // two columns of cards: the switches left, the knobs and the context right (dima, 17:42)
+                <Box flexDirection='row' gap={1} key='settings:view'>
+                    <Box flexDirection='column' flexGrow={1} gap={1} width={0}>
+                        {settingsListJSX(
+                            $,
+                            ui,
+                            (await $.state.get(VIEW)).value?.shown ?? {},
+                            e.surface === 'desktop',
+                        )}
+                    </Box>
+                    <Box flexDirection='column' flexGrow={1} gap={1} width={0}>
+                        {knobsJSX}
+                        {compactJSX}
+                    </Box>
                 </Box>
             );
         },
@@ -2242,7 +2238,7 @@ export const register: Register = (on) => {
                 {...(mark === 'accepted'
                     ? { variant: 'primary' as const }
                     : {})}>
-                {`${a.mark === mark ? '✅' : mark === 'accepted' ? '🛎️' : '↩️'} ${mark === 'accepted' ? 'take' : 'back'}`}
+                {`${a.mark === mark ? (a.isLocked ? '🔓' : '✅') : mark === 'accepted' ? '🛎️' : '↩️'} ${mark === 'accepted' ? 'take' : 'back'}`}
             </Button>
         );
         const handleAssumedNote = (id: string, value: string) =>
@@ -2327,9 +2323,6 @@ export const register: Register = (on) => {
                         <Text>
                             {a.isResolved ? '👀 ' : ''}
                             {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the note (dima, 11:57) */}
-                            {a.isLocked
-                                ? `🔒${a.mark === 'accepted' ? '🛎️' : '↩️'} `
-                                : ''}
                             {a.isChanged ? `${CHANGED_MARK} ` : ''}
                             <Text bold>{a.id}</Text>
                             {': '}
@@ -2346,9 +2339,8 @@ export const register: Register = (on) => {
                 </Box>
                 {/* the buttons lead, the note follows them (dima, 20:19) */}
                 <Box alignItems='center' flexDirection='row' gap={1}>
-                    {a.isLocked
-                        ? null
-                        : [markJSX(a, 'accepted'), markJSX(a, 'rejected')]}
+                    {/* a joined ask keeps both buttons; the held one reads 🔓 while the turn holds it (dima, 17:42) */}
+                    {[markJSX(a, 'accepted'), markJSX(a, 'rejected')]}
                     {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
                     {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
                     {speakJSX(a.id, `${a.text}. ${a.pick}`)}
@@ -2596,7 +2588,6 @@ export const register: Register = (on) => {
                     ? state
                     : `${isCold ? '❄️' : state} ${span(sinceMs)}`;
             const ticket = ticketOf(m.name);
-            const door = m.door;
             const name = m.sid === me ? `${m.name} (here)` : m.name;
             const line = m.wait && `🔭 ${m.wait}`;
             return (
@@ -2626,21 +2617,10 @@ export const register: Register = (on) => {
                                     ●
                                 </Text>
                             </Box>
-                            {/* every name bold, and the whole name is the control: no ↗ beside it (dima, 17:00) */}
-                            {door ? (
-                                <Button
-                                    key={`door:${m.sid}`}
-                                    onPress={(p) =>
-                                        void pressDoor($, door, p.surface)
-                                    }
-                                    plain>
-                                    <Text bold>{name}</Text>
-                                </Button>
-                            ) : (
-                                <Text bold wrap='truncate-end'>
-                                    {name}
-                                </Text>
-                            )}
+                            {/* every name bold text, no control: the board opens no session (dima, 17:42) */}
+                            <Text bold wrap='truncate-end'>
+                                {name}
+                            </Text>
                             {m.offPattern ? (
                                 <Text color={ACCENT}>⚠</Text>
                             ) : null}

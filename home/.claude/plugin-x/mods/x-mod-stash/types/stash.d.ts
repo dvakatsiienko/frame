@@ -15,18 +15,12 @@ export type StashDigest = {
     done: { sid: string; name: string }[];
 };
 
-// what a press on a board row's name does: open a desktop url, or copy the terminal door
-export type StashDoor =
-    | { kind: 'open'; url: string }
-    | { kind: 'copy'; text: string };
-
 // one row of the fleet board
 export type StashMember = {
     sid: string;
     name: string;
     status?: string;
     statusSince?: number;
-    door?: StashDoor;
     wait?: string;
     asks: number;
     context?: number;

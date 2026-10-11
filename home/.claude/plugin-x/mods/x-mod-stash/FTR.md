@@ -154,10 +154,10 @@
   - then no ping is sent, and the clock restarts when that turn ends
 - ⬜ 🎛️ opens a settings pane with a show/hide switch per part (FRM-391 slice 05)
   - given the band's 🎛️, right before 🚦
-  - when dima presses it, then a `🎛️ settings` pane opens, which the surface tabs beside the `🚦 board` pane; a bold heading per group (`stash · band`) over a vertical list, one row per part — a button with the part's label, accent while shown and dim while hidden, nothing beside it; the desktop puts a small gap between rows (0.3 row); a second press closes the pane, and neither adds a row to the transcript
+  - when dima presses it, then a `🎛️ settings` pane opens, which the surface tabs beside the `🚦 board` pane, its cards in two columns — the switch groups left, the knobs and the context right (dima, 17:42); each group a card, a bold heading (`stash · band`) over a vertical list, one row per part — a button with the part's label, accent while shown and dim while hidden, nothing beside it; the desktop puts a small gap between rows (0.3 row); a second press closes the pane, and neither adds a row to the transcript
   - and a `stash · knobs` section (slice 06): `🔥 bars breathe while a turn runs` (on), `🔥 bars breathe all the time` (off; was `/board breathe`, dima's o10), `🔥 breath speed` typed as a number, 0.1–5×, 0.5× by default, `🎨 board colour` (off; `/board colour` writes the same), `🌔 phase lines` 5–7, 7 by default — it caps the plan op and its fill nudge, `🔊 read-aloud on assumptions` (on); a switch saves on its press, a number on each keystroke that makes a valid value, and a keystroke that does not (`0.`, `9`, `8` on 5–7) is never applied
   - decision: no frame-rate knob — the desktop bars are SVG animation at the display's own rate, the terminal bars left (dima's o9, 17:27); no take picker — take C left with the A/B, speed is the one animation knob (dima's o10, 17:31)
-  - and the pane's last section, `context`, holds `📦 auto-compact at` its `Input` `% of the context window`; the band draws no setting of its own
+  - and the right column's last card, `context`, holds `📦 auto-compact at` its `Input` `% of the context window`; the band draws no setting of its own
   - decision: a pane of its own, dima's pick a of four homes tried side by side (16:20); the band is capped by cc's `maxRows` and the fold-out scrolled the list out of sight, the grid in the band would still shift the layout as parts grow, a dialog-mannered pane looked the same as a plain one, and a tab row inside 🚦 is kept as an idea (`../api-map.md`)
   - decision: a vertical list of on/off buttons, no ☑/☐, more air, full-strength labels (dima, 15:31 «looks ugly», 15:35 «print as a vertical list»); no hover cards inside the pane, it explains itself (dima, 15:36); no shown/hidden words, the button says it (dima, 15:50); the 📦 field moves in (dima, 15:35)
   - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
@@ -243,19 +243,9 @@
   - then the row has no second line
   - decision: only a `🔭` line, never a fallback — the reply's first line read as noise beside the waits (dima, 2026-10-05)
   - source: the session's own last reply, kept by its x-mod-stash at each reply end
-- ⬜ a press on a session's name opens it in the desktop
-  - the harness proves the `open <url>` it runs; that the desktop then shows the session is dima's click
-  - given a desktop-born session (the registry carries `hostSessionId: local_…`)
-  - when dima presses its name, bold, with no glyph beside it (dima, 17:00 «remove link»)
-  - then the desktop opens that session through `claude://code/continue?session=local_…`
-  - given a background session bridged to claude.ai (`bridgeSessionId: session_…`)
-  - then the press opens `claude://code/session_…`
-  - given a background session with neither
-  - then the press copies `claude attach <jobId>`, the terminal door
-  - given a terminal session with neither
-  - then the name is plain text: nothing opens it
-  - decision: the mod api has no door to a session; the desktop's own `claude://` url handler has one (read from its 2.1.289 bundle), and the press runs `open <url>` on this mac rather than a `Link`, whose click the pane's sandbox decides
-  - decision: every name bold, and the whole name is the `Button`, its bold `Text` the child (a `Button` takes `Text` children); no `↗` or `📋` beside it (dima, 17:00: «all session names bold», «remove link»)
+- ✅ a session's name is bold text, never a control (dima, 17:42: «i don't need a session as clickable link in sessions»)
+  - given the board draws, then every name reads bold and its `●` dot keeps its colour; a row holds no button
+  - decision: the desktop deep links (FRM-306) left with the press; `mods/api-map.md` keeps the `claude://` door as knowledge
   - decision: no hover cards anywhere in the pane — an absolute card in a narrow row wrapped, clipped and drew over its neighbours (dima, 2026-10-05)
 - 🔎 each row carries its facts beside the state
   - given a session has open asks, a context reading or a ticket in its name
@@ -381,7 +371,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
-  - then those rows draw no mark or note control — `🔒🛎️` or `🔒↩️` leads the ask's line and the note shows as dim text — until it ends, when the controls come back; 🔊 ⏯️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
+  - then those rows keep both buttons, the held one reading `🔓 take` or `🔓 back` and a press on either changing nothing, and the note shows as dim text instead of its field — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ⏯️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
   - decision: no control rather than a disabled one — the mod api's `Button` and `Input` take no `disabled` (dima asked for one, 19:46)
 - ✅ a resolved ask leaves, a follow-up changes in place
   - given cclio answered a marked ask

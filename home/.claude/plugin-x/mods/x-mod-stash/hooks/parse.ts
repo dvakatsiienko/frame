@@ -1,5 +1,3 @@
-import type { StashDoor } from '../types/stash.d.ts';
-
 // a ·-joined list in prose, rewritten as bullets the way the output rules want it (reply-check blocks the dot);
 // fences, inline code and the 📄 stamp line keep theirs
 export function bulletDots(text: string) {
@@ -177,32 +175,6 @@ export function backgroundWait(
 }
 
 export const ticketOf = (name: string) => name.match(/\b[A-Z]{2,5}-\d+\b/)?.[0];
-
-// the desktop's url handler accepts only these id shapes (Claude.app 2.1.289)
-const LOCAL_ID = /^local_[A-Za-z0-9-]{1,64}$/;
-const BRIDGE_ID = /^session_[A-Za-z0-9_-]+$/;
-const JOB_ID = /^[A-Za-z0-9-]+$/;
-
-export type Door = StashDoor;
-
-// How a press reaches a session: its desktop deep link, else the terminal's attach command for a background job.
-export function doorOf(entry: {
-    hostSessionId?: string;
-    bridgeSessionId?: string;
-    jobId?: string;
-    bg: boolean;
-}): Door | undefined {
-    if (entry.hostSessionId && LOCAL_ID.test(entry.hostSessionId))
-        return {
-            kind: 'open',
-            url: `claude://code/continue?session=${entry.hostSessionId}`,
-        };
-    if (entry.bridgeSessionId && BRIDGE_ID.test(entry.bridgeSessionId))
-        return { kind: 'open', url: `claude://code/${entry.bridgeSessionId}` };
-    if (entry.bg && entry.jobId && JOB_ID.test(entry.jobId))
-        return { kind: 'copy', text: `claude attach ${entry.jobId}` };
-    return undefined;
-}
 
 // `<mode> <role emoji> <ticket> <role word>: <what>` — «☕️ 🔧 FRM-303 code: stash keep-hot»; a standing member keeps
 // its own name, badge or not — «🐦‍⬛ ccrow», which the registry writes with a space for the joiner

@@ -260,3 +260,24 @@ test('the phase lines knob takes 5 to 7 only', async ($, on) => {
             .then(() => seen.push(store.get('phase-lines')));
     expect(seen).toEqual([undefined, undefined, 6]);
 });
+
+test('🎛️ lays its cards in two columns: switches left, knobs and context right', async ($, on) => {
+    world(on);
+    await band($);
+    const view = await pane($);
+    const cards = (await view.findAll({ type: 'Box' }))
+        .filter((n) => n.props.borderStyle === 'round')
+        .map((n) => n.key);
+    const columns = (await view.find({ key: 'settings:view', type: 'Box' }))
+        ?.props.flexDirection;
+    expect([columns, cards]).toEqual([
+        'row',
+        [
+            'settings:stash · band',
+            'settings:stash · board',
+            'settings:stash · replies',
+            'settings:knobs',
+            'settings:compact',
+        ],
+    ]);
+});

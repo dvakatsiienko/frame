@@ -1,11 +1,6 @@
 import { expect, test } from 'claude-code/testing';
 
-import {
-    backgroundWait,
-    doorOf,
-    isFleetName,
-    parseWait,
-} from '../hooks/parse.ts';
+import { backgroundWait, isFleetName, parseWait } from '../hooks/parse.ts';
 
 test('a reply without a 🔭 line waits on nothing', () => {
     expect(parseWait('done.\n\n➡️ next')).toBe(undefined);
@@ -23,12 +18,6 @@ test('a 🔭 line quoted before the end is not a wait', () => {
     expect(
         parseWait('the shape:\n```\n🔭 waiting on ci — a ping\n```\ndone.'),
     ).toBe(undefined);
-});
-
-test('a host id the desktop would refuse opens nothing', () => {
-    expect(doorOf({ bg: false, hostSessionId: 'local_x&evil=1' })).toBe(
-        undefined,
-    );
 });
 
 for (const [name, fits] of [
