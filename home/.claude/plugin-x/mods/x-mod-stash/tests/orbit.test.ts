@@ -465,6 +465,34 @@ test("🔊 sends the ask's text to speak's control socket", async ($, on) => {
     });
 });
 
+test('🔊 on an assumption reads its text aloud', async ($, on) => {
+    world(on);
+    const runs: string[][] = [];
+    on('process.run', (_$, e) => {
+        runs.push([...e.argv]);
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: '{"ok":true}',
+            },
+        };
+    });
+    await start($);
+    const ui = await board($);
+    await orbit($, { op: 'assume', texts: ['moons repeat past five'] });
+    await ui.press({ key: 'orbit:read:a1' });
+    const sent = runs.find((argv) =>
+        argv.includes('/home/.local/share/x-speak/control.sock'),
+    );
+    expect(JSON.parse(sent?.[4] ?? '{}')).toEqual({
+        op: 'read',
+        text: 'moons repeat past five',
+    });
+});
+
 test("orbit's asks survive a reload", async ($, on) => {
     const w = world(on);
     const kept = {

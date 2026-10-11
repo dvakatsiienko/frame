@@ -1843,20 +1843,16 @@ export const register: Register = (on) => {
         // a locked ask is the running turn's: no control at all, its mark and note as dim text (the api has no disabled)
         // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
         // (claude-code#101090) — a workaround, see mods/workarounds.md
-        const speakJSX = (a: OrbitAsk) =>
+        const speakJSX = (id: string, text: string) =>
             (
                 [
-                    [
-                        'read',
-                        '🔊',
-                        { op: 'read', text: `${a.text}. pick: ${a.pick}` },
-                    ],
+                    ['read', '🔊', { op: 'read', text }],
                     ['pause', '⏯️', { op: 'pause' }],
                     ['stop', '⏹️', { op: 'stop' }],
                 ] as const
             ).map(([what, glyph, request]) => (
                 <Button
-                    key={`orbit:${what}:${a.id}`}
+                    key={`orbit:${what}:${id}`}
                     onPress={() => void speak($, request)}
                     plain>
                     {glyph}
@@ -1912,7 +1908,7 @@ export const register: Register = (on) => {
                         [markJSX(a, 'accepted'), markJSX(a, 'rejected')]
                     )}
                     {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
-                    {speakJSX(a)}
+                    {speakJSX(a.id, `${a.text}. pick: ${a.pick}`)}
                     {a.isLocked ? (
                         a.note ? (
                             <Box flexShrink={1} minWidth={0}>
@@ -2027,6 +2023,7 @@ export const register: Register = (on) => {
                                                 : { plain: true as const })}>
                                             ↩️
                                         </Button>
+                                        {speakJSX(x.id, x.text)}
                                         {Input ? (
                                             <Box flexShrink={1} minWidth={0}>
                                                 <Input

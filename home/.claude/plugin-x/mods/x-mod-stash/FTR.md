@@ -419,6 +419,10 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when dima looks at the board
   - then at most 3 rows show under an «assumed» section below the asks, hidden while empty; a fourth in one turn is refused
   - decision: only unasked choices that would cost a redo; the 10-turn trial read 3 rows over ~25 turns, two right, one caught (dima's o92)
+- ⬜ an assumption reads aloud
+  - given an assumption shows under «assumed»
+  - when dima presses its 🔊, ⏯️ or ⏹️
+  - then speak reads, pauses or stops its text, as on an ask row (dima, 2026-10-11 11:27)
 - ✅ 🛎️ clears, ↩️ sends back
   - given an assumption shows
   - when dima presses its 🛎️, or its ↩️ with a note
