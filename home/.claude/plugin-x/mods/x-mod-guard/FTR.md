@@ -165,7 +165,8 @@
   - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the `fleet-hazards.md` line left with this rule
 
-- ⬜ a member's raw `linear` read or comment is refused, the `x linear` door named (FRM-398)
+- ⬜ a member's raw `linear` read or comment is warned until 2026-10-18, then refused, the `x linear` door named (FRM-398)
+  - decision: warn-only for a week, then refuse (dima's o234); the flip is `raw-linear` leaving `WARN_ONLY` in `hooks/register.ts`, `rule-mode:raw-linear` = «enforce» turns it on early
   - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --as coder --body-file <file>`
   - and cclio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as cclio, a member's door is `x linear read`

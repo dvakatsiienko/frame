@@ -168,7 +168,11 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 
 // a new refusing rule ships warn-only: the call runs and the model reads what would have been refused, until the rule's
 // verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
-const WARN_ONLY: ReadonlySet<string> = new Set(['frozen-lockfile']);
+// raw-linear (FRM-398) warns until 2026-10-18, then leaves this set and refuses (dima's o234, 21:41)
+const WARN_ONLY: ReadonlySet<string> = new Set([
+    'frozen-lockfile',
+    'raw-linear',
+]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (verifier, 15:08)
 async function isWarnOnly($: EngineInterface, rule: string) {
@@ -550,17 +554,28 @@ export const register: Register = (on) => {
                 name !== undefined &&
                 name.replaceAll(/[\s\u200d]/g, '') !== '🦉cclio'
             ) {
+                const isWarn = await isWarnOnly($, raw.rule);
                 await record($, {
                     command,
                     door: raw.door,
-                    kind: 'refused',
+                    kind: isWarn ? 'warned' : 'refused',
                     rule: raw.rule,
                     target: raw.targets[0] ?? '',
                     why: raw.why,
                 });
-                return deny(
-                    `nothing in this command ran — x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`,
-                );
+                const said = `x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`;
+                if (!isWarn)
+                    return deny(`nothing in this command ran — ${said}`);
+                const ran = await go();
+                return ran.deny !== undefined
+                    ? ran
+                    : {
+                          ...ran,
+                          context: [
+                              ...(ran.context ?? []),
+                              wouldRefuse(raw.rule, said),
+                          ],
+                      };
             }
         }
         if (verdict.kind === 'run') return go();

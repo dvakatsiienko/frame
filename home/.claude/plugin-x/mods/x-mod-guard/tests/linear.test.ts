@@ -1,12 +1,14 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { liveStore } from './store.ts';
+
 // FRM-398: a member reads and comments on tickets through x linear; the raw cli is refused with the door named
 const SID = 'm1m1m1m1-0000';
 
 function world(on: On, name: string | null = '☕️ 🔧 coder') {
     mock.clock(on, { now: 1_000_000 });
-    mock.store(on);
+    const store = liveStore(on);
     const ran: string[] = [];
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: '/repo' }));
@@ -35,7 +37,7 @@ function world(on: On, name: string | null = '☕️ 🔧 coder') {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
     });
-    return { ran };
+    return { ran, store };
 }
 
 const bash = ($: Engine, command: string) =>
@@ -52,12 +54,24 @@ for (const [typed, door] of [
         'x linear comment <id> --as coder --body-file <file>',
     ],
     ['cd /tmp && linear issue view FRM-1 | jq .', 'x linear read'],
-] as const)
-    test(`a member's raw linear is refused, the door named: ${typed}`, async ($, on) => {
+] as const) {
+    test(`a member's raw linear runs, warned with the door named, until 2026-10-18: ${typed}`, async ($, on) => {
         const w = world(on);
+        const r = await bash($, typed);
+        expect([
+            w.ran.length,
+            r.deny,
+            r.context?.some((c) => c.includes(door)),
+        ]).toEqual([1, undefined, true]);
+    });
+
+    test(`with the rule enforced, a member's raw linear is refused: ${typed}`, async ($, on) => {
+        const w = world(on);
+        w.store.set('rule-mode:raw-linear', 'enforce');
         const r = await bash($, typed);
         expect([w.ran, r.deny?.includes(door)]).toEqual([[], true]);
     });
+}
 
 test("cclio's session runs the raw linear cli", async ($, on) => {
     const w = world(on, '🦉 cclio');
