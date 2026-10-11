@@ -289,6 +289,24 @@ test('a ticket id in the answer stays plain text in the box', async ($, on) => {
     expect([box.text, box.painted]).toEqual(['/x:shape-idea on FRM-381', []]);
 });
 
+test('a call a reload cut leaves ⏪ ⏩ working', async ($, on) => {
+    const box = { text: 'draft' };
+    world(on, box);
+    const state: Record<string, unknown> = {
+        enhancer: { latest: 'b', original: 'a', status: 'running' },
+    };
+    on('state.get', (_$, e) => ({
+        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state[e.key] = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    const ui = await band($);
+    await ui.press({ key: 'enh:new' });
+    expect(box.text).toBe('b');
+});
+
 test('⏪ and ⏩ stay drawn while 🪄 runs', async ($, on) => {
     const box: Parameters<typeof world>[1] = { text: 'draft' };
     const w = world(on, box);

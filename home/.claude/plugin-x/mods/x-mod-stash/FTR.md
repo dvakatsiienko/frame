@@ -370,6 +370,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ enhance swaps in a cleaned-up prompt
   - decision: the buttons are 🪄 ⏪ ⏩, named on hover «enhance prompt», «your text», «enhanced text» (dima, 23:13)
   - decision: ⏪ ⏩ stay drawn while 🪄 runs, so the row never jumps; a press on them waits out the call (dima, 23:17)
+  - 📌 a mod reload cuts a running call; the next start drops its «running», so ⏪ ⏩ work again at once
   - makes: the box's text, rewritten; `enhancer.md` beside the hooks is what Haiku reads as its rules
   - given dima typed or dictated a prompt
   - when he presses `🪄` in the band

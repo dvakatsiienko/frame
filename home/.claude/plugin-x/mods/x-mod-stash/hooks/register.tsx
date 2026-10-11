@@ -1509,6 +1509,10 @@ export const register: Register = (on) => {
             turnAfk = kept.turn.afk;
         }
         digest = kept.view?.digest;
+        // a reload unloads the old module and aborts its Haiku call, so a stored «running» is stale
+        const enhancer = await enhancerOf($);
+        if (enhancer.status === 'running')
+            await saveEnhancer($, { ...enhancer, status: 'idle' });
         await load($);
         await armHot($);
         await armWake($);
