@@ -946,13 +946,12 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
         : undefined;
 }
 
-// everything this mod keeps for one conversation
+// everything this mod keeps for one conversation: one store key per prefix, the session id after it; a new
+// per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
+const SESSION_KEYS = [PREFIX, MARKS, HOT, REPLY, CONTEXT, MODEL] as const;
+
 async function forget($: EngineInterface, sid: string) {
-    await $.store.delete(PREFIX + sid);
-    await $.store.delete(HOT + sid);
-    await $.store.delete(REPLY + sid);
-    await $.store.delete(CONTEXT + sid);
-    await $.store.delete(MODEL + sid);
+    for (const prefix of SESSION_KEYS) await $.store.delete(prefix + sid);
 }
 
 // a session that exited keeps only its last reply, marked ended, so an away digest still counts it as done

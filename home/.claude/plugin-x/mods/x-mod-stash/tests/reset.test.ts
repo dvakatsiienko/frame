@@ -79,6 +79,15 @@ for (const command of ['clear', 'resume'] as const)
         expect(await s.chips()).toBe('🪐 0');
     });
 
+test('/clear drops every key the old conversation kept, its pending lane marks included', async ($, on) => {
+    const s = await session($, on);
+    const old = 'a1a1a1a1-0000';
+    for (const key of ['marks:', 'reply:', 'context:', 'model:', 'hot:'])
+        s.store.set(key + old, { at: 0 });
+    await run($, 'clear');
+    expect([...s.store.keys()].filter((k) => k.endsWith(old))).toEqual([]);
+});
+
 test("/clear leaves another session's asks in the store", async ($, on) => {
     const s = await session($, on);
     await run($, 'clear');

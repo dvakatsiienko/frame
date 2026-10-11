@@ -55,8 +55,8 @@
 - ✅ `/clear` and `/resume` empty the conversation's orbit in the same turn
   - given orbit holds asks
   - when dima runs `/clear` or `/resume`
-  - then the row reads `🪐 0 · 🌔 0` at once; another session's asks stay in the store
-  - decision: one `command.run` hook drops the conversation's orbit, holds, 🔭 wait, context fill and keep-hot key — the same set `session.end` drops — and x-mod-redact empties its vault on the same command (FRM-325)
+  - then the row reads `🪐 0 · 🌔 0` at once; another session's asks stay in the store, and none of the old conversation's keys do
+  - decision: one `command.run` hook drops the conversation's orbit, holds, 🔭 wait, context fill, model, keep-hot key and pending lane marks — the same set `session.end` drops — and x-mod-redact empties its vault on the same command (FRM-325, FRM-400)
 - ✅ every prompt carries the local clock
   - given dima's prompt, or a peer's
   - when it reaches the model
