@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import {
@@ -19,6 +20,7 @@ import {
     sendLine,
     spawnHarvest,
     transcriptDelta,
+    turnStartOf,
     verifiedHead,
     wakeIdOf,
     wakeLine,
@@ -43,13 +45,14 @@ if (
     try {
         if (decision.kind === 'merge')
             await merge(decision.args, input.transcript_path, input.cwd);
-        else if (decision.kind === 'proposal')
+        else if (decision.kind === 'spawn')
+            await noWaitWake('spawn', input.transcript_path);
+        else if (isFirstInTurn(decision.path, input.transcript_path))
             await noWaitWake(
                 `proposal ${decision.path}`,
                 input.transcript_path,
                 decision.path,
             );
-        else await noWaitWake('spawn', input.transcript_path);
     } catch (error) {
         context(
             `🐦‍⬛ ccrow decision hook failed, nothing waited: ${error instanceof Error ? error.message : String(error)}`,
@@ -128,6 +131,23 @@ async function noWaitWake(
         context(
             `🐦‍⬛ ccrow wake for this ${fields.split(' ')[0]}: after this call, send the line below, alone, ${SEND}; do not wait for it, no need to report it to dima unless he asks.\n${wake.line}`,
         );
+}
+
+// one wake per proposal file per turn: a draft takes several Edits, and ccrow should read it once
+function isFirstInTurn(path: string, transcriptPath: string) {
+    const turn = `${transcriptPath}:${turnStartOf(readLines(transcriptPath))}`;
+    const marker = join(
+        STATE_DIR,
+        'decisions',
+        `proposal-${createHash('sha1').update(path).digest('hex').slice(0, 12)}.json`,
+    );
+    try {
+        if (JSON.parse(readFileSync(marker, 'utf8')).turn === turn)
+            return false;
+    } catch {}
+    mkdirSync(dirname(marker), { recursive: true });
+    writeFileSync(marker, JSON.stringify({ path, turn }));
+    return true;
 }
 
 function shortSha(sha: string) {

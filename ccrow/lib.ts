@@ -661,6 +661,20 @@ export function proposalOf(
 
 const PROPOSAL = /(^|\/)\.scratch\/(.+\/)?[^/]+-proposal\.md$/;
 
+// a turn starts at a user entry with text (a prompt or a peer's message); a tool result carries none
+export function turnStartOf(lines: string[]) {
+    for (let i = lines.length - 1; i >= 0; i--) {
+        const entry = parseEntry(lines[i] ?? '');
+        if (
+            entry?.type === 'user' &&
+            !entry.isMeta &&
+            textOf(entry.message?.content).trim()
+        )
+            return i;
+    }
+    return -1;
+}
+
 const MERGE_VALUE_FLAGS = new Set([
     '-A',
     '--author-email',

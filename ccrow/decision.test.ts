@@ -10,6 +10,7 @@ import {
 import { type Server, createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { afterEach, describe, expect, test } from 'vitest';
 
 // a fixture home with a ccrow socket this test owns, so the live ccrow is never touched
@@ -283,6 +284,38 @@ describe('a proposal cclio writes', () => {
             ),
             hookEventName: 'PostToolUse',
         });
+    });
+
+    test('wakes ccrow once for several edits in one turn', async () => {
+        const fixture = home();
+        const path = proposal(fixture);
+        const { lines } = ccrow(fixture.socket);
+        await hook(fixture, { path, tool: 'Write' });
+        await hook(fixture, { path, tool: 'Edit' });
+        await hook(fixture, { path, tool: 'Edit' });
+        await sleep(300);
+        expect(lines.length).toBe(1);
+    });
+
+    test('wakes ccrow again when the next turn edits the proposal', async () => {
+        const fixture = home();
+        const path = proposal(fixture);
+        const { lines } = ccrow(fixture.socket);
+        await hook(fixture, { path, tool: 'Write' });
+        writeFileSync(
+            fixture.transcript,
+            `${JSON.stringify({ message: { content: [{ content: 'ok', type: 'tool_result' }] }, type: 'user' })}\n`,
+            { flag: 'a' },
+        );
+        await hook(fixture, { path, tool: 'Edit' });
+        writeFileSync(
+            fixture.transcript,
+            `${JSON.stringify({ message: { content: 'cut step 2' }, type: 'user' })}\n`,
+            { flag: 'a' },
+        );
+        await hook(fixture, { path, tool: 'Edit' });
+        await sleep(300);
+        expect(lines.length).toBe(2);
     });
 
     test('wakes nothing on a write to any other file', async () => {
