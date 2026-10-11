@@ -407,6 +407,17 @@ test('only the now lead word reads green', async ($, on) => {
     ]);
 });
 
+test('a prompt that lands mid-turn reads a plan set this turn as 0 turns old', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($, 'go');
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await say($, 'a note mid-turn');
+    expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
+        /plan set 0 turns ago/,
+    );
+});
+
 test('a plan untouched for three turns reads stale', async ($, on) => {
     const w = world(on);
     await start($);

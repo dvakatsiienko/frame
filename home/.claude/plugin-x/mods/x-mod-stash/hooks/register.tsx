@@ -238,8 +238,9 @@ function joinText(asks: OrbitAsk[]) {
     ].join('\n');
 }
 
+// a plan set this turn counts from the turn's end, so a prompt landing mid-turn would read it as -1
 const planAge = (o: StashOrbit) =>
-    o.plan === undefined ? undefined : o.turns - o.plan.at;
+    o.plan === undefined ? undefined : Math.max(0, o.turns - o.plan.at);
 
 // the per-prompt note that keeps the habit through a compaction; none while orbit is empty
 function orbitReminder(o: StashOrbit) {
