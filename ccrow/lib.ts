@@ -299,6 +299,7 @@ const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
 
 // a /clear or a reopened desktop tab starts a new transcript in ccrow's project dir; the newest is the live one
 export const RELAY_PATH = join(STATE_DIR, 'relay.json');
+export const HARVEST_DEADLINE_MS = 15 * 60_000;
 
 export function spawnHarvest(wake: Wake) {
     spawnHarvester([wake.id, wake.mode, wake.phase]);

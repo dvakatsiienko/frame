@@ -1,5 +1,11 @@
 import { spawn } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    writeFileSync,
+} from 'node:fs';
 import { type Server, createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -180,5 +186,61 @@ test('refuses a second reconcile on the same note', async () => {
     expect([status, stderr.trim()]).toEqual([
         2,
         `${NOTE_ID} is reconciled already: one answer per note`,
+    ]);
+});
+
+test('refuses a second reconcile while the first waits for ccrow', async () => {
+    const fixture = home();
+    const pending = join(fixture.dir, '.local/state/ccrow/reconciles');
+    mkdirSync(pending);
+    writeFileSync(
+        join(pending, `${NOTE_ID}.json`),
+        JSON.stringify({ at: Date.now() }),
+    );
+    const { status, stderr } = await reconcile(fixture, NOTE_ID, 'again');
+    expect([status, stderr.trim()]).toEqual([
+        2,
+        `${NOTE_ID} has a reconcile waiting for ccrow's answer`,
+    ]);
+});
+
+test('marks a sent reconcile as waiting for ccrow', async () => {
+    const fixture = home();
+    await reconcile(fixture, NOTE_ID, 'the verifier re-ran on b0b0');
+    expect(
+        existsSync(
+            join(fixture.dir, `.local/state/ccrow/reconciles/${NOTE_ID}.json`),
+        ),
+    ).toBe(true);
+});
+
+test('refuses a reconcile before ccrow ever started', async () => {
+    const fixture = home();
+    writeFileSync(
+        join(fixture.dir, '.local/state/ccrow/state.json'),
+        JSON.stringify({ offsets: {} }),
+    );
+    const { status, stderr } = await reconcile(fixture, NOTE_ID, 'x');
+    expect([status, stderr.trim()]).toEqual([
+        2,
+        'no arm in state.json: start ccrow first',
+    ]);
+});
+
+test('refuses to reconcile a reconcile answer', async () => {
+    const fixture = home();
+    writeFileSync(
+        fixture.notes,
+        `${JSON.stringify({ id: `${NOTE_ID}-reconcile` })}\n`,
+        { flag: 'a' },
+    );
+    const { status, stderr } = await reconcile(
+        fixture,
+        `${NOTE_ID}-reconcile`,
+        'x',
+    );
+    expect([status, stderr.trim()]).toEqual([
+        2,
+        `no note with id ${NOTE_ID}-reconcile`,
     ]);
 });

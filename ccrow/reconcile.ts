@@ -1,10 +1,14 @@
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 import {
+    HARVEST_DEADLINE_MS,
     NOTES_PATH,
     SESSION_NAME,
+    STATE_DIR,
     fail,
     oneCcrow,
+    readState,
     reconcileMarker,
     sendLine,
     spawnHarvester,
@@ -23,22 +27,37 @@ try {
         } catch {}
     }
 } catch {}
-if (!ids.has(id)) fail(`no note with id ${id}`);
+if (!ids.has(id) || id.endsWith('-reconcile')) fail(`no note with id ${id}`);
 if (ids.has(`${id}-reconcile`))
     fail(`${id} is reconciled already: one answer per note`);
+// the answer row lands only when ccrow's turn ends, so a pending marker holds the one-answer rule until then
+const pending = join(STATE_DIR, 'reconciles', `${id}.json`);
+const sentAt = pendingSince(pending);
+if (sentAt !== undefined && Date.now() - sentAt < HARVEST_DEADLINE_MS)
+    fail(`${id} has a reconcile waiting for ccrow's answer`);
+if (!readState().arm) fail('no arm in state.json: start ccrow first');
 
 const ccrow = oneCcrow();
 if (!ccrow) fail('ccrow is not running');
 
 const evidence = words.join(' ');
 const line = `${reconcileMarker(id)} ${evidence}`;
+if (ccrow.jobId) await sendLine(ccrow.messagingSocketPath, line);
+mkdirSync(dirname(pending), { recursive: true });
+writeFileSync(pending, JSON.stringify({ at: Date.now() }));
 spawnHarvester(['reconcile', id, evidence]);
 if (ccrow.jobId) {
-    await sendLine(ccrow.messagingSocketPath, line);
     console.log(`sent to ccrow: ${line}`);
 } else {
     // a desktop tab takes no socket line; only the desktop's send_message reaches it
     console.log(
         `send the line below, alone, to the session titled «${SESSION_NAME}» through mcp__ccd_session_mgmt__send_message; her answer is logged by itself.\n${line}`,
     );
+}
+
+function pendingSince(path: string): number | undefined {
+    try {
+        const at: unknown = JSON.parse(readFileSync(path, 'utf8')).at;
+        return typeof at === 'number' ? at : undefined;
+    } catch {}
 }

@@ -4,6 +4,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 
 import {
     type Arm,
+    HARVEST_DEADLINE_MS,
     NOTES_PATH,
     type Note,
     type Run,
@@ -26,12 +27,11 @@ import {
 } from './lib.ts';
 
 // spawned detached by wake.ts, stdio ignored: every outcome goes to harvest.log
-const DEADLINE_MS = 15 * 60_000;
 const POLL_MS = 5_000;
 const TIMEOUT: Run = {
     model: null,
     note: 'timeout: no turn end within 15 min',
-    seconds: DEADLINE_MS / 1000,
+    seconds: HARVEST_DEADLINE_MS / 1000,
     tokensIn: 0,
     tokensOut: 0,
 };
@@ -67,7 +67,7 @@ function noteOf(
 
 async function waitTurn(marker: string) {
     const started = Date.now();
-    while (Date.now() - started < DEADLINE_MS) {
+    while (Date.now() - started < HARVEST_DEADLINE_MS) {
         const path = newestTranscript();
         const run = path && readTurn(path, marker);
         if (run) return { path, run };
@@ -89,7 +89,9 @@ async function harvestSession(wake: Wake, arm: Arm) {
 }
 
 async function harvestReconcile(noteId: string, evidence: string, arm: Arm) {
+    // a timeout logs no row, so the line can be sent again; harvest.log has the miss
     const turn = await waitTurn(reconcileMarker(noteId));
+    if (!turn) return;
     appendJsonl(NOTES_PATH, {
         arm,
         at: new Date().toISOString(),
@@ -97,9 +99,9 @@ async function harvestReconcile(noteId: string, evidence: string, arm: Arm) {
         evidence,
         id: `${noteId}-reconcile`,
         reconciles: noteId,
-        ...(turn?.run ?? TIMEOUT),
+        ...turn.run,
     });
-    if (turn) log(`reconcile: answer logged (${turn.run.seconds} s)`);
+    log(`reconcile: answer logged (${turn.run.seconds} s)`);
 }
 
 async function harvestOneShot(wake: Wake, arm: Arm) {

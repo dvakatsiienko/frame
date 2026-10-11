@@ -55,7 +55,9 @@ skill reaches it as text. a contract change goes there, never here.
 - `pnpm ccrow:reconcile <note-id> <evidence>` — cclio's answer when her evidence contradicts a note (FRM-396): sends
   `reconcile <note-id>: <evidence>` to a `--bg` ccrow, or prints it for cclio to `send_message` to a tab, and leaves a
   harvester (`harvest.ts reconcile <id> <evidence>`) that logs ccrow's one answer as `<note-id>-reconcile`, with
-  `reconciles` and `evidence`, in `notes.jsonl`. an unknown id or a second reconcile of one note exits 2.
+  `reconciles` and `evidence`, in `notes.jsonl`. an unknown id, a reconciled note, or one whose reconcile is still
+  pending (`reconciles/<id>.json`, younger than the harvester's 15 min) exits 2; a timeout logs no row, only a
+  `harvest.log` line, so the line can be sent again.
 - `leaves.txt`: one glob per line, `{today}` → `YYYY-MM-DD`, a `latest ` prefix keeps the newest
   match only. cclio owns it; the builder never reads under `cclio/`.
 
