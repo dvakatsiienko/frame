@@ -170,7 +170,7 @@
 - ⬜ `/board ab` compares the bars' frame rate and where the breath sits, live, with the gpu it costs (FRM-391 slice 02)
   - given dima runs `/board ab`
   - then the bars breathe idle too, and a row under the meters holds ⏱ (off, 10, 20, 30 Hz) and 📍 (bars or cc's spinner line), each a press that applies in every band with no reload, and `gpu <setting> <n>%` — the mean of the last ten 2 s `ioreg` reads, in the session that ran it
-  - given 📍 spinner, then the bars stand still and a 4-cell ember strip leads the spinner line (dima, 14:40; 12 before); that line's time and tokens are gone while it shows
+  - given 📍 spinner, then the bars stand still and a 2×2 ember strip leads the spinner line (dima, 14:46; 12 columns, then 4, before); the terminal line's time and tokens are gone while it shows, the desktop row keeps its token count (dima's 14:46 shot: «Working… 81 tokens»)
   - and the band keeps a «spinner preview» row with the same strip, so the look shows while idle (dima's o6)
   - proven live 2026-10-11 14:40 (dima's shot): the desktop draws the strip inside cc's spinner row, «Working… Thinking» beside it
   - given the desktop, then ⏱ reads «⏱ display rate», no button, and a rate left at «off» stills neither the bars nor the preview: the svg embers run at the display's rate
