@@ -51,22 +51,19 @@ const MODEL = 'model:';
 const COLOUR = 'board-colour';
 // `/board breathe`: the bars breathe idle too, while dima refines the look (2026-10-11 12:20); off by default, a try
 const BREATH_PREVIEW = 'breath-preview';
-// `/board ab` (FRM-391 slice 02): the bars breathe at a frame rate and in a place picked live from the band, with the
-// gpu % each setting costs; the losers go once dima picks, the rate stays as a 🎛️ knob
+// `/board ab` (FRM-391 slice 02): the bars breathe at a frame rate picked live from the band, with the gpu % each rate
+// costs; the losers go once dima picks, the rate stays as a 🎛️ knob. the spinner take was tried and cut (dima, 14:47)
 const BREATH_AB = 'breath-ab';
 // the owner session's gpu samples per setting, in its own state: a write redraws only its band
 const GPU = { key: 'gpu', plugin: 'x-mod-stash' } as const;
 const AB_RATES = [0, 10, 20, 30] as const;
 type BreathAb = {
     hz: (typeof AB_RATES)[number];
-    place: 'bars' | 'spinner';
     owner: string;
 };
 const BREATH = { key: 'breath', plugin: 'x-mod-stash' } as const;
 const GPU_SAMPLE_MS = 2000;
 const GPU_KEEP = 10;
-// columns: the strip is two cells tall, so 2 draws dima's 2×2 (14:46)
-const SPIN_CELLS = 2;
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
 // a session younger than this, counted from the registry's `startedAt`, is a probe: it gets no row until it outlives it
@@ -1165,14 +1162,11 @@ function abOf(v: unknown): BreathAb | undefined {
     if (!v || typeof v !== 'object') return undefined;
     const o = v as Record<string, unknown>;
     const hz = AB_RATES.find((r) => r === o.hz);
-    return hz !== undefined &&
-        (o.place === 'bars' || o.place === 'spinner') &&
-        typeof o.owner === 'string'
-        ? { hz, owner: o.owner, place: o.place }
+    return hz !== undefined && typeof o.owner === 'string'
+        ? { hz, owner: o.owner }
         : undefined;
 }
-export const abSetting = (ab: BreathAb) =>
-    `${ab.hz ? `${ab.hz} Hz` : 'off'} · ${ab.place}`;
+export const abSetting = (ab: BreathAb) => (ab.hz ? `${ab.hz} Hz` : 'off');
 const mean = (xs: number[]) =>
     Math.round(xs.reduce((a, b) => a + b, 0) / xs.length);
 // the A/B owner reads the whole gpu's utilisation every 2 s and files it under the setting it ran at; ioreg needs no sudo
@@ -1612,38 +1606,6 @@ function hoverTip(
     );
 }
 
-// the A/B's spinner place: a short strip of embers, the same in cc's spinner line and in the band's preview of it
-function emberStrip(
-    ui: ReturnType<EngineInterface['ui']['resolve']>,
-    isDesktop: boolean,
-    now: number,
-) {
-    const { Box, Text } = ui;
-    const Svg = isDesktop && 'Svg' in ui ? ui.Svg : undefined;
-    return Svg ? (
-        <Svg
-            alt='breathing'
-            height={BAR_HEIGHT}
-            key='spin:svg'
-            source={meterSvg(100, SPIN_CELLS, undefined, undefined, now)}
-        />
-    ) : (
-        <Box flexDirection='row' flexShrink={0} key='spin:bar'>
-            {meterBar(100, SPIN_CELLS, undefined, undefined, now).map(
-                (r, i) => (
-                    <Text
-                        bold={r.tone === 'hi'}
-                        color={r.color}
-                        // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its strip is its identity
-                        key={`spin:${i}`}>
-                        {r.text}
-                    </Text>
-                ),
-            )}
-        </Box>
-    );
-}
-
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
@@ -1996,7 +1958,7 @@ export const register: Register = (on) => {
             const isOn = !abOf(await $.store.get(BREATH_AB));
             const owner = await currentId($);
             if (isOn && owner) {
-                await $.store.set(BREATH_AB, { hz: 10, owner, place: 'bars' });
+                await $.store.set(BREATH_AB, { hz: 10, owner });
                 armGpu($);
             } else await $.store.delete(BREATH_AB);
             $.ui.invalidate('ui.render');
@@ -2696,7 +2658,7 @@ export const register: Register = (on) => {
         const ab = abOf(await $.store.get(BREATH_AB).catch(() => undefined));
         // while the A/B runs the bars breathe idle too, so dima sees each setting without a turn
         const isBreathing = ab
-            ? ab.place === 'bars' && (Boolean(Svg) || ab.hz > 0)
+            ? Boolean(Svg) || ab.hz > 0
             : Boolean(e.props.isWorking) ||
               (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
         const breath = isBreathing ? now : undefined;
@@ -3034,7 +2996,6 @@ export const register: Register = (on) => {
                   .join(' · ')
             : '';
         const rateLabel = ab?.hz ? `⏱ ${ab.hz} Hz` : '⏱ off';
-        const placeLabel = `📍 ${ab?.place ?? 'bars'}`;
         const abRow = ab ? (
             <Box flexDirection='row' gap={1} key='ab'>
                 {Svg
@@ -3063,40 +3024,11 @@ export const register: Register = (on) => {
                           </Button>,
                           leftOf(rateLabel, false),
                       )}
-                {tip(
-                    'ab:place',
-                    ab.place === 'bars'
-                        ? "move the breath into cc's spinner line (it hides its time and tokens)"
-                        : 'move the breath back onto the bars',
-                    <Button
-                        key='ab:place'
-                        onPress={() =>
-                            void handleAbChange({
-                                place: ab.place === 'bars' ? 'spinner' : 'bars',
-                            })
-                        }
-                        plain>
-                        {placeLabel}
-                    </Button>,
-                    leftOf(placeLabel, false),
-                )}
                 <Text dimColor key='ab:gpu' wrap='truncate-end'>
                     {ab.owner === selfId
                         ? `gpu ${gpuWords || 'reading…'}`
                         : 'gpu reads in the session that ran /board ab'}
                 </Text>
-            </Box>
-        ) : null;
-        // cc's spinner line shows only mid-turn: while 📍 says spinner the band keeps a copy of it, so dima sees it idle
-        // the rate is the terminal's: «off» stills a terminal, never the desktop's svg
-        const isSpinPreview =
-            ab?.place === 'spinner' && (Boolean(Svg) || ab.hz > 0);
-        if (isSpinPreview && !Svg) tickBreath($, ab?.hz);
-        const spinPreview = isSpinPreview ? (
-            <Box alignItems='center' flexDirection='row' gap={1} key='ab:spin'>
-                <Text dimColor>spinner preview</Text>
-                {emberStrip(ui, Boolean(Svg), now)}
-                <Text>Baking…</Text>
             </Box>
         ) : null;
         const meters = (
@@ -3155,7 +3087,6 @@ export const register: Register = (on) => {
                 {row}
                 {meters}
                 {abRow}
-                {spinPreview}
                 {enhancer.error ? (
                     <Text color='error' key='enh:error' wrap='truncate-end'>
                         {enhancer.error}
@@ -3168,30 +3099,6 @@ export const register: Register = (on) => {
                 ) : null}
                 {away}
                 {await next(e)}
-            </Box>
-        );
-    });
-
-    // the A/B's other place: a short strip of embers before cc's spinner word; the tree stands in for the whole line, so
-    // the time and tokens it drew are gone while it shows
-    on('ui.render', { component: 'Spinner' }, async ($, e, next) => {
-        if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e);
-        const ab = abOf(await $.store.get(BREATH_AB).catch(() => undefined));
-        if (ab?.place !== 'spinner' || (e.surface === 'terminal' && !ab.hz))
-            return next(e);
-        const ui = $.ui.resolve(e);
-        const { Box, Text } = ui;
-        const now = await $.clock.now();
-        const word = `${e.props.message ?? e.props.word}${e.props.suffix}`;
-        const strip = emberStrip(ui, e.surface === 'desktop', now);
-        if (e.surface === 'terminal') {
-            await $.state.get(BREATH);
-            tickBreath($, ab.hz);
-        }
-        return (
-            <Box alignItems='center' flexDirection='row' gap={1}>
-                {strip}
-                <Text>{word}</Text>
             </Box>
         );
     });

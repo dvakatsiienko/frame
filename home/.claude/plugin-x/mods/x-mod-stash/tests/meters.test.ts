@@ -470,14 +470,13 @@ test('/board breathe keeps the bars breathing while idle, for refining the look'
     ).toEqual([true, true]);
 });
 
-// the slice-02 A/B (FRM-391): /board ab, the ⏱ rate and 📍 place chips, the gpu % in the owner session
+// the slice-02 A/B (FRM-391): /board ab, the ⏱ rate chip, the gpu % in the owner session
 const setAb = (
     store: Record<string, unknown>,
     hz: 0 | 10 | 20 | 30,
-    place: 'bars' | 'spinner',
     owner = SID,
 ) => {
-    store['breath-ab'] = { hz, owner, place };
+    store['breath-ab'] = { hz, owner };
 };
 const svgsAnimate = async (
     ui: Pick<Awaited<ReturnType<typeof bandOn>>, 'findAll'>,
@@ -500,13 +499,13 @@ test('/board ab turns the A/B on: bars, 10 Hz, owned by this session', async ($,
         origin: { kind: 'composer' },
         presentation: { columns: 80, isFullscreen: false },
     });
-    expect(store['breath-ab']).toEqual({ hz: 10, owner: SID, place: 'bars' });
+    expect(store['breath-ab']).toEqual({ hz: 10, owner: SID });
 });
 
 test('while the A/B runs the idle desktop bars breathe', async ($, on) => {
     const { store } = meters(on);
     await measure($, 39, 35);
-    setAb(store, 10, 'bars');
+    setAb(store, 10);
     expect(await svgsAnimate(await bandOn($, 'desktop', false))).toEqual([
         true,
         true,
@@ -516,10 +515,10 @@ test('while the A/B runs the idle desktop bars breathe', async ($, on) => {
 test('the ⏱ chip steps the rate to the next one', async ($, on) => {
     const { store } = meters(on);
     await measure($, 39, 35);
-    setAb(store, 10, 'bars');
+    setAb(store, 10);
     const ui = await bandOn($, 'terminal', false);
     await ui.press({ key: 'ab:rate' });
-    expect(store['breath-ab']).toEqual({ hz: 20, owner: SID, place: 'bars' });
+    expect(store['breath-ab']).toEqual({ hz: 20, owner: SID });
 });
 
 // how many of 90 samples, 34 ms apart (3.06 s), show a frame the last one did not: 10 Hz can change at most 31 times
@@ -551,7 +550,7 @@ test('at 10 Hz the terminal bars change at most ten times a second', async ($, o
 test('the rate off stands the terminal bars still', async ($, on) => {
     const { clock, store } = meters(on);
     await measure($, 39, 35);
-    setAb(store, 0, 'bars');
+    setAb(store, 0);
     const ui = await bandOn($, 'terminal', true);
     const first = await frameOf(ui);
     await clock.advance(3000);
@@ -561,50 +560,11 @@ test('the rate off stands the terminal bars still', async ($, on) => {
 test('the desktop bars breathe whatever the terminal rate says', async ($, on) => {
     const { store } = meters(on);
     await measure($, 39, 35);
-    setAb(store, 0, 'bars');
+    setAb(store, 0);
     expect(await svgsAnimate(await bandOn($, 'desktop', false))).toEqual([
         true,
         true,
     ]);
-});
-
-test('the desktop spinner preview shows whatever the terminal rate says', async ($, on) => {
-    const { store } = meters(on);
-    await measure($, 39, 35);
-    setAb(store, 0, 'spinner');
-    const ui = await bandOn($, 'desktop', false);
-    expect(
-        (await ui.find({ text: 'spinner preview', type: 'Text' }))?.text,
-    ).toBe('spinner preview');
-});
-
-test('📍 spinner takes the breath off the bars', async ($, on) => {
-    const { store } = meters(on);
-    await measure($, 39, 35);
-    setAb(store, 10, 'spinner');
-    expect(
-        (await svgsAnimate(await bandOn($, 'desktop', true))).slice(0, 2),
-    ).toEqual([false, false]);
-});
-
-test("📍 spinner draws the embers before cc's spinner word", async ($, on) => {
-    const { store } = meters(on);
-    setAb(store, 10, 'spinner');
-    await $.session.start({
-        cwd: '/proj',
-        isInteractive: true,
-        surface: 'desktop',
-    });
-    const spin = await $.ui.mount({
-        component: 'Spinner',
-        plugin: 'x-mod-stash',
-        props: { message: null, mode: 'thinking', suffix: '…', word: 'Baking' },
-        surface: 'desktop',
-    });
-    expect([
-        (await svgsAnimate(spin)).length,
-        (await spin.find({ text: 'Baking…', type: 'Text' }))?.text,
-    ]).toEqual([1, 'Baking…']);
 });
 
 test('the owner session shows the gpu % its setting costs', async ($, on) => {
@@ -619,11 +579,11 @@ test('the owner session shows the gpu % its setting costs', async ($, on) => {
         },
     }));
     await measure($, 39, 35);
-    setAb(store, 10, 'bars');
+    setAb(store, 10);
     const ui = await bandOn($, 'desktop', false);
     await clock.advance(2000);
     expect((await ui.find({ text: /^gpu /, type: 'Text' }))?.text).toBe(
-        'gpu 10 Hz · bars 42%',
+        'gpu 10 Hz 42%',
     );
 });
 
@@ -635,37 +595,16 @@ test('a session that does not own the A/B never reads the gpu', async ($, on) =>
         return { deny: 'not here' };
     });
     await measure($, 39, 35);
-    setAb(store, 10, 'bars', 'someone-else');
+    setAb(store, 10, 'someone-else');
     await bandOn($, 'desktop', false);
     await clock.advance(4000);
     expect(ran.filter((c) => c === 'ioreg')).toEqual([]);
 });
 
-test('📍 spinner keeps a preview of the spinner line in the idle band', async ($, on) => {
-    const { store } = meters(on);
-    await measure($, 39, 35);
-    setAb(store, 10, 'spinner');
-    const ui = await bandOn($, 'desktop', false);
-    expect([
-        (await ui.find({ text: 'spinner preview', type: 'Text' }))?.text,
-        (await svgsAnimate(ui)).at(-1),
-    ]).toEqual(['spinner preview', true]);
-});
-
-test('📍 bars shows no spinner preview', async ($, on) => {
-    const { store } = meters(on);
-    await measure($, 39, 35);
-    setAb(store, 10, 'bars');
-    const ui = await bandOn($, 'desktop', false);
-    expect(
-        await ui.find({ text: 'spinner preview', type: 'Text' }),
-    ).toBeUndefined();
-});
-
 test('the desktop A/B names its rate as the display rate, with no rate button', async ($, on) => {
     const { store } = meters(on);
     await measure($, 39, 35);
-    setAb(store, 10, 'bars');
+    setAb(store, 10);
     const ui = await bandOn($, 'desktop', false);
     expect([
         (await ui.find({ text: '⏱ display rate', type: 'Text' }))?.text,

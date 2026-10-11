@@ -167,23 +167,12 @@
   - given the turn ends
   - then the bars stand still: no wave, no redraw tick
   - decision: `/board breathe` makes the bars breathe idle too while dima refines the look, off by default, a try that leaves with the 🎛️ knobs (dima, 2026-10-11 12:20)
-- ⬜ `/board ab` compares the bars' frame rate and where the breath sits, live, with the gpu it costs (FRM-391 slice 02)
+- ⬜ `/board ab` compares the bars' frame rate live, with the gpu it costs (FRM-391 slice 02)
   - given dima runs `/board ab`
-  - then the bars breathe idle too, and a row under the meters holds ⏱ (off, 10, 20, 30 Hz) and 📍 (bars or cc's spinner line), each a press that applies in every band with no reload, and `gpu <setting> <n>%` — the mean of the last ten 2 s `ioreg` reads, in the session that ran it
-  - given 📍 spinner, then the bars stand still and a 2×2 ember strip leads the spinner line (dima, 14:46; 12 columns, then 4, before); the terminal line's time and tokens are gone while it shows, the desktop row keeps its token count (dima's 14:46 shot: «Working… 81 tokens»)
-  - and the band keeps a «spinner preview» row with the same strip, so the look shows while idle (dima's o6)
-  - proven live 2026-10-11 14:40 (dima's shot): the desktop draws the strip inside cc's spinner row, «Working… Thinking» beside it
-  - given the desktop, then ⏱ reads «⏱ display rate», no button, and a rate left at «off» stills neither the bars nor the preview: the svg embers run at the display's rate
-  - decision: the rate is the terminal's — the desktop's svg embers run at the display's own rate, so on the desktop the A/B is the place and the gpu (dima's eye test runs in his live band, `mods:live` is a text pty)
-  - decision: a try; once dima picks, the losing place and rates go and the rate stays as the 🎛️ frame-rate knob's default
-  - decision: the desktop wave runs inside each bar's svg, no host tick, and a rebuild resumes at the breath's phase; the terminal redraws the band every 100 ms while working — the rates are an A/B dima picks by eye (FRM-391 slice 02)
-  - and both bars start and end on the same columns: one label width, one bar width, one right-aligned % cell; desktop air 0.5 above the meters and 0.4 between them
-  - and an idle band stays live: the 4 s poll takes the 5h reading from `cc-usage-window.json`, which any busy session writes, and its minute moves the time left
-  - and each filled cell takes sline's bar ramp by its place — green, yellow, orange, red — so a bar warms as it fills; the 5h ramp spans the window, the ctx ramp reaches red at the compaction point
-  - decision: the fills are the board's mid-tone hexes and sline's ramp, not theme keys — the theme's `success` drew a dark green and a calm ctx drew black (dima's screenshots, 19:25)
-  - source: the point resolves as cc does for the session: `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the settings merged for its project (`$.settings.read()`: local, project, user), then the process env, else cc's default — the engine's `autoCompactThreshold` over the window (`$.session.usage({ breakdown: 'summary' })`)
-  - decision: the engine's breakdown alone showed 97 in cclio's tab while its `.claude/settings.json` sets 70 (dima's screenshot, 19:08) — the breakdown reports the default, never the override
-  - decision: the band's meter state is written only when a reading moved, so a measure that changed nothing redraws nothing
+  - then the bars breathe idle too, and a row under the meters holds ⏱ (off, 10, 20, 30 Hz), a press that applies in every band with no reload, and `gpu <rate> <n>%` — the mean of the last ten 2 s `ioreg` reads, in the session that ran it
+  - given the desktop, then ⏱ reads «⏱ display rate», no button, and a rate left at «off» never stills the bars: the svg embers run at the display's rate
+  - decision: a spinner take (the embers in cc's spinner row, and a preview of it in the band) was built and seen live, then cut: it shows only between tool calls, so it flickers in a working turn (dima, 14:47 «it is useless for us»)
+  - decision: a try; once dima picks, the losing rates go and the rate stays as the 🎛️ frame-rate knob's default
 - ⬜ the compaction point is typed live
   - when dima types a whole 10–99 into the ctx row's `Input` and presses Enter
   - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the launch dir's `.claude/settings.json` when that dir is the repo top, its `.claude/settings.local.json` otherwise, every other key kept, and the row shows it
