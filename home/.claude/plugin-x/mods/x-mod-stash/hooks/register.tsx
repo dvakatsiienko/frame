@@ -2117,25 +2117,6 @@ export const register: Register = (on) => {
                     paddingY={air ? 0.5 : 0}
                     rowGap={air ? 0.3 : 0}>
                     <Text bold>stash · knobs</Text>
-                    {switchJSX(
-                        BREATHE,
-                        '🔥 bars breathe while a turn runs',
-                        knobs.breathe,
-                        true,
-                    )}
-                    {switchJSX(
-                        BREATH_PREVIEW,
-                        '🔥 bars breathe all the time',
-                        knobs.always,
-                        false,
-                    )}
-                    {numberJSX(
-                        BREATH_SPEED,
-                        '🔥 breath speed',
-                        knobs.speed,
-                        SPEED,
-                        '×',
-                    )}
                     {switchJSX(COLOUR, '🎨 board colour', knobs.colour, false)}
                     {numberJSX(
                         PHASE_LINES,
@@ -2165,15 +2146,51 @@ export const register: Register = (on) => {
                     </Box>
                 </Box>
             );
+            // the bars' animation, its own card at the pane's bottom beside the context (dima, 18:06)
+            const barsJSX = (
+                <Box
+                    borderColor={cardBorder(e.surface)}
+                    borderStyle='round'
+                    flexDirection='column'
+                    flexGrow={1}
+                    key='settings:bars'
+                    paddingX={1}
+                    paddingY={air ? 0.5 : 0}
+                    rowGap={air ? 0.3 : 0}
+                    width={0}>
+                    <Text bold>🔥 bars</Text>
+                    {switchJSX(
+                        BREATHE,
+                        '🔥 bars breathe while a turn runs',
+                        knobs.breathe,
+                        true,
+                    )}
+                    {switchJSX(
+                        BREATH_PREVIEW,
+                        '🔥 bars breathe all the time',
+                        knobs.always,
+                        false,
+                    )}
+                    {numberJSX(
+                        BREATH_SPEED,
+                        '🔥 breath speed',
+                        knobs.speed,
+                        SPEED,
+                        '×',
+                    )}
+                </Box>
+            );
             // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
             const compactJSX = Input ? (
                 <Box
                     borderColor={cardBorder(e.surface)}
                     borderStyle='round'
                     flexDirection='column'
+                    flexGrow={1}
                     key='settings:compact'
                     paddingX={1}
-                    paddingY={e.surface === 'desktop' ? 0.5 : 0}>
+                    paddingY={e.surface === 'desktop' ? 0.5 : 0}
+                    width={0}>
                     <Text bold>context</Text>
                     <Box alignItems='center' flexDirection='row' gap={1}>
                         <Text>📦 auto-compact at</Text>
@@ -2199,18 +2216,41 @@ export const register: Register = (on) => {
                 </Box>
             ) : null;
             return (
-                // two columns of cards: the switches left, the knobs and the context right (dima, 17:42)
-                <Box flexDirection='row' gap={1} key='settings:view'>
-                    <Box flexDirection='column' flexGrow={1} gap={1} width={0}>
-                        {settingsListJSX(
-                            $,
-                            ui,
-                            (await $.state.get(VIEW)).value?.shown ?? {},
-                            e.surface === 'desktop',
-                        )}
+                // two columns of cards, the switches left and the knobs right (dima, 17:42); the bars and the context sit at the
+                // pane's bottom, side by side, a gap growing above them as the phases do on the board (dima, 18:06)
+                <Box
+                    flexDirection='column'
+                    gap={1}
+                    key='settings:view'
+                    minHeight={
+                        e.props.placement === 'dock'
+                            ? e.props.scroll.bodyRows
+                            : undefined
+                    }>
+                    <Box flexDirection='row' gap={1} key='settings:columns'>
+                        <Box
+                            flexDirection='column'
+                            flexGrow={1}
+                            gap={1}
+                            width={0}>
+                            {settingsListJSX(
+                                $,
+                                ui,
+                                (await $.state.get(VIEW)).value?.shown ?? {},
+                                e.surface === 'desktop',
+                            )}
+                        </Box>
+                        <Box
+                            flexDirection='column'
+                            flexGrow={1}
+                            gap={1}
+                            width={0}>
+                            {knobsJSX}
+                        </Box>
                     </Box>
-                    <Box flexDirection='column' flexGrow={1} gap={1} width={0}>
-                        {knobsJSX}
+                    <Box flexGrow={1} key='settings:gap' />
+                    <Box flexDirection='row' gap={1} key='settings:bottom'>
+                        {barsJSX}
                         {compactJSX}
                     </Box>
                 </Box>
