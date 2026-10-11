@@ -220,3 +220,43 @@ test("a flip keeps another session's switch it has not polled yet", async ($, on
         'stash.enhancer': false,
     });
 });
+
+// the 🎛️ knobs (FRM-391 slice 06): a switch saves on its press, a number on each keystroke that makes a valid value
+for (const [key, before, after] of [
+    ['breathe', undefined, false],
+    ['breath-preview', undefined, true],
+    ['board-colour', undefined, true],
+    ['speak-assumed', undefined, false],
+] as const)
+    test(`the ${key} knob saves its flip at once`, async ($, on) => {
+        const { store } = world(on);
+        await band($);
+        const view = await pane($);
+        const was = store.get(key);
+        await view.press({ key: `knob:${key}` });
+        expect([was, store.get(key)]).toEqual([before, after]);
+    });
+
+test('a number knob saves each valid keystroke and never applies an invalid one', async ($, on) => {
+    const { store } = world(on);
+    await band($);
+    const view = await pane($);
+    const seen: unknown[] = [];
+    for (const text of ['0', '0.', '0.7', '0.75', '9'])
+        await view
+            .input({ key: 'knob:breath-speed', kind: 'change', text })
+            .then(() => seen.push(store.get('breath-speed')));
+    expect(seen).toEqual([undefined, undefined, 0.7, 0.75, 0.75]);
+});
+
+test('the phase lines knob takes 5 to 7 only', async ($, on) => {
+    const { store } = world(on);
+    await band($);
+    const view = await pane($);
+    const seen: unknown[] = [];
+    for (const text of ['8', '4', '6'])
+        await view
+            .input({ key: 'knob:phase-lines', kind: 'change', text })
+            .then(() => seen.push(store.get('phase-lines')));
+    expect(seen).toEqual([undefined, undefined, 6]);
+});

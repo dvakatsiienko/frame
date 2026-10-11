@@ -1175,3 +1175,30 @@ test('the fold button reads 📂 while its card is open and 📁 while folded', 
     await ui.press({ key: 'fold:orbit' });
     expect([open, await glyph()]).toEqual(['📂', '📁']);
 });
+
+test('the phase lines knob caps a plan and its nudge', async ($, on) => {
+    const w = world(on);
+    w.store.set('phase-lines', 5);
+    await start($);
+    const ui = await board($);
+    const result = await orbit($, {
+        lines: ['now: a', 'next: b', 'then: c', 'd', 'e', 'f', 'g'],
+        op: 'plan',
+    });
+    const lines = (await ui.findAll({ type: 'Text' }))
+        .map((t) => t.text)
+        .filter((t) => /^[🌕🌔🌓🌒🌑] (?!phases)/u.test(t ?? ''));
+    expect([
+        JSON.stringify(result).includes('plan set, 5 lines'),
+        lines.length,
+    ]).toEqual([true, 5]);
+});
+
+test('with read-aloud on assumptions off, an assumption draws no 🔊', async ($, on) => {
+    const w = world(on);
+    w.store.set('speak-assumed', false);
+    await start($);
+    const ui = await board($);
+    await orbit($, { op: 'assume', texts: ['moons repeat'] });
+    expect(await ui.find({ key: 'orbit:read:a1' })).toBe(undefined);
+});

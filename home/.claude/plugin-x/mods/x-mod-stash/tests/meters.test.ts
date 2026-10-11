@@ -200,7 +200,7 @@ test("the ctx row shows the fill and the engine's compaction point", async ($, o
     await measure($, 39, 35);
     await band($);
     const ui = await settingsPane($);
-    const input = await ui.find({ type: 'Input' });
+    const input = await ui.find({ key: 'compact-at', type: 'Input' });
     expect([
         (await part($, /^35%$/)) !== 'no text',
         input?.props.value,
@@ -292,7 +292,9 @@ test("a project override of the compaction point beats the engine's default", as
     await measure($, 39, 35);
     await band($);
     const ui = await settingsPane($);
-    expect((await ui.find({ type: 'Input' }))?.props.value).toBe('55');
+    expect(
+        (await ui.find({ key: 'compact-at', type: 'Input' }))?.props.value,
+    ).toBe('55');
 });
 
 test('the ctx fill turns amber 10 points before the compaction point', async ($, on) => {
@@ -493,3 +495,32 @@ for (const [key, drawn] of METER_PARTS)
         await clock.advance(4000);
         expect([before, await drawn(ui)]).toEqual([true, false]);
     });
+
+// the 🎛️ bar knobs (FRM-391 slice 06)
+test('with breathe switched off, mid-turn bars stand still', async ($, on) => {
+    const { store } = meters(on);
+    store.breathe = false;
+    await measure($, 39, 35);
+    const svgs = (
+        await (await bandOn($, 'desktop', true)).findAll({ type: 'Svg' })
+    ).map((n) => String(n.props.source).includes('<animate'));
+    expect(svgs).toEqual([false, false]);
+});
+
+test('the breath speed knob stretches every spark: 0.25× runs twice as slow as 0.5×', async ($, on) => {
+    const { store } = meters(on);
+    store['breath-speed'] = 0.25;
+    await measure($, 39, 35);
+    const durs = (
+        await (await bandOn($, 'desktop', true)).findAll({ type: 'Svg' })
+    )
+        .flatMap((n) => [
+            ...String(n.props.source).matchAll(/dur="([\d.]+)s"/g),
+        ])
+        .map((m) => Number(m[1]));
+    // at 0.5× a period runs 3.2–8.8 s; at 0.25× 6.4–17.6 s
+    expect([Math.min(...durs) >= 6.4, Math.max(...durs) <= 17.6]).toEqual([
+        true,
+        true,
+    ]);
+});

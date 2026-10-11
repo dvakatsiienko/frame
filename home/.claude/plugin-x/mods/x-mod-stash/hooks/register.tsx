@@ -62,6 +62,13 @@ const MODEL = 'model:';
 const COLOUR = 'board-colour';
 // `/board breathe`: the bars breathe idle too, while dima refines the look (2026-10-11 12:20); off by default, a try
 const BREATH_PREVIEW = 'breath-preview';
+// the 🎛️ knobs (FRM-391 slice 06), fleet-wide in stash's store like the switches: a missing key is the default
+const BREATHE = 'breathe';
+const BREATH_SPEED = 'breath-speed';
+const PHASE_LINES = 'phase-lines';
+const SPEAK_ASSUMED = 'speak-assumed';
+const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
+const LINES = { max: 7, min: 5 } as const;
 // the 🎛️ settings (FRM-391 slice 05): one show/hide switch per part, in the store every session reads and the poll
 // re-reads, so a flip reaches every band within one poll; a missing key is shown
 const SHOWN = 'shown';
@@ -576,6 +583,7 @@ function orbitOp(
     o: StashOrbit,
     input: Record<string, unknown>,
     isTurn: boolean,
+    planMax: number = PLAN_MAX,
 ): { orbit: StashOrbit; result: string } | { deny: string } {
     switch (input.op) {
         case 'add': {
@@ -688,7 +696,7 @@ function orbitOp(
             const lines = (Array.isArray(input.lines) ? input.lines : [])
                 .map(oneLine)
                 .filter(Boolean)
-                .slice(0, PLAN_MAX);
+                .slice(0, planMax);
             const tooLong = overCap('plan', lines);
             if (tooLong) return tooLong;
             return {
@@ -698,9 +706,9 @@ function orbitOp(
                         ? { at: isTurn ? o.turns + 1 : o.turns, lines }
                         : undefined,
                 },
-                // the board shows 7 phases; a shorter plan leaves dima guessing past it (dima's o74)
+                // the board shows the 🎛️ phase lines (7 by default); a shorter plan leaves dima guessing past it (dima's o74)
                 result: lines.length
-                    ? `plan set, ${lines.length} line${lines.length === 1 ? '' : 's'}${lines.length < PLAN_MAX ? ` — plan has ${lines.length} of ${PLAN_MAX}, fill to ${PLAN_MAX}` : ''}`
+                    ? `plan set, ${lines.length} line${lines.length === 1 ? '' : 's'}${lines.length < planMax ? ` — plan has ${lines.length} of ${planMax}, fill to ${planMax}` : ''}`
                     : 'plan cleared',
             };
         }
@@ -1206,12 +1214,12 @@ function seeded(n: number) {
     return (x >>> 0) / 2 ** 32;
 }
 /** a cell's spark: whether it has one, its period and its offset into it, in ms */
-export function emberOf(cell: number, row: number) {
+export function emberOf(cell: number, row: number, breathMs = BREATH_MS) {
     const k = cell * 2 + row;
     return {
         isOn: seeded(k * 3 + 1) < 0.85,
-        offsetMs: seeded(k * 3 + 3) * BREATH_MS,
-        periodMs: BREATH_MS * (0.2 + seeded(k * 3 + 2) * 0.35),
+        offsetMs: seeded(k * 3 + 3) * breathMs,
+        periodMs: breathMs * (0.2 + seeded(k * 3 + 2) * 0.35),
     };
 }
 // one bar as cells: the reading filled, one cell marked — the pace on the 5h bar, the compaction point on the context
@@ -1260,6 +1268,7 @@ export function meterSvg(
     mark?: number,
     scale = 100,
     breathAt?: number,
+    breathMs = BREATH_MS,
 ) {
     const w = width * CELL_STEP - CELL.gap;
     // the ramp reaches red where `scale` sits on the bar: the whole bar for the 5h window, the compaction point for ctx
@@ -1268,7 +1277,7 @@ export function meterSvg(
     // so a rebuild resumes every ember mid-flight instead of snapping back (the breather's fix, FRM-354)
     const sparkOf = (i: number, x: number, y: number, row: number) => {
         if (breathAt === undefined) return '';
-        const e = emberOf(i, row);
+        const e = emberOf(i, row, breathMs);
         if (!e.isOn) return '';
         const into = ((breathAt + e.offsetMs) % e.periodMs) / 1000;
         return `<rect class="ember" x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" opacity="0"><animate attributeName="opacity" values="${EMBER_GLOW.join(';')}" keyTimes="${EMBER_KEYS.join(';')}" dur="${(e.periodMs / 1000).toFixed(2)}s" begin="-${into.toFixed(2)}s" repeatCount="indefinite"/></rect>`;
@@ -1544,6 +1553,43 @@ async function flipPart($: EngineInterface, key: string) {
     shown = { ...now, [key]: now[key] === false };
     await $.store.set(SHOWN, shown);
     await publish($);
+}
+
+// a 🎛️ number knob's value: a whole or decimal number inside its range, else undefined — a half-typed «0.» or an out of
+// range «8» on the way to nothing is never applied
+function numberOf(v: unknown, range: { min: number; max: number }) {
+    const text =
+        typeof v === 'number'
+            ? String(v)
+            : typeof v === 'string'
+              ? v.trim()
+              : '';
+    if (!/^\d+(\.\d+)?$/.test(text)) return undefined;
+    const n = Number(text);
+    return n >= range.min && n <= range.max ? n : undefined;
+}
+
+async function flipKnob(
+    $: EngineInterface,
+    key: string,
+    isOnByDefault: boolean,
+) {
+    const was = await $.store.get(key).catch(() => undefined);
+    await $.store.set(key, !(typeof was === 'boolean' ? was : isOnByDefault));
+    $.ui.invalidate('ui.render');
+}
+
+// a keystroke saves at once when it makes a valid value, and is never applied when it does not (exit 6)
+async function setKnobNumber(
+    $: EngineInterface,
+    key: string,
+    text: string,
+    range: { min: number; max: number },
+) {
+    const n = numberOf(text, range);
+    if (n === undefined) return;
+    await $.store.set(key, n);
+    $.ui.invalidate('ui.render');
 }
 
 // the 🎛️ pane's switch list: a column per group
@@ -2014,10 +2060,110 @@ export const register: Register = (on) => {
         { component: 'Pane', requestId: SETTINGS_PANE },
         async ($, e) => {
             const ui = $.ui.resolve(e);
-            const { Box, Text } = ui;
+            const { Box, Text, Button } = ui;
             const meter = (await $.state.get(METER)).value;
             // mobile draws no Input
             const Input = 'Input' in ui ? ui.Input : undefined;
+            const read = (key: string) =>
+                $.store.get(key).catch(() => undefined);
+            // the knobs: a switch saves on its press, a number on each keystroke that makes a valid value
+            const knobs = {
+                always: (await read(BREATH_PREVIEW)) === true,
+                breathe: (await read(BREATHE)) !== false,
+                colour: (await read(COLOUR)) === true,
+                lines: numberOf(await read(PHASE_LINES), LINES) ?? PLAN_MAX,
+                speak: (await read(SPEAK_ASSUMED)) !== false,
+                speed: numberOf(await read(BREATH_SPEED), SPEED) ?? SPEED.of,
+            };
+            const switchJSX = (
+                key: string,
+                label: string,
+                isOn: boolean,
+                isOnByDefault: boolean,
+            ) => (
+                <Box flexDirection='row' key={`knob:${key}`}>
+                    <Button
+                        key={`knob:${key}`}
+                        onPress={() => void flipKnob($, key, isOnByDefault)}
+                        {...(isOn
+                            ? { variant: 'primary' as const }
+                            : { dimColor: true })}>
+                        {label}
+                    </Button>
+                </Box>
+            );
+            const numberJSX = (
+                key: string,
+                label: string,
+                value: number,
+                range: { min: number; max: number },
+                unit: string,
+            ) =>
+                Input ? (
+                    <Box
+                        alignItems='center'
+                        flexDirection='row'
+                        gap={1}
+                        key={`knob:${key}`}>
+                        <Text>{label}</Text>
+                        <Box flexShrink={0} width={8}>
+                            <Input
+                                key={`knob:${key}`}
+                                onInput={(text) =>
+                                    void setKnobNumber($, key, text, range)
+                                }
+                                onSubmit={(text) =>
+                                    void setKnobNumber($, key, text, range)
+                                }
+                                value={String(value)}
+                            />
+                        </Box>
+                        <Text
+                            dimColor>{`${unit} (${range.min}–${range.max})`}</Text>
+                    </Box>
+                ) : null;
+            const air = e.surface === 'desktop';
+            const knobsJSX = (
+                <Box
+                    flexDirection='column'
+                    key='settings:knobs'
+                    rowGap={air ? 0.3 : 0}>
+                    <Text bold>stash · knobs</Text>
+                    {switchJSX(
+                        BREATHE,
+                        '🔥 bars breathe while a turn runs',
+                        knobs.breathe,
+                        true,
+                    )}
+                    {switchJSX(
+                        BREATH_PREVIEW,
+                        '🔥 bars breathe all the time',
+                        knobs.always,
+                        false,
+                    )}
+                    {numberJSX(
+                        BREATH_SPEED,
+                        '🔥 breath speed',
+                        knobs.speed,
+                        SPEED,
+                        '×',
+                    )}
+                    {switchJSX(COLOUR, '🎨 board colour', knobs.colour, false)}
+                    {numberJSX(
+                        PHASE_LINES,
+                        '🌔 phase lines',
+                        knobs.lines,
+                        LINES,
+                        'lines',
+                    )}
+                    {switchJSX(
+                        SPEAK_ASSUMED,
+                        '🔊 read-aloud on assumptions',
+                        knobs.speak,
+                        true,
+                    )}
+                </Box>
+            );
             // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
             const compactJSX = Input ? (
                 <Box flexDirection='column' key='settings:compact'>
@@ -2053,6 +2199,7 @@ export const register: Register = (on) => {
                         (await $.state.get(VIEW)).value?.shown ?? {},
                         e.surface === 'desktop',
                     )}
+                    {knobsJSX}
                     {compactJSX}
                 </Box>
             );
@@ -2112,6 +2259,8 @@ export const register: Register = (on) => {
         // (claude-code#101090) — a workaround, see mods/workarounds.md
         const boardShown = (await $.state.get(VIEW)).value?.shown ?? {};
         const isPartOn = (key: string) => boardShown[key] !== false;
+        const speakAssumed =
+            (await $.store.get(SPEAK_ASSUMED).catch(() => undefined)) !== false;
         const folds = (await $.state.get(FOLDS)).value ?? {};
         // 📂 sits at the far right of each card's head line and folds the card to that line, then reads 📁 (dima's o5, 17:21)
         const foldJSX = (card: string) => (
@@ -2330,7 +2479,9 @@ export const register: Register = (on) => {
                                                 : { plain: true as const })}>
                                             ↩️
                                         </Button>
-                                        {speakJSX(x.id, x.text)}
+                                        {speakAssumed
+                                            ? speakJSX(x.id, x.text)
+                                            : null}
                                         {Input ? (
                                             <Box flexShrink={1} minWidth={0}>
                                                 <Input
@@ -2670,6 +2821,10 @@ export const register: Register = (on) => {
                 await currentOrbit($),
                 e as Record<string, unknown>,
                 isTurn,
+                numberOf(
+                    await $.store.get(PHASE_LINES).catch(() => undefined),
+                    LINES,
+                ) ?? PLAN_MAX,
             );
             if ('deny' in op) return { deny: op.deny };
             await saveOrbit($, op.orbit);
@@ -2812,8 +2967,17 @@ export const register: Register = (on) => {
         const now = await $.clock.now();
         const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
         const isBreathing =
-            Boolean(e.props.isWorking) ||
+            (Boolean(e.props.isWorking) &&
+                (await $.store.get(BREATHE).catch(() => undefined)) !==
+                    false) ||
             (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
+        // the 🎛️ speed: 1× sparks a cell every 1.6–4.4 s, 0.5× (the default, dima 12:58) twice as slow
+        const breathMs =
+            (BREATH_MS * SPEED.of) /
+            (numberOf(
+                await $.store.get(BREATH_SPEED).catch(() => undefined),
+                SPEED,
+            ) ?? SPEED.of);
         const five = meter?.fiveHour;
         const pace =
             five?.resetsAt === undefined
@@ -2872,6 +3036,7 @@ export const register: Register = (on) => {
                                     bar.mark,
                                     bar.scale,
                                     isBreathing ? now : undefined,
+                                    breathMs,
                                 )}
                             />
                         ) : null}
