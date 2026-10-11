@@ -205,7 +205,7 @@
   - decision: cclio is pinned to the top, its name always bold; ccrow, her adviser, is pinned second and bold too, a member matched by the name's last word so a coder naming ccrow is not pinned (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
 - ⬜ the board's sections sit in cards (FRM-391 aside, dima 16:54)
-  - given the board draws, then sessions, 🪐 orbit and 🌔 phases each sit in a round-bordered card in the `subtle` grey, between dim and `inactive`, no colour (16:54 too faint, 17:00 «too hard»); each ask is a smaller dim-bordered card inside orbit
+  - given the board draws, then sessions, 🪐 orbit and 🌔 phases each sit in a round-bordered card no colour: on the desktop a 30 % grey (`#8080804d`), the same on light and dark and a touch softer than `subtle`, in the terminal `subtle` (16:54 too faint, 17:00 «too hard», 17:08 «slightly less»); each ask is a smaller dim-bordered card inside orbit
   - and orbit's head reads `🪐 orbit` with no count, its check-all a bare `✅`; phases carry no count either (seven at most)
   - decision: cards over strips and the dashboard, tried side by side in a throwaway `board-lab` mod (dima, 16:48 «strips — no, windows 92 look», «colors are ugly»; 16:54 «apply the cards layout»)
   - decision: cc's registry stores «🐦‍⬛ ccrow» with the zero-width joiner as a space, so the board puts the joiner back for that one sequence — a plain string fix, no emoji parser (FRM-325)
@@ -337,13 +337,13 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ accept, reject, note, check all
   - given orbit shows asks
   - when dima presses an ask's 🛎️ or ↩️, types in its note, or presses check all
-  - then the pressed toggle, worded `🛎️ take` or `↩️ back`, is lit (the `primary` button) and a second press puts it out; the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
+  - then `🛎️ take` is always the filled (`primary`) button and reads `🛎️ taken` while it holds; `↩️ back` fills and reads `↩️ sent back` while it holds; a second press puts either out (dima, 17:08: «solid, as in the cards example»); the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
   - decision: 🛎️ / ↩️, the waiter lens — 🛎️ order up, ready for the session to pick up; ↩️ back to the kitchen (dima's o79, 23:05; was 🤩 / 👎🏼)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
   - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ⏯️ ⏹️, then the note; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
   - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
-  - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one bare `✅` button (dima, 19:59; a label tried at 16:54, dropped at 17:00); the pick sits on a line of its own, `➡️ pick:` dim then the pick bold, the mock's card shape (dima, 17:00)
+  - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one bare `✅` button (dima, 19:59; a label tried at 16:54, dropped at 17:00); the pick sits on a line of its own, `➡️` then the pick bold, the mock's card shape (dima, 17:00; the «pick» word dropped at 17:08: «➡️ already tells it is a pick»)
   - decision: the header reads `🪐 orbit`, no count (dima, 16:54; was `🪐 orbit: n`)
   - decision: the pick is bold like the id, so the proposal stands out (dima, 20:30)
   - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses

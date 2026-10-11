@@ -159,8 +159,10 @@ const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
 const CHANGED_MARK = '🆕';
 // a quarter row between a block's lines: the desktop draws the fraction, the terminal rounds it away (dima, 21:22)
 const LINE_GAP = 0.25;
-// the board's sections sit in cards: a round border between dim and `inactive`, no colour (dima, 16:48 «colors are ugly», 16:54, 17:00 «too hard»)
-const CARD_BORDER = 'subtle';
+// the board's sections sit in cards, no colour (dima, 16:48 «colors are ugly»): the desktop a 30 % grey that reads the same on
+// light and dark, a touch softer than `subtle` (16:54 too faint, 17:00 «too hard», 17:08 «slightly less»); the terminal `subtle`
+const cardBorder = (surface: string) =>
+    surface === 'desktop' ? '#8080804d' : 'subtle';
 // an ask, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
 const ORBIT_TEXT_MAX = 90;
 // at most this many assumptions a turn, and on the board at once (FRM-382 exit 2: under one a turn on average)
@@ -2044,9 +2046,18 @@ export const register: Register = (on) => {
                         true,
                     )
                 }
-                {...(a.mark === mark ? { variant: 'primary' as const } : {})}>
-                {/* worded, the mock's card shape: lit while it holds (dima, 17:00) */}
-                {mark === 'accepted' ? '🛎️ take' : '↩️ back'}
+                // take is always the filled button, the mock's (dima, 17:08); back fills only while it holds, and a held
+                // mark says so in its word
+                {...(mark === 'accepted' || a.mark === mark
+                    ? { variant: 'primary' as const }
+                    : {})}>
+                {mark === 'accepted'
+                    ? a.mark === mark
+                        ? '🛎️ taken'
+                        : '🛎️ take'
+                    : a.mark === mark
+                      ? '↩️ sent back'
+                      : '↩️ back'}
             </Button>
         );
         const handleAssumedNote = (id: string, value: string) =>
@@ -2122,7 +2133,7 @@ export const register: Register = (on) => {
                         </Text>
                         {/* the pick on a line of its own, the mock's card shape (dima, 17:00) */}
                         <Text>
-                            <Text dimColor>{'➡️ pick: '}</Text>
+                            {'➡️ '}
                             <Text bold>
                                 {linkedJSX(a.pick, `pick:${a.id}`)}
                             </Text>
@@ -2164,7 +2175,7 @@ export const register: Register = (on) => {
         );
         const orbitJSX = (
             <Box
-                borderColor={CARD_BORDER}
+                borderColor={cardBorder(e.surface)}
                 borderStyle='round'
                 flexDirection='column'
                 key='orbit'
@@ -2293,7 +2304,7 @@ export const register: Register = (on) => {
             ? [
                   <Box flexGrow={1} key='phases:gap' />,
                   <Box
-                      borderColor={CARD_BORDER}
+                      borderColor={cardBorder(e.surface)}
                       borderStyle='round'
                       flexDirection='column'
                       key='phases'
@@ -2506,7 +2517,7 @@ export const register: Register = (on) => {
         return (
             <Box flexDirection='column' minHeight={fill}>
                 <Box
-                    borderColor={CARD_BORDER}
+                    borderColor={cardBorder(e.surface)}
                     borderStyle='round'
                     flexDirection='column'
                     key='sessions'

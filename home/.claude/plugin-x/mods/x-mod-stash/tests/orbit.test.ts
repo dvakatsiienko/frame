@@ -121,7 +121,7 @@ test("an ask's row reads its text and cclio's pick", async ($, on) => {
     await add($, ['push the branch to main', 'yes, now']);
     expect(
         (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text,
-    ).toContain('push the branch to main➡️ pick: yes, now');
+    ).toContain('push the branch to main➡️ yes, now');
 });
 
 test('a ticked ask joins the next prompt as model-only context', async ($, on) => {
@@ -271,7 +271,7 @@ test("a joined ask's 🔒 mark leads its own line", async ($, on) => {
     await ui.press({ key: 'orbit:accepted:o1' });
     await say($, 'go');
     expect((await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text).toMatch(
-        /^🔒🛎️ o1: push .*FRM-1➡️ pick: yes🔊/u,
+        /^🔒🛎️ o1: push .*FRM-1➡️ yes🔊/u,
     );
 });
 
@@ -286,16 +286,22 @@ test('an ask the turn left unanswered gets its controls back when the turn ends'
     expect(await ui.find({ key: 'orbit:accepted:o1' })).toBeTruthy();
 });
 
-test('a pressed 🛎️ is lit and a second press puts it out', async ($, on) => {
+test('🛎️ take is always filled; a press reads «taken», a second puts it back', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
     await ui.press({ key: 'orbit:accepted:o1' });
-    const lit = (await ui.find({ key: 'orbit:accepted:o1' }))?.props.variant;
+    const take = async () => {
+        const b = await ui.find({ key: 'orbit:accepted:o1' });
+        return [b?.props.variant, b?.text];
+    };
+    const lit = await take();
     await ui.press({ key: 'orbit:accepted:o1' });
-    const out = (await ui.find({ key: 'orbit:accepted:o1' }))?.props.variant;
-    expect([lit, out]).toEqual(['primary', undefined]);
+    expect([lit, await take()]).toEqual([
+        ['primary', '🛎️ taken'],
+        ['primary', '🛎️ take'],
+    ]);
 });
 
 test('a note is kept as it is typed, with no Enter', async ($, on) => {
@@ -361,7 +367,7 @@ test('a follow-up keeps its id and place with new text, led by 🆕', async ($, 
     ]).toEqual([
         ['o1', 'o2'],
         expect.stringMatching(
-            /^🆕 o1: push the branch once ci is green➡️ pick: after ci🛎️ take/u,
+            /^🆕 o1: push the branch once ci is green➡️ after ci🛎️ take/u,
         ),
     ]);
 });
