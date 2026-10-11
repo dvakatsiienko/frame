@@ -332,11 +332,56 @@ test('every prompt reminds the session of its open asks and the tool', async ($,
     );
 });
 
-test('an empty orbit adds no reminder', async ($, on) => {
+test('an empty orbit adds no reminder after the first turn', async ($, on) => {
     const w = world(on);
     await start($);
     await say($, 'hi');
+    await endTurn($);
+    await say($, 'again');
     expect((w.contexts.at(-1) ?? []).join('\n')).not.toContain('orbit');
+});
+
+test("a session's first prompt says phases are its live plan", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($, 'hi');
+    expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
+        /phases are your live plan/,
+    );
+});
+
+const tools = async ($: Engine, n: number) => {
+    const out: string[] = [];
+    for (let i = 0; i < n; i++)
+        out.push(
+            (
+                (await $.tool.call({ command: 'ls', tool: 'Bash' })).context ??
+                []
+            ).join('\n'),
+        );
+    return out;
+};
+
+test('the third tool call of a turn with no phases set carries the nudge, once', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'go');
+    const seen = await tools($, 4);
+    expect(seen.map((c) => /no phases yet/.test(c))).toEqual([
+        false,
+        false,
+        true,
+        false,
+    ]);
+});
+
+test('a turn that set its phases gets no nudge', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'go');
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    const seen = await tools($, 3);
+    expect(seen.some((c) => /phases/.test(c))).toBe(false);
 });
 
 test('the phases show in the board, a moon each, at most seven', async ($, on) => {

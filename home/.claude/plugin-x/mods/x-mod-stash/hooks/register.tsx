@@ -88,6 +88,9 @@ const ACCENT = '#d97757';
 // its own tool, never a reply block
 const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
+// the phases guard, no extra turn and no Stop block: one line at the first prompt, one nudge in a turn's tool results (dima's o14)
+const PHASES_START = `phases are your live plan: set them with ${ORBIT_TOOL}'s plan op and keep them current as the work moves.`;
+const NUDGE_AT = 3;
 // mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
@@ -134,6 +137,10 @@ let pinged = false;
 let isPolling = false;
 let afk = false;
 let isWaker = false;
+// the main thread's tool calls this turn, and whether its one phases nudge went out
+let turnTools = 0;
+let isNudged = false;
+let isPrimed = false;
 // the 5h reset as the last session.measure reported it, and this session's cap state
 let fiveHourResetsAt: number | undefined;
 // the dir the session started in: its project, whose .claude settings the threshold input writes
@@ -1578,6 +1585,8 @@ export const register: Register = (on) => {
         if (isUserTurn && BACK_AT_MAC.test(e.text))
             await $.state.set(MOBILE, false).catch(() => undefined);
         isBusy = true;
+        turnTools = 0;
+        isNudged = false;
         hotGen++;
         await load($);
         turnAfk = afk;
@@ -1607,6 +1616,8 @@ export const register: Register = (on) => {
         const reminder = (await $.state.get(MOBILE)).value
             ? mobileReminder(orbit)
             : orbitReminder(orbit);
+        const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
+        isPrimed = true;
         return next({
             ...e,
             context: [
@@ -1615,6 +1626,7 @@ export const register: Register = (on) => {
                 ...(afk ? [AWAY_NOTE] : []),
                 ...(marked.length ? [joinText(marked)] : []),
                 ...(wrong.length ? [wrongText(wrong)] : []),
+                ...(isFirst ? [PHASES_START] : []),
                 ...(reminder ? [reminder] : []),
                 ...(tickets ? [tickets] : []),
             ],
@@ -2355,6 +2367,18 @@ export const register: Register = (on) => {
                 ),
             });
             notes.push(joinText(fresh));
+        }
+        if (
+            !isNudged &&
+            ++turnTools >= NUDGE_AT &&
+            !(o.plan && o.plan.at === o.turns + 1)
+        ) {
+            isNudged = true;
+            notes.push(
+                o.plan
+                    ? `phases not set this turn — update them with ${ORBIT_TOOL} plan`
+                    : `no phases yet — set them with ${ORBIT_TOOL} plan`,
+            );
         }
         if (!notes.length) return r;
         return { ...r, context: [...(r.context ?? []), ...notes] };

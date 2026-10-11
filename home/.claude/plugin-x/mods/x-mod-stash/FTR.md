@@ -452,6 +452,13 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: the moon replaces the line number (dima, 20:58)
   - decision: 7 lines, not 5, the lines past the fifth keep 🌑 — a try, dima may revert (dima, 2026-10-10 23:54)
   - decision: the now line's text stays plain, only its lead word stands out, green and bold (dima, 21:08)
+- ⬜ the phases guard: a start line and one nudge, never an extra turn
+  - given a session's first prompt
+  - then it carries one model-only line: phases are the live plan, set them with orbit's plan op and keep them current
+  - given a turn has run 3 tool calls and set no phases this turn
+  - when the third result comes back
+  - then it carries «no phases yet — set them with orbit plan» (or «phases not set this turn» when older ones exist), once a turn
+  - decision: never a Stop block, never an extra turn (dima's o14, 2026-10-11 11:27)
 - ✅ stale phases are named
   - given the phases were not touched for 3 turns
   - when the next prompt goes
