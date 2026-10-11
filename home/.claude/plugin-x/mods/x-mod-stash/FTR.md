@@ -203,7 +203,7 @@
   - the harness proves the rows; the spacing is dima's look
   - given cclio, two coders and a verifier are live
   - when dima types `/board`
-  - then a pane lists each by its session name, its state on the right, a full empty row between members
+  - then a pane lists each by its session name, its state on the right, a full empty row between members in the terminal, 0.6 of a row on the desktop (the cards mock's spacing, dima 17:27)
   - decision: cclio is pinned to the top, its name always bold; ccrow, her adviser, is pinned second and bold too, a member matched by the name's last word so a coder naming ccrow is not pinned (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
 - ⬜ the board's sections sit in cards (FRM-391 aside, dima 16:54)

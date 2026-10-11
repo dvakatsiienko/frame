@@ -2452,7 +2452,8 @@ export const register: Register = (on) => {
                 <Box
                     flexDirection='column'
                     key={`m:${m.sid}`}
-                    marginTop={i > 0 ? 1 : 0}
+                    // the desktop's rows sit closer, the cards mock's spacing (dima, 17:27); a terminal row cannot be split
+                    marginTop={i > 0 ? (e.surface === 'desktop' ? 0.6 : 1) : 0}
                     rowGap={LINE_GAP}>
                     <Box
                         flexDirection='row'
