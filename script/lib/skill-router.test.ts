@@ -14,8 +14,8 @@ describe('loadLine', () => {
     );
 
     test('a plain pick carries no warning', () => {
-        expect(loadLine([{ name: 'x:pm', p: 0.82 }])).toBe(
-            'skills (jev router): x:pm 0.82',
+        expect(loadLine([{ name: 'cclio:pm', p: 0.82 }])).toBe(
+            'skills (jev router): cclio:pm 0.82',
         );
     });
 
@@ -30,8 +30,8 @@ describe('decide', () => {
         gate: {},
         ms: 0,
         none: 0.1,
-        ranked: [['x:pm', 0.6]],
-        rerank: { fits: 0.9, need: 0.9, winner: 'x:pm' },
+        ranked: [['cclio:pm', 0.6]],
+        rerank: { fits: 0.9, need: 0.9, winner: 'cclio:pm' },
         tokens: 0,
         vetoes: { _ack: 0, _later: 0 },
         ...over,
@@ -68,20 +68,20 @@ describe('decide', () => {
 
     test('a low needs_skill drops the stage-2 pick', () => {
         const s = decide(
-            raw({ rerank: { fits: 0.9, need: 0.2, winner: 'x:pm' } }),
+            raw({ rerank: { fits: 0.9, need: 0.2, winner: 'cclio:pm' } }),
         );
         expect(s.loads).toEqual([]);
     });
 
     test('a dropped pick names the stage that dropped it', () => {
         const s = decide(
-            raw({ rerank: { fits: 0.9, need: 0.2, winner: 'x:pm' } }),
+            raw({ rerank: { fits: 0.9, need: 0.2, winner: 'cclio:pm' } }),
         );
         expect(s.trace).toEqual(['need 0.20 < 0.5']);
     });
 
     test('a skill already in the session is ranked but never loaded', () => {
-        const s = decide(raw({ blocked: ['x:pm'] }));
+        const s = decide(raw({ blocked: ['cclio:pm'] }));
         expect(s.loads).toEqual([]);
     });
 });

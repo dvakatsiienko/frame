@@ -56,7 +56,7 @@ this file says how every member does it. A section headed with roles binds only 
 ## coder · verifier — the pr pair
 
 **identity**
-- linear writes go through `x as coder`, proven by the `viewer` query <!-- mac -->
+- linear: read with `x linear read`, write only your one comment with `x linear comment <id>` (`rules-lazy/linear-flow.md`) <!-- mac -->
 - github writes wear `github-token-wrap`; a bare `gh` write posts as dima <!-- mac -->
 - every comment notifies dima: one per assignment
 
@@ -66,7 +66,7 @@ this file says how every member does it. A section headed with roles binds only 
 - the round cap: 3 rounds of medium-or-higher findings, scope growth resets the count, the stop goes to cclio
 - a dispute goes to cclio with both sides in one message
 - after `clean`, cclio adds dima as reviewer
-- the verifier writes no linear comment; the coder's done comment says «verified clean, round N»
+- on a main lane the verifier's one linear write is its `clean` verdict comment; on a pr lane it writes none (`pr-watch.sh --verified`); the coder's done comment says «verified clean, round N»
 
 **proof**
 - a worktree is `git worktree add .claude/worktrees/<ticket>-<slug>`, then `pnpm worktree:seed` <!-- mac -->

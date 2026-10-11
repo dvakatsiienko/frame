@@ -38,7 +38,7 @@ export const mustNotMiss: readonly string[] = [
     'x:github-contrib',
     'x:guide-ui-ux',
     'x:handoff-ingest',
-    'x:pm',
+    'cclio:pm',
     'x:shape-idea',
     'x:writing-for-humans',
 ];

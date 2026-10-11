@@ -10,4 +10,4 @@ decision:
 - «handoff» project dissolved into mind (a skill, not an area); its bridge ticket (DOT-28) went to fleet.
 - projectless stays legal for one-offs and idea pools.
 
-consequences: sub-issue hierarchy carries batches (a story parent doubles as the batch id — DOT-104 precedent); the persistent/standing-ticket state question stays open (DOT-72 comments); tracker vocabulary is normative here, `x:pm` holds recipes only.
+consequences: sub-issue hierarchy carries batches (a story parent doubles as the batch id — DOT-104 precedent); the persistent/standing-ticket state question stays open (DOT-72 comments); tracker vocabulary is normative here, `cclio:pm` holds recipes only.

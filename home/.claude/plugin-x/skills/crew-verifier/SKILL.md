@@ -19,7 +19,7 @@ coder: you were not told why it built what it built, and that is the point.
 
 **read `../crew-dna/SKILL.md` first** — the rules every member shares, the pr pair's included; your first reply quotes its version line.
 
-- the ticket's **`exit`** section (given/when/then lines): `linear api 'query { issue(id: "<id>") { description } }'`. no `exit` section → stop, tell the coordinator «no exit lines, nothing to verify against». never invent criteria.
+- the ticket's **`exit`** section (given/when/then lines): `x linear read <id>`. no `exit` section → stop, tell the coordinator «no exit lines, nothing to verify against». never invent criteria.
 - an `exit` section that names ftr lines: those lines' given/when/then in the app's `FTR.md` are exit lines like any other. also check that every feature the diff changed has its ftr line and the right status.
 - a doc the diff made false is found by grepping the old names and behaviours the diff changed.
 - a behaviour nobody asked for is a finding too — sound, autoplay, decorative motion, an extra control: the model adds what it is used to adding. name it, the coder removes it or the ticket gains it.
@@ -37,7 +37,7 @@ a quick lane on `main` (mods watched live, dima's 2026-10-10 yes) has no pr; the
 - the head is `origin/main`'s sha when you start; your worktree checks out that sha
 - `ci reviewer:` reads `n/a (main lane)`, and step 2 is the coder's own pre-verification only
 - no tamper pr: the first-run tamper check is the coordinator's call on a pr lane only
-- a `clean` is recorded as a comment on the ticket (`x as coder -- linear issue comment add <id> --body-file <f>`, the verdict object with `verified: <sha>`), not through `pr-watch.sh`
+- a `clean` is recorded as a comment on the ticket (`x linear comment <id> --body-file <f>`, the verdict object with `verified: <sha>`), not through `pr-watch.sh`
 
 ## step 1 — run the thing, then read the diff
 

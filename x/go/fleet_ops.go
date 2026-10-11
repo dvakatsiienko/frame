@@ -112,7 +112,7 @@ type ticketSize struct {
 	Closed   bool
 }
 
-// the size lines in agent turns (x:pm references/workspace.md § fields); M has none, it is split before a spawn
+// the size lines in agent turns (cclio:pm, cclio/plugin-cclio/skills/pm/SKILL.md § the fields); M has none, it is split before a spawn
 var sizeLines = map[int]struct {
 	name string
 	line int

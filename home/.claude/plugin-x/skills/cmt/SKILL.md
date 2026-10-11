@@ -173,14 +173,15 @@ the moment it lands. `frame` deploys nothing — no watch.
   `github.com` under an owner of ours — no Linear call, no log line, pure delegation.
 - **PR events** (exception lane): `start` → In Progress, `review` → In Review, `merge` → Done,
   wired on both teams. No `draft` row — a draft PR jumps straight to In Review.
+  a merge that lands a ticket in Done through this wiring still gets cclio's closing word the same turn.
 - Reading a Resources entry: ours carries the commit subject and `<short sha> · <branch>`.
 
 ### Coder lane — PR by default, in `bytes`
 
 **A coder assignment lands through a PR by default** (dima, 2026-09-07: he cannot review at the pace agents print; the PR is the review surface). The exceptions are a freebie or a genuinely small change — when in doubt the brief says «PR or main?» once, up front, never mid-flight. The flow: so `main` reverts by
 assignment, not by hash: branch `coder/BYT-N-<slug>` from `main`, step-commits on it (each
-with `- ticket: BYT-N` and its step line), `gh pr create` with `- ticket: BYT-N` in the body, and `Closes BYT-N` only when the PR ends the ticket
-(a PR is Linear's lane, its automations are wanted: open → In Progress, merge → Done), then
+with `- ticket: BYT-N` and its step line), `gh pr create` with `- ticket: BYT-N` in the body and never a closing keyword — cclio closes the
+ticket after the merge, with its closing word (dima, 2026-10-11), then
 **squash-merge** on Dima's word — the squash body lists the steps. On a `coder/*` branch the coder holds `y+` and `push+` (commit each step, push, **open the PR at the first push** — a real one, never a draft: dima wants no drafts, the PR is the review surface from its first commit); on `main` the default lane's rules hold unchanged. Load `x:github-contrib`
 before the `gh` call. **The PR url goes to Dima as a one-click link the moment `gh pr create`
 prints it** — in the coder's chat and in its ping to the coordinator. `frame` keeps the
@@ -189,8 +190,8 @@ default lane.
 ### Exception lane — other pull requests
 
 Cloud-agent branches (`claude/…`) and anything Dima explicitly opens a PR for follow the same
-shape: branch commits carry `- ticket: FRM-N`, the PR description carries exactly one
-`Closes FRM-N`. For a branch never checked out here, write it with `gh pr edit`, never by
+shape: branch commits and the PR description carry `- ticket: FRM-N`, never a closing keyword —
+cclio closes after the merge; a PR dima opens himself is his to word. For a branch never checked out here, write it with `gh pr edit`, never by
 rewriting remote commits.
 
 ### Wiring a new repo

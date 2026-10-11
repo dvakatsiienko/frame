@@ -57,9 +57,7 @@
 - ✅ linear-flow leaves the resident set
   - given the build landed
   - then `rules/` holds no `linear-flow.md`, and the resident rules shrink by about 3.7 KB
-- ✅ cw keeps the rule
-  - given cw calls `pm_guide`
-  - then the reply carries the full linear-flow text
+- decision: cw's `pm_guide` tool is removed (dima, 2026-10-11: cw never does linear work)
 - ✅ one name for the path loader
   - given the rename landed
   - then a grep for the path loader's old name prints nothing outside history

@@ -25,7 +25,7 @@ If a TARGET/focus was stated (what the continuation is for), weight R/D/S toward
   - **fleet roster** — living sessions worth reattaching to, one line each: session title, role, what it holds (e.g. `🔬 research: proto lab — proto owner — the running prototype + its findings`). Titles follow the spawn naming convention, so the title IS the address. Purpose: a coordinator that lost its conversation reconnects to the persistent `cc`s listed here instead of spawning new ones. Only sessions actually worth resuming — a roster of everything is a roster of nothing.
   - **run marker** — the active tracker run id (`cc·20260819·batch1`), if one was minted. The
     ingesting session continues that run instead of minting a new one, so a batch spanning two
-    sessions still reverts as one. Format and stamping rules: the `pm` skill.
+    sessions still reverts as one. Format and stamping rules: `cclio:pm`.
 - **G**: goal + current mental model of the problem.
 - **R**: user-stated requirements/preferences/corrections, verbatim or near-verbatim (highest-loss items in naive summaries — be generous here).
 - **D**: decisions made + one-line rationale each (so the continuation doesn't re-litigate).

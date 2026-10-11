@@ -15,7 +15,7 @@ const hook = join(
     import.meta.dirname,
     '../../home/.claude/shelf/hooks/memory-load-rule-lazy.py',
 );
-const ruleHead = '# Linear flow';
+const ruleHead = '# linear flow';
 
 function session() {
     const dir = mkdtempSync(join(tmpdir(), 'memory-load-'));

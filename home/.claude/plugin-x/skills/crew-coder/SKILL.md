@@ -50,8 +50,7 @@ for ceremony.
 
 ## identity and reporting
 
-- linear writes: `linear-as coder <linear args…>` (plugin-x bin, mints the token inside) —
-  `linear-as coder issue comment add <id> --body-file <f>`. github writes: `github-token-wrap <gh args…>` as `x-coder-cc`.
+- linear: read with `x linear read <id> --comments --relations`; your one write, the done comment: `x linear comment <id> --body-file <f>` (the floor: `linear-flow.md`). github writes: `github-token-wrap <gh args…>` as `x-coder-cc`.
   pushes, force-pushes and ref deletion stay on Dima's git auth (the app has no `contents:
   write` — a `DELETE git/refs/…` through the wrap is a 403); only the API calls wear the bot.
 - **done-report: ONE comment per assignment, ≤20 lines** — shipped · left · measured numbers ·

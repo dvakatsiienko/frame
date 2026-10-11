@@ -115,12 +115,12 @@ describe('the verdict record', () => {
         expect(
             verdictLine(
                 'miss',
-                'loaded x:pm, wanted x:notes',
+                'loaded cclio:pm, wanted x:notes',
                 'append to inbox: windscribe',
                 at,
             ),
         ).toBe(
-            '2026-09-22T10:00:00.000Z\tmiss\tloaded x:pm, wanted x:notes\tappend to inbox: windscribe\n',
+            '2026-09-22T10:00:00.000Z\tmiss\tloaded cclio:pm, wanted x:notes\tappend to inbox: windscribe\n',
         );
     });
 

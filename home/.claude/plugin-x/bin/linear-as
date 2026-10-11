@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-# linear-as <member> <linear args…> — the old spelling of `x as <member> -- linear …`; kept for the skills that name it.
-set -u
-[ $# -ge 2 ] || { echo "usage: linear-as <coder|cclio> <linear args…>" >&2; exit 2; }
-member=$1; shift
-exec x as "$member" -- linear "$@"
