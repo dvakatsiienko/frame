@@ -30,6 +30,37 @@ for (const surface of ['terminal', 'desktop'] as const) {
     });
 }
 
+test('the button flips what the store holds, even when another session flipped it since the last poll', async ($, on) => {
+    mock.clock(on);
+    const store = new Map<string, unknown>();
+    on('store.get', (_$, e) => ({ value: store.get(e.key) }));
+    on('store.set', (_$, e) => {
+        store.set(e.key, e.value);
+        return { value: undefined };
+    });
+    on('store.keys', () => ({ value: [...store.keys()] }));
+    on('store.delete', (_$, e) => {
+        store.delete(e.key);
+        return { value: undefined };
+    });
+    on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'terminal',
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props,
+        surface: 'terminal',
+    });
+    store.set('afk', { at: 0, on: true });
+    await ui.press({ key: 'afk' });
+    expect((store.get('afk') as { on?: boolean }).on).toBe(false);
+});
+
 test('every prompt carries the local clock', async ($, on) => {
     mock.clock(on, { now: new Date(2026, 9, 7, 14, 5).getTime() });
     mock.store(on);

@@ -13,11 +13,11 @@ An open question a session put to dima through orbit's tool: one line, its pick 
 _Avoid_: question, todo, pending
 
 **Orbit** 🪐:
-One session's own list of asks to dima, in the board; he rings 🛎️ (order up: take the pick), sends ↩️ (back to the kitchen) or notes an ask, and the marked ones join his next prompt, or the running turn. Replaced the reply-parsed ask list.
+One session's own list of asks to dima, in the board; he rings 🛎️ take (order up: take the pick), sends 🔁 redo (another round) or notes an ask, and the marked ones join his next prompt, or the running turn. Replaced the reply-parsed ask list.
 _Avoid_: asks box, wfyb, inbox
 
 **Phases** 🌔:
-The session's next moves, at most 5, kept live in the board by the session itself; each leads with a moon that fills by nearness, 🌕 now to 🌑 last.
+The session's next moves, at most 7 (🎛️ shows 5 to 7), kept live in the board by the session itself; each leads with a moon that fills by nearness, 🌕 now to 🌑 last.
 _Avoid_: planned actions, next block, todo
 
 **Lane** 🛼:
@@ -82,7 +82,7 @@ The band's `🪄` enhance, `⏪` prev and `⏩` new: Haiku rewrites the prompt b
 _Avoid_: prompt rewriter, polish
 
 **Mobile mode**:
-Dima away from the board, on the phone: while on, the per-prompt reminder asks for the asks fence instead of orbit; `/mobile-mode` turns it on, «back at the mac», `/mobile-mode off` or a 🛎️ or ↩️ press in orbit turns it off.
+Dima away from the board, on the phone: while on, the per-prompt reminder asks for the asks fence instead of orbit; `/mobile-mode` turns it on, «back at the mac», `/mobile-mode off` or a 🛎️, 🔁 or ↩️ press in orbit turns it off.
 _Avoid_: phone mode, away mode
 
 **Asks fence**:

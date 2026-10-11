@@ -3328,7 +3328,8 @@ export const register: Register = (on) => {
             const was = (await $.store.get(AFK_KEY)) as
                 | { at?: number; on?: boolean }
                 | undefined;
-            afk = !afk;
+            // the store's value, never the module copy: another session may have flipped it since the last poll
+            afk = !was?.on;
             digest =
                 !afk && was?.on && was.at !== undefined
                     ? await awayDigest($, was.at)
