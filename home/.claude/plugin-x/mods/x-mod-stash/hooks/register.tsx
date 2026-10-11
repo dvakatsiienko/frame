@@ -192,6 +192,8 @@ const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
 // every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
+// the first orbit ask a docked board shows: a scroll over the board moves it, never the pane (dima, 20:58)
+const ORBIT_TOP = { key: 'orbitTop', plugin: 'x-mod-stash' } as const;
 // 🐦‍⬛ ccrow strip (FRM-397): her newest note's first line and her ledger line, read from her home on each poll
 const CCROW = { key: 'ccrow', plugin: 'x-mod-stash' } as const;
 const LANE_OWNER = '🦉 cclio';
@@ -2932,13 +2934,20 @@ export const register: Register = (on) => {
                 </Box>
             </Box>
         );
+        const orbitTop = Math.min(
+            (await $.state.get(ORBIT_TOP)).value ?? 0,
+            Math.max(0, o.asks.length - 1),
+        );
         const orbitJSX = (
             <Box
                 borderColor={cardBorder(e.surface)}
                 borderStyle='round'
                 flexDirection='column'
+                flexShrink={1}
                 key='orbit'
                 marginTop={1}
+                minHeight={0}
+                overflow='hidden'
                 paddingX={1}
                 paddingY={0.5}
                 rowGap={0.5}>
@@ -2970,7 +2979,14 @@ export const register: Register = (on) => {
                     </Box>
                 </Box>
                 {/* an answered ask stays until its turn ends, so dima sees it go */}
-                {folds.orbit ? null : o.asks.map((a, i) => askJSX(a, i))}
+                {!folds.orbit && orbitTop > 0 ? (
+                    <Text dimColor key='orbit:above'>
+                        {`↑ ${orbitTop} above`}
+                    </Text>
+                ) : null}
+                {folds.orbit
+                    ? null
+                    : o.asks.slice(orbitTop).map((a, i) => askJSX(a, i))}
                 {!folds.orbit &&
                 o.assumed?.length &&
                 isPartOn('stash.assumed') ? (
@@ -3138,6 +3154,7 @@ export const register: Register = (on) => {
                     borderColor={cardBorder(e.surface)}
                     borderStyle='round'
                     flexDirection='column'
+                    flexShrink={0}
                     key='ccrow'
                     marginTop={1}
                     paddingX={1}
@@ -3182,6 +3199,7 @@ export const register: Register = (on) => {
                       borderColor={cardBorder(e.surface)}
                       borderStyle='round'
                       flexDirection='column'
+                      flexShrink={0}
                       key={`lane:${lane.id}`}
                       marginTop={1}
                       paddingX={1}
@@ -3265,6 +3283,7 @@ export const register: Register = (on) => {
                       borderColor={cardBorder(e.surface)}
                       borderStyle='round'
                       flexDirection='column'
+                      flexShrink={0}
                       key='phases'
                       marginTop={1}
                       paddingX={1}
@@ -3309,10 +3328,16 @@ export const register: Register = (on) => {
             : null;
         const fill =
             e.props.placement === 'dock' ? e.props.scroll.bodyRows : undefined;
+        // a docked board takes exactly its rows, so the pane never scrolls: sessions, the lane cards, phases and the
+        // ccrow strip keep their height and only orbit shrinks, its asks scrolled by the board's own ui.scroll (dima, 20:58)
+        const boardBox =
+            fill === undefined
+                ? {}
+                : { height: fill, overflow: 'hidden' as const };
         const list = board?.members;
         if (!list)
             return (
-                <Box flexDirection='column' minHeight={fill}>
+                <Box flexDirection='column' {...boardBox}>
                     <Text dimColor>the session registry is unreadable</Text>
                     {isPartOn('stash.orbit') ? orbitJSX : null}
                     <Box flexGrow={1} key='phases:gap' />
@@ -3323,7 +3348,7 @@ export const register: Register = (on) => {
             );
         if (!list.length)
             return (
-                <Box flexDirection='column' minHeight={fill}>
+                <Box flexDirection='column' {...boardBox}>
                     <Text dimColor>no live sessions</Text>
                     {isPartOn('stash.orbit') ? orbitJSX : null}
                     <Box flexGrow={1} key='phases:gap' />
@@ -3493,11 +3518,12 @@ export const register: Register = (on) => {
             (m) => statusOf(m.status).word === 'busy',
         ).length;
         return (
-            <Box flexDirection='column' minHeight={fill}>
+            <Box flexDirection='column' {...boardBox}>
                 <Box
                     borderColor={cardBorder(e.surface)}
                     borderStyle='round'
                     flexDirection='column'
+                    flexShrink={0}
                     key='sessions'
                     paddingX={1}
                     paddingY={0.5}>
@@ -3637,6 +3663,20 @@ export const register: Register = (on) => {
         }
         if (!notes.length) return r;
         return { ...r, context: [...(r.context ?? []), ...notes] };
+    });
+
+    // a docked board never scrolls as a whole: a wheel or a scroll key over it moves orbit's first shown ask instead
+    on('ui.scroll', async ($, e, next) => {
+        if (e.component !== 'Pane' || e.requestId !== BOARD) return next(e);
+        const o = await currentOrbit($);
+        const was = (await $.state.get(ORBIT_TOP)).value ?? 0;
+        const top = Math.max(
+            0,
+            Math.min(Math.max(0, o.asks.length - 1), was + Math.sign(e.by)),
+        );
+        if (top !== was)
+            await $.state.set(ORBIT_TOP, top).catch(() => undefined);
+        return { deny: 'the board scrolls its orbit asks itself' };
     });
 
     // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars,

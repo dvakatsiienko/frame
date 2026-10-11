@@ -462,6 +462,10 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when dima looks at the board
   - then up to 7 lines under `🌔 phases` show what is now, next and then, each readable on its own
   - decision: each line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
+- ⬜ a docked board never scrolls as a whole: only orbit's asks do
+  - given a docked board, then it takes exactly its rows; sessions, the lane cards, phases and the ccrow strip keep their height, and orbit shrinks and clips
+  - when dima scrolls over the board (wheel or keys), then the pane stays put and orbit moves one ask per tick, a dim `↑ n above` heading the asks hidden above
+  - decision: built by hand — the engine has no `sticky` and no inner scroll region, only the pane's own window (dima, 20:58: «if it will not land i will ask to revert»)
 - ⬜ phases stick to the board's bottom
   - given the session has set its phases and the board is docked
   - when dima looks at the board
