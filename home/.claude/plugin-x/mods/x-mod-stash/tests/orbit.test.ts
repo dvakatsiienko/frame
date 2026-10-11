@@ -588,7 +588,7 @@ test('«back at the mac» ends mobile mode', async ($, on) => {
     expect(lastContext(w.contexts)).not.toContain('asks fence');
 });
 
-test('a board press ends mobile mode', async ($, on) => {
+test('a 🛎️ press in orbit ends mobile mode', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
