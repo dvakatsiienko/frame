@@ -258,7 +258,7 @@ chunk 1 shipped as FRM-381 (orbit + planned actions + the band row), closed clea
 
 ## chunk 1b — two mods from the AI Labs video
 
-ticket: FRM-382 (dima, 2026-10-10 19:16–19:45)
+chunk done: FRM-382 closed 2026-10-11 11:31 (was its ticket, dima 2026-10-10 19:16–19:45)
 
 source: the AI Labs «Claude mods» video, read via transit, 9 stills in `~/Desktop/screenshots` (18:35–18:38, all the prompt enhancer). the same orbit coder builds both after FRM-381 (dima: a + b, same coder). shape through `x:shape-idea` before the build.
 
@@ -326,6 +326,11 @@ ticket: FRM-386 (sealed 22:25, 7 exit lines, preflight green; spec `.scratch/sta
 - rider o103: the band's ⏳ rounds up like cc's «resets in 1 min»
 - last item of tomorrow's mods lane (dima, 2026-10-10 23:54, folded): mods are configurable right from slash commands (`/board colour` toggles the board's colour). when every planned mods chunk is done and dima takes over the mods coder, remind him to ask it: which mods are configurable today, and how — the full interface. then, once the mods reach their final shape, a small grill on the knobs he wants: only the essential ones useful to him, never a zoo of configs; he brings his own, cclio proposes hers too. not for today
 - mods asks from 23:54: phases hold 7 lines instead of 5 (a try); the band's 🔭 prints who we wait on in bold
+- mods lane order (dima's 🛎️ o19, 2026-10-11 11:32): the settings gui (PK-57) first, so every later mod lands behind a show/hide toggle; then FRM-385 🛼 lane shaped as this item's first slice (the live tracker), then FRM-386 🐠 catch, then the ideas the capability probe proves
+- capability read (the mods coder, 2026-10-11 11:42, from cc 2.1.296 types, live probe pending dima's hot-reload toggle): desktop doors = ToolResult, ToolUse, AssistantMessage, UserMessage, ToolGroup, CommandOutput, Pane, Spinner, SessionMode, AbovePrompt; terminal-only = TurnDuration, PromptHint's tail, InfoNotice, ToolProgress; prompt.autocomplete / prompt.mention are hooks, live check pending; audio unchecked. so the ideas that survive on desktop: fold ToolResult, inline guard verdict on ToolUse, a Spinner meter; turn cost and the prompt hint drop
+- live probe on dima's desktop (11:47, log-only mod, `~/.local/state/mods-probe/sites.json`): raised = AssistantMessage, UserMessage, ToolUse, ToolGroup, SessionMode, AbovePrompt, Spinner, prompt.mention; ToolResult never raised in ~10 min (likely only on an expanded group, unconfirmed — one expand-click check before folding is planned); prompt.autocomplete not raised on @ or / (desktop runs its own typeahead, inferred from one sample) → ticket autocomplete looks terminal-only, then confirmed at 11:50: it fires in a terminal on the first keystroke and never on the desktop, plain words included; CommandOutput also raised on desktop (/board colour); Pane, PromptHint, CommandOutput, audio not exercised
+- tail before FRM-385's spawn (2026-10-11): reshape FRM-385 as the live tracker's first slice (dima's o19 order) and reseal its exit lines; plus the ccrow ledger freebie from the 10-10 CST (her ledger line at the packet head: sent n, holdout next in k, last send, hits) rides FRM-385's ccrow strip
+- mod ideas round (dima to the mods coder, 2026-10-11 11:06: «try them all, keep what's truly useful»), after the current mods slice. step 0, a ~10 min headless probe: which engine rows the desktop really lets a mod redraw. then: ToolResult folds a noisy test or lint dump to its verdict line, expandable · TurnDuration adds the turn's cost and the 5h % it burned · PromptHint, a dim line under the prompt with the top orbit ask · Spinner carries breather's meter while a turn runs · prompt.autocomplete suggests live FRM-/BYT- ids with titles · prompt.mention «@FRM-382» pulls the ticket body into context · ToolUse shows the guard's verdict inline on a Bash call · $.audio.play chimes when a background session goes idle or asks something
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes
