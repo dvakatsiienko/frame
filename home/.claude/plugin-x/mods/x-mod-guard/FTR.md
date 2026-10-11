@@ -34,6 +34,10 @@
   - given a `git add` or `git commit` whose repo is frame or bytes (the cwd, a `cd`, or `-C`), then it runs with one line naming `x lane commit`; in any other repo no line is added
   - then `x gh pr`, `x lane commit`, `x as <member> -- gh …`, a `gh api` with a body or a non-GET method, quoted text and a heredoc body get no line
   - decision: a hint, never a rewrite — `x gh pr` covers only reads, and `x lane commit` adds a format step a raw commit lacks; the git-sweep refusal still stops a commit with no `--` paths
+- ⬜ a `gh --jq` call gets a gojq hint (FRM-394)
+  - given a Bash call runs `gh … --jq <program>` (also `--jq=…` or `-q`), then it runs as typed and the model reads: `gh --jq` runs gojq, not jq — prove the program through gh itself, or pipe `gh --json …` into `jq`
+  - given `gh … --json f | jq …`, then no hint
+  - decision: a hint, never a refusal — the program may well be right; the `fleet-hazards.md` line goes to its holder's commit
 - ✅ a git add of a missing path is refused before git runs
   - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left
   - then it is refused, the reason names the missing path, and the door is «stage only paths that exist; a deleted file stages with git rm <path>»

@@ -70,3 +70,24 @@ for (const [cwd, typed] of QUIET)
         const r = await bash($, typed);
         expect(hinted(r.context, 'x ')).toEqual([]);
     });
+
+// FRM-394: gh's --jq is gojq, not jq
+for (const typed of [
+    "gh pr view 3 --json title --jq '.title'",
+    "gh api repos/o/r --jq='.name'",
+    "gh api repos/o/r -q '.name'",
+])
+    test(`a gh --jq call runs with a gojq hint: ${typed}`, async ($, on) => {
+        const w = world(on);
+        const r = await bash($, typed);
+        expect([w.ran, hinted(r.context, 'gh --jq').length]).toEqual([
+            [typed],
+            1,
+        ]);
+    });
+
+test('gh --json piped into jq gets no gojq hint', async ($, on) => {
+    world(on);
+    const r = await bash($, "gh pr view 3 --json title | jq '.title'");
+    expect(hinted(r.context, 'gh --jq')).toHaveLength(0);
+});

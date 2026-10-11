@@ -14,6 +14,15 @@ const PR_HINT =
     'x-mod-guard hint: `x gh pr <n>` reads a pr — its checks and all three comment feeds, newest first — in one call';
 const LANE_HINT =
     'x-mod-guard hint: `x lane commit <msg file> -- <paths>` formats and stages exactly those paths, then commits them';
+// gh's --jq runs gojq built into gh, not the system jq: a program proven with jq can read differently inside gh
+// (BYT-95/96 retros, FRM-394; was a fleet-hazards line)
+const JQ_HINT =
+    'x-mod-guard hint: `gh --jq` runs gojq, not jq — prove the program through gh itself, or pipe `gh --json …` into `jq`';
+const isGhJq = (args: Command['args']) =>
+    args.some(
+        (w) =>
+            w.text === '--jq' || w.text.startsWith('--jq=') || w.text === '-q',
+    );
 const PULLS = /(^|\/)pulls(\/|$|\?)/;
 // a gh api call with a body or a method other than GET writes, and x gh pr covers only reads
 function isPullsRead(args: Command['args']) {
@@ -38,6 +47,7 @@ export function hints(command: string, cwd: string, ctx: Context) {
                 (sub === 'api' && isPullsRead(c.args.slice(1))))
         )
             found.add(PR_HINT);
+        if (c.name === 'gh' && isGhJq(c.args)) found.add(JQ_HINT);
         if (c.name === 'git') {
             const git = gitParts(c.args).sub;
             if (
