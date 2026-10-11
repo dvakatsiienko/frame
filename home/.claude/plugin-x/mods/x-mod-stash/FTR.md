@@ -492,10 +492,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 
 - ⬜ every board draws the fleet's live lanes
   - given 🦉 cclio calls orbit op `lane` act `create` with a title and 1–5 steps (plain text, an optional ticket id, a done flag)
-  - then every session's board draws a `🛼 <title>` card between 🪐 orbit and 🌔 phases: every step in order, a done one `✅` and dim but still listed, the current one `🛼`, bold and «← we are here», the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
+  - then every session's board draws a `🛼 <title>` card right above 🌔 phases: every step in order, a done one `✅` and dim but still listed, the current one `🛼`, bold and «← we are here», the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
   - and one note box sits on the current step, on any board; its text joins cclio's next prompt once, model-only, and no other session's
   - and nothing of a lane enters a member's model context
   - and each card folds with its own `📂`, and the `🛼 lane` 🎛️ switch hides every lane card
+  - decision: the lane cards stick to the board's bottom, on top of 🌔 phases, the gap above them (dima's shot, 20:12)
 - ⬜ only cclio writes the lanes
   - given any session calls op `lane`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create
   - and act `link` with a session id and a role (coder, verifier) links a member; a second link of a role replaces the first
@@ -509,8 +510,12 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ⬜ a lane that moved nothing for 8 of cclio's turns reads stale
   - given the pointer and the done flags unmoved for 8 of cclio's turns, then her next prompt carries «lane <id> «…» moved nothing for n of your turns, stale»; a step that moves nothing keeps the count; no other session nags; with no lane, no lane text
   - decision: 8, not phases' 3 — a lane step spans many turns
-- 🧭 a lane card holds its members' asks (exit 3)
-  - given a lane with a linked coder and verifier, then a coder subcard sits above a verifier subcard, each folded with its open-ask count («🔧 2 asks»); unfolded, each row is the member's own ask; a tick or note there lands in that member's orbit and joins its running turn, and an idle member gets one wake carrying all its marks at dima's next prompt in any thread
+- ⬜ a lane card holds its members' asks (exit 3)
+  - given a lane with a linked coder and verifier, then a `🔧 n asks` subcard sits above a `🔎 n asks` one, each folded by default with its own `📁`
+  - when unfolded, then each row is the member's own open ask — its id, text and `→ pick` — with 🛎️ take, 🔁 redo and a note box; a locked one shows its mark, dim, no control
+  - when dima marks or notes a row, then it waits in the store and the member's own stash takes it into its orbit: a running member gets it in that turn, after its next tool call
+  - and an idle member with marks wakes once, within a poll of dima's next prompt in any thread, one turn carrying all of them; no turn starts before that prompt
+  - decision: the wake carries the marks in its text — a prompt a mod submits skips that mod's own prompt.submit hook (step 0, cc 2.1.296)
 - 🧭 an ask's pick and its buttons share one row (exit 4)
 
 ## spawn hints — the board's name flag only

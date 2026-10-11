@@ -16,11 +16,14 @@ function world(
     }: { files?: Record<string, string>; name?: string } = {},
 ) {
     const contexts: string[][] = [];
+    const texts: string[] = [];
     files[`/home/.claude/sessions/${PID}.json`] = JSON.stringify({
         name,
         pid: PID,
     });
-    mock.clock(on, { now: new Date(2026, 9, 11, 18, 30).getTime() });
+    const clock = mock.clock(on, {
+        now: new Date(2026, 9, 11, 18, 30).getTime(),
+    });
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
@@ -64,12 +67,13 @@ function world(
     }));
     on('prompt.submit', (_$, e) => {
         contexts.push([...(e.context ?? [])]);
+        texts.push(e.text);
         return { text: e.text };
     });
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
-    return { contexts, files, store };
+    return { clock, contexts, files, store, texts };
 }
 
 const start = ($: Engine) =>
@@ -359,6 +363,138 @@ test('the 🛼 lane switch hides every lane card', async ($, on) => {
     w.store.set('shown', { 'stash.lane': false });
     await start($);
     expect(await laneText(await board($))).toBe(undefined);
+});
+
+/* exit 3 — the members' asks on the card */
+
+const CODER = 'c0c0c0c0-coder';
+const VERIFIER = 'v0v0v0v0-verifier';
+const linked = () =>
+    shelf(keptLane({ members: { coder: CODER, verifier: VERIFIER } }));
+const published = (
+    w: ReturnType<typeof world>,
+    sid: string,
+    items: Record<string, unknown>[],
+) =>
+    w.store.set(`asks:${sid}`, {
+        asks: items.map((a) => a.text),
+        at: 1,
+        items,
+        label: 'frame',
+    });
+const ASK = { id: 'o3', pick: 'cut it', text: 'cut the second probe?' };
+const subText = async (ui: Board, role: string) =>
+    (await ui.find({ key: `lane:l1:${role}`, type: 'Box' }))?.text;
+
+test('a coder subcard sits above a verifier subcard, each folded to its count', async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK, { ...ASK, id: 'o4' }]);
+    published(w, VERIFIER, [ASK]);
+    await start($);
+    const text = await laneText(await board($));
+    expect([
+        text?.indexOf('🔧 2 asks'),
+        text?.includes('cut the second probe'),
+    ]).toEqual([expect.any(Number), false]);
+    expect(
+        (text?.indexOf('🔧 2 asks') ?? -1) < (text?.indexOf('🔎 1 ask') ?? -1),
+    ).toBe(true);
+});
+
+test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK]);
+    await start($);
+    const ui = await board($);
+    await ui.press({ key: 'fold:lane:l1:coder' });
+    expect(await subText(ui, 'coder')).toMatch(
+        /o3 cut the second probe\?.*→ cut it/su,
+    );
+});
+
+test("a take on the card waits in the store for the member's own stash", async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK]);
+    await start($);
+    const ui = await board($);
+    await ui.press({ key: 'fold:lane:l1:coder' });
+    await ui.press({ key: 'lane:l1:coder:accepted:o3' });
+    expect([
+        (w.store.get(`marks:${CODER}`) as Record<string, { mark?: string }>)?.o3
+            ?.mark,
+        await subText(ui, 'coder'),
+    ]).toEqual(['accepted', expect.stringContaining('✅ take')]);
+});
+
+async function memberWithAsk($: Engine, on: On) {
+    const w = world(on, { name: '☕️ 🔧 coder' });
+    await start($);
+    await $.tool.call({
+        asks: [{ pick: 'cut it', text: 'cut the second probe?' }],
+        op: 'add',
+        tool: TOOL,
+    } as never);
+    await endTurn($);
+    return w;
+}
+
+test('a member publishes its open asks whole, with ids, for the lane card', async ($, on) => {
+    const w = await memberWithAsk($, on);
+    expect(
+        (w.store.get(`asks:${SID}`) as { items?: unknown[] })?.items,
+    ).toEqual([{ id: 'o1', pick: 'cut it', text: 'cut the second probe?' }]);
+});
+
+test("a mark from a lane card joins the member's running turn", async ($, on) => {
+    const w = await memberWithAsk($, on);
+    await say($, 'go on');
+    w.store.set(`marks:${SID}`, {
+        o1: { at: w.clock.now(), mark: 'accepted' },
+    });
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
+    expect(
+        r.context?.some((c) => /o1 🛎️ accepted: cut the second probe/.test(c)),
+    ).toBe(true);
+});
+
+test('an idle member with marks wakes once, after dima prompts anywhere', async ($, on) => {
+    const w = await memberWithAsk($, on);
+    const before = w.texts.length;
+    w.store.set(`marks:${SID}`, {
+        o1: { at: w.clock.now(), mark: 'rejected', note: 'later' },
+    });
+    await w.clock.advance(5_000);
+    const quiet = w.texts.length;
+    w.store.set('dima-at', w.clock.now() + 1);
+    await w.clock.advance(5_000);
+    await w.clock.advance(5_000);
+    const woke = w.texts.slice(before);
+    expect([quiet - before, woke.length, woke[0]]).toEqual([
+        0,
+        1,
+        expect.stringMatching(/o1 ↩️ rejected: cut the second probe.*«later»/su),
+    ]);
+});
+
+test("dima's own prompt records when he last prompted, for the members to read", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($, 'go');
+    expect(w.store.get('dima-at')).toBe(w.clock.now());
+});
+
+test("the lanes stick to the board's bottom, on top of the phases (dima, 20:12)", async ($, on) => {
+    world(on, { files: shelf(keptLane()) });
+    await start($);
+    await $.tool.call({ lines: ['now: x'], op: 'plan', tool: TOOL } as never);
+    const keys = (await (await board($)).findAll({ type: 'Box' })).map(
+        (b) => b.key ?? '',
+    );
+    const at = (key: string) => keys.indexOf(key);
+    expect([
+        at('phases:gap') < at('lane:l1'),
+        at('lane:l1') < at('phases'),
+    ]).toEqual([true, true]);
 });
 
 /* exit 5 — the stale nag, cclio's turns only */

@@ -3,6 +3,24 @@ export type StashEntry = {
     label: string;
     name?: string;
     asks: string[];
+    // the open asks whole, so a lane card on another board draws and marks them (FRM-385 exit 3)
+    items?: PublishedAsk[];
+    at: number;
+};
+
+export type PublishedAsk = {
+    id: string;
+    text: string;
+    pick: string;
+    mark?: 'accepted' | 'rejected';
+    note?: string;
+    isLocked?: boolean;
+};
+
+// a mark or note dima made on another board's lane card, waiting in the store for the member to take it in
+export type RemoteMark = {
+    mark?: 'accepted' | 'rejected';
+    note?: string;
     at: number;
 };
 
@@ -83,6 +101,8 @@ export type OrbitAsk = {
     isLocked?: boolean;
     isChanged?: boolean;
     isResolved?: boolean;
+    // when a mark came in from another board: an idle session wakes once dima prompts anywhere after it
+    markedAt?: number;
 };
 
 // one choice the session made without asking, that costs a redo if wrong: born at a turn count; dima's send-back
@@ -151,6 +171,8 @@ declare module 'claude-code' {
             enhancer: StashEnhancer;
             // the fleet's live lanes as this session last read the shelf file
             lanes: StashLane[];
+            // each linked member's open asks, by session id, its pending remote marks laid over them
+            laneAsks: Record<string, PublishedAsk[]>;
             // the board's cards folded to their head row, by card: sessions, orbit, phases
             folds: Record<string, boolean>;
         };

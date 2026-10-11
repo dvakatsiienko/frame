@@ -5,6 +5,8 @@ import type {
     LaneItem,
     OrbitAsk,
     OrbitAssumption,
+    PublishedAsk,
+    RemoteMark,
     StashCap,
     StashDigest,
     StashEnhancer,
@@ -44,6 +46,9 @@ type Reply = {
 };
 
 const PREFIX = 'asks:';
+// a lane card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
+const MARKS = 'marks:';
+const DIMA_AT = 'dima-at';
 const AFK_KEY = 'afk';
 const AWAY_NOTE =
     'dima is afk: nothing waits on him. take reversible steps and log them, park every ask in orbit for his return, send no ping.';
@@ -178,6 +183,7 @@ const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
 // 🛼 lane (FRM-385): the fleet's lanes in one shelf file, written only by the session the registry names 🦉 cclio, read by
 // every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
+const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
 const LANE_OWNER = '🦉 cclio';
 const LANE_ROLES = ['coder', 'verifier'] as const;
 const LANE_MAX = 5;
@@ -294,12 +300,21 @@ async function saveOrbit($: EngineInterface, next: StashOrbit) {
         );
     const sid = await currentId($);
     if (!sid) return;
-    const asks = orbit.asks.filter((a) => !a.isResolved).map((a) => a.text);
+    const open = orbit.asks.filter((a) => !a.isResolved);
+    const asks = open.map((a) => a.text);
     if (asks.length)
         await $.store
             .set(PREFIX + sid, {
                 asks,
                 at: await $.clock.now(),
+                items: open.map((a) => ({
+                    id: a.id,
+                    pick: a.pick,
+                    text: a.text,
+                    ...(a.mark ? { mark: a.mark } : {}),
+                    ...(a.note ? { note: a.note } : {}),
+                    ...(a.isLocked ? { isLocked: true } : {}),
+                })),
                 label,
                 name: await sessionName($),
             } satisfies Entry)
@@ -313,6 +328,58 @@ async function currentOrbit($: EngineInterface) {
     const kept = (await $.state.get(ORBIT).catch(() => undefined))?.value;
     if (kept) orbit = kept;
     return orbit;
+}
+
+// marks dima made on another board's lane card join this session's own orbit, as if made here
+async function absorbMarks($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid) return;
+    const marks = (await $.store.get(MARKS + sid).catch(() => undefined)) as
+        | Record<string, RemoteMark>
+        | undefined;
+    if (!marks || !Object.keys(marks).length) return;
+    await $.store.delete(MARKS + sid).catch(() => undefined);
+    const o = await currentOrbit($);
+    await saveOrbit($, {
+        ...o,
+        asks: o.asks.map((a) => {
+            const m = marks[a.id];
+            if (!m || a.isLocked || a.isResolved) return a;
+            return {
+                ...a,
+                isChanged: false,
+                mark: m.mark,
+                markedAt: m.mark ? m.at : undefined,
+                note: m.note,
+            };
+        }),
+    });
+}
+
+// an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
+// carrying all of them. the submitted prompt skips this plugin's own prompt.submit hook, so the marks ride its text
+async function wakeForMarks($: EngineInterface) {
+    if (
+        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
+        isBusy
+    )
+        return;
+    const o = await currentOrbit($);
+    const due = o.asks.filter(
+        (a) =>
+            a.mark && a.markedAt !== undefined && !a.isLocked && !a.isResolved,
+    );
+    if (!due.length) return;
+    const dimaAt = Number(await $.store.get(DIMA_AT).catch(() => 0)) || 0;
+    if (dimaAt <= Math.min(...due.map((a) => a.markedAt ?? 0))) return;
+    const ids = new Set(due.map((a) => a.id));
+    await saveOrbit($, {
+        ...o,
+        asks: o.asks.map((a) =>
+            ids.has(a.id) ? { ...a, isLocked: true, markedAt: undefined } : a,
+        ),
+    });
+    void $.prompt.submit({ text: joinText(due) });
 }
 
 const markWord = (mark: OrbitAsk['mark']) =>
@@ -811,10 +878,45 @@ async function writeLanes($: EngineInterface, lanes: StashLane[]) {
 let lanesShown = '';
 async function showLanes($: EngineInterface, lanes: StashLane[]) {
     const live = lanes.filter((l) => !l.endedAt);
-    const text = JSON.stringify(live);
+    const asks: Record<string, PublishedAsk[]> = {};
+    for (const sid of new Set(live.flatMap((l) => Object.values(l.members)))) {
+        if (!sid) continue;
+        const entry = (await $.store
+            .get(PREFIX + sid)
+            .catch(() => undefined)) as Entry | undefined;
+        const marks =
+            ((await $.store.get(MARKS + sid).catch(() => undefined)) as
+                | Record<string, RemoteMark>
+                | undefined) ?? {};
+        asks[sid] = (entry?.items ?? []).map((a) => {
+            const m = marks[a.id];
+            return m ? { ...a, mark: m.mark, note: m.note } : a;
+        });
+    }
+    const text = JSON.stringify({ asks, live });
     if (text === lanesShown) return;
     lanesShown = text;
     await $.state.set(LANES, live).catch(() => undefined);
+    await $.state.set(LANE_ASKS, asks).catch(() => undefined);
+}
+
+// a mark or note on a member's ask from a lane card: the store holds it until the member's own stash takes it in
+async function markRemote(
+    $: EngineInterface,
+    sid: string,
+    ask: PublishedAsk,
+    change: Omit<RemoteMark, 'at'>,
+) {
+    const was =
+        ((await $.store.get(MARKS + sid).catch(() => undefined)) as
+            | Record<string, RemoteMark>
+            | undefined) ?? {};
+    const prior = was[ask.id] ?? { mark: ask.mark, note: ask.note };
+    await $.store.set(MARKS + sid, {
+        ...was,
+        [ask.id]: { ...prior, ...change, at: await $.clock.now() },
+    });
+    await showLanes($, await readLanes($));
 }
 
 // the registry names the coordinator, so a handoff's new 🦉 cclio keeps the lanes
@@ -2023,6 +2125,8 @@ export const register: Register = (on) => {
                     // an open board's view carries the tick's clock, so its «ago» times move on their own
                     await load($);
                     await freshMeter($).catch(() => undefined);
+                    await absorbMarks($).catch(() => undefined);
+                    await wakeForMarks($).catch(() => undefined);
                     tick();
                 });
             tick();
@@ -2064,6 +2168,11 @@ export const register: Register = (on) => {
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const clock = `now ${new Date(await $.clock.now()).toTimeString().slice(0, 5)}`;
         // only dima's own prompt carries his marks; each joins once and locks until the turn ends
+        if (isUserTurn)
+            await $.store
+                .set(DIMA_AT, await $.clock.now())
+                .catch(() => undefined);
+        await absorbMarks($);
         await currentOrbit($);
         const marked = isUserTurn
             ? orbit.asks.filter((a) => a.mark && !a.isLocked && !a.isResolved)
@@ -2077,7 +2186,9 @@ export const register: Register = (on) => {
             await saveOrbit($, {
                 ...orbit,
                 asks: orbit.asks.map((a) =>
-                    ids.has(a.id) ? { ...a, isLocked: true } : a,
+                    ids.has(a.id)
+                        ? { ...a, isLocked: true, markedAt: undefined }
+                        : a,
                 ),
                 assumed: (orbit.assumed ?? []).filter((x) => !x.isWrong),
             });
@@ -2860,6 +2971,115 @@ export const register: Register = (on) => {
         // 🛼 lanes (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
         // current one «← we are here»; a note on it reaches cclio's next prompt, whichever board took it
         const lanes = (await $.state.get(LANES)).value ?? [];
+        const laneAsks = (await $.state.get(LANE_ASKS)).value ?? {};
+        // a member's asks on the lane card: folded to their count by default, its rows marked as on the member's own board
+        const memberJSX = (
+            lane: StashLane,
+            role: (typeof LANE_ROLES)[number],
+        ) => {
+            const sid = lane.members[role];
+            if (!sid) return null;
+            const asks = laneAsks[sid] ?? [];
+            const card = `lane:${lane.id}:${role}`;
+            const isOpen = folds[card] === false;
+            const badge = role === 'coder' ? '🔧' : '🔎';
+            return (
+                <Box flexDirection='column' key={card} rowGap={LINE_GAP}>
+                    <Box alignItems='center' flexDirection='row' gap={1}>
+                        <Text
+                            bold>{`${badge} ${asks.length} ask${asks.length === 1 ? '' : 's'}`}</Text>
+                        <Button
+                            key={`fold:${card}`}
+                            onPress={async () => {
+                                const was =
+                                    (await $.state.get(FOLDS)).value ?? {};
+                                await $.state.set(FOLDS, {
+                                    ...was,
+                                    [card]: was[card] === false,
+                                });
+                            }}
+                            plain>
+                            {isOpen ? '📂' : '📁'}
+                        </Button>
+                    </Box>
+                    {isOpen
+                        ? asks.map((a) => (
+                              <Box
+                                  flexDirection='column'
+                                  key={`${card}:${a.id}`}
+                                  paddingLeft={2}>
+                                  <Text>{`${a.id} ${a.text}`}</Text>
+                                  <Box
+                                      alignItems='center'
+                                      flexDirection='row'
+                                      gap={1}>
+                                      <Text dimColor>{`→ ${a.pick}`}</Text>
+                                      {a.isLocked ? (
+                                          <Text dimColor>
+                                              {a.mark
+                                                  ? `🔓 ${a.mark === 'accepted' ? 'take' : 'redo'}`
+                                                  : ''}
+                                          </Text>
+                                      ) : (
+                                          (
+                                              ['accepted', 'rejected'] as const
+                                          ).map((mark) => (
+                                              <Button
+                                                  key={`${card}:${mark}:${a.id}`}
+                                                  onPress={() =>
+                                                      void markRemote(
+                                                          $,
+                                                          sid,
+                                                          a,
+                                                          {
+                                                              mark:
+                                                                  a.mark ===
+                                                                  mark
+                                                                      ? undefined
+                                                                      : mark,
+                                                              note: a.note,
+                                                          },
+                                                      )
+                                                  }
+                                                  {...(mark === 'accepted'
+                                                      ? {
+                                                            variant:
+                                                                'primary' as const,
+                                                        }
+                                                      : {})}>
+                                                  {`${a.mark === mark ? '✅' : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'take' : 'redo'}`}
+                                              </Button>
+                                          ))
+                                      )}
+                                      {Input && !a.isLocked ? (
+                                          <Box flexShrink={1} minWidth={0}>
+                                              <Input
+                                                  key={`${card}:note:${a.id}`}
+                                                  onSubmit={(value: string) =>
+                                                      void markRemote(
+                                                          $,
+                                                          sid,
+                                                          a,
+                                                          {
+                                                              mark: a.mark,
+                                                              note:
+                                                                  value.trim() ||
+                                                                  undefined,
+                                                          },
+                                                      )
+                                                  }
+                                                  placeholder='note'
+                                                  value={a.note ?? ''}
+                                              />
+                                          </Box>
+                                      ) : null}
+                                  </Box>
+                              </Box>
+                          ))
+                        : null}
+                </Box>
+            );
+        };
         const handleLaneNote = async (id: string, value: string) => {
             const all = await readLanes($);
             await writeLanes(
@@ -2936,13 +3156,16 @@ export const register: Register = (on) => {
                                     ) : null}
                                 </Box>
                             ))}
+                      {folds[`lane:${lane.id}`]
+                          ? null
+                          : LANE_ROLES.map((role) => memberJSX(lane, role))}
                   </Box>
               ))
             : null;
-        // the phases stick to the board's bottom: a docked board fills its rows and a gap grows above them (dima, 11:07)
+        // the lanes and the phases stick to the board's bottom, the lanes on top of the phases: a docked board fills its rows
+        // and a gap grows above them (dima, 11:07; the lanes, 20:12)
         const phasesJSX = o.plan
             ? [
-                  <Box flexGrow={1} key='phases:gap' />,
                   <Box
                       borderColor={cardBorder(e.surface)}
                       borderStyle='round'
@@ -2997,6 +3220,7 @@ export const register: Register = (on) => {
                 <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>the session registry is unreadable</Text>
                     {isPartOn('stash.orbit') ? orbitJSX : null}
+                    <Box flexGrow={1} key='phases:gap' />
                     {laneJSX}
                     {isPartOn('stash.phases') ? phasesJSX : null}
                 </Box>
@@ -3006,6 +3230,7 @@ export const register: Register = (on) => {
                 <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>no live sessions</Text>
                     {isPartOn('stash.orbit') ? orbitJSX : null}
+                    <Box flexGrow={1} key='phases:gap' />
                     {laneJSX}
                     {isPartOn('stash.phases') ? phasesJSX : null}
                 </Box>
@@ -3204,6 +3429,7 @@ export const register: Register = (on) => {
                     {folds.sessions ? null : list.map(row)}
                 </Box>
                 {isPartOn('stash.orbit') ? orbitJSX : null}
+                <Box flexGrow={1} key='phases:gap' />
                 {laneJSX}
                 {isPartOn('stash.phases') ? phasesJSX : null}
             </Box>
@@ -3278,6 +3504,7 @@ export const register: Register = (on) => {
         // a mark dima made while any turn of this session runs joins it here, model-only, and locks — a peer's or a task's
         // turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11); the turn is read from $.state, which a
         // mid-turn reload keeps
+        await absorbMarks($);
         const o = await currentOrbit($);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
         const fresh = isPing
@@ -3288,7 +3515,9 @@ export const register: Register = (on) => {
             await saveOrbit($, {
                 ...o,
                 asks: o.asks.map((a) =>
-                    ids.has(a.id) ? { ...a, isLocked: true } : a,
+                    ids.has(a.id)
+                        ? { ...a, isLocked: true, markedAt: undefined }
+                        : a,
                 ),
             });
             notes.push(joinText(fresh));
