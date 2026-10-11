@@ -1,7 +1,7 @@
 import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
-import type { Brief, Context } from './rules/command.ts';
+import type { Brief, Context, Refusal } from './rules/command.ts';
 import { hints } from './rules/hint.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
@@ -524,27 +524,48 @@ export const register: Register = (on) => {
                 context: [...(result.context ?? []), ...context],
             };
         };
+        // every Bash refusal goes through here: recorded, then refused — or, for a rule in WARN_ONLY, run with the
+        // would-refuse note the model reads
+        const enforce = async (
+            r: Pick<Refusal, 'door' | 'rule' | 'targets' | 'why'>,
+            denial: string,
+            note = denial,
+        ) => {
+            const isWarn = await isWarnOnly($, r.rule);
+            await record($, {
+                command,
+                door: r.door,
+                kind: isWarn ? 'warned' : 'refused',
+                rule: r.rule,
+                target: r.targets[0] ?? '',
+                why: r.why,
+            });
+            if (!isWarn) return deny(denial);
+            const ran = await go();
+            return ran.deny !== undefined
+                ? ran
+                : {
+                      ...ran,
+                      context: [
+                          ...(ran.context ?? []),
+                          wouldRefuse(r.rule, note),
+                      ],
+                  };
+        };
         // a file another live session holds (x-mod-holds) is refused before any other rule; holds has no escape
         const held = await heldBy($, command, cwd, ctx).catch(() => undefined);
         if (held) return deny(held);
-        // a refusal, never a warning: a warn would fire after the block it means to prevent (dima's o102)
+        // a refusal, never a warning, so it stays out of WARN_ONLY: a warn would fire after the block it means to
+        // prevent (dima's o102)
         const fg =
             e.tool === 'Bash' && e.run_in_background !== true
                 ? foregroundClaude(command, cwd)
                 : undefined;
-        if (fg) {
-            await record($, {
-                command,
-                door: fg.door,
-                kind: 'refused',
-                rule: fg.rule,
-                target: fg.targets[0] ?? '',
-                why: fg.why,
-            });
-            return deny(
+        if (fg)
+            return enforce(
+                fg,
                 `nothing in this command ran — x-mod-guard stopped this one command. instead: ${fg.door}. why: ${fg.why}.`,
             );
-        }
         // a member's raw linear read or comment, as typed (before the api rewrite), names its x linear door; cclio's runs (FRM-398)
         const raw = rawLinear(typed, cwd);
         if (raw) {
@@ -554,54 +575,17 @@ export const register: Register = (on) => {
                 name !== undefined &&
                 name.replaceAll(/[\s\u200d]/g, '') !== '🦉cclio'
             ) {
-                const isWarn = await isWarnOnly($, raw.rule);
-                await record($, {
-                    command,
-                    door: raw.door,
-                    kind: isWarn ? 'warned' : 'refused',
-                    rule: raw.rule,
-                    target: raw.targets[0] ?? '',
-                    why: raw.why,
-                });
                 const said = `x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`;
-                if (!isWarn)
-                    return deny(`nothing in this command ran — ${said}`);
-                const ran = await go();
-                return ran.deny !== undefined
-                    ? ran
-                    : {
-                          ...ran,
-                          context: [
-                              ...(ran.context ?? []),
-                              wouldRefuse(raw.rule, said),
-                          ],
-                      };
+                return enforce(
+                    raw,
+                    `nothing in this command ran — ${said}`,
+                    said,
+                );
             }
         }
         if (verdict.kind === 'run') return go();
-        if (verdict.kind === 'refused') {
-            const { refusal } = verdict;
-            const isWarn = await isWarnOnly($, refusal.rule);
-            await record($, {
-                command,
-                door: refusal.door,
-                kind: isWarn ? 'warned' : 'refused',
-                rule: refusal.rule,
-                target: refusal.targets[0] ?? '',
-                why: refusal.why,
-            });
-            if (!isWarn) return deny(message(refusal));
-            const ran = await go();
-            return ran.deny !== undefined
-                ? ran
-                : {
-                      ...ran,
-                      context: [
-                          ...(ran.context ?? []),
-                          wouldRefuse(refusal.rule, message(refusal)),
-                      ],
-                  };
-        }
+        if (verdict.kind === 'refused')
+            return enforce(verdict.refusal, message(verdict.refusal));
         // the marker is only a claim: dima's own last prompt must name every target the refusals named
         const { value: said = '' } = await $.state.get(PROMPT);
         const unproven = [
