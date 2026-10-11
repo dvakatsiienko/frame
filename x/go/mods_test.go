@@ -231,3 +231,16 @@ func anyStrings(v any) []string {
 	}
 	return out
 }
+
+// the sample the stash's pnpm mods:test parser (mods/test.ts outcome) is held to as well: both read it the same way
+func TestTestOutcomeReadsTheSharedSample(t *testing.T) {
+	raw, err := os.ReadFile("../../home/.claude/plugin-x/mods/plugin-test.sample.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	passed, failed, errored := testOutcome(string(raw))
+	got := []string{strings.Join(failed, "|"), strings.Join(errored, "|")}
+	if passed != 2 || got[0] != "a breaks" || got[1] != "tests/c.test.ts" {
+		t.Fatalf("passed %d, failed %q, errored %q", passed, failed, errored)
+	}
+}

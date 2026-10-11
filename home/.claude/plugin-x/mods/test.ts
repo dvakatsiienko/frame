@@ -9,23 +9,42 @@ import { parseArgs } from 'node:util';
 
 type Run = { mod: string; output: string };
 
-const count = (output: string, word: 'pass' | 'fail') =>
-    Number(output.match(new RegExp(`^\\s*(\\d+) ${word}$`, 'm'))?.[1] ?? NaN);
+// claude plugin test's words, read the same way by `x mods edit test` (x/go/mods.go testOutcome); both parsers are
+// held to plugin-test.sample.txt: a test file that cannot load is «errored», a test that runs and fails is «failed»
+export function outcome(output: string) {
+    let file = '';
+    let passed = 0;
+    const failed: string[] = [];
+    const errored: string[] = [];
+    for (const raw of output.split('\n')) {
+        const line = raw.trim();
+        const head = line.match(/^(tests\/\S+\.test\.tsx?):$/);
+        if (head) file = head[1] ?? '';
+        else if (line.startsWith('(pass) ')) passed++;
+        else if (line === '(fail) the file did not load') errored.push(file);
+        else {
+            const fail = line.match(/^\(fail\) (.+?)(?: \[[\d.]+ms\])?$/);
+            if (fail) failed.push(fail[1] ?? '');
+        }
+    }
+    return { errored, failed, passed };
+}
 
 export function summary(runs: Run[]) {
     let pass = 0;
     let fail = 0;
     const red: string[] = [];
     for (const { mod, output } of runs) {
-        const p = count(output, 'pass');
-        const f = count(output, 'fail');
-        if (Number.isNaN(p) || Number.isNaN(f)) {
+        const { errored, failed, passed } = outcome(output);
+        if (!passed && !failed.length && !errored.length) {
             red.push(`${mod} (no tally)`);
             continue;
         }
-        pass += p;
-        fail += f;
-        if (f) red.push(mod);
+        pass += passed;
+        fail += failed.length + errored.length;
+        if (errored.length)
+            red.push(`${mod} (${errored.join(', ')} did not load)`);
+        else if (failed.length) red.push(mod);
     }
     const head = red.length
         ? `red in ${red.join(', ')}`

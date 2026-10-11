@@ -1,0 +1,14 @@
+tests/a.test.ts:
+(pass) a holds [1.0ms]
+(fail) a breaks [2.0ms]
+  AssertionError: expected 1 to be 2
+
+tests/b.test.ts:
+(pass) b holds [1.0ms]
+tests/c.test.ts:
+(fail) the file did not load
+  tests/c.test.ts: cannot import "./gone.ts"
+
+ 2 pass
+ 2 fail
+Ran 4 tests across 3 files. [12.00ms]

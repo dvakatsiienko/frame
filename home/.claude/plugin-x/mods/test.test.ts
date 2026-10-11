@@ -1,9 +1,33 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { failures, summary } from './test.ts';
+import { failures, outcome, summary } from './test.ts';
+
+// the one sample both parsers of claude plugin test's output are held to (x/go/mods_test.go reads it too)
+const SAMPLE = readFileSync(
+    join(import.meta.dirname, 'plugin-test.sample.txt'),
+    'utf8',
+);
 
 const run = (pass: number, fail: number) =>
-    `(pass) a\n\n ${pass} pass\n ${fail} fail\nRan ${pass + fail} tests across 1 file.`;
+    [
+        'tests/a.test.ts:',
+        ...Array.from({ length: pass }, (_, i) => `(pass) holds ${i}`),
+        ...Array.from({ length: fail }, (_, i) => `(fail) breaks ${i}`),
+        ` ${pass} pass`,
+        ` ${fail} fail`,
+    ].join('\n');
+
+describe('outcome', () => {
+    it('tells a test that failed from a file that did not load', () => {
+        expect(outcome(SAMPLE)).toEqual({
+            errored: ['tests/c.test.ts'],
+            failed: ['a breaks'],
+            passed: 2,
+        });
+    });
+});
 
 describe('summary', () => {
     it('sums every mod into one line', () => {
@@ -24,6 +48,12 @@ describe('summary', () => {
         ).toBe('mods:test: red in x-mod-guard, 353 pass, 5 fail');
     });
 
+    it('names a test file that did not load', () => {
+        expect(summary([{ mod: 'x-mod-stash', output: SAMPLE }])).toBe(
+            'mods:test: red in x-mod-stash (tests/c.test.ts did not load), 2 pass, 2 fail',
+        );
+    });
+
     it('counts a mod that printed no tally as red', () => {
         expect(
             summary([{ mod: 'x-mod-redact', output: 'SyntaxError: boom' }]),
@@ -32,21 +62,7 @@ describe('summary', () => {
 });
 
 describe('failures', () => {
-    const output = [
-        'tests/a.test.ts:',
-        '(pass) a holds [1.0ms]',
-        '(fail) a breaks [2.0ms]',
-        '  AssertionError: expected 1 to be 2',
-        '',
-        'tests/b.test.ts:',
-        '(pass) b holds [1.0ms]',
-        'tests/c.test.ts:',
-        '(fail) the file did not load',
-        '  tests/c.test.ts: cannot import "./gone.ts"',
-        '',
-        ' 2 pass',
-        ' 2 fail',
-    ].join('\n');
+    const output = SAMPLE;
 
     it('keeps each failing test under its file, with what it printed', () => {
         expect(failures(output)).toBe(
