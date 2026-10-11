@@ -16,6 +16,7 @@ import type {
 import {
     type Door,
     backgroundWait,
+    backgroundWaits,
     boldFleetWords,
     bulletDots,
     doorOf,
@@ -33,7 +34,14 @@ import {
 // label: the repo; name: the session's registry name, when it has one
 type Entry = StashEntry;
 // a session's last reply: when it ended, its 🔭 wait; `ended` once the session itself exited
-type Reply = { at: number; name?: string; wait?: string; ended?: number };
+// waits: every background task's own name when the reply set no 🔭, so the board can list them all
+type Reply = {
+    at: number;
+    name?: string;
+    wait?: string;
+    waits?: string[];
+    ended?: number;
+};
 
 const PREFIX = 'asks:';
 const AFK_KEY = 'afk';
@@ -1392,7 +1400,11 @@ async function members($: EngineInterface): Promise<Member[]> {
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
-            wait: reply?.wait,
+            // the band says «first +n»; the board has the room to name every wait (dima's o75)
+            wait:
+                reply?.waits && reply.waits.length > 1
+                    ? `waiting on ${reply.waits.join('; ')}`
+                    : reply?.wait,
         });
     }
     // the coordinator first, her adviser second, the rest by name
@@ -1481,6 +1493,15 @@ function hoverTip(
             </Box>
         </Box>
     );
+}
+
+// a reply's own 🔭 line wins; else its background tasks, the first named for the band and all of them for the board
+function waitsOf(
+    said: string | undefined,
+    tasks: Parameters<typeof backgroundWait>[0],
+): Pick<Reply, 'wait' | 'waits'> {
+    if (said) return { wait: said };
+    return { wait: backgroundWait(tasks), waits: backgroundWaits(tasks) };
 }
 
 export const register: Register = (on) => {
@@ -1709,9 +1730,10 @@ export const register: Register = (on) => {
                 .set(REPLY + e.session_id, {
                     at: await $.clock.now(),
                     name: await sessionName($),
-                    wait:
-                        parseWait(e.last_assistant_message ?? '') ??
-                        backgroundWait(e.background_tasks),
+                    ...waitsOf(
+                        parseWait(e.last_assistant_message ?? ''),
+                        e.background_tasks,
+                    ),
                 } satisfies Reply)
                 .catch(() => undefined);
         isUserTurn = false;

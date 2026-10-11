@@ -328,6 +328,29 @@ test("a reply's 🔭 line shows on its session's row", async ($, on) => {
     );
 });
 
+test('with several waits the board row names every one by its own description', async ($, on) => {
+    fleet(on);
+    const task = (id: string, description: string) => ({
+        description,
+        id,
+        status: 'running',
+        type: 'shell',
+    });
+    await $.classic.Stop({
+        background_tasks: [
+            task('t1', 'Run the stash suite'),
+            task('t2', 'Build sline'),
+            task('t3', 'Probe the guard live'),
+        ],
+        last_assistant_message: 'three things running.',
+        session_id: HERE,
+        stop_hook_active: false,
+    });
+    expect(await row($, HERE)).toContain(
+        '🔭 waiting on Run the stash suite; Build sline; Probe the guard live',
+    );
+});
+
 test("a keep-hot ping's reply keeps what the session waits on", async ($, on) => {
     fleet(on);
     await stop($, 'done.\n\n🔭 waiting on ci — a ping');

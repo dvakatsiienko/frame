@@ -130,6 +130,17 @@ export function parseWait(reply: string): string | undefined {
 const STANDING_WATCH = /^Arm the one-shot (?:pr|ci) watch/i;
 const isStandingWatch = (t: { description: string; command?: string }) =>
     t.command?.includes('watch-once.sh') || STANDING_WATCH.test(t.description);
+// every background task the session waits on, by its own name or description: the board's row lists them all (dima's o75)
+export function backgroundWaits(
+    all:
+        | readonly { name?: string; description: string; command?: string }[]
+        | undefined,
+): string[] {
+    return (all ?? [])
+        .filter((t) => !isStandingWatch(t))
+        .map((t) => (t.name ?? t.description).trim());
+}
+
 export function backgroundWait(
     all:
         | readonly { name?: string; description: string; command?: string }[]

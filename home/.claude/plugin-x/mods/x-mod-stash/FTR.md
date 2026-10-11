@@ -34,6 +34,7 @@
   - decision: short, «waiting on <who>», nothing more (dima's o88, 23:15)
   - given the only tasks running are cclio's standing watches — a task whose command runs `watch-once.sh`, else one described «Arm the one-shot pr watch» or «… ci watch» — then the 🔭 reads «not waiting»; beside a real wait they are not counted in the +n
   - decision: the standing watches run all day and are no wait (dima's o52, 2026-10-11)
+  - given several background tasks, then the band keeps «waiting on <first> +n» and the fleet board's row names every one by its own description, `; `-joined (dima's o75)
   - decision: the band, not the board — slim enough, and dima wants it visible (dima, 2026-10-10)
 - ✅ a mid-turn reload keeps the turn and what only the band held
   - given a turn is running and dima's away digest shows
