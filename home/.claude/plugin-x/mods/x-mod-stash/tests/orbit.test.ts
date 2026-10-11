@@ -286,21 +286,26 @@ test('an ask the turn left unanswered gets its controls back when the turn ends'
     expect(await ui.find({ key: 'orbit:accepted:o1' })).toBeTruthy();
 });
 
-test('🛎️ take is always filled; a press reads «taken», a second puts it back', async ($, on) => {
+test('a held mark swaps its emoji for ✅, and only one of the two holds it', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
+    const look = async () =>
+        Promise.all(
+            ['accepted', 'rejected'].map(async (m) => {
+                const b = await ui.find({ key: `orbit:${m}:o1` });
+                return `${b?.text}|${b?.props.variant ?? '-'}`;
+            }),
+        );
+    const idle = await look();
     await ui.press({ key: 'orbit:accepted:o1' });
-    const take = async () => {
-        const b = await ui.find({ key: 'orbit:accepted:o1' });
-        return [b?.props.variant, b?.text];
-    };
-    const lit = await take();
-    await ui.press({ key: 'orbit:accepted:o1' });
-    expect([lit, await take()]).toEqual([
-        ['primary', '🛎️ taken'],
-        ['primary', '🛎️ take'],
+    const taken = await look();
+    await ui.press({ key: 'orbit:rejected:o1' });
+    expect([idle, taken, await look()]).toEqual([
+        ['🛎️ take|primary', '↩️ back|-'],
+        ['✅ take|primary', '↩️ back|-'],
+        ['🛎️ take|primary', '✅ back|-'],
     ]);
 });
 

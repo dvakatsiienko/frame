@@ -2090,18 +2090,12 @@ export const register: Register = (on) => {
                         true,
                     )
                 }
-                // take is always the filled button, the mock's (dima, 17:08); back fills only while it holds, and a held
-                // mark says so in its word
-                {...(mark === 'accepted' || a.mark === mark
+                // take is always the filled button (dima, 17:08); a held mark swaps its emoji for ✅, so the size never
+                // changes (dima's o7, 17:16) — one mark per ask, so only one of the two ever shows ✅
+                {...(mark === 'accepted'
                     ? { variant: 'primary' as const }
                     : {})}>
-                {mark === 'accepted'
-                    ? a.mark === mark
-                        ? '🛎️ taken'
-                        : '🛎️ take'
-                    : a.mark === mark
-                      ? '↩️ sent back'
-                      : '↩️ back'}
+                {`${a.mark === mark ? '✅' : mark === 'accepted' ? '🛎️' : '↩️'} ${mark === 'accepted' ? 'take' : 'back'}`}
             </Button>
         );
         const handleAssumedNote = (id: string, value: string) =>

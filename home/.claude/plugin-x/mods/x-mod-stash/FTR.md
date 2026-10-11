@@ -340,7 +340,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ accept, reject, note, check all
   - given orbit shows asks
   - when dima presses an ask's 🛎️ or ↩️, types in its note, or presses check all
-  - then `🛎️ take` is always the filled (`primary`) button and reads `🛎️ taken` while it holds; `↩️ back` fills and reads `↩️ sent back` while it holds; a second press puts either out (dima, 17:08: «solid, as in the cards example»); the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
+  - then `🛎️ take` is always the filled (`primary`) button and `↩️ back` a plain-chromed one; a held mark swaps its emoji for ✅ (`✅ take`, `✅ back`), so neither changes size, and only one of the two holds it; a second press puts it out (dima, 17:08 «solid»; o7, 17:16 «swap … only 1 of these btns can have ✅»); the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
   - decision: 🛎️ / ↩️, the waiter lens — 🛎️ order up, ready for the session to pick up; ↩️ back to the kitchen (dima's o79, 23:05; was 🤩 / 👎🏼)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
