@@ -149,6 +149,12 @@
   - given «enforce» in the store's `rule-mode:<rule>`, then a listed rule refuses; «warn» there does nothing — every session writes that store, so it can never switch a rule off (the verifier's 15:08 probe turned the `rm` floor off)
   - decision: a refusing hook reaches every session at its next turn end; FRM-392's guard refused three verifier verdicts before anyone saw it
 
+- ⬜ stash's 🎛️ «🛡️ guard notes to the model» switch silences guard's notes (FRM-391 slice 06, dima's o11)
+  - given the switch off — `guard-silent: true` in x-mod-stash's store file, read with `$.fs`, read-only
+  - when a call is rewritten, hinted or reaches the 8th cclio edit
+  - then the rewrite still runs and no note joins the model's context; a refusal and a warn-only «would refuse» still speak, the floor untouched
+  - decision: guard reads stash's file rather than keeping its own knob — one 🎛️ view, the store is one file per plugin (`mods/AGENTS.md`)
+
 ## every Agent spawn
 
 - ⬜ an agent brief passes `x brief check` before the agent runs (FRM-392)

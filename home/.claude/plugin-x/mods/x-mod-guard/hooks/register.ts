@@ -209,6 +209,20 @@ async function count(
 // x-mod-holds' store file: a session's first edit of a file holds it, and a Bash write by another session is refused here,
 // by the one Bash parser. the release checks are holds' own: a holder idle 30 min, a dead pid, a landed hold clean in git
 const HOLDS_FILE = /^x-mod-holds_.*\.json$/;
+// stash's 🎛️ «guard verdicts» knob lives in stash's own store file; silent drops the rewrite, hint and delegate notes, never a
+// refusal or a would-refuse (FRM-391 slice 06, dima's o11) — read-only, the store is one file per plugin
+const STASH_FILE = /^x-mod-stash_.*\.json$/;
+async function isSilent($: EngineInterface, home: string | undefined) {
+    const dir = `${home}/.claude/plugins/store`;
+    for (const f of await $.fs.list(dir).catch(() => [])) {
+        if (!STASH_FILE.test(f.name)) continue;
+        try {
+            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`));
+            if (v?.['guard-silent'] === true) return true;
+        } catch {}
+    }
+    return false;
+}
 const HOLD = 'hold:';
 const HOLD_IDLE_MS = 30 * 60_000;
 type Hold = { at: number; file: string; landed?: boolean };
@@ -470,14 +484,15 @@ export const register: Register = (on) => {
         const go = async () => {
             const result = await next(notes.length ? { ...e, command } : e);
             if (result.deny !== undefined) return deny(result.deny);
+            const isQuiet = await isSilent($, ctx.home);
             const context = [
-                ...(notes.length
+                ...(notes.length && !isQuiet
                     ? [
                           `x-mod-guard rewrote this call before it ran: ${notes.join('; ')}. it ran: ${command}`,
                       ]
                     : []),
                 ...(drift && result.isError ? [drift] : []),
-                ...hints(command, cwd, ctx),
+                ...(isQuiet ? [] : hints(command, cwd, ctx)),
             ];
             if (!context.length) return result;
             return {
@@ -560,7 +575,8 @@ export const register: Register = (on) => {
                 if (!isUnder(cwd, `${home}/frame/cclio`)) return result;
                 const n = ((await $.state.get(EDITS)).value ?? 0) + 1;
                 await $.state.set(EDITS, n);
-                if (n !== EDIT_LIMIT) return result;
+                if (n !== EDIT_LIMIT || (await isSilent($, home)))
+                    return result;
                 return {
                     ...result,
                     context: [...(result.context ?? []), DELEGATE_NOTE],

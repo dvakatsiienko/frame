@@ -227,6 +227,7 @@ for (const [key, before, after] of [
     ['breath-preview', undefined, true],
     ['board-colour', undefined, true],
     ['speak-assumed', undefined, false],
+    ['guard-silent', undefined, true],
 ] as const)
     test(`the ${key} knob saves its flip at once`, async ($, on) => {
         const { store } = world(on);

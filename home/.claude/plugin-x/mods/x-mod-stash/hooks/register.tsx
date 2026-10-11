@@ -65,6 +65,8 @@ const BREATHE = 'breathe';
 const BREATH_SPEED = 'breath-speed';
 const PHASE_LINES = 'phase-lines';
 const SPEAK_ASSUMED = 'speak-assumed';
+// x-mod-guard reads this key from stash's store file: true drops its rewrite, hint and delegate notes, never a refusal
+const GUARD_SILENT = 'guard-silent';
 const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
 const LINES = { max: 7, min: 5 } as const;
 // the 🎛️ settings (FRM-391 slice 05): one show/hide switch per part, in the store every session reads and the poll
@@ -2052,6 +2054,7 @@ export const register: Register = (on) => {
                 always: (await read(BREATH_PREVIEW)) === true,
                 breathe: (await read(BREATHE)) !== false,
                 colour: (await read(COLOUR)) === true,
+                guard: (await read(GUARD_SILENT)) !== true,
                 lines: numberOf(await read(PHASE_LINES), LINES) ?? PLAN_MAX,
                 speak: (await read(SPEAK_ASSUMED)) !== false,
                 speed: numberOf(await read(BREATH_SPEED), SPEED) ?? SPEED.of,
@@ -2147,6 +2150,19 @@ export const register: Register = (on) => {
                         knobs.speak,
                         true,
                     )}
+                    {/* the switch reads «shown» while lit, so it flips the stored «silent» the other way */}
+                    <Box flexDirection='row' key='knob:guard-silent'>
+                        <Button
+                            key='knob:guard-silent'
+                            onPress={() =>
+                                void flipKnob($, GUARD_SILENT, false)
+                            }
+                            {...(knobs.guard
+                                ? { variant: 'primary' as const }
+                                : { dimColor: true })}>
+                            🛡️ guard notes to the model
+                        </Button>
+                    </Box>
                 </Box>
             );
             // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
