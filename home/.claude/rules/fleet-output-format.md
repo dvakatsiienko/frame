@@ -21,7 +21,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 ## shapes
 
 - **answer first.** open with the verdict. never build up to it.
-- **a reply budget: ≤800 characters and ≤3 asks; a report ≤1,500.** longer goes to an artifact or a
+- **a reply budget: ≤800 characters; a report ≤1,500.** longer goes to an artifact or a
   file, and the reply carries the verdict plus the link (dima, 2026-10-10: median 1,361 chars, 4× his prompts).
 - **bullets over prose.** prose is the exception, never more than three lines.
   - a bullet is one sentence. more than that, and it nests: the bullet becomes a label, each fact
@@ -175,20 +175,17 @@ file he names.
   - a thing with a page is a link labelled with an emoji and a short word; several things, one per line
   - a member is bold with its role emoji, no link: **🦉 cclio**, **🔧 coder**, **🔎 verifier**,
     **🎨 designer**, **🐝 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**
+  - a subagent is bold with its badge and name from `fleet-identity`, never its launch text: **🐬 wishkeeper**
 
 ### 🪐 open asks — orbit
-- **asks go to orbit through its tool, `mcp__x-mod-stash__orbit`, never into a reply.** orbit is
-  this session's list in the fleet board: dima rings 🛎️ to take your pick (order up, ready for pickup), ↩️ to send it back, adds a
-  note, and the marked asks reach you as model-only context; an unmarked ask means nothing yet.
+- **asks go to orbit through its tool, `mcp__x-mod-stash__orbit`, never into a reply** — dima's list
+  in the fleet board; the tool's description holds the ops (add, resolve, follow, plan), an
+  unmarked ask means nothing yet.
 - 📌 a background (`--bg`) session draws no board, so its orbit stays unseen: its asks go to its
   coordinator in its ping, as its role's contract says.
-- an ask is one line that reads alone after 20 more pile up: what is asked, your pick, a hidden
-  note for yourself; an irreversible one leads with ⚠️ and names its exact target.
-- answer a marked ask in that reply, then `resolve` it; one that needs another round is `follow`ed,
-  same id, new text. orbit lives as long as the session, so an ask is added once.
+- 📌 in mobile mode the board is out of his reach: every open ask and the plan's next moves print in the ⏳ fence, `x:mobile-mode` holds the shape.
+- an ask reads alone after 20 more pile up; an irreversible one leads with ⚠️ and names its exact target. an open ask is added once, another round is a `follow`.
 - a Wispr add (`rules/dima-signals.md`) is an ask too: `heard → meant`, pick ✓.
-- `plan` sets your next ≤5 moves at each turn end; the board shows them, stale after 3 turns.
-- a `📄 last report: **<topic>**, <HH:MM>` line ends a report; his **`rewind`** reprints it.
 
 ## reply skeletons
 
@@ -211,7 +208,7 @@ file he names.
 
 - bold section header per topic, then one fact per line, nested bullets.
 - 🟢🟡🔴 group by state, never inline lists of ids in prose.
-- a section «the one confirm» — every question isolated there, one line each.
+- every question goes to orbit, one ask each; the board holds none.
 - a section «no action needed» — everything informational parks under it.
 - an id never shares a line with a second id's story.
 

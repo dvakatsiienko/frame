@@ -1,14 +1,14 @@
 ---
 researched: 2026-08-23
-sources-current-as-of: cc 2.1.241 · code.claude.com/docs/en/memory · pingdotgg/t3code AGENTS.md (DOT-73 attachment) · theo's own breakdown of it · bytemonk claude.md transcript
+sources-current-as-of: cc 2.1.296 · code.claude.com/docs/en/memory · pingdotgg/t3code AGENTS.md (DOT-73 attachment) · theo's own breakdown of it · bytemonk claude.md transcript
 refresh-when: a project file is written and a section here turns out to have no place to go — fix the skeleton, not the file
 ticket: DOT-216
 ---
 
-# project memfile authoring — how to write a project `CLAUDE.md`
+# project memfile authoring — how to write a project `AGENTS.md`
 
 sibling to `authoring-memory.md` (**where** a fact goes) and `authoring-skill.md` (**how** a skill
-is written). this one is the shape of ONE file: the `CLAUDE.md` at the root of a repo.
+is written). this one is the shape of ONE file: the `AGENTS.md` (or `CLAUDE.md`) at the root of a repo; ours are `AGENTS.md`.
 
 🎯 **the reference is [`pingdotgg/t3code`](https://github.com/pingdotgg/t3code)'s `AGENTS.md`.**
 dima's call: it is already distilled and fine-tuned, from a verified source. **the blocks quoted
@@ -33,10 +33,8 @@ below is the highest-value section in the file.
 
 **[read]** theo again, and this is the cleanest statement of it:
 
-| file | answers |
-| --- | --- |
-| `README.md` | *should i pull in this code?* — for a human or agent **deciding** |
-| `CLAUDE.md` | *how do i change this code, and what must i know first?* — for an agent **working** |
+- `README.md` answers *should i pull in this code?* — for a human or agent **deciding**
+- `AGENTS.md` answers *how do i change this code, and what must i know first?* — for an agent **working**
 
 > while there is a lot of overlap between developers contributing to a project and agents doing
 > those contributions, this file really should not be written for devs — it should be written for
@@ -66,15 +64,15 @@ this today and the drift is invisible — each file is written alone and only fe
 ## the budget
 
 **[read]** target **under 200 lines**. the reference is 155. `@imports` do not save context — they
-expand at launch. `paths:`-scoped rules in `.claude/rules/` are the only real relief, and they fire
-on **reading a matching file**, so they fit code conventions and not intentions.
+expand at launch. `paths:`-scoped rules in `.claude/rules/` are the only real relief: they load when
+a matching file is read (Bash `cat` included) or edited, never on an intention, so they fit code
+conventions and not intentions (`authoring-memory.md` § paths, measured 2026-10-11).
 
-**[read]** `/doctor` (v2.1.206+) proposes trims: it cuts what is derivable from the codebase —
-directory layouts, dependency lists, architecture overviews — and keeps pitfalls, rationale, and
-conventions that differ from tool defaults. **that is the correct filter; apply it by hand too.**
-
-📌 the `why` for each rule goes in a **block html comment** — stripped before injection, so it is
-free. see `authoring-memory.md`.
+**[read]** `/doctor` cuts what is derivable from the codebase — directory layouts, dependency lists,
+architecture overviews — and keeps pitfalls, rationale, and conventions that differ from tool
+defaults: the correct filter, applied by hand too. anthropic's own advice agrees: spend the tokens
+on gotchas (`authoring-memory.md` § what the measurements say). the `why` of a rule goes in a block
+html comment, free (`authoring-memory.md` § the mechanics).
 
 ---
 

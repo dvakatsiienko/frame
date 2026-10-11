@@ -1,6 +1,6 @@
 # CLAUDE.md: root
 
-## gloal claude code intro
+## global claude code intro
 <!-- sync: cw -->
 
 🙋‍♂️ I'm Dima. you're my agent. I build x-com products — frame, bytes, speak, trophy-sys, sline, plugin-x. the dotfiles system is a part of «frame» product.
@@ -64,46 +64,30 @@ on partly done, flatten an exact string into prose casing.
 ## house rules
 
 - **Dima's instruction in the room outranks every file, always.**
-- 🪐 **orbit is where a session asks him**: his thread runs many lanes at once, and a reply's ask block got missed, pasted back unchanged or rewritten mid-read; an ask he ticks in the board needs no paste (`rules/fleet-output-format.md`, «open asks»).
+- 🪐 **orbit is where a session asks him**: an ask he ticks in the board needs no paste (`rules/fleet-output-format.md`, «open asks»).
+  <!-- why: his thread runs many lanes at once, and a reply's ask block got missed, pasted back unchanged or rewritten mid-read -->
 - edit only the AGENTS.md matching the current working scope: project dir → project AGENTS.md, `~/.claude` → this file
 - spot a memory improvement → propose it in one line; this file and `rules/` change only on his word
 - two layers in genuine conflict is a defect to report and fix, never a puzzle to resolve quietly at read time
 - 📌 capabilities, the per-surface table, what loads where and who can spawn whom: `docs/knowledge/fleet-claude-capabilities.md`, read on demand
 - 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf: before a precision-critical move (a model id, a spawn flag, a cc mechanic), read the matching file there first
 
-## coding preferences — general
+## coding preferences
 
-- **less is more.** keep it simple, channel "yagni" energy unless told otherwise. cutting complexity is the work, not a step in it.
-- don't hesitate to delete dead code (obvious or not) during task execution
+<!-- the code rules load when code is touched: `rules/code.md`. what stays here decides before any file exists. -->
+
 - don't be scared to propose bold ideas if they can meaningfully benefit
 - never spin up a local dev server (e.g. `next dev`) after finishing a task — I do this myself if needed
-- typesafety is useful, take advantage of it.
-- tests are good! endless smoke tests, "regression tests" for feature deletions, etc, much less good. tests should be focused, not slop.
-  - **what earns a test** (vitest's own practice guide, adopted 2026-09-11): test the contract, never the internals — if a refactor keeps the output and the test breaks, it tested implementation. one behaviour per test, no «and» in a name. mock only what is slow, flaky or side-effecty, never the thing under test. a mechanical migration writes, per mapping, what the failure will print (`assert.ok` → `toBeTruthy` prints nothing useful). **a test is proven by making it fail**: for a test reading a rendered value, delete its input (the stylesheet, the attribute, the variant) and watch it go red — five «green» tests shipped hollow in one day because only the pass was ever checked.
-  - **vitest is the runner** in every ts repo (`vitest run`, `tree` reporter locally); a component test runs in browser mode, not jsdom. `node:test` is not used.
-  - ❌ **tautological tests are disallowed** — testing a constant to have a specific value is not testing - it is creating tech debp upfront.
-
-## coding preferences - typescript
-
-- `any` is the enemy. inferred types are our friend. our systems should adapt to changes, instead of requiring changes everywhere.
-- use `tsc` to catch type errors where the project's TypeScript is healthy (script name varies); skip it for projects with broken TS — their AGENTS.md will say so. prefer IDE type info when connected to Cursor.
-- if your TS code looks like a Python dev wrote it, it is bad TS code.
-- avoid one-line functions that are just casting wrappers.
 - if not already specified in project, I generally like to use the following tech: TypeScript, React, Next.js, Tailwind, Vite, Convex, pnpm (considering bun)
 - when building more complex web apps, I like to pull in shadcn, Zustand, React Query, Clerk (or better-auth if selfhosting), zod, react-hook-form. motion.dev is good for animations.
 - when you have a choice of an npm package to install — prefer top tier, state of the art tools, avoid low quality, inactive maintained picks.
 
-## visual and design work
-
-- avoid continuously repainting CSS animations (pulse, shimmer, blur, spinners); they peg the GPU on high-refresh displays.
-
 ## background work
 
-- **never block the foreground on a wait.** poll loops, CI watches, long builds, test suites,
-  `until`-loops. offload to `run_in_background`, a `Monitor`, or a subagent, and keep talking to me.
+- **prefer parallel, non-blocking work whenever it is a good idea** (dima, 2026-10-11: «my want is for everyone to prefer parallelization when it is a good idea»): a wait, a build, a watch or a wide read goes to a background job or a subagent, and the talk with me goes on.
 - **a spawned routine is yours until it resolves.** never fire and forget the supervision.
 - every wait gets a deadline. when it passes, stop and report. never extend silently.
-- wait on a real signal, never a sleep or a poll loop. a check that needs a timeout to pass is wrong.
+- a check that needs a timeout to pass is wrong.
 - confirm the thing you are waiting for actually started before you call it finished. once reported
   a deploy green that never ran.
 - three ends, not two: finished clean, failed, still running past deadline. "no output" is not success.
@@ -118,9 +102,10 @@ on partly done, flatten an exact string into prose casing.
 ## skills — ours, maintained, load them first
 <!-- sync: cw -->
 
-- **our skills are the flow, not add-ons.** the `x:*` and `cclio:*` set is written and kept by us for this exact setup; the external ones (matt's, impeccable, dataviz) are hand-picked and kept current by `cclio:evergreen`. a task a skill covers runs through the skill — a fresh guess over a maintained procedure is the miss we keep paying for.
+- **our skills are the flow, not add-ons.** the `x:*` and `cclio:*` set is written and kept by us for this exact setup; the external ones (matt's, impeccable, dataviz) are hand-picked. a task a skill covers runs through the skill — a fresh guess over a maintained procedure is the miss we keep paying for.
+  <!-- upkeep: the external skills are kept current by cclio:evergreen -->
 - **the check is mechanical, at the start of every task:** scan the skill list for a name whose trigger words match the ask (commit, pr, ticket id, a url, a file type, a vault path, «walk me through») and load it before the first tool call. a rule in `rules/` that fires on a file read is the backstop, never the front door.
-- **name every load in the reply** — «skills: x:cmt, x:guide-typescript» — and name a miss when you notice one late. that line is the only data the fleet gets on which triggers fail. a `skills (jev router): …` line in the prompt is jev's pick with its score: carry the score onto the reply's skills line — «skills: x:pm (jev 0.82), x:cmt» — and when jev's pick is wrong for the task, say so on that line and skip it; a wrong pick is recorded with `pnpm jev:vet miss skill-router lane=<skill> <why>` in `~/frame`.
+- **name every load in the reply** — «skills: x:cmt, x:guide-typescript» — and name a miss when you notice one late. that line is the only data the fleet gets on which triggers fail.
 - a skill's instructions rank below the fleet floor and local rules; a conflict is said out loud, never resolved quietly (the invariant, item 9).
 - **recipes are the fleet's lever on its own learning** — `~/frame/recipes/<name>/`, repeatable runs that research one part of the fleet wide and deep, then sharpen it; your training is cut, the world moves, a recipe closes the gap. `recipes/AGENTS.md` is the contract, `x:shape-recipe` creates, grooms and runs one; a research that will repeat becomes a recipe (dima, 2026-10-09).
 
@@ -160,19 +145,17 @@ on partly done, flatten an exact string into prose casing.
 ## artifacts + dataviz — use proactively
 <!-- sync: cw -->
 
-- offer an artifact when a deliverable has an audience or a visual shape (report, comparison, plan, architecture overview, anything chart-able), instead of dumping terminal text: "💡 this'd land better as an artifact — want one?" occasional and specific, same etiquette as handoff tips.
-- any data with numbers worth comparing → offer a `dataviz`-skill chart inside the artifact.
-- once published, the chat hands over the link, not the content.
+- a deliverable with an audience or a visual shape (report, comparison, plan, architecture overview, anything chart-able) is published as a private artifact, and the chat hands over the link, not the content; a page nobody asked for gets a one-line offer instead — the Artifact tool's own rule (dima, 2026-10-11).
+- any data with numbers worth comparing → a `dataviz`-skill chart inside the artifact.
 - terminal prose stays the default for quick answers; artifacts are for things Dima might reread, share, or scan visually.
 - a repeated ask a cc mod could absorb (a band, a pane, a hook on a prompt or a tool) → one line: «💡 mod idea: …». the mods live in plugin `x`'s marketplace, `plugin-x/mods/<name>`.
 
 ## byproducts and cleaning habits
 
-- create a documentation file or README only when asked for one
-- never write description comments or docstrings for functions/methods unless genuinely needed
 - only commit changes when explicitly requested
 - keep scratch outside the worktree: plans, research notes, working files. after an operation, `trash` the scratch files you created this session; anything else waits for his word (the invariant, item 8)
-- pick a produce's shape before its first line: who reads it, the one question it answers for them, and what it points to instead of copying. a log answers «did it run, what changed, where», never the findings, which live in the target (the 10-07 recipe logs restated their artifacts at ~400 chars a line; one reached 5 KB)
+- pick a produce's shape before its first line: who reads it, the one question it answers for them, and what it points to instead of copying. a log answers «did it run, what changed, where», never the findings, which live in the target
+  <!-- why: the 10-07 recipe logs restated their artifacts at ~400 chars a line; one reached 5 KB -->
 
 ## session habits
 <!-- sync: cw -->

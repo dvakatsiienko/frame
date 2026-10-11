@@ -72,3 +72,7 @@ keys and the call path: `x-fleet` service account → vault `dev` → `script/op
 - «0 requests» is proven by a fetch-stub preload (`NODE_OPTIONS=--import`, every request logged to a file), across scripts and vitest workers
 - a model baseline through `claude -p` runs lean: `--settings '{"disableAllHooks":true,"alwaysThinkingEnabled":false,"claudeMdExcludes":["**/*"]}'` (~17k tokens and 8 s → clean context and 2 s)
 - a replay on mostly synthetic fixtures prints its real-only slice first (94 % → 67 % on real); a vet miss line carries the full prompt
+
+## parked from root `CLAUDE.md` (2026-10-11 sweep) — restore there when the router is back on
+
+a `skills (jev router): …` line in the prompt is jev's pick with its score: carry the score onto the reply's skills line — «skills: x:pm (jev 0.82), x:cmt» — and when jev's pick is wrong for the task, say so on that line and skip it; a wrong pick is recorded with `pnpm jev:vet miss skill-router lane=<skill> <why>` in `~/frame`.

@@ -47,15 +47,11 @@ the +2 date shift ran on reminders and two files and passed its own check, while
 `dies-when` lines inside test-drive files kept the old dates (2026-10-05). **verify a bulk edit by
 grepping every old value across the repo**, never by the filter that chose the targets.
 
-## ❗ zsh eats unquoted `=word` args
+## ❗ zsh: unquoted args that abort or misfire
 
-`echo ===DIVIDER===` in a chained command aborts the WHOLE chain — zsh equals-expansion tries to
-resolve `==DIVIDER==` as a command path, fails, and everything after the `&&` never runs (`(eval):1:
-==DIVIDER== not found`). bit twice in one day. **quote separators, or drop the flair.** since 2026-09-26 the `zsh-equals-guard.py` PreToolUse hook refuses the unquoted form before zsh runs it.
-same class: an unquoted `*` inside an option value — `grep --include=*.md` — is a glob, and with
-nothing to match zsh aborts the whole chain (`no matches found`); the next command then read a
-file the aborted one never wrote (2026-09-18). **quote it: `--include='*.md'`.**
-the inverse trap: **zsh does not word-split an unquoted `$VAR`** — `for f in $FILES` runs once with
+- an unquoted `=word` (`echo ===DIVIDER===`) aborts the whole chain on equals-expansion — guard: `zsh-equals-guard.py` refuses it
+- an unquoted `*` in an option value (`grep --include=*.md`) is a glob that aborts the chain — guard: `x-mod-guard` quotes it
+- the inverse trap, unguarded: **zsh does not word-split an unquoted `$VAR`** — `for f in $FILES` runs once with
 the whole string as one word, and a snapshot loop copied nothing (2026-09-26). split with
 `${=FILES}` or feed a `while read -r f`.
 

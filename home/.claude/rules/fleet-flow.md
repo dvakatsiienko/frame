@@ -25,7 +25,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - hears from the coder
   - lands as: the coder carries `clean`; a dispute or a stop goes to cclio
 - **retros** — every member writes its retro to `~/.claude/shelf/retros/`, never as a message;
-  cclio folds them at the halt
+  cclio folds each when its lane ends, and the halt gathers what is left
 - **designer**
   - talks to cclio (one ping per spread) and to dima when he drops in
   - hears from cclio (the brief) and dima

@@ -1,108 +1,73 @@
 ---
 researched: 2026-08-23
-sources-current-as-of: cc 2.1.241 · docs.claude.com/en/docs/claude-code/memory · arXiv 2608.11095 · arXiv 2605.10039 · bytemonk claude.md transcript
-refresh-when: `paths:` scoping, html-comment stripping, or the 200-line target changes in the cc docs — reprobe with the two probes recorded below
+sources-current-as-of: cc 2.1.296 · code.claude.com/docs memory · arXiv 2608.11095 · arXiv 2605.10039 · claude.dev blog 2026-07-24
+refresh-when: `paths:` scoping, html-comment stripping, or the 200-line target changes in the cc docs — rerun the probes below
 ticket: DOT-216
 ---
 
-# memory authoring — where a fact goes, decided BEFORE it is written
-
-## the vertical map — pick the bucket BEFORE writing
-
-🎯 **AUDIENCE decides, never topic.** every memory lands in exactly one bucket — the widest one
-whose whole audience benefits. wrong-bucket placement is the mistake this map kills.
-
-- **root `~/.claude/CLAUDE.md`** — the entire fleet benefits: every session, every project.
-- **`~/.claude/rules/*`** — same global audience as root: each file one granular area (output
-  format, voice, linear floor, …), split so root stays lean.
-- **`~/projects/AGENTS.md`** — every coding session, no coordinator: true in every repo under
-  `~/projects` and nowhere else. cclio fills it. currently a deliberate stub.
-- **project-level `AGENTS.md`** — sessions in that one project only. cclio fills these too.
-- **`cclio/memory/*`** — the coordinator only; a coder reading it would be misled.
-- **skills** — any audience, but loaded on demand, never resident. a memory that reads like
-  steps wants to be a skill.
-- **`docs/`** — read on demand: long, occasional, or a lookup.
-
-📌 **the worked example — how the audience test runs:** pnpm FEELS coder-specific (topic: package
-management), so the reflex says `~/projects/AGENTS.md`. but ask who benefits: any session may run
-pnpm, even in non-coding projects like `~/frame` — so it parks fleet-wide, in `rules/fleet-tooling.md`
-(which tool does which job, plus its one-line gotcha); a trap that bit 2+ repos goes to `rules/fleet-hazards.md`. run every placement
-through this shape: name the audience, ignore the topic.
-
-## the pre-write checklist — five questions, before ANY memory write
-
-1. **who needs this?** everyone · every coder · one project · one surface · one role — the map above
-2. **what does it cost?** a rule is resident in every session forever; a skill description is
-   resident; a doc costs nothing until read
-3. **does it already exist somewhere?** a second copy is worse than none — the two drift
-4. **is it a fact, a rule, or a story?** different homes, different decay rates
-5. **is it a measurement or a standing fact?** a dated «as of» line in an `AGENTS.md` or doc is a
-   measurement and belongs in the commit that measured it; two such lines went stale within a day
-   and each cost a false finding (2026-09-08). docs state what does not expire
-6. **can the agent find it by looking?** scripts, layout, `--help` — a doc restating those is a
-   stale cache. cache only the unwritten convention, the reason, the gotcha
-
-## a new x:* skill asks the cw question
-
-creating a skill in `plugin-x` does NOT reach the desktop — `plugin-x-cw` is a curated symlink
-set. at create time, decide cw inclusion; if yes: `ln -s ../../plugin-x/skills/<name>` in
-`plugin-x-cw/skills/` + bump both plugin versions.
-
-## skill descriptions — WHEN only
-
-**the description is ONLY the load trigger** — «Load BEFORE …», «Load EVERY time …», «Load
-when …» (dima's call 2026-08-25, sharpening `docs/knowledge/authoring-skill.md`). the NAME carries
-the entity, the BODY carries the what — details are one invoke away. never let a description
-explain or answer: that is body content paid resident, every turn.
-**a «Not for …» clause is part of the trigger**, added only when a misfire is on record — it names
-the lookalike case in the words that misfired («Not for a 1password vault or item.») (dima's yes,
-2026-10-01, after the jev router's miss log).
-**seed the trigger with magic keywords** — the literal words dima would type («commit this», a
-pasted url, «walk me through»), not an abstract paraphrase of the situation; the description
-fires by matching the prompt, and it can only match words that actually appear in one.
-
+# memory authoring — where a fact goes, decided before it is written
 
 ## contents
 
-- the mechanics that decide everything else
-- what the measurements actually say
-- the context budget
-- where a rule comes from — audit, do not invent
-- two levers that cost almost nothing
+- the buckets — audience decides
 - the pre-write checklist
-- the buckets, and the test for each
-- precedence — which layer wins
-- what NEVER goes in
+- the mechanics, and their probes
+- what the measurements say
+- the context budget
+- where a rule comes from
+- precedence
+- what never goes in
 - hazards that bite silently
 - how the files are organised
 - the method, when a file needs rethinking
 - upkeep is mechanical
-- trimming — the order is binding
+- the groom card
 
-sibling to `authoring-skill.md`: that one is how to write a skill, this one is where anything
-written belongs. **placement is decided before the write, not repaired after it.**
+sibling to `authoring-skill.md`: that one is how to write a skill, this one is where anything written belongs. **placement is decided before the write, not repaired after it.** claim tags: **[measured]** run here or in a published experiment · **[read]** anthropic's docs or a paper · **[inferred]** our judgment, untested.
 
-claim tags: **[measured]** run on this machine or in a published experiment · **[read]** stated by
-anthropic's docs or a paper · **[inferred]** our judgment, untested.
+## the buckets — audience decides
 
----
+🎯 **audience decides, never topic.** a memory lands in the widest bucket whose whole audience benefits.
 
-## the mechanics that decide everything else
+- **root `~/.claude/CLAUDE.md`** — every session, every project. test: would a new session in any repo be worse without it?
+- **`~/.claude/rules/*.md`, no `paths:`** — the same audience, one granular area per file so root stays lean. test: worth paying for in every session on the machine?
+- **`rules/*.md` with `paths:`** — a convention tied to a kind of file or a directory. test: does a glob name when it matters? a topic or an intention has no glob
+- **`~/projects/AGENTS.md`** — every coding session, no coordinator; a deliberate stub today
+- **a project `AGENTS.md`** — that one project (`authoring-memory-project.md`). test: wrong or meaningless in another repo?
+- **`cclio/memory/*`** — the coordinator only. test: would a coder be misled by it?
+- **a skill** — a procedure, or anything needed occasionally; on demand, never resident. test: would someone invoke it by name?
+- **a hook, `settings.json`, `permissions.deny`** — anything that must happen. «always» or «before every» is enforcement, and memory is context, not enforcement **[read]**
+- **`docs/`** — long, occasional, or a lookup, read on demand
 
-these are the levers. get them wrong and no amount of good prose helps.
+📌 **the worked example:** pnpm feels coder-specific, but any session may run it, even in `~/frame`, so it lives fleet-wide in `rules/fleet-tooling.md`; a trap that bit 2+ repos goes to `rules/fleet-hazards.md`.
 
-| mechanic | the fact | tag |
-| --- | --- | --- |
-| **block html comments** | `<!-- … -->` in a `CLAUDE.md` is **stripped before injection**. free storage for the why | **[measured]** probe below, cc 2.1.241 · **[read]** docs |
-| **`paths:` frontmatter** | a `.claude/rules/*.md` with `paths:` is **absent at boot** and loads when a matching file is read | **[measured]** probe below |
-| ❗ **a wrong frontmatter key** | `globs:` is not a key. the rule silently loads **unconditionally**. no error, no warning | **[measured]** probe below |
-| **`@imports`** | expand at launch. splitting a file into imports buys organisation, **not context** | **[read]** docs |
-| **size target** | under **200 lines** per `CLAUDE.md`. over 4 MiB is skipped entirely | **[read]** docs |
-| **`MEMORY.md`** | auto-memory index is hard-cut at **200 lines or 25KB**. content past it is dropped on load | **[read]** docs |
-| **delivery** | `CLAUDE.md` arrives as a **user message after the system prompt**, not as system prompt. it is context, never enforcement | **[read]** docs |
-| **compaction** | project-root `CLAUDE.md` is re-read from disk after `/compact`. nested files and `paths:` rules reload only when re-matched. conversation-only instructions are gone | **[read]** docs |
+📌 **anything only one surface needs is a peek-on-demand doc, never a rule.** `fleet-identity.md` grew fat this way: every coder paid for capabilities of surfaces it will never be.
 
-### the two probes — rerun these, do not trust this table
+🚨 **memory supplies knowledge, never capability. [measured]** a root registry of switched-off mcps was meant to let the agent turn one on when needed; there is no `claude mcp enable` and a server binds only at session start, so the registry bought awareness of a wall at full resident cost. dima: *«test failed = you can't. it only creates a mess in memory file.»* a memory that asks the agent to do something to the system names the exact call, or the job moves to `settings.json`, a hook or `permissions.deny`.
+
+## the pre-write checklist
+
+1. **who needs this?** the buckets above
+2. **what does it cost?** a `rules/` file with no `paths:` is resident in every session forever; a skill description is resident; a command or a doc costs nothing until used
+3. **does it already exist?** a second copy is worse than none: the two drift and nobody can tell which is live
+4. **a fact, a rule, or a story?** different homes, different decay rates
+5. **a measurement or a standing fact?** a dated «as of» line is a measurement and belongs in the commit that measured it; two went stale within a day (2026-09-08)
+6. **can the agent find it by looking?** scripts, layout, `--help`: a doc restating them is a stale cache. cache only the unwritten convention, the reason, the gotcha
+
+## the mechanics, and their probes
+
+- **block html comments** — `<!-- … -->` is stripped before injection: free storage for the why. **[measured]** in a `CLAUDE.md`, an imported leaf and a `rules/` file (cc 2.1.292; re-run on 2.1.296, haiku + sonnet, 2026-10-11); a directly read AGENTS.md is unproven
+- **`paths:` frontmatter** — a `.claude/rules/*.md` with `paths:` is absent at boot and fires on touching a matching file, never on an intention. **[measured, cc 2.1.296, 2026-10-11]** opus 5.5 and sonnet 5.5, 3 tries each, 24/24: it loads on Bash `cat` and `Edit` of a matching file, and on a `Write` followed by a read; touching nothing matching loads nothing. haiku: `Read` loads it too, a bare `Write` of a new file does not. (cc 2.1.288 / 2.1.293 widened it — before, only `Read` fired.) 📌 the rule arrives inside the tool result: written as a secret token, haiku flagged it as injected text; written as a project convention, every opus and sonnet run used it. a scoped rule reads as a plain project rule
+- ❗ **a wrong frontmatter key** — `globs:` is not a key; the rule silently loads unconditionally. **[measured]**
+- **`@imports`** — expand at launch: they buy organisation, not context **[read]**
+- **size** — under 200 lines per `CLAUDE.md`; over 4 MiB is skipped **[read]**
+- **`MEMORY.md`** — the auto-memory index is cut at 200 lines or 25 KB, the rest dropped on load **[read]**
+- **delivery** — `CLAUDE.md` arrives as a user message after the system prompt: context, never enforcement **[read]**
+- **compaction** — the project-root `CLAUDE.md` is re-read from disk after `/compact`; nested files and `paths:` rules reload only when re-matched; conversation-only instructions are gone **[read]**
+- **did it load?** — `/context` (and `/memory`) list every loaded memory file, AGENTS.md included: the probe of record. the `InstructionsLoaded` hook never reports an AGENTS.md loaded as project instructions, how frame and cclio load **[read, 2026-10-11]**; a one-line `CLAUDE.md` holding `@AGENTS.md` makes it fire
+- **`/doctor prompt-audit`** (2.1.283) audits instructions; plain `/doctor` proposes trims of derivable content and offers moves into skills **[read]**
+
+the probes — rerun them, never trust the list above:
 
 ```bash
 # 1. is the comment stripped?
@@ -111,7 +76,7 @@ printf '# p\n\nvisible: ZEBRA.\n\n<!--\nhidden: WALRUS.\n-->\n' > CLAUDE.md
 claude -p "YES or NO: does the exact word WALRUS appear in your context?" --model haiku </dev/null
 # measured 2026-08-23 → NO   (and ZEBRA → YES)
 
-# 2. does paths: scoping work?
+# 2. does paths: scoping work? (the full 2026-10-11 run, one arm per touch: `recipes/nurture-memory/scripts/paths-probe.sh`)
 mkdir -p q/.claude/rules && cd q
 printf -- '---\npaths:\n  - "**/*.zzz"\n---\n\nscoped: OTTER.\n' > .claude/rules/probe.md
 printf 'x\n' > thing.zzz
@@ -121,53 +86,29 @@ claude -p "Read thing.zzz. Then YES or NO: does OTTER appear in your context?" -
 # measured 2026-08-23 → YES  (after the match)
 ```
 
-### the probe for «did it load at all»
+## what the measurements say
 
-`InstructionsLoaded` hook — logs which instruction files loaded, when, and why. **[read]** docs.
-this is the answer to the silent-import hazard: stop inferring, read the log.
+**[read]** arXiv 2605.10039 (McMillan, 2026-05), 1,650 cc sessions, sonnet 4.6:
 
-`/context` lists loaded memory files. `/doctor` (v2.1.206+) proposes trims for a checked-in
-`CLAUDE.md` — it cuts what is derivable from the codebase and keeps pitfalls, rationale, and
-conventions that differ from tool defaults.
+- 🚫 file size, instruction position, file architecture and contradictions in adjacent files showed no detectable effect on adherence (BF10 0.05–0.10 for size and conflict)
+- ✅ the one real effect is **within-session decay**: each extra function generated is ~5.6 % lower odds of compliance (OR 0.944), reproduced on opus 4.6
+- ⚠️ the target was one trivial annotation, not 39 competing rules: it does not say a bloated file is free
 
----
+**[read]** arXiv 2608.11095 (Chakrabarti, 2026-08), 1,867 repos, 247,694 instruction lifetimes:
 
-## what the measurements actually say — and it is not what folklore says
+- files grow +226 % over their life, +4.9 net instructions per commit; median 39 instructions
+- 76.8 % of instruction deaths happen in wholesale rewrites; old rules get harder to remove
+- **the rationale decays faster than the instruction** — once the why is gone, proving a deletion safe is exponential: *catastrophic remembering*
+- ✅ writing the reason as a comment at write time: excess size +211.3 % control vs +1.4 % treatment; a real-world replication lifted constraint satisfaction 50.4 % → 62.0 %
+- ⚠️ controlled runs used 2–3 instructions vs a median of 39; the wild numbers rest on an llm judge
 
-**[read]** arXiv 2605.10039 (McMillan, 2026-05) — factorial study, **1,650 cc sessions**, 16,050
-function-level observations, two typescript codebases, sonnet 4.6 primary:
+**[read]** anthropic, «the new rules of context engineering for Claude 5 generation models» (claude.dev blog, 2026-07-24): they cut over 80 % of Claude Code's system prompt «with no measurable loss»; the shifts are rules → judgement, examples → interface design, all upfront → progressive disclosure, instructions said once. a `CLAUDE.md` stays light and spends its tokens on gotchas; conflicting messages across system prompt, skills and `CLAUDE.md` make the model «think more carefully». three 2026 papers agree that context files earn their place with gotchas and non-standard practice, never repo overviews (arXiv 2602.11988, 2607.27250, 2601.20404).
 
-- 🚫 **file size, instruction position, file architecture, and contradictions in adjacent files
-  produced no detectable effect on adherence.** size and conflict carry affirmative-null bayes
-  factors (BF10 0.05–0.10). position and architecture are failures to reject.
-- ✅ the one real effect is **within-session decay**: each additional function generated is
-  **~5.6% lower odds of compliance** (OR 0.944). reproduced on a second codebase and on opus 4.6.
-- ⚠️ **do not over-read it.** the target was **one trivial annotation**, not 39 competing rules.
-  it says structure did not move a simple instruction; it does not say a bloated file is free.
+### the synthesis: the why survives in a comment
 
-**[read]** arXiv 2608.11095 (Chakrabarti, 2026-08) — 1,867 repos, 247,694 instruction lifetimes:
+> the **why** must survive, and it must not cost context → a block html comment, paid zero **[measured]**
 
-- files grow **+226%** over their lifetime, **+4.9 net instructions per commit**; median file ends
-  at **39 instructions**
-- **76.8% of instruction deaths happen in wholesale rewrites**, not incremental deletion
-- deletion hazard **declines with age** (−0.032/commit). old rules get harder to remove, not easier
-- **the mechanism**: the rationale decays faster than the instruction. once the why is gone,
-  proving deletion is safe costs `O(2^|D|)`. they call it **catastrophic remembering**
-- ✅ **the intervention worked.** writing the reason as a comment at write time: excess size at
-  T=51 steps **+211.3% control vs +1.4% treatment**. real-world replication lifted constraint
-  satisfaction **50.4% → 62.0%** (+11.6pp, CI [5.1, 18.3])
-- ⚠️ limitations they state: controlled runs used 2–3 instruction covers vs a median of 39; the
-  wildifeval numbers rest on an llm judge and a second judge differed by 3.8pp
-
-### the synthesis, and it changes our rule
-
-our old rule said *no provenance in prose*. that stands — and it was only half the answer.
-**[inferred]** the two findings reconcile exactly:
-
-> the **why** must survive, and it must not cost context.
-> → write it in a block html comment. paid: zero. **[measured]**
-
-so: **every rule gets a comment carrying failure · why · outcome.** the shape the paper measured:
+the shape the paper measured, three lines at most:
 
 ```markdown
 <!--
@@ -178,291 +119,76 @@ outcome: held. no orphan rows in 11 months.
 - every multi-table write uses a transaction.
 ```
 
-⚠️ **«added to fix an issue we saw earlier» performed the same as no comment at all.** **[read]**
-a comment without an outcome is an unvalidated guess left for the next reader.
+- «added to fix an issue we saw earlier» performed the same as no comment **[read]**: a comment without an outcome is a guess
+- the comment is also the **maintenance layer** (dima's design): why this piece is here, what would move it. the entry stays the instruction alone, and the urge to explain has somewhere free to go
+- 🚫 **the cap** — dima's own objection: a comment costs zero tokens but still costs his reading time. most rules get none; one only where the why is non-obvious (a hidden constraint, an incident, a placement that would look wrong); a barrel hook stays visible text, it is for him to navigate by
+- ⚠️ a comment is evidence, not proof that deleting is safe; two rules can overlap so that removing either is safe and removing both breaks **[read]**
 
-### the second job of a comment: navigation 🧪
+## the context budget
 
-dima's design, and it follows from the same free-storage fact. **the instruction stays slim; the
-comment carries everything a maintainer needs and a reader does not.**
+- 🚫 **there is no safe token number to hunt.** degradation is a gradient, not a cliff (chroma, 18 models). hunt the two countable proxies: **resident tokens a turn will not use**, and **duplicates** — a divergent duplicate is a measured distractor, and one board change once falsified the same sentence in eight files **[read + measured]**
+- **flat, separable statements retrieve better than narrative** — shuffled haystacks beat structured prose **[read]**
+- **prettiness costs ~2.89 chars/token vs ~4.0 for plain prose**: emoji, tables, backticks cost ~38 % more per character **[measured 2026-08-23]**
+- **batch boot-file edits**: every edit to a resident file invalidates the prompt-cache prefix **[read]**
+- **agents draft memory well; they must not own existence or deletion**: llm evaluators cannot separate good from bad instructional material **[read]**
+- 📌 the `permissions.deny` bare-deny trick has no primary measurement behind its savings and costs capability; memory is the bigger lever by 4× **[measured + read]**
 
-```markdown
-<!-- why here: coordinator-only — a coder session would act on it wrongly.
-     how it helps: stops the pm flow being re-explained every boot. -->
-- label AND project AND parent AND milestone, decided at create time.
-```
+## where a rule comes from — audit, do not invent
 
-- **the entry is the instruction. nothing else.** no audience note, no rationale, no history
-- **the comment is the maintenance layer**: why this piece is *here*, how it helps, what would
-  move it
-- 🎯 the point is not documentation — it is **removing the temptation to over-describe the entry**.
-  the urge to explain has somewhere free to go, so the instruction stays an instruction
+**[read]** theo wrote his memfile from his own agent history: per-model failure rates first, then one rule per failure that really happened.
 
-🚫 **the cap, because free storage invites flooding.** dima's own objection to this design, and it
-stands: a comment costs zero tokens but still costs **his reading time and its own maintenance**.
-
-- **not every entry gets one.** most rules are self-evident; a comment there is noise with a
-  zero-token price tag
-- **three lines maximum** — the shape the paper measured, and it measured a *short* one
-- write one only when the **why is non-obvious**: a hidden constraint, a past incident, a placement
-  that would look wrong to the next reader
-- 📌 **it is not a barrel-index job.** a one-line hook in an index is written for dima to navigate
-  by, so it stays visible text. the comment is for the maintainer question the hook cannot answer —
-  *why is this leaf here rather than in `rules/`* — and only where that is actually in doubt
-
-⚠️ **a comment is evidence, not proof.** **[read]** it tells the next reader what to go and check;
-it never establishes that deleting is safe. keep a human in the loop before removing anything —
-and the more expensive the blast radius, the harder that rule binds.
-
-📌 **why one-by-one deletion testing does not work.** **[read]** two rules can overlap so that
-removing *either* is safe and removing *both* breaks. «i deleted it and nothing broke» is therefore
-not evidence the rule was dead.
-
----
-
-## the context budget — what the measurements license
-
-<!-- absorbed from docs/research/context-budget-and-memory-authorship.md and
-     context-engineering-memory.md (deleted 2026-08-24); sources live in git history. -->
-
-- 🚫 **there is no safe token number to hunt.** degradation is a gradient from small inputs up, not
-  a cliff (chroma, 18 models). hunt the two countable proxies instead: **resident tokens a turn
-  will not use**, and **duplicate statements** — a divergent duplicate is a measured distractor,
-  and duplication is a **decay multiplier**: one board change once falsified the same sentence in
-  eight files. **[read + measured]**
-- **flat, separable statements retrieve better than elegant narrative** — models scored better on
-  shuffled haystacks than logically structured prose. write memory as separable facts, not essays.
-  **[read]**
-- **the prettiness has a price: ~2.89 chars/token vs ~4.0 for plain prose** — emoji prefixes,
-  tables, backticks and url schemes cost ~38% more per character. not a reason to stop; a cost to
-  weigh when a table could be three bullets. **[measured 2026-08-23]**
-- **batch boot-file edits.** every edit to resident files invalidates the prompt-cache prefix on
-  the next call; volatile session-scoped content belongs outside the boot path entirely. **[read]**
-- **agents draft memory well; they must not own existence or deletion.** llm evaluators cluster
-  their scores and cannot separate good from bad instructional material — an agent grading its own
-  memory is exactly that weak loop. drafting: agent. should-this-exist and should-this-die: human.
-  **[read]**
-- 📌 the `permissions.deny` bare-deny trick (dropping tool schemas) has **no primary measurement**
-  behind its quoted savings, is already applied on this machine, and costs capability — a denied
-  tool is invisible, not merely blocked. memory is the bigger lever by 4×. **[measured + read]**
-
-## where a rule comes from — audit, do not invent 🔎
-
-**[read]** the strongest published example of a memfile was not written from taste. theo scraped his
-own agent history first, then wrote rules against what actually broke:
-
-> can you look through my history with models like fable, opus and gpt-5.6 in claude code and codex
-> on this machine to see what the most common mistakes are… break down the most common failure modes
-> and how often each model hits them.
-
-the output was per-model failure rates — process-killing, draft PRs, repo-wide checks, tool misuse,
-corrections per 100 messages — and **his file's whole «ways to hurt yourself» section came straight
-out of it.** each rule names a failure that really happened to him.
-
-- ➡️ **a rule with no observed failure behind it is a guess.** it still costs context in every
-  session, forever
-- **when a thread goes badly, ask the agent why.** what gave it the indication this was right? a
-  simple change that took 30 minutes instead of 5 → ask it to bucket its own tool calls and say
-  which were useless. the answer is usually a line in a memfile that is stale, or missing
-- 🚫 **do not copy another person's memfile.** the value is the reasoning path, not the text — theo
-  deliberately does not publish his, on exactly this ground. borrow the *shape*, derive the content
-  from your own failures
-
-## two levers that cost almost nothing
-
-- **tone matching.** **[read]** *«models are good at tone matching. if you talk a certain way to the
-  model, the model's more likely to talk that way back»*. so how a memfile is written is itself an
-  instruction — a file written in clipped, plain, lowercase prose pulls replies toward it. this is
-  why voice rules work at all, and it means the register of these files is load-bearing, not taste.
-- **paired good/bad examples.** **[read]** *«agents are really good at bad and good examples… you've
-  seeded its weights with the things that matter to you»*. one `❌ … / ✅ …` pair, drawn from a real
-  output you disliked, outperforms a paragraph describing the same preference.
-
----
-
-## the pre-write checklist
-
-before writing or editing ANY memory, rule, or `CLAUDE.md`, answer these five.
-
-1. **who needs this?** everyone on the machine · every coder · one project · one surface · one role
-2. **what does it cost?** a `rules/` file with no `paths:` is resident in **every** session,
-   forever. a skill's `description:` is resident in every session. a command costs nothing until
-   typed. a doc costs nothing until read
-3. **does it already exist somewhere?** a second copy of a rule is worse than no rule — the two
-   drift and nobody can tell which is live
-4. **is it a fact, a rule, or a story?** different homes, different decay rates
-5. **can the agent already find it by looking?** `package.json` scripts, the directory layout,
-   `--help` output. a doc restating those is a **cache** of a cheap lookup, and it goes stale.
-   cache only what cannot be looked up: the unwritten convention, the reason, the gotcha
-
----
-
-## the buckets, and the test for each
-
-| bucket | holds | the test |
-| --- | --- | --- |
-| root `CLAUDE.md` | guiding for **everyone** — what we do, why, the main dos and donts | would a brand new session in any repo be worse without it? |
-| `rules/*.md`, no `paths:` | granular globals, same audience as root, split so one file is not a dump | same test as root, **plus**: worth paying for in every session on the machine? |
-| `rules/*.md` **with `paths:`** | code-shaped conventions tied to a file type or a directory | is there a **glob** that names when it matters? if the trigger is a topic and not a file, `paths:` cannot reach it |
-| `~/projects/CLAUDE.md` | the coder-global layer — conventions every coding session wants and no coordinator does | would a session that never writes code be worse off reading it? if no, it belongs here and not in root |
-| project `CLAUDE.md` | only what is true of **this** project — see `authoring-memory-project.md` | would it be wrong or meaningless in another repo? |
-| coordinator memory | one decision, coordinator-only | would a coder session be confused or misled by it? |
-| skill | a multi-step procedure, or anything needed occasionally | does it have a name someone would invoke? |
-| hook | a thing that must run at a lifecycle point | are you writing «always» or «before every»? then it is not memory. **[read]** memory is context, not enforcement |
-| `docs/` | reference read **on demand** | is it long, occasional, or a lookup? |
-
-**the sharpest single rule:** anything only ONE surface needs is a **peek-on-demand doc**, never a
-rule. `fleet-identity.md` grew fat exactly this way — every coder in every repo pays for capabilities of
-surfaces it will never be.
-
-🚨 **memory supplies knowledge, never capability. MEASURED — dima ran it deliberately.**
-
-the dormant-tools registry in root was an **experiment, not documentation**. the goal was context
-thrift: keep rarely-used mcps (`computer-use`, `claude-in-chrome`) switched off, and have the agent
-turn one on when a task needs it and off again after. **the obstacle it was built to solve: a
-disabled mcp is invisible to the session** — the agent cannot ask for what it cannot see. so the
-registry existed to tell the agent those servers were there.
-
-it failed, and the reason is the general lesson: **knowing about a capability is not having a
-mechanism to reach it.** there is no `claude mcp enable`, and a server only binds at session start,
-so no written awareness produces the toggle. dima's verdict: *«test failed = you can't. it only
-creates a mess in memory file.»*
-
-so the bucket test below is not a preference. **when a memory file asks the agent to DO something
-to the system, name the exact call that does it.** no call → the file buys awareness of a wall, at
-full resident cost, and the only thing it produces is clutter. that job belongs to `settings.json`,
-a hook, or `permissions.deny`, which act instead of informing.
-
-📌 what made it expensive: a registry describing an unreachable action reads exactly like one
-describing a reachable one. it looked correct for as long as nobody tried.
-
-📌 **`paths:` is narrower than it looks.** **[measured]** it fires on **reading a matching file**.
-that fits `guide-typescript`. it does not fit `linear-flow.md`, whose trigger is an intention.
-
-🚨 **and narrower still: the trigger is the `Read` TOOL, not file access.** **[measured]** three
-canary rules, two fresh sessions: `cat <matching file>` through Bash fires nothing, `Read` on the
-same path injects the rule instantly. **so a session instructed to prefer Bash for reads never
-fires a single scoped rule** — and cannot tell a scoped rule from a deleted one. bypass mode says
-exactly that. weigh this before converting anything a coordinator depends on.
+- a rule with no observed failure behind it is a guess, paid in every session forever
+- when a thread goes badly, ask the agent to bucket its own tool calls and say which were useless; the answer is usually a stale or missing memfile line
+- 🚫 never copy another person's memfile: borrow the shape, derive the content from your own failures
+- **tone matching** **[read]**: how a memfile is written pulls replies toward it, so its register is load-bearing
+- **one ❌ / ✅ pair** from a real output beats a paragraph describing the preference **[read]**
 
 ## precedence — which layer wins
 
-**more specific always wins.** the order, narrowest last:
+more specific wins, narrowest last: root `CLAUDE.md` → `rules/*.md` → `~/projects/CLAUDE.md` → project `CLAUDE.md` → leaf `CLAUDE.md`. the person in the room outranks all of it. layers are additive: a leaf overrides root only where they disagree, and a genuine conflict is a defect to fix in the files, said out loud, never a puzzle resolved at read time.
 
-```
-root CLAUDE.md  →  rules/*.md  →  ~/projects/CLAUDE.md  →  project CLAUDE.md  →  leaf CLAUDE.md
-```
+## what never goes in
 
-and **the person in the room outranks all of it** — a user instruction beats every file, always.
-
-📌 the layers are **additive, not exclusive**: a leaf does not replace root, it overrides root *on
-the points where they disagree*. everything root says that the leaf is silent about still binds.
-when two layers genuinely conflict, that is a defect to fix in the files, not a precedence puzzle
-to solve at read time — say so rather than silently picking one.
-
----
-
-## what NEVER goes in
-
-- **an expanded version for the reader.** dima's spec, verbatim: *info that is useful to **you**, in
-  a format appropriate to **you***. roughly 70% of written text is not needed
-- **timestamps and lineage in prose.** the tracker stores times natively. **keep** a date that IS
-  the fact — an expiry, a deadline, a scheduled review. put the rest in an html comment, free
-- **a rule inferred but not tested.** labelling it «inferred» does not help — it reads as a rule
-  regardless. the auto-unassign fix was marked inferred, written into two binding files, and
-  falsified by the first push. **test it, then write it**
-- **a claim relayed from another agent, asserted as your own.** attribute it, or verify it
-- **a no-op.** an instruction the model already obeys by default pays load to say nothing. the test
-  is model-relative: settle it by running the document, not by arguing
-- **a prohibition where a positive works.** stating the banned behaviour drags it into context and
-  makes it *more* available. write the target («write one-line comments»), not the ban. keep a
-  prohibition only as a hard guardrail, and pair it with the positive
-
----
+- **an expanded version for the reader** — dima's spec: *info that is useful to **you**, in a format appropriate to **you***. roughly 70 % of written text is not needed
+- **timestamps and lineage in prose** — keep a date that IS the fact (an expiry, a deadline, a measurement); the rest goes in a comment
+- **a rule inferred but not tested** — «inferred» as a label does not help: the auto-unassign fix was marked inferred, written into two files, and falsified by the first push
+- **a claim relayed from another agent** — attribute it, or verify it
+- **a no-op** — a default the model obeys anyway; settle it by running the document
+- **a prohibition where a positive works** — the ban drags the behaviour into context; write the target, keep a ban only as a hard guardrail paired with it
 
 ## hazards that bite silently
 
-- ❗ **a broken `@import` loads NOTHING and says nothing.** paths resolve relative to the
-  **importing file**. from `memory/MEMORY.md` a sibling is `@leaf.md`; the intuitive
-  `@memory/leaf.md` becomes `memory/memory/leaf.md` and fails in silence. **on-disk presence is not
-  evidence of loading** — check the `InstructionsLoaded` hook or `/context`
-- ❗ **a wrong frontmatter key downgrades a rule to always-on**, silently. **[measured]**
-- ❗ 🚨 **splitting a big file into `@imports` buys ORGANISATION, NOT CONTEXT.** **[read]** the
-  imported files still load at launch — the total is unchanged, only the layout moved. **`paths:`
-  scoping is the only thing that actually keeps a file out of context until it is needed.** this is
-  the single most common false economy in memfile work, and our own barrel is exactly this shape:
-  45 leaves, every one resident from turn one
-- ❗ **a hand-written barrel can lie.** add a leaf, skip the pointer, and the index says it does not
-  exist. `cclio/memory/` is index-**authoritative**, so a missing line genuinely disables a memory
-- ❗ **`MEMORY.md` past 200 lines is truncated on load**, not rejected. **[read]**
-- ❗ **a subagent does not inherit the parent's cwd** — it gets the git repo root. **every path in a
-  brief or a memfile must be absolute**
-- ❗ **a rule describing another surface is still resident everywhere.** `dispatch.md` cost every
-  bytes coder ~2.1k tokens describing a coordinator it will never be
-- ❗ **conflicting instructions are resolved arbitrarily.** **[read]** two files disagreeing is not
-  a tie broken by precedence unless precedence is written down
-
----
+- ❗ **a broken `@import` loads nothing and says nothing** — paths resolve relative to the importing file: from `memory/_MEMORY.md` a sibling is `@leaf.md`, and `@memory/leaf.md` fails silently. on-disk presence is not loading: check `/context`
+- ❗ **a wrong frontmatter key downgrades a rule to always-on** **[measured]**
+- ❗ **`@imports` buy organisation, not context** **[read]** — the most common false economy; cclio's barrel is this shape, every leaf resident from turn one. only `paths:` keeps a file out until needed
+- ❗ **a hand-written barrel can lie** — `cclio/memory/` is index-authoritative, so a missing line disables a memory
+- ❗ **`MEMORY.md` past 200 lines is truncated on load** **[read]**
+- ❗ **a subagent does not inherit the parent's cwd** — every path in a brief or a memfile is absolute
+- ❗ **a rule describing another surface is still resident everywhere** — `dispatch.md` cost every bytes coder ~2.1k tokens
+- ❗ **conflicting instructions are resolved arbitrarily** **[read]**
 
 ## how the files are organised
 
-- **one leaf, one decision.** not a topic dump
-- **colocate by hot spot.** 40 flat files is unnavigable. group by AREA. the test is dima's:
-  *«optimize your linear activity habits»* should land him in ONE place
-- **co-location within a file**: a concept's definition, rules and caveats under one heading.
-  scattering one meaning across many places is a different bug from duplicating it, and worse
-- **filenames are subject-first**, readable at a glance
-- **a stale pointer means delete both the line and the file.** no tombstones
-- **the emoji prefix is a salience marker** (❗ 📌 ⏰ 🧭 ⭐ 🚫), never decoration
-
----
+- one leaf, one decision; colocate by area — dima's test: *«optimize your linear activity habits»* lands him in one place
+- a concept's definition, rules and caveats under one heading; scattering one meaning is worse than duplicating it
+- filenames subject-first; a stale pointer means delete the line and the file, no tombstones
+- the emoji prefix is a salience marker (❗ 📌 ⏰ 🧭 ⭐ 🚫), never decoration
 
 ## the method, when a file needs rethinking
 
-⭐ **write TWO alternative drafts and let dima pick, rather than editing in place.** his standing
-rule for visual work says exactly this. incremental editing preserves the layout, and a rethink
-exists precisely because the layout is wrong.
-
-📌 **[read]** 76.8% of real-world instruction deletions happen in wholesale rewrites anyway. the
-two-draft method is the same move, done deliberately and with the reasons preserved.
-
----
+⭐ **two alternative drafts, dima picks**, rather than an edit in place: incremental editing preserves the layout, and a rethink exists because the layout is wrong. 76.8 % of real deletions happen in rewrites anyway **[read]**.
 
 ## upkeep is mechanical — regression checks, never an llm judge
 
-<!-- absorbed from docs/research/memory-upkeep-loop.md (deleted 2026-08-24). -->
+run when a file is touched; a quarterly cadence catches nothing (drift measured under 24 hours **[measured]**):
 
-memory upkeep is a **regression check on mechanical claims**, run when files are touched — not an
-eval, not an audit-by-agent:
+- a rule naming a **command** → its `--help` holds the flag
+- a rule naming a **file** → it exists
+- a rule naming a **ticket** → the state matches the tense, the sharpest check (~92 %, 11 real defects on its first run) **[measured 2026-08-23]**
+- a rule carrying a **probe** → rerun it
+- a groomed file → `python3 cclio/script/quote-diff.py HEAD <file>`: every «…» quote that left is listed, and each of dima's is restored or shown to him (2026-10-11)
 
-- a rule naming a **command** → run `--help`, confirm the flag exists
-- a rule naming a **file** → confirm it exists
-- a rule naming a **ticket** → confirm the state matches the tense — the highest-precision check
-  measured (~92%: 11 real defects in resident files on its first run) **[measured 2026-08-23]**
-- a rule carrying a **probe** → rerun the probe
-
-📌 drift latency here measured **under 24 hours** — a sweep's own output went stale the day it was
-written. the check runs when a file is touched or it is theatre; a quarterly cadence catches
-nothing. **[measured]**
-
-🚫 **never build an llm-judge memory audit.** judge models agree on verdicts >99.88% of the time
-while fabricating different reasoning per run (~19% reasoning stability) — an agent auditing its
-own memory produces confident, unfalsifiable verdicts. deterministic checks in code; llms only
-for semantics a human then confirms. **[read]**
-
-## trimming — the order is binding
-
-the «why» paragraphs are **scaffolding, not fat**, while a surface is still being built: a rule
-without its reason can only be obeyed or deleted, never corrected. they come out **last**, in this
-order, and no earlier:
-
-1. the coordinator's own story reaches a verdict
-2. the obsidian `worklog.md` and `inbox.md` are exhausted
-3. frozen handoffs are reviewed and resolved
-4. **then** the memory is freed from clutter
-
-📌 and «out» now means **into an html comment**, not deleted. the reason costs nothing there, and
-the measured cost of losing it is a file that regrows faster than it did the first time.
+🚫 **never an llm-judge memory audit** — judge models agree on verdicts >99.88 % of the time while fabricating different reasoning per run (~19 % stability). deterministic checks in code; llms only for semantics a human confirms **[read]**.
 
 ## the groom card
 
@@ -479,7 +205,7 @@ read at every halt; it feeds the delete digest. dima, 2026-10-07: «hunt redunda
 
 ### trim without losing the reason
 
-- the instruction stays; the why moves into a block html comment, stripped before injection, so it costs nothing (measured in `CLAUDE.md`, an imported leaf and a `rules/` file, cc 2.1.292). three lines at most: failure · why · outcome — a comment without an outcome is a guess
+- the instruction stays; the why moves into a block html comment, three lines at most: failure · why · outcome. a rule's «why» paragraph is scaffolding while its surface is still being built; it moves into the comment last, never into the bin
 - keep every date that IS the fact (an expiry, a measurement), every number, every incident behind a rule; shorten the prose, never the fact
 - a line with a written incident stays unless a run proves it a no-op; «deleted and nothing broke» proves nothing when two rules overlap
 - 🚫 **dima's words in «» are never cut or reworded** — restructure around them; dropping one needs his word, the original shown beside the change

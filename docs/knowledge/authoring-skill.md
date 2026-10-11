@@ -1,329 +1,115 @@
 ---
 researched: 2026-08-23
-sources-current-as-of: cc 2.1.241 · code.claude.com/docs/en/skills · mattpocock-skills 1.2.3 · theo t3 breakdown transcript · bytemonk claude.md transcript · anthropic skill best practices + prompting fable 5 (snapshots 2026-10-02, `docs/research/skill-authoring-best-practices/`)
-refresh-when: the skill listing budget mechanics change, or `writing-for-agents` ships a new version — diff `~/.claude/plugins/cache/claude-plugins-official/mattpocock-skills/`; or the anthropic snapshot diff (nurture-memory, research vectors) shows a delta
+sources-current-as-of: cc 2.1.296 · code.claude.com/docs/en/skills · mattpocock-skills 1.3.1 · theo t3 breakdown transcript · anthropic skill best practices + prompting fable 5 (snapshots 2026-10-02, unchanged on 2026-10-11, `docs/research/skill-authoring-best-practices/`)
+refresh-when: the skill listing budget mechanics change, or `writing-for-agents` ships a new version — diff `~/.claude/plugins/cache/mattpocock/mattpocock-skills/` (1.3.1 on 2026-10-11); or the anthropic snapshot diff shows a delta
 ticket: DOT-216
 ---
 
-# skill authoring — the full reference
+# skill authoring — the local half
 
 ## contents
 
-- read matt's skill first
+- two layers: matt's craft, our mechanics
 - frontmatter
 - writing the description
-- the skill listing budget (cc only)
+- the skill listing budget
 - invocation control
 - what belongs in a skill rather than a memfile
 - splitting: by trigger, not by topic
-- give the model a stop point
-- completion criteria
+- stop points and completion criteria
 - anthropic's structure rules — what we adopt
-- do we still need `skillsmith`? — no
 - argument placeholders
-- evals — prior art
+- evals
 
-conventions for the skills in `home/.claude/plugin-x/skills/`. `cw` reads the same files —
-`home/.claude/plugin-x-cw/` symlinks into them and ships as the `x-cw` plugin, so a
-skill is written once and every surface gets the edit.
+conventions for the skills in `home/.claude/plugin-x/skills/`. `cw` reads the same files: `home/.claude/plugin-x-cw/` symlinks into them and ships as the `x-cw` plugin, so a skill is written once. **a new `x:*` skill asks the cw question at create time**: `plugin-x-cw` is a curated symlink set, so a skill reaches cw only by `ln -s ../../plugin-x/skills/<name>` in `plugin-x-cw/skills/` plus a bump of both plugins.
 
-📌 **a plugin runs from its cache copy, so everything its `bin/` and skills import lives inside the plugin dir.** `package-json-shape` imported `../../../../script/lib/…`, which resolves only in the frame checkout; from the desktop app's PATH (the cache) it died with `ERR_MODULE_NOT_FOUND` and blocked every `package.json` commit in bytes. the rules moved to `plugin-x/lib/` (`eb47811f`, 2026-09-27).
+📌 **a plugin runs from its cache copy, so everything its `bin/` and skills import lives inside the plugin dir.** `package-json-shape` imported `../../../../script/lib/…`, which resolves only in the frame checkout; from the cache it died with `ERR_MODULE_NOT_FOUND` and blocked every `package.json` commit in bytes. the rules moved to `plugin-x/lib/` (`eb47811f`, 2026-09-27).
 
-⚠️ **this file is the local half.** the writing craft — pointers, information hierarchy,
-completion criteria, leading words, pruning — is `writing-for-agents`, and it is good. do not
-restate it here. **read the skill, then use this file for what it does not know: our budget, our
-frontmatter, our invocation habits.**
+claim tags: **[measured]** on this machine · **[read]** docs or a practitioner · **[inferred]** our judgment.
 
-claim tags: **[measured]** on this machine · **[read]** stated by docs or a practitioner ·
-**[inferred]** our judgment.
+## two layers: matt's craft, our mechanics
 
----
-
-## read matt's skill first — verdict 2026-08-23
-
-`mattpocock-skills:writing-for-agents` (v1.2.3), plus its `SKILL-MECHANICS.md` branch.
-
-✅ **it holds up, and the research replicates its two strongest claims:**
-
-- **a description is a trigger, not a summary.** matt calls it a *context pointer* whose wording
-  decides when the material is reached. theo, independently: *«think of the description of a skill
-  as the trigger keywords rather than as an actual description»* — he removed the explanatory half
-  and trigger reliability went up. **[read]** two practitioners, no controlled experiment.
-- **negation backfires.** stating the banned behaviour drags it into context. prompt the positive.
-  **[read]** matt only; consistent with everything known about attention, untested here.
-
-⚠️ **what it does not cover, and you must supply from `authoring-memory.md`:**
-
-- no measured numbers. every lever is reasoned, none is benchmarked
-- **nothing about the mechanics that actually gate loading** — html-comment stripping, `paths:`
-  scoping, import expansion, the listing budget. those are cc facts, not writing facts
-- it treats `AGENTS.md`/`CLAUDE.md` as the same object as a skill. **[inferred]** that is true for
-  the *writing* and false for the *economics*: a skill body is paid on invoke, a memfile is paid
-  every turn forever. the hierarchy it teaches has no rung for «resident in every session on the
-  machine, whether or not it fires»
-
-📌 **so: `writing-for-agents` is the craft layer, `authoring-memory.md` is the mechanics layer.**
-neither replaces the other. use both, matt's taking the final word on wording.
-
----
+- **craft** — wording, hierarchy, triggers, completion criteria, leading words, pruning, load economics: `mattpocock-skills:writing-for-agents` (1.3.1) and its `SKILL-MECHANICS.md`. read it first; it takes the final word on wording, and this file never restates it
+- **claude code mechanics** — html-comment stripping, `paths:` vs the silent `globs:` typo, `@import` resolution, the listing budget, invocation flags, evals: this file and `authoring-memory.md`. they rot on a different clock
+- one authority per layer: a third artifact restating either is the failure. that is why there is no `skillsmith` ([DOT-132](https://linear.app/x-com/issue/DOT-132), closed): `writing-for-agents` already is the trigger for both skills and memory files
+- the two strongest craft claims replicate **[read]**: a description is a trigger, not a summary (theo cut the explanatory half and reliability went up); negation backfires, so prompt the positive
+- what matt does not cover: measured numbers, and the economics — a skill body is paid on invoke, a memfile every turn forever
 
 ## frontmatter
 
-`name` and `description` are the contract cc reads. one optional field is ours:
+`name` and `description` are the contract cc reads; cc ignores unknown top-level keys silently, and custom keys belong under `metadata:` **[read, docs 2026-10-11]**.
 
-```yaml
-intended-models: fable, opus
-```
-
-- **meaning** — the models this skill is written for, best first. `fable, opus` reads "fable
-  normally, opus when fable is unavailable".
-- **enforcement is procedural, not mechanical.** nothing blocks a lower-tier model from loading it.
-  routing is where it is honoured.
-- **a model running a skill above its tier prints a note** saying so, then proceeds. the note is
-  the signal, never a refusal.
-- omit the field when the skill is model-agnostic. most are.
-
-**[read]** theo carries a second optional field worth stealing — `requires:`, naming an env var or
-credential the skill cannot work without: *«i don't want the skill on machines where i don't have
-the token… if it is unset, tell the user instead of guessing»*. the enforcement is the same kind as
-`intended-models` — procedural, stated in the body — but it converts a confusing failure into a
-one-line explanation.
-
-model strengths that decide the value: `home/.claude/rules/models.md`.
+- **`intended-models: fable, opus`** — ours: the models a skill is written for, best first. enforcement is procedural: a model running a skill above its tier prints a note and proceeds. omitted when the skill is model-agnostic, most are. open for `nurture-skills` step 6: it moves under `metadata:`, or drops on touch
+- **theo's `requires:`** **[read]** — the env var or credential the skill cannot work without: «if it is unset, tell the user instead of guessing». worth stealing, same procedural kind
+- model strengths that decide the value: `home/.claude/rules/models.md`
 
 ## writing the description
 
-it is the single most expensive line in the skill and the only one that decides whether the skill
-ever fires. **[read]** matt + theo agree on all four:
+the single most expensive line, and the only one that decides whether the skill fires **[read]**:
 
-- **front-load the trigger word.** the first words do the work
-- **one trigger per branch.** synonyms renaming one branch are one branch written twice
-- **cut identity the body already carries.** the description says *when*, the body says *what*
-- 🚫 **never let the description carry the answer.** theo: *«I've seen skills where the description
-  gives you everything you need and you don't even need to use the skill»* — that is the whole body
-  paid resident, every turn
+- **front-load the trigger word**; one trigger per branch — synonyms renaming one branch are one branch written twice
+- **WHEN only** (dima's call 2026-08-25): «Load BEFORE …», «Load EVERY time …», «Load when …». the name carries the entity, the body the what; a description that explains or answers is the body paid resident. theo: *«I've seen skills where the description gives you everything you need and you don't even need to use the skill»*
+- **a «Not for …» clause** is added only when a misfire is on record, naming the lookalike in the words that misfired («Not for a 1password vault or item.») (dima's yes, 2026-10-01)
+- **seed it with the literal words dima types** («commit this», a pasted url, «walk me through»): a description can only match words that appear in a prompt
+- **a user-only skill's description is written for a human** — it is shown, never matched **[read, matt 1.3.1]**
 
-🚨 **and the name is read BEFORE the description, sometimes instead of it. [measured].** four mcp
-tools shipped as `transcript_fetch` / `transcript_list` / `transcript_recall` / `transcript_transit`.
-a `cw` thread listed all four, then refused to use them:
+🚨 **the name is read before the description, sometimes instead of it. [measured]** four mcp tools shipped as `transcript_*`; a `cw` thread listed them and refused them as «your session/handoff transcript store … not YouTube captions». renamed `yt_transcript_*`, they worked first try. a wrong entity name is not recoverable by a good description, and the entity is as specific as the namespace it claims (dima: *«we may have more things for transcripting»*). the entity-first rule lives in root `CLAUDE.md`.
 
-> «x-cw's `transcript_*` tools wouldn't have helped anyway: those are your session/handoff
-> transcript store (agent-fleet CSTs), not YouTube captions. Different meaning of "transcript".»
+## the skill listing budget
 
-the description said *«Download the video transcript from a YouTube url»*. it never got that far.
-renamed `yt_transcript_*`, worked first try.
+skills are **half-lazy**: `name` + `description` are resident from boot (~80–100 tokens per skill); the `SKILL.md` body enters on invoke and stays for the session; bundled files load only when read, so bulk content belongs there.
 
-two consequences, both load-bearing:
+- the listing shares a **character budget, ~1 % of context**; on overflow descriptions truncate, then drop, least-invoked first, down to name-only — the mechanical cause of «the skill exists but never fires». **[read, docs 2026-10-11]** it scales with the model's window, and an overflow now writes a debug-log warning; `/doctor` estimates the cost per contributor. our older note said the budget used a 200k baseline even on 1m models, with no changelog fix found: a re-measure is owed (`nurture-skills` step 4)
+- two knobs in `settings.json`, documented in the settings reference: `skillListingBudgetFraction` (default `0.01`, ours `0.025`, 2026-08-19, DOT-64, sized for the library) and `skillListingMaxDescChars` (default `1536`, ours unset). `settings.json` carries no comments, so this line is the only record of why
+- **after a compaction, an invoked skill re-attaches its first 5,000 tokens, 25,000 across all skills** **[read, docs 2026-10-11]**: a crew skill's operating contract sits in its first 5k
+- descriptions are the precious bytes; one umbrella skill beats many narrow ones (`conventions`: one description, N rule files read on demand); there is no `SkillSearch`
 
-- **a wrong entity name is not recoverable by a good description.** no longer reasoned, an agent
-  demonstrated it
-- **the entity must be as specific as the namespace it claims.** `transcript_*` claimed a whole
-  namespace that youtube occupies a corner of. dima's framing: *«we may have more things for
-  transcripting»*
+## invocation control
 
-the rule itself is entity-first, and it lives in root `CLAUDE.md`.
+📌 **commands and skills are the same thing** — the docs: *"Custom commands have been merged into skills."* a command is billed exactly like a skill (**[measured]** the `cclio:*` commands sit in the listing at ~30–40 tokens each).
 
-## the skill listing budget (cc only)
+- **only dima invokes it** → `disable-model-invocation: true`: the description leaves the listing — the saving. it also stops preloading into subagents and (v2.1.196+) runs from a scheduled task
+- **only claude invokes it** → `user-invocable: false`: hidden from the `/` menu, description still resident. ⚠️ the trap — it reads like the one you want
+- **dima-only without editing the file** → `"user-invocable-only"` in `skillOverrides`: reaches loose skill files, 🚫 never a plugin skill («Overrides don't apply to plugin skills», settings reference, read 2026-09-28); a third-party plugin skill is kept whole or vendored with the flag
+- **cross-skill calls** are written «call the Skill tool with "x:foo"», one skill per call, never routed to a `disable-model-invocation` skill **[read, matt `invocation.md`]**
 
-skills are **half-lazy**. resident from boot = `name` + `description` (~80–100 tokens per skill).
-the `SKILL.md` body enters context on invoke, as one message, and persists for the rest of the
-session. files bundled next to a skill load only when actually read — near-zero resident cost, so
-**that is where bulk content belongs**.
-
-on `cc` the whole listing shares a **character budget, ~1% of context**. on overflow descriptions
-truncate, then drop entirely, least-invoked first, down to name-only. that is the mechanical cause
-of «the skill exists but never fires» — nothing errors, the skill just goes quiet.
-
-⚠️ **known bug**: the budget is computed against a 200k baseline even on 1m-context models, so a
-large window does not buy listing room.
-
-two unofficial knobs, `settings.json`:
-
-| key | default | ours |
-| --- | --- | --- |
-| `skillListingBudgetFraction` | `0.01` | `0.025` (2026-08-19, DOT-64 — sized for the current library) |
-| `skillListingMaxDescChars` | `1536` | unset |
-
-📌 the file is strict json and carries no comments, so this table is the only record of why that
-number is what it is. change one, change the other.
-
-consequences:
-
-- **descriptions are the precious bytes.** every word competes with every other skill's description
-- **prefer one umbrella skill over many narrow ones.** `conventions` is the pattern: one description
-  resident, N rule files read on demand
-- unlike mcp tools, skills have **no `ToolSearch` equivalent** — mcp overflow degrades to lazy
-  retrieval, skill overflow degrades to silent truncation. there is no `SkillSearch`
-
-## invocation control — the only lever that removes a description from the budget
-
-📌 **commands and skills are the same thing now.** the docs state it plainly: *"Custom commands have
-been merged into skills."* `.claude/commands/deploy.md` and `.claude/skills/deploy/SKILL.md` both
-create `/deploy` and behave identically. so **a command is billed exactly like a skill** —
-**[measured]** on this machine, the four `cclio-*` commands sit in the resident listing at ~30–40
-tokens each. there is no cheap tier by being "a command".
-
-three fields, and two of them are easy to confuse:
-
-| what you want | set this | description resident? |
-| --- | --- | --- |
-| **only dima invokes it** | `disable-model-invocation: true` | ❌ **no — this is the saving** |
-| only claude invokes it | `user-invocable: false` | ✅ yes, always |
-| dima-only, without editing the file | `"user-invocable-only"` in `skillOverrides` (settings) | ❌ no |
-
-- ⚠️ **`user-invocable: false` is the trap.** it reads like the one you want and is the opposite:
-  it hides the skill from the `/` menu, keeps claude's access, and keeps the description resident.
-- **`disable-model-invocation: true` also stops** the skill being preloaded into subagents, and
-  (v2.1.196+) stops it running when a scheduled task fires with it as the prompt.
-- 📌 `"user-invocable-only"` in `skillOverrides` reaches skills we do not own but that sit as
-  loose files (a project repo's `.claude/skills`). 🚫 **it never reaches a plugin skill** — the
-  settings reference: «Overrides don't apply to plugin skills, which you manage through `/plugin`»
-  (code.claude.com/docs/en/settings-reference#skilloverrides, read 2026-09-28). a third-party plugin
-  skill is either kept whole or vendored into a skills dir with `disable-model-invocation: true`.
-
-### the habit
-
-**mark a skill user-invocable-only whenever dima is the only one who should ever start it.** the
-docs' own test is side effects and timing — `/commit`, `/deploy`, `/send-slack-message`.
-
-🚫 **but check for self-triggering FIRST, and read the skill body, not just its name.** a skill that
-is *supposed* to fire on its own dies silently when flagged, and nothing reports it:
-
-- `cclio-halt` **must stay model-invocable** — dima may simply say something that means
-  «we are done», and starting the ritual is the agent's job
-- `cclio-flowlog` fires «whenever a mistake just happened»
-- `cclio-report` fires on «sup» / «where are we»
-- `x:cmt` loads on any commit, typed or not
-
-the saving is ~30–40 tokens per skill. **that is never worth killing a habit for.** when in doubt,
-leave it invocable.
-
-📌 **[read]** matt's *router skill*: when user-invoked skills multiply past what dima can remember,
-one user-invoked skill that names the others cures the pile-up. it can only hint, never fire them.
+**the habit**: mark a skill user-only when dima is the only one who should start it (side effects and timing: `/commit`, `/deploy`). 🚫 but read the body for self-triggering first — a skill meant to fire on its own dies silently when flagged: `cclio:halt` (dima may just say «we are done»), `cclio:flawlog` (a mistake just happened), `x:cmt` (any commit). the saving is ~30–40 tokens, never worth a habit. **[read]** matt's router skill — one user-invoked skill naming the others — cures a pile-up past what dima remembers.
 
 ## what belongs in a skill rather than a memfile
 
-**[read]** anthropic's own split:
-
-- a **multi-step procedure** → skill, not bullet points in `CLAUDE.md`
-- something that matters **only in one part of the codebase** → a `paths:`-scoped rule
-- something that **must run** at a lifecycle point → a hook. memory is context, not enforcement
-- everything else that must be true every session → `CLAUDE.md`
+**[read]** anthropic's split: a multi-step procedure → a skill; something for one part of the codebase → a `paths:`-scoped rule (it loads on a read, `cat` or edit of a matching file, `authoring-memory.md`); something that must run → a hook; what must be true every session → `CLAUDE.md`.
 
 ## splitting: by trigger, not by topic
 
-**[read]** theo shipped `file-pr` and `babysit-pr` as one skill, then split them:
+**[read]** theo split `file-pr` and `babysit-pr`: «once i added the keywords … it was good enough at triggering … also, i often want one and not the other.» two tests: do the triggers differ (one phrase pulls in half the body)? does the user ever want one without the other? 📌 a split becomes possible only once the descriptions carry good trigger words; a weak description forces skills to stay merged.
 
-> originally i had the file PR and babysit PR skills as one skill, but i noticed once i added the
-> keywords that it was good enough at triggering that i didn't really need that anymore. also, i
-> often want one and not the other.
+## stop points and completion criteria
 
-two tests, in order:
-
-1. **do the triggers differ?** if one phrase should pull in half the body and never the other half,
-   that is two skills. topical similarity is not the question
-2. **does the user ever want one without the other?** if yes, splitting removes a body they did not
-   ask for from context
-
-📌 the enabling condition is worth noticing: **the split only became possible once the descriptions
-had good trigger keywords.** a weak description forces skills to stay merged, because merging is the
-only way either one gets found.
-
-## give the model a stop point
-
-**[read]** *«when you give the model a stop point, life gets much better»* — theo, prompting a model
-he expected to overreach: *«make your changes. don't commit or push to any machines yet. i'll tell
-you when.»*
-
-**[inferred]** the same lever belongs inside a skill body, not only in prompts. a skill whose last
-step is «report and wait» behaves differently from one that ends by acting — and it is the cheap fix
-for a skill that keeps doing one step too many.
-
-## completion criteria — the lever we under-use
-
-**[read]** matt, untested here. every step ends on a condition telling the agent it is done.
-
-- **clarity** — can the agent tell done from not-done? a vague bound invites stopping early
-- **demand** — *«every modified model accounted for»* forces work that *«produce a change list»*
-  does not. it binds flat reference too: *«every rule applied»*
-
-**[inferred]** this is the strongest thing in matt's skill that none of our skills currently do.
-worth a pass over `plugin-x/skills/` on its own.
+- **a stop point** **[read]**: *«when you give the model a stop point, life gets much better»* (theo). a skill whose last step is «report and wait» is the cheap fix for one that keeps doing a step too many **[inferred]**
+- **completion criteria** **[read, matt]**: every step ends on a condition telling done from not-done; clarity stops early exits, demand («every modified model accounted for») forces the work, and binds flat reference too («every rule applied»)
 
 ## anthropic's structure rules — what we adopt
 
-**[read]** [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
-and the [Fable 5 guide](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5),
-both snapshotted 2026-10-02. the full check against us, with numbers, is
-`docs/research/skill-authoring-best-practices.md`; these are the rules a new or edited skill meets.
+**[read]** [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) and the [Fable 5 guide](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5), snapshotted 2026-10-02, no content change on 2026-10-11. the full check against us: `docs/research/skill-authoring-best-practices.md`.
 
-- **freedom matches fragility** — a step with many valid paths is plain prose (high); a preferred
-  shape is a template with knobs (medium); a fragile or destructive step is an exact script with
-  few or no flags (low). one skill mixes levels. the test per step: «what happens if Claude does it
-  differently?» — nothing much → loosen it; something consequential → script it
-- **`SKILL.md` under 500 lines; every reference file linked straight from it** — a file reached only
-  through another file may be previewed with `head -100` instead of read whole
-- **a contents list on top of any on-demand file over 100 lines**, so a partial read still shows the
-  whole scope. resident memory loads whole and does not need one
-- **an ordered workflow carries a checklist the model copies into its reply and ticks**, and its
-  verify step says where to go back to («if X fails, return to step 3») — that line is what stops a
-  failed step being ticked. no checklist where order does not matter
-- **a quality-critical step runs a validator loop**: check → fix → check again, and proceed only on a
-  pass. the validator can be a script or a file read and compared (a style guide)
-- **plan → validate → execute** for batch, destructive or high-stakes work: the plan is a file, a
-  script checks it, only then it runs. our `x lane` plan + `--apply` is this pattern
-- **say «run X» or «see X»** — whether a bundled script is executed or read as reference
-- **scripts solve, they do not defer**: they handle their errors with a message that names the fix,
-  and every constant says why it is that value
-- **packages are named, never assumed** — matters for skills a cloud or cw session runs
-- **prescriptive skills hurt Fable 5** — CAPS, «ALWAYS» and enumerated cases written for older
-  models; the delete-test in `nurture-memory` decides what stays
-- **never ask the model to reproduce its reasoning in the reply** — on Fable 5 it can trigger the
-  `reasoning_extraction` refusal; ask for a short summary of the answer instead
+- **freedom matches fragility** — many valid paths: prose; a preferred shape: a template with knobs; fragile or destructive: an exact script. the test per step: «what happens if Claude does it differently?»
+- **`SKILL.md` under 500 lines, every reference file linked straight from it** — a file reached through another may be previewed with `head -100` only
+- **a contents list on any on-demand file over 100 lines**; resident memory loads whole and needs none
+- **an ordered workflow carries a checklist** the model copies and ticks, with «if X fails, return to step 3»; none where order does not matter
+- **a quality-critical step runs a validator loop**, and **plan → validate → execute** guards batch or destructive work (our `x lane` plan + `--apply`)
+- **say «run X» or «see X»**; scripts solve and name the fix in their errors; packages are named, never assumed
+- **prescriptive skills hurt Fable 5** — CAPS, «ALWAYS», enumerated cases; the delete-test in `nurture-memory` decides what stays
+- **never ask the model to reproduce its reasoning** — on Fable 5 it can trigger the `reasoning_extraction` refusal
+- ⚠️ **two rules we do not adopt** (local wins, root CLAUDE.md invariant #9): third-person what-descriptions (ours say only when) and gerund names (ours are entity-first)
 
-⚠️ **two anthropic rules we do not adopt** (local wins, the invariant #9 in root CLAUDE.md): third-person descriptions
-that say *what* the skill does (ours say only *when*, `authoring-memory.md`), and gerund
-names (`processing-pdfs`; ours are entity-first). and one open conflict for the sweep: our
-`intended-models` frontmatter above vs `nurture-memory`'s «drop `intended-models` on touch».
+## argument placeholders
 
-## do we still need `skillsmith`? — no. settled, DOT-132 closed
+- **[measured 2026-09-07, cc 2.1.263]** `$1` renders the second word of the arguments; the docs now say `$N` is 0-based, so `$0` is the first **[read, 2026-10-11]**. `$ARGUMENTS` carries the whole string; prefer it and say in prose which word means what
+- a slash command expands in a typed turn and in a `claude --bg` / `claude -p` argument; it does **not** expand inside a `SendMessage`, which arrives as raw text (measured 2026-09-07, haiku probe)
 
-an earlier draft here said «yes, thin»: the guides are docs with no trigger, so skillsmith would be
-the trigger. **that reasoning was wrong, and it was written without opening matt's skill.**
+## evals
 
-`writing-for-agents` **already is that trigger.** its own description: *«use when creating or editing
-skills, or modifying AGENTS.md or CLAUDE.md»* — both artifacts, already covered. and it is not
-craft-only: it carries a section «the two loads» defining *«context load — the cost of always-loaded
-material on the agent's window… spending tokens and attention whether or not it fires»*, plus
-completion criteria, pruning, progressive disclosure and single-source-of-truth.
-
-**so the split is by layer, and there are only two:**
-
-| layer | authority |
-| --- | --- |
-| craft — wording, hierarchy, triggers, pruning, load economics | matt's `writing-for-agents` |
-| **claude code harness mechanics** | this file and `authoring-memory.md` |
-
-the second exists because a general writing guide should not carry one tool's internals: html
-comment stripping, `paths:` vs the silent `globs:` typo, `@import` resolution, the 200-line
-`MEMORY.md` cut, `InstructionsLoaded`, `/doctor`. those rot on a different clock.
-
-📌 **one authority per layer.** a third artifact restating either is the failure this decision
-avoids.
-
-## argument placeholders — measured, not documented
-
-- **[measured 2026-09-07, cc 2.1.263]** `$1` in a skill body renders the **second** word of the arguments (`/x:crew-coder AAA BBB CCC` → `The ticket is \`BBB\``). whether `$0` is the first is unmeasured. `$ARGUMENTS` carries the whole string; prefer it and say in prose which word means what.
-- a slash command expands (the body replaces the line, placeholders substituted) in a typed turn and in the `claude --bg '<prompt>'` / `claude -p '<prompt>'` argument; it does **not** expand inside a `SendMessage` — that arrives as raw text, and the invocation flag is not the cause: an unflagged skill (`/x:queue …`) arrived raw too (measured 2026-09-07, haiku probe, zero `command-message` blocks).
-
-## evals — prior art
-
-- notes went 2/9 → 9/9 on description edits alone (2026-09-12).
-- **the eval mechanics — a description edit is proven by `claude plugin eval`, never by reading it** (proven 2026-09-12,
-  DOT-243): 3–4 of dima's real prompts per skill as cases under `plugin-x/evals/`, a
-  `tool_used: Skill` trigger grader, `--runs 3`, one `--case` glob per call, ~$5 a skill. the
-  finding that set the shape: the literal words he types go FIRST, plus «even mid-sentence or
-  after another instruction» — cmt went 1/12 → 12/12 on that alone. it grades the trigger only;
-  the body stays a human read (the llm-judge guard in [nurture-memory](../../recipes/nurture-memory/recipe.md), «the one thing not to build»).
-- `/claude-api hillclimb` is the api-app version of this loop; its train/test split and
-  one-change-per-round discipline are what is borrowed, not the tool.
+- **a description edit is proven by `claude plugin eval`, never by reading it** (proven 2026-09-12, DOT-243): 3–4 of dima's real prompts per skill under `plugin-x/evals/`, a `tool_used: Skill` grader, `--runs 3`, one `--case` glob per call, ~$5 a skill. the finding that set the shape: the literal words he types go first, plus «even mid-sentence or after another instruction» — cmt 1/12 → 12/12, notes 2/9 → 9/9. it grades the trigger only; the body stays a human read
+- **[read, 2026-10-11]** what the next round adds: should-not-trigger near-miss cases (`tool_used: Skill, min: 0, max: 0`); a held-out test split; `--ablation none` for trigger-only runs at half the cost; a baseline at ≥95 % is saturated, stop climbing it; never paste eval prompts into a description (anthropic's hillclimb overfitting rule)
+- `/skill-doctor` gives a candidate list only: its «never fires» is unreliable (cc issue #92327) — confirm against real `Skill` calls in transcripts
+- `/claude-api hillclimb` is the api-app version; its train/test split and one-change-per-round discipline are what is borrowed

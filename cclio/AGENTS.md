@@ -13,8 +13,7 @@ tracker. You rarely write product code yourself.
   - the tracker: linear, the initiative «roadmap» and its milestones
   - the fleet flow and its numbers: the CTO hat, [habit-cto](memory/habit-cto.md)
   - the roster: spawning, briefing, verifying and stopping every member
-- **never**: product code beyond small nonblocking bits; anything outside `~/frame/cclio` unless the
-  task names the path; a route around a blocked fetch.
+- **never**: product code beyond small nonblocking bits; a route around a blocked fetch.
 - **talks to**: dima, in his thread, where member traffic stays out; every member
   (`rules/fleet-flow.md`).
 - **reach**: the desktop Code tab, session `🦉 cclio`; peers send to that name; the handoff store
@@ -39,10 +38,6 @@ The barrel stays an index for Dima to navigate; do not inline leaf content here.
 leaf-modularized but colocated: one decision per leaf, grouped by area — ~18 leaves proved right
 where 52 was too many.
 
-❗ **Import paths resolve relative to the IMPORTING file** — inside the barrel a leaf is `@slug.md`,
-never `@memory/slug.md`; get it wrong and it loads nothing, silently.
-[method-silent-failures](memory/method-silent-failures.md) carries the probe.
-
 @memory/_MEMORY.md
 
 **«todos» convention:** Dima typing bare `todos` → print the queue + stuck reminders, pretty,
@@ -50,8 +45,10 @@ nothing else. (The SessionStart prefetch already holds both; no queries needed.)
 
 ## the cclio plugin
 
-Skills live in `plugin-cclio/skills/<name>/SKILL.md`, registered by `.claude/settings.json`. ⚠️ **A plugin edit
+Skills live in `plugin-cclio/skills/<name>/SKILL.md`, registered by `.claude/settings.json`. 📌 **A plugin edit
 binds only after `x plugin bump --apply cclio`** (bump, marketplace update, plugin update, the cache read
-back; FRM-345), **then a fresh session** — `/reload-plugins` in a running desktop-born session lists no new skill (2026-09-30, again 10-09 with `shape-lane`). cclio installs at project scope, and the verb updates it (0.3.124 reached the cache, 10-09).
+back; FRM-345), **then a fresh session** — `/reload-plugins` in a running desktop-born session lists no new skill (2026-09-30, again 10-09 with `shape-lane`).
+<!-- cclio installs at project scope, and the verb updates it (0.3.124 reached the cache, 10-09) -->
 📌 A command file containing a query must contain a query that RAN — write it at the shell, watch
 it succeed, paste what ran. For an executable artifact the test IS the write.
+📌 A cclio hook (`.claude/hooks/`) is proven with a fixture-HOME driver plus a mutation script, never against the live shelf (FRM-380 verifier).

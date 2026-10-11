@@ -7,13 +7,14 @@ exists dies, so the file shrinks as the `x` cli grows. cc-only, deliberately not
 live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
 📌 **a Bash-shaped hazard becomes an `x-mod-guard` rule first** (the cc mod, `plugin-x/mods/x-mod-guard`; a ticket under FRM-304); a line lands here only for what a Bash check cannot see — a judgment call, a non-Bash tool, a browser-only look (dima, 2026-10-05).
 
-📌 hazards that bite one subject live beside it: frame `AGENTS.md` (launchd + tcc, git-crypt,
-lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x:github-contrib`
+📌 hazards that bite one subject live beside it: frame `AGENTS.md` (git-crypt), `schedule/AGENTS.md` (launchd + tcc), frame
+`.claude/rules/scripts.md` (lefthook, the toolchain), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x:github-contrib`
 (github api reads), `x:notes` (the obsidian vault), `docs/knowledge/macos-admin.md` (brew casks, desktop apps).
+
+<!-- the file-touch hazards (.gitignore, ci workflows, pnpm manifests) live in fleet-hazards-files.md, a paths: rule that loads with its file (2026-10-11 sweep) -->
 
 ## git hooks
 
-- a gitignore pattern with a `/` in the middle is anchored to the ignore file's directory — `.impeccable/x.json` at a repo root never matches `apps/web/.impeccable/x.json`; `**/` in front makes it match at any depth (measured with `git check-ignore -v`, 2026-09-19)
 - `rebase.updateRefs` is on since the git overhaul (2026-09-03): a safety BRANCH made before a
   rebase is dragged forward with the rewrite and stops being a recovery point — a tag or the
   reflog is the net (a coder lost its net on a reword, 2026-09-05)
@@ -35,7 +36,6 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 - **the `x-mod-guard` cc mod refuses the Bash shapes that used to be listed here** — `sd` with a `$`, a dash-led `sd` find, an unbraced `$var` before `:` or non-ascii, a trailing `&`, a gate piped to `head`/`grep`, a grepped push, `sd`/`sed` on a workflow, a `HOME=` override, plus the floor commands; its refusal names the fix, `plugin-x/mods/x-mod-guard/FTR.md` lists them. guard: `x-mod-guard` itself
 - **a cli new to you is probed with a bare `<cli> --help`, never `<cli> <verb> --help`** — some clis run the verb and ignore the flag: `obsidian delete --help` deleted the active note (2026-10-07, restored). guard: `x-mod-guard` for obsidian; any other unknown cli, none
 - **a hand edit goes through `Edit`/`Write`; a bulk transform may script** — the tools fire the hooks (biome format, the stash holds lock, read-before-write) and fail loud; a script sees no hook and fails silent. a change across many files (a rename, a date shift, 40 files) stays one script call, never 40 Edits (dima, 2026-10-05) — 37 % of a week's fleet writes went through Bash and took no hold (`docs/test-drive/mods.md`). guard: the stash cc mod's holds veto refuses a Bash write to a held file; a Bash write still takes no hold and fires no format hook
-- **`CI=1 pnpm install` is frozen-lockfile** (pnpm's own CI detection) — a dep add or removal takes `--no-frozen-lockfile` beside it, or the lockfile never moves and the commit ships half; and pnpm 12 reads `overrides` from `pnpm-workspace.yaml` only, the `package.json#pnpm` field is ignored with a warning (2026-09-21)
 - **a delete names the file the grep proved, never its dir** — «TriangleSvg has no users» was true, `trash src/elements/icons` took the live `ExternalLinkSvg.tsx` with it (2026-09-21); the unit of a delete is the path the evidence named
 - **a hand-kept plist or json changed for one value gets a one-line edit, never a re-serialize** —
   `plistlib.dumps` rewrote all 984 lines of the iterm prefs for one spacing value (2026-10-01)
@@ -64,10 +64,6 @@ lefthook), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x
 
 - **a tool that treats its config as the whole truth imports the live state before its first apply** — `gmailctl apply` deleted dima's two hand-made filters because `download` never ran first (2026-09-20). same shape: renovate's first run, `frame:link apply`, a launchd bootstrap. the first apply on a live account is preceded by the tool's own import verb.
 
-## ci runners
+## jq
 
-- a jq program is proven when ci compiles it — ubuntu runners ship jq 1.7, the mac 1.8; `a + b`
-  as a bare object value parses locally and fails on the runner (bytes #79, 2026-09-12). a job
-  that runs jq prints `jq --version` first; and `gh --jq` runs gojq, not jq, so a program proven with
-  the system jq can differ inside `gh` (BYT-95/96 retros, 2026-10-08). guard: none · BYT-94 (the gate
-  redraw drops the jq gate)
+- `gh --jq` runs gojq, not jq, so a program proven with the system jq can differ inside `gh` (BYT-95/96 retros, 2026-10-08). guard: none · FRM-394

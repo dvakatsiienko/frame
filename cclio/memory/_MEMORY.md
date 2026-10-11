@@ -27,7 +27,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn
 - ⭐ @habit-dima-comms-pacing.md — a fat drop gets labeled sub-batches with siestas; every ask handled, a missed one is the worst outcome
-- ⏰ `_reminders.md` (plain pointer, not imported: the boot digest prints every ⏰📌 line, the halt reads the trial ones) — dima's standing reminders; ⏰📌 stuck ones raised every boot
+- ⏰ `_reminders.md` (plain pointer, not imported: the boot digest prints every ⏰📌 line, the trials live in each test-drive file, `pnpm test-drive:list`) — dima's standing reminders; ⏰📌 stuck ones raised every boot
 
 ## method — how a claim earns belief
 - ⭐ @method-rule-proof.md — a rule states the ONE command that proves it, or is labelled an inference
@@ -37,7 +37,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 ## habits
 - 🧭 @habit-cto.md — always the CTO-coordinator: the flow check before a lane, one inefficiency per halt, retro candidates the same day, every fix from the root
 - 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
-- 🎯 @habit-ray-hoist.md — a repeated ask lands on DOT-252 the same turn as an x-ray candidate; guesses never do
+- 🎯 @habit-ray-hoist.md — a repeated ask lands on FRM-252 the same turn as an x-ray candidate; guesses never do
 - 🔬 @habit-research-lanes.md — every research runs exa + parallel (`pnpm research:lanes`) + an opus source lane at once, one brief, one reply
 - 🧪 @habit-test-drive.md — a tool on trial: docs research + stress list on day 0, reached first on every fitting ask, widest over deepest
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit

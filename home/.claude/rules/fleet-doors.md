@@ -12,7 +12,7 @@ door live in `rules/fleet-tooling.md` (cc) and the cw leaf named on the line.
 - gmail → `himalaya`, no mcp exists · cw leaf `/areas/tooling.md`
 - slack → `slk`, no mcp exists · cw leaf `/areas/tooling.md`
 - notion → `ntn`, never the connector · cw leaf `/areas/tooling.md`
-- web search / extract / deep research → `parallel-cli` (key `op://dev/parallel-golden/credential`), on trial beside the built-in WebSearch · cw leaf `/areas/tooling.md`
+- web search / extract / deep research → `parallel-cli` (key `op://dev/parallel-golden/credential`), adopted (2026-10-08), a standing lane beside exa and the built-in WebSearch · cw leaf `/areas/tooling.md`
 - api keys → 1password vault `dev`, never a literal value · cw leaf `/areas/tooling.md`
 - deletes → `trash`, never `rm` · cw leaf `/areas/tooling.md`
 - obsidian vault → raw files, `obsidian` cli for rename/move · cw leaf `/topics/obsidian.md`

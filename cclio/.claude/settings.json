@@ -4,6 +4,7 @@
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70"
   },
   "permissions": {
+    "additionalDirectories": ["/Users/dima/frame"],
     "deny": [
       "Skill(adhd:adhd)"
     ]

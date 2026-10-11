@@ -48,24 +48,9 @@ sat in four places on 2026-09-19). the one crossing: a feature's scheduled **dae
 
 ## scripts
 
-- **`script/lib/manifest.ts`** decides (walks `home/`, derives the expected link set), `frame-link.ts`
-  acts — status / apply / untrack, idempotent, refuses to clobber a real file. Never run the
-  manifest directly.
-- **`macos-setup.ts`** — `brew bundle` against the root `Brewfile`, the macOS defaults this repo
-  owns, `duti` bindings, vim-plug. Packages live in the `Brewfile`, never in the script.
-- **Scripts are `.ts`, run by node 24 directly** — no `tsx`, no build. `tsconfig.json` sets
-  `erasableSyntaxOnly`, which bans any syntax needing real compilation. `pnpm typecheck` checks.
-- **`pnpm typecheck` is the type gate, never a build** — `ray build` bundles with esbuild and reports success over type errors (typescript 7 is the native port, ray finds no compiler api to call); root typecheck recurses into every workspace member.
-- **`biome.jsonc` stops descending at an excluded directory** — re-including anything under `!**/import` names every ancestor; and probe the real config, never a minimal repro, because `extends` supplies patterns a repro lacks.
-- **`pnpm toolchain:sync`** writes `.node-version` (major), `packageManager` and `engines` in frame + bytes from the installed node and pnpm; renovate is told off those pins. run it after any `fnm install` or pnpm bump.
-- Anything directly under `script/` is a runnable entrypoint with a matching `pnpm` script;
-  `script/lib/` is library code, never invoked directly.
-- Formatter and linter is **biome** (`pnpm check`). Git hooks run through **lefthook** — biome on
-  staged files plus `pnpm typecheck` and `pnpm test` at commit, both on a temp copy of the index
-  (`script/index-run.sh`), `frame-link` at push. Nothing in
-  a hook writes to your files. 📌 `pnpm check` itself WRITES repo-wide — run biome on your own
-  paths only; lefthook already formats what you stage (it reformatted `hotkeys/map.html`
-  under a coder, 2026-09-15).
+<!-- the notes on scripts, the toolchain and the hooks moved to .claude/rules/scripts.md (2026-10-11 sweep), a paths: rule that loads with those files; this one line stays, because running a command touches no file -->
+
+- 📌 `pnpm check` itself WRITES repo-wide — run biome on your own paths only; lefthook already formats what you stage (it reformatted `hotkeys/map.html` under a coder, 2026-09-15).
 
 ## what lives in `home/.claude/` that `ls` does not explain
 
@@ -93,9 +78,7 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
   (ADR-nnnn). Tracker context: `docs/tracker/GLOSSARY.md` + `docs/tracker/adr/` (TRK-nnnn).
   Glossary vocabulary is binding in outputs (titles, proposals, test names); an output
   contradicting an ADR surfaces the conflict, never silently overrides.
-- **an app with `FTR.md` updates its ftr line, and any new domain word its `GLOSSARY.md`
-  entry, in the same commit as the code** (`x:ftr`) — `x lane gate` holds both at commit-msg: the ftr
-  line always, the glossary for the files a context lists as its `contract:` in `GLOSSARY-MAP.md`.
+- **`x lane gate` holds the ftr line and the glossary entry at commit-msg** for an app with `FTR.md` (`x:ftr`): the ftr line always, the glossary for the files a context lists as its `contract:` in `GLOSSARY-MAP.md`; both land in the same commit as the code
 - **Research** — `docs/research/<subject>.md`, subject-first filename, never a ticket-id prefix, so
   a doc survives the ticket that prompted it. `Ticket: FRM-N` on its own line at the top, mandatory — a doc no ticket owns writes `Ticket: none`. **Every research doc carries `dies-when:` frontmatter at creation** — the condition that
   retires it (distilled into an artifact, hatched into a skill/rule, or acted on). Reading a doc
@@ -141,6 +124,6 @@ multi-context: `GLOSSARY-MAP.md` lists every `GLOSSARY.md`. See `docs/agents/dom
 - **the pre-commit typecheck, test and mods gates read a temp copy of the index** (`script/index-run.sh`, FRM-367) — a peer's unstaged edit never reaches them; the copy holds git-crypt ciphertext and is deleted after each gate (dima, 2026-10-10)
 - a frame worktree pushes only through `x lane push` (it pushes from the main checkout; a plain `git push` there dies on the `mirror` gate, which reads `~` symlinks that point at the main checkout)
 - **the encrypted set is `.gitattributes`** (the `filter=git-crypt` lines) — read it before calling a task git-crypt-blocked; every other file works in a fresh clone or a cloud session with no key (a «frame is git-crypt, so no cloud» call was wrong on 2026-09-28: the set was one file). a commit that moves a file out of the set is refused by the `git-crypt-rename` pre-commit check — the new path needs its own filter line
-- a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`, and `x lane seed <path>` runs that same hook on a hand-made tree (unlock, mod types and tsconfigs, install); doing it by hand, a `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, `x lane unlock` — the unlock with both filters off (it runs `git status`, which dies on the clean filter; the chords-run probe, 2026-09-27), plus a remove + checkout per file still encrypted after it — a real frame tree decrypts on the unlock, a fresh fixture keeps the ciphertext (FRM-285). a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe ONLY after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob — same ciphertext, nothing plaintext can be staged
+- a git-crypt repo keeps its key in the main `.git`, so a fresh worktree holds ciphertext and even a pathspec `git add` dies on the clean filter: `x lane seed <path>` unlocks a hand-made tree (`EnterWorktree` trees unlock through `shelf/hooks/worktree-seed.sh`); the by-hand recipe lives in `x/AGENTS.md` § lane
 - **biome lints `.svg` in frame** (`useSortedAttributes`) — art shipped outside `assets/` and `brand/` gets its `!path` exclusion in `biome.jsonc` in the same commit, or the commit is refused (speak's favicon, 2026-09-29)
 - **launchd + tcc hazards live in `schedule/AGENTS.md`** (signing, tcc grants, plist edits) — read it before touching `schedule/` or a daemon under `hotkeys/`

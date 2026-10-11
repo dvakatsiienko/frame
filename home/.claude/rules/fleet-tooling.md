@@ -19,7 +19,8 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 - **slk** — slack cli (package `slkcli`; binary is `slk`, auth rides the slack desktop session; `slk --help` is the whole api)
 - **jq** — prefer it for JSON parsing, filtering, and transformation
 - **code examples across public github → `grep-mcp` first** (regex over ~1M repos, deferred, ~0 resident cost); `gh search code` only for one known repo — no cli exists for grep.app
-- **rg** (ripgrep, `brew "ripgrep"`) — the regex search over files; the Grep tool runs it too. 65 docs search in ~15 ms, so a doc is findable the moment it exists (2026-09-30)
+- **rg** (ripgrep, `brew "ripgrep"`) — the regex search over files; the Grep tool runs it too
+  <!-- measured 2026-09-30: 65 docs search in ~15 ms, so a doc is findable the moment it exists -->
 - **yq** — yaml/toml read-write (`settings.toml`, lefthook)
 - **sd** — in-place text replace without sed's macos `-i ''` traps
 - **trash over rm** — `trash <path>` moves to the recoverable macos trash; prefer it wherever a deletion is approved but regret is possible
@@ -27,10 +28,11 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 
 ## cc only
 
-- **a bare cc for clean runs** — `claude -p --model haiku --safe-mode --strict-mcp-config '<prompt>'` from a temp dir (`x probe` once the cli freezes it): no `CLAUDE.md`, rules, plugins, hooks, mods or MCP, only cc's built-ins. reach for it when our setup must not touch the answer: «is it us or cc?» probes, a model A/B, an upstream bug repro, a blind lane, the token weight of our memory (bare `/context` vs ours). `--bare` needs an API key, so it fails on our login (2026-10-06)
+- **package.json** — before printing or writing a manifest, `x:guide-conventions` (`conventions/package-json.md`); the full line loads with any manifest from `rules/code.md`
+
+- **a bare cc for clean runs** — `claude -p --model haiku --safe-mode --strict-mcp-config '<prompt>'` from a temp dir: no `CLAUDE.md`, rules, plugins, hooks, mods or MCP, only cc's built-ins. reach for it when our setup must not touch the answer: «is it us or cc?» probes, a model A/B, an upstream bug repro, a blind lane, the token weight of our memory (bare `/context` vs ours). `--bare` needs an API key, so it fails on our login (2026-10-06)
 - **duckdb** — SQL over jsonl, md and git where they lie, no import, no server: `duckdb -json -c "…"`; the measuring engine for transcripts and x traces (🧪 `docs/test-drive/duckdb.md`)
 - **fnm** — node version manager, use if needed
-- **package.json** — exact pins, `npm view` before any version, script order and `family:name` keys: the whole shape is `x:guide-conventions` → `conventions/package-json.md`, read before printing or editing any manifest
 - **ctx7** — library docs: `ctx7 library <name>` → id, `ctx7 docs <id> "<query>"`; a library it lacks → `WebSearch`
 - **archives → keka's bundled binaries**, `/Applications/Keka.app/Contents/MacOS/Keka --cli <bin>` — `7z` `7zz` `unar` `unrar` `tar` `xz` `zstd` `brotli` `lz4` `lzip` `pigz` and friends. macos ships no `unrar` and no 7z at all, so this is the only door to those; plain `zip`/`tar`/`ditto` still handle the ordinary cases
 - **big or tiny images → crop with pillow first.** a screenshot up to ~2000 px is read directly (≈3k tokens); a larger image, or a detail under ~20 px (a sprite, an icon, a chart tick), is cropped or zoomed with pillow (`from PIL import Image`, installed) and the crop is read (≈300 tokens) — the harness downscales big images and small text dies

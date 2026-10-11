@@ -34,9 +34,9 @@ The four failure shapes, each measured here:
   «impeccable's monorepo config does not work as the docs say» stood a day; 4.3.1 discovers
   workspaces fine, the wrong thing was the readme's gitignore anchoring (2026-09-20).
 
-Smaller, same root: a probe run while a human edits the system is not controlled — two of your own
-measurements disagreeing means the environment moved · a table reads as measured whether or not it
-is, tag provenance per cell or do not print it · «exhausted» describes a moment; a status
-inherited from a document is always stale.
+Smaller, same root:
+- a probe run while a human edits the system is not controlled — two of your own measurements disagreeing means the environment moved
+- a table reads as measured whether or not it is: tag provenance per cell or do not print it
+- «exhausted» describes a moment; a status inherited from a document is always stale
 
 Related: [[craft-pm]], [[method-silent-failures]], [[method-rule-proof]]
