@@ -90,6 +90,21 @@ test('a reply that waits on something draws its 🔭 line under the row', async 
     );
 });
 
+test('the 🔭 line prints who it waits on in bold', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await reply(
+        $,
+        'pushed.\n\n🔭 waiting on ci — the watcher wakes me\n🔭 waiting on 🔎 verifier',
+    );
+    expect(
+        (await ui.findAll({ type: 'Text' }))
+            .filter((t) => t.props.bold)
+            .map((t) => t.text)
+            .filter((t) => ['ci', '🔎 verifier'].includes(t ?? '')),
+    ).toEqual(['ci', '🔎 verifier']);
+});
+
 test('the 🔭 line reads in the theme grey, not dimmed', async ($, on) => {
     world(on);
     const ui = await band($);

@@ -26,6 +26,7 @@
   - when the band draws
   - then the row's 🔭 mark, after the compaction point and in the theme grey, names the wait and how the answer arrives; with no wait it reads «🔭 not waiting»
   - decision: in the row, always drawn, darker than dim, so dima sees every session's state at a glance (dima's o7, 22:03)
+  - decision: in each «waiting on <who>» part, <who> prints bold and a «— how» tail stays plain (dima, 2026-10-10 23:54)
 - ✅ 🔭 names the session's background work when the reply sets no wait
   - given a reply ends with no 🔭 line while a background shell, monitor, subagent or workflow still runs
   - when the turn stops

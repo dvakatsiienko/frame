@@ -2648,6 +2648,20 @@ export const register: Register = (on) => {
                     : null}
             </Box>
         );
+        // each «waiting on <who>» part of a 🔭 wait prints <who> bold, its «— how» tail plain (dima, 2026-10-10 23:54)
+        const waitJSX = (wait: string) =>
+            wait.split('; ').map((part, i) => {
+                const m = part.match(/^(waiting on )(.+?)( — .*)?$/u);
+                return (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
+                    <Text key={`wait:${i}`}>
+                        {i > 0 ? '; ' : ''}
+                        {m ? m[1] : part}
+                        {m ? <Text bold>{m[2]}</Text> : null}
+                        {m?.[3] ?? ''}
+                    </Text>
+                );
+            });
         const row = (
             <Box
                 alignItems='center'
@@ -2667,7 +2681,8 @@ export const register: Register = (on) => {
                     {meterInfoJSX}
                     <Box flexShrink={1} key='wait' minWidth={0}>
                         <Text color='inactive' wrap='truncate-end'>
-                            {`🔭 ${view.wait ?? 'not waiting'}`}
+                            {'🔭 '}
+                            {view.wait ? waitJSX(view.wait) : 'not waiting'}
                         </Text>
                     </Box>
                 </Box>
