@@ -237,16 +237,24 @@ test('a card lists every step in order, done ones kept, the current marked', asy
     await create($);
     await lane($, { act: 'step', current: 1, id: 'l1' });
     expect(await laneText(ui)).toMatch(
-        /🛼 mods settings.*✅ shape the settings pane.*🛼 the board in cards.*← we are here.*⬜ guard rules/su,
+        /🛼 mods settings.*✅ shape the settings pane.*➡️ the board in cards.*⬜ guard rules/su,
     );
 });
 
 test("any session's board draws the lane cclio wrote", async ($, on) => {
     world(on, { files: shelf(keptLane()), name: '☕️ 🔧 coder' });
     await start($);
-    expect(await laneText(await board($))).toMatch(
-        /🛼 kept.*🛼 a.*← we are here/su,
-    );
+    expect(await laneText(await board($))).toMatch(/🛼 kept.*➡️ a/su);
+});
+
+test('the current step reads ➡️, no «we are here» (dima, 20:46)', async ($, on) => {
+    world(on, { files: shelf(keptLane()) });
+    await start($);
+    const text = await laneText(await board($));
+    expect([text?.includes('➡️ a'), text?.includes('we are here')]).toEqual([
+        true,
+        false,
+    ]);
 });
 
 test('a ticket step links to linear', async ($, on) => {
@@ -294,6 +302,25 @@ test("a member's board takes a note that reaches cclio, never the member's own p
     ]).toEqual(['slow down', false]);
 });
 
+test("a sent note clears from the box once cclio's prompt took it", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await create($);
+    await ui.input({
+        key: 'lane:l1:note',
+        kind: 'change',
+        text: 'cards first',
+    });
+    const typed = (await ui.find({ key: 'lane:l1:note', type: 'Input' }))?.props
+        .value;
+    await say($, 'go');
+    expect([
+        typed,
+        (await ui.find({ key: 'lane:l1:note', type: 'Input' }))?.props.value,
+    ]).toEqual(['cards first', '']);
+});
+
 test('a step past an item marks it done, never leaving the pointer on a done one', async ($, on) => {
     world(on);
     await start($);
@@ -305,8 +332,8 @@ test('a step past an item marks it done, never leaving the pointer on a done one
     const first = await laneText(ui);
     await lane($, { act: 'step', current: 2, id: 'l1' });
     expect([first, await laneText(ui)]).toEqual([
-        expect.stringMatching(/✅ a.*🛼 b.*← we are here/su),
-        expect.stringMatching(/✅ a.*✅ b.*🛼 c/su),
+        expect.stringMatching(/✅ a.*➡️ b/su),
+        expect.stringMatching(/✅ a.*✅ b.*➡️ c/su),
     ]);
 });
 
@@ -323,7 +350,7 @@ test('a lane reads back whole from the shelf file at a fresh start', async ($, o
         ),
     });
     await start($);
-    expect(await laneText(await board($))).toMatch(/🛼 kept.*✅ a.*🛼 b/su);
+    expect(await laneText(await board($))).toMatch(/🛼 kept.*✅ a.*➡️ b/su);
 });
 
 test("a finished lane stays, all done, across turn ends until the end call (dima's o57)", async ($, on) => {
@@ -393,11 +420,12 @@ test('a coder subcard sits above a verifier subcard, each folded to its count', 
     await start($);
     const text = await laneText(await board($));
     expect([
-        text?.indexOf('🔧 2 asks'),
+        text?.indexOf('🔧 coder · 2 asks'),
         text?.includes('cut the second probe'),
     ]).toEqual([expect.any(Number), false]);
     expect(
-        (text?.indexOf('🔧 2 asks') ?? -1) < (text?.indexOf('🔎 1 ask') ?? -1),
+        (text?.indexOf('🔧 coder · 2 asks') ?? -1) <
+            (text?.indexOf('🔎 verifier · 1 ask') ?? -1),
     ).toBe(true);
 });
 
@@ -408,7 +436,7 @@ test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:coder' });
     expect(await subText(ui, 'coder')).toMatch(
-        /o3 cut the second probe\?.*→ cut it/su,
+        /o3: cut the second probe\?.*➡️ cut it.*take.*redo/su,
     );
 });
 

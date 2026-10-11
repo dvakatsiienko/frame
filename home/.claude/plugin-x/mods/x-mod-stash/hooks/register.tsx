@@ -35,6 +35,12 @@ import {
 
 // label: the repo; name: the session's registry name, when it has one
 type Entry = StashEntry;
+// where an ask card's take, redo and note go, and the prefix its keys carry
+type AskDoor = {
+    prefix: string;
+    mark: (a: OrbitAsk, mark: 'accepted' | 'rejected') => void;
+    note: (a: OrbitAsk, value: string) => void;
+};
 // a session's last reply: when it ended, its 🔭 wait; `ended` once the session itself exited
 // waits: every background task's own name when the reply set no 🔭, so the board can list them all
 type Reply = {
@@ -2680,23 +2686,32 @@ export const register: Register = (on) => {
         const open = o.asks.filter((a) => !a.isResolved);
         const age = planAge(o);
         // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
-        const markJSX = (a: OrbitAsk, mark: 'accepted' | 'rejected') => (
+        // an ask card's door: this session's own orbit by default; a lane card passes the member's, through the store
+        const ownDoor: AskDoor = {
+            mark: (a, mark) =>
+                void markAsks(
+                    $,
+                    (x) =>
+                        x.id === a.id
+                            ? {
+                                  ...x,
+                                  isChanged: false,
+                                  mark: x.mark === mark ? undefined : mark,
+                              }
+                            : x,
+                    true,
+                ),
+            note: (a, value) => handleNote(a.id, value),
+            prefix: 'orbit',
+        };
+        const markJSX = (
+            a: OrbitAsk,
+            mark: 'accepted' | 'rejected',
+            door: AskDoor = ownDoor,
+        ) => (
             <Button
-                key={`orbit:${mark}:${a.id}`}
-                onPress={() =>
-                    void markAsks(
-                        $,
-                        (x) =>
-                            x.id === a.id
-                                ? {
-                                      ...x,
-                                      isChanged: false,
-                                      mark: x.mark === mark ? undefined : mark,
-                                  }
-                                : x,
-                        true,
-                    )
-                }
+                key={`${door.prefix}:${mark}:${a.id}`}
+                onPress={() => door.mark(a, mark)}
                 // take is always the filled button (dima, 17:08); a held mark swaps its emoji for ✅, so the size never
                 // changes (dima's o7, 17:16) — one mark per ask, so only one of the two ever shows ✅
                 {...(mark === 'accepted'
@@ -2765,12 +2780,12 @@ export const register: Register = (on) => {
             });
         // the ask on its own line, the bold id leading it; under it one row: the note, 🛎️ ↩️, then speak's 🔊 ⏯ ⏹
         // (dima, 20:08); a full row of air between asks (dima, 19:52)
-        const askJSX = (a: OrbitAsk, i: number) => (
+        const askJSX = (a: OrbitAsk, i: number, door: AskDoor = ownDoor) => (
             <Box
                 borderDimColor
                 borderStyle='round'
                 flexDirection='column'
-                key={`orbit:ask:${a.id}`}
+                key={`${door.prefix}:ask:${a.id}`}
                 marginTop={i > 0 ? 0.5 : 0}
                 paddingX={1}
                 rowGap={LINE_GAP}>
@@ -2806,9 +2821,12 @@ export const register: Register = (on) => {
                     alignItems='center'
                     flexDirection='row'
                     gap={1}
-                    key={`orbit:row:${a.id}`}>
+                    key={`${door.prefix}:row:${a.id}`}>
                     {/* a joined ask keeps both buttons; the held one reads 🔓 while the turn holds it (dima, 17:42) */}
-                    {[markJSX(a, 'accepted'), markJSX(a, 'rejected')]}
+                    {[
+                        markJSX(a, 'accepted', door),
+                        markJSX(a, 'rejected', door),
+                    ]}
                     {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
                     {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
                     {speakJSX(a.id, `${a.text}. ${a.pick}`)}
@@ -2824,12 +2842,10 @@ export const register: Register = (on) => {
                     ) : Input ? (
                         <Box flexShrink={1} minWidth={0}>
                             <Input
-                                key={`orbit:note:${a.id}`}
-                                onInput={(value: string) =>
-                                    handleNote(a.id, value)
-                                }
+                                key={`${door.prefix}:note:${a.id}`}
+                                onInput={(value: string) => door.note(a, value)}
                                 onSubmit={(value: string) =>
-                                    handleNote(a.id, value)
+                                    door.note(a, value)
                                 }
                                 placeholder='note'
                                 value={a.note ?? ''}
@@ -2877,7 +2893,7 @@ export const register: Register = (on) => {
                     </Box>
                 </Box>
                 {/* an answered ask stays until its turn ends, so dima sees it go */}
-                {folds.orbit ? null : o.asks.map(askJSX)}
+                {folds.orbit ? null : o.asks.map((a, i) => askJSX(a, i))}
                 {!folds.orbit &&
                 o.assumed?.length &&
                 isPartOn('stash.assumed') ? (
@@ -2991,7 +3007,7 @@ export const register: Register = (on) => {
                 <Box flexDirection='column' key={card} rowGap={LINE_GAP}>
                     <Box alignItems='center' flexDirection='row' gap={1}>
                         <Text
-                            bold>{`${badge} ${asks.length} ask${asks.length === 1 ? '' : 's'}`}</Text>
+                            bold>{`${badge} ${role} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}</Text>
                         <Button
                             key={`fold:${card}`}
                             onPress={async () => {
@@ -3007,79 +3023,24 @@ export const register: Register = (on) => {
                         </Button>
                     </Box>
                     {isOpen
-                        ? asks.map((a) => (
-                              <Box
-                                  flexDirection='column'
-                                  key={`${card}:${a.id}`}
-                                  paddingLeft={2}>
-                                  <Text>{`${a.id} ${a.text}`}</Text>
-                                  <Box
-                                      alignItems='center'
-                                      flexDirection='row'
-                                      gap={1}>
-                                      <Text dimColor>{`→ ${a.pick}`}</Text>
-                                      {a.isLocked ? (
-                                          <Text dimColor>
-                                              {a.mark
-                                                  ? `🔓 ${a.mark === 'accepted' ? 'take' : 'redo'}`
-                                                  : ''}
-                                          </Text>
-                                      ) : (
-                                          (
-                                              ['accepted', 'rejected'] as const
-                                          ).map((mark) => (
-                                              <Button
-                                                  key={`${card}:${mark}:${a.id}`}
-                                                  onPress={() =>
-                                                      void markRemote(
-                                                          $,
-                                                          sid,
-                                                          a,
-                                                          {
-                                                              mark:
-                                                                  a.mark ===
-                                                                  mark
-                                                                      ? undefined
-                                                                      : mark,
-                                                              note: a.note,
-                                                          },
-                                                      )
-                                                  }
-                                                  {...(mark === 'accepted'
-                                                      ? {
-                                                            variant:
-                                                                'primary' as const,
-                                                        }
-                                                      : {})}>
-                                                  {`${a.mark === mark ? '✅' : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'take' : 'redo'}`}
-                                              </Button>
-                                          ))
-                                      )}
-                                      {Input && !a.isLocked ? (
-                                          <Box flexShrink={1} minWidth={0}>
-                                              <Input
-                                                  key={`${card}:note:${a.id}`}
-                                                  onSubmit={(value: string) =>
-                                                      void markRemote(
-                                                          $,
-                                                          sid,
-                                                          a,
-                                                          {
-                                                              mark: a.mark,
-                                                              note:
-                                                                  value.trim() ||
-                                                                  undefined,
-                                                          },
-                                                      )
-                                                  }
-                                                  placeholder='note'
-                                                  value={a.note ?? ''}
-                                              />
-                                          </Box>
-                                      ) : null}
-                                  </Box>
-                              </Box>
-                          ))
+                        ? asks.map((a, i) =>
+                              askJSX(a as OrbitAsk, i, {
+                                  mark: (x, mark) =>
+                                      void markRemote($, sid, x, {
+                                          mark:
+                                              x.mark === mark
+                                                  ? undefined
+                                                  : mark,
+                                          note: x.note,
+                                      }),
+                                  note: (x, value) =>
+                                      void markRemote($, sid, x, {
+                                          mark: x.mark,
+                                          note: value.trim() || undefined,
+                                      }),
+                                  prefix: card,
+                              }),
+                          )
                         : null}
                 </Box>
             );
@@ -3123,7 +3084,7 @@ export const register: Register = (on) => {
                                         {item.isDone
                                             ? '✅'
                                             : i === lane.current
-                                              ? '🛼'
+                                              ? '➡️'
                                               : '⬜'}{' '}
                                         {item.text}
                                     </Text>
@@ -3133,9 +3094,6 @@ export const register: Register = (on) => {
                                             key={`lane:${lane.id}:t:${i}`}>
                                             {item.ticket}
                                         </Link>
-                                    ) : null}
-                                    {i === lane.current ? (
-                                        <Text bold>← we are here</Text>
                                     ) : null}
                                     {i === lane.current && Input ? (
                                         <Box flexShrink={1} minWidth={0}>
