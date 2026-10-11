@@ -333,7 +333,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ accept, reject, note, check all
   - given orbit shows asks
   - when dima presses an ask's 🛎️ or ↩️, types in its note, or presses check all
-  - then `🛎️ take` is always the filled (`primary`) button and `↩️ back` a plain-chromed one; a held mark swaps its emoji for ✅ (`✅ take`, `✅ back`), so neither changes size, and only one of the two holds it; a second press puts it out (dima, 17:08 «solid»; o7, 17:16 «swap … only 1 of these btns can have ✅»); the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
+  - then `🛎️ take` is always the filled (`primary`) button and `🔁 redo` a plain-chromed one (was `↩️ back`, dima's o13, 18:01: «back sounds dull»); a held mark swaps its emoji for ✅ (`✅ take`, `✅ redo`), so neither changes size, and only one of the two holds it; a second press puts it out (dima, 17:08 «solid»; o7, 17:16 «swap … only 1 of these btns can have ✅»); the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
   - decision: 🛎️ / ↩️, the waiter lens — 🛎️ order up, ready for the session to pick up; ↩️ back to the kitchen (dima's o79, 23:05; was 🤩 / 👎🏼)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
@@ -371,7 +371,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
-  - then those rows keep both buttons, the held one reading `🔓 take` or `🔓 back` and a press on either changing nothing, and the note shows as dim text instead of its field — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ⏯️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
+  - then those rows keep both buttons, the held one reading `🔓 take` or `🔓 redo` and a press on either changing nothing, and the note shows as dim text instead of its field — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ⏯️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
   - decision: no control rather than a disabled one — the mod api's `Button` and `Input` take no `disabled` (dima asked for one, 19:46)
 - ✅ a resolved ask leaves, a follow-up changes in place
   - given cclio answered a marked ask
