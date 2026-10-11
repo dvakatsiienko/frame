@@ -558,6 +558,34 @@ test('/board colour turns the board colour on', async ($, on) => {
     expect(await dotColour($)).toMatch(/^#/);
 });
 
+test('the 🎛️ colour switch reaches the open board at once, never at the next poll', async ($, on) => {
+    fleet(on);
+    const view = await board($);
+    const dot = async () =>
+        (await view.findAll({ text: '●', type: 'Text' }))[0]?.props.color ??
+        'none';
+    const before = await dot();
+    const settings = await $.ui.mount({
+        component: 'Pane',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 80,
+            isFocused: false,
+            placement: 'dock',
+            scroll: { bodyRows: 40, offset: 0 },
+            title: '🎛️ settings',
+            view: {},
+        },
+        requestId: 'stash-settings',
+        surface: 'terminal',
+    });
+    await settings.press({ key: 'knob:board-colour' });
+    expect([before, await dot()]).toEqual([
+        'none',
+        expect.stringMatching(/^#/),
+    ]);
+});
+
 // every Text the board draws with colour on, by its text, with its colour and dim
 async function colourTexts($: Engine) {
     const ui = await board($);

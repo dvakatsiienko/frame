@@ -96,6 +96,21 @@ const SPEAK_ASSUMED = 'speak-assumed';
 const GUARD_SILENT = 'guard-silent';
 const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
 const LINES = { max: 7, min: 5 } as const;
+// every 🎛️ knob in one table: its store key and its default; a number knob its range too. a missing or broken value reads
+// as the default, and every read and write goes through readSwitch, readNumber, flipKnob and setKnobNumber
+const SWITCHES = {
+    always: { key: BREATH_PREVIEW, of: false },
+    breathe: { key: BREATHE, of: true },
+    colour: { key: COLOUR, of: false },
+    silent: { key: GUARD_SILENT, of: false },
+    speak: { key: SPEAK_ASSUMED, of: true },
+} as const;
+const NUMBERS = {
+    lines: { key: PHASE_LINES, of: PLAN_MAX, range: LINES },
+    speed: { key: BREATH_SPEED, of: SPEED.of, range: SPEED },
+} as const;
+type SwitchName = keyof typeof SWITCHES;
+type NumberName = keyof typeof NUMBERS;
 // the 🎛️ settings (FRM-391 slice 05): one show/hide switch per part, in the store every session reads and the poll
 // re-reads, so a flip reaches every band within one poll; a missing key is shown
 const SHOWN = 'shown';
@@ -1282,7 +1297,7 @@ async function publish($: EngineInterface) {
         const now = await $.clock.now();
         const board = {
             at: now,
-            isColour: (await $.store.get(COLOUR).catch(() => false)) === true,
+            isColour: await readSwitch($, 'colour'),
             members: await members($).catch(() => undefined),
         };
         const boardText = JSON.stringify({
@@ -1802,26 +1817,35 @@ function numberOf(v: unknown, range: { min: number; max: number }) {
     return n >= range.min && n <= range.max ? n : undefined;
 }
 
-async function flipKnob(
-    $: EngineInterface,
-    key: string,
-    isOnByDefault: boolean,
-) {
-    const was = await $.store.get(key).catch(() => undefined);
-    await $.store.set(key, !(typeof was === 'boolean' ? was : isOnByDefault));
+async function readSwitch($: EngineInterface, name: SwitchName) {
+    const v = await $.store.get(SWITCHES[name].key).catch(() => undefined);
+    return typeof v === 'boolean' ? v : SWITCHES[name].of;
+}
+
+async function readNumber($: EngineInterface, name: NumberName) {
+    const { key, of, range } = NUMBERS[name];
+    return numberOf(await $.store.get(key).catch(() => undefined), range) ?? of;
+}
+
+// the one door for every switch: a 🎛️ press and its slash command alike; the board's colour rides the view, so it
+// republishes at once instead of at the next poll
+async function flipKnob($: EngineInterface, name: SwitchName) {
+    const isOn = !(await readSwitch($, name));
+    await $.store.set(SWITCHES[name].key, isOn);
+    if (name === 'colour') await publish($);
     $.ui.invalidate('ui.render');
+    return isOn;
 }
 
 // a keystroke saves at once when it makes a valid value, and is never applied when it does not (exit 6)
 async function setKnobNumber(
     $: EngineInterface,
-    key: string,
+    name: NumberName,
     text: string,
-    range: { min: number; max: number },
 ) {
-    const n = numberOf(text, range);
+    const n = numberOf(text, NUMBERS[name].range);
     if (n === undefined) return;
-    await $.store.set(key, n);
+    await $.store.set(NUMBERS[name].key, n);
     $.ui.invalidate('ui.render');
 }
 
@@ -2280,22 +2304,17 @@ export const register: Register = (on) => {
     // `/board colour` flips the colour MVP for every session's board, and opens it to look
     on('command.run', { command: 'board' }, async ($, e) => {
         if (e.args.trim() === 'breathe') {
-            const isOn = !(await $.store.get(BREATH_PREVIEW));
-            await $.store.set(BREATH_PREVIEW, isOn);
-            $.ui.invalidate('ui.render');
+            const isOn = await flipKnob($, 'always');
             return {
                 text: `bars breathe ${isOn ? 'all the time' : 'only while a turn runs'}`,
             };
         }
         const isColourFlip = /^colou?r$/.test(e.args.trim());
-        if (isColourFlip)
-            await $.store.set(COLOUR, !(await $.store.get(COLOUR)));
+        const isColour = isColourFlip ? await flipKnob($, 'colour') : undefined;
         await openBoard($);
         await publish($);
-        if (!isColourFlip) return { text: 'fleet board opened' };
-        return {
-            text: `fleet board colour ${(await $.store.get(COLOUR)) ? 'on' : 'off'}`,
-        };
+        if (isColour === undefined) return { text: 'fleet board opened' };
+        return { text: `fleet board colour ${isColour ? 'on' : 'off'}` };
     });
 
     // the row's 🚦 shows whether the board is open
@@ -2319,28 +2338,25 @@ export const register: Register = (on) => {
             const meter = (await $.state.get(METER)).value;
             // mobile draws no Input
             const Input = 'Input' in ui ? ui.Input : undefined;
-            const read = (key: string) =>
-                $.store.get(key).catch(() => undefined);
             // the knobs: a switch saves on its press, a number on each keystroke that makes a valid value
             const knobs = {
-                always: (await read(BREATH_PREVIEW)) === true,
-                breathe: (await read(BREATHE)) !== false,
-                colour: (await read(COLOUR)) === true,
-                guard: (await read(GUARD_SILENT)) !== true,
-                lines: numberOf(await read(PHASE_LINES), LINES) ?? PLAN_MAX,
-                speak: (await read(SPEAK_ASSUMED)) !== false,
-                speed: numberOf(await read(BREATH_SPEED), SPEED) ?? SPEED.of,
+                always: await readSwitch($, 'always'),
+                breathe: await readSwitch($, 'breathe'),
+                colour: await readSwitch($, 'colour'),
+                guard: !(await readSwitch($, 'silent')),
+                lines: await readNumber($, 'lines'),
+                speak: await readSwitch($, 'speak'),
+                speed: await readNumber($, 'speed'),
             };
             const switchJSX = (
-                key: string,
+                name: SwitchName,
                 label: string,
                 isOn: boolean,
-                isOnByDefault: boolean,
             ) => (
-                <Box flexDirection='row' key={`knob:${key}`}>
+                <Box flexDirection='row' key={`knob:${SWITCHES[name].key}`}>
                     <Button
-                        key={`knob:${key}`}
-                        onPress={() => void flipKnob($, key, isOnByDefault)}
+                        key={`knob:${SWITCHES[name].key}`}
+                        onPress={() => void flipKnob($, name)}
                         {...(isOn
                             ? { variant: 'primary' as const }
                             : { dimColor: true })}>
@@ -2349,13 +2365,13 @@ export const register: Register = (on) => {
                 </Box>
             );
             const numberJSX = (
-                key: string,
+                name: NumberName,
                 label: string,
                 value: number,
-                range: { min: number; max: number },
                 unit: string,
-            ) =>
-                Input ? (
+            ) => {
+                const { key, range } = NUMBERS[name];
+                return Input ? (
                     <Box
                         alignItems='center'
                         flexDirection='row'
@@ -2366,10 +2382,10 @@ export const register: Register = (on) => {
                             <Input
                                 key={`knob:${key}`}
                                 onInput={(text) =>
-                                    void setKnobNumber($, key, text, range)
+                                    void setKnobNumber($, name, text)
                                 }
                                 onSubmit={(text) =>
-                                    void setKnobNumber($, key, text, range)
+                                    void setKnobNumber($, name, text)
                                 }
                                 value={String(value)}
                             />
@@ -2378,6 +2394,7 @@ export const register: Register = (on) => {
                             dimColor>{`${unit} (${range.min}–${range.max})`}</Text>
                     </Box>
                 ) : null;
+            };
             const air = e.surface === 'desktop';
             const knobsJSX = (
                 <Box
@@ -2389,27 +2406,18 @@ export const register: Register = (on) => {
                     paddingY={air ? 0.5 : 0}
                     rowGap={air ? 0.3 : 0}>
                     <Text bold>stash · knobs</Text>
-                    {switchJSX(COLOUR, '🎨 board colour', knobs.colour, false)}
-                    {numberJSX(
-                        PHASE_LINES,
-                        '🌔 phase lines',
-                        knobs.lines,
-                        LINES,
-                        'lines',
-                    )}
+                    {switchJSX('colour', '🎨 board colour', knobs.colour)}
+                    {numberJSX('lines', '🌔 phase lines', knobs.lines, 'lines')}
                     {switchJSX(
-                        SPEAK_ASSUMED,
+                        'speak',
                         '🔊 read-aloud on assumptions',
                         knobs.speak,
-                        true,
                     )}
                     {/* the switch reads «shown» while lit, so it flips the stored «silent» the other way */}
                     <Box flexDirection='row' key='knob:guard-silent'>
                         <Button
                             key='knob:guard-silent'
-                            onPress={() =>
-                                void flipKnob($, GUARD_SILENT, false)
-                            }
+                            onPress={() => void flipKnob($, 'silent')}
                             {...(knobs.guard
                                 ? { variant: 'primary' as const }
                                 : { dimColor: true })}>
@@ -2432,24 +2440,16 @@ export const register: Register = (on) => {
                     width={0}>
                     <Text bold>🔥 bars</Text>
                     {switchJSX(
-                        BREATHE,
+                        'breathe',
                         '🔥 bars breathe while a turn runs',
                         knobs.breathe,
-                        true,
                     )}
                     {switchJSX(
-                        BREATH_PREVIEW,
+                        'always',
                         '🔥 bars breathe all the time',
                         knobs.always,
-                        false,
                     )}
-                    {numberJSX(
-                        BREATH_SPEED,
-                        '🔥 breath speed',
-                        knobs.speed,
-                        SPEED,
-                        '×',
-                    )}
+                    {numberJSX('speed', '🔥 breath speed', knobs.speed, '×')}
                 </Box>
             );
             // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
@@ -2592,8 +2592,7 @@ export const register: Register = (on) => {
         // (claude-code#101090) — a workaround, see mods/workarounds.md
         const boardShown = (await $.state.get(VIEW)).value?.shown ?? {};
         const isPartOn = (key: string) => boardShown[key] !== false;
-        const speakAssumed =
-            (await $.store.get(SPEAK_ASSUMED).catch(() => undefined)) !== false;
+        const speakAssumed = await readSwitch($, 'speak');
         const folds = (await $.state.get(FOLDS)).value ?? {};
         // one fold rule for every card: open until folded, but a glide card's member subcard starts folded to its count
         const foldedOf = (kept: Record<string, boolean>, card: string) =>
@@ -3302,10 +3301,7 @@ export const register: Register = (on) => {
                 await currentOrbit($),
                 e as Record<string, unknown>,
                 isTurn,
-                numberOf(
-                    await $.store.get(PHASE_LINES).catch(() => undefined),
-                    LINES,
-                ) ?? PLAN_MAX,
+                await readNumber($, 'lines'),
             );
             if ('deny' in op) return { deny: op.deny };
             await saveOrbit($, op.orbit);
@@ -3445,17 +3441,11 @@ export const register: Register = (on) => {
         const now = await $.clock.now();
         const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
         const isBreathing =
-            (Boolean(e.props.isWorking) &&
-                (await $.store.get(BREATHE).catch(() => undefined)) !==
-                    false) ||
-            (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
+            (Boolean(e.props.isWorking) && (await readSwitch($, 'breathe'))) ||
+            (await readSwitch($, 'always'));
         // the 🎛️ speed: 1× sparks a cell every 1.6–4.4 s, 0.5× (the default, dima 12:58) twice as slow
         const breathMs =
-            (BREATH_MS * SPEED.of) /
-            (numberOf(
-                await $.store.get(BREATH_SPEED).catch(() => undefined),
-                SPEED,
-            ) ?? SPEED.of);
+            (BREATH_MS * SPEED.of) / (await readNumber($, 'speed'));
         const five = meter?.fiveHour;
         const pace =
             five?.resetsAt === undefined

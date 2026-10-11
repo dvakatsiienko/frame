@@ -286,6 +286,7 @@
   - decision: the head leads with `🚦`, the board's own button in the row, not the reference's `◆` (dima, 2026-10-08: «dont' like the diamond»); the context climbs sline's ramp, not the theme's dull amber (dima: «pick prettier color ctx filling»)
   - decision: theme keys (`success`, `warning`, `error`) for every state colour, so light and dark both read; the six dot hues are fixed mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane, with no coral beside the asks' orange
   - decision: one fleet-wide switch in the store, so dima compares on his own board; the verdict is his eye (FRM-329)
+  - and the 🎛️ `🎨 board colour` switch is the same door: either flip reaches the open board at once, never at the next poll (FRM-400)
 - ⬜ the board stays current
   - given the board is open
   - when a member starts or ends a turn, or sends a message
