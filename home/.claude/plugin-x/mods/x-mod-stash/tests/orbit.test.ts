@@ -1083,3 +1083,49 @@ test('a full plan of 7 lines is set with no nudge', async ($, on) => {
     });
     expect((r as { result?: unknown }).result).toBe('plan set, 7 lines');
 });
+
+// the 🎛️ board parts (FRM-391 batch 3): each drawn by default, gone when its switch is off
+const BOARD_PARTS: [string, (ui: Board) => Promise<boolean>][] = [
+    [
+        'stash.orbit',
+        async (ui) =>
+            (await ui.find({ key: 'orbit', type: 'Box' })) !== undefined,
+    ],
+    [
+        'stash.assumed',
+        async (ui) =>
+            (await ui.find({ key: 'orbit:assumed', type: 'Box' })) !==
+            undefined,
+    ],
+    [
+        'stash.phases',
+        async (ui) =>
+            (await ui.find({ key: 'phases', type: 'Box' })) !== undefined,
+    ],
+    [
+        'stash.speak',
+        async (ui) =>
+            (await ui.find({ key: 'orbit:read:o1', type: 'Button' })) !==
+            undefined,
+    ],
+];
+for (const [part, drawn] of BOARD_PARTS)
+    test(`the ${part} switch hides its part of the board`, async ($, on) => {
+        world(on).store.set('shown', { [part]: false });
+        await start($);
+        const ui = await board($);
+        await add($, ['push FRM-1', 'yes']);
+        await orbit($, { op: 'assume', texts: ['moons repeat'] });
+        await orbit($, { lines: ['now: a'], op: 'plan' });
+        expect(await drawn(ui)).toBe(false);
+    });
+for (const [part, drawn] of BOARD_PARTS)
+    test(`the ${part} part draws while its switch is on`, async ($, on) => {
+        world(on);
+        await start($);
+        const ui = await board($);
+        await add($, ['push FRM-1', 'yes']);
+        await orbit($, { op: 'assume', texts: ['moons repeat'] });
+        await orbit($, { lines: ['now: a'], op: 'plan' });
+        expect(await drawn(ui)).toBe(true);
+    });

@@ -95,6 +95,29 @@ const PARTS = [
         key: 'stash.digest',
         label: 'while you were away',
     },
+    { group: 'stash · board', key: 'stash.orbit', label: '🪐 orbit asks' },
+    { group: 'stash · board', key: 'stash.assumed', label: 'assumed section' },
+    { group: 'stash · board', key: 'stash.phases', label: '🌔 phases' },
+    {
+        group: 'stash · board',
+        key: 'stash.speak',
+        label: '🔊 ⏯️ ⏹️ speak buttons',
+    },
+    {
+        group: 'stash · board',
+        key: 'stash.rowmeta',
+        label: "session rows' second line",
+    },
+    {
+        group: 'stash · replies',
+        key: 'stash.bullets',
+        label: '·-lists drawn as bullets',
+    },
+    {
+        group: 'stash · replies',
+        key: 'stash.boldwords',
+        label: 'fleet words bold with their badge',
+    },
 ] as const;
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
@@ -1780,12 +1803,23 @@ export const register: Register = (on) => {
     // a long turn outruns the prompt's clock: the stored reply's 📄 stamp is the time it was written
     on('session.append', { door: 'response' }, async ($, e, next) => {
         const now = new Date(await $.clock.now()).toTimeString().slice(0, 5);
+        // the 🎛️ switches gate the stored rewrite, not only its look (the part list's 📌)
+        const switches = shownOf(
+            await $.store.get(SHOWN).catch(() => undefined),
+        );
+        const isOn = {
+            bold: switches['stash.boldwords'] !== false,
+            bullets: switches['stash.bullets'] !== false,
+        };
         let isChanged = false;
         const hits: Record<string, number> = {};
         const content = e.message.content.map((b) => {
             if (b.type !== 'text' || typeof b.text !== 'string') return b;
             // the stored row is what the Stop hooks read: a ·-list fixed here never trips reply-check
-            const fixed = boldFleetWords(bulletDots(b.text));
+            const dotted = isOn.bullets ? bulletDots(b.text) : b.text;
+            const fixed = isOn.bold
+                ? boldFleetWords(dotted)
+                : { hits: {}, text: dotted };
             for (const [word, n] of Object.entries(fixed.hits))
                 hits[word] = (hits[word] ?? 0) + n;
             const bulleted = fixed.text;
@@ -1811,8 +1845,16 @@ export const register: Register = (on) => {
     });
 
     // the drawing: the reply's ·-list shows as bullets while it streams, before the stored row exists
-    on('ui.render', { component: 'AssistantMessage' }, async (_$, e, next) => {
-        const { text } = boldFleetWords(bulletDots(e.props.text));
+    on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
+        const switches = (await $.state.get(VIEW)).value?.shown ?? {};
+        const dotted =
+            switches['stash.bullets'] !== false
+                ? bulletDots(e.props.text)
+                : e.props.text;
+        const { text } =
+            switches['stash.boldwords'] !== false
+                ? boldFleetWords(dotted)
+                : { text: dotted };
         if (text === e.props.text) return next(e);
         return next({ ...e, props: { ...e.props, text } });
     });
@@ -2072,21 +2114,25 @@ export const register: Register = (on) => {
         // a locked ask is the running turn's: no control at all, its mark and note as dim text (the api has no disabled)
         // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
         // (claude-code#101090) — a workaround, see mods/workarounds.md
+        const boardShown = (await $.state.get(VIEW)).value?.shown ?? {};
+        const isPartOn = (key: string) => boardShown[key] !== false;
         const speakJSX = (id: string, text: string) =>
-            (
-                [
-                    ['read', '🔊', { op: 'read', text }],
-                    ['pause', '⏯️', { op: 'pause' }],
-                    ['stop', '⏹️', { op: 'stop' }],
-                ] as const
-            ).map(([what, glyph, request]) => (
-                <Button
-                    key={`orbit:${what}:${id}`}
-                    onPress={() => void speak($, request)}
-                    plain>
-                    {glyph}
-                </Button>
-            ));
+            !isPartOn('stash.speak')
+                ? []
+                : (
+                      [
+                          ['read', '🔊', { op: 'read', text }],
+                          ['pause', '⏯️', { op: 'pause' }],
+                          ['stop', '⏹️', { op: 'stop' }],
+                      ] as const
+                  ).map(([what, glyph, request]) => (
+                      <Button
+                          key={`orbit:${what}:${id}`}
+                          onPress={() => void speak($, request)}
+                          plain>
+                          {glyph}
+                      </Button>
+                  ));
         // a ticket id in an ask or a phase opens its linear page, as a session row's does (dima's o62, 22:13)
         const linkedJSX = (text: string, key: string) =>
             text.split(TICKET_IDS).map((part, i) => {
@@ -2209,7 +2255,7 @@ export const register: Register = (on) => {
                 </Box>
                 {/* an answered ask stays until its turn ends, so dima sees it go */}
                 {o.asks.map(askJSX)}
-                {o.assumed?.length ? (
+                {o.assumed?.length && isPartOn('stash.assumed') ? (
                     <Box
                         flexDirection='column'
                         key='orbit:assumed'
@@ -2353,16 +2399,16 @@ export const register: Register = (on) => {
             return (
                 <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>the session registry is unreadable</Text>
-                    {orbitJSX}
-                    {phasesJSX}
+                    {isPartOn('stash.orbit') ? orbitJSX : null}
+                    {isPartOn('stash.phases') ? phasesJSX : null}
                 </Box>
             );
         if (!list.length)
             return (
                 <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>no live sessions</Text>
-                    {orbitJSX}
-                    {phasesJSX}
+                    {isPartOn('stash.orbit') ? orbitJSX : null}
+                    {isPartOn('stash.phases') ? phasesJSX : null}
                 </Box>
             );
         const isColour = board.isColour;
@@ -2492,7 +2538,7 @@ export const register: Register = (on) => {
                         </Box>
                     </Box>
                     {/* the second line sits under the name, past the dot, dim — the reference's: the model first, kept whole, then the wait, cut at its end */}
-                    {m.model || line ? (
+                    {(m.model || line) && isPartOn('stash.rowmeta') ? (
                         <Box flexDirection='row' gap={2} paddingLeft={2}>
                             {m.model ? (
                                 <Box flexShrink={0}>
@@ -2544,8 +2590,8 @@ export const register: Register = (on) => {
                     </Box>
                     {list.map(row)}
                 </Box>
-                {orbitJSX}
-                {phasesJSX}
+                {isPartOn('stash.orbit') ? orbitJSX : null}
+                {isPartOn('stash.phases') ? phasesJSX : null}
             </Box>
         );
     });

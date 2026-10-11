@@ -162,6 +162,8 @@
   - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
   - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
   - decision: the band's 12 parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; cclio's «build the rest of slice 05 meanwhile»)
+  - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ⏯️ ⏹️` speak buttons, the session rows' second line), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
+  - given a reply switch off (`·-lists drawn as bullets`, `fleet words bold with their badge`), then the reply is both stored and drawn as written: the switch gates the stored rewrite, not only its look (the part list's 📌)
   - decision: the switches live in stash's own store, the one the 💨 and ⏰ switches already share across sessions — a separate file joins only if another mod's parts do
 - ⬜ two live meters, full width under the row on the desktop (FRM-366)
   - given the terminal, then no bars draw: sline's own line carries the 5h, the week and the context, the pace number with them (dima, 2026-10-11 15:06); the row's 🔋/🪫 pace and ⏳ reset stay

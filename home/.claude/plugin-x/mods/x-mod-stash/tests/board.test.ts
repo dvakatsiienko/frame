@@ -552,6 +552,12 @@ test("a row shows its session's model with version and effort", async ($, on) =>
     expect(await row($, HERE)).toContain('opus 5.5 · medium');
 });
 
+test("with the rows' second line switched off, a row shows no model", async ($, on) => {
+    fleet(on, { shown: { 'stash.rowmeta': false } });
+    await steps($, on)('claude-opus-5-5', 'medium');
+    expect(await row($, HERE)).not.toContain('opus 5.5');
+});
+
 test('a dated model id with no effort shows family and version alone', async ($, on) => {
     fleet(on);
     await steps($, on)('claude-haiku-4-5-20251001');
