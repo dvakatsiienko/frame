@@ -974,6 +974,7 @@ async function sessionName($: EngineInterface) {
     }
 }
 
+// twin proc-of — a copy lives in x-mod-holds; the twins lint keeps them equal
 async function procOf($: EngineInterface): Promise<Proc | undefined> {
     const r = await $.process.run([
         'sh',
@@ -985,6 +986,7 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
         ? { pid: Number(pid), start }
         : undefined;
 }
+// twin end
 
 // everything this mod keeps for one conversation: one store key per prefix, the session id after it, plus its pending
 // lane marks; a new per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)

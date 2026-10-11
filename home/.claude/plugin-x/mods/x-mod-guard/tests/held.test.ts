@@ -45,11 +45,18 @@ const STORE = '/home/.claude/plugins/store';
 const FILE = 'x-mod-holds_inline-abc.json';
 const START = 'Sun Oct  4 21:00:00 2026';
 
-// session B in /repo; x-mod-holds' store file says A holds x.ts. `pidAlive` and `clean` steer the release checks
+// session B in /repo; x-mod-holds' store file says A holds x.ts. `pidAlive` and `clean` steer the release checks;
+// `newFile`: /repo is a link to /real/repo and A holds new.ts there, a file not written yet
 function world(
     on: On,
-    { pidAlive = true, clean = false, idleSince = null as number | null } = {},
+    {
+        pidAlive = true,
+        clean = false,
+        idleSince = null as number | null,
+        newFile = false,
+    } = {},
 ) {
+    const held = newFile ? '/real/repo/new.ts' : '/repo/x.ts';
     mock.clock(on, { now: NOW });
     mock.store(on);
     const ran: string[] = [];
@@ -77,9 +84,9 @@ function world(
         value:
             e.path === `${STORE}/${FILE}`
                 ? JSON.stringify({
-                      [`hold:${A}:/repo/x.ts`]: {
+                      [`hold:${A}:${held}`]: {
                           at: NOW - 3 * MIN,
-                          file: '/repo/x.ts',
+                          file: held,
                           landed: true,
                           top: '/repo',
                       },
@@ -87,15 +94,20 @@ function world(
                   })
                 : '{}',
     }));
-    on('fs.stat', (_$, e) => ({
-        value: {
-            isLink: false,
-            kind: 'file' as const,
-            mtimeMs: 0,
-            realPath: e.path,
-            size: 1,
-        },
-    }));
+    on('fs.stat', (_$, e) => {
+        if (newFile && e.path === '/repo/new.ts') throw new Error('ENOENT');
+        return {
+            value: {
+                isLink: false,
+                kind: 'file' as const,
+                mtimeMs: 0,
+                realPath: newFile
+                    ? e.path.replace(/^\/repo/, '/real/repo')
+                    : e.path,
+                size: 1,
+            },
+        };
+    });
     on('process.run', (_$, e) => {
         const stdout =
             e.argv[0] === 'ps'
@@ -152,4 +164,11 @@ test('a Bash write to a file held by a session idle 30 min runs', async ($, on) 
 test('a Bash write after `cd X;` is read from X', async ($, on) => {
     world(on);
     expect((await bash($, "cd sub; sd 'a' 'b' x.ts")).deny).toBeUndefined();
+});
+
+test('a Bash write to a held file not written yet is refused through a linked folder', async ($, on) => {
+    world(on, { newFile: true });
+    expect((await bash($, 'echo hi > new.ts')).deny).toMatch(
+        /^x-mod-holds: \/repo\/new\.ts is held by session b1b1b1b1/,
+    );
 });

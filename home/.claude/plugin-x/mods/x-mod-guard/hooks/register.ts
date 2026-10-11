@@ -231,9 +231,60 @@ async function isSilent($: EngineInterface, home: string | undefined) {
     return false;
 }
 const HOLD = 'hold:';
-const HOLD_IDLE_MS = 30 * 60_000;
+const IDLE_MS = 30 * 60 * 1000;
 type Hold = { at: number; file: string; landed?: boolean };
 type Holder = { pid?: number; start?: string; idleSince: number | null };
+
+// twin dirname — a copy lives in x-mod-holds; the twins lint keeps them equal
+const dirname = (file: string) => file.slice(0, file.lastIndexOf('/')) || '/';
+// twin end
+
+// twin real-path — a copy lives in x-mod-holds; the twins lint keeps them equal
+// the key is lowercased on every platform: APFS is case-insensitive and the mod cannot ask which os it runs on
+async function realPath($: EngineInterface, file: string) {
+    const resolve = (p: string) =>
+        $.fs.stat(p, { resolve: true }).then(
+            (s) => s.realPath,
+            () => undefined,
+        );
+    const direct = await resolve(file);
+    if (direct) return { file: direct, key: direct.toLowerCase() };
+    // a new file has no real path yet; its nearest existing folder does
+    let dir = dirname(file);
+    let real = await resolve(dir);
+    while (!real && dir !== '/') {
+        dir = dirname(dir);
+        real = await resolve(dir);
+    }
+    const full = `${real ?? dir}${file.slice(dir.length)}`;
+    return { file: full, key: full.toLowerCase() };
+}
+// twin end
+
+// twin holder-gone — a copy lives in x-mod-holds; the twins lint keeps them equal
+// a holder that ended, went idle or died holds nothing
+async function isGone(
+    $: EngineInterface,
+    holder: Holder | undefined,
+    now: number,
+) {
+    if (!holder) return true;
+    if (holder.idleSince !== null && now - holder.idleSince >= IDLE_MS)
+        return true;
+    if (holder.pid && holder.start) {
+        const ps = await $.process.run([
+            'ps',
+            '-o',
+            'lstart=',
+            '-p',
+            String(holder.pid),
+        ]);
+        // a reused pid starts at another time
+        if (ps.stdout.trim() !== holder.start) return true;
+    }
+    return false;
+}
+// twin end
 
 async function heldBy(
     $: EngineInterface,
@@ -257,16 +308,12 @@ async function heldBy(
     const sid = await $.session.id();
     const now = await $.clock.now();
     for (const path of paths) {
-        const real = await $.fs.stat(path, { resolve: true }).then(
-            (s) => s.realPath ?? path,
-            () => path,
-        );
+        const real = await realPath($, path);
         for (const [key, value] of Object.entries(held)) {
             if (!key.startsWith(HOLD)) continue;
             const cut = key.indexOf(':', HOLD.length);
             const holder = key.slice(HOLD.length, cut);
-            if (key.slice(cut + 1) !== real.toLowerCase() || holder === sid)
-                continue;
+            if (key.slice(cut + 1) !== real.key || holder === sid) continue;
             const hold = value as Hold;
             if (
                 await isReleased(
@@ -290,20 +337,7 @@ async function isReleased(
     hold: Hold,
     now: number,
 ) {
-    if (!holder) return true;
-    if (holder.idleSince !== null && now - holder.idleSince >= HOLD_IDLE_MS)
-        return true;
-    if (holder.pid && holder.start) {
-        const ps = await $.process.run([
-            'ps',
-            '-o',
-            'lstart=',
-            '-p',
-            String(holder.pid),
-        ]);
-        // a reused pid starts at another time
-        if (ps.stdout.trim() !== holder.start) return true;
-    }
+    if (await isGone($, holder, now)) return true;
     if (!hold.landed) return false;
     const git = await $.process
         .run(['git', 'status', '--porcelain', '--', hold.file], {
