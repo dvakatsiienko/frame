@@ -444,12 +444,13 @@ const idsOf = (v: unknown) =>
 // dima marks or notes asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs
 // rides that turn's next tool result (the tool.call hook); one the turn never reaches rides his next prompt — a
 // hidden message appended instead started a turn of its own when it landed after the last read (dima, 20:31)
-// 🛎️ clears an assumption, ↩️ and its note mark it wrong; a press means dima is at the mac
+// 🛎️ clears an assumption, ↩️ and its note mark it wrong; a 🛎️ or ↩️ press means dima is at the mac (dima, 11:16)
 async function changeAssumed(
     $: EngineInterface,
     change: (x: OrbitAssumption) => OrbitAssumption | undefined,
+    isMark = false,
 ) {
-    await $.state.set(MOBILE, false).catch(() => undefined);
+    if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
     const o = await currentOrbit($);
     await saveOrbit($, {
         ...o,
@@ -460,9 +461,13 @@ async function changeAssumed(
     });
 }
 
-async function markAsks($: EngineInterface, change: (a: OrbitAsk) => OrbitAsk) {
-    // a press in the board means dima is at the mac
-    await $.state.set(MOBILE, false).catch(() => undefined);
+async function markAsks(
+    $: EngineInterface,
+    change: (a: OrbitAsk) => OrbitAsk,
+    isMark = false,
+) {
+    // only a 🛎️ or ↩️ press means dima is at the mac: a note, a speak press or a row's ↗ never ends mobile mode (dima, 11:16)
+    if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
     const o = await currentOrbit($);
     const asks = o.asks.map((a) =>
         a.isLocked || a.isResolved ? a : change(a),
@@ -1807,14 +1812,17 @@ export const register: Register = (on) => {
             <Button
                 key={`orbit:${mark}:${a.id}`}
                 onPress={() =>
-                    void markAsks($, (x) =>
-                        x.id === a.id
-                            ? {
-                                  ...x,
-                                  isChanged: false,
-                                  mark: x.mark === mark ? undefined : mark,
-                              }
-                            : x,
+                    void markAsks(
+                        $,
+                        (x) =>
+                            x.id === a.id
+                                ? {
+                                      ...x,
+                                      isChanged: false,
+                                      mark: x.mark === mark ? undefined : mark,
+                                  }
+                                : x,
+                        true,
                     )
                 }
                 {...(a.mark === mark
@@ -1849,11 +1857,7 @@ export const register: Register = (on) => {
             ).map(([what, glyph, request]) => (
                 <Button
                     key={`orbit:${what}:${a.id}`}
-                    onPress={async () => {
-                        // a press in the board means dima is at the mac
-                        await $.state.set(MOBILE, false).catch(() => undefined);
-                        await speak($, request);
-                    }}
+                    onPress={() => void speak($, request)}
                     plain>
                     {glyph}
                 </Button>
@@ -1943,14 +1947,17 @@ export const register: Register = (on) => {
                         <Button
                             key='orbit:all'
                             onPress={() =>
-                                void markAsks($, (x) =>
-                                    x.mark
-                                        ? x
-                                        : {
-                                              ...x,
-                                              isChanged: false,
-                                              mark: 'accepted',
-                                          },
+                                void markAsks(
+                                    $,
+                                    (x) =>
+                                        x.mark
+                                            ? x
+                                            : {
+                                                  ...x,
+                                                  isChanged: false,
+                                                  mark: 'accepted',
+                                              },
+                                    true,
                                 )
                             }
                             plain>
@@ -1984,10 +1991,13 @@ export const register: Register = (on) => {
                                         <Button
                                             key={`orbit:right:${x.id}`}
                                             onPress={() =>
-                                                void changeAssumed($, (y) =>
-                                                    y.id === x.id
-                                                        ? undefined
-                                                        : y,
+                                                void changeAssumed(
+                                                    $,
+                                                    (y) =>
+                                                        y.id === x.id
+                                                            ? undefined
+                                                            : y,
+                                                    true,
                                                 )
                                             }
                                             plain>
@@ -1996,14 +2006,17 @@ export const register: Register = (on) => {
                                         <Button
                                             key={`orbit:wrong:${x.id}`}
                                             onPress={() =>
-                                                void changeAssumed($, (y) =>
-                                                    y.id === x.id
-                                                        ? {
-                                                              ...y,
-                                                              isWrong:
-                                                                  !y.isWrong,
-                                                          }
-                                                        : y,
+                                                void changeAssumed(
+                                                    $,
+                                                    (y) =>
+                                                        y.id === x.id
+                                                            ? {
+                                                                  ...y,
+                                                                  isWrong:
+                                                                      !y.isWrong,
+                                                              }
+                                                            : y,
+                                                    true,
                                                 )
                                             }
                                             {...(x.isWrong

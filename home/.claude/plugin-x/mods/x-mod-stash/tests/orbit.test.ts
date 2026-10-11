@@ -599,7 +599,7 @@ test('a board press ends mobile mode', async ($, on) => {
     expect(lastContext(w.contexts)).not.toContain('asks fence');
 });
 
-test('a speak press in an ask row ends mobile mode', async ($, on) => {
+test('a speak press keeps mobile mode on', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -607,7 +607,18 @@ test('a speak press in an ask row ends mobile mode', async ($, on) => {
     await mobile($);
     await ui.press({ key: 'orbit:stop:o1' });
     await say($, 'hi');
-    expect(lastContext(w.contexts)).not.toContain('asks fence');
+    expect(lastContext(w.contexts)).toContain('asks fence');
+});
+
+test('a typed note keeps mobile mode on', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await mobile($);
+    await ui.input({ key: 'orbit:note:o1', text: 'after ci' });
+    await say($, 'hi');
+    expect(lastContext(w.contexts)).toContain('asks fence');
 });
 
 test('mobile mode survives a reload', async ($, on) => {
