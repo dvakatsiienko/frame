@@ -1162,7 +1162,10 @@ let gpuTimer: { cancel: () => void } | undefined;
 function abOf(v: unknown): BreathAb | undefined {
     if (!v || typeof v !== 'object') return undefined;
     const o = v as Record<string, unknown>;
-    const hz = AB_RATES.find((r) => r === o.hz);
+    // a rate the steps since dropped lands on the first step, so the row never vanishes under dima (14:54)
+    const hz =
+        AB_RATES.find((r) => r === o.hz) ??
+        (typeof o.hz === 'number' ? AB_RATES[0] : undefined);
     return hz !== undefined && typeof o.owner === 'string'
         ? { hz, owner: o.owner }
         : undefined;

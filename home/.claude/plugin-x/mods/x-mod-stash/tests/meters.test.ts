@@ -591,3 +591,13 @@ test('the desktop A/B names its rate as the display rate, with no rate button', 
         await ui.find({ key: 'ab:rate', type: 'Button' }),
     ]).toEqual(['⏱ display rate', undefined]);
 });
+
+test('an A/B stored at a rate the steps dropped comes back at 10 Hz', async ($, on) => {
+    const { store } = meters(on);
+    await measure($, 39, 35);
+    store['breath-ab'] = { hz: 20, owner: SID };
+    const ui = await bandOn($, 'terminal', false);
+    expect((await ui.find({ key: 'ab:rate', type: 'Button' }))?.text).toBe(
+        '⏱ 10 Hz',
+    );
+});
