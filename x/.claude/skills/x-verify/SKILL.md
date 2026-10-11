@@ -1,6 +1,6 @@
 ---
 name: x-verify
-description: Load BEFORE verifying a change to `x`, the cli under `x/` — «verify x», «prove the verb», «x go gate», «lane pr-body», «brief preflight», a path-taking or cursor-paging verb, a verifier round on an x pr.
+description: Load BEFORE verifying a change to `x`, the cli under `x/` — «verify x», «prove the verb», «x-go:gate», «lane pr-body», «brief preflight», a path-taking or cursor-paging verb, a verifier round on an x pr.
 ---
 
 # x-verify
@@ -14,7 +14,7 @@ prove an `x` verb by running it, not reading it. the checks `x/AGENTS.md` § ver
 
 ## the gate and the live checks
 
-- `timeout 600 x go gate` runs in the background, never piped (FRM-355)
+- `timeout 600 pnpm x-go:gate` runs in the background, never piped (FRM-355)
 - `x lane pr-body` is proven live on a real frame pr (FRM-355)
 - `x brief preflight <ticket>` runs on the ticket under test (FRM-359 verifier)
 
