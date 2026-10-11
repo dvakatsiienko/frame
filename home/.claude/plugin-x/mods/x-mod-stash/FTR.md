@@ -158,9 +158,10 @@
 - ⬜ the bars breathe while a turn runs (FRM-391)
   - given a turn runs
   - when dima looks at the band
-  - then the lit cells of the 5h and ctx bars breathe, x-mod-breather's motion adapted: one 8 s breath while a few soft peaks wander and pulse across the fill over a ripple; a lit cell keeps its full colour and a peak flares warmer on top — on the desktop a hotter copy of the ramp fades in over the cell, the bottom cell row first and the top row only near a peak, so a peak rises inside the bar; in the terminal a peak cell goes bold three ramp steps warmer; the bars' length, labels and values stay as they are
+  - then most lit cells of the 5h and ctx bars spark white-hot now and then and cool back through a slow afterglow, each on its own seeded period, so a few embers are always cooling — on the desktop a white-gold ember fades over the cell, in the terminal the cell flashes bold in white-gold then cools bold two ramp steps warmer; the bars' length, hue, labels and values stay as they are
   - decision: «barely noticeable … boring left to right … make it like the breather, adapted to bars, a bit more alive» replaced the travelling wave (dima, 2026-10-11 12:21)
   - decision: colour flares instead of fading — the fading take «loses color», «make it more colorful» (dima, 2026-10-11 12:26)
+  - decision: embers, take C2 «embers, louder», picked from five takes over three rounds on the [bar breath takes](https://claude.ai/artifact/HCboh5U2nmb83yfZdMfBnd) page (dima, 2026-10-11 12:53)
   - given the turn ends
   - then the bars stand still: no wave, no redraw tick
   - decision: `/board breathe` makes the bars breathe idle too while dima refines the look, off by default, a try that leaves with the 🎛️ knobs (dima, 2026-10-11 12:20)

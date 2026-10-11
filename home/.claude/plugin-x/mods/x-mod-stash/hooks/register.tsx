@@ -1097,42 +1097,48 @@ export type BarRun = {
     color?: string;
     tone?: 'hi';
 };
-// the breathing (FRM-391), x-mod-breather's motion adapted to the bars: one breath swells and fades the lit cells'
-// brightness, while a few soft peaks wander and pulse across the fill over a rippling texture, so the bar looks alive
-// rather than swept; length, hue and labels never change, and an idle bar stands still (no ticks, no GPU)
+// the breathing (FRM-391), dima's pick C2 (2026-10-11 12:53): while a turn runs most lit cells spark white-hot now and
+// then and cool back through a slow afterglow, each on its own seeded period, so a few embers are always cooling; the bars'
+// length, hue and labels never change, and an idle bar stands still (no ticks, no GPU)
 const BREATH_MS = 8000;
-const TAU = 2 * Math.PI;
-const PEAKS = [
-    { amp: 1.0, n: 1, phase: 0.0, pulse: 2, pulsePhase: 0.1, width: 0.12 },
-    { amp: 0.8, n: -1, phase: 0.37, pulse: 3, pulsePhase: 0.6, width: 0.09 },
-    { amp: 0.65, n: 2, phase: 0.71, pulse: 1, pulsePhase: 0.3, width: 0.07 },
-] as const;
-/** how lit a cell at `u` (0..1 along the fill) is at point `p` (0..1) of the breath, 0..1 */
-export function breathLevel(u: number, p: number) {
-    // the inhale blooms from the middle out, the exhale folds back in: the ends lag the breath
-    const lag = (((p - Math.abs(u * 2 - 1) * 0.15) % 1) + 1) % 1;
-    const breath = 0.5 - 0.5 * Math.cos(TAU * lag);
-    let shape = 0.25;
-    for (const k of PEAKS) {
-        const cx = 0.5 + 0.45 * Math.sin(TAU * (p * k.n + k.phase));
-        const h =
-            k.amp * (0.6 + 0.4 * Math.sin(TAU * (p * k.pulse + k.pulsePhase)));
-        shape += h * Math.exp(-(((u - cx) / k.width) ** 2));
+// the spark's shape over its period: dark, a flash, a slow cool-down
+const EMBER_KEYS = [0, 0.5, 0.56, 0.66, 0.8, 1] as const;
+const EMBER_GLOW = [0, 0, 1, 0.6, 0.25, 0] as const;
+const EMBER_COLOR = '#ffe08a';
+// a seeded hash, so a cell sparks the same way on every redraw and both surfaces agree
+function seeded(n: number) {
+    let x = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b);
+    x ^= x >>> 13;
+    x = Math.imul(x, 0xc2b2ae35);
+    x ^= x >>> 16;
+    return (x >>> 0) / 2 ** 32;
+}
+/** a cell's spark: whether it has one, its period and its offset into it, in ms */
+export function emberOf(cell: number, row: number) {
+    const k = cell * 2 + row;
+    return {
+        isOn: seeded(k * 3 + 1) < 0.85,
+        offsetMs: seeded(k * 3 + 3) * BREATH_MS,
+        periodMs: BREATH_MS * (0.2 + seeded(k * 3 + 2) * 0.35),
+    };
+}
+/** how bright a cell's spark is at clock `t`, 0..1 */
+export function emberGlow(cell: number, row: number, t: number) {
+    const e = emberOf(cell, row);
+    if (!e.isOn) return 0;
+    const p = ((t + e.offsetMs) % e.periodMs) / e.periodMs;
+    for (let j = 1; j < EMBER_KEYS.length; j++) {
+        const a = EMBER_KEYS[j - 1] ?? 0;
+        const b = EMBER_KEYS[j] ?? 1;
+        if (p > b) continue;
+        const from = EMBER_GLOW[j - 1] ?? 0;
+        const to = EMBER_GLOW[j] ?? 0;
+        return from + ((to - from) * (p - a)) / (b - a);
     }
-    const tex =
-        0.5 +
-        0.5 * Math.sin(TAU * (u * 11 + p)) * Math.sin(TAU * (u * 5 - p * 2));
-    return Math.min(
-        1,
-        (0.25 + 0.75 * breath) *
-            Math.min(1, 1.3 * shape * (0.5 + 0.7 * tex)) *
-            1.15,
-    );
+    return 0;
 }
 // the terminal redraws the band this often while a turn runs; the desktop's svg runs its own clock
 const BREATH_TICK_MS = 100;
-// keyframes per breath in the desktop svg; the browser glides between them
-const BREATH_KEYS = 24;
 let isBreathTicking = false;
 // one bar as cells: the reading filled, one cell marked — the pace on the 5h bar, the compaction point on the context
 // one; each filled cell takes the ramp by its place, so the bar warms as it fills. `scale` is the % the ramp turns red
@@ -1172,31 +1178,29 @@ export function meterBar(
     width: number,
     mark?: number,
     scale = 100,
-    breath?: number,
+    breathAt?: number,
 ) {
     const runs: BarRun[] = [];
-    const cells = meterCells(percent, width, mark, scale);
-    const filled = cells.filter((c) => c.kind === 'fill').length;
-    let f = 0;
-    for (const c of cells) {
+    let i = 0;
+    for (const c of meterCells(percent, width, mark, scale)) {
         const ch = c.kind === 'mark' ? '┃' : c.kind === 'fill' ? '▮' : '▯';
-        // a cell never loses its colour: near a peak of the breath it flares bold, three ramp steps warmer
+        // a sparking cell flashes bold in the ember's white-gold, then cools bold two ramp steps warmer than its own
         let tone: BarRun['tone'];
-        let color = c.color;
-        if (c.kind === 'fill' && breath !== undefined) {
-            const level = breathLevel(
-                filled > 1 ? f / (filled - 1) : 0.5,
-                breath,
-            );
-            if (level > 0.55) {
+        let color: string | undefined = c.color;
+        if (c.kind === 'fill' && breathAt !== undefined) {
+            const glow = emberGlow(i, 1, breathAt);
+            if (glow > 0.5) {
+                tone = 'hi';
+                color = EMBER_COLOR;
+            } else if (glow > 0.2) {
                 tone = 'hi';
                 const step = BAR_RAMP.indexOf(
                     c.color as (typeof BAR_RAMP)[number],
                 );
-                color = BAR_RAMP[Math.min(BAR_RAMP.length - 1, step + 3)];
+                color = BAR_RAMP[Math.min(BAR_RAMP.length - 1, step + 2)];
             }
         }
-        if (c.kind === 'fill') f++;
+        i++;
         const last = runs.at(-1);
         if (last?.kind === c.kind && last.color === color && last.tone === tone)
             last.text += ch;
@@ -1216,8 +1220,8 @@ const CELL = { gap: 2, rows: 2, size: 5 } as const;
 const CELL_STEP = CELL.size + CELL.gap;
 export const BAR_HEIGHT = CELL.rows * CELL_STEP - CELL.gap;
 const BAR_STYLE =
-    ':root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.5}.mark{fill:#7c7670}.r0{stop-color:#7fb83a}.r1{stop-color:#f2b400}.r2{stop-color:#ff7a1a}.r3{stop-color:#f2364d}' +
-    '@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.45}.mark{fill:#a89984}.r0{stop-color:#a9b665}.r1{stop-color:#d8a657}.r2{stop-color:#e78a4e}.r3{stop-color:#ea6962}}';
+    ':root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.5}.mark{fill:#7c7670}.r0{stop-color:#7fb83a}.r1{stop-color:#f2b400}.r2{stop-color:#ff7a1a}.r3{stop-color:#f2364d}.ember{fill:#ffe08a}' +
+    '@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.45}.mark{fill:#a89984}.r0{stop-color:#a9b665}.r1{stop-color:#d8a657}.r2{stop-color:#e78a4e}.r3{stop-color:#ea6962}.ember{fill:#fff1c2}}';
 export function meterSvg(
     percent: number,
     width: number,
@@ -1228,31 +1232,17 @@ export function meterSvg(
     const w = width * CELL_STEP - CELL.gap;
     // the ramp reaches red where `scale` sits on the bar: the whole bar for the 5h window, the compaction point for ctx
     const redAt = Math.max(CELL_STEP, (Math.min(scale, 100) / 100) * w);
-    const all = meterCells(percent, width, mark, scale);
-    const filled = all.filter((c) => c.kind === 'fill').length;
-    const dur = BREATH_MS / 1000;
-    // a redraw rebuilds the svg and restarts its clock: the begin carries the breath's phase, so a rebuild resumes
-    // mid-breath instead of snapping back (x-mod-breather's fix, FRM-354)
-    const begin = breathAt === undefined ? 0 : (breathAt % BREATH_MS) / 1000;
-    let f = 0;
-    const cells = all.flatMap((c, i) => {
+    // a redraw rebuilds the svg and restarts its clock: each spark's begin carries where its period stands at `breathAt`,
+    // so a rebuild resumes every ember mid-flight instead of snapping back (x-mod-breather's fix, FRM-354)
+    const sparkOf = (i: number, x: number, y: number, row: number) => {
+        if (breathAt === undefined) return '';
+        const e = emberOf(i, row);
+        if (!e.isOn) return '';
+        const into = ((breathAt + e.offsetMs) % e.periodMs) / 1000;
+        return `<rect class="ember" x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" opacity="0"><animate attributeName="opacity" values="${EMBER_GLOW.join(';')}" keyTimes="${EMBER_KEYS.join(';')}" dur="${(e.periodMs / 1000).toFixed(2)}s" begin="-${into.toFixed(2)}s" repeatCount="indefinite"/></rect>`;
+    };
+    const cells = meterCells(percent, width, mark, scale).flatMap((c, i) => {
         const x = i * CELL_STEP;
-        const u =
-            c.kind === 'fill' ? (filled > 1 ? f++ / (filled - 1) : 0.5) : 0;
-        // a lit cell keeps its full colour; the breath lays a warmer flare over it, the ramp one step hotter. the bottom row
-        // flares first, the top row only near a peak, so a peak rises inside the bar like the breather's columns
-        const flareOf = (x: number, y: number, row: number) => {
-            if (breathAt === undefined) return '';
-            const values = Array.from({ length: BREATH_KEYS + 1 }, (_, k) => {
-                const level = breathLevel(u, (k % BREATH_KEYS) / BREATH_KEYS);
-                const lit =
-                    row === CELL.rows - 1
-                        ? Math.min(1, level * 1.4)
-                        : Math.max(0, Math.min(1, (level - 0.4) * 1.7));
-                return (0.9 * lit).toFixed(2);
-            });
-            return `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#flare)" opacity="0"><animate attributeName="opacity" values="${values.join(';')}" dur="${dur}s" begin="-${begin.toFixed(2)}s" repeatCount="indefinite"/></rect>`;
-        };
         if (c.kind === 'mark')
             return [
                 `<rect class="mark" x="${x + 1.5}" y="0" width="2" height="${BAR_HEIGHT}" rx="1"/>`,
@@ -1260,7 +1250,7 @@ export function meterSvg(
         return Array.from({ length: CELL.rows }, (_, r) => {
             const y = r * CELL_STEP;
             return c.kind === 'fill'
-                ? `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>${flareOf(x, y, r)}`
+                ? `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>${sparkOf(i, x, y, r)}`
                 : `<rect class="off" x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1"/>`;
         });
     });
@@ -1270,11 +1260,6 @@ export function meterSvg(
         `<defs><linearGradient id="ramp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${redAt.toFixed(1)}" y2="0">` +
         '<stop class="r0" offset="0"/><stop class="r1" offset=".45"/><stop class="r2" offset=".75"/><stop class="r3" offset="1"/>' +
         '</linearGradient>' +
-        (breathAt === undefined
-            ? ''
-            : `<linearGradient id="flare" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${redAt.toFixed(1)}" y2="0">` +
-              '<stop class="r1" offset="0"/><stop class="r2" offset=".45"/><stop class="r3" offset=".75"/><stop class="r3" offset="1"/>' +
-              '</linearGradient>') +
         `</defs>${cells.join('')}</svg>`
     );
 }
@@ -2583,7 +2568,7 @@ export const register: Register = (on) => {
         const isBreathing =
             Boolean(e.props.isWorking) ||
             (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
-        const breath = isBreathing ? (now % BREATH_MS) / BREATH_MS : undefined;
+        const breath = isBreathing ? now : undefined;
         // the terminal moves the crest by redrawing the band while a turn runs; one timer at a time
         if (isBreathing && !Svg && !isBreathTicking) {
             isBreathTicking = true;
