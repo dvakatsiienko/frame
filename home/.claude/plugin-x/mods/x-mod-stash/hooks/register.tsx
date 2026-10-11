@@ -51,20 +51,7 @@ const MODEL = 'model:';
 const COLOUR = 'board-colour';
 // `/board breathe`: the bars breathe idle too, while dima refines the look (2026-10-11 12:20); off by default, a try
 const BREATH_PREVIEW = 'breath-preview';
-// `/board ab` (FRM-391 slice 02): the bars breathe at a frame rate picked live from the band, with the gpu % each rate
-// costs; the losers go once dima picks, the rate stays as a 🎛️ knob. the spinner take was tried and cut (dima, 14:47)
-const BREATH_AB = 'breath-ab';
-// the owner session's gpu samples per setting, in its own state: a write redraws only its band
-const GPU = { key: 'gpu', plugin: 'x-mod-stash' } as const;
-// dima 14:52: «make hz steps 10, 30, 60 so i see the difference clearly»
-const AB_RATES = [10, 30, 60] as const;
-type BreathAb = {
-    hz: (typeof AB_RATES)[number];
-    owner: string;
-};
 const BREATH = { key: 'breath', plugin: 'x-mod-stash' } as const;
-const GPU_SAMPLE_MS = 2000;
-const GPU_KEEP = 10;
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
 // a session younger than this, counted from the registry's `startedAt`, is a probe: it gets no row until it outlives it
@@ -1155,61 +1142,17 @@ export function emberGlow(cell: number, row: number, t: number) {
     }
     return 0;
 }
-// the terminal redraws the band this often while a turn runs; the desktop's svg runs its own clock
-const BREATH_TICK_MS = 100;
+// the terminal redraws the band this often while a turn runs; the desktop's svg runs its own clock. 60 Hz is dima's
+// pick from the slice-02 A/B (14:57): 10, 30 and 60 cost the same gpu, 51–56 %, within noise
+const BREATH_TICK_MS = 1000 / 60;
 let isBreathTicking = false;
-let gpuTimer: { cancel: () => void } | undefined;
-function abOf(v: unknown): BreathAb | undefined {
-    if (!v || typeof v !== 'object') return undefined;
-    const o = v as Record<string, unknown>;
-    // a rate the steps since dropped lands on the first step, so the row never vanishes under dima (14:54)
-    const hz =
-        AB_RATES.find((r) => r === o.hz) ??
-        (typeof o.hz === 'number' ? AB_RATES[0] : undefined);
-    return hz !== undefined && typeof o.owner === 'string'
-        ? { hz, owner: o.owner }
-        : undefined;
-}
-export const abSetting = (ab: BreathAb) => `${ab.hz} Hz`;
-const mean = (xs: number[]) =>
-    Math.round(xs.reduce((a, b) => a + b, 0) / xs.length);
-// the A/B owner reads the whole gpu's utilisation every 2 s and files it under the setting it ran at; ioreg needs no sudo
-async function sampleGpu($: EngineInterface) {
-    const ab = abOf(await $.store.get(BREATH_AB));
-    if (!ab || ab.owner !== (await currentId($))) {
-        gpuTimer?.cancel();
-        gpuTimer = undefined;
-        return;
-    }
-    const run = await $.process.run([
-        'ioreg',
-        '-r',
-        '-d',
-        '1',
-        '-c',
-        'IOAccelerator',
-    ]);
-    const pct = Number(run.stdout.match(/"Device Utilization %"=(\d+)/)?.[1]);
-    if (!Number.isFinite(pct)) return;
-    const all = (await $.state.get(GPU)).value ?? {};
-    const setting = abSetting(ab);
-    await $.state.set(GPU, {
-        ...all,
-        [setting]: [...(all[setting] ?? []), pct].slice(-GPU_KEEP),
-    });
-}
 // one timer at a time; its write of the breath clock redraws only what reads it, never every x-mod-stash render
-function tickBreath($: EngineInterface, hz?: number) {
+function tickBreath($: EngineInterface) {
     if (isBreathTicking) return;
     isBreathTicking = true;
-    $.clock.after(hz ? 1000 / hz : BREATH_TICK_MS, async () => {
+    $.clock.after(BREATH_TICK_MS, async () => {
         isBreathTicking = false;
         await $.state.set(BREATH, await $.clock.now());
-    });
-}
-function armGpu($: EngineInterface) {
-    gpuTimer ??= $.clock.every(GPU_SAMPLE_MS, () => {
-        void sampleGpu($).catch(() => undefined);
     });
 }
 // one bar as cells: the reading filled, one cell marked — the pace on the 5h bar, the compaction point on the context
@@ -1633,12 +1576,6 @@ export const register: Register = (on) => {
             view: (await $.state.get(VIEW)).value,
         };
         orbit = kept.orbit ?? EMPTY_ORBIT;
-        // a reload drops the sampler's timer: the A/B's owner arms it again
-        if (
-            abOf(await $.store.get(BREATH_AB).catch(() => undefined))?.owner ===
-            selfId
-        )
-            armGpu($);
         await $.tool
             .register({
                 description: ORBIT_ABOUT,
@@ -1956,20 +1893,6 @@ export const register: Register = (on) => {
             $.ui.invalidate('ui.render');
             return {
                 text: `bars breathe ${isOn ? 'all the time' : 'only while a turn runs'}`,
-            };
-        }
-        if (e.args.trim() === 'ab') {
-            const isOn = !abOf(await $.store.get(BREATH_AB));
-            const owner = await currentId($);
-            if (isOn && owner) {
-                await $.store.set(BREATH_AB, { hz: 10, owner });
-                armGpu($);
-            } else await $.store.delete(BREATH_AB);
-            $.ui.invalidate('ui.render');
-            return {
-                text: isOn
-                    ? 'bars a/b on: ⏱ cycles the rate, 📍 moves the breath; gpu % reads in this session'
-                    : 'bars a/b off',
             };
         }
         const isColourFlip = /^colou?r$/.test(e.args.trim());
@@ -2659,16 +2582,13 @@ export const register: Register = (on) => {
         const meter = (await $.state.get(METER)).value;
         const now = await $.clock.now();
         const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
-        const ab = abOf(await $.store.get(BREATH_AB).catch(() => undefined));
-        // while the A/B runs the bars breathe idle too, so dima sees each setting without a turn
-        const isBreathing = ab
-            ? true
-            : Boolean(e.props.isWorking) ||
-              (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
+        const isBreathing =
+            Boolean(e.props.isWorking) ||
+            (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
         const breath = isBreathing ? now : undefined;
         // the terminal moves the embers by redrawing the band; reading the tick subscribes only this band to it
         await $.state.get(BREATH);
-        if (isBreathing && !Svg) tickBreath($, ab?.hz);
+        if (isBreathing && !Svg) tickBreath($);
         const runsJSX = (key: string, runs: BarRun[]) =>
             runs.map((r, i) => (
                 <Text
@@ -2986,55 +2906,6 @@ export const register: Register = (on) => {
         );
         // desktop air above and between the bars; a terminal row cannot be split, so none there
         const air = e.surface === 'desktop';
-        // the A/B row: ⏱ cycles the terminal rate, 📍 moves the breath; the desktop's svg runs at the display's own rate
-        const handleAbChange = async (change: Partial<BreathAb>) => {
-            const cur = abOf(await $.store.get(BREATH_AB));
-            if (cur) await $.store.set(BREATH_AB, { ...cur, ...change });
-            $.ui.invalidate('ui.render');
-        };
-        const gpu =
-            ab?.owner === selfId ? (await $.state.get(GPU)).value : undefined;
-        const gpuWords = gpu
-            ? Object.entries(gpu)
-                  .map(([setting, xs]) => `${setting} ${mean(xs)}%`)
-                  .join(' · ')
-            : '';
-        const rateLabel = `⏱ ${ab?.hz ?? 10} Hz`;
-        const abRow = ab ? (
-            <Box flexDirection='row' gap={1} key='ab'>
-                {Svg
-                    ? tip(
-                          'ab:rate',
-                          'the desktop draws the embers at the display rate; ⏱ steps the terminal only',
-                          <Text dimColor>⏱ display rate</Text>,
-                          { left: 16 },
-                      )
-                    : tip(
-                          'ab:rate',
-                          'bars frame rate: 10, 30, 60 Hz',
-                          <Button
-                              key='ab:rate'
-                              onPress={() =>
-                                  void handleAbChange({
-                                      hz:
-                                          AB_RATES[
-                                              (AB_RATES.indexOf(ab.hz) + 1) %
-                                                  AB_RATES.length
-                                          ] ?? 10,
-                                  })
-                              }
-                              plain>
-                              {rateLabel}
-                          </Button>,
-                          leftOf(rateLabel, false),
-                      )}
-                <Text dimColor key='ab:gpu' wrap='truncate-end'>
-                    {ab.owner === selfId
-                        ? `gpu ${gpuWords || 'reading…'}`
-                        : 'gpu reads in the session that ran /board ab'}
-                </Text>
-            </Box>
-        ) : null;
         const meters = (
             <Box
                 flexDirection='column'
@@ -3090,7 +2961,6 @@ export const register: Register = (on) => {
             <Box flexDirection='column'>
                 {row}
                 {meters}
-                {abRow}
                 {enhancer.error ? (
                     <Text color='error' key='enh:error' wrap='truncate-end'>
                         {enhancer.error}

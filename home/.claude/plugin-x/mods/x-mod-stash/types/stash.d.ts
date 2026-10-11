@@ -134,8 +134,6 @@ declare module 'claude-code' {
             enhancer: StashEnhancer;
             // epoch ms of the terminal bars' last breath tick: only the band reads it, so a tick redraws only the band
             breath: number;
-            // the /board ab owner's gpu utilisation samples, per «<rate> · <place>» setting
-            gpu: Record<string, number[]>;
         };
     }
 }

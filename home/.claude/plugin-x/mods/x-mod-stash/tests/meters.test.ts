@@ -470,134 +470,18 @@ test('/board breathe keeps the bars breathing while idle, for refining the look'
     ).toEqual([true, true]);
 });
 
-// the slice-02 A/B (FRM-391): /board ab, the ⏱ rate chip, the gpu % in the owner session
-const setAb = (
-    store: Record<string, unknown>,
-    hz: 10 | 30 | 60,
-    owner = SID,
-) => {
-    store['breath-ab'] = { hz, owner };
-};
-const svgsAnimate = async (
-    ui: Pick<Awaited<ReturnType<typeof bandOn>>, 'findAll'>,
-) =>
-    (await ui.findAll({ type: 'Svg' })).map((n) =>
-        String(n.props.source).includes('<animate'),
-    );
-
-test('/board ab turns the A/B on: bars, 10 Hz, owned by this session', async ($, on) => {
-    const { store } = meters(on);
-    on('command.run', () => ({ text: '' }));
-    await $.session.start({
-        cwd: '/proj',
-        isInteractive: true,
-        surface: 'desktop',
-    });
-    await $.command.run({
-        args: 'ab',
-        command: 'board',
-        origin: { kind: 'composer' },
-        presentation: { columns: 80, isFullscreen: false },
-    });
-    expect(store['breath-ab']).toEqual({ hz: 10, owner: SID });
-});
-
-test('while the A/B runs the idle desktop bars breathe', async ($, on) => {
-    const { store } = meters(on);
+test('mid-turn the terminal bars redraw at 60 Hz, more often than 10 Hz could', async ($, on) => {
+    const { clock } = meters(on);
     await measure($, 39, 35);
-    setAb(store, 10);
-    expect(await svgsAnimate(await bandOn($, 'desktop', false))).toEqual([
-        true,
-        true,
-    ]);
-});
-
-test('the ⏱ chip steps the rate to the next one', async ($, on) => {
-    const { store } = meters(on);
-    await measure($, 39, 35);
-    setAb(store, 10);
-    const ui = await bandOn($, 'terminal', false);
-    await ui.press({ key: 'ab:rate' });
-    expect(store['breath-ab']).toEqual({ hz: 30, owner: SID });
-});
-
-// how many of 90 samples, 34 ms apart (3.06 s), show a frame the last one did not: 10 Hz can change at most 31 times
-const changesAt = async ($: Engine, on: On, hz: 10 | 30) => {
-    const { clock, store } = meters(on);
-    await measure($, 39, 35);
-    setAb(store, hz, 'bars');
-    const ui = await bandOn($, 'terminal', false);
+    const ui = await bandOn($, 'terminal', true);
     let last = await frameOf(ui);
     let changes = 0;
+    // 90 samples 17 ms apart: 10 Hz could change at most 16 times in those 1.53 s
     for (let i = 0; i < 90; i++) {
-        await clock.advance(34);
+        await clock.advance(17);
         const now = await frameOf(ui);
         if (now !== last) changes++;
         last = now;
     }
-    return changes;
-};
-
-test('at 30 Hz the terminal bars change more often than 10 Hz ever can', async ($, on) => {
-    expect(await changesAt($, on, 30)).toBeGreaterThan(31);
-});
-
-test('at 10 Hz the terminal bars change at most ten times a second', async ($, on) => {
-    const n = await changesAt($, on, 10);
-    expect([n > 0, n <= 31]).toEqual([true, true]);
-});
-
-test('the owner session shows the gpu % its setting costs', async ($, on) => {
-    const { clock, store } = meters(on);
-    on('process.run', () => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout: '"Device Utilization %"=42',
-        },
-    }));
-    await measure($, 39, 35);
-    setAb(store, 10);
-    const ui = await bandOn($, 'desktop', false);
-    await clock.advance(2000);
-    expect((await ui.find({ text: /^gpu /, type: 'Text' }))?.text).toBe(
-        'gpu 10 Hz 42%',
-    );
-});
-
-test('a session that does not own the A/B never reads the gpu', async ($, on) => {
-    const { clock, store } = meters(on);
-    const ran: string[] = [];
-    on('process.run', (_$, e) => {
-        ran.push(e.argv[0] ?? '');
-        return { deny: 'not here' };
-    });
-    await measure($, 39, 35);
-    setAb(store, 10, 'someone-else');
-    await bandOn($, 'desktop', false);
-    await clock.advance(4000);
-    expect(ran.filter((c) => c === 'ioreg')).toEqual([]);
-});
-
-test('the desktop A/B names its rate as the display rate, with no rate button', async ($, on) => {
-    const { store } = meters(on);
-    await measure($, 39, 35);
-    setAb(store, 10);
-    const ui = await bandOn($, 'desktop', false);
-    expect([
-        (await ui.find({ text: '⏱ display rate', type: 'Text' }))?.text,
-        await ui.find({ key: 'ab:rate', type: 'Button' }),
-    ]).toEqual(['⏱ display rate', undefined]);
-});
-
-test('an A/B stored at a rate the steps dropped comes back at 10 Hz', async ($, on) => {
-    const { store } = meters(on);
-    await measure($, 39, 35);
-    store['breath-ab'] = { hz: 20, owner: SID };
-    const ui = await bandOn($, 'terminal', false);
-    expect((await ui.find({ key: 'ab:rate', type: 'Button' }))?.text).toBe(
-        '⏱ 10 Hz',
-    );
+    expect(changes).toBeGreaterThan(16);
 });

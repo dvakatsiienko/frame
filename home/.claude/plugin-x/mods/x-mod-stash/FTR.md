@@ -167,12 +167,7 @@
   - given the turn ends
   - then the bars stand still: no wave, no redraw tick
   - decision: `/board breathe` makes the bars breathe idle too while dima refines the look, off by default, a try that leaves with the 🎛️ knobs (dima, 2026-10-11 12:20)
-- ⬜ `/board ab` compares the bars' frame rate live, with the gpu it costs (FRM-391 slice 02)
-  - given dima runs `/board ab`
-  - then the bars breathe idle too, and a row under the meters holds ⏱ (10, 30, 60 Hz — dima 14:52, so the steps read apart; the terminal may cap a band near 30 redraws a second), a press that applies in every band with no reload, and `gpu <rate> <n>%` — the mean of the last ten 2 s `ioreg` reads, in the session that ran it
-  - given the desktop, then ⏱ reads «⏱ display rate», no button: the svg embers run at the display's rate
-  - decision: a spinner take (the embers in cc's spinner row, and a preview of it in the band) was built and seen live, then cut: it shows only between tool calls, so it flickers in a working turn (dima, 14:47 «it is useless for us»)
-  - decision: a try; once dima picks, the losing rates go and the rate stays as the 🎛️ frame-rate knob's default
+  - decision: the terminal bars redraw at 60 Hz — dima's pick from a live A/B of 10, 30 and 60 Hz, which cost the same gpu within noise (51–56 % by ioreg); the desktop's svg runs at the display's own rate (dima, 14:57). the A/B (`/board ab`) and a spinner take (embers in cc's spinner row, seen live, «useless for us», 14:47) were built for the pick and removed after it
 - ⬜ the compaction point is typed live
   - when dima types a whole 10–99 into the ctx row's `Input` and presses Enter
   - then it lands as `env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in the launch dir's `.claude/settings.json` when that dir is the repo top, its `.claude/settings.local.json` otherwise, every other key kept, and the row shows it
