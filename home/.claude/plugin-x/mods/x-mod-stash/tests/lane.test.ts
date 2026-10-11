@@ -495,8 +495,7 @@ test("a take on the card waits in the store for the member's own stash", async (
     await ui.press({ key: 'fold:lane:l1:coder' });
     await ui.press({ key: 'lane:l1:coder:accepted:o3' });
     expect([
-        (w.store.get(`marks:${CODER}`) as Record<string, { mark?: string }>)?.o3
-            ?.mark,
+        (w.store.get(`marks:${CODER}:o3`) as { mark?: string })?.mark,
         await subText(ui, 'coder'),
     ]).toEqual(['accepted', expect.stringContaining('✅ take')]);
 });
@@ -523,9 +522,7 @@ test('a member publishes its open asks whole, with ids, for the lane card', asyn
 test("a mark from a lane card joins the member's running turn", async ($, on) => {
     const w = await memberWithAsk($, on);
     await say($, 'go on');
-    w.store.set(`marks:${SID}`, {
-        o1: { at: w.clock.now(), mark: 'accepted' },
-    });
+    w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });
     const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
     expect(
         r.context?.some((c) => /o1 🛎️ accepted: cut the second probe/.test(c)),
@@ -535,8 +532,10 @@ test("a mark from a lane card joins the member's running turn", async ($, on) =>
 test('an idle member with marks wakes once, after dima prompts anywhere', async ($, on) => {
     const w = await memberWithAsk($, on);
     const before = w.texts.length;
-    w.store.set(`marks:${SID}`, {
-        o1: { at: w.clock.now(), mark: 'rejected', note: 'later' },
+    w.store.set(`marks:${SID}:o1`, {
+        at: w.clock.now(),
+        mark: 'rejected',
+        note: 'later',
     });
     await w.clock.advance(5_000);
     const quiet = w.texts.length;

@@ -341,15 +341,32 @@ async function currentOrbit($: EngineInterface) {
     return orbit;
 }
 
+// a lane card's marks on one member's asks: one store key per ask, `marks:<sid>:<ask id>`, so a board writes only its
+// own key and the member deletes only the keys it read — a shared map lost or re-applied marks across sessions
+const markKey = (sid: string, askId: string) => `${MARKS}${sid}:${askId}`;
+
+async function marksOf($: EngineInterface, sid: string) {
+    const marks: Record<string, RemoteMark> = {};
+    const keys = (await $.store.keys().catch(() => [] as string[])).filter(
+        (k) => k.startsWith(`${MARKS}${sid}:`),
+    );
+    for (const key of keys) {
+        const m = (await $.store.get(key).catch(() => undefined)) as
+            | RemoteMark
+            | undefined;
+        if (m) marks[key.slice(`${MARKS}${sid}:`.length)] = m;
+    }
+    return marks;
+}
+
 // marks dima made on another board's lane card join this session's own orbit, as if made here
 async function absorbMarks($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    const marks = (await $.store.get(MARKS + sid).catch(() => undefined)) as
-        | Record<string, RemoteMark>
-        | undefined;
-    if (!marks || !Object.keys(marks).length) return;
-    await $.store.delete(MARKS + sid).catch(() => undefined);
+    const marks = await marksOf($, sid);
+    if (!Object.keys(marks).length) return;
+    for (const id of Object.keys(marks))
+        await $.store.delete(markKey(sid, id)).catch(() => undefined);
     const o = await currentOrbit($);
     await saveOrbit($, {
         ...o,
@@ -842,10 +859,7 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
         const entry = (await $.store
             .get(PREFIX + sid)
             .catch(() => undefined)) as Entry | undefined;
-        const marks =
-            ((await $.store.get(MARKS + sid).catch(() => undefined)) as
-                | Record<string, RemoteMark>
-                | undefined) ?? {};
+        const marks = await marksOf($, sid);
         asks[sid] = (entry?.items ?? []).map((a) => {
             const m = marks[a.id];
             return m ? { ...a, mark: m.mark, note: m.note } : a;
@@ -865,15 +879,11 @@ async function markRemote(
     ask: PublishedAsk,
     change: Omit<RemoteMark, 'at'>,
 ) {
-    const was =
-        ((await $.store.get(MARKS + sid).catch(() => undefined)) as
-            | Record<string, RemoteMark>
-            | undefined) ?? {};
-    const prior = was[ask.id] ?? { mark: ask.mark, note: ask.note };
-    await $.store.set(MARKS + sid, {
-        ...was,
-        [ask.id]: { ...prior, ...change, at: await $.clock.now() },
-    });
+    const key = markKey(sid, ask.id);
+    const prior = ((await $.store.get(key).catch(() => undefined)) as
+        | RemoteMark
+        | undefined) ?? { mark: ask.mark, note: ask.note };
+    await $.store.set(key, { ...prior, ...change, at: await $.clock.now() });
     await showLanes($, await readLanes($));
 }
 
@@ -946,12 +956,14 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
         : undefined;
 }
 
-// everything this mod keeps for one conversation: one store key per prefix, the session id after it; a new
-// per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
-const SESSION_KEYS = [PREFIX, MARKS, HOT, REPLY, CONTEXT, MODEL] as const;
+// everything this mod keeps for one conversation: one store key per prefix, the session id after it, plus its pending
+// lane marks; a new per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
+const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL] as const;
 
 async function forget($: EngineInterface, sid: string) {
     for (const prefix of SESSION_KEYS) await $.store.delete(prefix + sid);
+    for (const key of await $.store.keys())
+        if (key.startsWith(`${MARKS}${sid}:`)) await $.store.delete(key);
 }
 
 // a session that exited keeps only its last reply, marked ended, so an away digest still counts it as done

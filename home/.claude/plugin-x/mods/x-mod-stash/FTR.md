@@ -522,6 +522,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ take, 🔁 redo, 🔊 and the note; a locked one shows its mark and its note, no control
   - decision: the lane draws orbit's own ask card, never a smaller copy; the subcards stay folded, the head names the role (dima's o4, o5, o10, 20:46)
   - when dima marks or notes a row, then it waits in the store and the member's own stash takes it into its orbit: a running member gets it in that turn, after its next tool call
+  - decision: one store key per marked ask (`marks:<member>:<ask id>`), so two boards never overwrite each other and the member deletes only the marks it read (FRM-400)
   - and an idle member with marks wakes once, within a poll of dima's next prompt in any thread, one turn carrying all of them; no turn starts before that prompt
   - decision: the wake carries the marks in its text — a prompt a mod submits skips that mod's own prompt.submit hook (step 0, cc 2.1.296)
 - ⬜ an ask reads in 3 lines: its line, the `➡️ pick` on its own, then 🛎️ take, 🔁 redo, 🔊 and the note
