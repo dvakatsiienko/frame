@@ -848,10 +848,29 @@ async function setCompactAt(
     isTyping = false,
 ) {
     const was = (await $.state.get(METER)).value ?? {};
-    const keep = (note?: string) =>
-        $.state.set(METER, { ...was, note }).catch(() => undefined);
+    const keep = async (note?: string) =>
+        $.state
+            .set(METER, { ...((await $.state.get(METER)).value ?? {}), note })
+            .catch(() => undefined);
     const typed = thresholdOf(text);
-    if ('refusal' in typed) return isTyping ? undefined : keep(typed.refusal);
+    if ('refusal' in typed) {
+        // a refused text takes back the saves typing made on the way to it: «10» on the way to «100»
+        const t = text.trim();
+        while (
+            compactTrail.length > 1 &&
+            t.startsWith(String(compactTrail.at(-1)))
+        )
+            compactTrail.pop();
+        const back = compactTrail.at(-1);
+        if (back !== undefined && back !== was.compactAt)
+            await setCompactAt($, String(back), true);
+        if (isTyping) return;
+        compactTrail = [];
+        return keep(typed.refusal);
+    }
+    if (!compactTrail.length && was.compactAt !== undefined)
+        compactTrail.push(was.compactAt);
+    compactTrail = isTyping ? [...compactTrail, typed.value] : [];
     // the launch dir cc keeps in the registry is the project its settings resolve from; session.start's cwd can be a
     // later one (cclio's read ~/frame while it launched in ~/frame/cclio, 2026-10-09)
     const launched = proc
@@ -897,6 +916,8 @@ async function setCompactAt(
 
 let published = '';
 let boardPublished = '';
+// the compaction field's typing run: the value before it, then each value typing saved; Enter ends the run
+let compactTrail: number[] = [];
 // writes the view to $.state when it changed; every site that reads it while drawing redraws
 async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);

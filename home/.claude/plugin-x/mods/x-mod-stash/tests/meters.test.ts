@@ -332,6 +332,22 @@ test('typing a compaction point saves it with no Enter', async ($, on) => {
     });
 });
 
+test('a refused compaction point takes back what typing saved on the way to it', async ($, on) => {
+    const { files } = meters(
+        on,
+        { [SHARED]: '{"env":{"CLAUDE_AUTOCOMPACT_PCT_OVERRIDE":"70"}}' },
+        '70',
+    );
+    await measure($, 39, 35);
+    const ui = await band($);
+    for (const text of ['1', '10', '100'])
+        await ui.input({ key: 'compact-at', kind: 'change', text });
+    await ui.input({ key: 'compact-at', text: '100' });
+    expect(JSON.parse(files[SHARED] ?? '{}').env).toEqual({
+        CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '70',
+    });
+});
+
 test('a half-typed compaction point saves nothing and names no refusal', async ($, on) => {
     const { files } = meters(on, { [LOCAL]: '{}' });
     await measure($, 39, 35);
