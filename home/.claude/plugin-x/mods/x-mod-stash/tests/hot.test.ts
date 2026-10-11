@@ -224,3 +224,54 @@ test('🔥 switched off on the band drops its store key', async ($, on) => {
     await s.ui.press({ key: 'hot' });
     expect(`hot:${SID}` in store).toBe(false);
 });
+
+// the mod's own ping skips the mod's own prompt.submit hook (mods AGENTS, probe (d)), so the ping turn is known only
+// where the mod submits it
+test("a keep-hot ping's one-character reply keeps the 🔭 wait the last real reply set", async ($, on) => {
+    const clock = mock.clock(on, { now: NOW });
+    const store = new Map<string, unknown>();
+    on('store.get', (_$, e) => ({ value: store.get(e.key) }));
+    on('store.set', (_$, e) => {
+        store.set(e.key, e.value);
+        return { value: undefined };
+    });
+    on('store.keys', () => ({ value: [...store.keys()] }));
+    on('store.delete', (_$, e) => {
+        store.delete(e.key);
+        return { value: undefined };
+    });
+    on('session.id', () => ({ value: SID }));
+    on('classic.Stop', () => ({}));
+    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    on('turn.complete', () => ({ text: '' }));
+    let pings = 0;
+    on('prompt.submit', (_$, e) => {
+        if (e.origin?.kind === 'plugin') pings++;
+        return { text: e.text };
+    });
+    const ui = await $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props,
+        surface: 'desktop',
+    });
+    await ui.press({ key: 'hot' });
+    const stop = (text: string) =>
+        $.classic.Stop({
+            last_assistant_message: text,
+            session_id: SID,
+            stop_hook_active: false,
+        });
+    const wait = () => (store.get(`reply:${SID}`) as { wait?: string }).wait;
+    await stop('done.\n\n🔭 waiting on ci');
+    await endTurn($);
+    const before = wait();
+    await clock.advance(50 * MIN);
+    await stop('.');
+    await endTurn($);
+    expect([before, pings, wait()]).toEqual([
+        'waiting on ci',
+        1,
+        'waiting on ci',
+    ]);
+});

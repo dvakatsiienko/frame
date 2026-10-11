@@ -381,7 +381,7 @@ async function wakeForMarks($: EngineInterface) {
     const dimaAt = Number(await $.store.get(DIMA_AT).catch(() => 0)) || 0;
     if (dimaAt <= Math.min(...due.map((a) => a.markedAt ?? 0))) return;
     await saveOrbit($, lockJoined(o, due));
-    void $.prompt.submit({ text: joinText(due) });
+    void selfSubmit($, joinText(due)).catch(() => undefined);
 }
 
 // a plan set this turn counts from the turn's end, so a prompt landing mid-turn would read it as -1
@@ -1054,7 +1054,7 @@ async function armWake($: EngineInterface) {
             | undefined;
         if (waker?.on !== true) return;
         $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
-        await $.prompt.submit({ text: RESUME });
+        await selfSubmit($, RESUME);
     });
 }
 
@@ -1269,6 +1269,30 @@ async function keepTurn($: EngineInterface) {
         .catch(() => undefined);
 }
 
+// every turn starts here: dima's and a peer's through prompt.submit, the mod's own through selfSubmit
+async function startTurn($: EngineInterface, text: string, isUser: boolean) {
+    isUserTurn = isUser;
+    pinged = text === PING;
+    isBusy = true;
+    turnTools = 0;
+    isNudged = false;
+    hotGen++;
+    await load($);
+    turnAfk = afk;
+    await keepTurn($);
+}
+
+// the mod's own prompt (the keep-hot ping, the waker's resume, a wake for marks) skips this plugin's prompt.submit hook
+// (mods AGENTS, probe (d)), so its turn starts here; a submit the engine refuses leaves the session idle again
+async function selfSubmit($: EngineInterface, text: string) {
+    await startTurn($, text, false);
+    return $.prompt.submit({ text }).catch(async (err: unknown) => {
+        isBusy = false;
+        await keepTurn($);
+        throw err;
+    });
+}
+
 // this session's id as session.start read it, else asked now; undefined when the engine cannot say
 async function currentId($: EngineInterface) {
     return selfId ?? (await $.session.id().catch(() => undefined));
@@ -1288,7 +1312,7 @@ async function armHot($: EngineInterface) {
     $.clock.after(Math.max(0, wait), async () => {
         if (!hot || isBusy || mine !== hotGen) return;
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
-        await $.prompt.submit({ text: PING });
+        await selfSubmit($, PING);
     });
 }
 
@@ -1981,26 +2005,19 @@ export const register: Register = (on) => {
 
     // only dima's own hands make his turn; a reply to any other origin may drop the block
     on('prompt.submit', async ($, e, next) => {
-        isUserTurn =
+        const isUser =
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
-        pinged = e.text === PING;
-        // dima read the away digest once he types again
-        if (isUserTurn) digest = undefined;
-        // a sent box ends the enhance: ⏪ ⏩ leave the band (dima's o11, 11:11)
-        if (isUserTurn) {
+        if (isUser) {
+            // dima read the away digest once he types again
+            digest = undefined;
+            // a sent box ends the enhance: ⏪ ⏩ leave the band (dima's o11, 11:11)
             const { status } = await enhancerOf($);
             await saveEnhancer($, { status });
+            if (BACK_AT_MAC.test(e.text))
+                await $.state.set(MOBILE, false).catch(() => undefined);
         }
-        if (isUserTurn && BACK_AT_MAC.test(e.text))
-            await $.state.set(MOBILE, false).catch(() => undefined);
-        isBusy = true;
-        turnTools = 0;
-        isNudged = false;
-        hotGen++;
-        await load($);
-        turnAfk = afk;
-        await keepTurn($);
+        await startTurn($, e.text, isUser);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const clock = `now ${new Date(await $.clock.now()).toTimeString().slice(0, 5)}`;
         // only dima's own prompt carries his marks; each joins once and locks until the turn ends

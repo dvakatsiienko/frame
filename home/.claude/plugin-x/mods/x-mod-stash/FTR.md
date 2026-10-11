@@ -108,6 +108,11 @@
   - given 🔥 is on
   - when two pings fire, or the mod reloads in between
   - then 🔥 is still ticked, and the next ping comes 50 minutes after the last turn ended
+- ✅ a ping's turn keeps what the session waits on
+  - given the session's last reply ended on a 🔭 line
+  - when a keep-hot ping fires and its one-character reply ends
+  - then the board still shows that 🔭 wait
+  - decision: the mod's own prompts (the ping, the waker's resume, a wake for marks) skip its own `prompt.submit` hook, so each starts its turn where the mod submits it (FRM-400)
 - ✅ 🔥 switched on while idle counts from the last turn end
   - given the session's last turn ended 17 minutes ago
   - when dima switches 🔥 on
