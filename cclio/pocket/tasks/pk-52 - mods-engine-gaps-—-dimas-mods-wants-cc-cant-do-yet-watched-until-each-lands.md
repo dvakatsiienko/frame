@@ -1,11 +1,11 @@
 ---
 id: PK-52
-title: "mods engine gaps — dima's mods wants cc can't do yet, watched until each lands"
+title: 'mods engine gaps — dima''s mods wants cc can''t do yet, watched until each lands'
 status: waiting
 assignee: []
-created_date: "2026-10-10 19:37"
-updated_date: '2026-10-10 20:45'
-due_date: "2026-10-17"
+created_date: '2026-10-10 19:37'
+updated_date: '2026-10-11 21:30'
+due_date: '2026-10-17'
 labels:
   - s
 dependencies: []
@@ -13,6 +13,7 @@ priority: later
 type: wish
 ordinal: 109000
 ---
+
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
@@ -30,5 +31,10 @@ dima, 2026-10-10 22:34 (via the mods coder): his mods wants the engine can't do 
 
 - 5–7 are not in workarounds.md yet: the mods coder adds them
 - the upstream issues join the boot digest's gh watch (o72)
-
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-10-12: more space in the board view (dima 00:29) — he tried it with the coder; the mods api is too barebones to allow it, kept as is until it lands upstream (dima 00:30, o306)
+<!-- SECTION:NOTES:END -->
