@@ -667,3 +667,25 @@ test('📁 folds the sessions card to its head row', async ($, on) => {
     await ui.press({ key: 'fold:sessions' });
     expect([open > 0, await rows()]).toEqual([true, 0]);
 });
+
+test('an idle state reads bold, as a busy one does', async ($, on) => {
+    fleet(on);
+    const ui = await board($);
+    const idle = (await ui.findAll({ type: 'Text' })).find((t) =>
+        t.text?.startsWith('idle'),
+    );
+    expect(idle?.props.bold).toBe(true);
+});
+
+test("a row's 🔭 line prints only the who bold", async ($, on) => {
+    fleet(on);
+    await stop($, 'done.\n\n🔭 waiting on ci — a ping');
+    const ui = await board($);
+    const bold = (await ui.findAll({ type: 'Text' }))
+        .filter((t) => t.props.bold === true)
+        .map((t) => t.text);
+    expect([
+        bold.includes('ci'),
+        bold.some((t) => t?.includes('a ping')),
+    ]).toEqual([true, false]);
+});

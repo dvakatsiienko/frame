@@ -2113,7 +2113,7 @@ export const register: Register = (on) => {
         const boardShown = (await $.state.get(VIEW)).value?.shown ?? {};
         const isPartOn = (key: string) => boardShown[key] !== false;
         const folds = (await $.state.get(FOLDS)).value ?? {};
-        // 📁 sits at the far right of each card's head line and folds the card to that line (dima's o5)
+        // 📂 sits at the far right of each card's head line and folds the card to that line, then reads 📁 (dima's o5, 17:21)
         const foldJSX = (card: string) => (
             <Button
                 key={`fold:${card}`}
@@ -2122,7 +2122,7 @@ export const register: Register = (on) => {
                     await $.state.set(FOLDS, { ...was, [card]: !was[card] });
                 }}
                 plain>
-                📁
+                {folds[card] ? '📁' : '📂'}
             </Button>
         );
         const speakJSX = (id: string, text: string) =>
@@ -2533,7 +2533,7 @@ export const register: Register = (on) => {
                                 justifyContent='flex-end'
                                 width={COLUMNS.state}>
                                 <Text
-                                    bold={isMemberBusy}
+                                    bold
                                     color={
                                         coolTint ??
                                         (isColour || isMemberBusy
@@ -2566,7 +2566,28 @@ export const register: Register = (on) => {
                             {line ? (
                                 <Box flexShrink={1} minWidth={0}>
                                     <Text dimColor wrap='truncate-end'>
-                                        {line}
+                                        {/* each «waiting on <who>» part prints <who> bold, as the band does (dima, 17:20) */}
+                                        {'🔭 '}
+                                        {(m.wait ?? '')
+                                            .split('; ')
+                                            .map((part, k) => {
+                                                const w = part.match(
+                                                    /^(waiting on )(.+?)( — .*)?$/u,
+                                                );
+                                                return (
+                                                    // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
+                                                    <Text key={`w:${k}`}>
+                                                        {k > 0 ? '; ' : ''}
+                                                        {w ? w[1] : part}
+                                                        {w ? (
+                                                            <Text bold>
+                                                                {w[2]}
+                                                            </Text>
+                                                        ) : null}
+                                                        {w?.[3] ?? ''}
+                                                    </Text>
+                                                );
+                                            })}
                                     </Text>
                                 </Box>
                             ) : null}

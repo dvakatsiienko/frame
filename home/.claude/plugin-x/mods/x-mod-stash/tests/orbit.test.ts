@@ -1164,3 +1164,14 @@ test("orbit's head ends ✅ then 📁, at the far right", async ($, on) => {
         .filter((k) => k === 'orbit:all' || k === 'fold:orbit');
     expect(head).toEqual(['orbit:all', 'fold:orbit']);
 });
+
+test('the fold button reads 📂 while its card is open and 📁 while folded', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    const glyph = async () => (await ui.find({ key: 'fold:orbit' }))?.text;
+    const open = await glyph();
+    await ui.press({ key: 'fold:orbit' });
+    expect([open, await glyph()]).toEqual(['📂', '📁']);
+});
