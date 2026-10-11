@@ -385,17 +385,19 @@ async function enhanceOnce($: EngineInterface) {
         failure = errorText(err);
     }
     timer.cancel();
+    // read again, not `before`: a send while Haiku answered cleared ⏪ ⏩, and that stays
+    const now = await enhancerOf($);
     if ((await $.prompt.read()).text !== pressed)
-        return saveEnhancer($, { ...before, status: 'idle' });
+        return saveEnhancer($, { ...now, status: 'idle' });
     if (answer === undefined)
         return saveEnhancer($, {
-            ...before,
+            ...now,
             error: `enhance: ${failure}; your text is untouched`,
             status: 'idle',
         });
     if (answer === pressed)
         return saveEnhancer($, {
-            ...before,
+            ...now,
             error: 'enhance: Haiku found nothing to change',
             status: 'idle',
         });

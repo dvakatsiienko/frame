@@ -197,6 +197,29 @@ test('a sent prompt hides ⏪ and ⏩', async ($, on) => {
     ]).toEqual([undefined, undefined]);
 });
 
+test('a send while a second enhance runs keeps ⏪ and ⏩ hidden', async ($, on) => {
+    const box = { text: 'draft' };
+    const w = world(on, box);
+    on('prompt.submit', (_$, e) => ({ text: e.text }));
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    box.text = 'enhanced, edited';
+    w.answers.push(async () => {
+        await $.prompt.submit({
+            origin: { kind: 'composer' },
+            text: box.text,
+            wait: false,
+        });
+        box.text = '';
+        return answered('enhanced again');
+    });
+    await ui.press({ key: 'enh:enhance' });
+    expect([
+        await ui.find({ key: 'enh:prev' }),
+        await ui.find({ key: 'enh:new' }),
+    ]).toEqual([undefined, undefined]);
+});
+
 test('enhance again makes exactly one more call', async ($, on) => {
     const box = { text: 'draft' };
     const w = world(on, box);
