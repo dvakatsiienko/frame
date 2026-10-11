@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-// 🛼 lanes (FRM-385): the fleet's lanes in one shelf file, written only by 🦉 cclio, drawn on every board
+// 🛼 glide (FRM-385): the fleet's lanes in one shelf file, written only by 🦉 cclio, drawn on every board
 const SID = 'l1l1l1l1-lane';
 const TOOL = 'mcp__x-mod-stash__orbit';
 const FILE = '/home/.claude/shelf/lanes.json';
@@ -79,7 +79,7 @@ function world(
 const start = ($: Engine) =>
     $.session.start({ cwd: '/tmp', isInteractive: true, surface: 'desktop' });
 const lane = ($: Engine, input: Record<string, unknown>) =>
-    $.tool.call({ op: 'lane', tool: TOOL, ...input } as never);
+    $.tool.call({ op: 'glide', tool: TOOL, ...input } as never);
 const create = ($: Engine, input: Record<string, unknown> = {}) =>
     lane($, { act: 'create', items: ITEMS, title: 'mods settings', ...input });
 const say = ($: Engine, text: string) =>
@@ -166,14 +166,14 @@ for (const [why, input] of [
     test(`${why} is refused with a one-line reason`, async ($, on) => {
         world(on, { files: shelf(keptLane()) });
         await start($);
-        expect(await denied($, input)).toMatch(/^orbit lane: [^\n]+$/);
+        expect(await denied($, input)).toMatch(/^orbit glide: [^\n]+$/);
     });
 
 test('a session the registry does not name 🦉 cclio is refused', async ($, on) => {
     const w = world(on, { name: '☕️ 🔧 coder' });
     await start($);
     expect([(await create($)).deny, w.files[FILE]]).toEqual([
-        'orbit lane: only 🦉 cclio writes the lanes; every board shows them',
+        'orbit glide: only 🦉 cclio writes the lanes; every board shows them',
         undefined,
     ]);
 });
@@ -449,9 +449,9 @@ test("nothing of a lane enters a member's model context", async ($, on) => {
     expect(w.contexts.at(-1)?.some((c) => /lane|kept/.test(c))).toBe(false);
 });
 
-test('the 🛼 lane switch hides every lane card', async ($, on) => {
+test('the 🛼 glide switch hides every glide card', async ($, on) => {
     const w = world(on, { files: shelf(keptLane()) });
-    w.store.set('shown', { 'stash.lane': false });
+    w.store.set('shown', { 'stash.glide': false });
     await start($);
     expect(await laneText(await board($))).toBe(undefined);
 });
@@ -529,14 +529,14 @@ async function memberWithAsk($: Engine, on: On) {
     return w;
 }
 
-test('a member publishes its open asks whole, with ids, for the lane card', async ($, on) => {
+test('a member publishes its open asks whole, with ids, for the glide card', async ($, on) => {
     const w = await memberWithAsk($, on);
     expect(
         (w.store.get(`asks:${SID}`) as { items?: unknown[] })?.items,
     ).toEqual([{ id: 'o1', pick: 'cut it', text: 'cut the second probe?' }]);
 });
 
-test("a mark from a lane card joins the member's running turn", async ($, on) => {
+test("a mark from a glide card joins the member's running turn", async ($, on) => {
     const w = await memberWithAsk($, on);
     await say($, 'go on');
     w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });

@@ -225,7 +225,7 @@ export function orbitOp(
         }
         default:
             return {
-                deny: `orbit: op is add, assume, resolve, follow, plan or lane, got «${String(input.op)}»`,
+                deny: `orbit: op is add, assume, resolve, follow, plan or glide, got «${String(input.op)}»`,
             };
     }
 }

@@ -493,20 +493,20 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when the next prompt goes
   - then the board marks them stale and the session's reminder says so in one line
 
-## /board — 🛼 lanes (FRM-385)
+## /board — 🛼 glide (FRM-385)
 
 - ⬜ every board draws the fleet's live lanes
-  - given 🦉 cclio calls orbit op `lane` act `create` with a title and 1–5 steps (plain text, an optional ticket id, a done flag)
+  - given 🦉 cclio calls orbit op `glide` act `create` with a title and 1–5 steps (plain text, an optional ticket id, a done flag)
   - then every session's board draws a `🛼 <title>` card right above 🌔 phases: every step in order, a done one `✅` and dim but still listed, the current one `➡️` and bold, the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
   - and one note box with a 🛎️ take sits on the current step, on any board; the text stays a draft until take, then joins cclio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the take clear once it did
   - decision: the note and its take live in the stash store, one key per lane, so the shelf file keeps one writer, cclio's lane op; a step that moves the pointer drops the note (FRM-400)
   - decision: take only, no redo — a note has nothing to redo; a peer's prompt never carries it (dima, 20:51)
   - decision: ➡️ marks the current step, no «← we are here» (dima's o9 note, o10)
   - and nothing of a lane enters a member's model context
-  - and each card folds with its own `📂`, and the `🛼 lane` 🎛️ switch hides every lane card
-  - decision: the lane cards stick to the board's bottom, on top of 🌔 phases, the gap above them (dima's shot, 20:12)
+  - and each card folds with its own `📂`, and the `🛼 glide` 🎛️ switch hides every glide card
+  - decision: the glide cards stick to the board's bottom, on top of 🌔 phases, the gap above them (dima's shot, 20:12)
 - ⬜ only cclio writes the lanes
-  - given any session calls op `lane`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create
+  - given any session calls op `glide`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create
   - and act `link` with a session id and a role (coder, verifier) links a member; a second link of a role replaces the first
   - and act `step` with a step index marks every step before it done; the pointer never sits on a done step; the step count marks the lane finished
   - and a 6th step, an empty list, a step over 60 chars, a malformed ticket id, an unknown lane id or a step out of range is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
@@ -518,7 +518,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ⬜ a lane that moved nothing for 8 of cclio's turns reads stale
   - given the pointer and the done flags unmoved for 8 of cclio's turns, then her next prompt carries «lane <id> «…» moved nothing for n of your turns, stale»; a step that moves nothing keeps the count; no other session nags; with no lane, no lane text
   - decision: 8, not phases' 3 — a lane step spans many turns
-- ⬜ a lane card holds its members' asks (exit 3)
+- ⬜ a glide card holds its members' asks (exit 3)
   - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
   - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ take, 🔁 redo, 🔊 and the note; a locked one shows its mark and its note, no control
   - decision: the lane draws orbit's own ask card, never a smaller copy; the subcards stay folded, the head names the role (dima's o4, o5, o10, 20:46)

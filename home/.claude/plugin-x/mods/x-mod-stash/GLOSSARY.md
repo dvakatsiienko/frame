@@ -20,9 +20,13 @@ _Avoid_: asks box, wfyb, inbox
 The session's next moves, at most 7 (🎛️ shows 5 to 7), kept live in the board by the session itself; each leads with a moon that fills by nearness, 🌕 now to 🌑 last.
 _Avoid_: planned actions, next block, todo
 
-**Lane** 🛼:
-One piece of fleet work cclio runs, its whole scope as 1–5 plain steps, with its linked members (a coder, a verifier); kept in one shelf file, written only by 🦉 cclio, drawn as a card on every board until her siesta ends it.
-_Avoid_: lane tracker, project, run
+**Lane**:
+One piece of fleet work cclio runs, its whole scope as 1–5 plain steps, with its linked members (a coder, a verifier).
+_Avoid_: project, run
+
+**Glide** 🛼:
+A lane's progress card on every board: its steps in order, done ones kept, the current marked, its members' asks beneath; kept in one shelf file, written only by 🦉 cclio through orbit op `glide`, drawn until her siesta ends it.
+_Avoid_: lane tracker, lane card
 
 **Step**:
 One of a lane's 1–5 plain-word items; done steps stay listed, the current one is «← we are here».

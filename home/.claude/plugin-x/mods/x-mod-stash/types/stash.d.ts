@@ -3,7 +3,7 @@ export type StashEntry = {
     label: string;
     name?: string;
     asks: string[];
-    // the open asks whole, so a lane card on another board draws and marks them (FRM-385 exit 3)
+    // the open asks whole, so a glide card on another board draws and marks them (FRM-385 exit 3)
     items?: PublishedAsk[];
     at: number;
 };
@@ -17,7 +17,7 @@ export type PublishedAsk = {
     isLocked?: boolean;
 };
 
-// a mark or note dima made on another board's lane card, waiting in the store for the member to take it in
+// a mark or note dima made on another board's glide card, waiting in the store for the member to take it in
 export type RemoteMark = {
     mark?: 'accepted' | 'rejected';
     note?: string;
@@ -125,7 +125,7 @@ export type StashOrbit = {
     plan?: { lines: string[]; at: number };
 };
 
-// 🛼 lane (FRM-385): one live lane of the fleet, kept in one shelf file every board reads and only cclio writes;
+// 🛼 glide (FRM-385): one live lane of the fleet, kept in one shelf file every board reads and only cclio writes;
 // ≤5 plain steps, the pointer and what moved it; done steps stay listed
 export type LaneItem = { text: string; ticket?: string; isDone: boolean };
 export type LaneRole = 'coder' | 'verifier';

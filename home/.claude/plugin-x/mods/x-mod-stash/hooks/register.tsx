@@ -66,7 +66,7 @@ type Reply = {
 };
 
 const PREFIX = 'asks:';
-// a lane card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
+// a glide card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
 const MARKS = 'marks:';
 const DIMA_AT = 'dima-at';
 const AFK_KEY = 'afk';
@@ -132,7 +132,7 @@ const PARTS = [
     { group: 'stash · board', key: 'stash.orbit', label: '🪐 orbit asks' },
     { group: 'stash · board', key: 'stash.assumed', label: 'assumed section' },
     { group: 'stash · board', key: 'stash.phases', label: '🌔 phases' },
-    { group: 'stash · board', key: 'stash.lane', label: '🛼 lane' },
+    { group: 'stash · board', key: 'stash.glide', label: '🛼 glide' },
     {
         group: 'stash · board',
         key: 'stash.speak',
@@ -199,7 +199,7 @@ const NUDGE_AT = 3;
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 // a board card folded to its head row, per session (dima's o5, 17:16)
 const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
-// 🛼 lane (FRM-385): the fleet's lanes in one shelf file, written only by the session the registry names 🦉 cclio, read by
+// 🛼 glide (FRM-385): the fleet's lanes in one shelf file, written only by the session the registry names 🦉 cclio, read by
 // every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
@@ -241,7 +241,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a ${CHANGED_MARK} mark before its id.`,
     `op assume, texts: choices you made without asking that would cost a redo if wrong, at most ${ASSUMED_MAX} a turn and ≤${ORBIT_TEXT_MAX} chars each; never routine ones. dima's 🛎️ clears one, ↩️ sends it back with his note.`,
     `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone and ≤${ORBIT_TEXT_MAX} chars; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
-    `op lane — ${LANE_OWNER} only, every board draws it: act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
+    `op glide — ${LANE_OWNER} only, every board draws it: act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
 let selfId: string | undefined;
@@ -344,7 +344,7 @@ async function currentOrbit($: EngineInterface) {
     return orbit;
 }
 
-// a lane card's marks on one member's asks: one store key per ask, `marks:<sid>:<ask id>`, so a board writes only its
+// a glide card's marks on one member's asks: one store key per ask, `marks:<sid>:<ask id>`, so a board writes only its
 // own key and the member deletes only the keys it read — a shared map lost or re-applied marks across sessions
 const markKey = (sid: string, askId: string) => `${MARKS}${sid}:${askId}`;
 
@@ -362,7 +362,7 @@ async function marksOf($: EngineInterface, sid: string) {
     return marks;
 }
 
-// marks dima made on another board's lane card join this session's own orbit, as if made here
+// marks dima made on another board's glide card join this session's own orbit, as if made here
 async function absorbMarks($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
@@ -644,7 +644,7 @@ async function markAsks(
 }
 
 // the lane ops on the fleet's lanes: validate, then keep each pointer honest — every step before it done, never on a done one
-export function laneOp(
+export function glideOp(
     lanes: StashLane[],
     input: Record<string, unknown>,
     turns: number,
@@ -655,10 +655,10 @@ export function laneOp(
     const id = oneLine(input.id);
     const lane = lanes.find((l) => l.id === id && !l.endedAt);
     if (act !== 'link' && act !== 'step' && act !== 'end')
-        return { deny: 'orbit lane: act is create, link, step or end' };
+        return { deny: 'orbit glide: act is create, link, step or end' };
     if (!lane)
         return {
-            deny: `orbit lane: no live lane «${id}»; live: ${
+            deny: `orbit glide: no live lane «${id}»; live: ${
                 lanes
                     .filter((l) => !l.endedAt)
                     .map((l) => l.id)
@@ -686,9 +686,9 @@ export function laneOp(
         const session = oneLine(input.session);
         const role = input.role;
         if (!session)
-            return { deny: 'orbit lane: link names the member session id' };
+            return { deny: 'orbit glide: link names the member session id' };
         if (role !== 'coder' && role !== 'verifier')
-            return { deny: 'orbit lane: role is coder or verifier' };
+            return { deny: 'orbit glide: role is coder or verifier' };
         return put(
             {
                 ...lane,
@@ -714,7 +714,7 @@ export function laneOp(
         at > lane.items.length
     )
         return {
-            deny: `orbit lane: current is a step from 0 to ${lane.items.length}`,
+            deny: `orbit glide: current is a step from 0 to ${lane.items.length}`,
         };
     const stepped = pointed(lane.items, at);
     const isMoved = stepped.current !== lane.current || stepped.done !== done;
@@ -747,25 +747,25 @@ function laneCreate(
     now: number,
 ): { lanes: StashLane[]; result: string } | { deny: string } {
     const title = oneLine(input.title);
-    if (!title) return { deny: 'orbit lane: a title names the lane' };
+    if (!title) return { deny: 'orbit glide: a title names the lane' };
     const raw = Array.isArray(input.items) ? input.items : [];
     if (raw.length < 1 || raw.length > LANE_MAX)
         return {
-            deny: `orbit lane: 1 to ${LANE_MAX} steps, got ${raw.length}`,
+            deny: `orbit glide: 1 to ${LANE_MAX} steps, got ${raw.length}`,
         };
     const items: LaneItem[] = [];
     for (const item of raw) {
         const v = (item ?? {}) as Record<string, unknown>;
         const text = oneLine(v.text);
-        if (!text) return { deny: 'orbit lane: every step needs its text' };
+        if (!text) return { deny: 'orbit glide: every step needs its text' };
         if ([...text].length > LANE_TEXT_MAX)
             return {
-                deny: `orbit lane: «${[...text].slice(0, 30).join('')}…» is ${[...text].length} chars; keep it ≤${LANE_TEXT_MAX}, plain words`,
+                deny: `orbit glide: «${[...text].slice(0, 30).join('')}…» is ${[...text].length} chars; keep it ≤${LANE_TEXT_MAX}, plain words`,
             };
         const ticket = oneLine(v.ticket);
         if (ticket && !LANE_TICKET.test(ticket))
             return {
-                deny: `orbit lane: ticket «${ticket}» is not an id like FRM-12`,
+                deny: `orbit glide: ticket «${ticket}» is not an id like FRM-12`,
             };
         items.push({
             isDone: v.done === true,
@@ -906,7 +906,7 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
     await $.state.set(LANE_ASKS, asks).catch(() => undefined);
 }
 
-// a mark or note on a member's ask from a lane card: the store holds it until the member's own stash takes it in
+// a mark or note on a member's ask from a glide card: the store holds it until the member's own stash takes it in
 async function markRemote(
     $: EngineInterface,
     sid: string,
@@ -1977,7 +1977,7 @@ export const register: Register = (on) => {
                                 'resolve',
                                 'follow',
                                 'plan',
-                                'lane',
+                                'glide',
                             ],
                             type: 'string',
                         },
@@ -2096,7 +2096,7 @@ export const register: Register = (on) => {
             .filter((l) => orbit.turns - l.movedAt >= LANE_STALE)
             .map(
                 (l) =>
-                    `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op lane.`,
+                    `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`,
             );
         const laneNotes = isUserTurn ? await takeLaneNotes($, lanes) : [];
         return next({
@@ -2544,7 +2544,7 @@ export const register: Register = (on) => {
         const open = o.asks.filter((a) => !a.isResolved);
         const age = planAge(o);
         // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
-        // an ask card's door: this session's own orbit by default; a lane card passes the member's, through the store
+        // an ask card's door: this session's own orbit by default; a glide card passes the member's, through the store
         const ownDoor: AskDoor = {
             mark: (a, mark) =>
                 void markAsks(
@@ -2846,11 +2846,11 @@ export const register: Register = (on) => {
                 ) : null}
             </Box>
         );
-        // 🛼 lanes (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
+        // 🛼 glide (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
         // current one «← we are here»; a note on it reaches cclio's next prompt, whichever board took it
         const lanes = (await $.state.get(LANES)).value ?? [];
         const laneAsks = (await $.state.get(LANE_ASKS)).value ?? {};
-        // a member's asks on the lane card: folded to their count by default, its rows marked as on the member's own board
+        // a member's asks on the glide card: folded to their count by default, its rows marked as on the member's own board
         const memberJSX = (
             lane: StashLane,
             role: (typeof LANE_ROLES)[number],
@@ -2913,7 +2913,7 @@ export const register: Register = (on) => {
                 ...n,
                 isTaken: !n.isTaken || undefined,
             }));
-        const laneJSX = isPartOn('stash.lane')
+        const laneJSX = isPartOn('stash.glide')
             ? lanes.map((lane) => (
                   <Box
                       borderColor={cardBorder(e.surface)}
@@ -3294,14 +3294,14 @@ export const register: Register = (on) => {
     on('tool.call', async ($, e, next) => {
         if (
             (e.tool as string) === ORBIT_TOOL &&
-            (e as Record<string, unknown>).op === 'lane'
+            (e as Record<string, unknown>).op === 'glide'
         ) {
             if (!(await isLaneOwner($)))
                 return {
-                    deny: `orbit lane: only ${LANE_OWNER} writes the lanes; every board shows them`,
+                    deny: `orbit glide: only ${LANE_OWNER} writes the lanes; every board shows them`,
                 };
             const before = await readLanes($);
-            const op = laneOp(
+            const op = glideOp(
                 before,
                 e as Record<string, unknown>,
                 (await currentOrbit($)).turns,
