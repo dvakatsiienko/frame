@@ -2410,7 +2410,8 @@ export const register: Register = (on) => {
                         a.note ? (
                             <Box flexShrink={1} minWidth={0}>
                                 <Text dimColor wrap='truncate-end'>
-                                    {`«${a.note}»`}
+                                    {/* a sent note leads with 💬, drawn for dima only: the model gets «his note: …» (dima, 18:14) */}
+                                    {`💬 «${a.note}»`}
                                 </Text>
                             </Box>
                         ) : null

@@ -371,7 +371,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
-  - then those rows keep both buttons, the held one reading `🔓 take` or `🔓 redo` and a press on either changing nothing, and the note shows as dim text instead of its field — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ⏯️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
+  - then those rows keep both buttons, the held one reading `🔓 take` or `🔓 redo` and a press on either changing nothing, and the note shows as dim text, `💬 «…»`, instead of its field (the 💬 is dima's alone; the model reads «his note: …», dima 18:14) — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ⏯️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
   - decision: no control rather than a disabled one — the mod api's `Button` and `Input` take no `disabled` (dima asked for one, 19:46)
 - ✅ a resolved ask leaves, a follow-up changes in place
   - given cclio answered a marked ask

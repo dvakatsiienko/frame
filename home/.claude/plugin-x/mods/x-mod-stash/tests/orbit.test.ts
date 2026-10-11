@@ -262,7 +262,7 @@ test('a joined ask keeps its buttons but no note field while the turn runs', asy
         (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text,
     ]).toEqual([
         ['orbit:accepted:o1', 'orbit:rejected:o1', 'orbit:read:o1'],
-        expect.stringContaining('«after ci»'),
+        expect.stringContaining('💬 «after ci»'),
     ]);
 });
 
