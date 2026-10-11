@@ -173,6 +173,30 @@ test('check all accepts every open ask', async ($, on) => {
     ).toEqual(['o1 🛎️', 'o2 🛎️']);
 });
 
+test('orbit is a card headed «🪐 orbit» with no count, and its ✅ reads «yes to all»', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['a one', 'x'], ['a two', 'y']);
+    const card = await ui.find({ key: 'orbit', type: 'Box' });
+    expect([
+        card?.props.borderStyle,
+        (await ui.find({ text: /^🪐 orbit/, type: 'Text' }))?.text,
+        (await ui.find({ key: 'orbit:all', type: 'Button' }))?.text,
+    ]).toEqual(['round', '🪐 orbit', '✅ yes to all']);
+});
+
+test('each ask is a card of its own', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['a one', 'x']);
+    expect(
+        (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.props
+            .borderStyle,
+    ).toBe('round');
+});
+
 test("a peer's prompt carries no mark, but its turn takes the tick at its next tool call", async ($, on) => {
     const w = world(on);
     await start($);

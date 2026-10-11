@@ -204,6 +204,10 @@
   - then a pane lists each by its session name, its state on the right, a full empty row between members
   - decision: cclio is pinned to the top, its name always bold; ccrow, her adviser, is pinned second and bold too, a member matched by the name's last word so a coder naming ccrow is not pinned (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
+- ⬜ the board's sections sit in cards (FRM-391 aside, dima 16:54)
+  - given the board draws, then sessions, 🪐 orbit and 🌔 phases each sit in a round-bordered card in the `inactive` grey, a step stronger than dim, no colour; each ask is a smaller dim-bordered card inside orbit
+  - and orbit's head reads `🪐 orbit` with no count, its check-all button `✅ yes to all`; phases carry no count either (seven at most)
+  - decision: cards over strips and the dashboard, tried side by side in a throwaway `board-lab` mod (dima, 16:48 «strips — no, windows 92 look», «colors are ugly»; 16:54 «apply the cards layout»)
   - decision: cc's registry stores «🐦‍⬛ ccrow» with the zero-width joiner as a space, so the board puts the joiner back for that one sequence — a plain string fix, no emoji parser (FRM-325)
   - decision: a session younger than a minute, counted from the registry's `startedAt`, gets no row — a probe that exits within a minute never shows; one that lives on gets its row once it is a minute old (FRM-325)
   - decision: a session that never ran a turn gets no row and no count — its project folder under `~/.claude/projects/` holds no `<session id>.jsonl` yet; the desktop's warm spares sit in the registry like this (cclio-9a, 2026-10-09; that they are spares is an inference). a missing project folder keeps the row, since cc hashes a long path's folder name
@@ -340,7 +344,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
   - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ⏯️ ⏹️, then the note; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
   - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
-  - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one `✅` button (dima, 19:59)
+  - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one `✅` button (dima, 19:59), labelled `✅ yes to all` since the cards (16:54)
   - decision: the header reads `🪐 orbit: n`, the number alone (dima, 20:19, 20:48)
   - decision: the pick is bold like the id, so the proposal stands out (dima, 20:30)
   - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses

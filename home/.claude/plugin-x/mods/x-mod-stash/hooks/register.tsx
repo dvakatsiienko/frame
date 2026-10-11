@@ -159,6 +159,8 @@ const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
 const CHANGED_MARK = '🆕';
 // a quarter row between a block's lines: the desktop draws the fraction, the terminal rounds it away (dima, 21:22)
 const LINE_GAP = 0.25;
+// the board's sections sit in cards: a round border a step stronger than dim, no colour (dima, 16:48 «colors are ugly», 16:54)
+const CARD_BORDER = 'inactive';
 // an ask, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
 const ORBIT_TEXT_MAX = 90;
 // at most this many assumptions a turn, and on the board at once (FRM-382 exit 2: under one a turn on average)
@@ -2091,9 +2093,12 @@ export const register: Register = (on) => {
         // (dima, 20:08); a full row of air between asks (dima, 19:52)
         const askJSX = (a: OrbitAsk, i: number) => (
             <Box
+                borderDimColor
+                borderStyle='round'
                 flexDirection='column'
                 key={`orbit:ask:${a.id}`}
-                marginTop={i > 0 ? 1 : 0}
+                marginTop={i > 0 ? 0.5 : 0}
+                paddingX={1}
                 rowGap={LINE_GAP}>
                 <Box flexDirection='row' gap={1}>
                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
@@ -2151,9 +2156,17 @@ export const register: Register = (on) => {
             </Box>
         );
         const orbitJSX = (
-            <Box flexDirection='column' key='orbit' marginTop={1}>
+            <Box
+                borderColor={CARD_BORDER}
+                borderStyle='round'
+                flexDirection='column'
+                key='orbit'
+                marginTop={1}
+                paddingX={1}
+                paddingY={0.5}
+                rowGap={0.5}>
                 <Box flexDirection='row' justifyContent='space-between'>
-                    <Text bold>{`🪐 orbit: ${open.length}`}</Text>
+                    <Text bold>🪐 orbit</Text>
                     {open.some((a) => !a.mark && !a.isLocked) ? (
                         <Button
                             key='orbit:all'
@@ -2172,7 +2185,7 @@ export const register: Register = (on) => {
                                 )
                             }
                             plain>
-                            ✅
+                            ✅ yes to all
                         </Button>
                     ) : null}
                 </Box>
@@ -2273,9 +2286,13 @@ export const register: Register = (on) => {
             ? [
                   <Box flexGrow={1} key='phases:gap' />,
                   <Box
+                      borderColor={CARD_BORDER}
+                      borderStyle='round'
                       flexDirection='column'
                       key='phases'
                       marginTop={1}
+                      paddingX={1}
+                      paddingY={0.5}
                       rowGap={LINE_GAP}>
                       <Text bold>
                           {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
@@ -2493,23 +2510,31 @@ export const register: Register = (on) => {
         ).length;
         return (
             <Box flexDirection='column' minHeight={fill}>
-                {/* the head: what the pane holds on the left, how many work right now on the right */}
                 <Box
-                    flexDirection='row'
-                    justifyContent='space-between'
-                    marginBottom={1}>
-                    <Box flexDirection='row' gap={1}>
-                        <Text>🚦</Text>
-                        <Text bold>sessions</Text>
-                        <Text dimColor>on this mac · {list.length}</Text>
+                    borderColor={CARD_BORDER}
+                    borderStyle='round'
+                    flexDirection='column'
+                    key='sessions'
+                    paddingX={1}
+                    paddingY={0.5}>
+                    {/* the head: what the pane holds on the left, how many work right now on the right */}
+                    <Box
+                        flexDirection='row'
+                        justifyContent='space-between'
+                        marginBottom={1}>
+                        <Box flexDirection='row' gap={1}>
+                            <Text>🚦</Text>
+                            <Text bold>sessions</Text>
+                            <Text dimColor>on this mac · {list.length}</Text>
+                        </Box>
+                        <Text
+                            color={busyCount ? STATUS.busy.tint : undefined}
+                            dimColor={!busyCount}>
+                            {busyCount} busy
+                        </Text>
                     </Box>
-                    <Text
-                        color={busyCount ? STATUS.busy.tint : undefined}
-                        dimColor={!busyCount}>
-                        {busyCount} busy
-                    </Text>
+                    {list.map(row)}
                 </Box>
-                {list.map(row)}
                 {orbitJSX}
                 {phasesJSX}
             </Box>
