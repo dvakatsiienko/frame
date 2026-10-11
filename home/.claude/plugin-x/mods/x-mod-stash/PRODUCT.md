@@ -22,3 +22,13 @@ the words: `GLOSSARY.md`.
 - the full want, the grill and the chunks: cclio's pocket PK-20
 - out: other sessions' asks in one list, a turn started by the mod, a new skill for the contract
 
+
+## settings — the want (2026-10-11)
+
+> a foldable mods settings gui replaces the breather. i want at least the stash parts to be toggleable — for example the auto-compact threshold, show/hide — essentially any mod part. make me a really solid mod settings view with good ux. the settings exist so an mvp like the enhancer can be shown or hidden until it earns its place.
+> don't change the current 5h and ctx bars, they are fine — only animate them. … i'm sharp on an eye and notice low fps very clearly.
+
+- why: the enhancer mvp sat on the board with no way to hide it, the few knobs lived in scattered places, and the breather spent a row the band already has
+- the cut: slice 1 — the breather's breathing moves onto the 5h and ctx bars (with a spinner take and a live frame-rate A/B); slice 2 — a 🎛️ toggle in the band folds out a show/hide switch per mod part plus 7 knobs, saved on each keystroke into one global file. polish tier: an internal tool, «works and clear»
+- the grill, the decisions and the exit lines: [FRM-391](https://linear.app/x-com/issue/FRM-391)
+- out: a `/settings` command, per-session settings, mobile, knobs beyond the 7, knobs for holds and redact, a designer pass

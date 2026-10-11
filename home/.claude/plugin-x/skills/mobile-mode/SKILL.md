@@ -27,13 +27,19 @@ dima is on a small screen with a software keyboard, often lying down. every repl
   there). orbit stays the one store: every reply ends with every open orbit ask printed with its
   id, and his answer by id is written back the same turn (`resolve` or `follow`), so the board is
   current the moment he is back at the mac. an orbit mark that reaches a prompt in mobile mode
-  still counts, it was made on the mac:
+  still counts, it was made on the mac. the board's phases are gone too, so the plan's next 3 moves
+  print under the asks (dima, 2026-10-11, o112: «i don't have orbit there and phases»):
 
       ⏳ waiting on your word:
 
       ```
       o9. <ask> ➡️ <pick>
       ```
+
+      🌔 next:
+      - <move 1>
+      - <move 2>
+      - <move 3>
 
 mode ends on dima's word: «back at the mac», `/mobile-mode off`, or a 🛎️ or ↩️ press in the board's orbit (he is at the mac; a note, a speak press or a row's ↗ is not). a
 new topic does not end it; once it ends the fence goes and the asks live in orbit again. x-mod-stash keeps the flag and
