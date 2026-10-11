@@ -4,7 +4,8 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
-// a rule in warn mode: the call runs and the model reads what would have been refused (dima's o70)
+// warn mode is the code's to give (WARN_ONLY), never the store's: a test cannot reach the hook's module, so the warn
+// path is proven by red-proof listing a rule there, which turns the first test below red
 function world(on: On) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
@@ -40,28 +41,15 @@ const fork = ($: Engine) =>
         tool_use_id: 'tu-1',
     });
 
-test('a rule set to warn lets the command run and names the refusal it would make', async ($, on) => {
+test('a floor rule stays refused when the store says warn', async ($, on) => {
     const { ran, store } = world(on);
     store.set('rule-mode:rm', 'warn');
     const r = await $.tool.call({ command: 'rm -rf build', tool: 'Bash' });
-    expect([
-        ran,
-        (r.context ?? []).some((c) =>
-            c.startsWith('x-mod-guard would refuse this (rule rm'),
-        ),
-        kinds(store),
-    ]).toEqual([['rm -rf build'], true, ['warned']]);
+    expect([ran, r.deny !== undefined]).toEqual([[], true]);
 });
 
 test('a rule with no mode set still refuses', async ($, on) => {
     const { ran } = world(on);
     const r = await $.tool.call({ command: 'rm -rf build', tool: 'Bash' });
     expect([ran, r.deny !== undefined]).toEqual([[], true]);
-});
-
-test('a fork rule set to warn spawns and keeps a warned event', async ($, on) => {
-    const { store } = world(on);
-    store.set('rule-mode:fork', 'warn');
-    const r = await fork($);
-    expect([r.deny, kinds(store)]).toEqual([undefined, ['warned']]);
 });

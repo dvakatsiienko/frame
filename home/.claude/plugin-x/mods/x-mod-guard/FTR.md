@@ -142,11 +142,11 @@
   - given a plain `git push`, or the same refspec outside those two repos, then it runs
 
 - ⬜ a new rule warns before it refuses (dima's o70)
-  - given a rule listed in `WARN_ONLY`, or set to «warn» in the store's `rule-mode:<rule>`
+  - given a rule listed in `WARN_ONLY`
   - when it fires on a Bash call, then the command runs and the model gets «x-mod-guard would refuse this (rule …, warn-only until its verifier says clean): <the refusal>»
   - when it fires on an Agent spawn, then the agent runs — a spawn takes no note
   - then the event is kept as `warned`, and the day's tally counts it apart
-  - given «enforce» in the store, then the rule refuses even while listed
+  - given «enforce» in the store's `rule-mode:<rule>`, then a listed rule refuses; «warn» there does nothing — every session writes that store, so it can never switch a rule off (the verifier's 15:08 probe turned the `rm` floor off)
   - decision: a refusing hook reaches every session at its next turn end; FRM-392's guard refused three verifier verdicts before anyone saw it
 
 ## every Agent spawn

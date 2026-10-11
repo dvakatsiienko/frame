@@ -166,10 +166,14 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // a new refusing rule ships warn-only: the call runs and the model reads what would have been refused, until the rule's
 // verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([]);
-// the store's `rule-mode:<rule>` («warn» or «enforce») outranks the set, so a 🎛️ knob can flip a rule with no commit
+// the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
+// any session writes that store, and a «warn» there switched the floor off for every session (verifier, 15:08)
 async function isWarnOnly($: EngineInterface, rule: string) {
-    const mode = await $.store.get(`rule-mode:${rule}`).catch(() => undefined);
-    return mode === 'warn' || (mode !== 'enforce' && WARN_ONLY.has(rule));
+    if (!WARN_ONLY.has(rule)) return false;
+    return (
+        (await $.store.get(`rule-mode:${rule}`).catch(() => undefined)) !==
+        'enforce'
+    );
 }
 const wouldRefuse = (rule: string, text: string) =>
     `x-mod-guard would refuse this (rule ${rule}, warn-only until its verifier says clean): ${text}`;
