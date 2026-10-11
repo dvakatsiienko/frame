@@ -592,6 +592,28 @@ test("a turn that ends before a reloaded module's start keeps orbit", async ($, 
     ).toEqual(['o3']);
 });
 
+test("a tool call before a mid-turn reload's start still stamps the running turn", async ($, on) => {
+    world(on);
+    const state: Record<string, unknown> = {
+        orbit: {
+            asks: [],
+            assumed: ['a1', 'a2', 'a3'].map((id) => ({ at: 2, id, text: id })),
+            next: 1,
+            turns: 2,
+        },
+        turn: { isBusy: true, isPinged: false, isUserTurn: true },
+    };
+    on('state.get', (_$, e) => ({
+        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state[e.key] = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    const r = await orbit($, { op: 'assume', texts: ['one more'] });
+    expect((r as { deny?: string }).deny).toBeUndefined();
+});
+
 test("an ask's pick is drawn bold", async ($, on) => {
     world(on);
     await start($);

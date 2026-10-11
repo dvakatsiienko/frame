@@ -2337,10 +2337,12 @@ export const register: Register = (on) => {
     // mid-turn: the next tool result carries the new state once
     on('tool.call', async ($, e, next) => {
         if ((e.tool as string) === ORBIT_TOOL) {
+            // the turn as $.state holds it: a call that lands before a mid-turn reload's start reads a default isBusy
+            const isTurn = (await $.state.get(TURN)).value?.isBusy ?? isBusy;
             const op = orbitOp(
                 await currentOrbit($),
                 e as Record<string, unknown>,
-                isBusy,
+                isTurn,
             );
             if ('deny' in op) return { deny: op.deny };
             await saveOrbit($, op.orbit);
