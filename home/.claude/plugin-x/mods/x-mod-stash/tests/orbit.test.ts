@@ -121,7 +121,7 @@ test("an ask's row reads its text and cclio's pick", async ($, on) => {
     await add($, ['push the branch to main', 'yes, now']);
     expect(
         (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text,
-    ).toContain('push the branch to main ➡️ yes, now');
+    ).toContain('push the branch to main➡️ pick: yes, now');
 });
 
 test('a ticked ask joins the next prompt as model-only context', async ($, on) => {
@@ -173,7 +173,7 @@ test('check all accepts every open ask', async ($, on) => {
     ).toEqual(['o1 🛎️', 'o2 🛎️']);
 });
 
-test('orbit is a card headed «🪐 orbit» with no count, and its ✅ reads «yes to all»', async ($, on) => {
+test('orbit is a card headed «🪐 orbit» with no count, and its check-all is a bare ✅', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -183,7 +183,7 @@ test('orbit is a card headed «🪐 orbit» with no count, and its ✅ reads «y
         card?.props.borderStyle,
         (await ui.find({ text: /^🪐 orbit/, type: 'Text' }))?.text,
         (await ui.find({ key: 'orbit:all', type: 'Button' }))?.text,
-    ]).toEqual(['round', '🪐 orbit', '✅ yes to all']);
+    ]).toEqual(['round', '🪐 orbit', '✅']);
 });
 
 test('each ask is a card of its own', async ($, on) => {
@@ -271,7 +271,7 @@ test("a joined ask's 🔒 mark leads its own line", async ($, on) => {
     await ui.press({ key: 'orbit:accepted:o1' });
     await say($, 'go');
     expect((await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text).toMatch(
-        /^🔒🛎️ o1: push .*FRM-1 ➡️ yes🔊/u,
+        /^🔒🛎️ o1: push .*FRM-1➡️ pick: yes🔊/u,
     );
 });
 
@@ -295,7 +295,7 @@ test('a pressed 🛎️ is lit and a second press puts it out', async ($, on) =>
     const lit = (await ui.find({ key: 'orbit:accepted:o1' }))?.props.variant;
     await ui.press({ key: 'orbit:accepted:o1' });
     const out = (await ui.find({ key: 'orbit:accepted:o1' }))?.props.variant;
-    expect([lit, out]).toEqual(['secondary', undefined]);
+    expect([lit, out]).toEqual(['primary', undefined]);
 });
 
 test('a note is kept as it is typed, with no Enter', async ($, on) => {
@@ -361,7 +361,7 @@ test('a follow-up keeps its id and place with new text, led by 🆕', async ($, 
     ]).toEqual([
         ['o1', 'o2'],
         expect.stringMatching(
-            /^🆕 o1: push the branch once ci is green ➡️ after ci🛎️/u,
+            /^🆕 o1: push the branch once ci is green➡️ pick: after ci🛎️ take/u,
         ),
     ]);
 });

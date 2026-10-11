@@ -156,17 +156,28 @@ test('a session with a door is pressed by its whole name', async ($, on) => {
     );
     const ui = await board($);
     const name = await ui.find({ key: `door:${PEER}` });
-    expect(name?.text).toBe('☕️ 🔧 FRM-1 code: x ↗');
+    expect(name?.text).toBe('☕️ 🔧 FRM-1 code: x');
 });
 
-test("the coordinator's name is bold text beside its own ↗", async ($, on) => {
+test('every name is bold and is its own door, with no ↗ beside it', async ($, on) => {
     fleet(on);
     const ui = await board($);
     const [name, door] = await Promise.all([
         ui.find({ text: '🦉 cclio (here)', type: 'Text' }),
         ui.find({ key: `door:${HERE}` }),
     ]);
-    expect([name?.props.bold, door?.text]).toEqual([true, '↗']);
+    expect([name?.props.bold, door?.text]).toEqual([true, '🦉 cclio (here)']);
+});
+
+test('the sessions head reads its count and a bold busy on the right', async ($, on) => {
+    fleet(on);
+    const ui = await board($);
+    const busy = await ui.find({ text: /^\d+ busy$/, type: 'Text' });
+    expect([
+        (await ui.find({ text: /on this mac · \d+ busy$/, type: 'Text' }))
+            ?.text,
+        busy?.props.bold,
+    ]).toEqual([expect.stringMatching(/^\d+ on this mac · \d+ busy$/), true]);
 });
 
 test('the coordinator is pinned to the top of the board', async ($, on) => {

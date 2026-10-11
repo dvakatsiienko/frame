@@ -205,8 +205,8 @@
   - decision: cclio is pinned to the top, its name always bold; ccrow, her adviser, is pinned second and bold too, a member matched by the name's last word so a coder naming ccrow is not pinned (dima, 2026-10-10); the rest follow by name (dima, 2026-10-05)
   - decision: members come from the session registry (`~/.claude/sessions/<pid>.json`) with a live pid
 - ⬜ the board's sections sit in cards (FRM-391 aside, dima 16:54)
-  - given the board draws, then sessions, 🪐 orbit and 🌔 phases each sit in a round-bordered card in the `inactive` grey, a step stronger than dim, no colour; each ask is a smaller dim-bordered card inside orbit
-  - and orbit's head reads `🪐 orbit` with no count, its check-all button `✅ yes to all`; phases carry no count either (seven at most)
+  - given the board draws, then sessions, 🪐 orbit and 🌔 phases each sit in a round-bordered card in the `subtle` grey, between dim and `inactive`, no colour (16:54 too faint, 17:00 «too hard»); each ask is a smaller dim-bordered card inside orbit
+  - and orbit's head reads `🪐 orbit` with no count, its check-all a bare `✅`; phases carry no count either (seven at most)
   - decision: cards over strips and the dashboard, tried side by side in a throwaway `board-lab` mod (dima, 16:48 «strips — no, windows 92 look», «colors are ugly»; 16:54 «apply the cards layout»)
   - decision: cc's registry stores «🐦‍⬛ ccrow» with the zero-width joiner as a space, so the board puts the joiner back for that one sequence — a plain string fix, no emoji parser (FRM-325)
   - decision: a session younger than a minute, counted from the registry's `startedAt`, gets no row — a probe that exits within a minute never shows; one that lives on gets its row once it is a minute old (FRM-325)
@@ -241,17 +241,16 @@
 - ⬜ a press on a session's name opens it in the desktop
   - the harness proves the `open <url>` it runs; that the desktop then shows the session is dima's click
   - given a desktop-born session (the registry carries `hostSessionId: local_…`)
-  - when dima presses its name, which ends in `↗`
+  - when dima presses its name, bold, with no glyph beside it (dima, 17:00 «remove link»)
   - then the desktop opens that session through `claude://code/continue?session=local_…`
   - given a background session bridged to claude.ai (`bridgeSessionId: session_…`)
   - then the press opens `claude://code/session_…`
-  - given a background session with neither, the name ends in `📋`
+  - given a background session with neither
   - then the press copies `claude attach <jobId>`, the terminal door
   - given a terminal session with neither
   - then the name is plain text: nothing opens it
   - decision: the mod api has no door to a session; the desktop's own `claude://` url handler has one (read from its 2.1.289 bundle), and the press runs `open <url>` on this mac rather than a `Link`, whose click the pane's sandbox decides
-  - decision: the whole name is a plain `Button`, normal weight; the surface's own hover background marks it, no bold on hover — a `Button` label takes no weight, and a whole-name `Markdown` link drew in the surface's blue (dima, 2026-10-05)
-  - decision: cclio's name is bold text with its own `↗` beside it, since a bold name cannot be a `Button` label
+  - decision: every name bold, and the whole name is the `Button`, its bold `Text` the child (a `Button` takes `Text` children); no `↗` or `📋` beside it (dima, 17:00: «all session names bold», «remove link»)
   - decision: no hover cards anywhere in the pane — an absolute card in a narrow row wrapped, clipped and drew over its neighbours (dima, 2026-10-05)
 - 🔎 each row carries its facts beside the state
   - given a session has open asks, a context reading or a ticket in its name
@@ -273,7 +272,7 @@
   - decision: on the second line, not beside the name — in the narrow pane a long name wrapped to three lines or cut the model (the live look, FRM-329)
 - ⬜ the board borrows the reference's look (dima's dark screenshot on FRM-329)
   - given the board draws
-  - then a head reads `🚦 sessions on this mac · n` with `n busy` on its right, each row leads with a `●` state dot, the second line sits under the name and is dim
+  - then a head reads `🚦 sessions` with `n on this mac · m busy` on its right, the busy bold (dima, 17:00), each row leads with a `●` state dot, the second line sits under the name and is dim
   - decision: no footer hint — «a name opens its session · /board colour flips colour» is gone (dima, 21:12)
   - decision: a quarter row of air between the lines of one block — a member's two lines, an ask and its buttons, the phases — on the desktop; the terminal rounds it to none (dima, 21:22: 0 too dense, 0.5 too big)
   - decision: no new controls — the reference's run buttons stay out (dima: «no need functionality buttons»)
@@ -338,14 +337,14 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ accept, reject, note, check all
   - given orbit shows asks
   - when dima presses an ask's 🛎️ or ↩️, types in its note, or presses check all
-  - then the pressed toggle is lit (the `secondary` chip, like `🚦`) and a second press puts it out; the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
+  - then the pressed toggle, worded `🛎️ take` or `↩️ back`, is lit (the `primary` button) and a second press puts it out; the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
   - decision: 🛎️ / ↩️, the waiter lens — 🛎️ order up, ready for the session to pick up; ↩️ back to the kitchen (dima's o79, 23:05; was 🤩 / 👎🏼)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
   - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ⏯️ ⏹️, then the note; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
   - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
-  - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one `✅` button (dima, 19:59), labelled `✅ yes to all` since the cards (16:54)
-  - decision: the header reads `🪐 orbit: n`, the number alone (dima, 20:19, 20:48)
+  - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one bare `✅` button (dima, 19:59; a label tried at 16:54, dropped at 17:00); the pick sits on a line of its own, `➡️ pick:` dim then the pick bold, the mock's card shape (dima, 17:00)
+  - decision: the header reads `🪐 orbit`, no count (dima, 16:54; was `🪐 orbit: n`)
   - decision: the pick is bold like the id, so the proposal stands out (dima, 20:30)
   - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
 - 🔎 🔊 reads an ask aloud through speak, ⏯ pauses or resumes, ⏹ stops

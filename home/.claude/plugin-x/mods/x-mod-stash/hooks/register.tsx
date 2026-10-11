@@ -159,8 +159,8 @@ const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
 const CHANGED_MARK = '🆕';
 // a quarter row between a block's lines: the desktop draws the fraction, the terminal rounds it away (dima, 21:22)
 const LINE_GAP = 0.25;
-// the board's sections sit in cards: a round border a step stronger than dim, no colour (dima, 16:48 «colors are ugly», 16:54)
-const CARD_BORDER = 'inactive';
+// the board's sections sit in cards: a round border between dim and `inactive`, no colour (dima, 16:48 «colors are ugly», 16:54, 17:00 «too hard»)
+const CARD_BORDER = 'subtle';
 // an ask, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
 const ORBIT_TEXT_MAX = 90;
 // at most this many assumptions a turn, and on the board at once (FRM-382 exit 2: under one a turn on average)
@@ -2044,10 +2044,9 @@ export const register: Register = (on) => {
                         true,
                     )
                 }
-                {...(a.mark === mark
-                    ? { variant: 'secondary' as const }
-                    : { plain: true as const })}>
-                {mark === 'accepted' ? '🛎️' : '↩️'}
+                {...(a.mark === mark ? { variant: 'primary' as const } : {})}>
+                {/* worded, the mock's card shape: lit while it holds (dima, 17:00) */}
+                {mark === 'accepted' ? '🛎️ take' : '↩️ back'}
             </Button>
         );
         const handleAssumedNote = (id: string, value: string) =>
@@ -2101,7 +2100,12 @@ export const register: Register = (on) => {
                 paddingX={1}
                 rowGap={LINE_GAP}>
                 <Box flexDirection='row' gap={1}>
-                    <Box flexGrow={1} flexShrink={1} minWidth={0}>
+                    <Box
+                        flexDirection='column'
+                        flexGrow={1}
+                        flexShrink={1}
+                        minWidth={0}
+                        rowGap={LINE_GAP}>
                         {/* the id and the pick bold, so the proposal stands out (dima, 20:30) */}
                         {/* an ask answered this turn leads its line with 👀 until the turn ends — inline, so the row keeps its left
                             edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
@@ -2115,7 +2119,10 @@ export const register: Register = (on) => {
                             <Text bold>{a.id}</Text>
                             {': '}
                             {linkedJSX(a.text, `ask:${a.id}`)}
-                            {' ➡️ '}
+                        </Text>
+                        {/* the pick on a line of its own, the mock's card shape (dima, 17:00) */}
+                        <Text>
+                            <Text dimColor>{'➡️ pick: '}</Text>
                             <Text bold>
                                 {linkedJSX(a.pick, `pick:${a.id}`)}
                             </Text>
@@ -2185,7 +2192,7 @@ export const register: Register = (on) => {
                                 )
                             }
                             plain>
-                            ✅ yes to all
+                            ✅
                         </Button>
                     ) : null}
                 </Box>
@@ -2392,33 +2399,21 @@ export const register: Register = (on) => {
                                     ●
                                 </Text>
                             </Box>
-                            {/* the whole name is the control; a pinned name stays bold text, since a Button label takes no weight */}
-                            {door && pinOf(m.name) === 2 ? (
+                            {/* every name bold, and the whole name is the control: no ↗ beside it (dima, 17:00) */}
+                            {door ? (
                                 <Button
                                     key={`door:${m.sid}`}
                                     onPress={(p) =>
                                         void pressDoor($, door, p.surface)
                                     }
                                     plain>
-                                    {`${name} ${doorGlyph(door)}`}
+                                    <Text bold>{name}</Text>
                                 </Button>
                             ) : (
-                                <Text
-                                    bold={pinOf(m.name) < 2}
-                                    wrap='truncate-end'>
+                                <Text bold wrap='truncate-end'>
                                     {name}
                                 </Text>
                             )}
-                            {door && pinOf(m.name) < 2 ? (
-                                <Button
-                                    key={`door:${m.sid}`}
-                                    onPress={(p) =>
-                                        void pressDoor($, door, p.surface)
-                                    }
-                                    plain>
-                                    {doorGlyph(door)}
-                                </Button>
-                            ) : null}
                             {m.offPattern ? (
                                 <Text color={ACCENT}>⚠</Text>
                             ) : null}
@@ -2522,15 +2517,18 @@ export const register: Register = (on) => {
                         flexDirection='row'
                         justifyContent='space-between'
                         marginBottom={1}>
-                        <Box flexDirection='row' gap={1}>
-                            <Text>🚦</Text>
-                            <Text bold>sessions</Text>
-                            <Text dimColor>on this mac · {list.length}</Text>
-                        </Box>
-                        <Text
-                            color={busyCount ? STATUS.busy.tint : undefined}
-                            dimColor={!busyCount}>
-                            {busyCount} busy
+                        <Text bold>🚦 sessions</Text>
+                        {/* the mock's head: the count and the busy on the right, the busy bold (dima, 17:00) */}
+                        <Text>
+                            <Text
+                                dimColor>{`${list.length} on this mac · `}</Text>
+                            <Text
+                                bold
+                                color={
+                                    busyCount ? STATUS.busy.tint : undefined
+                                }>
+                                {`${busyCount} busy`}
+                            </Text>
                         </Text>
                     </Box>
                     {list.map(row)}
