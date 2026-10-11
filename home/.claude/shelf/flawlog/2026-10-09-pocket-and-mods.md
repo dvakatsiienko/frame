@@ -1,0 +1,11 @@
+# flawlog · 2026-10-09 · pocket-and-mods · run `cc·20261009·night`
+
+one line per flaw: what broke · cost · lesson. `fixed:` opens a closed one. tags `#dima-caught` `#brief`.
+
+- fixed: a red-proof command held `git checkout -- <file>` over my own uncommitted test fix; x-mod-guard stopped it on a sibling redirect before it ran · cost: none, one retry · lesson → a red proof swaps code with `git stash push -- <path>` + pop, never checkout or a redirect
+- fixed: `x stats` counted test fixtures as usage, 4243 lines in 3 days (54 handoff calls per commit from `handoff.test.ts`); dima read the numbers as false before I did · cost: a wrong cli-direction answer at boot · lesson → x traces are opt-in under `X_TEST`, the 3 days moved to `traces/_polluted/` #dima-caught
+- fixed: a pre-filled batch printed as nested bullets with empty labels (an id, then its size, then a lone dash, per item) · cost: dima «I can't read this», a reprint · lesson → a batch of items prints one line per item, `id · size · title`, never nested #dima-caught
+- fixed: the reprint broke the same way, each item split into three bullets (a nesting rule applied to a list of records) · cost: a second «why broken? fix» · lesson → a list of records prints inside a code fence, one record per line; the bullet-nesting rule is for prose facts, not table rows #dima-caught
+- fixed: pr-watch + ci-watch re-armed by hand five times, each a reply reprinting the same ⏳ bucket, right after dima said stop reprinting · cost: ~5 empty turns in his thread (ccrow caught it) · lesson → the watches run as one-shot background jobs that end on the first event (6 h cap), so an idle expiry never wakes a turn; the boot skill line moves to it (pk-36)
+- fixed: dima's 10-07 ask «extract the common crew patterns into one crew-dna skill» lived only as one line in a test-drive log, never a pocket item or a ticket · cost: a lost ask surfaced only because dima remembered it · lesson → every verdict line written into a log during a grill also becomes a pocket task in the same turn #dima-caught
+- 16:22 #dima-caught FRM-354 closed on a coder's probe of one session while the look card's «not checked» was dima's eye on the desktop; he said «breath is not fixed yet». a visual fix closes only on his eye, never on a probe → reopened, coder back on it
