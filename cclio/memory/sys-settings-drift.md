@@ -14,5 +14,3 @@ copy froze while live kept moving, surfacing only at a pre-push refusal months l
   user `true`, and impeccable stayed off in every frame session for a day behind one (2026-09-29).
 - ⚠️ **Before any future merge of this file, verify the `permissions` blocks byte-identical and
   say so** — Dima was once storm-hit by a permission change and is rightly wary.
-
-Related: [[sys-boundaries]]

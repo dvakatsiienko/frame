@@ -9,6 +9,30 @@ the trace of every ask, steer and decision across the sweep ([FRM-267](https://l
 
 his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 
+## findings — patterns, mistakes, tips (one line per round that shows one; step 10's retro reads this first)
+
+### flaw classes to hunt
+- stories and lineage loaded at boot: `dima-stories` 10 KB every turn, incidents inside rule lines → a comment or off the boot (r19–r20, r31)
+- a line restating a guard or a skill: the pocket breach list beside `pocket-check`, the typecheck line beside the parent AGENTS (r28, r31)
+- the same fact in two layers: x-ray vs `schedule/README.md`, `Related:` footers between leaves that all load anyway (r28, r31)
+- a closed ticket in open-state words: FRM-244, FRM-335, FRM-397 (r26, r28)
+- a dead entry: the kick-5h commands, gone since `59be8a3e` but still listed (r28)
+- a missing entry is drift too: the chords route list lacked `/api/stats` (r28)
+
+### mistakes
+- a split by string index took the roadmap section and the pacing check off the boot; check every heading the proposal says stays (r31, wishkeeper)
+- an addition applied without its tick (r5, wishkeeper)
+- eleven rounds graded «keep unless proven dead» because the recipe never carried dima's 10-07 delete-first brief (r17–r28, ccrow)
+- 27 files passed «read whole, unchanged» with the guides out of context (run #2's first pass)
+- a rough number (81.2k) turned into a target; it is a direction (dima, 00:00)
+
+### tips
+- measure loaded bytes (column-0 comments stripped), never disk bytes alone
+- the quote gate before every apply: `python3 cclio/script/quote-diff.py HEAD <files>`
+- one proposal file per round wakes ccrow before dima's tick: two catches tonight (the 10-07 brief, A2)
+- read the guides whole at every re-entry
+- a zsh script runs by path, never under `bash`
+
 ## the grill
 
 ### round 1 · 2026-10-07
@@ -205,3 +229,75 @@ born place: a **terminal** `claude` in `~/frame/cclio` (not the Code tab), monit
 - sweep run #2, cclio leaves · 18:10 · o149 method-silent-failures 4,219 → 3,832 B, o150 method-report-verify bullets, method-rule-proof unchanged; gate 0 · dima: siesta every 5 groomed chunks → cclio:siesta § when (one home), habit-ctx-load-balancing points at it, recipe line · authoring-memory.md re-read after the compact (dima asked whether the knowledge is used): every cut so far maps to a groom-card kind · siesta: 5 chunks since 17:26
 - 18:13 · siesta wishkeeper (113k tokens) on 5 chunks, 5 findings, all checked: 4 test-drive verdicts were my picks written as his → marked «cclio's pick, waiting on his tick» (o151), PK-58 reopened; FRM-385's reseal reversed his o57 (end at the next siesta) and changed the stale count → o152; his «regular pace, do not rush anyone» folded into habit-ctx-load-balancing; halt 3b reads the 🔬/👁️ reminders left again; groom-list bytes re-measured (15,559 / 2,735 / 1,807); design-drift's moved block marked superseded; two trace times fixed
 - 18:18 · o154: 9 commits by named paths (794aa01d memory · 7b4e9a83 test-drive · 9c380e48 recipes, after the pre-commit test caught code-rule-coverage spawning git without gitEnv — fixed · 1d1161a5 cclio-plugin · fcb921cc plugin-x · 389d3aba hooks · 84eadd3d pocket · 18b15854 shelf · ced98ab1 the gojq hazard after FRM-394), banned-keyword count 0, pushed at ced98ab1, 0 unpushed; the CI=1 hazard left with FRM-393; settings.json, shelf/stash and pr-verified.json left untouched
+- 2026-10-11 21:10 · sweep chunks 1–5 after checkpoint 3: sys-boundaries 2 fixes, sys-skills + sys-settings-drift kept, gifs todo → FRM-260, sline kept (o223, o225); each proposal got a live ccrow decision review (FRM-396)
+- 2026-10-11 21:17 · sweep chunk 6: schedule kept, gmail worktree recipe → `x lane seed <worktree>` (probed on a scratch tree), the ray-build dupe left scripts.md (o226); ccrow caught a wrong seed argument and a changed pick before apply
+- 2026-10-11 21:55 · the root fix (dima o229–o233, o238): the recipe gains its re-entry rule (boot → recipe + writing-for-agents + every authoring-* read whole → state), the size goal, and step 7 the full per-file card moved in from authoring-memory with a demanding done line; `scripts/groom-list-check.sh` refuses a ✅ without bytes and every lens; all 50 ✅/🟡 reopened to ⬜ (o231); cclio:checkpoint names a running recipe as META first-act 1
+- 2026-10-11 21:57 · the cold test: a fresh researcher read only the recipe and its re-entry list, and named the reads, the goal, every lens and the done line right; its misses folded: unanchored paths, the 5/6/8 order clash, the done line missing merge · placement · deferral, «chunk» and `oN` undefined, the stale header count
+- 2026-10-11 21:59 · the blind critic on the recipe (plan 20261011215328), 5 folded: «memory sweep» → nurture-memory pointer in the cclio barrel; a protected lens (format, emoji, voice, trigger words, flow frameworks); «unused» names its evidence or says unmeasured; the groom list regenerates per sweep and proves coverage against a find; the inventory's «plan» is the groom list
+- 2026-10-11 22:05 · the cadence written into the recipe's run rules (o243/o244): size-tier rounds (≥5 KB alone, 2–5 KB pairs, <2 KB batches of ~6), wishkeeper after 2 big or 5 small rounds, checkpoints at the 4 clean seams
+- 2026-10-11 22:12 · re-entry after checkpoint 4 (dima's fresh-session test): recipe, writing-for-agents, authoring-memory, authoring-memory-project, authoring-skill, nurture-skills read whole; groom list 84 ⬜ · 5 ⏭️; waiting on dima's word before the first groom
+- 2026-10-11 22:12 · r1 authoring-memory.md drafted, 16,043 → 14,744 B, all 11 lenses verdicted (.scratch/memory-sweep/r1-authoring-memory-proposal.md); ccrow decision wake sent; waiting on o248
+- 2026-10-11 22:13 · r1 applied on o248, 16,043 → 14,752 B, after ccrow 202610112212d02: DOT-216 → FRM-216, the [read] conflict claim → [inferred], the story comments kept and called placement (Read is raw); quote gate: 9 left HEAD, 8 live in the recipe, 1 lost in the 21:55 move (dima 10-07 «hunt redundant memories…») restored to the recipe want
+- 2026-10-11 22:16 · o249: cclio:halt gains «the redundancy hunt» (step 7 lenses over the day's touched memory files), dima's 10-07 quote homed there too · FRM-399 follow-ups: cclio:pm size line takes the word, the floor drops --as coder
+- 2026-10-11 22:23 · coder stopped on dima's word (full; no retros for FRM-388/397/398/399 before the stop) · FRM-391, 398, 399 closed with closing words · lane l4 ended (dima) · r2 authoring-memory-project.md drafted, 11,257 → 10,367 B, all lenses; waiting on o255
+- 2026-10-11 22:25 · r2 applied on o255, 11,257 → 10,779 B; ccrow 202610112222d52 caught a rephrased reference block, restored byte-identical with root pointers under it
+- 2026-10-11 22:26 · coder retros in (2026-10-11-mods-lane-coder.md) → PK-65, 7 candidates with homes, folded at the halt · FRM-391 close re-checked: all 6 slices have landed commits, spec dir → .scratch/_archive/stash-settings
+- 2026-10-11 22:26 · coder archived on dima's word (retros gathered); roster: no coders
+- 2026-10-11 22:30 · siesta wishkeeper, 5 findings, all checked and fixed: siesta § when → the recipe cadence; FRM-391 closing word names the unconfirmed slices + their commits; FRM-398 exit 1 marked changed (o234), reminder 115 reopens instead of closing; authoring-memory § negation → § leading words; --as coder out of crew-coder, crew-verifier, crew-dna (the guard string + FTR + test → PK-65, a coder job); the dupe 22:00 trace line gone; halt read whole, line 7 dupe of «invoking it IS the go» cut; the quote's one home → o257
+- 2026-10-11 22:34 · o257: the 10-07 quote homed in cclio:halt (his reason folded: the flush grows memory, the hunt stops it), recipe points there · r3 root CLAUDE.md drafted, loaded 13,156 → 13,056 B, all lenses; waiting on o258
+- 2026-10-11 22:36 · r3 applied on o258, root 13,707 → 13,478 B on disk, 13,156 → 13,056 loaded
+- 2026-10-11 22:38 · r4 fleet-output-format drafted, loaded 12,537 → 12,112 B, all lenses, protected held; waiting on o259
+- 2026-10-11 22:39 · r4 applied on o259, fleet-output-format loaded 12,537 → 12,112 B; siesta due (2 big rounds since the last)
+- 2026-10-11 22:44 · siesta 2 (wishkeeper, 5 findings, all checked): ❗ cc strips only column-0 comments, indented ones load (seen in cclio's own root attachment) → authoring-memory mechanics line fixed, r3/r4 loaded bytes wrong, root + fleet-output-format + fleet-mods fixes on o260; crew-dna pr-lane verifier writes none; halt hunt scoped to skills too, dima's o257 reason folded in «»; recipe pointer → phase 3a
+- 2026-10-11 22:46 · o260 applied: 5 indented comments → column 0 (root 2, fleet-output-format 3), the o251 house rule says column 0, the orbit why back in fleet-mods; loaded re-measured by the column-0 rule: root 13,437 → 13,075, fleet-output-format 12,537 → 12,103
+- 2026-10-11 22:48 · dima: a fix flows into the next phases item, no report turn → recipe cadence line · halt lines out of the phases (dima: the halt comes later) · r5 fleet-hazards drafted, loaded 6,938 → 5,811 B; waiting on o261
+- 2026-10-11 22:49 · r5 applied on o261, redrawn for the FRM-314 gate (ccrow 202610112248d38): fleet-hazards loaded 6,938 → 6,319 B
+- 2026-10-11 22:50 · r6 fleet-tooling + fleet-vibe drafted (tooling −226 B loaded, vibe +14); the «lane» double meaning raised as o263; waiting on o262
+- 2026-10-11 22:53 · r6 applied on o262
+- 2026-10-11 22:54 · o263 followed with a named pick (lane → jam), o264 asks the habit line (a pick carries its full outcome) · r7 code.md + fleet-identity drafted (−268 B on code touch, −228 B every session); the Cursor clause asked apart (o266); siesta after r7 on dima's word
+- 2026-10-11 22:57 · r7 applied (o265) with dima's own code.md picks (o266: Cursor + type safety out, less is more → «cutting complexity is the work»); o263 the day mode lane → jam in fleet-vibe, crew-lead, cclio:shift (the 🛼 card keeps lane); o264 fleet-mods: a pick names its whole outcome
+- 2026-10-11 23:02 · siesta 3 (wishkeeper, 5 findings, all checked): r5's unticked guard tag → o268; fleet-output-format's bold **lane** → o269; refresh-crew-coordinator «shifts vs jams»; fleet-mods joined the groom list; dima's no-mid-report wish homed in habit-dima-comms-pacing, the recipe points there; fleet-vibe line re-measured · o267 applied: a checkpoint comes on context or dima's word · r8+r9 six small rules read whole, unchanged (o270), hazards-files' FRM-267 debt → o271
+- 2026-10-11 23:04 · o268 kept the guard tag · o269 fleet-output-format word list → **☕️ jam**, **🛼 lane** · o270 r8+r9 six small rules ✅ unchanged · o271 hazards-files debt FRM-267 → FRM-304
+- 2026-10-11 23:05 · r10 fleet-mods drafted, loaded 3,523 → 3,413 B; waiting on o273 · o272 asks whether to park the rest of «lane» (x lane vs the ticket lane)
+- 2026-10-11 23:09 · dima 23:08: the jam rename reverted everywhere (lane stays, the card is the «lane tracker»; CLI lane verbs settled); r10 fleet-mods applied with that · FRM-400 created (mods architecture review, child of FRM-304, In Progress, coder), lane tracker l5, the mods coder briefed
+- 2026-10-11 23:13 · dima's lane note on FRM-400: auto mode, no report, no grill, a light refactor → relayed, body updated, lane tracker l5 → l6 (fresh steps) · r11 _reminders drafted (3 dead lines + 2 due ones asked)
+- 2026-10-11 23:14 · r11 applied (o274, 3 deletes) · o275 parked to 10-12 · #ccrow-caught root: the boot printed only ⏰📌, so a dated ⏰ went silent → boot-prefetch prints every ⏰ whose `due:` has come (fixture-proven, mutation red), 10 lines tagged, x:remind gains the `due:` convention
+- 2026-10-11 23:15 · r12 sys-jev: stale tense fixed (frozen, router off since FRM-305, the ⏳ detector → an ask), a broken sentence; 7,604 → 7,775 B off-resident, a leaf tweak announced · siesta 4 due (r11 + r12)
+- 2026-10-11 23:17 · FRM-400 slices S1–S4 written into decided, the coder told go, lane tracker l6 at step 3 · r13 craft-pm: two dead pointers fixed (boot step 4.5, granular's home), leaf tweak announced
+- 2026-10-11 23:19 · siesta 4 (wishkeeper, 4 findings, all checked): the card is «lane tracker» in fleet-mods:11 + cclio:siesta, the stash glossary rename folded into the coder's S3; FRM-400 cites dima's 17:10 «no verifier for now», its HTML-report line matched to his 23:12 note; sys-jev tense; the r11 reply said 13,924 B, the real figure is 14,114 (after the due: tags)
+- 2026-10-11 23:20 · r14 _MEMORY: the craft-pm line matched to its every-turn scope, the reminders line names the due: block, 25 imports resolve · r15 dima-strategy read whole, unchanged (his vector)
+- 2026-10-11 23:23 · FRM-400 S1 landed (982daf07, mods:test 783 green) · #dima-caught: o276 unglossed labels → rewritten · lane tracker code-name pick on o277 (comet top) · r16 comms-pacing drafted, −244 B, o278
+- 2026-10-11 23:26 · r16 applied (o278) · o276 «do all now»: FRM-400 S5–S12 in decided, the coder told · o277 followed (🛼 comet or a skate name) · r17 shared-files drafted: the flowlog archive is gone from the vault → the pocket mirror line; found: the mirror copies the frozen _pocket.md (o280)
+- 2026-10-11 23:29 · r17 applied (o279) · o280 pocket-mirror.sh renders the live Backlog pocket (fixture + failure path proven, live run carries PK-65) · o277 the card is «🛼 glide»: fleet-mods + cclio:siesta renamed, the code side (glossary, card head, the orbit op) sent to the mods coder
+- 2026-10-11 23:29 · r18 cclio AGENTS (the todos line → pocket + due reminders) + habit-test-drive (unchanged, matches test-drive:list)
+- 2026-10-11 23:29 · r18 cclio AGENTS (the todos line → pocket + due reminders) + habit-test-drive (unchanged, matches test-drive:list)
+- 2026-10-11 23:30 · r19 method-silent-failures drafted under the o251 house rule: 6 stories → column-0 comments, loaded 3,832 → 3,220 B; o281
+- 2026-10-11 23:32 · r19 applied (o281) · r20 method-report-verify (loaded −1,406 B) + method-rule-proof (−804 B) drafted, stories → column-0 comments; o282
+- 2026-10-11 23:33 · r20 applied (o282) · FRM-400 S1–S4 landed (982daf07 ff1a3411 4d1f3a15 b5f59095), the coder on S5; it flags the mods:live board drew no phases card after a plan call — not ruled out · siesta 5 due
+- 2026-10-11 23:34 · o283 the phases card shows on dima's board, S1 no regression · r21 craft-fleet-flow (lineage → comment, −162 B loaded) + habit-cto (unchanged)
+- 2026-10-11 23:34 · r22 batch of 7 small cclio leaves: memory-edits (audit numbers → comment), 6 unchanged with evidence; dima-wishes' sweep fold duty not run in r1–r21 → o284
+- 2026-10-11 23:34 · r23 the last 7 cclio files read whole, unchanged with evidence (stories at the 12 cap, two generated files) → the cclio layer done
+- 2026-10-11 23:36 · FRM-400 S5 landed (bfa43071, the ping bug proven red then fixed) · measured: a loaded AGENTS.md strips column-0 comments (cclio/AGENTS.md:51) → authoring-memory · r24 frame AGENTS drafted (−228 B loaded, the dead pm-tools line); o285
+- 2026-10-11 23:37 · r24 applied (o285) · o284 «one-pass sweep now»: a fold-pass agent drafts every earned fold of dima's quotes (memory, rules, root, recipes, pocket; ~367 quotes) into .scratch/memory-sweep/fold-pass.md, no edits; linear wish blocks are batch 2 · the coder asked how far
+- 2026-10-11 23:38 · FRM-400 S6 landed (72ed8fd8) · dima's lane note: when the coder is fully done, stop it and close FRM-400 · r25 x/AGENTS read whole, unchanged with evidence
+- 2026-10-11 23:38 · siesta 5 (wishkeeper, 5 findings, all fixed): glide = S13 in FRM-400, words only, the orbit op stays `lane` (dima 23:08), the coder corrected; r19 the 08-25 incident restored as a comment + 2 split lines joined; r20 «inferred» back, «each measured here» dropped, 3 lost facts back in the comment; FRM-400 proposed line, exit 2 name, size S → M; the pocket mirror marks itself stale under its frontmatter on a failed read (proven: once, cleared on recovery); the =word guard is x-mod-guard (it rewrites before zsh-equals-guard.py runs) → o286
+- 2026-10-11 23:41 · o286 zsh-equals-guard.py out of settings.json (one block edit, jq valid) and trashed; its FTR mention rides the coder's S8 · FRM-400 S7 landed (d4468473, lanes.json one writer) · fold pass drafted: 17 folds over 16 of ≈240 quotes in 11 files + 8 flagged → o287
+- 2026-10-11 23:42 · dima 23:41: the op rename to glide IS approved → S13 back to the whole mod; the card head becomes «🛼 glide: <lane title>» (his board shot) · r26 ccrow/AGENTS drafted (FRM-335 done, FRM-397 canceled refs; ledgerLine never read the trashed ledger.txt); o288
+- 2026-10-11 23:42 · FRM-400 S8 landed (e8bf77e5) · cclio ctx 67 %: checkpoint offered at the next seam (o289)
+- 2026-10-11 23:42 · r26 applied (o288) · the fold pass applied (o287): 17 folds over 16 of dima's quotes in 11 files, each by exact match once; 8 flagged stay for his look
+- 2026-10-11 23:44 · o290 the 8 unsure quotes stay as written · lane tracker l6 → l7 rebuilt on dima's ask with real slice progress (S1–S8 done, S9–S12 now, S13 glide, his look), the coder linked; stepped on every slice ping until done
+- 2026-10-11 23:45 · checkpoint 5 (o289, ctx 67 %): the coder paused by message, ccrow paused, CST pocket-sweep-checkpoint-5 in the store
+- 2026-10-11 23:47 · checkpoint 5 ingested (store empty), re-entry reads whole (recipe, writing-for-agents, 3 authoring guides, nurture-skills), ccrow unpaused, the coder told resume, inbox 4/4 ✅ vs pocket · r27 recipes/AGENTS drafted (−202 B loaded, intro + log story → comment); o291
+- 2026-10-11 23:48 · r27 applied (o291), recipe-shape test 51 green
+- 2026-10-11 23:50 · r28 x-ray (−1.9 KB: dead kick cmds, schedule dupes) + chords (stats route, FRM-244 done) drafted; o292 · FRM-400 S10 (cb161a14) + the glide slice (c21caf50) landed: op lane → glide switched in rules/fleet-mods.md:16 + cclio:siesta:20 (dima's 23:41 rename)
+- 2026-10-11 23:50 · r28 applied (o292) · ccrow's late note (held by the desktop's 10-sends cap since 23:26): dima's 10-07 vault brief _hq/memory-sweep.md asks delete-first + an 81.2k boot baseline; the recipe carries neither (rg 0 hits) — verified, asked
+- 2026-10-11 23:53 · o293 «fold it»: r30 drafts dima's 10-07 brief into the recipe's want (3 quotes folded, the 81.2k boot baseline) + a delete-first run rule; the incident-stays lens flagged as a conflict, b recommended · o294 queued after the fold · FRM-400 S11 landed (5f7a4e3e)
+- 2026-10-11 23:55 · r30 applied (o293): the 10-07 brief in the want, delete-first run rule, the incident-stays lens flipped (b: the incident moves to a comment) · ccrow cleared by dima, reinit sent, her 23:26 note vetted ok
+- 2026-10-11 23:58 · FRM-400 closed Done (closing word in body, mods:test green on 00a30ce4), glide l7 at its last step, the coder told to stop (archive waits for its idle), 4 retro candidates → PK-65 · dima: 81.2k is a direction, never a target → recipe line reworded with his words · r31 drafted (o295–o299), A2 redrawn on ccrow's catch (bytes/fleet/harness rules stay)
+- 2026-10-11 23:58 · FRM-400 rider a44827ed (card head «🛼 glide: <lane title>», guard FTR =word line) → closing word says 14 commits · the mods coder archived on dima's lane note
+- 2026-10-12 00:00 · o300 «fix the double colon»: glide l7 ended (finished, he looked), the title rule «<topic> — <what>» → craft-fleet-flow:22 · dima asked where r31's C lines live → the proposal file; 💡 an ask could link its proposal
+- 2026-10-12 00:07 · r31 applied (o295–o299): dima-stories out of the boot, strategy's branch notes → dima-strategy-branches.md (bytes/fleet/harness lines stay), 12 Related footers + 2 no-op lines, the pocket breach list, the boot-board line, frame's index-copy line (→ index-run.sh header); cclio imports 66,242 → 51,385 B loaded (−22 %), barrel probe ok, no strategy quote lost · dima's 10-12 clarification folded into the recipe: delete-first = only asked-for or fleet-helping instructions, never a working habit
+- 2026-10-12 00:11 · siesta 6 (wishkeeper, 5 findings, all checked): the roadmap section + pacing check restored to dima-strategy (loaded imports 52,479 B, −21 % vs 66,242); PK-66 born (an orbit ask links its proposal); groom list carries r31 + the branches file; FRM-396 → the halt's closable list; «word for word» was a fold
+- 2026-10-12 00:13 · halt started (dima 00:10): pocket green (14 done filed, PK-66), inbox reset, 0 gh notifications · the recipe matches dima's 00:12 outline: step 10 = the drift hunt → gates → the retro on this trace (findings, mistakes, how the recipe improves)
+- 2026-10-12 00:16 · dima: «trace as you go» was buried at line 97 → hoisted to the run section's first bullet (line 82); shape test green
+- 2026-10-12 00:18 · halt flush applied (o302): PK-67 guard catches, PK-68 x lane verbs, PK-69 reply-check catches, PK-65 +4 lines; 3 skill lines merged (cclio:checkpoint, x:crew-lead, cclio:shape-lane), the mods/AGENTS one dropped (line 6 holds it); FRM-396 Done; 2 stale research docs trashed, 4 kept (live pointers); 8 retros folded + trashed; story appended, the drop held for dima's word on the cap · o301: trace rule gains findings, ## findings seeded

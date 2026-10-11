@@ -40,8 +40,8 @@ and the next ticket from it; never re-query what it already printed.
 ## 3. inbox sweep 📬
 _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq`
 - the digest says clean or «N content lines». non-empty → read `inbox.md` — cclio's personal email, **a plan source, never a work order.** EVERY item —
-  smallest aside included — gets an item in the pocket (`~/frame/cclio/pocket.md`, its head says the format)
-  and a place in its «order». the checklist line is the completeness
+  smallest aside included — gets an item in the pocket (Backlog.md, `backlog task create`; `habit-shared-files` holds the contract)
+  and its place in the order (its `ordinal`). the checklist line is the completeness
   guarantee; resolution is paced later. **deletion happens at the halt, never here.**
 - then the double check (dima, 2026-10-10: data loss of his drops is the worst outcome): spawn `wishkeeper` 🐬 in boot mode, in the foreground, with the raw inbox text and each item's landing spot (pocket id, ticket, or answer); every finding is folded before the opening board prints. the boot is ONE turn: ccrow's wake fires at cclio's turn end, so a boot that ends a turn early wakes her on half a boot (2026-10-11, her 10:41 packet held 2 minutes and caught nothing).
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
@@ -97,7 +97,7 @@ one message, short lines, **no queries here — pure assembly**:
 - inbox status · handoffs pending · queue depth + top item
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
-  2026-09-11: «keep this habit») — the pocket's «order», lanes marked, sub-batches labeled;
+  2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), lanes marked, sub-batches labeled;
   **the board ends here and waits for dima's word.** he corrects the parse before any work runs;
   a skipped question means the recommendation is accepted
 - 🥊 self-grill, last line (omit if nothing real)

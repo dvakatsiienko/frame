@@ -2,7 +2,7 @@
 
 dima, 2026-09-28: «encourage yourself to proactively use all vetted tools and ensure the widest
 exploration of vetted tools … explore strong and weak sides, upfront.» sharpened 2026-09-29: «vet means
-- try to use it as much as possible, not just «park» there and wait until vet period ends … each vet
+— try to use it as much as possible, not just «park» there and wait until the vet period ends … each vet
 is measured as much as possible, to have numbers.»
 
 a test drive is a running measurement (`docs/test-drive/<tool>.md`). a parked test drive grades nothing, and the tool is

@@ -59,6 +59,7 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
   dropped topic is reachable, never remembered
 - the coder roster with ids and status
 - the orbit asks as they last stood (orbit itself survives the compact in the mod's state)
+- **a running recipe** (a memory sweep above all): META first-act 1 is its re-entry rule, «read `recipes/<name>/recipe.md` whole and follow its re-entry» — the 10-11 sweep lost its want and its lenses after checkpoint 3 because the CST named the groom list, never the recipe; it also names the brief the recipe was born from, and a step that needs its own session names that session (10-11: the 10-07 sweep brief and the pm review both slipped)
 
 ## 3.5 the CST check — before the two lines
 
@@ -81,12 +82,6 @@ top of what the compact kept. **then resume every paused member** — one «resu
 diff it against the pocket** — every inbox item must carry the `✅` mark AND a pocket item with
 its details; an unmarked or detail-less one is restored from the inbox on the spot, out loud. the prefetch hook re-runs on compact by itself (queue, roadmap,
 handoffs, reminders).
-
-## 5. the probe — first runs only
-
-after the ingest, dima asks ten facts from the keep list, no tools allowed. ten of ten = the
-checkpoint keeps what a halt keeps; a miss goes into the CST template above, once. drop the probe
-once two runs pass.
 
 ## completion criterion
 

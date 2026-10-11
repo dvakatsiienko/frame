@@ -1,13 +1,13 @@
 # jev — the fleet's classifier, and how it stays sharp
 
 `jev` (typesafe.ai) answers typed questions about a `state`: no tools, no memory, no generation.
-we pull, it judges, we write back. two lanes live, both from 2026-09-19:
+we pull, it judges, we write back. two lanes, both from 2026-09-19, frozen with the credit (below):
 
 - **inbox lanes** — the boot digest prints every inbox item with a lane (ticket · fold · pocket ·
   answer · drop) and a `needsVerdict` band. it pre-sorts; the pocket parse is still mine.
-- **skill router** — a `UserPromptSubmit` hook at user scope (`home/.claude/settings.json`), so it runs in every fleet session, coders included prints `skills (jev router):
-  x:pm 0.81, …` for every skill ≥ 0.6, score included. the built-in router still runs; jev stops
-  the misses. 📌 the hook is synchronous — every prompt in cclio waits for it (~0.8–1.8 s measured
+- **skill router** — a `UserPromptSubmit` hook at user scope (`home/.claude/settings.json`), so it runs in every fleet session, coders included; it prints `skills (jev router):
+  cclio:pm 0.81, …` for every skill ≥ 0.6, score included. the built-in router runs alone; jev's catch of
+  its misses is off since v2 merged (FRM-305): 75 % precision on real prompts against a 90 % bar, re-measured 10-19 (`_reminders.md`). 📌 the hook is synchronous — every prompt in cclio waits for it (~0.8–1.8 s measured
   2026-09-22). log: `~/.claude/shelf/jev/route.log` (time · top pick · loads · prompt · ms). kill
   switch: `pnpm jev:router off|on|status` (a flag file, `router.off`); the digest and `jev:report`
   print `router: OFF` or `router: on · avg · p95`.
@@ -18,7 +18,7 @@ we pull, it judges, we write back. two lanes live, both from 2026-09-19:
 - every rubric lives in `script/lib/jev-questions.ts`, model pinned to `jev-1.13.0`. sharpening
   is a commit with a diff, never an inline edit in a caller.
 - low confidence is the feature: a three-way split (hkeys, conf 25) is the item to hand dima, not
-  to decide. the 0.30–0.70 band on `needsVerdict` is the ⏳ detector.
+  to decide. the 0.30–0.70 band on `needsVerdict` is what goes to dima as an ask.
 - prove a wording with `RUNS=3`: ±3 points across repeats is the measured wobble; a threshold
   tuned on one run is a guess.
 
@@ -75,4 +75,4 @@ keys and the call path: `x-fleet` service account → vault `dev` → `script/op
 
 ## parked from root `CLAUDE.md` (2026-10-11 sweep) — restore there when the router is back on
 
-a `skills (jev router): …` line in the prompt is jev's pick with its score: carry the score onto the reply's skills line — «skills: x:pm (jev 0.82), x:cmt» — and when jev's pick is wrong for the task, say so on that line and skip it; a wrong pick is recorded with `pnpm jev:vet miss skill-router lane=<skill> <why>` in `~/frame`.
+a `skills (jev router): …` line in the prompt is jev's pick with its score: carry the score onto the reply's skills line — «skills: cclio:pm (jev 0.82), x:cmt» — and when jev's pick is wrong for the task, say so on that line and skip it; a wrong pick is recorded with `pnpm jev:vet miss skill-router lane=<skill> <why>` in `~/frame`.

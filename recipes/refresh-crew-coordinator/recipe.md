@@ -22,7 +22,7 @@ keeps the coordinator true: how cclio spawns, picks models, runs the crew, the t
 
 coordination and the crew (dima's, 2026-10-07):
 
-> «our coordination approach is kind of home-baked, and coordination is a tricky and sophisticated topic. We already have: coordinator, coder, verifier, designer, classifier, your ccrow.
+> «our coordination approach is home-baked, and coordination is a tricky and sophisticated topic. We already have: coordinator, coder, verifier, designer, classifier, your ccrow.
 > I want this recipe to research the coordination in framework overall: how a
 > coordinator agent should work in general and how to coordinate efficiently. Which types of essential crew members do we miss to have a full crew est?»
 >

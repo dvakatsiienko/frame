@@ -14,17 +14,18 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
   - `op item create|edit` works from an agent shell through his desktop session; dima pastes the key value in the app
   - an item an agent creates carries: `--url` where a new key is minted, a one-line note (what it unlocks, which config reads it), tags `fleet` + the surface (`cc`, `cw`, `raycast`), the account, and the expiry when the service sets one
 - **pnpm** — preferred package manager for node/typescript/javascript projects
-- **obsidian = raw files, the `obsidian` cli only for rename/move and the link graph; notion = `ntn`; never an mcp for either** — measured 2026-09-10 (DOT-228): the mcp lanes lose on every metric, the notion connector costs 34× the time of `ntn` per edit. the recipe and the hazards: `x:notes`
+- **obsidian = raw files, the `obsidian` cli only for rename/move and the link graph; notion = `ntn`; never an mcp for either** — the recipe and the hazards: `x:notes`
 - **himalaya** — the mail cli (`himalaya envelope list`, `message read <id>`, `message delete`, `message reply`); one gmail account, app password from 1password `gmail-himalaya-golden`, config in `home/.config/himalaya/`. filters are not its job — those are `gmailctl` over `gmail/blocklist.json`
 - **slk** — slack cli (package `slkcli`; binary is `slk`, auth rides the slack desktop session; `slk --help` is the whole api)
 - **jq** — prefer it for JSON parsing, filtering, and transformation
 - **code examples across public github → `grep-mcp` first** (regex over ~1M repos, deferred, ~0 resident cost); `gh search code` only for one known repo — no cli exists for grep.app
 - **rg** (ripgrep, `brew "ripgrep"`) — the regex search over files; the Grep tool runs it too
-  <!-- measured 2026-09-30: 65 docs search in ~15 ms, so a doc is findable the moment it exists -->
 - **yq** — yaml/toml read-write (`settings.toml`, lefthook)
 - **sd** — in-place text replace without sed's macos `-i ''` traps
 - **trash over rm** — `trash <path>` moves to the recoverable macos trash; prefer it wherever a deletion is approved but regret is possible
 - **install order for any tool** — `brew` (formula or cask) first; not in brew → `pnpm add -g`; never `npm -g` (dima, 2026-09-18)
+
+<!-- measured 2026-09-30: rg searches 65 docs in ~15 ms, so a doc is findable the moment it exists · measured 2026-09-10 (FRM-228): the mcp lanes lose on every metric, the notion connector costs 34× the time of `ntn` per edit -->
 
 ## cc only
 

@@ -24,6 +24,7 @@ boot**, natural moment or not. Both die only when Dima drops them.
 
 - **no argument** — store one entry: `⏰ <the thing, in his words where possible> — set
   <YYYY-MM-DD>`. Confirm one line: `⏰ reminded: <thing>`. Never two entries for one reminder.
+  a reminder with a date ends ` · due: <YYYY-MM-DD>`: cclio's boot prints every `⏰` line whose `due:` has come.
 - **`stick`** — store at the stuck tier, prefixed `⏰📌`. Already exists as `⏰` → **promote in
   place**, never file a second entry. Confirm: `⏰📌 stuck: <thing>`.
 - **`yourself stick`** — the tracked thing is the agent's own behaviour or a watched system.

@@ -2,7 +2,7 @@
 researched: 2026-08-23
 sources-current-as-of: cc 2.1.296 · code.claude.com/docs/en/memory · pingdotgg/t3code AGENTS.md (DOT-73 attachment) · theo's own breakdown of it · bytemonk claude.md transcript
 refresh-when: a project file is written and a section here turns out to have no place to go — fix the skeleton, not the file
-ticket: DOT-216
+ticket: FRM-216
 ---
 
 # project memfile authoring — how to write a project `AGENTS.md`
@@ -15,8 +15,6 @@ dima's call: it is already distilled and fine-tuned, from a verified source. **t
 below are copied, not rephrased.** copy them again when you write a new file; do not improve them.
 
 claim tags: **[read]** stated by anthropic's docs or the reference · **[inferred]** our judgment.
-
----
 
 ## the thesis — it is a communication file, not a competence file
 
@@ -45,8 +43,6 @@ instead. yes, some of this file describes the project — but only as much as th
 it changes something, so it does not *«spend its first four tool calls googling and reading files to
 figure out what we're doing»*.
 
----
-
 ## the two jobs, and we conflate them
 
 1. **represent the project** — what it is, how it is shaped, what its vocabulary means
@@ -59,22 +55,15 @@ separate sections rather than one blended wall.
 **tone continuity is a requirement.** a project file reads in the root file's voice. nothing checks
 this today and the drift is invisible — each file is written alone and only feels wrong side by side.
 
----
-
 ## the budget
 
-**[read]** target **under 200 lines**. the reference is 155. `@imports` do not save context — they
-expand at launch. `paths:`-scoped rules in `.claude/rules/` are the only real relief: they load when
-a matching file is read (Bash `cat` included) or edited, never on an intention, so they fit code
-conventions and not intentions (`authoring-memory.md` § paths, measured 2026-10-11).
+**[read]** target **under 200 lines**; the reference is 155. the only real relief is a `paths:`-scoped
+rule in `.claude/rules/`, which fits a code convention, never an intention (`authoring-memory.md` § the mechanics).
 
-**[read]** `/doctor` cuts what is derivable from the codebase — directory layouts, dependency lists,
-architecture overviews — and keeps pitfalls, rationale, and conventions that differ from tool
-defaults: the correct filter, applied by hand too. anthropic's own advice agrees: spend the tokens
-on gotchas (`authoring-memory.md` § what the measurements say). the `why` of a rule goes in a block
-html comment, free (`authoring-memory.md` § the mechanics).
-
----
+**[read]** `/doctor` cuts what is derivable (directory layouts, dependency lists, architecture
+overviews) and keeps pitfalls, rationale, and conventions that differ from tool defaults: the
+correct filter, applied by hand too. the `why` of a rule goes in a block html comment with its
+outcome (`authoring-memory.md` § the synthesis).
 
 ## the skeleton
 
@@ -131,14 +120,15 @@ the reference, copied — the first entry is the one everyone forgets:
 
 ### 5. 🚨 the ways to hurt yourself
 
-**the section no project of ours has.** each entry: the destructive act, why it is reachable by
-accident, and the safe alternative. copy the shape and rule 1 near-verbatim — it is the process
-guard we are missing everywhere:
+each entry: the destructive act, why it is reachable by accident, and the safe alternative. the
+reference's first two:
 
 > **Killing by pattern.** Never `pkill -f`, `pgrep | kill`, or `kill` a PID you found by matching a
 > name, path, or worktree string. Your own agent process has this worktree's path in its argv, and
 > this machine runs several other dev servers at once. Kill only a PID you captured at spawn, or
 > the owner of your port from `ss -H -ltnp` after confirming `/proc/<pid>/cwd` is your worktree.
+
+📌 root `CLAUDE.md` § blast radius already holds this one for every session: a project file of ours skips it.
 
 > **Writing to the live install.** `~/.t3/userdata` is the developer's real database, in use while
 > you work. Reading it and copying from it are fine. Never start a server against it, never open it
@@ -189,12 +179,12 @@ and the anti-flake rule, worth copying anywhere event-driven:
 > Wait on receipts and worker drains, never on sleeps or polling. A test that needs a timeout to
 > pass is wrong.
 
+📌 root `CLAUDE.md` § background work already holds the timeout half for every session.
+
 ### 10. pull requests
 
-**[read]** ours already match the reference nearly line for line — `~/.claude/CLAUDE.md` carries
-conventional titles, problem-then-solution bodies, the model-and-harness blurb, and the babysitting
-protocol. **do not restate them per project.** write only the delta: this repo's title scopes, its
-required evidence, its bots.
+the fleet's pr conventions live in `x:github-contrib` (titles, bodies, babysitting) and `x:cmt`;
+a project file writes only the delta: its title scopes, its required evidence, its bots.
 
 ### 11. plans and work artifacts
 
@@ -227,14 +217,10 @@ the reference:
 > If a rule here fights the task in front of you, say so loudly and get a human sign-off before
 > breaking it.
 
----
-
 ## before you commit the file
 
-- every rule has a **why** in an html comment, with an **outcome**. a why without an outcome
-  measured the same as no why at all
-- 🚫 no prohibitions where a positive works. state the target behaviour
-- 🚫 nothing `/doctor` would strip: no dependency lists, no `tree` output, no architecture recap
-- ✅ at least one section carries a **completion criterion** the agent must report against
-- ✅ it reads in root's voice
-- ✅ under 200 lines
+- a rule whose why is non-obvious carries it in an html comment, with an **outcome**
+- nothing `/doctor` would strip
+- at least one section carries a **completion criterion** the agent must report against
+- it reads in root's voice, under 200 lines
+- nothing root or `rules/` already holds — a project file is read beside them

@@ -14,20 +14,21 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 ## direction — read before any pm decision
 - 🧭 @_roadmap.md — WHERE WE ARE: the live outline (step order, now, next, started mils), regenerated from linear at every boot and compaction. name the step when reporting
 - 🧭 the full roadmap is the linear initiative «roadmap», printed by the full boot. rules for using it: `dima-strategy`
-- 🧭 @dima-strategy.md — the vector (always: streamline the fleet · the mil: make fleet good · his finish line: cv + portfolio), the initiative + milestones as the lane driver, then the branch notes
+- 🧭 `dima-strategy-branches.md` (plain pointer, not imported) — the six branch notes, read on demand; their binding lines stay in dima-strategy
+- 🧭 @dima-strategy.md — the vector (always: streamline the fleet · the mil: make fleet good · his finish line: cv + portfolio), the initiative + milestones as the lane driver, then the lines that bind every report (bytes, fleet, harness)
 - 🗞️ @../gazette/_trail.md — 3 lines per post for the 5 freshest gazette days (shipped / open / state), regenerated at every post; the full posts sit in `gazette/`, read on demand
 - 📌 @dima-wishes.md — his words reach a file folded, never raw; an old verbatim met on any touch is re-folded
-- 📖 @dima-stories.md — what actually happened, so the rules keep their reasons. append, never rewrite
+- 📖 `dima-stories.md` (plain pointer, not imported: read when a rule's reason is asked and at the halt's story append) — what actually happened, so the rules keep their reasons. append, never rewrite
 
 ## running the work
-- ⭐ @craft-pm.md — fold or drop, the four fields every ticket carries, how to read and write linear, and the link rule that keeps breaking
+- ⭐ @craft-pm.md — the every-turn pm judgment: fold or drop, wishes, the pace contract, the pending block, the ask-guard, the freebie rule; the ticket handbook is `cclio:pm`
 - 🧭 @craft-fleet-flow.md — the path from idea to his hands: ten stages, five lanes, each stage's gate and owner, the done test
 - ⭐ `x:crew-lead` (plain pointer, not imported: the spawn craft loads on demand) — load it before any spawn, brief, watch or stop: the doors, the models, the preflight, briefing, watching, the shared tree
 - ⭐ @habit-halt.md — a session ends with the halt ritual; run it on his signal, never open it mid-task
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn
 - ⭐ @habit-dima-comms-pacing.md — a fat drop gets labeled sub-batches with siestas; every ask handled, a missed one is the worst outcome
-- ⏰ `_reminders.md` (plain pointer, not imported: the boot digest prints every ⏰📌 line, the trials live in each test-drive file, `pnpm test-drive:list`) — dima's standing reminders; ⏰📌 stuck ones raised every boot
+- ⏰ `_reminders.md` (plain pointer, not imported: the boot digest prints every ⏰📌 line and every ⏰ whose `due:` has come, the trials live in each test-drive file, `pnpm test-drive:list`) — dima's standing reminders; ⏰📌 stuck ones raised every boot
 
 ## method — how a claim earns belief
 - ⭐ @method-rule-proof.md — a rule states the ONE command that proves it, or is labelled an inference
@@ -50,3 +51,4 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - @sys-settings-drift.md — CC writes it at runtime; a real file where the symlink belongs is silent divergence
 
 - 📐 recipes live in `~/frame/recipes/<name>/` (recipe.md · log.md · scripts/ · last/); the `x:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)
+- 🧹 «memory sweep» = a run of `~/frame/recipes/nurture-memory/recipe.md`: read it whole and follow its re-entry rule, never a fresh plan (plain pointer)

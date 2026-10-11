@@ -4,7 +4,6 @@ description: load when dima means the SESSION is done — «let's wrap», «that
 
 # /cclio:halt
 
-🚨 **invoking it IS the go — never ask for confirmation.** plan it, land what lands, wrap properly.
 loads on `/cclio:halt`, `/halt`, `/wrap`, or when dima says to finish the day.
 
 📌 **never open the halt plan unprompted mid-task.** if dima has not asked to finish, do not
@@ -52,7 +51,7 @@ every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item h
 it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear (dima, 2026-09-28). the template
 is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
-the same pass prunes the pocket first: every `done` item is filed with `backlog task complete <id>` (pocket-check lets a done item stay listed through its day, then reds it); the gazette post (phase 4.5) carries the day's done items and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost), then the section empties; then the
+the same pass prunes the pocket first: every `done` item is filed with `backlog task complete <id>` (pocket-check lets a done item stay listed through its day, then reds it); the gazette post (phase 4.5) carries the day's done items and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
 inbox clears — before the CST is written, every halt, both lanes (the 09-20 halt skipped the prune
 and dima found six done lines at the next boot).
 **size misses** (FRM-379): the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
@@ -74,6 +73,7 @@ halt report — he misses a few every session, and this is where they get caught
 proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict is dima's.
 
 ## phase 3a — flawlog flush, the one stop
+📌 **jev is frozen until its credit refills (~10-18, `sys-jev` parked): skip `pnpm jev:flawlog` here and phase 3b's jev vet + report; the flush starts from a plain read.** this line dies the day `sys-jev` is re-imported.
 `pnpm jev:flawlog` first: jev lanes every line (memory / rule / story / ticket / drop) and the
 proposal starts from its lanes, not from a blank read. then cluster, ONE batched proposal, ONE
 approval, execute and commit. see `/cclio:flawlog`.
@@ -87,6 +87,7 @@ flawlog's drop pile. skipped for two weeks once (2026-09-05).
 placed by cclio into that app's `.claude/skills/verify/SKILL.md` in the flush — coders and
 verifiers only suggest; the recipe stays short (commands that worked, flows worth driving, gotchas).
 **second sighting = teeth (FRM-314):** before a lesson enters the proposal, `rg -i '<its key words>' ~/.claude/shelf/flawlog/` over the last 30 days; a hit makes it a repeat, and a repeat leaves the flush as a guard, a verb, a check or a ticket, never a memory line. a stopgap memory line is written with `until: <ticket>`.
+**the redundancy hunt** (dima, 2026-10-07: «hunt redundant memories each time, and also propose grooms, trims to keep it tidy»): every memory file and skill the flush or the day touched gets `recipes/nurture-memory/recipe.md` step 7's lenses; each finding joins the proposal. dima, 2026-10-11: «During the halt, you process retros gathered across the lanes and flush them into the corresponding skills and memory files. This causes the memory bloat we have right now, so this step in your halt is meant to stop endless memory growth.»
 **notes expire:** `rg -n 'until: (FRM|BYT)-[0-9]+' ~/frame/cclio/memory ~/.claude/rules` and check each id's state; a line whose ticket closed goes into the proposal for deletion.
 **the flow numbers, before the proposal:** `x fleet flow --days 14` in `~/frame` — the
 `habit-cto` halt read; name one inefficiency from it, fixed in place or ticketed in the flush.

@@ -18,8 +18,8 @@ skill reaches it as text. a contract change goes there, never here.
   outside frame, so the global `CLAUDE.md` loads and frame `AGENTS.md` does not; the global
   `rules/` are copied into the home's `.claude/rules/` at each start (see facts that bite).
 - 🔥 keep-hot is stash's own: once the registry lists ccrow, the start writes `hot:<sessionId>`
-  into stash's store file. 📌 stash reads that key only at `session.start`, which has already
-  run by then, so 🔥 stays off until stash reads the key later too (FRM-335 open).
+  into stash's store file. stash reads it again after `session.start` too (`register.tsx`, the `hot:` reads), so 🔥 turns on
+  once the key lands (FRM-335, Done).
 - `pnpm ccrow:wake --transcript <cclio jsonl> [--mode day|systematic] [--precompact]` — gates
   (no `~/.local/state/ccrow/paused` file — cclio's checkpoint holds it; 30 min since the last wake, ≥10 cclio steps; `--precompact` waives the steps), copies the
   leaves named in `~/.local/state/ccrow/leaves.txt` plus the transcript delta into
@@ -39,7 +39,7 @@ skill reaches it as text. a contract change goes there, never here.
   `mode decision` wake ending `proposal <path>`, the file whole under a `## proposal ·` block in the packet; it never
   waits, like a spawn, and any other file wakes nothing. one wake per proposal file per turn (o178): `decisions/proposal-<hash>.json` keys the
   turn by cclio's last prompt line, so a draft's later Edits stay quiet until her next prompt.
-- every packet opens with ccrow's ledger line (FRM-397): notes sent today, the holdout's next send in k (until 10-20), the
+- every packet opens with ccrow's ledger line (born in FRM-397, kept when its board strip was dropped): notes sent today, the holdout's next send in k (until 10-20), the
   last send's time, today's ok verdicts — `ledgerLine` in `lib.ts`
 - every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
   transcript; ccrow reads its tail only then.

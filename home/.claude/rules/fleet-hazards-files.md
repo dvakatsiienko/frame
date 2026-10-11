@@ -11,7 +11,7 @@ paths:
 
 ## .gitignore
 
-- a gitignore pattern with a `/` in the middle is anchored to the ignore file's directory — `.impeccable/x.json` at a repo root never matches `apps/web/.impeccable/x.json`; `**/` in front makes it match at any depth (measured with `git check-ignore -v`, 2026-09-19). guard: none · FRM-267
+- a gitignore pattern with a `/` in the middle is anchored to the ignore file's directory — `.impeccable/x.json` at a repo root never matches `apps/web/.impeccable/x.json`; `**/` in front makes it match at any depth (measured with `git check-ignore -v`, 2026-09-19). guard: none · FRM-304
 
 ## ci jq (workflows, `.github/*.jq`, `.github/scripts`)
 
@@ -21,7 +21,7 @@ paths:
 
 ## pnpm manifests
 
-- pnpm 12 reads `overrides` from `pnpm-workspace.yaml` only, the `package.json#pnpm` field is ignored with a warning (2026-09-21). guard: none · FRM-267
+- pnpm 12 reads `overrides` from `pnpm-workspace.yaml` only, the `package.json#pnpm` field is ignored with a warning (2026-09-21). guard: none · FRM-304
 
 <!--
 why here: the file-touch half of fleet-hazards.md, moved out in the 2026-10-11 sweep; a paths: rule loads on a Read, `cat` or Edit of a matching file, measured on .gitignore and a workflow (cc 2.1.296, sonnet + opus, 8/8). a line that bites on a Bash command or its output stays in fleet-hazards.md.

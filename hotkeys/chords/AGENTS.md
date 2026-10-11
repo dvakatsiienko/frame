@@ -4,17 +4,14 @@ the hotkey map, as a served app. vite + react + tailwind, one page today, built 
 served by the always-on `x-monitor-hotkey-live` daemon. it is not deployed anywhere and there is
 nothing to deploy it to — it draws this mac's bindings and this mac's press log.
 
-**`FTR.md` + `GLOSSARY.md`** — read your section before changing what the app does.
-
-**`PRODUCT.md` is the product authority and `DESIGN.md` is the look authority.** read the first
-before changing what the app does, the second before changing how anything renders. `DESIGN.md`
-binds on top of the house ui guides, and its named rules — Zero Blur, Owner Edge, Earned Accent,
-Two Hands, Tabular, Cold Ring — are the ones a review will cite.
+**before changing what the app does, read `PRODUCT.md` (the product authority) and your section
+of `FTR.md` + `GLOSSARY.md`; before changing how anything renders, `DESIGN.md` (the look
+authority).** `DESIGN.md` binds on top of the house ui guides, and its named rules — Zero Blur,
+Owner Edge, Earned Accent, Two Hands, Tabular, Cold Ring — are the ones a review will cite.
 
 📌 **`PRODUCT.md` and `DESIGN.md` here are seeded by impeccable only (dima's hands, `init` +
-`document`), kept as the reference point for DOT-244's own doc system — never rewrite them into
-another shape.** `.impeccable/design.json` is `document`'s sidecar and is regenerated with them,
-never by hand.
+`document`) and keep impeccable's shape — never rewrite them into another one.**
+`.impeccable/design.json` is `document`'s sidecar and is regenerated with them, never by hand.
 
 ## the server is not here
 
@@ -24,6 +21,8 @@ because the daemon is already watching the press log and the config sources. the
 - `GET /api/hotkeys` — the scan snapshot. `503` until `pnpm hotkeys:scan` has run once
 - `GET /api/presses` — server-sent events, two kinds: `presses` when a chord is pressed,
   `bindings` when a config source moved and the scan reran. the page holds no timer of its own
+- `GET /api/stats?window=all|month|week` — the press report (`report.ts`); `400` on any other
+  window, `503` before the first scan
 - `GET`/`PUT /api/notes` — `hotkeys/notes.json`. empty text is the delete
 - `POST /api/manual` — a rebind, written surgically into `manual.ts`. `409` when it cannot place
   the edit exactly, `400` when a field is missing or carries a control character

@@ -1,7 +1,7 @@
 # AGENTS.md: x-ray
 
 raycast extension. the `x-com` surfaces reachable from the raycast bar — linear, the handoff
-shelf, the schedulers, monobank rates. source lives here; the command runs out of raycast.
+shelf, the schedulers, monobank rates, the gmail block list. source lives here; the command runs out of raycast.
 
 ## the commands
 
@@ -12,52 +12,23 @@ shelf, the schedulers, monobank rates. source lives here; the command runs out o
 - `currency` — monobank buy/sell for the hryvnia, with an amount argument to convert
 - `gmail-block-sender` — appends a sender, domain or display name to `gmail/blocklist.json` and runs
   `gmailctl apply`; the filter deletes on arrival, old mail is his one search by hand
-- `kick-5h` — opens the claude 5h usage window now: one `claude -p --model haiku` «ok» call from an
-  empty temp dir (`lib/kick.ts` holds the line; never `--bare`, it skips the subscription), then a HUD
-- `kick-5h-at <hh:mm>` — the same call once, later: writes `com.dima.kick-5h-once.plist` (the next
-  time the clock shows hh:mm), which runs it, trashes itself and boots itself out; `pmset schedule
-  wake` a minute before needs root, so macOS asks for the password — a cancel keeps the kick, unwoken.
-  logs at `~/.local/share/kick-5h/`
+## schedulers
 
-## schedulers — the live thread
+`schedule/` at the repo root owns every scheduled job; `schedule/README.md` is the authority on the
+job layout, the launchd install step and the heartbeat a cloud job reports through. the `schedule`
+command answers «what runs, when, did it work» and only reads it: the state lives under `schedule/`, never in this extension, so a later
+`schedule` verb in `x` (none yet) reads the same data.
 
-📌 **dima's position: schedulers matter, they were scattered, and they belong in ONE place.**
-they now are — `schedule/` at the repo root owns them, and `schedule/README.md` is the authority.
-
-- `schedule/jobs/<name>/` — one directory per job: plist, source, build output
-- `schedule/state/` — heartbeats from jobs we cannot poll, gitignored
-- `pnpm schedule:install` — links each plist into `~/Library/LaunchAgents` and bootstraps it
-- logs stay at `~/.local/share/<name>/`, outside the repo: runtime output, not source
-
-📌 **the constraint that forces an install step: launchd reads plists only from
-`~/Library/LaunchAgents`.** it will not read a directory of ours. symlinks do work — launchd
-resolves one at bootstrap and holds the repo path, verified with `launchctl print` — but a link
-on its own loads nothing, so the installer runs `bootout` + `bootstrap` too, idempotently.
-
-### why the heartbeat pattern exists
-
-a cloud job runs on anthropic's machines. no pid, no plist, no `launchctl` row — nothing to
-poll, ever. so it writes a json beat to disk when it runs, and `schedule` derives state from
-**freshness**: fresh and ok → `waiting`, fresh and not ok → `failed`, older than 26h → `missed`,
-file missing → the task is simply not set up and no row appears at all.
-
-### the open decision
-
-this raycast command is a first answer to «what runs, when, did it work»; a `schedule` verb in the
-`x` cli is still on the table. so the state lives under `schedule/`, never inside this extension:
-the reader never owns the data.
+<!-- failure: schedulers were scattered across repos and tools. outcome: dima's call, one home — `schedule/` (frame AGENTS «one home per feature»). -->
 
 ## conventions — do not break these
 
 - **style** — arrow-function consts, 4-space, single quotes, `/* Helpers */` and `/* Types */`
   banners, named helpers over logic inlined in jsx
-- **comments explain WHY** — the existing ones are the bar; a comment restating the code is noise
 - **the `com.dima.` prefix filter** — `schedule` is a window onto what we run, never a launchd
   browser. everything else in `~/Library/LaunchAgents` stays filtered out
 - **the two-read plist trick** — `plutil -convert json` DROPS xml comments, so the prose is read
   from the raw file and the fields from json. two reads of one file; neither is optional
-- **a cloud task derives state from freshness** — never invent a poll for something with no
-  process to poll
+- **a cloud task derives state from freshness** (`schedule/README.md` § the heartbeat contract) —
+  never invent a poll for something with no process to poll
 - **no new dependencies** — `@raycast/api`, `@raycast/utils`, `node-emoji`, and that is the list
-- **`pnpm typecheck` before done** — `strict` plus `noUncheckedIndexedAccess`. `ray build`
-  bundles with esbuild and reports success over type errors, so a green build proves nothing

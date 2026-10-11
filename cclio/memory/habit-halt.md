@@ -12,5 +12,3 @@ grows into a work session has failed at its one job.
 
 This leaf decides **when**. Everything about **how** — the two speeds, the phases, the CST, the
 pocket prune, what follows the halt — lives in `/cclio:halt` and loads with it.
-
-Related: [craft-pm](craft-pm.md)

@@ -17,8 +17,3 @@ lives here when it exists, and the raycast extension reads this tree.
 a url is the source: record it with its range, never copy the video. a file dima handed over
 (a screen recording, an image) is copied into `<slug>/source/` because nothing else can refetch it.
 caption html, mocks and earlier versions are scratch and die with the session.
-
-## todo
-
-- x-ray extension `gifs: mine` at the next gif: list this tree, actions paste gif · copy gif ·
-  copy fs path; plus the `pnpm gif:*` scripts of FRM-260

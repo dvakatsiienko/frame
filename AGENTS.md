@@ -42,21 +42,22 @@ pnpm frame:link untrack ~/.gitconfig   # hand a file back to ~, drop it from the
 **a feature lives in ONE directory named after it** — `schedule/` owns every scheduled job,
 `hotkeys/` owns every hotkey tool; its served app is `hotkeys/chords/` — read
 `hotkeys/AGENTS.md` before touching either; a new feature or mini-app gets its own root directory the day it is born. before adding a file, ask which feature it belongs to and put
-it in that home; `script/`, `docs/` and `lib/` are not homes, they are where scatter starts (hotkeys
-sat in four places on 2026-09-19). the one crossing: a feature's scheduled **daemon** lives under
+it in that home; `script/`, `docs/` and `lib/` are not homes, they are where scatter starts. the one crossing: a feature's scheduled **daemon** lives under
 `schedule/jobs/<name>/` (plist, source, `bin/`), its readers and tools stay in the feature's home.
+
+<!-- failure: hotkeys sat in four places on 2026-09-19 -->
 
 ## scripts
 
 <!-- the notes on scripts, the toolchain and the hooks moved to .claude/rules/scripts.md (2026-10-11 sweep), a paths: rule that loads with those files; this one line stays, because running a command touches no file -->
 
-- 📌 `pnpm check` itself WRITES repo-wide — run biome on your own paths only; lefthook already formats what you stage (it reformatted `hotkeys/map.html` under a coder, 2026-09-15).
+- 📌 `pnpm check` itself WRITES repo-wide — run biome on your own paths only; lefthook already formats what you stage.
 
 ## what lives in `home/.claude/` that `ls` does not explain
 
 - **`plugin-x/`** — the personal plugin, registered as marketplace "x". `CST-SPEC.md` there is the
   single definition of the handoff format.
-- **`mcp-x-cw/`** — local stdio MCP server giving `cw` handoff, transcript and pm tools against the
+- **`mcp-x-cw/`** — local stdio MCP server giving `cw` handoff and transcript tools against the
   shared shelf. Build: `pnpm mcp:build`.
 - **`shelf/`** — everything we bake, symlinked wholesale into `~/.claude/`: handoffs,
   transcripts, flawlog, plus the `hooks/` settings.json points at and the `sounds/` they
@@ -121,9 +122,10 @@ multi-context: `GLOSSARY-MAP.md` lists every `GLOSSARY.md`. See `docs/agents/dom
 ## hazards that bite this repo
 
 - **a pre-commit `test` red in under 1 s on the first commit after staging is the known flake** — vitest needs ~2.5 s, and the identical retry went green both times (2026-10-04); retry once, a second red is real. guard: none, cause unknown
-- **the pre-commit typecheck, test and mods gates read a temp copy of the index** (`script/index-run.sh`, FRM-367) — a peer's unstaged edit never reaches them; the copy holds git-crypt ciphertext and is deleted after each gate (dima, 2026-10-10)
 - a frame worktree pushes only through `x lane push` (it pushes from the main checkout; a plain `git push` there dies on the `mirror` gate, which reads `~` symlinks that point at the main checkout)
-- **the encrypted set is `.gitattributes`** (the `filter=git-crypt` lines) — read it before calling a task git-crypt-blocked; every other file works in a fresh clone or a cloud session with no key (a «frame is git-crypt, so no cloud» call was wrong on 2026-09-28: the set was one file). a commit that moves a file out of the set is refused by the `git-crypt-rename` pre-commit check — the new path needs its own filter line
+- **the encrypted set is `.gitattributes`** (the `filter=git-crypt` lines) — read it before calling a task git-crypt-blocked; every other file works in a fresh clone or a cloud session with no key. a commit that moves a file out of the set is refused by the `git-crypt-rename` pre-commit check — the new path needs its own filter line
 - a git-crypt repo keeps its key in the main `.git`, so a fresh worktree holds ciphertext and even a pathspec `git add` dies on the clean filter: `x lane seed <path>` unlocks a hand-made tree (`EnterWorktree` trees unlock through `shelf/hooks/worktree-seed.sh`); the by-hand recipe lives in `x/AGENTS.md` § lane
-- **biome lints `.svg` in frame** (`useSortedAttributes`) — art shipped outside `assets/` and `brand/` gets its `!path` exclusion in `biome.jsonc` in the same commit, or the commit is refused (speak's favicon, 2026-09-29)
+- **biome lints `.svg` in frame** (`useSortedAttributes`) — art shipped outside `assets/` and `brand/` gets its `!path` exclusion in `biome.jsonc` in the same commit, or the commit is refused
 - **launchd + tcc hazards live in `schedule/AGENTS.md`** (signing, tcc grants, plist edits) — read it before touching `schedule/` or a daemon under `hotkeys/`
+
+<!-- failure: pnpm check reformatted hotkeys/map.html under a coder (2026-09-15) · a «frame is git-crypt, so no cloud» call was wrong, the set was one file (2026-09-28) · speak's favicon refused at commit by the svg lint (2026-09-29) -->

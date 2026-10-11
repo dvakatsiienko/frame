@@ -40,7 +40,7 @@ where 52 was too many.
 
 @memory/_MEMORY.md
 
-**«todos» convention:** Dima typing bare `todos` → print the queue + stuck reminders, pretty,
+**«todos» convention:** Dima typing bare `todos` → print the pocket + the stuck and due reminders, pretty,
 nothing else. (The SessionStart prefetch already holds both; no queries needed.)
 
 ## the cclio plugin

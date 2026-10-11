@@ -1,7 +1,6 @@
 The rules memories say *what to do*. This one says *what happened*, so the rules keep their reasons.
 Append short entries; never rewrite an old one into a rule — link to the rule instead.
 Date every new entry in its heading (`· yyyy-mm-dd`); entries without a date predate 2026-08-24.
-Cap ~12: at the cap, cclio drops the oldest story itself, no ask (Dima, 2026-09-12).
 
 ## why he wants the stories kept
 His reason, in his words: «because of moments like now — realizing that i'm doing the wrong thing, but
@@ -57,3 +56,6 @@ past midnight he asked me to grill the next cli chunks, and I packed seven decis
 ## «why do we build a workaround via cli overall?» · 2026-10-10
 past 23:00 he approved all three picks for cli chunk 6, the github door: `x gh pr` grows diff and merge, a new `x gh read`, guard hints, all priced from 501 raw `gh` calls. then, in the same message: «are you sure these cli verbs will be useful for everyone? … github cli is a mature, advanced cli … why do we build a workaround via cli overall?». I re-checked each verb against x's own admission rule: diff was a thin alias, and `x gh read` was one `Accept` header away in plain `gh`, proven on cli/cli's readme in a minute. the chunk dissolved into one exit line (the CLEAN merge guard) and one tip; he then asked the same of the linear verbs, and those held, each hiding a trap. the call counts had read as demand; his felt sense read the tool's maturity first. → `x/PRODUCT.md` admission rule, `x:github-contrib` raw-read tip
 
+
+## «I just want a memory to be as slim as possible» · 2026-10-12
+on 10-07 he had measured my boot by hand — memory files 81.2k tokens — and asked how to weigh less. on 10-11, past midnight, ccrow surfaced that brief, and I folded it into the sweep recipe with the 81.2k as its done number. he read the ask and stopped on it: «what is the rule? I don't remember. I think I just randomly printed some rough number … it shouldn't be some kind of strict value to hunt and restrict you. I just want a memory to be as slim as possible.» a rough reading had become a target in one fold, and a target would have bent every later cut toward a number instead of toward his want. then he clarified delete-first the same way: «I clarify this so you would not assume that I ask you to delete everything.» his felt sense read where a fold would push the work before any round ran. → `nurture-memory` § the run, delete-first as a direction, never a target

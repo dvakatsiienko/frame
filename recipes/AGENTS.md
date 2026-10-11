@@ -1,9 +1,8 @@
 # AGENTS.md: recipes
 
-a **recipe** is a repeatable learning run: it researches what we want to learn, wide and deep, then
-sharpens the matching part of the fleet or its tools (a skill, a memory file, an app's knowledge) with
-what it found. every recipe has the same purpose and covers its own area, so every recipe has the same
-shape. running, grooming and creating one is `x:shape-recipe`; this file is what a recipe is.
+a **recipe** is a repeatable learning run: it researches one area wide and deep, then sharpens the
+matching part of the fleet (a skill, a memory file, an app's knowledge) with what it found. every
+recipe shares one shape, and this file is it; running, grooming and creating one is `x:shape-recipe`.
 
 ## the want
 
@@ -68,7 +67,9 @@ body, in this order. each section holds only its own kind of line:
 - one line per run, oldest first, exactly five ` · ` fields; an unknown field is `?`, never dropped
 - the outcome is one clause, the verdict or the delta as a headline («2 rows flipped», «noop»)
 - at most 280 characters a line; past 8 KB the oldest lines move to `log-<year>.md`
-- the log answers «did it run, what changed, where». findings, numbers and decisions live in the artifact; todos go to the pocket; dima's wants go to `## the want`. the 10-07 cut is the reason: lines restated their artifacts at ~400 characters, and one reached 5 KB
+- the log answers «did it run, what changed, where». findings, numbers and decisions live in the artifact; todos go to the pocket; dima's wants go to `## the want`
+
+<!-- failure: log lines restated their artifacts at ~400 characters, one log reached 5 KB. outcome: the 10-07 cut, the 280-character cap. -->
 
 ## the check
 

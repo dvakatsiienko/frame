@@ -33,14 +33,15 @@ live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
 
 ## the bash tool
 
-- **the `x-mod-guard` cc mod refuses the Bash shapes that used to be listed here** — `sd` with a `$`, a dash-led `sd` find, an unbraced `$var` before `:` or non-ascii, a trailing `&`, a gate piped to `head`/`grep`, a grepped push, `sd`/`sed` on a workflow, a `HOME=` override, plus the floor commands; its refusal names the fix, `plugin-x/mods/x-mod-guard/FTR.md` lists them. guard: `x-mod-guard` itself
-- **a cli new to you is probed with a bare `<cli> --help`, never `<cli> <verb> --help`** — some clis run the verb and ignore the flag: `obsidian delete --help` deleted the active note (2026-10-07, restored). guard: `x-mod-guard` for obsidian; any other unknown cli, none
-- **a hand edit goes through `Edit`/`Write`; a bulk transform may script** — the tools fire the hooks (biome format, the stash holds lock, read-before-write) and fail loud; a script sees no hook and fails silent. a change across many files (a rename, a date shift, 40 files) stays one script call, never 40 Edits (dima, 2026-10-05) — 37 % of a week's fleet writes went through Bash and took no hold (`docs/test-drive/mods.md`). guard: the stash cc mod's holds veto refuses a Bash write to a held file; a Bash write still takes no hold and fires no format hook
+- **a cli new to you is probed with a bare `<cli> --help`, never `<cli> <verb> --help`** — some clis run the verb and ignore the flag. guard: `x-mod-guard` for obsidian; any other unknown cli, none
+- **a hand edit goes through `Edit`/`Write`; a bulk transform may script** — the tools fire the hooks (biome format, the stash holds lock, read-before-write) and fail loud; a script sees no hook and fails silent. a change across many files (a rename, a date shift, 40 files) stays one script call, never 40 Edits. guard: the stash cc mod's holds veto refuses a Bash write to a held file; a Bash write still takes no hold and fires no format hook
 - **a delete names the file the grep proved, never its dir** — «TriangleSvg has no users» was true, `trash src/elements/icons` took the live `ExternalLinkSvg.tsx` with it (2026-09-21); the unit of a delete is the path the evidence named
 - **a hand-kept plist or json changed for one value gets a one-line edit, never a re-serialize** —
   `plistlib.dumps` rewrote all 984 lines of the iterm prefs for one spacing value (2026-10-01)
 - **vendored code gets its biome exclusion in the same commit that adds it** — the commit hook formats staged files only, ci runs `biome ci` over the repo, so a vendored skill turned main red after a green commit (2026-09-28)
 - **`op run` masks secrets in its child's stdout** — a script that reads a key back from an `op-run` child gets `<concealed by 1Password>`; the child sets `OP_RUN_NO_MASKING=true` and keeps the key in memory only (speak's daemon, 15 min, 2026-09-29)
+
+<!-- failure: obsidian delete --help deleted the active note (2026-10-07, restored) · 37 % of a week's fleet writes went through Bash and took no hold (dima, 2026-10-05, docs/test-drive/mods.md) -->
 
 ## green statuses
 
@@ -54,7 +55,9 @@ live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
   created for this head», never «is a check green» (bytes #84, 2026-09-12: a commit body that
   quoted the skip marker; the guard is a `commit-msg` hook in both repos)
 - **a green typecheck answers «did the configured files pass», never «are my files configured»** — `hotkeys/*.ts` sat in no tsconfig for a week and a reverted interface field left the gate green (2026-09-20). a new dir of `.ts` is proven by planting a type error and watching `pnpm typecheck` go red
-- **github's `Deploy · success` is the hook trigger, never the build** — three production builds were red for 20 minutes behind a green Actions page (2026-09-21); the build state lives only in `vercel inspect <deploy url>` (`status ● Error`), and `vercel ls <project> --prod` names the newest one
+- **github's `Deploy · success` is the hook trigger, never the build** — the build state lives only in `vercel inspect <deploy url>` (`status ● Error`), and `vercel ls <project> --prod` names the newest one. guard: `deploy-watch.sh`, armed by `x:cmt` on every bytes push
+
+<!-- failure: three production builds were red 20 min behind a green Actions page (2026-09-21) -->
 
 ## app exports
 

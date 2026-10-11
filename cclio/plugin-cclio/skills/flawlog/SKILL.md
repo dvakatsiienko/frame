@@ -70,7 +70,7 @@ was missed, fix what is still fixable.
 the opposite failure: flagging so eagerly every turn carries a ⚠️. if it cost nothing and changes
 nothing, it is not a flaw. **silence is the correct output for a clean turn.**
 
-📌 **the two logs are different things and the names now say so.** the pocket (`cclio/pocket.md`) is the
+📌 **the two logs are different things and the names now say so.** the pocket (Backlog.md, `cclio/pocket/`) is the
 **work** pool — what we are doing, statuses, carry-over. `~/.claude/shelf/flawlog/` is the **flaw** journal — process defects caught mid-session.
 one tracks the flow, one tracks the flaws. never write a flaw into the pocket or a task
 into the flawlog.

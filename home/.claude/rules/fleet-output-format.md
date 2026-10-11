@@ -22,12 +22,14 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 
 - **answer first.** open with the verdict. never build up to it.
 - **a reply budget: ≤800 characters; a report ≤1,500.** longer goes to an artifact or a
-  file, and the reply carries the verdict plus the link (dima, 2026-10-10: median 1,361 chars, 4× his prompts).
+  file, and the reply carries the verdict plus the link.
 - **bullets over prose.** prose is the exception, never more than three lines.
   - a bullet is one sentence. more than that, and it nests: the bullet becomes a label, each fact
     a sub-bullet.
 - **operations get list shape.** one op per line, `FRM-N → what happened`, grouped by kind;
   reasoning stays prose.
+
+<!-- failure: dima, 2026-10-10: the median reply ran 1,361 chars, 4× his prompts -->
 
 ## typography
 
@@ -73,7 +75,7 @@ a page you named, never navigates from a site root to the page you meant.
 
 - **every web resource you name is a markdown link.** label it and link it.
 - **a generic filename prints with its parent dir** — `refresh-crew-coordinator/recipe.md`, never a bare
-  `recipe.md`, `log.md`, `SKILL.md` or `AGENTS.md`, so the name alone says which one (dima, 2026-10-07)
+  `recipe.md`, `log.md`, `SKILL.md` or `AGENTS.md`, so the name alone says which one
 - **strictest when you ask him to do something** — grab an api key, flip a setting, re-grant a
   permission: deep-link the exact page or pane so the click IS the action, never «go find X».
   before asking at all, look for the door that does it for him (a `defaults write`, a script).
@@ -82,9 +84,11 @@ a page you named, never navigates from a site root to the page you meant.
   one form every surface renders (the desktop Code tab and cw strip custom schemes); dima opens a
   ticket in the app with his Hyper+G raycast command.
 - **an issue or pr from another repo is a full link** — `[vhs#787](https://github.com/charmbracelet/vhs/issues/787)`.
-  a bare `#787` autolinks to the repo in view, and he lands on the wrong page (2026-09-25).
+  a bare `#787` autolinks to the repo in view.
   - **inside a repo file, a plain relative markdown link** — `[pm](pm.md)` — renders in every
     viewer; no scheme.
+
+<!-- failure: 2026-09-25, a bare #787 landed him on the wrong repo's page -->
 
 ## copy-paste blocks get visible ends 📋
 
@@ -92,9 +96,9 @@ a page you named, never navigates from a site root to the page you meant.
 boot block, a command. a prompt printed as prose reads fine and gives no way to tell where it stops.
 
 the ribbons sit **outside** the fence so they never get copied, with **one blank line between
-ribbon and fence — to breathe**. **plain text only — no box-drawing glyphs, no dashes**: the long
-`╭───╮` lines wrapped in the code tab and trimmed in cw (dima, 2026-09-08); an emoji-bold-emoji
-line renders the same in every pane:
+ribbon and fence — to breathe**. **plain text only — no box-drawing glyphs, no dashes**; an emoji-bold-emoji line renders the same
+in every pane:
+<!-- failure: 2026-09-08, the long ╭───╮ ribbons wrapped in the code tab and were trimmed in cw -->
 
     📋 **copy → terminal** 📋
 
@@ -178,14 +182,7 @@ file he names.
   - a subagent is bold with its badge and name from `fleet-identity`, never its launch text: **🐬 wishkeeper**
 
 ### 🪐 open asks — orbit
-- **asks go to orbit through its tool, `mcp__x-mod-stash__orbit`, never into a reply** — dima's list
-  in the fleet board; the tool's description holds the ops (add, resolve, follow, plan), an
-  unmarked ask means nothing yet.
-- 📌 a background (`--bg`) session draws no board, so its orbit stays unseen: its asks go to its
-  coordinator in its ping, as its role's contract says.
-- 📌 in mobile mode the board is out of his reach: every open ask and the plan's next moves print in the ⏳ fence, `x:mobile-mode` holds the shape.
-- an ask reads alone after 20 more pile up; an irreversible one leads with ⚠️ and names its exact target. an open ask is added once, another round is a `follow`.
-- a Wispr add (`rules/dima-signals.md`) is an ask too: `heard → meant`, pick ✓.
+- asks go to orbit, never into a reply: `rules/fleet-mods.md` holds orbit, phases and the other mods.
 
 ## reply skeletons
 
@@ -208,7 +205,6 @@ file he names.
 
 - bold section header per topic, then one fact per line, nested bullets.
 - 🟢🟡🔴 group by state, never inline lists of ids in prose.
-- every question goes to orbit, one ask each; the board holds none.
 - a section «no action needed» — everything informational parks under it.
 - an id never shares a line with a second id's story.
 
@@ -216,12 +212,12 @@ file he names.
 
 - 📊 mini scoreboard for session wrap-ups (created / done / touched / routed) — bullet lines, not a table
 - 🚦 fleet reports as one line per session, in fixed order — 🟢 done-idle, then 🟡 working, then 🔴 blocked;
-  naming is type-first — «ccli batch-1», «cwrk research-x»
+  each named by its registry name («☕️ 🔧 FRM-399 code: …»)
 - 🧾 diff-shaped state changes: `field: old → new`
 - 🏷️ incremental art or product work (a diorama set, an mvp growing round by round) → every
   report ends with its version label — `mvp`, `mvp v1`, `mvp v2`, `prod`, or a number like
   `0.03` — and the artifact carries the same label in its title or header, bumped on each
-  republish. one-off work carries no label (dima, 2026-09-25). **the artifact's title is the source
-  of the label**: a message quotes the version the title shows, never its own count — «canvas v10»
-  in a reply while the title still read «spread v1» sent dima looking for a page that was right
-  there (2026-09-30)
+  republish. one-off work carries no label. **the artifact's title is the source of the label**: a
+  message quotes the version the title shows, never its own count
+
+<!-- failure: 2026-09-30, «canvas v10» in a reply while the title read «spread v1» sent dima hunting for a page that was right there -->

@@ -32,23 +32,24 @@ paths:
 
 ## general
 
-- **less is more.** keep it simple, channel "yagni" energy unless told otherwise. cutting complexity is the work, not a step in it.
+- **cutting complexity is the work, not a step in it.**
 - don't hesitate to delete dead code (obvious or not) during task execution
-- type safety is useful, take advantage of it.
 - **package.json** — exact pins, `npm view` before any version, script order and `family:name` keys: the whole shape is `x:guide-conventions` → `conventions/package-json.md`, read before printing or editing any manifest
 
 ## typescript
 
 - `any` is the enemy. inferred types are our friend. our systems should adapt to changes, instead of requiring changes everywhere.
-- use `tsc` to catch type errors where the project's TypeScript is healthy (script name varies); skip it for projects with broken TS — their AGENTS.md will say so. prefer IDE type info when connected to Cursor.
+- use `tsc` to catch type errors where the project's TypeScript is healthy (script name varies); skip it for projects with broken TS — their AGENTS.md will say so.
 - if your TS code looks like a Python dev wrote it, it is bad TS code.
 - avoid one-line functions that are just casting wrappers.
 
 ## tests
 - tests are good! endless smoke tests, "regression tests" for feature deletions, etc, much less good. tests should be focused, not slop.
-- **what earns a test** (vitest's own practice guide, adopted 2026-09-11): test the contract, never the internals — if a refactor keeps the output and the test breaks, it tested implementation. one behaviour per test, no «and» in a name. mock only what is slow, flaky or side-effecty, never the thing under test. a mechanical migration writes, per mapping, what the failure will print (`assert.ok` → `toBeTruthy` prints nothing useful). **a test is proven by making it fail**: for a test reading a rendered value, delete its input (the stylesheet, the attribute, the variant) and watch it go red — five «green» tests shipped hollow in one day because only the pass was ever checked.
+- **what earns a test** (vitest's own practice guide, adopted 2026-09-11): test the contract, never the internals — if a refactor keeps the output and the test breaks, it tested implementation. one behaviour per test, no «and» in a name. mock only what is slow, flaky or side-effecty, never the thing under test. a mechanical migration writes, per mapping, what the failure will print (`assert.ok` → `toBeTruthy` prints nothing useful). **a test is proven by making it fail**: for a test reading a rendered value, delete its input (the stylesheet, the attribute, the variant) and watch it go red.
 - **vitest is the runner** in every ts repo (`vitest run`, `tree` reporter locally); a component test runs in browser mode, not jsdom. `node:test` is not used.
 - ❌ **tautological tests are disallowed** — testing a constant to have a specific value is not testing - it is creating tech debt upfront.
+
+<!-- failure: five «green» tests shipped hollow in one day because only the pass was ever checked -->
 
 ## on a web page
 

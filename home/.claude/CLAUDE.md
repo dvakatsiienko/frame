@@ -64,13 +64,11 @@ on partly done, flatten an exact string into prose casing.
 ## house rules
 
 - **Dima's instruction in the room outranks every file, always.**
-- 🪐 **orbit is where a session asks him**: an ask he ticks in the board needs no paste (`rules/fleet-output-format.md`, «open asks»).
-  <!-- why: his thread runs many lanes at once, and a reply's ask block got missed, pasted back unchanged or rewritten mid-read -->
 - edit only the AGENTS.md matching the current working scope: project dir → project AGENTS.md, `~/.claude` → this file
 - spot a memory improvement → propose it in one line; this file and `rules/` change only on his word
+- a memory line holds the instruction; its incident, story or reason goes in a block html comment at column 0, after its list (failure · why · outcome, ≤3 lines): cc strips only those, an indented one loads. a doc opened with `Read` keeps its comments, so there the story goes to git or a research doc
 - two layers in genuine conflict is a defect to report and fix, never a puzzle to resolve quietly at read time
-- 📌 capabilities, the per-surface table, what loads where and who can spawn whom: `docs/knowledge/fleet-claude-capabilities.md`, read on demand
-- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf: before a precision-critical move (a model id, a spawn flag, a cc mechanic), read the matching file there first
+- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf, read on demand: before a precision-critical move (a model id, a spawn flag, a cc mechanic), read the matching file first; what loads where and who can spawn whom is `fleet-claude-capabilities.md`
 
 ## coding preferences
 
@@ -103,11 +101,11 @@ on partly done, flatten an exact string into prose casing.
 <!-- sync: cw -->
 
 - **our skills are the flow, not add-ons.** the `x:*` and `cclio:*` set is written and kept by us for this exact setup; the external ones (matt's, impeccable, dataviz) are hand-picked. a task a skill covers runs through the skill — a fresh guess over a maintained procedure is the miss we keep paying for.
-  <!-- upkeep: the external skills are kept current by cclio:evergreen -->
 - **the check is mechanical, at the start of every task:** scan the skill list for a name whose trigger words match the ask (commit, pr, ticket id, a url, a file type, a vault path, «walk me through») and load it before the first tool call. a rule in `rules/` that fires on a file read is the backstop, never the front door.
 - **name every load in the reply** — «skills: x:cmt, x:guide-typescript» — and name a miss when you notice one late. that line is the only data the fleet gets on which triggers fail.
-- a skill's instructions rank below the fleet floor and local rules; a conflict is said out loud, never resolved quietly (the invariant, item 9).
 - **recipes are the fleet's lever on its own learning** — `~/frame/recipes/<name>/`, repeatable runs that research one part of the fleet wide and deep, then sharpen it; your training is cut, the world moves, a recipe closes the gap. `recipes/AGENTS.md` is the contract, `x:shape-recipe` creates, grooms and runs one; a research that will repeat becomes a recipe (dima, 2026-10-09).
+
+<!-- upkeep: the external skills are kept current by cclio:evergreen -->
 
 ## questions are read-only
 <!-- sync: cw -->
@@ -152,10 +150,10 @@ on partly done, flatten an exact string into prose casing.
 
 ## byproducts and cleaning habits
 
-- only commit changes when explicitly requested
 - keep scratch outside the worktree: plans, research notes, working files. after an operation, `trash` the scratch files you created this session; anything else waits for his word (the invariant, item 8)
 - pick a produce's shape before its first line: who reads it, the one question it answers for them, and what it points to instead of copying. a log answers «did it run, what changed, where», never the findings, which live in the target
-  <!-- why: the 10-07 recipe logs restated their artifacts at ~400 chars a line; one reached 5 KB -->
+
+<!-- why: the 10-07 recipe logs restated their artifacts at ~400 chars a line; one reached 5 KB -->
 
 ## session habits
 <!-- sync: cw -->

@@ -1,5 +1,5 @@
 ---
-dies-when: the next refresh-crew-coordinator run distills it (the scheme already landed in x:pm, 2026-10-10)
+dies-when: the next refresh-crew-coordinator run distills it (the scheme already landed in cclio:pm, 2026-10-10)
 ---
 Ticket: none (pocket pk-46)
 
@@ -89,7 +89,7 @@ brief: `scratchpad/brief-estimates.md` (pk-46). this is the primary-source lane:
 - anthropic: the coding agent «was then asked to work on only one feature at a time … critical to addressing the agent's tendency to do too much at once», which «led to the model running out of context in the middle of its implementation» ([anthropic engineering](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)). this backs «fits one session» as a unit
 - metr: models reach «almost 100% success rate on tasks taking humans less than 4 minutes» but «<10% … on tasks taking more than around 4 hours», with a horizon doubling «around 7 months» ([metr, 2025-03](https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/)). size predicts *failure risk* for agents, not only cost
 - where they disagree:
-  - linear treats a large estimate as «uncertainty». x:pm's assumption gate forbids exactly that: «Do not average it away into a bigger estimate» (`pm/SKILL.md:137`). our rule is the stricter one
+  - linear treats a large estimate as «uncertainty». cclio:pm's assumption gate forbids exactly that: «Do not average it away into a bigger estimate» (`pm/SKILL.md:137`). our rule is the stricter one
   - jeffries and #NoEstimates say drop estimates. linear needs them for cycle graphs. we run no cycles «?», so that reader does not exist here
 - unread: the towards-ai essay «story points stopped working…» returned 403 and was dropped. woody zuill's #NoEstimates post returned 404 and was dropped. a nathanfox.net post on agent story-point estimation failed to load and was dropped
 
@@ -165,7 +165,7 @@ brief: `scratchpad/brief-estimates.md` (pk-46). this is the primary-source lane:
   - **1 · minutes**: mechanical, one place, no open question; one coder session under ~100 turns. anchors: FRM-334, FRM-314, FRM-294
   - **2 · one session**: one coder session, ≤ ~400 turns, verifier clean within its rounds. anchors: FRM-336, FRM-372, FRM-355, FRM-343
   - **3 · more than one session**: will not fit one session. it gets split or shaped before a coder spawns, per linear's «breaking up issues into smaller ones is the best approach» and anthropic's «one feature at a time». anchors: FRM-284, BYT-113, BYT-116
-  - uncertainty is not a size: the x:pm assumption gate stays as it is (`pm/SKILL.md:123-140`). an unanswerable question blocks the estimate, it does not inflate it
+  - uncertainty is not a size: the cclio:pm assumption gate stays as it is (`pm/SKILL.md:123-140`). an unanswerable question blocks the estimate, it does not inflate it
 - the rubric cclio applies: name the closest anchor ticket in one body line (`size: 2 ~ FRM-372`). that makes the estimate auditable. unverified that a named anchor improves agent consistency «?»
 - the lane rides along. a bucket of 1 suggests freebie or quick, 2 quick or feature, and 3 «shape first». the lane stays the workflow choice (`craft-fleet-flow.md:20`)
 
@@ -181,7 +181,7 @@ brief: `scratchpad/brief-estimates.md` (pk-46). this is the primary-source lane:
 - the siesta pick: pocket first, ordered by ordinal; freebies = size 1 / `xs`. this replaces «estimates are not a filter» (`siesta/SKILL.md:19`)
 - craft-pm: «estimated 1 is solved now» stays, now with a defined 1
 - the build wait: 1 → check at 15 min, 2 → check at the session's end. the times are proposals, chosen from the medians above (5 min and 33–39 min)
-- x:pm: on any scope change it re-sizes (`pm/SKILL.md:118`, «re-eval both»). nothing enforces that today; the history shows zero re-estimates
+- cclio:pm: on any scope change it re-sizes (`pm/SKILL.md:118`, «re-eval both»). nothing enforces that today; the history shows zero re-estimates
 
 ### checked against actuals
 - at the halt: one duckdb pass over the day's coder transcripts (title → ticket, distinct `message.id` → turns, `output_tokens` → tokens). it prints each ticket's bucket and actual turns, plus misses

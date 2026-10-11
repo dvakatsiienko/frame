@@ -19,7 +19,7 @@ born 2026-10-10 from the operator ledger and the reply analysis (pocket PK-50).
 
 ## the want
 
-dima, 2026-10-10: «the recent sweeps that gathered data about our communications were very useful and should be saved in this shape for future runs … the findings are extremely useful. what else could we hunt to improve our communications, and what else interesting could we search for along with this run, because it's kind of wide?»
+dima, 2026-10-10: «the recent sweeps that gathered data about our communications were very useful and should be saved in this shape for future runs … the findings are extremely useful. what else could we hunt to improve our communications, and what else interesting could we search for along with this run, because it's wide?»
 
 dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-out to hunt for info about how to improve communications between humans and agents. based on that, we will know what else we should look for during the scrape.»
 

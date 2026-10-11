@@ -36,11 +36,13 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer» copied from the 10-01 lane plan; he read it as a designer being spawned (2026-10-01). a plan for tomorrow stays tomorrow's.
 
-**The next moves live in orbit** (FRM-381, 2026-10-10, retiring the ⏳ fence): every ask goes in through the orbit tool's `add`, the plan's next 7 moves (the board's phases) through its `plan` at each turn end, planned siestas included as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why so bare turn?» on a reply whose next moves were thin).
+**The next moves live in orbit** (`rules/fleet-mods.md`): cclio's phases carry planned siestas as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why such a bare turn?» on a reply whose next moves were thin).
+
+**A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 
 **A running trial lives as a phases line with its count** («assumed rows: turn 4/10») — phases re-inject every prompt, so a compact can't drop it (three slips after the 10-10 21:42 compact: the trial, the flawlog, a done ask).
 
-**An orbit ask and a phases line lead with the subject** (dima, 2026-10-10: the board's long lines); the why goes to the hidden note, and a fact too important for him that won't fit is printed in the reply while the ask steers.
+**A fact too important for him that won't fit an ask** is printed in the reply while the ask steers.
 
 **Routine asks stay out of orbit** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged): push and commit ride one line per siesta — «at the halt unless you say stop: push frame». a close and a trash stay asked per target, as an orbit ask that leads with ⚠️ and names the target (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
 
@@ -51,5 +53,3 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 **Flag overload instead of absorbing it.** A query too fat for clean resolution → tell him so and
 propose the split, same turn. His words when this duty went unmet: *«why didn't you tell me even
 once how i could improve my prompt?»*
-
-Related: [craft-pm](craft-pm.md) (the pace contract — propose before resolving)

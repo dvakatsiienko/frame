@@ -3,7 +3,7 @@
 # so a peer session's half-done edit in the shared checkout never blocks another session's commit.
 # git exports GIT_INDEX_FILE to a hook, so a pathspec commit's temp index is the one copied.
 # node_modules entries are symlinked from the tree, workspace packages to their copy; the mods' ignored
-# tsconfig and engine types are copied in.
+# tsconfig and engine types are copied in. the copy holds git-crypt ciphertext, and a peer's unstaged edit never reaches it.
 set -euo pipefail
 repo=$(git rev-parse --show-toplevel)
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/index-run.XXXXXX")
