@@ -357,6 +357,18 @@ test("a keep-hot ping's reply keeps what the session waits on", async ($, on) =>
     expect(await row($, HERE)).toContain('🔭 waiting on ci — a ping');
 });
 
+test("the wait sits on the name's line, right of the name", async ($, on) => {
+    fleet(on);
+    await stop($, 'done.\n\n🔭 waiting on ci — a ping');
+    const ui = await board($);
+    const nameSide = (await ui.findAll({ type: 'Box' })).find(
+        (b) =>
+            b.props.overflow === 'hidden' &&
+            b.text?.includes('🦉 cclio (here)'),
+    );
+    expect(nameSide?.text).toContain('🔭 waiting on ci — a ping');
+});
+
 test('asks over a day old are not counted on the board', async ($, on) => {
     fleet(on, {
         [`asks:${PEER}`]: { asks: ['a'], at: NOW - 25 * 60 * MIN, label: 'x' },

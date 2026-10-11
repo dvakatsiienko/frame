@@ -2927,6 +2927,35 @@ export const register: Register = (on) => {
                             {m.offPattern ? (
                                 <Text color={ACCENT}>⚠</Text>
                             ) : null}
+                            {/* the wait sits right of the name, cut first when the row is short (dima's shot, 19:59) */}
+                            {line && isPartOn('stash.rowmeta') ? (
+                                <Box flexShrink={1} minWidth={0}>
+                                    <Text dimColor wrap='truncate-end'>
+                                        {/* each «waiting on <who>» part prints <who> bold, as the band does (dima, 17:20) */}
+                                        {'🔭 '}
+                                        {(m.wait ?? '')
+                                            .split('; ')
+                                            .map((part, k) => {
+                                                const w = part.match(
+                                                    /^(waiting on )(.+?)( — .*)?$/u,
+                                                );
+                                                return (
+                                                    // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
+                                                    <Text key={`w:${k}`}>
+                                                        {k > 0 ? '; ' : ''}
+                                                        {w ? w[1] : part}
+                                                        {w ? (
+                                                            <Text bold>
+                                                                {w[2]}
+                                                            </Text>
+                                                        ) : null}
+                                                        {w?.[3] ?? ''}
+                                                    </Text>
+                                                );
+                                            })}
+                                    </Text>
+                                </Box>
+                            ) : null}
                         </Box>
                         {/* one fixed-width, right-aligned cell per fact, drawn empty when it has no reading, so the columns line up across rows (dima, 2026-10-05) */}
                         <Box
@@ -2990,40 +3019,12 @@ export const register: Register = (on) => {
                             </Box>
                         </Box>
                     </Box>
-                    {/* the second line sits under the name, past the dot, dim — the reference's: the model first, kept whole, then the wait, cut at its end */}
-                    {(m.model || line) && isPartOn('stash.rowmeta') ? (
+                    {/* the second line sits under the name, past the dot, dim: the model */}
+                    {m.model && isPartOn('stash.rowmeta') ? (
                         <Box flexDirection='row' gap={2} paddingLeft={2}>
                             {m.model ? (
                                 <Box flexShrink={0}>
                                     <Text dimColor>{m.model}</Text>
-                                </Box>
-                            ) : null}
-                            {line ? (
-                                <Box flexShrink={1} minWidth={0}>
-                                    <Text dimColor wrap='truncate-end'>
-                                        {/* each «waiting on <who>» part prints <who> bold, as the band does (dima, 17:20) */}
-                                        {'🔭 '}
-                                        {(m.wait ?? '')
-                                            .split('; ')
-                                            .map((part, k) => {
-                                                const w = part.match(
-                                                    /^(waiting on )(.+?)( — .*)?$/u,
-                                                );
-                                                return (
-                                                    // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
-                                                    <Text key={`w:${k}`}>
-                                                        {k > 0 ? '; ' : ''}
-                                                        {w ? w[1] : part}
-                                                        {w ? (
-                                                            <Text bold>
-                                                                {w[2]}
-                                                            </Text>
-                                                        ) : null}
-                                                        {w?.[3] ?? ''}
-                                                    </Text>
-                                                );
-                                            })}
-                                    </Text>
                                 </Box>
                             ) : null}
                         </Box>
