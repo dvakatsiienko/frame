@@ -12,6 +12,7 @@ import {
     installDirs,
     message,
     namesWhole,
+    rawLinear,
     removedTrees,
 } from './rules.ts';
 
@@ -539,6 +540,28 @@ export const register: Register = (on) => {
             return deny(
                 `nothing in this command ran — x-mod-guard stopped this one command. instead: ${fg.door}. why: ${fg.why}.`,
             );
+        }
+        // a member's raw linear read or comment, as typed (before the api rewrite), names its x linear door; cclio's runs (FRM-398)
+        const raw = rawLinear(typed, cwd);
+        if (raw) {
+            const sid = await $.session.id().catch(() => undefined);
+            const name = sid ? await sessionName($, sid) : undefined;
+            if (
+                name !== undefined &&
+                name.replaceAll(/[\s\u200d]/g, '') !== '🦉cclio'
+            ) {
+                await record($, {
+                    command,
+                    door: raw.door,
+                    kind: 'refused',
+                    rule: raw.rule,
+                    target: raw.targets[0] ?? '',
+                    why: raw.why,
+                });
+                return deny(
+                    `nothing in this command ran — x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`,
+                );
+            }
         }
         if (verdict.kind === 'run') return go();
         if (verdict.kind === 'refused') {

@@ -165,6 +165,10 @@
   - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the `fleet-hazards.md` line left with this rule
 
+- ⬜ a member's raw `linear` read or comment is refused, the `x linear` door named (FRM-398)
+  - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --as coder --body-file <file>`
+  - and cclio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
+  - decision: read as typed, before the `linear api` rewrite — the rewrite acts as cclio, a member's door is `x linear read`
 - ⬜ a foreground `claude -p` is refused (FRM-395)
   - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `run_in_background`
   - given the same call with `run_in_background`, or ending in `# fg-ok: <why>`, then it runs; a foreground `sleep`, `gh run watch` or any command with no `claude -p` is untouched

@@ -221,3 +221,29 @@ export function foregroundClaude(
         why: 'a foreground claude -p holds this session until it ends',
     };
 }
+
+// a member reads and comments on tickets through x linear, never the raw cli (FRM-398, rules-lazy/linear-flow.md);
+// cclio's own session is never asked, the caller checks the registry name
+export function rawLinear(command: string, cwd: string): Refusal | undefined {
+    for (const c of commands(parse(command), cwd)) {
+        if (c.name !== 'linear') continue;
+        const [a, b, d] = c.args.map((w) => w.text);
+        const isComment = a === 'issue' && b === 'comment' && d === 'add';
+        const isRead = (a === 'issue' && b === 'view') || a === 'api';
+        if (!isComment && !isRead) continue;
+        return isComment
+            ? {
+                  door: 'x linear comment <id> --as coder --body-file <file>',
+                  rule: 'raw-linear',
+                  targets: ['linear issue comment add'],
+                  why: "a member's one linear write is its done comment, through x linear (rules-lazy/linear-flow.md)",
+              }
+            : {
+                  door: 'x linear read <id> --comments --relations',
+                  rule: 'raw-linear',
+                  targets: [a === 'api' ? 'linear api' : 'linear issue view'],
+                  why: 'a member reads tickets through x linear, the whole ticket in one call (rules-lazy/linear-flow.md)',
+              };
+    }
+    return undefined;
+}
