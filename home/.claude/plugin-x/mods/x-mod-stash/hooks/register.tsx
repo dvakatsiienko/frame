@@ -1097,10 +1097,11 @@ export type BarRun = {
     color?: string;
     tone?: 'hi';
 };
-// the breathing (FRM-391), dima's pick C2 (2026-10-11 12:53): while a turn runs most lit cells spark white-hot now and
-// then and cool back through a slow afterglow, each on its own seeded period, so a few embers are always cooling; the bars'
-// length, hue and labels never change, and an idle bar stands still (no ticks, no GPU)
-const BREATH_MS = 8000;
+// the breathing (FRM-391), dima's pick C2 (2026-10-11 12:53, kept 13:01 over C): while a turn runs most lit cells spark
+// white-hot now and then and cool back through a slow afterglow, each on its own seeded period, so a few embers are always
+// cooling; the bars' length, hue and labels never change, and an idle bar stands still (no ticks, no GPU)
+// dima 12:58 «speed 0.5»: 16 s, so a cell sparks every 3.2–8.8 s
+const BREATH_MS = 16000;
 // the spark's shape over its period: dark, a flash, a slow cool-down
 const EMBER_KEYS = [0, 0.5, 0.56, 0.66, 0.8, 1] as const;
 const EMBER_GLOW = [0, 0, 1, 0.6, 0.25, 0] as const;
