@@ -55,8 +55,8 @@ the workaround in place, the undo.
 
 ## no flicker when the board redraws
 
-- want: the breather's svg in the band stays still while the board is open (dima, 2026-10-09)
+- want: the breathing bars' svg in the band stays still while the board is open (dima, 2026-10-09)
 - issue: [claude-code#100797](https://github.com/anthropics/claude-code/issues/100797) — on the desktop a pane
-  redraw rebuilds every svg on the screen, so the breather blinks about every 30 s while the board is open
+  redraw rebuilds every svg on the screen, so the bars' embers restart about every 30 s while the board is open
 - workaround: none; the board redraws only on its poll and on a press
 - undo when fixed: nothing to undo; drop the decision line in `x-mod-stash/FTR.md` that names the blink
