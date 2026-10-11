@@ -18,6 +18,7 @@ import {
     readCharter,
     readState,
     readTurn,
+    reconcileMarker,
     runOneShot,
     tokensIn,
     wakeLine,
@@ -27,6 +28,14 @@ import {
 // spawned detached by wake.ts, stdio ignored: every outcome goes to harvest.log
 const DEADLINE_MS = 15 * 60_000;
 const POLL_MS = 5_000;
+const TIMEOUT: Run = {
+    model: null,
+    note: 'timeout: no turn end within 15 min',
+    seconds: DEADLINE_MS / 1000,
+    tokensIn: 0,
+    tokensOut: 0,
+};
+// `<wake id> <mode> <phase>` for a wake, `reconcile <note id> <evidence>` for a reconcile
 const [wakeId, mode, phaseArg] = process.argv.slice(2);
 
 function log(line: string) {
@@ -56,32 +65,41 @@ function noteOf(
     };
 }
 
-async function harvestSession(wake: Wake, arm: Arm) {
+async function waitTurn(marker: string) {
     const started = Date.now();
     while (Date.now() - started < DEADLINE_MS) {
         const path = newestTranscript();
-        const run = path && readTurn(path, `ccrow wake ${wake.id}`);
-        if (run) {
-            // a relayed wake lands after a /clear in a transcript born after the wake keyed its leaves
-            const state = readState();
-            if (state.leavesFor !== path)
-                writeState({ ...state, leavesFor: path });
-            appendJsonl(NOTES_PATH, noteOf(wake, arm, 'session', run));
-            return log(`session: note logged (${run.seconds} s)`);
-        }
+        const run = path && readTurn(path, marker);
+        if (run) return { path, run };
         await sleep(POLL_MS);
     }
     log('session: no turn end within 15 min');
-    appendJsonl(
-        NOTES_PATH,
-        noteOf(wake, arm, 'session', {
-            model: null,
-            note: 'timeout: no turn end within 15 min',
-            seconds: DEADLINE_MS / 1000,
-            tokensIn: 0,
-            tokensOut: 0,
-        }),
-    );
+}
+
+async function harvestSession(wake: Wake, arm: Arm) {
+    const turn = await waitTurn(`ccrow wake ${wake.id}`);
+    if (!turn)
+        return appendJsonl(NOTES_PATH, noteOf(wake, arm, 'session', TIMEOUT));
+    // a relayed wake lands after a /clear in a transcript born after the wake keyed its leaves
+    const state = readState();
+    if (state.leavesFor !== turn.path)
+        writeState({ ...state, leavesFor: turn.path });
+    appendJsonl(NOTES_PATH, noteOf(wake, arm, 'session', turn.run));
+    log(`session: note logged (${turn.run.seconds} s)`);
+}
+
+async function harvestReconcile(noteId: string, evidence: string, arm: Arm) {
+    const turn = await waitTurn(reconcileMarker(noteId));
+    appendJsonl(NOTES_PATH, {
+        arm,
+        at: new Date().toISOString(),
+        channel: 'reconcile',
+        evidence,
+        id: `${noteId}-reconcile`,
+        reconciles: noteId,
+        ...(turn?.run ?? TIMEOUT),
+    });
+    if (turn) log(`reconcile: answer logged (${turn.run.seconds} s)`);
 }
 
 async function harvestOneShot(wake: Wake, arm: Arm) {
@@ -109,6 +127,14 @@ async function harvestOneShot(wake: Wake, arm: Arm) {
 }
 
 const sessionArm = readState().arm;
+if (wakeId === 'reconcile' && mode && phaseArg !== undefined && sessionArm) {
+    await harvestReconcile(mode, phaseArg, sessionArm).catch((error: unknown) =>
+        log(
+            `crashed: ${error instanceof Error ? error.message : String(error)}`,
+        ),
+    );
+    process.exit(0);
+}
 if (
     !wakeId ||
     !isMode(mode) ||

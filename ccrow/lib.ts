@@ -301,16 +301,20 @@ const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
 export const RELAY_PATH = join(STATE_DIR, 'relay.json');
 
 export function spawnHarvest(wake: Wake) {
+    spawnHarvester([wake.id, wake.mode, wake.phase]);
+}
+
+export function spawnHarvester(args: string[]) {
     spawn(
         process.execPath,
-        [
-            new URL('harvest.ts', import.meta.url).pathname,
-            wake.id,
-            wake.mode,
-            wake.phase,
-        ],
+        [new URL('harvest.ts', import.meta.url).pathname, ...args],
         { detached: true, stdio: 'ignore' },
     ).unref();
+}
+
+// the harvester finds ccrow's answer by this prefix; the evidence after it is free text
+export function reconcileMarker(noteId: string) {
+    return `reconcile ${noteId}:`;
 }
 
 export function newestTranscript() {
@@ -783,7 +787,10 @@ export function sendLine(socketPath: string, text: string) {
     });
 }
 
-export function appendJsonl(path: string, value: Note | PlanNote | Verdict) {
+export function appendJsonl(
+    path: string,
+    value: Note | PlanNote | ReconcileNote | Verdict,
+) {
     mkdirSync(STATE_DIR, { recursive: true });
     writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
 }
@@ -1100,6 +1107,15 @@ export interface Note {
     mode: Mode;
     phase: Phase;
     note: string;
+    at: string;
+}
+
+export interface ReconcileNote extends Run {
+    id: string;
+    reconciles: string;
+    evidence: string;
+    arm: Arm;
+    channel: 'reconcile';
     at: string;
 }
 
