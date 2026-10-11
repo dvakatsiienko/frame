@@ -112,9 +112,8 @@ export type StashLane = {
     items: LaneItem[];
     // the item we are on; items.length once every item is done
     current: number;
-    // orbit's turn count when the pointer or a done flag last moved, and when the last item checked
+    // orbit's turn count when the pointer or a done flag last moved
     movedAt: number;
-    doneAt?: number;
     // dima's note on the current item, joining his next prompt once
     note?: string;
     history: { at: number; current: number; done: number }[];

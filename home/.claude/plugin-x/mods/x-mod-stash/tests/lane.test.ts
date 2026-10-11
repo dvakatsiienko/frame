@@ -199,7 +199,7 @@ test('(2) a lane reads back whole from its file at a fresh start', async ($, on)
     expect(await laneText(await board($))).toMatch(/🛼 kept.*✅ a.*🛼 b/su);
 });
 
-test('(2) a finished lane stays through the next turn end, then leaves and its file records the end', async ($, on) => {
+test("(2) a finished lane stays on the board, all done, across turn ends until the end call (dima's o57)", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -208,14 +208,18 @@ test('(2) a finished lane stays through the next turn end, then leaves and its f
         items: [...ITEMS.slice(0, 2), { done: true, text: 'last' }],
         title: 't',
     });
-    await endTurn($);
-    const after1 = await laneText(ui);
-    await endTurn($);
+    for (let i = 0; i < 4; i++) await endTurn($);
+    const kept = await laneText(ui);
+    await lane($, { end: true });
     expect([
-        after1 !== undefined,
+        kept,
         await laneText(ui),
         typeof JSON.parse(w.files[FILE] ?? '{}').endedAt,
-    ]).toEqual([true, undefined, 'number']);
+    ]).toEqual([
+        expect.stringMatching(/✅ shape.*✅ the board.*✅ last/su),
+        undefined,
+        'number',
+    ]);
 });
 
 test('(2) a lane end call takes it off the board at once', async ($, on) => {

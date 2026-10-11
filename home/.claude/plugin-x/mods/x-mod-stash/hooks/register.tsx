@@ -219,7 +219,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a ${CHANGED_MARK} mark before its id.`,
     `op assume, texts: choices you made without asking that would cost a redo if wrong, at most ${ASSUMED_MAX} a turn and ≤${ORBIT_TEXT_MAX} chars each; never routine ones. dima's 🛎️ clears one, ↩️ sends it back with his note.`,
     `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone and ≤${ORBIT_TEXT_MAX} chars; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
-    `op lane, title, items [{ text, ticket, done }], current: the lane you run, its whole scope as 1–${LANE_MAX} items dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; current is the index we are on, and moving it past an item marks that item done. call it again at every member's done and at turn end. a finished lane stays on the board through the next turn end; op lane with end: true ends it sooner. nothing moved for ${LANE_STALE} turns reads stale.`,
+    `op lane, title, items [{ text, ticket, done }], current: the lane you run, its whole scope as 1–${LANE_MAX} items dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; current is the index we are on, and moving it past an item marks that item done. call it again at every member's done and at turn end. a finished lane stays on the board, all done, until you end it with op lane end: true at the next siesta. nothing moved for ${LANE_STALE} turns reads stale.`,
 ].join('\n');
 
 let selfId: string | undefined;
@@ -666,9 +666,6 @@ export function laneOp(
         items: marked,
         movedAt: isMoved ? turns : prior.movedAt,
         title,
-        ...(isFinished
-            ? { doneAt: (isSame ? prior.doneAt : undefined) ?? turns }
-            : {}),
         ...(isSame && prior.current === current && prior.note
             ? { note: prior.note }
             : {}),
@@ -676,7 +673,7 @@ export function laneOp(
     return {
         lane,
         result: isFinished
-            ? `lane «${title}» done: it stays on the board through the next turn end`
+            ? `lane «${title}» done: it stays on the board, all done, until op lane with end: true at the next siesta`
             : `lane set: ${doneCount} of ${marked.length} done, on «${marked[current]?.text}»`,
     };
 }
@@ -2101,10 +2098,6 @@ export const register: Register = (on) => {
             ),
             turns: done.turns + 1,
         });
-        // a finished lane stays through the turn end after the one it finished in, then leaves; its file records the end
-        const lane = (await $.state.get(LANE)).value ?? null;
-        if (lane?.doneAt !== undefined && done.turns + 1 >= lane.doneAt + 2)
-            await saveLane($, null, lane);
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);

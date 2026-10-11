@@ -498,7 +498,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - and the card folds with its own `📂` like the others, and its `🛼 lane` 🎛️ switch hides it (exit 4c)
 - ⬜ the lane survives a reload, a compaction and a restart, and ends by itself
   - given a lane, then it lives in the session's state and in `~/.claude/shelf/lanes/<session>.json`, every pointer move in its history with the time; a fresh start reads it back unless the file records an end
-  - when the last item checks, then the finished lane stays on the board through the next turn end, then leaves, and the file records `endedAt`; op `lane` with `end: true` ends it at once
+  - when the last item checks, then the finished lane stays on the board, all done, across turn ends, until op `lane` with `end: true` — cclio's next siesta — takes it off and the file records `endedAt`
+  - decision: no auto-end — dima's o57 over the critic's «gone one turn later» (dima, 18:18)
 - ⬜ a lane that moved nothing for 8 turns reads stale
   - given the pointer and the done flags unmoved for 8 turns, then dima's next prompt carries «lane «…» moved nothing for n turns, stale»; a re-call that moves nothing keeps the count; with no lane, no lane text
   - decision: 8, not phases' 3 — a lane item spans many turns (the ticket's exit 3)
