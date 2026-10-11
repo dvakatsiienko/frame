@@ -7,7 +7,7 @@
 
 ## the row
 
-- ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, packed left with the pace and the time left, then the 🔭 mark; `🔥`, `⏰`, `💨` and `🚦` hold the right edge; the two meters run full width under it
+- ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, packed left with the pace and the time left, then the 🔭 mark; `🔥`, `⏰`, `💨`, `🎛️` and `🚦` hold the right edge, 🎛️ right before 🚦 (dima's o1, 15:38); the two meters run full width under it
   - decision: the readings pack left after the chips, the switches stay right (dima's o6, 22:03)
   - given the band draws
   - when dima looks above the prompt

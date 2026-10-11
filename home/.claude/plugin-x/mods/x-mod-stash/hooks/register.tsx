@@ -2736,21 +2736,6 @@ export const register: Register = (on) => {
         );
         const switches = (
             <Box flexDirection='row' flexShrink={0} gap={1} key='switches'>
-                {tip(
-                    'settings',
-                    view.isSettingsOpen
-                        ? 'fold the settings'
-                        : 'settings: show or hide each part',
-                    <Button
-                        key='settings'
-                        onPress={() => void handleSettingsFlip()}
-                        {...(view.isSettingsOpen
-                            ? { variant: 'secondary' as const }
-                            : { plain: true as const })}>
-                        🎛️
-                    </Button>,
-                    leftOf('🎛️', view.isSettingsOpen),
-                )}
                 {!isShown('stash.hot')
                     ? null
                     : tip(
@@ -2802,6 +2787,21 @@ export const register: Register = (on) => {
                           </Button>,
                           leftOf('💨', view.afk),
                       )}
+                {tip(
+                    'settings',
+                    view.isSettingsOpen
+                        ? 'fold the settings'
+                        : 'settings: show or hide each part',
+                    <Button
+                        key='settings'
+                        onPress={() => void handleSettingsFlip()}
+                        {...(view.isSettingsOpen
+                            ? { variant: 'secondary' as const }
+                            : { plain: true as const })}>
+                        🎛️
+                    </Button>,
+                    leftOf('🎛️', view.isSettingsOpen),
+                )}
                 {!isShown('stash.board')
                     ? null
                     : tip(
