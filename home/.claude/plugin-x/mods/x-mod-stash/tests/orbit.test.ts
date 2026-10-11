@@ -203,6 +203,18 @@ test('a joined ask draws no control while the turn runs', async ($, on) => {
     ]).toEqual([['orbit:read:o1'], expect.stringContaining('«after ci»')]);
 });
 
+test("a joined ask's 🔒 mark leads its own line", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'go');
+    expect((await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text).toMatch(
+        /^🔒🛎️ o1: push .*FRM-1 ➡️ yes🔊/u,
+    );
+});
+
 test('an ask the turn left unanswered gets its controls back when the turn ends', async ($, on) => {
     world(on);
     await start($);

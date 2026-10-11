@@ -1898,6 +1898,10 @@ export const register: Register = (on) => {
                             edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
                         <Text>
                             {a.isResolved ? '👀 ' : ''}
+                            {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the note (dima, 11:57) */}
+                            {a.isLocked
+                                ? `🔒${a.mark === 'accepted' ? '🛎️' : '↩️'} `
+                                : ''}
                             {a.isChanged ? `${CHANGED_MARK} ` : ''}
                             <Text bold>{a.id}</Text>
                             {': '}
@@ -1911,15 +1915,9 @@ export const register: Register = (on) => {
                 </Box>
                 {/* the buttons lead, the note follows them (dima, 20:19) */}
                 <Box alignItems='center' flexDirection='row' gap={1}>
-                    {a.isLocked ? (
-                        <Box flexShrink={0}>
-                            <Text dimColor>
-                                {`🔒 ${a.mark === 'accepted' ? '🛎️' : '↩️'}`}
-                            </Text>
-                        </Box>
-                    ) : (
-                        [markJSX(a, 'accepted'), markJSX(a, 'rejected')]
-                    )}
+                    {a.isLocked
+                        ? null
+                        : [markJSX(a, 'accepted'), markJSX(a, 'rejected')]}
                     {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
                     {speakJSX(a.id, `${a.text}. pick: ${a.pick}`)}
                     {a.isLocked ? (
