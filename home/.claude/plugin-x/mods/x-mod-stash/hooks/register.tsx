@@ -2915,7 +2915,7 @@ export const register: Register = (on) => {
                       marginTop={1}
                       rowGap={LINE_GAP}>
                       <Box flexDirection='row' justifyContent='space-between'>
-                          <Text bold>{`🛼 ${lane.title}`}</Text>
+                          <Text bold>{`🛼 glide: ${lane.title}`}</Text>
                           {foldJSX(`lane:${lane.id}`)}
                       </Box>
                       {isFolded(`lane:${lane.id}`)

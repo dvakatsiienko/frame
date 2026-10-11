@@ -242,14 +242,14 @@ test('a card lists every step in order, done ones kept, the current marked', asy
     await create($);
     await lane($, { act: 'step', current: 1, id: 'l1' });
     expect(await laneText(ui)).toMatch(
-        /🛼 mods settings.*✅ shape the settings pane.*➡️ the board in cards.*⬜ guard rules/su,
+        /🛼 glide: mods settings.*✅ shape the settings pane.*➡️ the board in cards.*⬜ guard rules/su,
     );
 });
 
 test("any session's board draws the lane cclio wrote", async ($, on) => {
     world(on, { files: shelf(keptLane()), name: '☕️ 🔧 coder' });
     await start($);
-    expect(await laneText(await board($))).toMatch(/🛼 kept.*➡️ a/su);
+    expect(await laneText(await board($))).toMatch(/🛼 glide: kept.*➡️ a/su);
 });
 
 test('the current step reads ➡️, no «we are here» (dima, 20:46)', async ($, on) => {
@@ -414,7 +414,9 @@ test('a lane reads back whole from the shelf file at a fresh start', async ($, o
         ),
     });
     await start($);
-    expect(await laneText(await board($))).toMatch(/🛼 kept.*✅ a.*➡️ b/su);
+    expect(await laneText(await board($))).toMatch(
+        /🛼 glide: kept.*✅ a.*➡️ b/su,
+    );
 });
 
 test("a finished lane stays, all done, across turn ends until the end call (dima's o57)", async ($, on) => {

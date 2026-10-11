@@ -27,7 +27,7 @@
   - then it runs as `pnpm --silent` / `'==='`, every rule reads the fixed command, and the model gets one context line: «x-mod-guard rewrote this call before it ran: `-s` → `--silent` (…). it ran: <command>»
   - then quoted text, heredoc bodies, a `-s` after `--` and `a=b` run as typed
   - ⬜ given a command `linear api …`, then it runs as `x linear api …` with the one context line `` `linear` → `x linear` ``; `x linear api`, `x as <member> -- linear api`, `gh api`, quoted text and a heredoc body run as typed (FRM-370: 60 raw calls against 15 through x on 10-08, each skipping x's actor, ids and trace)
-  - decision: a mod's `tool.call` rewrite runs before the classic PreToolUse hooks, so `zsh-equals-guard.py` sees the quoted word and stays the backstop — probed live 2026-10-08 (FRM-337 comment); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each
+  - decision: x-mod-guard alone covers `=word`: its `tool.call` rewrite runs before any classic PreToolUse hook, so the classic `zsh-equals-guard.py` backstop was dropped (dima's o286, 2026-10-11); 12 `pnpm -s` refusals on 10-07 were a hand rewrite each
 - ✅ a raw pr read or a raw git add or commit gets a hint toward its x verb (FRM-374)
   - given a Bash call reads a pr with `gh pr view`, `gh pr checks`, or a `gh api` GET on a `pulls` path
   - then it runs as typed, and the model gets one context line naming `x gh pr <n>`

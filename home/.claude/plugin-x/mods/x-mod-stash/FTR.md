@@ -498,7 +498,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 
 - ⬜ every board draws the fleet's live lanes
   - given 🦉 cclio calls orbit op `glide` act `create` with a title and 1–5 steps (plain text, an optional ticket id, a done flag)
-  - then every session's board draws a `🛼 <title>` card right above 🌔 phases: every step in order, a done one `✅` and dim but still listed, the current one `➡️` and bold, the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
+  - then every session's board draws a `🛼 glide: <title>` card right above 🌔 phases, its head naming its mod as sessions, orbit and phases do (dima's board shot, 23:41): every step in order, a done one `✅` and dim but still listed, the current one `➡️` and bold, the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
   - and one note box with a 🛎️ take sits on the current step, on any board; the text stays a draft until take, then joins cclio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the take clear once it did
   - decision: the note and its take live in the stash store, one key per lane, so the shelf file keeps one writer, cclio's lane op; a step that moves the pointer drops the note (FRM-400)
   - decision: take only, no redo — a note has nothing to redo; a peer's prompt never carries it (dima, 20:51)
