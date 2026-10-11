@@ -154,9 +154,9 @@
   - then no ping is sent, and the clock restarts when that turn ends
 - ⬜ 🎛️ folds out a show/hide switch per part (FRM-391 slice 05)
   - given the band's 🎛️, the first of its switches
-  - when dima presses it, then a bordered view folds out above the row: a bold `🎛️ settings` title, a bold heading per group (`stash · band`), and a vertical list, one row per part — a button with the part's label, accent while shown and dim while hidden, and the word `shown` or `hidden` beside it; a second press folds it away, and neither adds a row to the transcript
+  - when dima presses it, then a bordered view folds out above the row: a bold `🎛️ settings` title, a bold heading per group (`stash · band`), and a vertical list, one row per part — a button with the part's label, accent while shown and dim while hidden, nothing beside it; the desktop puts a small gap between rows (0.3 row); a second press folds it away, and neither adds a row to the transcript
   - and the view's last section, `context`, holds `📦 auto-compact at` its `Input` `% of the context window`; the band's row no longer carries it
-  - decision: a vertical list of on/off buttons, no ☑/☐, more air, full-strength labels (dima, 15:31 «looks ugly», 15:35 «print as a vertical list»); no hover cards inside the view, it explains itself (dima, 15:36); the 📦 field moves in (dima, 15:35)
+  - decision: a vertical list of on/off buttons, no ☑/☐, more air, full-strength labels (dima, 15:31 «looks ugly», 15:35 «print as a vertical list»); no hover cards inside the view, it explains itself (dima, 15:36); no shown/hidden words, the button says it (dima, 15:50); the 📦 field moves in (dima, 15:35)
   - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
   - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
   - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw

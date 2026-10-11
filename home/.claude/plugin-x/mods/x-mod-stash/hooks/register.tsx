@@ -2977,7 +2977,7 @@ export const register: Register = (on) => {
                   ]
                 : [];
         // the 🎛️ view folds out above the row, where the breather drew: a vertical list, one button per part, accent while
-        // shown and dim while hidden, the state in words beside it; no hover cards here, the view explains itself (dima, 15:31–15:36)
+        // shown and dim while hidden, the button alone says which; no hover cards, no shown/hidden words (dima, 15:31–15:50)
         const groups = [...new Set(PARTS.map((p) => p.group))];
         const settingsJSX = view.isSettingsOpen ? (
             <Box
@@ -2990,34 +2990,23 @@ export const register: Register = (on) => {
                 paddingY={air ? 1 : 0}>
                 <Text bold>🎛️ settings · press a part to show or hide it</Text>
                 {groups.map((group) => (
-                    <Box flexDirection='column' key={`settings:${group}`}>
+                    <Box
+                        flexDirection='column'
+                        key={`settings:${group}`}
+                        rowGap={air ? 0.3 : 0}>
                         <Text bold>{group}</Text>
                         {PARTS.filter((p) => p.group === group).map((p) => (
                             <Box
-                                alignItems='center'
                                 flexDirection='row'
-                                gap={2}
                                 key={`settings:row:${p.key}`}>
-                                <Box minWidth={30}>
-                                    {
-                                        <Button
-                                            key={`part:${p.key}`}
-                                            onPress={() =>
-                                                void handlePartFlip(p.key)
-                                            }
-                                            {...(isShown(p.key)
-                                                ? {
-                                                      variant:
-                                                          'primary' as const,
-                                                  }
-                                                : { dimColor: true })}>
-                                            {p.label}
-                                        </Button>
-                                    }
-                                </Box>
-                                <Text dimColor={!isShown(p.key)}>
-                                    {isShown(p.key) ? 'shown' : 'hidden'}
-                                </Text>
+                                <Button
+                                    key={`part:${p.key}`}
+                                    onPress={() => void handlePartFlip(p.key)}
+                                    {...(isShown(p.key)
+                                        ? { variant: 'primary' as const }
+                                        : { dimColor: true })}>
+                                    {p.label}
+                                </Button>
                             </Box>
                         ))}
                     </Box>

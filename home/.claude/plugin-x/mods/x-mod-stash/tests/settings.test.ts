@@ -66,7 +66,7 @@ test('🎛️ folds out a switch per part, grouped under its mod', async ($, on)
     ]).toEqual(['stash · band', '🪄 ⏪ ⏩ enhancer']);
 });
 
-test('a shown part is an accent button marked shown, a hidden one dim and marked hidden', async ($, on) => {
+test('a shown part is an accent button, a hidden one dim, with no shown or hidden words', async ($, on) => {
     world(on);
     const ui = await band($);
     await ui.press({ key: 'settings' });
@@ -76,17 +76,13 @@ test('a shown part is an accent button marked shown, a hidden one dim and marked
             key: 'settings:row:stash.enhancer',
             type: 'Box',
         });
-        return [
-            b?.props.variant,
-            b?.props.dimColor,
-            row?.text.match(/(shown|hidden)$/u)?.[1],
-        ];
+        return [b?.props.variant, b?.props.dimColor, row?.text];
     };
     const before = await look();
     await ui.press({ key: 'part:stash.enhancer' });
     expect([before, await look()]).toEqual([
-        ['primary', undefined, 'shown'],
-        [undefined, true, 'hidden'],
+        ['primary', undefined, '🪄 ⏪ ⏩ enhancer'],
+        [undefined, true, '🪄 ⏪ ⏩ enhancer'],
     ]);
 });
 
