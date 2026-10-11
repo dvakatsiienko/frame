@@ -52,6 +52,10 @@ skill reaches it as text. a contract change goes there, never here.
   `ccrow:note-vet` on that id; the full review sits in `plans/<run>/review.json`.
 - `pnpm ccrow:note-vet ok|miss <note-id> <why>` — appends the verdict to `verdicts.jsonl`, keyed by
   note id; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
+- `pnpm ccrow:reconcile <note-id> <evidence>` — cclio's answer when her evidence contradicts a note (FRM-396): sends
+  `reconcile <note-id>: <evidence>` to a `--bg` ccrow, or prints it for cclio to `send_message` to a tab, and leaves a
+  harvester (`harvest.ts reconcile <id> <evidence>`) that logs ccrow's one answer as `<note-id>-reconcile`, with
+  `reconciles` and `evidence`, in `notes.jsonl`. an unknown id or a second reconcile of one note exits 2.
 - `leaves.txt`: one glob per line, `{today}` → `YYYY-MM-DD`, a `latest ` prefix keeps the newest
   match only. cclio owns it; the builder never reads under `cclio/`.
 

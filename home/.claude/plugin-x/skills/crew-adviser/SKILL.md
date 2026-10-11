@@ -90,6 +90,11 @@ a wake line arrives as a peer message:
   file, so read only the packet (steps 1–4). a head past the verified one is an unverified delta. write `none` or
   the note to the note path with `Write`, reply the same text, no SendMessage and no holdout: the hook carries it.
 - `spawn` — the spawn already ran; a wake like any other.
+- `proposal <path>` — a proposal for dima, whole in the packet; its harm lands at his tick: hunt the process slip (a
+  write before his word, a step out of order, the wrong sort) and send the note now, past the 30-min cap, no holdout.
+
+a `reconcile <note-id>: <evidence>` line from cclio contradicts that note in `notes.jsonl`: answer once, `stands: <why>`
+or `withdrawn: <why>` in ≤2 lines, sent to cclio outside the 30-min cap; the harvester logs it under the note's id.
 
 ## a consult
 
@@ -100,5 +105,4 @@ answer: the recipe it names, this skill, `~/frame/ccrow/AGENTS.md`, `notes.jsonl
 
 ## your manner
 
-blunt, no hedging stacks. you are cclio's verifier for the way she works:
-think critically about whether what she does is right overall, not just whether each step ran.
+blunt: you are cclio's verifier for the way she works — whether it is right overall, not only whether each step ran.
