@@ -173,7 +173,7 @@ test('check all accepts every open ask', async ($, on) => {
     ).toEqual(['o1 🛎️', 'o2 🛎️']);
 });
 
-test("a peer's prompt carries no marked ask", async ($, on) => {
+test("a peer's prompt carries no mark, but its turn takes the tick at its next tool call", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -185,7 +185,25 @@ test("a peer's prompt carries no marked ask", async ($, on) => {
         wait: false,
     });
     const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
-    expect([joined(w.contexts), r.context ?? []]).toEqual([[], []]);
+    expect([joined(w.contexts), (r.context ?? []).join('\n')]).toEqual([
+        [],
+        expect.stringMatching(/o1 🛎️ accepted/),
+    ]);
+});
+
+test('a keep-hot ping turn never takes a tick', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await $.prompt.submit({
+        origin: { kind: 'plugin' } as never,
+        text: 'x-mod-stash keep-hot ping: answer with one character, nothing else.',
+        wait: false,
+    });
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).join('\n')).not.toMatch(/accepted/);
 });
 
 test('a joined ask draws no control while the turn runs', async ($, on) => {

@@ -2453,11 +2453,14 @@ export const register: Register = (on) => {
             turnAfk = afk;
             notes.push(afk ? AWAY_NOTE : BACK_NOTE);
         }
-        // a mark dima made while his own turn runs joins it here, model-only, and locks; a peer's turn never takes it
+        // a mark dima made while any turn of this session runs joins it here, model-only, and locks — a peer's or a task's
+        // turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11); the turn is read from $.state, which a
+        // mid-turn reload keeps
         const o = await currentOrbit($);
-        const fresh = isUserTurn
-            ? o.asks.filter((a) => a.mark && !a.isLocked && !a.isResolved)
-            : [];
+        const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
+        const fresh = isPing
+            ? []
+            : o.asks.filter((a) => a.mark && !a.isLocked && !a.isResolved);
         if (fresh.length) {
             const ids = new Set(fresh.map((a) => a.id));
             await saveOrbit($, {

@@ -351,11 +351,12 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: model-only context, never a rewrite of his text — a rewrite once destroyed his typed prompt (the copy-all decision above)
   - decision: only the prompt box starts a turn; orbit never does (dima, 2026-10-10)
 - ✅ a tick while cclio works joins the running turn
-  - given cclio is mid-turn
+  - given cclio is mid-turn, whoever started the turn — dima, a peer's message or a background task
   - when dima ticks an ask
-  - then cclio's reply in that turn covers it; a tick that lands too late for the turn stays ticked and joins the next prompt
+  - then cclio's reply in that turn covers it; only a keep-hot ping turn never takes a tick; a tick that lands too late for the turn stays ticked and joins the next prompt
   - proven live on the desktop 2026-10-10 20:40: dima ticked o21 while cclio ran a tool, and that same turn's reply answered it
   - decision: the tick rides the turn's next tool result as model-only context; one that no tool result reaches waits for dima's next prompt — a hidden appended message started a turn of its own when it landed after the turn's last read (dima, 20:31)
+  - decision: any running turn takes a tick, not only one dima's prompt started — his o32 waited through 5+ tool calls of a task-notification turn (dima's o10, 2026-10-11 12:20)
   - decision: every orbit write reads the orbit back from `$.state` first — a reload landing at a turn's end ran `turn.complete` before `session.start` and saved an empty orbit (dima, 20:20: «coder wiped the orbit»)
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
