@@ -63,7 +63,3 @@ live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
 ## declarative tools
 
 - **a tool that treats its config as the whole truth imports the live state before its first apply** — `gmailctl apply` deleted dima's two hand-made filters because `download` never ran first (2026-09-20). same shape: renovate's first run, `frame:link apply`, a launchd bootstrap. the first apply on a live account is preceded by the tool's own import verb.
-
-## jq
-
-- `gh --jq` runs gojq, not jq, so a program proven with the system jq can differ inside `gh` (BYT-95/96 retros, 2026-10-08). guard: none · FRM-394
