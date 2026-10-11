@@ -353,7 +353,13 @@ function orbitReminder(o: StashOrbit) {
 function mobileReminder(o: StashOrbit) {
     const open = o.asks.filter((a) => !a.isResolved);
     const ids = open.length ? ` (${open.map((a) => a.id).join(', ')})` : '';
-    return `dima is on mobile, where the board draws nothing: end the reply with the asks fence, «⏳ waiting on your word:» and every open orbit ask${ids} with its id and pick, and write his answer by id back through ${ORBIT_TOOL} the same turn.`;
+    // the phases are gone on mobile too: the plan's next 3 moves print under the fence (dima's o112, 2026-10-11)
+    const age = planAge(o);
+    const stale =
+        age !== undefined && age >= STALE_TURNS
+            ? ` the plan is stale, untouched ${age} turns: set it again through ${ORBIT_TOOL}.`
+            : '';
+    return `dima is on mobile, where the board draws nothing: end the reply with the asks fence, «⏳ waiting on your word:» and every open orbit ask${ids} with its id and pick, then «🌔 next:» and the plan's next 3 moves as bullets, and write his answer by id back through ${ORBIT_TOOL} the same turn.${stale}`;
 }
 
 const enhancerOf = async ($: EngineInterface): Promise<StashEnhancer> =>

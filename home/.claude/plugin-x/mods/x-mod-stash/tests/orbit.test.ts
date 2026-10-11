@@ -1207,3 +1207,27 @@ test('with read-aloud on assumptions off, an assumption draws no 🔊', async ($
     await orbit($, { op: 'assume', texts: ['moons repeat'] });
     expect(await ui.find({ key: 'orbit:read:a1' })).toBe(undefined);
 });
+
+// o112: the board's phases are gone on mobile, so the reminder asks for the plan's next 3 moves under the fence
+test('on mobile the reminder asks for «🌔 next:» and the next 3 moves', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
+    await mobile($);
+    await say($, 'hi');
+    expect(lastContext(w.contexts)).toMatch(/🌔 next:.*next 3 moves/s);
+});
+
+test('on mobile a stale plan is still named', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($, 'go');
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    for (let i = 0; i < 4; i++) {
+        await endTurn($);
+        await say($, 'more');
+    }
+    await mobile($);
+    await say($, 'hi');
+    expect(lastContext(w.contexts)).toMatch(/plan is stale/);
+});

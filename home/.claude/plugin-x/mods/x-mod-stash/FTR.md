@@ -427,6 +427,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when his next prompt arrives
   - then the per-prompt reminder tells the session to end its reply with the asks fence — «⏳ waiting on your word:» and every open orbit ask with its id and pick — instead of the orbit reminder
   - decision: on mobile mods draw nothing, so orbit is invisible there; orbit stays the one store and the session writes his answers back by id (dima, 2026-10-10)
+  - and the reminder asks for «🌔 next:» and the plan's next 3 moves as bullets under the fence, and names a stale plan to set again — the board's phases are gone on mobile too (dima's o112, 2026-10-11; the `x:mobile-mode` skill prints the same shape)
 - ✅ mobile mode ends at the mac
   - given mobile mode is on
   - when dima says «back at the mac», types `/mobile-mode off`, or presses 🛎️ or ↩️ in the board's orbit
