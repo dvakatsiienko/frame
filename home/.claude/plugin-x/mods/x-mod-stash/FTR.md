@@ -522,6 +522,15 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ⬜ an ask reads in 3 lines: its line, the `➡️ pick` on its own, then 🛎️ take, 🔁 redo, 🔊 and the note
   - decision: the buttons never share the pick's line — exit 4's «one row» misread the 19:31 shot (dima, 20:23)
 
+## /board — 🐦‍⬛ ccrow strip (FRM-397)
+
+- ⬜ the strip shows ccrow's newest catch and her day's ledger
+  - given ccrow's `notes.jsonl` and `ledger.txt` exist, then a card at the board's bottom, under 🌔 phases, reads the first line of her newest session note that is not «none», verbatim, then her ledger line dim: notes sent today, the holdout's next send in k, the last send's time, today's ok verdicts
+  - and a missing or unreadable file hides the card
+  - and a `↗` opens her desktop tab, when the registry lists one; a `--bg` ccrow has none
+  - and the `🐦‍⬛ ccrow strip` 🎛️ switch hides it, across a restart
+  - decision: the ledger line is written by ccrow's own `ledgerLine` to `ledger.txt` at every notes or verdicts append — a mod cannot import from `ccrow/`
+
 ## spawn hints — the board's name flag only
 
 - decision: no spawn-time hints — the chore-helper word match and the short general-purpose brief warning are gone, with their `agent.spawn` toast: 0 for 1 on its first real fire, and a toast never reaches the session it corrects (dima, 2026-10-05)
