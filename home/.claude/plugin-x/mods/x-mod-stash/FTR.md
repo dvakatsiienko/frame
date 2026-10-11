@@ -356,7 +356,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ a resolved ask leaves, a follow-up changes in place
   - given cclio answered a marked ask
   - when the turn ends
-  - then the ask leaves orbit; one cclio has a follow-up on keeps its place and id, with new text and a «changed» mark
+  - then the ask leaves orbit; one cclio has a follow-up on keeps its place and id, with new text, its line led by 🆕 (`🆕 o3: …`)
+  - decision: 🆕 before the id, not a «changed» column on the right, so the ask text keeps the full width — a try, dima may swap the glyph (dima's o6, 10:58)
   - decision: an answered ask stays in orbit until its turn ends, its line led by 👀 (`👀 o20: …`), so dima sees it go — an icon, not the word «answered», inline so the row keeps its left edge; no «seen» card, since a card needs a box of its own (dima, 20:34, 20:39)
 - ✅ every prompt reminds the session of orbit
   - given orbit holds open asks or a plan

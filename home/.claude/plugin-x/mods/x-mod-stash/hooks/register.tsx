@@ -105,6 +105,8 @@ const STALE_TURNS = 3;
 // a plan line's lead word, one short word before its colon
 const PLAN_LEAD = /^[a-z]{2,10}:/i;
 const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
+// a followed-up ask's mark, before its id so the text keeps the full width — a try, dima may swap the glyph (o6)
+const CHANGED_MARK = '🆕';
 // a quarter row between a block's lines: the desktop draws the fraction, the terminal rounds it away (dima, 21:22)
 const LINE_GAP = 0.25;
 // an ask, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
@@ -118,7 +120,7 @@ const ORBIT_ABOUT = [
     "orbit is dima's list of your asks to him, in the fleet board: he rings 🛎️ when your pick is good to go, sends ↩️ back for another round, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     `op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»), ≤${ORBIT_TEXT_MAX} chars, subject first, detail in hiddenNote; pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.`,
     'op resolve, ids: the asks you answered this turn; they leave orbit when the turn ends.',
-    `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a «changed» mark.`,
+    `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a ${CHANGED_MARK} mark before its id.`,
     `op assume, texts: choices you made without asking that would cost a redo if wrong, at most ${ASSUMED_MAX} a turn and ≤${ORBIT_TEXT_MAX} chars each; never routine ones. dima's 🛎️ clears one, ↩️ sends it back with his note.`,
     `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone and ≤${ORBIT_TEXT_MAX} chars; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
 ].join('\n');
@@ -1838,6 +1840,7 @@ export const register: Register = (on) => {
                             edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
                         <Text>
                             {a.isResolved ? '👀 ' : ''}
+                            {a.isChanged ? `${CHANGED_MARK} ` : ''}
                             <Text bold>{a.id}</Text>
                             {': '}
                             {linkedJSX(a.text, `ask:${a.id}`)}
@@ -1847,7 +1850,6 @@ export const register: Register = (on) => {
                             </Text>
                         </Text>
                     </Box>
-                    {a.isChanged ? <Text color={ACCENT}>changed</Text> : null}
                 </Box>
                 {/* the buttons lead, the note follows them (dima, 20:19) */}
                 <Box alignItems='center' flexDirection='row' gap={1}>

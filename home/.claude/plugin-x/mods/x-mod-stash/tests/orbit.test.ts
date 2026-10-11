@@ -253,7 +253,7 @@ test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
     expect(await asksShown(ui)).toEqual(['o2']);
 });
 
-test('a follow-up keeps its id and place with new text and a changed mark', async ($, on) => {
+test('a follow-up keeps its id and place with new text, led by 🆕', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -272,7 +272,7 @@ test('a follow-up keeps its id and place with new text and a changed mark', asyn
     ]).toEqual([
         ['o1', 'o2'],
         expect.stringMatching(
-            /push the branch once ci is green ➡️ after ci.*changed/,
+            /^🆕 o1: push the branch once ci is green ➡️ after ci🛎️/u,
         ),
     ]);
 });
