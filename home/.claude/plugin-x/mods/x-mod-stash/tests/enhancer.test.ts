@@ -12,7 +12,7 @@ function world(
         painted?: string[];
     },
 ) {
-    mock.clock(on);
+    const clock = mock.clock(on);
     mock.store(on);
     const calls: { prompt: unknown; system: unknown }[] = [];
     // resolves at the next fill, for a test whose press settled while Haiku was still answering
@@ -74,7 +74,7 @@ function world(
             value: next ? await next() : answered('enhanced'),
         };
     });
-    return { answers, calls, nextFill, runs };
+    return { answers, calls, clock, nextFill, runs };
 }
 
 const usage = {
@@ -224,6 +224,33 @@ test('a Haiku error leaves his text and the band names the reason', async ($, on
         box.text,
         (await ui.find({ text: /^enhance:/, type: 'Text' }))?.text,
     ]).toEqual(['draft', expect.stringMatching(/api-error.*untouched/)]);
+});
+
+test('a Haiku call past 30 s is cut and the band names the timeout', async ($, on) => {
+    const box = { text: 'draft' };
+    const w = world(on, box);
+    let entered = () => {};
+    const isCalled = new Promise<void>((done) => {
+        entered = done;
+    });
+    let reply = (_r: ModelCompleteResult) => {};
+    w.answers.push(
+        () =>
+            new Promise<ModelCompleteResult>((done) => {
+                reply = done;
+                entered();
+            }),
+    );
+    const ui = await band($);
+    const press = ui.press({ key: 'enh:enhance' });
+    await isCalled;
+    await w.clock.advance(30_000);
+    reply({ isAnswered: false, reason: 'aborted', usage });
+    await press;
+    expect([
+        box.text,
+        (await ui.find({ text: /^enhance:/, type: 'Text' }))?.text,
+    ]).toEqual(['draft', expect.stringMatching(/took over 30 s.*untouched/)]);
 });
 
 test('a box that refuses the answer says so in the band', async ($, on) => {
