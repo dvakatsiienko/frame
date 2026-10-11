@@ -190,9 +190,6 @@ const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
 // every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
-// the first ask each scrolled list shows on a docked board, by list (`orbit`, a lane's member card): its ▲ ▼ move it,
-// never the pane, which the engine scrolls only when it has rows to spare (dima, 20:58; o18, o19 at 21:54)
-const TOPS = { key: 'tops', plugin: 'x-mod-stash' } as const;
 const LANE_OWNER = '🦉 cclio';
 const LANE_ROLES = ['coder', 'verifier'] as const;
 const LANE_MAX = 5;
@@ -2866,43 +2863,13 @@ export const register: Register = (on) => {
                 </Box>
             </Box>
         );
-        const tops = (await $.state.get(TOPS)).value ?? {};
-        const topOf = (list: string, count: number) =>
-            Math.min(tops[list] ?? 0, Math.max(0, count - 1));
-        // ▲ shows only with asks hidden above, ▼ only with more below: plain arrows beside the fold, nothing when all fit
-        const scrollJSX = (list: string, count: number) => {
-            const top = topOf(list, count);
-            const move = (by: number) => async () => {
-                const was = (await $.state.get(TOPS)).value ?? {};
-                await $.state.set(TOPS, {
-                    ...was,
-                    [list]: Math.max(0, Math.min(count - 1, top + by)),
-                });
-            };
-            return [
-                top > 0 ? (
-                    <Button key={`up:${list}`} onPress={move(-1)} plain>
-                        ▲
-                    </Button>
-                ) : null,
-                top < count - 1 ? (
-                    <Button key={`down:${list}`} onPress={move(1)} plain>
-                        ▼
-                    </Button>
-                ) : null,
-            ];
-        };
-        const orbitTop = topOf('orbit', o.asks.length);
         const orbitJSX = (
             <Box
                 borderColor={cardBorder(e.surface)}
                 borderStyle='round'
                 flexDirection='column'
-                flexShrink={1}
                 key='orbit'
                 marginTop={1}
-                minHeight={0}
-                overflow='hidden'
                 paddingX={1}
                 paddingY={0.5}
                 rowGap={0.5}>
@@ -2930,19 +2897,11 @@ export const register: Register = (on) => {
                                 ✅
                             </Button>
                         ) : null}
-                        {folds.orbit ? null : scrollJSX('orbit', o.asks.length)}
                         {foldJSX('orbit')}
                     </Box>
                 </Box>
                 {/* an answered ask stays until its turn ends, so dima sees it go */}
-                {!folds.orbit && orbitTop > 0 ? (
-                    <Text dimColor key='orbit:above'>
-                        {`↑ ${orbitTop} above`}
-                    </Text>
-                ) : null}
-                {folds.orbit
-                    ? null
-                    : o.asks.slice(orbitTop).map((a, i) => askJSX(a, i))}
+                {folds.orbit ? null : o.asks.map((a, i) => askJSX(a, i))}
                 {!folds.orbit &&
                 o.assumed?.length &&
                 isPartOn('stash.assumed') ? (
@@ -3053,18 +3012,8 @@ export const register: Register = (on) => {
             const isOpen = folds[card] === false;
             const badge = role === 'coder' ? '🔧' : '🔎';
             return (
-                <Box
-                    flexDirection='column'
-                    flexShrink={1}
-                    key={card}
-                    minHeight={0}
-                    overflow='hidden'
-                    rowGap={LINE_GAP}>
-                    <Box
-                        alignItems='center'
-                        flexDirection='row'
-                        flexShrink={0}
-                        gap={1}>
+                <Box flexDirection='column' key={card} rowGap={LINE_GAP}>
+                    <Box alignItems='center' flexDirection='row' gap={1}>
                         <Text
                             bold>{`${badge} ${role} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}</Text>
                         <Button
@@ -3080,15 +3029,9 @@ export const register: Register = (on) => {
                             plain>
                             {isOpen ? '📂' : '📁'}
                         </Button>
-                        {isOpen ? scrollJSX(card, asks.length) : null}
                     </Box>
-                    {isOpen && topOf(card, asks.length) > 0 ? (
-                        <Text dimColor key={`${card}:above`}>
-                            {`↑ ${topOf(card, asks.length)} above`}
-                        </Text>
-                    ) : null}
                     {isOpen
-                        ? asks.slice(topOf(card, asks.length)).map((a, i) =>
+                        ? asks.map((a, i) =>
                               askJSX(a as OrbitAsk, i, {
                                   mark: (x, mark) =>
                                       void markRemote($, sid, x, {
@@ -3136,11 +3079,8 @@ export const register: Register = (on) => {
                       borderColor={cardBorder(e.surface)}
                       borderStyle='round'
                       flexDirection='column'
-                      flexShrink={1}
                       key={`lane:${lane.id}`}
                       marginTop={1}
-                      minHeight={0}
-                      overflow='hidden'
                       paddingX={1}
                       paddingY={0.5}
                       rowGap={LINE_GAP}>
@@ -3154,7 +3094,6 @@ export const register: Register = (on) => {
                                 <Box
                                     alignItems='center'
                                     flexDirection='row'
-                                    flexShrink={0}
                                     gap={1}
                                     // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
                                     key={`lane:${lane.id}:${i}`}>
@@ -3223,7 +3162,6 @@ export const register: Register = (on) => {
                       borderColor={cardBorder(e.surface)}
                       borderStyle='round'
                       flexDirection='column'
-                      flexShrink={0}
                       key='phases'
                       marginTop={1}
                       paddingX={1}
@@ -3268,16 +3206,10 @@ export const register: Register = (on) => {
             : null;
         const fill =
             e.props.placement === 'dock' ? e.props.scroll.bodyRows : undefined;
-        // a docked board takes exactly its rows, so the pane never scrolls: sessions, the lane cards and phases keep
-        // their height and only orbit shrinks, its asks scrolled by the board's own ui.scroll (dima, 20:58)
-        const boardBox =
-            fill === undefined
-                ? {}
-                : { height: fill, overflow: 'hidden' as const };
         const list = board?.members;
         if (!list)
             return (
-                <Box flexDirection='column' {...boardBox}>
+                <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>the session registry is unreadable</Text>
                     {isPartOn('stash.orbit') ? orbitJSX : null}
                     <Box flexGrow={1} key='phases:gap' />
@@ -3287,7 +3219,7 @@ export const register: Register = (on) => {
             );
         if (!list.length)
             return (
-                <Box flexDirection='column' {...boardBox}>
+                <Box flexDirection='column' minHeight={fill}>
                     <Text dimColor>no live sessions</Text>
                     {isPartOn('stash.orbit') ? orbitJSX : null}
                     <Box flexGrow={1} key='phases:gap' />
@@ -3456,12 +3388,11 @@ export const register: Register = (on) => {
             (m) => statusOf(m.status).word === 'busy',
         ).length;
         return (
-            <Box flexDirection='column' {...boardBox}>
+            <Box flexDirection='column' minHeight={fill}>
                 <Box
                     borderColor={cardBorder(e.surface)}
                     borderStyle='round'
                     flexDirection='column'
-                    flexShrink={0}
                     key='sessions'
                     paddingX={1}
                     paddingY={0.5}>
@@ -3600,23 +3531,6 @@ export const register: Register = (on) => {
         }
         if (!notes.length) return r;
         return { ...r, context: [...(r.context ?? []), ...notes] };
-    });
-
-    // a docked board never scrolls as a whole: a wheel or a scroll key over it moves orbit's first shown ask instead
-    on('ui.scroll', async ($, e, next) => {
-        if (e.component !== 'Pane' || e.requestId !== BOARD) return next(e);
-        const o = await currentOrbit($);
-        const tops = (await $.state.get(TOPS)).value ?? {};
-        const was = tops.orbit ?? 0;
-        const top = Math.max(
-            0,
-            Math.min(Math.max(0, o.asks.length - 1), was + Math.sign(e.by)),
-        );
-        if (top !== was)
-            await $.state
-                .set(TOPS, { ...tops, orbit: top })
-                .catch(() => undefined);
-        return { deny: 'the board scrolls its orbit asks itself' };
     });
 
     // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars,

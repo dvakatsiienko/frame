@@ -520,24 +520,6 @@ test('a member publishes its open asks whole, with ids, for the lane card', asyn
     ).toEqual([{ id: 'o1', pick: 'cut it', text: 'cut the second probe?' }]);
 });
 
-test("an unfolded member card clips and scrolls its own asks; the lane's steps stay put (o19)", async ($, on) => {
-    const w = world(on, { files: linked() });
-    published(w, CODER, [ASK, { ...ASK, id: 'o4', text: 'the second one' }]);
-    await start($);
-    const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
-    await ui.press({ key: 'down:lane:l1:coder' });
-    const card = await ui.find({ key: 'lane:l1:coder', type: 'Box' });
-    const step = await ui.find({ key: 'lane:l1:0', type: 'Box' });
-    expect([
-        card?.props.flexShrink,
-        card?.props.overflow,
-        card?.text?.includes('cut the second probe'),
-        card?.text?.includes('the second one'),
-        step?.props.flexShrink,
-    ]).toEqual([1, 'hidden', false, true, 0]);
-});
-
 test("a mark from a lane card joins the member's running turn", async ($, on) => {
     const w = await memberWithAsk($, on);
     await say($, 'go on');

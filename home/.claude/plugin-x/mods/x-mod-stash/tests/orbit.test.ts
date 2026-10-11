@@ -544,65 +544,10 @@ test('the phases stick to the bottom of a docked board', async ($, on) => {
     const boxes = await ui.findAll({ type: 'Box' });
     const gap = boxes.findIndex((b) => b.key === 'phases:gap');
     expect([
-        boxes[0]?.props.height,
-        boxes[0]?.props.overflow,
+        boxes[0]?.props.minHeight,
         boxes[gap]?.props.flexGrow,
         boxes[gap + 1]?.key,
-    ]).toEqual([40, 'hidden', 1, 'phases']);
-});
-
-test('on a docked board only orbit shrinks; sessions and phases keep their rows (dima, 20:58)', async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await orbit($, { lines: ['now: a'], op: 'plan' });
-    const shrink = async (key: string) =>
-        (await ui.find({ key, type: 'Box' }))?.props.flexShrink;
-    expect([
-        await shrink('orbit'),
-        (await ui.find({ key: 'orbit', type: 'Box' }))?.props.overflow,
-        await shrink('phases'),
-    ]).toEqual([1, 'hidden', 0]);
-});
-
-const scrollBoard = ($: Engine, by: number) =>
-    $.ui.scroll({
-        bodyRows: 40,
-        by,
-        component: 'Pane',
-        contentRows: 40,
-        offset: 0,
-        origin: { kind: 'person' },
-        requestId: 'fleet-board',
-    } as never);
-
-test('a scroll over the board moves orbit one ask, never the pane (dima, 20:58)', async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await orbit($, {
-        asks: [
-            { pick: 'p', text: 'first ask' },
-            { pick: 'p', text: 'second ask' },
-            { pick: 'p', text: 'third ask' },
-        ],
-        op: 'add',
-    });
-    const r = await scrollBoard($, 1);
-    const shown = async () =>
-        (await ui.find({ key: 'orbit', type: 'Box' }))?.text ?? '';
-    const down = await shown();
-    await scrollBoard($, -1);
-    await scrollBoard($, -1);
-    const up = await shown();
-    expect([
-        typeof r.deny,
-        down.includes('first ask'),
-        down.includes('↑ 1 above'),
-        down.includes('second ask'),
-        up.includes('first ask'),
-        up.includes('above'),
-    ]).toEqual(['string', false, true, true, true, false]);
+    ]).toEqual([40, 1, 'phases']);
 });
 
 test('a phase fades with its distance from now', async ($, on) => {
@@ -1285,33 +1230,4 @@ test('on mobile a stale plan is still named', async ($, on) => {
     await mobile($);
     await say($, 'hi');
     expect(lastContext(w.contexts)).toMatch(/plan is stale/);
-});
-
-test("▼ and ▲ on orbit's head move its asks, each shown only with asks to reach (o18)", async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await orbit($, {
-        asks: [
-            { pick: 'p', text: 'first ask' },
-            { pick: 'p', text: 'second ask' },
-        ],
-        op: 'add',
-    });
-    const has = async (key: string) =>
-        (await ui.find({ key, type: 'Button' })) !== undefined;
-    const atTop = [await has('up:orbit'), await has('down:orbit')];
-    await ui.press({ key: 'down:orbit' });
-    const text = (await ui.find({ key: 'orbit', type: 'Box' }))?.text ?? '';
-    const atEnd = [await has('up:orbit'), await has('down:orbit')];
-    await ui.press({ key: 'up:orbit' });
-    expect([
-        atTop,
-        text.includes('first ask'),
-        text.includes('↑ 1 above'),
-        atEnd,
-        ((await ui.find({ key: 'orbit', type: 'Box' }))?.text ?? '').includes(
-            'first ask',
-        ),
-    ]).toEqual([[false, true], false, true, [true, false], true]);
 });
