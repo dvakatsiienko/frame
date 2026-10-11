@@ -18,6 +18,20 @@ import type {
     StashView,
 } from '../types/stash.d.ts';
 import {
+    ASSUMED_MAX,
+    CHANGED_MARK,
+    ORBIT_TEXT_MAX,
+    ORBIT_TOOL,
+    PLAN_MAX,
+    isFresh,
+    joinText,
+    lockJoined,
+    oneLine,
+    orbitOp,
+    turnEnded,
+    wrongText,
+} from './orbit.ts';
+import {
     backgroundWait,
     backgroundWaits,
     boldFleetWords,
@@ -178,7 +192,6 @@ const ACCENT = '#d97757';
 // 🪐 orbit: the session's asks to dima, ticked in the board instead of pasted back; the session writes them through
 // its own tool, never a reply block
 const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
-const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
 // the phases guard, no extra turn and no Stop block: one line at the first prompt, one nudge in a turn's tool results (dima's o14)
 const PHASES_START = `phases are your live plan: set them with ${ORBIT_TOOL}'s plan op and keep them current as the work moves.`;
 const NUDGE_AT = 3;
@@ -206,24 +219,16 @@ const ENHANCE_MS = 30_000;
 const WISPR_DB = 'Library/Application Support/Wispr Flow/flow.sqlite';
 let isEnhancing = false;
 const TICKET_ID_ALL = /(?<!\[)\b(?:FRM|BYT)-\d+\b(?!\])/g;
-const PLAN_MAX = 7;
 const STALE_TURNS = 3;
 // a plan line's lead word, one short word before its colon
 const PLAN_LEAD = /^[a-z]{2,10}:/i;
 const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
-// a followed-up ask's mark, before its id so the text keeps the full width — a try, dima may swap the glyph (o6)
-const CHANGED_MARK = '🆕';
 // a quarter row between a block's lines: the desktop draws the fraction, the terminal rounds it away (dima, 21:22)
 const LINE_GAP = 0.25;
 // the board's sections sit in cards, no colour (dima, 16:48 «colors are ugly»): the desktop a 30 % grey that reads the same on
 // light and dark, a touch softer than `subtle` (16:54 too faint, 17:00 «too hard», 17:08 «slightly less»); the terminal `subtle`
 const cardBorder = (surface: string) =>
     surface === 'desktop' ? '#8080804d' : 'subtle';
-// an ask, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
-const ORBIT_TEXT_MAX = 90;
-// at most this many assumptions a turn, and on the board at once (FRM-382 exit 2: under one a turn on average)
-const ASSUMED_MAX = 3;
-const ASSUMED_TURNS = 3;
 // a ticket id inside an ask or a phase; split keeps the id as every odd part
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
@@ -371,49 +376,12 @@ async function wakeForMarks($: EngineInterface) {
     )
         return;
     const o = await currentOrbit($);
-    const due = o.asks.filter(
-        (a) =>
-            a.mark && a.markedAt !== undefined && !a.isLocked && !a.isResolved,
-    );
+    const due = o.asks.filter((a) => isFresh(a) && a.markedAt !== undefined);
     if (!due.length) return;
     const dimaAt = Number(await $.store.get(DIMA_AT).catch(() => 0)) || 0;
     if (dimaAt <= Math.min(...due.map((a) => a.markedAt ?? 0))) return;
-    const ids = new Set(due.map((a) => a.id));
-    await saveOrbit($, {
-        ...o,
-        asks: o.asks.map((a) =>
-            ids.has(a.id) ? { ...a, isLocked: true, markedAt: undefined } : a,
-        ),
-    });
+    await saveOrbit($, lockJoined(o, due));
     void $.prompt.submit({ text: joinText(due) });
-}
-
-const markWord = (mark: OrbitAsk['mark']) =>
-    mark === 'accepted' ? '🛎️ accepted' : '↩️ rejected';
-
-// what the session reads for each assumption dima sent back: the assumption and his note
-const wrongText = (wrong: OrbitAssumption[]) =>
-    [
-        `orbit: dima marked ${wrong.length === 1 ? 'an assumption' : `${wrong.length} assumptions`} wrong; take it into account in this reply.`,
-        ...wrong.map(
-            (x) =>
-                `- ${x.id} wrong assumption: ${x.text}` +
-                (x.note ? ` · his note: «${x.note}»` : ''),
-        ),
-    ].join('\n');
-
-// what the session reads for each marked ask: the mark, the ask, its pick, both notes
-function joinText(asks: OrbitAsk[]) {
-    const lines = asks.map(
-        (a) =>
-            `- ${a.id} ${markWord(a.mark)}: ${a.text} (your pick: ${a.pick})` +
-            (a.note ? ` · his note: «${a.note}»` : '') +
-            (a.hiddenNote ? ` · your note: «${a.hiddenNote}»` : ''),
-    );
-    return [
-        `orbit: dima marked ${asks.length === 1 ? 'an ask' : `${asks.length} asks`}. answer each in this reply, then call ${ORBIT_TOOL}: resolve the answered ids, or follow one that needs another round.`,
-        ...lines,
-    ].join('\n');
 }
 
 // a plan set this turn counts from the turn's end, so a prompt landing mid-turn would read it as -1
@@ -621,11 +589,6 @@ async function enhanceNew($: EngineInterface) {
     });
 }
 
-const oneLine = (v: unknown) =>
-    typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
-const idsOf = (v: unknown) =>
-    Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
-
 // dima marks or notes asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs
 // rides that turn's next tool result (the tool.call hook); one the turn never reaches rides his next prompt — a
 // hidden message appended instead started a turn of its own when it landed after the last read (dima, 20:31)
@@ -658,17 +621,6 @@ async function markAsks(
         a.isLocked || a.isResolved ? a : change(a),
     );
     await saveOrbit($, { ...o, asks });
-}
-
-// the tool's ops on orbit; `isTurn` decides whether a plan set now counts from this turn's end or the last one
-// the first text over the cap, named with its length, so the session can shorten that one
-function overCap(op: string, texts: string[]) {
-    const long = texts.find((x) => [...x].length > ORBIT_TEXT_MAX);
-    return long === undefined
-        ? undefined
-        : {
-              deny: `orbit ${op}: «${[...long].slice(0, 40).join('')}…» is ${[...long].length} chars; keep it ≤${ORBIT_TEXT_MAX}, subject first, detail in hiddenNote`,
-          };
 }
 
 // the lane ops on the fleet's lanes: validate, then keep each pointer honest — every step before it done, never on a done one
@@ -951,146 +903,6 @@ async function isLaneOwner($: EngineInterface) {
 }
 
 const bare = (name: string) => name.replaceAll(/[\s\u200d]/g, '');
-
-function orbitOp(
-    o: StashOrbit,
-    input: Record<string, unknown>,
-    isTurn: boolean,
-    planMax: number = PLAN_MAX,
-): { orbit: StashOrbit; result: string } | { deny: string } {
-    switch (input.op) {
-        case 'add': {
-            const raw = Array.isArray(input.asks) ? input.asks : [];
-            const added: OrbitAsk[] = [];
-            let next = o.next;
-            for (const item of raw) {
-                const v = (item ?? {}) as Record<string, unknown>;
-                const text = oneLine(v.text);
-                if (!text) continue;
-                const hiddenNote = oneLine(v.hiddenNote);
-                added.push({
-                    hiddenNote: hiddenNote || undefined,
-                    id: `o${next++}`,
-                    pick: oneLine(v.pick) || 'no pick',
-                    text,
-                });
-            }
-            if (!added.length)
-                return {
-                    deny: 'orbit add: asks needs one { text, pick } or more',
-                };
-            const tooLong = overCap(
-                'add',
-                added.map((a) => a.text),
-            );
-            if (tooLong) return tooLong;
-            return {
-                orbit: { ...o, asks: [...o.asks, ...added], next },
-                result: `added ${added.map((a) => a.id).join(', ')} to dima's orbit; never repeat them in the reply`,
-            };
-        }
-        case 'assume': {
-            const texts = (Array.isArray(input.texts) ? input.texts : [])
-                .map(oneLine)
-                .filter(Boolean);
-            if (!texts.length)
-                return { deny: 'orbit assume: texts needs one or more' };
-            const tooLong = overCap('assume', texts);
-            if (tooLong) return tooLong;
-            const born = isTurn ? o.turns + 1 : o.turns;
-            const kept = o.assumed ?? [];
-            const already = kept.filter((x) => x.at === born).length;
-            if (already + texts.length > ASSUMED_MAX)
-                return {
-                    deny: `orbit assume: at most ${ASSUMED_MAX} a turn, ${already} already; keep the ones that would cost a redo`,
-                };
-            let next = o.next;
-            const added: OrbitAssumption[] = texts.map((text) => ({
-                at: born,
-                id: `a${next++}`,
-                text,
-            }));
-            return {
-                orbit: {
-                    ...o,
-                    assumed: [...kept, ...added].slice(-ASSUMED_MAX),
-                    next,
-                },
-                result: `assumed ${added.map((x) => x.id).join(', ')}; dima sees them under orbit`,
-            };
-        }
-        case 'resolve': {
-            const ids = idsOf(input.ids);
-            const unknown = ids.filter(
-                (id) => !o.asks.some((a) => a.id === id),
-            );
-            const asks = o.asks.map((a) =>
-                ids.includes(a.id) ? { ...a, isResolved: true } : a,
-            );
-            return {
-                orbit: {
-                    ...o,
-                    asks: isTurn ? asks : asks.filter((a) => !a.isResolved),
-                },
-                result: `resolved ${ids.filter((id) => !unknown.includes(id)).join(', ') || 'nothing'}${unknown.length ? `; no ask ${unknown.join(', ')}` : ''}`,
-            };
-        }
-        case 'follow': {
-            const id = typeof input.id === 'string' ? input.id : '';
-            const text = oneLine(input.text);
-            if (!o.asks.some((a) => a.id === id) || !text)
-                return {
-                    deny: `orbit follow: needs a known id and a text, got «${id}»`,
-                };
-            const tooLong = overCap('follow', [text]);
-            if (tooLong) return tooLong;
-            return {
-                orbit: {
-                    ...o,
-                    asks: o.asks.map((a) =>
-                        a.id === id
-                            ? {
-                                  ...a,
-                                  isChanged: true,
-                                  isResolved: false,
-                                  mark: undefined,
-                                  // his note answered the old question
-                                  note: undefined,
-                                  pick: oneLine(input.pick) || a.pick,
-                                  text,
-                              }
-                            : a,
-                    ),
-                },
-                result: `${id} changed in place`,
-            };
-        }
-        case 'plan': {
-            const lines = (Array.isArray(input.lines) ? input.lines : [])
-                .map(oneLine)
-                .filter(Boolean)
-                .slice(0, planMax);
-            const tooLong = overCap('plan', lines);
-            if (tooLong) return tooLong;
-            return {
-                orbit: {
-                    ...o,
-                    plan: lines.length
-                        ? { at: isTurn ? o.turns + 1 : o.turns, lines }
-                        : undefined,
-                },
-                // the board shows the 🎛️ phase lines (7 by default); a shorter plan leaves dima guessing past it (dima's o74)
-                result: lines.length
-                    ? `plan set, ${lines.length} line${lines.length === 1 ? '' : 's'}${lines.length < planMax ? ` — plan has ${lines.length} of ${planMax}, fill to ${planMax}` : ''}`
-                    : 'plan cleared',
-            };
-        }
-        default:
-            return {
-                deny: `orbit: op is add, resolve, follow or plan, got «${String(input.op)}»`,
-            };
-    }
-}
 
 // a thread's asks show while it has any and they are under a day old
 const isLive = (v: Entry | undefined, now: number): v is Entry =>
@@ -2199,25 +2011,16 @@ export const register: Register = (on) => {
                 .catch(() => undefined);
         await absorbMarks($);
         await currentOrbit($);
-        const marked = isUserTurn
-            ? orbit.asks.filter((a) => a.mark && !a.isLocked && !a.isResolved)
-            : [];
+        const marked = isUserTurn ? orbit.asks.filter(isFresh) : [];
         // an assumption dima sent back joins his prompt once and leaves orbit
         const wrong = isUserTurn
             ? (orbit.assumed ?? []).filter((x) => x.isWrong)
             : [];
-        if (marked.length || wrong.length) {
-            const ids = new Set(marked.map((a) => a.id));
+        if (marked.length || wrong.length)
             await saveOrbit($, {
-                ...orbit,
-                asks: orbit.asks.map((a) =>
-                    ids.has(a.id)
-                        ? { ...a, isLocked: true, markedAt: undefined }
-                        : a,
-                ),
+                ...lockJoined(orbit, marked),
                 assumed: (orbit.assumed ?? []).filter((x) => !x.isWrong),
             });
-        }
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
         const reminder = (await $.state.get(MOBILE)).value
             ? mobileReminder(orbit)
@@ -2337,20 +2140,7 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         isBusy = false;
-        // the turn's answers leave; a marked ask it never resolved unlocks and rides dima's next prompt
-        const done = await currentOrbit($);
-        await saveOrbit($, {
-            ...done,
-            asks: done.asks
-                .filter((a) => !a.isResolved)
-                .map((a) => (a.isLocked ? { ...a, isLocked: false } : a)),
-            // an unmarked assumption leaves at its third turn end, the turn it was made in counted; one sent back waits
-            // for his prompt
-            assumed: (done.assumed ?? []).filter(
-                (x) => x.isWrong || done.turns + 2 - x.at < ASSUMED_TURNS,
-            ),
-            turns: done.turns + 1,
-        });
+        await saveOrbit($, turnEnded(await currentOrbit($)));
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
@@ -3499,19 +3289,9 @@ export const register: Register = (on) => {
         await absorbMarks($);
         const o = await currentOrbit($);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
-        const fresh = isPing
-            ? []
-            : o.asks.filter((a) => a.mark && !a.isLocked && !a.isResolved);
+        const fresh = isPing ? [] : o.asks.filter(isFresh);
         if (fresh.length) {
-            const ids = new Set(fresh.map((a) => a.id));
-            await saveOrbit($, {
-                ...o,
-                asks: o.asks.map((a) =>
-                    ids.has(a.id)
-                        ? { ...a, isLocked: true, markedAt: undefined }
-                        : a,
-                ),
-            });
+            await saveOrbit($, lockJoined(o, fresh));
             notes.push(joinText(fresh));
         }
         // a lane note dima took while cclio's turn runs joins it here too, as an orbit mark does
