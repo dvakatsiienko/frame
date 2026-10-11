@@ -407,6 +407,18 @@ test('idle the terminal bars stand still: two frames apart are equal', async ($,
     expect(await frameOf(ui)).toBe(first);
 });
 
+test('mid-turn the terminal bars keep the idle glyphs, labels and values', async ($, on) => {
+    const { clock } = meters(on);
+    await measure($, 39, 35);
+    // the runs split where a spark's styling starts, so the band's text is compared joined
+    const textOf = async (ui: Awaited<ReturnType<typeof bandOn>>) =>
+        (await ui.findAll({ type: 'Text' })).map((t) => t.text).join('');
+    const idle = await textOf(await bandOn($, 'terminal', false));
+    const working = await bandOn($, 'terminal', true);
+    await clock.advance(3000);
+    expect(await textOf(working)).toBe(idle);
+});
+
 test('mid-turn the desktop bars carry their breathing, idle ones none', async ($, on) => {
     meters(on);
     await measure($, 39, 35);
