@@ -129,6 +129,18 @@ test('the 5h bar ends in its used %, and the head reads the gap and the time lef
     ]);
 });
 
+test('under a minute to the reset, ⏳ rounds up to 1m', async ($, on) => {
+    meters(on);
+    await measure($, 39, 35, 40_000);
+    expect(await part($, /^⏳/u)).toMatchObject({ text: '⏳ 1m' });
+});
+
+test('once the reset has passed, ⏳ leaves the row until the next measure', async ($, on) => {
+    meters(on);
+    await measure($, 39, 35, -1000);
+    expect(await part($, /^⏳/u)).toBe('no text');
+});
+
 test('a full desktop bar lights every cell through the ramp', async ($, on) => {
     meters(on);
     await measure($, 100, 0);

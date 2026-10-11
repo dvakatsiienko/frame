@@ -2493,12 +2493,19 @@ export const register: Register = (on) => {
                           </Text>,
                           { left: 10 },
                       )}
-                {five?.resetsAt === undefined
+                {five?.resetsAt === undefined || five.resetsAt <= now
                     ? null
                     : tip(
                           'reset',
                           'until the 5h window resets',
-                          <Text>⏳ {span(five.resetsAt - now)}</Text>,
+                          // rounded up like cc's own «resets in 1 min», so it never reads 0m (o103)
+                          <Text>
+                              ⏳{' '}
+                              {span(
+                                  Math.ceil((five.resetsAt - now) / 60_000) *
+                                      60_000,
+                              )}
+                          </Text>,
                           { left: 9 },
                       )}
                 {tip(
