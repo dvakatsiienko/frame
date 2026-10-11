@@ -60,7 +60,7 @@ const edit = ($: Engine, file: string) =>
 test("an Edit under a live mod's hooks/ is refused while its plugin test is red", async ($, on) => {
     const { ran } = world(on, 1);
     const r = await edit($, `${MOD}/hooks/register.ts`);
-    expect([r.deny?.includes('scratch-edit pull'), ran]).toEqual([true, []]);
+    expect([r.deny?.includes('x mods edit pull'), ran]).toEqual([true, []]);
 });
 
 test("an Edit under a live mod's hooks/ goes through while its plugin test is green", async ($, on) => {

@@ -39,47 +39,51 @@ type Impl struct {
 }
 
 var impls = map[string]Impl{
-	"lane commit":     {Run: commit, Undone: "nothing was committed"},
-	"lane push":       {Plan: pushPlan, Apply: push, Undone: "nothing was pushed", Ask: askPush},
-	"lane pr-open":    {Plan: prPlan, Apply: prOpen, Undone: "no pr was opened", Ask: askPR},
-	"lane merge-main": {Run: mergeMain, Undone: "nothing was merged"},
-	"lane unlock":     {Run: unlock, Undone: "nothing was decrypted"},
-	"lane decamp":     {Plan: decampPlan, Apply: decamp, Undone: "the worktree is still there", Ask: askDecamp},
-	"lane seed":       {Run: seed, Undone: "the tree is as the hook left it"},
-	"lane review":     {Run: laneReview, Undone: "no review was requested"},
-	"lane pr-body":    {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
-	"plugin bump":     {Plan: pluginBumpPlan, Apply: pluginBump, Undone: "the cache holds the old version", Ask: askPluginBump},
-	"lane gate":       {Run: laneGate},
-	"handoff list":    {Run: handoffList},
-	"handoff peek":    {Run: handoffPeek},
-	"handoff ingest":  {Run: handoffIngest},
-	"handoff write":   {Run: handoffWrite, Undone: "nothing was written"},
-	"handoff delete":  {Run: handoffDelete, Undone: "nothing was deleted"},
-	"brief check":     {Run: briefCheck, Undone: "nothing was stamped"},
-	"brief preflight": {Run: briefPreflight},
-	"as":              {Run: as, Undone: "the command did not run"},
-	"gh pr":           {Run: ghPr},
-	"linear read":     {Run: linearRead},
-	"linear list":     {Run: linearList},
-	"linear body":     {Run: linearBody, Undone: "nothing was written"},
-	"linear set":      {Run: linearSet, Undone: "nothing was changed"},
-	"linear link":     {Run: linearLink, Undone: "no relation was made"},
-	"linear comment":  {Run: linearComment, Undone: "nothing was posted"},
-	"linear update":   {Run: linearUpdate, Undone: "nothing was posted"},
-	"linear api":      {Run: linearAPI},
-	"linear push":     {Run: linearPush},
-	"linear archive":  {Plan: archivePlanOf, Apply: archiveApply, Undone: "nothing was archived", Ask: askArchive},
-	"fleet flow":      {Run: fleetFlow},
-	"fleet audit":     {Run: fleetAudit},
-	"fleet ops":       {Run: fleetOps},
-	"probe bare":      {Run: probeBare, Undone: "no answer came back"},
-	"probe session":   {Run: probeSession, Undone: "the session was not saved"},
-	"knowledge list":  {Run: knowledgeList},
-	"knowledge read":  {Run: knowledgeRead},
-	"schema":          {Run: schema},
-	"completion":      {Run: completion},
-	"stats":           {Run: stats},
-	"trace record":    {Run: traceRecord},
+	"lane commit":      {Run: commit, Undone: "nothing was committed"},
+	"lane push":        {Plan: pushPlan, Apply: push, Undone: "nothing was pushed", Ask: askPush},
+	"lane pr-open":     {Plan: prPlan, Apply: prOpen, Undone: "no pr was opened", Ask: askPR},
+	"lane merge-main":  {Run: mergeMain, Undone: "nothing was merged"},
+	"lane unlock":      {Run: unlock, Undone: "nothing was decrypted"},
+	"lane decamp":      {Plan: decampPlan, Apply: decamp, Undone: "the worktree is still there", Ask: askDecamp},
+	"lane seed":        {Run: seed, Undone: "the tree is as the hook left it"},
+	"lane review":      {Run: laneReview, Undone: "no review was requested"},
+	"lane pr-body":     {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
+	"plugin bump":      {Plan: pluginBumpPlan, Apply: pluginBump, Undone: "the cache holds the old version", Ask: askPluginBump},
+	"mods edit pull":   {Run: modsEditPull, Undone: "the copies sit in scratch, the mod untouched"},
+	"mods edit status": {Run: modsEditStatus, Undone: "a read"},
+	"mods edit test":   {Run: modsEditTest, Undone: "a read; the overlay is gone"},
+	"mods edit push":   {Run: modsEditPush, Undone: "a refused push wrote nothing; a failed write was restored"},
+	"lane gate":        {Run: laneGate},
+	"handoff list":     {Run: handoffList},
+	"handoff peek":     {Run: handoffPeek},
+	"handoff ingest":   {Run: handoffIngest},
+	"handoff write":    {Run: handoffWrite, Undone: "nothing was written"},
+	"handoff delete":   {Run: handoffDelete, Undone: "nothing was deleted"},
+	"brief check":      {Run: briefCheck, Undone: "nothing was stamped"},
+	"brief preflight":  {Run: briefPreflight},
+	"as":               {Run: as, Undone: "the command did not run"},
+	"gh pr":            {Run: ghPr},
+	"linear read":      {Run: linearRead},
+	"linear list":      {Run: linearList},
+	"linear body":      {Run: linearBody, Undone: "nothing was written"},
+	"linear set":       {Run: linearSet, Undone: "nothing was changed"},
+	"linear link":      {Run: linearLink, Undone: "no relation was made"},
+	"linear comment":   {Run: linearComment, Undone: "nothing was posted"},
+	"linear update":    {Run: linearUpdate, Undone: "nothing was posted"},
+	"linear api":       {Run: linearAPI},
+	"linear push":      {Run: linearPush},
+	"linear archive":   {Plan: archivePlanOf, Apply: archiveApply, Undone: "nothing was archived", Ask: askArchive},
+	"fleet flow":       {Run: fleetFlow},
+	"fleet audit":      {Run: fleetAudit},
+	"fleet ops":        {Run: fleetOps},
+	"probe bare":       {Run: probeBare, Undone: "no answer came back"},
+	"probe session":    {Run: probeSession, Undone: "the session was not saved"},
+	"knowledge list":   {Run: knowledgeList},
+	"knowledge read":   {Run: knowledgeRead},
+	"schema":           {Run: schema},
+	"completion":       {Run: completion},
+	"stats":            {Run: stats},
+	"trace record":     {Run: traceRecord},
 }
 
 // set by -ldflags at build; a dev run falls back to the executable's own tree
@@ -203,6 +207,22 @@ func buildRoot(m mode) *cobra.Command {
 				root.AddCommand(groups[family])
 			}
 			parent = groups[family]
+			// a verb three words deep (`mods edit push`) sits under a group per middle word
+			words := strings.Fields(verb.Name)
+			for depth := 2; depth < len(words); depth++ {
+				key := strings.Join(words[:depth], " ")
+				if groups[key] == nil {
+					prefix := words[:depth]
+					groups[key] = &cobra.Command{
+						Use: words[depth-1], Args: cobra.ArbitraryArgs,
+						RunE: func(_ *cobra.Command, args []string) error {
+							return overview(m, append(slices.Clone(prefix), args...), false)
+						},
+					}
+					parent.AddCommand(groups[key])
+				}
+				parent = groups[key]
+			}
 		}
 		parent.AddCommand(leaf(m, verb))
 	}
@@ -210,10 +230,8 @@ func buildRoot(m mode) *cobra.Command {
 }
 
 func leaf(m mode, verb Verb) *cobra.Command {
-	name := verb.Short()
-	if name == "" {
-		name = verb.Name
-	}
+	words := strings.Fields(verb.Name)
+	name := words[len(words)-1]
 	c := &cobra.Command{
 		Use: name, Short: gist(verb.Purpose), Args: cobra.ArbitraryArgs, Hidden: verb.Hidden,
 		RunE: func(c *cobra.Command, args []string) error {

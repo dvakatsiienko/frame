@@ -54,6 +54,11 @@
             "name": "plugin"
         },
         {
+            "example": "x mods edit push",
+            "gist": "a live mod edited in a scratch copy, landing only green and whole",
+            "name": "mods"
+        },
+        {
             "example": "x schema lane --level short",
             "gist": "the registry as json",
             "name": "schema"
@@ -1018,6 +1023,70 @@
             "steps": ["plan", "write", "marketplace", "update", "cache"],
             "touches": [
                 "the installed plugins and the plugin cache, through claude plugin list, marketplace update and update"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "files under home/.claude/plugin-x/mods/<mod>/, a new one included",
+                    "isVariadic": true,
+                    "name": "paths"
+                }
+            ],
+            "name": "mods edit pull",
+            "needsApply": false,
+            "purpose": "copy live mod files into scratch, where a bg session may edit them",
+            "replaces": [
+                "home/.claude/plugin-x/bin/scratch-edit",
+                "home/.claude/plugin-x/lib/scratch-edit.ts"
+            ],
+            "steps": ["pull"],
+            "touches": [
+                "the job tmp (or the os tmp): the scratch copies and the overlay mods the tests run on"
+            ]
+        },
+        {
+            "args": [],
+            "name": "mods edit status",
+            "needsApply": false,
+            "purpose": "list the scratch copies edited since their pull, the ones a push would write",
+            "steps": [],
+            "touches": [
+                "the job tmp (or the os tmp): the scratch copies and the overlay mods the tests run on"
+            ]
+        },
+        {
+            "args": [],
+            "flags": {
+                "against": {
+                    "description": "run only the edited tests on that ref's mod, naming which fail there and which errored",
+                    "type": "string",
+                    "value": "ref"
+                }
+            },
+            "name": "mods edit test",
+            "needsApply": false,
+            "purpose": "validate and test each touched mod on an overlay copy with the scratch edits laid over",
+            "steps": ["test"],
+            "touches": [
+                "the job tmp (or the os tmp): the scratch copies and the overlay mods the tests run on"
+            ]
+        },
+        {
+            "args": [],
+            "flags": {
+                "add": {
+                    "description": "comma-separated scratch files never pulled that may land as new files",
+                    "type": "string",
+                    "value": "paths"
+                }
+            },
+            "name": "mods edit push",
+            "needsApply": false,
+            "purpose": "write the scratch edits into the live mod only when its overlay validates green, all files or none",
+            "steps": ["plan", "test", "write"],
+            "touches": [
+                "the job tmp (or the os tmp): the scratch copies and the overlay mods the tests run on"
             ]
         }
     ]

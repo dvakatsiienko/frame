@@ -327,7 +327,7 @@ const UNPROVEN_WHY =
 // a live mod's hooks reload into every session on save, so while its own tests are red a half-done edit there breaks the fleet
 // (FRM-350: Bash down fleet-wide for ~5 min); the fix goes through a scratch copy and lands only once it is green
 const LIVE_RED_DOOR =
-    'edit a scratch copy: `scratch-edit pull <file>`, get `claude plugin test` green on it, then `scratch-edit push`';
+    'edit a scratch copy: `x mods edit pull <file>`, then `x mods edit push`, which lands it only when the mod validates and tests green';
 
 // the live mod dir a path sits under `hooks/` of, from CLAUDE_CODE_PLUGIN_DIRS; real paths on both sides, so a symlinked
 // route into the tree counts too

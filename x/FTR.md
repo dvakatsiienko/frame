@@ -365,6 +365,19 @@
   - given a name no plugin carries, then exit 2 lists the names that exist
 - ✅ `x schema plugin` lists the verb
 
+## mods — a live mod edited safely
+
+- ⬜ `x mods edit pull|status|test|push` edits a live mod through a scratch copy and lands it only green and whole (FRM-388)
+  - makes: the scratch copies under the job tmp (`$CLAUDE_JOB_DIR/tmp/x-mods-edit/<repo>`, else the os tmp), and on a push the edited files in `home/.claude/plugin-x/mods/<mod>/`
+  - given a path outside `home/.claude/plugin-x/mods/<mod>/`, then pull exits 2 naming the shape
+  - given an edit that turns a mod test red, when push runs, then nothing reaches the mod and the refusal names the red test; `test` shows the same red on the overlay copy
+  - given a hooks file that does not parse, when push runs, then the validator refuses it before any test or write, naming the parse error (PK-64)
+  - given a scratch file never pulled, or one the repo changed since its pull, then push writes nothing and names it; `--add <paths>` lets a new file land
+  - given a write that fails midway, then every file already written is put back from the backup push took first
+  - given `test --against HEAD`, then only the edited tests run on HEAD's mod, each named «failed» or, when its file cannot load, «errored»; nothing is written
+  - decision: `scratch-edit` (plugin bin) retired into these verbs; a three-word verb sits under a group per middle word
+- ✅ `x schema mods` lists the verbs
+
 ## fleet — the fleet measuring itself
 
 - ✅ `x fleet flow` prints the fleet-flow done test

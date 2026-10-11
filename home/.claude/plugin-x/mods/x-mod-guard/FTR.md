@@ -217,7 +217,7 @@
 - ⬜ no live hook edit while the mod's own tests are red (FRM-361)
   - given a mod named in `CLAUDE_CODE_PLUGIN_DIRS` whose `claude plugin test` exits red
   - when an `Edit`, `Write` or `MultiEdit` targets a file under that mod's `hooks/`, by any path that resolves there
-  - then it is refused: «instead: edit a scratch copy: `scratch-edit pull <file>`, get `claude plugin test` green on it, then `scratch-edit push`», and a guard event is kept (rule `live-hook-red`)
+  - then it is refused: «instead: edit a scratch copy: `x mods edit pull <file>`, then `x mods edit push`, which lands it only when the mod validates and tests green», and a guard event is kept (rule `live-hook-red`)
   - given the mod's tests green, or a file outside its `hooks/` (its tests, its FTR), then the call runs, and outside `hooks/` no test runs at all
   - decision: the test runs on each such call, 1–5 s, never a cached verdict — a stale green is the exact hole (FRM-350: a half-done refactor of a hot-reloaded mod took Bash down fleet-wide for ~5 min)
   - 📌 harness-proven only; a live red mod was not planted
