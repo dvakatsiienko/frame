@@ -1095,13 +1095,44 @@ export type BarRun = {
     kind: 'fill' | 'empty' | 'mark';
     text: string;
     color?: string;
-    isCrest?: boolean;
+    tone?: 'hi' | 'lo';
 };
-// the breathing (FRM-391): while a turn runs a soft wave of brightness travels along each bar's lit cells, one pass per
-// breath; the bars' length, hue and labels never change, and an idle bar stands still (no ticks, no GPU)
-const BREATH_MS = 3200;
+// the breathing (FRM-391), x-mod-breather's motion adapted to the bars: one breath swells and fades the lit cells'
+// brightness, while a few soft peaks wander and pulse across the fill over a rippling texture, so the bar looks alive
+// rather than swept; length, hue and labels never change, and an idle bar stands still (no ticks, no GPU)
+const BREATH_MS = 8000;
+const TAU = 2 * Math.PI;
+const PEAKS = [
+    { amp: 1.0, n: 1, phase: 0.0, pulse: 2, pulsePhase: 0.1, width: 0.12 },
+    { amp: 0.8, n: -1, phase: 0.37, pulse: 3, pulsePhase: 0.6, width: 0.09 },
+    { amp: 0.65, n: 2, phase: 0.71, pulse: 1, pulsePhase: 0.3, width: 0.07 },
+] as const;
+/** how lit a cell at `u` (0..1 along the fill) is at point `p` (0..1) of the breath, 0..1 */
+export function breathLevel(u: number, p: number) {
+    // the inhale blooms from the middle out, the exhale folds back in: the ends lag the breath
+    const lag = (((p - Math.abs(u * 2 - 1) * 0.15) % 1) + 1) % 1;
+    const breath = 0.5 - 0.5 * Math.cos(TAU * lag);
+    let shape = 0.25;
+    for (const k of PEAKS) {
+        const cx = 0.5 + 0.45 * Math.sin(TAU * (p * k.n + k.phase));
+        const h =
+            k.amp * (0.6 + 0.4 * Math.sin(TAU * (p * k.pulse + k.pulsePhase)));
+        shape += h * Math.exp(-(((u - cx) / k.width) ** 2));
+    }
+    const tex =
+        0.5 +
+        0.5 * Math.sin(TAU * (u * 11 + p)) * Math.sin(TAU * (u * 5 - p * 2));
+    return Math.min(
+        1,
+        (0.25 + 0.75 * breath) *
+            Math.min(1, 1.3 * shape * (0.5 + 0.7 * tex)) *
+            1.15,
+    );
+}
 // the terminal redraws the band this often while a turn runs; the desktop's svg runs its own clock
 const BREATH_TICK_MS = 100;
+// keyframes per breath in the desktop svg; the browser glides between them
+const BREATH_KEYS = 24;
 let isBreathTicking = false;
 // one bar as cells: the reading filled, one cell marked — the pace on the 5h bar, the compaction point on the context
 // one; each filled cell takes the ramp by its place, so the bar warms as it fills. `scale` is the % the ramp turns red
@@ -1141,23 +1172,29 @@ export function meterBar(
     width: number,
     mark?: number,
     scale = 100,
-    crest?: number,
+    breath?: number,
 ) {
     const runs: BarRun[] = [];
     const cells = meterCells(percent, width, mark, scale);
     const filled = cells.filter((c) => c.kind === 'fill').length;
-    // the wave's crest, a cell and its two neighbours drawn bold as it passes along the fill
-    const at = crest === undefined ? -9 : Math.floor(crest * filled);
     let f = 0;
     for (const c of cells) {
         const ch = c.kind === 'mark' ? '┃' : c.kind === 'fill' ? '▮' : '▯';
-        const isCrest = c.kind === 'fill' && Math.abs(f - at) <= 1;
+        // the terminal has three strengths: a lit cell glows bold, rests plain or sinks dim with the breath
+        let tone: BarRun['tone'];
+        if (c.kind === 'fill' && breath !== undefined) {
+            const level = breathLevel(
+                filled > 1 ? f / (filled - 1) : 0.5,
+                breath,
+            );
+            tone = level > 0.62 ? 'hi' : level < 0.3 ? 'lo' : undefined;
+        }
         if (c.kind === 'fill') f++;
         const last = runs.at(-1);
         if (
             last?.kind === c.kind &&
             last.color === c.color &&
-            Boolean(last.isCrest) === isCrest
+            last.tone === tone
         )
             last.text += ch;
         else
@@ -1165,7 +1202,7 @@ export function meterBar(
                 color: c.color,
                 kind: c.kind,
                 text: ch,
-                ...(isCrest ? { isCrest } : {}),
+                ...(tone ? { tone } : {}),
             });
     }
     return runs;
@@ -1191,23 +1228,35 @@ export function meterSvg(
     const all = meterCells(percent, width, mark, scale);
     const filled = all.filter((c) => c.kind === 'fill').length;
     const dur = BREATH_MS / 1000;
+    // a redraw rebuilds the svg and restarts its clock: the begin carries the breath's phase, so a rebuild resumes
+    // mid-breath instead of snapping back (x-mod-breather's fix, FRM-354)
+    const begin = breathAt === undefined ? 0 : (breathAt % BREATH_MS) / 1000;
     let f = 0;
     const cells = all.flatMap((c, i) => {
         const x = i * CELL_STEP;
-        // each lit cell dips and swells once a breath, set off by its place, so the dip travels along the fill
-        const lag = c.kind === 'fill' ? (f++ / Math.max(1, filled)) * dur : 0;
-        // a redraw rebuilds the svg and restarts its clock: the begin carries the breath's phase, so a rebuild resumes
-        // mid-wave instead of snapping back (x-mod-breather's fix, FRM-354)
-        const breath =
-            breathAt === undefined
-                ? ''
-                : `<animate attributeName="opacity" values="1;.45;1" dur="${dur}s" begin="-${((dur - lag + (breathAt % BREATH_MS) / 1000) % dur).toFixed(2)}s" repeatCount="indefinite"/>`;
+        const u =
+            c.kind === 'fill' ? (filled > 1 ? f++ / (filled - 1) : 0.5) : 0;
+        // the bottom row lights first, the top row only near a peak, so a peak rises inside the bar like the breather's
+        // columns; a lit cell never drops below a quarter, so the fill stays readable
+        const breathOf = (row: number) => {
+            if (breathAt === undefined) return '';
+            const values = Array.from({ length: BREATH_KEYS + 1 }, (_, k) => {
+                const level = breathLevel(u, (k % BREATH_KEYS) / BREATH_KEYS);
+                const lit =
+                    row === CELL.rows - 1
+                        ? Math.min(1, level * 1.6)
+                        : Math.max(0, Math.min(1, (level - 0.35) * 1.6));
+                return (0.25 + 0.75 * lit).toFixed(2);
+            });
+            return `<animate attributeName="opacity" values="${values.join(';')}" dur="${dur}s" begin="-${begin.toFixed(2)}s" repeatCount="indefinite"/>`;
+        };
         if (c.kind === 'mark')
             return [
                 `<rect class="mark" x="${x + 1.5}" y="0" width="2" height="${BAR_HEIGHT}" rx="1"/>`,
             ];
         return Array.from({ length: CELL.rows }, (_, r) => {
             const y = r * CELL_STEP;
+            const breath = c.kind === 'fill' ? breathOf(r) : '';
             return c.kind === 'fill'
                 ? breath
                     ? `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)">${breath}</rect>`
@@ -2525,7 +2574,7 @@ export const register: Register = (on) => {
         const isBreathing =
             Boolean(e.props.isWorking) ||
             (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
-        const crest = isBreathing ? (now % BREATH_MS) / BREATH_MS : undefined;
+        const breath = isBreathing ? (now % BREATH_MS) / BREATH_MS : undefined;
         // the terminal moves the crest by redrawing the band while a turn runs; one timer at a time
         if (isBreathing && !Svg && !isBreathTicking) {
             isBreathTicking = true;
@@ -2537,9 +2586,9 @@ export const register: Register = (on) => {
         const runsJSX = (key: string, runs: BarRun[]) =>
             runs.map((r, i) => (
                 <Text
-                    bold={r.kind === 'mark' || r.isCrest}
+                    bold={r.kind === 'mark' || r.tone === 'hi'}
                     color={r.color}
-                    dimColor={r.kind === 'empty'}
+                    dimColor={r.kind === 'empty' || r.tone === 'lo'}
                     // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its bar is its identity
                     key={`${key}:${i}`}>
                     {r.text}
@@ -2615,7 +2664,7 @@ export const register: Register = (on) => {
                                         barWidth,
                                         bar.mark,
                                         bar.scale,
-                                        crest,
+                                        breath,
                                     ),
                                 )}
                             </Box>

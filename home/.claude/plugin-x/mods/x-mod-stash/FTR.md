@@ -158,7 +158,8 @@
 - ⬜ the bars breathe while a turn runs (FRM-391)
   - given a turn runs
   - when dima looks at the band
-  - then a soft wave of brightness travels along the lit cells of the 5h and ctx bars, one pass every 3.2 s — on the desktop the lit cells dip and swell in opacity, in the terminal a three-cell crest passes in bold; the bars' length, hue, labels and values stay as they are
+  - then the lit cells of the 5h and ctx bars breathe, x-mod-breather's motion adapted: one 8 s breath swells and fades their brightness while a few soft peaks wander and pulse across the fill over a ripple; on the desktop the bottom cell row lights first and the top row only near a peak, so a peak rises inside the bar; the terminal shows it as bold, plain and dim cells; a lit cell never drops below a quarter; the bars' length, hue, labels and values stay as they are
+  - decision: «barely noticeable … boring left to right … make it like the breather, adapted to bars, a bit more alive» replaced the travelling wave (dima, 2026-10-11 12:21)
   - given the turn ends
   - then the bars stand still: no wave, no redraw tick
   - decision: `/board breathe` makes the bars breathe idle too while dima refines the look, off by default, a try that leaves with the 🎛️ knobs (dima, 2026-10-11 12:20)
