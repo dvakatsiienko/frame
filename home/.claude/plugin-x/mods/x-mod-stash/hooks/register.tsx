@@ -1093,7 +1093,14 @@ export type BarRun = {
     kind: 'fill' | 'empty' | 'mark';
     text: string;
     color?: string;
+    isCrest?: boolean;
 };
+// the breathing (FRM-391): while a turn runs a soft wave of brightness travels along each bar's lit cells, one pass per
+// breath; the bars' length, hue and labels never change, and an idle bar stands still (no ticks, no GPU)
+const BREATH_MS = 3200;
+// the terminal redraws the band this often while a turn runs; the desktop's svg runs its own clock
+const BREATH_TICK_MS = 100;
+let isBreathTicking = false;
 // one bar as cells: the reading filled, one cell marked — the pace on the 5h bar, the compaction point on the context
 // one; each filled cell takes the ramp by its place, so the bar warms as it fills. `scale` is the % the ramp turns red
 // at: 100 for the 5h window, the compaction point for the context
@@ -1132,13 +1139,32 @@ export function meterBar(
     width: number,
     mark?: number,
     scale = 100,
+    crest?: number,
 ) {
     const runs: BarRun[] = [];
-    for (const c of meterCells(percent, width, mark, scale)) {
+    const cells = meterCells(percent, width, mark, scale);
+    const filled = cells.filter((c) => c.kind === 'fill').length;
+    // the wave's crest, a cell and its two neighbours drawn bold as it passes along the fill
+    const at = crest === undefined ? -9 : Math.floor(crest * filled);
+    let f = 0;
+    for (const c of cells) {
         const ch = c.kind === 'mark' ? '┃' : c.kind === 'fill' ? '▮' : '▯';
+        const isCrest = c.kind === 'fill' && Math.abs(f - at) <= 1;
+        if (c.kind === 'fill') f++;
         const last = runs.at(-1);
-        if (last?.kind === c.kind && last.color === c.color) last.text += ch;
-        else runs.push({ color: c.color, kind: c.kind, text: ch });
+        if (
+            last?.kind === c.kind &&
+            last.color === c.color &&
+            Boolean(last.isCrest) === isCrest
+        )
+            last.text += ch;
+        else
+            runs.push({
+                color: c.color,
+                kind: c.kind,
+                text: ch,
+                ...(isCrest ? { isCrest } : {}),
+            });
     }
     return runs;
 }
@@ -1155,12 +1181,25 @@ export function meterSvg(
     width: number,
     mark?: number,
     scale = 100,
+    breathAt?: number,
 ) {
     const w = width * CELL_STEP - CELL.gap;
     // the ramp reaches red where `scale` sits on the bar: the whole bar for the 5h window, the compaction point for ctx
     const redAt = Math.max(CELL_STEP, (Math.min(scale, 100) / 100) * w);
-    const cells = meterCells(percent, width, mark, scale).flatMap((c, i) => {
+    const all = meterCells(percent, width, mark, scale);
+    const filled = all.filter((c) => c.kind === 'fill').length;
+    const dur = BREATH_MS / 1000;
+    let f = 0;
+    const cells = all.flatMap((c, i) => {
         const x = i * CELL_STEP;
+        // each lit cell dips and swells once a breath, set off by its place, so the dip travels along the fill
+        const lag = c.kind === 'fill' ? (f++ / Math.max(1, filled)) * dur : 0;
+        // a redraw rebuilds the svg and restarts its clock: the begin carries the breath's phase, so a rebuild resumes
+        // mid-wave instead of snapping back (x-mod-breather's fix, FRM-354)
+        const breath =
+            breathAt === undefined
+                ? ''
+                : `<animate attributeName="opacity" values="1;.45;1" dur="${dur}s" begin="-${((dur - lag + (breathAt % BREATH_MS) / 1000) % dur).toFixed(2)}s" repeatCount="indefinite"/>`;
         if (c.kind === 'mark')
             return [
                 `<rect class="mark" x="${x + 1.5}" y="0" width="2" height="${BAR_HEIGHT}" rx="1"/>`,
@@ -1168,7 +1207,9 @@ export function meterSvg(
         return Array.from({ length: CELL.rows }, (_, r) => {
             const y = r * CELL_STEP;
             return c.kind === 'fill'
-                ? `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>`
+                ? breath
+                    ? `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)">${breath}</rect>`
+                    : `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>`
                 : `<rect class="off" x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1"/>`;
         });
     });
@@ -2471,10 +2512,20 @@ export const register: Register = (on) => {
         const meter = (await $.state.get(METER)).value;
         const now = await $.clock.now();
         const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
+        const isBreathing = Boolean(e.props.isWorking);
+        const crest = isBreathing ? (now % BREATH_MS) / BREATH_MS : undefined;
+        // the terminal moves the crest by redrawing the band while a turn runs; one timer at a time
+        if (isBreathing && !Svg && !isBreathTicking) {
+            isBreathTicking = true;
+            $.clock.after(BREATH_TICK_MS, () => {
+                isBreathTicking = false;
+                $.ui.invalidate('ui.render');
+            });
+        }
         const runsJSX = (key: string, runs: BarRun[]) =>
             runs.map((r, i) => (
                 <Text
-                    bold={r.kind === 'mark'}
+                    bold={r.kind === 'mark' || r.isCrest}
                     color={r.color}
                     dimColor={r.kind === 'empty'}
                     // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its bar is its identity
@@ -2540,6 +2591,7 @@ export const register: Register = (on) => {
                                     svgCells,
                                     bar.mark,
                                     bar.scale,
+                                    isBreathing ? now : undefined,
                                 )}
                             />
                         ) : (
@@ -2551,6 +2603,7 @@ export const register: Register = (on) => {
                                         barWidth,
                                         bar.mark,
                                         bar.scale,
+                                        crest,
                                     ),
                                 )}
                             </Box>

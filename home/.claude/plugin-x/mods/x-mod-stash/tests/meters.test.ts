@@ -358,3 +358,78 @@ test('a half-typed compaction point saves nothing and names no refusal', async (
         'no text',
     ]);
 });
+
+// the band on one surface, mid-turn or idle; a frame is every Text's words and weight in draw order
+async function bandOn(
+    $: Engine,
+    surface: 'terminal' | 'desktop',
+    isWorking: boolean,
+) {
+    await $.session.start({ cwd: '/proj', isInteractive: true, surface });
+    return $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 100,
+            hasSurvey: false,
+            isWorking,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface,
+    });
+}
+const frameOf = async (ui: Awaited<ReturnType<typeof bandOn>>) =>
+    JSON.stringify(
+        (await ui.findAll({ type: 'Text' })).map((t) => [
+            t.text,
+            Boolean(t.props.bold),
+        ]),
+    );
+
+test('mid-turn the terminal bars breathe: two frames apart differ', async ($, on) => {
+    const { clock } = meters(on);
+    await measure($, 39, 35);
+    const ui = await bandOn($, 'terminal', true);
+    const first = await frameOf(ui);
+    await clock.advance(1000);
+    expect(await frameOf(ui)).not.toBe(first);
+});
+
+test('idle the terminal bars stand still: two frames apart are equal', async ($, on) => {
+    const { clock } = meters(on);
+    await measure($, 39, 35);
+    const ui = await bandOn($, 'terminal', false);
+    const first = await frameOf(ui);
+    await clock.advance(1000);
+    expect(await frameOf(ui)).toBe(first);
+});
+
+test('mid-turn the desktop bars carry their breathing, idle ones none', async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    const sources = async (ui: Awaited<ReturnType<typeof bandOn>>) =>
+        (await ui.findAll({ type: 'Svg' })).map((n) =>
+            String(n.props.source).includes('<animate'),
+        );
+    const working = await sources(await bandOn($, 'desktop', true));
+    const idle = await sources(await bandOn($, 'desktop', false));
+    expect([working, idle]).toEqual([
+        [true, true],
+        [false, false],
+    ]);
+});
+
+test("the breathing keeps every bar's cells and colours", async ($, on) => {
+    meters(on);
+    await measure($, 39, 35);
+    const strip = (svg: string) =>
+        svg.replace(/<animate[^>]*\/>/g, '').replace(/><\/rect>/g, '/>');
+    const idle = await bandOn($, 'desktop', false);
+    const still = (await idle.findAll({ type: 'Svg' })).map((n) =>
+        String(n.props.source),
+    );
+    expect(still.length).toBe(2);
+    expect(still.map(strip)).toEqual(still);
+});

@@ -155,6 +155,13 @@
   - and `🧠 ctx` draws the context % as a full-width bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` carries the point in an `Input` that saves each valid value as dima types; a half-typed one saves nothing, Enter names a refusal (dima, 23:31: no ✓); a refused text takes back what typing saved on the way to it, so «100» never leaves «10» behind
   - and the desktop draws each bar in x-mod-breather's design language — its 5px cells, 2px gaps, light and dark palettes and ramp, two cell rows tall; the terminal draws sline's `▮ ▯` (dima, 20:22: «make them the same design language … bars are slightly different because they are bars»)
   - decision: no `pace n%` — the gap already says how far off pace (dima, 20:04)
+- ⬜ the bars breathe while a turn runs (FRM-391)
+  - given a turn runs
+  - when dima looks at the band
+  - then a soft wave of brightness travels along the lit cells of the 5h and ctx bars, one pass every 3.2 s — on the desktop the lit cells dip and swell in opacity, in the terminal a three-cell crest passes in bold; the bars' length, hue, labels and values stay as they are
+  - given the turn ends
+  - then the bars stand still: no wave, no redraw tick
+  - decision: the desktop wave runs inside each bar's svg, no host tick, and a rebuild resumes at the breath's phase; the terminal redraws the band every 100 ms while working — the rates are an A/B dima picks by eye (FRM-391 slice 02)
   - and both bars start and end on the same columns: one label width, one bar width, one right-aligned % cell; desktop air 0.5 above the meters and 0.4 between them
   - and an idle band stays live: the 4 s poll takes the 5h reading from `cc-usage-window.json`, which any busy session writes, and its minute moves the time left
   - and each filled cell takes sline's bar ramp by its place — green, yellow, orange, red — so a bar warms as it fills; the 5h ramp spans the window, the ctx ramp reaches red at the compaction point
