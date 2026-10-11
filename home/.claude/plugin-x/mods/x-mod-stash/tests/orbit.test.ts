@@ -636,7 +636,7 @@ test("🔊 sends the ask's text to speak's control socket", async ($, on) => {
     );
     expect(JSON.parse(sent?.[4] ?? '{}')).toEqual({
         op: 'read',
-        text: 'name a bird. pick: pelican',
+        text: 'name a bird. pelican',
     });
 });
 

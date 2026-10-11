@@ -2192,7 +2192,8 @@ export const register: Register = (on) => {
                         ? null
                         : [markJSX(a, 'accepted'), markJSX(a, 'rejected')]}
                     {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
-                    {speakJSX(a.id, `${a.text}. pick: ${a.pick}`)}
+                    {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
+                    {speakJSX(a.id, `${a.text}. ${a.pick}`)}
                     {a.isLocked ? (
                         a.note ? (
                             <Box flexShrink={1} minWidth={0}>
@@ -2574,7 +2575,7 @@ export const register: Register = (on) => {
                         flexDirection='row'
                         justifyContent='space-between'
                         marginBottom={1}>
-                        <Text bold>🚦 sessions</Text>
+                        <Text bold>🌌 sessions</Text>
                         {/* the mock's head: the count and the busy on the right, the busy bold (dima, 17:00) */}
                         <Text>
                             <Text

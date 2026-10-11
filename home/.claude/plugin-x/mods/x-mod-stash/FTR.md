@@ -274,7 +274,7 @@
   - decision: on the second line, not beside the name — in the narrow pane a long name wrapped to three lines or cut the model (the live look, FRM-329)
 - ⬜ the board borrows the reference's look (dima's dark screenshot on FRM-329)
   - given the board draws
-  - then a head reads `🚦 sessions` with `n on this mac · m busy` on its right, the busy bold (dima, 17:00), each row leads with a `●` state dot, the second line sits under the name and is dim
+  - then a head reads `🌌 sessions` (the pane's tab holds 🚦, dima's o3, 17:14) with `n on this mac · m busy` on its right, the busy bold (dima, 17:00), each row leads with a `●` state dot, the second line sits under the name and is dim
   - decision: no footer hint — «a name opens its session · /board colour flips colour» is gone (dima, 21:12)
   - decision: a quarter row of air between the lines of one block — a member's two lines, an ask and its buttons, the phases — on the desktop; the terminal rounds it to none (dima, 21:22: 0 too dense, 0.5 too big)
   - decision: no new controls — the reference's run buttons stay out (dima: «no need functionality buttons»)
@@ -352,7 +352,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - 🔎 🔊 reads an ask aloud through speak, ⏯ pauses or resumes, ⏹ stops
   - given orbit shows an ask and x-speak runs
   - when dima presses its 🔊
-  - then speak reads the ask and its pick through the chain F4 uses, cutting off whatever plays; ⏯ and ⏹ act on any read
+  - then speak reads the ask and its pick as the card shows them, no «pick» word (dima, 17:14), through the chain F4 uses, cutting off whatever plays; ⏯ and ⏹ act on any read
   - decision: buttons, because a mod's text can't be selected for F4 on the desktop ([claude-code#101090](https://github.com/anthropics/claude-code/issues/101090)) — a workaround, `mods/workarounds.md`
   - 📌 harness-proven that the press sends `read` with the text; the voice itself is dima's ear
   - decision: an ask for something irreversible (trash, push, close, merge) leads its row with ⚠️ and names the exact target; one tick still approves it (dima, 2026-10-10)

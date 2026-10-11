@@ -648,8 +648,10 @@ test("with colour on, a calm context stays dim and a filling one climbs sline's 
     ]);
 });
 
-test("the board's head leads with the board's own 🚦", async ($, on) => {
+test('the sessions head leads with 🌌, since the tab holds 🚦', async ($, on) => {
     fleet(on);
     const ui = await board($);
-    expect(await ui.find({ text: '🚦', type: 'Text' })).toBeTruthy();
+    expect((await ui.find({ text: /sessions$/, type: 'Text' }))?.text).toBe(
+        '🌌 sessions',
+    );
 });
