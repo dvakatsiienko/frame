@@ -19,8 +19,6 @@ const STORE_DIR = join(homedir(), '.claude/plugins/store');
 const HOT = 'hot:';
 export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');
 export const VERDICTS_PATH = join(STATE_DIR, 'verdicts.jsonl');
-// the ledger line, rewritten at every notes or verdicts append, so the board's ccrow strip reads it without importing this file
-export const LEDGER_PATH = join(STATE_DIR, 'ledger.txt');
 // every 5th note ccrow would send is a holdout until this day (x:crew-adviser, the holdout)
 const HOLDOUT_UNTIL = '2026-10-20';
 export const WAKE_GAP_MS = 30 * 60_000;
@@ -815,7 +813,6 @@ export function appendJsonl(
 ) {
     mkdirSync(STATE_DIR, { recursive: true });
     writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
-    writeFileSync(LEDGER_PATH, `${ledgerLine(new Date())}\n`);
 }
 
 // ccrow's day in one line: notes sent today, the holdout's next send in k, the last send's time, today's ok verdicts

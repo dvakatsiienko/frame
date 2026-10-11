@@ -8,7 +8,6 @@ import type {
     PublishedAsk,
     RemoteMark,
     StashCap,
-    StashCcrow,
     StashDigest,
     StashEnhancer,
     StashEntry,
@@ -120,7 +119,6 @@ const PARTS = [
     { group: 'stash · board', key: 'stash.assumed', label: 'assumed section' },
     { group: 'stash · board', key: 'stash.phases', label: '🌔 phases' },
     { group: 'stash · board', key: 'stash.lane', label: '🛼 lane' },
-    { group: 'stash · board', key: 'stash.ccrow', label: '🐦‍⬛ ccrow strip' },
     {
         group: 'stash · board',
         key: 'stash.speak',
@@ -194,8 +192,6 @@ const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
 // the first orbit ask a docked board shows: a scroll over the board moves it, never the pane (dima, 20:58)
 const ORBIT_TOP = { key: 'orbitTop', plugin: 'x-mod-stash' } as const;
-// 🐦‍⬛ ccrow strip (FRM-397): her newest note's first line and her ledger line, read from her home on each poll
-const CCROW = { key: 'ccrow', plugin: 'x-mod-stash' } as const;
 const LANE_OWNER = '🦉 cclio';
 const LANE_ROLES = ['coder', 'verifier'] as const;
 const LANE_MAX = 5;
@@ -931,68 +927,6 @@ async function markRemote(
     await showLanes($, await readLanes($));
 }
 
-// ccrow's strip: the first line of her newest session note that is not «none», verbatim, and the ledger line her
-// own code writes (ccrow/lib.ts ledgerLine); either file missing or unreadable hides the strip
-export function ccrowStrip(
-    notes: string | undefined,
-    ledger: string | undefined,
-): StashCcrow | null {
-    const line = ledger?.split('\n')[0]?.trim();
-    if (!notes || !line) return null;
-    let headline: string | undefined;
-    for (const row of notes.split('\n')) {
-        try {
-            const n = JSON.parse(row) as { channel?: unknown; note?: unknown };
-            if (
-                n.channel === 'session' &&
-                typeof n.note === 'string' &&
-                n.note.trim() &&
-                n.note.trim() !== 'none'
-            )
-                headline = n.note.trim().split('\n')[0];
-        } catch {}
-    }
-    return headline ? { headline, ledger: line } : null;
-}
-
-// her desktop tab's deep link, from the registry: a press opens her window (FRM-397 step 0: the desktop switches its main
-// window to the session, cc 2.1.296); a --bg ccrow or none live has no door
-async function ccrowDoor($: EngineInterface, home: string | undefined) {
-    const dir = `${home}/.claude/sessions`;
-    for (const f of await $.fs.list(dir).catch(() => [])) {
-        if (!f.name.endsWith('.json')) continue;
-        try {
-            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as {
-                name?: unknown;
-                hostSessionId?: unknown;
-            };
-            if (
-                typeof v.name === 'string' &&
-                bare(v.name) === bare('🐦‍⬛ ccrow') &&
-                typeof v.hostSessionId === 'string' &&
-                v.hostSessionId.startsWith('local_')
-            )
-                return `claude://code/continue?session=${v.hostSessionId}`;
-        } catch {}
-    }
-    return undefined;
-}
-
-let ccrowShown = '';
-async function showCcrow($: EngineInterface) {
-    const home = await $.env.get('HOME').catch(() => undefined);
-    const dir = `${home}/.local/state/ccrow`;
-    const found = ccrowStrip(
-        await $.fs.read(`${dir}/notes.jsonl`).catch(() => undefined),
-        await $.fs.read(`${dir}/ledger.txt`).catch(() => undefined),
-    );
-    const strip = found ? { ...found, door: await ccrowDoor($, home) } : null;
-    const text = JSON.stringify(strip);
-    if (text === ccrowShown) return;
-    ccrowShown = text;
-    await $.state.set(CCROW, strip).catch(() => undefined);
-}
-
 // the lane notes dima took with 🛎️, as cclio reads them; each leaves the lane once read
 async function takeLaneNotes($: EngineInterface, lanes: StashLane[]) {
     const taken = lanes.filter((l) => !l.endedAt && l.note && l.isNoteTaken);
@@ -1488,7 +1422,6 @@ async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);
     // a lane cclio moved shows on this board at its next poll
     if (isBoardOpen) await showLanes($, await readLanes($));
-    if (isBoardOpen) await showCcrow($);
     if (isBoardOpen) {
         // each board write redraws the pane, and the desktop then rebuilds the bars' svg in the band (a blink and a
         // restarted breath, FRM-354): it writes only when what the board shows changes — a row's facts, or a span such as
@@ -2123,8 +2056,6 @@ export const register: Register = (on) => {
         // every board reads the fleet's lanes from the shelf file: at a start, a reload, and on each poll
         lanesShown = '';
         await showLanes($, await readLanes($));
-        ccrowShown = '';
-        await showCcrow($);
         await $.tool
             .register({
                 description: ORBIT_ABOUT,
@@ -3147,41 +3078,6 @@ export const register: Register = (on) => {
                 ),
             );
         };
-        const ccrow = (await $.state.get(CCROW)).value ?? null;
-        const ccrowJSX =
-            ccrow && isPartOn('stash.ccrow') ? (
-                <Box
-                    borderColor={cardBorder(e.surface)}
-                    borderStyle='round'
-                    flexDirection='column'
-                    flexShrink={0}
-                    key='ccrow'
-                    marginTop={1}
-                    paddingX={1}
-                    paddingY={0.5}
-                    rowGap={LINE_GAP}>
-                    <Box alignItems='center' flexDirection='row' gap={1}>
-                        <Box flexGrow={1} flexShrink={1} minWidth={0}>
-                            <Text wrap='truncate-end'>{ccrow.headline}</Text>
-                        </Box>
-                        {ccrow.door ? (
-                            <Button
-                                key='ccrow:open'
-                                onPress={() =>
-                                    void $.process
-                                        .run(['open', ccrow.door ?? ''])
-                                        .catch(() => undefined)
-                                }
-                                plain>
-                                ↗
-                            </Button>
-                        ) : null}
-                    </Box>
-                    <Text dimColor wrap='truncate-end'>
-                        {ccrow.ledger}
-                    </Text>
-                </Box>
-            ) : null;
         const handleLaneTake = async (id: string) => {
             const all = await readLanes($);
             await writeLanes(
@@ -3328,8 +3224,8 @@ export const register: Register = (on) => {
             : null;
         const fill =
             e.props.placement === 'dock' ? e.props.scroll.bodyRows : undefined;
-        // a docked board takes exactly its rows, so the pane never scrolls: sessions, the lane cards, phases and the
-        // ccrow strip keep their height and only orbit shrinks, its asks scrolled by the board's own ui.scroll (dima, 20:58)
+        // a docked board takes exactly its rows, so the pane never scrolls: sessions, the lane cards and phases keep
+        // their height and only orbit shrinks, its asks scrolled by the board's own ui.scroll (dima, 20:58)
         const boardBox =
             fill === undefined
                 ? {}
@@ -3343,7 +3239,6 @@ export const register: Register = (on) => {
                     <Box flexGrow={1} key='phases:gap' />
                     {laneJSX}
                     {isPartOn('stash.phases') ? phasesJSX : null}
-                    {ccrowJSX}
                 </Box>
             );
         if (!list.length)
@@ -3354,7 +3249,6 @@ export const register: Register = (on) => {
                     <Box flexGrow={1} key='phases:gap' />
                     {laneJSX}
                     {isPartOn('stash.phases') ? phasesJSX : null}
-                    {ccrowJSX}
                 </Box>
             );
         const isColour = board.isColour;
@@ -3555,7 +3449,6 @@ export const register: Register = (on) => {
                 <Box flexGrow={1} key='phases:gap' />
                 {laneJSX}
                 {isPartOn('stash.phases') ? phasesJSX : null}
-                {ccrowJSX}
             </Box>
         );
     });

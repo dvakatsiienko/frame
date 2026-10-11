@@ -24,9 +24,6 @@ export type RemoteMark = {
     at: number;
 };
 
-// the board's ccrow strip: her newest note's first line, verbatim, and her ledger line
-export type StashCcrow = { headline: string; ledger: string; door?: string };
-
 // the session's last main turn stopped on the 5h cap: the reset it waits for, and the reset a resume already went for
 export type StashCap = { resetsAt?: number; sentFor?: number };
 
@@ -179,8 +176,6 @@ declare module 'claude-code' {
             laneAsks: Record<string, PublishedAsk[]>;
             // the first orbit ask a docked board shows, moved by a scroll over the board
             orbitTop: number;
-            // the ccrow strip, null when either of her files is missing
-            ccrow: StashCcrow | null;
             // the board's cards folded to their head row, by card: sessions, orbit, phases
             folds: Record<string, boolean>;
         };
