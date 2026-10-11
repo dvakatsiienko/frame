@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Stop hook: reads the reply that just ended and logs every shape the output-format rules ban.
-# it blocks a 📄 stamp later than the clock and a ·-joined list in prose; every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
+# it blocks the shapes `main` names (a 📄 stamp off the clock, a ·-joined list, a 🔭 on ccrow, a grill answer fence); every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
 # fixed instead of a validator stopping every reply. `pnpm reply-check:report` reads it.
 import json
 import os
@@ -22,6 +22,19 @@ HASH = re.compile(r"(?<![\w/.-])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}(
 REPORT_STAMP = re.compile(r"📄[^\n]*?\b(\d{1,2}):(\d{2})\b")
 # a ccrow wake is a Stop-hook side effect, never a block: a 🔭 line naming it read as a hang (dima, 2026-10-10)
 WAIT_ON_CCROW = re.compile(r"^\s*🔭.*ccrow.*$", re.M)
+GRILL_ANSWER = re.compile(r"^\s*Q\d+\s*[:\-–]?\s*[a-e]\b", re.M)
+# a link the desktop pane opens: no scheme, no #anchor; the pane resolves it from the session's folder (dima, 2026-10-11, o125)
+LOCAL_LINK = re.compile(r"\]\((?![a-z][a-z0-9+.-]*:|#)([^)\s]+)\)")
+LINE_SUFFIX = re.compile(r":\d+(?::\d+)?$")
+
+
+def dead_links(prose: str, cwd: str) -> list[str]:
+    dead: list[str] = []
+    for m in LOCAL_LINK.finditer(prose):
+        target = LINE_SUFFIX.sub("", m.group(1))
+        if not os.path.exists(os.path.join(cwd, os.path.expanduser(target))):
+            dead.append(m.group(1))
+    return dead
 
 
 def minutes_now() -> int:
@@ -38,6 +51,56 @@ def future_stamps(prose: str) -> list[str]:
         if 1 < ahead < 720:
             late.append(f"{m.group(1)}:{m.group(2)}")
     return late
+
+
+PROMPT_NOW = re.compile(r"hook additional context: now (\d{1,2}):(\d{2})")
+
+
+def prompt_now(path: str) -> int | None:
+    with open(path) as transcript:
+        lines = transcript.readlines()
+    # only the hook's own attachment counts: a tool result quoting «now 10:39» once matched first
+    for raw in reversed(lines):
+        try:
+            entry = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if entry.get("type") != "attachment" or (entry.get("attachment") or {}).get("hookEvent") != "UserPromptSubmit":
+            continue
+        m = PROMPT_NOW.search(json.dumps(entry.get("rendered"), ensure_ascii=False))
+        if m:
+            return int(m.group(1)) * 60 + int(m.group(2))
+    return None
+
+
+def is_rewind(path: str) -> bool:
+    # a `rewind` reprints an old report with its true time, so its 📄 line is meant to be behind the clock
+    with open(path) as transcript:
+        lines = transcript.readlines()
+    for raw in reversed(lines):
+        try:
+            entry = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if entry.get("type") != "user":
+            continue
+        content = (entry.get("message") or {}).get("content")
+        if isinstance(content, list):
+            if any(isinstance(b, dict) and b.get("type") == "tool_result" for b in content):
+                continue
+            content = " ".join(b.get("text", "") for b in content if isinstance(b, dict))
+        return isinstance(content, str) and content.strip().lower().startswith("rewind")
+    return False
+
+
+def stale_stamps(prose: str, prompted: int) -> list[str]:
+    stale: list[str] = []
+    for m in REPORT_STAMP.finditer(prose):
+        behind = (prompted - (int(m.group(1)) * 60 + int(m.group(2)))) % 1440
+        # a stamp copied at the prompt or from a later `date` is never behind the prompt's own clock
+        if 2 < behind < 720:
+            stale.append(f"{m.group(1)}:{m.group(2)}")
+    return stale
 
 
 def last_reply(path: str) -> str:
@@ -79,6 +142,8 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("commit-hash", m.group(0)) for m in HASH.finditer(URL.sub("", prose))]
     found += [("future-stamp", stamp) for stamp in future_stamps(prose)]
     found += [("wait-on-ccrow", m.group(0)[:40]) for m in WAIT_ON_CCROW.finditer(prose)]
+    # each fence is judged alone: a Q line in prose between two command fences once matched across them
+    found += [("grill-fence", f.group(0)[3:43]) for f in FENCE.finditer(reply) if GRILL_ANSWER.search(f.group(0))]
     return found
 
 
@@ -92,6 +157,14 @@ def main() -> None:
             return
         reply = last_reply(path)
     hits = findings(reply)
+    cwd = event.get("cwd")
+    if cwd:
+        hits += [("dead-link", link) for link in dead_links(FENCE.sub("", reply), cwd)]
+    path = event.get("transcript_path")
+    prompted = prompt_now(path) if path and os.path.exists(path) else None
+    if prompted is not None and not is_rewind(path):
+        prose = FENCE.sub("", reply)
+        hits += [("stale-stamp", s) for s in stale_stamps(prose, prompted)]
     if not hits:
         return
     os.makedirs(os.path.dirname(LOG), exist_ok=True)
@@ -105,6 +178,7 @@ def main() -> None:
     late = [snippet for rule, snippet in hits if rule == "future-stamp"]
     dots = [snippet for rule, snippet in hits if rule == "middot"]
     crow = [snippet for rule, snippet in hits if rule == "wait-on-ccrow"]
+    grill = [snippet for rule, snippet in hits if rule == "grill-fence"]
     # the two blocking rules: logging alone changed nothing (28 stamp hits in a day, dima 2026-10-06; the · list, dima 2026-10-08); a second stop passes, so a block never loops
     reasons: list[str] = []
     if late:
@@ -114,6 +188,12 @@ def main() -> None:
         reasons.append(f"a ·-joined list in prose («{dots[0]}»): three things in a row are three bullets. reprint it as one `- ` line per item.")
     if crow:
         reasons.append("a 🔭 line names ccrow: a wake never holds the session. drop the 🔭 line, or name what really holds it (a ci run, a coder).")
+    stale = [snippet for rule, snippet in hits if rule == "stale-stamp"]
+    if stale and prompted is not None:
+        asked = f"{prompted // 60:02d}:{prompted % 60:02d}"
+        reasons.append(f"the 📄 stamp is a composed clock: {stale[0]} and {asked} (the prompt hook's now) differ by over 2 minutes. copy the hook's now, or run `date`, and reprint the 📄 line.")
+    if grill:
+        reasons.append("a fence pre-filled with grill answers: grill answers go to orbit, one `Qn <title>` row per question with your pick (dima, 2026-10-11). drop the fence; the round itself stays in the reply.")
     if reasons and not event.get("stop_hook_active"):
         print(json.dumps({"decision": "block", "reason": " ".join(reasons)}))
 

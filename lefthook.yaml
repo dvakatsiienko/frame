@@ -33,7 +33,7 @@ pre-commit:
       run: script/index-run.sh sh -c 'pnpm mods:typecheck && pnpm mods:test'
     fleet-hazards:
       # a stumble becomes a guard, never a note (FRM-314): a hazard line added or reworded names its guard
-      glob: "home/.claude/rules/fleet-hazards.md"
+      glob: "home/.claude/rules/fleet-hazards*.md"
       run: node script/fleet-hazards-check.ts
     git-crypt-rename:
       # a git-crypt file moved to a path no filter line covers ships plaintext — d1bddfb5 put one on

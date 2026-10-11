@@ -475,6 +475,21 @@ export function transcriptDelta(lines: string[], fromLine: number) {
             if (text && !text.includes('<cross-session-message'))
                 parts.push(`${headOf('dima', entry.timestamp)}\n${text}`);
         }
+        // dima's orbit ticks and notes reach cclio only as hook context, never as a user entry
+        if (
+            entry?.type === 'attachment' &&
+            entry.attachment?.type === 'hook_additional_context'
+        ) {
+            const content = entry.attachment.content;
+            for (const line of typeof content === 'string'
+                ? [content]
+                : (content ?? [])) {
+                if (line.startsWith('orbit: dima marked'))
+                    parts.push(
+                        `${headOf('dima', entry.timestamp)}\n${line.trim()}`,
+                    );
+            }
+        }
         if (entry?.type === 'user') {
             const text = textOf(entry.message?.content).trim();
             if (!text) continue;
@@ -1011,7 +1026,11 @@ export interface TranscriptEntry {
     timestamp?: string;
     isMeta?: boolean;
     origin?: { kind?: string };
-    attachment?: { type?: string; prompt?: TranscriptContent };
+    attachment?: {
+        type?: string;
+        prompt?: TranscriptContent;
+        content?: string | string[];
+    };
     message?: {
         id?: string;
         model?: string;

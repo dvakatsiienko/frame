@@ -85,6 +85,33 @@ describe('transcriptDelta', () => {
         );
     });
 
+    test("keeps dima's orbit marks and notes, drops the other hook context", () => {
+        const hooked = [
+            JSON.stringify({
+                attachment: {
+                    content: [
+                        'now 15:48',
+                        'orbit: dima marked 1 ask.\n- o98 🛎️ accepted: hazards · his note: «which workflows?»',
+                    ],
+                    hookEvent: 'UserPromptSubmit',
+                    type: 'hook_additional_context',
+                },
+                type: 'attachment',
+            }),
+            JSON.stringify({
+                attachment: {
+                    content: ['phases not set this turn'],
+                    hookEvent: 'PreToolUse',
+                    type: 'hook_additional_context',
+                },
+                type: 'attachment',
+            }),
+        ];
+        expect(transcriptDelta(hooked, 0).text).toBe(
+            '## dima\norbit: dima marked 1 ask.\n- o98 🛎️ accepted: hazards · his note: «which workflows?»',
+        );
+    });
+
     test('leaves out a peer message queued mid-turn', () => {
         const queued = [
             JSON.stringify({
