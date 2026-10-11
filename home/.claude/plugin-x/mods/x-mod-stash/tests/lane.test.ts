@@ -497,6 +497,22 @@ test("the lanes stick to the board's bottom, on top of the phases (dima, 20:12)"
     ]).toEqual([true, true]);
 });
 
+/* exit 4 — an ask in 2 rows */
+
+test("an ask's pick and its buttons share one row", async ($, on) => {
+    world(on);
+    await start($);
+    await $.tool.call({
+        asks: [{ pick: 'cut it', text: 'cut the second probe?' }],
+        op: 'add',
+        tool: TOOL,
+    } as never);
+    const ui = await board($);
+    expect((await ui.find({ key: 'orbit:row:o1', type: 'Box' }))?.text).toMatch(
+        /➡️ cut it.*take.*redo/su,
+    );
+});
+
 /* exit 5 — the stale nag, cclio's turns only */
 
 test("a lane that moved nothing for 8 of cclio's turns reads stale; a step that moves nothing keeps the count", async ($, on) => {

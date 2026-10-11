@@ -516,7 +516,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when dima marks or notes a row, then it waits in the store and the member's own stash takes it into its orbit: a running member gets it in that turn, after its next tool call
   - and an idle member with marks wakes once, within a poll of dima's next prompt in any thread, one turn carrying all of them; no turn starts before that prompt
   - decision: the wake carries the marks in its text — a prompt a mod submits skips that mod's own prompt.submit hook (step 0, cc 2.1.296)
-- 🧭 an ask's pick and its buttons share one row (exit 4)
+- ⬜ an ask takes 2 rows: its line, then one row with the `➡️ pick`, 🛎️ take, 🔁 redo, 🔊 and the note (exit 4, dima's 19:31 shot)
 
 ## spawn hints — the board's name flag only
 
