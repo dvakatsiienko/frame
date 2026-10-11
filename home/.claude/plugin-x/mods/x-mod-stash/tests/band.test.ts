@@ -200,12 +200,22 @@ test('a reply with no 🔭 line names its background work in the row', async ($,
     );
 });
 
-const standingWatch = (id: string) => ({
-    description: 'Arm the one-shot pr/ci watch',
-    id,
-    status: 'running',
-    type: 'shell',
-});
+// the two watches as cclio arms them: the pr one names its script, the ci one only its description
+const standingWatch = (id: string) =>
+    id === 'w1'
+        ? {
+              command: '~/frame/cclio/.claude/hooks/watch-once.sh pr',
+              description: 'Arm the one-shot pr watch',
+              id,
+              status: 'running',
+              type: 'shell',
+          }
+        : {
+              description: 'Arm the one-shot ci watch',
+              id,
+              status: 'running',
+              type: 'shell',
+          };
 
 test("cclio's standing pr/ci watches are not counted as waits", async ($, on) => {
     world(on);
@@ -235,6 +245,28 @@ test('a session running only the standing watches reads not waiting', async ($, 
     const ui = await band($);
     await $.classic.Stop({
         background_tasks: [standingWatch('w1'), standingWatch('w2')],
+        last_assistant_message: 'done.',
+        session_id: SID,
+        stop_hook_active: false,
+    });
+    expect((await ui.find({ text: /^🔭/, type: 'Text' }))?.text).toBe(
+        '🔭 not waiting',
+    );
+});
+
+test('a watch named only by its watch-once.sh command is not a wait', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await $.classic.Stop({
+        background_tasks: [
+            {
+                command: '~/frame/cclio/.claude/hooks/watch-once.sh ci',
+                description: 'Watch ci on the head once',
+                id: 'w3',
+                status: 'running',
+                type: 'shell',
+            },
+        ],
         last_assistant_message: 'done.',
         session_id: SID,
         stop_hook_active: false,
