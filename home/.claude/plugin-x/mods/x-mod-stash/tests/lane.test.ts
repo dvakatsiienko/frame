@@ -122,6 +122,11 @@ const kept = (w: ReturnType<typeof world>) =>
     (JSON.parse(w.files[FILE] ?? '{"lanes":[]}') as { lanes: KeptLane[] })
         .lanes;
 const shelf = (...lanes: KeptLane[]) => ({ [FILE]: JSON.stringify({ lanes }) });
+// dima's note on lane l1 as the board keeps it
+const noteOf = (w: { store: Map<string, unknown> }) =>
+    w.store.get('lane-note:l1') as
+        | { note?: string; isTaken?: boolean }
+        | undefined;
 const keptLane = (over: Partial<KeptLane> = {}): KeptLane => ({
     current: 0,
     history: [],
@@ -300,7 +305,7 @@ test('a note never sent with take stays a draft (dima, 20:51)', async ($, on) =>
     await say($, 'go');
     expect([
         w.contexts.at(-1)?.some((c) => c.includes('cards first')),
-        kept(w)[0]?.note,
+        noteOf(w)?.note,
     ]).toEqual([false, 'cards first']);
 });
 
@@ -345,10 +350,22 @@ test("a member's board takes a note that reaches cclio, never the member's own p
     await take(ui);
     await say($, 'go');
     expect([
-        kept(w)[0]?.note,
-        kept(w)[0]?.isNoteTaken,
+        noteOf(w)?.note,
+        noteOf(w)?.isTaken,
         w.contexts.at(-1)?.some((c) => c.includes('slow down')),
-    ]).toEqual(['slow down', true, false]);
+        // only cclio's lane op writes the shelf file
+        kept(w)[0]?.note,
+    ]).toEqual(['slow down', true, false, undefined]);
+});
+
+test('a note on a step leaves when cclio moves the lane past it', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await create($);
+    await note(ui, 'cards first');
+    await lane($, { act: 'step', current: 1, id: 'l1' });
+    expect(noteOf(w)).toBe(undefined);
 });
 
 test('a taken note clears from the box once cclio took it', async ($, on) => {

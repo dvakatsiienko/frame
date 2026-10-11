@@ -203,6 +203,9 @@ const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
 // every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
+// dima's note on a lane's current step and its 🛎️ take, one store key per lane: any board writes it, so the shelf file
+// keeps its one writer, cclio's lane op
+const LANE_NOTE = 'lane-note:';
 const LANE_OWNER = '🦉 cclio';
 const LANE_ROLES = ['coder', 'verifier'] as const;
 const LANE_MAX = 5;
@@ -732,9 +735,6 @@ export function laneOp(
                 : lane.history,
             items: stepped.items,
             movedAt: isMoved ? turns : lane.movedAt,
-            ...(stepped.current === lane.current && lane.note
-                ? { isNoteTaken: lane.isNoteTaken, note: lane.note }
-                : { isNoteTaken: undefined, note: undefined }),
         },
         laneSummary(lane.id, lane.title, stepped),
     );
@@ -849,10 +849,44 @@ async function writeLanes($: EngineInterface, lanes: StashLane[]) {
     await showLanes($, lanes);
 }
 
-// the live lanes into this session's state, only when they changed: a write redraws the board
+type LaneNote = { note?: string; isTaken?: boolean };
+
+async function laneNotes($: EngineInterface) {
+    const notes: Record<string, LaneNote> = {};
+    for (const key of await $.store.keys().catch(() => [] as string[])) {
+        if (!key.startsWith(LANE_NOTE)) continue;
+        const n = (await $.store.get(key).catch(() => undefined)) as
+            | LaneNote
+            | undefined;
+        if (n) notes[key.slice(LANE_NOTE.length)] = n;
+    }
+    return notes;
+}
+
+async function changeLaneNote(
+    $: EngineInterface,
+    id: string,
+    change: (n: LaneNote) => LaneNote,
+) {
+    const was = ((await $.store.get(LANE_NOTE + id).catch(() => undefined)) ??
+        {}) as LaneNote;
+    const n = change(was);
+    if (n.note) await $.store.set(LANE_NOTE + id, n);
+    else await $.store.delete(LANE_NOTE + id);
+    await showLanes($, await readLanes($));
+}
+
+// the live lanes into this session's state, only when they changed: a write redraws the board; each carries its note
 let lanesShown = '';
 async function showLanes($: EngineInterface, lanes: StashLane[]) {
-    const live = lanes.filter((l) => !l.endedAt);
+    const notes = await laneNotes($);
+    const live = lanes
+        .filter((l) => !l.endedAt)
+        .map((l) => ({
+            ...l,
+            isNoteTaken: notes[l.id]?.isTaken,
+            note: notes[l.id]?.note,
+        }));
     const asks: Record<string, PublishedAsk[]> = {};
     for (const sid of new Set(live.flatMap((l) => Object.values(l.members)))) {
         if (!sid) continue;
@@ -889,20 +923,16 @@ async function markRemote(
 
 // the lane notes dima took with 🛎️, as cclio reads them; each leaves the lane once read
 async function takeLaneNotes($: EngineInterface, lanes: StashLane[]) {
-    const taken = lanes.filter((l) => !l.endedAt && l.note && l.isNoteTaken);
-    if (!taken.length) return [];
-    const ids = new Set(taken.map((l) => l.id));
-    await writeLanes(
-        $,
-        lanes.map((l) =>
-            ids.has(l.id)
-                ? { ...l, isNoteTaken: undefined, note: undefined }
-                : l,
-        ),
+    const notes = await laneNotes($);
+    const taken = lanes.filter(
+        (l) => !l.endedAt && notes[l.id]?.note && notes[l.id]?.isTaken,
     );
+    if (!taken.length) return [];
+    for (const l of taken) await $.store.delete(LANE_NOTE + l.id);
+    await showLanes($, lanes);
     return taken.map(
         (l) =>
-            `lane note from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${l.note}»`,
+            `lane note from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${notes[l.id]?.note}»`,
     );
 }
 
@@ -2871,26 +2901,16 @@ export const register: Register = (on) => {
                 </Box>
             );
         };
-        const handleLaneNote = async (id: string, value: string) => {
-            const all = await readLanes($);
-            await writeLanes(
-                $,
-                all.map((l) =>
-                    l.id === id ? { ...l, note: value.trim() || undefined } : l,
-                ),
-            );
-        };
-        const handleLaneTake = async (id: string) => {
-            const all = await readLanes($);
-            await writeLanes(
-                $,
-                all.map((l) =>
-                    l.id === id
-                        ? { ...l, isNoteTaken: !l.isNoteTaken || undefined }
-                        : l,
-                ),
-            );
-        };
+        const handleLaneNote = (id: string, value: string) =>
+            changeLaneNote($, id, (n) => ({
+                ...n,
+                note: value.trim() || undefined,
+            }));
+        const handleLaneTake = (id: string) =>
+            changeLaneNote($, id, (n) => ({
+                ...n,
+                isTaken: !n.isTaken || undefined,
+            }));
         const laneJSX = isPartOn('stash.lane')
             ? lanes.map((lane) => (
                   <Box
@@ -3278,13 +3298,19 @@ export const register: Register = (on) => {
                 return {
                     deny: `orbit lane: only ${LANE_OWNER} writes the lanes; every board shows them`,
                 };
+            const before = await readLanes($);
             const op = laneOp(
-                await readLanes($),
+                before,
                 e as Record<string, unknown>,
                 (await currentOrbit($)).turns,
                 await $.clock.now(),
             );
             if ('deny' in op) return { deny: op.deny };
+            // a note was about the step it sat on: a moved pointer drops it
+            const was = new Map(before.map((l) => [l.id, l.current]));
+            for (const l of op.lanes)
+                if (was.has(l.id) && was.get(l.id) !== l.current)
+                    await $.store.delete(LANE_NOTE + l.id);
             await writeLanes($, op.lanes);
             return { result: op.result } as never;
         }
