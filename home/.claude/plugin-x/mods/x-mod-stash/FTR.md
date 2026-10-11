@@ -172,7 +172,7 @@
   - then the bars breathe idle too, and a row under the meters holds ⏱ (off, 10, 20, 30 Hz) and 📍 (bars or cc's spinner line), each a press that applies in every band with no reload, and `gpu <setting> <n>%` — the mean of the last ten 2 s `ioreg` reads, in the session that ran it
   - given 📍 spinner, then the bars stand still and a 12-cell ember strip leads the spinner line; that line's time and tokens are gone while it shows
   - and the band keeps a «spinner preview» row with the same strip, so the look shows while idle (dima's o6)
-  - given the desktop, then ⏱ reads «⏱ display rate», no button: the svg embers run at the display's rate
+  - given the desktop, then ⏱ reads «⏱ display rate», no button, and a rate left at «off» stills neither the bars nor the preview: the svg embers run at the display's rate
   - decision: the rate is the terminal's — the desktop's svg embers run at the display's own rate, so on the desktop the A/B is the place and the gpu (dima's eye test runs in his live band, `mods:live` is a text pty)
   - decision: a try; once dima picks, the losing place and rates go and the rate stays as the 🎛️ frame-rate knob's default
   - decision: the desktop wave runs inside each bar's svg, no host tick, and a rebuild resumes at the breath's phase; the terminal redraws the band every 100 ms while working — the rates are an A/B dima picks by eye (FRM-391 slice 02)

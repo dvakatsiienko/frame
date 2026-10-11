@@ -2695,7 +2695,7 @@ export const register: Register = (on) => {
         const ab = abOf(await $.store.get(BREATH_AB).catch(() => undefined));
         // while the A/B runs the bars breathe idle too, so dima sees each setting without a turn
         const isBreathing = ab
-            ? ab.hz > 0 && ab.place === 'bars'
+            ? ab.place === 'bars' && (Boolean(Svg) || ab.hz > 0)
             : Boolean(e.props.isWorking) ||
               (await $.store.get(BREATH_PREVIEW).catch(() => false)) === true;
         const breath = isBreathing ? now : undefined;
@@ -3087,7 +3087,9 @@ export const register: Register = (on) => {
             </Box>
         ) : null;
         // cc's spinner line shows only mid-turn: while 📍 says spinner the band keeps a copy of it, so dima sees it idle
-        const isSpinPreview = ab?.place === 'spinner' && ab.hz > 0;
+        // the rate is the terminal's: «off» stills a terminal, never the desktop's svg
+        const isSpinPreview =
+            ab?.place === 'spinner' && (Boolean(Svg) || ab.hz > 0);
         if (isSpinPreview && !Svg) tickBreath($, ab?.hz);
         const spinPreview = isSpinPreview ? (
             <Box alignItems='center' flexDirection='row' gap={1} key='ab:spin'>
@@ -3174,7 +3176,8 @@ export const register: Register = (on) => {
     on('ui.render', { component: 'Spinner' }, async ($, e, next) => {
         if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e);
         const ab = abOf(await $.store.get(BREATH_AB).catch(() => undefined));
-        if (ab?.place !== 'spinner' || !ab.hz) return next(e);
+        if (ab?.place !== 'spinner' || (e.surface === 'terminal' && !ab.hz))
+            return next(e);
         const ui = $.ui.resolve(e);
         const { Box, Text } = ui;
         const now = await $.clock.now();

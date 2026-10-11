@@ -548,14 +548,34 @@ test('at 10 Hz the terminal bars change at most ten times a second', async ($, o
     expect([n > 0, n <= 31]).toEqual([true, true]);
 });
 
-test('the rate off stands the bars still', async ($, on) => {
+test('the rate off stands the terminal bars still', async ($, on) => {
+    const { clock, store } = meters(on);
+    await measure($, 39, 35);
+    setAb(store, 0, 'bars');
+    const ui = await bandOn($, 'terminal', true);
+    const first = await frameOf(ui);
+    await clock.advance(3000);
+    expect(await frameOf(ui)).toBe(first);
+});
+
+test('the desktop bars breathe whatever the terminal rate says', async ($, on) => {
     const { store } = meters(on);
     await measure($, 39, 35);
     setAb(store, 0, 'bars');
-    expect(await svgsAnimate(await bandOn($, 'desktop', true))).toEqual([
-        false,
-        false,
+    expect(await svgsAnimate(await bandOn($, 'desktop', false))).toEqual([
+        true,
+        true,
     ]);
+});
+
+test('the desktop spinner preview shows whatever the terminal rate says', async ($, on) => {
+    const { store } = meters(on);
+    await measure($, 39, 35);
+    setAb(store, 0, 'spinner');
+    const ui = await bandOn($, 'desktop', false);
+    expect(
+        (await ui.find({ text: 'spinner preview', type: 'Text' }))?.text,
+    ).toBe('spinner preview');
 });
 
 test('📍 spinner takes the breath off the bars', async ($, on) => {
