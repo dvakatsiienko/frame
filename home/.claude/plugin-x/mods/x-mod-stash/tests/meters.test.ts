@@ -385,6 +385,7 @@ const frameOf = async (ui: Awaited<ReturnType<typeof bandOn>>) =>
         (await ui.findAll({ type: 'Text' })).map((t) => [
             t.text,
             Boolean(t.props.bold),
+            t.props.color,
         ]),
     );
 
@@ -393,7 +394,7 @@ test('mid-turn the terminal bars breathe: two frames apart differ', async ($, on
     await measure($, 39, 35);
     const ui = await bandOn($, 'terminal', true);
     const first = await frameOf(ui);
-    await clock.advance(1000);
+    await clock.advance(3000);
     expect(await frameOf(ui)).not.toBe(first);
 });
 

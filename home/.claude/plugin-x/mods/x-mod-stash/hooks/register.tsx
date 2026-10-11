@@ -1095,7 +1095,7 @@ export type BarRun = {
     kind: 'fill' | 'empty' | 'mark';
     text: string;
     color?: string;
-    tone?: 'hi' | 'lo';
+    tone?: 'hi';
 };
 // the breathing (FRM-391), x-mod-breather's motion adapted to the bars: one breath swells and fades the lit cells'
 // brightness, while a few soft peaks wander and pulse across the fill over a rippling texture, so the bar looks alive
@@ -1180,26 +1180,29 @@ export function meterBar(
     let f = 0;
     for (const c of cells) {
         const ch = c.kind === 'mark' ? '┃' : c.kind === 'fill' ? '▮' : '▯';
-        // the terminal has three strengths: a lit cell glows bold, rests plain or sinks dim with the breath
+        // a cell never loses its colour: near a peak of the breath it flares bold, three ramp steps warmer
         let tone: BarRun['tone'];
+        let color = c.color;
         if (c.kind === 'fill' && breath !== undefined) {
             const level = breathLevel(
                 filled > 1 ? f / (filled - 1) : 0.5,
                 breath,
             );
-            tone = level > 0.62 ? 'hi' : level < 0.3 ? 'lo' : undefined;
+            if (level > 0.55) {
+                tone = 'hi';
+                const step = BAR_RAMP.indexOf(
+                    c.color as (typeof BAR_RAMP)[number],
+                );
+                color = BAR_RAMP[Math.min(BAR_RAMP.length - 1, step + 3)];
+            }
         }
         if (c.kind === 'fill') f++;
         const last = runs.at(-1);
-        if (
-            last?.kind === c.kind &&
-            last.color === c.color &&
-            last.tone === tone
-        )
+        if (last?.kind === c.kind && last.color === color && last.tone === tone)
             last.text += ch;
         else
             runs.push({
-                color: c.color,
+                color,
                 kind: c.kind,
                 text: ch,
                 ...(tone ? { tone } : {}),
@@ -1236,19 +1239,19 @@ export function meterSvg(
         const x = i * CELL_STEP;
         const u =
             c.kind === 'fill' ? (filled > 1 ? f++ / (filled - 1) : 0.5) : 0;
-        // the bottom row lights first, the top row only near a peak, so a peak rises inside the bar like the breather's
-        // columns; a lit cell never drops below a quarter, so the fill stays readable
-        const breathOf = (row: number) => {
+        // a lit cell keeps its full colour; the breath lays a warmer flare over it, the ramp one step hotter. the bottom row
+        // flares first, the top row only near a peak, so a peak rises inside the bar like the breather's columns
+        const flareOf = (x: number, y: number, row: number) => {
             if (breathAt === undefined) return '';
             const values = Array.from({ length: BREATH_KEYS + 1 }, (_, k) => {
                 const level = breathLevel(u, (k % BREATH_KEYS) / BREATH_KEYS);
                 const lit =
                     row === CELL.rows - 1
-                        ? Math.min(1, level * 1.6)
-                        : Math.max(0, Math.min(1, (level - 0.35) * 1.6));
-                return (0.25 + 0.75 * lit).toFixed(2);
+                        ? Math.min(1, level * 1.4)
+                        : Math.max(0, Math.min(1, (level - 0.4) * 1.7));
+                return (0.9 * lit).toFixed(2);
             });
-            return `<animate attributeName="opacity" values="${values.join(';')}" dur="${dur}s" begin="-${begin.toFixed(2)}s" repeatCount="indefinite"/>`;
+            return `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#flare)" opacity="0"><animate attributeName="opacity" values="${values.join(';')}" dur="${dur}s" begin="-${begin.toFixed(2)}s" repeatCount="indefinite"/></rect>`;
         };
         if (c.kind === 'mark')
             return [
@@ -1256,11 +1259,8 @@ export function meterSvg(
             ];
         return Array.from({ length: CELL.rows }, (_, r) => {
             const y = r * CELL_STEP;
-            const breath = c.kind === 'fill' ? breathOf(r) : '';
             return c.kind === 'fill'
-                ? breath
-                    ? `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)">${breath}</rect>`
-                    : `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>`
+                ? `<rect x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>${flareOf(x, y, r)}`
                 : `<rect class="off" x="${x}" y="${y}" width="${CELL.size}" height="${CELL.size}" rx="1"/>`;
         });
     });
@@ -1269,7 +1269,13 @@ export function meterSvg(
         `<style>${BAR_STYLE}</style>` +
         `<defs><linearGradient id="ramp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${redAt.toFixed(1)}" y2="0">` +
         '<stop class="r0" offset="0"/><stop class="r1" offset=".45"/><stop class="r2" offset=".75"/><stop class="r3" offset="1"/>' +
-        `</linearGradient></defs>${cells.join('')}</svg>`
+        '</linearGradient>' +
+        (breathAt === undefined
+            ? ''
+            : `<linearGradient id="flare" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${redAt.toFixed(1)}" y2="0">` +
+              '<stop class="r1" offset="0"/><stop class="r2" offset=".45"/><stop class="r3" offset=".75"/><stop class="r3" offset="1"/>' +
+              '</linearGradient>') +
+        `</defs>${cells.join('')}</svg>`
     );
 }
 // a calm meter's fill: the board's green and blue mid-tones, 3.6:1 or more on white and 4.2:1 on a dark pane
@@ -2591,7 +2597,7 @@ export const register: Register = (on) => {
                 <Text
                     bold={r.kind === 'mark' || r.tone === 'hi'}
                     color={r.color}
-                    dimColor={r.kind === 'empty' || r.tone === 'lo'}
+                    dimColor={r.kind === 'empty'}
                     // biome-ignore lint/suspicious/noArrayIndexKey: a run's place in its bar is its identity
                     key={`${key}:${i}`}>
                     {r.text}
