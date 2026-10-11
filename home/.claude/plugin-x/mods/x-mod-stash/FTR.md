@@ -123,6 +123,9 @@
   - given the resume went out
   - when the mod reloads or the clock runs on
   - then no second resume goes for that reset
+  - given ⏰ was off when the reset passed
+  - when dima switches ⏰ on later
+  - then the session that reset left capped is not woken; ⏰ on before the reset still wakes it (o102)
   - makes: one `waker` key in x-mod-stash's `$.store`, `{ on }`, so a restart keeps the switch; the cap and the reset it was sent for live in `$.state` (`cap`)
   - decision: «on the cap» is a turn that ended in error with «hit your session limit» — the text the 5h cap writes (8 transcript rows, 2026-10-08); the weekly cap and spent credits read otherwise and are left alone. inferred from transcripts, no capped turn seen through the hook yet
   - decision: each session wakes itself at the reset its last measure named, a few seconds after; no message crosses sessions, and a capped session that never measured waits for its first measure

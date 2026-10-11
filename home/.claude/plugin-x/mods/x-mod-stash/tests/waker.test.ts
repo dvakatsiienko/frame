@@ -110,6 +110,29 @@ test('one reset sends at most one resume, a reload included', async ($, on) => {
     expect(s.resumes).toHaveLength(1);
 });
 
+test('⏰ switched on before the reset still wakes the capped session', async ($, on) => {
+    const s = await session($, on);
+    await endTurn($, CAPPED, 'error');
+    await s.clock.advance(10 * MIN);
+    await s.ui.press({ key: 'waker' });
+    await s.clock.advance(30 * MIN);
+    expect(s.resumes).toHaveLength(1);
+});
+
+test('⏰ switched on after the reset never wakes the session that reset left capped', async ($, on) => {
+    const s = await session($, on);
+    await endTurn($, CAPPED, 'error');
+    await s.clock.advance(40 * MIN);
+    await s.ui.press({ key: 'waker' });
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'desktop',
+    });
+    await s.clock.advance(40 * MIN);
+    expect(s.resumes).toEqual([]);
+});
+
 test('the ⏰ button in the band switches the waker on for every session', async ($, on) => {
     const s = await session($, on);
     await s.ui.press({ key: 'waker' });

@@ -736,12 +736,13 @@ async function armWake($: EngineInterface) {
     const wait = at + WAKE_SLACK_MS - (await $.clock.now());
     $.clock.after(Math.max(0, wait), async () => {
         if (mine !== capGen || isBusy || !cap) return;
+        // the reset is spent at its fire, switch on or off: ⏰ flipped on later never wakes a reset already past (o102)
+        cap = { ...cap, sentFor: at };
+        await $.state.set(CAP, cap).catch(() => undefined);
         const waker = (await $.store.get(WAKER_KEY)) as
             | { on?: boolean }
             | undefined;
         if (waker?.on !== true) return;
-        cap = { ...cap, sentFor: at };
-        await $.state.set(CAP, cap).catch(() => undefined);
         $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
         await $.prompt.submit({ text: RESUME });
     });
