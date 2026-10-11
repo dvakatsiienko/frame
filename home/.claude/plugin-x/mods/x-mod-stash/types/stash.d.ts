@@ -135,6 +135,8 @@ declare module 'claude-code' {
             // dima is on mobile: the reminder asks for the asks fence instead of orbit
             mobile: boolean;
             enhancer: StashEnhancer;
+            // the board's cards folded to their head row, by card: sessions, orbit, phases
+            folds: Record<string, boolean>;
         };
     }
 }

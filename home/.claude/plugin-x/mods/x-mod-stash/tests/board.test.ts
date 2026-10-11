@@ -655,3 +655,15 @@ test('the sessions head leads with 🌌, since the tab holds 🚦', async ($, on
         '🌌 sessions',
     );
 });
+
+test('📁 folds the sessions card to its head row', async ($, on) => {
+    fleet(on);
+    const ui = await board($);
+    const rows = async () =>
+        (await ui.findAll({ type: 'Box' })).filter((n) =>
+            n.key?.startsWith('m:'),
+        ).length;
+    const open = await rows();
+    await ui.press({ key: 'fold:sessions' });
+    expect([open > 0, await rows()]).toEqual([true, 0]);
+});

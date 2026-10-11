@@ -1129,3 +1129,33 @@ for (const [part, drawn] of BOARD_PARTS)
         await orbit($, { lines: ['now: a'], op: 'plan' });
         expect(await drawn(ui)).toBe(true);
     });
+
+// 📁 folds a card to its head row and back (dima's o5)
+for (const [card, body] of [
+    ['orbit', { key: 'orbit:ask:o1' }],
+    ['phases', { text: '🌕 now: a', type: 'Text' as const }],
+] as const)
+    test(`📁 folds the ${card} card to its head and a second press opens it`, async ($, on) => {
+        world(on);
+        await start($);
+        const ui = await board($);
+        await add($, ['push FRM-1', 'yes']);
+        await orbit($, { lines: ['now: a'], op: 'plan' });
+        const drawn = async () => (await ui.find(body)) !== undefined;
+        const open = await drawn();
+        await ui.press({ key: `fold:${card}` });
+        const folded = await drawn();
+        await ui.press({ key: `fold:${card}` });
+        expect([open, folded, await drawn()]).toEqual([true, false, true]);
+    });
+
+test("orbit's head ends ✅ then 📁, at the far right", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    const head = (await ui.findAll({ type: 'Button' }))
+        .map((b) => b.key)
+        .filter((k) => k === 'orbit:all' || k === 'fold:orbit');
+    expect(head).toEqual(['orbit:all', 'fold:orbit']);
+});

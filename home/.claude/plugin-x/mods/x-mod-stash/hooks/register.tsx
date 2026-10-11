@@ -163,6 +163,8 @@ const PHASES_START = `phases are your live plan: set them with ${ORBIT_TOOL}'s p
 const NUDGE_AT = 3;
 // mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
+// a board card folded to its head row, per session (dima's o5, 17:16)
+const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
 const BACK_AT_MAC = /\bback at the mac\b/i;
@@ -2116,6 +2118,19 @@ export const register: Register = (on) => {
         // (claude-code#101090) — a workaround, see mods/workarounds.md
         const boardShown = (await $.state.get(VIEW)).value?.shown ?? {};
         const isPartOn = (key: string) => boardShown[key] !== false;
+        const folds = (await $.state.get(FOLDS)).value ?? {};
+        // 📁 sits at the far right of each card's head line and folds the card to that line (dima's o5)
+        const foldJSX = (card: string) => (
+            <Button
+                key={`fold:${card}`}
+                onPress={async () => {
+                    const was = (await $.state.get(FOLDS)).value ?? {};
+                    await $.state.set(FOLDS, { ...was, [card]: !was[card] });
+                }}
+                plain>
+                📁
+            </Button>
+        );
         const speakJSX = (id: string, text: string) =>
             !isPartOn('stash.speak')
                 ? []
@@ -2232,31 +2247,36 @@ export const register: Register = (on) => {
                 rowGap={0.5}>
                 <Box flexDirection='row' justifyContent='space-between'>
                     <Text bold>🪐 orbit</Text>
-                    {open.some((a) => !a.mark && !a.isLocked) ? (
-                        <Button
-                            key='orbit:all'
-                            onPress={() =>
-                                void markAsks(
-                                    $,
-                                    (x) =>
-                                        x.mark
-                                            ? x
-                                            : {
-                                                  ...x,
-                                                  isChanged: false,
-                                                  mark: 'accepted',
-                                              },
-                                    true,
-                                )
-                            }
-                            plain>
-                            ✅
-                        </Button>
-                    ) : null}
+                    <Box alignItems='center' flexDirection='row' gap={1}>
+                        {open.some((a) => !a.mark && !a.isLocked) ? (
+                            <Button
+                                key='orbit:all'
+                                onPress={() =>
+                                    void markAsks(
+                                        $,
+                                        (x) =>
+                                            x.mark
+                                                ? x
+                                                : {
+                                                      ...x,
+                                                      isChanged: false,
+                                                      mark: 'accepted',
+                                                  },
+                                        true,
+                                    )
+                                }
+                                plain>
+                                ✅
+                            </Button>
+                        ) : null}
+                        {foldJSX('orbit')}
+                    </Box>
                 </Box>
                 {/* an answered ask stays until its turn ends, so dima sees it go */}
-                {o.asks.map(askJSX)}
-                {o.assumed?.length && isPartOn('stash.assumed') ? (
+                {folds.orbit ? null : o.asks.map(askJSX)}
+                {!folds.orbit &&
+                o.assumed?.length &&
+                isPartOn('stash.assumed') ? (
                     <Box
                         flexDirection='column'
                         key='orbit:assumed'
@@ -2359,10 +2379,13 @@ export const register: Register = (on) => {
                       paddingX={1}
                       paddingY={0.5}
                       rowGap={LINE_GAP}>
-                      <Text bold>
-                          {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
-                      </Text>
-                      {o.plan.lines.map((line, i) => {
+                      <Box flexDirection='row' justifyContent='space-between'>
+                          <Text bold>
+                              {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
+                          </Text>
+                          {foldJSX('phases')}
+                      </Box>
+                      {(folds.phases ? [] : o.plan.lines).map((line, i) => {
                           // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
                           const lead = line.match(PLAN_LEAD);
                           return (
@@ -2574,22 +2597,25 @@ export const register: Register = (on) => {
                     <Box
                         flexDirection='row'
                         justifyContent='space-between'
-                        marginBottom={1}>
+                        marginBottom={folds.sessions ? 0 : 1}>
                         <Text bold>🌌 sessions</Text>
-                        {/* the mock's head: the count and the busy on the right, the busy bold (dima, 17:00) */}
-                        <Text>
-                            <Text
-                                dimColor>{`${list.length} on this mac · `}</Text>
-                            <Text
-                                bold
-                                color={
-                                    busyCount ? STATUS.busy.tint : undefined
-                                }>
-                                {`${busyCount} busy`}
+                        <Box alignItems='center' flexDirection='row' gap={1}>
+                            {/* the mock's head: the count and the busy on the right, the busy bold (dima, 17:00) */}
+                            <Text>
+                                <Text
+                                    dimColor>{`${list.length} on this mac · `}</Text>
+                                <Text
+                                    bold
+                                    color={
+                                        busyCount ? STATUS.busy.tint : undefined
+                                    }>
+                                    {`${busyCount} busy`}
+                                </Text>
                             </Text>
-                        </Text>
+                            {foldJSX('sessions')}
+                        </Box>
                     </Box>
-                    {list.map(row)}
+                    {folds.sessions ? null : list.map(row)}
                 </Box>
                 {isPartOn('stash.orbit') ? orbitJSX : null}
                 {isPartOn('stash.phases') ? phasesJSX : null}

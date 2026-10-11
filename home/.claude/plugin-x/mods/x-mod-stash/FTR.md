@@ -209,6 +209,7 @@
 - ⬜ the board's sections sit in cards (FRM-391 aside, dima 16:54)
   - given the board draws, then sessions, 🪐 orbit and 🌔 phases each sit in a round-bordered card no colour: on the desktop a 30 % grey (`#8080804d`), the same on light and dark and a touch softer than `subtle`, in the terminal `subtle` (16:54 too faint, 17:00 «too hard», 17:08 «slightly less»); each ask is a smaller dim-bordered card inside orbit
   - and orbit's head reads `🪐 orbit` with no count, its check-all a bare `✅`; phases carry no count either (seven at most)
+  - and each card's head line ends in a plain `📁` at its far right (orbit's `✅` just left of it); a press folds the card to that line, a second opens it; the folds are kept in the session's state, so a hot reload keeps them (dima's o5, 17:16)
   - decision: cards over strips and the dashboard, tried side by side in a throwaway `board-lab` mod (dima, 16:48 «strips — no, windows 92 look», «colors are ugly»; 16:54 «apply the cards layout»)
   - decision: cc's registry stores «🐦‍⬛ ccrow» with the zero-width joiner as a space, so the board puts the joiner back for that one sequence — a plain string fix, no emoji parser (FRM-325)
   - decision: a session younger than a minute, counted from the registry's `startedAt`, gets no row — a probe that exits within a minute never shows; one that lives on gets its row once it is a minute old (FRM-325)
