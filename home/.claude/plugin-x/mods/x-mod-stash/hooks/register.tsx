@@ -408,7 +408,8 @@ async function enhancePrev($: EngineInterface) {
     const s = await enhancerOf($);
     if (s.status === 'running' || s.original === undefined) return;
     const box = (await $.prompt.read()).text;
-    const latest = box === s.original ? s.latest : box;
+    // an empty box is a sent prompt, never an edit: it keeps the enhanced text for new
+    const latest = box === s.original || !box.trim() ? s.latest : box;
     await saveEnhancer($, { ...s, error: undefined, latest });
     await $.prompt.fill({ text: s.original });
 }

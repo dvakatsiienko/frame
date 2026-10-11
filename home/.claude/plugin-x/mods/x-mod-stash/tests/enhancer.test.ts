@@ -153,6 +153,21 @@ test('new brings the enhanced text back with his edits and no second call', asyn
     expect([box.text, w.calls.length]).toEqual(['enhanced, edited', 1]);
 });
 
+test('after a send empties the box, ⏪ then ⏩ brings the enhanced text back', async ($, on) => {
+    const box = { text: 'draft' };
+    world(on, box);
+    const ui = await band($);
+    await ui.press({ key: 'enh:enhance' });
+    const enhanced = box.text;
+    box.text = '';
+    await ui.press({ key: 'enh:prev' });
+    await ui.press({ key: 'enh:new' });
+    expect([box.text, ['', 'draft'].includes(enhanced)]).toEqual([
+        enhanced,
+        false,
+    ]);
+});
+
 test('enhance again makes exactly one more call', async ($, on) => {
     const box = { text: 'draft' };
     const w = world(on, box);

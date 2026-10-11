@@ -383,7 +383,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ prev and new swap back with no call
   - given he pressed enhance
   - when he presses `⏪`, then `⏩`
-  - then prev puts back his own text exactly as he typed it, and new brings the enhanced text back with any edits he made to it; a second `enhance` makes exactly one more call
+  - then prev puts back his own text exactly as he typed it, and new brings the enhanced text back with any edits he made to it, and an emptied box (a sent prompt) is never taken for an edit; a second `enhance` makes exactly one more call
   - 📌 on the desktop a fill drops a trailing newline (FRM-382 step 0), so «exactly» holds for any text that does not end in one
 - ✅ his typing wins
   - given enhance is running
