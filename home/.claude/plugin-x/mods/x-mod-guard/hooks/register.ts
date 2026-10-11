@@ -452,6 +452,34 @@ async function markSeen($: EngineInterface, path: string) {
     }
 }
 
+// the disk facts the pure rules need, looked up in one round: each rule names the paths it asks about, this answers
+// them; a rule that needs a new fact adds its question here and its field to Context
+async function lookUp(
+    $: EngineInterface,
+    command: string,
+    cwd: string,
+    ctx: Context,
+): Promise<Context> {
+    const missing = new Set<string>();
+    for (const path of addedPaths(command, cwd, ctx))
+        if (!(await $.fs.exists(path))) missing.add(path);
+    const kinds: NonNullable<Context['kinds']> = new Map();
+    for (const path of overwrittenPaths(command, cwd, ctx))
+        if (await $.fs.exists(path))
+            kinds.set(path, (await $.fs.stat(path)).kind);
+    const cleanTrees = new Set<string>();
+    for (const tree of removedTrees(command, cwd, ctx))
+        if (await isCleanTree($, tree)) cleanTrees.add(tree);
+    const briefs = new Map<string, Brief>();
+    for (const path of briefPaths(command, cwd, ctx))
+        if (await $.fs.exists(path))
+            briefs.set(path, await readBrief($, path, ctx.home));
+    const manifestDirs = new Set<string>();
+    for (const dir of installDirs(command, cwd, ctx))
+        if (await isManifestChanged($, dir)) manifestDirs.add(dir);
+    return { briefs, cleanTrees, kinds, manifestDirs, missing };
+}
+
 export const register: Register = (on) => {
     // a Monitor's command is a shell command too
     on('tool.call', { tool: /^(Bash|Monitor)$/ }, async ($, e, next) => {
@@ -469,30 +497,9 @@ export const register: Register = (on) => {
             isCclio: isUnder(root, `${home}/frame/cclio`),
             jobDir: await $.env.get('CLAUDE_JOB_DIR'),
         };
-        const missing = new Set<string>();
-        for (const path of addedPaths(command, cwd, ctx))
-            if (!(await $.fs.exists(path))) missing.add(path);
-        const kinds: NonNullable<Context['kinds']> = new Map();
-        for (const path of overwrittenPaths(command, cwd, ctx))
-            if (await $.fs.exists(path))
-                kinds.set(path, (await $.fs.stat(path)).kind);
-        const cleanTrees = new Set<string>();
-        for (const tree of removedTrees(command, cwd, ctx))
-            if (await isCleanTree($, tree)) cleanTrees.add(tree);
-        const briefs = new Map<string, Brief>();
-        for (const path of briefPaths(command, cwd, ctx))
-            if (await $.fs.exists(path))
-                briefs.set(path, await readBrief($, path, ctx.home));
-        const manifestDirs = new Set<string>();
-        for (const dir of installDirs(command, cwd, ctx))
-            if (await isManifestChanged($, dir)) manifestDirs.add(dir);
         const verdict = check(command, cwd, {
             ...ctx,
-            briefs,
-            cleanTrees,
-            kinds,
-            manifestDirs,
-            missing,
+            ...(await lookUp($, command, cwd, ctx)),
         });
         // a worktree session whose shell `cd`ed out (`cd ~/frame && …`) is refused for the wrong tree; the root still names its own
         const drift =
