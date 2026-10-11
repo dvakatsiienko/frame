@@ -154,6 +154,13 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 	}
 	for _, field := range []string{"priority", "estimate"} {
 		if value := given[field]; value != "" {
+			if field == "estimate" {
+				if i := slices.Index(sizes, strings.ToUpper(value)); i >= 0 {
+					value = strconv.Itoa(i + 1)
+				} else if _, err := strconv.ParseFloat(value, 64); err != nil {
+					return nil, usageFail(fmt.Sprintf("--estimate takes a size, %s, or a number — not %q", strings.Join(sizes, " · "), value), "x linear set --help")
+				}
+			}
 			number, err := strconv.ParseFloat(value, 64)
 			if err != nil || number < 0 || field == "priority" && (number > 4 || number != float64(int(number))) {
 				return nil, usageFail(fmt.Sprintf("--%s takes a number%s, not %q", field, map[string]string{"priority": " 0–4"}[field], value), "x linear set --help")

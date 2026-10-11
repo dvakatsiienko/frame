@@ -22,7 +22,8 @@ import (
 
 var ticketShape = regexp.MustCompile(`^[A-Z]+-\d+$`)
 
-// an agent acts as the cclio app, dima on his own terminal as himself; --as names anyone else
+// an agent acts as the cclio app, a member's session (its registry name is not 🦉 cclio) as the coder app, dima on his
+// own terminal as himself; --as names anyone else (FRM-399)
 func actorOf(flags Flags) (string, error) {
 	if named, _ := flags["as"].(string); named != "" {
 		if !slices.Contains(members, named) {
@@ -34,7 +35,50 @@ func actorOf(flags Flags) (string, error) {
 	if os.Getenv("CLAUDECODE") == "" && os.Getenv("AI_AGENT") == "" && term.IsTerminal(os.Stdin.Fd()) {
 		return "dima", nil
 	}
+	if name, ok := sessionName(); ok && strings.Join(strings.Fields(strings.ReplaceAll(name, "\u200d", " ")), "") != "🦉cclio" {
+		return "coder", nil
+	}
 	return "cclio", nil
+}
+
+// the calling session's registry name, by CLAUDE_CODE_SESSION_ID; X_SESSIONS points a test at a fixture registry, and
+// under X_TEST without it nothing is read, so no test meets a live session
+func sessionName() (string, bool) {
+	sid := os.Getenv("CLAUDE_CODE_SESSION_ID")
+	dir := os.Getenv("X_SESSIONS")
+	if dir == "" && os.Getenv("X_TEST") == "" {
+		if home, err := os.UserHomeDir(); err == nil {
+			dir = filepath.Join(home, ".claude/sessions")
+		}
+	}
+	if sid == "" || dir == "" {
+		return "", false
+	}
+	entries, _ := os.ReadDir(dir)
+	for _, entry := range entries {
+		raw, err := os.ReadFile(filepath.Join(dir, entry.Name()))
+		if err != nil || !strings.HasSuffix(entry.Name(), ".json") {
+			continue
+		}
+		var session struct {
+			SessionID string `json:"sessionId"`
+			Name      string `json:"name"`
+		}
+		if json.Unmarshal(raw, &session) == nil && session.SessionID == sid && session.Name != "" {
+			return session.Name, true
+		}
+	}
+	return "", false
+}
+
+// a ticket's size: linear stores the number, the fleet says the word (FRM-399)
+var sizes = []string{"XS", "S", "M"}
+
+func sizeWord(estimate *float64) string {
+	if estimate == nil || *estimate != float64(int(*estimate)) || *estimate < 1 || int(*estimate) > len(sizes) {
+		return ""
+	}
+	return sizes[int(*estimate)-1]
 }
 
 type gqlError struct {
@@ -197,6 +241,7 @@ type ticket struct {
 	StateType   string      `json:"stateType"`
 	Priority    int         `json:"priority"`
 	Estimate    *float64    `json:"estimate"`
+	Size        string      `json:"size,omitempty"`
 	Project     string      `json:"project,omitempty"`
 	Milestone   string      `json:"milestone,omitempty"`
 	Parent      *ticketRef  `json:"parent,omitempty"`
@@ -211,7 +256,7 @@ type ticket struct {
 
 func (raw rawIssue) ticket() ticket {
 	t := ticket{ID: raw.Identifier, Title: raw.Title, URL: raw.URL, State: raw.State.Name, StateType: raw.State.Type,
-		Priority: raw.Priority, Estimate: raw.Estimate, UpdatedAt: raw.UpdatedAt, Labels: []string{}, Children: []ticketRef{}}
+		Priority: raw.Priority, Estimate: raw.Estimate, Size: sizeWord(raw.Estimate), UpdatedAt: raw.UpdatedAt, Labels: []string{}, Children: []ticketRef{}}
 	if raw.Description != nil {
 		t.Description = *raw.Description
 	}
@@ -508,7 +553,9 @@ func cards(read []ticket, actor string) frame {
 		b.rows = append(b.rows, clip(head, w-lipgloss.Width(state)-1)+strings.Repeat(" ", gap)+state)
 
 		meta := []string{fmt.Sprintf("p%d", t.Priority)}
-		if t.Estimate != nil {
+		if t.Size != "" {
+			meta = append(meta, t.Size)
+		} else if t.Estimate != nil {
 			meta = append(meta, fmt.Sprintf("e%g", *t.Estimate))
 		}
 		for _, part := range []string{t.Project, t.Milestone} {

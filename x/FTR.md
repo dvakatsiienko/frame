@@ -308,6 +308,7 @@
   - given the ticket changed since the pull (a peer's edit, dima's words), then nothing is written: exit 1, and `next` pulls theirs beside yours and diffs the two
   - given no pull of that ticket, then nothing is written and `next` is the pull
 - ✅ `x linear set` updates a ticket by names, in one write
+  - given `--estimate XS|S|M` (1 · 2 · 3) or a number, then that estimate goes out; any other word is refused naming XS · S · M (FRM-399)
   - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate coder|cclio`, `--add-label`, `--remove-label` — names, never ids
   - when it runs
   - then one lookup resolves every name and one `issueUpdate` lands them all; the envelope prints the actor and each change as `field: old → new`
@@ -346,8 +347,9 @@
 - ✅ `x linear archive [--days 14]` retires closed tickets
   - given closed tickets (completed or canceled) untouched for `--days`
   - when it runs, then it prints the plan and exits 4; with `--apply`, one request archives them all and a capped page says «run again»
+- ⬜ a ticket's size prints as its word: `x linear read` carries `size` (XS · S · M) beside the estimate (FRM-399)
 - ✅ every `x linear` call acts as someone, and says who
-  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cw — anything without a terminal — then it acts as the cclio app; given dima's own terminal, as dima; `--as coder|cclio|dima` overrides
+  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cw — anything without a terminal — then it acts as the cclio app — but a session whose registry name is not 🦉 cclio (by `CLAUDE_CODE_SESSION_ID`) acts as the coder app (FRM-399); given dima's own terminal, as dima; `--as coder|cclio|dima` overrides
   - given linear rejects a cached app token (401), then x mints it again and retries once
   - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
 

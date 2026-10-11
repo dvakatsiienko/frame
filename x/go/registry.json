@@ -13,7 +13,7 @@
         {
             "example": "x linear read FRM-1 FRM-2 --comments",
             "gist": "tickets in native graphql: ids, states and labels resolve inside x",
-            "identity": "every verb acts as one member: an agent or a terminal-less caller as the cclio app, dima's terminal as dima, --as overrides; app tokens come from the keychain, dima's key from 1password (x as, keys.go)",
+            "identity": "every verb acts as one member: cclio's session or a terminal-less caller as the cclio app, any other agent session as the coder app, dima's terminal as dima, --as overrides; app tokens come from the keychain, dima's key from 1password (x as, keys.go)",
             "name": "linear",
             "rawDoor": "x linear api"
         },
@@ -422,7 +422,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -456,7 +456,7 @@
         {
             "flags": {
                 "as": {
-                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -507,7 +507,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -544,7 +544,7 @@
                     "value": "names"
                 },
                 "as": {
-                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -554,9 +554,9 @@
                     "value": "name"
                 },
                 "estimate": {
-                    "description": "the estimate, a number",
+                    "description": "the size, XS · S · M (1 · 2 · 3), or a number",
                     "type": "string",
-                    "value": "n"
+                    "value": "size"
                 },
                 "milestone": {
                     "description": "a milestone of the ticket's project (or of --project), by name",
@@ -614,7 +614,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 }
@@ -635,7 +635,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -661,7 +661,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -692,7 +692,7 @@
             ],
             "flags": {
                 "as": {
-                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
@@ -747,7 +747,7 @@
         {
             "flags": {
                 "as": {
-                    "description": "the member to act as; an agent defaults to cclio, dima's terminal to dima",
+                    "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
                 },
