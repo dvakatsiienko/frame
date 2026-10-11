@@ -1099,7 +1099,8 @@ export type BarRun = {
 };
 // the breathing (FRM-391), dima's pick C2 (2026-10-11 12:53, kept 13:01 over C): while a turn runs most lit cells spark
 // white-hot now and then and cool back through a slow afterglow, each on its own seeded period, so a few embers are always
-// cooling; the bars' length, hue and labels never change, and an idle bar stands still (no ticks, no GPU)
+// cooling; the bars' length, labels and values never change, a flash may tint a cell (dima's o55), and an idle bar stands
+// still (no ticks, no GPU)
 // dima 12:58 «speed 0.5»: 16 s, so a cell sparks every 3.2–8.8 s
 const BREATH_MS = 16000;
 // the spark's shape over its period: dark, a flash, a slow cool-down

@@ -206,6 +206,24 @@ test('a keep-hot ping turn never takes a tick', async ($, on) => {
     expect((r.context ?? []).join('\n')).not.toMatch(/accepted/);
 });
 
+test('a ping turn a reload kept in state still takes no tick', async ($, on) => {
+    world(on);
+    // a fresh module after a mid-turn reload: its own flag is the default, the ping turn lives on in $.state
+    let keptTurn: unknown;
+    on('state.get', (_$, e, next) =>
+        e.key === 'turn' && keptTurn
+            ? { value: { value: keptTurn, version: 1 } }
+            : next(e),
+    );
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    keptTurn = { afk: false, isBusy: true, isPinged: true, isUserTurn: false };
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).join('\n')).not.toMatch(/accepted/);
+});
+
 test('a joined ask draws no control while the turn runs', async ($, on) => {
     world(on);
     await start($);

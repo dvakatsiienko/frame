@@ -425,14 +425,14 @@ test('mid-turn the desktop bars carry their breathing, idle ones none', async ($
 test("the breathing keeps every bar's cells and colours", async ($, on) => {
     meters(on);
     await measure($, 39, 35);
-    const strip = (svg: string) =>
-        svg.replace(/<animate[^>]*\/>/g, '').replace(/><\/rect>/g, '/>');
-    const idle = await bandOn($, 'desktop', false);
-    const still = (await idle.findAll({ type: 'Svg' })).map((n) =>
-        String(n.props.source),
-    );
+    const svgs = async (ui: Awaited<ReturnType<typeof bandOn>>) =>
+        (await ui.findAll({ type: 'Svg' })).map((n) => String(n.props.source));
+    const withoutEmbers = (svg: string) =>
+        svg.replace(/<rect class="ember"[^>]*>.*?<\/rect>/g, '');
+    const breathing = await svgs(await bandOn($, 'desktop', true));
+    const still = await svgs(await bandOn($, 'desktop', false));
     expect(still.length).toBe(2);
-    expect(still.map(strip)).toEqual(still);
+    expect(breathing.map(withoutEmbers)).toEqual(still);
 });
 
 test('/board breathe keeps the bars breathing while idle, for refining the look', async ($, on) => {
