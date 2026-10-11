@@ -175,9 +175,11 @@ const NUDGE_AT = 3;
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 // a board card folded to its head row, per session (dima's o5, 17:16)
 const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
-// 🛼 lane (FRM-385): kept in the session's state and in a file under ~/.claude/shelf/lanes, so a compaction or a reload
-// reads it back whole; at most 5 plain items, each ≤60 chars, stale after 8 turns with nothing moved
-const LANE = { key: 'lane', plugin: 'x-mod-stash' } as const;
+// 🛼 lane (FRM-385): the fleet's lanes in one shelf file, written only by the session the registry names 🦉 cclio, read by
+// every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
+const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
+const LANE_OWNER = '🦉 cclio';
+const LANE_ROLES = ['coder', 'verifier'] as const;
 const LANE_MAX = 5;
 const LANE_TEXT_MAX = 60;
 const LANE_STALE = 8;
@@ -219,7 +221,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a ${CHANGED_MARK} mark before its id.`,
     `op assume, texts: choices you made without asking that would cost a redo if wrong, at most ${ASSUMED_MAX} a turn and ≤${ORBIT_TEXT_MAX} chars each; never routine ones. dima's 🛎️ clears one, ↩️ sends it back with his note.`,
     `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone and ≤${ORBIT_TEXT_MAX} chars; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
-    `op lane, title, items [{ text, ticket, done }], current: the lane you run, its whole scope as 1–${LANE_MAX} items dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; current is the index we are on, and moving it past an item marks that item done. call it again at every member's done and at turn end. a finished lane stays on the board, all done, until you end it with op lane end: true at the next siesta. nothing moved for ${LANE_STALE} turns reads stale.`,
+    `op lane — ${LANE_OWNER} only, every board draws it: act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
 let selfId: string | undefined;
@@ -596,29 +598,124 @@ function overCap(op: string, texts: string[]) {
           };
 }
 
-// the lane op: validate, then keep the pointer honest — every item before it done, never on a done one
+// the lane ops on the fleet's lanes: validate, then keep each pointer honest — every step before it done, never on a done one
 export function laneOp(
-    prior: StashLane | null,
+    lanes: StashLane[],
     input: Record<string, unknown>,
     turns: number,
     now: number,
-): { lane: StashLane | null; result: string } | { deny: string } {
-    if (input.end === true)
-        return prior
-            ? { lane: null, result: `lane «${prior.title}» ended` }
-            : { deny: 'orbit lane: no lane is running to end' };
+): { lanes: StashLane[]; result: string } | { deny: string } {
+    const act = input.act;
+    if (act === 'create') return laneCreate(lanes, input, turns, now);
+    const id = oneLine(input.id);
+    const lane = lanes.find((l) => l.id === id && !l.endedAt);
+    if (act !== 'link' && act !== 'step' && act !== 'end')
+        return { deny: 'orbit lane: act is create, link, step or end' };
+    if (!lane)
+        return {
+            deny: `orbit lane: no live lane «${id}»; live: ${
+                lanes
+                    .filter((l) => !l.endedAt)
+                    .map((l) => l.id)
+                    .join(', ') || 'none'
+            }`,
+        };
+    const done = lane.items.filter((x) => x.isDone).length;
+    const put = (next: StashLane, result: string) => ({
+        lanes: lanes.map((l) => (l.id === lane.id ? next : l)),
+        result,
+    });
+    if (act === 'end')
+        return put(
+            {
+                ...lane,
+                endedAt: now,
+                history: [
+                    ...lane.history,
+                    { act, at: now, current: lane.current, done },
+                ],
+            },
+            `lane ${lane.id} «${lane.title}» ended`,
+        );
+    if (act === 'link') {
+        const session = oneLine(input.session);
+        const role = input.role;
+        if (!session)
+            return { deny: 'orbit lane: link names the member session id' };
+        if (role !== 'coder' && role !== 'verifier')
+            return { deny: 'orbit lane: role is coder or verifier' };
+        return put(
+            {
+                ...lane,
+                history: [
+                    ...lane.history,
+                    {
+                        act: `link ${role}`,
+                        at: now,
+                        current: lane.current,
+                        done,
+                    },
+                ],
+                members: { ...lane.members, [role]: session },
+            },
+            `lane ${lane.id}: ${role} is ${session.slice(0, 8)}`,
+        );
+    }
+    const at = input.current;
+    if (
+        typeof at !== 'number' ||
+        !Number.isInteger(at) ||
+        at < 0 ||
+        at > lane.items.length
+    )
+        return {
+            deny: `orbit lane: current is a step from 0 to ${lane.items.length}`,
+        };
+    const stepped = pointed(lane.items, at);
+    const isMoved = stepped.current !== lane.current || stepped.done !== done;
+    return put(
+        {
+            ...lane,
+            current: stepped.current,
+            history: isMoved
+                ? [
+                      ...lane.history,
+                      {
+                          act,
+                          at: now,
+                          current: stepped.current,
+                          done: stepped.done,
+                      },
+                  ]
+                : lane.history,
+            items: stepped.items,
+            movedAt: isMoved ? turns : lane.movedAt,
+            ...(stepped.current === lane.current && lane.note
+                ? { note: lane.note }
+                : { note: undefined }),
+        },
+        laneSummary(lane.id, lane.title, stepped),
+    );
+}
+
+function laneCreate(
+    lanes: StashLane[],
+    input: Record<string, unknown>,
+    turns: number,
+    now: number,
+): { lanes: StashLane[]; result: string } | { deny: string } {
     const title = oneLine(input.title);
     if (!title) return { deny: 'orbit lane: a title names the lane' };
     const raw = Array.isArray(input.items) ? input.items : [];
     if (raw.length < 1 || raw.length > LANE_MAX)
         return {
-            deny: `orbit lane: 1 to ${LANE_MAX} items, got ${raw.length}`,
+            deny: `orbit lane: 1 to ${LANE_MAX} steps, got ${raw.length}`,
         };
     const items: LaneItem[] = [];
     for (const item of raw) {
         const v = (item ?? {}) as Record<string, unknown>;
         const text = oneLine(v.text);
-        if (!text) return { deny: 'orbit lane: every item needs its text' };
+        if (!text) return { deny: 'orbit lane: every step needs its text' };
         if ([...text].length > LANE_TEXT_MAX)
             return {
                 deny: `orbit lane: «${[...text].slice(0, 30).join('')}…» is ${[...text].length} chars; keep it ≤${LANE_TEXT_MAX}, plain words`,
@@ -634,74 +731,99 @@ export function laneOp(
             ...(ticket ? { ticket } : {}),
         });
     }
-    const at = input.current;
-    if (
-        typeof at !== 'number' ||
-        !Number.isInteger(at) ||
-        at < 0 ||
-        at >= items.length
-    )
-        return {
-            deny: `orbit lane: current is an index from 0 to ${items.length - 1}`,
-        };
-    // the pointer moves past what is done, and everything behind it is done
+    const id = `l${1 + Math.max(0, ...lanes.map((l) => Number(l.id.slice(1)) || 0))}`;
+    const stepped = pointed(items, 0);
+    const lane: StashLane = {
+        current: stepped.current,
+        history: [
+            {
+                act: 'create',
+                at: now,
+                current: stepped.current,
+                done: stepped.done,
+            },
+        ],
+        id,
+        items: stepped.items,
+        members: {},
+        movedAt: turns,
+        title,
+    };
+    return {
+        lanes: [...lanes, lane],
+        result: laneSummary(id, title, stepped),
+    };
+}
+
+// the pointer moves past what is done, and everything behind it is done
+function pointed(items: LaneItem[], at: number) {
     let current = at;
     while (current < items.length && items[current]?.isDone) current++;
     const marked = items.map((x, i) => ({
         ...x,
         isDone: x.isDone || i < current,
     }));
-    const doneCount = marked.filter((x) => x.isDone).length;
-    const isSame = prior?.title === title;
-    const wasDone = isSame ? prior.items.filter((x) => x.isDone).length : -1;
-    const isMoved =
-        !isSame || prior.current !== current || wasDone !== doneCount;
-    const isFinished = current >= marked.length;
-    const lane: StashLane = {
-        current,
-        history: [
-            ...(isSame ? prior.history : []),
-            ...(isMoved ? [{ at: now, current, done: doneCount }] : []),
-        ],
-        items: marked,
-        movedAt: isMoved ? turns : prior.movedAt,
-        title,
-        ...(isSame && prior.current === current && prior.note
-            ? { note: prior.note }
-            : {}),
-    };
     return {
-        lane,
-        result: isFinished
-            ? `lane «${title}» done: it stays on the board, all done, until op lane with end: true at the next siesta`
-            : `lane set: ${doneCount} of ${marked.length} done, on «${marked[current]?.text}»`,
+        current,
+        done: marked.filter((x) => x.isDone).length,
+        items: marked,
     };
 }
 
-const laneFile = (home: string | undefined, sid: string) =>
-    `${home}/.claude/shelf/lanes/${sid}.json`;
-
-// the state the board reads, and the file a compaction or a reload reads back; an ended lane's file records the end
-async function saveLane(
-    $: EngineInterface,
-    lane: StashLane | null,
-    ended?: StashLane,
+function laneSummary(
+    id: string,
+    title: string,
+    { current, done, items }: ReturnType<typeof pointed>,
 ) {
-    await $.state.set(LANE, lane).catch(() => undefined);
-    const sid = await currentId($);
-    if (!sid) return;
+    return current >= items.length
+        ? `lane ${id} «${title}» done: it stays on every board, all done, until act end at the next siesta`
+        : `lane ${id} «${title}»: ${done} of ${items.length} done, on «${items[current]?.text}»`;
+}
+
+const lanesFile = (home: string | undefined) =>
+    `${home}/.claude/shelf/lanes.json`;
+
+// the shelf file as it stands: every lane, ended ones kept as the record
+async function readLanes($: EngineInterface): Promise<StashLane[]> {
     const home = await $.env.get('HOME').catch(() => undefined);
-    const body =
-        lane ?? (ended ? { ...ended, endedAt: await $.clock.now() } : null);
-    if (!body) return;
+    const text = await $.fs.read(lanesFile(home)).catch(() => undefined);
+    try {
+        const body = text ? JSON.parse(text) : undefined;
+        return Array.isArray(body?.lanes) ? (body.lanes as StashLane[]) : [];
+    } catch {
+        return [];
+    }
+}
+
+async function writeLanes($: EngineInterface, lanes: StashLane[]) {
+    const home = await $.env.get('HOME').catch(() => undefined);
     await $.fs
-        .write(laneFile(home, sid), `${JSON.stringify(body, null, 2)}\n`)
+        .write(lanesFile(home), `${JSON.stringify({ lanes }, null, 2)}\n`)
         .catch((err) =>
             $.ui.log(
-                `x-mod-stash: the lane file was not kept: ${errorText(err)}`,
+                `x-mod-stash: the lanes file was not kept: ${errorText(err)}`,
             ),
         );
+    await showLanes($, lanes);
 }
+
+// the live lanes into this session's state, only when they changed: a write redraws the board
+let lanesShown = '';
+async function showLanes($: EngineInterface, lanes: StashLane[]) {
+    const live = lanes.filter((l) => !l.endedAt);
+    const text = JSON.stringify(live);
+    if (text === lanesShown) return;
+    lanesShown = text;
+    await $.state.set(LANES, live).catch(() => undefined);
+}
+
+// the registry names the coordinator, so a handoff's new 🦉 cclio keeps the lanes
+async function isLaneOwner($: EngineInterface) {
+    const name = await sessionName($);
+    return name !== undefined && bare(name) === bare(LANE_OWNER);
+}
+
+const bare = (name: string) => name.replaceAll(/[\s\u200d]/g, '');
 
 function orbitOp(
     o: StashOrbit,
@@ -1169,6 +1291,8 @@ let compactTrail: number[] = [];
 // writes the view to $.state when it changed; every site that reads it while drawing redraws
 async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);
+    // a lane cclio moved shows on this board at its next poll
+    if (isBoardOpen) await showLanes($, await readLanes($));
     if (isBoardOpen) {
         // each board write redraws the pane, and the desktop then rebuilds the bars' svg in the band (a blink and a
         // restarted breath, FRM-354): it writes only when what the board shows changes — a row's facts, or a span such as
@@ -1800,26 +1924,18 @@ export const register: Register = (on) => {
             view: (await $.state.get(VIEW)).value,
         };
         orbit = kept.orbit ?? EMPTY_ORBIT;
-        // a compaction keeps the state, a restart does not: the lane reads back from its file unless it ended
-        if (
-            !(await $.state.get(LANE).catch(() => undefined))?.value &&
-            selfId
-        ) {
-            const home = await $.env.get('HOME').catch(() => undefined);
-            const text = await $.fs
-                .read(laneFile(home, selfId))
-                .catch(() => undefined);
-            try {
-                const kept = text ? JSON.parse(text) : undefined;
-                if (kept?.title && Array.isArray(kept.items) && !kept.endedAt)
-                    await $.state.set(LANE, kept as StashLane);
-            } catch {}
-        }
+        // every board reads the fleet's lanes from the shelf file: at a start, a reload, and on each poll
+        lanesShown = '';
+        await showLanes($, await readLanes($));
         await $.tool
             .register({
                 description: ORBIT_ABOUT,
                 inputSchema: {
                     properties: {
+                        act: {
+                            enum: ['create', 'link', 'step', 'end'],
+                            type: 'string',
+                        },
                         asks: {
                             items: {
                                 properties: {
@@ -1833,7 +1949,6 @@ export const register: Register = (on) => {
                             type: 'array',
                         },
                         current: { type: 'number' },
-                        end: { type: 'boolean' },
                         id: { type: 'string' },
                         ids: { items: { type: 'string' }, type: 'array' },
                         items: {
@@ -1861,6 +1976,8 @@ export const register: Register = (on) => {
                             type: 'string',
                         },
                         pick: { type: 'string' },
+                        role: { enum: [...LANE_ROLES], type: 'string' },
+                        session: { type: 'string' },
                         text: { type: 'string' },
                         texts: { items: { type: 'string' }, type: 'array' },
                         title: { type: 'string' },
@@ -1971,18 +2088,29 @@ export const register: Register = (on) => {
             : orbitReminder(orbit);
         const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
         isPrimed = true;
-        // the lane: stale after LANE_STALE turns with nothing moved; dima's note on the current item rides his prompt once
-        const lane = (await $.state.get(LANE)).value ?? null;
-        const laneAge = lane ? orbit.turns - lane.movedAt : 0;
-        const laneStale =
-            lane && laneAge >= LANE_STALE
-                ? `lane «${lane.title}» moved nothing for ${laneAge} turns, stale: move its pointer or end it through ${ORBIT_TOOL} op lane.`
-                : undefined;
-        const laneNote =
-            isUserTurn && lane?.note
-                ? `lane note from dima on «${lane.items[lane.current]?.text ?? lane.title}»: «${lane.note}»`
-                : undefined;
-        if (laneNote && lane) await saveLane($, { ...lane, note: undefined });
+        // the lanes speak only in cclio's thread: a lane stale after LANE_STALE of her turns, and dima's note on a current step
+        // riding her next prompt once, from any board
+        const isOwner = await isLaneOwner($);
+        const lanes = isOwner ? await readLanes($) : [];
+        const live = lanes.filter((l) => !l.endedAt);
+        const laneStale = live
+            .filter((l) => orbit.turns - l.movedAt >= LANE_STALE)
+            .map(
+                (l) =>
+                    `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op lane.`,
+            );
+        const noted = isUserTurn ? live.filter((l) => l.note) : [];
+        const laneNotes = noted.map(
+            (l) =>
+                `lane note from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${l.note}»`,
+        );
+        if (noted.length)
+            await writeLanes(
+                $,
+                lanes.map((l) =>
+                    l.note && !l.endedAt ? { ...l, note: undefined } : l,
+                ),
+            );
         return next({
             ...e,
             context: [
@@ -1993,8 +2121,8 @@ export const register: Register = (on) => {
                 ...(wrong.length ? [wrongText(wrong)] : []),
                 ...(isFirst ? [PHASES_START] : []),
                 ...(reminder ? [reminder] : []),
-                ...(laneStale ? [laneStale] : []),
-                ...(laneNote ? [laneNote] : []),
+                ...laneStale,
+                ...laneNotes,
                 ...(tickets ? [tickets] : []),
             ],
         });
@@ -2729,81 +2857,88 @@ export const register: Register = (on) => {
                 ) : null}
             </Box>
         );
-        // 🛼 lane (FRM-385): the whole scope in order, done items kept and marked, the current one «← we are here»
-        const lane = (await $.state.get(LANE)).value ?? null;
-        const laneJSX =
-            lane && isPartOn('stash.lane') ? (
-                <Box
-                    borderColor={cardBorder(e.surface)}
-                    borderStyle='round'
-                    flexDirection='column'
-                    key='lane'
-                    marginTop={1}
-                    paddingX={1}
-                    paddingY={0.5}
-                    rowGap={LINE_GAP}>
-                    <Box flexDirection='row' justifyContent='space-between'>
-                        <Text bold>{`🛼 ${lane.title}`}</Text>
-                        {foldJSX('lane')}
-                    </Box>
-                    {folds.lane
-                        ? null
-                        : lane.items.map((item, i) => (
-                              <Box
-                                  alignItems='center'
-                                  flexDirection='row'
-                                  gap={1}
-                                  // biome-ignore lint/suspicious/noArrayIndexKey: a lane item's place is its identity
-                                  key={`lane:${i}`}>
-                                  <Text
-                                      bold={i === lane.current}
-                                      dimColor={item.isDone}>
-                                      {item.isDone
-                                          ? '✅'
-                                          : i === lane.current
-                                            ? '🛼'
-                                            : '⬜'}{' '}
-                                      {item.text}
-                                  </Text>
-                                  {item.ticket ? (
-                                      <Link
-                                          href={`https://linear.app/x-com/issue/${item.ticket}`}
-                                          key={`lane:t:${i}`}>
-                                          {item.ticket}
-                                      </Link>
-                                  ) : null}
-                                  {i === lane.current ? (
-                                      <Text bold>← we are here</Text>
-                                  ) : null}
-                                  {i === lane.current && Input ? (
-                                      <Box flexShrink={1} minWidth={0}>
-                                          <Input
-                                              key='lane:note'
-                                              onInput={(value: string) =>
-                                                  void $.state.set(LANE, {
-                                                      ...lane,
-                                                      note:
-                                                          value.trim() ||
-                                                          undefined,
-                                                  })
-                                              }
-                                              onSubmit={(value: string) =>
-                                                  void $.state.set(LANE, {
-                                                      ...lane,
-                                                      note:
-                                                          value.trim() ||
-                                                          undefined,
-                                                  })
-                                              }
-                                              placeholder='note'
-                                              value={lane.note ?? ''}
-                                          />
-                                      </Box>
-                                  ) : null}
-                              </Box>
-                          ))}
-                </Box>
-            ) : null;
+        // 🛼 lanes (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
+        // current one «← we are here»; a note on it reaches cclio's next prompt, whichever board took it
+        const lanes = (await $.state.get(LANES)).value ?? [];
+        const handleLaneNote = async (id: string, value: string) => {
+            const all = await readLanes($);
+            await writeLanes(
+                $,
+                all.map((l) =>
+                    l.id === id ? { ...l, note: value.trim() || undefined } : l,
+                ),
+            );
+        };
+        const laneJSX = isPartOn('stash.lane')
+            ? lanes.map((lane) => (
+                  <Box
+                      borderColor={cardBorder(e.surface)}
+                      borderStyle='round'
+                      flexDirection='column'
+                      key={`lane:${lane.id}`}
+                      marginTop={1}
+                      paddingX={1}
+                      paddingY={0.5}
+                      rowGap={LINE_GAP}>
+                      <Box flexDirection='row' justifyContent='space-between'>
+                          <Text bold>{`🛼 ${lane.title}`}</Text>
+                          {foldJSX(`lane:${lane.id}`)}
+                      </Box>
+                      {folds[`lane:${lane.id}`]
+                          ? null
+                          : lane.items.map((item, i) => (
+                                <Box
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    gap={1}
+                                    // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
+                                    key={`lane:${lane.id}:${i}`}>
+                                    <Text
+                                        bold={i === lane.current}
+                                        dimColor={item.isDone}>
+                                        {item.isDone
+                                            ? '✅'
+                                            : i === lane.current
+                                              ? '🛼'
+                                              : '⬜'}{' '}
+                                        {item.text}
+                                    </Text>
+                                    {item.ticket ? (
+                                        <Link
+                                            href={`https://linear.app/x-com/issue/${item.ticket}`}
+                                            key={`lane:${lane.id}:t:${i}`}>
+                                            {item.ticket}
+                                        </Link>
+                                    ) : null}
+                                    {i === lane.current ? (
+                                        <Text bold>← we are here</Text>
+                                    ) : null}
+                                    {i === lane.current && Input ? (
+                                        <Box flexShrink={1} minWidth={0}>
+                                            <Input
+                                                key={`lane:${lane.id}:note`}
+                                                onInput={(value: string) =>
+                                                    void handleLaneNote(
+                                                        lane.id,
+                                                        value,
+                                                    )
+                                                }
+                                                onSubmit={(value: string) =>
+                                                    void handleLaneNote(
+                                                        lane.id,
+                                                        value,
+                                                    )
+                                                }
+                                                placeholder='note'
+                                                value={lane.note ?? ''}
+                                            />
+                                        </Box>
+                                    ) : null}
+                                </Box>
+                            ))}
+                  </Box>
+              ))
+            : null;
         // the phases stick to the board's bottom: a docked board fills its rows and a gap grows above them (dima, 11:07)
         const phasesJSX = o.plan
             ? [
@@ -3103,19 +3238,18 @@ export const register: Register = (on) => {
             (e.tool as string) === ORBIT_TOOL &&
             (e as Record<string, unknown>).op === 'lane'
         ) {
-            const prior = (await $.state.get(LANE)).value ?? null;
+            if (!(await isLaneOwner($)))
+                return {
+                    deny: `orbit lane: only ${LANE_OWNER} writes the lanes; every board shows them`,
+                };
             const op = laneOp(
-                prior,
+                await readLanes($),
                 e as Record<string, unknown>,
                 (await currentOrbit($)).turns,
                 await $.clock.now(),
             );
             if ('deny' in op) return { deny: op.deny };
-            await saveLane(
-                $,
-                op.lane,
-                op.lane ? undefined : (prior ?? undefined),
-            );
+            await writeLanes($, op.lanes);
             return { result: op.result } as never;
         }
         if ((e.tool as string) === ORBIT_TOOL) {

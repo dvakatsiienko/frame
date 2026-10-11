@@ -105,18 +105,24 @@ export type StashOrbit = {
     plan?: { lines: string[]; at: number };
 };
 
-// 🛼 lane (FRM-385): a running lane's whole scope, ≤5 plain items, its pointer and what moved it; done ones stay listed
+// 🛼 lane (FRM-385): one live lane of the fleet, kept in one shelf file every board reads and only cclio writes;
+// ≤5 plain steps, the pointer and what moved it; done steps stay listed
 export type LaneItem = { text: string; ticket?: string; isDone: boolean };
+export type LaneRole = 'coder' | 'verifier';
 export type StashLane = {
+    id: string;
     title: string;
     items: LaneItem[];
-    // the item we are on; items.length once every item is done
+    // the step we are on; items.length once every step is done
     current: number;
-    // orbit's turn count when the pointer or a done flag last moved
+    // cclio's orbit turn count when the pointer or a done flag last moved
     movedAt: number;
-    // dima's note on the current item, joining his next prompt once
+    // the linked members' session ids; a re-link of a role replaces the old one
+    members: Partial<Record<LaneRole, string>>;
+    // dima's note on the current step, joining cclio's next prompt once
     note?: string;
-    history: { at: number; current: number; done: number }[];
+    history: { at: number; act: string; current: number; done: number }[];
+    endedAt?: number;
 };
 
 // the prompt enhancer: the box at the last press and the enhanced text as last seen (his edits kept), the call's
@@ -143,8 +149,8 @@ declare module 'claude-code' {
             // dima is on mobile: the reminder asks for the asks fence instead of orbit
             mobile: boolean;
             enhancer: StashEnhancer;
-            // the running lane, null once it ended or before one is set
-            lane: StashLane | null;
+            // the fleet's live lanes as this session last read the shelf file
+            lanes: StashLane[];
             // the board's cards folded to their head row, by card: sessions, orbit, phases
             folds: Record<string, boolean>;
         };

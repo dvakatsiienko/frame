@@ -20,6 +20,14 @@ _Avoid_: asks box, wfyb, inbox
 The session's next moves, at most 5, kept live in the board by the session itself; each leads with a moon that fills by nearness, 🌕 now to 🌑 last.
 _Avoid_: planned actions, next block, todo
 
+**Lane** 🛼:
+One piece of fleet work cclio runs, its whole scope as 1–5 plain steps, with its linked members (a coder, a verifier); kept in one shelf file, written only by 🦉 cclio, drawn as a card on every board until her siesta ends it.
+_Avoid_: lane tracker, project, run
+
+**Step**:
+One of a lane's 1–5 plain-word items; done steps stay listed, the current one is «← we are here».
+_Avoid_: item, task, phase
+
 **Afk**:
 Dima's away switch; while on, every session's prompt carries an away note.
 _Avoid_: away mode, shift presence
@@ -82,7 +90,7 @@ The block a reply ends with in mobile mode: the line «⏳ waiting on your word:
 _Avoid_: ⏳ block, wfyb
 
 **Wait**:
-What a session is blocked on, from the `🔭` line that ends its last reply; on the board it is a row's second line, absent when the reply has none.
+What a session is blocked on, from the `🔭` line that ends its last reply; on the board it sits right of the row's name, absent when the reply has none.
 _Avoid_: blocker, status, watch
 
 **Fleet word**:

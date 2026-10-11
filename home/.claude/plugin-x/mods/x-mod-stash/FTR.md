@@ -488,22 +488,30 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when the next prompt goes
   - then the board marks them stale and the session's reminder says so in one line
 
-## /board — 🛼 lane (FRM-385)
+## /board — 🛼 lanes (FRM-385)
 
-- ⬜ a running lane shows its whole scope on the board
-  - given a session calls orbit op `lane` with a title, 1–5 items (plain text, an optional ticket id, a done flag) and a current index
-  - then a `🛼 <title>` card draws between 🪐 orbit and 🌔 phases: every item in order, a done one `✅` and dim but still listed, the current one `🛼`, bold and «← we are here», the rest `⬜`; a ticket id is a link into linear; one note box sits on the current item, and its text joins dima's next prompt once, model-only
-  - and a 6th item, an empty list, an index out of range, an item over 60 chars or a malformed ticket id is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
-  - and moving the index past an item marks it done; the pointer never sits behind or on a done item
-  - and the card folds with its own `📂` like the others, and its `🛼 lane` 🎛️ switch hides it (exit 4c)
-- ⬜ the lane survives a reload, a compaction and a restart, and ends by itself
-  - given a lane, then it lives in the session's state and in `~/.claude/shelf/lanes/<session>.json`, every pointer move in its history with the time; a fresh start reads it back unless the file records an end
-  - when the last item checks, then the finished lane stays on the board, all done, across turn ends, until op `lane` with `end: true` — cclio's next siesta — takes it off and the file records `endedAt`
+- ⬜ every board draws the fleet's live lanes
+  - given 🦉 cclio calls orbit op `lane` act `create` with a title and 1–5 steps (plain text, an optional ticket id, a done flag)
+  - then every session's board draws a `🛼 <title>` card between 🪐 orbit and 🌔 phases: every step in order, a done one `✅` and dim but still listed, the current one `🛼`, bold and «← we are here», the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
+  - and one note box sits on the current step, on any board; its text joins cclio's next prompt once, model-only, and no other session's
+  - and nothing of a lane enters a member's model context
+  - and each card folds with its own `📂`, and the `🛼 lane` 🎛️ switch hides every lane card
+- ⬜ only cclio writes the lanes
+  - given any session calls op `lane`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create
+  - and act `link` with a session id and a role (coder, verifier) links a member; a second link of a role replaces the first
+  - and act `step` with a step index marks every step before it done; the pointer never sits on a done step; the step count marks the lane finished
+  - and a 6th step, an empty list, a step over 60 chars, a malformed ticket id, an unknown lane id or a step out of range is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
+- ⬜ a lane survives a reload, a compaction and a restart, and ends at cclio's siesta
+  - given a lane, then it lives in `~/.claude/shelf/lanes.json`, every act in its history with the time; a fresh start and each poll of an open board read it back, an ended lane never comes back
+  - when the last step checks, then the finished lane stays on every board, all done, across turn ends, until act `end` — cclio's next siesta — takes it off and the file records `endedAt`
   - decision: no auto-end — dima's o57 over the critic's «gone one turn later» (dima, 18:18)
-- ⬜ a lane that moved nothing for 8 turns reads stale
-  - given the pointer and the done flags unmoved for 8 turns, then dima's next prompt carries «lane «…» moved nothing for n turns, stale»; a re-call that moves nothing keeps the count; with no lane, no lane text
-  - decision: 8, not phases' 3 — a lane item spans many turns (the ticket's exit 3)
-- 🧭 the ccrow strip (exits 0, 4, 4b) waits for dima's look at the lane card — one screen first (the ticket's decided)
+  - decision: global, one file, cclio its only writer — dima keeps only her thread open and wants every lane there (grill 2, 2026-10-11)
+- ⬜ a lane that moved nothing for 8 of cclio's turns reads stale
+  - given the pointer and the done flags unmoved for 8 of cclio's turns, then her next prompt carries «lane <id> «…» moved nothing for n of your turns, stale»; a step that moves nothing keeps the count; no other session nags; with no lane, no lane text
+  - decision: 8, not phases' 3 — a lane step spans many turns
+- 🧭 a lane card holds its members' asks (exit 3)
+  - given a lane with a linked coder and verifier, then a coder subcard sits above a verifier subcard, each folded with its open-ask count («🔧 2 asks»); unfolded, each row is the member's own ask; a tick or note there lands in that member's orbit and joins its running turn, and an idle member gets one wake carrying all its marks at dima's next prompt in any thread
+- 🧭 an ask's pick and its buttons share one row (exit 4)
 
 ## spawn hints — the board's name flag only
 
