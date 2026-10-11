@@ -1,4 +1,6 @@
 ---
+status: adopted
+until: 2026-09-29
 dies-when: a verdict line lands (adopted or dropped) after three real uses
 ---
 

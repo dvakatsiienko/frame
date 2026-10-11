@@ -1,4 +1,6 @@
 ---
+status: live
+until: 2026-10-14
 dies-when: adhd is adopted as a user-only skill or dropped after the test-drive window (2026-10-14)
 ---
 
@@ -50,3 +52,7 @@ Ticket: none
 - **r3 · 2026-10-02 · name the design comms app (`design-*`)** — the cli door, 5 frames × 3 ideas × top 3, 55 s, 5h +1 % (4 → 5). baseline (plain opus, same session, written first): ballot · loupe · forge · pins, pick `design-loupe`. adhd shortlist: ★ `design-parley` · `design-ring` · `design-pin`; traps: `design-asks` (too literal), `mailbox` (misses the spatial part), `latch` (binary, not a queue). a/b winner: baseline, blind · grade: baseline 7–8.5 per name, adhd 6 flat · shipped: `design-loupe` (the baseline pick) · note: adhd found the literal ring angle the baseline missed, but no name above the baseline's best
 - 2026-10-05 · naming the fleet cli (real ask) · cli door, 5 frames × 6 ideas, concurrency 2 (the default 4 died: «Claude Code process exited with code 1», a tiny probe passed) · 75 s · 5h window 21 → 22 % · 24 ideas, 13 traps · blind A/B: A = adhd (tap, nod, cil, via, kit), B = opus baseline (x, bosun, rig, tack, mate, crew) · dima liked from both: x, tap, nod, cil (+ his own xc, nd) — no single pick yet, no grade
 - 2026-10-05 · naming the fleet's delivery flow (real ask, wayfinder) · skill door (dima typed `/adhd:adhd`), 5 sonnet frames × 6 ideas in parallel (game design · logistics · 10-year-old · biology · remove-the-assumption), each 7–18 s; scoring + clusters + the top-3 deepen done in-context (a naming ask; the deepen agents skipped — calibration) · 30 ideas, 5 traps (stage, dock, digest, myelin, pass) · baseline (plain opus, written first, seen by dima): runway · relay · loom · track · tempo · kiln · forge · groove · shipyard → pick loom or track · adhd top 3: porch · arc ★ · bench · not blind (dima saw the baseline before the run) · dima's pick: neither — «fleet flow» stays for now («did not liked neither»); arc ★ was adhd's, loom/track mine
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 adhd test drive, extended one week to 2026-10-14 (dima 10-06: «outputs were meh») — every real naming / design-fork / fuzzy-bug ask offers `/adhd:adhd` beside a plain opus baseline, blind a/b to dima, one line per round in `docs/test-drive/adhd.md` (the protocol is there). any real case counts from the weekly reset on — candidates named so far: the `crew-designer` four phases + the 10 atelier looks, the shift-model «what's missing» pass, a fuzzy bug with no known cause (BYT-88 refetch, the barrel-probe false red). not bytes naming (dima: the frame rename settles first). on 10-14: adopt user-only or uninstall. dima 2026-09-28: «install and vet for 1wk, and measure its perf» — set 2026-09-28

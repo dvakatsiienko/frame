@@ -1,3 +1,8 @@
+---
+status: frozen
+until: 2026-10-31
+---
+
 # jev compaction — fast-jev-compaction on cclio checkpoints, vs the built-in summary
 
 Ticket: [FRM-268](https://linear.app/x-com/issue/FRM-268)
@@ -40,3 +45,7 @@ https://github.com/tamaratran/fast-jev-compaction»
 📌 round 3, before the 10-15 verdict (dima's yes, relayed by cclio old): jev vs built-in on twin sessions, the same recall quiz; /context before and after, seconds timed. open for the verdict: jev drops only tool calls and results, never text messages (its README), so a long chat thread stays big. config is ours: compactAtPercent 95, preserveRecentMessages 10, truncateHeadChars 500, model jev-1.13.0, keepThreshold 0.5 (default)
 
 ## verdict
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 jev compaction test drive, frozen with the jev credit, verdict moved 2026-10-17 → 2026-10-31 (every compaction falls back until the ~10-18 refill) — `fast-jev-compaction` at cclio scope only, **switched off 2026-10-05** after the 402 toast (dima: yes) — at the refill set it back to `true` in `cclio/.claude/settings.json`, then round 3 (twin sessions, one recall quiz, `/context` before and after); every `/cclio:checkpoint` compaction logs one line in `docs/test-drive/jev-compaction.md`: before → after, seconds, fallback, open asks kept. on 10-31: adopt or uninstall. the 10-05 fallback (400 invalid Unicode) is filed upstream as [fast-jev-compaction#128](https://github.com/tamaratran/fast-jev-compaction/issues/128) — the gh watch reports its fix. dima 2026-10-01: «maybe try this?» — set 2026-10-01

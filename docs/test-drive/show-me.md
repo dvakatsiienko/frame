@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-13
+---
+
 # test drive — show-me
 
 window: 2026-10-06 → 2026-10-13 (one week). plugin `show-me@skills` (humanlayer/skills, 1.0.1, auto-update on).
@@ -18,3 +23,7 @@ explains the current topic visually: the smallest view that makes the point — 
 
 one line per use: date · topic · view it picked · dima's verdict (landed / meh) · note
 - 2026-10-06 · how ccrow's wake works · a mermaid sequence + a pseudocode gate · verdict pending · first use, invoked as /show-me:show-me with an args line
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 show-me test drive, one week to 2026-10-13 — `/show-me` (dima types it); one log line per use in `docs/test-drive/show-me.md`. the verdict waits for the whiteboard test drive, so the two compare head to head (dima 2026-10-06: «looks nice, let's keep an eye on it until the whiteboard is also test driven, to compare»); dima 2026-10-06: «start now» — set 2026-10-06

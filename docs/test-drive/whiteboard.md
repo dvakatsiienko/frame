@@ -1,3 +1,8 @@
+---
+status: live
+until: none
+---
+
 # test drive — dev.fast whiteboard
 
 window: from 2026-10-06; verdict after the first real cases, compared head to head with show-me. app 0.2.0 via `brew install --cask devdotfast/tap/whiteboard`.
@@ -32,3 +37,7 @@ one line per use: date · case · blocks it drew · dima's verdict · note
 - 2026-10-06 · install + first probe · `whiteboard api session_capabilities` → desktopAvailable true, scratchpad off · the PATH-button install left ~/.zprofile untouched (the comment line held) · cli-driven, no mcp
 - 2026-10-06 · FRM-284 a/b/c review (first real case) · intro + 3 arms (sequence + 3 code_peek each) + one call_stack_diff + closing · 5.1 min agent run, ~62 api calls, 9 failed (4 bad parent ids, ranges, a symlink; `session_source` takes fromLine/toLine, edits take start/end; move without afterId appends) · call_stack_diff has only old/new sides · per-source commit pins let one session show two branches · dima's verdict: pending
 - 2026-10-06 · dima's verdict on round 1: «looks good for me, let's keep for now» · the in-app «ask claude code» answered «The head checkout for this review is not ready yet.» (and «Diff selection unavailable» on code peeks) — whiteboard ↔ cclio comms unproven; the ask panel runs its own claude in a checkout of the head, it never reaches this session
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 whiteboard test drive (dev.fast, cli-driven) — first real case: review the cli a/b/c arms (FRM-284) when they report; log in `docs/test-drive/whiteboard.md`; the verdict compares head to head with show-me, then the whiteboard recipe is written from the real uses. dima 2026-10-06: «let's test drive it … create and execute the whiteboard app recipe» — set 2026-10-06

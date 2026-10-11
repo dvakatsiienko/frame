@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-20
+---
+
 # test drive — mattpocock retro
 
 window: 2026-10-06 → 2026-10-20. the skill: `mattpocock-skills:retro` (v1.3.1) — a fresh agent reads a session transcript and proposes environment fixes in 7 areas: navigation, automated checks, reviewer rules, AGENTS.md size, tool economy, no-ops, information access. human in the loop, never auto-fixed.
@@ -13,3 +18,7 @@ why (dima, 2026-10-06): «very-very useful». the question: does an outside read
 one line per run: date · sessions read · retro findings · self-retro findings · overlap · kept by dima · tokens · note
 - 2026-10-06 · run 1 · 6 transcripts (go coder, verifier, quick-lane coder, 3 spec implementers) · 9 proposals · the brief said «cclio pushes» against crew-coder's `x lane push`, 4 push relays and a 17-min stall on unpushed main · retro-runner (opus) · 5
 - 2026-10-07 · in-thread, cclio (dima typed `/mattpocock-skills:retro` before the checkpoint) · read from context, ~0 extra tokens · 6 findings: inline coding bloats context, a refused chain runs nothing, raw push beside `x lane push`, stale usage in desktop sessions, guessed facts, unknown-cli `--help` · dima: «retro was interesting»; finding 1 judged too self-critical (a freebie inline is cheaper than a helper)
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 retro test drive, two weeks to 2026-10-20 — `mattpocock-skills:retro` (user-only): self-retros only (dima 10-07: «spawning a session only for retro is a bad idea»): coders and verifiers read matt's retro SKILL.md at their last act, cclio's retro is dima typing `/mattpocock-skills:retro` in its thread before a checkpoint or halt; one line per run in `docs/test-drive/retro.md`. when a session went wrong, say «🎓 a /retro moment» to dima. on 10-20: does it replace the self-retro? dima 2026-10-06: «very-very useful» — set 2026-10-06

@@ -1,4 +1,6 @@
 ---
+status: adopted
+until: 2026-10-11
 dies-when: FRM-287's verdict — the adviser lands in x:shape-idea (this log becomes its evidence) or is dropped
 ---
 
@@ -23,3 +25,5 @@ what each found (✓ = found it):
 - **blind only**: the per-read record doubles as the post-relaunch health check (a fresh `ok` line, else swap back) · Kokoro-FastAPI's `/dev/captioned_speech` may already return word timings (unchecked against our server)
 
 read: all three agree on the 4 big findings, so a cheap arm would have caught the cut's main flaws. fable's extra finds are real and specific (a security gap, a panel-focus conflict) at 2.5× opus's cost; the blind arm's two ideas are the cheapest-per-insight. one round is an anecdote — next shape repeats it.
+
+**verdict — adopted, cclio's pick, dima's tick (o151, 18:12):** FRM-287 done; the three-critic run became `pnpm ccrow:plan-critique`, the blind critic every `shape-idea` and `shape-lane` runs. not the built-in `/advisor`, which was dropped (ccrow.md).

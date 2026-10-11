@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-20
+---
+
 # test drive — ccrow, cclio's parked adviser
 
 window: 2026-10-06 → 2026-10-20 (two weeks from the first live wake). ticket: [FRM-327](https://linear.app/x-com/issue/FRM-327). the build: `ccrow/AGENTS.md`.
@@ -46,6 +51,8 @@ stress list — each run in cclio's tab beside ccrow, same fields for both (fire
 6. persistence: `/compact` and a restart — is it still on
 7. quiet hours: a turn of plain chat — does it stay silent (ccrow's silence bar is «none»)
 verdict question: borrow its timing (consult before an approach / before done) into ccrow, or replace ccrow, or keep both.
+
+**verdict 2026-10-11 16:26: dropped.** dima: «the advisor is useful, but costly, and we have wishkeeper. disabled. it's nice to have, if we agree on the additional spending.» he ran `/advisor off` after 18 logged rounds (14 on 10-10, 4 on 10-11), every one followed, the 10-11 four graded useful. its edge was process before work (approval-first, the trigger sort, the step order); wishkeeper covers the after-work read on disk with tools (10 of 10 real on 10-11), the two overlapped once. cost unmeasured, an inference: each consult forwards the whole thread to opus. the borrow left for ccrow: its timing — a wake before an approach crystallizes, reading the proposal file, and the reconcile call on a clash with evidence (o113); first, ccrow's packet must carry dima's orbit notes (o114).
 
 ### round 1 · 2026-10-10 11:31 · a plan turn (pk-28's audit about to land)
 - setup: dima set `/advisor fable` at 11:30; the running conversation keeps **Opus 5.5** as its advisor until `/clear` or `/compact` (the command's own line), so round 1 ran on opus — the fable rounds start after the next compaction (stress item 6 checks the tool is still listed then)
@@ -96,3 +103,13 @@ verdict question: borrow its timing (consult before an approach / before done) i
 
 ### round 14 · 2026-10-10 18:36 · before the orbit chunk outputs, ticket and spec
 - advisor: record the 🔭 band steer first; on main there is no pr, so the verifier answer is «no, the ftr recipe + dima's 🔎»; FTR lines as user-visible checks with decision lines, old asks lines die in the coder's commit; the ticket in Triage as a child of FRM-304; read to-spec / to-tickets / issue-tracker before writing; the brief names scratch-edit, plugin-authoring, mods:live and the live-reload hazard. acted on: all; the blind critic (Fable 5.1, $1.49) then found 5 more, 4 folded, 1 went to dima as an ask
+- 10-11 13:38 · cclio · advisor (opus 5.5): caught the false sweep status source, put the run script into nurture-memory instead of a new plan, kept the older scope lines on the table · followed in full · useful
+- 10-11 15:26 · cclio · advisor (opus 5.5), round 2 on sweep steps 3–6: the quote gate is blind to root/rules (no «»), check cw-synced sections, wishkeeper owed per step, scratchpad pointers, frame-rule load path unmeasured from subdirs, «pnpm check» is command-triggered · followed in full · useful
+- 10-11 15:40 · cclio · advisor (opus 5.5), round 3 on step 6 fleet-hazards: a rules/ edit needs his word first, sort each line by the event before the hazard (file touch vs Bash vs output), probe dot-paths before claiming, quote gate exit 2 on a new file is not clean, the step-order flag · followed in full · useful (the sort cut the honest saving to ~640 B)
+- 10-11 15:55 · cclio · advisor (opus 5.5), round 4 before output-format: the hazards check skips the new file (orbit ask), FRM-393 at estimate 1 needs a home in the wake queue, grep sync: cw and reply-check first, audit 25/26 already fixed, cclio:report does not exist, keep the orbit door resident (deferred tool) · followed in full · useful
+- 10-11 16:09 · ccrow wake 202610111558 (fable) · «the sweep loop spends the 5h: advisor twice a step, wishkeeper every step, claude -p probes» · meter at read: 32 % used vs 23 % pace, +8 % (15:53 was ~+10 %, so «got worse» did not hold) · the cut it proposes changes two of dima's rules → orbit ask, not acted on · half useful
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 ccrow test drive, two weeks to 2026-10-20 — the parked adviser (FRM-327, `docs/test-drive/ccrow.md`); every halt reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl`, one log line per day; days 1–3 silent and paired, then live and alternating. on 10-20: keep (and pick the arm), reshape, or stop — and the mod (FRM-327 «later») only if it proved useful. dima 2026-10-06: «test drive for 2 weeks + measures» — set 2026-10-06
+- 10-11 17:42 · ccrow wake 202610111736 (fable) · checkpoint 2's CST lost or staled 3 items (pm review's dedicated session, o74/o75, FRM-385's reseal); a firmer first-act is remember-harder; check the CST draft with wishkeeper before /compact · vetted ok · useful: becomes a cclio:checkpoint step (o143)

@@ -1,3 +1,8 @@
+---
+status: live
+until: three runs
+---
+
 # test drive — the spec pipeline: to-spec → to-tickets → implement-spec
 
 window: from 2026-10-06, verdict after three runs. the skills: `mattpocock-skills:to-spec`, `to-tickets`, `implement-spec` (v1.3.1), all user-only.
@@ -28,3 +33,7 @@ one line per run: date · ticket · tickets in the graph · subagents · minutes
   - dima's take (2026-10-06): «implement-spec looks very good of under the hood work, some bulk work, especially if can be made via sonnet 5.5»; a plain `--bg` coder for granular UI he watches. promoted after his 5 tries: cclio runs it without him typing it first
 - 2026-10-07 · run 2 · the next cli lane under FRM-14 · grill-with-docs over 5 rounds (overview, then telemetry, handoff, linear in depth), then to-spec read by hand · 4 specs in `.scratch/` (x-telemetry 19 stories, x-handoff 18, x-linear 26, x-stats-board 14); ccrow split telemetry from the board before dima read them, so the foundation ships alone · to-tickets not run yet (the coder runs it) · dima's verdict on where a spec lives: «too early to decide. i'd continue test driving in this mode» — specs stay in `.scratch`, linear keeps the ticket
 - 2026-10-10 · PK-11, the archive read · 2 real specs (mods-round → FRM-324/325/329, x-telemetry → FRM-340); x-handoff and x-linear hold issues and retros only; x-stats-board was never built and went back to `.scratch` · the `x:pm` relation held: the body keeps the want, dima's mid-run «also:» asks landed in the bodies (his words, the right home), the spec kept the how, and 3 of 4 closing words carry the outcome · one miss: FRM-329 closed bare, no closing word · verdict: keep — specs stay local in `.scratch`, archived at land; linear keeps want + closing word; beads revisits the «one home for every spec» idea at the pocket verdict
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 spec pipeline test drive, three runs — to-spec → to-tickets → implement-spec on a local `.scratch/` tracker, linear stays global (`docs/test-drive/spec-pipeline.md`); run 1 while dima is at the keyboard, on an almost-freebie with several parts. raise «🎓 a /to-spec moment» when a lane or shift starts from a ticket with several parts. dima 2026-10-06: «have Linear tickets as global … but structured via to spec right before execution» — set 2026-10-06

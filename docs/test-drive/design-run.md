@@ -1,3 +1,8 @@
+---
+status: adopted
+until: 2026-09-29
+---
+
 # design run — the designer flow on trial
 
 Ticket: [FRM-244](https://linear.app/x-com/issue/FRM-244)
@@ -105,3 +110,7 @@ fable 5.1, speak brief v1.2, 2 takes + the blind pill side take each, one line p
 - 2026-10-01 · speak merge, fable 5.1 high, the whole session (spread + ~15 comment rounds) · out 254k · cache write 724k · cache read 109M · **$54.42** · 128 min · ctx ~731k by then. the spread cost $16.96; each later round re-read a 400–700k context (~$2–4 a round), so cache reads are half the bill. lesson: comment rounds on a long fable session are the expensive part — batch the comments, and start a fresh session per round batch; dima: «try Fable Medium next design»
 - 2026-10-01 · speak merge, final (v1.18 + decision.md + contract.md) · fable 5.1 high · **$62.72 total** · 141 min · 25 boards · merged into studio main
 - 2026-10-01 · cli (x) · brief v1 quick · follow-up round on the pick (T2, «a bit of vertical space») · fable 5.1 low · 13 boards redrawn + 2 new (line spacing 1.2) + 2 confirm stickies · out ~30k · cache write 151k · read 3.5M · ~8 min · usage window 69 → 82 % (shared with 4 live sessions) · rounds: 3 of 3 on the pick; the find: «few px» was line spacing, a terminal setting — read the comments for units before adding rows
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🦉🔬 design run test drive — the designer flow is on trial: the first atelier run walks the test list in `docs/test-drive/design-run.md` (brief gate, canvas fill, a real spread, pick time, rounds, the blinding, cost, comp → build, two A/Bs), one ledger line per spread; raise when a design job starts and at the verdict (adopt / reshape / drop). dima 2026-09-29: «a tested and proven design flow … a reminder of what we have to test» — set 2026-09-29

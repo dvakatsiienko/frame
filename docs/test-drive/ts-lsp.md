@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-16
+---
+
 # test drive — the TypeScript LSP (native TS 7 server)
 
 on trial 2026-09-30 → 2026-10-14. dima: «set it on … watch it yourself, and measure how useful it
@@ -45,3 +50,7 @@ beat grep or lost to it.
 - 2026-09-30 · day 0 · headless session on bytes: `hover` on `AnthropicSVG` → `const AnthropicSVG: (props: TSvgProps) => JSX.Element`; `findReferences` → 2 sites, grep 3 (the third an `export *` re-export — LSP right) · the stock plugin failed at `initialize` (no `tsserver.js`)
 - 2026-09-30 · vendored proxy · fresh headless session in a scratch TS 7 project: Write `const count: number = 'three'` → the next tool call carried `Type 'string' is not assignable to type 'number'. [2322]` · negative control with `TYPESCRIPT_NATIVE_LSP_DIAGNOSTICS=0` → NONE — the bridge is what delivers it
 - 2026-09-30 · first real round, a fresh opus agent on the chords + speak drift check · 3 calls (usage.py agrees): `documentSymbol` on `sources.ts` paid (the list in one call, rg would too), `findReferences` on `scope` paid (5 refs proved no scoped row), `documentSymbol` on `StateBadge.tsx` half (the bug sat in a regex body) · reach: a markdown↔code and swift job, where LSP answers neither side · diagnostics bridge not exercised (read-only job, no edits)
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 ts-lsp test drive, two weeks to 2026-10-16 — the native TS 7 server through plugin `x` (`.lsp.json` → `bin/ts-lsp`); walk the stress list in `docs/test-drive/ts-lsp.md`, read `python3 docs/test-drive/ts-lsp/usage.py` at every halt (LSP calls beside grep calls per session), one line per round in its log. on 10-16: keep (and sharpen the `x:guide-code` «every use site» line) or drop the entry. dima 2026-09-30: «measure it under a weight for 2 weeks» — set 2026-09-30

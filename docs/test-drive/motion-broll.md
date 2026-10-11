@@ -1,4 +1,6 @@
 ---
+status: parked
+until: dima's next video
 dies-when: adopted or dropped after this run
 ---
 

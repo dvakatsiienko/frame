@@ -1,4 +1,6 @@
 ---
+status: closed
+until: 2026-09-10
 dies-when: the proper comparison ran (gh-stack step 3b, same commit, no sequence bias) and the lane order is decided — fold the numbers into the decision log, delete this
 ---
 
@@ -156,3 +158,5 @@ were wrong. the review is the gate, not the receipt.
 - whether coderabbit would find the auth DoS with more passes at the same commit
 - how either behaves on a diff much larger than ~2900 lines
 - greptile's per-review cost in money
+
+**verdict — closed, cclio's pick, dima's tick (o151, 18:12):** a one-shot greptile vs coderabbit measurement (09-10); its numbers fed `review-stack`, and coderabbit runs on as its own test drive.

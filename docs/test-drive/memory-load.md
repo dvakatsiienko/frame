@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-20
+---
+
 # memory-load — lazy rules on trial
 
 - **what:** `memory-load-rule-lazy` loads `rules-lazy/linear-flow.md` when linear work starts instead of keeping it resident ([FRM-300](https://linear.app/x-com/issue/FRM-300)); docs in `home/.claude/rules-lazy/`
@@ -10,3 +15,7 @@
 
 - 2026-10-04 · build day · replay 14 d: cclio 1648/1648, coder 284/284, other 345/346 (the one miss is a worktree path from `ps`, not linear work) · the hook fired live in cclio on a prompt naming FRM-300
 - 2026-10-06 · 3 misses from retro run 1: `linear-flow` (3.7k) loaded into implementers that never touch linear — t01 on an `x lane commit` (15:28), t08 on a `linear` word (16:07), the review fix on a Write of a commit message (16:43); each load cost a refused call. trigger fix at the 10-20 verdict: drop `x lane commit` and commit-message writes from the trigger
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 memory-load test drive, two weeks to 2026-10-20 — lazy rules (linear-flow out of the resident set, FRM-300). every halt reads the hook's `miss` lines, one log line in `docs/test-drive/memory-load.md`. on 10-20: rerun `pnpm memory-load:replay --days 14`; keep (then `fleet-hazards` goes lazy next) or discard (the file goes back to `rules/`). dima 2026-10-04: «let's see if it works, make it work, or discard it» — set 2026-10-04

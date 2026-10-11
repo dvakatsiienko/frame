@@ -1,4 +1,6 @@
 ---
+status: adopted
+until: 2026-09-28
 dies-when: FRM-147 closes
 ---
 

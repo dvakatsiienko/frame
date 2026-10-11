@@ -1,4 +1,6 @@
 ---
+status: live
+until: 2026-11-04
 dies-when: every candidate use below has a verdict, written into `x:crew-cloud` (by 2026-11-04)
 ---
 
@@ -54,3 +56,7 @@ Ticket: none
 - 2026-10-08 · meter read by dima (usage page): credit $236 of $250 left, expires 2026-11-05 09:59 GMT+2 · «how they affect weekly and 5h in this state is unknown» (dima) — the refresh-crew-coordinator cloud rerun reads get_usage weekly + 5h before and after as the probe
 - 2026-10-08 16:24 · cloud research launched: «☁️ 🔬 research: coordinator craft» (session_01E9zeRZ6UsG1zRMfGf7A4zL), the refresh-crew-coordinator craft brief, head-to-head with a local opus `--bg` (45b6a19f) on the same brief · BEFORE (get_usage): weekly 78 %, 5h 67 % · AFTER (16:31, get_usage): weekly 78 %, 5h 74 % — weekly flat while 5h moved +7 under the local twin, a coder and two cclio sessions; reads as «the cloud run did not hit the weekly», not proven (one sample, the 5h delta has other spenders)
 - 2026-10-08 16:41 · graded, same craft brief, both opus · **local `--bg`: 4/5** — 2,405 words, ~3 min, 9 requests, ~$1.17 api-equivalent (98k cache write, 834k read, 11k out, deduped by message id — the first grade summed 39 streaming entries and read ~$4.75; 🪶 sifter caught it) off the window; read primaries (MAST rates, the harness's JSON finding, METR, a pr-bot study) · **cloud: 3/5** — 1,924 words, off the credit, weekly flat; the vm's egress proxy blocked cognition.ai + addyosmani.com, most facts from search summaries (said so itself); unique finds: llm-judge self-preference (cross-family reviewer), approval fatigue (-84 % prompts), the classifier-retire call · verdict for research: cloud is fine for a breadth lane, the local one stays the source-reading lane; branch transfer worked with no pr
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 cc-cloud test drive, to 2026-11-04 (the $250 credit expires 11-05) — cloud sessions are fleet members on a test drive; walk `docs/test-drive/cc-cloud.md`, one real job per candidate use, dima's usage-page screenshot before and after each. on 11-04: which uses stay, written into `x:crew-cloud`. dima 2026-09-28: «announce cloud sessions as official members of our fleet, under vet, and we have to find a good use for cloud agents» — set 2026-09-28

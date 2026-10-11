@@ -1,4 +1,6 @@
 ---
+status: live
+until: 2026-10-22
 dies-when: the verdict line below is written (2026-10-22, beside the second haiku 5.5 research round)
 ---
 

@@ -1,4 +1,6 @@
 ---
+status: live
+until: 2026-10-14
 dies-when: browserbase is adopted as a door or dropped at the test-drive verdict (2026-10-14, extended by dima on 10-06)
 ---
 
@@ -40,3 +42,7 @@ Ticket: none
 - 2026-09-28 · #2 key · probe 3a (session_01TDmUoRP4fksNjcUggEG48Y): the key in environment «cloud base»'s api credentials (host `api.browserbase.com`, header `X-BB-API-Key`) → a bare `curl …/v1/projects` from the VM answered **200** · 0 min · the one matching variable is `CCR_AUTO_MODE_ALLOW` (the auto-mode allow list naming the host), not the key (probe 3b)
 - 2026-09-28 · #2 half · a `claude --cloud` probe on bytes (session_014QV6GViG5BzJYugdtrZuzw), read back with `claude -p … --teleport <id>` in a scratch clone · 0 min · cloud VM: node 24.21, pnpm 12.3.4, **no browser**; `api.browserbase.com` → 401 (reachable on the default network, no key), no browserbase env · the other half is BLOCKED on dima: the key into the cloud environment's credential proxy for `api.browserbase.com`
 - 2026-09-28 · round 2 · a ☁️ cloud verifier + Browserbase checks trophy-sys prod read-only (journal rows, now-playing, header, 12 loads at 390/1280 × L/D) · ✅ all clean, 0 console errors · 1 session, 0.74 min · 📌 node fetch needs `NODE_USE_ENV_PROXY=1` through the cloud proxy (401 otherwise) · default session timeout 300 s (asked 900) · the vm cannot reach vercel.app directly, so all app data is read inside the remote browser · x:browser-headless's essentials/tab-walk were not run (the brief asked for playwright) — the next round runs them
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 browserbase test drive, extended to 2026-10-14 (dima 10-06) — walk the stress list in `docs/test-drive/browserbase.md`, one real ask per feature, widest over deepest (`habit-test-drive`); the free hour is the budget, log minutes per round. on 10-14: adopt as the cloud-agent browser door, or drop. dima 2026-09-28: «pick good browserbase features for us to stress test, and find how to make use of cloud agents» — set 2026-09-28

@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-20
+---
+
 # test drive — mattpocock tdd
 
 window: 2026-10-06 → 2026-10-20. the skill: `mattpocock-skills:tdd` (v1.3.1), red → green → refactor, one behaviour per test, test the contract not the internals.
@@ -20,3 +25,7 @@ why (dima, 2026-10-06): «it changes a coder's approach a lot» — a test drive
 one line per ticket: date · ticket · tdd loaded? · verifier findings · rounds · tests proven red · minutes · note
 
 - 2026-10-07 · [FRM-340](https://linear.app/x-com/issue/FRM-340) x telemetry · yes · 4 by round 2 (2 privacy holes in the trace — a mistyped dash word, free text in an id arg — a test seam in the binary, kinds on two preconditions) · 2+ · 17 test functions, each red first or by mutation (red-proof) · ~45 · the seams were pre-agreed by the spec, so the skill's «confirm seams» step was a no-op; three tests went green on first run because the code came first in the same slice — red-proof caught them, the loop alone would not
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 tdd test drive, two weeks to 2026-10-20 — `mattpocock-skills:tdd`, named in `x:crew-coder` for test-shaped exit lines; one log line per ticket in `docs/test-drive/tdd.md` (loaded or not, verifier findings, rounds, tests proven red). on 10-20: a default for every coder, for some tickets, or drop. dima 2026-10-06: «it changes a coder's approach a lot … deserves a test drive and measure» — set 2026-10-06

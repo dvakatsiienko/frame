@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-20
+---
+
 # test drive — bare cc
 
 window: 2026-10-06 → 2026-10-20 (two weeks). the fold: one line in `rules/fleet-tooling.md` (cc only).
@@ -27,3 +32,7 @@ zero uses while the flawlog holds a case that wanted one → the memory line is 
 one line per use: date · session · case · hit · seconds · note
 
 - 2026-10-07 · cclio · the `researcher` agent (`omitClaudeMd: true`, opus medium), spawned from a fresh `claude -p --model haiku` parent in `~/frame` · hit: no CLAUDE.md, rules or memory loaded (it saw only the auto gitStatus), answered the ntcharts tag question from `gh api` with sources · first request wrote **9.2k** tokens cold, against ~137k for a plain fresh agent (10-06 base) and 51.7k for its own haiku parent · 7 steps · note: the agent file is not hot-loaded — a session started before it gets «Agent type not found»; chore-helper keeps the fleet memory on purpose (it edits repos)
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 bare-cc test drive, two weeks to 2026-10-20 — the `fleet-tooling` line plus the `x fleet flow` count (FRM-328); walk the stress list in `docs/test-drive/bare-cc.md`. on 10-20: kept as a habit, or a guard hint when it stays unused. dima 2026-10-06: «if bare cc isn't used, then a memory word isn't enough» — set 2026-10-06

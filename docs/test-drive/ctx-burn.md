@@ -1,4 +1,6 @@
 ---
+status: closed
+until: 2026-10-11
 dies-when: the pattern is understood and its answer lives in x:crew-coder or craft-spawning; until then one dated entry per case
 ---
 
@@ -39,3 +41,5 @@ bucketed by 15 min.
 - **the loop around it**: a verifier (113 calls, ~78k out, 19M reads, ~16 min of its own work over 3 rounds) + the ci reviewer (2 rounds) + local matt code-review + coderabbit, each read in a subagent
 - **github replies**: 3 thread answers, sent late (the brief had a hole in verifier mode, fixed in x 0.11.108). dima: keep the replies, and watch whether they move the burn — this job's replies were 3 short ones, not a measurable share
 - **watch next**: whether the reply rule grows the context on a pr with many threads; a coder at 700k+ is past half the window — the next assignment in the same session starts heavy
+
+**verdict — closed, cclio's pick, dima's tick (o151, 18:12):** dima's «end it» was conditional on this being the weekly-reset burn, and it is the coder context-growth log instead; the live ctx and 5h meters (FRM-366) show the burn now.

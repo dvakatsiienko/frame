@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-21
+---
+
 # test drive — duckdb, the fleet's measuring engine
 
 verdict due: 2026-10-21 (two weeks) — adopt as the doors engine (a doors measure under `x fleet`) and the ad-hoc measure door, or drop

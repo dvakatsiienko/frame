@@ -1,4 +1,6 @@
 ---
+status: live
+until: 2026-10-19
 dies-when: the verdict line below is written (2026-10-19) — mods become a fleet-aware layer (rules line + contracts), stay dima's own toy, or get pruned
 ---
 Ticket: [FRM-303](https://linear.app/x-com/issue/FRM-303)
@@ -65,3 +67,7 @@ the coder cannot see a surface; dima walks each, ticks what holds, notes what do
 - 2026-10-05 · cclio · stash spawn hints · first real fire, a false positive · «a mechanical job belongs on chore-helper» on «Wayfinder research: one watcher» — a judgment job (source reading, a design call), not mechanical; dima saw the toast and asked «useful call?». count for the 10-19 verdict: 1 fire, 0 right
 - 2026-10-05 · coder FRM-319 · all three · the recipe's open leads closed · the «not yet probed» block in `mods/AGENTS.md` probed (11 proven or types-backed, 2 corrected: no 50 ms `prompt.edit` budget, drawings reach mobile and vscode too; 3 need a live session); api-map regenerated from the types (its ranges had drifted ~190 lines), `ui.fault` and `ui.selection` added; state audit: redact keeps its vault in `$.state`, breather's module state may reset, stash's fold state and 5h reset should not (🐞 in its FTR)
 - 2026-10-05 · dima's matrix sitting · stash, breather, redact · terminal, desktop, remote-control rows all hold; Warp passes with small visual misses he accepts · the matrix closes for 2.1.289
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 mods test drive, two weeks to 2026-10-19 — the cc mods (stash, breather) and whether the fleet needs to know them; walk the stress list in `docs/test-drive/mods.md`, one log line per halt (which mod fired for real, what it saved or broke). on 10-19: a fleet-awareness line + per-mod contracts, keep as dima's own layer, or prune. dima 2026-10-05: «let's keep exploring and registering mods on a test drive, so you keep an eye on it and grow fleet awareness of whether mods are even needed» — set 2026-10-05

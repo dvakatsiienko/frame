@@ -1,3 +1,8 @@
+---
+status: adopted
+until: 2026-10-11
+---
+
 # explore — which model finds code best for the cost: opus, sonnet 5.5, or a jev ranking
 
 Ticket: none
@@ -42,3 +47,9 @@ right file as well, faster or cheaper?
 - 2026-10-01 · day-0 probe: «which file in frame/script defines wispr:add» · B · not timed · not counted · y · a fresh `claude -p` session; its subagent transcript reads `claude-sonnet-5-5`, the parent `claude-opus-5-5` — the agent file overrides the built-in. effort `medium` is set but not observable in the transcript
 
 ## verdict
+
+## verdict — adopted (dima, o45, 2026-10-11): kept in the fleet past its trial; no stress rounds left open are graded here.
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 explore test drive, one week to 2026-10-10 — every Explore call fleet-wide now runs on sonnet 5.5 `medium` (`home/.claude/agents/explore.md`, proven on a fresh session 2026-10-01). walk the 10-lookup stress list in `docs/test-drive/explore.md` for arms A (opus, built-in), B (sonnet) and C (jev ranking, a script built once B has rounds — frozen with the jev credit until ~10-18; on 10-10 A vs B decides, C gets its rounds after the refill); one log line per lookup per arm. on 10-10: keep the winner as the agent file, drop the others. dima 2026-10-01: «worth setting up and a/b measuring? and test driving side by side?» — set 2026-10-01

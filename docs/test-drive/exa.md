@@ -1,4 +1,6 @@
 ---
+status: adopted
+until: 2026-10-08
 dies-when: exa is adopted as the research door (replacing or beside parallel) or dropped after the test-drive period
 ---
 

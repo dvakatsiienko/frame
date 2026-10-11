@@ -1,4 +1,6 @@
 ---
+status: live
+until: 2026-10-21
 dies-when: the pocket is kept or dropped at the verdict (2026-10-21)
 ---
 
@@ -27,3 +29,7 @@ window: 2026-10-07 → 2026-10-21. the pocket (`cclio/pocket.md`) replaced the v
 
 one line per halt: date · items resolved · tickets opened · «what's next?» asks · items lost
 - 2026-10-07 · 7 resolved (03 04 17 19 20 21 26) · 0 opened · 0 asks · 0 lost
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 pocket test drive, two weeks to 2026-10-21 — one log line per halt in `docs/test-drive/pocket.md` (items resolved, tickets opened, «what's next?» asks, items lost; day-0 baseline in the file). on 10-21: keep the pocket or go back to a vault journal. dima 2026-10-07: «test drive» (pocket item 11) — set 2026-10-07

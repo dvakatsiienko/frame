@@ -69,6 +69,7 @@
         "repo:defaults": "node ./script/repo-defaults.ts",
         "reply-check:report": "node ./script/reply-check-report.ts",
         "research:lanes": "./script/research-lanes.sh",
+        "test-drive:list": "node ./script/test-drive-list.ts",
         "schedule:install": "node ./schedule/install.ts",
         "schedule:restart": "node ./schedule/restart.ts",
         "skill:cclio-mode-snapshot": "node ./script/skill-cclio-mode-snapshot.ts",

@@ -1,4 +1,6 @@
 ---
+status: live
+until: 2026-10-17
 dies-when: the verdict line below is written (2026-10-17) — adopted as a door in rules/fleet-doors.md, or dropped
 ---
 
@@ -22,3 +24,7 @@ dima, 2026-10-01: «your input prompt only allows five screenshots at once, and 
 - 2026-10-01 · 1 · file (jpg) · ok · the first read, a screenshot of a cclio reply
 
 ## verdict
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 vorssaint shelf test drive, two weeks to 2026-10-17 — dima drops screenshots past the 5-per-prompt cap on the vorssaint utils shelf and says «check my shelf»; read with `pnpm vorssaint:shelf`, one log line per read in `docs/test-drive/vorssaint-shelf.md`. on 10-17: a door line in `rules/fleet-doors.md` (his approval), or drop. dima 2026-10-01: «let's use this approach. test drive.» — set 2026-10-01

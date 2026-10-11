@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-13
+---
+
 # test drive — cc-plugin-you-should-know
 
 window: 2026-10-06 → 2026-10-13 (one week). dima's terminal sessions, user scope.
@@ -33,3 +38,7 @@ one line per round: date · session · card topic · useful / known / noise · t
 ## verdict
 
 dropped, 2026-10-10 — turned off in `settings.json`. not because of the feature: dima likes it and wants it, but he works in the desktop app ~99 % of the time, where it never fires, and in the terminal it only reaches unattended `--bg` sessions. it goes back on the day it works in the desktop app.
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 you-should-know test drive, one week to 2026-10-13 — the built-in `cc-plugin-you-should-know`, on in dima's terminal sessions (user scope, so coders get it too); walk the stress list in `docs/test-drive/you-should-know.md`, one log line per card. on 10-13: keep on, keep for dima only, or off. dima 2026-10-06: «how to test drive it? can i test drive now?» — set 2026-10-06

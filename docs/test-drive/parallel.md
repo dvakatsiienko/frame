@@ -1,4 +1,6 @@
 ---
+status: adopted
+until: 2026-10-08
 dies-when: parallel is adopted as a door or dropped after the test-drive period
 ---
 

@@ -1,3 +1,8 @@
+---
+status: live
+until: 2026-10-18
+---
+
 # reply-check — test drive, 2026-10-02 → 2026-10-16
 
 the log-only Stop hook `home/.claude/shelf/hooks/reply-check.py`: pure regex, no jev, never blocks.
@@ -24,3 +29,8 @@ added only if the regex log shows the gap.
 _(2026-10-16)_
 - 2026-10-04 · live probe · the hook fires live (one bare-ticket line logged this session), but a deliberate «alpha · beta» in the final reply of a turn was never logged · guess, unproven: at Stop the final text block is not yet in the transcript, so the hook reads an earlier block of the turn · fix candidate: read the Stop input's last-message field if cc passes one, else re-read the transcript after a short settle
 - 2026-10-04 evening · 8 live hits today, so the hook fires · false positives: commit-hash fires on job ids (d848735b) and on the barrel-probe hash d03f3da at session resumes (the resume turn, not a reply of mine) · fix candidate: skip hex in a `job`/`probe` context, skip resume turns
+- 2026-10-11 16:52 · new log-only rule `dead-link` (o125): a markdown link with no scheme that does not resolve from the session's cwd (a :line suffix stripped); red-proven test then 16/16, the live hook replay of the 16:47 groom-list link logs it, the absolute twin passes · promote to blocking if it fires again (dima's warn-first pick)
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 reply-check test drive, two weeks to 2026-10-18 — the log-only Stop hook (pure regex, no jev); at each halt read `pnpm reply-check:report`, one log line in `docs/test-drive/reply-check.md`. on 10-18: per rule — fix the root, block, or drop (the rule is in the file). dima 2026-10-02: «let's vet it for 2 weeks» — set 2026-10-02

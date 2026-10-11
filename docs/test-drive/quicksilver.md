@@ -1,4 +1,6 @@
 ---
+status: frozen
+until: 2026-10-28
 dies-when: the test drive closes with adopted or dropped (by 2026-10-28 — frozen with the jev credit 10-05 → ~10-18, dima)
 ---
 
@@ -98,3 +100,7 @@ every round runs the same ask twice, the usual door and the qs door, and logs on
 
 <!-- one line per round: date · feature · ask · hit · tokens saved · seconds -->
 - 2026-09-30 · `qs filter` «user-visible change?» over 47 speak commit subjects (drift agent) · miss: 1.0 s, 16.5k jev tokens, $0.0007, 19 of 47 borderline, `cdc19aaa` (quota cards) scored 0.49 and the react admin 0.37 · the input was already in context, and terse subjects are the weak band the skill warns about — wrong fit, not a broken tool
+
+## the reminder, moved here (2026-10-11, o139)
+
+⏰ 🔬 quicksilver test drive, frozen with the jev credit, verdict moved 2026-10-14 → 2026-10-28 (dima 2026-10-05: «freeze jev-related test drives too»; the $5 monthly credit ran out on 10-05 and refills ~10-18) — the jev bulk-judgment skill (vendored @ 5d6fe5c, key via op-run). walk the stress list in `docs/test-drive/quicksilver.md`, one real ask per feature, widest over deepest (`habit-test-drive`); every round one line in its log. on 10-28: adopt (and teach crew-coder when to reach for it) or drop; at adoption also decide vendored vs the `quicksilver@quicksilver` marketplace (it ships one) — the key and data-guard lines need a home outside the skill first. dima 2026-09-28: «is it truly useful? … vet - 2 weeks» — set 2026-09-28
