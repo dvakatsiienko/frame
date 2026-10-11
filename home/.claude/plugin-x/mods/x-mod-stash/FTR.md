@@ -424,16 +424,17 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 
 ## /board — 🌔 phases
 
-- ✅ phases: the session's next 5 moves, live
+- ✅ phases: the session's next 7 moves, live
   - given the session has set its phases
   - when dima looks at the board
-  - then up to 5 lines under `🌔 phases` show what is now, next and then, each readable on its own
+  - then up to 7 lines under `🌔 phases` show what is now, next and then, each readable on its own
   - decision: each line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
 - ✅ a phase's moon fills by nearness
-  - given the session has set 5 phases
+  - given the session has set 7 phases
   - when dima looks at the board
-  - then the lines lead with 🌕 🌔 🌓 🌒 🌑 in order; the 🌕 and 🌔 lines print plain, the rest dim; only the `now:` lead word reads green
+  - then the lines lead with 🌕 🌔 🌓 🌒 🌑 🌑 🌑 in order; the 🌕 and 🌔 lines print plain, the rest dim; only the `now:` lead word reads green
   - decision: the moon replaces the line number (dima, 20:58)
+  - decision: 7 lines, not 5, the lines past the fifth keep 🌑 — a try, dima may revert (dima, 2026-10-10 23:54)
   - decision: the now line's text stays plain, only its lead word stands out, green and bold (dima, 21:08)
 - ✅ stale phases are named
   - given the phases were not touched for 3 turns

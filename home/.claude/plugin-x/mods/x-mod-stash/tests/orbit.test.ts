@@ -339,19 +339,27 @@ test('an empty orbit adds no reminder', async ($, on) => {
     expect((w.contexts.at(-1) ?? []).join('\n')).not.toContain('orbit');
 });
 
-test('the phases show in the board, a moon each, at most five', async ($, on) => {
+test('the phases show in the board, a moon each, at most seven', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await orbit($, {
-        lines: ['now: a', 'next: b', 'then: c', 'd', 'e', 'f'],
+        lines: ['now: a', 'next: b', 'then: c', 'd', 'e', 'f', 'g', 'h'],
         op: 'plan',
     });
     expect(
         (await ui.findAll({ type: 'Text' }))
             .map((t) => t.text)
             .filter((t) => /^[🌕🌔🌓🌒🌑] (?!phases)/u.test(t ?? '')),
-    ).toEqual(['🌕 now: a', '🌔 next: b', '🌓 then: c', '🌒 d', '🌑 e']);
+    ).toEqual([
+        '🌕 now: a',
+        '🌔 next: b',
+        '🌓 then: c',
+        '🌒 d',
+        '🌑 e',
+        '🌑 f',
+        '🌑 g',
+    ]);
 });
 
 test('a phase fades with its distance from now', async ($, on) => {

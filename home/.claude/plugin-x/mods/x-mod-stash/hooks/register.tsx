@@ -100,7 +100,7 @@ const ENHANCE_MS = 30_000;
 const WISPR_DB = 'Library/Application Support/Wispr Flow/flow.sqlite';
 let isEnhancing = false;
 const TICKET_ID_ALL = /(?<!\[)\b(?:FRM|BYT)-\d+\b(?!\])/g;
-const PLAN_MAX = 5;
+const PLAN_MAX = 7;
 const STALE_TURNS = 3;
 // a plan line's lead word, one short word before its colon
 const PLAN_LEAD = /^[a-z]{2,10}:/i;
@@ -2008,7 +2008,7 @@ export const register: Register = (on) => {
                                     dimColor={i > 1}
                                     // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
                                     key={`plan:${i}`}>
-                                    {`${PHASE_MOONS[i]} `}
+                                    {`${PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
                                     {lead ? (
                                         <Text
                                             bold
