@@ -1830,7 +1830,11 @@ export const register: Register = (on) => {
             ).map(([what, glyph, request]) => (
                 <Button
                     key={`orbit:${what}:${a.id}`}
-                    onPress={() => void speak($, request)}
+                    onPress={async () => {
+                        // a press in the board means dima is at the mac
+                        await $.state.set(MOBILE, false).catch(() => undefined);
+                        await speak($, request);
+                    }}
                     plain>
                     {glyph}
                 </Button>
