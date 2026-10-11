@@ -464,7 +464,9 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: each line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
 - ⬜ a docked board never scrolls as a whole: only orbit's asks do
   - given a docked board, then it takes exactly its rows; sessions, the lane cards and phases keep their height, and orbit shrinks and clips
-  - when dima scrolls over the board (wheel or keys), then the pane stays put and orbit moves one ask per tick, a dim `↑ n above` heading the asks hidden above
+  - when dima presses `▼` or `▲` on orbit's head, then orbit moves one ask, a dim `↑ n above` heading the asks hidden above; `▲` shows only with asks above, `▼` only with asks below; a wheel the engine sends moves it the same way
+  - and an unfolded lane member card clips and scrolls its own asks with its own `▲ ▼`; the lane's steps keep their rows
+  - decision: arrows, since the engine sends no wheel to a board that fills its rows (dima's 21:51 shot); dima expects them ugly — a try (o18, o19)
   - decision: built by hand — the engine has no `sticky` and no inner scroll region, only the pane's own window (dima, 20:58: «if it will not land i will ask to revert»)
 - ⬜ phases stick to the board's bottom
   - given the session has set its phases and the board is docked

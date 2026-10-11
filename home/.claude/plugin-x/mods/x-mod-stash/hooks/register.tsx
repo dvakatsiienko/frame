@@ -190,8 +190,9 @@ const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
 // every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
-// the first orbit ask a docked board shows: a scroll over the board moves it, never the pane (dima, 20:58)
-const ORBIT_TOP = { key: 'orbitTop', plugin: 'x-mod-stash' } as const;
+// the first ask each scrolled list shows on a docked board, by list (`orbit`, a lane's member card): its ▲ ▼ move it,
+// never the pane, which the engine scrolls only when it has rows to spare (dima, 20:58; o18, o19 at 21:54)
+const TOPS = { key: 'tops', plugin: 'x-mod-stash' } as const;
 const LANE_OWNER = '🦉 cclio';
 const LANE_ROLES = ['coder', 'verifier'] as const;
 const LANE_MAX = 5;
@@ -2865,10 +2866,33 @@ export const register: Register = (on) => {
                 </Box>
             </Box>
         );
-        const orbitTop = Math.min(
-            (await $.state.get(ORBIT_TOP)).value ?? 0,
-            Math.max(0, o.asks.length - 1),
-        );
+        const tops = (await $.state.get(TOPS)).value ?? {};
+        const topOf = (list: string, count: number) =>
+            Math.min(tops[list] ?? 0, Math.max(0, count - 1));
+        // ▲ shows only with asks hidden above, ▼ only with more below: plain arrows beside the fold, nothing when all fit
+        const scrollJSX = (list: string, count: number) => {
+            const top = topOf(list, count);
+            const move = (by: number) => async () => {
+                const was = (await $.state.get(TOPS)).value ?? {};
+                await $.state.set(TOPS, {
+                    ...was,
+                    [list]: Math.max(0, Math.min(count - 1, top + by)),
+                });
+            };
+            return [
+                top > 0 ? (
+                    <Button key={`up:${list}`} onPress={move(-1)} plain>
+                        ▲
+                    </Button>
+                ) : null,
+                top < count - 1 ? (
+                    <Button key={`down:${list}`} onPress={move(1)} plain>
+                        ▼
+                    </Button>
+                ) : null,
+            ];
+        };
+        const orbitTop = topOf('orbit', o.asks.length);
         const orbitJSX = (
             <Box
                 borderColor={cardBorder(e.surface)}
@@ -2906,6 +2930,7 @@ export const register: Register = (on) => {
                                 ✅
                             </Button>
                         ) : null}
+                        {folds.orbit ? null : scrollJSX('orbit', o.asks.length)}
                         {foldJSX('orbit')}
                     </Box>
                 </Box>
@@ -3028,8 +3053,18 @@ export const register: Register = (on) => {
             const isOpen = folds[card] === false;
             const badge = role === 'coder' ? '🔧' : '🔎';
             return (
-                <Box flexDirection='column' key={card} rowGap={LINE_GAP}>
-                    <Box alignItems='center' flexDirection='row' gap={1}>
+                <Box
+                    flexDirection='column'
+                    flexShrink={1}
+                    key={card}
+                    minHeight={0}
+                    overflow='hidden'
+                    rowGap={LINE_GAP}>
+                    <Box
+                        alignItems='center'
+                        flexDirection='row'
+                        flexShrink={0}
+                        gap={1}>
                         <Text
                             bold>{`${badge} ${role} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}</Text>
                         <Button
@@ -3045,9 +3080,15 @@ export const register: Register = (on) => {
                             plain>
                             {isOpen ? '📂' : '📁'}
                         </Button>
+                        {isOpen ? scrollJSX(card, asks.length) : null}
                     </Box>
+                    {isOpen && topOf(card, asks.length) > 0 ? (
+                        <Text dimColor key={`${card}:above`}>
+                            {`↑ ${topOf(card, asks.length)} above`}
+                        </Text>
+                    ) : null}
                     {isOpen
-                        ? asks.map((a, i) =>
+                        ? asks.slice(topOf(card, asks.length)).map((a, i) =>
                               askJSX(a as OrbitAsk, i, {
                                   mark: (x, mark) =>
                                       void markRemote($, sid, x, {
@@ -3095,9 +3136,11 @@ export const register: Register = (on) => {
                       borderColor={cardBorder(e.surface)}
                       borderStyle='round'
                       flexDirection='column'
-                      flexShrink={0}
+                      flexShrink={1}
                       key={`lane:${lane.id}`}
                       marginTop={1}
+                      minHeight={0}
+                      overflow='hidden'
                       paddingX={1}
                       paddingY={0.5}
                       rowGap={LINE_GAP}>
@@ -3111,6 +3154,7 @@ export const register: Register = (on) => {
                                 <Box
                                     alignItems='center'
                                     flexDirection='row'
+                                    flexShrink={0}
                                     gap={1}
                                     // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
                                     key={`lane:${lane.id}:${i}`}>
@@ -3562,13 +3606,16 @@ export const register: Register = (on) => {
     on('ui.scroll', async ($, e, next) => {
         if (e.component !== 'Pane' || e.requestId !== BOARD) return next(e);
         const o = await currentOrbit($);
-        const was = (await $.state.get(ORBIT_TOP)).value ?? 0;
+        const tops = (await $.state.get(TOPS)).value ?? {};
+        const was = tops.orbit ?? 0;
         const top = Math.max(
             0,
             Math.min(Math.max(0, o.asks.length - 1), was + Math.sign(e.by)),
         );
         if (top !== was)
-            await $.state.set(ORBIT_TOP, top).catch(() => undefined);
+            await $.state
+                .set(TOPS, { ...tops, orbit: top })
+                .catch(() => undefined);
         return { deny: 'the board scrolls its orbit asks itself' };
     });
 

@@ -174,8 +174,8 @@ declare module 'claude-code' {
             lanes: StashLane[];
             // each linked member's open asks, by session id, its pending remote marks laid over them
             laneAsks: Record<string, PublishedAsk[]>;
-            // the first orbit ask a docked board shows, moved by a scroll over the board
-            orbitTop: number;
+            // the first ask each scrolled list shows on a docked board, by list
+            tops: Record<string, number>;
             // the board's cards folded to their head row, by card: sessions, orbit, phases
             folds: Record<string, boolean>;
         };
