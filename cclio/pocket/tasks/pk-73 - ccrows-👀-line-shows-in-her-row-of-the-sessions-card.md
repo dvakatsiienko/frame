@@ -4,6 +4,7 @@ title: "ccrow's \U0001F440 line shows in her row of the sessions card"
 status: open
 assignee: []
 created_date: '2026-10-11 22:45'
+updated_date: '2026-10-11 22:50'
 due_date: '2026-10-14'
 labels:
   - s
@@ -22,3 +23,9 @@ dima 2026-10-12 01:42, relayed by ccrow on his word (01:45): «the mods view is 
 - route: a rider on FRM-386 🐠 catch, the next mods coder, on dima's tick
 parked: the mods queue, after FRM-386, on dima's word
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+dima's yes, o314 (01:49): rides FRM-386 🐠 catch with the next mods coder
+<!-- SECTION:NOTES:END -->
