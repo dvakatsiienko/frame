@@ -126,13 +126,15 @@ test('a reply that waits on nothing keeps the 🔭 mark as «not waiting»', asy
     );
 });
 
-test('the 🔭 wait sits in the row, after the compact field', async ($, on) => {
+test('the 🔭 wait sits in the row, and the 📦 field no longer does', async ($, on) => {
     world(on);
     const ui = await band($);
     await reply($, 'pushed.\n\n🔭 waiting on ci — the watcher wakes me');
-    expect((await ui.find({ key: 'row', type: 'Box' }))?.text).toMatch(
-        /📦.*🔭 waiting on ci/su,
-    );
+    const row = (await ui.find({ key: 'row', type: 'Box' }))?.text ?? '';
+    expect([/🔭 waiting on ci/u.test(row), row.includes('📦')]).toEqual([
+        true,
+        false,
+    ]);
 });
 
 test('every control in the row carries a hover card that names it', async ($, on) => {
@@ -145,8 +147,6 @@ test('every control in the row carries a hover card that names it', async ($, on
     expect(cards).toEqual([
         '0 open asks for you',
         '0 phases',
-        'auto-compact at this context %',
-        'type a %, it saves as you type',
         'enhance prompt',
         'settings: show or hide each part',
         "keep this session's cache hot: ping every 50 min",

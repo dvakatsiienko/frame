@@ -141,19 +141,37 @@ export function backgroundWaits(
         .map((t) => (t.name ?? t.description).trim());
 }
 
+// a fleet subagent is named by its badge and type, the way replies print a member (rules/fleet-identity.md)
+const AGENT_BADGE: Record<string, string> = {
+    Explore: '🦊',
+    helper: '🐜',
+    researcher: '🐝',
+    retro: '🦡',
+    sifter: '🪶',
+    wishkeeper: '🐬',
+};
+
 export function backgroundWait(
     all:
-        | readonly { name?: string; description: string; command?: string }[]
+        | readonly {
+              name?: string;
+              description: string;
+              command?: string;
+              agent_type?: string;
+          }[]
         | undefined,
 ): string | undefined {
     const tasks = all?.filter((t) => !isStandingWatch(t)) ?? [];
     const first = tasks[0];
     if (!first) return undefined;
-    const who = (first.name ?? first.description)
-        .trim()
-        .split(/\s+/)
-        .slice(0, 3)
-        .join(' ');
+    const badge = first.agent_type && AGENT_BADGE[first.agent_type];
+    const who = badge
+        ? `${badge} ${first.agent_type}`
+        : (first.name ?? first.description)
+              .trim()
+              .split(/\s+/)
+              .slice(0, 3)
+              .join(' ');
     const more = tasks.length > 1 ? ` +${tasks.length - 1}` : '';
     return `waiting on ${who}${more}`;
 }

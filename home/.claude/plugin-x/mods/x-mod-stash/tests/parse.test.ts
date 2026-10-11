@@ -54,6 +54,25 @@ test('one background task reads as waiting on it, three words at most', () => {
     ).toBe('waiting on critic reads the');
 });
 
+test('a fleet subagent reads as its badge and type, never its description', () => {
+    expect(
+        backgroundWait([
+            {
+                agent_type: 'wishkeeper',
+                description: 'wishkeeper siesta on batch 3',
+            },
+        ]),
+    ).toBe('waiting on 🐬 wishkeeper');
+});
+
+test('a subagent type with no badge keeps the three-word description', () => {
+    expect(
+        backgroundWait([
+            { agent_type: 'general-purpose', description: 'scan the logs now' },
+        ]),
+    ).toBe('waiting on scan the logs');
+});
+
 test('more background tasks add a count', () => {
     expect(
         backgroundWait([

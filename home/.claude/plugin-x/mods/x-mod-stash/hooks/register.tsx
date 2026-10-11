@@ -2707,15 +2707,14 @@ export const register: Register = (on) => {
                           </Text>,
                           { left: 9 },
                       )}
-                {tip(
-                    'compact',
-                    'auto-compact at this context %',
-                    <Text>📦</Text>,
-                    { left: 3 },
-                )}
-                {tip(
-                    'compact-at',
-                    'type a %, it saves as you type',
+            </Box>
+        );
+        // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
+        const compactJSX = (
+            <Box flexDirection='column' key='settings:compact'>
+                <Text bold>context</Text>
+                <Box alignItems='center' flexDirection='row' gap={1}>
+                    <Text>📦 auto-compact at</Text>
                     <Box flexShrink={0} width={8}>
                         <ui.Input
                             key='compact-at'
@@ -2730,9 +2729,9 @@ export const register: Register = (on) => {
                                     : String(meter.compactAt)
                             }
                         />
-                    </Box>,
-                    { left: 9 },
-                )}
+                    </Box>
+                    <Text dimColor>% of the context window</Text>
+                </Box>
             </Box>
         );
         const switches = (
@@ -2977,37 +2976,53 @@ export const register: Register = (on) => {
                       )),
                   ]
                 : [];
-        // the 🎛️ view folds out above the row, where the breather drew; one switch per part, ☑ shown and ☐ hidden, so the
-        // state reads in the glyph, never by colour alone
+        // the 🎛️ view folds out above the row, where the breather drew: a vertical list, one button per part, accent while
+        // shown and dim while hidden, the state in words beside it; no hover cards here, the view explains itself (dima, 15:31–15:36)
         const groups = [...new Set(PARTS.map((p) => p.group))];
         const settingsJSX = view.isSettingsOpen ? (
-            <Box flexDirection='column' key='settings:view'>
+            <Box
+                borderDimColor
+                borderStyle='round'
+                flexDirection='column'
+                gap={1}
+                key='settings:view'
+                paddingX={2}
+                paddingY={air ? 1 : 0}>
+                <Text bold>🎛️ settings · press a part to show or hide it</Text>
                 {groups.map((group) => (
                     <Box flexDirection='column' key={`settings:${group}`}>
-                        <Text bold dimColor>
-                            {group}
-                        </Text>
-                        <Box flexDirection='row' flexWrap='wrap' gap={1}>
-                            {PARTS.filter((p) => p.group === group).map((p) =>
-                                tip(
-                                    `part:${p.key}`,
-                                    isShown(p.key)
-                                        ? `hide ${p.label}`
-                                        : `show ${p.label}`,
-                                    <Button
-                                        key={`part:${p.key}`}
-                                        onPress={() =>
-                                            void handlePartFlip(p.key)
-                                        }
-                                        plain>
-                                        {`${isShown(p.key) ? '☑' : '☐'} ${p.label}`}
-                                    </Button>,
-                                    { left: [...p.label].length + 4 },
-                                ),
-                            )}
-                        </Box>
+                        <Text bold>{group}</Text>
+                        {PARTS.filter((p) => p.group === group).map((p) => (
+                            <Box
+                                alignItems='center'
+                                flexDirection='row'
+                                gap={2}
+                                key={`settings:row:${p.key}`}>
+                                <Box minWidth={30}>
+                                    {
+                                        <Button
+                                            key={`part:${p.key}`}
+                                            onPress={() =>
+                                                void handlePartFlip(p.key)
+                                            }
+                                            {...(isShown(p.key)
+                                                ? {
+                                                      variant:
+                                                          'primary' as const,
+                                                  }
+                                                : { dimColor: true })}>
+                                            {p.label}
+                                        </Button>
+                                    }
+                                </Box>
+                                <Text dimColor={!isShown(p.key)}>
+                                    {isShown(p.key) ? 'shown' : 'hidden'}
+                                </Text>
+                            </Box>
+                        ))}
                     </Box>
                 ))}
+                {compactJSX}
             </Box>
         ) : null;
         return (

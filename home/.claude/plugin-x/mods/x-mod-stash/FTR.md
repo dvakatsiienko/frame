@@ -7,7 +7,7 @@
 
 ## the row
 
-- ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, packed left with the pace, the time left, `📦` and the compaction point, then the 🔭 mark; `🔥`, `⏰`, `💨` and `🚦` hold the right edge; the two meters run full width under it
+- ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, packed left with the pace and the time left, then the 🔭 mark; `🔥`, `⏰`, `💨` and `🚦` hold the right edge; the two meters run full width under it
   - decision: the readings pack left after the chips, the switches stay right (dima's o6, 22:03)
   - given the band draws
   - when dima looks above the prompt
@@ -31,6 +31,7 @@
   - given a reply ends with no 🔭 line while a background shell, monitor, subagent or workflow still runs
   - when the turn stops
   - then the row reads «🔭 waiting on <who>», the first task in three words at most, «+n» for the rest; a reply's own 🔭 line wins
+  - and a fleet subagent (`wishkeeper`, `helper`, `researcher`, `retro`, `sifter`, `Explore`) is <who> as its badge and type, `🐬 wishkeeper`, never its description; only <who> prints bold (dima, 2026-10-11 15:34: «why no emoji? bold only <who>»)
   - decision: short, «waiting on <who>», nothing more (dima's o88, 23:15)
   - given the only tasks running are cclio's standing watches — a task whose command runs `watch-once.sh`, else one described «Arm the one-shot pr watch» or «… ci watch» — then the 🔭 reads «not waiting»; beside a real wait they are not counted in the +n
   - decision: the standing watches run all day and are no wait (dima's o52, 2026-10-11)
@@ -48,8 +49,8 @@
   - decision: a toggle's card follows its state — it names the next press, never both ways (dima, 2026-10-05)
 - ⬜ every chip and reading in the row names itself on hover, five words or fewer
   - given the row draws
-  - when dima hovers `🪐 n`, `🌔 n`, the pace, `⏳`, `📦`, its field, `🔥 5h` or `🧠`
-  - then a dim card reads «n open asks for you», «n phases», «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «auto-compact at this context %», «type a %, it saves as you type», «5h window used», «context window used» (dima, 20:13)
+  - when dima hovers `🪐 n`, `🌔 n`, the pace, `⏳`, `🔥 5h` or `🧠`
+  - then a dim card reads «n open asks for you», «n phases», «ahead of the 5h pace» or «behind the 5h pace», «until the 5h window resets», «5h window used», «context window used» (dima, 20:13)
   - 📌 harness-proven words; the reveal on the desktop is dima's eye
 - ✅ `/clear` and `/resume` empty the conversation's orbit in the same turn
   - given orbit holds asks
@@ -153,7 +154,9 @@
   - then no ping is sent, and the clock restarts when that turn ends
 - ⬜ 🎛️ folds out a show/hide switch per part (FRM-391 slice 05)
   - given the band's 🎛️, the first of its switches
-  - when dima presses it, then a view folds out above the row, a bold dim heading per group (`stash · band`) over one switch per part, `☑ <part>` shown or `☐ <part>` hidden, each naming its next press on hover; a second press folds it away, and neither adds a row to the transcript
+  - when dima presses it, then a bordered view folds out above the row: a bold `🎛️ settings` title, a bold heading per group (`stash · band`), and a vertical list, one row per part — a button with the part's label, accent while shown and dim while hidden, and the word `shown` or `hidden` beside it; a second press folds it away, and neither adds a row to the transcript
+  - and the view's last section, `context`, holds `📦 auto-compact at` its `Input` `% of the context window`; the band's row no longer carries it
+  - decision: a vertical list of on/off buttons, no ☑/☐, more air, full-strength labels (dima, 15:31 «looks ugly», 15:35 «print as a vertical list»); no hover cards inside the view, it explains itself (dima, 15:36); the 📦 field moves in (dima, 15:35)
   - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
   - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
   - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
@@ -164,7 +167,7 @@
   - given a session.measure arrives
   - then `🔥 5h` draws the window's used % as a full-width bar with a `┃` at the pace (the share of the 5h already gone), ending in the used %; beside it the gap reads bold, `🔋 +n%` green while there is room and `🪫 -n%` red at any overrun of the pace (dima's o46, 21:37: the word «pace» goes, the hover keeps it) — and `⏳ 1h 26m`, the time left to the reset (⏳ since dima, 21:10; the phases took 🌔), at full strength (dima, 20:53: «not dimmed»)
   - and `⏳` rounds up to the next minute like cc's own «resets in 1 min», so under a minute reads `⏳ 1m`, never `0m`; once the reset has passed it leaves the row until the next measure names the new one (o103)
-  - and `🧠 ctx` draws the context % as a full-width bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` carries the point in an `Input` that saves each valid value as dima types; a half-typed one saves nothing, Enter names a refusal (dima, 23:31: no ✓); a refused text takes back what typing saved on the way to it, so «100» never leaves «10» behind
+  - and `🧠 ctx` draws the context % as a full-width bar with a `┃` at the compaction point, its % blue while calm, orange from 10 points short of it and red at it; `📦` in 🎛️ carries the point in an `Input` that saves each valid value as dima types; a half-typed one saves nothing, Enter names a refusal (dima, 23:31: no ✓); a refused text takes back what typing saved on the way to it, so «100» never leaves «10» behind
   - and the desktop draws each bar in the retired breather's design language — 5px cells, 2px gaps, light and dark palettes and ramp, two cell rows tall (dima, 20:22: «make them the same design language … bars are slightly different because they are bars»)
   - decision: no `pace n%` — the gap already says how far off pace (dima, 20:04)
 - ⬜ the bars breathe while a turn runs (FRM-391)

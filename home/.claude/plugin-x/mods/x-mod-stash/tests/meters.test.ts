@@ -182,6 +182,7 @@ test("the ctx row shows the fill and the engine's compaction point", async ($, o
     meters(on);
     await measure($, 39, 35);
     const ui = await band($);
+    await ui.press({ key: 'settings' });
     const input = await ui.find({ type: 'Input' });
     expect([
         (await part($, /^35%$/)) !== 'no text',
@@ -195,6 +196,7 @@ test("a repo top's compaction point lands in its shared settings.json, other key
     });
     await measure($, 39, 35);
     const ui = await band($);
+    await ui.press({ key: 'settings' });
     await ui.input({ key: 'compact-at', text: '80' });
     expect([JSON.parse(files[SHARED] ?? '{}'), LOCAL in files]).toEqual([
         {
@@ -220,6 +222,7 @@ test("a subdir session's compaction point lands in its own settings.local.json, 
     }));
     await measure($, 39, 35);
     const ui = await band($);
+    await ui.press({ key: 'settings' });
     await ui.input({ key: 'compact-at', text: '90' });
     expect([
         JSON.parse(files['/launch/.claude/settings.local.json'] ?? '{}').env,
@@ -231,6 +234,7 @@ test('a compaction point outside 10–99 is refused and the file stays untouched
     const { files } = meters(on, { [LOCAL]: '{}' });
     await measure($, 39, 35);
     const ui = await band($);
+    await ui.press({ key: 'settings' });
     await ui.input({ key: 'compact-at', text: '5' });
     expect([
         files[LOCAL],
@@ -270,6 +274,7 @@ test("a project override of the compaction point beats the engine's default", as
     meters(on, {}, '55');
     await measure($, 39, 35);
     const ui = await band($);
+    await ui.press({ key: 'settings' });
     expect((await ui.find({ type: 'Input' }))?.props.value).toBe('55');
 });
 
@@ -292,6 +297,7 @@ test('typing a compaction point saves it with no Enter', async ($, on) => {
     const { files } = meters(on, { [SHARED]: '{}' });
     await measure($, 39, 35);
     const ui = await band($);
+    await ui.press({ key: 'settings' });
     await ui.input({ key: 'compact-at', kind: 'change', text: '85' });
     expect(JSON.parse(files[SHARED] ?? '{}').env).toEqual({
         CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '85',
@@ -306,6 +312,7 @@ test('a refused compaction point takes back what typing saved on the way to it',
     );
     await measure($, 39, 35);
     const ui = await band($);
+    await ui.press({ key: 'settings' });
     for (const text of ['1', '10', '100'])
         await ui.input({ key: 'compact-at', kind: 'change', text });
     await ui.input({ key: 'compact-at', text: '100' });
@@ -318,6 +325,7 @@ test('a half-typed compaction point saves nothing and names no refusal', async (
     const { files } = meters(on, { [LOCAL]: '{}' });
     await measure($, 39, 35);
     const ui = await band($);
+    await ui.press({ key: 'settings' });
     await ui.input({ key: 'compact-at', kind: 'change', text: '8' });
     expect([files[LOCAL], await part($, /^compaction point must/)]).toEqual([
         '{}',

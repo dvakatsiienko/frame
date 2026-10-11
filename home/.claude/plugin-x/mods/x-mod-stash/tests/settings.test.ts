@@ -63,7 +63,43 @@ test('🎛️ folds out a switch per part, grouped under its mod', async ($, on)
     expect([
         (await ui.find({ text: 'stash · band', type: 'Text' }))?.text,
         (await ui.find({ key: 'part:stash.enhancer', type: 'Button' }))?.text,
-    ]).toEqual(['stash · band', '☑ 🪄 ⏪ ⏩ enhancer']);
+    ]).toEqual(['stash · band', '🪄 ⏪ ⏩ enhancer']);
+});
+
+test('a shown part is an accent button marked shown, a hidden one dim and marked hidden', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await ui.press({ key: 'settings' });
+    const look = async () => {
+        const b = await ui.find({ key: 'part:stash.enhancer', type: 'Button' });
+        const row = await ui.find({
+            key: 'settings:row:stash.enhancer',
+            type: 'Box',
+        });
+        return [
+            b?.props.variant,
+            b?.props.dimColor,
+            row?.text.match(/(shown|hidden)$/u)?.[1],
+        ];
+    };
+    const before = await look();
+    await ui.press({ key: 'part:stash.enhancer' });
+    expect([before, await look()]).toEqual([
+        ['primary', undefined, 'shown'],
+        [undefined, true, 'hidden'],
+    ]);
+});
+
+test('the 📦 auto-compact field is the last section of 🎛️', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    const closed = await ui.find({ key: 'compact-at' });
+    await ui.press({ key: 'settings' });
+    const view = (await ui.find({ key: 'settings:view', type: 'Box' }))?.text;
+    expect([
+        closed,
+        /📦 auto-compact at.*% of the context window$/su.test(view ?? ''),
+    ]).toEqual([undefined, true]);
 });
 
 test('a second 🎛️ press folds the view away and leaves no transcript rows', async ($, on) => {
