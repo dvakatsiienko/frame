@@ -398,6 +398,30 @@ test("a session's first prompt says phases are its live plan", async ($, on) => 
     );
 });
 
+test('after a /clear the first prompt says phases are its live plan again', async ($, on) => {
+    const w = world(on);
+    on('command.run', () => ({ text: '' }));
+    on('session.end', (_$, e) => ({ sessionId: e.sessionId }));
+    await start($);
+    await say($, 'hi');
+    await endTurn($);
+    await $.command.run({
+        args: '',
+        command: 'clear',
+        origin: { kind: 'composer' },
+        presentation: { columns: 80, isFullscreen: false },
+    });
+    await $.session.end({
+        reason: 'clear',
+        resume: { id: SID },
+        sessionId: SID,
+    });
+    await say($, 'fresh start');
+    expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
+        /phases are your live plan/,
+    );
+});
+
 const tools = async ($: Engine, n: number) => {
     const out: string[] = [];
     for (let i = 0; i < n; i++)

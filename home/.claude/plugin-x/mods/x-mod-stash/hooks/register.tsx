@@ -2407,9 +2407,11 @@ export const register: Register = (on) => {
 
     // a /clear or a resume leaves the conversation behind; an exit leaves its last reply for the away digest
     on('session.end', async ($, e, next) => {
-        if (e.reason === 'clear' || e.reason === 'resume')
+        if (e.reason === 'clear' || e.reason === 'resume') {
+            // the process outlives a /clear, so the next conversation is primed again: no session.start fires for it
+            isPrimed = false;
             await forget($, e.sessionId);
-        else await retire($, e.sessionId);
+        } else await retire($, e.sessionId);
         return next(e);
     });
 
