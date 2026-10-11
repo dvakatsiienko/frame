@@ -59,6 +59,17 @@ const MODEL = 'model:';
 const COLOUR = 'board-colour';
 // `/board breathe`: the bars breathe idle too, while dima refines the look (2026-10-11 12:20); off by default, a try
 const BREATH_PREVIEW = 'breath-preview';
+// the 🎛️ settings (FRM-391 slice 05): one show/hide switch per part, in the store every session reads and the poll
+// re-reads, so a flip reaches every band within one poll; a missing key is shown
+const SHOWN = 'shown';
+// the parts dima approved (o2, 2026-10-11 13:15), grouped by where they draw; a mod's own parts, so a new one joins here
+const PARTS = [
+    {
+        group: 'stash · band',
+        key: 'stash.enhancer',
+        label: '🪄 ⏪ ⏩ enhancer',
+    },
+] as const;
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
 // a session younger than this, counted from the registry's `startedAt`, is a probe: it gets no row until it outlives it
@@ -147,6 +158,8 @@ let pinged = false;
 let isPolling = false;
 let afk = false;
 let isWaker = false;
+let shown: Record<string, boolean> = {};
+let isSettingsOpen = false;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
 let turnTools = 0;
 let isNudged = false;
@@ -741,6 +754,7 @@ async function load($: EngineInterface) {
         | { on?: boolean }
         | undefined;
     isWaker = waker?.on === true;
+    shown = shownOf(await $.store.get(SHOWN).catch(() => undefined));
     // after a /clear the process goes on under a new id, and no session.start fires
     selfId = await $.session.id().catch(() => selfId);
     // the band's 🔭 line: what this session's last reply said it waits on
@@ -760,10 +774,20 @@ function viewOf(isBoardOpen: boolean): StashView {
         digest,
         isBoardOpen,
         isHot: Boolean(hot),
+        isSettingsOpen,
         isWaker,
         selfId,
+        shown,
         wait,
     };
+}
+
+// the store's switches, any non-boolean dropped: a broken value never hides a part
+function shownOf(v: unknown): Record<string, boolean> {
+    if (!v || typeof v !== 'object') return {};
+    return Object.fromEntries(
+        Object.entries(v).filter(([, on]) => typeof on === 'boolean'),
+    );
 }
 
 // a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
@@ -2492,6 +2516,20 @@ export const register: Register = (on) => {
             press?: { hotkey: string; onPress: () => void },
         ) => hoverTip(ui, key, words, control, place, press);
         const boardOpen = view.isBoardOpen;
+        const isShown = (key: string) => view.shown?.[key] !== false;
+        const handleSettingsFlip = async () => {
+            isSettingsOpen = !view.isSettingsOpen;
+            await publish($);
+        };
+        // re-read before the write: another session may have flipped a part since this one's poll
+        const handlePartFlip = async (key: string) => {
+            const now = shownOf(
+                await $.store.get(SHOWN).catch(() => undefined),
+            );
+            shown = { ...now, [key]: now[key] === false };
+            await $.store.set(SHOWN, shown);
+            await publish($);
+        };
         const handleBoardFlip = async () => {
             if (await isOpen($)) await $.ui.close({ id: BOARD });
             else await openBoard($);
@@ -2675,6 +2713,21 @@ export const register: Register = (on) => {
         const switches = (
             <Box flexDirection='row' flexShrink={0} gap={1} key='switches'>
                 {tip(
+                    'settings',
+                    view.isSettingsOpen
+                        ? 'fold the settings'
+                        : 'settings: show or hide each part',
+                    <Button
+                        key='settings'
+                        onPress={() => void handleSettingsFlip()}
+                        {...(view.isSettingsOpen
+                            ? { variant: 'secondary' as const }
+                            : { plain: true as const })}>
+                        🎛️
+                    </Button>,
+                    leftOf('🎛️', view.isSettingsOpen),
+                )}
+                {tip(
                     'hot',
                     view.isHot
                         ? "stop keeping this session's cache hot"
@@ -2823,7 +2876,7 @@ export const register: Register = (on) => {
                         </Text>
                     </Box>
                 </Box>
-                {enhancerJSX}
+                {isShown('stash.enhancer') ? enhancerJSX : null}
                 {switches}
             </Box>
         );
@@ -2880,8 +2933,42 @@ export const register: Register = (on) => {
                       )),
                   ]
                 : [];
+        // the 🎛️ view folds out above the row, where the breather drew; one switch per part, ☑ shown and ☐ hidden, so the
+        // state reads in the glyph, never by colour alone
+        const groups = [...new Set(PARTS.map((p) => p.group))];
+        const settingsJSX = view.isSettingsOpen ? (
+            <Box flexDirection='column' key='settings:view'>
+                {groups.map((group) => (
+                    <Box flexDirection='column' key={`settings:${group}`}>
+                        <Text bold dimColor>
+                            {group}
+                        </Text>
+                        <Box flexDirection='row' flexWrap='wrap' gap={1}>
+                            {PARTS.filter((p) => p.group === group).map((p) =>
+                                tip(
+                                    `part:${p.key}`,
+                                    isShown(p.key)
+                                        ? `hide ${p.label}`
+                                        : `show ${p.label}`,
+                                    <Button
+                                        key={`part:${p.key}`}
+                                        onPress={() =>
+                                            void handlePartFlip(p.key)
+                                        }
+                                        plain>
+                                        {`${isShown(p.key) ? '☑' : '☐'} ${p.label}`}
+                                    </Button>,
+                                    { left: [...p.label].length + 4 },
+                                ),
+                            )}
+                        </Box>
+                    </Box>
+                ))}
+            </Box>
+        ) : null;
         return (
             <Box flexDirection='column'>
+                {settingsJSX}
                 {row}
                 {/* the terminal reads the 5h and ctx on sline's line; the desktop keeps the bars (dima, 15:06) */}
                 {Svg ? meters : null}

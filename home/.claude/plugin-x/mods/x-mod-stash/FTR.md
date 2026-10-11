@@ -151,6 +151,13 @@
 - ✅ a busy session is never pinged
   - given 🔥 is on and a turn is running at the 50-minute mark
   - then no ping is sent, and the clock restarts when that turn ends
+- ⬜ 🎛️ folds out a show/hide switch per part (FRM-391 slice 05)
+  - given the band's 🎛️, the first of its switches
+  - when dima presses it, then a view folds out above the row, a bold dim heading per group (`stash · band`) over one switch per part, `☑ <part>` shown or `☐ <part>` hidden, each naming its next press on hover; a second press folds it away, and neither adds a row to the transcript
+  - when he presses a switch, then that part leaves the band or comes back at once, and every open session follows within one 4 s poll; the switch is kept in stash's store, so a reload or a restart keeps it
+  - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
+  - decision: the first batch carries the enhancer switch alone, the other approved parts join once dima has seen the view (the advisor's small-batch call, 2026-10-11 15:30)
+  - decision: the switches live in stash's own store, the one the 💨 and ⏰ switches already share across sessions — a separate file joins only if another mod's parts do
 - ⬜ two live meters, full width under the row on the desktop (FRM-366)
   - given the terminal, then no bars draw: sline's own line carries the 5h, the week and the context, the pace number with them (dima, 2026-10-11 15:06); the row's 🔋/🪫 pace and ⏳ reset stay
   - given a session.measure arrives

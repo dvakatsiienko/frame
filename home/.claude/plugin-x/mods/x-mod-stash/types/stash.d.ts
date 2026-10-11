@@ -55,6 +55,9 @@ export type StashView = {
     isWaker: boolean;
     digest?: StashDigest;
     isBoardOpen: boolean;
+    // the settings view: open in this session, and each part's switch as every session reads it (a missing key is shown)
+    isSettingsOpen: boolean;
+    shown: Record<string, boolean>;
 };
 
 // what only the board pane draws, kept apart from the band's view: its clock moves every poll, and a band that read it
