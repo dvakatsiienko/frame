@@ -65,7 +65,8 @@ type BreathAb = {
 const BREATH = { key: 'breath', plugin: 'x-mod-stash' } as const;
 const GPU_SAMPLE_MS = 2000;
 const GPU_KEEP = 10;
-const SPIN_CELLS = 12;
+// dima 14:40: «try reducing spinner to 4 cells»
+const SPIN_CELLS = 4;
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
 // a session younger than this, counted from the registry's `startedAt`, is a probe: it gets no row until it outlives it
