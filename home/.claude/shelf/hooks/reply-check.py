@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Stop hook: reads the reply that just ended and logs every shape the output-format rules ban.
-# it blocks the shapes `main` names (a 📄 stamp off the clock, a ·-joined list, a 🔭 on ccrow, a grill answer fence); every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
+# it blocks the shapes `main` names (a 📄 stamp off the clock, a ·-joined list, a 🔭 on ccrow, a grill answer fence, an unglossed internal id, cclio's 🔭 without dima while his ask is open); every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
 # fixed instead of a validator stopping every reply. `pnpm reply-check:report` reads it.
 import json
 import os
@@ -26,6 +26,15 @@ GRILL_ANSWER = re.compile(r"^\s*Q\d+\s*[:\-–]?\s*[a-e]\b", re.M)
 # a link the desktop pane opens: no scheme, no #anchor; the pane resolves it from the session's folder (dima, 2026-10-11, o125)
 LOCAL_LINK = re.compile(r"\]\((?![a-z][a-z0-9+.-]*:|#)([^)\s]+)\)")
 LINE_SUFFIX = re.compile(r":\d+(?::\d+)?$")
+HOME = os.environ.get("REPLY_CHECK_HOME", os.path.expanduser("~"))
+# while dima owes cclio an answer, her 🔭 names him (o45; missed twice on 10-12 after it was set)
+WAIT_LINE = re.compile(r"^\s*🔭.*$", re.M)
+# an internal id dima cannot read cold: an orbit ask, a pocket item, a letter-digit label (o54: o56, PK-50, I7); a grill's
+# `Q1` is its own label, printed with its question in the same reply
+INTERNAL_ID = re.compile(r"(?<![\w/.#-])(o\d{1,4}|[Pp][Kk]-\d{1,4}|[A-PR-Z]\d{1,2})(?![\w/-])")
+# glossed: words right after it in brackets, or after a colon or a dash, at least two of them
+GLOSS_AFTER = re.compile(r"^\s*(?:\(|:\s|[—–-]\s|=\s)\s*[^\s)]+\s+[^\s)]+")
+MD_LINK_LABEL = re.compile(r"\[[^\]]*\]\([^)]*\)")
 
 
 def dead_links(prose: str, cwd: str) -> list[str]:
@@ -35,6 +44,56 @@ def dead_links(prose: str, cwd: str) -> list[str]:
         if not os.path.exists(os.path.join(cwd, os.path.expanduser(target))):
             dead.append(m.group(1))
     return dead
+
+
+def unglossed(prose: str) -> list[str]:
+    # each id judged at its first use only; a link label is its own gloss, inline code is a machine string
+    text = INLINE_CODE.sub("", MD_LINK_LABEL.sub("", prose))
+    seen: set[str] = set()
+    bare: list[str] = []
+    for m in INTERNAL_ID.finditer(text):
+        token = m.group(1)
+        if token.lower() in seen:
+            continue
+        seen.add(token.lower())
+        if not GLOSS_AFTER.match(text[m.end():]):
+            bare.append(token)
+    return bare
+
+
+def session_name(session: str) -> str:
+    folder = os.path.join(HOME, ".claude/sessions")
+    for entry in os.listdir(folder) if os.path.isdir(folder) else []:
+        try:
+            with open(os.path.join(folder, entry)) as f:
+                record = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue
+        if record.get("sessionId") == session:
+            return str(record.get("name") or "")
+    return ""
+
+
+def open_asks(session: str) -> int:
+    # the asks x-mod-stash mirrors for its board: dima's unmarked ones, under a day old, from the newest store file
+    folder = os.path.join(HOME, ".claude/plugins/store")
+    files = [os.path.join(folder, f) for f in os.listdir(folder) if f.startswith("x-mod-stash_")] if os.path.isdir(folder) else []
+    if not files:
+        return 0
+    with open(max(files, key=os.path.getmtime)) as f:
+        entry = (json.load(f) or {}).get(f"asks:{session}") or {}
+    if time.time() * 1000 - float(entry.get("at") or 0) > 24 * 3600 * 1000:
+        return 0
+    items = entry.get("items")
+    if isinstance(items, list):
+        return sum(1 for item in items if isinstance(item, dict) and not item.get("mark"))
+    return len(entry.get("asks") or [])
+
+
+def waits_without_dima(prose: str, session: str) -> bool:
+    if not re.search(r"(^|\s)cclio$", session_name(session)) or not open_asks(session):
+        return False
+    return not any("dima" in line for line in WAIT_LINE.findall(prose))
 
 
 def minutes_now() -> int:
@@ -144,6 +203,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("wait-on-ccrow", m.group(0)[:40]) for m in WAIT_ON_CCROW.finditer(prose)]
     # each fence is judged alone: a Q line in prose between two command fences once matched across them
     found += [("grill-fence", f.group(0)[3:43]) for f in FENCE.finditer(reply) if GRILL_ANSWER.search(f.group(0))]
+    found += [("unglossed-id", token) for token in unglossed(prose)]
     return found
 
 
@@ -160,6 +220,8 @@ def main() -> None:
     cwd = event.get("cwd")
     if cwd:
         hits += [("dead-link", link) for link in dead_links(FENCE.sub("", reply), cwd)]
+    if waits_without_dima(FENCE.sub("", reply), str(event.get("session_id", ""))):
+        hits.append(("wait-without-dima", "🔭"))
     path = event.get("transcript_path")
     prompted = prompt_now(path) if path and os.path.exists(path) else None
     if prompted is not None and not is_rewind(path):
@@ -194,6 +256,11 @@ def main() -> None:
         reasons.append(f"the 📄 stamp is a composed clock: {stale[0]} and {asked} (the prompt hook's now) differ by over 2 minutes. copy the hook's now, or run `date`, and reprint the 📄 line.")
     if grill:
         reasons.append("a fence pre-filled with grill answers: grill answers go to orbit, one `Qn <title>` row per question with your pick (dima, 2026-10-11). drop the fence; the round itself stays in the reply.")
+    bare = [snippet for rule, snippet in hits if rule == "unglossed-id"]
+    if bare:
+        reasons.append(f"an internal id with no gloss ({', '.join(bare)}): dima reads it cold. give each its three-word gloss at first use — `o56 (the trash ask)` — or say the plain thing instead.")
+    if any(rule == "wait-without-dima" for rule, _ in hits):
+        reasons.append("orbit holds an ask dima has not answered, and no 🔭 line names him: end with `🔭 waiting on **🙋‍♂️ dima**` (beside any member it also waits on).")
     if reasons and not event.get("stop_hook_active"):
         print(json.dumps({"decision": "block", "reason": " ".join(reasons)}))
 
