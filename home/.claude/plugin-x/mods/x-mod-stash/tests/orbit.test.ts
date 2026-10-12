@@ -116,49 +116,49 @@ test('asks the tool adds list in orbit oldest first, each by its id', async ($, 
     expect(await asksShown(ui)).toEqual(['o1', 'o2', 'o3']);
 });
 
-test('a note being typed keeps the value it showed, so a redraw never moves the caret', async ($, on) => {
+test('a steer being typed keeps the value it showed, so a redraw never moves the caret', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await add($, ['name a bird', 'pelican']);
-    await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'a' });
-    await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'ab' });
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a' });
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'ab' });
     expect(
-        (await ui.find({ key: 'orbit:note:o1', type: 'Input' }))?.props.value,
+        (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.value,
     ).toBe('');
 });
 
-// the note as the session's published asks hold it, the store mirror every board reads
-const savedNote = (store: Map<string, unknown>) =>
-    (store.get(`asks:${SID}`) as { items: { note?: string }[] } | undefined)
-        ?.items[0]?.note;
+// the steer as the session's published asks hold it, the store mirror every board reads
+const savedSteer = (store: Map<string, unknown>) =>
+    (store.get(`asks:${SID}`) as { items: { steer?: string }[] } | undefined)
+        ?.items[0]?.steer;
 
-test('a note saves once typing pauses 1.5 s, never on each keystroke', async ($, on) => {
+test('a steer saves once typing pauses 1.5 s, never on each keystroke', async ($, on) => {
     const { clock, store } = world(on);
     await start($);
     const ui = await board($);
     await add($, ['name a bird', 'pelican']);
-    await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'a' });
-    await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'ab' });
-    const typing = savedNote(store);
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a' });
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'ab' });
+    const typing = savedSteer(store);
     await clock.advance(1600);
-    expect([typing, savedNote(store)]).toEqual([undefined, 'ab']);
+    expect([typing, savedSteer(store)]).toEqual([undefined, 'ab']);
 });
 
-test('a tick pressed right after typing carries the note still waiting to save', async ($, on) => {
+test('a tick pressed right after typing carries the steer still waiting to save', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await add($, ['name a bird', 'pelican']);
     await ui.input({
-        key: 'orbit:note:o1',
+        key: 'orbit:steer:o1',
         kind: 'change',
         text: 'not a pelican',
     });
     await ui.press({ key: 'orbit:accepted:o1' });
     await say($, 'next');
     expect(joined(w.contexts).join('\n')).toContain(
-        'his note: «not a pelican»',
+        'his steer: «not a pelican»',
     );
 });
 
@@ -194,16 +194,16 @@ test('an unmarked ask joins no prompt', async ($, on) => {
     expect(joined(w.contexts).join('\n')).not.toContain('o1');
 });
 
-test("a rejected ask joins with dima's note and cclio's hidden note", async ($, on) => {
+test("a rejected ask joins with dima's steer and cclio's hidden steer", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
     await ui.press({ key: 'orbit:rejected:o1' });
-    await ui.input({ key: 'orbit:note:o1', text: 'wait for ci' });
+    await ui.input({ key: 'orbit:steer:o1', text: 'wait for ci' });
     await say($, 'next');
     expect(joined(w.contexts).join('\n')).toMatch(
-        /o1 ↩️ rejected: push FRM-1 \(your pick: yes\) · his note: «wait for ci» · your note: «came from push FRM-1»/,
+        /o1 ↩️ rejected: push FRM-1 \(your pick: yes\) · his steer: «wait for ci» · your note: «came from push FRM-1»/,
     );
 });
 
@@ -296,17 +296,17 @@ test('a ping turn a reload kept in state still takes no tick', async ($, on) => 
     expect((r.context ?? []).join('\n')).not.toMatch(/accepted/);
 });
 
-test('a joined ask keeps its buttons but no note field while the turn runs', async ($, on) => {
+test('a joined ask keeps its buttons but no steer field while the turn runs', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
     await ui.press({ key: 'orbit:accepted:o1' });
-    await ui.input({ key: 'orbit:note:o1', text: 'after ci' });
+    await ui.input({ key: 'orbit:steer:o1', text: 'after ci' });
     await say($, 'go');
     const keys = (await ui.findAll({})).map((n) => n.key ?? '');
     expect([
-        keys.filter((k) => /^orbit:(accepted|rejected|note|read):o1$/.test(k)),
+        keys.filter((k) => /^orbit:(accepted|rejected|steer|read):o1$/.test(k)),
         (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text,
     ]).toEqual([
         ['orbit:accepted:o1', 'orbit:rejected:o1', 'orbit:read:o1'],
@@ -362,19 +362,19 @@ test('a held mark swaps its emoji for ✅, and only one of the two holds it', as
     ]);
 });
 
-test('a note is kept as it is typed, with no Enter', async ($, on) => {
+test('a steer is kept as it is typed, with no Enter', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
     await ui.press({ key: 'orbit:rejected:o1' });
     await ui.input({
-        key: 'orbit:note:o1',
+        key: 'orbit:steer:o1',
         kind: 'change',
         text: 'wait for ci',
     });
     await say($, 'next');
-    expect(joined(w.contexts).join('\n')).toContain('his note: «wait for ci»');
+    expect(joined(w.contexts).join('\n')).toContain('his steer: «wait for ci»');
 });
 
 test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
@@ -389,12 +389,12 @@ test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
     expect(await asksShown(ui)).toEqual(['o2']);
 });
 
-test("a follow-up clears dima's note on the old question", async ($, on) => {
+test("a follow-up clears dima's steer on the old question", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
-    await ui.input({ key: 'orbit:note:o1', text: 'tastaet' });
+    await ui.input({ key: 'orbit:steer:o1', text: 'tastaet' });
     await say($, 'go');
     await orbit($, {
         id: 'o1',
@@ -403,7 +403,7 @@ test("a follow-up clears dima's note on the old question", async ($, on) => {
         text: 'push the branch once ci is green',
     });
     await endTurn($);
-    expect((await ui.find({ key: 'orbit:note:o1' }))?.props.value).toBe('');
+    expect((await ui.find({ key: 'orbit:steer:o1' }))?.props.value).toBe('');
 });
 
 test('a follow-up keeps its id and place with new text, led by 🆕', async ($, on) => {
@@ -669,7 +669,7 @@ test('a prompt that lands mid-turn reads a plan set this turn as 0 turns old', a
     await start($);
     await say($, 'go');
     await orbit($, { lines: ['now: a'], op: 'plan' });
-    await say($, 'a note mid-turn');
+    await say($, 'a steer mid-turn');
     expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
         /plan set 0 turns ago/,
     );
@@ -991,13 +991,13 @@ test('a speak press keeps mobile mode on', async ($, on) => {
     expect(lastContext(w.contexts)).toContain('asks fence');
 });
 
-test('a typed note keeps mobile mode on', async ($, on) => {
+test('a typed steer keeps mobile mode on', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
     await mobile($);
-    await ui.input({ key: 'orbit:note:o1', text: 'after ci' });
+    await ui.input({ key: 'orbit:steer:o1', text: 'after ci' });
     await say($, 'hi');
     expect(lastContext(w.contexts)).toContain('asks fence');
 });
@@ -1178,16 +1178,20 @@ test('🛎️ clears an assumption', async ($, on) => {
     );
 });
 
-test('↩️ with a note joins the next prompt as a wrong assumption', async ($, on) => {
+test('↩️ with a steer joins the next prompt as a wrong assumption', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await assume($, 'kept the old port');
     await ui.press({ key: 'orbit:wrong:a1' });
-    await ui.input({ key: 'orbit:anote:a1', kind: 'change', text: 'use 7374' });
+    await ui.input({
+        key: 'orbit:asteer:a1',
+        kind: 'change',
+        text: 'use 7374',
+    });
     await say($, 'next');
     expect((w.contexts.at(-1) ?? []).join('\n')).toContain(
-        '- a1 wrong assumption: kept the old port · his note: «use 7374»',
+        '- a1 wrong assumption: kept the old port · his steer: «use 7374»',
     );
 });
 

@@ -121,7 +121,7 @@ async function hold($: Engine, n: number) {
 
 /* exit 1 — the section */
 
-test('caught pieces show under 🐠 catch, each with 🤔, copy, clear and a note box', async ($, on) => {
+test('caught pieces show under 🐠 catch, each with 🤔, copy, clear and a steer box', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -134,7 +134,7 @@ test('caught pieces show under 🐠 catch, each with 🤔, copy, clear and a not
             'orbit:think:c1',
             'orbit:copy:c1',
             'orbit:clear:c1',
-            'orbit:cnote:c1',
+            'orbit:csteer:c1',
         ].every((k) => keys.includes(k)),
     ]).toEqual(['🐠 catch', ['c1', 'c2'], true]);
 });
@@ -189,14 +189,14 @@ test('🤔 while a turn runs joins it at the next tool result and starts no turn
     await say($, 'go');
     await ui.press({ key: 'orbit:think:c1' });
     await ui.input({
-        key: 'orbit:cnote:c1',
+        key: 'orbit:csteer:c1',
         kind: 'change',
         text: 'why so early?',
     });
     const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
     expect([thought(r.context ?? []), w.contexts.length, w.appended]).toEqual([
         expect.stringContaining(
-            '- c1: the 5h window resets at 16:40 · your note: «from the 5h window resets at 16:40» · his note: «why so early?»',
+            '- c1: the 5h window resets at 16:40 · your note: «from the 5h window resets at 16:40» · his steer: «why so early?»',
         ),
         1,
         [],
@@ -295,4 +295,28 @@ test('held pieces survive a reload', async ($, on) => {
     await start($);
     const ui = await board($);
     expect(await piecesShown(ui)).toEqual(['c4']);
+});
+
+test("a piece's text kept as «note» before the steer rename is drawn in its steer field after a reload", async ($, on) => {
+    world(on);
+    const state: Record<string, unknown> = {
+        orbit: {
+            asks: [],
+            caught: [{ at: 1, id: 'c4', note: 'why so early?', text: 'kept' }],
+            next: 5,
+            turns: 2,
+        },
+    };
+    on('state.get', (_$, e) => ({
+        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state[e.key] = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    await start($);
+    const ui = await board($);
+    expect(
+        (await ui.find({ key: 'orbit:csteer:c4', type: 'Input' }))?.props.value,
+    ).toBe('why so early?');
 });

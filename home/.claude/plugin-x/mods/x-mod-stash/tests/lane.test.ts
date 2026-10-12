@@ -122,10 +122,10 @@ const kept = (w: ReturnType<typeof world>) =>
     (JSON.parse(w.files[FILE] ?? '{"lanes":[]}') as { lanes: KeptLane[] })
         .lanes;
 const shelf = (...lanes: KeptLane[]) => ({ [FILE]: JSON.stringify({ lanes }) });
-// dima's note on lane l1 as the board keeps it
-const noteOf = (w: { store: Map<string, unknown> }) =>
-    w.store.get('lane-note:l1') as
-        | { note?: string; isTaken?: boolean }
+// dima's steer on lane l1 as the board keeps it
+const steerOf = (w: { store: Map<string, unknown> }) =>
+    w.store.get('lane-steer:l1') as
+        | { steer?: string; isTaken?: boolean }
         | undefined;
 const keptLane = (over: Partial<KeptLane> = {}): KeptLane => ({
     current: 0,
@@ -272,11 +272,11 @@ test('a ticket step links to linear', async ($, on) => {
     );
 });
 
-const note = async (ui: Board, text: string) =>
-    ui.input({ key: 'lane:l1:note', kind: 'change', text });
+const steer = async (ui: Board, text: string) =>
+    ui.input({ key: 'lane:l1:steer', kind: 'change', text });
 const take = (ui: Board) => ui.press({ key: 'lane:l1:take' });
 
-test("one note box and one take, on the current step only; a taken note joins dima's next prompt once", async ($, on) => {
+test("one steer box and one take, on the current step only; a taken steer joins dima's next prompt once", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -285,7 +285,7 @@ test("one note box and one take, on the current step only; a taken note joins di
     const boxes = (await ui.findAll({ type: 'Input' })).filter((n) =>
         n.key?.startsWith('lane:'),
     ).length;
-    await note(ui, 'cards first');
+    await steer(ui, 'cards first');
     await take(ui);
     await say($, 'go');
     await say($, 'again');
@@ -296,25 +296,25 @@ test("one note box and one take, on the current step only; a taken note joins di
     ]).toEqual([1, true, false]);
 });
 
-test('a note never sent with take stays a draft (dima, 20:51)', async ($, on) => {
+test('a steer never sent with take stays a draft (dima, 20:51)', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await create($);
-    await note(ui, 'cards first');
+    await steer(ui, 'cards first');
     await say($, 'go');
     expect([
         w.contexts.at(-1)?.some((c) => c.includes('cards first')),
-        noteOf(w)?.note,
+        steerOf(w)?.steer,
     ]).toEqual([false, 'cards first']);
 });
 
-test("a peer's prompt never carries a taken note (dima, 20:51: only via send prompt)", async ($, on) => {
+test("a peer's prompt never carries a taken steer (dima, 20:51: only via send prompt)", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await create($);
-    await note(ui, 'cards first');
+    await steer(ui, 'cards first');
     await take(ui);
     await $.prompt.submit({
         origin: { kind: 'peer' },
@@ -326,13 +326,13 @@ test("a peer's prompt never carries a taken note (dima, 20:51: only via send pro
     );
 });
 
-test("a note taken while cclio's turn runs joins it at her next tool call", async ($, on) => {
+test("a steer taken while cclio's turn runs joins it at her next tool call", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await create($);
     await say($, 'go');
-    await note(ui, 'stop and look');
+    await steer(ui, 'stop and look');
     await take(ui);
     const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
     const again = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
@@ -342,49 +342,49 @@ test("a note taken while cclio's turn runs joins it at her next tool call", asyn
     ]).toEqual([true, false]);
 });
 
-test("a member's board takes a note that reaches cclio, never the member's own prompt", async ($, on) => {
+test("a member's board takes a steer that reaches cclio, never the member's own prompt", async ($, on) => {
     const w = world(on, { files: shelf(keptLane()), name: '☕️ 🔧 coder' });
     await start($);
     const ui = await board($);
-    await note(ui, 'slow down');
+    await steer(ui, 'slow down');
     await take(ui);
     await say($, 'go');
     expect([
-        noteOf(w)?.note,
-        noteOf(w)?.isTaken,
+        steerOf(w)?.steer,
+        steerOf(w)?.isTaken,
         w.contexts.at(-1)?.some((c) => c.includes('slow down')),
         // only cclio's lane op writes the shelf file
-        kept(w)[0]?.note,
+        kept(w)[0]?.steer,
     ]).toEqual(['slow down', true, false, undefined]);
 });
 
-test('a note on a step leaves when cclio moves the lane past it', async ($, on) => {
+test('a steer on a step leaves when cclio moves the lane past it', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await create($);
-    await note(ui, 'cards first');
+    await steer(ui, 'cards first');
     await lane($, { act: 'step', current: 1, id: 'l1' });
-    expect(noteOf(w)).toBe(undefined);
+    expect(steerOf(w)).toBe(undefined);
 });
 
-test('a taken note clears from the box once cclio took it', async ($, on) => {
+test('a taken steer clears from the box once cclio took it', async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await create($);
-    await note(ui, 'cards first');
+    await steer(ui, 'cards first');
     await take(ui);
     await say($, 'go');
     // the field held what it showed while typed into; the clear remounts it, so the surface drops the typed text
     const box = (await ui.findAll({ type: 'Input' })).find((n) =>
-        n.key?.startsWith('lane:l1:note'),
+        n.key?.startsWith('lane:l1:steer'),
     );
     expect([
         box?.key,
         box?.props.value,
         (await ui.find({ key: 'lane:l1:take', type: 'Button' }))?.text,
-    ]).toEqual(['lane:l1:note#1', '', '🛎️ tick']);
+    ]).toEqual(['lane:l1:steer#1', '', '🛎️ tick']);
 });
 
 test('a step past an item marks it done, never leaving the pointer on a done one', async ($, on) => {
@@ -457,7 +457,7 @@ test('an ended lane never comes back at a fresh start', async ($, on) => {
 
 test("nothing of a lane enters a member's model context", async ($, on) => {
     const w = world(on, {
-        files: shelf(keptLane({ note: 'n' })),
+        files: shelf(keptLane({ steer: 'n' })),
         name: '☕️ 🔧 coder',
     });
     await start($);
@@ -569,7 +569,7 @@ test('an idle member with marks wakes once, after dima prompts anywhere', async 
     w.store.set(`marks:${SID}:o1`, {
         at: w.clock.now(),
         mark: 'rejected',
-        note: 'later',
+        steer: 'later',
     });
     await w.clock.advance(5_000);
     const quiet = w.texts.length;
@@ -657,8 +657,8 @@ interface KeptLane {
     current: number;
     movedAt: number;
     members: Record<string, string>;
-    note?: string;
-    isNoteTaken?: boolean;
+    steer?: string;
+    isSteerTaken?: boolean;
     history: { act: string; at: number; current: number; done: number }[];
     endedAt?: number;
 }
@@ -691,7 +691,7 @@ test('every board card folds by one rule: open until folded, a member subcard fo
     ]);
 });
 
-test("the current step's tick and note sit on its own line after its link, tick first (dima's shots, 17:41, 17:46)", async ($, on) => {
+test("the current step's tick and steer sit on its own line after its link, tick first (dima's shots, 17:41, 17:46)", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
@@ -718,4 +718,35 @@ test("the step's text gives way before its link: it truncates, the link keeps it
         'truncate-end',
         0,
     ]);
+});
+
+test('a lane steer typed before the rename survives: drawn in the field, sent by tick, its old key gone', async ($, on) => {
+    const w = world(on);
+    w.store.set('lane-note:l1', { note: 'cards first' });
+    await start($);
+    const ui = await board($);
+    await create($);
+    const drawn = (await ui.find({ key: 'lane:l1:steer', type: 'Input' }))
+        ?.props.value;
+    await take(ui);
+    await say($, 'go');
+    expect([
+        drawn,
+        w.contexts.at(-1)?.some((c) => c.includes('«cards first»')),
+        w.store.has('lane-note:l1'),
+    ]).toEqual(['cards first', true, false]);
+});
+
+test('a lane steer ticked before the rename joins once, never again', async ($, on) => {
+    const w = world(on);
+    w.store.set('lane-note:l1', { isTaken: true, note: 'cards first' });
+    await start($);
+    await board($);
+    await create($);
+    await say($, 'go');
+    await say($, 'again');
+    expect([
+        w.contexts.at(-2)?.some((c) => c.includes('«cards first»')),
+        w.contexts.at(-1)?.some((c) => c.includes('«cards first»')),
+    ]).toEqual([true, false]);
 });

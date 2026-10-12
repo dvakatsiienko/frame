@@ -331,7 +331,7 @@
 the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «current stash asks implementation doesn't work for me»).
 - makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` and the away digest count them; orbit itself lives in the session's `$.state`
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt
-- 📌 the desktop Code tab's look (the pane's lower half, the note `Input`) is dima's eye
+- 📌 the desktop Code tab's look (the pane's lower half, the steer `Input`) is dima's eye
 
 - ✅ orbit lists this session's open asks, oldest first
   - given cclio ends a turn with something for dima to decide
@@ -353,22 +353,28 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when dima looks at the board
   - then the id opens its linear page, as a session row's ticket does (dima's o62, 22:13)
   - decision: https links only, no ↗ app buttons beside them — a mod Link refuses `linear://`, and a button can't sit inside a line of text; app links wait on the engine (dima, 22:34)
-- ✅ accept, reject, note, check all
+- ⬜ every steer field clears once its text has gone out (dima's o57, 17:39)
+  - given dima typed a steer on an ask, a 🐠 piece, an assumption or a glide step
+  - when it goes out — the turn its tick or 🤔 joined ends, or ↩️ sent the assumption back, or the lane step's tick joined cclio's prompt
+  - then its field is empty for the next steer, and a second tick never sends the old text again
+  - decision: one name, «steer», for every text field dima types into on the board; catch's hidden note stays a «note», it is the session's (dima's o57)
+  - decision: a text kept under the old name, «note», reads as its steer after the reload: orbit's state, a glide mark, a lane's draft
+- ✅ accept, reject, steer, check all
   - given orbit shows asks
-  - when dima presses an ask's 🛎️ or ↩️, types in its note, or presses check all
-  - then `🛎️ tick` is always the filled (`primary`) button and `🔁 replay` a plain-chromed one (was `↩️ back`, dima's o13, 18:01: «back sounds dull»); a held mark swaps its emoji for ✅ (`✅ tick`, `✅ replay`), so neither changes size, and only one of the two holds it; a second press puts it out (dima, 17:08 «solid»; o7, 17:16 «swap … only 1 of these btns can have ✅»); the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
+  - when dima presses an ask's 🛎️ or ↩️, types in its steer, or presses check all
+  - then `🛎️ tick` is always the filled (`primary`) button and `🔁 replay` a plain-chromed one (was `↩️ back`, dima's o13, 18:01: «back sounds dull»); a held mark swaps its emoji for ✅ (`✅ tick`, `✅ replay`), so neither changes size, and only one of the two holds it; a second press puts it out (dima, 17:08 «solid»; o7, 17:16 «swap … only 1 of these btns can have ✅»); the steer is kept as he types, no Enter; an unmarked ask stays parked and means nothing
   - decision: 🛎️ / ↩️, the waiter lens — 🛎️ order up, ready for the session to pick up; ↩️ back to the kitchen (dima's o79, 23:05; was 🤩 / 👎🏼)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
-  - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
+  - decision: the steer keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
   - decision: a field never redraws because of its own typing — it holds the value it showed while typed into and 3 s after, then shows the stored text; a change from outside (a follow clearing the note) shows at once, a note field remounting when the clear matches what it showed (dima, 16:15 and 16:22: «a caret drifts and breaks the words»; drawing the latest typed text still drifted)
-  - decision: a note saves once typing pauses for 1.5 s, so no redraw lands mid-typing and scrolls the field back to its start; a press, a prompt or a tool call saves a waiting note first (dima's video, 16:40)
+  - decision: a steer saves once typing pauses for 1.5 s, so no redraw lands mid-typing and scrolls the field back to its start; a press, a prompt or a tool call saves a waiting steer first (dima's video, 16:40)
   - decision: the board's 4 s poll holds its redraw while a field was typed into in the last 3 s — after the save delay it was the one redraw left that snapped the field back (dima's o8, 16:54)
-  - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ▶️ ⏹️, then the note; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
-  - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
+  - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ▶️ ⏹️, then the steer; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
+  - decision: the steer shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
   - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one bare `✅` button (dima, 19:59; a label tried at 16:54, dropped at 17:00); the pick sits on a line of its own, `➡️` then the pick bold, the mock's card shape (dima, 17:00; the «pick» word dropped at 17:08: «➡️ already tells it is a pick»)
   - decision: the header reads `🪐 orbit`, no count (dima, 16:54; was `🪐 orbit: n`)
   - decision: the pick is bold like the id, so the proposal stands out (dima, 20:30)
-  - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
+  - decision: one line of steer — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
 - 🔎 🔊 reads an ask aloud through speak, ▶️ / ⏸️ plays or pauses, ⏹ stops
   - given orbit shows an ask and x-speak runs
   - when dima presses its 🔊
@@ -384,7 +390,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ marked asks join the next prompt
   - given one or more asks are accepted or rejected
   - when dima sends a prompt from the prompt box
-  - then cclio receives his text plus each marked ask with its id and note, model-only: his prompt shows only what he typed; unmarked asks stay
+  - then cclio receives his text plus each marked ask with its id and steer, model-only: his prompt shows only what he typed; unmarked asks stay
   - decision: model-only context, never a rewrite of his text — a rewrite once destroyed his typed prompt (the copy-all decision above)
   - decision: only the prompt box starts a turn; orbit never does (dima, 2026-10-10)
 - ✅ a tick while cclio works joins the running turn
@@ -398,13 +404,13 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
-  - then those rows keep both buttons, the held one reading `🔓 tick` or `🔓 replay` and a press on either changing nothing, and the note shows as dim text, `💬 «…»`, instead of its field (the 💬 is dima's alone; the model reads «his note: …», dima 18:14) — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ▶️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
+  - then those rows keep both buttons, the held one reading `🔓 tick` or `🔓 replay` and a press on either changing nothing, and the steer shows as dim text, `💬 «…»`, instead of its field (the 💬 is dima's alone; the model reads «his steer: …», dima 18:14) — until the turn ends, when the held button reads ✅ again and the steer field comes back empty, its text sent (dima's o57) (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ▶️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
   - decision: no control rather than a disabled one — the mod api's `Button` and `Input` take no `disabled` (dima asked for one, 19:46)
 - ✅ a resolved ask leaves, a follow-up changes in place
   - given cclio answered a marked ask
   - when the turn ends
   - then the ask leaves orbit; one cclio has a follow-up on keeps its place and id, with new text, its line led by 🆕 (`🆕 o3: …`)
-  - and its note box comes back empty — dima's note answered the old question (dima, 13:57 shot)
+  - and its steer box comes back empty — dima's steer answered the old question (dima, 13:57 shot)
   - decision: 🆕 before the id, not a «changed» column on the right, so the ask text keeps the full width — a try, dima may swap the glyph (dima's o6, 10:58)
   - decision: an answered ask stays in orbit until its turn ends, its line led by 👀 (`👀 o20: …`), so dima sees it go — an icon, not the word «answered», inline so the row keeps its left edge; no «seen» card, since a card needs a box of its own (dima, 20:34, 20:39)
 - ✅ every prompt reminds the session of orbit
@@ -459,7 +465,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given mobile mode is on
   - when dima says «back at the mac», types `/mobile-mode off`, or presses 🛎️ or ↩️ in the board's orbit
   - then the next prompt carries the orbit reminder again; a hot reload keeps the mode as it was
-  - decision: only a 🛎️ or ↩️ press ends it; a note, a speak press or a session row's ↗ never does (dima's o9, 2026-10-11 11:16)
+  - decision: only a 🛎️ or ↩️ press ends it; a steer, a speak press or a session row's ↗ never does (dima's o9, 2026-10-11 11:16)
 
 ## /board — assumed
 
@@ -474,8 +480,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then speak reads, pauses or stops its text, as on an ask row (dima, 2026-10-11 11:27)
 - ✅ 🛎️ clears, ↩️ sends back
   - given an assumption shows
-  - when dima presses its 🛎️, or its ↩️ with a note
-  - then 🛎️ removes the row; ↩️ joins his next prompt model-only as «wrong assumption: … · his note: «…»» and the row leaves
+  - when dima presses its 🛎️, or its ↩️ with a steer
+  - then 🛎️ removes the row; ↩️ joins his next prompt model-only as «wrong assumption: … · his steer: «…»» and the row leaves
   - decision: the orbit pair, 🛎️ / ↩️ (dima's o101)
 - ✅ an unmarked assumption fades
   - given nobody marked an assumption
@@ -490,14 +496,14 @@ the facts dima likely missed in long replies, parked by the session under orbit 
 - 🧭 caught pieces show under 🐠 catch
   - given a session calls the orbit tool with op `catch` and 1–2 pieces
   - when dima looks at the board
-  - then a `🐠 catch` section under orbit lists each piece, its bold id leading it, with 🤔, 📋 copy, ✖️ clear and a note box; the section is hidden while empty
+  - then a `🐠 catch` section under orbit lists each piece, its bold id leading it, with 🤔, 📋 copy, ✖️ clear and a steer box; the section is hidden while empty
   - decision: the tool's own text says when to catch — a fact already printed that dima likely missed, worth a follow-up; 0 is normal (grill Q1, critic)
 - 🧭 the caps refuse, never drop
   - given a catch of 3 pieces, or 2 already caught this turn, then the tool refuses it in one line
   - given 5 pieces held and a 6th added, then the tool refuses it with «clear one first» and the 5 stay
 - 🧭 🤔 gets a piece explained without a turn of its own
-  - given dima presses 🤔, with or without a note
-  - when a turn is running, then the piece, its hidden note and his note join that turn at its next tool result, model-only; when none runs, they join his next prompt
+  - given dima presses 🤔, with or without a steer
+  - when a turn is running, then the piece, its hidden note and his steer join that turn at its next tool result, model-only; when none runs, they join his next prompt
   - then the piece stays until he clears it; while a turn takes it, its 🤔 reads `🔓 🤔` and its note shows as dim text
   - decision: the tool-result door, as an orbit tick takes, not `$.session.append`: an append landing after the turn's last read starts a turn of its own (`mods/AGENTS.md`, dima 20:31) — the ticket's «never starts a turn» wins
 - 🧭 clear and copy
@@ -586,9 +592,9 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 - ⬜ every board draws the fleet's live lanes
   - given 🦉 cclio calls orbit op `glide` act `create` with a title and 1–5 steps (plain text, an optional ticket id, a done flag)
   - then every session's board draws a `🛼 glide: <title>` card right above 🌔 phases, its head naming its mod as sessions, orbit and phases do (dima's board shot, 23:41): every step in order, a done one `✅` and dim but still listed, the current one `➡️` and bold, the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
-  - and one 🛎️ tick and a note box sit on the current step's line after its ticket link, tick first; the step's text cuts short before the link, tick or note give way (dima's shots, 17:41, 17:46) — on any board; the text stays a draft until tick, then joins cclio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the tick clear once it did (the button read «take» until dima's o28)
-  - decision: the note and its take live in the stash store, one key per lane, so the shelf file keeps one writer, cclio's lane op; a step that moves the pointer drops the note (FRM-400)
-  - decision: take only, no replay — a note has nothing to redo; a peer's prompt never carries it (dima, 20:51)
+  - and one 🛎️ tick and a steer box sit on the current step's line after its ticket link, tick first; the step's text cuts short before the link, tick or steer give way (dima's shots, 17:41, 17:46) — on any board; the text stays a draft until tick, then joins cclio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the tick clear once it did (the button read «take» until dima's o28)
+  - decision: the steer and its take live in the stash store, one key per lane, so the shelf file keeps one writer, cclio's lane op; a step that moves the pointer drops the steer (FRM-400)
+  - decision: take only, no replay — a steer has nothing to redo; a peer's prompt never carries it (dima, 20:51)
   - decision: ➡️ marks the current step, no «← we are here» (dima's o9 note, o10)
   - and nothing of a lane enters a member's model context
   - and each card folds with its own `📂`, and the `🛼 glide` 🎛️ switch hides every glide card
@@ -609,13 +615,13 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: 8, not phases' 3 — a lane step spans many turns
 - ⬜ a glide card holds its members' asks (exit 3)
   - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
-  - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ tick, 🔁 replay, 🔊 and the note; a locked one shows its mark and its note, no control
+  - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ tick, 🔁 replay, 🔊 and the steer; a locked one shows its mark and its steer, no control
   - decision: the lane draws orbit's own ask card, never a smaller copy; the subcards stay folded, the head names the role (dima's o4, o5, o10, 20:46)
-  - when dima marks or notes a row, then it waits in the store and the member's own stash takes it into its orbit: a running member gets it in that turn, after its next tool call
+  - when dima marks or steers a row, then it waits in the store and the member's own stash takes it into its orbit: a running member gets it in that turn, after its next tool call
   - decision: one store key per marked ask (`marks:<member>:<ask id>`), so two boards never overwrite each other and the member deletes only the marks it read (FRM-400)
   - and an idle member with marks wakes once, within a poll of dima's next prompt in any thread, one turn carrying all of them; no turn starts before that prompt
   - decision: the wake carries the marks in its text — a prompt a mod submits skips that mod's own prompt.submit hook (step 0, cc 2.1.296)
-- ⬜ an ask reads in 3 lines: its line, the `➡️ pick` on its own, then 🛎️ tick, 🔁 replay, 🔊 and the note
+- ⬜ an ask reads in 3 lines: its line, the `➡️ pick` on its own, then 🛎️ tick, 🔁 replay, 🔊 and the steer
   - decision: the buttons never share the pick's line — exit 4's «one row» misread the 19:31 shot (dima, 20:23)
 
 ## spawn hints — the board's name flag only

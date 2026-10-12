@@ -29,6 +29,30 @@ const idsOf = (v: unknown) =>
 export const isFresh = (a: OrbitAsk) =>
     Boolean(a.mark) && !a.isLocked && !a.isResolved;
 
+// a text kept under the fields' old name, «note», before the steer rename (dima's o57, 17:39): read once as its steer
+export function steered<T extends { steer?: string }>(x: T): T {
+    if (!('note' in x)) return x;
+    const { note, ...rest } = x as T & { note?: unknown };
+    return (
+        typeof note === 'string' && rest.steer === undefined
+            ? { ...rest, steer: note }
+            : rest
+    ) as T;
+}
+
+export const steeredOrbit = (o: StashOrbit): StashOrbit => ({
+    ...o,
+    asks: o.asks.map(steered),
+    ...(o.assumed ? { assumed: o.assumed.map(steered) } : {}),
+    ...(o.caught ? { caught: o.caught.map(steered) } : {}),
+});
+
+// a steer the turn carried has gone out: its field clears for the next one, so a second tick never resends it
+const unsteer = <T extends { steer?: string }>(x: T): T => {
+    const { steer: _, ...rest } = x;
+    return rest as T;
+};
+
 // the asks a turn takes are locked to it until it ends; a remote mark's wake time is spent
 export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
     const ids = new Set(asks.map((a) => a.id));
@@ -47,12 +71,12 @@ export function turnEnded(o: StashOrbit): StashOrbit {
         ...o,
         asks: o.asks
             .filter((a) => !a.isResolved)
-            .map((a) => (a.isLocked ? { ...a, isLocked: false } : a)),
+            .map((a) => (a.isLocked ? { ...unsteer(a), isLocked: false } : a)),
         assumed: (o.assumed ?? []).filter(
             (x) => x.isWrong || o.turns + 2 - x.at < ASSUMED_TURNS,
         ),
         caught: o.caught?.map((x) =>
-            x.isLocked ? { ...x, isLocked: false } : x,
+            x.isLocked ? { ...unsteer(x), isLocked: false } : x,
         ),
         turns: o.turns + 1,
     };
@@ -61,14 +85,14 @@ export function turnEnded(o: StashOrbit): StashOrbit {
 const markWord = (mark: OrbitAsk['mark']) =>
     mark === 'accepted' ? '🛎️ accepted' : '↩️ rejected';
 
-// what the session reads for each assumption dima sent back: the assumption and his note
+// what the session reads for each assumption dima sent back: the assumption and his steer
 export const wrongText = (wrong: OrbitAssumption[]) =>
     [
         `orbit: dima marked ${wrong.length === 1 ? 'an assumption' : `${wrong.length} assumptions`} wrong; take it into account in this reply.`,
         ...wrong.map(
             (x) =>
                 `- ${x.id} wrong assumption: ${x.text}` +
-                (x.note ? ` · his note: «${x.note}»` : ''),
+                (x.steer ? ` · his steer: «${x.steer}»` : ''),
         ),
     ].join('\n');
 
@@ -86,7 +110,7 @@ export function lockThought(o: StashOrbit, pieces: OrbitCatch[]): StashOrbit {
     };
 }
 
-// what the session reads for each 🤔: the piece, its hidden note, his note
+// what the session reads for each 🤔: the piece, its hidden steer, his steer
 export const thinkText = (pieces: OrbitCatch[]) =>
     [
         `🐠 catch: dima pressed 🤔 on ${pieces.length === 1 ? 'a piece' : `${pieces.length} pieces`}: explain each in this reply, plainly, with the why. the piece stays until he clears it.`,
@@ -94,16 +118,16 @@ export const thinkText = (pieces: OrbitCatch[]) =>
             (x) =>
                 `- ${x.id}: ${x.text}` +
                 (x.hiddenNote ? ` · your note: «${x.hiddenNote}»` : '') +
-                (x.note ? ` · his note: «${x.note}»` : ''),
+                (x.steer ? ` · his steer: «${x.steer}»` : ''),
         ),
     ].join('\n');
 
-// what the session reads for each marked ask: the mark, the ask, its pick, both notes
+// what the session reads for each marked ask: the mark, the ask, its pick, both steers
 export function joinText(asks: OrbitAsk[]) {
     const lines = asks.map(
         (a) =>
             `- ${a.id} ${markWord(a.mark)}: ${a.text} (your pick: ${a.pick})` +
-            (a.note ? ` · his note: «${a.note}»` : '') +
+            (a.steer ? ` · his steer: «${a.steer}»` : '') +
             (a.hiddenNote ? ` · your note: «${a.hiddenNote}»` : ''),
     );
     return [
@@ -267,9 +291,9 @@ export function orbitOp(
                                   isChanged: true,
                                   isResolved: false,
                                   mark: undefined,
-                                  // his note answered the old question
-                                  note: undefined,
                                   pick: oneLine(input.pick) || a.pick,
+                                  // his steer answered the old question
+                                  steer: undefined,
                                   text,
                               }
                             : a,

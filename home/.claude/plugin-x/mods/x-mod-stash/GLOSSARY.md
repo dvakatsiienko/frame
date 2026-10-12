@@ -12,8 +12,12 @@ _Avoid_: deck, band, dock
 An open question a session put to dima through orbit's tool: one line, its pick and a hidden note, live until the session resolves it.
 _Avoid_: question, todo, pending
 
+**Steer**:
+The one line dima types on the board — on an ask, a 🐠 piece, an assumption or a glide step; it goes out with its tick (or 🤔, or ↩️) and its field clears once it has.
+_Avoid_: note (that is a session's hidden note), comment, reply
+
 **Orbit** 🪐:
-One session's own list of asks to dima, in the board; he rings 🛎️ tick (order up: tick the pick), sends 🔁 replay (another round) or notes an ask, and the marked ones join his next prompt, or the running turn. Replaced the reply-parsed ask list.
+One session's own list of asks to dima, in the board; he rings 🛎️ tick (order up: tick the pick), sends 🔁 replay (another round) or steers an ask, and the marked ones join his next prompt, or the running turn. Replaced the reply-parsed ask list.
 _Avoid_: asks box, wfyb, inbox
 
 **Phases** 🌔:
@@ -78,7 +82,7 @@ The context % at which cc compacts: the project's `CLAUDE_AUTOCOMPACT_PCT_OVERRI
 _Avoid_: threshold, limit, autocompact %
 
 **Assumption**:
-A choice the session made without asking that would cost a redo if wrong, shown under «assumed» in orbit; at most 3 a turn, 🛎️ clears it, ↩️ sends it back with a note, an unmarked one fades after 3 turns.
+A choice the session made without asking that would cost a redo if wrong, shown under «assumed» in orbit; at most 3 a turn, 🛎️ clears it, ↩️ sends it back with a steer, an unmarked one fades after 3 turns.
 _Avoid_: guess, assumed ask
 
 **Catch**:

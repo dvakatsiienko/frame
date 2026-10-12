@@ -13,14 +13,14 @@ export type PublishedAsk = {
     text: string;
     pick: string;
     mark?: 'accepted' | 'rejected';
-    note?: string;
+    steer?: string;
     isLocked?: boolean;
 };
 
-// a mark or note dima made on another board's glide card, waiting in the store for the member to take it in
+// a mark or steer dima made on another board's glide card, waiting in the store for the member to take it in
 export type RemoteMark = {
     mark?: 'accepted' | 'rejected';
-    note?: string;
+    steer?: string;
     at: number;
 };
 
@@ -99,7 +99,7 @@ export type StashTurn = {
     afk?: boolean;
 };
 
-// one ask to dima in orbit: what is asked and cclio's pick, the note cclio keeps for herself, dima's mark and note;
+// one ask to dima in orbit: what is asked and cclio's pick, the steer cclio keeps for herself, dima's mark and steer;
 // locked while the turn it joined runs, changed after a follow-up, resolved until that turn ends
 export type OrbitAsk = {
     id: string;
@@ -107,7 +107,7 @@ export type OrbitAsk = {
     pick: string;
     hiddenNote?: string;
     mark?: 'accepted' | 'rejected';
-    note?: string;
+    steer?: string;
     isLocked?: boolean;
     isChanged?: boolean;
     isResolved?: boolean;
@@ -116,13 +116,13 @@ export type OrbitAsk = {
 };
 
 // one choice the session made without asking, that costs a redo if wrong: born at a turn count; dima's send-back
-// button marks it wrong, with his note
+// button marks it wrong, with his steer
 export type OrbitAssumption = {
     id: string;
     text: string;
     at: number;
     isWrong?: boolean;
-    note?: string;
+    steer?: string;
 };
 
 // 🐠 a fact the session already printed that dima likely missed (FRM-386): born at a turn count; 🤔 asks for it
@@ -131,7 +131,7 @@ export type OrbitCatch = {
     id: string;
     text: string;
     hiddenNote?: string;
-    note?: string;
+    steer?: string;
     at: number;
     isAsked?: boolean;
     isLocked?: boolean;
@@ -189,9 +189,9 @@ export type StashLane = {
     movedAt: number;
     // the linked members' session ids; a re-link of a role replaces the old one
     members: Partial<Record<LaneRole, string>>;
-    // dima's note on the current step: a draft until his take, then it joins cclio's next prompt or running turn once
-    note?: string;
-    isNoteTaken?: boolean;
+    // dima's steer on the current step: a draft until his take, then it joins cclio's next prompt or running turn once
+    steer?: string;
+    isSteerTaken?: boolean;
     history: { at: number; act: string; current: number; done: number }[];
     endedAt?: number;
 };

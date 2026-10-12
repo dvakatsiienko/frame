@@ -38,6 +38,8 @@ import {
     lockThought,
     oneLine,
     orbitOp,
+    steered,
+    steeredOrbit,
     thinkText,
     turnEnded,
     wrongText,
@@ -60,11 +62,11 @@ import {
 
 // label: the repo; name: the session's registry name, when it has one
 type Entry = StashEntry;
-// where an ask card's tick, replay and note go, and the prefix its keys carry
+// where an ask card's tick, replay and steer go, and the prefix its keys carry
 type AskDoor = {
     prefix: string;
     mark: (a: OrbitAsk, mark: 'accepted' | 'rejected') => void;
-    note: (a: OrbitAsk, value: string) => void;
+    steer: (a: OrbitAsk, value: string) => void;
 };
 // a session's last reply: when it ended, its 🔭 wait; `ended` once the session itself exited
 // waits: every background task's own name when the reply set no 🔭, so the board can list them all
@@ -240,9 +242,11 @@ const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
 // every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
-// dima's note on a lane's current step and its 🛎️ tick, one store key per lane: any board writes it, so the shelf file
+// dima's steer on a lane's current step and its 🛎️ tick, one store key per lane: any board writes it, so the shelf file
 // keeps its one writer, cclio's lane op
-const LANE_NOTE = 'lane-note:';
+const LANE_STEER = 'lane-steer:';
+// a lane steer typed before the rename sits under the old prefix: read as a steer, retired at its next write
+const LANE_STEER_OLD = 'lane-note:';
 const LANE_OWNER = '🦉 cclio';
 const LANE_ROLES = ['coder', 'verifier'] as const;
 const LANE_MAX = 5;
@@ -272,11 +276,11 @@ const cardBorder = (surface: string) =>
 // a ticket id inside an ask or a phase; split keeps the id as every odd part
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
-    "orbit is dima's list of your asks to him, in the fleet board: he rings 🛎️ tick when your pick is good to go, 🔁 replay for another round, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
+    "orbit is dima's list of your asks to him, in the fleet board: he rings 🛎️ tick when your pick is good to go, 🔁 replay for another round, adds a steer; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     `op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»), ≤${ORBIT_TEXT_MAX} chars, subject first, detail in hiddenNote; pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.`,
     'op resolve, ids: the asks you answered this turn; they leave orbit when the turn ends.',
     `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a ${CHANGED_MARK} mark before its id.`,
-    `op assume, texts: choices you made without asking that would cost a redo if wrong, at most ${ASSUMED_MAX} a turn and ≤${ORBIT_TEXT_MAX} chars each; never routine ones. dima's 🛎️ clears one, ↩️ sends it back with his note.`,
+    `op assume, texts: choices you made without asking that would cost a redo if wrong, at most ${ASSUMED_MAX} a turn and ≤${ORBIT_TEXT_MAX} chars each; never routine ones. dima's 🛎️ clears one, ↩️ sends it back with his steer.`,
     `op catch, pieces [{ text, hiddenNote }]: a fact you already printed in this or an earlier reply that dima likely missed and would want to follow up, parked under 🐠 catch; 0 is normal, at most ${CATCH_TURN_MAX} a turn, ${CATCH_HELD_MAX} held until he clears one; text ≤${ORBIT_TEXT_MAX} chars, the fact itself, hiddenNote where it came from so a 🤔 turns later still makes sense. his 🤔 asks you to explain it; never print a «you may have missed» block in a reply.`,
     `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone and ≤${ORBIT_TEXT_MAX} chars; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
     `op glide — ${LANE_OWNER} only, every board draws it: act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
@@ -295,9 +299,9 @@ let shown: Record<string, boolean> = {};
 let isSettingsOpen = false;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
 // a field never redraws because of its own typing: the surface runs a keystroke ahead of this module, so any changed
-// `value` — the stored note, or even the latest text this module heard — reset the field and threw the caret (dima,
+// `value` — the stored steer, or even the latest text this module heard — reset the field and threw the caret (dima,
 // 16:15 and 16:22). while typing, the field keeps drawing the value it showed; once typing has been quiet for
-// FIELD_QUIET_MS the stored text takes over. a change from outside (a note cleared once it joined a turn) is drawn at
+// FIELD_QUIET_MS the stored text takes over. a change from outside (a steer cleared once it joined a turn) is drawn at
 // once; when it equals what is already drawn the surface would keep the typed text, so the field remounts under a new key
 export type FieldDraft = {
     drawn: string;
@@ -356,7 +360,7 @@ export const typedInto = (
     isLanded: draft?.isLanded ?? false,
     sent: [...(draft?.sent ?? []).slice(-50), text],
 });
-// a note field remounts on a clear it cannot otherwise show; a number field keeps its typed text beside its refusal line
+// a steer field remounts on a clear it cannot otherwise show; a number field keeps its typed text beside its refusal line
 const isNumberField = (key: string) =>
     key.startsWith('knob:') || key === 'compact-at';
 function field($: EngineInterface, key: string, saved: string) {
@@ -675,7 +679,7 @@ async function saveOrbit($: EngineInterface, next: StashOrbit) {
                     pick: a.pick,
                     text: a.text,
                     ...(a.mark ? { mark: a.mark } : {}),
-                    ...(a.note ? { note: a.note } : {}),
+                    ...(a.steer ? { steer: a.steer } : {}),
                     ...(a.isLocked ? { isLocked: true } : {}),
                 })),
                 label,
@@ -689,7 +693,7 @@ async function saveOrbit($: EngineInterface, next: StashOrbit) {
 // that never loaded would write an empty orbit over the kept one (FRM-381: «coder wiped the orbit»)
 async function currentOrbit($: EngineInterface) {
     const kept = (await $.state.get(ORBIT).catch(() => undefined))?.value;
-    if (kept) orbit = kept;
+    if (kept) orbit = steeredOrbit(kept);
     return orbit;
 }
 
@@ -706,7 +710,7 @@ async function marksOf($: EngineInterface, sid: string) {
         const m = (await $.store.get(key).catch(() => undefined)) as
             | RemoteMark
             | undefined;
-        if (m) marks[key.slice(`${MARKS}${sid}:`.length)] = m;
+        if (m) marks[key.slice(`${MARKS}${sid}:`.length)] = steered(m);
     }
     return marks;
 }
@@ -730,7 +734,7 @@ async function absorbMarks($: EngineInterface) {
                 isChanged: false,
                 mark: m.mark,
                 markedAt: m.mark ? m.at : undefined,
-                note: m.note,
+                steer: m.steer,
             };
         }),
     });
@@ -958,10 +962,10 @@ async function enhanceNew($: EngineInterface) {
     });
 }
 
-// dima marks or notes asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs
+// dima marks or steers asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs
 // rides that turn's next tool result (the tool.call hook); one the turn never reaches rides his next prompt — a
 // hidden message appended instead started a turn of its own when it landed after the last read (dima, 20:31)
-// 🛎️ clears an assumption, ↩️ and its note mark it wrong; a 🛎️ or ↩️ press means dima is at the mac (dima, 11:16)
+// 🛎️ clears an assumption, ↩️ and its steer mark it wrong; a 🛎️ or ↩️ press means dima is at the mac (dima, 11:16)
 async function changeAssumed(
     $: EngineInterface,
     change: (x: OrbitAssumption) => OrbitAssumption | undefined,
@@ -993,7 +997,7 @@ async function countCatch($: EngineInterface, field: keyof CatchCount) {
     await $.store.set(CATCH_COUNT + day, next).catch(() => undefined);
 }
 
-// a 🐠 piece's 🤔, note or clear; a locked one is the running turn's and keeps its 🤔
+// a 🐠 piece's 🤔, steer or clear; a locked one is the running turn's and keeps its 🤔
 async function changeCaught(
     $: EngineInterface,
     change: (x: OrbitCatch) => OrbitCatch | undefined,
@@ -1013,7 +1017,7 @@ async function markAsks(
     change: (a: OrbitAsk) => OrbitAsk,
     isMark = false,
 ) {
-    // only a 🛎️ or ↩️ press means dima is at the mac: a note or a speak press never ends mobile mode (dima, 11:16)
+    // only a 🛎️ or ↩️ press means dima is at the mac: a steer or a speak press never ends mobile mode (dima, 11:16)
     if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
     const o = await currentOrbit($);
     const asks = o.asks.map((a) =>
@@ -1234,43 +1238,48 @@ async function writeLanes($: EngineInterface, lanes: StashLane[]) {
     await showLanes($, lanes);
 }
 
-type LaneNote = { note?: string; isTaken?: boolean };
+type LaneSteer = { steer?: string; isTaken?: boolean };
 
-async function laneNotes($: EngineInterface) {
-    const notes: Record<string, LaneNote> = {};
+async function laneSteers($: EngineInterface) {
+    const steers: Record<string, LaneSteer> = {};
     for (const key of await $.store.keys().catch(() => [] as string[])) {
-        if (!key.startsWith(LANE_NOTE)) continue;
+        const prefix = [LANE_STEER, LANE_STEER_OLD].find((p) =>
+            key.startsWith(p),
+        );
+        if (!prefix) continue;
+        const id = key.slice(prefix.length);
         const n = (await $.store.get(key).catch(() => undefined)) as
-            | LaneNote
+            | LaneSteer
             | undefined;
-        if (n) notes[key.slice(LANE_NOTE.length)] = n;
+        if (n && (prefix === LANE_STEER || !steers[id]))
+            steers[id] = steered(n);
     }
-    return notes;
+    return steers;
 }
 
-async function changeLaneNote(
+async function changeLaneSteer(
     $: EngineInterface,
     id: string,
-    change: (n: LaneNote) => LaneNote,
+    change: (n: LaneSteer) => LaneSteer,
 ) {
-    const was = ((await $.store.get(LANE_NOTE + id).catch(() => undefined)) ??
-        {}) as LaneNote;
+    const was = (await laneSteers($))[id] ?? {};
     const n = change(was);
-    if (n.note) await $.store.set(LANE_NOTE + id, n);
-    else await $.store.delete(LANE_NOTE + id);
+    if (n.steer) await $.store.set(LANE_STEER + id, n);
+    else await $.store.delete(LANE_STEER + id);
+    await $.store.delete(LANE_STEER_OLD + id).catch(() => undefined);
     await showLanes($, await readLanes($));
 }
 
-// the live lanes into this session's state, only when they changed: a write redraws the board; each carries its note
+// the live lanes into this session's state, only when they changed: a write redraws the board; each carries its steer
 let lanesShown = '';
 async function showLanes($: EngineInterface, lanes: StashLane[]) {
-    const notes = await laneNotes($);
+    const steers = await laneSteers($);
     const live = lanes
         .filter((l) => !l.endedAt)
         .map((l) => ({
             ...l,
-            isNoteTaken: notes[l.id]?.isTaken,
-            note: notes[l.id]?.note,
+            isSteerTaken: steers[l.id]?.isTaken,
+            steer: steers[l.id]?.steer,
         }));
     const asks: Record<string, PublishedAsk[]> = {};
     for (const sid of new Set(live.flatMap((l) => Object.values(l.members)))) {
@@ -1279,9 +1288,9 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
             .get(PREFIX + sid)
             .catch(() => undefined)) as Entry | undefined;
         const marks = await marksOf($, sid);
-        asks[sid] = (entry?.items ?? []).map((a) => {
+        asks[sid] = (entry?.items ?? []).map(steered).map((a) => {
             const m = marks[a.id];
-            return m ? { ...a, mark: m.mark, note: m.note } : a;
+            return m ? { ...a, mark: m.mark, steer: m.steer } : a;
         });
     }
     const text = JSON.stringify({ asks, live });
@@ -1291,7 +1300,7 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
     await $.state.set(LANE_ASKS, asks).catch(() => undefined);
 }
 
-// a mark or note on a member's ask from a glide card: the store holds it until the member's own stash takes it in
+// a mark or steer on a member's ask from a glide card: the store holds it until the member's own stash takes it in
 async function markRemote(
     $: EngineInterface,
     sid: string,
@@ -1301,23 +1310,26 @@ async function markRemote(
     const key = markKey(sid, ask.id);
     const prior = ((await $.store.get(key).catch(() => undefined)) as
         | RemoteMark
-        | undefined) ?? { mark: ask.mark, note: ask.note };
+        | undefined) ?? { mark: ask.mark, steer: ask.steer };
     await $.store.set(key, { ...prior, ...change, at: await $.clock.now() });
     await showLanes($, await readLanes($));
 }
 
-// the lane notes dima took with 🛎️, as cclio reads them; each leaves the lane once read
-async function takeLaneNotes($: EngineInterface, lanes: StashLane[]) {
-    const notes = await laneNotes($);
+// the lane steers dima took with 🛎️, as cclio reads them; each leaves the lane once read
+async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
+    const steers = await laneSteers($);
     const taken = lanes.filter(
-        (l) => !l.endedAt && notes[l.id]?.note && notes[l.id]?.isTaken,
+        (l) => !l.endedAt && steers[l.id]?.steer && steers[l.id]?.isTaken,
     );
     if (!taken.length) return [];
-    for (const l of taken) await $.store.delete(LANE_NOTE + l.id);
+    for (const l of taken) {
+        await $.store.delete(LANE_STEER + l.id);
+        await $.store.delete(LANE_STEER_OLD + l.id).catch(() => undefined);
+    }
     await showLanes($, lanes);
     return taken.map(
         (l) =>
-            `lane note from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${notes[l.id]?.note}»`,
+            `lane steer from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${steers[l.id]?.steer}»`,
     );
 }
 
@@ -1690,7 +1702,7 @@ async function publish($: EngineInterface) {
                 m.statusSince === undefined ? null : span(now - m.statusSince),
             ),
         });
-        // the poll's board redraw waits while a note is typed into: a redraw scrolled the field back to its start
+        // the poll's board redraw waits while a steer is typed into: a redraw scrolled the field back to its start
         // (dima's o8, 16:54: «far less often» after the save delay; the poll was what was left)
         if (
             boardText !== boardPublished &&
@@ -2434,7 +2446,10 @@ export const register: Register = (on) => {
             turn: (await $.state.get(TURN)).value,
             view: (await $.state.get(VIEW)).value,
         };
-        orbit = kept.orbit ?? EMPTY_ORBIT;
+        orbit = kept.orbit ? steeredOrbit(kept.orbit) : EMPTY_ORBIT;
+        // a reload after the steer rename keeps a held text: the migrated orbit is written back once
+        if (kept.orbit && JSON.stringify(orbit) !== JSON.stringify(kept.orbit))
+            await $.state.set(ORBIT, orbit).catch(() => undefined);
         // every board reads the fleet's lanes from the shelf file: at a start, a reload, and on each poll
         lanesShown = '';
         await showLanes($, await readLanes($));
@@ -2589,7 +2604,7 @@ export const register: Register = (on) => {
     });
 
     // only dima's own hands make his turn; a reply to any other origin may drop the block
-    // a press reads what was typed: a note still waiting for its pause saves first
+    // a press reads what was typed: a steer still waiting for its pause saves first
     on('ui.press', async (_$, e, next) => {
         await flushFields();
         return next(e);
@@ -2639,7 +2654,7 @@ export const register: Register = (on) => {
             : orbitReminder(orbit);
         const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
         isPrimed = true;
-        // the lanes speak only in cclio's thread: a lane stale after LANE_STALE of her turns, and dima's note on a current step
+        // the lanes speak only in cclio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
         // riding her next prompt once, from any board
         const isOwner = await isLaneOwner($);
         const lanes = isOwner ? await readLanes($) : [];
@@ -2650,7 +2665,7 @@ export const register: Register = (on) => {
                 (l) =>
                     `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`,
             );
-        const laneNotes = isUserTurn ? await takeLaneNotes($, lanes) : [];
+        const laneSteers = isUserTurn ? await takeLaneSteers($, lanes) : [];
         // held member pings ride the next prompt of any origin, once (quiet comms)
         const quiet = await quietOf($);
         if (quiet.held.length) {
@@ -2669,7 +2684,7 @@ export const register: Register = (on) => {
                 ...(isFirst ? [PHASES_START] : []),
                 ...(reminder ? [reminder] : []),
                 ...laneStale,
-                ...laneNotes,
+                ...laneSteers,
                 ...(quiet.held.length ? [quietNote(quiet.held)] : []),
                 ...(tickets ? [tickets] : []),
             ],
@@ -3235,7 +3250,7 @@ export const register: Register = (on) => {
         const me = (await $.state.get(VIEW)).value?.selfId;
         // the board's lower half: this session's orbit and its plan, read here so a mark or a tool call redraws it
         const o = (await $.state.get(ORBIT)).value ?? orbit;
-        // mobile draws no Input: its notes wait for another surface
+        // mobile draws no Input: its steers wait for another surface
         const Input = 'Input' in ui ? ui.Input : undefined;
         const open = o.asks.filter((a) => !a.isResolved);
         const age = planAge(o);
@@ -3255,8 +3270,8 @@ export const register: Register = (on) => {
                             : x,
                     true,
                 ),
-            note: (a, value) => handleNote(a.id, value),
             prefix: 'orbit',
+            steer: (a, value) => handleSteer(a.id, value),
         };
         const markJSX = (
             a: OrbitAsk,
@@ -3274,9 +3289,9 @@ export const register: Register = (on) => {
                 {`${a.mark === mark ? (a.isLocked ? '🔓' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'tick' : 'replay'}`}
             </Button>
         );
-        const handleAssumedNote = (id: string, value: string) =>
+        const handleAssumedSteer = (id: string, value: string) =>
             void changeAssumed($, (y) =>
-                y.id === id ? { ...y, note: value.trim() || undefined } : y,
+                y.id === id ? { ...y, steer: value.trim() || undefined } : y,
             );
         // 🐠 a 🤔 press toggles until a turn takes it; a locked piece is the running turn's and stays as it is
         const handleThink = async (id: string) => {
@@ -3293,18 +3308,18 @@ export const register: Register = (on) => {
             await countCatch($, 'clears');
             await changeCaught($, (x) => (x.id === id ? undefined : x));
         };
-        const handleCatchNote = (id: string, value: string) =>
+        const handleCatchSteer = (id: string, value: string) =>
             void changeCaught($, (x) =>
                 x.id === id && !x.isLocked
-                    ? { ...x, note: value.trim() || undefined }
+                    ? { ...x, steer: value.trim() || undefined }
                     : x,
             );
-        // the note keeps every keystroke, no Enter needed
-        const handleNote = (id: string, value: string) =>
+        // the steer keeps every keystroke, no Enter needed
+        const handleSteer = (id: string, value: string) =>
             void markAsks($, (x) =>
-                x.id === id ? { ...x, note: value.trim() || undefined } : x,
+                x.id === id ? { ...x, steer: value.trim() || undefined } : x,
             );
-        // a locked ask is the running turn's: no control at all, its mark and note as dim text (the api has no disabled)
+        // a locked ask is the running turn's: no control at all, its mark and steer as dim text (the api has no disabled)
         // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
         // (claude-code#101090) — a workaround, see mods/workarounds.md
         const boardShown = (await $.state.get(VIEW)).value?.shown ?? {};
@@ -3383,7 +3398,7 @@ export const register: Register = (on) => {
                     </Link>
                 );
             });
-        // the ask on its own line, the bold id leading it; under it one row: the note, 🛎️ ↩️, then speak's 🔊 ⏯ ⏹
+        // the ask on its own line, the bold id leading it; under it one row: the steer, 🛎️ ↩️, then speak's 🔊 ⏯ ⏹
         // (dima, 20:08); a full row of air between asks (dima, 19:52)
         const askJSX = (a: OrbitAsk, i: number, door: AskDoor = ownDoor) => (
             <Box
@@ -3406,7 +3421,7 @@ export const register: Register = (on) => {
                             edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
                         <Text>
                             {a.isResolved ? '👀 ' : ''}
-                            {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the note (dima, 11:57) */}
+                            {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the steer (dima, 11:57) */}
                             {a.isChanged ? `${CHANGED_MARK} ` : ''}
                             <Text bold>{a.id}</Text>
                             {': '}
@@ -3421,7 +3436,7 @@ export const register: Register = (on) => {
                         </Text>
                     </Box>
                 </Box>
-                {/* the buttons lead, the note follows them, on the line under the pick — never beside it (dima, 20:19; 20:23) */}
+                {/* the buttons lead, the steer follows them, on the line under the pick — never beside it (dima, 20:19; 20:23) */}
                 <Box
                     alignItems='center'
                     flexDirection='row'
@@ -3436,11 +3451,11 @@ export const register: Register = (on) => {
                     {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
                     {speakJSX(a.id, `${a.text}. ${a.pick}`)}
                     {a.isLocked ? (
-                        a.note ? (
+                        a.steer ? (
                             <Box flexShrink={1} minWidth={0}>
                                 <Text dimColor wrap='truncate-end'>
-                                    {/* a sent note leads with 💬, drawn for dima only: the model gets «his note: …» (dima, 18:14) */}
-                                    {`💬 «${a.note}»`}
+                                    {/* a sent steer leads with 💬, drawn for dima only: the model gets «his steer: …» (dima, 18:14) */}
+                                    {`💬 «${a.steer}»`}
                                 </Text>
                             </Box>
                         ) : null
@@ -3450,28 +3465,28 @@ export const register: Register = (on) => {
                                 key={
                                     field(
                                         $,
-                                        `${door.prefix}:note:${a.id}`,
-                                        a.note ?? '',
+                                        `${door.prefix}:steer:${a.id}`,
+                                        a.steer ?? '',
                                     ).key
                                 }
                                 onInput={(value: string) => {
                                     field(
                                         $,
-                                        `${door.prefix}:note:${a.id}`,
-                                        a.note ?? '',
+                                        `${door.prefix}:steer:${a.id}`,
+                                        a.steer ?? '',
                                     ).type(value, () => {
-                                        return door.note(a, value);
+                                        return door.steer(a, value);
                                     });
                                 }}
                                 onSubmit={(value: string) =>
-                                    door.note(a, value)
+                                    door.steer(a, value)
                                 }
-                                placeholder='note'
+                                placeholder='steer'
                                 value={
                                     field(
                                         $,
-                                        `${door.prefix}:note:${a.id}`,
-                                        a.note ?? '',
+                                        `${door.prefix}:steer:${a.id}`,
+                                        a.steer ?? '',
                                     ).value
                                 }
                             />
@@ -3582,8 +3597,8 @@ export const register: Register = (on) => {
                                                     key={
                                                         field(
                                                             $,
-                                                            `orbit:anote:${x.id}`,
-                                                            x.note ?? '',
+                                                            `orbit:asteer:${x.id}`,
+                                                            x.steer ?? '',
                                                         ).key
                                                     }
                                                     onInput={(
@@ -3591,27 +3606,27 @@ export const register: Register = (on) => {
                                                     ) => {
                                                         field(
                                                             $,
-                                                            `orbit:anote:${x.id}`,
-                                                            x.note ?? '',
+                                                            `orbit:asteer:${x.id}`,
+                                                            x.steer ?? '',
                                                         ).type(value, () => {
-                                                            return handleAssumedNote(
+                                                            return handleAssumedSteer(
                                                                 x.id,
                                                                 value,
                                                             );
                                                         });
                                                     }}
                                                     onSubmit={(value: string) =>
-                                                        handleAssumedNote(
+                                                        handleAssumedSteer(
                                                             x.id,
                                                             value,
                                                         )
                                                     }
-                                                    placeholder='note'
+                                                    placeholder='steer'
                                                     value={
                                                         field(
                                                             $,
-                                                            `orbit:anote:${x.id}`,
-                                                            x.note ?? '',
+                                                            `orbit:asteer:${x.id}`,
+                                                            x.steer ?? '',
                                                         ).value
                                                     }
                                                 />
@@ -3681,9 +3696,9 @@ export const register: Register = (on) => {
                                             ✖️ clear
                                         </Button>
                                         {x.isLocked ? (
-                                            x.note ? (
+                                            x.steer ? (
                                                 <Text
-                                                    dimColor>{`💬 «${x.note}»`}</Text>
+                                                    dimColor>{`💬 «${x.steer}»`}</Text>
                                             ) : null
                                         ) : Input ? (
                                             <Box flexShrink={1} minWidth={0}>
@@ -3691,8 +3706,8 @@ export const register: Register = (on) => {
                                                     key={
                                                         field(
                                                             $,
-                                                            `orbit:cnote:${x.id}`,
-                                                            x.note ?? '',
+                                                            `orbit:csteer:${x.id}`,
+                                                            x.steer ?? '',
                                                         ).key
                                                     }
                                                     onInput={(
@@ -3700,27 +3715,27 @@ export const register: Register = (on) => {
                                                     ) => {
                                                         field(
                                                             $,
-                                                            `orbit:cnote:${x.id}`,
-                                                            x.note ?? '',
+                                                            `orbit:csteer:${x.id}`,
+                                                            x.steer ?? '',
                                                         ).type(value, () => {
-                                                            return handleCatchNote(
+                                                            return handleCatchSteer(
                                                                 x.id,
                                                                 value,
                                                             );
                                                         });
                                                     }}
                                                     onSubmit={(value: string) =>
-                                                        handleCatchNote(
+                                                        handleCatchSteer(
                                                             x.id,
                                                             value,
                                                         )
                                                     }
-                                                    placeholder='note'
+                                                    placeholder='steer'
                                                     value={
                                                         field(
                                                             $,
-                                                            `orbit:cnote:${x.id}`,
-                                                            x.note ?? '',
+                                                            `orbit:csteer:${x.id}`,
+                                                            x.steer ?? '',
                                                         ).value
                                                     }
                                                 />
@@ -3735,7 +3750,7 @@ export const register: Register = (on) => {
             </Box>
         );
         // 🛼 glide (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
-        // current one «← we are here»; a note on it reaches cclio's next prompt, whichever board took it
+        // current one «← we are here»; a steer on it reaches cclio's next prompt, whichever board took it
         const lanes = (await $.state.get(LANES)).value ?? [];
         const laneAsks = (await $.state.get(LANE_ASKS)).value ?? {};
         // a member's asks on the glide card: folded to their count by default, its rows marked as on the member's own board
@@ -3765,27 +3780,27 @@ export const register: Register = (on) => {
                                               x.mark === mark
                                                   ? undefined
                                                   : mark,
-                                          note: x.note,
-                                      }),
-                                  note: (x, value) =>
-                                      void markRemote($, sid, x, {
-                                          mark: x.mark,
-                                          note: value.trim() || undefined,
+                                          steer: x.steer,
                                       }),
                                   prefix: card,
+                                  steer: (x, value) =>
+                                      void markRemote($, sid, x, {
+                                          mark: x.mark,
+                                          steer: value.trim() || undefined,
+                                      }),
                               }),
                           )
                         : null}
                 </Box>
             );
         };
-        const handleLaneNote = (id: string, value: string) =>
-            changeLaneNote($, id, (n) => ({
+        const handleLaneSteer = (id: string, value: string) =>
+            changeLaneSteer($, id, (n) => ({
                 ...n,
-                note: value.trim() || undefined,
+                steer: value.trim() || undefined,
             }));
         const handleLaneTake = (id: string) =>
-            changeLaneNote($, id, (n) => ({
+            changeLaneSteer($, id, (n) => ({
                 ...n,
                 isTaken: !n.isTaken || undefined,
             }));
@@ -3809,7 +3824,7 @@ export const register: Register = (on) => {
                                     gap={1}
                                     // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
                                     key={`lane:${lane.id}:${i}`}>
-                                    {/* the step's text gives way first: the link, tick and note keep their room (dima's shots, 17:41, 17:46) */}
+                                    {/* the step's text gives way first: the link, tick and steer keep their room (dima's shots, 17:41, 17:46) */}
                                     <Box flexShrink={1} minWidth={0}>
                                         <Text
                                             bold={i === lane.current}
@@ -3832,7 +3847,7 @@ export const register: Register = (on) => {
                                             </Link>
                                         </Box>
                                     ) : null}
-                                    {/* tick leads, the note follows, on the step's own line after its link (dima's shot, 17:46) */}
+                                    {/* tick leads, the steer follows, on the step's own line after its link (dima's shot, 17:46) */}
                                     {i === lane.current ? (
                                         <Box
                                             alignItems='center'
@@ -3842,14 +3857,14 @@ export const register: Register = (on) => {
                                             gap={1}
                                             key={`lane:${lane.id}:act`}
                                             minWidth={24}>
-                                            {/* the note waits as a draft until 🛎️ tick sends it; no replay, a note has nothing to redo (dima, 20:51) */}
+                                            {/* the steer waits as a draft until 🛎️ tick sends it; no replay, a steer has nothing to redo (dima, 20:51) */}
                                             <Button
                                                 key={`lane:${lane.id}:take`}
                                                 onPress={() =>
                                                     void handleLaneTake(lane.id)
                                                 }
                                                 variant='primary'>
-                                                {`${lane.isNoteTaken ? '✅' : '🛎️'} tick`}
+                                                {`${lane.isSteerTaken ? '✅' : '🛎️'} tick`}
                                             </Button>
                                             {Input ? (
                                                 <Box flexGrow={1} minWidth={0}>
@@ -3857,8 +3872,9 @@ export const register: Register = (on) => {
                                                         key={
                                                             field(
                                                                 $,
-                                                                `lane:${lane.id}:note`,
-                                                                lane.note ?? '',
+                                                                `lane:${lane.id}:steer`,
+                                                                lane.steer ??
+                                                                    '',
                                                             ).key
                                                         }
                                                         onInput={(
@@ -3866,12 +3882,13 @@ export const register: Register = (on) => {
                                                         ) => {
                                                             field(
                                                                 $,
-                                                                `lane:${lane.id}:note`,
-                                                                lane.note ?? '',
+                                                                `lane:${lane.id}:steer`,
+                                                                lane.steer ??
+                                                                    '',
                                                             ).type(
                                                                 value,
                                                                 () => {
-                                                                    return handleLaneNote(
+                                                                    return handleLaneSteer(
                                                                         lane.id,
                                                                         value,
                                                                     );
@@ -3881,17 +3898,18 @@ export const register: Register = (on) => {
                                                         onSubmit={(
                                                             value: string,
                                                         ) =>
-                                                            void handleLaneNote(
+                                                            void handleLaneSteer(
                                                                 lane.id,
                                                                 value,
                                                             )
                                                         }
-                                                        placeholder='note'
+                                                        placeholder='steer'
                                                         value={
                                                             field(
                                                                 $,
-                                                                `lane:${lane.id}:note`,
-                                                                lane.note ?? '',
+                                                                `lane:${lane.id}:steer`,
+                                                                lane.steer ??
+                                                                    '',
                                                             ).value
                                                         }
                                                     />
@@ -4332,11 +4350,15 @@ export const register: Register = (on) => {
                 await $.clock.now(),
             );
             if ('deny' in op) return { deny: op.deny };
-            // a note was about the step it sat on: a moved pointer drops it
+            // a steer was about the step it sat on: a moved pointer drops it
             const was = new Map(before.map((l) => [l.id, l.current]));
             for (const l of op.lanes)
-                if (was.has(l.id) && was.get(l.id) !== l.current)
-                    await $.store.delete(LANE_NOTE + l.id);
+                if (was.has(l.id) && was.get(l.id) !== l.current) {
+                    await $.store.delete(LANE_STEER + l.id);
+                    await $.store
+                        .delete(LANE_STEER_OLD + l.id)
+                        .catch(() => undefined);
+                }
             await writeLanes($, op.lanes);
             isWorkTurn = true;
             return { result: op.result } as never;
@@ -4385,9 +4407,9 @@ export const register: Register = (on) => {
             if (fresh.length) notes.push(joinText(fresh));
             if (thought.length) notes.push(thinkText(thought));
         }
-        // a lane note dima took while cclio's turn runs joins it here too, as an orbit mark does
+        // a lane steer dima took while cclio's turn runs joins it here too, as an orbit mark does
         if (!isPing && (await isLaneOwner($)))
-            notes.push(...(await takeLaneNotes($, await readLanes($))));
+            notes.push(...(await takeLaneSteers($, await readLanes($))));
         if (
             !isNudged &&
             ++turnTools >= NUDGE_AT &&
