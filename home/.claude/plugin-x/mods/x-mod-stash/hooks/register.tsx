@@ -8,6 +8,8 @@ import type {
     OrbitAssumption,
     OrbitCatch,
     PublishedAsk,
+    QuietLogLine,
+    QuietPing,
     RemoteMark,
     StashCap,
     StashDigest,
@@ -17,6 +19,7 @@ import type {
     StashMember,
     StashMeter,
     StashOrbit,
+    StashQuiet,
     StashView,
 } from '../types/stash.d.ts';
 import {
@@ -312,6 +315,99 @@ const EMPTY_ORBIT: StashOrbit = { asks: [], next: 1, turns: 0 };
 let orbit: StashOrbit = EMPTY_ORBIT;
 
 // one json line to x-speak's control socket; the text rides argv, never the shell's words
+// quiet comms (PK-93, dima's o17: an a/b mvp, one switch to revert): in cclio's thread a member's [progress] ping is
+// held, no turn; every other tag, and no tag, passes; held pings ride her next prompt as one hidden block, or an
+// idle append after 10 min. the a/b reads one log line per delivery from the store (docs/test-drive/quiet-comms.md)
+const QUIET = { key: 'quiet', plugin: 'x-mod-stash' } as const;
+const QUIET_HELD = 'quiet-held:';
+const QUIET_LOG = 'quiet-log:';
+const QUIET_IDLE_MS = 10 * 60_000;
+const QUIET_LOG_MAX = 500;
+const QUIET_TAG = /^\s*\[(done|blocked|ask|progress)\]/i;
+
+// only cclio's thread holds anything: her session runs in ~/frame/cclio
+async function isQuietHome($: EngineInterface) {
+    try {
+        const home = await $.env.get('HOME');
+        const cwd = await $.session.cwd();
+        return (
+            cwd === `${home}/frame/cclio` ||
+            cwd.startsWith(`${home}/frame/cclio/`)
+        );
+    } catch {
+        return false;
+    }
+}
+
+// the switch beats the day's arm: even days on, odd days off, so the same lanes see both
+export const quietArm = (now: number, mode?: StashQuiet['mode']) =>
+    mode ? mode === 'on' : new Date(now).getDate() % 2 === 0;
+
+// a peer delivery's body and sender: a cli peer's envelope names it `from-name`, a desktop one `name` (probe, 14:49)
+export function peerPing(text: string) {
+    const from =
+        text.match(/\bfrom-name="([^"]*)"/)?.[1] ??
+        text.match(/\bname="([^"]*)"/)?.[1] ??
+        'a member';
+    const body = text
+        .replace(/^[\s\S]*?<cross-session-message[^>]*>\n?/, '')
+        .replace(/\n?<\/cross-session-message>\s*$/, '');
+    const tag = body.match(QUIET_TAG)?.[1]?.toLowerCase() ?? 'none';
+    return { body, from, tag };
+}
+
+async function quietOf($: EngineInterface): Promise<StashQuiet> {
+    return (
+        (await $.state.get(QUIET).catch(() => undefined))?.value ?? { held: [] }
+    );
+}
+
+async function saveQuiet($: EngineInterface, q: StashQuiet) {
+    await $.state.set(QUIET, q).catch(() => undefined);
+    const sid = await currentId($);
+    if (sid)
+        await $.store
+            .set(QUIET_HELD + sid, q.held.length)
+            .catch(() => undefined);
+}
+
+async function quietLog($: EngineInterface, line: QuietLogLine) {
+    const key = QUIET_LOG + new Date(line.at).toISOString().slice(0, 10);
+    const was = ((await $.store.get(key).catch(() => undefined)) ??
+        []) as QuietLogLine[];
+    await $.store
+        .set(key, [...was, line].slice(-QUIET_LOG_MAX))
+        .catch(() => undefined);
+}
+
+export const quietNote = (held: QuietPing[]) =>
+    [
+        `🤫 quiet comms: ${held.length} held member ping${held.length === 1 ? '' : 's'}, [progress] only; read them, act only if one changes the plan, never relay them to dima.`,
+        ...held.map(
+            (p) =>
+                `- ${new Date(p.at).toTimeString().slice(0, 5)} ${p.from}: ${p.text}`,
+        ),
+    ].join('\n');
+
+// held pings past 10 min while cclio is idle: one hidden row, no turn (probe Q2, 11:46:50)
+async function quietIdle($: EngineInterface) {
+    const q = await quietOf($);
+    if (!q.held.length) return;
+    if ((await $.state.get(TURN).catch(() => undefined))?.value?.isBusy) return;
+    const now = await $.clock.now();
+    if (now - Math.min(...q.held.map((p) => p.at)) < QUIET_IDLE_MS) return;
+    const appended = await $.session
+        .append({
+            message: {
+                content: [{ text: quietNote(q.held), type: 'text' }],
+                type: 'user',
+            },
+        })
+        .catch(() => undefined);
+    if (!appended || 'deny' in appended) return;
+    await saveQuiet($, { ...q, held: [] });
+}
+
 // speak's own answer to `status`: reading and not paused draws ⏸️ on every play button, else ▶️ (dima, 15:51)
 const SPEAKING = { key: 'speaking', plugin: 'x-mod-stash' } as const;
 async function refreshSpeaking($: EngineInterface) {
@@ -1880,6 +1976,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             ...r,
             asks: isLive(asks, now) ? asks.asks.length : 0,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
+            held: Number(await $.store.get(QUIET_HELD + r.sid)) || undefined,
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
             // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
@@ -2196,6 +2293,16 @@ export const register: Register = (on) => {
                 name: 'board',
             })
             .catch(() => $.ui.log('x-mod-stash: /board was not registered'));
+        if (await isQuietHome($))
+            await $.command
+                .register({
+                    description:
+                        "quiet comms: `/quiet on` holds members' [progress] pings off this thread, `off` passes all, `auto` follows the day's a/b arm; bare shows it",
+                    name: 'quiet',
+                })
+                .catch(() =>
+                    $.ui.log('x-mod-stash: /quiet was not registered'),
+                );
         if (!isPolling) {
             isPolling = true;
             const tick = () =>
@@ -2205,6 +2312,7 @@ export const register: Register = (on) => {
                     await freshMeter($).catch(() => undefined);
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
+                    await quietIdle($).catch(() => undefined);
                     if (await isOpen($))
                         await refreshSpeaking($).catch(() => undefined);
                     tick();
@@ -2279,6 +2387,9 @@ export const register: Register = (on) => {
                     `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`,
             );
         const laneNotes = isUserTurn ? await takeLaneNotes($, lanes) : [];
+        // held member pings ride the next prompt of any origin, once (quiet comms)
+        const quiet = await quietOf($);
+        if (quiet.held.length) await saveQuiet($, { ...quiet, held: [] });
         return next({
             ...e,
             context: [
@@ -2292,6 +2403,7 @@ export const register: Register = (on) => {
                 ...(reminder ? [reminder] : []),
                 ...laneStale,
                 ...laneNotes,
+                ...(quiet.held.length ? [quietNote(quiet.held)] : []),
                 ...(tickets ? [tickets] : []),
             ],
         });
@@ -2467,6 +2579,59 @@ export const register: Register = (on) => {
     });
 
     // `/board colour` flips the colour MVP for every session's board, and opens it to look
+    // quiet comms: a member's [progress] ping is held in cclio's thread, every other delivery passes and is logged
+    on('session.receive', async ($, e, next) => {
+        const kind = e.origin.kind;
+        if ((kind !== 'peer' && kind !== 'peer-send-message') || e.agentId)
+            return next(e);
+        if (!(await isQuietHome($))) return next(e);
+        const now = await $.clock.now();
+        const { body, from, tag } = peerPing(e.text);
+        const q = await quietOf($);
+        const isOn = quietArm(now, q.mode);
+        const isMobile = (await $.state.get(MOBILE)).value === true;
+        const isBusyNow =
+            (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
+            isBusy;
+        const line = { arm: isOn ? 'on' : 'off', at: now, from, tag } as const;
+        if (isOn && !isMobile && tag === 'progress') {
+            const first =
+                body.replace(QUIET_TAG, '').trim().split('\n')[0] ?? '';
+            await saveQuiet($, {
+                ...q,
+                held: [...q.held, { at: now, from, text: first.slice(0, 300) }],
+            });
+            await quietLog($, { ...line, startedTurn: false, verdict: 'held' });
+            return { consumed: `quiet comms held ${from}'s [progress] ping` };
+        }
+        await quietLog($, {
+            ...line,
+            startedTurn: !isBusyNow,
+            verdict: 'passed',
+        });
+        return next(e);
+    });
+
+    on('command.run', { command: 'quiet' }, async ($, e) => {
+        const arg = e.args.trim();
+        const q = await quietOf($);
+        const now = await $.clock.now();
+        if (arg === 'on' || arg === 'off' || arg === 'auto') {
+            await saveQuiet($, {
+                ...q,
+                mode: arg === 'auto' ? undefined : arg,
+            });
+            const isOn = quietArm(now, arg === 'auto' ? undefined : arg);
+            return {
+                text: `quiet comms ${isOn ? 'on' : 'off'}${arg === 'auto' ? " (the day's arm)" : ''}: ${isOn ? "members' [progress] pings wait for your next turn" : 'every member ping passes'}`,
+            };
+        }
+        const isOn = quietArm(now, q.mode);
+        return {
+            text: `quiet comms ${isOn ? 'on' : 'off'} (${q.mode ? 'switched' : "the day's arm"}), ${q.held.length} held; /quiet on | off | auto`,
+        };
+    });
+
     on('command.run', { command: 'board' }, async ($, e) => {
         if (e.args.trim() === 'breathe') {
             const isOn = await flipKnob($, 'always');
@@ -3432,6 +3597,12 @@ export const register: Register = (on) => {
                             </Text>
                             {m.offPattern ? (
                                 <Text color={ACCENT}>⚠</Text>
+                            ) : null}
+                            {/* quiet comms: the member pings held for cclio's next turn, nothing at 0 */}
+                            {m.held ? (
+                                <Box flexShrink={0}>
+                                    <Text dimColor>{`🤫 ${m.held}`}</Text>
+                                </Box>
                             ) : null}
                             {/* the name's line: the model and its effort cells right of the name (dima, 15:27; o6, 15:49) */}
                             {model && isPartOn('stash.rowmeta') ? (

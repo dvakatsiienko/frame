@@ -85,6 +85,10 @@ _Avoid_: guess, assumed ask
 A fact the session already printed that dima likely missed, parked as one line under 🐠 catch in the board by the orbit tool's `catch` op; at most 2 a turn and 5 held, 🤔 gets it explained, it stays until he clears it.
 _Avoid_: highlight, missed fact, fish
 
+**Quiet comms**:
+cclio's thread holding a member's `[progress]` ping until her next turn instead of starting one; every other tag passes; `/quiet` is its one switch, the day its a/b arm.
+_Avoid_: mute, silent mode, filter
+
 **Enhancer**:
 The band's `🪄` enhance, `⏪` prev and `⏩` new: Haiku rewrites the prompt box once per press; prev and new swap his own text and the enhanced one back without a call.
 _Avoid_: prompt rewriter, polish

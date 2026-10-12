@@ -28,3 +28,8 @@ helps, makes comms more efficient, and does not break our comms. make it easy to
 - adopt when peer-started turns drop by a third or more and the harm count stays at 0
 
 ## rounds
+
+- round 0 (2026-10-12, the mods coder): built in x-mod-stash, live in cclio's thread only. the a/b reads
+  `quiet-log:<day>` in the store file: `jq '[to_entries[] | select(.key|startswith("quiet-log:")) | .value[]] | group_by(.arm)'
+  ~/.claude/plugins/store/x-mod-stash_*.json`; held pings show as `🤫 n` on cclio's sessions row. proven: 14 harness
+  tests, each branch red by mutation; the desktop hold itself at 15:48 (no turn). not yet: a real lane day per arm

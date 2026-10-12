@@ -42,6 +42,8 @@ export type StashMember = {
     wait?: string;
     // ccrow's row only: her newest 👀 «for you» tip, which takes the wait's place (PK-73)
     tip?: string;
+    // cclio's row only: the member pings quiet comms holds for her next turn
+    held?: number;
     asks: number;
     context?: number;
     model?: string;
@@ -132,6 +134,20 @@ export type OrbitCatch = {
 // the 🐠 catch experiment's counts for one day, read at its keep-or-kill
 export type CatchCount = { thinks: number; clears: number; refused: number };
 
+// quiet comms (PK-93): a [progress] ping from a member, held off cclio's thread until her next turn
+export type QuietPing = { at: number; from: string; text: string };
+// the held pings and the switch; no switch means the day's arm: even days on, odd days off
+export type StashQuiet = { held: QuietPing[]; mode?: 'on' | 'off' };
+// one delivery as the a/b reads it
+export type QuietLogLine = {
+    at: number;
+    from: string;
+    tag: string;
+    verdict: 'held' | 'passed' | 'flushed';
+    startedTurn: boolean;
+    arm: 'on' | 'off';
+};
+
 // the session's orbit: its asks oldest first, the next id's number, the main turns ended so far, and the plan with
 // the turn count it was set at
 export type StashOrbit = {
@@ -178,6 +194,7 @@ declare module 'claude-code' {
         'x-mod-stash': {
             // speak is reading aloud and not paused: the board's play button reads pause (dima, 15:51)
             speaking: boolean;
+            quiet: StashQuiet;
             view: StashView;
             board: StashBoardView;
             turn: StashTurn;

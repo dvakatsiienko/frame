@@ -437,6 +437,15 @@ test("ccrow's tip line carries speak's buttons, reading the tip", async ($, on) 
     ).toBe(true);
 });
 
+test('a row shows 🤫 n while its session holds n member pings, nothing at 0', async ($, on) => {
+    fleet(on, { [`quiet-held:${HERE}`]: 2, [`quiet-held:${PEER}`]: 0 });
+    const rows = await rowsBySid($);
+    expect([rows[HERE]?.includes('🤫 2'), rows[PEER]?.includes('🤫')]).toEqual([
+        true,
+        false,
+    ]);
+});
+
 test('asks over a day old are not counted on the board', async ($, on) => {
     fleet(on, {
         [`asks:${PEER}`]: { asks: ['a'], at: NOW - 25 * 60 * MIN, label: 'x' },

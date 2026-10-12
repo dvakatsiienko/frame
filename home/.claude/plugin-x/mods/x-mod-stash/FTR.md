@@ -497,6 +497,27 @@ the facts dima likely missed in long replies, parked by the session under orbit 
   - given he presses 📋 copy, then the piece's text is on the clipboard of the surface he pressed it on; his prompt box is never touched
   - decision: `$.ui.copy` takes on both surfaces at cc 2.1.296 (step 0), so no prompt-box fallback
 
+## quiet comms — member pings off cclio's thread
+
+an a/b mvp ([test drive](../../../../../docs/test-drive/quiet-comms.md), pocket PK-93, dima's o17): a member's `[progress]` ping waits for cclio's next turn instead of starting one; one switch reverts it.
+- makes: one `quiet-log:<day>` key in x-mod-stash's `$.store`, a line per delivery (time, sender, tag, held · passed · flushed, started a turn, the arm); `quiet-held:<session>` the held count
+
+- 🧭 a [progress] ping is held in cclio's thread, every other passes
+  - given cclio's session (its cwd under `~/frame/cclio`) and the arm on
+  - when a member's message opens with `[progress]`
+  - then it is not queued and starts no turn; `[done]`, `[blocked]`, `[ask]` and an untagged ping pass as before; any other session holds nothing
+  - decision: the tag decides, never a guess at the text — an untagged ping always passes (dima, 2026-10-12, the probe's «never hold blind»)
+  - proven on the desktop 15:48: a held `[progress]` ping started no turn (the probe's open line)
+- 🧭 held pings reach cclio without a turn of their own
+  - given pings are held
+  - when the next prompt of any origin reaches her, then they ride it as one hidden block, «n held member pings», each with its time, sender and first line, once
+  - when none comes for 10 min while she is idle, then one hidden row is appended, no turn
+- 🧭 one switch, and an a/b arm by day
+  - given no switch, then even days hold and odd days pass; `/quiet on` or `off` beats the day; `/quiet auto` goes back to it; bare `/quiet` says which and how many are held
+  - given mobile mode is on, then nothing is held
+- 🧭 cclio's row counts what waits
+  - given her stash holds n pings, then her row in the sessions card reads `🤫 n` beside the name; at 0 nothing
+
 ## /board — 🌔 phases
 
 - ✅ phases: the session's next 7 moves, live
