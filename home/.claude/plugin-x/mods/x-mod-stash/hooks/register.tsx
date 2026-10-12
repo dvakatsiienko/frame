@@ -4350,16 +4350,25 @@ export const register: Register = (on) => {
                 flexShrink={0}
                 gap={1}
                 key={`${key}:arrows`}>
+                {/* every row keeps both arrows in place; an end's dead one is dim text, the api has no disabled (dima, 21:20) */}
                 {canUp ? (
                     <Button key={`${key}:up`} onPress={() => onMove(-1)} plain>
                         ↑
                     </Button>
-                ) : null}
+                ) : (
+                    <Text dimColor key={`${key}:up:off`}>
+                        ↑
+                    </Text>
+                )}
                 {canDown ? (
                     <Button key={`${key}:down`} onPress={() => onMove(1)} plain>
                         ↓
                     </Button>
-                ) : null}
+                ) : (
+                    <Text dimColor key={`${key}:down:off`}>
+                        ↓
+                    </Text>
+                )}
             </Box>
         );
         const handleLaneSteer = (id: string, value: string) =>

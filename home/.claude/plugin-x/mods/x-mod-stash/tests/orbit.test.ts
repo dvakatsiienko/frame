@@ -1760,3 +1760,19 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
         ['create', 'edit', 'link', 'step', 'end'],
     ]);
 });
+
+test('every phase line keeps both arrows; the ends draw their dead one as dim text', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a', 'next: b', 'then: c'], op: 'plan' });
+    const shape = async (i: number) =>
+        ((await ui.find({ key: `plan:${i}:arrows` }))?.children ?? []).map(
+            (c) => (c as { type?: string }).type,
+        );
+    expect([await shape(0), await shape(1), await shape(2)]).toEqual([
+        ['Text', 'Button'],
+        ['Button', 'Button'],
+        ['Button', 'Text'],
+    ]);
+});
