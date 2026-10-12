@@ -23,6 +23,9 @@ function world(
         // files beside the registry (ccrow's relay), and other live sessions as cc writes their registry files
         files = {} as Record<string, string>,
         peers = [] as Record<string, unknown>[],
+        // a test's own answer to a process run, before the default one
+        run = (_argv: readonly string[]): string | number | undefined =>
+            undefined,
     } = {},
 ) {
     for (const p of peers)
@@ -44,18 +47,32 @@ function world(
     });
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: cwd }));
-    on('process.run', (_$, e) => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout:
-                e.argv[0] === 'ps'
-                    ? [PID, ...peers.map((p) => p.pid)].join('\n')
-                    : `${PID}\nMon Oct 12 15:00:00 2026\n`,
-        },
-    }));
+    const logged: string[] = [];
+    on('process.run', (_$, e) => {
+        const own = run(e.argv);
+        if (own !== undefined)
+            return {
+                value: {
+                    exitCode: typeof own === 'number' ? own : 0,
+                    isStderrTruncated: false,
+                    isStdoutTruncated: false,
+                    stderr: '',
+                    stdout: typeof own === 'string' ? own : '',
+                },
+            };
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout:
+                    e.argv[0] === 'ps'
+                        ? [PID, ...peers.map((p) => p.pid)].join('\n')
+                        : `${PID}\nMon Oct 12 15:00:00 2026\n`,
+            },
+        };
+    });
     on('fs.write', (_$, e) => {
         files[e.path] = e.text;
         return { value: undefined };
@@ -68,7 +85,10 @@ function world(
               : { deny: 'no such file' },
     );
     on('env.get', () => ({ value: '/home' }));
-    on('ui.log', () => ({ value: undefined }));
+    on('ui.log', (_$, e) => {
+        logged.push(String(e.text));
+        return { value: undefined };
+    });
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     on('session.repo', () => ({
@@ -105,7 +125,7 @@ function world(
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { appended, clock, contexts, queued, store };
+    return { appended, clock, contexts, logged, queued, store };
 }
 
 const start = ($: Engine) =>
@@ -488,4 +508,123 @@ test('a wake already sent goes out once', async ($, on) => {
     await w.clock.advance(5000);
     await w.clock.advance(5000);
     expect(w.sent.length).toBe(1);
+});
+
+/* o75: the quiet ledger's gaps and a stuck hold raise a native alarm */
+
+const CODER_SID = 'c0c0c0c0-coder';
+const coderPeer = { name: '☕️ 🔧 coder: mods', pid: 778, sessionId: CODER_SID };
+// the send timestamps the ledger's transcript grep returns, local time like EVEN
+const sendAt = (min: number) =>
+    `2026-10-12T15:${String(min).padStart(2, '0')}:00.000`;
+
+function alarmWorld(
+    on: On,
+    { notify = 'no-surface', osascript = 0, sends = [] as string[] } = {},
+) {
+    const scripted: string[] = [];
+    const w = world(on, {
+        peers: [coderPeer],
+        run: (argv) => {
+            if (argv[0] === 'osascript') {
+                scripted.push(String(argv[3]));
+                return osascript;
+            }
+            if (argv[0] === 'sh' && String(argv[2]).includes('SendMessage'))
+                return sends.join('\n');
+            return undefined;
+        },
+    });
+    const notified: string[] = [];
+    on('ui.notify', (_$, e) => {
+        notified.push(e.text);
+        if (notify === 'deny') return { deny: 'a hook refused it' };
+        return {
+            value:
+                notify === 'sent'
+                    ? { channel: 'ghostty' as const, isSent: true as const }
+                    : {
+                          isSent: false as const,
+                          reason: notify as 'no-surface',
+                      },
+        };
+    });
+    return { ...w, notified, scripted };
+}
+
+test('a ledger gap raises one native alarm, through osascript when notify finds no surface', async ($, on) => {
+    const w = alarmWorld(on, { sends: [sendAt(2), sendAt(3)] });
+    await start($);
+    await w.clock.advance(10 * MIN);
+    expect([w.notified, w.scripted]).toEqual([
+        ['☕️ 🔧 coder: mods sent cclio 1, her quiet log holds 0'],
+        ['☕️ 🔧 coder: mods sent cclio 1, her quiet log holds 0'],
+    ]);
+});
+
+test('a gap that closes and opens again alarms again', async ($, on) => {
+    const sends = [sendAt(2)];
+    const w = alarmWorld(on, { sends });
+    await start($);
+    await w.clock.advance(10 * MIN);
+    sends.length = 0;
+    await w.clock.advance(2 * MIN);
+    sends.push(sendAt(2));
+    await w.clock.advance(2 * MIN);
+    expect(w.scripted.length).toBe(2);
+});
+
+test('a gap notify sends itself goes no further', async ($, on) => {
+    const w = alarmWorld(on, { notify: 'sent', sends: [sendAt(2)] });
+    await start($);
+    await w.clock.advance(10 * MIN);
+    expect([w.notified.length, w.scripted]).toEqual([1, []]);
+});
+
+test('a held ping stuck past the idle wait + 2 min raises one alarm', async ($, on) => {
+    const w = alarmWorld(on);
+    w.store.set(`quiet-held:${SID}`, [
+        {
+            at: EVEN - 13 * MIN,
+            from: '☕️ 🔧 coder: mods',
+            text: '[progress] a',
+        },
+    ]);
+    await start($);
+    await w.clock.advance(3 * MIN);
+    expect(w.scripted).toEqual([
+        '1 held ping stuck 13 min, oldest from ☕️ 🔧 coder: mods',
+    ]);
+});
+
+test('a held ping inside the idle wait + 2 min raises none', async ($, on) => {
+    const w = alarmWorld(on);
+    w.store.set(`quiet-held:${SID}`, [
+        {
+            at: EVEN - 11 * MIN,
+            from: '☕️ 🔧 coder: mods',
+            text: '[progress] a',
+        },
+    ]);
+    await start($);
+    await w.clock.advance(30_000);
+    expect(w.notified).toEqual([]);
+});
+
+test('an alarm neither notify nor osascript can raise is logged, never thrown', async ($, on) => {
+    const w = alarmWorld(on, { osascript: 1, sends: [sendAt(2)] });
+    await start($);
+    await w.clock.advance(10 * MIN);
+    expect(
+        w.logged.filter((l) => l.includes('quiet alarm not raised')),
+    ).toEqual([
+        'x-mod-stash: quiet alarm not raised (notify: no-surface; osascript: exit 1): ☕️ 🔧 coder: mods sent cclio 1, her quiet log holds 0',
+    ]);
+});
+
+test('a notify that rejects falls through to osascript, never thrown', async ($, on) => {
+    const w = alarmWorld(on, { notify: 'deny', sends: [sendAt(2)] });
+    await start($);
+    await w.clock.advance(10 * MIN);
+    expect(w.scripted.length).toBe(1);
 });

@@ -460,6 +460,13 @@ const QUIET_STUCK_MS = 2 * 60_000;
 // a send younger than the grace may still be on its way, so the ledger counts it next minute
 const LEDGER_GRACE_MS = 2 * 60_000;
 const LEDGER_EVERY_MS = 60_000;
+// the alarms already raised, so each gap and each stuck hold notifies once, across reloads too
+const QUIET_ALARMED = 'quiet-alarmed';
+const QUIET_ALARMED_MAX = 50;
+const QUIET_ALARM_TITLE = '🚨 quiet comms';
+// osascript's own argv, so no text is ever spliced into the script
+const NOTIFY_SCRIPT =
+    'on run argv\ndisplay notification (item 1 of argv) with title (item 2 of argv)\nend run';
 
 // every way a member addresses cclio in a SendMessage `to`: her name (any ref after it), the socket a reply copies from
 // her envelope's `from`, her session ids — as one grep -E alternation, read wherever `to` sits in the input
@@ -609,14 +616,65 @@ async function relayCcrowWake($: EngineInterface) {
         .catch(() => undefined);
 }
 
-// the ledger runs once a minute in cclio's thread; its gaps sit in the store for her board and the boot digest
+// one native notification per alarm key: `$.ui.notify` writes only through a terminal (the desktop answers no-surface),
+// so a not-sent one goes out through osascript; both failing leaves a log line, never a throw
+async function quietAlarm($: EngineInterface, key: string, text: string) {
+    const raised =
+        ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ?? [];
+    if (raised.includes(key)) return;
+    await $.store.set(
+        QUIET_ALARMED,
+        [...raised, key].slice(-QUIET_ALARMED_MAX),
+    );
+    const sent = await $.ui
+        .notify(text, { title: QUIET_ALARM_TITLE })
+        .catch((err: unknown) => ({
+            isSent: false as const,
+            reason: String(err),
+        }));
+    if (sent.isSent) return;
+    const r = await $.process
+        .run(['osascript', '-e', NOTIFY_SCRIPT, text, QUIET_ALARM_TITLE])
+        .catch(() => undefined);
+    if (r?.exitCode === 0) return;
+    await $.ui.log(
+        `x-mod-stash: quiet alarm not raised (notify: ${sent.reason}; osascript: ${r ? `exit ${r.exitCode}` : 'did not run'}): ${text}`,
+    );
+}
+
+// the ledger runs once a minute in cclio's thread; its gaps sit in the store for her board and the boot digest, and each
+// new gap or a held ping stuck past the idle wait + 2 min raises one native alarm beside the board's red row
 let ledgerAt = 0;
 async function quietBooks($: EngineInterface) {
     if (!(await isQuietHome($))) return;
     const now = await $.clock.now();
     if (now - ledgerAt < LEDGER_EVERY_MS) return;
     ledgerAt = now;
-    await $.store.set(QUIET_GAP, { at: now, gaps: await quietLedger($, now) });
+    const gaps = await quietLedger($, now);
+    await $.store.set(QUIET_GAP, { at: now, gaps });
+    // a member's gap alarms once while it stays open; once it closes, its next gap alarms again
+    const raised =
+        ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ?? [];
+    const open = new Set(gaps.map((g) => `gap:${g.from}`));
+    const kept = raised.filter((k) => !k.startsWith('gap:') || open.has(k));
+    if (kept.length !== raised.length) await $.store.set(QUIET_ALARMED, kept);
+    for (const g of gaps)
+        await quietAlarm(
+            $,
+            `gap:${g.from}`,
+            `${g.from} sent cclio ${g.sent}, her quiet log holds ${g.logged}`,
+        );
+    const held = heldOf(await $.store.get(QUIET_HELD + (await currentId($))));
+    if (!held) return;
+    const oldest = held.reduce((a, b) => (b.at < a.at ? b : a));
+    const stuckMs =
+        (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
+    if (now - oldest.at > stuckMs)
+        await quietAlarm(
+            $,
+            `stuck:${oldest.at}`,
+            `${held.length} held ping${held.length === 1 ? '' : 's'} stuck ${Math.round((now - oldest.at) / 60_000)} min, oldest from ${oldest.from}`,
+        );
 }
 
 export const quietNote = (held: QuietPing[]) =>

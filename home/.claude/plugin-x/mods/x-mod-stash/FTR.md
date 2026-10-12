@@ -584,6 +584,13 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 - ⬜ a stuck held ping turns cclio's 🤫 n red
   - given a held ping older than the idle wait + 2 min (12 min by default)
   - then her row's `🤫 n` reads red; younger, it reads plain
+- ⬜ a ledger gap or a stuck hold raises a native alarm
+  - makes: one macOS notification headed `🚨 quiet comms`; `quiet-alarmed` in the store names the alarms raised
+  - given the minute's ledger in cclio's thread finds a member's gap, or her oldest held ping past the idle wait + 2 min
+  - then one notification names it (`<member> sent cclio <n>, her quiet log holds <m>`, or `<n> held pings stuck <m> min, oldest from <member>`), beside the red row
+  - and a member's gap alarms once while it stays open, again only after it closed; a stuck hold alarms once per oldest ping
+  - and when neither `$.ui.notify` nor osascript raises it, a `ui.log` line says so; nothing throws
+  - decision: `$.ui.notify` first, osascript when it answers not sent — the desktop, where cclio runs, answers `no-surface` (dima's o75, 2026-10-12)
 - ⬜ `/quiet-canary` sends cclio a test ping with no model
   - given any session but cclio's, when it runs `/quiet-canary <nonce>`, then the mod sends `[progress] quiet canary <nonce>: …` to `🦉 cclio` through `$.session.send` and answers `sent` or `FAIL, <reason>`
   - then cclio's log lines for it carry `canary: <nonce>`, so `pnpm mods:quiet-canary` reads held → delivered

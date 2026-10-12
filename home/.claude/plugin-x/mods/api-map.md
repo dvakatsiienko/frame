@@ -85,7 +85,7 @@ lists against this file: the quoted names in `EngineEventOf`, the members of `En
 
 every `$` method is also an interceptable event; these are the ones the op list below misses:
 
-- ui: `$.ui.notify(text, { title })` — a native notification through the person's channel, no pane or turn needed, no rate limit; resolves `{ isSent: false, reason }` (`disabled` `no-channel` `no-surface` `refused`) rather than failing silently (2.1.295) · `$.ui.ask` — the AskUserQuestion dialog from a mod, rejects in `-p` · `$.ui.scroll` · `$.ui.focus` · `$.ui.close`
+- ui: `$.ui.notify(text, { title })` — a native notification through the person's channel, no pane or turn needed, no rate limit; resolves `{ isSent: false, reason }` (`disabled` `no-channel` `no-surface` `refused`) rather than failing silently, and rejects on a hook's `{ deny }` (2.1.295); 📌 it writes only through a terminal: the desktop, `-p` and the SDK answer `no-surface` (types: `UiNotifyResult`), so a desktop session falls back to `osascript` (x-mod-stash's quiet alarm) · `$.ui.ask` — the AskUserQuestion dialog from a mod, rejects in `-p` · `$.ui.scroll` · `$.ui.focus` · `$.ui.close`
 - session: `$.session.send` — the one door into another session · `$.session.append` · `$.session.compact`
 - prompt: `$.prompt.submit` · `$.prompt.fill` · `$.prompt.suggest` · `$.prompt.compose`
 - tools, commands, config, agents: `$.tool.call` · `$.tool.check` · `$.command.run` · `$.config.set` · `$.agent.spawn`
