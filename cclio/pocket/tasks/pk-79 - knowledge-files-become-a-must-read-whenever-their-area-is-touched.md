@@ -4,7 +4,7 @@ title: knowledge files become a must-read whenever their area is touched
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 15:13'
+updated_date: '2026-10-12 16:48'
 due_date: '2026-10-15'
 labels:
   - m
@@ -56,4 +56,6 @@ dima 16:34: Q14 ✅ the primer delivers x:author-memory's core as a 6th source o
 dima o62 18:01: recipes stay wide; each shelf file gets a fed-by: line (recipe <name> | incidents) in its revamp; the both-ways map + reds land in x knowledge list (cli lane, PK-94); knowledge/AGENTS.md states the shelf's purpose; each raw recipe is shaped at its own next run. orphans today: macos-apps (incidents), fleet-claude-capabilities (no feeder yet).
 
 dima o64 18:13, the shelf test for knowledge/AGENTS.md: a subject that lives in one place (the mods, in plugin-x/mods/) keeps its knowledge in that home; the shelf holds subjects scattered across the fs (go/charm in any app).
+
+19:50: steps 1, 2, 4, 5 done (scouts 98569e9d, author-memory d05e6323, primer trace in docs/test-drive/primer.md); step 3 shelf: 4 of 7 landed, 5–7 drafted (o76, o78, o79); knowledge/AGENTS.md landed. left: land 5–7, then the primer build joins the mods lane after l12.
 <!-- SECTION:NOTES:END -->

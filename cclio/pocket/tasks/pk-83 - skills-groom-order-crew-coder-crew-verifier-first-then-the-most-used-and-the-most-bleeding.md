@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 15:02'
+updated_date: '2026-10-12 16:55'
 due_date: '2026-10-16'
 labels:
   - m
@@ -34,4 +34,6 @@ from the x domain-modeling coder's retro (2026-10-12): crew-coder has no line fo
 15:51 (wishkeeper): committed HEAD's crew-coder/SKILL.md:19 still points at the gone docs/knowledge/impeccable-refine.md until the draft's commit; writing-for-humans/SKILL.md never names references/sources.md — add the pointer at the groom
 
 dima 18:01: when the memory sweep reaches skills, shape and run nurture-skills (never run yet) as the groom's engine.
+
+dima o76/o77 19:55, don't forget: fleet-models moves into x:crew-lead (models knowledge serves only the spawner, cclio + dima — the one-home test) and merges with crew-lead/models.md, one copy; the shelf drops it.
 <!-- SECTION:NOTES:END -->
