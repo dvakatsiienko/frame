@@ -610,7 +610,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 ## /board — 🛼 glide (FRM-385)
 
 - ⬜ every board draws the fleet's live lanes
-  - given 🦉 cclio calls orbit op `glide` act `create` with a title and 1–5 steps (plain text, an optional ticket id, a done flag)
+  - given 🦉 cclio calls orbit op `glide` act `create` with a title and 1–7 steps (5 until 2026-10-12) (plain text, an optional ticket id, a done flag)
   - then every session's board draws a `🛼 glide: <title>` card right above 🌔 phases, its head naming its mod as sessions, orbit and phases do (dima's board shot, 23:41): every step in order, a done one `✅` and dim but still listed, the current one `➡️` and bold, the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
   - and one 🛎️ tick and a steer box sit on the current step's line after its ticket link, tick first; the step's text cuts short before the link, tick or steer give way (dima's shots, 17:41, 17:46) — on any board; the text stays a draft until tick, then joins cclio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the tick clear once it did (the button read «take» until dima's o28)
   - decision: the steer and its take live in the stash store, one key per lane, so the shelf file keeps one writer, cclio's lane op; a step that moves the pointer drops the steer (FRM-400)
@@ -621,6 +621,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: the glide cards stick to the board's bottom, on top of 🌔 phases, the gap above them (dima's shot, 20:12)
 - ⬜ only cclio writes the lanes
   - given any session calls op `glide`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create
+  - and act `edit` with an id and a new title, new steps or both refreshes the card in place: the id, the members and the history stay, the history gains one `edit` entry, a step whose text stays keeps its done flag, the pointer lands on the first step not done, and dima's steer stays while the current step's text does (cclio's ask, 18:01)
   - and act `link` with a session id and a role (coder, verifier) links a member; a second link of a role replaces the first
   - and the lane keeps the member's registry name — a link by its session id, an 8-char prefix or its desktop `local_` id is mapped to it — and each draw finds the session that name runs under now, so a `/clear` or a desktop id never leaves the card at «0 asks»; two live under one name, the newer; an id the registry does not know is kept as given (cclio's wisp, 18:01)
   - and act `step` with a step index marks every step before it done; the pointer never sits on a done step; the step count marks the lane finished

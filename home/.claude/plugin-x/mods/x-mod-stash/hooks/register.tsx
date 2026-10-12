@@ -251,7 +251,7 @@ const LANE_STEER = 'lane-steer:';
 const LANE_STEER_OLD = 'lane-note:';
 const LANE_OWNER = '🦉 cclio';
 const LANE_ROLES = ['coder', 'verifier'] as const;
-const LANE_MAX = 5;
+const LANE_MAX = 7;
 const LANE_TEXT_MAX = 60;
 const LANE_STALE = 8;
 const LANE_TICKET = /^[A-Z]{2,5}-\d+$/;
@@ -285,7 +285,7 @@ const ORBIT_ABOUT = [
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     'op catch, pieces [{ kind, text, hiddenNote }], clear [ids]: cclio only, her rules come from catch.md.',
     `op plan, lines: your next ${PLAN_MAX} moves (now, next, then), each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale.`,
-    `op glide — ${LANE_OWNER} only, every board draws it: act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
+    `op glide — ${LANE_OWNER} only, every board draws it: act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a step whose text stays keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
 let selfId: string | undefined;
@@ -1086,8 +1086,8 @@ export function glideOp(
     if (act === 'create') return laneCreate(lanes, input, turns, now);
     const id = oneLine(input.id);
     const lane = lanes.find((l) => l.id === id && !l.endedAt);
-    if (act !== 'link' && act !== 'step' && act !== 'end')
-        return { deny: 'orbit glide: act is create, link, step or end' };
+    if (act !== 'link' && act !== 'step' && act !== 'end' && act !== 'edit')
+        return { deny: 'orbit glide: act is create, edit, link, step or end' };
     if (!lane)
         return {
             deny: `orbit glide: no live lane «${id}»; live: ${
@@ -1114,6 +1114,43 @@ export function glideOp(
             },
             `lane ${lane.id} «${lane.title}» ended`,
         );
+    // a card refreshed in place: the id, members and history stay; a step whose text survives keeps its done flag, and
+    // the pointer lands on the first step not done (cclio's ask, 18:01: ending and re-creating lost all three)
+    if (act === 'edit') {
+        const title = oneLine(input.title) || lane.title;
+        const fresh =
+            input.items === undefined ? lane.items : laneItems(input.items);
+        if (!Array.isArray(fresh)) return fresh;
+        const wasDone = new Set(
+            lane.items.filter((x) => x.isDone).map((x) => x.text),
+        );
+        const stepped = pointed(
+            fresh.map((x) => ({
+                ...x,
+                isDone: x.isDone || wasDone.has(x.text),
+            })),
+            0,
+        );
+        return put(
+            {
+                ...lane,
+                current: stepped.current,
+                history: [
+                    ...lane.history,
+                    {
+                        act,
+                        at: now,
+                        current: stepped.current,
+                        done: stepped.done,
+                    },
+                ],
+                items: stepped.items,
+                movedAt: turns,
+                title,
+            },
+            laneSummary(lane.id, title, stepped),
+        );
+    }
     if (act === 'link') {
         const session = oneLine(input.session);
         const role = input.role;
@@ -1186,7 +1223,35 @@ function laneCreate(
 ): { lanes: StashLane[]; result: string } | { deny: string } {
     const title = oneLine(input.title);
     if (!title) return { deny: 'orbit glide: a title names the lane' };
-    const raw = Array.isArray(input.items) ? input.items : [];
+    const items = laneItems(input.items);
+    if (!Array.isArray(items)) return items;
+    const id = `l${1 + Math.max(0, ...lanes.map((l) => Number(l.id.slice(1)) || 0))}`;
+    const stepped = pointed(items, 0);
+    const lane: StashLane = {
+        current: stepped.current,
+        history: [
+            {
+                act: 'create',
+                at: now,
+                current: stepped.current,
+                done: stepped.done,
+            },
+        ],
+        id,
+        items: stepped.items,
+        members: {},
+        movedAt: turns,
+        title,
+    };
+    return {
+        lanes: [...lanes, lane],
+        result: laneSummary(id, title, stepped),
+    };
+}
+
+// a lane's steps as cclio sends them: 1 to LANE_MAX, each plain text ≤LANE_TEXT_MAX, an optional ticket id
+function laneItems(input: unknown): LaneItem[] | { deny: string } {
+    const raw = Array.isArray(input) ? input : [];
     if (raw.length < 1 || raw.length > LANE_MAX)
         return {
             deny: `orbit glide: 1 to ${LANE_MAX} steps, got ${raw.length}`,
@@ -1211,28 +1276,7 @@ function laneCreate(
             ...(ticket ? { ticket } : {}),
         });
     }
-    const id = `l${1 + Math.max(0, ...lanes.map((l) => Number(l.id.slice(1)) || 0))}`;
-    const stepped = pointed(items, 0);
-    const lane: StashLane = {
-        current: stepped.current,
-        history: [
-            {
-                act: 'create',
-                at: now,
-                current: stepped.current,
-                done: stepped.done,
-            },
-        ],
-        id,
-        items: stepped.items,
-        members: {},
-        movedAt: turns,
-        title,
-    };
-    return {
-        lanes: [...lanes, lane],
-        result: laneSummary(id, title, stepped),
-    };
+    return items;
 }
 
 // the pointer moves past what is done, and everything behind it is done
@@ -4527,10 +4571,16 @@ export const register: Register = (on) => {
                 await $.clock.now(),
             );
             if ('deny' in op) return { deny: op.deny };
-            // a steer was about the step it sat on: a moved pointer drops it
-            const was = new Map(before.map((l) => [l.id, l.current]));
+            // a steer was about the step it sat on: it drops when the lane's current step is another one — by its text, so
+            // an edit that only moves the step keeps dima's steer
+            const was = new Map(
+                before.map((l) => [l.id, l.items[l.current]?.text]),
+            );
             for (const l of op.lanes)
-                if (was.has(l.id) && was.get(l.id) !== l.current) {
+                if (
+                    was.has(l.id) &&
+                    was.get(l.id) !== l.items[l.current]?.text
+                ) {
                     await $.store.delete(LANE_STEER + l.id);
                     await $.store
                         .delete(LANE_STEER_OLD + l.id)

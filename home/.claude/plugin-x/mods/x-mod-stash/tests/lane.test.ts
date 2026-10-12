@@ -177,7 +177,14 @@ test('a create lands in the shelf file with its history', async ($, on) => {
 });
 
 for (const [why, input] of [
-    ['a 6th step', { act: 'create', items: [...ITEMS, ...ITEMS], title: 'x' }],
+    [
+        'an 8th step',
+        {
+            act: 'create',
+            items: [...ITEMS, ...ITEMS, ...ITEMS.slice(0, 2)],
+            title: 'x',
+        },
+    ],
     ['an empty list', { act: 'create', items: [], title: 'x' }],
     [
         'a step over 60 chars',
@@ -867,4 +874,105 @@ test('two live sessions under one name: the card follows the newer', async ($, o
     await start($);
     const ui = await board($);
     expect(await subText(ui, 'coder')).toContain('2 asks');
+});
+
+/* rider (cclio's ask, 18:01): a card edits in place, up to 7 steps */
+
+const step = (text: string, isDone = false) => ({ isDone, text });
+
+test('seven steps make a card', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($, { items: [...ITEMS, ...ITEMS, ITEMS[0]] });
+    expect(kept(w)[0]?.items.length).toBe(7);
+});
+
+test('an edit keeps the lane id, its members and its history, adding one edit entry', async ($, on) => {
+    const w = world(on, {
+        files: shelf(
+            keptLane({
+                history: [{ act: 'create', at: 1, current: 0, done: 0 }],
+                members: { coder: 'c0c0c0c0-coder' },
+            }),
+        ),
+    });
+    await start($);
+    await lane($, { act: 'edit', id: 'l1', title: 'kept, renamed' });
+    const l = kept(w)[0];
+    expect([l?.id, l?.title, l?.members, l?.history.map((h) => h.act)]).toEqual(
+        [
+            'l1',
+            'kept, renamed',
+            { coder: 'c0c0c0c0-coder' },
+            ['create', 'edit'],
+        ],
+    );
+});
+
+test('a step whose text stays keeps its done flag, and the pointer lands on the first step not done', async ($, on) => {
+    const w = world(on, {
+        files: shelf(
+            keptLane({ current: 1, items: [step('a', true), step('b')] }),
+        ),
+    });
+    await start($);
+    await lane($, {
+        act: 'edit',
+        id: 'l1',
+        items: [{ text: 'a' }, { text: 'new' }, { text: 'b' }],
+    });
+    const l = kept(w)[0];
+    expect([l?.items.map((x) => x.isDone), l?.current]).toEqual([
+        [true, false, false],
+        1,
+    ]);
+});
+
+test("an edit that keeps the current step keeps dima's steer on it", async ($, on) => {
+    const w = world(on, {
+        files: shelf(
+            keptLane({ current: 1, items: [step('a', true), step('b')] }),
+        ),
+    });
+    w.store.set('lane-steer:l1', { steer: 'cards first' });
+    await start($);
+    await lane($, {
+        act: 'edit',
+        id: 'l1',
+        items: [{ done: true, text: 'z0' }, { text: 'a' }, { text: 'b' }],
+    });
+    expect([kept(w)[0]?.current, w.store.has('lane-steer:l1')]).toEqual([
+        2,
+        true,
+    ]);
+});
+
+test('an edit that puts another step current drops the steer', async ($, on) => {
+    const w = world(on, {
+        files: shelf(
+            keptLane({ current: 1, items: [step('a', true), step('b')] }),
+        ),
+    });
+    w.store.set('lane-steer:l1', { steer: 'cards first' });
+    await start($);
+    await lane($, {
+        act: 'edit',
+        id: 'l1',
+        items: [{ text: 'a' }, { text: 'c' }, { text: 'b' }],
+    });
+    expect(w.store.has('lane-steer:l1')).toBe(false);
+});
+
+test('an edit with a step past 60 chars is refused and the card stays', async ($, on) => {
+    const w = world(on, { files: shelf(keptLane()) });
+    await start($);
+    const r = await denied($, {
+        act: 'edit',
+        id: 'l1',
+        items: [{ text: 'x'.repeat(61) }],
+    });
+    expect([r, kept(w)[0]?.items.length]).toEqual([
+        expect.stringMatching(/keep it ≤60/),
+        2,
+    ]);
 });
