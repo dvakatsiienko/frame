@@ -169,7 +169,7 @@
   - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
   - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
   - decision: the band's 12 parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; cclio's «build the rest of slice 05 meanwhile»)
-  - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ⏯️ ⏹️` speak buttons, the session rows' second line), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
+  - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ⏯️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
   - given a reply switch off (`·-lists drawn as bullets`, `fleet words bold with their badge`), then the reply is both stored and drawn as written: the switch gates the stored rewrite, not only its look (the part list's 📌)
   - decision: the switches live in stash's own store, the one the 💨 and ⏰ switches already share across sessions — a separate file joins only if another mod's parts do
 - ⬜ two live meters, full width under the row on the desktop (FRM-366)
@@ -266,12 +266,14 @@
   - decision: no «sent» column — the time since a session last messaged another one; dima reads the state's idle time instead (2026-10-05)
   - source: `🪐 n` each session's open orbit asks, which its x-mod-stash mirrors into the store · the ticket from the session name · `ctx n%` the session's `session.measure`, kept by its x-mod-stash
   - decision: no pr, ci or cost yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306
-- ⬜ each row names its session's model, version and effort
+- ⬜ each row names its session's model, version and effort, on one line
   - given a session's main loop sent a model request on `claude-opus-5-5` at `medium`
   - when the board draws
-  - then the row's second line opens with `opus 5.5 · medium`, before its `🔭` wait; a dated id drops its date, a model with no effort shows the model alone
+  - then the row reads, on one line: the name, `opus 5.5` with its effort as 5 cells, 2 lit for medium (low 1 · medium 2 · high 3 · xhigh 4 · max 5), then the `🔭` wait, then the fact columns; a dated id drops its date, a model with no effort shows the model alone, an effort off the five words prints as its word
+  - and the cells are the bars' own: on the desktop the band's 5 px cells and green-to-red ramp in one row, in the terminal `▮▯` in the ramp's colours
   - source: `turn.step`'s `model` and `effort`, kept by the session's own x-mod-stash; a subagent's step never counts
-  - decision: on the second line, not beside the name — in the narrow pane a long name wrapped to three lines or cut the model (the live look, FRM-329)
+  - decision: one line per row, to save the board's height (dima, 15:27); the name and the wait clip first, the model and its cells never
+  - decision: cells, not sline's one-glyph dial (dima's o4, 15:35: «ugly»), coloured as the 5h bar; no word beside them — the pane takes no hover card for a tooltip (2026-10-05), and the lit count reads the level
 - ⬜ the board borrows the reference's look (dima's dark screenshot on FRM-329)
   - given the board draws
   - then every state reads bold, idle as busy, and in a row's 🔭 line only the who prints bold, as the band does (dima, 17:20)

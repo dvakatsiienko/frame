@@ -167,7 +167,7 @@ const PARTS = [
     {
         group: 'stash · board',
         key: 'stash.rowmeta',
-        label: "session rows' second line",
+        label: 'session rows: model, effort and wait',
     },
     {
         group: 'stash · replies',
@@ -1621,6 +1621,32 @@ export function meterSvg(
         `</defs>${cells.join('')}</svg>`
     );
 }
+// cc's effort words, low to max: a row draws its session's as that many of 5 cells, in the bars' own cells and ramp
+// (dima's o4, 15:35: «b, but coloured», the 5h bar's look in one row)
+const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'] as const;
+export const effortLevel = (word: string | undefined) => {
+    const i = EFFORTS.indexOf(word as (typeof EFFORTS)[number]);
+    return i < 0 ? undefined : i + 1;
+};
+export const effortCells = (level: number) =>
+    meterCells((level / EFFORTS.length) * 100, EFFORTS.length);
+export function effortSvg(level: number) {
+    const w = EFFORTS.length * CELL_STEP - CELL.gap;
+    const cells = effortCells(level).map((c, i) => {
+        const x = i * CELL_STEP;
+        return c.kind === 'fill'
+            ? `<rect x="${x}" y="0" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>`
+            : `<rect class="off" x="${x}" y="0" width="${CELL.size}" height="${CELL.size}" rx="1"/>`;
+    });
+    return (
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${CELL.size}" viewBox="0 0 ${w} ${CELL.size}">` +
+        `<style>${BAR_STYLE}</style>` +
+        `<defs><linearGradient id="ramp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${w}" y2="0">` +
+        '<stop class="r0" offset="0"/><stop class="r1" offset=".45"/><stop class="r2" offset=".75"/><stop class="r3" offset="1"/>' +
+        `</linearGradient></defs>${cells.join('')}</svg>`
+    );
+}
+export const EFFORT_CELL = CELL.size;
 // a calm meter's fill: the board's green and blue mid-tones, 3.6:1 or more on white and 4.2:1 on a dark pane
 const METER_TINTS = { calm5h: '#47915a', calmCtx: '#4f83e0' } as const;
 // the 5h window runs five hours; its pace is the share of it already gone, so a used % on pace keeps up exactly
@@ -2612,6 +2638,7 @@ export const register: Register = (on) => {
     on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
         const ui = $.ui.resolve(e);
         const { Box, Text, Button, Link } = ui;
+        const Svg = e.surface === 'desktop' && 'Svg' in ui ? ui.Svg : undefined;
         // the poll read the registry into the view; the pane only draws it, so a draw costs no file or process read
         const board = (await $.state.get(BOARD_VIEW)).value;
         const now = board?.at ?? 0;
@@ -3264,6 +3291,36 @@ export const register: Register = (on) => {
             const ticket = ticketOf(m.name);
             const name = m.sid === me ? `${m.name} (here)` : m.name;
             const line = m.wait && `🔭 ${m.wait}`;
+            // «opus 5.5 · medium» as kept: the model in words, its effort as cells beside it on the name's line
+            const [model, effort] = (m.model ?? '').split(' · ');
+            const level = effortLevel(effort);
+            const effortJSX =
+                level === undefined ? (
+                    effort ? (
+                        <Text dimColor>{effort}</Text>
+                    ) : null
+                ) : Svg ? (
+                    <Svg
+                        alt={`effort ${effort}`}
+                        height={EFFORT_CELL}
+                        key={`m:${m.sid}:effort`}
+                        source={effortSvg(level)}
+                    />
+                ) : (
+                    <Text>
+                        {effortCells(level).map((c, k) => {
+                            return (
+                                // biome-ignore lint/suspicious/noArrayIndexKey: a cell's place is its identity
+                                <Text
+                                    color={c.color}
+                                    dimColor={!c.color}
+                                    key={`c:${k}`}>
+                                    {c.kind === 'fill' ? '▮' : '▯'}
+                                </Text>
+                            );
+                        })}
+                    </Text>
+                );
             return (
                 <Box
                     flexDirection='column'
@@ -3297,6 +3354,17 @@ export const register: Register = (on) => {
                             </Text>
                             {m.offPattern ? (
                                 <Text color={ACCENT}>⚠</Text>
+                            ) : null}
+                            {/* one line per row: the model and its effort cells right of the name, then the wait (dima, 15:27) */}
+                            {model && isPartOn('stash.rowmeta') ? (
+                                <Box
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    flexShrink={0}
+                                    gap={e.surface === 'desktop' ? 0.5 : 1}>
+                                    <Text dimColor>{model}</Text>
+                                    {effortJSX}
+                                </Box>
                             ) : null}
                             {/* the wait sits right of the name, cut first when the row is short (dima's shot, 19:59) */}
                             {line && isPartOn('stash.rowmeta') ? (
@@ -3390,16 +3458,6 @@ export const register: Register = (on) => {
                             </Box>
                         </Box>
                     </Box>
-                    {/* the second line sits under the name, past the dot, dim: the model */}
-                    {m.model && isPartOn('stash.rowmeta') ? (
-                        <Box flexDirection='row' gap={2} paddingLeft={2}>
-                            {m.model ? (
-                                <Box flexShrink={0}>
-                                    <Text dimColor>{m.model}</Text>
-                                </Box>
-                            ) : null}
-                        </Box>
-                    ) : null}
                 </Box>
             );
         };

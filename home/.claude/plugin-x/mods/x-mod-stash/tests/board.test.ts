@@ -523,14 +523,11 @@ function steps($: Engine, on: On) {
         };
     });
     // the stream runs only as it is read, so the request is read to its end
-    return async (
-        model: string,
-        effort?: 'medium' | 'high',
-        agentId?: string,
-    ) => {
+    return async (model: string, effort?: string, agentId?: string) => {
         const stream = $.turn.step({
             agentId,
-            effort,
+            // an effort off cc's words too, so the row's fallback is reachable
+            effort: effort as never,
             index: 0,
             messageCount: 1,
             model,
@@ -541,13 +538,43 @@ function steps($: Engine, on: On) {
     };
 }
 
-test("a row shows its session's model with version and effort", async ($, on) => {
+test("a row shows its session's model on the name's line, its effort as lit cells", async ($, on) => {
     fleet(on);
     await steps($, on)('claude-opus-5-5', 'medium');
-    expect(await row($, HERE)).toContain('opus 5.5 · medium');
+    const ui = await board($);
+    const nameSide = (await ui.findAll({ type: 'Box' })).find(
+        (b) =>
+            b.props.overflow === 'hidden' &&
+            b.text?.includes('🦉 cclio (here)'),
+    );
+    const cells = (await ui.findAll({ type: 'Svg' })).find((n) =>
+        String(n.props.alt).startsWith('effort'),
+    );
+    expect([
+        nameSide?.text?.includes('opus 5.5'),
+        cells?.props.alt,
+        String(cells?.props.source).match(/url\(#ramp\)/g)?.length,
+        String(cells?.props.source).match(/class="off"/g)?.length,
+    ]).toEqual([true, 'effort medium', 2, 3]);
 });
 
-test("with the rows' second line switched off, a row shows no model", async ($, on) => {
+test('max effort lights all five cells', async ($, on) => {
+    fleet(on);
+    await steps($, on)('claude-opus-5-5', 'max');
+    const ui = await board($);
+    const cells = (await ui.findAll({ type: 'Svg' })).find((n) =>
+        String(n.props.alt).startsWith('effort'),
+    );
+    expect(String(cells?.props.source).match(/url\(#ramp\)/g)?.length).toBe(5);
+});
+
+test('an effort cc names off the five words reads as its word', async ($, on) => {
+    fleet(on);
+    await steps($, on)('claude-opus-5-5', 'ultra');
+    expect(await row($, HERE)).toContain('ultra');
+});
+
+test("with the rows' meta switched off, a row shows no model", async ($, on) => {
     fleet(on, { shown: { 'stash.rowmeta': false } });
     await steps($, on)('claude-opus-5-5', 'medium');
     expect(await row($, HERE)).not.toContain('opus 5.5');
@@ -564,7 +591,7 @@ test("a subagent's model never replaces its session's", async ($, on) => {
     const step = steps($, on);
     await step('claude-opus-5-5', 'medium');
     await step('claude-haiku-4-5', 'high', 'sub-1');
-    expect(await row($, HERE)).toContain('opus 5.5 · medium');
+    expect(await row($, HERE)).toContain('opus 5.5');
 });
 
 // the colour of the state dot that leads the coordinator's row, the board's first
