@@ -8,7 +8,7 @@ artifacts:
   - home/.claude/plugin-x/mods/workarounds.md
 script: none
 was: [refresh-branch-mods, refresh-mods]
-groomed: 2026-10-10 (dima)
+groomed: 2026-10-12 (dima)
 ---
 
 # refresh-cc-mods
@@ -33,6 +33,10 @@ what the api can do now, what others built, and whether anything useful is left 
 
 > the biggest possible failure of this mod is a habit: you should know it very well, since it becomes the main comms place (2026-10-10)
 
+> this mod is very important, as one of the critical failure points: it's a communication point and kind of an escape hatch of your own harness … our workaround is home-baked, so it has higher risks of malfunction. how to ensure that, if it starts to malfunction, it will not be missed? (2026-10-12, quiet comms)
+
+> what other common operations would existing mods be missing, and what features and knobs would you want to smoothen your moves? (2026-10-12)
+
 his standing calls: session.measure «not yet, i don't need another ctx meter»; spoken pings «not yet … speak only when i press f4»; sline stays a statusline, not a mod; a mod-authoring skill → no, `mods/AGENTS.md` is the home.
 
 ## the run
@@ -54,10 +58,9 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 2. **hunt already built to borrow** — published mods and hook plugins (the catalogue at mods.aidojo.si, claudemods.ai, ray-amjad/awesome-claude-code-function-hooks, anthropics/claude-code-playground mods): read the source of the ones near our needs, one «borrow» line each
 3. **hunt already built for inspo** — unusual or high-value uses we have not thought of (guards, dashboards, presence, cost, privacy)
 4. best practices and pitfalls — hot paths, state lifetimes, reload, composition with other mods and with cc built-ins, testing
-5. **the comms mechanics** — clickable checkboxes, buttons and a text box inside a mod's pane, in the desktop side pane and in the terminal: what renders where, what takes input, what keeps per-session state
-6. **joining a prompt** — a mod adding text to the next prompt on send (before or after it), and whether anything can join a running turn without starting a new one
-7. **borrow for the asks** — the vendor fleet views (needs you · ready to review · working), Claude Code's structured asks (`AskUserQuestion`), approval queues: what a mod can copy as is
-8. **keeping the contract in mind** — how an agent keeps a tool's contract live across turns and compactions: a skill, resident memory, a hook reminder; dima's «the habit is the failure point»
+5. **keeping the contract in mind** — how an agent keeps a tool's contract live across turns and compactions: a skill, resident memory, a hook reminder; dima's «the habit is the failure point»
+6. **fail-safe mods on a comms door** — how others guard a hook that can swallow or delay delivery: fail open, canaries, ledgers, kill switches, health rows
+7. **a mod's reach into other sessions** — sending a peer message, reading another session's state, delivering into a tool result's `context`; the size caps on a tool description and on that `context`
 
 ### analysis
 
@@ -69,8 +72,10 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 6. **a session-kind probe** — any filter on origin or session kind is probed once per kind: interactive, bg `sdk`, peer (the composer-only allow-list broke every bg session, FRM-303)
 7. **a state-lifetime audit** — every module variable that must survive a reload lives in `$.state` or `$.store` (the 10-04 keep-hot untick looked like a reload resetting one)
 8. **open leads**: every «unprobed» line in `mods/AGENTS.md` and every open child of FRM-304, re-checked on the current build; the test drive verdict in `docs/test-drive/mods.md`
-9. **why the stash asks went unused** — dima kept them folded; plus the fence check that fires after the reply, costing a second print
-10. **the comms targets** — the ledger in `docs/knowledge/fleet-comms.md`: the numbers each comms mod must move (asks pasted back, status questions, re-asks, the reading load)
+9. **the comms targets** — the ledger in `docs/knowledge/fleet-comms.md`: the numbers each comms mod must move (asks pasted back, status questions, re-asks, the reading load)
+10. **session identity** — every key a mod uses for «who is this session» (cwd, registry name, cc sessionId, desktop `local_` id) checked against a `cd`, a `/clear`, a rename and a reinit
+11. **leftovers** — dev-mods dirs past their probe, a mod still loaded after its source moved
+12. **cclio's wants list** — each open want of the coordinator's (brief 8 on 10-12) read against the api: buildable, workaround, or engine gap
 
 ## artifacts
 
