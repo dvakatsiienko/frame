@@ -171,6 +171,32 @@ test('the log names the arm from the switch', async ($, on) => {
     ).toEqual(['off']);
 });
 
+// the 🎛️ pane, mounted as the board mounts the pane: one press on the quiet switch
+const settings = ($: Engine) =>
+    $.ui.mount({
+        component: 'Pane',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 100,
+            isFocused: true,
+            placement: 'dock',
+            scroll: { bodyRows: 40, offset: 0 },
+            title: 'settings',
+            view: {},
+        },
+        requestId: 'stash-settings',
+        surface: 'desktop',
+    });
+
+test('the 🎛️ quiet switch turns quiet off, and a [progress] ping passes', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const pane = await settings($);
+    await pane.press({ key: 'knob:quiet-comms' });
+    await ping($, '[progress] step 2 landed');
+    expect([w.store.get('quiet-comms'), w.queued.length]).toEqual([false, 1]);
+});
+
 /* the flush */
 
 test('held pings ride the next prompt as one hidden block, once', async ($, on) => {

@@ -2928,6 +2928,11 @@ export const register: Register = (on) => {
                     rowGap={air ? 0.3 : 0}
                     width={0}>
                     <Text bold>🤫 quiet comms</Text>
+                    {switchJSX(
+                        'quiet',
+                        "🤫 hold members' [progress] pings",
+                        knobs.quiet,
+                    )}
                     {numberJSX(
                         'quietWait',
                         '🤫 held pings wait',
