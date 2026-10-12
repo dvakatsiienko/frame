@@ -5,6 +5,9 @@ const SID = 'o1o1o1o1-orbit';
 const TOOL = 'mcp__x-mod-stash__orbit';
 
 // one session: `contexts` holds each prompt's model-only context, `appended` each hidden mid-turn message
+// the orbit tool's description as the last start registered it
+let described = '';
+
 function world(on: On) {
     const contexts: string[][] = [];
     const appended: string[] = [];
@@ -32,9 +35,10 @@ function world(on: On) {
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
     on('fs.list', () => ({ value: [] }));
-    on('tool.register', (_$, e) => ({
-        value: { tool: `mcp__x-mod-stash__${e.name}` },
-    }));
+    on('tool.register', (_$, e) => {
+        described = e.description;
+        return { value: { tool: `mcp__x-mod-stash__${e.name}` } };
+    });
     on('prompt.submit', (_$, e) => {
         contexts.push([...(e.context ?? [])]);
         return { text: e.text };
@@ -1380,4 +1384,14 @@ test('on mobile a stale plan is still named', async ($, on) => {
     await mobile($);
     await say($, 'hi');
     expect(lastContext(w.contexts)).toMatch(/plan is stale/);
+});
+
+test("orbit's description fits the 2048 chars cc shows the model, every op named", async ($, on) => {
+    world(on);
+    await start($);
+    const ops = [...described.matchAll(/^op (\w+)/gmu)].map((m) => m[1]);
+    expect([described.length <= 2048, ops]).toEqual([
+        true,
+        ['add', 'resolve', 'follow', 'assume', 'catch', 'plan', 'glide'],
+    ]);
 });
