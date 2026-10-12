@@ -28,8 +28,24 @@ async function redactRow<T>($: EngineInterface, content: T) {
     throw new Error('the vault kept changing under three writes');
 }
 
-// a vault error never lets a secret through: the value is masked one way instead, with a line in the log
-async function redactOrMask<T>($: EngineInterface, value: T) {
+// a scan that may not finish inside the hook's budget: 300 ms of slack, and about 4,000 chars a millisecond
+export const isTight = (remainingMs: number, chars: number) =>
+    remainingMs < 300 + chars / 4000;
+
+const charsOf = (value: unknown) =>
+    typeof value === 'string'
+        ? value.length
+        : (JSON.stringify(value)?.length ?? 0);
+
+// a vault error never lets a secret through: the value is masked one way instead, with a line in the log; with the budget
+// too tight for the vault's reads and writes, it goes straight to the one-way mask
+async function redactOrMask<T>(
+    $: EngineInterface,
+    value: T,
+    remainingMs: number,
+) {
+    if (isTight(remainingMs, charsOf(value)))
+        return mapStrings(value, maskText);
     try {
         return await redactRow($, value);
     } catch (err) {
@@ -38,14 +54,63 @@ async function redactOrMask<T>($: EngineInterface, value: T) {
     }
 }
 
+// fail closed: a hook that throws, overruns or misanswers is run again as its `.catch`, which never passes a row raw
+type Caught<E, R> = ((e: E) => R) & {
+    readonly called: boolean;
+    readonly error: { readonly kind: string };
+};
+
+// the row hook failed: the row goes on masked one way (a row it already passed on replays, the engine ignoring the argument)
+export function appendCaught<E extends { message: { content: unknown } }, R>(
+    $: EngineInterface,
+    e: E,
+    next: Caught<E, R>,
+) {
+    if (next.error.kind !== 're-entry')
+        $.ui.log(
+            `x-mod-redact: the row hook failed (${next.error.kind}); masked one way`,
+        );
+    return next({
+        ...e,
+        message: {
+            ...e.message,
+            content: mapStrings(e.message.content, maskText),
+        },
+    });
+}
+
+// the tool hook failed: a tool that ran replays its result, one that had not runs with its placeholders as written; the
+// result is masked one way either way
+export async function toolCaught<
+    E,
+    R extends { deny?: unknown; result?: unknown; text?: unknown },
+>($: EngineInterface, e: E, next: Caught<E, Promise<R>>) {
+    if (next.error.kind !== 're-entry')
+        $.ui.log(
+            `x-mod-redact: the tool hook failed (${next.error.kind}); its result masked one way`,
+        );
+    const r = await next(e);
+    if (r.deny !== undefined) return r;
+    return {
+        ...r,
+        result: mapStrings(r.result, maskText),
+        ...(r.text === undefined ? {} : { text: mapStrings(r.text, maskText) }),
+    };
+}
+
 // x-mod-redact: every row a session keeps, and every tool result, reads secrets as placeholders before it is stored and sent;
 // a Bash command gets the secrets back. Only Bash: a Write or an Edit quoting a placeholder would put the live key into a file.
 export const register: Register = (on) => {
+    // fail closed: a hook that throws or overruns is run again as its `.catch`, which masks the row one way, never passes it raw
     on('session.append', async ($, e, next) => {
-        const content = await redactOrMask($, e.message.content);
+        const content = await redactOrMask(
+            $,
+            e.message.content,
+            next.budget.remainingMs,
+        );
         if (content === e.message.content) return next(e);
         return next({ ...e, message: { ...e.message, content } });
-    });
+    }).catch(appendCaught);
 
     // `/clear` and `/resume` leave the conversation: its placeholders stop meaning anything at once
     on('command.run', async ($, e, next) => {
@@ -71,10 +136,12 @@ export const register: Register = (on) => {
         const r = await next(input);
         if (r.deny !== undefined) return r;
         // the engine keeps the tool's own result beside the row (`toolUseResult`), which `session.append` never sees
-        const result = await redactOrMask($, r.result);
+        const result = await redactOrMask($, r.result, next.budget.remainingMs);
         const text =
-            r.text === undefined ? undefined : await redactOrMask($, r.text);
+            r.text === undefined
+                ? undefined
+                : await redactOrMask($, r.text, next.budget.remainingMs);
         if (result === r.result && text === r.text) return r;
         return { ...r, result, ...(text === undefined ? {} : { text }) };
-    });
+    }).catch(toolCaught);
 };

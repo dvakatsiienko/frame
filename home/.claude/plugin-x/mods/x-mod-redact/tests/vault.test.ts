@@ -6,6 +6,7 @@ import {
     redactText,
     restoreText,
 } from '../hooks/mask.ts';
+import { appendCaught, isTight, toolCaught } from '../hooks/register.ts';
 
 // planted fakes built at run time, so no source line reads as a secret to a live redactor
 const FAKE = ['sk-ant-api03-', 'FAKE'.repeat(6)].join('');
@@ -156,3 +157,55 @@ for (const command of ['clear', 'resume'] as const)
         });
         expect(ran).toEqual([`echo ${placeholderOf(FAKE)}`]);
     });
+
+// the harness clones an event before any hook, so no row can make a hook throw: the catch handlers are called directly
+const caught = <E, R>(answer: (e: E) => R, called: boolean) => {
+    const seen: E[] = [];
+    const next = Object.assign(
+        (e: E) => {
+            seen.push(e);
+            return answer(e);
+        },
+        { called, error: { kind: 'throw' } },
+    );
+    return { next, seen };
+};
+const quiet$ = { ui: { log: () => undefined } } as never;
+
+test('a row hook that failed before passing the row on sends it masked one way', () => {
+    const { next, seen } = caught((e: unknown) => e, false);
+    appendCaught(
+        quiet$,
+        { message: { content: [{ text: `use ${FAKE}`, type: 'text' }] } },
+        next,
+    );
+    expect([seen.length, JSON.stringify(seen).includes(FAKE)]).toEqual([
+        1,
+        false,
+    ]);
+});
+
+test('a tool hook that failed masks the replayed result one way', async () => {
+    const { next } = caught(
+        async () => ({ result: { stdout: `x ${FAKE}` }, text: `x ${FAKE}` }),
+        true,
+    );
+    const r = await toolCaught(quiet$, { command: 'cat .env' }, next);
+    expect(JSON.stringify(r)).not.toContain(FAKE);
+});
+
+test('a tool hook that failed keeps a refusal as it was', async () => {
+    const { next } = caught(async () => ({ deny: 'no' }), false);
+    expect(await toolCaught(quiet$, { command: 'x' }, next)).toEqual({
+        deny: 'no',
+    });
+});
+
+test('a scan is tight under 300 ms plus a millisecond per 4,000 chars', () => {
+    expect([
+        isTight(299, 0),
+        isTight(300, 0),
+        isTight(1299, 4_000_000),
+        isTight(1300, 4_000_000),
+    ]).toEqual([true, false, true, false]);
+});
