@@ -269,6 +269,8 @@
   - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
   - decision: each column is sized to its usual reading, so little slack shows between columns (dima asked for ~8px gaps, 2026-10-05)
   - decision: the name side gives way and clips, so a long name never pushes a row's columns out of line (dima saw one drift, 2026-10-05)
+  - decision: the ticket column is drawn only when some row names a ticket — empty on every row it was 9 cells of nothing (dima, 15:41)
+  - decision: the wait holds one clipped row; the desktop wrapped its run of styled pieces to a second line instead of cutting it (dima, 15:41)
   - decision: no «sent» column — the time since a session last messaged another one; dima reads the state's idle time instead (2026-10-05)
   - source: `🪐 n` each session's open orbit asks, which its x-mod-stash mirrors into the store · the ticket from the session name · `ctx n%` the session's `session.measure`, kept by its x-mod-stash
   - decision: no pr, ci or cost yet — each needs a per-tick `gh` call or another writer; proposed on FRM-306

@@ -431,6 +431,37 @@ test("a row shows its session's context fill", async ($, on) => {
     expect(await row($, HERE)).toContain('ctx 43%');
 });
 
+// the 9-cell fact columns on the whole board: each row's state, plus its ticket column when one is drawn
+async function nineCellColumns($: Engine) {
+    const ui = await board($);
+    return (await ui.findAll({ type: 'Box' })).filter(
+        (b) => b.props.width === 9 && b.props.justifyContent === 'flex-end',
+    ).length;
+}
+
+test('with no ticket on any row, no row draws the ticket column', async ($, on) => {
+    fleet(on, {}, { patch: { 2: { name: '☕️ 🔧 code: x' } } });
+    expect(await nineCellColumns($)).toBe(2);
+});
+
+test('with a ticket on one row, every row keeps the ticket column', async ($, on) => {
+    fleet(on);
+    expect(await nineCellColumns($)).toBe(4);
+});
+
+test("a row's wait sits in one clipped row, never wrapping to a second", async ($, on) => {
+    fleet(on);
+    await stop(
+        $,
+        'done.\n\n🔭 waiting on a very long description of what this session waits on',
+    );
+    const ui = await board($);
+    const wait = (await ui.findAll({ type: 'Box' })).find(
+        (b) => b.props.height === 1 && b.text?.startsWith('🔭'),
+    );
+    expect(wait?.props.overflow).toBe('hidden');
+});
+
 test("a row links the ticket in its session's name", async ($, on) => {
     fleet(on);
     const ui = await board($);

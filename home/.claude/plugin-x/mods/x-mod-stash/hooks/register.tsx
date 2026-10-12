@@ -3299,6 +3299,8 @@ export const register: Register = (on) => {
             return arranged(<Text dimColor>no live sessions</Text>);
         const isColour = board.isColour;
         const hues = huesOf(list.map((m) => m.name));
+        // the ticket column is drawn only when some row names a ticket: empty on every row, it was 9 cells of nothing (dima, 15:41)
+        const hasTickets = list.some((m) => ticketOf(m.name));
         const row = (m: Member, i: number) => {
             const { tint: stateTint, word: state } = statusOf(m.status);
             const isMemberBusy = state === 'busy';
@@ -3392,13 +3394,22 @@ export const register: Register = (on) => {
                             ) : null}
                             {/* the wait sits right of the name, cut first when the row is short (dima's shot, 19:59) */}
                             {m.tip && isPartOn('stash.rowmeta') ? (
-                                <Box flexShrink={1} minWidth={0}>
+                                <Box
+                                    flexShrink={1}
+                                    height={1}
+                                    minWidth={0}
+                                    overflow='hidden'>
                                     <Text dimColor wrap='truncate-end'>
                                         {line}
                                     </Text>
                                 </Box>
                             ) : line && isPartOn('stash.rowmeta') ? (
-                                <Box flexShrink={1} minWidth={0}>
+                                // one row, clipped: the desktop wraps a run of styled pieces instead of cutting it (dima, 15:41)
+                                <Box
+                                    flexShrink={1}
+                                    height={1}
+                                    minWidth={0}
+                                    overflow='hidden'>
                                     <Text dimColor wrap='truncate-end'>
                                         {/* each «waiting on <who>» part prints <who> bold, as the band does (dima, 17:20) */}
                                         {'🔭 '}
@@ -3432,19 +3443,21 @@ export const register: Register = (on) => {
                             flexShrink={0}
                             gap={e.surface === 'desktop' ? 0.5 : 1}>
                             {/* no hover card in the pane: an absolute card in a narrow row wraps and clips (dima, 2026-10-05) */}
-                            <Box
-                                justifyContent='flex-end'
-                                width={COLUMNS.ticket}>
-                                {ticket ? (
-                                    // never wraps: `FRM-306` broke at its hyphen in the desktop font
-                                    <Text dimColor wrap='truncate-end'>
-                                        <Link
-                                            href={`https://linear.app/x-com/issue/${ticket}`}>
-                                            {ticket}
-                                        </Link>
-                                    </Text>
-                                ) : null}
-                            </Box>
+                            {hasTickets ? (
+                                <Box
+                                    justifyContent='flex-end'
+                                    width={COLUMNS.ticket}>
+                                    {ticket ? (
+                                        // never wraps: `FRM-306` broke at its hyphen in the desktop font
+                                        <Text dimColor wrap='truncate-end'>
+                                            <Link
+                                                href={`https://linear.app/x-com/issue/${ticket}`}>
+                                                {ticket}
+                                            </Link>
+                                        </Text>
+                                    ) : null}
+                                </Box>
+                            ) : null}
                             <Box
                                 justifyContent='flex-end'
                                 width={COLUMNS.context}>
