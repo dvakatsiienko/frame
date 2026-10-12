@@ -1,9 +1,10 @@
 ---
 id: PK-91
 title: ccrow's wake packet carries the 5h + weekly meter line
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:25'
+updated_date: '2026-10-12 11:33'
 due_date: '2026-10-12'
 labels:
   - xs
@@ -23,4 +24,6 @@ ccrow 2026-10-12 14:24 (packet: line): her budget hunt is blind — no 5h or wee
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: xs, solved at the 2026-10-12 siesta (the open cap holds PK-75–79)
+
+done 14:41: meterLine in ccrow/lib.ts, 2 tests (red-proven)
 <!-- SECTION:NOTES:END -->

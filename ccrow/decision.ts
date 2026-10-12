@@ -31,6 +31,8 @@ import {
 // cclio's settings give the merge hook 120 s, so this wait stays under it
 const WAIT_MS = Number(process.env.CCROW_DECISION_WAIT_MS ?? 90_000);
 const MARKER_TTL_MS = 10 * 60_000;
+// the boot's draft board (cclio:boot step 7): dima wants ccrow's note on it before it prints
+const BOOT_BOARD = /(^|\/)\.scratch\/boot-[^/]+\/[^/]+-proposal\.md$/;
 const SEND = `through mcp__ccd_session_mgmt__send_message to the session titled «${SESSION_NAME}»`;
 
 const input: HookInput = JSON.parse(readFileSync(0, 'utf8'));
@@ -129,7 +131,7 @@ async function noWaitWake(
     });
     if (!live.ccrow.jobId)
         context(
-            `🐦‍⬛ ccrow wake for this ${fields.split(' ')[0]}: after this call, send the line below, alone, ${SEND}; do not wait for it, no need to report it to dima unless he asks.\n${wake.line}`,
+            `🐦‍⬛ ccrow wake for this ${fields.split(' ')[0]}: after this call, send the line below, alone, ${SEND}; ${proposal && BOOT_BOARD.test(proposal) ? 'the board waits on her note: end the turn on the 🔭 line, print the board once her note and wishkeeper are folded.' : 'do not wait for it, no need to report it to dima unless he asks.'}\n${wake.line}`,
         );
 }
 
@@ -164,7 +166,8 @@ function liveCcrow(): { ccrow: LiveSession } | { skip: string } {
     return { ccrow };
 }
 
-// a decision wake skips the 30-min and step gates and leaves lastWakeAt alone: the Stop cadence is the charter's
+// a decision wake skips the 30-min and step gates and leaves lastWakeAt alone: the Stop cadence is the charter's.
+// the boot board is the one exception: the boot's turn ends on purpose while it waits, and a Stop wake then would read the same half boot twice
 async function wakeCcrow({
     fields,
     proposal,
@@ -196,7 +199,11 @@ async function wakeCcrow({
     const note = withNote ? ` · note ${notePath(wake.id)}` : '';
     const line = `${wakeLine(wake)} · ${fields}${note}`;
     if (socket?.jobId) await sendLine(socket.messagingSocketPath, line);
-    writeState(packed.state);
+    writeState(
+        proposal && BOOT_BOARD.test(proposal)
+            ? { ...packed.state, lastWakeAt: now.getTime() }
+            : packed.state,
+    );
     spawnHarvest(wake);
     return { ...wake, line };
 }

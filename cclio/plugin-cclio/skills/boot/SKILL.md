@@ -98,7 +98,8 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
   the worst outcome
 - end the turn on one line, `🔭 waiting on 🐦‍⬛ ccrow + 🐬 wishkeeper`; fold each finding as it lands,
   and print the board when both are in. ccrow down (step 4 printed no tab) → wishkeeper alone, and
-  the board says so
+  the board says so. the board's wake also starts ccrow's 30-min gap, so this turn end never wakes her a
+  second time on the same half boot (the 10-11 failure)
 
 the board, one message, short lines, **no queries here — pure assembly**:
 - «hey <model> here» (the root claude.md rule)

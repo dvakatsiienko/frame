@@ -297,6 +297,57 @@ describe('a proposal cclio writes', () => {
         });
     });
 
+    test('tells cclio to hold a boot board for the note, any other proposal not', async () => {
+        const fixture = home({ tab: true });
+        mkdirSync(join(fixture.dir, '.scratch/boot-2026-10-12'), {
+            recursive: true,
+        });
+        const board = join(
+            fixture.dir,
+            '.scratch/boot-2026-10-12/board-proposal.md',
+        );
+        writeFileSync(board, '# board\n');
+        const held = await hook(fixture, { path: board, tool: 'Write' });
+        const other = await hook(fixture, {
+            path: proposal(fixture),
+            tool: 'Write',
+        });
+        expect([
+            held.out?.hookSpecificOutput?.additionalContext?.includes(
+                'the board waits on her note',
+            ),
+            other.out?.hookSpecificOutput?.additionalContext?.includes(
+                'do not wait for it',
+            ),
+        ]).toEqual([true, true]);
+    });
+
+    test('a boot board starts the Stop wake gap, any other proposal leaves it', async () => {
+        const fixture = home({ tab: true });
+        mkdirSync(join(fixture.dir, '.scratch/boot-2026-10-12'), {
+            recursive: true,
+        });
+        const board = join(
+            fixture.dir,
+            '.scratch/boot-2026-10-12/board-proposal.md',
+        );
+        writeFileSync(board, '# board\n');
+        const stateOf = () =>
+            JSON.parse(
+                readFileSync(
+                    join(fixture.dir, '.local/state/ccrow/state.json'),
+                    'utf8',
+                ),
+            );
+        await hook(fixture, { path: proposal(fixture), tool: 'Write' });
+        const before = stateOf().lastWakeAt;
+        await hook(fixture, { path: board, tool: 'Write' });
+        expect([before, typeof stateOf().lastWakeAt]).toEqual([
+            undefined,
+            'number',
+        ]);
+    });
+
     test('wakes ccrow once for several edits in one turn', async () => {
         const fixture = home();
         const path = proposal(fixture);

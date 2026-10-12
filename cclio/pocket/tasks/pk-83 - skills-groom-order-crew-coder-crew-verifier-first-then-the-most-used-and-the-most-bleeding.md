@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 11:31'
 due_date: '2026-10-16'
 labels:
   - m
@@ -26,4 +26,6 @@ dima, boot 2026-10-12: when we switch to skills, the first to groom are crew-cod
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
+
+from the x domain-modeling coder's retro (2026-10-12): crew-coder has no line for empty args (`/x:crew-coder` with no ticket and no «dima» word) — the coder guessed dima mode; matt's domain-modeling is grill-first with no solo-audit mode — the coder ran it solo, open questions went to its report
 <!-- SECTION:NOTES:END -->
