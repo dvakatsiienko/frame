@@ -3804,77 +3804,97 @@ export const register: Register = (on) => {
                           ? null
                           : lane.items.map((item, i) => (
                                 <Box
-                                    alignItems='center'
-                                    flexDirection='row'
-                                    gap={1}
+                                    flexDirection='column'
                                     // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
-                                    key={`lane:${lane.id}:${i}`}>
-                                    <Text
-                                        bold={i === lane.current}
-                                        dimColor={item.isDone}>
-                                        {item.isDone
-                                            ? '✅'
-                                            : i === lane.current
-                                              ? '➡️'
-                                              : '⬜'}{' '}
-                                        {item.text}
-                                    </Text>
-                                    {item.ticket ? (
-                                        <Link
-                                            href={`https://linear.app/x-com/issue/${item.ticket}`}
-                                            key={`lane:${lane.id}:t:${i}`}>
-                                            {item.ticket}
-                                        </Link>
-                                    ) : null}
-                                    {i === lane.current && Input ? (
-                                        <Box flexShrink={1} minWidth={0}>
-                                            <Input
-                                                key={
-                                                    field(
-                                                        $,
-                                                        `lane:${lane.id}:note`,
-                                                        lane.note ?? '',
-                                                    ).key
-                                                }
-                                                onInput={(value: string) => {
-                                                    field(
-                                                        $,
-                                                        `lane:${lane.id}:note`,
-                                                        lane.note ?? '',
-                                                    ).type(value, () => {
-                                                        return handleLaneNote(
-                                                            lane.id,
-                                                            value,
-                                                        );
-                                                    });
-                                                }}
-                                                onSubmit={(value: string) =>
-                                                    void handleLaneNote(
-                                                        lane.id,
-                                                        value,
-                                                    )
-                                                }
-                                                placeholder='note'
-                                                value={
-                                                    field(
-                                                        $,
-                                                        `lane:${lane.id}:note`,
-                                                        lane.note ?? '',
-                                                    ).value
-                                                }
-                                            />
-                                        </Box>
-                                    ) : null}
+                                    key={`lane:${lane.id}:${i}`}
+                                    rowGap={LINE_GAP}>
+                                    <Box
+                                        alignItems='center'
+                                        flexDirection='row'
+                                        gap={1}>
+                                        <Text
+                                            bold={i === lane.current}
+                                            dimColor={item.isDone}>
+                                            {item.isDone
+                                                ? '✅'
+                                                : i === lane.current
+                                                  ? '➡️'
+                                                  : '⬜'}{' '}
+                                            {item.text}
+                                        </Text>
+                                        {item.ticket ? (
+                                            <Link
+                                                href={`https://linear.app/x-com/issue/${item.ticket}`}
+                                                key={`lane:${lane.id}:t:${i}`}>
+                                                {item.ticket}
+                                            </Link>
+                                        ) : null}
+                                    </Box>
+                                    {/* tick leads, the note follows, on the line under the step — never beside it, where the field
+                                        covered the step's ticket link (dima's shot, 17:41; orbit's cards, 20:19) */}
                                     {i === lane.current ? (
-                                        // the note waits as a draft until 🛎️ tick sends it; no replay, a note has nothing to redo (dima, 20:51)
-                                        <Button
-                                            key={`lane:${lane.id}:take`}
-                                            onPress={() =>
-                                                void handleLaneTake(lane.id)
-                                            }
-                                            variant='primary'>
-                                            {`${lane.isNoteTaken ? '✅' : '🛎️'} tick`}
-                                        </Button>
+                                        <Box
+                                            alignItems='center'
+                                            flexDirection='row'
+                                            gap={1}
+                                            key={`lane:${lane.id}:act`}
+                                            paddingLeft={3}>
+                                            {/* the note waits as a draft until 🛎️ tick sends it; no replay, a note has nothing to redo (dima, 20:51) */}
+                                            <Button
+                                                key={`lane:${lane.id}:take`}
+                                                onPress={() =>
+                                                    void handleLaneTake(lane.id)
+                                                }
+                                                variant='primary'>
+                                                {`${lane.isNoteTaken ? '✅' : '🛎️'} tick`}
+                                            </Button>
+                                            {Input ? (
+                                                <Box flexGrow={1} minWidth={0}>
+                                                    <Input
+                                                        key={
+                                                            field(
+                                                                $,
+                                                                `lane:${lane.id}:note`,
+                                                                lane.note ?? '',
+                                                            ).key
+                                                        }
+                                                        onInput={(
+                                                            value: string,
+                                                        ) => {
+                                                            field(
+                                                                $,
+                                                                `lane:${lane.id}:note`,
+                                                                lane.note ?? '',
+                                                            ).type(
+                                                                value,
+                                                                () => {
+                                                                    return handleLaneNote(
+                                                                        lane.id,
+                                                                        value,
+                                                                    );
+                                                                },
+                                                            );
+                                                        }}
+                                                        onSubmit={(
+                                                            value: string,
+                                                        ) =>
+                                                            void handleLaneNote(
+                                                                lane.id,
+                                                                value,
+                                                            )
+                                                        }
+                                                        placeholder='note'
+                                                        value={
+                                                            field(
+                                                                $,
+                                                                `lane:${lane.id}:note`,
+                                                                lane.note ?? '',
+                                                            ).value
+                                                        }
+                                                    />
+                                                </Box>
+                                            ) : null}
+                                        </Box>
                                     ) : null}
                                 </Box>
                             ))}
