@@ -4,7 +4,7 @@ title: 'mini-cclio: any coder in bytes or frame turns into cclio in one or two c
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 13:08'
+updated_date: '2026-10-12 14:10'
 due_date: '2026-10-14'
 labels:
   - m
@@ -34,4 +34,6 @@ dima o16 (2026-10-12 15:27), verbatim: «I'd like for a CLI lane to solve as man
 dima 16:01: «let's not rush with the cli lane start, too many things happening for me — 1 parallel lane at a time (the current coder)». the plan stays sealed-ready in .scratch/cli-lane-10-12/lane-proposal.md; it starts when the mods lane ends
 
 16:09: x mods gates (FRM-389 exits 1, 5, 6) joins the cli lane — the mods coder builds exits 3 + 7 only
+
+ccrow 17:10: quiet comms holds only in the session named exactly «🦉 cclio» — the mini tab name must never be that string («🦉 mini: <what>» is fine).
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'quiet comms: peer traffic reaches cclio behind the scenes, not as dima''
 status: open
 assignee: []
 created_date: '2026-10-12 11:40'
-updated_date: '2026-10-12 13:12'
+updated_date: '2026-10-12 13:54'
 due_date: '2026-10-19'
 labels:
   - m
@@ -30,4 +30,6 @@ dima 14:48: in mobile mode every thread switches fully to mod-less comms — so 
 16:03: built 8d59213f (x-mod-stash, cclio's thread only, arm by day, /quiet on|off|auto, 🤫 n on her row, quiet-log store lines); desktop hold proven 15:48; mods:test exit 0 on cclio's run. trial live to 10-19 in docs/test-drive/quiet-comms.md
 
 dima 16:12: o33 a 🎛️ quiet switch in the board panel beside /quiet — yes; o34 🤫 n expands to the held pings (who + first line) — «let's try». queued as mods-lane riders after brief 4; dima will ask about the quiet mod himself (reminded by cclio after x-mod-primer is sealed)
+
+dima 16:53: the day a/b is redundant — quiet runs every day as a stress test, more data (/quiet off stays the revert); the idle append time becomes a mod setting, 10 min to start (15 maybe); 🤫 n shows only while something is held; quiet works only in cclio's thread, never in a session dima spawns himself. riders to the mods coder as brief 5 with o33 🎛️ + o34 🤫 n expand.
 <!-- SECTION:NOTES:END -->

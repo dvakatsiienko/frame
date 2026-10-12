@@ -4,6 +4,7 @@ title: "\U0001F420 catch refinements: cclio's thread only, plus dima's refine"
 status: open
 assignee: []
 created_date: '2026-10-12 13:12'
+updated_date: '2026-10-12 14:26'
 due_date: '2026-10-17'
 labels:
   - s
@@ -23,4 +24,6 @@ dima 2026-10-12 16:12 (o29): «yes, I see the catch, but I also want to refine i
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: the mods lane runs one item at a time (dima 16:12)
+
+decided 17:22 (o51–o56): catch v2 = keep-in-mind shelf, 7 kinds, survives compaction, 5 visible / cap 7, 🤔 on all, cclio-only; contract = x-mod-stash/catch.md (dima edits). brief 7 sealed: ~/frame/.scratch/mods-l9/brief-7-catch.md. out: o54 reply-check rule blocking an unglossed id → its own item after brief 7.
 <!-- SECTION:NOTES:END -->

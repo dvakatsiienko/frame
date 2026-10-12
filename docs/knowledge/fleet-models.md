@@ -143,6 +143,7 @@ dima's screenshots of the Anthropic webinar (Lucas Gonzalez), read through his s
   5 % of input (was 10 % on opus 5); a 50-turn run re-reading 100k tokens costs ~$1.00 cached vs $20 uncached.
   sonnet 5.5 reads cache at the same $0.20, so a long sonnet loop saves on output, not on re-reads
 - sonnet 5.5's api default effort is `high`, opus 5.5's is `medium` (matches the cards above)
+- **effort mid-session** (verified 2026-10-12, `.scratch/effort-switch/`): changing effort keeps the cache on opus 5.5, sonnet 5.5, haiku 5.5 and fable 5.1 (fable since cc 2.1.260) on a subscription or api key, never on bedrock, vertex, a gateway or HIPAA; `/model` still re-reads the whole history uncached; `/effort` during a turn applies to the next request in that turn, not the next message ([model-config](https://code.claude.com/docs/en/model-config)), the desktop picker undocumented. dima's habit: high for planning and thinking, medium for the usual work, switched live
 
 ## spawn defaults — set by Dima, binding on every surface that spawns
 

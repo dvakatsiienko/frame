@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:45'
-updated_date: '2026-10-12 12:50'
+updated_date: '2026-10-12 14:16'
 due_date: '2026-10-26'
 labels:
   - m
@@ -59,4 +59,6 @@ moved from PK-50 at its close (wishkeeper 15:49: the close dropped them), whole,
   4. `x recipe list` — overdue recipes surface by themselves (dima 10-07)
   5. `x retro gather` — retros grouped by type for the halt's fold
   - python3 tops the census at 1,694 raw runs (inferred: mostly inline edits that skip edit hooks); 1 and 2 absorb part of it
+
+retro 10-12 (mods coder) automation candidates: `x peer send --after <s> <to> <text>` (a delayed cross-session send, no model, for idle probes); `x mods edit red <pairs-file>` (the mutation loop over the overlay copy).
 <!-- SECTION:NOTES:END -->
