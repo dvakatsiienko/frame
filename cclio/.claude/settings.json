@@ -54,6 +54,16 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/pocket-check-on-write.sh",
+            "timeout": 30
+          }
+        ]
+      },
+      {
         "matcher": "Write|Edit",
         "hooks": [
           {

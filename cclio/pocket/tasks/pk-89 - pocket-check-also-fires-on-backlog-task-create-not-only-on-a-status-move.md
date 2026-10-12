@@ -1,10 +1,10 @@
 ---
 id: PK-89
 title: 'pocket-check also fires on backlog task create, not only on a status move'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:17'
-updated_date: '2026-10-12 12:57'
+updated_date: '2026-10-12 17:41'
 due_date: '2026-10-14'
 labels:
   - s
@@ -26,4 +26,6 @@ ccrow 2026-10-12 14:16: the 14:09 cap stumble was logged with a firmer intention
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
 
 15:58: folds into the cli lane as `x pocket new` (exit 3b), ccrow's catch on the re-plan
+
+done 20:42: cclio PostToolUse hook (.claude/hooks/pocket-check-on-write.sh) runs pocket-check after a backlog create/edit or a pocket/tasks write and blocks with the red lines; 4 tests, red under a trigger and a verdict mutation
 <!-- SECTION:NOTES:END -->
