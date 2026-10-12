@@ -1,10 +1,10 @@
 ---
 id: PK-66
 title: 'an orbit ask links its proposal file, one click to the diff'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-11 21:11'
-updated_date: '2026-10-12 16:25'
+updated_date: '2026-10-12 19:08'
 due_date: '2026-10-14'
 labels:
   - s
@@ -30,4 +30,6 @@ parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — 
 done 18:34: brief 8 item 1 — an ask carries a link (https or a file path).
 
 19:26 reopened (wishkeeper): the desktop first click may only move focus (#99395); lane-l12 item 8 checks it live.
+
+landed by the mods coder: ce997506 — one click opens an ask's file link; noted in mods/workarounds.md
 <!-- SECTION:NOTES:END -->

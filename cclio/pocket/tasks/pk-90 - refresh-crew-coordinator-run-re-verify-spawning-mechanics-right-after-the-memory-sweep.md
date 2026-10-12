@@ -6,6 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:23'
+updated_date: '2026-10-12 17:54'
 due_date: '2026-10-26'
 labels:
   - m
@@ -26,4 +27,6 @@ dima, 2026-10-12 (o3): postpone the spawning-mechanics refresh to right after th
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: waits for the memory sweep (FRM-267) to close; dima, 2026-10-12
+
+dima o94 ✓ 20:54: this run also measures the auto-compact threshold — exercise CLAUDE_AUTOCOMPACT_PCT_OVERRIDE / autoCompactWindow / --autocompact (spawning-mechanics.md:325-329), and where quality drops; the 600–700k manual checkpoint stays until then
 <!-- SECTION:NOTES:END -->

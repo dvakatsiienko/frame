@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 16:59'
+updated_date: '2026-10-12 19:08'
 due_date: '2026-10-16'
 labels:
   - m
@@ -40,4 +40,10 @@ dima o76/o77 19:55, don't forget: fleet-models moves into x:crew-lead (models kn
 dima o79–o81 19:57, don't forget: spawning-mechanics moves into x:crew-lead too (its references), with its drafted core (~/frame/cclio/.scratch/knowledge-79/core-6-7.md § 7); crew-lead keeps its procedure, the facts live in its references, delivered on load.
 
 dima 19:59 on o81: spawning-mechanics was kept out of resident memory and skills on purpose, fat and of questionable shape — find the balance of volume, size and use. at the groom: measure crew-lead's loaded bytes (SKILL.md body + what a spawn reads) before and after; the moved files sit in references/, read on demand, and only a ≤4 KB core is ever delivered.
+
+wishkeeper 21:44 → step 9: 7 app skills still say next dev rewrites AGENTS.md (settled false by bytes cc4ffe9a, agentRules: false): x-com-chat-run:61,71 · x-com-chat-verify:33 · cv-run:58,72 · cv-verify:49 · figmentation-run:73 · figmentation-verify:51 · financial-run:108
+
+retro fold 10-12 (x domain-modeling coder): crew-coder has no line for empty args (a mid-turn `/x:crew-coder` with no ticket was read as dima mode) — one line in the skill groom
+
+dima 22:07: before any skill groom, the nurture-skills recipe gets its x:shape-recipe pass (step 0 groom: it is old) and a real run (its research lanes); only then the groom order below
 <!-- SECTION:NOTES:END -->

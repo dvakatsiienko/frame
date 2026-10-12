@@ -4,7 +4,7 @@ title: "\U0001F420 catch v2 test drive: is the keep-in-mind shelf used and usefu
 status: open
 assignee: []
 created_date: '2026-10-12 13:12'
-updated_date: '2026-10-12 16:25'
+updated_date: '2026-10-12 17:55'
 due_date: '2026-10-17'
 labels:
   - s
@@ -30,4 +30,6 @@ decided 17:22 (o51–o56): catch v2 = keep-in-mind shelf, 7 kinds, survives comp
 18:17 catch v2 landed (brief 7, 29 tests, 449 green) + catch.md committed (581600bc) + the fleet-mods line out. binds at cclio's next session start. test drive: pieces per kind, clears vs expiries, 🤔 presses, re-asks of a class with a live piece.
 
 19:26 narrowed: dima's refine was heard and shipped (catch v2, 32de7758 + 581600bc). this item is now the test drive: pieces per kind, clears vs expiries, 🤔 presses, re-asks of a class with a live piece.
+
+round 20:55: a miss — cclio used catch 0 times from 20:16 to 20:55 (4 receipts, an effort, unpushed work fit it); dima had to ask «why don't you use catch?». 4 pieces added after. the reach is the weak side, not the shelf.
 <!-- SECTION:NOTES:END -->

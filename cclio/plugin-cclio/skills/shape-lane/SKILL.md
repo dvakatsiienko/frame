@@ -26,7 +26,10 @@ a card is an h2 heading and two plain lines (dima, 2026-10-09, after a fence, a 
 
 load `mattpocock-skills:grilling` and ask in its round shape (❓ **Qn** - **title**: body, ➡️ pick, `---`). a fact the environment holds is looked up, never asked. the round prints whole in the reply, where dima reads it (dima, 2026-10-10: «grills print as usual in a response, orbit only sends my reply»); each question also goes to orbit as one answer row — `Qn <short title>` with the pick — so he ticks to agree and notes to steer; an unmarked question stays open. orbit is the only answer door: no pre-filled answer fence in the reply (dima, 2026-10-11; reply-check blocks one). his answers fold into `decided` the same turn, then the next round recomputes the frontier.
 
-## 2.5 · the spec — feature and app lanes only
+## 2.5 · the spec — feature and app lanes, and any coder job of 3+ items
+
+a coder job carrying three or more asks — a lane, or a pile of today's drops and finds — goes through a spec, never a run of messages: the spec holds every item with its exit line, so nothing is lost to a refresh and «done» is checkable (dima, 2026-10-12, o140: «via specs, nothing is lost and is structured»). a one-line fix stays a message. x-mod-guard warns on a 3+-item coder message that names no spec path (o143).
+
 
 the grill's `open` section is empty → read matt's `to-spec` and follow it (`sys-skills`: a user-only skill is plain text): the spec in `.scratch/<feature>/spec.md` carries `wish: <ticket>`. **the coder writes the tickets**: its brief's first step runs `to-tickets` on the spec after reading the code, so the slices follow real seams — its step 4 «quiz the user» is skipped and the brief says so: the grill already settled the want, the coder writes the slices into `.scratch/<feature>/issues/`, never linear, and builds (2026-10-11, a coder parked on four orbit asks after reading it); the spec and the sealed exit lines bind, the tickets are its own route (dima, 2026-10-10: cclio-written tickets anchor the coder to guessed seams). the exit lines below are sealed from the spec. a quick lane and a freebie skip it, said in one line (dima, 2026-10-10, after the stage was named nowhere and every lane skipped it).
 

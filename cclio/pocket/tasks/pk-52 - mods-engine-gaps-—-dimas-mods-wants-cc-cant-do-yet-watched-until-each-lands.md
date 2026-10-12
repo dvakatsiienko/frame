@@ -4,7 +4,7 @@ title: 'mods engine gaps — dima''s mods wants cc can''t do yet, watched until 
 status: waiting
 assignee: []
 created_date: '2026-10-10 19:37'
-updated_date: '2026-10-11 21:30'
+updated_date: '2026-10-12 18:46'
 due_date: '2026-10-17'
 labels:
   - s
@@ -23,7 +23,7 @@ dima, 2026-10-10 22:34 (via the mods coder): his mods wants the engine can't do 
 
 1. full-width, multi-line note Input on the desktop — https://github.com/anthropics/claude-code/issues/101089 (workaround: the note shares the button row)
 2. selectable mod text for F4 — https://github.com/anthropics/claude-code/issues/101090 (workaround: 🔊 ⏯ ⏹ through x-speak)
-3. links that open desktop apps (linear://) — no issue filed yet; Link takes https only, a Button can't sit inside Text
+3. ~~links that open desktop apps (linear://)~~ — dropped, dima 21:32: https everywhere, his Hyper+G opens the apps only, a Button can't sit inside Text
 4. a board button acts on the first click — https://github.com/anthropics/claude-code/issues/99395 (first click only focuses)
 5. hover cards inside a pane (his «1 open ask for you» on a board row) — cards draw over neighbours in a Pane; no issue named yet
 6. mods drawing on mobile and remote control (in desktop app too — app + terminal) — https://github.com/anthropics/claude-code/issues/99217 (why /mobile-mode exists)
@@ -37,4 +37,6 @@ dima, 2026-10-10 22:34 (via the mods coder): his mods wants the engine can't do 
 
 <!-- SECTION:NOTES:BEGIN -->
 2026-10-12: more space in the board view (dima 00:29) — he tried it with the coder; the mods api is too barebones to allow it, kept as is until it lands upstream (dima 00:30, o306)
+
+for the next refresh-cc-mods run's step 0 (mods coder's verdict on run #4, 21:40): useful — the researcher lane alone found a real loss path it had shipped (quiet's swallowed saves), api-map named every door used; noise — exa/parallel's local analysis. its proposal: add a pass that greps our own mods for the failure patterns the research finds, and a tool schema-vs-ops check per mod (today's catch-clear bug was one); cut the local-analysis vectors from exa/parallel
 <!-- SECTION:NOTES:END -->

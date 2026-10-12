@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:45'
-updated_date: '2026-10-12 15:19'
+updated_date: '2026-10-12 18:46'
 due_date: '2026-10-26'
 labels:
   - m
@@ -65,4 +65,6 @@ retro 10-12 (mods coder) automation candidates: `x peer send --after <s> <to> <t
 dima o62: x knowledge list gains the recipe ↔ shelf map, both ways; red on a shelf file with no fed-by, an artifact path that does not exist, a recipe never run.
 
 guard candidate (18:01 flawlog, ccrow 18:19): x brief check reds a ~/frame/cclio/ path in a brief for a non-cclio session.
+
+10-12 retro fold (lane l12 + arm A), verb candidates for the cli big picture: `x mods edit test --tsc` (tsc inside the overlay test — cost commits twice) · `red-proof --names` + `--keep-output` (a flake in red-proof is unreadable today) · `x mods edit red <pairs-file>` · `x peer send --after <s>` (idle-delivery probes, no model) · `pnpm mods:banner <text>` · `x eval why <run>`
 <!-- SECTION:NOTES:END -->

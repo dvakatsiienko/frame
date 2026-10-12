@@ -1,10 +1,10 @@
 ---
 id: PK-88
 title: 'reversible orbit pick: a 5 s «sending» state that unpicking cancels — doable?'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 16:25'
+updated_date: '2026-10-12 19:08'
 due_date: '2026-10-17'
 labels:
   - s
@@ -26,4 +26,6 @@ dima, inbox 2026-10-12: a mod useful for me — the orbit ask's 🛎️ take and
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
 
 19:26 → mods lane l12 item 5.
+
+landed 22:00 by the mods coder: 4dd40f0e (📨 sending 5 s, a second press unsends) + 9faea7a0 (icon-only); dima's own prompt sends a waiting one at once
 <!-- SECTION:NOTES:END -->
