@@ -65,12 +65,12 @@ func focusSegment(sessionID string) string {
 	return out
 }
 
-// ticketLink makes the id clickable — the linear:// scheme opens the macOS app
-// directly, and a hover in Warp reveals the target, which is the closest a
-// statusline gets to a tooltip.
+// ticketLink makes the id clickable — the https url every surface opens, and a
+// hover in Warp reveals the target, which is the closest a statusline gets to a
+// tooltip.
 func ticketLink(id string) string {
 	if id == "" {
 		return ""
 	}
-	return hyperlink("linear://linear.app/issue/"+id, id)
+	return hyperlink("https://linear.app/x-com/issue/"+id, id)
 }

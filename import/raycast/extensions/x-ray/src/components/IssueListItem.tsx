@@ -1,7 +1,6 @@
 import { Action, ActionPanel, Icon, List } from '@raycast/api';
 
 import type { LinearIssue } from '../lib/linear';
-import { toLinearAppUrl } from '../lib/linear';
 import {
     toPriorityIcon,
     toPriorityName,
@@ -18,7 +17,7 @@ export const IssueListItem = (props: IssueListItemProps) => {
                 <ActionPanel>
                     <Action.Open
                         icon={Icon.ArrowRight}
-                        target={toLinearAppUrl(props.issue.url)}
+                        target={props.issue.url}
                         title='open in linear'
                     />
                     <Action.Push

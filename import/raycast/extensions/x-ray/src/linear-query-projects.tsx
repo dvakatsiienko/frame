@@ -6,7 +6,6 @@ import {
     type LinearProject,
     readProjectIssueList,
     readProjectList,
-    toLinearAppUrl,
 } from './lib/linear';
 import {
     toPriorityIcon,
@@ -35,7 +34,7 @@ const LinearQueryProjects = () => {
                         <Action.Open
                             icon={Icon.ArrowRight}
                             shortcut={{ key: 'return', modifiers: ['cmd'] }}
-                            target={toLinearAppUrl(project.url)}
+                            target={project.url}
                             title='open in linear'
                         />
                         <Action.CopyToClipboard

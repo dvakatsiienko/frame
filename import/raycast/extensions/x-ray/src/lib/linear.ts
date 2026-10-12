@@ -119,12 +119,8 @@ export const readProjectList = async () => {
     return data.projects.nodes;
 };
 
-// The api hands back the web url; the same path under the linear:// scheme opens the desktop app.
-export const toLinearAppUrl = (url: string) =>
-    url.replace(/^https:\/\//, 'linear://');
-
-// The shortcut lane never sees an api url — an identifier typed or selected is the whole
-// input — so this is the one place the workspace slug has to be spelled out.
+// The hotkey's desktop-app door, the fleet's only linear:// — every other ticket link is https.
+// The shortcut lane never sees an api url, so this is the one place the workspace slug is spelled out.
 export const toIssueAppUrl = (identifier: string) =>
     `linear://linear.app/x-com/issue/${identifier}`;
 
