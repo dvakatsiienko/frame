@@ -44,6 +44,8 @@ export type StashMember = {
     tip?: string;
     // cclio's row only: the member pings quiet comms holds for her next turn, opened from her row's 🤫 n
     held?: QuietPing[];
+    // a held ping older than the idle wait + 2 min: the 🤫 n reads red
+    isHeldStuck?: boolean;
     asks: number;
     context?: number;
     model?: string;
@@ -85,6 +87,8 @@ export type StashBoardView = {
     at: number;
     // cclio's board only: each dev-mods probe past its probe, «<mod> (<session short id>)»
     staleProbes?: string[];
+    // cclio's board only: the ledger's gaps, from the store's `quiet-gap`
+    quietGaps?: QuietGap[];
 };
 
 // the running turn, kept so a mid-turn reload still knows it: busy, dima's own, a keep-hot ping, afk as it began
@@ -137,7 +141,13 @@ export type OrbitCatch = {
 export type CatchCount = { thinks: number; clears: number; refused: number };
 
 // quiet comms (PK-93): a [progress] ping from a member, held off cclio's thread until her next turn
-export type QuietPing = { at: number; from: string; text: string };
+// `canary`: the nonce of a `/quiet-canary` test ping, so its run finds its own log lines
+export type QuietPing = {
+    at: number;
+    from: string;
+    text: string;
+    canary?: string;
+};
 // the pings held for cclio's next turn; the on/off switch is a settings knob in the store
 export type StashQuiet = { held: QuietPing[] };
 // one delivery as the a/b reads it
@@ -145,10 +155,14 @@ export type QuietLogLine = {
     at: number;
     from: string;
     tag: string;
-    verdict: 'held' | 'passed' | 'flushed';
+    // failed-open: the hook threw, so the delivery passed unjudged
+    verdict: 'held' | 'passed' | 'flushed' | 'failed-open';
     startedTurn: boolean;
     arm: 'on' | 'off';
+    canary?: string;
 };
+// the ledger: a member whose transcript sent cclio more pings than her quiet log holds since the window opened
+export type QuietGap = { from: string; sent: number; logged: number };
 
 // the session's orbit: its asks oldest first, the next id's number, the main turns ended so far, and the plan with
 // the turn count it was set at

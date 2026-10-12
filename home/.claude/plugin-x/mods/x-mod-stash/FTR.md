@@ -529,6 +529,25 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given her stash holds n pings, then her row in the sessions card reads `🤫 n` beside the name; at 0 nothing
   - when dima presses `🤫 n`, then one dim line per held ping opens under her row — `🤫 <sender> · <age> ago: <first line>` — and a second press folds it; folded by default (dima's o34)
   - source: `quiet-held:<session>` in the store, the held pings themselves
+- ⬜ a broken hold never loses a ping (brief 6, dima's o49)
+  - given anything inside cclio's quiet hold throws
+  - when a member's ping arrives
+  - then it passes as if quiet were off, and the log keeps a `failed-open` line for it
+- ⬜ every held ping that reaches cclio logs `flushed`
+  - when held pings ride her next prompt, or land as the idle row, then each gets a `flushed` line beside its `held` one
+- ⬜ the ledger counts what members sent against what the log holds
+  - makes: `quiet-gap` in the store, `{ at, gaps: [{ from, sent, logged }] }`, rewritten once a minute; the boot digest reads it
+  - given a live member's own transcript holds more SendMessage calls to cclio than her quiet log holds lines from it, counted from the day's first log line and the member's start, sends younger than 2 min left out
+  - when the minute's ledger runs in cclio's thread
+  - then her board draws a red `🚨 quiet ledger: <member> sent cclio <n>, her quiet log holds <m>` row at its top; any other board draws none
+  - decision: a `flushed` line is not a delivery, so a held ping counts once
+  - decision: the transcript is found by session id under any project folder, never by the registry's cwd, which follows a `cd`
+- ⬜ a stuck held ping turns cclio's 🤫 n red
+  - given a held ping older than the idle wait + 2 min (12 min by default)
+  - then her row's `🤫 n` reads red; younger, it reads plain
+- ⬜ `/quiet-canary` sends cclio a test ping with no model
+  - given any session but cclio's, when it runs `/quiet-canary <nonce>`, then the mod sends `[progress] quiet canary <nonce>: …` to `🦉 cclio` through `$.session.send` and answers `sent` or `FAIL, <reason>`
+  - then cclio's log lines for it carry `canary: <nonce>`, so `pnpm mods:quiet-canary` reads held → delivered
 
 - ✅ phases: the session's next 7 moves, live
   - given the session has set its phases

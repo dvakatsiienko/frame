@@ -310,3 +310,85 @@ test('a desktop envelope names its sender with name=', () => {
         ),
     ).toEqual({ body: '[ask] a or b?', from: '🦉 cclio', tag: 'ask' });
 });
+
+/* the safety net (brief 6) */
+
+const logOf = (w: ReturnType<typeof world>) =>
+    (w.store.get(`quiet-log:${new Date(EVEN).toISOString().slice(0, 10)}`) ??
+        []) as Record<string, unknown>[];
+
+test('a throw inside the hold passes the ping and logs failed-open', async ($, on) => {
+    const w = world(on);
+    let isBroken = false;
+    on('state.get', (_$, e, next) =>
+        isBroken && e.key === 'mobile' ? { deny: 'boom' } : next(e),
+    );
+    await start($);
+    isBroken = true;
+    await ping($, '[progress] step 2 landed');
+    expect([w.queued.length, logOf(w).map((l) => l.verdict)]).toEqual([
+        1,
+        ['failed-open'],
+    ]);
+});
+
+test('a held ping that rides the next prompt logs flushed', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ping($, '[progress] step 2 landed');
+    await say($, 'status?');
+    expect(logOf(w).map((l) => l.verdict)).toEqual(['held', 'flushed']);
+});
+
+test('a held ping that lands as the idle row logs flushed', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ping($, '[progress] step 2 landed');
+    await w.clock.advance(11 * MIN);
+    expect(logOf(w).map((l) => l.verdict)).toEqual(['held', 'flushed']);
+});
+
+test("a canary ping's held and flushed lines carry its nonce", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ping($, '[progress] quiet canary c42: a test ping');
+    await say($, 'status?');
+    expect(logOf(w).map((l) => [l.verdict, l.canary])).toEqual([
+        ['held', 'c42'],
+        ['flushed', 'c42'],
+    ]);
+});
+
+test('/quiet-canary sends cclio a [progress] ping with its nonce', async ($, on) => {
+    world(on, { name: '☕️ 🔧 coder: mods' });
+    const sent: { to: string; text: string }[] = [];
+    on('session.send', (_$, e) => {
+        sent.push({ text: e.text, to: e.to });
+        return { isDelivered: true };
+    });
+    await start($);
+    const r = await $.command.run({
+        args: 'c7',
+        command: 'quiet-canary',
+    } as never);
+    expect([r.text, sent]).toEqual([
+        'quiet canary c7: sent',
+        [
+            {
+                text: '[progress] quiet canary c7: a test ping from /quiet-canary, nothing to do',
+                to: '🦉 cclio',
+            },
+        ],
+    ]);
+});
+
+test('/quiet-canary says FAIL with the reason when the send bounces', async ($, on) => {
+    world(on, { name: '☕️ 🔧 coder: mods' });
+    on('session.send', () => ({ isDelivered: false, reason: 'not reachable' }));
+    await start($);
+    const r = await $.command.run({
+        args: 'c7',
+        command: 'quiet-canary',
+    } as never);
+    expect(r.text).toBe('quiet canary c7: FAIL, not reachable');
+});

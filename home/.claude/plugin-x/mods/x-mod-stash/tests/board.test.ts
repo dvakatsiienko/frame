@@ -43,6 +43,7 @@ function fleet(
         reads = {} as Record<string, string>,
         dirs = {} as Record<string, FsEntry[]>,
         isOwner = false,
+        sends = {} as Record<string, string[]>,
     } = {},
 ) {
     const runs: string[][] = [];
@@ -98,9 +99,13 @@ function fleet(
                 stdout:
                     e.argv[0] === 'ps'
                         ? alive.map((p) => `    ${p}\n`).join('')
-                        : isOwner && e.argv[0] === 'sh'
-                          ? '1\nMon Oct 12 15:00:00 2026\n'
-                          : '',
+                        : e.argv[0] !== 'sh'
+                          ? ''
+                          : e.argv[2]?.includes('PPID')
+                            ? isOwner
+                                ? '1\nMon Oct 12 15:00:00 2026\n'
+                                : ''
+                            : (sends[e.argv[5] ?? ''] ?? []).join('\n'),
             },
         };
     });
@@ -986,4 +991,108 @@ test('a dev-mods folder holding only a file draws no warning', async ($, on) => 
 test("a stale probe stays off any board but cclio's", async ($, on) => {
     fleet(on, {}, { dirs: probes(GONE, [dir('qc-view', NOW - MIN)]) });
     expect(await probeRow($)).toBeUndefined();
+});
+
+// the quiet ledger (brief 6): a member's transcript sends to cclio against her quiet log, on her board only
+const DAY = new Date(NOW).toISOString().slice(0, 10);
+const at = (ms: number) => new Date(ms).toISOString();
+const logged = (from: string, ms: number, verdict = 'held') => ({
+    arm: 'on',
+    at: ms,
+    from,
+    startedTurn: false,
+    tag: 'progress',
+    verdict,
+});
+const PEER_NAME = '☕️ 🔧 FRM-1 code: x';
+const gapRow = async (
+    $: Engine,
+    clock: { advance: (ms: number) => Promise<void> },
+) => {
+    const ui = await board($);
+    await clock.advance(9000);
+    return (await ui.find({ text: /^🚨/, type: 'Text' }))?.text;
+};
+
+test('a member that sent cclio more pings than her log holds draws a 🚨 row on her board', async ($, on) => {
+    const { clock } = fleet(
+        on,
+        { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+        },
+    );
+    expect(await gapRow($, clock)).toBe(
+        `🚨 quiet ledger: ${PEER_NAME} sent cclio 2, her quiet log holds 1`,
+    );
+});
+
+test('a send inside the 2 min grace is not a gap yet', async ($, on) => {
+    const { clock } = fleet(
+        on,
+        { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - MIN)] },
+        },
+    );
+    expect(await gapRow($, clock)).toBeUndefined();
+});
+
+test("a send before the day's first log line is not counted", async ($, on) => {
+    const { clock } = fleet(
+        on,
+        { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 40 * MIN), at(NOW - 30 * MIN)] },
+        },
+    );
+    expect(await gapRow($, clock)).toBeUndefined();
+});
+
+test('a flushed line does not count as a logged delivery', async ($, on) => {
+    const { clock } = fleet(
+        on,
+        {
+            [`quiet-log:${DAY}`]: [
+                logged(PEER_NAME, NOW - 30 * MIN),
+                logged(PEER_NAME, NOW - 25 * MIN, 'flushed'),
+            ],
+        },
+        {
+            isOwner: true,
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+        },
+    );
+    expect(await gapRow($, clock)).toContain(
+        'sent cclio 2, her quiet log holds 1',
+    );
+});
+
+test("the ledger's gap stays off any board but cclio's", async ($, on) => {
+    const { clock } = fleet(
+        on,
+        { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
+        { sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] } },
+    );
+    expect(await gapRow($, clock)).toBeUndefined();
+});
+
+// the stuck alarm: a held ping past the idle wait (10 min) + 2 min turns cclio's 🤫 n red
+const heldFor = (ms: number) => ({
+    [`quiet-held:${HERE}`]: [{ at: NOW - ms, from: PEER_NAME, text: 'step 2' }],
+});
+
+test('a held ping past the wait + 2 min turns the 🤫 n red', async ($, on) => {
+    fleet(on, heldFor(13 * MIN));
+    const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
+    expect(badge?.props.color).toBe('error');
+});
+
+test('a held ping inside the wait + 2 min keeps the 🤫 n plain', async ($, on) => {
+    fleet(on, heldFor(11 * MIN));
+    const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
+    expect(badge?.props.color).toBeUndefined();
 });

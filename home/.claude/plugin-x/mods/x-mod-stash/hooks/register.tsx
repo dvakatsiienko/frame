@@ -8,6 +8,7 @@ import type {
     OrbitAssumption,
     OrbitCatch,
     PublishedAsk,
+    QuietGap,
     QuietLogLine,
     QuietPing,
     RemoteMark,
@@ -441,6 +442,15 @@ const QUIET_HELD = 'quiet-held:';
 const QUIET_LOG = 'quiet-log:';
 const QUIET_LOG_MAX = 500;
 const QUIET_TAG = /^\s*\[(done|blocked|ask|progress)\]/i;
+// the safety net (brief 6): the ledger's gaps, the canary's test ping, how long a held ping may wait past the idle wait
+const QUIET_GAP = 'quiet-gap';
+const QUIET_CANARY = /^\s*\[progress\]\s*quiet canary ([\w-]+)/i;
+const QUIET_STUCK_MS = 2 * 60_000;
+// a send younger than the grace may still be on its way, so the ledger counts it next minute
+const LEDGER_GRACE_MS = 2 * 60_000;
+const LEDGER_EVERY_MS = 60_000;
+// a transcript's SendMessage to cclio, whatever ref follows her name
+const SENT_TO_CCLIO = '"name":"SendMessage","input":\\{"to":"[^"]*cclio';
 
 // only cclio's thread holds anything, known by her registry name — never the cwd, which a Bash `cd` moves: her pings
 // passed unheld from 16:43, the hour she worked cd'd into ~/frame (cclio's wisp, 17:06)
@@ -456,7 +466,8 @@ export function peerPing(text: string) {
         .replace(/^[\s\S]*?<cross-session-message[^>]*>\n?/, '')
         .replace(/\n?<\/cross-session-message>\s*$/, '');
     const tag = body.match(QUIET_TAG)?.[1]?.toLowerCase() ?? 'none';
-    return { body, from, tag };
+    const canary = body.match(QUIET_CANARY)?.[1];
+    return { body, from, tag, ...(canary ? { canary } : {}) };
 }
 
 async function quietOf($: EngineInterface): Promise<StashQuiet> {
@@ -478,6 +489,74 @@ async function quietLog($: EngineInterface, line: QuietLogLine) {
     await $.store
         .set(key, [...was, line].slice(-QUIET_LOG_MAX))
         .catch(() => undefined);
+}
+
+// each held ping that reached cclio's thread gets a `flushed` line, so a canary sees held → delivered
+async function quietFlushed($: EngineInterface, held: QuietPing[]) {
+    const at = await $.clock.now();
+    for (const p of held)
+        await quietLog($, {
+            arm: 'on',
+            at,
+            from: p.from,
+            startedTurn: false,
+            tag: 'progress',
+            verdict: 'flushed',
+            ...(p.canary ? { canary: p.canary } : {}),
+        });
+}
+
+// the ledger: each live member's sends to cclio, counted from its own transcript, against her quiet log's lines from
+// it; a member that sent more than the log holds lost a ping between the two. the window opens at the day's first log
+// line (before it quiet comms logged nothing) and at the member's start
+async function quietLedger($: EngineInterface, now: number) {
+    const day = new Date(now).toISOString().slice(0, 10);
+    const judged = (
+        ((await $.store.get(QUIET_LOG + day).catch(() => undefined)) ??
+            []) as QuietLogLine[]
+    ).filter((l) => l.verdict !== 'flushed');
+    const opened = judged.length
+        ? Math.min(...judged.map((l) => l.at))
+        : Date.parse(`${day}T00:00:00Z`);
+    const home = await $.env.get('HOME');
+    const me = await currentId($);
+    const gaps: QuietGap[] = [];
+    for (const r of await registry($)) {
+        if (!r.isAlive || r.base.sid === me) continue;
+        const since = Math.max(opened, r.startedAt ?? 0);
+        // the transcript by its session id, never the cwd: the registry's cwd follows a Bash `cd`
+        const out = await $.process
+            .run([
+                'sh',
+                '-c',
+                'cat "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | grep -E "$3" | sed -n \'s/.*"timestamp":"\\([^"]*\\)".*/\\1/p\'',
+                'sh',
+                home ?? '',
+                r.base.sid,
+                SENT_TO_CCLIO,
+            ])
+            .catch(() => undefined);
+        if (!out) continue;
+        const sent = out.stdout
+            .split('\n')
+            .map((t) => Date.parse(t))
+            .filter((t) => t >= since && t <= now - LEDGER_GRACE_MS).length;
+        const logged = judged.filter(
+            (l) => l.from === r.base.name && l.at >= since,
+        ).length;
+        if (sent > logged) gaps.push({ from: r.base.name, logged, sent });
+    }
+    return gaps;
+}
+
+// the ledger runs once a minute in cclio's thread; its gaps sit in the store for her board and the boot digest
+let ledgerAt = 0;
+async function quietBooks($: EngineInterface) {
+    if (!(await isQuietHome($))) return;
+    const now = await $.clock.now();
+    if (now - ledgerAt < LEDGER_EVERY_MS) return;
+    ledgerAt = now;
+    await $.store.set(QUIET_GAP, { at: now, gaps: await quietLedger($, now) });
 }
 
 export const quietNote = (held: QuietPing[]) =>
@@ -518,6 +597,7 @@ async function quietIdle($: EngineInterface) {
         .catch(() => undefined);
     if (!appended || 'deny' in appended) return;
     await saveQuiet($, { ...q, held: [] });
+    await quietFlushed($, q.held);
 }
 
 // speak's own answer to `status`: reading and not paused draws ⏸️ on every play button, else ▶️ (dima, 15:51)
@@ -1589,9 +1669,20 @@ async function publish($: EngineInterface) {
             at: now,
             isColour: await readSwitch($, 'colour'),
             members: await members($).catch(() => undefined),
-            staleProbes: (await isLaneOwner($))
-                ? await staleProbes($, now).catch(() => undefined)
-                : undefined,
+            ...((await isLaneOwner($))
+                ? {
+                      quietGaps: (
+                          (await $.store
+                              .get(QUIET_GAP)
+                              .catch(() => undefined)) as
+                              | { gaps?: QuietGap[] }
+                              | undefined
+                      )?.gaps,
+                      staleProbes: await staleProbes($, now).catch(
+                          () => undefined,
+                      ),
+                  }
+                : {}),
         };
         const boardText = JSON.stringify({
             ...board,
@@ -2090,17 +2181,22 @@ async function members($: EngineInterface): Promise<Member[]> {
             !(r.startedAt !== undefined && now - r.startedAt < SHORT_MS),
     );
     const home = await $.env.get('HOME');
+    const stuckMs =
+        (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
     for (const { bg, cwd, base: r } of shown) {
         if (await isUnstarted($, home, cwd, r.sid)) continue;
         const reply = (await $.store.get(REPLY + r.sid)) as
             | Partial<Reply>
             | undefined;
         const asks = (await $.store.get(PREFIX + r.sid)) as Entry | undefined;
+        const held = heldOf(await $.store.get(QUIET_HELD + r.sid));
         out.push({
             ...r,
             asks: isLive(asks, now) ? asks.asks.length : 0,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
-            held: heldOf(await $.store.get(QUIET_HELD + r.sid)),
+            held,
+            isHeldStuck:
+                !!held && now - Math.min(...held.map((p) => p.at)) > stuckMs,
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
             // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
@@ -2453,6 +2549,16 @@ export const register: Register = (on) => {
                 .catch(() =>
                     $.ui.log('x-mod-stash: /quiet was not registered'),
                 );
+        else
+            await $.command
+                .register({
+                    description:
+                        'quiet comms canary: send cclio a test [progress] ping, no model; `pnpm mods:quiet-canary` reads held → delivered',
+                    name: 'quiet-canary',
+                })
+                .catch(() =>
+                    $.ui.log('x-mod-stash: /quiet-canary was not registered'),
+                );
         if (!isPolling) {
             isPolling = true;
             const tick = () =>
@@ -2463,6 +2569,7 @@ export const register: Register = (on) => {
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
                     await quietIdle($).catch(() => undefined);
+                    await quietBooks($).catch(() => undefined);
                     if (await isOpen($))
                         await refreshSpeaking($).catch(() => undefined);
                     tick();
@@ -2546,7 +2653,10 @@ export const register: Register = (on) => {
         const laneNotes = isUserTurn ? await takeLaneNotes($, lanes) : [];
         // held member pings ride the next prompt of any origin, once (quiet comms)
         const quiet = await quietOf($);
-        if (quiet.held.length) await saveQuiet($, { ...quiet, held: [] });
+        if (quiet.held.length) {
+            await saveQuiet($, { ...quiet, held: [] });
+            await quietFlushed($, quiet.held).catch(() => undefined);
+        }
         return next({
             ...e,
             context: [
@@ -2741,32 +2851,79 @@ export const register: Register = (on) => {
         const kind = e.origin.kind;
         if ((kind !== 'peer' && kind !== 'peer-send-message') || e.agentId)
             return next(e);
-        if (!(await isQuietHome($))) return next(e);
-        const now = await $.clock.now();
-        const { body, from, tag } = peerPing(e.text);
-        const q = await quietOf($);
-        const isOn = await readSwitch($, 'quiet');
-        const isMobile = (await $.state.get(MOBILE)).value === true;
-        const isBusyNow =
-            (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
-            isBusy;
-        const line = { arm: isOn ? 'on' : 'off', at: now, from, tag } as const;
-        if (isOn && !isMobile && tag === 'progress') {
-            const first =
-                body.replace(QUIET_TAG, '').trim().split('\n')[0] ?? '';
-            await saveQuiet($, {
-                ...q,
-                held: [...q.held, { at: now, from, text: first.slice(0, 300) }],
+        if (!(await isQuietHome($).catch(() => false))) return next(e);
+        const { body, canary, from, tag } = peerPing(e.text);
+        const marks = canary ? { canary } : {};
+        let arm: QuietLogLine['arm'] = 'on';
+        // fail open: a throw anywhere below passes the delivery unjudged and logs it, so a broken hold never loses a ping
+        try {
+            const now = await $.clock.now();
+            const q = await quietOf($);
+            const isOn = await readSwitch($, 'quiet');
+            arm = isOn ? 'on' : 'off';
+            const isMobile = (await $.state.get(MOBILE)).value === true;
+            const isBusyNow =
+                (await $.state.get(TURN).catch(() => undefined))?.value
+                    ?.isBusy ?? isBusy;
+            const line = { arm, at: now, from, tag, ...marks } as const;
+            if (isOn && !isMobile && tag === 'progress') {
+                const first =
+                    body.replace(QUIET_TAG, '').trim().split('\n')[0] ?? '';
+                await saveQuiet($, {
+                    ...q,
+                    held: [
+                        ...q.held,
+                        { at: now, from, text: first.slice(0, 300), ...marks },
+                    ],
+                });
+                await quietLog($, {
+                    ...line,
+                    startedTurn: false,
+                    verdict: 'held',
+                });
+                return {
+                    consumed: `quiet comms held ${from}'s [progress] ping`,
+                };
+            }
+            await quietLog($, {
+                ...line,
+                startedTurn: !isBusyNow,
+                verdict: 'passed',
             });
-            await quietLog($, { ...line, startedTurn: false, verdict: 'held' });
-            return { consumed: `quiet comms held ${from}'s [progress] ping` };
+        } catch (err) {
+            await quietLog($, {
+                arm,
+                at: Date.now(),
+                from,
+                startedTurn: false,
+                tag,
+                verdict: 'failed-open',
+                ...marks,
+            });
+            $.ui.log(
+                `x-mod-stash: quiet comms failed open on ${from}'s ping: ${errorText(err)}`,
+            );
         }
-        await quietLog($, {
-            ...line,
-            startedTurn: !isBusyNow,
-            verdict: 'passed',
-        });
         return next(e);
+    });
+
+    // the canary: a model-free test [progress] ping to cclio through the real peer path; its run reads the log by nonce
+    on('command.run', { command: 'quiet-canary' }, async ($, e) => {
+        const nonce = e.args.trim() || `c${(await $.clock.now()).toString(36)}`;
+        const r = await $.session
+            .send({
+                text: `[progress] quiet canary ${nonce}: a test ping from /quiet-canary, nothing to do`,
+                to: LANE_OWNER,
+            })
+            .catch((err) => ({
+                isDelivered: false as const,
+                reason: errorText(err),
+            }));
+        return {
+            text: r.isDelivered
+                ? `quiet canary ${nonce}: sent`
+                : `quiet canary ${nonce}: FAIL, ${r.reason}`,
+        };
     });
 
     on('command.run', { command: 'quiet' }, async ($, e) => {
@@ -3790,8 +3947,16 @@ export const register: Register = (on) => {
                 {`🧪 stale probe mods in ~/.claude/dev-mods, unload them: ${probes.join(', ')}`}
             </Text>
         ) : null;
+        const gapsJSX = (board?.quietGaps ?? []).map((g) => {
+            return (
+                <Text color='error' key={`gap:${g.from}`} wrap='truncate-end'>
+                    {`🚨 quiet ledger: ${g.from} sent cclio ${g.sent}, her quiet log holds ${g.logged}`}
+                </Text>
+            );
+        });
         const arranged = (top: RenderElement) => (
             <Box flexDirection='column' minHeight={fill}>
+                {gapsJSX}
                 {probesJSX}
                 {top}
                 {isPartOn('stash.orbit') ? orbitJSX : null}
@@ -3909,7 +4074,13 @@ export const register: Register = (on) => {
                                             });
                                         }}
                                         plain>
-                                        {`🤫 ${m.held.length}`}
+                                        {m.isHeldStuck ? (
+                                            <Text color='error'>
+                                                {`🤫 ${m.held.length}`}
+                                            </Text>
+                                        ) : (
+                                            `🤫 ${m.held.length}`
+                                        )}
                                     </Button>
                                 </Box>
                             ) : null}
