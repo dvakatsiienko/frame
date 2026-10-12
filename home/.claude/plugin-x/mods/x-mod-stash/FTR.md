@@ -240,6 +240,8 @@
   - decision: always on, never behind `/board colour` — it is a cache signal, not decoration (dima's ask, 2026-10-09)
   - decision: red, not a cooling blue — red is what dima sees, and it says something is wrong; the climb to it is gradual (dima, 2026-10-09)
   - decision: ❄️ takes the place of the word `idle`, so a cold row fits the 9-cell state column
+  - and an idle row counts from the session's last reply, or a later 🔥 keep-hot ping, never cc's registry stamp: cc restamps a thread whenever it is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77, dima's boot shot 2026-10-12); a busy row and a session with no reply yet keep the registry stamp
+  - source: the `reply:<session>` store key each session's x-mod-stash writes at every reply end, `pingedAt` at a ping's
 - 🔎 each row says what its session waits on
   - given a session's last reply ends with a `🔭` line
   - when the board draws

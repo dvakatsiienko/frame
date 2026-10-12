@@ -66,6 +66,8 @@ type AskDoor = {
 // waits: every background task's own name when the reply set no 🔭, so the board can list them all
 type Reply = {
     at: number;
+    // a keep-hot ping's reply end: it warms the cache without being a reply dima reads
+    pingedAt?: number;
     name?: string;
     wait?: string;
     waits?: string[];
@@ -1797,6 +1799,12 @@ async function members($: EngineInterface): Promise<Member[]> {
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
+            // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
+            // whenever a thread is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77)
+            statusSince:
+                statusOf(r.status).word !== 'busy' && reply?.at !== undefined
+                    ? Math.max(reply.at, reply.pingedAt ?? reply.at)
+                    : r.statusSince,
             // the band says «first +n»; the board has the room to name every wait (dima's o75)
             wait:
                 reply?.waits && reply.waits.length > 1
@@ -2264,17 +2272,25 @@ export const register: Register = (on) => {
 
     on('classic.Stop', async ($, e, next) => {
         const r = await next(e);
-        // a keep-hot ping's one-character reply never clears what the session waits on
-        if (!pinged)
+        // a keep-hot ping's one-character reply never clears what the session waits on; it only stamps the warm cache
+        const was = pinged
+            ? ((await $.store
+                  .get(REPLY + e.session_id)
+                  .catch(() => undefined)) as Reply | undefined)
+            : undefined;
+        const reply: Reply | undefined = pinged
+            ? was && { ...was, pingedAt: await $.clock.now() }
+            : {
+                  at: await $.clock.now(),
+                  name: await sessionName($),
+                  ...waitsOf(
+                      parseWait(e.last_assistant_message ?? ''),
+                      e.background_tasks,
+                  ),
+              };
+        if (reply)
             await $.store
-                .set(REPLY + e.session_id, {
-                    at: await $.clock.now(),
-                    name: await sessionName($),
-                    ...waitsOf(
-                        parseWait(e.last_assistant_message ?? ''),
-                        e.background_tasks,
-                    ),
-                } satisfies Reply)
+                .set(REPLY + e.session_id, reply)
                 .catch(() => undefined);
         isUserTurn = false;
         await keepTurn($);

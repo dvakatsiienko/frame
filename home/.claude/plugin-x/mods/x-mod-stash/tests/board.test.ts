@@ -278,6 +278,41 @@ test('an idle session under 15 minutes reads gray', async ($, on) => {
     expect(await stateLook($, 'idle')).toEqual({ color: undefined, dim: true });
 });
 
+test('an idle row counts from its last reply, not a later registry restamp', async ($, on) => {
+    fleet(
+        on,
+        { [`reply:${PEER}`]: { at: NOW - 2 * 60 * MIN } },
+        { patch: { 2: { statusUpdatedAt: NOW - 3 * MIN } } },
+    );
+    expect(await row($, PEER)).toContain('❄️ 2h 0m');
+});
+
+test('a keep-hot ping after the reply restarts the idle clock', async ($, on) => {
+    fleet(on, {
+        [`reply:${PEER}`]: { at: NOW - 2 * 60 * MIN, pingedAt: NOW - 5 * MIN },
+    });
+    expect(await row($, PEER)).toContain('idle 5m');
+});
+
+test('a busy row keeps the registry stamp whatever its last reply', async ($, on) => {
+    fleet(on, { [`reply:${HERE}`]: { at: NOW - 2 * 60 * MIN } });
+    expect(await row($, HERE)).toContain('busy 3m');
+});
+
+test("a keep-hot ping's reply restarts its own session's idle clock", async ($, on) => {
+    const f = fleet(on, {}, { patch: { 1: { status: 'idle' } } });
+    await stop($, 'done.');
+    await f.clock.advance(40 * MIN);
+    await $.prompt.submit({
+        origin: { kind: 'plugin', name: 'x-mod-stash' },
+        text: PING,
+        wait: false,
+    });
+    await stop($, '.');
+    await f.clock.advance(2 * MIN);
+    expect(await row($, HERE)).toContain('idle 2m');
+});
+
 test('an idle session past 15 minutes starts cooling in yellow', async ($, on) => {
     fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 15 * MIN } } });
     expect(await stateLook($, 'idle 15m')).toEqual({
