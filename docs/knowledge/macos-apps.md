@@ -1,4 +1,15 @@
-# macos admin — app installs and removals
+---
+when:
+  - { kind: command, value: brew install --cask }
+  - { kind: command, value: brew uninstall }
+  - { kind: command, value: mo uninstall }
+  - { kind: command, value: sfltool }
+  - { kind: basename, value: claude_desktop_config.json }
+---
+
+# macos apps — app installs and removals
+
+## core
 
 read when adopting, installing or removing a mac app; `rules/fleet-tooling.md` (app removal) points here.
 
