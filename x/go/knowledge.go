@@ -40,8 +40,8 @@ var (
 	h1      = regexp.MustCompile(`(?m)^# (.+)$`)
 )
 
-// the stamp is the date a file was last checked against the world: `verified-against` says so outright,
-// `researched` is the next best; a file with neither is unstamped, and the board says that
+// the verified date is the date a file was last checked against the world: `verified-against` says so outright,
+// `researched` is the next best; a file with neither is unverified, and the board says that
 func readShelfFile(path string) (shelfFile, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {
@@ -103,15 +103,15 @@ func knowledgeList(r *Run, _ []string, _ Flags) (any, error) {
 }
 
 func shelfBoard(files []shelfFile) string {
-	unstamped := 0
+	unverified := 0
 	for _, f := range files {
 		if f.Verified == nil {
-			unstamped++
+			unverified++
 		}
 	}
 	right := fmt.Sprintf("%d files", len(files))
-	if unstamped > 0 {
-		right += fmt.Sprintf(", %d unstamped", unstamped)
+	if unverified > 0 {
+		right += fmt.Sprintf(", %d unverified", unverified)
 	}
 	b := frame{width: frameWidth(), titleLeft: titleOf("knowledge list"), titleRight: ui.dim.Render(right),
 		footLeft: ui.dim.Render("x knowledge read <name>"), footRight: ui.dim.Render(home(knowledgeRoot())), padRows: true}
@@ -125,13 +125,13 @@ func shelfBoard(files []shelfFile) string {
 	}
 	b.rows = append(columns(widths, head...), "")
 	for _, f := range files {
-		stamp := ui.er.Render("unstamped")
+		verified := ui.er.Render("unverified")
 		if f.Verified != nil {
-			stamp = ui.fg.Render(*f.Verified)
+			verified = ui.fg.Render(*f.Verified)
 		}
-		cells := []string{ui.verb("knowledge", f.Name), stamp, ui.fg.Render(f.Purpose)}
+		cells := []string{ui.verb("knowledge", f.Name), verified, ui.fg.Render(f.Purpose)}
 		if isNarrow() {
-			cells = []string{cells[0], ui.fg.Render(f.Purpose) + "  " + stamp}
+			cells = []string{cells[0], ui.fg.Render(f.Purpose) + "  " + verified}
 		}
 		b.rows = append(b.rows, columns(widths, cells...)...)
 	}
@@ -167,11 +167,11 @@ func knowledgeRead(r *Run, args []string, _ Flags) (any, error) {
 	f := matches[0]
 	logRead(f.Name)
 	if r.human {
-		stamp := "unstamped"
+		verified := "unverified"
 		if f.Verified != nil {
-			stamp = "verified " + *f.Verified
+			verified = "verified " + *f.Verified
 		}
-		b := frame{width: frameWidth(), titleLeft: titleOf("knowledge read"), titleRight: ui.dim.Render(f.Name + ", " + stamp),
+		b := frame{width: frameWidth(), titleLeft: titleOf("knowledge read"), titleRight: ui.dim.Render(f.Name + ", " + verified),
 			footLeft: ui.dim.Render(home(f.path)), padRows: true}
 		if f.RefreshWhen != nil {
 			b.footRight = ui.dim.Render("refresh when: " + clip(*f.RefreshWhen, 40))

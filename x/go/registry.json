@@ -916,7 +916,7 @@
         },
         {
             "name": "knowledge list",
-            "purpose": "list the fleet reference shelf docs/knowledge: each file with its purpose and its verified-on stamp"
+            "purpose": "list the fleet reference shelf docs/knowledge: each file with its purpose and its verified date"
         },
         {
             "args": [

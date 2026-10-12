@@ -14,7 +14,8 @@ source file is newer.
   global flags, the exit codes and the usage line are derived (`go/registry.go`).
 - its run binds by name in `impls` (`go/main.go`); a verb in one and not the other fails a test.
 - `needsApply: true` for a verb that publishes or destroys: it splits into `Plan` and `Apply`; dispatch
-  exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal.
+  exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal; why, and the
+  shape a new exception needs: `docs/adr/X-0003`.
   the one exception: the `handoff` verbs delete without it — the store is disposable by contract
   (ADR-0002), every removal goes to the macos trash, and the envelope names each file it took.
   the second: the `linear` writes (`body --set`, `set`, `link`, `comment`, `update`) go out in one call —

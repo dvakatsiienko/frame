@@ -238,10 +238,10 @@
 
 ## knowledge
 
-- ✅ `x knowledge list` shows the shelf with its stamps
+- ✅ `x knowledge list` shows the knowledge shelf with each file's verified date
   - given `docs/knowledge/`
   - when it runs
-  - then each file shows its title and its verified date, and a file with none says unstamped
+  - then each file shows its title and its verified date, and a file with none says unverified
 - ✅ `x knowledge read` prints one file and logs the read
   - makes: a line in `~/.local/state/x/knowledge-reads.jsonl`
   - given a word of a file name

@@ -1,39 +1,79 @@
 # x — words
 
-- **verb** — one operation `x` runs, named `<family> <name>` (`lane commit`); the unit an agent calls
-- **family** — a group of verbs about one subject (`lane`, `handoff`); owns a colour in the human view
-- **registry** — the one list of verbs and families in `x/go/registry.json`; dispatch, schema, help and completion all read it
-- **envelope** — the json every verb prints for a machine: `{verb, ok, status, data}`
-- **resident line** — the one line every session holds about x: it exists, `x` lists families, `x schema <family>` the verbs; a per-verb index was cut (2026-10-07)
-- **admission rule** — the three tests a verb passes before it joins x (`PRODUCT.md`): a fleet procedure, more than one surface calls it, it hides a hazard or a sequence
-- **the human view** — what dima sees on a tty: the T2 dense-family design; a pipe or `--json` gets the envelope instead
-- **brief** — the markdown a coder is spawned with; `x brief check` reads its backticked names and its exit lines
-- **stamp** — the file a passing `brief check` writes, keyed by the brief's sha256, so a spawn guard can ask «was this brief checked»
-- **overlay** — a throwaway copy of a mod in the tmp with the scratch edits laid over it; `x mods edit test` and `push` validate and test it, never the live mod
-- **size** — a ticket's estimate as the fleet says it: XS · S · M for linear's 1 · 2 · 3; `x linear set --estimate` takes it, `x linear read` prints it
-- **preflight** — the read of a ticket before a lane spawns anyone: exit lines a verifier can grade, every `x` verb and flag they name real in the registry, nothing main already holds, no redesign slipping into an unattended lane; `x brief preflight`
-- **comment feed** — one of the three github endpoints a pr's comments land on: `comments` (the conversation), `reviews` (a verdict with its words), `reviewComments` (a line in the diff); the ci reviewer posts to a different one per round, so `x gh pr` reads all three
-- **review round** — one successful `review.yml` run on a pr's branch in bytes, started by the `🤖 review:requested` label; two per pr, a third only past dima's approval. the **judged commit** is the head sha of the last round; a verdict is **stale** when the pr head moved past it
-- **probe** — a `claude -p` session run from a dir no repo owns, so our setup cannot answer for it: `bare` (no setup at all) or `session` (named, with a settings json, resumable)
-- **shelf** — `docs/knowledge/`, the fleet's reference files; each file's verified date is its stamp, a file with none is unstamped
-- **held files** — the unstaged and untracked work outside a commit's paths, moved into the git dir while the hooks run, then put back byte for byte
-- **trace** — the one json line x writes when a call exits: the verb, flag names (never values), the caller, duration, exit and error kind; `x stats` reads them
-- **caller** — who ran a verb, one fixed value per trace line, read from the env: `hook` (`GIT_EXEC_PATH` from git, `CLAUDE_PROJECT_DIR` from a cc hook), `cc` (`CLAUDECODE`), `cw` (Cowork's Desktop Commander passes on a `CLAUDE_PLUGIN_ROOT` under `local-agent-mode-sessions/`), `ssh` (`SSH_CONNECTION`), `dima` (a tty), `other`
-- **error kind** — why a traced call failed: `usage` (exit 2), `refused` (x's own check stopped before acting), `external` (a tool ran and failed), `bug` (a panic or an unexpected error)
-- **old door** — a script or file a verb took over; its registry entry names it under `replaces`, and `replaces_test.go` stays red while it exists or anything tracked still names it
-- **touches** — what a verb reads or writes outside the repo (a store dir, the trash), named in its registry entry so `x schema` shows a fixer where the door leads
-- **actor** — the fleet member a call acts as on an outside service (`cclio`, `coder`, `dima`); `x as` picks its token, the trace names it, never the token
-- **shape** — what a raw-door query asks for, without a word of its text: the operation kind and its top-level field names (`mutation issueArchive`); the trace keeps it as `x.shape`, `x stats` ranks it
-- **bare run** — a `claude … --safe-mode` call in a Bash command: a cc session our setup cannot touch; `x fleet flow` counts them per window
+the fleet cli's language: what an agent or dima calls, what x answers, and what it counts. definitions only — how a
+thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`).
+
+## the cli
+
+- **verb** — one operation x runs, named `<family> <name>` (`lane commit`); the unit an agent calls. avoid: command, subcommand
+- **family** — the verbs about one subject, named by their first word (`lane`, `handoff`); each owns a colour on the board
+- **registry** — the one list of every verb and family; anything that names a verb reads it ([X-0002](docs/adr/X-0002-one-registry-one-resident-line.md))
+- **door** — the one place the fleet goes to do a thing; a verb is x's kind of door
+- **old door** — a script or file a verb took over; the verb names it under `replaces`, and it must be gone
+- **raw door** — a family's traced passthrough to the tool underneath (`x linear api`), the fallback when no verb fits; what it carries ranks the next verbs. avoid: escape hatch
+- **cover** — the x door that already does a head's job: a family's raw door, or the verb that replaced the script the command runs
+- **touches** — what a verb reads or writes outside the repo (a store, the trash), named so a fixer sees where the door leads
+- **admission rule** — the tests a verb passes before it joins x (`PRODUCT.md`): a fleet procedure, more than one surface calls it, it hides a hazard, a sequence or a location
+- **resident line** — the one line every session holds about x: it exists, `x` lists families, `x schema <family>` the verbs. avoid: verb index
+- **dev build** — an x binary built from `x/go` code that differs from `origin/main`: x being changed, not x in use ([X-0004](docs/adr/X-0004-local-trace-names-never-values.md)). avoid: dirty build
+
+## what x answers
+
+- **envelope** — the json a verb prints for a machine: the verb, whether it went ok, its data, plan or error, and the next command. avoid: response, payload
+- **human view** — how x talks on a tty: boards, spinners, forms; a pipe, an agent env or `--json` gets the envelope instead
+- **board** — one framed view a verb draws in the human view; `--board` draws it for an agent too. avoid: screen, tui
+- **plan** — what a verb that publishes or destroys would do, printed before it acts; it acts only on `--apply` ([X-0003](docs/adr/X-0003-apply-gate-and-its-exceptions.md)). avoid: dry run, preview
+- **next** — the command that moves the caller forward; every failure carries one
+- **error kind** — why a traced call failed: `usage`, `refused` (x's own check stopped it before acting), `external` (a tool it ran failed) or `bug`
+
+## who acts
+
+- **caller** — who ran a verb, one value per trace: `dima`, `cc`, `cw`, `hook`, `ssh` or `other`
+- **actor** — the fleet member a call acts as on an outside service (`cclio`, `coder`, `dima`); `x as` picks it. the caller runs the verb, the actor signs the write. avoid: user, identity
+
+## the trace and what it counts
+
+- **trace** — the one line x writes when a call exits: verb, flag names, caller, time, exit and error kind, never a value ([X-0004](docs/adr/X-0004-local-trace-names-never-values.md)). avoid: log, event
+- **span** — the days from the first counted trace to the last, both included; never the window asked for
+- **shape** — what a raw-door query asks for, without a word of its text: the operation kind and its top-level fields (`mutation issueArchive`)
+- **head** — what a Bash command runs, past a leading `cd`, variable setup and wrappers: the tool's name, plus its verb for the tools that have one (`git commit`, `pnpm test`), or an interpreter with its script. not git's HEAD: a pr's newest commit is its **pr head**. avoid: command name
+- **raw head** — a head no x door covers and no shell basic, run 5 times or more: a verb candidate
+- **bare run** — a `claude … --safe-mode` call in a Bash command: a cc session our setup cannot touch
 - **false fire** — a crew skill (`x:crew-coder`, `x:crew-verifier`) loaded with no earlier message naming it; its opposite is **brief-led**
-- **raw door** — a family's traced passthrough to the tool underneath (`x linear api`), the fallback when no verb fits; what it carries ranks the next verbs
-- **dev build** — an x binary built from `x/go` code that differs from its merge base with `origin/main`, in a worktree or the main checkout: x being changed, not x in use. the shim decides at build time; its trace lines carry `x.dev`, and `x stats` leaves them out unless `--dev`. never the `-dirty` version: main's own x reads dirty whenever the frame tree holds any uncommitted file (dima, 2026-10-08)
-- **span** — the days from the first counted trace to the last, both included; what `x stats` names as `days`, never the window asked for
-- **plugin cache** — where claude code installs a released plugin, `~/.claude/plugins/cache/<marketplace>/<name>/<version>`; `x plugin bump` takes `claude plugin list` reporting the install at the new version, its dir on disk, as the proof — a dir alone can be left from an earlier release
-- **head** — what a Bash command runs, past a leading `cd <dir> &&`, variable setup and the wrappers (`timeout <n>`, `env …`, …): the tool's name, plus its verb for `git`, `claude`, `gh`, `pnpm`, `linear`, `go`, `brew`, `npm`, `npx` and `op`, and an interpreter (`node`, `python3`, …) named with its script; `x stats --outside` ranks them, the one parser of them
-- **coder turn** — one distinct assistant `message.id` in a coder transcript (a model step in `fleet-vibe`'s words), summed over every coder session of a ticket; the unit the size lines are written in (XS < 80, S < 400)
-- **size miss** — a closed ticket whose coder turns reached its estimate's size line; `x fleet ops` lists them, an M has no line
-- **cover** — the x door that already does a head's job: a family's raw door, or the verb that `replaces:` the script or pnpm name the command runs
-- **contract** — the files a context's glossary defines, listed under the context in `GLOSSARY-MAP.md`; a change to one lands with the glossary or an adr, or the message says why not — `x lane gate` holds it
-- **groom** — reading a crew-/guide- skill whole and cutting before a commit that grows it; `x lane gate` asks for it past 3 net non-blank lines, «groom: read whole — <what was cut>» records it
-- **raw head** — a head no x door covers and no shell basic, ≥5 runs: a verb candidate for `cli-drift-check`, listed by `pnpm x:cli-census`
+- **coder turn** — one assistant message in a coder transcript, summed over every coder session of a ticket. 📌 `fleet-vibe` calls this unit a step; the name stays because cclio's pm skill writes the size lines in it
+- **size** — a ticket's estimate as the fleet says it: XS, S or M, for linear's 1, 2, 3. XS and S each have a **size line** in coder turns (XS under 80, S under 400); M has none
+- **size miss** — a closed ticket whose coder turns reached its size line
+
+## lanes and reviews
+
+- **lane** (the family) — the git door for one session's branch: commit, push, pr, merge main, unlock, seed, decamp, gate. 📌 not the fleet's lane, a working day with dima present (`fleet-vibe`)
+- **gate** — the commit-msg check `x lane gate`: a contract change carries its glossary or adr, a growing skill was groomed, app code carries its ftr line
+- **contract** — the files a context's glossary defines, listed under the context in `GLOSSARY-MAP.md`; x's is its registry
+- **groom** — reading a crew- or guide- skill whole and cutting before a commit that grows it
+- **held files** — the unstaged and untracked work outside a commit's paths, set aside while the hooks run and put back byte for byte. avoid: stash
+- **review round** — one successful ci review run on a pr in bytes, started by the review label; two per pr, a third only past dima's approval
+- **judged commit** — the pr head the last review round read; a verdict is **stale** when the pr head moved past it
+- **comment feed** — one of the three places a pr's comments land: the conversation, reviews, and lines in the diff; the ci reviewer posts to a different one per round
+
+## briefs
+
+- **brief** — the markdown a coder is spawned with
+- **stamp** — the file a passing `x brief check` leaves, keyed by the brief's content, so a spawn guard can ask «was this brief checked». only a brief has a stamp
+- **preflight** — the read of a ticket before a lane spawns anyone: exit lines a verifier can grade, every x verb and flag they name real, nothing main already holds, no redesign in an unattended lane
+
+## handoffs
+
+- **CST** — one handoff file: the transcript that carries a thread to its successor. avoid: handoff file
+- **handoff store** — the shared dir every surface reads and writes CSTs in ([ADR-0002](../docs/adr/0002-handoff-shared-file-store.md)). avoid: inbox, queue
+- **audience** — the reader a CST is addressed to, or `any`; a CST addressed to another reader is left alone
+- **pending** — a CST still in the handoff store, not yet ingested
+- **shared** — a CST that survives an ingest so every reader gets it; an explicit delete still takes it
+
+## mods, plugins, probes, knowledge
+
+- **scratch copy** — a live mod file pulled out for a bg session to edit; a push writes it back
+- **overlay** — a throwaway copy of a mod with its scratch copies laid over it; x tests the overlay, never the live mod
+- **plugin cache** — where claude code installs a released plugin; a bump is proven when claude reports the new version there, never by a dir alone
+- **probe** — a `claude -p` session run from a dir no repo owns, so our setup cannot answer for it: `bare` (no setup at all) or `session` (named, resumable)
+- **knowledge shelf** — `docs/knowledge/`, the fleet's reference files. avoid: bare «shelf» — `~/.claude/shelf/` is a different dir
+- **verified date** — the day a knowledge file was last checked against the world; a file with none is **unverified**. avoid: stamp

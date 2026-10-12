@@ -9,7 +9,7 @@ nine contexts live in this repo:
   - contract: none yet
 - **speak** — `speak/GLOSSARY.md` — the read-aloud daemon: engines, chains, voices
   - contract: none yet
-- **x** — `x/GLOSSARY.md` — the fleet cli: verbs, families, the envelope
+- **x** — `x/GLOSSARY.md` + `x/docs/adr/` (`X-nnnn`) — the fleet cli: verbs, families, the envelope
   - contract: `x/go/registry.json`
 - **x-mod-guard** — `home/.claude/plugin-x/mods/x-mod-guard/GLOSSARY.md` — the mod that stops a hazardous Bash call or fork before it runs
   - contract: none yet

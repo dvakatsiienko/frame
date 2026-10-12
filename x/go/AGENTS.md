@@ -14,7 +14,7 @@ fleet sees whether the page earns its place (0 of 8 x coders read it, 2026-10-05
   (the token wrap for `pr-open`, the knowledge shelf), so a moved copy without the pin cannot.
 - the shim also pins `devBuild=1` when `x/go` differs from its merge base with `origin/main` (an edit, an untracked file,
   an unpushed commit), so the trace marks the build a **dev build**; `pnpm x-go:build` never pins it,
-  and a stamp lasts until the next rebuild — a push alone does not clear it.
+  and the pin lasts until the next rebuild — a push alone does not clear it.
 - `pnpm x-go:test` — the gate, run in ci; the frame commit hooks never run it, so run it before
   every commit here. `x:guide-go` holds the go craft (gofmt, vet, staticcheck, table tests).
 
