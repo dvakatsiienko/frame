@@ -1,7 +1,8 @@
 // pnpm mods:live <mod> — a dev server for a mod: a real cc session in a pty with the mod loaded, a text frame of its
-// screen after every save, and a reload verdict. pnpm mods:live <mod> hover <label> moves the pointer onto a label
-// in the running session and saves the frame with its hover card; click <label> presses it; type <text> types the
-// text and Enter into the prompt (a prompt, or a slash command such as /board).
+// screen after every save, and a reload verdict; it prints one `mods:live ready:` line once the first frame draws.
+// pnpm mods:live <mod> hover <label> moves the pointer onto a label in the running session and saves the frame with
+// its hover card; click <label> presses it; type <text> types the text and Enter into the prompt (a prompt, or a slash
+// command such as /board); fill <text> types it with no Enter; status names the pid and session holding the slot.
 import { spawnSync } from 'node:child_process';
 import {
     chmodSync,
@@ -20,6 +21,7 @@ import { dirname, join, resolve } from 'node:path';
 import xterm from '@xterm/headless';
 import pty from 'node-pty';
 
+import { type LiveVerb, parseLive } from './live-args.ts';
 import { reloadVerdict, sourceHash } from './live-verdict.ts';
 
 const COLS = 140;
@@ -29,19 +31,15 @@ const RELOAD_MS = 8000;
 // a typed prompt answers only once its turn quiets down
 const ACT_MS = 60_000;
 
-const VERBS = ['hover', 'click', 'type'] as const;
-type Verb = (typeof VERBS)[number];
-const isVerb = (v: string): v is Verb =>
-    (VERBS as readonly string[]).includes(v);
-const [modArg, verb, ...rest] = process.argv.slice(2);
-const usage = () => {
+const args = parseLive(process.argv.slice(2));
+if (args.kind === 'usage') {
     console.error(
-        'usage: pnpm mods:live <mod dir>, or pnpm mods:live <mod dir> hover|click <label>, or … type <text>',
+        'usage: pnpm mods:live <mod dir>, or … hover|click <label>, … type|fill <text>, … status',
     );
     process.exit(2);
-};
-if (!modArg || (verb && (!isVerb(verb) || !rest.length))) usage();
-const mod = resolve(modArg as string);
+}
+const modArg = args.mod;
+const mod = resolve(modArg);
 const manifest = join(mod, '.claude-plugin/plugin.json');
 if (!existsSync(manifest)) {
     console.error(`mods:live: ${mod} has no .claude-plugin/plugin.json`);
@@ -51,6 +49,8 @@ const name = (JSON.parse(readFileSync(manifest, 'utf8')) as { name: string })
     .name;
 const dir = join(tmpdir(), 'mods-live', name);
 const pidFile = join(dir, 'server.pid');
+// who holds the slot: the server's pid, the cc session's pid and name, since when
+const slotFile = join(dir, 'slot.json');
 const request = join(dir, 'hover.request');
 const response = join(dir, 'hover.response');
 
@@ -64,10 +64,28 @@ const isServing = () => {
     }
 };
 
-if (verb && isVerb(verb)) await act(verb, rest.join(' '));
+if (args.kind === 'act') await act(args.verb, args.text);
+else if (args.kind === 'status') status();
 else await serve();
 
-async function act(what: Verb, label: string) {
+function status() {
+    if (!isServing()) {
+        console.log(`mods:live: ${name}'s slot is free`);
+        process.exit(1);
+    }
+    const slot = existsSync(slotFile)
+        ? (JSON.parse(readFileSync(slotFile, 'utf8')) as Record<
+              string,
+              unknown
+          >)
+        : {};
+    console.log(
+        `mods:live: ${name} is held by pid ${readFileSync(pidFile, 'utf8')}, session «${slot.session ?? '?'}» (cc pid ${slot.ccPid ?? '?'}) since ${slot.since ?? '?'}`,
+    );
+    process.exit(0);
+}
+
+async function act(what: LiveVerb, label: string) {
     if (!isServing()) {
         console.error(
             `mods:live: no session serves ${name}; start pnpm mods:live ${modArg}`,
@@ -141,6 +159,14 @@ async function serve() {
             rows: ROWS,
         },
     );
+    writeFileSync(
+        slotFile,
+        JSON.stringify({
+            ccPid: session.pid,
+            session: `mods-live: ${name}`,
+            since: new Date().toISOString(),
+        }),
+    );
     let lastData = Date.now();
     session.onData((d) => {
         lastData = Date.now();
@@ -150,11 +176,13 @@ async function serve() {
     const stop = (code: number) => {
         session.kill();
         rmSync(pidFile, { force: true });
+        rmSync(slotFile, { force: true });
         process.exit(code);
     };
     session.onExit(() => {
         console.error('mods:live: the session ended');
         rmSync(pidFile, { force: true });
+        rmSync(slotFile, { force: true });
         process.exit(1);
     });
     process.on('SIGINT', () => stop(0));
@@ -198,6 +226,8 @@ async function serve() {
     await settle();
     console.log(`mods:live: ${name} runs in a pty, frames in ${dir}`);
     console.log(`frame: ${frame('start')}`);
+    // the one line a caller waits on before its first keystroke (FRM-389: a 90 s blind wait, an early key at 21:29)
+    console.log(`mods:live ready: ${name}`);
 
     let timer: NodeJS.Timeout | undefined;
     let busy = false;
@@ -254,16 +284,17 @@ async function serve() {
         if (file !== 'hover.request' || !existsSync(request)) return;
         const { label, what } = JSON.parse(readFileSync(request, 'utf8')) as {
             label: string;
-            what: Verb;
+            what: LiveVerb;
         };
         rmSync(request, { force: true });
-        const at = what === 'type' ? undefined : cellOf(term, label);
+        const isTyped = what === 'type' || what === 'fill';
+        const at = isTyped ? undefined : cellOf(term, label);
         const cell = at && `${at.x + 1};${at.y + 1}`;
         if (what === 'hover' && cell) session.write(`\x1b[<35;${cell}M`);
         if (what === 'click' && cell)
             session.write(`\x1b[<0;${cell}M\x1b[<0;${cell}m`);
+        if (isTyped) session.write(label);
         if (what === 'type') {
-            session.write(label);
             await sleep(300);
             session.write('\r');
         }
@@ -273,7 +304,7 @@ async function serve() {
         writeFileSync(
             `${response}.tmp`,
             JSON.stringify({
-                found: what === 'type' || !!at,
+                found: isTyped || !!at,
                 frame: frame(what),
             }),
         );
