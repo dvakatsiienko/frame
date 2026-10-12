@@ -996,8 +996,6 @@ test('an edit with a step past 60 chars is refused and the card stays', async ($
     ]);
 });
 
-/* o84: dima reorders a lane's queue from any board; cclio's stash applies it */
-
 const threeQueued = () =>
     keptLane({
         items: [
@@ -1008,58 +1006,27 @@ const threeQueued = () =>
         ],
     });
 
-test('only the queue after the current step carries ↑ ↓, both on every queued step', async ($, on) => {
+/* o138: the glide card reads as a status — no reorder arrows on any step */
+
+test('no glide row carries ↑ or ↓, queued steps included', async ($, on) => {
     world(on, { files: shelf(threeQueued()) });
     await start($);
     const ui = await board($);
-    const has = async (key: string) => Boolean(await ui.find({ key }));
-    expect(
-        await Promise.all(
-            [
-                'lane:l1:0:up',
-                'lane:l1:0:down',
-                'lane:l1:1:up',
-                'lane:l1:1:down',
-                'lane:l1:3:up',
-                'lane:l1:3:down',
-            ].map(has),
-        ),
-    ).toEqual([false, false, true, true, true, true]);
+    const arrows = await Promise.all(
+        [0, 1, 2, 3]
+            .flatMap((i) => [`lane:l1:${i}:up`, `lane:l1:${i}:down`])
+            .map(async (key) => Boolean(await ui.find({ key }))),
+    );
+    expect(arrows.some(Boolean)).toBe(false);
 });
 
-test('a ↓ on a queued step shows the new order on the card at once', async ($, on) => {
-    world(on, { files: shelf(threeQueued()) });
-    await start($);
-    const ui = await board($);
-    await ui.press({ key: 'lane:l1:1:down' });
-    expect(await laneText(ui)).toMatch(/a.*c.*b.*d/s);
-});
-
-test("cclio's running turn applies the order once its 5 s pass, with one note", async ($, on) => {
+test("a lane-order key a board left before o138 is dropped by cclio's stash, never applied", async ($, on) => {
     const w = world(on, { files: shelf(threeQueued()) });
+    w.store.set('lane-order:l1', { at: 0, order: ['d', 'c', 'b'] });
     await start($);
-    const ui = await board($);
     await say($, 'go');
-    await ui.press({ key: 'lane:l1:1:down' });
-    const early = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
-    await w.clock.advance(5_000);
-    const late = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
     expect([
-        (early.context ?? []).some((c) => /reordered lane l1/.test(c)),
-        (late.context ?? []).some((c) =>
-            /reordered lane l1.*c → b → d/.test(c),
-        ),
+        w.store.has('lane-order:l1'),
         kept(w)[0]?.items.map((x) => x.text),
-    ]).toEqual([false, true, ['a', 'c', 'b', 'd']]);
-});
-
-test('a session other than cclio never applies a lane order', async ($, on) => {
-    const w = world(on, { files: shelf(threeQueued()), name: '☕️ 🔧 coder' });
-    await start($);
-    const ui = await board($);
-    await say($, 'go');
-    await ui.press({ key: 'lane:l1:1:down' });
-    await w.clock.advance(5_000);
-    await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
-    expect(kept(w)[0]?.items.map((x) => x.text)).toEqual(['a', 'b', 'c', 'd']);
+    ]).toEqual([false, ['a', 'b', 'c', 'd']]);
 });

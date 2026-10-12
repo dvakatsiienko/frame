@@ -46,7 +46,6 @@ import {
     orbitOp,
     planTaken,
     planText,
-    reordered,
     shelved,
     steered,
     steeredOrbit,
@@ -246,6 +245,9 @@ export const PALETTE = {
     accent: '#d97757',
     calm: '#4f83e0',
     dim: 'inactive',
+    // each member's dot, by name: six mid-tones at 3.6:1 or more on white and 4.2:1 on the dark pane, none a state tint
+    // and no coral near the asks' orange; the 1st and 4th nudged off `calm` and `ok` (l13, `pnpm design:contrast`)
+    dots: ['#6b7bdc', '#2f8f8a', '#a87f12', '#3c9472', '#9a74c9', '#c4689f'],
     hot: '#e5484d',
     ok: '#47915a',
     warn: '#d9661a',
@@ -270,7 +272,7 @@ const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
 // dima's steer on a lane's current step and its 🛎️ tick, one store key per lane: any board writes it, so the shelf file
 // keeps its one writer, cclio's lane op
 const LANE_STEER = 'lane-steer:';
-// dima's reorder of a lane's queue (o84): `lane-order:<id>` = { order, at }, any board writes it, cclio's stash applies it
+// the retired glide reorder's store key (o84, dropped by o138): cclio's stash deletes any left behind
 const LANE_ORDER = 'lane-order:';
 // a lane steer typed before the rename sits under the old prefix: read as a steer, retired at its next write
 const LANE_STEER_OLD = 'lane-note:';
@@ -1489,89 +1491,21 @@ async function changeLaneSteer(
     await showLanes($, await readLanes($));
 }
 
-type LaneOrder = { order: string[]; at: number };
-
-async function laneOrders($: EngineInterface) {
-    const orders: Record<string, LaneOrder> = {};
+// the glide reorder left (dima's o138): a `lane-order:` key a board wrote before that is dropped by cclio's stash, never applied
+async function dropLaneOrders($: EngineInterface) {
     for (const key of await $.store.keys().catch(() => [] as string[]))
-        if (key.startsWith(LANE_ORDER)) {
-            const o = (await $.store.get(key).catch(() => undefined)) as
-                | LaneOrder
-                | undefined;
-            if (o && Array.isArray(o.order))
-                orders[key.slice(LANE_ORDER.length)] = o;
-        }
-    return orders;
-}
-
-// a ↑ or ↓ on a queued step: the order as this board shows it, one place moved; the current step and the done ones stay
-async function moveLaneStep(
-    $: EngineInterface,
-    lane: StashLane,
-    i: number,
-    by: -1 | 1,
-) {
-    const queue = moved(
-        lane.items.map((x) => x.text),
-        i,
-        by,
-    ).slice(lane.current + 1);
-    await $.store.set(LANE_ORDER + lane.id, {
-        at: await $.clock.now(),
-        order: queue,
-    });
-    await showLanes($, await readLanes($));
-    $.clock.after(SEND_MS, () => $.ui.invalidate('ui.render'));
-}
-
-// cclio's stash, the lanes' one writer, applies dima's queue orders: all of them on his own prompt, else those past
-// their sending window; each becomes one note for her
-async function applyLaneOrders($: EngineInterface, isAll: boolean) {
-    const orders = await laneOrders($);
-    const now = await $.clock.now();
-    const due = Object.entries(orders).filter(
-        ([, o]) => isAll || now >= o.at + SEND_MS,
-    );
-    if (!due.length) return [];
-    const lanes = await readLanes($);
-    const notes: string[] = [];
-    const next = lanes.map((l) => {
-        const o = due.find(([id]) => id === l.id)?.[1];
-        if (!o || l.endedAt) return l;
-        const items = reordered(l.items, l.current, o.order);
-        notes.push(
-            `🛼 glide: dima reordered lane ${l.id} «${l.title}»; its queue after the current step now reads: ${items
-                .slice(l.current + 1)
-                .map((x) => x.text)
-                .join(' → ')}`,
-        );
-        return { ...l, items };
-    });
-    for (const [id] of due) await $.store.delete(LANE_ORDER + id);
-    await writeLanes($, next);
-    return notes;
+        if (key.startsWith(LANE_ORDER))
+            await $.store.delete(key).catch(() => undefined);
 }
 
 // the live lanes into this session's state, only when they changed: a write redraws the board; each carries its steer
-// and dima's pending queue order
 let lanesShown = '';
 async function showLanes($: EngineInterface, lanes: StashLane[]) {
     const steers = await laneSteers($);
-    const orders = await laneOrders($);
     const live = lanes
         .filter((l) => !l.endedAt)
         .map((l) => ({
             ...l,
-            ...(orders[l.id]
-                ? {
-                      isReordered: true,
-                      items: reordered(
-                          l.items,
-                          l.current,
-                          orders[l.id]?.order ?? [],
-                      ),
-                  }
-                : {}),
             isSteerTaken: steers[l.id]?.isTaken,
             steer: steers[l.id]?.steer,
         }));
@@ -2141,15 +2075,8 @@ function modelLabel(model: string, effort?: string | number) {
 
 // the colour look, borrowed from the reference on FRM-329: calm by default, each member's dot its own hue, and a
 // colour only where something is live — theme keys follow light and dark; orange stays the asks' alone
-// six mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane; no coral, which would read as the asks' orange
-const HUES = [
-    '#4f83e0',
-    '#2f8f8a',
-    '#a87f12',
-    '#47915a',
-    '#9a74c9',
-    '#c4689f',
-] as const;
+// the hues live in the palette's dot list
+const HUES = PALETTE.dots;
 // each member's hue: the one its name hashes to, so it holds across reloads, or the next free one when an earlier
 // row took it — up to six members never share a colour
 export function huesOf(names: string[]) {
@@ -3083,8 +3010,7 @@ export const register: Register = (on) => {
                     `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`,
             );
         const laneSteers = isUserTurn ? await takeLaneSteers($, lanes) : [];
-        const laneOrdered =
-            isUserTurn && isOwner ? await applyLaneOrders($, true) : [];
+        if (isOwner) await dropLaneOrders($);
         // dima's own prompt sends his phases mark at once, as it sends a tick still sending
         const planMark =
             isUserTurn && hasPlanMark(orbit.plan) ? orbit.plan : undefined;
@@ -3110,7 +3036,6 @@ export const register: Register = (on) => {
                 ...(reminder ? [reminder] : []),
                 ...laneStale,
                 ...laneSteers,
-                ...laneOrdered,
                 ...(planMark ? [planText(planMark)] : []),
                 ...(quiet.held.length ? [quietNote(quiet.held)] : []),
                 ...(tickets ? [tickets] : []),
@@ -4535,21 +4460,6 @@ export const register: Register = (on) => {
                                             ) : null}
                                         </Box>
                                     ) : null}
-                                    {/* the queue after the current step reorders at the row's right edge (dima's o84) */}
-                                    {i > lane.current
-                                        ? arrowsJSX(
-                                              `lane:${lane.id}:${i}`,
-                                              i > lane.current + 1,
-                                              i < lane.items.length - 1,
-                                              (by) =>
-                                                  void moveLaneStep(
-                                                      $,
-                                                      lane,
-                                                      i,
-                                                      by,
-                                                  ),
-                                          )
-                                        : null}
                                 </Box>
                             ))}
                       {isFolded(`lane:${lane.id}`)
@@ -5168,7 +5078,6 @@ export const register: Register = (on) => {
         // a lane steer dima took while cclio's turn runs joins it here too, as an orbit mark does
         if (!isPing && (await isLaneOwner($))) {
             notes.push(...(await takeLaneSteers($, await readLanes($))));
-            notes.push(...(await applyLaneOrders($, false)));
         }
         // dima's phases mark joins the running turn once its sending window passed
         const p = (await currentOrbit($)).plan;

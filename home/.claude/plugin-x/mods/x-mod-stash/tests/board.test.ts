@@ -1,7 +1,7 @@
 import type { FsEntry, On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { ctxBar, huesOf } from '../hooks/register.tsx';
+import { PALETTE, ctxBar, huesOf } from '../hooks/register.tsx';
 
 const NOW = 10_000_000;
 const MIN = 60 * 1000;
@@ -1150,4 +1150,28 @@ test('the terminal draws ctx as a fixed 10-wide bar', () => {
         '▮▮▯▯▯  43%',
         '▮▮▮▮▮ 100%',
     ]);
+});
+
+test('no member dot equals a state tint: ok, warn, hot, calm or accent', () => {
+    const tints: string[] = [
+        PALETTE.ok,
+        PALETTE.warn,
+        PALETTE.hot,
+        PALETTE.calm,
+        PALETTE.accent,
+    ];
+    expect(PALETTE.dots.filter((d) => tints.includes(d))).toEqual([]);
+});
+
+test('every dot comes from the palette, the same name keeping the same hue', () => {
+    const names = ['🦉 cclio', '☕️ 🔧 coder', '🐦 ⬛ ccrow'];
+    const hues = huesOf(names);
+    expect([
+        hues.every(
+            (h) =>
+                h !== undefined &&
+                (PALETTE.dots as readonly string[]).includes(h),
+        ),
+        huesOf(names),
+    ]).toEqual([true, hues]);
 });

@@ -223,8 +223,6 @@ export type StashLane = {
     // dima's steer on the current step: a draft until his take, then it joins cclio's next prompt or running turn once
     steer?: string;
     isSteerTaken?: boolean;
-    // the board's view only: dima's reorder of the queue after the current step, waiting for cclio's stash to apply it
-    isReordered?: boolean;
     history: { at: number; act: string; current: number; done: number }[];
     endedAt?: number;
 };

@@ -295,7 +295,7 @@
 - ⬜ `/board colour` tries colour as an MVP
   - given colour is off, the default
   - when dima types `/board colour`
-  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), 🚧 blocked's time red, ⏳ waiting's and 🙋 needs_input's amber, every colour read from one palette table (ok, warn, hot, dim, accent, plus the ctx meter's calm blue; dima's o107), each row's context a fixed 64×18 pill, the % inside, filled in the band's ctx ramp (calm blue, amber 10 points short of the compaction point, red at it; 80 when the point is unknown), the terminal a fixed 10-wide `▮▮▯▯▯  43%` bar, every row the same width (dima's o105); the model stays dim and orange is left to `🪐 n` alone; typed again, it goes back
+  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), 🚧 blocked's time red, ⏳ waiting's and 🙋 needs_input's amber, every colour read from one palette table (ok, warn, hot, dim, accent, the ctx meter's calm blue, and the six member dot hues, none equal to a state tint — the 1st and 4th nudged off calm and ok, each 3.6:1 on white and 4.2:1 on the dark pane; dima's o107, l13), each row's context a fixed 64×18 pill, the % inside, filled in the band's ctx ramp (calm blue, amber 10 points short of the compaction point, red at it; 80 when the point is unknown), the terminal a fixed 10-wide `▮▮▯▯▯  43%` bar, every row the same width (dima's o105); the model stays dim and orange is left to `🪐 n` alone; typed again, it goes back
   - decision: calm by default, a colour only where something is live — the first MVP put the same orange on the busy dot, the busy word, the head and the asks, and painted a calm context green (dima, 2026-10-08: «colors like in SS»)
   - decision: the head leads with `🚦`, the board's own button in the row, not the reference's `◆` (dima, 2026-10-08: «dont' like the diamond»); the context climbs sline's ramp, not the theme's dull amber (dima: «pick prettier color ctx filling»)
   - decision: theme keys (`success`, `warning`, `error`) for every state colour, so light and dark both read; the six dot hues are fixed mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane, with no coral beside the asks' orange
@@ -687,12 +687,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 - ⬜ a lane that moved nothing for 8 of cclio's turns reads stale
   - given the pointer and the done flags unmoved for 8 of cclio's turns, then her next prompt carries «lane <id> «…» moved nothing for n of your turns, stale»; a step that moves nothing keeps the count; no other session nags; with no lane, no lane text
   - decision: 8, not phases' 3 — a lane step spans many turns
-- ⬜ dima reorders a lane's queue from any board (o84)
-  - given a glide card shows steps after the current one
-  - then each of those ends in `↑` `↓` at its right edge, the same two buttons on every queued step, the first one's ↑ and the last's ↓ doing nothing; done steps and the current one carry none
-  - when dima presses one, then the card shows the new order at once, and `lane-order:<id>` in the store holds it
-  - then cclio's own stash writes it into the lanes file once 5 s pass (at her next tool call), or at her next prompt from dima, and she reads one note naming the new queue; no other session ever writes the file
-  - decision: only the queue moves, so every step before the pointer stays done (dima's o84 shot, 20:25)
+- decision: no reorder arrows on a glide step — a glide card reads as a status, not a control panel, and a reorder lands in cclio's own turn through act `edit` (dima's o138, 2026-10-12 21:51; the o84 arrows lived 20:25–22:05); a `lane-order:` key a board wrote before that is dropped by cclio's stash, never applied
 - ⬜ a glide card holds its members' asks (exit 3)
   - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
   - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ tick, 🔁 replay, 🔊 and the steer; a locked one shows its mark and its steer, no control

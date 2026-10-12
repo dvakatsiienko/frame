@@ -1,7 +1,6 @@
 // orbit's rules as pure steps over one session's orbit: the tool's ops, dima's marks joining a turn, the turn's end.
 // register.tsx owns every $ call: it reads the orbit from $.state, applies a step here, and saves the result.
 import type {
-    LaneItem,
     OrbitAsk,
     OrbitAssumption,
     OrbitCatch,
@@ -484,19 +483,3 @@ export const planTaken = (p: StashPlan): StashPlan => ({
     at: p.at,
     lines: p.lines,
 });
-
-// a glide queue order dima set on a board: the item texts after the current step, in his order; a text the lane no
-// longer holds is skipped, a held one he never placed keeps its place at the end
-export function reordered(
-    items: LaneItem[],
-    current: number,
-    order: string[],
-): LaneItem[] {
-    const head = items.slice(0, current + 1);
-    const queue = items.slice(current + 1);
-    const placed = order.flatMap((text) => {
-        const item = queue.find((x) => x.text === text);
-        return item ? [item] : [];
-    });
-    return [...head, ...placed, ...queue.filter((x) => !placed.includes(x))];
-}
