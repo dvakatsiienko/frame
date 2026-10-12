@@ -165,6 +165,12 @@
   - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the `fleet-hazards.md` line left with this rule
 
+- ⬜ three slips get a hint line, the command runs as typed (PK-67, the 10-11 halt flush)
+  - given an `sd`, `sed -i` or `python` write into a file under `~/frame` or `~/projects/bytes`, then the hint names `Edit`, which fires the format and hold hooks a scripted replace skips; an append, a redirect or a path outside the repos gets none
+  - given `echo` of a json-ish argument (`{…"…`), then the hint names `printf '%s\n'` or `jq -n`: zsh's `echo` reads the escapes inside it
+  - given `claude -p` inside a `while read` loop with no `</dev/null`, then the hint names `</dev/null`: the call eats the loop's stdin
+  - decision: hints, never refusals — a bulk change across many files may stay one script (`fleet-hazards.md`), and the held-file veto already covers heredoc and python writes
+
 - ⬜ a raw plugin update names `x plugin bump`, warn-only (FRM-389 exit 7)
   - given any session runs `claude plugin update …` or `claude plugin marketplace update …`
   - then it runs, and the model reads «would refuse» with `x plugin bump --apply <plugin>` named; with `rule-mode:raw-plugin-update` = «enforce» nothing runs

@@ -91,3 +91,71 @@ test('gh --json piped into jq gets no gojq hint', async ($, on) => {
     const r = await bash($, "gh pr view 3 --json title | jq '.title'");
     expect(hinted(r.context, 'gh --jq')).toHaveLength(0);
 });
+
+/* PK-67: the three warnings */
+
+const HOME_REPO = '/home/frame';
+const edited = (context: readonly string[] | undefined) =>
+    (context ?? []).filter((l) => l.includes('goes through `Edit`'));
+for (const typed of [
+    "sd -F 'a' 'b' x.ts",
+    "sed -i '' 's/a/b/' x.ts",
+    "python3 - <<'EOF'\nopen('x.ts', 'w').write(s)\nEOF",
+])
+    test(`a scripted replace into a repo file names Edit: ${typed.split('\n')[0]}`, async ($, on) => {
+        const w = world(on, HOME_REPO);
+        const r = await bash($, typed);
+        expect([w.ran, edited(r.context).length]).toEqual([[typed], 1]);
+    });
+
+test('a scripted replace outside the repos runs unhinted', async ($, on) => {
+    world(on, '/tmp/scratch');
+    const r = await bash($, "sd -F 'a' 'b' x.ts");
+    expect(edited(r.context)).toEqual([]);
+});
+
+test('an append into a repo file runs with no Edit hint', async ($, on) => {
+    const w = world(on, HOME_REPO);
+    const r = await bash($, 'echo hi >> x.ts');
+    expect([w.ran, edited(r.context)]).toEqual([['echo hi >> x.ts'], []]);
+});
+
+const echoed = (context: readonly string[] | undefined) =>
+    (context ?? []).filter((l) => l.includes("zsh's `echo`"));
+
+test("echo of json names zsh's escapes and printf", async ($, on) => {
+    world(on);
+    const r = await bash($, `echo '{"text":"a\\nb"}' | jq .`);
+    expect(echoed(r.context)).toHaveLength(1);
+});
+
+test('echo of plain words gets no json hint', async ($, on) => {
+    world(on);
+    const r = await bash($, 'echo hi there');
+    expect(echoed(r.context)).toEqual([]);
+});
+
+const looped = (context: readonly string[] | undefined) =>
+    (context ?? []).filter((l) =>
+        l.includes('`claude -p` inside `while read`'),
+    );
+
+test('claude -p inside while read names </dev/null', async ($, on) => {
+    world(on);
+    const r = await $.tool.call({
+        command: 'ls | while read f; do claude -p "say $f"; done',
+        run_in_background: true,
+        tool: 'Bash',
+    });
+    expect(looped(r.context)).toHaveLength(1);
+});
+
+test('claude -p inside while read with </dev/null runs unhinted', async ($, on) => {
+    world(on);
+    const r = await $.tool.call({
+        command: 'ls | while read f; do claude -p "say $f" </dev/null; done',
+        run_in_background: true,
+        tool: 'Bash',
+    });
+    expect(looped(r.context)).toEqual([]);
+});
