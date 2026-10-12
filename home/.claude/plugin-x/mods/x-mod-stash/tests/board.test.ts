@@ -1,7 +1,7 @@
 import type { FsEntry, On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { huesOf } from '../hooks/register.tsx';
+import { ctxBar, huesOf } from '../hooks/register.tsx';
 
 const NOW = 10_000_000;
 const MIN = 60 * 1000;
@@ -251,7 +251,7 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
     // ticket, ctx, state and its emoji cell, asks
-    expect(widths).toEqual([9, 7, 9, 3, 4, 9, 7, 9, 3, 4]);
+    expect(widths).toEqual([9, 10, 9, 3, 4, 9, 10, 9, 3, 4]);
 });
 
 test('a session inside a long shell command reads 🐚 with its time', async ($, on) => {
@@ -517,7 +517,15 @@ test("a row shows its session's context fill", async ($, on) => {
         context: { percent: 43, tokens: 430_000, window: 1_000_000 },
         rateLimits: [],
     });
-    expect(await row($, HERE)).toContain('ctx 43%');
+    const ui = await board($);
+    const pill = (await ui.findAll({ type: 'Svg' })).find(
+        (n) => n.props.alt === 'ctx 43%',
+    );
+    expect([
+        pill?.type,
+        pill?.props.alt,
+        String(pill?.props.source).includes('>43%<'),
+    ]).toEqual(['Svg', 'ctx 43%', true]);
 });
 
 // the 9-cell fact columns on the whole board: each row's state, plus its ticket column when one is drawn
@@ -879,20 +887,30 @@ test("with colour on, an idle member's dot is dimmed and a busy one's is not", a
     expect(dots.map((d) => d.dim)).toEqual([false, true]);
 });
 
-test("with colour on, a calm context stays dim and a filling one climbs sline's ramp", async ($, on) => {
-    fleet(on, {
-        'board-colour': true,
-        [`context:${HERE}`]: 31,
-        [`context:${PEER}`]: 86,
-    });
-    const texts = await colourTexts($);
-    const calm = texts.find((t) => t.text === 'ctx 31%');
-    const full = texts.find((t) => t.text === 'ctx 86%');
-    expect([calm?.color, calm?.dim, full?.color]).toEqual([
-        undefined,
-        true,
-        '#e5484d',
-    ]);
+test("a row's ctx pill takes the band's ramp: calm blue, red at the compaction point", async ($, on) => {
+    fleet(on, { [`context:${HERE}`]: 31, [`context:${PEER}`]: 86 });
+    const ui = await board($);
+    const pills = (await ui.findAll({ type: 'Svg' })).filter((n) =>
+        /^ctx /.test(String(n.props.alt)),
+    );
+    expect(
+        pills.map(
+            (n) => String(n.props.source).match(/fill="(#[0-9a-f]{6})"/)?.[1],
+        ),
+    ).toEqual(['#4f83e0', '#e5484d']);
+});
+
+test('every ctx pill is the same 64-px width, whatever the fill', async ($, on) => {
+    fleet(on, { [`context:${HERE}`]: 3, [`context:${PEER}`]: 100 });
+    const ui = await board($);
+    const pills = (await ui.findAll({ type: 'Svg' })).filter((n) =>
+        /^ctx /.test(String(n.props.alt)),
+    );
+    expect(
+        pills.map(
+            (n) => String(n.props.source).match(/<svg[^>]* width="(\d+)"/)?.[1],
+        ),
+    ).toEqual(['64', '64']);
 });
 
 test('the sessions head leads with 🌌, since the tab holds 🚦', async ($, on) => {
@@ -1124,4 +1142,12 @@ test("ccrow's lines count for her though the log keeps the registry's split «�
         },
     );
     expect(await gapRow($, clock)).toBeUndefined();
+});
+
+test('the terminal draws ctx as a fixed 10-wide bar', () => {
+    expect(['0', '43', '100'].map((p) => ctxBar(Number(p)))).toEqual([
+        '▯▯▯▯▯   0%',
+        '▮▮▯▯▯  43%',
+        '▮▮▮▮▮ 100%',
+    ]);
 });

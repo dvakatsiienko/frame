@@ -2186,17 +2186,6 @@ const statusOf = (status: string | undefined) =>
         : { emoji: '❔', isIdle: false, isWorking: false, tint: PALETTE.warn };
 // sline's bar ramp, yellow, orange, red, tuned to 3.2:1 or more on a light pane and 4.2:1 on a dark one
 const RAMP = ['#b98500', '#d9661a', '#e5484d'] as const;
-// a calm context is dim; a filling one climbs the ramp
-const contextTint = (percent: number) =>
-    percent >= 80
-        ? RAMP[2]
-        : percent >= 65
-          ? RAMP[1]
-          : percent >= 50
-            ? RAMP[0]
-            : undefined;
-// the prompt cache lives an hour: an idle session stays gray, then climbs the ramp as it cools, red from half the
-// cache's life; cold past all of it
 // idle only: gray, amber from 30 min, red from 45 (dima's o106)
 const IDLE_WARN_MS = 30 * 60_000;
 const IDLE_HOT_MS = 45 * 60_000;
@@ -2357,6 +2346,31 @@ export function effortSvg(level: number) {
     );
 }
 export const EFFORT_CELL = CELL.size;
+// a row's context as a fixed 64×18 pill (dima's o105): the meter's off-gray track, the fill in the band's ctx tint, the %
+// centered at 12px with a halo so it reads over the fill and the track, on light and dark
+export const PILL = { height: 18, width: 64 } as const;
+const CTX_FALLBACK_AT = 80;
+export function ctxPillSvg(percent: number, tint: string) {
+    const { height: h, width: w } = PILL;
+    const p = Math.min(100, Math.max(0, Math.round(percent)));
+    const fill = Math.max(p > 0 ? h : 0, (p / 100) * w);
+    return (
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+        '<style>:root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.5}.t{fill:#1d1d1d;stroke:#ffffff}' +
+        '@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.45}.t{fill:#f2f2f2;stroke:#1d1d1d}}</style>' +
+        `<defs><clipPath id="pill"><rect width="${w}" height="${h}" rx="${h / 2}"/></clipPath></defs>` +
+        `<g clip-path="url(#pill)"><rect class="off" width="${w}" height="${h}"/>` +
+        `<rect width="${fill}" height="${h}" fill="${tint}"/></g>` +
+        `<text class="t" x="${w / 2}" y="${h / 2}" dy=".35em" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="12" font-weight="600" stroke-width="3" paint-order="stroke">${p}%</text>` +
+        '</svg>'
+    );
+}
+// the terminal's pill: five cells and the %, always 10 wide
+export const ctxBar = (percent: number) => {
+    const p = Math.min(100, Math.max(0, Math.round(percent)));
+    const on = Math.round(p / 20);
+    return `${'▮'.repeat(on)}${'▯'.repeat(5 - on)} ${`${p}%`.padStart(4)}`;
+};
 // a calm meter's fill: the board's green and blue mid-tones, 3.6:1 or more on white and 4.2:1 on a dark pane
 const METER_TINTS = { calm5h: PALETTE.ok, calmCtx: PALETTE.calm } as const;
 // the 5h window runs five hours; its pace is the share of it already gone, so a used % on pace keeps up exactly
@@ -2644,7 +2658,8 @@ const span = (ms: number) => {
 const STATE_EMOJI = 3;
 const COLUMNS = {
     asks: 4,
-    context: 7,
+    // the ctx pill: 64 px on the desktop, a 10-wide bar in the terminal
+    context: 10,
     state: 9,
     ticket: 9,
 } as const;
@@ -4720,6 +4735,12 @@ export const register: Register = (on) => {
         if (!list.length)
             return arranged(<Text dimColor>no live sessions</Text>);
         const isColour = board.isColour;
+        // the band's ctx ramp needs this session's compaction point, which the rows share; unknown, it falls back to 80, the
+        // old red line, so a full session never reads calm
+        const compactAt =
+            (await $.state.get(METER)).value?.compactAt ?? CTX_FALLBACK_AT;
+        const PillSvg =
+            e.surface === 'desktop' && 'Svg' in ui ? ui.Svg : undefined;
         const hues = huesOf(list.map((m) => m.name));
         // the ticket column is drawn only when some row names a ticket: empty on every row, it was 9 cells of nothing (dima, 15:41)
         const hasTickets = list.some((m) => ticketOf(m.name));
@@ -4864,17 +4885,24 @@ export const register: Register = (on) => {
                             <Box
                                 justifyContent='flex-end'
                                 width={COLUMNS.context}>
-                                {m.context === undefined ? null : (
+                                {/* every row's pill the same width, coloured by the band's ctx ramp (dima's o105, 21:13) */}
+                                {m.context === undefined ? null : PillSvg ? (
+                                    <PillSvg
+                                        alt={`ctx ${m.context}%`}
+                                        height={PILL.height}
+                                        key={`ctx:${m.sid}`}
+                                        source={ctxPillSvg(
+                                            m.context,
+                                            contextFill(m.context, compactAt),
+                                        )}
+                                    />
+                                ) : (
                                     <Text
-                                        color={
-                                            isColour
-                                                ? contextTint(m.context)
-                                                : undefined
-                                        }
-                                        dimColor={
-                                            !isColour || !contextTint(m.context)
-                                        }>
-                                        ctx {m.context}%
+                                        color={contextFill(
+                                            m.context,
+                                            compactAt,
+                                        )}>
+                                        {ctxBar(m.context)}
                                     </Text>
                                 )}
                             </Box>
