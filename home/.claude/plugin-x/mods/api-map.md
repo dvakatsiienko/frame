@@ -1,14 +1,15 @@
 # mods api map — every hook event, one line each
 
-read from `.claude-plugin/types/claude-code/index.d.ts` at cc 2.1.294; the types file wins on any
-conflict. find an event by grepping its quoted name (`'tool.call'`) in that file (any mod's copy; the engine
-regenerates it on reload) — names survive a cc bump, line numbers never did. the events live in
-`EngineEventOf`; a hook may also answer an op (`store.get`, `session.id`, `ui.copy` …), listed at the end.
-a new event at a bump: diff the quoted names in `EngineEventOf` against this list.
+read from `.claude-plugin/types/claude-code/index.d.ts` at cc 2.1.295 / 2.1.296 (refresh-cc-mods run #4, 2026-10-12);
+the types file wins on any conflict. 📌 the fleet runs both builds and each rewrites a mod's types on load (stash's
+copy flipped twice in a minute), so the file's first line names the build you are reading. find an event by
+grepping its quoted name (`'tool.call'`) — names survive a bump, line numbers never did. at a bump, diff three
+lists against this file: the quoted names in `EngineEventOf`, the members of `EngineInterface` (the `$` calls;
+`rg "^          [a-zA-Z]+: "` lists them), and `ClassicEventOf`.
 
 ## ui — drawing and input
 
-- `ui.render` — the engine is about to draw a component; return the tree. the sites (`RenderComponent`): `AbovePrompt` (the band) and `Pane`, plus the engine's own rows a mod may redraw — `AskUserQuestion` `UserMessage` `AssistantMessage` `ToolUse` `ToolResult` `ToolGroup` `ToolProgress` `CommandOutput` `Spinner` `TurnDuration` `InfoNotice` `SessionMode` `PromptHint`
+- `ui.render` — the engine is about to draw a component; return the tree. the sites (`RenderComponent`): `AbovePrompt` (the band) and `Pane`, plus the engine's own rows a mod may redraw — `AskUserQuestion` `UserMessage` `AssistantMessage` `ToolUse` `ToolResult` `ToolGroup` `ToolProgress` `CommandOutput` `Spinner` `TurnDuration` `InfoNotice` `SessionMode` `PromptHint`; `ToolProgress`, `TurnDuration` and `InfoNotice` draw in the terminal only (reference, «Render sites»)
 - `ui.resolve` — once per surface, component and plugin at load (not per draw); `e` names the surface and component, never the props
 - `ui.press` — a `Button` a render hook drew was pressed; `element` is its `key`
 - `ui.input` — an `Input` changed or was submitted
@@ -28,7 +29,7 @@ a new event at a bump: diff the quoted names in `EngineEventOf` against this lis
 
 ## the prompt box and the prompt
 
-- `prompt.submit` — a prompt is submitted, before the turn starts; `e.origin.kind` says who sent it
+- `prompt.submit` — a prompt is submitted, before the turn starts; `e.origin.kind` says who sent it; answer `{ drop: reason }` to stop it. `$.prompt.submit({ text, asUser: true })` sends text as the person's own words
 - `prompt.fill` — a text is about to go into the prompt box as the person's draft
 - `prompt.suggest` — a dim Tab-to-take suggestion is about to show: the engine's guess or a plugin's `$.prompt.suggest`
 - `prompt.edit` — the person edits the prompt box: a key or a paste
@@ -50,8 +51,8 @@ a new event at a bump: diff the quoted names in `EngineEventOf` against this lis
 
 ## the session
 
-- `session.start` — once per process per plugin, then again on every reload, worker respawn or enable; init here
-- `session.receive` — a delivery reaches the session (a peer's message, a relay event, a Remote Control prompt), before it is queued
+- `session.start` — once per process per plugin, then again on every reload, worker respawn or enable; init here. not after `/clear`, `/resume` or `/branch`: the process goes on under a new session id with no `session.start`, and `session.end` carries the old id (`SessionEndInput`)
+- `session.receive` — a delivery reaches the session, before it is queued; `e.origin.kind` is `peer`, `peer-send-message`, `coordinator`, `bridge`, `task-notification`, `scheduled-trigger`, `projects-relay`, `slack-ping` or `unclassified`, a teammate's carrying `isVerified`. a session set to refuse inbound messages refuses before this hook fires, so a sent message may never reach it
 - `session.append` — every row the conversation keeps (prompt, response block, tool result, notice), before it is stored
 - `session.send` — a plain-text message is about to leave for another agent or session (SendMessage, `$.session.send`)
 - `session.compact` — the conversation is about to be compacted; resolves `{ messages }`
@@ -64,7 +65,7 @@ a new event at a bump: diff the quoted names in `EngineEventOf` against this lis
 
 - `turn.start` — a model turn begins, before its first model call
 - `turn.step` — a model request of a turn is about to go out, main's or a subagent's
-- `turn.complete` — a model turn ended; `e.agentId` set for a subagent's
+- `turn.complete` — a model turn ended; `e.agentId` set for a subagent's; answer `{ text }` to show a line under the answer
 
 ## the plugin itself and telemetry
 
@@ -72,6 +73,45 @@ a new event at a bump: diff the quoted names in `EngineEventOf` against this lis
 - `engine.create` — `$` is being built, before any other hook of this plugin
 - `telemetry.log` — a record is about to be logged
 - `telemetry.mark` — one use of a feature is marked
+
+## `classic.*` — the settings-hook events, seen by a mod
+
+`ClassicEventOf`, 33 events with the settings hooks' input shapes; the ones our mods touch: `classic.Stop` (with
+`background_tasks`), `classic.SessionStart` (`source`: `startup` `resume` `clear` `compact` `fork`), `classic.PostCompact`,
+`classic.CwdChanged`, `classic.TeammateIdle`, `classic.TaskCompleted`, `classic.Notification`. a hot reload fires
+`session.start` only, never `classic.SessionStart`.
+
+## `$` calls that raise an event (not in `OpValueOf`)
+
+every `$` method is also an interceptable event; these are the ones the op list below misses:
+
+- ui: `$.ui.notify(text, { title })` — a native notification through the person's channel, no pane or turn needed, no rate limit; resolves `{ isSent: false, reason }` (`disabled` `no-channel` `no-surface` `refused`) rather than failing silently (2.1.295) · `$.ui.ask` — the AskUserQuestion dialog from a mod, rejects in `-p` · `$.ui.scroll` · `$.ui.focus` · `$.ui.close`
+- session: `$.session.send` — the one door into another session · `$.session.append` · `$.session.compact`
+- prompt: `$.prompt.submit` · `$.prompt.fill` · `$.prompt.suggest` · `$.prompt.compose`
+- tools, commands, config, agents: `$.tool.call` · `$.tool.check` · `$.command.run` · `$.config.set` · `$.agent.spawn`
+- telemetry: `$.telemetry.log` · `$.telemetry.mark`
+- the plugin: `$.plugin.name` · `$.plugin.root`
+
+## props and options a grep finds only by name
+
+- `$.tool.register({ …, isDeferred })` (2.1.293): `false` loads the tool up front; left out, the engine's rule puts it behind ToolSearch
+- `Button` takes `Text` children (2.1.295); `Markdown` takes `onLinkPress` / `pressableLinks`, where the surface reports clicks (the fullscreen terminal; the desktop «?»)
+- `$.state` is per session, and any plugin may read another's value; only its owner writes it
+- `$.session.root()` does not follow a shell `cd`; `$.session.cwd()` does
+
+## limits (reference «Limits», unless a type is named)
+
+- hooks: 10 s each (`HookBudget.ms`), a `.catch` 1 s (`catchMs`), 5 s linger after an abort (`lingerMs`); every `$` call is free of the budget but `$.clock.sleep`, which spends it
+- `prompt.edit` 50 ms — the reference only; `HookBudget` names no such budget «?»
+- all `session.end` hooks together 1.5 s; a `drop` or `deny` reason 4,096 chars
+- `Link.href` 2,048 chars; `Svg` 131,072 chars; `Raster` 512×256; `Image` 2 MiB; a UI tree 100,000 chars, 2,000 nested scopes
+- toast, status and log lines 2,000 chars in the terminal, 10,000 on a remote surface
+- `$.fs.read` / `write` 4 MiB, `write` not atomic; `$.store` 4 MiB in all, read-modify-write not atomic
+- `$.http.fetch` 4 MiB, 30 s, 5 redirects; `$.model.complete` 1,024 output tokens by default
+- a `context` note (`tool.call`, `prompt.submit`, `prompt.mention`): any length, past 100,000 chars (200,000 together) cut to its head and a path
+- a tool description: no cap in `ToolSpec`; cc's MCP caps by build — 2,048 up front until 2.1.296, 4,096 from it, 16,384 through ToolSearch — and that they bind a mod's tool is likely «?» (a 2,371-char notice at 2,048, x-mod-stash FTR)
+- cross-session messages ~1 M serialized chars; an inbound queue of 50 accepted, 100 held
+- `claude plugin test`: 5 s per test
 
 ## ops a hook can answer (`OpValueOf`; inputs `OpEventOf`)
 
@@ -86,7 +126,7 @@ the `$.<noun>.<verb>` calls; the test harness answers them with `on('<op>', …)
 - net and processes: `http.fetch` `mcp.call` `mcp.connect` `process.run` `process.spawn`
 - model: `model.complete` `model.classify` (weigh it beside jev) `model.fork`
 - prompt and turn: `prompt.read` `turn.abort`
-- session: `session.id` `session.cwd` `session.root` `session.repo` `session.model` `session.messages` `session.turns` `session.usage` `session.surface` `session.surfaces` `session.version` `session.authorize`
+- session: `session.id` `session.cwd` `session.root` `session.repo` `session.model` `session.messages` (this session's own, or one of its agents') `session.turns` `session.usage` `session.surface` `session.surfaces` `session.version` `session.authorize`
 - state and store: `state.get` `state.set` `store.get` `store.set` `store.delete` `store.keys`
 - tools: `tool.list` `tool.register`
 - ui: `ui.open` `ui.close` `ui.panes` `ui.toast` `ui.notice` `ui.status` `ui.copy` `ui.log` `ui.invalidate` `ui.blit` `ui.selection` (`undefined` with fullscreen off, in `-p`, and on a surface that reports none)
@@ -106,12 +146,11 @@ cclio folds dima's picks into a ticket; a built idea leaves this list.
 ## comms pieces — what the api gives (refresh-cc-mods, 2026-10-10, cc 2.1.296; «?» = unprobed by us)
 
 - **agent → mod**: a mod-registered tool is the agent's write door (set the plan, add an ask, clear an ask); the mod keeps it in `$.state` per session and the pane redraws, so no reply text is parsed
-- **checkbox**: no native checkbox; a `Button` whose label flips ☐ / ☑ stands in (`inline-next-steps` does it); `Input` takes a note, on desktop by the types, unused by our mods yet «?»
+- **checkbox**: no native checkbox; a `Button` whose label flips ☐ / ☑ stands in (`inline-next-steps` does it); `Input` draws on the desktop (the reference marks it ✓; x-mod-stash's steer fields ship it)
 - **joining the prompt**: `prompt.submit` rewrites `e.text` (visible, either end) or appends `e.context` (model-only, after the prompt only)
 - **turn state**: a pane is not told whether a turn runs; a lock while mid-turn needs a flag the mod keeps from `turn.start` / `turn.complete`
 - **mid-turn join**: `$.session.append` adds a hidden user message without starting a turn (grill, human-in-the-loop use it); a message that lands during the final reply is never read, and human-in-the-loop then starts a turn — our rule forbids that, so a 🤔 piece rides the next prompt «?»
-- **peer envelope**: `session.receive` gets a peer message as `<cross-session-message from="…" …>`, and the sender's registry name sits in `from-name="…"` or `name="…"` depending on the surfaces — parse both, `from-name` first (x-mod-stash's peer parse in `hooks/register.tsx`; probe 14:49 read cli → `from-name`, desktop → `name`, yet a desktop cclio's message to a desktop coder rendered with `from-name`, 17:18 — unprobed at the hook)
-- **copy**: `$.ui.copy` on desktop is contradictory in the types «?»
+- **peer envelope**: `session.receive` gets a peer message as `<cross-session-message from="…" …>`, and the sender's registry name sits in `from-name="…"` or `name="…"` depending on the surfaces — parse both, `from-name` first (x-mod-stash's peer parse in `hooks/register.tsx`; probe 14:49 read cli → `from-name`, desktop → `name`, yet a desktop cclio's message to a desktop coder rendered with `from-name`, 17:18 — unprobed at the hook); the name is whatever the sender wrote, so it never decides a guard (api page)
 - **contract**: a `prompt.submit` reminder in `e.context` is the one layer that holds every turn and through compaction; a third-party comment claims the desktop app skips the system-prompt event mods use «?»
 - **borrow**: `next-steps` (planned actions), `todo-bar` (lane progress), `where-am-i` (goal · now · waiting on you · next), `pinboard` (a durable list), `blast-radius` (accept / reject buttons), `prompt-drafts` (the user owns the send), `review-inbox` (age and severity)
 

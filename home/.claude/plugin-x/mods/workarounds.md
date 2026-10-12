@@ -1,7 +1,8 @@
 # workarounds — what dima wanted, what the api gave, what to undo
 
 read on demand when cc's mods api moves; nothing points here from a resident file. each entry: the want, the issue,
-the workaround in place, the undo.
+the workaround in place, the undo. checked against the changelog through 2.1.296 (refresh-cc-mods run #4,
+2026-10-12): no entry is fixed yet.
 
 ## orbit's note: a wide, roomy text field
 
@@ -28,12 +29,15 @@ the workaround in place, the undo.
 - issue: no upstream issue yet — a mod `Link` takes `https:` (or `http://localhost`) only; a `linear://` href draws as
   plain text, and a `Button` can't sit inside a line of `Text`, so an inline app link has no shape
 - workaround: none; the ids stay https links (a ↗ button beside each id was tried and dropped, dima 22:34)
+- a door to try: `Markdown` `onLinkPress` hands a link's click to the mod, which could `open linear://…`; it fires where
+  the surface reports clicks, the fullscreen terminal, and on the desktop «?» (run #4)
 - undo when fixed: switch `href` to `linear://x-com/issue/<id>` (the scheme resolves to Linear.app on this mac)
 
 ## the board's first click
 
 - issue: [claude-code#99395](https://github.com/anthropics/claude-code/issues/99395) — on the desktop, the first
-  click on a pane button only moves focus; `$.ui.open({ focus: true })` helps until the next turn
+  click on a pane button only moves focus; `$.ui.open({ focus: true })` helps until the next turn; still open
+  2026-10-11
 - workaround: none in the code; the FTR's 🐞 line tracks it
 - undo when fixed: flip that line
 
@@ -60,3 +64,11 @@ the workaround in place, the undo.
   redraw rebuilds every svg on the screen, so the bars' embers restart about every 30 s while the board is open
 - workaround: none; the board redraws only on its poll and on a press
 - undo when fixed: nothing to undo; drop the decision line in `x-mod-stash/FTR.md` that names the blink
+
+## orbit's description under 2,048 chars
+
+- want: the model reads orbit's whole tool description, every op's rule (dima's o50, 2026-10-12)
+- issue: no upstream issue — a 2.1.295 session showed a 2,371-char description cut at 2,048; 2.1.296 raised cc's
+  up-front cap to 4,096, and the fleet still runs both builds
+- workaround: the description is held under 2,048 (x-mod-stash's `ORBIT_ABOUT`, a test pins it)
+- undo when no 2.1.295 session runs: let the ops' rules breathe again, up to 4,096
