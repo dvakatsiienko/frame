@@ -46,7 +46,8 @@ def bash_paths(command):
     return paths
 
 
-raw = bash_paths(str(tool_input.get("command", ""))) if event.get("tool_name") == "Bash" else [tool_input.get("file_path") or ""]
+is_bash = event.get("tool_name") == "Bash"
+raw = bash_paths(str(tool_input.get("command", ""))) if is_bash else [tool_input.get("file_path") or ""]
 targets = [os.path.realpath(os.path.expanduser(t)) for t in raw if t]
 if not targets or not project:
     sys.exit(0)
@@ -57,10 +58,11 @@ def within(path, root):
 
 
 # the dirs between each file and home, nearest first; a dir argument counts itself; the project's own ancestors
-# are loaded at launch
+# are loaded at launch. cc loads a nested AGENTS.md inside the project on a Read or an Edit, never on a Bash
+# read (probed 2026-10-12 21:34), so only a Bash path inside the project walks its nested folders
 dirs = []
 for target in targets:
-    if within(target, project):
+    if within(target, project) and not is_bash:
         continue
     here = target if os.path.isdir(target) else os.path.dirname(target)
     while within(here, home) and here != home:
