@@ -4350,25 +4350,22 @@ export const register: Register = (on) => {
                 flexShrink={0}
                 gap={1}
                 key={`${key}:arrows`}>
-                {/* every row keeps both arrows in place; an end's dead one is dim text, the api has no disabled (dima, 21:20) */}
-                {canUp ? (
-                    <Button key={`${key}:up`} onPress={() => onMove(-1)} plain>
-                        ↑
-                    </Button>
-                ) : (
-                    <Text dimColor key={`${key}:up:off`}>
-                        ↑
-                    </Text>
-                )}
-                {canDown ? (
-                    <Button key={`${key}:down`} onPress={() => onMove(1)} plain>
-                        ↓
-                    </Button>
-                ) : (
-                    <Text dimColor key={`${key}:down:off`}>
-                        ↓
-                    </Text>
-                )}
+                {/* every row keeps the same two buttons, so the column never drifts and no size changes (dima, 21:23–21:24);
+                    an end's dead arrow is the same button, a press on it does nothing — the api has no disabled */}
+                {(['up', 'down'] as const).map((dir) => {
+                    const isLive = dir === 'up' ? canUp : canDown;
+                    const glyph = dir === 'up' ? '↑' : '↓';
+                    return (
+                        <Button
+                            key={`${key}:${dir}`}
+                            onPress={() => {
+                                if (isLive) onMove(dir === 'up' ? -1 : 1);
+                            }}
+                            plain>
+                            {glyph}
+                        </Button>
+                    );
+                })}
             </Box>
         );
         const handleLaneSteer = (id: string, value: string) =>

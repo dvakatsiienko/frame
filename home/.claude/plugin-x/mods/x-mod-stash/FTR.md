@@ -639,7 +639,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: a q&a turn of reads gets no nudge — the 3-turn stale mark covers it; the nudge on every turn drove 235 plan calls in one session (PK-70, dima 00:28: «fewer redundant tool calls, phases still real-time»)
 - ⬜ dima reorders, ticks and steers the phases on the board (o84)
   - given the session's 🌔 phases card shows its plan
-  - then each line ends in `↑` `↓` at its right edge, the same pair on every line; the first line's ↑ and the last's ↓ draw dim and do nothing (dima, 21:20: the missing arrows read as confusing), and one `🛎️ tick` with a `steer` field sits under the card's head
+  - then each line ends in `↑` `↓` at its right edge, the same two buttons on every line, so the column never drifts; the first line's ↑ and the last's ↓ do nothing on a press (dima, 21:20–21:24: missing arrows read as confusing, dim text drifted and looked ugly, a disabled button would change size), and one `🛎️ tick` with a `steer` field sits under the card's head
   - when dima presses an arrow, then the line moves at once on the board; when he ticks, the button reads `📨 tick` for 5 s, then `✅ tick`
   - then the move or the tick, his steer riding with them, joins the session's running turn at its next tool call once 5 s pass, or his next prompt at once: one model-only note with the new order and his steer, once
   - and a steer alone joins nothing; a new plan from the session clears his marks
@@ -685,7 +685,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: 8, not phases' 3 — a lane step spans many turns
 - ⬜ dima reorders a lane's queue from any board (o84)
   - given a glide card shows steps after the current one
-  - then each of those ends in `↑` `↓` at its right edge, the first queued step's ↑ and the last's ↓ dim and dead; done steps and the current one carry none
+  - then each of those ends in `↑` `↓` at its right edge, the same two buttons on every queued step, the first one's ↑ and the last's ↓ doing nothing; done steps and the current one carry none
   - when dima presses one, then the card shows the new order at once, and `lane-order:<id>` in the store holds it
   - then cclio's own stash writes it into the lanes file once 5 s pass (at her next tool call), or at her next prompt from dima, and she reads one note naming the new queue; no other session ever writes the file
   - decision: only the queue moves, so every step before the pointer stays done (dima's o84 shot, 20:25)

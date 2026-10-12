@@ -1761,18 +1761,36 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
     ]);
 });
 
-test('every phase line keeps both arrows; the ends draw their dead one as dim text', async ($, on) => {
+test("every phase line keeps the same two arrow buttons; an end's dead one does nothing", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await orbit($, { lines: ['now: a', 'next: b', 'then: c'], op: 'plan' });
-    const shape = async (i: number) =>
-        ((await ui.find({ key: `plan:${i}:arrows` }))?.children ?? []).map(
-            (c) => (c as { type?: string }).type,
-        );
-    expect([await shape(0), await shape(1), await shape(2)]).toEqual([
-        ['Text', 'Button'],
-        ['Button', 'Button'],
-        ['Button', 'Text'],
-    ]);
+    // the same two buttons on every line; a press on an end's dead one changes nothing (dima, 21:23)
+    const has = async (k: string) => (await ui.find({ key: k }))?.type ?? '-';
+    const before = await phaseLines(ui);
+    await ui.press({ key: 'plan:0:up' });
+    await ui.press({ key: 'plan:2:down' });
+    expect([
+        await Promise.all(
+            [0, 1, 2]
+                .flatMap((i) => [`plan:${i}:up`, `plan:${i}:down`])
+                .map(has),
+        ),
+        await phaseLines(ui),
+    ]).toEqual([Array(6).fill('Button'), before]);
+});
+
+test('a press on a dead end arrow sends the turn no reorder', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
+    await say($, 'go');
+    await ui.press({ key: 'plan:0:up' });
+    await w.clock.advance(5_000);
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).some((c) => /reordered your phases/.test(c))).toBe(
+        false,
+    );
 });

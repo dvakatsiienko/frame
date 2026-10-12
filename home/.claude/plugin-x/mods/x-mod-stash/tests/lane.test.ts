@@ -1008,7 +1008,7 @@ const threeQueued = () =>
         ],
     });
 
-test('only the queue after the current step carries ↑ ↓, the ends one arrow each', async ($, on) => {
+test('only the queue after the current step carries ↑ ↓, both on every queued step', async ($, on) => {
     world(on, { files: shelf(threeQueued()) });
     await start($);
     const ui = await board($);
@@ -1024,7 +1024,7 @@ test('only the queue after the current step carries ↑ ↓, the ends one arrow 
                 'lane:l1:3:down',
             ].map(has),
         ),
-    ).toEqual([false, false, false, true, true, false]);
+    ).toEqual([false, false, true, true, true, true]);
 });
 
 test('a ↓ on a queued step shows the new order on the card at once', async ($, on) => {
