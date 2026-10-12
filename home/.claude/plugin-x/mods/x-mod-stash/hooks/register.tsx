@@ -288,6 +288,20 @@ let isSettingsOpen = false;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
 let turnTools = 0;
 let isNudged = false;
+// the phases nudge fires only on a turn that did real work: an edit, a spawn or a stop, a commit, a lane move — a q&a
+// turn keeps quiet and the 3-turn stale mark covers it (PK-70: 235 plan calls in a session, the nudge on every turn)
+let isWorkTurn = false;
+const WORK_TOOLS = new Set([
+    'Edit',
+    'Write',
+    'NotebookEdit',
+    'MultiEdit',
+    'Agent',
+]);
+const WORK_BASH =
+    /\b(claude\s+(--bg|-n\s+\S+.*--bg|stop|respawn)|git\s+commit|x\s+lane\s+(commit|push|pr-open|merge-main|seed)|x\s+mods\s+edit\s+push)\b/;
+export const isWork = (tool: string, command?: string) =>
+    WORK_TOOLS.has(tool) || (tool === 'Bash' && WORK_BASH.test(command ?? ''));
 let isPrimed = false;
 // the 5h reset as the last session.measure reported it, and this session's cap state
 let fiveHourResetsAt: number | undefined;
@@ -1513,6 +1527,7 @@ async function startTurn($: EngineInterface, text: string, isUser: boolean) {
     isBusy = true;
     turnTools = 0;
     isNudged = false;
+    isWorkTurn = false;
     hotGen++;
     await load($);
     turnAfk = afk;
@@ -3815,6 +3830,7 @@ export const register: Register = (on) => {
                 if (was.has(l.id) && was.get(l.id) !== l.current)
                     await $.store.delete(LANE_NOTE + l.id);
             await writeLanes($, op.lanes);
+            isWorkTurn = true;
             return { result: op.result } as never;
         }
         if ((e.tool as string) === ORBIT_TOOL) {
@@ -3836,6 +3852,13 @@ export const register: Register = (on) => {
         }
         const r = await next(e);
         if (r.deny !== undefined || e.agentId) return r;
+        if (
+            isWork(
+                e.tool as string,
+                (e as { command?: unknown }).command as string | undefined,
+            )
+        )
+            isWorkTurn = true;
         const notes: string[] = [];
         if (turnAfk !== undefined && turnAfk !== afk) {
             turnAfk = afk;
@@ -3860,6 +3883,7 @@ export const register: Register = (on) => {
         if (
             !isNudged &&
             ++turnTools >= NUDGE_AT &&
+            isWorkTurn &&
             !(o.plan && o.plan.at === o.turns + 1)
         ) {
             isNudged = true;

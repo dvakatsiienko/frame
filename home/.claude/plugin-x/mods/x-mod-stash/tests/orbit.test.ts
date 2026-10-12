@@ -491,17 +491,52 @@ const tools = async ($: Engine, n: number) => {
     return out;
 };
 
-test('the third tool call of a turn with no phases set carries the nudge, once', async ($, on) => {
+const edits = async ($: Engine, n: number) => {
+    const out: string[] = [];
+    for (let i = 0; i < n; i++)
+        out.push(
+            (
+                (
+                    await $.tool.call({
+                        file_path: '/tmp/a.ts',
+                        new_string: 'b',
+                        old_string: 'a',
+                        tool: 'Edit',
+                    } as never)
+                ).context ?? []
+            ).join('\n'),
+        );
+    return out;
+};
+
+test('the third tool call of a working turn with no phases set carries the nudge, once', async ($, on) => {
     world(on);
     await start($);
     await say($, 'go');
-    const seen = await tools($, 4);
+    const seen = await edits($, 4);
     expect(seen.map((c) => /no phases yet/.test(c))).toEqual([
         false,
         false,
         true,
         false,
     ]);
+});
+
+test('a q&a turn of reads gets no phases nudge', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'why does it wrap?');
+    const seen = await tools($, 5);
+    expect(seen.some((c) => /phases/.test(c))).toBe(false);
+});
+
+test('a commit through bash makes the turn a working one', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'go');
+    await $.tool.call({ command: 'x lane commit m.txt -- a.ts', tool: 'Bash' });
+    const seen = await tools($, 2);
+    expect(seen.at(-1)).toMatch(/no phases yet/);
 });
 
 test('a turn that set its phases gets no nudge', async ($, on) => {
