@@ -10,7 +10,6 @@
   - one ask leads with its subject, the why in its hidden note (the tool refuses one past 90 chars); an irreversible one leads with ⚠️ and names its exact target; another round is a `follow`, never a second add
   - a member in a lane keeps its asks in its own orbit only; the 🛼 glide card on every board shows them, and dima's tick there reaches the member — never copied into the coordinator's orbit (dima, 2026-10-11, o183). a member in no lane names its ask in its ping to the coordinator
   - in mobile mode the board is out of his reach: open asks and phases print in the ⏳ fence (`x:mobile-mode`)
-- **🐠 catch — a fact dima likely missed.** one already printed in a reply that he would want to follow up goes to the board through orbit's `catch` op, ≤2 a turn and often none; never a «you may have missed» block in a reply (FRM-386)
 - **🌔 phases — the session's own plan, live.** every session keeps its next moves (≤7) through orbit's `plan` op (`lines`), reset at a turn end whenever they moved: a coder's coding plan, a verifier's review plan, the coordinator's lane plan; parked → what it waits on. dima opens any thread and sees where it is (dima, 2026-10-11).
   - a new session seeds them the turn it starts, from its brief, spec or tickets; nothing to do yet → empty is right
   - a line leads with its subject; the mod's «no phases yet» nudge after 3 tool calls is the guard
