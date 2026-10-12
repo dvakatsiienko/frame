@@ -1,4 +1,31 @@
+---
+when:
+  - { kind: import, value: charm.land }
+  - { kind: command, value: go get charm.land }
+  - { kind: command, value: go mod init }
+---
+
 # charm — the stack x is built on
+
+## core
+
+charm v2 is not what your training remembers. before writing go that touches charm:
+
+- docs, the pinned version, offline: `go doc charm.land/bubbletea/v2.Program` from the module dir; each repo's `UPGRADE_GUIDE_V2.md` holds the traps
+- imports are `charm.land/<lib>/v2` (bubbletea, bubbles/<pkg>, lipgloss, huh, glamour, log, fang); `github.com/charmbracelet/<lib>` is v1 and will not mix. github paths stay only for `x/...`, colorprofile, harmonica, ultraviolet, teatest/v2, ntcharts/v2
+- `View() string` → `View() tea.View` via `tea.NewView(s)`; alt screen, mouse, window title and cursor are View fields now (`v.AltScreen = true`), not program options
+- keys: match `tea.KeyPressMsg` (`tea.KeyMsg` also catches release); `msg.Code` / `msg.Text` / `msg.Mod.Contains(tea.ModAlt)`; ctrl+c is `msg.String() == "ctrl+c"`; space is `"space"`; paste is `tea.PasteMsg`
+- mouse: `msg.Mouse().X`, split into click / release / wheel / motion msgs
+- `tea.Sequence`, `tea.RequestWindowSize`, `p.Run()`
+- bubbles widths are methods (`SetWidth`), `viewport.New(viewport.WithWidth(80), …)`, `DefaultKeyMap()` is a func, `m.Tick()` a method; progress colors are `color.Color`
+- no auto light/dark: `lipgloss.LightDark(isDark)(light, dark)`, bubbles styles take `isDark`, huh themes are `func(isDark bool)`; `HasDarkBackground(in, out)` takes two files whatever a README shows
+- `lipgloss.Color` returns `color.Color`; `Style.Render` emits truecolor and downsampling happens at print: use `lipgloss.Println`, never `fmt.Println(style.Render(...))`; glamour output goes through `lipgloss.Print` too, with its width set by you
+- `WithInput(nil)` skips every terminal query; a model waiting on one waits forever
+- ntcharts: pin an exact version, minor releases changed behavior
+
+widgets: a short pick → `huh.NewSelect`; long or filterable → `bubbles/list`; a printed board → `lipgloss/table`; navigable → `bubbles/table`; long text → `bubbles/viewport`; steps with a log → `tea.Printf` + `tea.Sequence`; overlays and clicks → lipgloss `NewCompositor`. the full map with examples: § 2.
+
+the rest: the stack and versions (§ 1), the widget map (§ 2), power patterns, the agent + human split, testing (§ 4–6).
 
 read when picking a charm library or widget for `x` or another go cli, and before writing any v2 code: it names the widget per view and the v2 traps a v1-trained agent hits; dima browses the stack here in one click. maintained by the `refresh-guide-go` recipe (`recipes/refresh-guide-go/recipe.md`).
 
