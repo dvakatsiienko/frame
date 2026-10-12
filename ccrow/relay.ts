@@ -2,8 +2,8 @@ import { readFileSync, rmSync } from 'node:fs';
 
 import { RELAY_PATH, type Wake, spawnHarvest } from './lib.ts';
 
-// a cclio UserPromptSubmit hook: a wake parked for a desktop-tab ccrow reaches cclio's next turn as context, unless
-// x-mod-stash in her thread already sent it (`isSent`): then it only starts the harvester
+// a cclio UserPromptSubmit hook: once x-mod-stash in her thread sent a parked wake to a desktop-tab ccrow (`isSent`), it
+// starts the harvester; an unsent wake stays parked for the mod's next poll, never an ask in her context
 let parked:
     | (Wake & { line: string; model?: string; isSent?: boolean })
     | undefined;
@@ -12,15 +12,6 @@ try {
 } catch {
     process.exit(0);
 }
-if (!parked) process.exit(0);
+if (!parked?.isSent) process.exit(0);
 rmSync(RELAY_PATH);
 spawnHarvest(parked);
-if (parked.isSent) process.exit(0);
-console.log(
-    JSON.stringify({
-        hookSpecificOutput: {
-            additionalContext: `🐦‍⬛ ccrow wake due: send this exact line, alone, to the session titled «🐦‍⬛ ccrow» through mcp__ccd_session_mgmt__send_message, in this turn, before anything else; no need to report it to dima unless he asks; never change ccrow's model, a switch mid-session reloads her whole context.\n${parked.line}`,
-            hookEventName: 'UserPromptSubmit',
-        },
-    }),
-);

@@ -527,7 +527,7 @@ test("a parked ccrow wake goes to her session from cclio's poll, and is marked s
     ]);
 });
 
-test('a wake that does not go out stays parked for the prompt hook', async ($, on) => {
+test('a wake that does not go out stays parked for the next poll', async ($, on) => {
     const w = relayWorld(on, false);
     await start($);
     await w.clock.advance(5000);

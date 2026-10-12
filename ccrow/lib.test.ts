@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import {
     existsSync,
     mkdirSync,
@@ -628,4 +629,24 @@ describe('ledgerLine', () => {
             '📒 0 sent today | last none | 🎯 0 ok today',
         );
     });
+});
+
+// relay.ts: a wake x-mod-stash has not sent yet stays parked for its next poll; cclio's prompt hook prints nothing
+test('an unsent parked wake stays parked and puts nothing in cclio’s context', () => {
+    const state = mkdtempSync(join(tmpdir(), 'ccrow-state-'));
+    const relay = join(state, 'relay.json');
+    writeFileSync(
+        relay,
+        JSON.stringify({
+            id: 'w1',
+            line: 'wake w1',
+            mode: 'day',
+            phase: 'live',
+        }),
+    );
+    const run = spawnSync('node', [join(import.meta.dirname, 'relay.ts')], {
+        encoding: 'utf8',
+        env: { ...process.env, CCROW_STATE_DIR: state },
+    });
+    expect([run.status, run.stdout, existsSync(relay)]).toEqual([0, '', true]);
 });
