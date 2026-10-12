@@ -18,5 +18,6 @@ ai are essentially free research tools).»
   lane the only one that reads source. the synthesis names where they split.
 - **one reply** when all lanes land (habit-dima-comms-pacing), and **recipe-first** when the subject will be
   researched again (`x:shape-recipe`).
+- **a research print is a fresh-news read, never a status line** (dima, 2026-10-12: «when i ask to research, i'm curious — tips, bits, facts that would surprise me; i like updates and refreshes, that's why we have evergreen»): any research — a recipe run, his plain ask, one i start — lands as a longer, pretty print past the reply budget: the headline in a sentence, then labelled sections (🆕 what's new · 😮 the surprising bits · 🧰 tips and borrows · ⚠️ what it found wrong in ours · ➡️ what it moves), each fact with its number and a link, natural sentences, nested where a list grows. a «lanes are back» line is never the report.
 - **prior art is offered unprompted** whenever a build, a feature or an approach is about to be chosen: «others solved this how, and where did it break?» as one fan-out round before the build (dima, 2026-09-30, on the speak word-highlight Q12: «i want your prior art research suggestion always, whenever it matters»)
 - a one-fact lookup is not research: exa `/answer` (2 s, half a cent) or WebSearch, not the full fan-out.
