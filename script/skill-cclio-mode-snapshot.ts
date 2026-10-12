@@ -64,7 +64,16 @@ const cclio = [
     join(CCLIO, 'AGENTS.md'),
     ...importWalk(join(CCLIO, 'memory/_MEMORY.md')),
 ];
-const live = [join(CCLIO, 'pocket.md')];
+// the pocket is a Backlog.md board since 2026-10-11; its ordered list is what a booted cclio reads
+const pocket = execFileSync(
+    'backlog',
+    ['task', 'list', '--plain', '--sort', 'ordinal'],
+    {
+        cwd: CCLIO,
+        encoding: 'utf8',
+        env: { ...process.env, BACKLOG_CWD: CCLIO },
+    },
+);
 
 const board = (() => {
     try {
@@ -85,10 +94,10 @@ const out = [
     ...cclio.map((p) => section(p.replace(`${CCLIO}/`, ''), p)),
     '\n\n# layer 3 — live state at compile time',
     section('the board (roadmap prefetch)', 'roadmap-prefetch.sh', board),
-    ...live.map((p) => section(p.replace(`${CCLIO}/`, ''), p)),
+    section('the pocket (backlog task list)', 'cclio/pocket/', pocket),
 ].join('');
 
 writeFileSync(OUT, out);
 console.log(
-    `${OUT.replace(HOME, '~')} · ${(out.length / 1024).toFixed(0)} kB · ${fleet.length + cclio.length + live.length + 1} parts`,
+    `${OUT.replace(HOME, '~')} · ${(out.length / 1024).toFixed(0)} kB · ${fleet.length + cclio.length + 2} parts`,
 );

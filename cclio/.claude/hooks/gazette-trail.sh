@@ -11,4 +11,4 @@ out="$dir/_trail.md"
   done
 } > "$out"
 # the cw snapshot rides the same moment: every gazette post is a halt, and the compile is ~1 s.
-node "$HOME/frame/script/skill-cclio-mode-snapshot.ts" >/dev/null 2>&1 || true
+node "$HOME/frame/script/skill-cclio-mode-snapshot.ts" >/dev/null || echo "🚨 FAIL · cw cclio-mode snapshot did not build (script/skill-cclio-mode-snapshot.ts)" >&2
