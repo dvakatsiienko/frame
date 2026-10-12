@@ -73,3 +73,87 @@ test('the index copy leaves nothing behind', () => {
     expect(run.status, run.stderr).toBe(0);
     expect(readdirSync(scratch)).toEqual([]);
 });
+
+// a repo whose shared index holds a peer's staged new file, and a pathspec commit's own index that lacks it
+function peerStaged() {
+    const repo = mkdtempSync(join(tmpdir(), 'index-run-peer-'));
+    mkdirSync(join(repo, 'script'));
+    copyFileSync(
+        join(root, 'script/index-run.sh'),
+        join(repo, 'script/index-run.sh'),
+    );
+    writeFileSync(join(repo, 'pnpm-workspace.yaml'), 'packages: []\n');
+    writeFileSync(join(repo, 'a.txt'), 'a\n');
+    const git = (args: string[], extra: NodeJS.ProcessEnv = {}) =>
+        execFileSync('git', args, {
+            cwd: repo,
+            encoding: 'utf8',
+            env: { ...gitEnv(), ...extra },
+        });
+    git(['init', '-q']);
+    git(['add', '-A']);
+    git(['commit', '-q', '-m', 'seed']);
+    writeFileSync(join(repo, 'peer.test.ts'), 'export {};\n');
+    git(['add', 'peer.test.ts']);
+    writeFileSync(join(repo, 'mine.txt'), 'mine\n');
+    const commitIndex = join(
+        mkdtempSync(join(tmpdir(), 'index-run-idx-')),
+        'index',
+    );
+    git(['read-tree', 'HEAD'], { GIT_INDEX_FILE: commitIndex });
+    git(['add', 'mine.txt'], { GIT_INDEX_FILE: commitIndex });
+    // a gate's git as a test runs it: gitEnv() strips GIT_INDEX_FILE
+    const gate = (command: string, extra: NodeJS.ProcessEnv = {}) =>
+        spawnSync(
+            'bash',
+            [
+                join(repo, 'script/index-run.sh'),
+                'sh',
+                '-c',
+                `env -u GIT_INDEX_FILE ${command}`,
+            ],
+            { cwd: repo, encoding: 'utf8', env: { ...gitEnv(), ...extra } },
+        );
+    return { commitIndex, gate, repo };
+}
+
+test("a pathspec commit's gate lists the commit's files, never a peer's staged one", () => {
+    const { commitIndex, gate } = peerStaged();
+
+    const run = gate('git ls-files', { GIT_INDEX_FILE: commitIndex });
+
+    expect(run.stdout.split('\n').filter(Boolean), run.stderr).toEqual([
+        'a.txt',
+        'mine.txt',
+        'pnpm-workspace.yaml',
+        'script/index-run.sh',
+    ]);
+});
+
+test('a gate with no commit index lists exactly the real index', () => {
+    const { gate } = peerStaged();
+
+    const run = gate('git ls-files');
+
+    expect(run.stdout.split('\n').filter(Boolean), run.stderr).toEqual([
+        'a.txt',
+        'peer.test.ts',
+        'pnpm-workspace.yaml',
+        'script/index-run.sh',
+    ]);
+});
+
+test('the gate copy never shows in git worktree list, and its temp dir is gone after', () => {
+    const { commitIndex, gate, repo } = peerStaged();
+    const scratch = mkdtempSync(join(tmpdir(), 'index-run-tmp-'));
+
+    const run = gate(`git -C ${repo} worktree list`, {
+        GIT_INDEX_FILE: commitIndex,
+        TMPDIR: scratch,
+    });
+
+    expect([
+        run.stdout.trim().split('\n').length,
+        readdirSync(scratch),
+    ]).toEqual([1, []]);
+});
