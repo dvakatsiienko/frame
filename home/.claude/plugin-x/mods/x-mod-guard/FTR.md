@@ -215,7 +215,7 @@
 ## every Edit and Write
 
 - ✅ a cclio session gets one delegate hint at its 8th code edit
-  - given a session whose cwd is under `~/frame/cclio` makes its 8th `Edit`, `Write` or `MultiEdit` on a `.ts` `.tsx` `.go` `.sh` `.py` or `.swift` file
+  - given a session whose root is under `~/frame/cclio` (its start dir, which a shell `cd` never moves) makes its 8th `Edit`, `Write` or `MultiEdit` on a `.ts` `.tsx` `.go` `.sh` `.py` or `.swift` file
   - then the call runs and the model gets one note: «x-mod-guard: 8 code edits in this cclio session — a bigger job goes to a helper (~137k base) instead of this thread's context»; later edits get none
   - given other file types, or a session outside `~/frame/cclio`, then nothing is counted or said
   - decision: a hint, never a block — a freebie of a few edits is cheaper inline than a helper's cold start

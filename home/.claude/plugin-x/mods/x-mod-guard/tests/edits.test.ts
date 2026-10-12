@@ -3,11 +3,12 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { liveStore } from './store.ts';
 
-function world(on: On, cwd: string) {
+function world(on: On, cwd: string, root = cwd) {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: cwd }));
+    on('session.root', () => ({ value: root }));
     on('env.get', () => ({ value: '/home' }));
     on('tool.call', () => ({ result: {}, text: 'ran' }));
 }
@@ -42,6 +43,24 @@ test('edits to non-code files do not count', async ($, on) => {
     world(on, '/home/frame/cclio');
     for (let i = 1; i <= 10; i++) {
         const r = await edit($, '/home/frame/cclio/notes.md');
+        expect(r.context ?? []).toHaveLength(0);
+    }
+});
+
+test("cclio cd'd into ~/frame still gets the note at the 8th edit", async ($, on) => {
+    world(on, '/home/frame', '/home/frame/cclio');
+    const notes: number[] = [];
+    for (let i = 1; i <= 10; i++) {
+        const r = await edit($, '/home/frame/x/a.ts');
+        if (r.context?.length) notes.push(i);
+    }
+    expect(notes).toEqual([8]);
+});
+
+test("a coder cd'd into cclio's dir gets no note", async ($, on) => {
+    world(on, '/home/frame/cclio', '/home/frame');
+    for (let i = 1; i <= 10; i++) {
+        const r = await edit($, '/home/frame/x/a.ts');
         expect(r.context ?? []).toHaveLength(0);
     }
 });

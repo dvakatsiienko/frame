@@ -35,6 +35,7 @@ async function session($: Engine, on: On) {
         return { text: '' };
     });
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
+    on('session.end', (_$, e) => e);
     await $.session.start({
         cwd: '/tmp',
         isInteractive: true,
@@ -60,6 +61,10 @@ async function session($: Engine, on: On) {
     });
     return {
         chips: async () => (await ui.find({ text: /^🪐/, type: 'Text' }))?.text,
+        // the engine moves to a new conversation id, as a /clear does before its session.end
+        setSid: (next: string) => {
+            sid = next;
+        },
         store,
     };
 }
@@ -97,4 +102,22 @@ test("/clear leaves another session's asks in the store", async ($, on) => {
         at: 0,
         label: 'frame',
     });
+});
+
+test('after a session.end of reason clear, the next write keys on the new conversation id', async ($, on) => {
+    const s = await session($, on);
+    s.setSid('b2b2b2b2-0000');
+    await $.session.end({
+        reason: 'clear',
+        sessionId: 'a1a1a1a1-0000',
+    } as never);
+    await $.tool.call({
+        asks: [{ pick: 'yes', text: 'ship the next one' }],
+        op: 'add',
+        tool: TOOL,
+    } as never);
+    expect([
+        s.store.has('asks:b2b2b2b2-0000'),
+        s.store.has('asks:a1a1a1a1-0000'),
+    ]).toEqual([true, false]);
 });

@@ -679,8 +679,11 @@ export const register: Register = (on) => {
                 return result;
             try {
                 const home = await $.env.get('HOME');
-                const cwd = await $.session.cwd();
-                if (!isUnder(cwd, `${home}/frame/cclio`)) return result;
+                // the session's root, never its cwd: a cclio cd'd into ~/frame is still cclio, a coder cd'd into cclio is not
+                const root = await $.session
+                    .root()
+                    .catch(() => $.session.cwd());
+                if (!isUnder(root, `${home}/frame/cclio`)) return result;
                 const n = ((await $.state.get(EDITS)).value ?? 0) + 1;
                 await $.state.set(EDITS, n);
                 if (n !== EDIT_LIMIT || (await isSilent($, home)))

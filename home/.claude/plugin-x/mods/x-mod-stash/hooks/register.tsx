@@ -2677,7 +2677,8 @@ export const register: Register = (on) => {
     on('session.start', async ($, e, next) => {
         // the repo root, not the cwd: a cd in the shell must not rename the thread
         selfId = await $.session.id();
-        projectDir = e.cwd;
+        // a hot reload's start carries the shell's cwd, which follows a `cd`: the root stays the project's
+        projectDir = await $.session.root().catch(() => e.cwd);
         const top = (await $.session.repo())?.root ?? e.cwd;
         label = basename(top);
         proc = await procOf($).catch(() => {
@@ -4695,6 +4696,8 @@ export const register: Register = (on) => {
         if (e.reason === 'clear' || e.reason === 'resume') {
             // the process outlives a /clear, so the next conversation is primed again: no session.start fires for it
             isPrimed = false;
+            // the process goes on under a new id with no session.start: the next read takes it fresh
+            selfId = undefined;
             await forget($, e.sessionId);
         } else await retire($, e.sessionId);
         return next(e);
