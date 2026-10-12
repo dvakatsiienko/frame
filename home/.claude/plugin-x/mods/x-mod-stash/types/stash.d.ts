@@ -42,8 +42,8 @@ export type StashMember = {
     wait?: string;
     // ccrow's row only: her newest 👀 «for you» tip, which takes the wait's place (PK-73)
     tip?: string;
-    // cclio's row only: the member pings quiet comms holds for her next turn
-    held?: number;
+    // cclio's row only: the member pings quiet comms holds for her next turn, opened from her row's 🤫 n
+    held?: QuietPing[];
     asks: number;
     context?: number;
     model?: string;

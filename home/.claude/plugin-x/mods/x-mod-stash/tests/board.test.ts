@@ -437,12 +437,39 @@ test("ccrow's tip line carries speak's buttons, reading the tip", async ($, on) 
     ).toBe(true);
 });
 
+const held = (from: string, text: string, ago: number) => ({
+    at: NOW - ago * MIN,
+    from,
+    text,
+});
+
 test('a row shows 🤫 n while its session holds n member pings, nothing at 0', async ($, on) => {
-    fleet(on, { [`quiet-held:${HERE}`]: 2, [`quiet-held:${PEER}`]: 0 });
+    fleet(on, {
+        [`quiet-held:${HERE}`]: [held('a', 'x', 1), held('b', 'y', 2)],
+        [`quiet-held:${PEER}`]: [],
+    });
     const rows = await rowsBySid($);
     expect([rows[HERE]?.includes('🤫 2'), rows[PEER]?.includes('🤫')]).toEqual([
         true,
         false,
+    ]);
+});
+
+test('🤫 n opens the held pings: sender, age, first line', async ($, on) => {
+    fleet(on, {
+        [`quiet-held:${HERE}`]: [held('🔎 verifier', 'round 2 clean', 3)],
+    });
+    const ui = await board($);
+    const closed = (await ui.findAll({ type: 'Text' })).some((t) =>
+        t.text?.includes('round 2 clean'),
+    );
+    await ui.press({ key: `fold:quiet:${HERE}` });
+    const line = (await ui.findAll({ type: 'Text' })).find((t) =>
+        t.text?.includes('round 2 clean'),
+    )?.text;
+    expect([closed, line]).toEqual([
+        false,
+        '🤫 🔎 verifier · 3m ago: round 2 clean',
     ]);
 });
 

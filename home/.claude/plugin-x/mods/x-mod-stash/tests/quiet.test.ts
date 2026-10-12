@@ -259,12 +259,19 @@ test('each delivery logs its sender, tag, verdict and whether it started a turn'
     ]);
 });
 
-test("the held count reaches the store for cclio's sessions row", async ($, on) => {
+test("the held pings reach the store for cclio's sessions row", async ($, on) => {
     const w = world(on);
     await start($);
     await ping($, '[progress] a');
     await ping($, '[progress] b');
-    expect(w.store.get(`quiet-held:${SID}`)).toBe(2);
+    expect(
+        (
+            w.store.get(`quiet-held:${SID}`) as { from: string; text: string }[]
+        ).map((p) => [p.from, p.text]),
+    ).toEqual([
+        ['☕️ 🔧 coder: mods', 'a'],
+        ['☕️ 🔧 coder: mods', 'b'],
+    ]);
 });
 
 /* the envelope */

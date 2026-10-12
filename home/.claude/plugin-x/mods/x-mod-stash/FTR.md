@@ -519,10 +519,10 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given no switch set, then quiet holds every day; `/quiet off` passes every ping, `/quiet on` holds again, bare `/quiet` says which and how many are held; the 🎛️ `🤫 quiet comms` card's switch, `🤫 hold members' [progress] pings`, is the same store key, `quiet-comms` (dima's o33)
   - given mobile mode is on, then nothing is held
   - decision: always on, no day arm — the a/b compares days by the log's `arm`, read from the switch (dima, 16:53, brief 5)
-- 🧭 cclio's row counts what waits
+- 🧭 cclio's row counts what waits, and opens it
   - given her stash holds n pings, then her row in the sessions card reads `🤫 n` beside the name; at 0 nothing
-
-## /board — 🌔 phases
+  - when dima presses `🤫 n`, then one dim line per held ping opens under her row — `🤫 <sender> · <age> ago: <first line>` — and a second press folds it; folded by default (dima's o34)
+  - source: `quiet-held:<session>` in the store, the held pings themselves
 
 - ✅ phases: the session's next 7 moves, live
   - given the session has set its phases

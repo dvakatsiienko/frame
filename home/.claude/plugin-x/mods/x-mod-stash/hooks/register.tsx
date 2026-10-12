@@ -477,10 +477,7 @@ async function quietOf($: EngineInterface): Promise<StashQuiet> {
 async function saveQuiet($: EngineInterface, q: StashQuiet) {
     await $.state.set(QUIET, q).catch(() => undefined);
     const sid = await currentId($);
-    if (sid)
-        await $.store
-            .set(QUIET_HELD + sid, q.held.length)
-            .catch(() => undefined);
+    if (sid) await $.store.set(QUIET_HELD + sid, q.held).catch(() => undefined);
 }
 
 async function quietLog($: EngineInterface, line: QuietLogLine) {
@@ -500,6 +497,17 @@ export const quietNote = (held: QuietPing[]) =>
                 `- ${new Date(p.at).toTimeString().slice(0, 5)} ${p.from}: ${p.text}`,
         ),
     ].join('\n');
+
+// the held pings a session published, for its row; anything else reads as none
+const heldOf = (v: unknown): QuietPing[] | undefined =>
+    Array.isArray(v) && v.length
+        ? v.filter(
+              (p): p is QuietPing =>
+                  typeof p?.at === 'number' &&
+                  typeof p?.from === 'string' &&
+                  typeof p?.text === 'string',
+          )
+        : undefined;
 
 // held pings past 10 min while cclio is idle: one hidden row, no turn (probe Q2, 11:46:50)
 async function quietIdle($: EngineInterface) {
@@ -2098,7 +2106,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             ...r,
             asks: isLive(asks, now) ? asks.asks.length : 0,
             context: (await $.store.get(CONTEXT + r.sid)) as number | undefined,
-            held: Number(await $.store.get(QUIET_HELD + r.sid)) || undefined,
+            held: heldOf(await $.store.get(QUIET_HELD + r.sid)),
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isFleetName(r.name),
             // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
@@ -3128,7 +3136,7 @@ export const register: Register = (on) => {
         const folds = (await $.state.get(FOLDS)).value ?? {};
         // one fold rule for every card: open until folded, but a glide card's member subcard starts folded to its count
         const foldedOf = (kept: Record<string, boolean>, card: string) =>
-            kept[card] ?? /^lane:[^:]+:(coder|verifier)$/.test(card);
+            kept[card] ?? /^(lane:[^:]+:(coder|verifier)|quiet:.+)$/.test(card);
         const isFolded = (card: string) => foldedOf(folds, card);
         // 📂 sits at the far right of each card's head line and folds the card to that line, then reads 📁 (dima's o5, 17:21)
         const foldJSX = (card: string) => (
@@ -3859,7 +3867,23 @@ export const register: Register = (on) => {
                             {/* quiet comms: the member pings held for cclio's next turn, nothing at 0 */}
                             {m.held ? (
                                 <Box flexShrink={0}>
-                                    <Text dimColor>{`🤫 ${m.held}`}</Text>
+                                    <Button
+                                        key={`fold:quiet:${m.sid}`}
+                                        onPress={async () => {
+                                            const was =
+                                                (await $.state.get(FOLDS))
+                                                    .value ?? {};
+                                            await $.state.set(FOLDS, {
+                                                ...was,
+                                                [`quiet:${m.sid}`]: !foldedOf(
+                                                    was,
+                                                    `quiet:${m.sid}`,
+                                                ),
+                                            });
+                                        }}
+                                        plain>
+                                        {`🤫 ${m.held.length}`}
+                                    </Button>
                                 </Box>
                             ) : null}
                             {/* the name's line: the model and its effort cells right of the name (dima, 15:27; o6, 15:49) */}
@@ -3990,6 +4014,25 @@ export const register: Register = (on) => {
                                 </Box>
                             ) : null}
                             {m.tip ? speakJSX(`crow:${m.sid}`, m.tip) : null}
+                        </Box>
+                    ) : null}
+                    {/* the held member pings, opened from 🤫 n: sender, age, first line (dima's o34) */}
+                    {m.held && !isFolded(`quiet:${m.sid}`) ? (
+                        <Box
+                            flexDirection='column'
+                            key={`quiet:${m.sid}`}
+                            paddingLeft={2}>
+                            {m.held.map((p, k) => {
+                                return (
+                                    // biome-ignore lint/suspicious/noArrayIndexKey: a held ping's place is its identity
+                                    <Text
+                                        dimColor
+                                        key={`quiet:${m.sid}:${k}`}
+                                        wrap='truncate-end'>
+                                        {`🤫 ${p.from} · ${span(now - p.at)} ago: ${p.text}`}
+                                    </Text>
+                                );
+                            })}
                         </Box>
                     ) : null}
                 </Box>
