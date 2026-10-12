@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 12:50'
+updated_date: '2026-10-12 15:02'
 due_date: '2026-10-16'
 labels:
   - m
@@ -32,4 +32,6 @@ from the x domain-modeling coder's retro (2026-10-12): crew-coder has no line fo
 15:27: crew-coder/SKILL.md's worktree carries one cclio line beside dima's draft — the impeccable-refine link now points at crew-lead/impeccable-refine.md (moved in cc048e1e); it rides the draft's commit at the groom; the plugin cache 0.11.285 already serves it
 
 15:51 (wishkeeper): committed HEAD's crew-coder/SKILL.md:19 still points at the gone docs/knowledge/impeccable-refine.md until the draft's commit; writing-for-humans/SKILL.md never names references/sources.md — add the pointer at the groom
+
+dima 18:01: when the memory sweep reaches skills, shape and run nurture-skills (never run yet) as the groom's engine.
 <!-- SECTION:NOTES:END -->

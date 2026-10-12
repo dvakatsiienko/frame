@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:45'
-updated_date: '2026-10-12 14:16'
+updated_date: '2026-10-12 15:19'
 due_date: '2026-10-26'
 labels:
   - m
@@ -61,4 +61,8 @@ moved from PK-50 at its close (wishkeeper 15:49: the close dropped them), whole,
   - python3 tops the census at 1,694 raw runs (inferred: mostly inline edits that skip edit hooks); 1 and 2 absorb part of it
 
 retro 10-12 (mods coder) automation candidates: `x peer send --after <s> <to> <text>` (a delayed cross-session send, no model, for idle probes); `x mods edit red <pairs-file>` (the mutation loop over the overlay copy).
+
+dima o62: x knowledge list gains the recipe ↔ shelf map, both ways; red on a shelf file with no fed-by, an artifact path that does not exist, a recipe never run.
+
+guard candidate (18:01 flawlog, ccrow 18:19): x brief check reds a ~/frame/cclio/ path in a brief for a non-cclio session.
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: knowledge files become a must-read whenever their area is touched
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 13:34'
+updated_date: '2026-10-12 15:13'
 due_date: '2026-10-15'
 labels:
   - m
@@ -50,4 +50,10 @@ dima o31 16:06: the mod is named x-mod-primer («let's try»)
 16:22 sealed: spec ~/frame/.scratch/primer/spec.md (wish: PK-79); exit lines ~/frame/.scratch/primer/exit-lines.md — step 0 + 6 lines, the blind critic's 5 findings folded (plan 20261012162001); x brief preflight runs when the ticket is born at dispatch. the build waits on steps 1–4 (the shelf revamp) and the mods lane's brief 4
 
 dima 16:34: Q14 ✅ the primer delivers x:author-memory's core as a 6th source on SKILL.md/AGENTS.md/memory touches — and the halt flush + flawlog parse load the skill once, so a flush becomes a groom (his note, folded); Q15 ✅ go mod init / go get charm.land as go-charm signals («tricky, let's try»). spec updated
+
+17:50: steps 1 (98569e9d scouts), 2 + 4 (d05e6323 x:author-memory, the trigger rule) done; next step 3, the shelf revamp, one proposal per file.
+
+dima o62 18:01: recipes stay wide; each shelf file gets a fed-by: line (recipe <name> | incidents) in its revamp; the both-ways map + reds land in x knowledge list (cli lane, PK-94); knowledge/AGENTS.md states the shelf's purpose; each raw recipe is shaped at its own next run. orphans today: macos-apps (incidents), fleet-claude-capabilities (no feeder yet).
+
+dima o64 18:13, the shelf test for knowledge/AGENTS.md: a subject that lives in one place (the mods, in plugin-x/mods/) keeps its knowledge in that home; the shelf holds subjects scattered across the fs (go/charm in any app).
 <!-- SECTION:NOTES:END -->

@@ -3,10 +3,10 @@ id: PK-82
 title: >-
   x:author-memory — one skill that loads the memory and skill authoring
   knowledge
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 14:42'
 due_date: '2026-10-15'
 labels:
   - m
@@ -26,4 +26,6 @@ dima, inbox 2026-10-12: why not a skill, x:author-memory? on mobile it was hard 
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
+
+done 17:50: x:author-memory in plugin x 0.11.287 (d05e6323), core 3.7 KB + 3 references; authoring-trigger loads it (PK-79 step 4).
 <!-- SECTION:NOTES:END -->
