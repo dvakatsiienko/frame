@@ -1,10 +1,10 @@
 ---
 id: PK-70
 title: phases nudge fires only on turns that did real work
-status: open
+status: done
 assignee: []
 created_date: '2026-10-11 21:28'
-updated_date: '2026-10-12 12:51'
+updated_date: '2026-10-12 13:28'
 due_date: '2026-10-13'
 labels:
   - s
@@ -38,4 +38,6 @@ rides FRM-386 🐠 catch (o309)
 parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
 
 15:55: queued in mods lane l8, brief 4 (dima's o309)
+
+done: 3158a266 (mods lane l8 brief 4); mods:test exit 0 (wishkeeper 16:27)
 <!-- SECTION:NOTES:END -->
