@@ -11,7 +11,13 @@ const EVEN = new Date(2026, 9, 12, 15, 0).getTime();
 const ODD = new Date(2026, 9, 13, 15, 0).getTime();
 const MIN = 60_000;
 
-function world(on: On, { cwd = '/home/frame/cclio', now = EVEN } = {}) {
+const PID = 4242;
+
+// cclio by default, as the registry names her; `cwd` is where a Bash `cd` left her
+function world(
+    on: On,
+    { cwd = '/home/frame/cclio', name = '🦉 cclio', now = EVEN } = {},
+) {
     const contexts: string[][] = [];
     const appended: string[] = [];
     const queued: string[] = [];
@@ -29,6 +35,20 @@ function world(on: On, { cwd = '/home/frame/cclio', now = EVEN } = {}) {
     });
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: cwd }));
+    on('process.run', () => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: `${PID}\nMon Oct 12 15:00:00 2026\n`,
+        },
+    }));
+    on('fs.read', (_$, e) =>
+        e.path === `/home/.claude/sessions/${PID}.json`
+            ? { value: JSON.stringify({ name, pid: PID }) }
+            : { deny: 'no such file' },
+    );
     on('env.get', () => ({ value: '/home' }));
     on('ui.log', () => ({ value: undefined }));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
@@ -107,8 +127,15 @@ test('an untagged ping passes, never held blind', async ($, on) => {
     expect(w.queued).toHaveLength(1);
 });
 
-test("outside cclio's thread a [progress] ping passes", async ($, on) => {
-    const w = world(on, { cwd: '/home/frame' });
+test("cclio cd'd out of ~/frame/cclio still holds a [progress] ping", async ($, on) => {
+    const w = world(on, { cwd: '/home/frame/home/.claude/plugin-x/mods' });
+    await start($);
+    await ping($, '[progress] step 2 landed');
+    expect(w.queued).toEqual([]);
+});
+
+test('a session the registry names other than cclio passes a [progress] ping, even in her dir', async ($, on) => {
+    const w = world(on, { name: '☕️ 🔧 coder: mods' });
     await start($);
     await ping($, '[progress] step 2 landed');
     expect(w.queued).toHaveLength(1);

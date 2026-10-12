@@ -506,7 +506,8 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 - makes: one `quiet-log:<day>` key in x-mod-stash's `$.store`, a line per delivery (time, sender, tag, held · passed · flushed, started a turn, the arm); `quiet-held:<session>` the held count
 
 - 🧭 a [progress] ping is held in cclio's thread, every other passes
-  - given cclio's session (its cwd under `~/frame/cclio`) and the arm on
+  - given cclio's session — the registry names it `🦉 cclio`, wherever a Bash `cd` left it — and the switch on
+  - decision: the registry name, never the cwd: a `cd` into `~/frame` let every ping through for an hour (cclio's wisp, 17:06)
   - when a member's message opens with `[progress]`
   - then it is not queued and starts no turn; `[done]`, `[blocked]`, `[ask]` and an untagged ping pass as before; any other session holds nothing
   - decision: the tag decides, never a guess at the text — an untagged ping always passes (dima, 2026-10-12, the probe's «never hold blind»)

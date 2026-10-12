@@ -441,19 +441,9 @@ const QUIET_LOG = 'quiet-log:';
 const QUIET_LOG_MAX = 500;
 const QUIET_TAG = /^\s*\[(done|blocked|ask|progress)\]/i;
 
-// only cclio's thread holds anything: her session runs in ~/frame/cclio
-async function isQuietHome($: EngineInterface) {
-    try {
-        const home = await $.env.get('HOME');
-        const cwd = await $.session.cwd();
-        return (
-            cwd === `${home}/frame/cclio` ||
-            cwd.startsWith(`${home}/frame/cclio/`)
-        );
-    } catch {
-        return false;
-    }
-}
+// only cclio's thread holds anything, known by her registry name — never the cwd, which a Bash `cd` moves: her pings
+// passed unheld from 16:43, the hour she worked cd'd into ~/frame (cclio's wisp, 17:06)
+const isQuietHome = ($: EngineInterface) => isLaneOwner($);
 
 // a peer delivery's body and sender: a cli peer's envelope names it `from-name`, a desktop one `name` (probe, 14:49)
 export function peerPing(text: string) {
