@@ -87,7 +87,7 @@
   - measured 2026-10-09 (FRM-358): a desktop `send_message` into a Code-tab session arrives as `peer`; in a `--bg` session cclio's spawn prompt arrived as `composer` and dima's typed line as `bridge`, with no other field telling them apart
   - ⬜ in a session the registry marks `kind: bg`, only a `bridge` prompt counts as dima's; a `composer` one, the spawn prompt's kind there, never does (dima's pick, 2026-10-09, FRM-358)
 - ✅ a guard that fails refuses the command
-  - given x-mod-guard's check throws (a `$` call it needs fails) or runs past its 10 s budget (the throw is tested; the overrun is the same `.catch` by the engine's types, unprobed)
+  - given x-mod-guard's check throws (a `$` call it needs fails) or runs past its 10 s budget (the throw is tested; an overrun runs the same `.catch` — types: `CatchHandler`, «run afresh when it throws, misreturns or overruns»)
   - then the command is refused with «x-mod-guard: the check failed or ran out of time … (fail closed)»
   - decision: `.catch` answers `{ deny }` — a hook without one is skipped and the command would run
 - ✅ every refusal and escape is kept as a guard event

@@ -102,7 +102,7 @@ every `$` method is also an interceptable event; these are the ones the op list 
 ## limits (reference «Limits», unless a type is named)
 
 - hooks: 10 s each (`HookBudget.ms`), a `.catch` 1 s (`catchMs`), 5 s linger after an abort (`lingerMs`); every `$` call is free of the budget but `$.clock.sleep`, which spends it
-- `prompt.edit` 50 ms — the reference only; `HookBudget` names no such budget «?»
+- `prompt.edit` ~50 ms — the reference's number, measured live at 2.1.296 (45 ms lands, 60 ms is dropped silently); `HookBudget` names no such budget and the harness does not enforce it
 - all `session.end` hooks together 1.5 s; a `drop` or `deny` reason 4,096 chars
 - `Link.href` 2,048 chars; `Svg` 131,072 chars; `Raster` 512×256; `Image` 2 MiB; a UI tree 100,000 chars, 2,000 nested scopes
 - toast, status and log lines 2,000 chars in the terminal, 10,000 on a remote surface

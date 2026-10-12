@@ -14,7 +14,7 @@
   - decision: one `session.append` hook rewrites every row — a tool result, a prompt, a reply — since the engine stores and sends the rewritten form; the screen may flash the raw row first
   - decision: the placeholder carries no glob characters — the model writes it into shell commands, and `[redacted]` broke a zsh `echo` in the live probe
   - proven live 2026-10-05 for the one-way mask: a headless `claude --plugin-dir` run echoed a planted `sk-ant-…` fake; 8 rows came out masked, the reply too
-  - 📌 one raw copy stays: a queued prompt's `queue-operation` record, which the engine writes before any hook runs — a mod cannot reach it
+  - 📌 one raw copy stays: a queued prompt's `queue-operation` record, which the engine writes before any hook runs — a mod cannot reach it; 2.1.295 fixed that record for a prompt a `prompt.submit` hook rewrote, but redact rewrites in `session.append`, so the copy is expected to stay — unprobed at 2.1.296 (queue a prompt holding a fake key while a turn runs, then grep the jsonl's `queue-operation` row)
 - ✅ one value reads as one placeholder
   - given the same key appears in two rows
   - then both read the same placeholder, so the model can tell two keys apart and name the one it means
