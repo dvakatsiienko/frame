@@ -4,6 +4,7 @@
 - shipped: boot review gate · mods lane l8 (catch, idle clock, quiet comms, tick) · knowledge families · cw snapshot fixed · x ADRs
 - open: primer sealed (waits on the shelf revamp) · cli lane held · PK-81/83 skills · quiet + catch questions
 - state: frame unpushed · mods coder on brief 4 · ccrow paused for the checkpoint
+⸻ upd 20:15 — checkpoint 2
 
 ## 2026-10-11-the-sweep
 - shipped: mods lane closed (FRM-385/391/400, glide) · guard teeth (FRM-392–395, 398) · ccrow proposal wakes (FRM-396) · cclio:pm · sweep r1–r31 + delete-first
