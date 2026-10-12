@@ -43,6 +43,11 @@ case $brief_abs in
       echo "research-lanes: recipe $(basename "$recipe") is groomed ${groomed:-never}, not today — groom it with dima first (x:shape-recipe step 0)" >&2
       exit 2
     }
+    # the shared vectors ride every recipe brief, built by recipe:brief and marked with their hash (dima o73)
+    grep -Eq '^<!-- shared-vectors: [0-9a-f]{64} -->$' "$brief" || {
+      echo "research-lanes: $brief carries no shared vectors — build it with pnpm recipe:brief ${name%%/*}" >&2
+      exit 2
+    }
     ;;
 esac
 out=${2:-$(dirname "$brief")/lanes-$(date +%H%M%S)}
