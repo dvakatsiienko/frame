@@ -3806,7 +3806,6 @@ export const register: Register = (on) => {
                         {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
                         {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
                         {speakJSX(a.id, `${a.text}. ${a.pick}`)}
-                        {a.link ? askLinkJSX(a.id, a.link) : null}
                         {door === ownDoor && a.dies !== undefined && !a.mark ? (
                             <Text dimColor>{expiryText(a)}</Text>
                         ) : null}
@@ -3852,6 +3851,8 @@ export const register: Register = (on) => {
                                 />
                             </Box>
                         ) : null}
+                        {/* the steer comes first, the file link after it, at the row's end (dima's shot, 20:57) */}
+                        {a.link ? askLinkJSX(a.id, a.link) : null}
                     </Box>
                 </Box>
             );

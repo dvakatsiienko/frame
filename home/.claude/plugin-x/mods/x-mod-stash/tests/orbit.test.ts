@@ -1623,3 +1623,19 @@ test("dima's own prompt sends a tick still sending, at once", async ($, on) => {
     await say($, 'go');
     expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
+
+test("an ask's row puts its steer before its file link (dima, 20:57)", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, {
+        asks: [{ link: '/tmp/proposal.md', pick: 'apply', text: 'r34 groom' }],
+        op: 'add',
+    });
+    // the harness keeps no text or key on a row's children (mods/engine.md): the steer is the one Box, the link a Button
+    const row = await ui.find({ key: 'orbit:row:o1' });
+    const types = (row?.children ?? []).map(
+        (c) => (c as { type?: string }).type,
+    );
+    expect(types.slice(-2)).toEqual(['Box', 'Button']);
+});
