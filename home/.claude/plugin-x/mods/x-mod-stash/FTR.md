@@ -510,6 +510,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given any session calls op `glide`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create
   - and act `link` with a session id and a role (coder, verifier) links a member; a second link of a role replaces the first
   - and act `step` with a step index marks every step before it done; the pointer never sits on a done step; the step count marks the lane finished
+  - and a step back moves the pointer back and reopens every step from it on (`current: 1` after `current: 2` once left «2 of 5 done», cclio 15:18)
   - and a 6th step, an empty list, a step over 60 chars, a malformed ticket id, an unknown lane id or a step out of range is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
 - ⬜ a lane survives a reload, a compaction and a restart, and ends at cclio's siesta
   - given a lane, then it lives in `~/.claude/shelf/lanes.json`, every act in its history with the time; a fresh start and each poll of an open board read it back, an ended lane never comes back

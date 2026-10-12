@@ -401,6 +401,19 @@ test('a step past an item marks it done, never leaving the pointer on a done one
     ]);
 });
 
+test('a step back moves the pointer back and reopens the steps after it', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await create($, {
+        items: [{ text: 'a' }, { text: 'b' }, { text: 'c' }],
+        title: 't',
+    });
+    await lane($, { act: 'step', current: 2, id: 'l1' });
+    await lane($, { act: 'step', current: 1, id: 'l1' });
+    expect(await laneText(ui)).toMatch(/✅ a.*➡️ b.*⬜ c/su);
+});
+
 test('a lane reads back whole from the shelf file at a fresh start', async ($, on) => {
     world(on, {
         files: shelf(

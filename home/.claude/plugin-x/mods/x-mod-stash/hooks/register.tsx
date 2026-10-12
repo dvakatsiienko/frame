@@ -731,7 +731,13 @@ export function glideOp(
         return {
             deny: `orbit glide: current is a step from 0 to ${lane.items.length}`,
         };
-    const stepped = pointed(lane.items, at);
+    // a step back reopens the steps from the pointer on, or pointed skips forward over them again
+    const stepped = pointed(
+        at < lane.current
+            ? lane.items.map((x, i) => (i >= at ? { ...x, isDone: false } : x))
+            : lane.items,
+        at,
+    );
     const isMoved = stepped.current !== lane.current || stepped.done !== done;
     return put(
         {
