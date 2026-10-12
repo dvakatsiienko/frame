@@ -4524,62 +4524,79 @@ export const register: Register = (on) => {
                           {...cardProps}
                           marginTop={1}
                           rowGap={LINE_GAP}>
+                          {/* one row: the title, then one tick and one steer for the whole order at the right, then 📂 — every
+                              part centered on the row (dima's o84; moved into the head, 21:26: «looks off and steals vertical space») */}
                           <Box
+                              alignItems='center'
                               flexDirection='row'
-                              justifyContent='space-between'>
-                              <Text bold>
-                                  {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
-                              </Text>
+                              gap={1}
+                              justifyContent='space-between'
+                              key='phases:head'>
+                              <Box flexShrink={0}>
+                                  <Text bold>
+                                      {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
+                                  </Text>
+                              </Box>
+                              {isFolded('phases') ? null : (
+                                  <Box
+                                      alignItems='center'
+                                      flexDirection='row'
+                                      flexGrow={1}
+                                      flexShrink={1}
+                                      gap={1}
+                                      justifyContent='flex-end'
+                                      key='plan:act'
+                                      minWidth={0}>
+                                      <Button
+                                          key='plan:tick'
+                                          onPress={handlePlanTick}
+                                          variant='primary'>
+                                          {`${o.plan.mark ? (isSending(o.plan, drawnAt) ? '📨' : '✅') : '🛎️'} tick`}
+                                      </Button>
+                                      {Input ? (
+                                          <Box
+                                              flexShrink={1}
+                                              minWidth={0}
+                                              width={24}>
+                                              <Input
+                                                  key={
+                                                      field(
+                                                          $,
+                                                          'plan:steer',
+                                                          o.plan.steer ?? '',
+                                                      ).key
+                                                  }
+                                                  onInput={(value: string) => {
+                                                      field(
+                                                          $,
+                                                          'plan:steer',
+                                                          o.plan?.steer ?? '',
+                                                      ).type(value, () =>
+                                                          handlePlanSteer(
+                                                              value,
+                                                          ),
+                                                      );
+                                                  }}
+                                                  onSubmit={(value: string) =>
+                                                      void handlePlanSteer(
+                                                          value,
+                                                      )
+                                                  }
+                                                  placeholder='steer'
+                                                  value={
+                                                      field(
+                                                          $,
+                                                          'plan:steer',
+                                                          o.plan.steer ?? '',
+                                                      ).value
+                                                  }
+                                              />
+                                          </Box>
+                                      ) : null}
+                                  </Box>
+                              )}
                               {foldJSX('phases')}
                           </Box>
-                          {/* one tick and one steer for the whole order (dima's o84): tick = agreed, the steer says why */}
-                          {isFolded('phases') ? null : (
-                              <Box
-                                  alignItems='center'
-                                  flexDirection='row'
-                                  gap={1}
-                                  key='plan:act'>
-                                  <Button
-                                      key='plan:tick'
-                                      onPress={handlePlanTick}
-                                      variant='primary'>
-                                      {`${o.plan.mark ? (isSending(o.plan, drawnAt) ? '📨' : '✅') : '🛎️'} tick`}
-                                  </Button>
-                                  {Input ? (
-                                      <Box flexGrow={1} minWidth={0}>
-                                          <Input
-                                              key={
-                                                  field(
-                                                      $,
-                                                      'plan:steer',
-                                                      o.plan.steer ?? '',
-                                                  ).key
-                                              }
-                                              onInput={(value: string) => {
-                                                  field(
-                                                      $,
-                                                      'plan:steer',
-                                                      o.plan?.steer ?? '',
-                                                  ).type(value, () =>
-                                                      handlePlanSteer(value),
-                                                  );
-                                              }}
-                                              onSubmit={(value: string) =>
-                                                  void handlePlanSteer(value)
-                                              }
-                                              placeholder='steer'
-                                              value={
-                                                  field(
-                                                      $,
-                                                      'plan:steer',
-                                                      o.plan.steer ?? '',
-                                                  ).value
-                                              }
-                                          />
-                                      </Box>
-                                  ) : null}
-                              </Box>
-                          )}
                           {(isFolded('phases') ? [] : o.plan.lines).map(
                               (line, i) => {
                                   // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)

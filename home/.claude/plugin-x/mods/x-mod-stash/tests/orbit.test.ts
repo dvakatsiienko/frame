@@ -1794,3 +1794,18 @@ test('a press on a dead end arrow sends the turn no reorder', async ($, on) => {
         false,
     );
 });
+
+test("the phases tick and steer sit in the card's head row, centered, before 📂 (dima, 21:26)", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
+    const head = await ui.find({ key: 'phases:head' });
+    const act = await ui.find({ key: 'plan:act' });
+    expect([
+        head?.props.alignItems,
+        (head?.children ?? []).map((c) => (c as { type?: string }).type),
+        act?.props.alignItems,
+        Boolean(await ui.find({ key: 'plan:tick' })),
+    ]).toEqual(['center', ['Box', 'Box', 'Button'], 'center', true]);
+});
