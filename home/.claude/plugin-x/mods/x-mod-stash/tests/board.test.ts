@@ -395,7 +395,7 @@ test("a keep-hot ping's reply keeps what the session waits on", async ($, on) =>
     expect(await row($, HERE)).toContain('🔭 waiting on ci — a ping');
 });
 
-test("the wait sits on the name's line, right of the name", async ($, on) => {
+test("the wait sits on a second line under the name, never on the name's line", async ($, on) => {
     fleet(on);
     await stop($, 'done.\n\n🔭 waiting on ci — a ping');
     const ui = await board($);
@@ -404,7 +404,37 @@ test("the wait sits on the name's line, right of the name", async ($, on) => {
             b.props.overflow === 'hidden' &&
             b.text?.includes('🦉 cclio (here)'),
     );
-    expect(nameSide?.text).toContain('🔭 waiting on ci — a ping');
+    const second = (await ui.findAll({ type: 'Box' })).find(
+        (b) => b.props.paddingLeft === 2 && b.text?.startsWith('🔭'),
+    );
+    expect([nameSide?.text?.includes('🔭'), second?.text]).toEqual([
+        false,
+        '🔭 waiting on ci — a ping',
+    ]);
+});
+
+test("ccrow's tip line carries speak's buttons, reading the tip", async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            patch: { 3: { name: '🐦 ⬛ ccrow', sessionId: 'c3c3c3c3-crow' } },
+            reads: {
+                '/home/.local/state/ccrow/notes.jsonl': JSON.stringify({
+                    at: new Date(NOW - MIN).toISOString(),
+                    note: '- 👀 **for you:** read me aloud',
+                }),
+            },
+        },
+    );
+    const ui = await board($);
+    const keys = (await ui.findAll({ type: 'Button' })).map((b) => b.key);
+    expect(
+        ['read', 'pause', 'stop'].every((w) =>
+            keys.includes(`orbit:${w}:crow:c3c3c3c3-crow`),
+        ),
+    ).toBe(true);
 });
 
 test('asks over a day old are not counted on the board', async ($, on) => {

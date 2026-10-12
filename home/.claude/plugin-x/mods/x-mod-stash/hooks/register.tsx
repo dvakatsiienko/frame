@@ -3381,7 +3381,7 @@ export const register: Register = (on) => {
                             {m.offPattern ? (
                                 <Text color={ACCENT}>⚠</Text>
                             ) : null}
-                            {/* one line per row: the model and its effort cells right of the name, then the wait (dima, 15:27) */}
+                            {/* the name's line: the model and its effort cells right of the name (dima, 15:27; o6, 15:49) */}
                             {model && isPartOn('stash.rowmeta') ? (
                                 <Box
                                     alignItems='center'
@@ -3390,50 +3390,6 @@ export const register: Register = (on) => {
                                     gap={e.surface === 'desktop' ? 0.5 : 1}>
                                     <Text dimColor>{model}</Text>
                                     {effortJSX}
-                                </Box>
-                            ) : null}
-                            {/* the wait sits right of the name, cut first when the row is short (dima's shot, 19:59) */}
-                            {m.tip && isPartOn('stash.rowmeta') ? (
-                                <Box
-                                    flexShrink={1}
-                                    height={1}
-                                    minWidth={0}
-                                    overflow='hidden'>
-                                    <Text dimColor wrap='truncate-end'>
-                                        {line}
-                                    </Text>
-                                </Box>
-                            ) : line && isPartOn('stash.rowmeta') ? (
-                                // one row, clipped: the desktop wraps a run of styled pieces instead of cutting it (dima, 15:41)
-                                <Box
-                                    flexShrink={1}
-                                    height={1}
-                                    minWidth={0}
-                                    overflow='hidden'>
-                                    <Text dimColor wrap='truncate-end'>
-                                        {/* each «waiting on <who>» part prints <who> bold, as the band does (dima, 17:20) */}
-                                        {'🔭 '}
-                                        {(m.wait ?? '')
-                                            .split('; ')
-                                            .map((part, k) => {
-                                                const w = part.match(
-                                                    /^(waiting on )(.+?)( — .*)?$/u,
-                                                );
-                                                return (
-                                                    // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
-                                                    <Text key={`w:${k}`}>
-                                                        {k > 0 ? '; ' : ''}
-                                                        {w ? w[1] : part}
-                                                        {w ? (
-                                                            <Text bold>
-                                                                {w[2]}
-                                                            </Text>
-                                                        ) : null}
-                                                        {w?.[3] ?? ''}
-                                                    </Text>
-                                                );
-                                            })}
-                                    </Text>
                                 </Box>
                             ) : null}
                         </Box>
@@ -3501,6 +3457,60 @@ export const register: Register = (on) => {
                             </Box>
                         </Box>
                     </Box>
+                    {/* the second line, under the name: ccrow's 👀 tip with speak's buttons, or the 🔭 wait — one clipped row,
+                        so a session waiting on many things never pushes the name's line (dima's o6, 15:49) */}
+                    {(m.tip || line) && isPartOn('stash.rowmeta') ? (
+                        <Box
+                            alignItems='center'
+                            flexDirection='row'
+                            gap={1}
+                            paddingLeft={2}>
+                            {m.tip ? (
+                                <Box
+                                    flexShrink={1}
+                                    height={1}
+                                    minWidth={0}
+                                    overflow='hidden'>
+                                    <Text dimColor wrap='truncate-end'>
+                                        {line}
+                                    </Text>
+                                </Box>
+                            ) : line ? (
+                                // one row, clipped: the desktop wraps a run of styled pieces instead of cutting it (dima, 15:41)
+                                <Box
+                                    flexShrink={1}
+                                    height={1}
+                                    minWidth={0}
+                                    overflow='hidden'>
+                                    <Text dimColor wrap='truncate-end'>
+                                        {/* each «waiting on <who>» part prints <who> bold, as the band does (dima, 17:20) */}
+                                        {'🔭 '}
+                                        {(m.wait ?? '')
+                                            .split('; ')
+                                            .map((part, k) => {
+                                                const w = part.match(
+                                                    /^(waiting on )(.+?)( — .*)?$/u,
+                                                );
+                                                return (
+                                                    // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
+                                                    <Text key={`w:${k}`}>
+                                                        {k > 0 ? '; ' : ''}
+                                                        {w ? w[1] : part}
+                                                        {w ? (
+                                                            <Text bold>
+                                                                {w[2]}
+                                                            </Text>
+                                                        ) : null}
+                                                        {w?.[3] ?? ''}
+                                                    </Text>
+                                                );
+                                            })}
+                                    </Text>
+                                </Box>
+                            ) : null}
+                            {m.tip ? speakJSX(`crow:${m.sid}`, m.tip) : null}
+                        </Box>
+                    ) : null}
                 </Box>
             );
         };

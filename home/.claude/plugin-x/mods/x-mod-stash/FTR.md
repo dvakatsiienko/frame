@@ -252,7 +252,7 @@
 - ⬜ ccrow's row carries her newest 👀 tip for dima
   - given ccrow's newest note under a day old holds a `- 👀 **for you:** …` line
   - when the board draws
-  - then her row reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row; no other row ever carries it, and a tip over a day old leaves
+  - then her row's second line reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row, with 🔊 ⏯️ ⏹️ that read it through speak; no other row ever carries it, and a tip over a day old leaves
   - source: `~/.local/state/ccrow/notes.jsonl`, read by the poll for her row only
   - decision: on her one line, in the wait slot — no strip and no numbers, the board is already cramped (PK-73, dima 01:42 and 14:16; his o5 pick, 15:35: «let's try»)
   - source: the session's own last reply, kept by its x-mod-stash at each reply end
@@ -277,10 +277,10 @@
 - ⬜ each row names its session's model, version and effort, on one line
   - given a session's main loop sent a model request on `claude-opus-5-5` at `medium`
   - when the board draws
-  - then the row reads, on one line: the name, `opus 5.5` with its effort as 5 cells, 2 lit for medium (low 1 · medium 2 · high 3 · xhigh 4 · max 5), then the `🔭` wait, then the fact columns; a dated id drops its date, a model with no effort shows the model alone, an effort off the five words prints as its word
+  - then the name's line reads the name, `opus 5.5` with its effort as 5 cells, 2 lit for medium (low 1 · medium 2 · high 3 · xhigh 4 · max 5), then the fact columns; the `🔭` wait sits on a second line under the name, one clipped row; a dated id drops its date, a model with no effort shows the model alone, an effort off the five words prints as its word
   - and the cells are the bars' own: on the desktop the band's 5 px cells and green-to-red ramp in one row, in the terminal `▮▯` in the ramp's colours
   - source: `turn.step`'s `model` and `effort`, kept by the session's own x-mod-stash; a subagent's step never counts
-  - decision: one line per row, to save the board's height (dima, 15:27); the name and the wait clip first, the model and its cells never
+  - decision: the name's line holds the model, the second the wait — one line per row (15:27) still broke when a session waited on many things (dima's o6, 15:49)
   - decision: cells, not sline's one-glyph dial (dima's o4, 15:35: «ugly»), coloured as the 5h bar; no word beside them — the pane takes no hover card for a tooltip (2026-10-05), and the lit count reads the level
 - ⬜ the board borrows the reference's look (dima's dark screenshot on FRM-329)
   - given the board draws
