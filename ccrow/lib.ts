@@ -14,7 +14,9 @@ import { basename, join } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 
 export const SESSION_NAME = '🐦‍⬛ ccrow';
-export const STATE_DIR = join(homedir(), '.local/state/ccrow');
+// CCROW_STATE_DIR moves every note, verdict and run off the real home, so a fixture never writes the live notes (FRM-339)
+export const STATE_DIR =
+    process.env.CCROW_STATE_DIR || join(homedir(), '.local/state/ccrow');
 const STORE_DIR = join(homedir(), '.claude/plugins/store');
 const HOT = 'hot:';
 export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');

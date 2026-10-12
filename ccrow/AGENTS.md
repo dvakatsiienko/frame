@@ -66,6 +66,9 @@ skill reaches it as text. a contract change goes there, never here.
 
 ## facts that bite
 
+- **a fixture run sets `CCROW_STATE_DIR`** to a temp dir: `lib.ts` reads every path from it, so no note, verdict or
+  run reaches the real `~/.local/state/ccrow/` (FRM-339; FRM-336's coder left 10 fixture notes there). a script that
+  spends runs with a stub `claude` on `PATH` (`state-dir.test.ts`)
 - **the inbox socket takes newline-delimited json.** a frame with no `from_mode` is «no mode
   asserted», and a bypass session holds it unless `crossSessionInbound` is `accept` (probed
   2.1.291: the control logged «Held peer message … not delivered»).
