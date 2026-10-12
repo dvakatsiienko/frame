@@ -1,4 +1,27 @@
+---
+fed-by: recipe refresh-fleet-comms
+when:
+  - { kind: basename, value: fleet-output-format.md }
+  - { kind: basename, value: fleet-voice.md }
+  - { kind: basename, value: habit-dima-comms-pacing.md }
+  - { kind: basename, value: output-fun.md }
+---
+
 # comms — the ledger of dima ↔ fleet talk
+
+## core
+
+what the 10-10 ledger measured (37 days, 2,512 prompts), the numbers a comms change must move:
+- 42 % of his prompts show a gap: «what can the system do» 17 %, «did it land» 9 %, then a lost decision, unreadable output, «is it stuck»
+- re-asks ~8 % (~200); pushback ~27 % with context
+- he still asked for status 98 times across 322 replies that carried a 🔭
+- 58 of 136 ask fences came back pasted unchanged → asks moved to orbit (10-10)
+- replies grew 1,000 → 1,518 chars median over 3 weeks; a long reply goes with uncertainty
+- 15 of 179 next prompts stop to decode a label
+
+landed since: the reply budget, glosses, orbit asks, phases, glide, 🐠 catch, quiet comms (💨 slipstream). open: the decision log consulted before an ask (the re-ask fix), the labeller re-run against these numbers.
+
+the rest: per-week trends, the labelling method and gold set, the research behind each lever.
 
 kept by `recipes/refresh-fleet-comms`; each run merges its numbers here and names the direction against the last run. the page view of the first run: [Operator Ledger](https://claude.ai/artifact/CJmBAGi8tJ9wyh8FW3kx9o).
 
@@ -32,7 +55,7 @@ kept by `recipes/refresh-fleet-comms`; each run merges its numbers here and name
 ## levers
 
 - landed 2026-10-10 (his yes): the reply budget, one home for the next move, «ok» accepts the fence, glosses, proof in commits, a)/b) choices, push + commit batched per siesta
-- open, mod-shaped (pocket PK-50 step 3): the ask fence and the trackers (🔭, stat boards, 📄) in a side pane; the add-ons (skills line, 🔥) to a log; the plugin-reload friction
+- landed 2026-10-10 → 10-12, mod-shaped: asks in orbit, phases, glide lane cards, 🐠 catch, quiet comms (💨 slipstream); still open: the plugin-reload friction
 
 ## what the research says (run 1, 2026-10-10; exa, parallel, researcher)
 
