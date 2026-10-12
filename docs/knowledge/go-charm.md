@@ -1,4 +1,5 @@
 ---
+fed-by: recipe refresh-guide-go
 when:
   - { kind: import, value: charm.land }
   - { kind: command, value: go get charm.land }

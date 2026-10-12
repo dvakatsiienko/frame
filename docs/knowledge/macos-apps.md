@@ -1,4 +1,5 @@
 ---
+fed-by: incidents
 when:
   - { kind: command, value: brew install --cask }
   - { kind: command, value: brew uninstall }

@@ -1,4 +1,5 @@
 ---
+fed-by: recipe refresh-fleet-ops
 when:
   - { kind: command, value: x fleet }
   - { kind: command, value: claude plugin eval }
