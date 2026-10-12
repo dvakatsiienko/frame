@@ -172,7 +172,7 @@ file he names.
 
 ### 🔭 blocked on something external
 - **when**: only while a review bot, ci, a background job or another agent genuinely holds the
-  session. not blocked → no 🔭 line, or the marker rots into decoration.
+  session, or while the next move waits on dima's answer — then **🙋‍♂️ dima** is named beside any member (dima, 2026-10-12). not blocked → no 🔭 line, or the marker rots into decoration.
 - **where**: the LAST line, after the ➡️. ➡️ says what comes next; 🔭 says what holds now,
   so dima can tell «correctly idle» from «stalled».
 - **shape**: `🔭 waiting on <who>`, nothing more — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70)`; the band shows this line, so how the answer arrives stays out (dima, 2026-10-10).

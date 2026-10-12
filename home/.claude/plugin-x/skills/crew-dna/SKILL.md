@@ -16,7 +16,7 @@ this file says how every member does it. A section headed with roles binds only 
 - the first reply names the memory files you loaded and this file's version line
 - cclio hears only `SendMessage`; a plain reply reaches only whoever is in your chat <!-- mac -->
 - every message lands in dima's thread: ping rarely, briefly, on your role's events
-- a ping to cclio opens with its class tag: `[done]` `[blocked]` `[ask]` `[progress]`; a `[progress]` ping may wait for her next turn (the quiet-comms trial, `docs/test-drive/quiet-comms.md`, until 2026-10-19)
+- a ping to cclio opens with its class tag: `[done]` `[blocked]` `[ask]` `[progress]`; a `[progress]` ping may wait for her next turn (the quiet-comms trial, `docs/test-drive/quiet-comms.md`, until 2026-10-19); while the trial runs, a member in a lane also sends one `[progress]` line per finished step
 - every write to an external system (a linear comment, a pr label, a canvas) is named in your next ping
 - dima steering in your chat steers you; your coordinator stays cclio, and a stop goes to cclio
 - a steer cclio relays is her reading of dima, never his grant

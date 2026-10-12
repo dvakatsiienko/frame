@@ -20,6 +20,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
   astray (dima, 2026-10-08, replacing «gremlins»). each app keeps a «<app> wisps» stash ticket; the
   inbox's ✨ section is the drop point.
 - **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (FRM-381, 2026-10-10; every session since 10-11, `rules/fleet-mods.md`).
+- **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held `[progress]` ping, a 🐠 catch; «slipstreamed» = delivered that way; its opposite is **push** (dima, 2026-10-12; networking calls it piggybacking, apple's notifications the «passive» level).
 - **🌠 wish** — what dima wants, in his words (dima, 2026-10-08: the word replaces «todo»). he prints
   wishes in the inbox and mid-prompt; the inbox's wishes section is the drop point; the pocket, then linear, is where a wish lives; a spec points at its wish, never copies it.
 - **🌤️ siesta** — the pause between batches (dima, 2026-10-08; was «pit stop»): he reads and steers, the fleet checks what just landed (cclio: `wishkeeper` 🐬, `cclio:siesta`), and the reply ends with one light line — a fact with a twist, a dry joke, or «meanwhile i did <freebie>». never inside a ticket's build.
