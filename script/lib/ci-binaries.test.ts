@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'vitest';
 
-import { gitEnv } from './git-fixture.ts';
+import { gitEnv, trackedFiles } from './git-fixture.ts';
 
 const root = path.resolve(import.meta.dirname, '../..');
 // what ubuntu-latest ships before any step runs
@@ -41,26 +41,22 @@ test('every binary a test execs is installed by the ci job that runs it', () => 
     const jobs = jobBinaries(
         readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8'),
     );
-    const files = spawnSync('git', ['ls-files', '*.test.ts', '*_test.go'], {
-        cwd: root,
-        encoding: 'utf8',
-        env: gitEnv(),
-    }).stdout.split('\n');
-
-    const missing = files.filter(Boolean).flatMap((file) => {
-        const job = file.startsWith('x/go/') ? 'x' : 'check';
-        const kind = file.endsWith('.go') ? 'go' : 'ts';
-        const text = readFileSync(path.join(root, file), 'utf8');
-        return (
-            [...text.matchAll(execCall[kind] as RegExp)]
-                .map((call) => call[1] ?? '')
-                // a relative path is a repo script; an absolute one is still the binary it names
-                .filter((exe) => !exe.startsWith('.'))
-                .map((exe) => path.basename(exe))
-                .filter((bin) => !jobs.get(job)?.has(bin))
-                .map((bin) => `${bin} (${file}, job ${job})`)
-        );
-    });
+    const missing = trackedFiles(root, '*.test.ts', '*_test.go').flatMap(
+        (file) => {
+            const job = file.startsWith('x/go/') ? 'x' : 'check';
+            const kind = file.endsWith('.go') ? 'go' : 'ts';
+            const text = readFileSync(path.join(root, file), 'utf8');
+            return (
+                [...text.matchAll(execCall[kind] as RegExp)]
+                    .map((call) => call[1] ?? '')
+                    // a relative path is a repo script; an absolute one is still the binary it names
+                    .filter((exe) => !exe.startsWith('.'))
+                    .map((exe) => path.basename(exe))
+                    .filter((bin) => !jobs.get(job)?.has(bin))
+                    .map((bin) => `${bin} (${file}, job ${job})`)
+            );
+        },
+    );
 
     expect([...new Set(missing)], 'binaries ci.yml never installs').toEqual([]);
 });

@@ -1,3 +1,7 @@
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+
 // the commit hook runs the suite with GIT_DIR, GIT_INDEX_FILE and friends set for frame: a git a test spawns with them
 // works on frame, not its fixture — one `git init` set core.bare=true in frame and git refused every command for ~3 min (2026-10-08)
 export function gitEnv(): NodeJS.ProcessEnv {
@@ -74,4 +78,15 @@ export function bareGitSpawns(source: string) {
         lines.push(source.slice(0, m.index).split('\n').length);
     }
     return lines;
+}
+
+// a peer's staged file is absent from a pathspec commit's index-run copy; it is checked at its own commit
+export function trackedFiles(root: string, ...patterns: string[]) {
+    return spawnSync('git', ['ls-files', ...patterns], {
+        cwd: root,
+        encoding: 'utf8',
+        env: gitEnv(),
+    })
+        .stdout.split('\n')
+        .filter((file) => file && existsSync(path.join(root, file)));
 }

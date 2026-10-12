@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'vitest';
 
-import { bareGitSpawns, gitEnv } from './git-fixture.ts';
+import { bareGitSpawns, gitEnv, trackedFiles } from './git-fixture.ts';
 
 const root = path.resolve(import.meta.dirname, '../..');
 // the fixtures' calls are spelled in pieces, so the repo-wide lint below never reads them as this file's own spawns
@@ -80,18 +80,11 @@ test('gitEnv drops every inherited GIT_ variable', () => {
 });
 
 test('every tracked test that spawns git passes env from gitEnv in script/lib/git-fixture.ts', () => {
-    const files = spawnSync('git', ['ls-files', '*.test.ts'], {
-        cwd: root,
-        encoding: 'utf8',
-        env: gitEnv(),
-    }).stdout.split('\n');
-    const bare = files
-        .filter(Boolean)
-        .flatMap((file) =>
-            bareGitSpawns(readFileSync(path.join(root, file), 'utf8')).map(
-                (line) => `${file}:${line}`,
-            ),
-        );
+    const bare = trackedFiles(root, '*.test.ts').flatMap((file) =>
+        bareGitSpawns(readFileSync(path.join(root, file), 'utf8')).map(
+            (line) => `${file}:${line}`,
+        ),
+    );
     expect(
         bare,
         'spawns git without env: gitEnv() from script/lib/git-fixture.ts',
