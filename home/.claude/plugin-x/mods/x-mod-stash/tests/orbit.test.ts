@@ -7,6 +7,7 @@ const TOOL = 'mcp__x-mod-stash__orbit';
 // one session: `contexts` holds each prompt's model-only context, `appended` each hidden mid-turn message
 // the orbit tool's description as the last start registered it
 let described = '';
+let isDeferred: boolean | undefined;
 
 function world(on: On) {
     const contexts: string[][] = [];
@@ -37,6 +38,7 @@ function world(on: On) {
     on('fs.list', () => ({ value: [] }));
     on('tool.register', (_$, e) => {
         described = e.description;
+        isDeferred = e.isDeferred;
         return { value: { tool: `mcp__x-mod-stash__${e.name}` } };
     });
     on('prompt.submit', (_$, e) => {
@@ -1559,4 +1561,10 @@ test('the link rides the ask a glide card draws from the store', async ($, on) =
         (w.store.get('asks:o1o1o1o1-orbit') as { items: { link?: string }[] })
             .items[0]?.link,
     ).toBe('https://github.com/x/y/pull/7');
+});
+
+test('orbit registers loaded up front, never behind ToolSearch', async ($, on) => {
+    world(on);
+    await start($);
+    expect(isDeferred).toBe(false);
 });

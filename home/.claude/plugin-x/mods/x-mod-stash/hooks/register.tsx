@@ -2781,6 +2781,8 @@ export const register: Register = (on) => {
                     required: ['op'],
                     type: 'object',
                 },
+                // loaded up front: behind ToolSearch a session met «add your asks to orbit» with no schema to call
+                isDeferred: false,
                 name: 'orbit',
             })
             .catch(() =>

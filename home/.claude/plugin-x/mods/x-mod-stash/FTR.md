@@ -336,6 +336,8 @@
   - given cc shows a model only the first 2048 chars of a tool's description (the reload notice read 2371)
   - when a session loads orbit
   - then its description fits in 2048 and names every op — add, resolve, follow, assume, catch, plan, glide — with its rule; catch and glide stay whole
+  - and the tool loads up front (`isDeferred: false`), never behind ToolSearch
+  - decision: 2048 holds while any 2.1.295 session runs; 2.1.296 raised cc's cap to 4096 (brief 9 item 6, refresh-cc-mods run #4)
 the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «current stash asks implementation doesn't work for me»).
 - makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` and the away digest count them; orbit itself lives in the session's `$.state`
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt
