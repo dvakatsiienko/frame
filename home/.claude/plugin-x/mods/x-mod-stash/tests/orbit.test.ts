@@ -257,6 +257,7 @@ test("a peer's prompt carries no mark, but its turn takes the tick at its next t
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
     await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(5_000);
     await $.prompt.submit({
         origin: { kind: 'peer-send-message' } as never,
         text: 'status?',
@@ -346,7 +347,7 @@ test('an ask the turn left unanswered gets its controls back when the turn ends'
 });
 
 test('a held mark swaps its emoji for ✅, and only one of the two holds it', async ($, on) => {
-    world(on);
+    const w = world(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
@@ -359,8 +360,10 @@ test('a held mark swaps its emoji for ✅, and only one of the two holds it', as
         );
     const idle = await look();
     await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(5_000);
     const taken = await look();
     await ui.press({ key: 'orbit:rejected:o1' });
+    await w.clock.advance(5_000);
     expect([idle, taken, await look()]).toEqual([
         ['🛎️ tick|primary', '🔁 replay|-'],
         ['✅ tick|primary', '🔁 replay|-'],
@@ -523,6 +526,7 @@ test('a tick while the turn runs reaches that turn, and its resolve takes it out
     await add($, ['name a bird', 'pelican']);
     await say($, 'run the long job');
     await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(5_000);
     const r = await $.tool.call({ command: 'sleep 20', tool: 'Bash' });
     await orbit($, { ids: ['o1'], op: 'resolve' });
     await endTurn($);
@@ -1567,4 +1571,55 @@ test('orbit registers loaded up front, never behind ToolSearch', async ($, on) =
     world(on);
     await start($);
     expect(isDeferred).toBe(false);
+});
+
+/* PK-88: a tick waits 5 s in a reversible «sending» state */
+
+test('a tick reads 📨 sending for 5 s, then ✅ tick', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    const sending = (await ui.find({ key: 'orbit:accepted:o1' }))?.text;
+    await w.clock.advance(5_000);
+    expect([
+        sending,
+        (await ui.find({ key: 'orbit:accepted:o1' }))?.text,
+    ]).toEqual(['📨 sending', '✅ tick']);
+});
+
+test('a tick unticked inside its 5 s never reaches the turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'run the long job');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(2_000);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(5_000);
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).join('\n')).not.toMatch(/o1 🛎️ accepted/);
+});
+
+test('a running turn takes no tick still sending', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'run the long job');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).join('\n')).not.toMatch(/o1 🛎️ accepted/);
+});
+
+test("dima's own prompt sends a tick still sending, at once", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'go');
+    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
 });

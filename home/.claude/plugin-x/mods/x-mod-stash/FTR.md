@@ -423,6 +423,12 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - and its steer box comes back empty — dima's steer answered the old question (dima, 13:57 shot)
   - decision: 🆕 before the id, not a «changed» column on the right, so the ask text keeps the full width — a try, dima may swap the glyph (dima's o6, 10:58)
   - decision: an answered ask stays in orbit until its turn ends, its line led by 👀 (`👀 o20: …`), so dima sees it go — an icon, not the word «answered», inline so the row keeps its left edge; no «seen» card, since a card needs a box of its own (dima, 20:34, 20:39)
+- ⬜ a tick waits 5 s in a reversible «sending» state (PK-88)
+  - given dima presses 🛎️ tick or 🔁 replay on an ask, on its own board or a glide card
+  - then the button reads `📨 sending` for 5 s, then `✅ tick` (or `✅ replay`)
+  - and a second press inside the 5 s unsends it: no turn ever takes it
+  - and no running turn takes it before the 5 s pass; after them it joins the turn at its next tool call, as before
+  - decision: dima's own prompt sends a tick still sending at once — submitting is his «send», and the moment to unsend has passed (lane l12, 2026-10-12)
 - ⬜ a resolve can carry a closing word
   - given a session resolves an ask with a closing word (`words: { o1: "landed" }`)
   - then the ask's card turns dim, `✔️ o1: <ask> — **landed**`, with no tick, replay, speak or steer

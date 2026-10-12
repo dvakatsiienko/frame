@@ -30,8 +30,11 @@ import {
     ORBIT_TEXT_MAX,
     ORBIT_TOOL,
     PLAN_MAX,
+    SEND_MS,
     halted,
+    isDue,
     isFresh,
+    isSending,
     isThought,
     joinText,
     lockJoined,
@@ -799,6 +802,7 @@ async function saveOrbit($: EngineInterface, next: StashOrbit) {
                     text: a.text,
                     ...(a.link ? { link: a.link } : {}),
                     ...(a.mark ? { mark: a.mark } : {}),
+                    ...(a.sendAt ? { sendAt: a.sendAt } : {}),
                     ...(a.steer ? { steer: a.steer } : {}),
                     ...(a.isLocked ? { isLocked: true } : {}),
                 })),
@@ -872,6 +876,7 @@ async function absorbMarks($: EngineInterface) {
                 isChanged: false,
                 mark: m.mark,
                 markedAt: m.mark ? m.at : undefined,
+                sendAt: m.mark ? (m.markAt ?? m.at) + SEND_MS : undefined,
                 steer: m.steer,
             };
         }),
@@ -887,7 +892,9 @@ async function wakeForMarks($: EngineInterface) {
     )
         return;
     const o = await currentOrbit($);
-    const due = o.asks.filter((a) => isFresh(a) && a.markedAt !== undefined);
+    const due = o.asks
+        .filter(isDue(await $.clock.now()))
+        .filter((a) => a.markedAt !== undefined);
     if (!due.length) return;
     const dimaAt = Number(await $.store.get(DIMA_AT).catch(() => 0)) || 0;
     if (dimaAt <= Math.min(...due.map((a) => a.markedAt ?? 0))) return;
@@ -1494,7 +1501,14 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
         const marks = await marksOf($, sid);
         asks[member] = (entry?.items ?? []).map(steered).map((a) => {
             const m = marks[a.id];
-            return m ? { ...a, mark: m.mark, steer: m.steer } : a;
+            return m
+                ? {
+                      ...a,
+                      mark: m.mark,
+                      sendAt: m.mark ? (m.markAt ?? m.at) + SEND_MS : undefined,
+                      steer: m.steer,
+                  }
+                : a;
         });
     }
     const text = JSON.stringify({ asks, live });
@@ -1518,8 +1532,16 @@ async function markRemote(
             | RemoteMark
             | undefined) ?? { mark: ask.mark, steer: ask.steer },
     );
-    await $.store.set(key, { ...prior, ...change, at: await $.clock.now() });
+    const now = await $.clock.now();
+    await $.store.set(key, {
+        ...prior,
+        ...change,
+        at: now,
+        ...('mark' in change ? { markAt: now } : {}),
+    });
     await showLanes($, await readLanes($));
+    if ('mark' in change)
+        $.clock.after(SEND_MS, () => $.ui.invalidate('ui.render'));
 }
 
 // the lane steers dima took with 🛎️, as cclio reads them; each leaves the lane once read
@@ -3536,20 +3558,28 @@ export const register: Register = (on) => {
         const age = planAge(o);
         // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
         // an ask card's door: this session's own orbit by default; a glide card passes the member's, through the store
+        const drawnAt = await $.clock.now();
+        // a press starts the 5 s «sending» window (PK-88); a second press inside it unsends, and one redraw shows it sent
         const ownDoor: AskDoor = {
             mark: (a, mark) =>
-                void markAsks(
-                    $,
-                    (x) =>
-                        x.id === a.id
-                            ? {
-                                  ...x,
-                                  isChanged: false,
-                                  mark: x.mark === mark ? undefined : mark,
-                              }
-                            : x,
-                    true,
-                ),
+                void (async () => {
+                    const now = await $.clock.now();
+                    await markAsks(
+                        $,
+                        (x) => {
+                            if (x.id !== a.id) return x;
+                            const isOff = x.mark === mark;
+                            return {
+                                ...x,
+                                isChanged: false,
+                                mark: isOff ? undefined : mark,
+                                sendAt: isOff ? undefined : now + SEND_MS,
+                            };
+                        },
+                        true,
+                    );
+                    $.clock.after(SEND_MS, () => $.ui.invalidate('ui.render'));
+                })(),
             prefix: 'orbit',
             steer: (a, value) => handleSteer(a.id, value),
         };
@@ -3566,7 +3596,7 @@ export const register: Register = (on) => {
                 {...(mark === 'accepted'
                     ? { variant: 'primary' as const }
                     : {})}>
-                {`${a.mark === mark ? (a.isLocked ? '🔓' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'tick' : 'replay'}`}
+                {`${a.mark === mark ? (a.isLocked ? '🔓' : isSending(a, drawnAt) ? '📨' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${a.mark === mark && !a.isLocked && isSending(a, drawnAt) ? 'sending' : mark === 'accepted' ? 'tick' : 'replay'}`}
             </Button>
         );
         const handleAssumedSteer = (id: string, value: string) =>
@@ -4811,7 +4841,7 @@ export const register: Register = (on) => {
         await absorbMarks($);
         const o = await currentOrbit($);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
-        const fresh = isPing ? [] : o.asks.filter(isFresh);
+        const fresh = isPing ? [] : o.asks.filter(isDue(await $.clock.now()));
         const thought = isPing ? [] : (o.caught ?? []).filter(isThought);
         if (fresh.length || thought.length) {
             await saveOrbit($, lockThought(lockJoined(o, fresh), thought));

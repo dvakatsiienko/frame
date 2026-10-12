@@ -35,6 +35,16 @@ const idsOf = (v: unknown) =>
 export const isFresh = (a: OrbitAsk) =>
     Boolean(a.mark) && !a.isLocked && !a.isResolved;
 
+// PK-88: a tick or replay waits SEND_MS in a reversible «sending» state before a turn may take it
+export const SEND_MS = 5000;
+export const isSending = (
+    a: { mark?: unknown; sendAt?: number },
+    now: number,
+) => Boolean(a.mark) && a.sendAt !== undefined && now < a.sendAt;
+// a fresh mark whose sending window has passed
+export const isDue = (now: number) => (a: OrbitAsk) =>
+    isFresh(a) && !isSending(a, now);
+
 // a text kept under the fields' old name, «note», before the steer rename (dima's o57, 17:39): read once as its steer
 export function steered<T extends { steer?: string }>(x: T): T {
     if (!('note' in x)) return x;
@@ -69,7 +79,14 @@ export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
     return {
         ...o,
         asks: o.asks.map((a) =>
-            ids.has(a.id) ? { ...a, isLocked: true, markedAt: undefined } : a,
+            ids.has(a.id)
+                ? {
+                      ...a,
+                      isLocked: true,
+                      markedAt: undefined,
+                      sendAt: undefined,
+                  }
+                : a,
         ),
     };
 }

@@ -572,6 +572,7 @@ test("a tick on the card waits in the store for the member's own stash", async (
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:coder' });
     await ui.press({ key: 'lane:l1:coder:accepted:o3' });
+    await w.clock.advance(5_000);
     expect([
         (w.store.get(`marks:${CODER}:o3`) as { mark?: string })?.mark,
         await subText(ui, 'coder'),
@@ -600,7 +601,11 @@ test('a member publishes its open asks whole, with ids, for the glide card', asy
 test("a mark from a glide card joins the member's running turn", async ($, on) => {
     const w = await memberWithAsk($, on);
     await say($, 'go on');
-    w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });
+    // marked on another board past its 5 s sending window
+    w.store.set(`marks:${SID}:o1`, {
+        at: w.clock.now() - 5_000,
+        mark: 'accepted',
+    });
     const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
     expect(
         r.context?.some((c) => /o1 🛎️ accepted: cut the second probe/.test(c)),

@@ -16,6 +16,10 @@ _Avoid_: question, todo, pending
 When an ask dies on its own: «halt» (cclio's halt skill takes it) or N turns unpicked (it leaves at the end of the Nth turn after its own unless dima marked it).
 _Avoid_: timeout, ttl
 
+**Sending** 📨:
+The 5 s after dima ticks or replays an ask: the mark shows, no turn takes it yet, and a second press unsends it.
+_Avoid_: pending, queued
+
 **Closing word**:
 The word a resolve gives an ask («landed», «dropped: superseded by o58»): the ask stays dim with it for one more turn, then leaves.
 _Avoid_: reason, status

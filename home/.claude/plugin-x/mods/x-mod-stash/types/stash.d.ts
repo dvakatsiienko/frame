@@ -16,6 +16,8 @@ export type PublishedAsk = {
     mark?: 'accepted' | 'rejected';
     steer?: string;
     isLocked?: boolean;
+    // a mark still inside its 5 s sending window ends here (ms)
+    sendAt?: number;
 };
 
 // a mark or steer dima made on another board's glide card, waiting in the store for the member to take it in
@@ -23,6 +25,8 @@ export type RemoteMark = {
     mark?: 'accepted' | 'rejected';
     steer?: string;
     at: number;
+    // when the mark itself last changed, so a steer edit never restarts its sending window
+    markAt?: number;
 };
 
 // the session's last main turn stopped on the 5h cap: the reset it waits for, and the reset a resume already went for
@@ -116,6 +120,8 @@ export type OrbitAsk = {
     isResolved?: boolean;
     // when a mark came in from another board: an idle session wakes once dima prompts anywhere after it
     markedAt?: number;
+    // a fresh mark is «sending» until this time (ms): a second press before it unsends it, and no turn takes it yet
+    sendAt?: number;
     // an expiry: «halt» leaves at cclio's halt, a number is the turn whose end takes it while still unmarked
     dies?: 'halt' | number;
     // the closing word a resolve gave it («landed», «dropped: superseded by o58»)
