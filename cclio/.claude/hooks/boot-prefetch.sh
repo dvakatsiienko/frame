@@ -117,8 +117,8 @@ for repo in bytes frame; do
 done
 jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
   | ($today | strptime("%Y-%m-%d") | mktime) as $t
-  | ($t - ((($t | strftime("%u") | tonumber) + 4) % 7) * 86400 | strftime("%Y-%m-%d")) as $wednesday
-  | "apps lane: \(length) apps · last marked \($m) · " + (if $m < $wednesday then "DUE (a wednesday passed) — pnpm skill:evergreen-apps" else "next wednesday" end)' \
+  | ((10 - ($t | strftime("%u") | tonumber)) % 7) as $days
+  | "apps lane: \(length) apps · last marked \($m) · " + (if $days == 0 and $m < $today then "DUE today, wednesday — pnpm skill:evergreen-apps" else "next run wednesday \($t + (if $days == 0 then 7 else $days end) * 86400 | strftime("%Y-%m-%d"))" end)' \
   "$HOME/frame/cclio/evergreen/sources.json" || fail "apps lane index unreadable"
 
 fi

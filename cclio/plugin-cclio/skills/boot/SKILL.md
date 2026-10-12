@@ -8,7 +8,7 @@ argument-hint: "[mini | board | <handoff slug>]"
 light boot by default. an argument that loosely means the full picture — «board», «full», or
 similar — adds tracker orientation; any other argument is a handoff topic, ingested at step 4
 (`/cclio:boot <slug>` is the whole opener — one skill per message is all the desktop box sends).
-run silently, report as ONE opening message.
+run silently, report as ONE opening message, after the two reviews (step 7).
 
 🎯 **the boot ORIENTS, it never resolves.** steps 1–8 are pure parse-and-assemble: no answers
 written, no tickets touched, no inbox item worked. the opening board ends with a proposed
@@ -43,7 +43,6 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
   smallest aside included — gets an item in the pocket (Backlog.md, `backlog task create`; `habit-shared-files` holds the contract)
   and its place in the order (its `ordinal`). the checklist line is the completeness
   guarantee; resolution is paced later. **deletion happens at the halt, never here.**
-- then the double check (dima, 2026-10-10: data loss of his drops is the worst outcome): spawn `wishkeeper` 🐬 in boot mode, in the foreground, with the raw inbox text and each item's landing spot (pocket id, ticket, or answer); every finding is folded before the opening board prints. the boot is ONE turn: ccrow's wake fires at cclio's turn end, so a boot that ends a turn early wakes her on half a boot (2026-10-11, her 10:41 packet held 2 minutes and caught nothing).
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 
 ## 4. continuity
@@ -64,8 +63,8 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
 - 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:keep-cache-hot` — it finds dima's desktop tab by name and writes its 🔥 key; no tab → it prints one line, and the board asks dima to open the tab.
 - 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or a Wednesday boot
   whose apps lane says DUE → fire the `/cclio:evergreen` digest as a fork DURING the boot**: the apps
-  lane runs on Wednesdays only, as the full changelog since the last `--mark` (dima, 2026-10-11); DUE
-  on another day is one orbit ask, «missed Wednesday: run the apps lane now?», never a fire. report-only, and say
+  lane runs on Wednesdays only, as the full changelog since the last `--mark` (dima, 2026-10-11); any
+  other day it waits for the next Wednesday, no ask (dima, 2026-10-12). report-only, and say
   so on the board; the report lands as its own message and waits for his word. it never queues
   behind the session plan (2026-09-21: it sat behind a 40-min flush until dima asked). zero and
   not due → say nothing.
@@ -88,13 +87,27 @@ settled lines). no CST, or no pair in it → skip the step. **two lines, last li
 no evidence paragraph, no options, no quotes. **grounded or silent — never invent one.** nothing
 real in the logs → skip the step entirely.
 
-## 7. opening board
-one message, short lines, **no queries here — pure assembly**:
+## 7. two reviews, then the opening board
+**the board prints once, after both reviews are folded** (dima, 2026-10-12: «first gather all
+reviews from wishkeeper and ccrow, only then print a plan»; the boot is the session's planning step):
+- write the draft board to `~/frame/cclio/.scratch/boot-<YYYY-MM-DD>/board-proposal.md` — the write
+  fires ccrow's `proposal` decision wake (`ccrow/decision.ts`), the whole thread in her packet: she
+  checks the parse, the plan, and how cclio read his prompt
+- in the same step, `wishkeeper` 🐬 in boot mode, in the background, with the raw inbox text, his
+  boot prompt and each item's landing spot (pocket id, ticket, or answer): data loss of his drops is
+  the worst outcome
+- end the turn on one line, `🔭 waiting on 🐦‍⬛ ccrow + 🐬 wishkeeper`; fold each finding as it lands,
+  and print the board when both are in. ccrow down (step 4 printed no tab) → wishkeeper alone, and
+  the board says so
+
+the board, one message, short lines, **no queries here — pure assembly**:
 - «hey <model> here» (the root claude.md rule)
 - healthcheck verdict (one line if green)
 - 📝 `flawlog: <path>` — the day's file from step 8, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 8 shows as a missing line (the 2026-09-23 miss: the file never opened all day)
 - ⏰📌 stuck reminders, own line each (omit if none)
 - inbox status · handoffs pending · queue depth + top item
+- 🧭 `roadmap step <n> <name> | bytes: last touched <date>, next touch <when or none>` — `dima-strategy`'s two
+  report rules, on every board (ccrow, 2026-10-12: a board of pure meta-work named neither)
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
   2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), lanes marked, sub-batches labeled;

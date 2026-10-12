@@ -40,7 +40,7 @@ const leavesDir = join(fixtures, 'leaves');
 
 test('the boot prompt is the x:crew-adviser skill body, frontmatter cut', () => {
     const charter = readCharter();
-    expect(charter.startsWith('you are a parked adviser')).toBe(true);
+    expect(charter.startsWith('you are ccrow')).toBe(true);
     expect(charter).toContain('the silence bar');
 });
 
