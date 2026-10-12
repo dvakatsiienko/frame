@@ -38,11 +38,12 @@ GLOSS_AFTER = re.compile(r"^\s*(?:\(|:\s|[—–-]\s|=\s)\s*[^\s)]+\s+[^\s)]+")
 MD_LINK_LABEL = re.compile(r"\[[^\]]*\]\([^)]*\)")
 
 
-def dead_links(prose: str, cwd: str) -> list[str]:
+def dead_links(prose: str, roots: list[str]) -> list[str]:
+    # the event's cwd follows each Bash cd; the launch folder does not, so a link resolving from either one passes
     dead: list[str] = []
     for m in LOCAL_LINK.finditer(prose):
-        target = unquote(LINE_SUFFIX.sub("", m.group(1)))
-        if not os.path.exists(os.path.join(cwd, os.path.expanduser(target))):
+        target = os.path.expanduser(unquote(LINE_SUFFIX.sub("", m.group(1))))
+        if not any(os.path.exists(os.path.join(root, target)) for root in roots):
             dead.append(m.group(1))
     return dead
 
@@ -218,9 +219,9 @@ def main() -> None:
             return
         reply = last_reply(path)
     hits = findings(reply)
-    cwd = event.get("cwd")
-    if cwd:
-        hits += [("dead-link", link) for link in dead_links(FENCE.sub("", reply), cwd)]
+    roots = [r for r in (event.get("cwd"), os.environ.get("CLAUDE_PROJECT_DIR")) if r]
+    if roots:
+        hits += [("dead-link", link) for link in dead_links(FENCE.sub("", reply), roots)]
     if waits_without_dima(FENCE.sub("", reply), str(event.get("session_id", ""))):
         hits.append(("wait-without-dima", "🔭"))
     path = event.get("transcript_path")

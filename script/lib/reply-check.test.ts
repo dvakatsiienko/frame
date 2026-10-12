@@ -299,3 +299,29 @@ describe('a relative link that resolves to nothing', () => {
         ).toBe(undefined);
     });
 });
+
+describe('a link checked from the launch folder after a cd', () => {
+    it('passes a link that resolves from CLAUDE_PROJECT_DIR while cwd moved', () => {
+        const project = mkdtempSync(join(tmpdir(), 'reply-check-project-'));
+        mkdirSync(join(project, 'docs'));
+        mkdirSync(join(project, 'sub'));
+        writeFileSync(join(project, 'docs/here.md'), '');
+        const home = mkdtempSync(join(tmpdir(), 'reply-check-'));
+        const out = spawnSync('python3', [hook], {
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                CLAUDE_PROJECT_DIR: project,
+                REPLY_CHECK_HOME: home,
+                REPLY_CHECK_LOG: join(home, 'log.tsv'),
+                REPLY_CHECK_NOW: '12:00',
+            },
+            input: JSON.stringify({
+                cwd: join(project, 'sub'),
+                last_assistant_message: 'see [x](docs/here.md)',
+                session_id: 'test',
+            }),
+        }).stdout.trim();
+        expect(out).toBe('');
+    });
+});

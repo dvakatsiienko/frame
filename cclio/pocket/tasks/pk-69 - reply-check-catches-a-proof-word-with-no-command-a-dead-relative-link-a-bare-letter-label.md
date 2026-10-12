@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-10-11 21:17'
-updated_date: '2026-10-12 17:32'
+updated_date: '2026-10-12 17:45'
 due_date: '2026-10-13'
 labels:
   - s
@@ -33,4 +33,6 @@ parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — 
 dima o54 (17:22): reply-check reds an unglossed internal id or label — rides lane-l12 item 7 (the mods coder's reply-check edit).
 
 done 20:33: dead links now block (decoded first). the bare letter-digit label rides the unglossed-id block (committed 20:27). left out on purpose: a proof word with no command — the voice rule says the reply says «proven» and the proof lives in the commit, so a check would red the house style; asked in orbit.
+
+dima o85 ✓ 20:34: the proof-word catch dropped for good (the voice rule's plain «proven»)
 <!-- SECTION:NOTES:END -->
