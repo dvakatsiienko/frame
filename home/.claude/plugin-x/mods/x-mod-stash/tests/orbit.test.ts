@@ -114,6 +114,18 @@ test('asks the tool adds list in orbit oldest first, each by its id', async ($, 
     expect(await asksShown(ui)).toEqual(['o1', 'o2', 'o3']);
 });
 
+test('a note being typed keeps the value it showed, so a redraw never moves the caret', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'a' });
+    await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'ab' });
+    expect(
+        (await ui.find({ key: 'orbit:note:o1', type: 'Input' }))?.props.value,
+    ).toBe('');
+});
+
 test("an ask's row reads its text and cclio's pick", async ($, on) => {
     world(on);
     await start($);

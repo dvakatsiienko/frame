@@ -286,46 +286,69 @@ let isWaker = false;
 let shown: Record<string, boolean> = {};
 let isSettingsOpen = false;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
-// a field's text as typed, ahead of its save: a redraw that carried the stored value before the last keystroke's save
-// landed wrote an older string into the field and threw the caret (dima, 16:15: «a caret drifts and breaks the words»)
+// a field never redraws because of its own typing: the surface runs a keystroke ahead of this module, so any changed
+// `value` — the stored note, or even the latest text this module heard — reset the field and threw the caret (dima,
+// 16:15 and 16:22). while typing, the field keeps drawing the value it showed; once typing has been quiet for
+// FIELD_QUIET_MS the stored text takes over. a change from outside (a note cleared once it joined a turn) is drawn at
+// once; when it equals what is already drawn the surface would keep the typed text, so the field remounts under a new key
 export type FieldDraft = {
-    text: string;
-    base: string;
+    drawn: string;
     sent: string[];
+    at: number;
     isLanded: boolean;
 };
+const FIELD_QUIET_MS = 2000;
 const drafts = new Map<string, FieldDraft>();
-// the field draws its draft while the stored value is one it typed itself, or — until one of its saves has landed — the
-// value it started from (a knob refuses a half-typed «0.»); any other value (a note cleared after a follow, a lock) is
-// from outside: it drops the draft and draws the stored one
-export const fieldText = (draft: FieldDraft | undefined, saved: string) =>
-    draft &&
-    (draft.sent.includes(saved) || (!draft.isLanded && saved === draft.base))
-        ? draft.text
-        : saved;
-export const typedInto = (
+const remounts = new Map<string, number>();
+export type FieldView =
+    | { kind: 'held'; draft: FieldDraft }
+    | { kind: 'saved' }
+    | { kind: 'outside'; isRemount: boolean };
+export function fieldView(
     draft: FieldDraft | undefined,
     saved: string,
-    text: string,
-): FieldDraft => {
-    const live =
-        draft && fieldText(draft, saved) === draft.text ? draft : undefined;
+    now: number,
+): FieldView {
+    if (!draft) return { kind: 'saved' };
+    const isOwn = draft.sent.includes(saved);
+    const isLag = saved === draft.drawn && !draft.isLanded;
+    if (!isOwn && !isLag)
+        return { isRemount: saved === draft.drawn, kind: 'outside' };
+    if (now - draft.at >= FIELD_QUIET_MS) return { kind: 'saved' };
     return {
-        base: live?.base ?? saved,
-        isLanded: (live?.isLanded ?? false) || !!live?.sent.includes(saved),
-        sent: [...(live?.sent ?? []).slice(-50), text],
-        text,
+        draft: isOwn && !draft.isLanded ? { ...draft, isLanded: true } : draft,
+        kind: 'held',
     };
-};
+}
+export const typedInto = (
+    draft: FieldDraft | undefined,
+    drawn: string,
+    text: string,
+    now: number,
+): FieldDraft => ({
+    at: now,
+    drawn: draft?.drawn ?? drawn,
+    isLanded: draft?.isLanded ?? false,
+    sent: [...(draft?.sent ?? []).slice(-50), text],
+});
+// a note field remounts on a clear it cannot otherwise show; a number field keeps its typed text beside its refusal line
+const isNumberField = (key: string) =>
+    key.startsWith('knob:') || key === 'compact-at';
 function field(key: string, saved: string) {
-    const draft = drafts.get(key);
-    if (draft && !draft.isLanded && draft.sent.includes(saved))
-        drafts.set(key, { ...draft, isLanded: true });
-    const value = fieldText(drafts.get(key), saved);
-    if (value === saved) drafts.delete(key);
+    const view = fieldView(drafts.get(key), saved, Date.now());
+    if (view.kind === 'held') drafts.set(key, view.draft);
+    else drafts.delete(key);
+    if (view.kind === 'outside' && view.isRemount && !isNumberField(key))
+        remounts.set(key, (remounts.get(key) ?? 0) + 1);
+    const value = view.kind === 'held' ? view.draft.drawn : saved;
+    const gen = remounts.get(key);
     return {
+        key: gen ? `${key}#${gen}` : key,
         type: (text: string) =>
-            drafts.set(key, typedInto(drafts.get(key), saved, text)),
+            drafts.set(
+                key,
+                typedInto(drafts.get(key), value, text, Date.now()),
+            ),
         value,
     };
 }
@@ -2769,7 +2792,7 @@ export const register: Register = (on) => {
                         <Text>{label}</Text>
                         <Box flexShrink={0} width={8}>
                             <Input
-                                key={`knob:${key}`}
+                                key={field(`knob:${key}`, String(value)).key}
                                 onInput={(text) => {
                                     field(`knob:${key}`, String(value)).type(
                                         text,
@@ -2862,7 +2885,14 @@ export const register: Register = (on) => {
                         <Text>📦 auto-compact at</Text>
                         <Box flexShrink={0} width={8}>
                             <Input
-                                key='compact-at'
+                                key={
+                                    field(
+                                        'compact-at',
+                                        meter?.compactAt === undefined
+                                            ? ''
+                                            : String(meter.compactAt),
+                                    ).key
+                                }
                                 onInput={(value) => {
                                     field(
                                         'compact-at',
@@ -3155,7 +3185,12 @@ export const register: Register = (on) => {
                     ) : Input ? (
                         <Box flexShrink={1} minWidth={0}>
                             <Input
-                                key={`${door.prefix}:note:${a.id}`}
+                                key={
+                                    field(
+                                        `${door.prefix}:note:${a.id}`,
+                                        a.note ?? '',
+                                    ).key
+                                }
                                 onInput={(value: string) => {
                                     field(
                                         `${door.prefix}:note:${a.id}`,
@@ -3278,7 +3313,12 @@ export const register: Register = (on) => {
                                         {Input ? (
                                             <Box flexShrink={1} minWidth={0}>
                                                 <Input
-                                                    key={`orbit:anote:${x.id}`}
+                                                    key={
+                                                        field(
+                                                            `orbit:anote:${x.id}`,
+                                                            x.note ?? '',
+                                                        ).key
+                                                    }
                                                     onInput={(
                                                         value: string,
                                                     ) => {
@@ -3378,7 +3418,12 @@ export const register: Register = (on) => {
                                         ) : Input ? (
                                             <Box flexShrink={1} minWidth={0}>
                                                 <Input
-                                                    key={`orbit:cnote:${x.id}`}
+                                                    key={
+                                                        field(
+                                                            `orbit:cnote:${x.id}`,
+                                                            x.note ?? '',
+                                                        ).key
+                                                    }
                                                     onInput={(
                                                         value: string,
                                                     ) => {
@@ -3510,7 +3555,12 @@ export const register: Register = (on) => {
                                     {i === lane.current && Input ? (
                                         <Box flexShrink={1} minWidth={0}>
                                             <Input
-                                                key={`lane:${lane.id}:note`}
+                                                key={
+                                                    field(
+                                                        `lane:${lane.id}:note`,
+                                                        lane.note ?? '',
+                                                    ).key
+                                                }
                                                 onInput={(value: string) => {
                                                     field(
                                                         `lane:${lane.id}:note`,

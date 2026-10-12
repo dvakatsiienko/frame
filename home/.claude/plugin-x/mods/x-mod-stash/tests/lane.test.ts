@@ -375,14 +375,16 @@ test('a taken note clears from the box once cclio took it', async ($, on) => {
     await create($);
     await note(ui, 'cards first');
     await take(ui);
-    const typed = (await ui.find({ key: 'lane:l1:note', type: 'Input' }))?.props
-        .value;
     await say($, 'go');
+    // the field held what it showed while typed into; the clear remounts it, so the surface drops the typed text
+    const box = (await ui.findAll({ type: 'Input' })).find((n) =>
+        n.key?.startsWith('lane:l1:note'),
+    );
     expect([
-        typed,
-        (await ui.find({ key: 'lane:l1:note', type: 'Input' }))?.props.value,
+        box?.key,
+        box?.props.value,
         (await ui.find({ key: 'lane:l1:take', type: 'Button' }))?.text,
-    ]).toEqual(['cards first', '', '🛎️ tick']);
+    ]).toEqual(['lane:l1:note#1', '', '🛎️ tick']);
 });
 
 test('a step past an item marks it done, never leaving the pointer on a done one', async ($, on) => {
