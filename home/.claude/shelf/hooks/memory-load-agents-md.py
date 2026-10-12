@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-# PreToolUse on Read/Edit/Write: a file outside this session's project gets its repo's AGENTS.md
-# chain injected once per session. cc loads memory only upward from the launch dir and lazily
+# PreToolUse on Read/Edit/Write/Bash: a file outside this session's project gets its repo's AGENTS.md
+# chain injected once per session; a Bash call counts each plain path argument that exists (dima, 2026-10-12:
+# «a bash cat would also trigger it»). a compaction empties the marks (memory-load-rule-lazy's forget), so the
+# next touch attaches again. cc loads memory only upward from the launch dir and lazily
 # below it (code.claude.com/docs/en/memory), so a session that travels into another repo edits
 # there blind — a bytes edit from a frame session never saw bytes' rules (dima, 2026-09-28).
 import json
 import os
 import re
+import shlex
 import sys
 import tempfile
 
@@ -14,29 +17,56 @@ IMPORT = re.compile(r"^@(\S+)\s*$", re.M)
 INLINE_CAP = 8_000
 
 event = json.load(sys.stdin)
-target = event.get("tool_input", {}).get("file_path") or ""
-project = os.path.realpath(os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or "")
+tool_input = event.get("tool_input") or {}
+cwd = event.get("cwd") or ""
+project = os.path.realpath(os.environ.get("CLAUDE_PROJECT_DIR") or cwd)
 home = os.path.realpath(os.path.expanduser("~"))
-if not target or not project:
-    sys.exit(0)
 
-target = os.path.realpath(os.path.expanduser(target))
+
+def bash_paths(command):
+    # every word after a command's name that names a path on disk — plain words only, nothing expanded or run
+    try:
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+        lexer.whitespace_split = True
+        words = list(lexer)
+    except ValueError:
+        return []
+    paths, is_name = [], True
+    for w in words:
+        if w and set(w) <= set("|&;()<>"):
+            is_name = w not in "<>" and w not in (">>", "&>", "2>")
+            continue
+        if is_name:
+            is_name = False
+            continue
+        if not w.startswith("-") and ("/" in w or w.startswith("~")):
+            path = os.path.join(cwd, os.path.expanduser(w))
+            if os.path.exists(path):
+                paths.append(path)
+    return paths
+
+
+raw = bash_paths(str(tool_input.get("command", ""))) if event.get("tool_name") == "Bash" else [tool_input.get("file_path") or ""]
+targets = [os.path.realpath(os.path.expanduser(t)) for t in raw if t]
+if not targets or not project:
+    sys.exit(0)
 
 
 def within(path, root):
     return path == root or path.startswith(root + os.sep)
 
 
-if within(target, project):
-    sys.exit(0)
-
-# the dirs between the file and home, nearest first; the project's own ancestors are loaded at launch
+# the dirs between each file and home, nearest first; a dir argument counts itself; the project's own ancestors
+# are loaded at launch
 dirs = []
-here = os.path.dirname(target)
-while within(here, home) and here != home:
-    if not within(project, here):
-        dirs.append(here)
-    here = os.path.dirname(here)
+for target in targets:
+    if within(target, project):
+        continue
+    here = target if os.path.isdir(target) else os.path.dirname(target)
+    while within(here, home) and here != home:
+        if not within(project, here) and here not in dirs:
+            dirs.append(here)
+        here = os.path.dirname(here)
 
 state_dir = os.path.join(tempfile.gettempdir(), "cc-memory-load-agents-md")
 os.makedirs(state_dir, exist_ok=True)

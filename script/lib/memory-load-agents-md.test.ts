@@ -1,0 +1,70 @@
+import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { expect, it } from 'vitest';
+
+const hooks = join(import.meta.dirname, '../../home/.claude/shelf/hooks');
+
+// a home with frame/cclio as the session's project and frame/recipes beside it, each with its own AGENTS.md
+function session() {
+    const home = mkdtempSync(join(tmpdir(), 'agents-md-'));
+    const project = join(home, 'frame/cclio');
+    mkdirSync(project, { recursive: true });
+    mkdirSync(join(home, 'frame/recipes'));
+    writeFileSync(join(home, 'frame/AGENTS.md'), '# frame rules\n');
+    writeFileSync(join(home, 'frame/recipes/AGENTS.md'), '# recipe rules\n');
+    writeFileSync(join(home, 'frame/recipes/r.md'), 'a recipe\n');
+    const id = randomUUID();
+    const run = (hook: string, event: Record<string, unknown>) =>
+        spawnSync('python3', [join(hooks, hook)], {
+            encoding: 'utf8',
+            env: { ...process.env, CLAUDE_PROJECT_DIR: project, HOME: home },
+            input: JSON.stringify({ cwd: project, session_id: id, ...event }),
+        }).stdout;
+    const bash = (command: string): string => {
+        const out = run('memory-load-agents-md.py', {
+            hook_event_name: 'PreToolUse',
+            tool_input: { command },
+            tool_name: 'Bash',
+        });
+        return out ? JSON.parse(out).hookSpecificOutput.additionalContext : '';
+    };
+    // the reset is memory-load-rule-lazy's: on a compaction it empties every memory-load-* mark of the session
+    const compact = () =>
+        run('memory-load-rule-lazy.py', {
+            hook_event_name: 'SessionStart',
+            source: 'compact',
+        });
+    return { bash, compact };
+}
+
+it("a cat of a file outside the project attaches that folder's AGENTS.md", () => {
+    const out = session().bash('cat ../recipes/r.md | head -5');
+    expect([
+        out.includes('# recipe rules'),
+        out.includes('# frame rules'),
+    ]).toEqual([true, false]);
+});
+
+it('a second cat in the same session attaches nothing', () => {
+    const s = session();
+    s.bash('cat ../recipes/r.md');
+    expect(s.bash('cat ../recipes/r.md')).toBe('');
+});
+
+it('a cat after a compaction attaches the AGENTS.md again', () => {
+    const s = session();
+    s.bash('cat ../recipes/r.md');
+    s.compact();
+    expect(s.bash('cat ../recipes/r.md')).toContain('# recipe rules');
+});
+
+it('a command naming no path attaches nothing', () => {
+    expect(session().bash('git status && echo done')).toBe('');
+});
+
+it('an ls of a dir outside the project attaches its AGENTS.md', () => {
+    expect(session().bash('ls -la ../recipes/')).toContain('# recipe rules');
+});
