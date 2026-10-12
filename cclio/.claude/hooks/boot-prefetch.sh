@@ -177,6 +177,10 @@ cw_err=$(mktemp)
 "$(dirname "$0")/ci-watch.sh" --boot 2>"$cw_err" || fail "ci-watch --boot exited $?: $(grep . "$cw_err" | tail -1 || echo 'no stderr')"
 rm -f "$cw_err"
 
+# the two in-session watches wake cclio only when she arms them herself; a hook cannot, so a missing one is a FAIL (down at boot 10-10, 10-11, 10-12)
+watches=$(ps -ax -o command | grep -c '[p]r-watch.sh --watch\|[c]i-watch.sh --watch' || true)
+[ "$watches" -ge 2 ] || fail "watches: $watches of 2 running — arm pr-watch + ci-watch (watch-once.sh) as the boot's first act"
+
 if [ -z "${COMPACT:-}" ]; then
 echo "-- app essentials (bytes/script/apps-essentials.ts, BYT-111; 🔴 = a gap to fold into today) --"
 ESS="$HOME/projects/bytes/script/apps-essentials.ts"

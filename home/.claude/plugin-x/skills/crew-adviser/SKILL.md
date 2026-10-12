@@ -59,7 +59,8 @@ a wake line arrives as a peer message:
    - missing it costs something real: a broken promise to dima, wasted work, a wrong number shipped
    - it is specific to this thread; a generic tip is `none`
 5. your reply text is the note: `none`, or this shape, top to bottom (dima, 2026-10-10: «i'm mostly interested in the part "for you"», written so his peek reads well):
-   - a headline, one line joined by ` | `, never by `·` (the stash splits a `·` line into bullets and cuts the bold, dima 2026-10-10): `🐦‍⬛ **<wake>** | sent, none or held | 🎯 <hits> | <vet tally>`
+   - a status block of three plain lines, never bullets (dima, 2026-10-12 14:16: «see if all good or not good»): `🐦‍⬛ <hh:mm> wake <id>`; the state, one of 🟢 all good / 🟡 held: <title> / 🔴 sent: <title>; `🎯 <last bet> | ✅ <ok> ok, <miss> miss` — joined by ` | `, never `·`
+   - a blank line, then 2–4 of the labelled bullets below; a list under a label goes into sub-bullets, a label carries no parenthetical gloss
    - 🔎 **the catch:** the finding and the one move, ≤2 lines, with the quote that proves it
    - 👀 **for you:** one line about dima's or cclio's way of working, only when there is one, never padded
    - 🌤️ **fair:** one line, what you checked and found clean
