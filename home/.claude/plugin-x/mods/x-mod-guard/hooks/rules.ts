@@ -222,6 +222,33 @@ export function foregroundClaude(
     };
 }
 
+// a plugin's cache moves through x plugin bump, never a raw update: 36 raw update calls in 14 days, while the bump also
+// reads the cache back (FRM-389 exit 7, dima's o33); every session, cclio's included
+export function rawPluginUpdate(
+    command: string,
+    cwd: string,
+): Refusal | undefined {
+    for (const c of commands(parse(command), cwd)) {
+        if (c.name !== 'claude') continue;
+        const [a, b, d] = c.args.map((w) => w.text);
+        if (a !== 'plugin') continue;
+        const isUpdate =
+            b === 'update' || (b === 'marketplace' && d === 'update');
+        if (!isUpdate) continue;
+        return {
+            door: 'x plugin bump --apply <plugin>',
+            rule: 'raw-plugin-update',
+            targets: [
+                b === 'update'
+                    ? 'claude plugin update'
+                    : 'claude plugin marketplace update',
+            ],
+            why: 'x plugin bump bumps, updates the marketplace and the plugin, and reads the cache back in one call (FRM-345)',
+        };
+    }
+    return undefined;
+}
+
 // a member reads and comments on tickets through x linear, never the raw cli (FRM-398, rules-lazy/linear-flow.md);
 // cclio's own session is never asked, the caller checks the registry name
 export function rawLinear(command: string, cwd: string): Refusal | undefined {

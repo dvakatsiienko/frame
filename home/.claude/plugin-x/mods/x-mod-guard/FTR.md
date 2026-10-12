@@ -165,6 +165,13 @@
   - given an install with no manifest change, the flag present, or no `CI=1`, then it runs unflagged
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the `fleet-hazards.md` line left with this rule
 
+- ⬜ a raw plugin update names `x plugin bump`, warn-only (FRM-389 exit 7)
+  - given any session runs `claude plugin update …` or `claude plugin marketplace update …`
+  - then it runs, and the model reads «would refuse» with `x plugin bump --apply <plugin>` named; with `rule-mode:raw-plugin-update` = «enforce» nothing runs
+  - given `claude plugin list`, `validate`, `test`, a quoted mention or another `claude … update`, then it runs unwarned
+  - decision: every session, cclio's included — the bump is everyone's door, and it reads the cache back where a raw update does not (36 raw update calls in 14 days, dima's o33)
+  - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70)
+
 - ⬜ a member's raw `linear` read or comment is warned until 2026-10-18, then refused, the `x linear` door named (FRM-398)
   - decision: warn-only for a week, then refuse (dima's o234); the flip is `raw-linear` leaving `WARN_ONLY` in `hooks/register.ts`, `rule-mode:raw-linear` = «enforce» turns it on early
   - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --as coder --body-file <file>`

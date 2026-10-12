@@ -13,6 +13,7 @@ import {
     message,
     namesWhole,
     rawLinear,
+    rawPluginUpdate,
     removedTrees,
 } from './rules.ts';
 
@@ -172,6 +173,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
     'raw-linear',
+    'raw-plugin-update',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (verifier, 15:08)
@@ -623,6 +625,12 @@ export const register: Register = (on) => {
                     said,
                 );
             }
+        }
+        // a raw plugin update names x plugin bump, every session's door (FRM-389 exit 7); warn-only until its verifier
+        const bump = rawPluginUpdate(typed, cwd);
+        if (bump) {
+            const said = `x-mod-guard stopped this one command. instead: ${bump.door}. why: ${bump.why}.`;
+            return enforce(bump, `nothing in this command ran — ${said}`, said);
         }
         if (verdict.kind === 'run') return go();
         if (verdict.kind === 'refused')
