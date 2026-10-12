@@ -1,6 +1,11 @@
 import { expect, test } from 'claude-code/testing';
 
-import { type FieldDraft, fieldView, typedInto } from '../hooks/register.tsx';
+import {
+    type FieldDraft,
+    fieldView,
+    isTypingAt,
+    typedInto,
+} from '../hooks/register.tsx';
 
 // a field never redraws because of its own typing (dima, 16:15 and 16:22: the caret drifted mid-word)
 const T = 1_000_000;
@@ -48,4 +53,12 @@ test('the first keystroke before its save lands is lag, never outside', () => {
 
 test('a knob value the knob refuses changes nothing drawn while typing', () => {
     expect(drawn(typeAll('0.5', '0', '0.'), '0.5', T + 300)).toBe('0.5');
+});
+
+test('the poll counts a field typed into within 2 s as typing, and an older one as idle', () => {
+    expect([
+        isTypingAt([T], T + 1900),
+        isTypingAt([T], T + 2100),
+        isTypingAt([], T),
+    ]).toEqual([true, false, false]);
 });

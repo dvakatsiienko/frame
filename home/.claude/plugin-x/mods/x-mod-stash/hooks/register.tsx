@@ -306,6 +306,10 @@ const pendingSaves = new Map<
     string,
     { save: () => unknown; timer: { cancel: () => void } }
 >();
+// a field was typed into within the quiet window: the poll holds its redraw till it passes
+export const isTypingAt = (typedAt: readonly number[], now: number) =>
+    typedAt.some((at) => now - at < FIELD_QUIET_MS);
+
 // every save still waiting on a pause runs now: before a press, a prompt or a tool call reads what was typed
 async function flushFields() {
     const due = [...pendingSaves];
@@ -1589,7 +1593,15 @@ async function publish($: EngineInterface) {
                 m.statusSince === undefined ? null : span(now - m.statusSince),
             ),
         });
-        if (boardText !== boardPublished) {
+        // the poll's board redraw waits while a note is typed into: a redraw scrolled the field back to its start
+        // (dima's o8, 16:54: «far less often» after the save delay; the poll was what was left)
+        if (
+            boardText !== boardPublished &&
+            !isTypingAt(
+                [...drafts.values()].map((d) => d.at),
+                Date.now(),
+            )
+        ) {
             boardPublished = boardText;
             await $.state.set(BOARD_VIEW, board).catch(() => undefined);
         }
