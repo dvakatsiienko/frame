@@ -60,6 +60,7 @@
         "mods:live": "node ./home/.claude/plugin-x/mods/live.ts",
         "mods:probe": "node ./home/.claude/plugin-x/mods/probe.ts",
         "mods:probe-x-mod-redact": "node ./home/.claude/plugin-x/mods/probe-x-mod-redact.ts",
+        "mods:quiet-canary": "node ./home/.claude/plugin-x/mods/quiet-canary.ts",
         "mods:test": "node ./home/.claude/plugin-x/mods/test.ts",
         "mods:typecheck": "node ./home/.claude/plugin-x/mods/typecheck.ts",
         "mods:writes": "node ./home/.claude/plugin-x/mods/writes.ts",
