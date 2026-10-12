@@ -1096,3 +1096,21 @@ test('a held ping inside the wait + 2 min keeps the 🤫 n plain', async ($, on)
     const badge = await (await board($)).find({ text: '🤫 1', type: 'Text' });
     expect(badge?.props.color).toBeUndefined();
 });
+
+test("ccrow's lines count for her though the log keeps the registry's split «🐦 ⬛» and the board the joined «🐦‍⬛»", async ($, on) => {
+    const { clock } = fleet(
+        on,
+        {
+            [`quiet-log:${DAY}`]: [
+                logged('🐦 ⬛ ccrow', NOW - 30 * MIN),
+                logged('🐦 ⬛ ccrow', NOW - 20 * MIN),
+            ],
+        },
+        {
+            isOwner: true,
+            patch: { 2: { name: '🐦 ⬛ ccrow' } },
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+        },
+    );
+    expect(await gapRow($, clock)).toBeUndefined();
+});

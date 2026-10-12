@@ -567,8 +567,9 @@ async function quietLedger($: EngineInterface, now: number) {
             .split('\n')
             .map((t) => Date.parse(t))
             .filter((t) => t >= since && t <= now - LEDGER_GRACE_MS).length;
+        // the envelope names ccrow as the registry stores her («🐦 ⬛», the joiner a space), the board as rejoined: bare both
         const logged = judged.filter(
-            (l) => l.from === r.base.name && l.at >= since,
+            (l) => bare(l.from) === bare(r.base.name) && l.at >= since,
         ).length;
         if (sent > logged) gaps.push({ from: r.base.name, logged, sent });
     }
