@@ -3,10 +3,10 @@ id: PK-81
 title: >-
   read the two parked skill threads, then answer: is the knowledge idea worth
   it?
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 16:57'
 due_date: '2026-10-14'
 labels:
   - m
@@ -26,4 +26,6 @@ dima, inbox 2026-10-12, folded. last night i ran an experiment: two threads, one
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
+
+answered 19:57 (.scratch/pk81/threads-read.md, ~/frame): yes, with a check after the edit. coder: round 1 two gut proposals → round 2 eight principle-tied (4 new problems) → round 3 numbers (36 % false loads) and two self-corrections; verifier: the sharpest find (tests never proven to fail) only after the recipe; both cleanups shrank the skill (−11 %, −20 %) yet both broke behaviour (rebase→merge, a false-clean rule), caught by outside checks, never by the reading. feeds PK-83: the groom pairs every knowledge read with a verifier pass on the diff.
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 16:55'
+updated_date: '2026-10-12 16:58'
 due_date: '2026-10-16'
 labels:
   - m
@@ -36,4 +36,6 @@ from the x domain-modeling coder's retro (2026-10-12): crew-coder has no line fo
 dima 18:01: when the memory sweep reaches skills, shape and run nurture-skills (never run yet) as the groom's engine.
 
 dima o76/o77 19:55, don't forget: fleet-models moves into x:crew-lead (models knowledge serves only the spawner, cclio + dima — the one-home test) and merges with crew-lead/models.md, one copy; the shelf drops it.
+
+dima o79–o81 19:57, don't forget: spawning-mechanics moves into x:crew-lead too (its references), with its drafted core (~/frame/cclio/.scratch/knowledge-79/core-6-7.md § 7); crew-lead keeps its procedure, the facts live in its references, delivered on load.
 <!-- SECTION:NOTES:END -->

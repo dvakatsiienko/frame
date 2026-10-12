@@ -1,4 +1,22 @@
+---
+fed-by: recipe refresh-crew-coordinator
+when:
+  - { kind: skill, value: x:crew-cloud }
+  - { kind: skill, value: x:handoff }
+  - { kind: command, value: claude --cloud }
+  - { kind: basename, value: fleet-identity.md }
+---
+
 # Claude fleet: capabilities, memory, who can operate whom
+
+## core
+
+- the surfaces: `cc` (the mac cli, loads everything), cclio (cc in ~/frame/cclio + her barrel), Code-tab sessions (cc from the desktop + desktop-only MCP servers injected once at creation, never for `--bg` or a resume; the desktop's bundled cc can lag the terminal's, 2.1.295 vs 2.1.296 on 2026-10-12), `cc cloud` (no ~/.claude, no plugin-x, the repo's AGENTS.md only), `cw` (the Claude app: the x-cw plugin, no rules/, hooks or root CLAUDE.md)
+- memory per surface: cc files; cw `memory_*` entries through `x-cw:memory-update`; cloud none; a Projects mount is read by cloud threads only
+- who reaches whom: SendMessage reaches local, `--bg` and Code-tab sessions both ways; a cloud session takes a steer only as `claude -p "<msg>" --cloud <id>` and never messages back; a Projects coordinator cannot reach the mac
+- «harness» is reserved for the FRM-43 thread; `CLAUDE_CONFIG_DIR` is rejected for isolation (it leaks four ways)
+
+the rest: Projects, Desktop Commander, the two cloud VMs, claude on disk, scheduling, power.
 
 📌 **Do not delete — core coordinator knowledge.** The capability reference behind
 `home/.claude/rules/fleet-identity.md`, which keeps only the lean charter and points here.

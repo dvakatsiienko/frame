@@ -4,7 +4,7 @@ title: knowledge files become a must-read whenever their area is touched
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 16:48'
+updated_date: '2026-10-12 16:58'
 due_date: '2026-10-15'
 labels:
   - m
@@ -58,4 +58,6 @@ dima o62 18:01: recipes stay wide; each shelf file gets a fed-by: line (recipe <
 dima o64 18:13, the shelf test for knowledge/AGENTS.md: a subject that lives in one place (the mods, in plugin-x/mods/) keeps its knowledge in that home; the shelf holds subjects scattered across the fs (go/charm in any app).
 
 19:50: steps 1, 2, 4, 5 done (scouts 98569e9d, author-memory d05e6323, primer trace in docs/test-drive/primer.md); step 3 shelf: 4 of 7 landed, 5–7 drafted (o76, o78, o79); knowledge/AGENTS.md landed. left: land 5–7, then the primer build joins the mods lane after l12.
+
+19:57: shelf 6 capabilities landed; 5 fleet-models + 7 spawning-mechanics leave the shelf for x:crew-lead (o76, o81) at the skills groom, PK-83. the shelf revamp is done.
 <!-- SECTION:NOTES:END -->
