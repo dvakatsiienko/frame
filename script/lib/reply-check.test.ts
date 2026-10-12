@@ -343,3 +343,20 @@ describe('a reply that is only the stamp', () => {
         ).toBe(undefined);
     });
 });
+
+describe('a 🔭 line with an aside', () => {
+    it('blocks a 🔭 line that carries a parenthetical', () => {
+        expect(
+            stop('ok.\n\n🔭 waiting on dima (the glide pick)', '12:05')?.reason,
+        ).toContain('(…) aside');
+    });
+
+    it('passes a 🔭 line whose only parens are a markdown link', () => {
+        expect(
+            stop(
+                'ok.\n\n🔭 waiting on the bots on [🔎 #70](https://github.com/x/y/pull/70)',
+                '12:05',
+            ),
+        ).toBe(undefined);
+    });
+});

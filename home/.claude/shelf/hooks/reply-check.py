@@ -206,6 +206,10 @@ def findings(reply: str) -> list[tuple[str, str]]:
     # each fence is judged alone: a Q line in prose between two command fences once matched across them
     found += [("grill-fence", f.group(0)[3:43]) for f in FENCE.finditer(reply) if GRILL_ANSWER.search(f.group(0))]
     found += [("unglossed-id", token) for token in unglossed(prose)]
+    # the 🔭 line is «🔭 waiting on <who>», nothing more; a (…) aside there was caught by dima three times on 10-12
+    for line in WAIT_LINE.findall(MD_LINK_LABEL.sub("", prose)):
+        if "(" in line:
+            found.append(("wait-paren", line.strip()[:40]))
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (ccrow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
@@ -265,6 +269,8 @@ def main() -> None:
     bare = [snippet for rule, snippet in hits if rule == "unglossed-id"]
     if bare:
         reasons.append(f"an internal id with no gloss ({', '.join(bare)}): dima reads it cold. give each its three-word gloss at first use — `o56 (the trash ask)` — or say the plain thing instead.")
+    if any(rule == "wait-paren" for rule, _ in hits):
+        reasons.append("the 🔭 line carries a (…) aside: it is «🔭 waiting on <who>», nothing more (a link with its emoji label is fine). drop the aside and reprint the line.")
     if any(rule == "empty-reply" for rule, _ in hits):
         reasons.append("the reply holds only the 📄 stamp and the 🔭 line: the answer sits in a mid-turn block dima never sees. reprint the answer in full above the stamp.")
     dead = [snippet for rule, snippet in hits if rule == "dead-link"]
