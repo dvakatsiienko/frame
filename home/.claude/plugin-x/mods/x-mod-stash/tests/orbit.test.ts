@@ -1575,7 +1575,7 @@ test('orbit registers loaded up front, never behind ToolSearch', async ($, on) =
 
 /* PK-88: a tick waits 5 s in a reversible «sending» state */
 
-test('a tick reads 📨 sending for 5 s, then ✅ tick', async ($, on) => {
+test('a tick reads 📨 tick for 5 s, then ✅ tick: only the icon changes', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -1586,7 +1586,7 @@ test('a tick reads 📨 sending for 5 s, then ✅ tick', async ($, on) => {
     expect([
         sending,
         (await ui.find({ key: 'orbit:accepted:o1' }))?.text,
-    ]).toEqual(['📨 sending', '✅ tick']);
+    ]).toEqual(['📨 tick', '✅ tick']);
 });
 
 test('a tick unticked inside its 5 s never reaches the turn', async ($, on) => {

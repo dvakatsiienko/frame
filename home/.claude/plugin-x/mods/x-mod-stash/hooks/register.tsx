@@ -3596,7 +3596,7 @@ export const register: Register = (on) => {
                 {...(mark === 'accepted'
                     ? { variant: 'primary' as const }
                     : {})}>
-                {`${a.mark === mark ? (a.isLocked ? '🔓' : isSending(a, drawnAt) ? '📨' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${a.mark === mark && !a.isLocked && isSending(a, drawnAt) ? 'sending' : mark === 'accepted' ? 'tick' : 'replay'}`}
+                {`${a.mark === mark ? (a.isLocked ? '🔓' : isSending(a, drawnAt) ? '📨' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'tick' : 'replay'}`}
             </Button>
         );
         const handleAssumedSteer = (id: string, value: string) =>
