@@ -236,6 +236,8 @@ const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 // the phases guard, no extra turn and no Stop block: one line at the first prompt, one nudge in a turn's tool results (dima's o14)
 const PHASES_START = `phases are your live plan: set them with ${ORBIT_TOOL}'s plan op and keep them current as the work moves.`;
 const NUDGE_AT = 3;
+// a plan set in either of the last 2 turns still holds: a turn that did not move it gets no nudge (cclio's brief 8)
+const PLAN_QUIET_TURNS = 2;
 // mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 // a board card folded to its head row, per session (dima's o5, 17:16)
@@ -4705,12 +4707,12 @@ export const register: Register = (on) => {
             !isNudged &&
             ++turnTools >= NUDGE_AT &&
             isWorkTurn &&
-            !(o.plan && o.plan.at === o.turns + 1)
+            !(o.plan && o.plan.at >= o.turns + 1 - PLAN_QUIET_TURNS)
         ) {
             isNudged = true;
             notes.push(
                 o.plan
-                    ? `phases not set this turn — update them with ${ORBIT_TOOL} plan`
+                    ? `phases not set for ${PLAN_QUIET_TURNS + 1} turns — update them with ${ORBIT_TOOL} plan`
                     : `no phases yet — set them with ${ORBIT_TOOL} plan`,
             );
         }

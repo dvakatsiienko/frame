@@ -600,6 +600,25 @@ test('a turn that set its phases gets no nudge', async ($, on) => {
     expect(seen.some((c) => /phases/.test(c))).toBe(false);
 });
 
+test('phases set in the last 2 turns hold: working turns stay quiet till the third', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'go');
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await endTurn($);
+    const nudged: boolean[] = [];
+    for (let i = 0; i < 3; i++) {
+        await say($, 'go on');
+        nudged.push(
+            (await edits($, 3)).some((c) =>
+                /phases not set for 3 turns/.test(c),
+            ),
+        );
+        await endTurn($);
+    }
+    expect(nudged).toEqual([false, false, true]);
+});
+
 test('the phases show in the board, a moon each, at most seven', async ($, on) => {
     world(on);
     await start($);

@@ -601,9 +601,10 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - then it carries one model-only line: phases are the live plan, set them with orbit's plan op and keep them current
   - given a `/clear` or a resume, then the next conversation's first prompt carries the line again — the process outlives the conversation (o59)
   - given a plan set with fewer than 7 lines, then the plan op's answer adds «plan has N of 7, fill to 7»; 7 lines get none (o74)
-  - given a working turn — an edit, an Agent spawn, a glide move, or a Bash that runs `claude --bg`, `claude stop`, a commit or an `x lane` publish — has run 3 tool calls and set no phases this turn
+  - given a working turn — an edit, an Agent spawn, a glide move, or a Bash that runs `claude --bg`, `claude stop`, a commit or an `x lane` publish — has run 3 tool calls, with no phases set in this turn or the 2 before it
   - when the third result comes back
-  - then it carries «no phases yet — set them with orbit plan» (or «phases not set this turn» when older ones exist), once a turn
+  - then it carries «no phases yet — set them with orbit plan» (or «phases not set for 3 turns» when older ones exist), once a turn
+  - decision: phases set in the last 2 turns still hold, so a working turn that did not move them stays quiet (cclio's brief 8, 2026-10-12)
   - decision: never a Stop block, never an extra turn (dima's o14, 2026-10-11 11:27)
   - decision: a q&a turn of reads gets no nudge — the 3-turn stale mark covers it; the nudge on every turn drove 235 plan calls in one session (PK-70, dima 00:28: «fewer redundant tool calls, phases still real-time»)
 - ✅ stale phases are named
