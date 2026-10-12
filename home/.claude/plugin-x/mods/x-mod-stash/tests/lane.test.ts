@@ -515,11 +515,11 @@ test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:coder' });
     expect(await subText(ui, 'coder')).toMatch(
-        /o3: cut the second probe\?.*➡️ cut it.*take.*replay/su,
+        /o3: cut the second probe\?.*➡️ cut it.*tick.*replay/su,
     );
 });
 
-test("a take on the card waits in the store for the member's own stash", async ($, on) => {
+test("a tick on the card waits in the store for the member's own stash", async ($, on) => {
     const w = world(on, { files: linked() });
     published(w, CODER, [ASK]);
     await start($);
@@ -529,7 +529,7 @@ test("a take on the card waits in the store for the member's own stash", async (
     expect([
         (w.store.get(`marks:${CODER}:o3`) as { mark?: string })?.mark,
         await subText(ui, 'coder'),
-    ]).toEqual(['accepted', expect.stringContaining('✅ take')]);
+    ]).toEqual(['accepted', expect.stringContaining('✅ tick')]);
 });
 
 async function memberWithAsk($: Engine, on: On) {
@@ -616,7 +616,7 @@ test("an ask's buttons sit on the line under its pick, never beside it", async (
     const row = (
         await (await board($)).find({ key: 'orbit:row:o1', type: 'Box' })
     )?.text;
-    expect([row?.includes('take'), row?.includes('cut it')]).toEqual([
+    expect([row?.includes('tick'), row?.includes('cut it')]).toEqual([
         true,
         false,
     ]);

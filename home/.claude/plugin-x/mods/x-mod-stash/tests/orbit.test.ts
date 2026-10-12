@@ -277,7 +277,7 @@ test("a joined ask's held button reads 🔓, and a press changes nothing", async
         (await ui.find({ key: 'orbit:accepted:o1', type: 'Button' }))?.text;
     const held = await take();
     await ui.press({ key: 'orbit:accepted:o1' });
-    expect([held, await take()]).toEqual(['🔓 take', '🔓 take']);
+    expect([held, await take()]).toEqual(['🔓 tick', '🔓 tick']);
 });
 
 test('an ask the turn left unanswered gets its controls back when the turn ends', async ($, on) => {
@@ -308,9 +308,9 @@ test('a held mark swaps its emoji for ✅, and only one of the two holds it', as
     const taken = await look();
     await ui.press({ key: 'orbit:rejected:o1' });
     expect([idle, taken, await look()]).toEqual([
-        ['🛎️ take|primary', '🔁 replay|-'],
-        ['✅ take|primary', '🔁 replay|-'],
-        ['🛎️ take|primary', '✅ replay|-'],
+        ['🛎️ tick|primary', '🔁 replay|-'],
+        ['✅ tick|primary', '🔁 replay|-'],
+        ['🛎️ tick|primary', '✅ replay|-'],
     ]);
 });
 
@@ -377,7 +377,7 @@ test('a follow-up keeps its id and place with new text, led by 🆕', async ($, 
     ]).toEqual([
         ['o1', 'o2'],
         expect.stringMatching(
-            /^🆕 o1: push the branch once ci is green➡️ after ci🛎️ take/u,
+            /^🆕 o1: push the branch once ci is green➡️ after ci🛎️ tick/u,
         ),
     ]);
 });
