@@ -157,7 +157,7 @@
   - given the switch off — `guard-silent: true` in x-mod-stash's store file, read with `$.fs`, read-only
   - when a call is rewritten, hinted or reaches the 8th cclio edit
   - then the rewrite still runs and no note joins the model's context; a refusal and a warn-only «would refuse» still speak, the floor untouched
-  - decision: guard reads stash's file rather than keeping its own knob — one 🎛️ view, the store is one file per plugin (`mods/AGENTS.md`)
+  - decision: guard reads stash's file rather than keeping its own knob — one 🎛️ view, the store is one file per plugin (`mods/engine.md`)
 
 - ⬜ `CI=1 pnpm` with a frozen lockfile is flagged, warn-only (FRM-393)
   - given `CI=1 pnpm add|remove …`, or `CI=1 pnpm install` while `git diff --name-only HEAD` in its dir names a `package.json` or `pnpm-workspace.yaml`, with no `--no-frozen-lockfile`
@@ -180,7 +180,7 @@
 
 - ⬜ a member's raw `linear` read or comment is warned until 2026-10-18, then refused, the `x linear` door named (FRM-398)
   - decision: warn-only for a week, then refuse (dima's o234); the flip is `raw-linear` leaving `WARN_ONLY` in `hooks/register.ts`, `rule-mode:raw-linear` = «enforce» turns it on early
-  - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --as coder --body-file <file>`
+  - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
   - and cclio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as cclio, a member's door is `x linear read`
 - ⬜ a foreground `claude -p` is refused (FRM-395)

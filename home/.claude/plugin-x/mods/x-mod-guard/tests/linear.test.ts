@@ -51,7 +51,7 @@ for (const [typed, door] of [
     ],
     [
         'linear issue comment add FRM-1 --body-file f.md',
-        'x linear comment <id> --as coder --body-file <file>',
+        'x linear comment <id> --body-file <file>',
     ],
     ['cd /tmp && linear issue view FRM-1 | jq .', 'x linear read'],
 ] as const) {

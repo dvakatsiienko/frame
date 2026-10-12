@@ -260,7 +260,7 @@ export function rawLinear(command: string, cwd: string): Refusal | undefined {
         if (!isComment && !isRead) continue;
         return isComment
             ? {
-                  door: 'x linear comment <id> --as coder --body-file <file>',
+                  door: 'x linear comment <id> --body-file <file>',
                   rule: 'raw-linear',
                   targets: ['linear issue comment add'],
                   why: "a member's one linear write is its done comment, through x linear (rules-lazy/linear-flow.md)",
