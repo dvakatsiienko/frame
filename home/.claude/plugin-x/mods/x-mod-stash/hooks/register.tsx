@@ -112,6 +112,9 @@ const GUARD_SILENT = 'guard-silent';
 const QUIET_ON = 'quiet-comms';
 const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
 const LINES = { max: 7, min: 5 } as const;
+// how long held member pings wait before the hidden idle append, in minutes (dima, 16:53: 10 by default, maybe 15)
+const QUIET_WAIT = 'quiet-wait';
+const WAIT = { max: 60, min: 1 } as const;
 // every 🎛️ knob in one table: its store key and its default; a number knob its range too. a missing or broken value reads
 // as the default, and every read and write goes through readSwitch, readNumber, flipKnob and setKnobNumber
 const SWITCHES = {
@@ -124,6 +127,7 @@ const SWITCHES = {
 } as const;
 const NUMBERS = {
     lines: { key: PHASE_LINES, of: PLAN_MAX, range: LINES },
+    quietWait: { key: QUIET_WAIT, of: 10, range: WAIT },
     speed: { key: BREATH_SPEED, of: SPEED.of, range: SPEED },
 } as const;
 type SwitchName = keyof typeof SWITCHES;
@@ -434,7 +438,6 @@ let orbit: StashOrbit = EMPTY_ORBIT;
 const QUIET = { key: 'quiet', plugin: 'x-mod-stash' } as const;
 const QUIET_HELD = 'quiet-held:';
 const QUIET_LOG = 'quiet-log:';
-const QUIET_IDLE_MS = 10 * 60_000;
 const QUIET_LOG_MAX = 500;
 const QUIET_TAG = /^\s*\[(done|blocked|ask|progress)\]/i;
 
@@ -504,7 +507,8 @@ async function quietIdle($: EngineInterface) {
     if (!q.held.length) return;
     if ((await $.state.get(TURN).catch(() => undefined))?.value?.isBusy) return;
     const now = await $.clock.now();
-    if (now - Math.min(...q.held.map((p) => p.at)) < QUIET_IDLE_MS) return;
+    const waitMs = (await readNumber($, 'quietWait')) * 60_000;
+    if (now - Math.min(...q.held.map((p) => p.at)) < waitMs) return;
     const appended = await $.session
         .append({
             message: {
@@ -2795,6 +2799,8 @@ export const register: Register = (on) => {
                 colour: await readSwitch($, 'colour'),
                 guard: !(await readSwitch($, 'silent')),
                 lines: await readNumber($, 'lines'),
+                quiet: await readSwitch($, 'quiet'),
+                quietWait: await readNumber($, 'quietWait'),
                 speak: await readSwitch($, 'speak'),
                 speed: await readNumber($, 'speed'),
             };
@@ -2909,6 +2915,27 @@ export const register: Register = (on) => {
                     {numberJSX('speed', '🔥 breath speed', knobs.speed, '×')}
                 </Box>
             );
+            // quiet comms' own card: the wait before an idle append (dima's brief 5, 16:53)
+            const quietJSX = (
+                <Box
+                    borderColor={cardBorder(e.surface)}
+                    borderStyle='round'
+                    flexDirection='column'
+                    flexGrow={1}
+                    key='settings:quiet'
+                    paddingX={1}
+                    paddingY={air ? 0.5 : 0}
+                    rowGap={air ? 0.3 : 0}
+                    width={0}>
+                    <Text bold>🤫 quiet comms</Text>
+                    {numberJSX(
+                        'quietWait',
+                        '🤫 held pings wait',
+                        knobs.quietWait,
+                        'min',
+                    )}
+                </Box>
+            );
             // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
             const compactJSX = Input ? (
                 <Box
@@ -3000,6 +3027,7 @@ export const register: Register = (on) => {
                     <Box flexGrow={1} key='settings:gap' />
                     <Box flexDirection='row' gap={1} key='settings:bottom'>
                         {barsJSX}
+                        {quietJSX}
                         {compactJSX}
                     </Box>
                 </Box>

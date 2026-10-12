@@ -262,7 +262,7 @@ test('the phase lines knob takes 5 to 7 only', async ($, on) => {
     expect(seen).toEqual([undefined, undefined, 6]);
 });
 
-test('🎛️ lays its cards in two columns, the bars and the context along the bottom', async ($, on) => {
+test('🎛️ lays its cards in two columns, the bars, quiet comms and the context along the bottom', async ($, on) => {
     world(on);
     await band($);
     const view = await pane($);
@@ -284,6 +284,7 @@ test('🎛️ lays its cards in two columns, the bars and the context along the 
             'settings:stash · replies',
             'settings:knobs',
             'settings:bars',
+            'settings:quiet',
             'settings:compact',
         ],
     ]);

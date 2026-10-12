@@ -201,6 +201,20 @@ test('held pings older than 10 min while idle become one hidden row, no turn', a
     ]).toEqual([true, []]);
 });
 
+test('a wait set to 15 min holds the idle append past 10 and lands it after 15', async ($, on) => {
+    const w = world(on);
+    w.store.set('quiet-wait', 15);
+    await start($);
+    await ping($, '[progress] step 2 landed');
+    await w.clock.advance(11 * MIN);
+    const at11 = w.appended.length;
+    await w.clock.advance(5 * MIN);
+    expect([
+        at11,
+        w.appended.some((a) => a.includes('1 held member ping')),
+    ]).toEqual([0, true]);
+});
+
 /* the log */
 
 test('each delivery logs its sender, tag, verdict and whether it started a turn', async ($, on) => {

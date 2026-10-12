@@ -514,7 +514,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 - 🧭 held pings reach cclio without a turn of their own
   - given pings are held
   - when the next prompt of any origin reaches her, then they ride it as one hidden block, «n held member pings», each with its time, sender and first line, once
-  - when none comes for 10 min while she is idle, then one hidden row is appended, no turn
+  - when none comes for the wait while she is idle — 10 min by default, set in the 🎛️ `🤫 quiet comms` card, 1–60 — then one hidden row is appended, no turn
 - 🧭 one switch, on by default
   - given no switch set, then quiet holds every day; `/quiet off` passes every ping, `/quiet on` holds again, bare `/quiet` says which and how many are held; the 🎛️ pane's switch is the same store key, `quiet-comms`
   - given mobile mode is on, then nothing is held
