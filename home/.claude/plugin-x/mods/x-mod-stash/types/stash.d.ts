@@ -189,8 +189,11 @@ export type StashLane = {
     current: number;
     // cclio's orbit turn count when the pointer or a done flag last moved
     movedAt: number;
-    // the linked members' session ids; a re-link of a role replaces the old one
+    // the linked members as the registry names them (an id the registry did not know stays as given); a re-link of a
+    // role replaces the old one
     members: Partial<Record<LaneRole, string>>;
+    // the board's view only: each member's session id now, resolved from its name at every draw
+    memberSids?: Partial<Record<LaneRole, string>>;
     // dima's steer on the current step: a draft until his take, then it joins cclio's next prompt or running turn once
     steer?: string;
     isSteerTaken?: boolean;

@@ -1135,7 +1135,7 @@ export function glideOp(
                 ],
                 members: { ...lane.members, [role]: session },
             },
-            `lane ${lane.id}: ${role} is ${session.slice(0, 8)}`,
+            `lane ${lane.id}: ${role} is ${session}`,
         );
     }
     const at = input.current;
@@ -1331,13 +1331,30 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
             steer: steers[l.id]?.steer,
         }));
     const asks: Record<string, PublishedAsk[]> = {};
-    for (const sid of new Set(live.flatMap((l) => Object.values(l.members)))) {
-        if (!sid) continue;
+    const rows = live.some((l) => Object.keys(l.members).length)
+        ? await registry($).catch(() => [])
+        : [];
+    // each member to the session id it runs under now; the card's asks are keyed by the member as linked
+    const sids = new Map<string, string>();
+    for (const member of new Set(
+        live.flatMap((l) => Object.values(l.members)),
+    )) {
+        if (member)
+            sids.set(member, memberOf(rows, member)?.base.sid ?? member);
+    }
+    for (const lane of live)
+        lane.memberSids = Object.fromEntries(
+            Object.entries(lane.members).map(([role, m]) => [
+                role,
+                sids.get(m ?? '') ?? m,
+            ]),
+        );
+    for (const [member, sid] of sids) {
         const entry = (await $.store
             .get(PREFIX + sid)
             .catch(() => undefined)) as Entry | undefined;
         const marks = await marksOf($, sid);
-        asks[sid] = (entry?.items ?? []).map(steered).map((a) => {
+        asks[member] = (entry?.items ?? []).map(steered).map((a) => {
             const m = marks[a.id];
             return m ? { ...a, mark: m.mark, steer: m.steer } : a;
         });
@@ -2138,8 +2155,32 @@ type Registered = {
     isAlive: boolean;
     cwd?: string;
     startedAt?: number;
+    // the desktop's own id for the session (`local_…`), which a peer's envelope or a link may carry
+    hostId?: string;
     base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince'>;
 };
+
+// a lane's member as the registry knows it now: by its name first — a /clear mints a new session id under the same
+// name — the newest live one when two share it; else by its session id, an 8-char prefix of it, or its desktop id
+// (cclio's wisp, 18:01: a linked `local_` id and a /clear both left the subcard at «0 asks»)
+export function memberOf(
+    rows: Pick<Registered, 'base' | 'hostId' | 'isAlive' | 'startedAt'>[],
+    member: string,
+) {
+    const live = rows.filter((r) => r.isAlive);
+    const named = live
+        .filter((r) => bare(r.base.name) === bare(member))
+        .sort((a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0))[0];
+    return (
+        named ??
+        live.find(
+            (r) =>
+                r.base.sid === member ||
+                r.hostId === member ||
+                (member.length >= 8 && r.base.sid.startsWith(member)),
+        )
+    );
+}
 
 // cc's registry stores the black bird's zero-width joiner as a space: «🐦 ⬛ ccrow» for «🐦‍⬛ ccrow»
 const SPLIT_CROW = '\u{1F426} \u{2B1B}';
@@ -2173,6 +2214,7 @@ async function registry($: EngineInterface): Promise<Registered[]> {
                 },
                 bg,
                 cwd: text(v.cwd),
+                hostId: text(v.hostSessionId),
                 pid: v.pid,
                 startedAt:
                     typeof v.startedAt === 'number' ? v.startedAt : undefined,
@@ -3887,6 +3929,8 @@ export const register: Register = (on) => {
             const sid = lane.members[role];
             if (!sid) return null;
             const asks = laneAsks[sid] ?? [];
+            // a mark goes to the session the member runs under now, which its own stash absorbs
+            const markSid = lane.memberSids?.[role] ?? sid;
             const card = `lane:${lane.id}:${role}`;
             const isOpen = !isFolded(card);
             const badge = role === 'coder' ? '🔧' : '🔎';
@@ -3901,7 +3945,7 @@ export const register: Register = (on) => {
                         ? asks.map((a, i) =>
                               askJSX(a as OrbitAsk, i, {
                                   mark: (x, mark) =>
-                                      void markRemote($, sid, x, {
+                                      void markRemote($, markSid, x, {
                                           mark:
                                               x.mark === mark
                                                   ? undefined
@@ -3910,7 +3954,7 @@ export const register: Register = (on) => {
                                       }),
                                   prefix: card,
                                   steer: (x, value) =>
-                                      void markRemote($, sid, x, {
+                                      void markRemote($, markSid, x, {
                                           mark: x.mark,
                                           steer: value.trim() || undefined,
                                       }),
@@ -4469,9 +4513,16 @@ export const register: Register = (on) => {
                     deny: `orbit glide: only ${LANE_OWNER} writes the lanes; every board shows them`,
                 };
             const before = await readLanes($);
+            const input = e as Record<string, unknown>;
+            // a link keeps the member's registry name, so the card finds its asks after a /clear or by a desktop id
+            const linkTo =
+                input.act === 'link' && typeof input.session === 'string'
+                    ? memberOf(await registry($), input.session.trim())?.base
+                          .name
+                    : undefined;
             const op = glideOp(
                 before,
-                e as Record<string, unknown>,
+                linkTo ? { ...input, session: linkTo } : input,
                 (await currentOrbit($)).turns,
                 await $.clock.now(),
             );

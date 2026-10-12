@@ -13,14 +13,23 @@ function world(
     {
         files = {},
         name = CCLIO,
-    }: { files?: Record<string, string>; name?: string } = {},
+        peers = [],
+    }: {
+        files?: Record<string, string>;
+        name?: string;
+        // other live sessions in the registry, as cc writes their files
+        peers?: Record<string, unknown>[];
+    } = {},
 ) {
     const contexts: string[][] = [];
     const texts: string[] = [];
     files[`/home/.claude/sessions/${PID}.json`] = JSON.stringify({
         name,
         pid: PID,
+        sessionId: SID,
     });
+    for (const p of peers)
+        files[`/home/.claude/sessions/${p.pid}.json`] = JSON.stringify(p);
     const clock = mock.clock(on, {
         now: new Date(2026, 9, 11, 18, 30).getTime(),
     });
@@ -43,16 +52,30 @@ function world(
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
-    on('process.run', () => ({
+    on('process.run', (_$, e) => ({
         value: {
             exitCode: 0,
             isStderrTruncated: false,
             isStdoutTruncated: false,
             stderr: '',
-            stdout: `${PID}\nSat Oct 11 18:00:00 2026\n`,
+            stdout:
+                e.argv[0] === 'ps'
+                    ? [PID, ...peers.map((p) => p.pid)].join('\n')
+                    : `${PID}\nSat Oct 11 18:00:00 2026\n`,
         },
     }));
-    on('fs.list', () => ({ value: [] }));
+    on('fs.list', (_$, e) => ({
+        value:
+            e.path === '/home/.claude/sessions'
+                ? [PID, ...peers.map((p) => p.pid)].map((pid) => ({
+                      isLink: false,
+                      kind: 'file' as const,
+                      mtimeMs: 0,
+                      name: `${pid}.json`,
+                      size: 1,
+                  }))
+                : [],
+    }));
     on('fs.read', (_$, e) =>
         e.path in files
             ? { value: files[e.path] ?? '' }
@@ -765,4 +788,83 @@ test('a glide mark saved before the steer rename clears for good when dima empti
         undefined,
         false,
     ]);
+});
+
+/* rider (cclio's wisp, 18:01): a member is linked by its registry name, so its asks survive a /clear */
+
+const CODER_NAME = '☕️ 🔧 coder: mods';
+const coderAt = (sessionId: string, more: Record<string, unknown> = {}) => ({
+    hostSessionId: 'local_94d65a2a',
+    name: CODER_NAME,
+    pid: 5001,
+    sessionId,
+    ...more,
+});
+
+test("a link by the member's desktop id keeps its registry name", async ($, on) => {
+    const w = world(on, { peers: [coderAt(CODER)] });
+    await start($);
+    await create($);
+    await lane($, {
+        act: 'link',
+        id: 'l1',
+        role: 'coder',
+        session: 'local_94d65a2a',
+    });
+    expect(kept(w)[0]?.members.coder).toBe(CODER_NAME);
+});
+
+test("a link by an 8-char session prefix keeps the member's registry name", async ($, on) => {
+    const w = world(on, { peers: [coderAt(CODER)] });
+    await start($);
+    await create($);
+    await lane($, {
+        act: 'link',
+        id: 'l1',
+        role: 'coder',
+        session: 'c0c0c0c0',
+    });
+    expect(kept(w)[0]?.members.coder).toBe(CODER_NAME);
+});
+
+test("after a /clear mints a new session id, the card still shows the member's asks", async ($, on) => {
+    const w = world(on, {
+        files: shelf(keptLane({ members: { coder: CODER_NAME } })),
+        peers: [coderAt('n3n3n3n3-after-clear')],
+    });
+    published(w, 'n3n3n3n3-after-clear', [ASK]);
+    await start($);
+    const ui = await board($);
+    expect(await subText(ui, 'coder')).toContain('1 ask');
+});
+
+test("a tick on the card reaches the member's session id of now", async ($, on) => {
+    const w = world(on, {
+        files: shelf(keptLane({ members: { coder: CODER_NAME } })),
+        peers: [coderAt('n3n3n3n3-after-clear')],
+    });
+    published(w, 'n3n3n3n3-after-clear', [ASK]);
+    await start($);
+    const ui = await board($);
+    await ui.press({ key: 'fold:lane:l1:coder' });
+    await ui.press({ key: 'lane:l1:coder:accepted:o3' });
+    expect(
+        (w.store.get('marks:n3n3n3n3-after-clear:o3') as { mark?: string })
+            ?.mark,
+    ).toBe('accepted');
+});
+
+test('two live sessions under one name: the card follows the newer', async ($, on) => {
+    const w = world(on, {
+        files: shelf(keptLane({ members: { coder: CODER_NAME } })),
+        peers: [
+            coderAt('o1o1o1o1-older', { pid: 5001, startedAt: 1 }),
+            coderAt('n2n2n2n2-newer', { pid: 5002, startedAt: 2 }),
+        ],
+    });
+    published(w, 'o1o1o1o1-older', [ASK]);
+    published(w, 'n2n2n2n2-newer', [ASK, { ...ASK, id: 'o4' }]);
+    await start($);
+    const ui = await board($);
+    expect(await subText(ui, 'coder')).toContain('2 asks');
 });

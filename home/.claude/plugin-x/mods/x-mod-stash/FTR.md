@@ -622,6 +622,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 - ⬜ only cclio writes the lanes
   - given any session calls op `glide`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create
   - and act `link` with a session id and a role (coder, verifier) links a member; a second link of a role replaces the first
+  - and the lane keeps the member's registry name — a link by its session id, an 8-char prefix or its desktop `local_` id is mapped to it — and each draw finds the session that name runs under now, so a `/clear` or a desktop id never leaves the card at «0 asks»; two live under one name, the newer; an id the registry does not know is kept as given (cclio's wisp, 18:01)
   - and act `step` with a step index marks every step before it done; the pointer never sits on a done step; the step count marks the lane finished
   - and a step back moves the pointer back and reopens every step from it on (`current: 1` after `current: 2` once left «2 of 5 done», cclio 15:18)
   - and a 6th step, an empty list, a step over 60 chars, a malformed ticket id, an unknown lane id or a step out of range is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
