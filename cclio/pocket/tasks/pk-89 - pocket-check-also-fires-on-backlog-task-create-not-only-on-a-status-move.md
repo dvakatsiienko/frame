@@ -4,6 +4,7 @@ title: 'pocket-check also fires on backlog task create, not only on a status mov
 status: open
 assignee: []
 created_date: '2026-10-12 11:17'
+updated_date: '2026-10-12 12:57'
 due_date: '2026-10-14'
 labels:
   - s
@@ -23,4 +24,6 @@ ccrow 2026-10-12 14:16: the 14:09 cap stumble was logged with a firmer intention
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
+
+15:58: folds into the cli lane as `x pocket new` (exit 3b), ccrow's catch on the re-plan
 <!-- SECTION:NOTES:END -->

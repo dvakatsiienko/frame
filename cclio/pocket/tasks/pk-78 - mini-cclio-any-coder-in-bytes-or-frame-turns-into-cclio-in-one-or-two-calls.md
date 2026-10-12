@@ -4,7 +4,7 @@ title: 'mini-cclio: any coder in bytes or frame turns into cclio in one or two c
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 12:50'
+updated_date: '2026-10-12 13:08'
 due_date: '2026-10-14'
 labels:
   - m
@@ -30,4 +30,8 @@ dima 14:52: o8 a) mini by default, --full on ask; o9 a) a go verb in x; o10 a) m
 15:05: cli lane planner → .scratch/cli-lane-10-12/lane-proposal.md (PK-78 ~280k est + 5 riders ~525k). FRM-383 (sealed, the nearest planned chunk) left out at ~450k est. Read caps: snapshot 138 KB ≈ 47k tokens, past one Read; mini ~35 KB fits, --full pages. FRM-384's planned «x lane gate -- <cmd>» collides with the shipped commit-msg «x lane gate» — rename before sealing 384
 
 dima o16 (2026-10-12 15:27), verbatim: «I'd like for a CLI lane to solve as many CLI chores as possible and solve the most wanted things about CLI, and afterwards do one nearest planned chunk for CLI lane.» the most wanted list is his o46 ranked candidates (x pocket, x linear line, x hook test, x recipe list, x retro gather), now in PK-94; the lane planner (15:03) never saw it — re-plan before the seal
+
+dima 16:01: «let's not rush with the cli lane start, too many things happening for me — 1 parallel lane at a time (the current coder)». the plan stays sealed-ready in .scratch/cli-lane-10-12/lane-proposal.md; it starts when the mods lane ends
+
+16:09: x mods gates (FRM-389 exits 1, 5, 6) joins the cli lane — the mods coder builds exits 3 + 7 only
 <!-- SECTION:NOTES:END -->

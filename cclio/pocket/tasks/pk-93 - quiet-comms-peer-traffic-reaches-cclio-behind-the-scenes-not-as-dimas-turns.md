@@ -4,7 +4,7 @@ title: 'quiet comms: peer traffic reaches cclio behind the scenes, not as dima''
 status: open
 assignee: []
 created_date: '2026-10-12 11:40'
-updated_date: '2026-10-12 11:49'
+updated_date: '2026-10-12 13:12'
 due_date: '2026-10-19'
 labels:
   - m
@@ -26,4 +26,8 @@ dima, 2026-10-12 14:37: coders, verifiers and ccrow message cclio through the cr
 parked: queued under the ≤5 open cap; the probe runs now in dima's mods coder tab (o7)
 
 dima 14:48: in mobile mode every thread switches fully to mod-less comms — so quiet comms must pass every peer message through while mobile mode is on (the board that would hold them is out of his reach); mobile-mode SKILL.md today covers orbit asks + phases only, not 🔭, the glide card or the sessions card
+
+16:03: built 8d59213f (x-mod-stash, cclio's thread only, arm by day, /quiet on|off|auto, 🤫 n on her row, quiet-log store lines); desktop hold proven 15:48; mods:test exit 0 on cclio's run. trial live to 10-19 in docs/test-drive/quiet-comms.md
+
+dima 16:12: o33 a 🎛️ quiet switch in the board panel beside /quiet — yes; o34 🤫 n expands to the held pings (who + first line) — «let's try». queued as mods-lane riders after brief 4; dima will ask about the quiet mod himself (reminded by cclio after x-mod-primer is sealed)
 <!-- SECTION:NOTES:END -->
