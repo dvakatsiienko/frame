@@ -176,6 +176,8 @@ export type StashEnhancer = {
 declare module 'claude-code' {
     interface PluginState {
         'x-mod-stash': {
+            // speak is reading aloud and not paused: the board's play button reads pause (dima, 15:51)
+            speaking: boolean;
             view: StashView;
             board: StashBoardView;
             turn: StashTurn;

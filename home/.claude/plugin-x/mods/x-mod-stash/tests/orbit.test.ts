@@ -650,6 +650,69 @@ test("🔊 sends the ask's text to speak's control socket", async ($, on) => {
     });
 });
 
+// speak's control socket as a stub: `status` answers the given state, every request is kept
+function speakStub(on: On, state: { speaking: boolean; paused: boolean }) {
+    const sent: Record<string, unknown>[] = [];
+    on('process.run', (_$, e) => {
+        const isSpeak = e.argv.some((a) => a.endsWith('x-speak/control.sock'));
+        const request = (
+            isSpeak ? JSON.parse(e.argv[4] ?? '{}') : {}
+        ) as Record<string, unknown>;
+        if (isSpeak) sent.push(request);
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout:
+                    request.op === 'status'
+                        ? JSON.stringify(state)
+                        : '{"ok":true}',
+            },
+        };
+    });
+    return sent;
+}
+
+const playLabel = async (ui: Board, id: string) =>
+    (await ui.find({ key: `orbit:pause:${id}` }))?.text;
+
+test('the play button reads ⏸️ once speak says it reads, ▶️ while quiet', async ($, on) => {
+    world(on);
+    const state = { paused: false, speaking: false };
+    speakStub(on, state);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    const quiet = await playLabel(ui, 'o1');
+    state.speaking = true;
+    await ui.press({ key: 'orbit:read:o1' });
+    expect([quiet, await playLabel(ui, 'o1')]).toEqual(['▶️', '⏸️']);
+});
+
+test('▶️ with speak quiet reads the row', async ($, on) => {
+    world(on);
+    const sent = speakStub(on, { paused: false, speaking: false });
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.press({ key: 'orbit:pause:o1' });
+    expect(sent.filter((r) => r.op !== 'status')).toEqual([
+        { op: 'read', text: 'name a bird. pelican' },
+    ]);
+});
+
+test('▶️ with speak paused resumes it, never reads anew', async ($, on) => {
+    world(on);
+    const sent = speakStub(on, { paused: true, speaking: true });
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.press({ key: 'orbit:pause:o1' });
+    expect(sent.filter((r) => r.op !== 'status')).toEqual([{ op: 'pause' }]);
+});
+
 test('🔊 on an assumption reads its text aloud', async ($, on) => {
     world(on);
     const runs: string[][] = [];

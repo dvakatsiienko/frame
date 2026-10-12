@@ -169,7 +169,7 @@
   - given the `🪄 ⏪ ⏩ enhancer` switch off, then the enhancer's buttons leave the band while the enhancer stays installed; one press brings them back (exit 8)
   - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
   - decision: the band's 12 parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; cclio's «build the rest of slice 05 meanwhile»)
-  - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ⏯️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
+  - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ▶️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
   - given a reply switch off (`·-lists drawn as bullets`, `fleet words bold with their badge`), then the reply is both stored and drawn as written: the switch gates the stored rewrite, not only its look (the part list's 📌)
   - decision: the switches live in stash's own store, the one the 💨 and ⏰ switches already share across sessions — a separate file joins only if another mod's parts do
 - ⬜ two live meters, full width under the row on the desktop (FRM-366)
@@ -252,7 +252,7 @@
 - ⬜ ccrow's row carries her newest 👀 tip for dima
   - given ccrow's newest note under a day old holds a `- 👀 **for you:** …` line
   - when the board draws
-  - then her row's second line reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row, with 🔊 ⏯️ ⏹️ that read it through speak; no other row ever carries it, and a tip over a day old leaves
+  - then her row's second line reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row, with 🔊 ▶️ ⏹️ that read it through speak; no other row ever carries it, and a tip over a day old leaves
   - source: `~/.local/state/ccrow/notes.jsonl`, read by the poll for her row only
   - decision: on her one line, in the wait slot — no strip and no numbers, the board is already cramped (PK-73, dima 01:42 and 14:16; his o5 pick, 15:35: «let's try»)
   - source: the session's own last reply, kept by its x-mod-stash at each reply end
@@ -355,16 +355,17 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: 🛎️ / ↩️, the waiter lens — 🛎️ order up, ready for the session to pick up; ↩️ back to the kitchen (dima's o79, 23:05; was 🤩 / 👎🏼)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
-  - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ⏯️ ⏹️, then the note; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
+  - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ▶️ ⏹️, then the note; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)
   - decision: the note shares that row because the desktop keeps an `Input` short ([claude-code#101089](https://github.com/anthropics/claude-code/issues/101089)) — a workaround, `mods/workarounds.md`
   - decision: the id leads its ask in bold — `o6: enhancer v1 …` — one line, not a column of its own; check all is one bare `✅` button (dima, 19:59; a label tried at 16:54, dropped at 17:00); the pick sits on a line of its own, `➡️` then the pick bold, the mock's card shape (dima, 17:00; the «pick» word dropped at 17:08: «➡️ already tells it is a pick»)
   - decision: the header reads `🪐 orbit`, no count (dima, 16:54; was `🪐 orbit: n`)
   - decision: the pick is bold like the id, so the proposal stands out (dima, 20:30)
   - decision: one line of note — `Input` is the api's only text field (one line, every surface but mobile); a textarea would need a `Client`, which the desktop refuses
-- 🔎 🔊 reads an ask aloud through speak, ⏯ pauses or resumes, ⏹ stops
+- 🔎 🔊 reads an ask aloud through speak, ▶️ / ⏸️ plays or pauses, ⏹ stops
   - given orbit shows an ask and x-speak runs
   - when dima presses its 🔊
   - then speak reads the ask and its pick as the card shows them, no «pick» word (dima, 17:14), through the chain F4 uses, cutting off whatever plays; ⏯ and ⏹ act on any read
+  - and the play button follows speak's own `status`: ⏸️ while it reads, ▶️ while it is paused or quiet; a press pauses, resumes, or — speak quiet — reads that row; every play button on the board, ccrow's tip included, reads the same, refreshed at each press and on the board's 4 s poll while it is open (dima, 15:51: «▶️ if paused or not speaking, ⏸️ if speaking»)
   - decision: buttons, because a mod's text can't be selected for F4 on the desktop ([claude-code#101090](https://github.com/anthropics/claude-code/issues/101090)) — a workaround, `mods/workarounds.md`
   - 📌 harness-proven that the press sends `read` with the text; the voice itself is dima's ear
   - decision: an ask for something irreversible (trash, push, close, merge) leads its row with ⚠️ and names the exact target; one tick still approves it (dima, 2026-10-10)
@@ -389,7 +390,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
-  - then those rows keep both buttons, the held one reading `🔓 tick` or `🔓 replay` and a press on either changing nothing, and the note shows as dim text, `💬 «…»`, instead of its field (the 💬 is dima's alone; the model reads «his note: …», dima 18:14) — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ⏯️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
+  - then those rows keep both buttons, the held one reading `🔓 tick` or `🔓 replay` and a press on either changing nothing, and the note shows as dim text, `💬 «…»`, instead of its field (the 💬 is dima's alone; the model reads «his note: …», dima 18:14) — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ▶️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
   - decision: no control rather than a disabled one — the mod api's `Button` and `Input` take no `disabled` (dima asked for one, 19:46)
 - ✅ a resolved ask leaves, a follow-up changes in place
   - given cclio answered a marked ask
@@ -461,7 +462,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: only unasked choices that would cost a redo; the 10-turn trial read 3 rows over ~25 turns, two right, one caught (dima's o92)
 - ⬜ an assumption reads aloud
   - given an assumption shows under «assumed»
-  - when dima presses its 🔊, ⏯️ or ⏹️
+  - when dima presses its 🔊, ▶️ or ⏹️
   - then speak reads, pauses or stops its text, as on an ask row (dima, 2026-10-11 11:27)
 - ✅ 🛎️ clears, ↩️ sends back
   - given an assumption shows
