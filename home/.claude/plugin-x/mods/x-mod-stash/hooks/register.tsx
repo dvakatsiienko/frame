@@ -49,7 +49,7 @@ import {
 
 // label: the repo; name: the session's registry name, when it has one
 type Entry = StashEntry;
-// where an ask card's take, redo and note go, and the prefix its keys carry
+// where an ask card's take, replay and note go, and the prefix its keys carry
 type AskDoor = {
     prefix: string;
     mark: (a: OrbitAsk, mark: 'accepted' | 'rejected') => void;
@@ -250,7 +250,7 @@ const cardBorder = (surface: string) =>
 // a ticket id inside an ask or a phase; split keeps the id as every odd part
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
-    "orbit is dima's list of your asks to him, in the fleet board: he rings 🛎️ take when your pick is good to go, 🔁 redo for another round, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
+    "orbit is dima's list of your asks to him, in the fleet board: he rings 🛎️ take when your pick is good to go, 🔁 replay for another round, adds a note; the marked ones reach you as model-only context. it is the one door for asks: an ask goes here, never into a reply. a background (--bg) session draws no board, so it sends its asks to its coordinator instead.",
     `op add, asks [{ text, pick, hiddenNote }]: text is one line that reads alone after 20 more pile up (what is asked, never «above» or «this»), ≤${ORBIT_TEXT_MAX} chars, subject first, detail in hiddenNote; pick is your recommendation; hiddenNote is yours alone, where it came from and what a tick means. an ask for something irreversible (trash, push, close, merge) leads with ⚠️ and names the exact target. new asks append.`,
     'op resolve, ids: the asks you answered this turn; they leave orbit when the turn ends.',
     `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a ${CHANGED_MARK} mark before its id.`,
@@ -2581,7 +2581,7 @@ export const register: Register = (on) => {
                 {...(mark === 'accepted'
                     ? { variant: 'primary' as const }
                     : {})}>
-                {`${a.mark === mark ? (a.isLocked ? '🔓' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'take' : 'redo'}`}
+                {`${a.mark === mark ? (a.isLocked ? '🔓' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'take' : 'replay'}`}
             </Button>
         );
         const handleAssumedNote = (id: string, value: string) =>
@@ -2972,7 +2972,7 @@ export const register: Register = (on) => {
                                         </Box>
                                     ) : null}
                                     {i === lane.current ? (
-                                        // the note waits as a draft until 🛎️ take sends it; no redo, a note has nothing to redo (dima, 20:51)
+                                        // the note waits as a draft until 🛎️ take sends it; no replay, a note has nothing to redo (dima, 20:51)
                                         <Button
                                             key={`lane:${lane.id}:take`}
                                             onPress={() =>

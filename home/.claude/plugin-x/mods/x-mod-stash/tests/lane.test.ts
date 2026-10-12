@@ -515,7 +515,7 @@ test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:coder' });
     expect(await subText(ui, 'coder')).toMatch(
-        /o3: cut the second probe\?.*➡️ cut it.*take.*redo/su,
+        /o3: cut the second probe\?.*➡️ cut it.*take.*replay/su,
     );
 });
 

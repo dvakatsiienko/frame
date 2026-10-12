@@ -308,9 +308,9 @@ test('a held mark swaps its emoji for ✅, and only one of the two holds it', as
     const taken = await look();
     await ui.press({ key: 'orbit:rejected:o1' });
     expect([idle, taken, await look()]).toEqual([
-        ['🛎️ take|primary', '🔁 redo|-'],
-        ['✅ take|primary', '🔁 redo|-'],
-        ['🛎️ take|primary', '✅ redo|-'],
+        ['🛎️ take|primary', '🔁 replay|-'],
+        ['✅ take|primary', '🔁 replay|-'],
+        ['🛎️ take|primary', '✅ replay|-'],
     ]);
 });
 

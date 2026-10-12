@@ -339,7 +339,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ accept, reject, note, check all
   - given orbit shows asks
   - when dima presses an ask's 🛎️ or ↩️, types in its note, or presses check all
-  - then `🛎️ take` is always the filled (`primary`) button and `🔁 redo` a plain-chromed one (was `↩️ back`, dima's o13, 18:01: «back sounds dull»); a held mark swaps its emoji for ✅ (`✅ take`, `✅ redo`), so neither changes size, and only one of the two holds it; a second press puts it out (dima, 17:08 «solid»; o7, 17:16 «swap … only 1 of these btns can have ✅»); the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
+  - then `🛎️ take` is always the filled (`primary`) button and `🔁 replay` a plain-chromed one (was `↩️ back`, dima's o13, 18:01: «back sounds dull»); a held mark swaps its emoji for ✅ (`✅ take`, `✅ replay`), so neither changes size, and only one of the two holds it; a second press puts it out (dima, 17:08 «solid»; o7, 17:16 «swap … only 1 of these btns can have ✅»); the note is kept as he types, no Enter; an unmarked ask stays parked and means nothing
   - decision: 🛎️ / ↩️, the waiter lens — 🛎️ order up, ready for the session to pick up; ↩️ back to the kitchen (dima's o79, 23:05; was 🤩 / 👎🏼)
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the note keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
@@ -377,7 +377,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ marked asks lock while cclio works on them
   - given marked asks joined a prompt or a running turn
   - when the turn runs
-  - then those rows keep both buttons, the held one reading `🔓 take` or `🔓 redo` and a press on either changing nothing, and the note shows as dim text, `💬 «…»`, instead of its field (the 💬 is dima's alone; the model reads «his note: …», dima 18:14) — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ⏯️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
+  - then those rows keep both buttons, the held one reading `🔓 take` or `🔓 replay` and a press on either changing nothing, and the note shows as dim text, `💬 «…»`, instead of its field (the 💬 is dima's alone; the model reads «his note: …», dima 18:14) — until the turn ends, when the held button reads ✅ again and the note field comes back (dima, 17:42: «do not hide take/back … swap ✅ … into 🔓»); 🔊 ⏯️ ⏹️ stay live, since reading edits nothing (dima, 20:25; the mark moved onto the line 2026-10-11 11:57)
   - decision: no control rather than a disabled one — the mod api's `Button` and `Input` take no `disabled` (dima asked for one, 19:46)
 - ✅ a resolved ask leaves, a follow-up changes in place
   - given cclio answered a marked ask
@@ -501,7 +501,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then every session's board draws a `🛼 glide: <title>` card right above 🌔 phases, its head naming its mod as sessions, orbit and phases do (dima's board shot, 23:41): every step in order, a done one `✅` and dim but still listed, the current one `➡️` and bold, the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
   - and one note box with a 🛎️ take sits on the current step, on any board; the text stays a draft until take, then joins cclio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the take clear once it did
   - decision: the note and its take live in the stash store, one key per lane, so the shelf file keeps one writer, cclio's lane op; a step that moves the pointer drops the note (FRM-400)
-  - decision: take only, no redo — a note has nothing to redo; a peer's prompt never carries it (dima, 20:51)
+  - decision: take only, no replay — a note has nothing to redo; a peer's prompt never carries it (dima, 20:51)
   - decision: ➡️ marks the current step, no «← we are here» (dima's o9 note, o10)
   - and nothing of a lane enters a member's model context
   - and each card folds with its own `📂`, and the `🛼 glide` 🎛️ switch hides every glide card
@@ -522,13 +522,13 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: 8, not phases' 3 — a lane step spans many turns
 - ⬜ a glide card holds its members' asks (exit 3)
   - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
-  - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ take, 🔁 redo, 🔊 and the note; a locked one shows its mark and its note, no control
+  - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ take, 🔁 replay, 🔊 and the note; a locked one shows its mark and its note, no control
   - decision: the lane draws orbit's own ask card, never a smaller copy; the subcards stay folded, the head names the role (dima's o4, o5, o10, 20:46)
   - when dima marks or notes a row, then it waits in the store and the member's own stash takes it into its orbit: a running member gets it in that turn, after its next tool call
   - decision: one store key per marked ask (`marks:<member>:<ask id>`), so two boards never overwrite each other and the member deletes only the marks it read (FRM-400)
   - and an idle member with marks wakes once, within a poll of dima's next prompt in any thread, one turn carrying all of them; no turn starts before that prompt
   - decision: the wake carries the marks in its text — a prompt a mod submits skips that mod's own prompt.submit hook (step 0, cc 2.1.296)
-- ⬜ an ask reads in 3 lines: its line, the `➡️ pick` on its own, then 🛎️ take, 🔁 redo, 🔊 and the note
+- ⬜ an ask reads in 3 lines: its line, the `➡️ pick` on its own, then 🛎️ take, 🔁 replay, 🔊 and the note
   - decision: the buttons never share the pick's line — exit 4's «one row» misread the 19:31 shot (dima, 20:23)
 
 ## spawn hints — the board's name flag only
