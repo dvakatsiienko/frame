@@ -4,7 +4,7 @@ title: 'quiet comms: peer traffic reaches cclio behind the scenes, not as dima''
 status: open
 assignee: []
 created_date: '2026-10-12 11:40'
-updated_date: '2026-10-12 13:54'
+updated_date: '2026-10-12 16:25'
 due_date: '2026-10-19'
 labels:
   - m
@@ -32,4 +32,6 @@ dima 14:48: in mobile mode every thread switches fully to mod-less comms — so 
 dima 16:12: o33 a 🎛️ quiet switch in the board panel beside /quiet — yes; o34 🤫 n expands to the held pings (who + first line) — «let's try». queued as mods-lane riders after brief 4; dima will ask about the quiet mod himself (reminded by cclio after x-mod-primer is sealed)
 
 dima 16:53: the day a/b is redundant — quiet runs every day as a stress test, more data (/quiet off stays the revert); the idle append time becomes a mod setting, 10 min to start (15 maybe); 🤫 n shows only while something is held; quiet works only in cclio's thread, never in a session dima spawns himself. riders to the mods coder as brief 5 with o33 🎛️ + o34 🤫 n expand.
+
+19:26 landed since 16:53: brief 5 (always on, idle setting, 🎛️ switch, 🤫 n opens, 4f355749…d6b7b30d), the cwd wisp (registry name), the safety net (fail open, ledger, stuck alarm, canary; 3042a2e3, 92842908), the ccrow false-red fix (bc199a57), live pass 17:11. left: brief 9 item 2 (no silent loss on a failed save). test drive runs to 10-19.
 <!-- SECTION:NOTES:END -->

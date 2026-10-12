@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-11 21:17'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 16:25'
 due_date: '2026-10-13'
 labels:
   - s
@@ -29,4 +29,6 @@ from the 10-11 halt flush (gather clusters 14, 17), cclio's own hook to extend (
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
+
+dima o54 (17:22): reply-check reds an unglossed internal id or label — rides lane-l12 item 7 (the mods coder's reply-check edit).
 <!-- SECTION:NOTES:END -->

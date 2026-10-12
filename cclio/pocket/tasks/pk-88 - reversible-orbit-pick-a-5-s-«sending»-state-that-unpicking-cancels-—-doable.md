@@ -4,7 +4,7 @@ title: 'reversible orbit pick: a 5 s «sending» state that unpicking cancels �
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 16:25'
 due_date: '2026-10-17'
 labels:
   - s
@@ -24,4 +24,6 @@ dima, inbox 2026-10-12: a mod useful for me — the orbit ask's 🛎️ take and
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
+
+19:26 → mods lane l12 item 5.
 <!-- SECTION:NOTES:END -->

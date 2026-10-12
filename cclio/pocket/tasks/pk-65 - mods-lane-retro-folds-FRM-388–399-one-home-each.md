@@ -4,7 +4,7 @@ title: 'mods lane retro folds (FRM-388–399), one home each'
 status: open
 assignee: []
 created_date: '2026-10-11 19:26'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 16:25'
 due_date: '2026-10-12'
 labels:
   - s
@@ -37,4 +37,6 @@ from ~/.claude/shelf/retros/2026-10-11-mods-lane-coder.md, lane l4 ended 22:21 (
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
+
+19:26: the mods-code lines → lane l12 item 6; the x mods edit lines → the cli lane (PK-94); the shape-lane seal lines stay cclio's.
 <!-- SECTION:NOTES:END -->

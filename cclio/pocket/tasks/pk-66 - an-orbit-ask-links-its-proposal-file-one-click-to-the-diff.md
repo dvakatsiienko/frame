@@ -4,7 +4,7 @@ title: 'an orbit ask links its proposal file, one click to the diff'
 status: open
 assignee: []
 created_date: '2026-10-11 21:11'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 16:25'
 due_date: '2026-10-14'
 labels:
   - s
@@ -26,4 +26,8 @@ dima 2026-10-12 00:00: «i see a list of asks in orbit but where to see edits li
 parked: the mods queue, after FRM-386 🐠 catch, on dima's word
 
 parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
+
+done 18:34: brief 8 item 1 — an ask carries a link (https or a file path).
+
+19:26 reopened (wishkeeper): the desktop first click may only move focus (#99395); lane-l12 item 8 checks it live.
 <!-- SECTION:NOTES:END -->

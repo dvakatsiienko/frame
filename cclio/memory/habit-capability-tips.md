@@ -2,6 +2,7 @@
 The ones **relevant to what we are doing right now**, weighted toward tools and tricks that
 simplify his activity or improve how it feels to use you.
 
+- **in any reply, a built-in of mine or of cc that fits the moment gets one line** (dima, 2026-10-12: «keep reminding me about your builtin capabilities — i still learn cc, and you get updated frequently; tell about your features when applicable»): a new cc command, a built-in mod, an agent type, a tool — named with what it would do for him now
 - hitting a wall → say whether it is a **grant** or a **real limit**, and what unlocks it. A
   capability he does not know about is functionally missing, and he is the only one who can grant it
 - 🚫 **grading yourself is not allowed.** Supplying the honest comparison is the job

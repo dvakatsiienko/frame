@@ -1,10 +1,10 @@
 ---
 id: PK-96
-title: "\U0001F420 catch refinements: cclio's thread only, plus dima's refine"
+title: "\U0001F420 catch v2 test drive: is the keep-in-mind shelf used and useful"
 status: open
 assignee: []
 created_date: '2026-10-12 13:12'
-updated_date: '2026-10-12 15:17'
+updated_date: '2026-10-12 16:25'
 due_date: '2026-10-17'
 labels:
   - s
@@ -28,4 +28,6 @@ parked: the mods lane runs one item at a time (dima 16:12)
 decided 17:22 (o51–o56): catch v2 = keep-in-mind shelf, 7 kinds, survives compaction, 5 visible / cap 7, 🤔 on all, cclio-only; contract = x-mod-stash/catch.md (dima edits). brief 7 sealed: ~/frame/.scratch/mods-l9/brief-7-catch.md. out: o54 reply-check rule blocking an unglossed id → its own item after brief 7.
 
 18:17 catch v2 landed (brief 7, 29 tests, 449 green) + catch.md committed (581600bc) + the fleet-mods line out. binds at cclio's next session start. test drive: pieces per kind, clears vs expiries, 🤔 presses, re-asks of a class with a live piece.
+
+19:26 narrowed: dima's refine was heard and shipped (catch v2, 32de7758 + 581600bc). this item is now the test drive: pieces per kind, clears vs expiries, 🤔 presses, re-asks of a class with a live piece.
 <!-- SECTION:NOTES:END -->
