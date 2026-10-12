@@ -83,6 +83,8 @@ export type StashBoardView = {
     isColour: boolean;
     // the poll's clock, so the board's «busy 3m» spans move on their own
     at: number;
+    // cclio's board only: each dev-mods probe past its probe, «<mod> (<session short id>)»
+    staleProbes?: string[];
 };
 
 // the running turn, kept so a mid-turn reload still knows it: busy, dima's own, a keep-hot ping, afk as it began

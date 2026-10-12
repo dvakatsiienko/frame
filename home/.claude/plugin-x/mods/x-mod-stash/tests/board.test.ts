@@ -1,4 +1,4 @@
-import type { On } from 'claude-code';
+import type { FsEntry, On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { huesOf } from '../hooks/register.tsx';
@@ -41,6 +41,8 @@ function fleet(
         isBoardOpen = true,
         files = undefined as string[] | undefined,
         reads = {} as Record<string, string>,
+        dirs = {} as Record<string, FsEntry[]>,
+        isOwner = false,
     } = {},
 ) {
     const runs: string[][] = [];
@@ -59,14 +61,16 @@ function fleet(
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
     if (isBoardOpen) panes(on, true);
-    on('fs.list', () => ({
-        value: ['1.json', '2.json', '3.json', 'x.key'].map((name) => ({
-            isLink: false,
-            kind: 'file' as const,
-            mtimeMs: 0,
-            name,
-            size: 1,
-        })),
+    on('fs.list', (_$, e) => ({
+        value:
+            dirs[e.path] ??
+            ['1.json', '2.json', '3.json', 'x.key'].map((name) => ({
+                isLink: false,
+                kind: 'file' as const,
+                mtimeMs: 0,
+                name,
+                size: 1,
+            })),
     }));
     on('fs.read', (_$, e) => {
         const extra = reads[e.path];
@@ -90,10 +94,13 @@ function fleet(
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
                 stderr: '',
+                // `sh` is the board's own pid lookup: pid 1, the registry's cclio, when the board is hers
                 stdout:
                     e.argv[0] === 'ps'
                         ? alive.map((p) => `    ${p}\n`).join('')
-                        : '',
+                        : isOwner && e.argv[0] === 'sh'
+                          ? '1\nMon Oct 12 15:00:00 2026\n'
+                          : '',
             },
         };
     });
@@ -912,4 +919,71 @@ test("a row's 🔭 line prints only the who bold", async ($, on) => {
         bold.includes('ci'),
         bold.some((t) => t?.includes('a ping')),
     ]).toEqual([true, false]);
+});
+
+// a probe mod left in ~/.claude/dev-mods past its probe (pk-93's qc-view swallowed a brief after its proof)
+const DEV = '/home/.claude/dev-mods';
+const dir = (name: string, mtimeMs = 0): FsEntry => ({
+    isLink: false,
+    kind: 'dir',
+    mtimeMs,
+    name,
+    size: 0,
+});
+const probes = (sid: string, mods: FsEntry[]) => ({
+    [DEV]: [dir(sid)],
+    [`${DEV}/${sid}`]: mods,
+});
+const probeRow = async ($: Engine) =>
+    (await (await board($)).find({ text: /^🧪/, type: 'Text' }))?.text;
+
+test("a probe whose session is gone warns on cclio's board", async ($, on) => {
+    fleet(
+        on,
+        {},
+        { dirs: probes(GONE, [dir('qc-view', NOW - MIN)]), isOwner: true },
+    );
+    expect(await probeRow($)).toBe(
+        '🧪 stale probe mods in ~/.claude/dev-mods, unload them: qc-view (g3g3g3g3)',
+    );
+});
+
+test('a probe older than a day warns while its session still runs', async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            dirs: probes(PEER, [dir('qc-view', NOW - 25 * 60 * MIN)]),
+            isOwner: true,
+        },
+    );
+    expect(await probeRow($)).toContain('qc-view (p2p2p2p2)');
+});
+
+test("a live session's fresh probe draws no warning", async ($, on) => {
+    fleet(
+        on,
+        {},
+        { dirs: probes(PEER, [dir('qc-view', NOW - MIN)]), isOwner: true },
+    );
+    expect(await probeRow($)).toBeUndefined();
+});
+
+test('a dev-mods folder holding only a file draws no warning', async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            dirs: probes(GONE, [
+                { ...dir('notes.md', NOW - MIN), kind: 'file' },
+            ]),
+            isOwner: true,
+        },
+    );
+    expect(await probeRow($)).toBeUndefined();
+});
+
+test("a stale probe stays off any board but cclio's", async ($, on) => {
+    fleet(on, {}, { dirs: probes(GONE, [dir('qc-view', NOW - MIN)]) });
+    expect(await probeRow($)).toBeUndefined();
 });

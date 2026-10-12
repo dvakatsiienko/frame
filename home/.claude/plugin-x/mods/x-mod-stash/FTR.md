@@ -320,6 +320,11 @@
   - when a span turns its minute (`idle 12m` → `idle 13m`)
   - then the board redraws with it
   - decision: a pane redraw also rebuilds x-mod-breather's svg in the band on the desktop (dima, 2026-10-09: «breather only resets while board is open»; a video measured a blank frame every 4.04 s, the poll's beat); the svg rebuild is the desktop's, [claude-code#100797](https://github.com/anthropics/claude-code/issues/100797)
+- ⬜ a stale probe mod warns on cclio's board (brief 6, mods lane l9)
+  - given a folder under `~/.claude/dev-mods/<session id>/` holds a mod, and its session is gone or the mod is over a day old
+  - when cclio's board draws
+  - then one amber row at its top reads `🧪 stale probe mods in ~/.claude/dev-mods, unload them: <mod> (<session short id>)`, every stale mod in that row; any other board draws none
+  - decision: the registry name says whose board it is, never the cwd; a probe left loaded swallowed cclio's 16:03 brief after its proof (pk-93 retro)
 
 ## /board — 🪐 orbit
 

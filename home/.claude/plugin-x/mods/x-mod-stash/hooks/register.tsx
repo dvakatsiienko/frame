@@ -1589,6 +1589,9 @@ async function publish($: EngineInterface) {
             at: now,
             isColour: await readSwitch($, 'colour'),
             members: await members($).catch(() => undefined),
+            staleProbes: (await isLaneOwner($))
+                ? await staleProbes($, now).catch(() => undefined)
+                : undefined,
         };
         const boardText = JSON.stringify({
             ...board,
@@ -2118,6 +2121,32 @@ async function members($: EngineInterface): Promise<Member[]> {
     return out.sort(
         (a, b) => pinOf(a.name) - pinOf(b.name) || a.name.localeCompare(b.name),
     );
+}
+
+// a probe mod left in `~/.claude/dev-mods/<session id>/` past its probe: a day old, or its session gone — a loaded
+// probe keeps acting on live traffic (pk-93's qc-view swallowed cclio's brief after its proof)
+async function staleProbes($: EngineInterface, now: number) {
+    const dir = `${await $.env.get('HOME')}/.claude/dev-mods`;
+    const held: { sid: string; mods: string[]; at: number }[] = [];
+    for (const f of await $.fs.list(dir).catch(() => [])) {
+        if (f.kind !== 'dir') continue;
+        const mods = (
+            await $.fs.list(`${dir}/${f.name}`).catch(() => [])
+        ).filter((m) => m.kind === 'dir');
+        if (mods.length)
+            held.push({
+                at: Math.max(...mods.map((m) => m.mtimeMs)),
+                mods: mods.map((m) => m.name),
+                sid: f.name,
+            });
+    }
+    if (!held.length) return [];
+    const live = new Set(
+        (await registry($)).filter((r) => r.isAlive).map((r) => r.base.sid),
+    );
+    return held
+        .filter((h) => now - h.at > STALE_MS || !live.has(h.sid))
+        .flatMap((h) => h.mods.map((m) => `${m} (${short(h.sid)})`));
 }
 
 const span = (ms: number) => {
@@ -3755,8 +3784,15 @@ export const register: Register = (on) => {
             e.props.placement === 'dock' ? e.props.scroll.bodyRows : undefined;
         // the board top to bottom: what the sessions part shows, orbit, then a gap that docks the glide and phase cards at
         // the bottom (dima's shot, 20:12)
+        const probes = board?.staleProbes ?? [];
+        const probesJSX = probes.length ? (
+            <Text color='warning' key='probes' wrap='truncate-end'>
+                {`🧪 stale probe mods in ~/.claude/dev-mods, unload them: ${probes.join(', ')}`}
+            </Text>
+        ) : null;
         const arranged = (top: RenderElement) => (
             <Box flexDirection='column' minHeight={fill}>
+                {probesJSX}
                 {top}
                 {isPartOn('stash.orbit') ? orbitJSX : null}
                 <Box flexGrow={1} key='phases:gap' />
