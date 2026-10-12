@@ -4,8 +4,10 @@
 the [FRM-284](https://linear.app/x-com/issue/FRM-284) look probe. The probe's numbers and hard parts: `../compare/c.md`.
 
 📌 **before the first edit to a view** (anything a human sees: a board, a table, a form, a pager), run
-`x knowledge read charm`: the widget per view and the v2 traps live there, and the read is logged, so the
-fleet sees whether the page earns its place (0 of 8 x coders read it, 2026-10-05..09).
+`x knowledge read charm`: the widget per view and the v2 traps live there; the read is logged, so the
+fleet sees whether the page earns its place.
+
+<!-- failure: 0 of 8 x coders read it, 2026-10-05..09. -->
 
 ## build, test, gate
 
@@ -20,17 +22,14 @@ fleet sees whether the page earns its place (0 of 8 x coders read it, 2026-10-05
 
 ## the contract
 
-- `registry.json` is the source of every verb (`../AGENTS.md` has the rules); `go:embed` bakes it
-  into the binary, so the shim's rebuild picks up an edit to it.
-- `../fixtures/calls.json` is the contract: `x_test.go` runs every call, a pipe call checks the
-  envelope, a tty call runs on a pty and checks the human view and the exit code.
+- `go:embed` bakes `registry.json` into the binary, so the shim's rebuild picks up an edit to it; the verb rules and the `fixtures/calls.json` contract are `../AGENTS.md`'s.
 - `store.go` is the handoff store's one door (ADR-0002); `store_test.go` reads every name in
   `script/lib/handoff-names.json`, so a grammar change edits that file first.
 - a verb's `replaces` is checked by `replaces_test.go` through `git grep` of each door's basename;
   `notCallers` there lists the history paths it skips.
 - every `Fail.Log` line goes to stderr in agent mode — the envelope says «the output is above».
 - a transcript fixture is encoded with `SetEscapeHTML(false)`: `json.Marshal` writes `<` as
-  `<`, so a fixture never holds `<command-name>` the way a real transcript does.
+  `\u003c`, so a fixture never holds `<command-name>` the way a real transcript does.
 
 ## bubbletea v2 traps
 

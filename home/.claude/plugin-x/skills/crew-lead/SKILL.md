@@ -33,7 +33,7 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 - **cloud (`claude --cloud`)** — a coder on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the whole procedure is `x:crew-cloud`.
 - **a mods coder is spawned by dima, never by cclio** (dima, 2026-10-10): he watches mods live in the coder's own tab, and a `--bg` session shows no mods in the desktop app over remote control. so a lane prepped for a mods coder ends with the brief file and the ask «open a Code tab in `~/frame` and paste: <pointer>», plus a second fence holding the tab name to paste (`☕️ 🔧 <ticket> code: <what>`, dima, 2026-10-11), then the pick-up below
 - **a pick-up is a spawn** (dima, 2026-10-10, after a restarted mods coder got a brief with no `plugin-authoring`): when dima reinits a member (a big context, a Code-tab restart so he sees its mods) or opens a thread and says «pick it up», the first message inits it by role, the same as a fresh brief — the handoff ingest never replaces it. per role:
-  - mods coder: `x:crew-coder`, the bundled `plugin-authoring` skill, `home/.claude/plugin-x/mods/AGENTS.md` whole, `mods/api-map.md`
+  - mods coder: `x:crew-coder`, the bundled `plugin-authoring` skill, `home/.claude/plugin-x/mods/AGENTS.md` whole, `mods/engine.md` by section when a probe or a test bites, `mods/api-map.md`
   - cli coder: `x:crew-coder`, `x:guide-go`, `x/AGENTS.md`, `x/PRODUCT.md`
   - bytes coder: `x:crew-coder`, `x:guide-typescript` + `x:guide-react`, the app's essentials (preflight 0.7)
   - ccrow: her boot from `ccrow/AGENTS.md` and the `x:crew-adviser` charter

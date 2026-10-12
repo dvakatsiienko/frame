@@ -4,7 +4,7 @@ distilled facts the fleet needs before a precision move: the traps, the defaults
 
 ## what belongs here
 
-a subject scattered across the filesystem: go and charm live in any app, a spawn happens from any session. a subject that lives in one place keeps its knowledge in that place: the mods in `home/.claude/plugin-x/mods/AGENTS.md`, a skill's sources in its `references/` (dima, 2026-10-12).
+a subject scattered across the filesystem: go and charm live in any app, a spawn happens from any session. a subject that lives in one place keeps its knowledge in that place: the mods in `home/.claude/plugin-x/mods/AGENTS.md`, a skill's sources in its `references/`, an app area in a nested `AGENTS.md` beside its code (trophy-sys `src/server/`, `src/web/charts/`), which loads when the folder is touched (dima, 2026-10-12).
 
 ## every file carries
 

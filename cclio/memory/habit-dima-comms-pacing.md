@@ -40,7 +40,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer» copied from the 10-01 lane plan; he read it as a designer being spawned (2026-10-01). a plan for tomorrow stays tomorrow's.
 
-**The next moves live in orbit** (`rules/fleet-mods.md`): cclio's phases carry planned siestas as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why such a bare turn?» on a reply whose next moves were thin).
+**The next moves live in orbit** (`rules/fleet-mods.md`): cclio's phases carry planned siestas as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why such a bare turn?» on a reply whose next moves were thin). a report turn ends with 1–3 pickable next items as an orbit ask he ticks, never a phases list of holds and parked lines alone (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»).
 
 **A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 

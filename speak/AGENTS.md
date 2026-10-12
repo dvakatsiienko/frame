@@ -6,9 +6,7 @@ with its api by `server.ts` on 127.0.0.1:7386 — always on through the launchd 
 `pnpm speak:admin-build`; a `server.ts` change needs `pnpm schedule:restart x-speak-admin`.
 not deployed anywhere: it edits this mac's config.json and talks to this mac's daemon.
 
-**`FTR.md` + `GLOSSARY.md`** — read your section before changing what the app does.
-
-📌 `PRODUCT.md` (impeccable `init`) is the product record — read it before changing what the app does;
+📌 before changing what the app does, read your section of `FTR.md` + `GLOSSARY.md` and `PRODUCT.md` (impeccable `init`, the product record);
 `DESIGN.md` (impeccable `document`) is the look record — read it before changing how anything renders. both
 are impeccable's files: change them through it, never by hand.
 
@@ -28,7 +26,7 @@ else, and the daemon re-reads the file on the next F4 after a save.
 ## hazards
 
 - **save goes through biome's formatter, fed indented json** — biome keeps an object expanded only when its input
-  was; compact input rewrote dima's whole file and the commit hook refused it (ce906229)
+  was; compact input rewrote dima's whole file and the commit hook refused it
 - **a dnd-kit reorder applies `move()` on every drag-over**, with the snapshot back on a cancel — applying it only
   on drop fought dnd-kit's optimistic dom move, and the page and the ranks disagreed after a keyboard drag
 - **only a chain card registers with dnd-kit** — it stamps `role` and a tab stop on what it registers, which broke

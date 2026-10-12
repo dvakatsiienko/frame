@@ -4,24 +4,9 @@ Neovim configuration based on **LazyVim** (v16+). Dual-mode: native Neovim and V
 
 ## Architecture
 
-```
-init.lua                  → requires config.lazy; loads config.vscode when vim.g.vscode
-lua/config/
-  lazy.lua                → lazy.nvim bootstrap + setup (spec imports lazyvim.plugins, then plugins/)
-  options.lua             → auto-loaded by LazyVim before startup
-  keymaps.lua             → auto-loaded by LazyVim on VeryLazy
-  autocmds.lua            → auto-loaded by LazyVim
-  vscode.lua              → NOT auto-loaded; required explicitly from init.lua in VSCode mode only
-lua/plugins/              → every file returns lazy.nvim specs, auto-imported
-  ui.lua                  → colorscheme (gruvbox)
-  coding.lua              → nvim-surround (vim-surround port: ys/cs/ds/S)
-  formatting.lua          → conform.nvim biome/prettier filetype split
-  vscode.lua              → vscode-multi-cursor.nvim
-lazyvim.json              → LazyVim extras registry (managed via :LazyExtras, editable by hand)
-lazy-lock.json            → committed lockfile; update via :Lazy sync
-```
+`init.lua` requires `config.lazy`; `lua/plugins/` holds one lazy.nvim spec file per domain, auto-imported; `lazyvim.json` is the extras registry (`:LazyExtras`, editable by hand); `lazy-lock.json` is committed, updated through `:Lazy sync`.
 
-LazyVim auto-loads exactly `config.options`, `config.keymaps`, `config.autocmds`. Any other module under `lua/config/` must be required explicitly.
+LazyVim auto-loads exactly `config.options`, `config.keymaps`, `config.autocmds`. Any other module under `lua/config/` must be required explicitly — `config/vscode.lua` is, from `init.lua`, in VSCode mode only.
 
 ## Usage context
 
@@ -51,8 +36,7 @@ LazyVim auto-loads exactly `config.options`, `config.keymaps`, `config.autocmds`
 
 ## External dependencies
 
-- `tree-sitter` CLI (brew `tree-sitter-cli`) — required by nvim-treesitter `main` branch to compile parsers
-- `stylua` (brew) — Lua formatting
+- `tree-sitter-cli` and `stylua` come from the root `Brewfile`; nvim-treesitter's `main` branch needs the cli to compile parsers
 - node via fnm — mason package installs
 - Mason-managed: vtsls, tailwindcss-language-server, biome, prettier, lua-language-server
 
@@ -64,5 +48,3 @@ nvim --headless "+lua print('ok')" +qa          # startup smoke test
 nvim --headless "+Lazy! sync" +qa               # sync plugins + lockfile
 nvim --headless -c "Lazy! load mason.nvim nvim-treesitter" -c "checkhealth lazy mason nvim-treesitter" -c "silent w! /tmp/health.txt" -c "qa!"
 ```
-
-Commit only when explicitly asked.

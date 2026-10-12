@@ -1,0 +1,78 @@
+# engine — what the mods engine does, probed
+
+the facts a mod round needs only when a probe or a test bites; the doors and rules are `AGENTS.md` beside this file. each fact names its build and its proof: «types» (grep the type in `.claude-plugin/types/claude-code/index.d.ts`), «harness» (a throwaway mod under `claude plugin test`), «live» (a headless `claude -p --plugin-dir <probe>`).
+
+## drawing and hover
+
+- the desktop refuses a `Client` module (10 s, csp) — draw desktop art with `Svg`: SMIL animates in its default image mode, and an image survives a redraw with no blink, where `isInteractive`'s sandboxed frame is rebuilt blank on every redraw of any site (the breather, FRM-354, dima's eye 2026-10-09; [claude-code#100797](https://github.com/anthropics/claude-code/issues/100797)) — reach for `isInteractive` only for hover or `:hover`; mods draw only on the host surface, never in a `--remote-control` view ([claude-code#99217](https://github.com/anthropics/claude-code/issues/99217))
+- the hover traps (the rule itself, «every interactive element names itself», is `AGENTS.md`'s):
+  - a hover card is a `Box` with a `key`, holding a child `Box` drawn `position="absolute"` `display="none"` `hover={{ display: 'flex' }}`; the card itself carries no `key`, or it becomes its own scope and never shows
+  - a `Button` has no `title`, and its `hover` only restyles the label — wrap it in the keyed `Box`
+  - the card clips at its site's edge — a one-row band clips anything above or below, so place it on the same row
+  - terminal hover needs pointer reporting: kitty, Ghostty, iTerm2 and WezTerm send it, tmux does not
+  - an `Svg` `<title>` (`isInteractive`) does not show in the desktop (x-mod-stash holds chip, 2026-10-05)
+  - the test harness keeps `hover` out of `FoundElement.props` and cannot hover — test the hidden card and its words; the reveal is checked with `pnpm mods:live <mod dir> hover <label>`
+  - `ui.find({ text })` matches a wrapper `Box` too, whose text joins its card's — add `type: 'Text'` to reach the label alone (FRM-303)
+  - no hover cards in a `Pane`: an absolute card in a narrow row wraps and draws over its neighbours; the recipe holds on the one-row band only (two rounds, FRM-306)
+- an `Input`'s `value` resets the field whenever a redraw draws a different one, and the surface runs a keystroke ahead of the mod, so any value that follows the typing — the stored steer, or even the latest text the mod heard — throws the caret (dima, 2026-10-12 16:15, 16:22; the second fix still drifted). x-mod-stash's `field(key, saved)` holds the drawn value still while typing and for 3 s after, then draws the stored text; a change from outside is drawn at once, and a steer cleared back to what is drawn remounts under `<key>#n` so the surface drops the typed text; a debounce only makes the race rarer; a steer's save waits for a 1.5 s pause too, since each save redraws the board and a redraw scrolled the field back to its start (dima's video, 16:40) — a press, a prompt or a tool call flushes it; a number field saves each keystroke
+- a `Markdown` link draws in the surface's blue and a mod cannot restyle it; a `Button` `label` takes no weight, but a `Button` takes `Text` children, yet the desktop draws a `<Button><Text bold>` child at normal weight (dima's eye, FRM-391, 17:27) — the harness keeps `bold` on the child, so a test passes while the desktop ignores it; a bold name that is also a control needs a separate control beside it (FRM-306's `↗`)
+
+## sessions, stores and messages
+
+- `$.store` is one file per plugin (`~/.claude/plugins/store/<plugin>_<source>-<hash>.json`, plain json) — two mods never share keys; a mod reads another's events from that file with `$.fs`
+- a mod's own tool (`$.tool.register` in `session.start`, x-mod-stash's orbit, FRM-381): its `tool.call` hook answers `{ result }` (a `content[]` answer is skipped as the wrong shape), its arguments sit flat on `e` (`e.input` is undefined), and an `mcp__<plugin>__<name>` is not in the tool-name union, so a `{ tool }` matcher fails tsc — a mod may hold only one matcherless `tool.call` hook, so the door is a `e.tool` check inside it (probed 2026-10-10, headless)
+- a `$.session.append` user row during a running turn reaches that same turn's reply (headless probe, 2026-10-10: a note appended 2 s into a `sleep 6` was answered in that reply), but one that lands after the turn's last model request starts a turn of its own (dima's live tick, 20:31) — a mid-turn note rides a `tool.call` result's `context` instead, and one no tool result reaches waits for the next prompt (x-mod-stash orbit, FRM-381)
+- a mark from another session reaches a member through the shared `$.store` (one file per plugin, every session's process reads it fresh), never through the member's `$.state` — FRM-385 step 0, probed headless and `--bg` at cc 2.1.296 with a throwaway mod and an outside write to its store file:
+  - (a) an idle member's next prompt: ✅ its `prompt.submit` hook reads the key a write from outside left, and the model quotes it
+  - (b) a running turn: ✅ a write 6 s into a `sleep 12` reached the same turn through the `tool.call` hook's `context` after that call
+  - (c) a `--bg` member: ✅ mods load under `--bg` (the user `CLAUDE_CODE_PLUGIN_DIRS` ones too) and its `prompt.submit` reads the key
+  - (d) a mod starting a turn in an idle session: ✅ a 2 s `$.clock.every` poll in an idle `--bg` session saw the key and `$.prompt.submit` ran a turn; 📌 that prompt skips the submitting plugin's own `prompt.submit` hook (the types say so: «every hook but the calling one»), so the mark travels in the submitted text, never as that hook's context
+- `$.session.send({ to, text })` sends a peer message with no model call (probed 2026-10-12 17:38, cc 2.1.295): a headless `claude -p "/<mod command>"` whose `command.run` hook sends it costs $0, 0 turns, ~0.2 s, and the receiver logs the sender by its registry name (`frame-5e` for that run); x-mod-stash's `/quiet-canary` and `pnpm mods:quiet-canary` ride it. it is the only `$.session.*` call that reaches another session — every other acts on this one — and «delivered» means queued, never read; a receiver set to refuse inbound messages drops it before its `session.receive` fires, so only the receiver's own log proves a delivery
+- a mod click can open another session's desktop window (FRM-397 step 0, cc 2.1.296, desktop app, probed 21:10): `open "claude://code/continue?session=<hostSessionId>"` through `$.process.run` switches the main window to that session, proven by the window layout before and after; the id is the registry's `hostSessionId` (`local_…`)
+- `$.ui.copy` takes on both surfaces at cc 2.1.296 (FRM-386 step 0, probed 15:21 desktop, 15:22 terminal): `{ isCopied: true }` with `surface` named and left out; on the desktop `pbpaste` read the text back, in a `mods:live` pty the paste itself is unprovable, so the terminal's clipboard is dima's eye
+- `$.prompt.fill` writes the box on both surfaces at cc 2.1.296 (FRM-382 step 0, probed 21:30 terminal, 21:42 desktop): `\r` is dropped on both, a trailing `\n` is dropped on the desktop and kept in the terminal, inner `\n` and an emoji land byte-for-byte, a typed character appends and reaches `prompt.submit` with the rest; `$.prompt.read()` inside `prompt.submit` sees an empty box (Enter cleared it) — read the box before the press; a probe armed on `prompt.submit` takes the next prompt of any origin (it swallowed a peer's message), so gate it on the origin
+- after a hot reload a hook can run before the fresh module's `session.start` (a reload lands at the turn's end, and `turn.complete` came first): a module variable the start restores from `$.state` is still its default there — read `$.state` in the hook that writes, never a module copy (orbit saved an empty list, FRM-381)
+- `classic.Stop` carries `background_tasks`, the session's in-flight shells, monitors, subagents and workflows (type, status, description; types: `BackgroundTaskSummary`): the one door a mod has to them; x-mod-stash names them in the 🔭 when a reply sets no wait (FRM-382, o88)
+
+## engine facts by area
+
+- engine facts probed 2026-10-05 at 2.1.289 (FRM-319), still true at 2.1.295 / 2.1.296 (refresh-cc-mods run #4: no release since 2.1.296 of 2026-10-09); the fleet runs both builds, and each rewrites a mod's `.claude-plugin/types/` on load, so its first line names the build; a «types» proof names the type to grep in `.claude-plugin/types/claude-code/index.d.ts`, never a line (they shift every bump), a «harness» proof is a throwaway mod under `claude plugin test`, a «live» one a headless `claude -p --plugin-dir <probe>`:
+  - state by lifetime:
+    - a module variable resets on every reload — live: keep-hot lost 🔥 on reload until it moved to `$.store` (x-mod-stash, 2026-10-04)
+    - `$.state` survives a hot reload and resets at `/clear` — live, 2.1.296 (lane l12, 20:01): a `mods:live` probe set a mark, ran `/clear`, read it back empty under the new session id; the interface guide says `/resume` and `/branch` reset it too (unprobed)
+    - `$.store` persists across sessions on this mac — live: the fleet board reads other sessions' keys; 4 MiB in all — types: `$.store`'s doc; cross-session writes are not atomic: per-item keys, re-read right before a write
+  - limits:
+    - a hook runs 10 s, then is skipped and the call goes on — live: the probe logged «tool.call hook skipped: ran past its 10s budget»; types: `HookBudget`; a `$` call's own time does not count (`HookBudget`), except `$.clock.sleep`, which spends the hook's budget — to wait without spending it, `$.process.run(['sleep', …])`
+    - a `.catch` gets 1 s, then is absent and the hook beneath runs — harness, ≈1018 ms; types: `HookBudget`
+    - `$.process.run` 30 s by default, ten minutes at most — types: `ProcessRunInit`
+    - ui invalidations: ten a second at most, thirty in the terminal for its shown pane, expanded band and prompt hint — types: `$.ui.invalidate`'s doc
+    - `prompt.edit` runs on a ~50 ms budget live, though the types name none and the harness let a 120 ms hook rewrite — live, 2.1.296 (lane l12, 20:02): an uppercasing hook that slept 45 ms rewrote the box, one that slept 60 ms was dropped with no log line; keep a `prompt.edit` hook to pure string work
+  - a rewritten event replaces the old one, never patches it — harness: `next({ command, tool, tool_use_id })` reached the hook beneath without `description` and `timeout`; pass `next({ ...e, field })`. a rewrite that drops a pinned key (`tool`, `tool_use_id`, `agentId`) gets the whole hook skipped
+  - a hook that throws is skipped and the chain goes on (fail-open) — harness: «hook was skipped: HooksError: boom»; types: `EngineCreateResult`. a guard meant to fail closed attaches `.catch` and answers `{ deny }` — harness: «hook failed closed … its .catch answered»
+  - `AbovePrompt` is shared: put `{await next(e)}` in your tree or the next mod's band vanishes — harness: a band without it hid the one beneath (x-mod-stash carries it)
+  - an `AbovePrompt` or `Pane` tree sizes to `e.props.bodyColumns`, never `e.viewport.columns` (the docs' rule)
+  - `turn.complete` fires for every subagent run too, with `agentId` set: a mod tracking the main turn returns early on it — types: `TurnCompleteFields`; breather restarted its band mid-turn until it did (2026-10-08)
+  - a terminal grid that animates every frame is one `Raster` redrawn by `$.ui.blit`, which skips the render pass (docs: `$.ui.blit`); a redraw tick written to a `$.state` key only one site reads redraws only that site, where `$.ui.invalidate('ui.render')` re-runs every render hook of the plugin (stash's terminal bars did it, FRM-391, until they left for sline)
+  - doors worth knowing before building, all types-only: `agent.offer` `{ isOffered: false }` withholds an agent type (`AgentOfferResult`); `agent.spawn` answers `{ deny }`; `$.model.classify` (weigh it beside jev); `$.ui.selection`, `undefined` with fullscreen off, in `-p` and on a surface that reports none; `session.send` / `session.receive`
+  - hooks run in the terminal, the desktop Code tab and headless `claude -p` (live: the budget probe); on the host under remote control too, drawing in the local terminal only (the overview's «Where mods run», run #4); in a cloud session where the build allows one (types: `AgentSpawnInput`)
+
+  - drawings: `RenderSurface` is `terminal | desktop | mobile | vscode`  — the terminal draws the whole tree, the others where they have a slot
+
+## the test harness
+
+- test-harness traps (FRM-299, ~6 debug rounds; pk-93): an unmocked op that throws inside `session.start` silently skips the rest of that hook, so unrelated tests go red (7 settings tests did) — mock every op the start calls; a `Pane` mounts once per test and `$.fs.read` answers once per test (a second `$.ui.mount` of the same `requestId`, or a second `$.fs.read`, errors) — keep the first result and read it again; a `session.append` mock must return `next(e)`; one op mocked twice in a test (`on('ui.log')` beside the world's) fails the module load («registered twice») — give the world function an option instead; an `on()` registered after the test's first `$` call throws — register it before and gate it on a flag; a `FoundElement` has no `parent`, and a `children` entry's `key` is unreliable — find by key or text; a board drawing reads its clock only with an open `ui.panes` mocked; `$.tool.call` answers a refusal as `{ deny }`, not `isError`; a `Text` drops its `key` — find it by text + type; an op hook (`ui.copy`) answers `{ value }`; the engine regenerates `.claude-plugin/types/` on reload, sometimes without the tool types, so tool inputs go `unknown` — narrow from `unknown`
+- a fail-open guard's «goes through» test also asserts the log holds no error line — with an unmocked store the guard fails open and the test passes for the wrong reason (two holds tests did, FRM-303)
+- a throwing op mock is skipped by the harness, never thrown — test a failure by forcing the real failing path (FRM-307)
+- a declaration a mod needs (a vault, a store shape) sits in a `types` contract the manifest names, never inline — `claude plugin validate` goes red otherwise; stop on that red before committing (FRM-307). a contract file keeps its comments to plain text: an emoji's variation selector (U+FE0F), even in a comment, fails it (pk-93)
+
+- the harness clones an event before any hook runs, so no test row can make a hook throw — test a `.catch` by calling the handler directly; a row's `children` carry only `type`, no text or key (mods coder, lane l12)
+
+## secrets and chain order
+
+- a transcript-scrubbing mod redacts in `tool.call` as well as `session.append`: the engine stores a tool's own result (`toolUseResult`) beside the row, and `session.append` never sees it (x-mod-redact, FRM-307)
+- a live redactor masks your own view and restores placeholders inside your own tool calls — tests build fake keys by concatenation, never as one literal (FRM-307)
+- `CLAUDE_CODE_PLUGIN_DIRS` order is the chain order, first outermost: x-mod-redact stays last, so every mod above it reads placeholders and only the tool gets the key. a hook adds `context` notes but cannot rewrite one from beneath, so a mod below redact that quotes the command leaks it for good (guard's «it ran:» did, live probe 2026-10-08)
+
+## what a mod cannot reach
+
+- what a mod cannot reach (measured, so nobody retries it): the queued-prompt `queue-operation` record is written before any hook (x-mod-redact); the «<mod> reloaded (n hooks)» line is the terminal's `InfoNotice`, not a mod site; the desktop draws cc's own prompt suggestion, so a mod suggestion races it (dropped, FRM-303)

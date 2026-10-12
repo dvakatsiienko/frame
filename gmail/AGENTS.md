@@ -13,11 +13,10 @@ only adds delete-on-arrival filters for dima's picks and keeps newton's spam cou
 
 ⚠️ **the config is the whole truth: `apply` deletes every gmail filter the config does not name.** on a
 new account, or after hand-made filters in the web ui, run `gmailctl download --config ~/frame/gmail`
-first and fold what it prints into `config.jsonnet` (the first apply on 2026-09-20 removed two old
-filters nobody had folded in).
-
-📌 **a worktree unlocks the encrypted file with `x lane seed <worktree>`** (probed 2026-10-11: ciphertext before, plain json after).
+first and fold what it prints into `config.jsonnet`.
 
 📌 a filter never touches mail that already arrived — after adding a sender, the sweep of old mail
 is one gmail search by hand. 📌 «delete» is gmail's trash, purged after 30 days; there is no
 permanent-delete filter action.
+
+<!-- the first apply on 2026-09-20 removed two old filters nobody had folded in. -->

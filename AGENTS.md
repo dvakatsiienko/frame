@@ -10,7 +10,7 @@ This is where the agent system itself (currently Claude Code CLI) is developed (
 
 🚫 **`cclio/` is the coordinator's home.** A session not booted as the coordinator never cds into
 or reads under `cclio/` — its memory autoloads and quietly rebrands whoever enters. Asked to boot as
-cclio from here: run `cclio/script/boot-mini.sh`, read its whole output, then work its mini checklist.
+cclio from here: run `cclio/script/cclio-boot-mini.sh`, read its whole output, then work its mini checklist.
 
 ## the dotfiles
 
@@ -52,7 +52,7 @@ it in that home; `script/`, `docs/` and `lib/` are not homes, they are where sca
 
 <!-- the notes on scripts, the toolchain and the hooks moved to .claude/rules/scripts.md (2026-10-11 sweep), a paths: rule that loads with those files; this one line stays, because running a command touches no file -->
 
-- 📌 `pnpm check` itself WRITES repo-wide — run biome on your own paths only; lefthook already formats what you stage.
+- 📌 `pnpm check` itself WRITES repo-wide — run biome on your own paths only; `x lane commit` formats the paths it commits.
 
 ## what lives in `home/.claude/` that `ls` does not explain
 

@@ -21,7 +21,7 @@ live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
 
 ## the shared working tree
 
-- **a parallel agent in a repo with a repo-wide commit gate writes to scratch until it compiles, then moves in** — per-path ownership does not hold against a per-repo typecheck hook: a coder's own subagent dropped a half-compiled `.ts` into the tree and blocked the coder's commits for two rounds (2026-09-22). guard: `script/index-run.sh` in frame (the gates run on a copy of the index, FRM-367); none in bytes until its index copy lands
+- **a parallel agent in a repo with a repo-wide commit gate writes to scratch until it compiles, then moves in** — per-path ownership does not hold against a per-repo typecheck hook: a coder's own subagent dropped a half-compiled `.ts` into the tree and blocked the coder's commits for two rounds (2026-09-22). guard: `script/index-run.sh` in frame (the gates run on a private copy that sees only the commit, so a peer's staged file never reds yours — FRM-367, PK-97) and `x lane commit` waits out a peer's index lock; none in bytes until its index copy lands
 
 ## the bash sandbox
 
