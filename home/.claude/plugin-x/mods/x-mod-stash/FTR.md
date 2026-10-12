@@ -572,6 +572,8 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given anything inside cclio's quiet hold throws
   - when a member's ping arrives
   - then it passes as if quiet were off, and the log keeps a `failed-open` line for it
+  - given the held list does not save, or its `held` log line does not land, then the ping passes the same way, and a held list that saved is taken back, so it is never delivered twice
+  - decision: the hold answers «consumed» only once both writes landed; a write that fails silently was a ping nobody holds (brief 9 item 2, 2026-10-12)
 - ⬜ every held ping that reaches cclio logs `flushed`
   - when held pings ride her next prompt, or land as the idle row, then each gets a `flushed` line beside its `held` one
 - ⬜ the ledger counts what members sent against what the log holds

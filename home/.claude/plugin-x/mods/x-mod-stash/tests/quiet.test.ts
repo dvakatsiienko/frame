@@ -26,6 +26,8 @@ function world(
         // a test's own answer to a process run, before the default one
         run = (_argv: readonly string[]): string | number | undefined =>
             undefined,
+        // a store write the test makes fail
+        refuseSet = (_key: string): boolean => false,
     } = {},
 ) {
     for (const p of peers)
@@ -37,6 +39,7 @@ function world(
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
+        if (refuseSet(e.key)) return { deny: 'disk full' };
         store.set(e.key, e.value);
         return { value: undefined };
     });
@@ -378,6 +381,35 @@ test('a throw inside the hold passes the ping and logs failed-open', async ($, o
     expect([w.queued.length, logOf(w).map((l) => l.verdict)]).toEqual([
         1,
         ['failed-open'],
+    ]);
+});
+
+test('a held list that does not save passes the ping, failed-open, nothing held', async ($, on) => {
+    const w = world(on);
+    let isBroken = false;
+    on('state.set', (_$, e, next) =>
+        isBroken && e.key === 'quiet' ? { deny: 'disk full' } : next(e),
+    );
+    await start($);
+    isBroken = true;
+    await ping($, '[progress] step 2 landed');
+    expect([w.queued.length, logOf(w).map((l) => l.verdict)]).toEqual([
+        1,
+        ['failed-open'],
+    ]);
+});
+
+test('a held line that does not log passes the ping and takes it back out of the held list', async ($, on) => {
+    let isBroken = false;
+    const w = world(on, {
+        refuseSet: (key) => isBroken && key.startsWith('quiet-log:'),
+    });
+    await start($);
+    isBroken = true;
+    await ping($, '[progress] step 2 landed');
+    expect([w.queued.length, w.store.get(`quiet-held:${SID}`)]).toEqual([
+        1,
+        [],
     ]);
 });
 

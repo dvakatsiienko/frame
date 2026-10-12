@@ -504,19 +504,26 @@ async function quietOf($: EngineInterface): Promise<StashQuiet> {
     );
 }
 
+// true once the held list is in the session's state; the store copy only feeds the board's row
 async function saveQuiet($: EngineInterface, q: StashQuiet) {
-    await $.state.set(QUIET, q).catch(() => undefined);
+    const isSaved = await $.state
+        .set(QUIET, q)
+        .then(() => true)
+        .catch(() => false);
     const sid = await currentId($);
     if (sid) await $.store.set(QUIET_HELD + sid, q.held).catch(() => undefined);
+    return isSaved;
 }
 
+// true once the line is in the day's log
 async function quietLog($: EngineInterface, line: QuietLogLine) {
     const key = QUIET_LOG + new Date(line.at).toISOString().slice(0, 10);
     const was = ((await $.store.get(key).catch(() => undefined)) ??
         []) as QuietLogLine[];
-    await $.store
+    return $.store
         .set(key, [...was, line].slice(-QUIET_LOG_MAX))
-        .catch(() => undefined);
+        .then(() => true)
+        .catch(() => false);
 }
 
 // each held ping that reached cclio's thread gets a `flushed` line, so a canary sees held → delivered
@@ -3145,18 +3152,24 @@ export const register: Register = (on) => {
             if (isOn && !isMobile && tag === 'progress') {
                 const first =
                     body.replace(QUIET_TAG, '').trim().split('\n')[0] ?? '';
-                await saveQuiet($, {
+                // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
+                const isSaved = await saveQuiet($, {
                     ...q,
                     held: [
                         ...q.held,
                         { at: now, from, text: first.slice(0, 300), ...marks },
                     ],
                 });
-                await quietLog($, {
+                if (!isSaved) throw new Error('the held list did not save');
+                const isLogged = await quietLog($, {
                     ...line,
                     startedTurn: false,
                     verdict: 'held',
                 });
+                if (!isLogged) {
+                    await saveQuiet($, q);
+                    throw new Error('the held line did not log');
+                }
                 return {
                     consumed: `quiet comms held ${from}'s [progress] ping`,
                 };
