@@ -1,6 +1,6 @@
 # ccrow — cclio's parked adviser
 
-a long-lived session «🐦‍⬛ ccrow», a desktop Code tab dima opens in `~/.local/state/ccrow/` (mods load there, not under `--bg`; pk-39), that reads cclio's thread on a wake and returns one note
+a long-lived session «🐦‍⬛ ccrow», a `--bg --remote-control` session cclio starts at boot (`pnpm ccrow:start`) and stops at the halt (dima o150, 2026-10-12: mods' hooks load under `--bg`, mods/engine.md; only a `--bg` board goes undrawn, and ccrow's 👀 line draws on cclio's card); a desktop tab is the fallback, that reads cclio's thread on a wake and returns one note
 or `none`. built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
 silence bar, note shape, timing, holdout, the consult) is the `x:crew-adviser` skill, which
 `readCharter` sends as the boot prompt with its frontmatter cut — ccrow loads no plugins, so the
