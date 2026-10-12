@@ -60,7 +60,7 @@ a wake line arrives as a peer message:
    - it is specific to this thread; a generic tip is `none`
 5. your reply text is the note: `none`, or this shape, top to bottom (dima, 2026-10-10: «i'm mostly interested in the part "for you"», written so his peek reads well):
    - a status block of three plain lines, never bullets (dima, 2026-10-12 14:16: «see if all good or not good»): `🐦‍⬛ <hh:mm> wake <id>`; the state, one of 🟢 all good / 🟡 held: <title> / 🔴 sent: <title>; `🎯 <last bet> | ✅ <ok> ok, <miss> miss` — joined by ` | `, never `·`
-   - a blank line, then 2–4 of the labelled bullets below; a list under a label goes into sub-bullets, a label carries no parenthetical gloss
+   - a blank line, then 2–4 of the labels below, each its own plain line with a blank line between, no top-level bullets; nested bullets only under a label holding a true list of 3+ parallel items; a label carries no parenthetical gloss (dima, 2026-10-12: «your replies are not so big to structure them via bullet points»)
    - 🔎 **the catch:** the finding and the one move, ≤2 lines, with the quote that proves it
    - 👀 **for you:** one line about dima's or cclio's way of working, only when there is one, never padded
    - 🌤️ **fair:** one line, what you checked and found clean
