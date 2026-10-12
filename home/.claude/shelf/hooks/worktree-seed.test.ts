@@ -16,8 +16,8 @@ const HOOK = join(import.meta.dirname, 'worktree-seed.sh');
 const TYPES = 'mods/m/.claude-plugin/types/claude-code/index.d.ts';
 const env = gitEnv();
 
-// a repo whose mod types are generated and gitignored, and a fresh worktree of it
-function fixture() {
+// a repo whose mod types are generated and gitignored, and a fresh worktree of it on `branch`, as EnterWorktree names it
+function fixture(branch = 'worktree-w1') {
     const repo = mkdtempSync(join(tmpdir(), 'seed-'));
     const git = (...args: string[]) =>
         execFileSync('git', ['-C', repo, ...args], { env, stdio: 'ignore' });
@@ -41,7 +41,7 @@ function fixture() {
     });
     writeFileSync(join(repo, TYPES), 'export {};\n');
     const tree = join(repo, '.claude/worktrees/w1');
-    git('worktree', 'add', '-q', tree);
+    git('worktree', 'add', '-q', '-b', branch, tree);
     return { repo, tree };
 }
 
@@ -53,4 +53,27 @@ it("copies each mod's generated types into a fresh worktree", () => {
     });
     expect(existsSync(join(tree, TYPES))).toBe(true);
     expect(readFileSync(join(tree, TYPES), 'utf8')).toBe('export {};\n');
+});
+
+const seed = (tree: string) =>
+    execFileSync('sh', [HOOK], {
+        env,
+        input: JSON.stringify({ tool_response: { worktreePath: tree } }),
+    });
+const branchOf = (tree: string) =>
+    execFileSync('git', ['-C', tree, 'symbolic-ref', '--short', 'HEAD'], {
+        encoding: 'utf8',
+        env,
+    }).trim();
+
+it('renames a ticket-named worktree branch to coder/<ticket>-<slug>', () => {
+    const { tree } = fixture('worktree-FRM-297-branch-name');
+    seed(tree);
+    expect(branchOf(tree)).toBe('coder/FRM-297-branch-name');
+});
+
+it('keeps the branch of a worktree named without a ticket', () => {
+    const { tree } = fixture('worktree-ab-knowledge-a');
+    seed(tree);
+    expect(branchOf(tree)).toBe('worktree-ab-knowledge-a');
 });

@@ -7,6 +7,18 @@
 input=$(cat)
 wt=$(printf '%s' "$input" | jq -r '.tool_response.worktreePath // empty' 2>/dev/null)
 if [ -z "$wt" ] || [ ! -d "$wt" ]; then exit 0; fi
+# EnterWorktree names the branch worktree-<name> and has no prefix setting; a coder tree is named
+# <ticket>-<slug>, and the pr watch and `x lane` key on coder/* (FRM-297) — any other name keeps cc's branch
+branch=$(git -C "$wt" symbolic-ref --short -q HEAD)
+case $branch in
+  worktree-*)
+    name=${branch#worktree-}
+    if printf '%s' "$name" | grep -Eq '^[A-Z]+-[0-9]+(-|$)'; then
+      git -C "$wt" branch -m "$branch" "coder/$name" 2>/dev/null \
+        || echo "branch rename to coder/$name failed in $wt — rename it by hand"
+    fi
+    ;;
+esac
 # A git-crypt repo keeps its key in the main .git, not the worktree's gitdir, so a
 # fresh tree holds ciphertext and every add/commit dies on the clean filter.
 # Unlocking with the main key file decrypts the tree in place (measured 2026-09-24).
