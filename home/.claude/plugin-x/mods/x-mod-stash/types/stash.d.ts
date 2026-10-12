@@ -12,6 +12,7 @@ export type PublishedAsk = {
     id: string;
     text: string;
     pick: string;
+    link?: string;
     mark?: 'accepted' | 'rejected';
     steer?: string;
     isLocked?: boolean;
@@ -106,6 +107,8 @@ export type OrbitAsk = {
     text: string;
     pick: string;
     hiddenNote?: string;
+    // one https url or file path dima opens in a click (brief 8: proposals sat in scratch files he dug for)
+    link?: string;
     mark?: 'accepted' | 'rejected';
     steer?: string;
     isLocked?: boolean;

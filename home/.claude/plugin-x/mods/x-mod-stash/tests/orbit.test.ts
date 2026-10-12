@@ -1395,3 +1395,69 @@ test("orbit's description fits the 2048 chars cc shows the model, every op named
         ['add', 'resolve', 'follow', 'assume', 'catch', 'plan', 'glide'],
     ]);
 });
+
+/* brief 8 item 1: an ask carries one link dima opens in a click */
+
+const addLinked = ($: Engine, link: string) =>
+    orbit($, {
+        asks: [
+            { link, pick: 'read it', text: 'the proposal for the catch kinds' },
+        ],
+        op: 'add',
+    }) as Promise<{ deny?: string }>;
+
+test("an ask's https link draws as a link to that url", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await addLinked($, 'https://github.com/x/y/pull/7');
+    expect(
+        (await ui.find({ text: '🔗 github.com', type: 'Link' }))?.props.href,
+    ).toBe('https://github.com/x/y/pull/7');
+});
+
+test("an ask's file link opens through open, its ~ the home dir", async ($, on) => {
+    world(on);
+    const runs: string[][] = [];
+    on('process.run', (_$, e) => {
+        runs.push([...e.argv]);
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: '',
+            },
+        };
+    });
+    await start($);
+    const ui = await board($);
+    await addLinked($, '~/frame/.scratch/catch/kinds.md');
+    const label = (await ui.find({ key: 'ask:link:o1', type: 'Button' }))?.text;
+    await ui.press({ key: 'ask:link:o1' });
+    expect([label, runs.at(-1)]).toEqual([
+        '🔗 kinds.md',
+        ['open', '/home/frame/.scratch/catch/kinds.md'],
+    ]);
+});
+
+test('a link that is neither an https url nor a file path is refused, and no ask lands', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await addLinked($, 'javascript:alert(1)');
+    expect([r.deny, w.store.has('asks:o1o1o1o1-orbit')]).toEqual([
+        'orbit add: link «javascript:alert(1)» is neither an https url nor a file path (/… or ~/…)',
+        false,
+    ]);
+});
+
+test('the link rides the ask a glide card draws from the store', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await addLinked($, 'https://github.com/x/y/pull/7');
+    expect(
+        (w.store.get('asks:o1o1o1o1-orbit') as { items: { link?: string }[] })
+            .items[0]?.link,
+    ).toBe('https://github.com/x/y/pull/7');
+});

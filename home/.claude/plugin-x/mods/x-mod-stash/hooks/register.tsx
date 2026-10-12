@@ -279,7 +279,7 @@ const cardBorder = (surface: string) =>
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
     'orbit: your asks to dima on the fleet board; an ask goes here, never into a reply. 🛎️ tick = pick good to go, 🔁 replay = another round, plus his steer; marked asks reach you model-only. a --bg session has no board: its asks go to its coordinator.',
-    `op add, asks [{ text, pick, hiddenNote }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
+    `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url or file path he opens in a click. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
     'op resolve, ids: the asks answered this turn; they leave when it ends.',
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
@@ -704,6 +704,7 @@ async function saveOrbit($: EngineInterface, next: StashOrbit) {
                     id: a.id,
                     pick: a.pick,
                     text: a.text,
+                    ...(a.link ? { link: a.link } : {}),
                     ...(a.mark ? { mark: a.mark } : {}),
                     ...(a.steer ? { steer: a.steer } : {}),
                     ...(a.isLocked ? { isLocked: true } : {}),
@@ -1460,6 +1461,14 @@ const isLive = (v: Entry | undefined, now: number): v is Entry =>
 
 const errorText = (err: unknown) =>
     err instanceof Error ? err.message : String(err);
+
+// a file an ask links to opens in its app; `~/` is the home dir, the path an argv item, never a shell word
+async function openPath($: EngineInterface, path: string) {
+    const home = (await $.env.get('HOME')) ?? '';
+    await $.process
+        .run(['open', path.replace(/^~(?=\/)/, home)])
+        .catch(() => undefined);
+}
 
 const basename = (path: string) =>
     path.split('/').filter(Boolean).pop() ?? path;
@@ -3512,6 +3521,21 @@ export const register: Register = (on) => {
         } as const;
         // ⏸️ while speak reads, ▶️ when it is paused or quiet: a press pauses, resumes, or reads this row (dima, 15:51)
         const isSpeaking = (await $.state.get(SPEAKING)).value === true;
+        // an ask's one link: a url opens as a link, a file path through `open` (a mod Link takes https only)
+        const askLinkJSX = (id: string, target: string) => {
+            return target.startsWith('https://') ? (
+                <Link href={target} key={`ask:link:${id}`}>
+                    {`🔗 ${target.slice('https://'.length).split('/')[0]}`}
+                </Link>
+            ) : (
+                <Button
+                    key={`ask:link:${id}`}
+                    onPress={() => void openPath($, target)}
+                    plain>
+                    {`🔗 ${basename(target)}`}
+                </Button>
+            );
+        };
         const speakJSX = (id: string, text: string) =>
             !isPartOn('stash.speak')
                 ? []
@@ -3607,6 +3631,7 @@ export const register: Register = (on) => {
                     {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
                     {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
                     {speakJSX(a.id, `${a.text}. ${a.pick}`)}
+                    {a.link ? askLinkJSX(a.id, a.link) : null}
                     {a.isLocked ? (
                         a.steer ? (
                             <Box flexShrink={1} minWidth={0}>

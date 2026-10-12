@@ -15,6 +15,8 @@ export const CHANGED_MARK = '🆕';
 export const ORBIT_TEXT_MAX = 90;
 // at most this many assumptions a turn, and on the board at once (FRM-382 exit 2: under one a turn on average)
 export const ASSUMED_MAX = 3;
+// an ask's one link: an https url, or an absolute or home path to a file
+export const ASK_LINK = /^(https:\/\/|\/|~\/)\S+$/;
 export const ASSUMED_TURNS = 3;
 // 🐠 catch v2 (PK-96): catch.md's seven kinds, a piece ≤60 chars, 5 rows drawn and 7 held; the rules live in catch.md
 export const CATCH_KINDS = ['📍', '🧷', '✅', '🎯', '⏰', '💡', '📦'] as const;
@@ -172,9 +174,15 @@ export function orbitOp(
                 const text = oneLine(v.text);
                 if (!text) continue;
                 const hiddenNote = oneLine(v.hiddenNote);
+                const link = oneLine(v.link);
+                if (link && !ASK_LINK.test(link))
+                    return {
+                        deny: `orbit add: link «${link.slice(0, 40)}» is neither an https url nor a file path (/… or ~/…)`,
+                    };
                 added.push({
                     hiddenNote: hiddenNote || undefined,
                     id: `o${next++}`,
+                    ...(link ? { link } : {}),
                     pick: oneLine(v.pick) || 'no pick',
                     text,
                 });

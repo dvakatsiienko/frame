@@ -328,6 +328,10 @@
 
 ## /board — 🪐 orbit
 
+- ⬜ an ask carries one link dima opens in a click (brief 8)
+  - given cclio adds an ask with `link` — an https url, or a file path from `/` or `~/`
+  - then its row draws `🔗 <host>` as a link to the url, or `🔗 <file name>`, a press opening the file through `open`; any other link is refused and no ask lands
+  - and a glide card draws the same link on a member's ask
 - ⬜ the model reads orbit's whole tool description (dima's o50)
   - given cc shows a model only the first 2048 chars of a tool's description (the reload notice read 2371)
   - when a session loads orbit
