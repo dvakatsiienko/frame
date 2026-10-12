@@ -66,7 +66,7 @@ an emoji is a **line prefix**, never inline decoration.
   llm slop sparkles, «✨ wisp» reads as the bug list. the words and badges live in `rules/fleet-vibe.md`.
 - **picking an emoji for anything** — offer a few from dima's own favourites first, then a few fresh
   fits; he picks. his set (handpicked, 2026-10-08): 🐋 🐬 🐠 🫍 🦈 🐆 🪶 🐉 🐦‍🔥 🪸 🌼 🌻 🌞 🌘 🌗 🌔 🪐 💫 💨
-  🛼 🫟 🎑 🌠 🌌 🧞‍♂️
+  🛼 🫟 🎑 🌠 🌌 🧞‍♂️ 🦅
 
 ## links and paths — one click, always
 
