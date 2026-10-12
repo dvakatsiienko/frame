@@ -1,5 +1,5 @@
 ---
-fed-by: recipe refresh-fleet-comms
+fed-by: recipe refresh-fleet-operator-comms
 when:
   - { kind: basename, value: fleet-output-format.md }
   - { kind: basename, value: fleet-voice.md }
@@ -23,7 +23,7 @@ landed since: the reply budget, glosses, orbit asks, phases, glide, 🐠 catch, 
 
 the rest: per-week trends, the labelling method and gold set, the research behind each lever.
 
-kept by `recipes/refresh-fleet-comms`; each run merges its numbers here and names the direction against the last run. the page view of the first run: [Operator Ledger](https://claude.ai/artifact/CJmBAGi8tJ9wyh8FW3kx9o).
+kept by `recipes/refresh-fleet-operator-comms`; each run merges its numbers here and names the direction against the last run. the page view of the first run: [Operator Ledger](https://claude.ai/artifact/CJmBAGi8tJ9wyh8FW3kx9o).
 
 ## his prompts — 2026-09-03 → 2026-10-10 (37 days)
 

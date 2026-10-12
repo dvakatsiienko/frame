@@ -72,7 +72,7 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 6. **a session-kind probe** — any filter on origin or session kind is probed once per kind: interactive, bg `sdk`, peer (the composer-only allow-list broke every bg session, FRM-303)
 7. **a state-lifetime audit** — every module variable that must survive a reload lives in `$.state` or `$.store` (the 10-04 keep-hot untick looked like a reload resetting one)
 8. **open leads**: every «unprobed» line in `mods/AGENTS.md` and every open child of FRM-304, re-checked on the current build; the test drive verdict in `docs/test-drive/mods.md`
-9. **the comms targets** — the ledger in `docs/knowledge/fleet-comms.md`: the numbers each comms mod must move (asks pasted back, status questions, re-asks, the reading load)
+9. **the comms targets** — the ledger in `docs/knowledge/fleet-operator-comms.md`: the numbers each comms mod must move (asks pasted back, status questions, re-asks, the reading load)
 10. **session identity** — every key a mod uses for «who is this session» (cwd, registry name, cc sessionId, desktop `local_` id) checked against a `cd`, a `/clear`, a rename and a reinit
 11. **leftovers** — dev-mods dirs past their probe, a mod still loaded after its source moved
 12. **cclio's wants list** — each open want of the coordinator's (brief 8 on 10-12) read against the api: buildable, workaround, or engine gap
