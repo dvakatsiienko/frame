@@ -433,12 +433,12 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: dima's own prompt sends a tick still sending at once — submitting is his «send», and the moment to unsend has passed (lane l12, 2026-10-12)
 - ⬜ a resolve can carry a closing word
   - given a session resolves an ask with a closing word (`words: { o1: "landed" }`)
-  - then the ask's card turns dim, `✔️ o1: <ask> — **landed**`, with no tick, replay, speak or steer
+  - then the ask collapses to one dim line, no card and no controls: an emoji from the word (🗑️ dropped, ▶️ started or queued, ✅ anything else), its id and text cut short, the word in bold at the end — `✅ o1: <ask> **landed**` (dima's shot, 20:37)
   - when the turn ends, then it stays, dim, through the next turn; at that turn's end it leaves
   - decision: an ask resolved with no word leaves at its turn end as before (cclio's brief 8, 2026-10-12)
 - ⬜ an ask can carry an expiry
-  - given a session adds an ask with `dies: "halt"`, then its row reads `⌛ halt`, and when cclio's halt skill expands, the ask leaves orbit, unless a running turn holds it
-  - given an ask added with `dies: 2`, then its row reads `⌛ 2 turns`, counting down to `⌛ last turn`; unmarked, it leaves at the end of the second turn after its own; a 🛎️ or 🔁 keeps it and drops the ⌛
+  - given a session adds an ask with `dies: "halt"`, then its row reads `⌛ dies at halt`, and when cclio's halt skill expands, the ask leaves orbit, unless a running turn holds it
+  - given an ask added with `dies: 2`, then its row reads `⌛ dies in 2 turns`, counting down to `⌛ dies this turn`; unmarked, it leaves at the end of the second turn after its own; a 🛎️ or 🔁 keeps it and drops the ⌛
   - given a `dies` that is neither «halt» nor a whole number 1–20, then the tool refuses the add in one line
 - ✅ every prompt reminds the session of orbit
   - given orbit holds open asks or a plan
@@ -624,6 +624,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - when dima looks at the board
   - then the lines lead with 🌕 🌔 🌓 🌒 🌑 🌑 🌑 in order; the 🌕 and 🌔 lines print plain, the rest dim; only the `now:` lead word reads green
   - decision: the moon replaces the line number (dima, 20:58)
+  - and a `siesta:` line draws 🌤️ in place of its moon: a siesta is a pause, not a step (dima, 2026-10-12 20:37)
   - decision: 7 lines, not 5, the lines past the fifth keep 🌑 — a try, dima may revert (dima, 2026-10-10 23:54)
   - decision: the now line's text stays plain, only its lead word stands out, green and bold (dima, 21:08)
 - ⬜ the phases guard: a start line and one nudge, never an extra turn

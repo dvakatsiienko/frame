@@ -288,6 +288,13 @@ const PLAN_LEAD = /^[a-z]{2,10}:/i;
 const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
 // a quarter row between a block's lines: the desktop draws the fraction, the terminal rounds it away (dima, 21:22)
 const LINE_GAP = 0.25;
+// a closed ask's lead, read from its closing word: dropped 🗑️, started or queued ▶️, anything else done ✅ (dima, 20:37)
+export const closedMark = (word: string) =>
+    /^(drop|cut|cancel|superseded|declined)/i.test(word)
+        ? '🗑️'
+        : /^(start|queued|running|in progress)/i.test(word)
+          ? '▶️'
+          : '✅';
 // the board's sections sit in cards, no colour (dima, 16:48 «colors are ugly»): the desktop a 30 % grey that reads the same on
 // light and dark, a touch softer than `subtle` (16:54 too faint, 17:00 «too hard», 17:08 «slightly less»); the terminal `subtle`
 const cardBorder = (surface: string) =>
@@ -3826,26 +3833,33 @@ export const register: Register = (on) => {
         // the ask on its own line, the bold id leading it; under it one row: the steer, 🛎️ ↩️, then speak's 🔊 ⏯ ⏹
         // (dima, 20:08); a full row of air between asks (dima, 19:52)
         // an ask resolved with a closing word draws dim, the word after its text and no controls, for its turn and one more
+        // one line, no card: its emoji from the word, the word kept whole and the ask cut short (dima's shot, 20:37)
         const closedJSX = (a: OrbitAsk, i: number, door: AskDoor) => (
             <Box
-                borderDimColor
-                borderStyle='round'
+                flexDirection='row'
+                gap={1}
                 key={`${door.prefix}:ask:${a.id}`}
                 marginTop={i > 0 ? 0.5 : 0}
                 paddingX={1}>
-                <Text dimColor>
-                    {`✔️ ${a.id}: ${a.text} — `}
-                    <Text bold>{a.word}</Text>
-                </Text>
+                <Box flexShrink={1} minWidth={0}>
+                    <Text dimColor wrap='truncate-end'>
+                        {`${closedMark(a.word ?? '')} ${a.id}: ${a.text}`}
+                    </Text>
+                </Box>
+                <Box flexShrink={0}>
+                    <Text bold dimColor>
+                        {a.word}
+                    </Text>
+                </Box>
             </Box>
         );
-        // an ask with an expiry names it beside its controls: «⌛ halt», or the turns it has left unpicked after this one
+        // an ask with an expiry says what it is beside its controls (dima, 20:37: «⌛ halt» did not read)
         const expiryText = (a: OrbitAsk) => {
-            if (a.dies === 'halt') return '⌛ halt';
+            if (a.dies === 'halt') return '⌛ dies at halt';
             const left = (a.dies ?? 0) - o.turns - 1;
             return left < 1
-                ? '⌛ last turn'
-                : `⌛ ${left} turn${left === 1 ? '' : 's'}`;
+                ? '⌛ dies this turn'
+                : `⌛ dies in ${left} turn${left === 1 ? '' : 's'}`;
         };
         const askJSX = (a: OrbitAsk, i: number, door: AskDoor = ownDoor) =>
             a.word ? (
@@ -4614,7 +4628,8 @@ export const register: Register = (on) => {
                                               flexShrink={1}
                                               minWidth={0}>
                                               <Text dimColor={i > 1}>
-                                                  {`${PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
+                                                  {/* a siesta is a pause, not a step: 🌤️ in place of its moon (dima, 20:37) */}
+                                                  {`${/^siesta:/i.test(line) ? '🌤️' : PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
                                                   {lead ? (
                                                       <Text
                                                           bold

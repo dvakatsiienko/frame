@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { closedMark } from '../hooks/register.tsx';
+
 const SID = 'o1o1o1o1-orbit';
 const TOOL = 'mcp__x-mod-stash__orbit';
 
@@ -419,7 +421,7 @@ test('an ask resolved with a closing word shows dim with it for one more turn, t
         op: 'resolve',
         words: { o1: 'dropped: superseded by o58' },
     });
-    expect(await texts(ui)).toContain('✔️ o1: push FRM-1 — ');
+    expect(await texts(ui)).toContain('🗑️ o1: push FRM-1');
     await endTurn($);
     const after = [await asksShown(ui), await texts(ui)] as const;
     await say($, 'next');
@@ -444,7 +446,7 @@ test('an unpicked ask with dies: 2 leaves at the end of the second turn after it
         ],
         op: 'add',
     });
-    expect(await texts(ui)).toContain('⌛ 2 turns');
+    expect(await texts(ui)).toContain('⌛ dies in 2 turns');
     await endTurn($);
     await ui.press({ key: 'orbit:accepted:o3' });
     const seen: string[][] = [];
@@ -470,7 +472,7 @@ test('an ask with dies: "halt" leaves when the halt skill expands; the rest stay
         ],
         op: 'add',
     });
-    expect(await texts(ui)).toContain('⌛ halt');
+    expect(await texts(ui)).toContain('⌛ dies at halt');
     await $.skill.prompt({ skill: 'cclio:halt', text: '# halt' } as never);
     expect(await asksShown(ui)).toEqual(['o2']);
 });
@@ -1808,4 +1810,31 @@ test("the phases tick and steer sit in the card's head row, centered, before �
         act?.props.alignItems,
         Boolean(await ui.find({ key: 'plan:tick' })),
     ]).toEqual(['center', ['Box', 'Box', 'Button'], 'center', true]);
+});
+
+test("a closed ask leads with its word's emoji: dropped 🗑️, started ▶️, anything else ✅", () => {
+    expect(
+        [
+            'dropped: superseded by o58',
+            'queued for the mods coder',
+            'started',
+            'landed',
+            'applied, quote gate clean',
+        ].map(closedMark),
+    ).toEqual(['🗑️', '▶️', '▶️', '✅', '✅']);
+});
+
+test('a «siesta:» phase draws 🌤️ in place of its moon', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, {
+        lines: ['now: a', 'siesta: wishkeeper', 'then: b'],
+        op: 'plan',
+    });
+    const leads = (await ui.findAll({ type: 'Text' }))
+        .map((t) => t.text ?? '')
+        .filter((t) => /(now|siesta|then): /.test(t) && !/phases/.test(t))
+        .map((t) => [...t][0]);
+    expect(leads).toEqual(['🌕', '🌤', '🌓']);
 });
