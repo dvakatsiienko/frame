@@ -40,6 +40,7 @@ function fleet(
         patch = {} as Record<number, Record<string, unknown>>,
         isBoardOpen = true,
         files = undefined as string[] | undefined,
+        reads = {} as Record<string, string>,
     } = {},
 ) {
     const runs: string[][] = [];
@@ -68,6 +69,8 @@ function fleet(
         })),
     }));
     on('fs.read', (_$, e) => {
+        const extra = reads[e.path];
+        if (extra !== undefined) return { value: extra };
         const entry = REGISTRY[e.path];
         if (!entry) return { deny: 'no such file' };
         const pid = entry.pid as number;
@@ -433,6 +436,80 @@ test("a row links the ticket in its session's name", async ($, on) => {
     const ui = await board($);
     const link = await ui.find({ type: 'Link' });
     expect(link?.props.href).toBe('https://linear.app/x-com/issue/FRM-1');
+});
+
+// ccrow's notes file as her wakes write it: one json line per note, the 👀 «for you» line inside the note's text
+const crowNotes = (notes: { at: number; note: string }[]) => ({
+    '/home/.local/state/ccrow/notes.jsonl': notes
+        .map((n) =>
+            JSON.stringify({ at: new Date(n.at).toISOString(), note: n.note }),
+        )
+        .join('\n'),
+});
+
+const CROW_SID = 'c3c3c3c3-crow';
+const asCrow = { 3: { name: '🐦 ⬛ ccrow', sessionId: CROW_SID } };
+
+test("ccrow's row shows her newest 👀 for-you tip in the wait slot", async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            patch: asCrow,
+            reads: crowNotes([
+                {
+                    at: NOW - 30 * MIN,
+                    note: '🐦‍⬛ **15:00** wake\n- 👀 **for you:** an older tip',
+                },
+                {
+                    at: NOW - 5 * MIN,
+                    note: '🐦‍⬛ **15:27** wake\n🟡 held\n- 👀 **for you:** ask her whether **l8** still fits one window',
+                },
+                {
+                    at: NOW - 2 * MIN,
+                    note: '🐦‍⬛ **15:30** wake\n🔴 sent: no tip this time',
+                },
+            ]),
+        },
+    );
+    expect(await row($, CROW_SID)).toContain(
+        '👀 ask her whether l8 still fits one window',
+    );
+});
+
+test('a tip over a day old leaves her row', async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            patch: asCrow,
+            reads: crowNotes([
+                {
+                    at: NOW - 25 * 60 * MIN,
+                    note: '- 👀 **for you:** stale advice',
+                },
+            ]),
+        },
+    );
+    expect(await row($, CROW_SID)).not.toContain('👀');
+});
+
+test("no other session's row carries her tip", async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            patch: asCrow,
+            reads: crowNotes([
+                { at: NOW - 5 * MIN, note: '- 👀 **for you:** only hers' },
+            ]),
+        },
+    );
+    const rows = await rowsBySid($);
+    expect([rows[PEER], rows[HERE]].join('\n')).not.toContain('👀');
 });
 
 // cc's registry keeps «🐦‍⬛ ccrow» with its zero-width joiner turned into a space

@@ -1802,6 +1802,29 @@ async function isUnstarted(
     );
 }
 
+// ccrow's newest 👀 «for you» line from her notes file, under a day old, its bold stripped (PK-73, dima 14:16: «i'd like to
+// see this note somewhere in a mod», the 👀 line only, no numbers)
+const CROW_TIP = /^- 👀 \*\*for you:\*\*\s*(.+)$/mu;
+async function crowTip(
+    $: EngineInterface,
+    home: string | undefined,
+    now: number,
+) {
+    const raw = await $.fs
+        .read(`${home}/.local/state/ccrow/notes.jsonl`)
+        .catch(() => '');
+    for (const line of raw.trim().split('\n').reverse()) {
+        try {
+            const v = JSON.parse(line) as { at?: string; note?: unknown };
+            if (now - Date.parse(v.at ?? '') > STALE_MS) return undefined;
+            const tip =
+                typeof v.note === 'string' && v.note.match(CROW_TIP)?.[1];
+            if (tip) return tip.replaceAll('**', '').trim();
+        } catch {}
+    }
+    return undefined;
+}
+
 // live sessions from the registry, each with what its own stash wrote
 async function members($: EngineInterface): Promise<Member[]> {
     const out: Member[] = [];
@@ -1831,6 +1854,7 @@ async function members($: EngineInterface): Promise<Member[]> {
                 statusOf(r.status).word !== 'busy' && reply?.at !== undefined
                     ? Math.max(reply.at, reply.pingedAt ?? reply.at)
                     : r.statusSince,
+            tip: pinOf(r.name) === 1 ? await crowTip($, home, now) : undefined,
             // the band says «first +n»; the board has the room to name every wait (dima's o75)
             wait:
                 reply?.waits && reply.waits.length > 1
@@ -3290,7 +3314,7 @@ export const register: Register = (on) => {
                     : `${isCold ? '❄️' : state} ${span(sinceMs)}`;
             const ticket = ticketOf(m.name);
             const name = m.sid === me ? `${m.name} (here)` : m.name;
-            const line = m.wait && `🔭 ${m.wait}`;
+            const line = m.tip ? `👀 ${m.tip}` : m.wait && `🔭 ${m.wait}`;
             // «opus 5.5 · medium» as kept: the model in words, its effort as cells beside it on the name's line
             const [model, effort] = (m.model ?? '').split(' · ');
             const level = effortLevel(effort);
@@ -3367,7 +3391,13 @@ export const register: Register = (on) => {
                                 </Box>
                             ) : null}
                             {/* the wait sits right of the name, cut first when the row is short (dima's shot, 19:59) */}
-                            {line && isPartOn('stash.rowmeta') ? (
+                            {m.tip && isPartOn('stash.rowmeta') ? (
+                                <Box flexShrink={1} minWidth={0}>
+                                    <Text dimColor wrap='truncate-end'>
+                                        {line}
+                                    </Text>
+                                </Box>
+                            ) : line && isPartOn('stash.rowmeta') ? (
                                 <Box flexShrink={1} minWidth={0}>
                                     <Text dimColor wrap='truncate-end'>
                                         {/* each «waiting on <who>» part prints <who> bold, as the band does (dima, 17:20) */}

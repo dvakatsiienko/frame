@@ -40,6 +40,8 @@ export type StashMember = {
     status?: string;
     statusSince?: number;
     wait?: string;
+    // ccrow's row only: her newest 👀 «for you» tip, which takes the wait's place (PK-73)
+    tip?: string;
     asks: number;
     context?: number;
     model?: string;
