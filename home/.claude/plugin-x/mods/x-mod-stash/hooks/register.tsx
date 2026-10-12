@@ -240,7 +240,17 @@ const RESUME =
     'x-mod-stash waker: the 5h window reset. pick up where you stopped.';
 // a few seconds past the reset, so the window has turned before the resume goes out
 const WAKE_SLACK_MS = 5000;
-const ACCENT = '#d97757';
+// the board's one palette, every card's colours read from it (dima's o107, 21:17): mid-tones at 3.2:1 or more on a light
+// pane and 4.2:1 on a dark one; `dim` is the theme's own gray; `calm` is the ctx meter's blue
+export const PALETTE = {
+    accent: '#d97757',
+    calm: '#4f83e0',
+    dim: 'inactive',
+    hot: '#e5484d',
+    ok: '#47915a',
+    warn: '#d9661a',
+} as const;
+const ACCENT = PALETTE.accent;
 // 🪐 orbit: the session's asks to dima, ticked in the board instead of pasted back; the session writes them through
 // its own tool, never a reply block
 const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
@@ -2154,22 +2164,26 @@ export function huesOf(names: string[]) {
         return HUES[at];
     });
 }
-// cc's registry status: the word the board shows, and its tint with colour on. `shell` is a long command
-// inside a turn, so it reads busy; a status cc adds later reads as itself, amber
+// cc's registry status: the emoji in the row's state column, its time's tint, and whether it counts as working (the
+// head's «n busy»); `shell` is a long command inside a turn. the words leave the row (dima's o106, 21:17); a status cc
+// adds later reads ❔, warn
 const STATUS = {
-    blocked: { tint: 'error', word: 'blocked' },
-    busy: { tint: 'success', word: 'busy' },
-    idle: { tint: undefined, word: 'idle' },
-    needs_input: { tint: 'warning', word: 'needs_input' },
-    shell: { tint: 'success', word: 'busy' },
-    waiting: { tint: 'warning', word: 'waiting' },
-} as const satisfies Record<string, { tint: string | undefined; word: string }>;
+    blocked: { emoji: '🚧', isWorking: false, tint: PALETTE.hot },
+    busy: { emoji: '🐆', isWorking: true, tint: PALETTE.ok },
+    idle: { emoji: '💤', isWorking: false, tint: undefined },
+    needs_input: { emoji: '🙋', isWorking: false, tint: PALETTE.warn },
+    shell: { emoji: '🐚', isWorking: true, tint: PALETTE.ok },
+    waiting: { emoji: '⏳', isWorking: false, tint: PALETTE.warn },
+} as const satisfies Record<
+    string,
+    { emoji: string; isWorking: boolean; tint: string | undefined }
+>;
 const isStatus = (status: string): status is keyof typeof STATUS =>
     Object.hasOwn(STATUS, status);
 const statusOf = (status: string | undefined) =>
     status !== undefined && isStatus(status)
-        ? STATUS[status]
-        : { tint: 'warning', word: status ?? '?' };
+        ? { ...STATUS[status], isIdle: status === 'idle' }
+        : { emoji: '❔', isIdle: false, isWorking: false, tint: PALETTE.warn };
 // sline's bar ramp, yellow, orange, red, tuned to 3.2:1 or more on a light pane and 4.2:1 on a dark one
 const RAMP = ['#b98500', '#d9661a', '#e5484d'] as const;
 // a calm context is dim; a filling one climbs the ramp
@@ -2183,8 +2197,9 @@ const contextTint = (percent: number) =>
             : undefined;
 // the prompt cache lives an hour: an idle session stays gray, then climbs the ramp as it cools, red from half the
 // cache's life; cold past all of it
-const COOLING_MS = [15 * 60_000, 22 * 60_000, 30 * 60_000] as const;
-const COLD_MS = 60 * 60_000;
+// idle only: gray, amber from 30 min, red from 45 (dima's o106)
+const IDLE_WARN_MS = 30 * 60_000;
+const IDLE_HOT_MS = 45 * 60_000;
 
 // the meters: a bar of whole cells, the reading filled and one cell marked — the pace on the 5h bar, the compaction
 // point on the context one; runs of one kind come out joined, so each draws as one Text
@@ -2343,7 +2358,7 @@ export function effortSvg(level: number) {
 }
 export const EFFORT_CELL = CELL.size;
 // a calm meter's fill: the board's green and blue mid-tones, 3.6:1 or more on white and 4.2:1 on a dark pane
-const METER_TINTS = { calm5h: '#47915a', calmCtx: '#4f83e0' } as const;
+const METER_TINTS = { calm5h: PALETTE.ok, calmCtx: PALETTE.calm } as const;
 // the 5h window runs five hours; its pace is the share of it already gone, so a used % on pace keeps up exactly
 const FIVE_HOUR_MS = 5 * 60 * 60_000;
 export const paceOf = (resetsAt: number, now: number) =>
@@ -2369,14 +2384,12 @@ export const thresholdOf = (text: string) => {
               refusal: `compaction point must be a whole 10–99, got «${text.trim()}»`,
           };
 };
-const idleTint = (ms: number) =>
-    ms >= COOLING_MS[2]
-        ? RAMP[2]
-        : ms >= COOLING_MS[1]
-          ? RAMP[1]
-          : ms >= COOLING_MS[0]
-            ? RAMP[0]
-            : undefined;
+export const idleTint = (ms: number) =>
+    ms >= IDLE_HOT_MS
+        ? PALETTE.hot
+        : ms >= IDLE_WARN_MS
+          ? PALETTE.warn
+          : undefined;
 
 const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
@@ -2388,7 +2401,7 @@ async function awayDigest($: EngineInterface, since: number): Promise<Digest> {
     const keys = await $.store.keys();
     const running = new Set(
         (await registry($).catch(() => []))
-            .filter((r) => r.isAlive && statusOf(r.base.status).word === 'busy')
+            .filter((r) => r.isAlive && statusOf(r.base.status).isWorking)
             .map((r) => r.base.sid),
     );
     for (const key of keys) {
@@ -2577,7 +2590,7 @@ async function members($: EngineInterface): Promise<Member[]> {
             // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
             // whenever a thread is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77)
             statusSince:
-                statusOf(r.status).word !== 'busy' && reply?.at !== undefined
+                !statusOf(r.status).isWorking && reply?.at !== undefined
                     ? Math.max(reply.at, reply.pingedAt ?? reply.at)
                     : r.statusSince,
             tip: pinOf(r.name) === 1 ? await crowTip($, home, now) : undefined,
@@ -2627,6 +2640,8 @@ const span = (ms: number) => {
 };
 
 // each fact column's width in cells, sized to its usual reading — `🪐 12`, `FRM-306`, `ctx 54%`, `idle 12m` — so little slack shows between columns; a longer one is cut at its end
+// the state column's emoji cell
+const STATE_EMOJI = 3;
 const COLUMNS = {
     asks: 4,
     context: 7,
@@ -4672,13 +4687,16 @@ export const register: Register = (on) => {
         // the bottom (dima's shot, 20:12)
         const probes = board?.staleProbes ?? [];
         const probesJSX = probes.length ? (
-            <Text color='warning' key='probes' wrap='truncate-end'>
+            <Text color={PALETTE.warn} key='probes' wrap='truncate-end'>
                 {`🧪 stale probe mods in ~/.claude/dev-mods, unload them: ${probes.join(', ')}`}
             </Text>
         ) : null;
         const gapsJSX = (board?.quietGaps ?? []).map((g) => {
             return (
-                <Text color='error' key={`gap:${g.from}`} wrap='truncate-end'>
+                <Text
+                    color={PALETTE.hot}
+                    key={`gap:${g.from}`}
+                    wrap='truncate-end'>
                     {`🚨 quiet ledger: ${g.from} sent cclio ${g.sent}, her quiet log holds ${g.logged}`}
                 </Text>
             );
@@ -4706,18 +4724,15 @@ export const register: Register = (on) => {
         // the ticket column is drawn only when some row names a ticket: empty on every row, it was 9 cells of nothing (dima, 15:41)
         const hasTickets = list.some((m) => ticketOf(m.name));
         const row = (m: Member, i: number) => {
-            const { tint: stateTint, word: state } = statusOf(m.status);
-            const isMemberBusy = state === 'busy';
+            const status = statusOf(m.status);
             const sinceMs =
                 m.statusSince === undefined ? undefined : now - m.statusSince;
-            const idleMs =
-                state === 'idle' && sinceMs !== undefined ? sinceMs : 0;
-            const isCold = idleMs >= COLD_MS;
-            const coolTint = idleTint(idleMs);
-            const stateText =
-                sinceMs === undefined
-                    ? state
-                    : `${isCold ? '❄️' : state} ${span(sinceMs)}`;
+            // the time's tint: idle by its thresholds alone, a working row always green, the rest with colour on
+            const timeTint = status.isIdle
+                ? idleTint(sinceMs ?? 0)
+                : status.isWorking || isColour
+                  ? status.tint
+                  : undefined;
             const ticket = ticketOf(m.name);
             const name = m.sid === me ? `${m.name} (here)` : m.name;
             const line = m.tip ? `👀 ${m.tip}` : m.wait && `🔭 ${m.wait}`;
@@ -4774,7 +4789,7 @@ export const register: Register = (on) => {
                             <Box flexShrink={0}>
                                 <Text
                                     color={isColour ? hues[i] : undefined}
-                                    dimColor={!isColour || state === 'idle'}>
+                                    dimColor={!isColour || status.isIdle}>
                                     ●
                                 </Text>
                             </Box>
@@ -4863,21 +4878,26 @@ export const register: Register = (on) => {
                                     </Text>
                                 )}
                             </Box>
+                            {/* the state: its emoji in a column of its own, the time right-aligned beside it, so every row lines up
+                                (dima's o106, 21:17) */}
                             <Box
-                                justifyContent='flex-end'
+                                flexDirection='row'
+                                key={`state:${m.sid}`}
                                 width={COLUMNS.state}>
-                                <Text
-                                    bold
-                                    color={
-                                        coolTint ??
-                                        (isColour || isMemberBusy
-                                            ? stateTint
-                                            : undefined)
-                                    }
-                                    dimColor={state === 'idle' && !coolTint}
-                                    wrap='truncate-end'>
-                                    {stateText}
-                                </Text>
+                                <Box flexShrink={0} width={STATE_EMOJI}>
+                                    <Text>{status.emoji}</Text>
+                                </Box>
+                                <Box flexGrow={1} justifyContent='flex-end'>
+                                    {sinceMs === undefined ? null : (
+                                        <Text
+                                            bold
+                                            color={timeTint}
+                                            dimColor={!timeTint}
+                                            wrap='truncate-end'>
+                                            {span(sinceMs)}
+                                        </Text>
+                                    )}
+                                </Box>
                             </Box>
                             {/* the asks close the row, always drawn: `🪐 0` dimmed when none (dima, 2026-10-05) */}
                             <Box justifyContent='flex-end' width={COLUMNS.asks}>
@@ -4966,7 +4986,7 @@ export const register: Register = (on) => {
             );
         };
         const busyCount = list.filter(
-            (m) => statusOf(m.status).word === 'busy',
+            (m) => statusOf(m.status).isWorking,
         ).length;
         return arranged(
             <Box key='sessions' {...cardProps}>
@@ -4983,9 +5003,7 @@ export const register: Register = (on) => {
                                 dimColor>{`${list.length} on this mac · `}</Text>
                             <Text
                                 bold
-                                color={
-                                    busyCount ? STATUS.busy.tint : undefined
-                                }>
+                                color={busyCount ? PALETTE.ok : undefined}>
                                 {`${busyCount} busy`}
                             </Text>
                         </Text>

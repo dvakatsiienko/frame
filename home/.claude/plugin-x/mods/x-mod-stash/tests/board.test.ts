@@ -250,19 +250,33 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
     const widths = (await ui.findAll({ type: 'Box' }))
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
-    // ticket, ctx, state, asks
-    expect(widths).toEqual([9, 7, 9, 4, 9, 7, 9, 4]);
+    // ticket, ctx, state and its emoji cell, asks
+    expect(widths).toEqual([9, 7, 9, 3, 4, 9, 7, 9, 3, 4]);
 });
 
-test('a session inside a long shell command reads busy', async ($, on) => {
+test('a session inside a long shell command reads 🐚 with its time', async ($, on) => {
     fleet(on, {}, { patch: { 2: { status: 'shell' } } });
-    expect(await row($, PEER)).toContain('busy 12m');
+    expect(await row($, PEER)).toMatch(/🐚\s*12m/);
 });
 
-test('an idle session reads idle with its time in that state', async ($, on) => {
+test('an idle session reads 💤 with its time, no word', async ($, on) => {
     fleet(on);
-    expect(await row($, PEER)).toContain('idle 12m');
+    const text = await row($, PEER);
+    expect([/💤\s*12m/.test(text ?? ''), /idle|busy/.test(text ?? '')]).toEqual(
+        [true, false],
+    );
 });
+
+for (const [status, emoji] of [
+    ['busy', '🐆'],
+    ['waiting', '⏳'],
+    ['blocked', '🚧'],
+    ['needs_input', '🙋'],
+] as const)
+    test(`a ${status} session reads ${emoji}`, async ($, on) => {
+        fleet(on, {}, { patch: { 2: { status } } });
+        expect(await row($, PEER)).toContain(emoji);
+    });
 
 test("an open board's span moves when its minute turns", async ($, on) => {
     const f = fleet(on);
@@ -271,7 +285,7 @@ test("an open board's span moves when its minute turns", async ($, on) => {
     const peer = (await ui.findAll({ type: 'Box' })).find(
         (n) => n.key === `m:${PEER}`,
     );
-    expect(peer?.text).toContain('idle 13m');
+    expect(peer?.text).toMatch(/💤\s*13m/);
 });
 
 // the state cell's look, found by the start of its words
@@ -280,17 +294,17 @@ async function stateLook($: Engine, start: string) {
     return cell ? { color: cell.color, dim: cell.dim } : 'no cell';
 }
 
-test('a busy session reads green with colour off', async ($, on) => {
+test("a busy session's time reads green with colour off", async ($, on) => {
     fleet(on);
-    expect(await stateLook($, 'busy')).toEqual({
-        color: 'success',
+    expect(await stateLook($, '3m')).toEqual({
+        color: '#47915a',
         dim: false,
     });
 });
 
-test('an idle session under 15 minutes reads gray', async ($, on) => {
-    fleet(on);
-    expect(await stateLook($, 'idle')).toEqual({ color: undefined, dim: true });
+test("an idle session's time under 30 minutes reads gray", async ($, on) => {
+    fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 29 * MIN } } });
+    expect(await stateLook($, '29m')).toEqual({ color: undefined, dim: true });
 });
 
 test('an idle row counts from its last reply, not a later registry restamp', async ($, on) => {
@@ -299,19 +313,19 @@ test('an idle row counts from its last reply, not a later registry restamp', asy
         { [`reply:${PEER}`]: { at: NOW - 2 * 60 * MIN } },
         { patch: { 2: { statusUpdatedAt: NOW - 3 * MIN } } },
     );
-    expect(await row($, PEER)).toContain('❄️ 2h 0m');
+    expect(await row($, PEER)).toMatch(/💤\s*2h 0m/);
 });
 
 test('a keep-hot ping after the reply restarts the idle clock', async ($, on) => {
     fleet(on, {
         [`reply:${PEER}`]: { at: NOW - 2 * 60 * MIN, pingedAt: NOW - 5 * MIN },
     });
-    expect(await row($, PEER)).toContain('idle 5m');
+    expect(await row($, PEER)).toMatch(/💤\s*5m/);
 });
 
 test('a busy row keeps the registry stamp whatever its last reply', async ($, on) => {
     fleet(on, { [`reply:${HERE}`]: { at: NOW - 2 * 60 * MIN } });
-    expect(await row($, HERE)).toContain('busy 3m');
+    expect(await row($, HERE)).toMatch(/🐆\s*3m/);
 });
 
 test("a keep-hot ping's reply restarts its own session's idle clock", async ($, on) => {
@@ -325,36 +339,33 @@ test("a keep-hot ping's reply restarts its own session's idle clock", async ($, 
     });
     await stop($, '.');
     await f.clock.advance(2 * MIN);
-    expect(await row($, HERE)).toContain('idle 2m');
+    expect(await row($, HERE)).toMatch(/💤\s*2m/);
 });
 
-test('an idle session past 15 minutes starts cooling in yellow', async ($, on) => {
-    fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 15 * MIN } } });
-    expect(await stateLook($, 'idle 15m')).toEqual({
-        color: '#b98500',
-        dim: false,
-    });
-});
-
-test('an idle session past 22 minutes cools to orange', async ($, on) => {
-    fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 22 * MIN } } });
-    expect(await stateLook($, 'idle 22m')).toEqual({
-        color: '#d9661a',
-        dim: false,
-    });
-});
-
-test('an idle session past half an hour reads red', async ($, on) => {
+test("an idle session's time reads amber from 30 minutes", async ($, on) => {
     fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 30 * MIN } } });
-    expect(await stateLook($, 'idle 30m')).toEqual({
+    expect(await stateLook($, '30m')).toEqual({ color: '#d9661a', dim: false });
+});
+
+test("an idle session's time reads red from 45 minutes, and stays red", async ($, on) => {
+    fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 75 * MIN } } });
+    expect(await stateLook($, '1h 15m')).toEqual({
         color: '#e5484d',
         dim: false,
     });
 });
 
-test('an idle session past an hour reads ❄️ cold', async ($, on) => {
-    fleet(on, {}, { patch: { 2: { statusUpdatedAt: NOW - 75 * MIN } } });
-    expect(await stateLook($, '❄️ 1h 15m')).toEqual({
+test("a waiting session's time has no idle threshold", async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            patch: {
+                2: { status: 'waiting', statusUpdatedAt: NOW - 50 * MIN },
+            },
+        },
+    );
+    expect(await stateLook($, '50m')).not.toEqual({
         color: '#e5484d',
         dim: false,
     });
@@ -513,7 +524,7 @@ test("a row shows its session's context fill", async ($, on) => {
 async function nineCellColumns($: Engine) {
     const ui = await board($);
     return (await ui.findAll({ type: 'Box' })).filter(
-        (b) => b.props.width === 9 && b.props.justifyContent === 'flex-end',
+        (b) => b.props.width === 9,
     ).length;
 }
 
@@ -904,11 +915,11 @@ test('📁 folds the sessions card to its head row', async ($, on) => {
     expect([open > 0, await rows()]).toEqual([true, 0]);
 });
 
-test('an idle state reads bold, as a busy one does', async ($, on) => {
+test("an idle state's time reads bold, as a busy one does", async ($, on) => {
     fleet(on);
     const ui = await board($);
-    const idle = (await ui.findAll({ type: 'Text' })).find((t) =>
-        t.text?.startsWith('idle'),
+    const idle = (await ui.findAll({ type: 'Text' })).find(
+        (t) => t.text === '12m',
     );
     expect(idle?.props.bold).toBe(true);
 });

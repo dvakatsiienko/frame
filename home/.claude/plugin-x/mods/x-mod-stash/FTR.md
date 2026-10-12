@@ -230,16 +230,18 @@
 - ✅ each row's state is cc's own
   - given a coder runs a long shell command inside a turn
   - when the board draws
-  - then its row reads `busy` and for how long, not `idle`
-  - source: the registry's `status` and `statusUpdatedAt`, written by cc for every session; `busy` and `shell` read `busy`, any other word (`idle`, `waiting`, `blocked`, `needs_input`) shows as cc wrote it
+  - then its row's state column reads `🐚` and for how long, not `💤`
+  - and the state is an emoji in a column of its own, the time right-aligned beside it, no word: 🐆 busy, 💤 idle, 🐚 shell, ⏳ waiting, 🚧 blocked, 🙋 needs_input, ❔ a status cc adds later (dima's o106, 2026-10-12 21:17)
+  - source: the registry's `status` and `statusUpdatedAt`, written by cc for every session; `busy` and `shell` count as busy in the head's `n busy`
   - decision: the registry over a flag each x-mod-stash wrote — that flag read idle through FRM-305's long `shell` (2026-10-05)
-- ⬜ each row shows how cold its session's cache is
+- ⬜ each row shows how long its session has idled
   - given the prompt cache lives an hour
   - when the board draws, colour on or off
-  - then `busy` reads green, `idle` reads gray under 15 min, then cools up sline's ramp: yellow from 15, orange from 22, red from 30; from 60 min the word turns ❄️, still red (cold): `❄️ 1h 15m`
+  - then a busy or shell row's time reads green; an idle row's time reads gray under 30 min, amber from 30, red from 45 and on
+  - and the thresholds are idle's alone: a waiting, blocked or needs_input row keeps its own tint however long (dima's o106)
   - decision: always on, never behind `/board colour` — it is a cache signal, not decoration (dima's ask, 2026-10-09)
-  - decision: red, not a cooling blue — red is what dima sees, and it says something is wrong; the climb to it is gradual (dima, 2026-10-09)
-  - decision: ❄️ takes the place of the word `idle`, so a cold row fits the 9-cell state column
+  - decision: red, not a cooling blue — red is what dima sees, and it says something is wrong (dima, 2026-10-09)
+  - decision: no ❄️ any more — 💤 holds the column and red says it all (o106 replaced the 15/22/30/60 ramp)
   - and an idle row counts from the session's last reply, or a later 🔥 keep-hot ping, never cc's registry stamp: cc restamps a thread whenever it is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77, dima's boot shot 2026-10-12); a busy row and a session with no reply yet keep the registry stamp
   - source: the `reply:<session>` store key each session's x-mod-stash writes at every reply end, `pingedAt` at a ping's
 - 🔎 each row says what its session waits on
@@ -293,7 +295,7 @@
 - ⬜ `/board colour` tries colour as an MVP
   - given colour is off, the default
   - when dima types `/board colour`
-  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), `blocked` red, `waiting` and `needs_input` amber, `ctx n%` dim under 50, then sline's bar ramp: yellow from 50, orange from 65, red from 80; the model stays dim and orange is left to `🪐 n` alone; typed again, it goes back
+  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), 🚧 blocked's time red, ⏳ waiting's and 🙋 needs_input's amber, every colour read from one palette table (ok, warn, hot, dim, accent, plus the ctx meter's calm blue; dima's o107), `ctx n%` dim under 50, then sline's bar ramp: yellow from 50, orange from 65, red from 80; the model stays dim and orange is left to `🪐 n` alone; typed again, it goes back
   - decision: calm by default, a colour only where something is live — the first MVP put the same orange on the busy dot, the busy word, the head and the asks, and painted a calm context green (dima, 2026-10-08: «colors like in SS»)
   - decision: the head leads with `🚦`, the board's own button in the row, not the reference's `◆` (dima, 2026-10-08: «dont' like the diamond»); the context climbs sline's ramp, not the theme's dull amber (dima: «pick prettier color ctx filling»)
   - decision: theme keys (`success`, `warning`, `error`) for every state colour, so light and dark both read; the six dot hues are fixed mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane, with no coral beside the asks' orange
@@ -363,7 +365,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given an ask, its pick or a phase line names `FRM-N` or `BYT-N`
   - when dima looks at the board
   - then the id opens its linear page, as a session row's ticket does (dima's o62, 22:13)
-  - decision: https links only, no ↗ app buttons beside them — a mod Link refuses `linear://`, and a button can't sit inside a line of text; app links wait on the engine (dima, 22:34)
+  - decision: https links only, no ↗ app buttons beside them — a mod Link refuses `linear://`, and a button can't sit inside a line of text (dima, 22:34); app links are not wanted: his Hyper+G opens a selected id in the app (dima, 2026-10-12 21:32)
 - ⬜ every steer field clears once its text has gone out (dima's o57, 17:39)
   - given dima typed a steer on an ask, a 🐠 piece, an assumption or a glide step
   - when it goes out — the turn its tick or 🤔 joined ends, or ↩️ sent the assumption back, or the lane step's tick joined cclio's prompt
