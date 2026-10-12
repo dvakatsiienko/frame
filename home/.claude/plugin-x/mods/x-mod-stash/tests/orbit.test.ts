@@ -393,6 +393,86 @@ test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
     expect(await asksShown(ui)).toEqual(['o2']);
 });
 
+const texts = async (ui: Board) =>
+    (await ui.findAll({ type: 'Text' })).map((t) => t.text ?? '').join('\n');
+
+test('an ask resolved with a closing word shows dim with it for one more turn, then leaves', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await say($, 'go');
+    await add($, ['push FRM-1', 'yes'], ['trash the probe', 'yes']);
+    await orbit($, {
+        ids: ['o1', 'o2'],
+        op: 'resolve',
+        words: { o1: 'dropped: superseded by o58' },
+    });
+    expect(await texts(ui)).toContain('✔️ o1: push FRM-1 — ');
+    await endTurn($);
+    const after = [await asksShown(ui), await texts(ui)] as const;
+    await say($, 'next');
+    await endTurn($);
+    expect([
+        after[0],
+        /dropped: superseded by o58/.test(after[1]),
+        await asksShown(ui),
+    ]).toEqual([['o1'], true, []]);
+});
+
+test('an unpicked ask with dies: 2 leaves at the end of the second turn after its own; a ticked one stays', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await say($, 'go');
+    await add($, ['push FRM-1', 'yes']);
+    await orbit($, {
+        asks: [
+            { dies: 2, pick: 'yes', text: 'trash the probe' },
+            { dies: 2, pick: 'yes', text: 'rename the band' },
+        ],
+        op: 'add',
+    });
+    expect(await texts(ui)).toContain('⌛ 2 turns');
+    await endTurn($);
+    await ui.press({ key: 'orbit:accepted:o3' });
+    const seen: string[][] = [];
+    for (let i = 0; i < 2; i++) {
+        await say($, 'go on');
+        await endTurn($);
+        seen.push((await asksShown(ui)) as string[]);
+    }
+    expect(seen).toEqual([
+        ['o1', 'o2', 'o3'],
+        ['o1', 'o3'],
+    ]);
+});
+
+test('an ask with dies: "halt" leaves when the halt skill expands; the rest stay', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, {
+        asks: [
+            { dies: 'halt', pick: 'yes', text: 'retro now?' },
+            { pick: 'yes', text: 'push FRM-1' },
+        ],
+        op: 'add',
+    });
+    expect(await texts(ui)).toContain('⌛ halt');
+    await $.skill.prompt({ skill: 'cclio:halt', text: '# halt' } as never);
+    expect(await asksShown(ui)).toEqual(['o2']);
+});
+
+test('an ask whose dies is neither "halt" nor 1–20 turns is refused', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await orbit($, {
+        asks: [{ dies: 'soon', pick: 'yes', text: 'retro now?' }],
+        op: 'add',
+    });
+    expect(r.deny).toMatch(/dies «soon» is neither "halt" nor a whole number/);
+});
+
 test("a follow-up clears dima's steer on the old question", async ($, on) => {
     world(on);
     await start($);

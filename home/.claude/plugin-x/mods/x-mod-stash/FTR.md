@@ -421,6 +421,15 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - and its steer box comes back empty — dima's steer answered the old question (dima, 13:57 shot)
   - decision: 🆕 before the id, not a «changed» column on the right, so the ask text keeps the full width — a try, dima may swap the glyph (dima's o6, 10:58)
   - decision: an answered ask stays in orbit until its turn ends, its line led by 👀 (`👀 o20: …`), so dima sees it go — an icon, not the word «answered», inline so the row keeps its left edge; no «seen» card, since a card needs a box of its own (dima, 20:34, 20:39)
+- ⬜ a resolve can carry a closing word
+  - given a session resolves an ask with a closing word (`words: { o1: "landed" }`)
+  - then the ask's card turns dim, `✔️ o1: <ask> — **landed**`, with no tick, replay, speak or steer
+  - when the turn ends, then it stays, dim, through the next turn; at that turn's end it leaves
+  - decision: an ask resolved with no word leaves at its turn end as before (cclio's brief 8, 2026-10-12)
+- ⬜ an ask can carry an expiry
+  - given a session adds an ask with `dies: "halt"`, then its row reads `⌛ halt`, and when cclio's halt skill expands, the ask leaves orbit, unless a running turn holds it
+  - given an ask added with `dies: 2`, then its row reads `⌛ 2 turns`, counting down to `⌛ last turn`; unmarked, it leaves at the end of the second turn after its own; a 🛎️ or 🔁 keeps it and drops the ⌛
+  - given a `dies` that is neither «halt» nor a whole number 1–20, then the tool refuses the add in one line
 - ✅ every prompt reminds the session of orbit
   - given orbit holds open asks or a plan
   - when any prompt goes to the session

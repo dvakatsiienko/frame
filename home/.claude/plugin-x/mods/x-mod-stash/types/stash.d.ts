@@ -116,6 +116,12 @@ export type OrbitAsk = {
     isResolved?: boolean;
     // when a mark came in from another board: an idle session wakes once dima prompts anywhere after it
     markedAt?: number;
+    // an expiry: «halt» leaves at cclio's halt, a number is the turn whose end takes it while still unmarked
+    dies?: 'halt' | number;
+    // the closing word a resolve gave it («landed», «dropped: superseded by o58»)
+    word?: string;
+    // resolved with a word in a turn that has ended: drawn dim for one more turn, then it leaves
+    isClosed?: boolean;
 };
 
 // one choice the session made without asking, that costs a redo if wrong: born at a turn count; dima's send-back

@@ -9,8 +9,16 @@ The shared row and the one store behind it; every feature below lives in it.
 _Avoid_: deck, band, dock
 
 **Ask**:
-An open question a session put to dima through orbit's tool: one line, its pick and a hidden note, live until the session resolves it.
+An open question a session put to dima through orbit's tool: one line, its pick and a hidden note, live until the session resolves it, or until its expiry.
 _Avoid_: question, todo, pending
+
+**Expiry** ⌛:
+When an ask dies on its own: «halt» (cclio's halt skill takes it) or N turns unpicked (it leaves at the end of the Nth turn after its own unless dima marked it).
+_Avoid_: timeout, ttl
+
+**Closing word**:
+The word a resolve gives an ask («landed», «dropped: superseded by o58»): the ask stays dim with it for one more turn, then leaves.
+_Avoid_: reason, status
 
 **Steer**:
 The one line dima types on the board — on an ask, a 🐠 piece, an assumption or a glide step; it goes out with its tick (or 🤔, or ↩️) and its field clears once it has.

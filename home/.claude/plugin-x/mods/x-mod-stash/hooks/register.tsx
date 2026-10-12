@@ -30,6 +30,7 @@ import {
     ORBIT_TEXT_MAX,
     ORBIT_TOOL,
     PLAN_MAX,
+    halted,
     isFresh,
     isThought,
     joinText,
@@ -258,6 +259,8 @@ const LANE_TEXT_MAX = 60;
 const LANE_STALE = 8;
 const LANE_TICKET = /^[A-Z]{2,5}-\d+$/;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
+// cclio's halt skill: an ask added with `dies: "halt"` leaves when it expands
+const HALT_SKILL = /(^|:)halt$/;
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
 const BACK_AT_MAC = /\bback at the mac\b/i;
 // the prompt enhancer: Haiku rewrites the box on a press; prev and new swap the two texts back with no call
@@ -281,8 +284,8 @@ const cardBorder = (surface: string) =>
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
     'orbit: your asks to dima on the fleet board; an ask goes here, never into a reply. 🛎️ tick = pick good to go, 🔁 replay = another round, plus his steer; marked asks reach you model-only. a --bg session has no board: its asks go to its coordinator.',
-    `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url or file path he opens in a click. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
-    'op resolve, ids: the asks answered this turn; they leave when it ends.',
+    `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url or file path he opens in a click; dies: "halt" or N turns unpicked. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
+    'op resolve, ids, words { id: closing word }: the asks answered this turn; they leave when it ends, a worded one shown dim a turn more.',
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     'op catch, pieces [{ kind, text, hiddenNote }], clear [ids]: cclio only, her rules come from catch.md.',
@@ -2648,7 +2651,9 @@ export const register: Register = (on) => {
                         asks: {
                             items: {
                                 properties: {
+                                    dies: { type: ['string', 'number'] },
                                     hiddenNote: { type: 'string' },
+                                    link: { type: 'string' },
                                     pick: { type: 'string' },
                                     text: { type: 'string' },
                                 },
@@ -2702,6 +2707,10 @@ export const register: Register = (on) => {
                         text: { type: 'string' },
                         texts: { items: { type: 'string' }, type: 'array' },
                         title: { type: 'string' },
+                        words: {
+                            additionalProperties: { type: 'string' },
+                            type: 'object',
+                        },
                     },
                     required: ['op'],
                     type: 'object',
@@ -2778,12 +2787,14 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    // `/mobile-mode` turns the asks fence on, `/mobile-mode off` turns it off
+    // `/mobile-mode` turns the asks fence on, `/mobile-mode off` turns it off; a halt takes the asks born to die there
     on('skill.prompt', async ($, e, next) => {
         if (MOBILE_SKILL.test(e.skill))
             await $.state
                 .set(MOBILE, !MOBILE_OFF.test(e.text))
                 .catch(() => undefined);
+        if (HALT_SKILL.test(e.skill))
+            await saveOrbit($, halted(await currentOrbit($)));
         return next(e);
     });
 
@@ -3613,102 +3624,130 @@ export const register: Register = (on) => {
             });
         // the ask on its own line, the bold id leading it; under it one row: the steer, 🛎️ ↩️, then speak's 🔊 ⏯ ⏹
         // (dima, 20:08); a full row of air between asks (dima, 19:52)
-        const askJSX = (a: OrbitAsk, i: number, door: AskDoor = ownDoor) => (
+        // an ask resolved with a closing word draws dim, the word after its text and no controls, for its turn and one more
+        const closedJSX = (a: OrbitAsk, i: number, door: AskDoor) => (
             <Box
                 borderDimColor
                 borderStyle='round'
-                flexDirection='column'
                 key={`${door.prefix}:ask:${a.id}`}
                 marginTop={i > 0 ? 0.5 : 0}
-                paddingX={1}
-                rowGap={LINE_GAP}>
-                <Box flexDirection='row' gap={1}>
-                    <Box
-                        flexDirection='column'
-                        flexGrow={1}
-                        flexShrink={1}
-                        minWidth={0}
-                        rowGap={LINE_GAP}>
-                        {/* the id and the pick bold, so the proposal stands out (dima, 20:30) */}
-                        {/* an ask answered this turn leads its line with 👀 until the turn ends — inline, so the row keeps its left
-                            edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
-                        <Text>
-                            {a.isResolved ? '👀 ' : ''}
-                            {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the steer (dima, 11:57) */}
-                            {a.isChanged ? `${CHANGED_MARK} ` : ''}
-                            <Text bold>{a.id}</Text>
-                            {': '}
-                            {linkedJSX(a.text, `ask:${a.id}`)}
-                        </Text>
-                        {/* the pick on a line of its own, the mock's card shape (dima, 17:00) */}
-                        <Text>
-                            {'➡️ '}
-                            <Text bold>
-                                {linkedJSX(a.pick, `pick:${a.id}`)}
-                            </Text>
-                        </Text>
-                    </Box>
-                </Box>
-                {/* the buttons lead, the steer follows them, on the line under the pick — never beside it (dima, 20:19; 20:23) */}
-                <Box
-                    alignItems='center'
-                    flexDirection='row'
-                    gap={1}
-                    key={`${door.prefix}:row:${a.id}`}>
-                    {/* a joined ask keeps both buttons; the held one reads 🔓 while the turn holds it (dima, 17:42) */}
-                    {[
-                        markJSX(a, 'accepted', door),
-                        markJSX(a, 'rejected', door),
-                    ]}
-                    {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
-                    {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
-                    {speakJSX(a.id, `${a.text}. ${a.pick}`)}
-                    {a.link ? askLinkJSX(a.id, a.link) : null}
-                    {a.isLocked ? (
-                        a.steer ? (
-                            <Box flexShrink={1} minWidth={0}>
-                                <Text dimColor wrap='truncate-end'>
-                                    {/* a sent steer leads with 💬, drawn for dima only: the model gets «his steer: …» (dima, 18:14) */}
-                                    {`💬 «${a.steer}»`}
-                                </Text>
-                            </Box>
-                        ) : null
-                    ) : Input ? (
-                        <Box flexShrink={1} minWidth={0}>
-                            <Input
-                                key={
-                                    field(
-                                        $,
-                                        `${door.prefix}:steer:${a.id}`,
-                                        a.steer ?? '',
-                                    ).key
-                                }
-                                onInput={(value: string) => {
-                                    field(
-                                        $,
-                                        `${door.prefix}:steer:${a.id}`,
-                                        a.steer ?? '',
-                                    ).type(value, () => {
-                                        return door.steer(a, value);
-                                    });
-                                }}
-                                onSubmit={(value: string) =>
-                                    door.steer(a, value)
-                                }
-                                placeholder='steer'
-                                value={
-                                    field(
-                                        $,
-                                        `${door.prefix}:steer:${a.id}`,
-                                        a.steer ?? '',
-                                    ).value
-                                }
-                            />
-                        </Box>
-                    ) : null}
-                </Box>
+                paddingX={1}>
+                <Text dimColor>
+                    {`✔️ ${a.id}: ${a.text} — `}
+                    <Text bold>{a.word}</Text>
+                </Text>
             </Box>
         );
+        // an ask with an expiry names it beside its controls: «⌛ halt», or the turns it has left unpicked after this one
+        const expiryText = (a: OrbitAsk) => {
+            if (a.dies === 'halt') return '⌛ halt';
+            const left = (a.dies ?? 0) - o.turns - 1;
+            return left < 1
+                ? '⌛ last turn'
+                : `⌛ ${left} turn${left === 1 ? '' : 's'}`;
+        };
+        const askJSX = (a: OrbitAsk, i: number, door: AskDoor = ownDoor) =>
+            a.word ? (
+                closedJSX(a, i, door)
+            ) : (
+                <Box
+                    borderDimColor
+                    borderStyle='round'
+                    flexDirection='column'
+                    key={`${door.prefix}:ask:${a.id}`}
+                    marginTop={i > 0 ? 0.5 : 0}
+                    paddingX={1}
+                    rowGap={LINE_GAP}>
+                    <Box flexDirection='row' gap={1}>
+                        <Box
+                            flexDirection='column'
+                            flexGrow={1}
+                            flexShrink={1}
+                            minWidth={0}
+                            rowGap={LINE_GAP}>
+                            {/* the id and the pick bold, so the proposal stands out (dima, 20:30) */}
+                            {/* an ask answered this turn leads its line with 👀 until the turn ends — inline, so the row keeps its left
+                            edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
+                            <Text>
+                                {a.isResolved ? '👀 ' : ''}
+                                {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the steer (dima, 11:57) */}
+                                {a.isChanged ? `${CHANGED_MARK} ` : ''}
+                                <Text bold>{a.id}</Text>
+                                {': '}
+                                {linkedJSX(a.text, `ask:${a.id}`)}
+                            </Text>
+                            {/* the pick on a line of its own, the mock's card shape (dima, 17:00) */}
+                            <Text>
+                                {'➡️ '}
+                                <Text bold>
+                                    {linkedJSX(a.pick, `pick:${a.id}`)}
+                                </Text>
+                            </Text>
+                        </Box>
+                    </Box>
+                    {/* the buttons lead, the steer follows them, on the line under the pick — never beside it (dima, 20:19; 20:23) */}
+                    <Box
+                        alignItems='center'
+                        flexDirection='row'
+                        gap={1}
+                        key={`${door.prefix}:row:${a.id}`}>
+                        {/* a joined ask keeps both buttons; the held one reads 🔓 while the turn holds it (dima, 17:42) */}
+                        {[
+                            markJSX(a, 'accepted', door),
+                            markJSX(a, 'rejected', door),
+                        ]}
+                        {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
+                        {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
+                        {speakJSX(a.id, `${a.text}. ${a.pick}`)}
+                        {a.link ? askLinkJSX(a.id, a.link) : null}
+                        {door === ownDoor && a.dies !== undefined && !a.mark ? (
+                            <Text dimColor>{expiryText(a)}</Text>
+                        ) : null}
+                        {a.isLocked ? (
+                            a.steer ? (
+                                <Box flexShrink={1} minWidth={0}>
+                                    <Text dimColor wrap='truncate-end'>
+                                        {/* a sent steer leads with 💬, drawn for dima only: the model gets «his steer: …» (dima, 18:14) */}
+                                        {`💬 «${a.steer}»`}
+                                    </Text>
+                                </Box>
+                            ) : null
+                        ) : Input ? (
+                            <Box flexShrink={1} minWidth={0}>
+                                <Input
+                                    key={
+                                        field(
+                                            $,
+                                            `${door.prefix}:steer:${a.id}`,
+                                            a.steer ?? '',
+                                        ).key
+                                    }
+                                    onInput={(value: string) => {
+                                        field(
+                                            $,
+                                            `${door.prefix}:steer:${a.id}`,
+                                            a.steer ?? '',
+                                        ).type(value, () => {
+                                            return door.steer(a, value);
+                                        });
+                                    }}
+                                    onSubmit={(value: string) =>
+                                        door.steer(a, value)
+                                    }
+                                    placeholder='steer'
+                                    value={
+                                        field(
+                                            $,
+                                            `${door.prefix}:steer:${a.id}`,
+                                            a.steer ?? '',
+                                        ).value
+                                    }
+                                />
+                            </Box>
+                        ) : null}
+                    </Box>
+                </Box>
+            );
         const orbitJSX = (
             <Box key='orbit' {...cardProps} marginTop={1} rowGap={0.5}>
                 <Box flexDirection='row' justifyContent='space-between'>

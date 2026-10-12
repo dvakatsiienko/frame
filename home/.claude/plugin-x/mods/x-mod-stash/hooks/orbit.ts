@@ -74,13 +74,26 @@ export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
     };
 }
 
-// the turn's answers leave; a marked ask it never resolved unlocks and rides dima's next prompt; an unmarked
-// assumption leaves at its third turn end, the turn it was made in counted; one sent back waits for his prompt
+// the turn's answers leave, one with a closing word drawn dim one turn more; a marked ask it never resolved unlocks
+// and rides dima's next prompt; an unmarked ask past its `dies` turn leaves; an unmarked assumption leaves at its third
+// turn end, the turn it was made in counted; one sent back waits for his prompt
 export function turnEnded(o: StashOrbit): StashOrbit {
+    const ending = o.turns + 1;
     return {
         ...o,
         asks: o.asks
-            .filter((a) => !a.isResolved)
+            .filter(
+                (a) =>
+                    !a.isClosed &&
+                    (!a.isResolved || a.word) &&
+                    !(
+                        typeof a.dies === 'number' &&
+                        !a.mark &&
+                        !a.isResolved &&
+                        ending >= a.dies
+                    ),
+            )
+            .map((a) => (a.isResolved ? { ...a, isClosed: true } : a))
             .map((a) => (a.isLocked ? { ...unsteer(a), isLocked: false } : a)),
         assumed: (o.assumed ?? []).filter(
             (x) => x.isWrong || o.turns + 2 - x.at < ASSUMED_TURNS,
@@ -90,6 +103,26 @@ export function turnEnded(o: StashOrbit): StashOrbit {
         ),
         turns: o.turns + 1,
     };
+}
+
+// cclio's halt: every ask born to die there leaves, unless a running turn holds it
+export const halted = (o: StashOrbit): StashOrbit => ({
+    ...o,
+    asks: o.asks.filter((a) => a.dies !== 'halt' || a.isLocked),
+});
+
+// an ask's expiry as the tool takes it: «halt», or 1–DIES_MAX turns unpicked counted from the birth turn's end
+export const DIES_MAX = 20;
+function diesOf(v: unknown, born: number): OrbitAsk['dies'] | 'bad' {
+    if (v === undefined || v === null || v === '') return undefined;
+    if (v === 'halt') return 'halt';
+    const n = typeof v === 'string' ? Number(v) : v;
+    return typeof n === 'number' &&
+        Number.isInteger(n) &&
+        n >= 1 &&
+        n <= DIES_MAX
+        ? born + n
+        : 'bad';
 }
 
 const markWord = (mark: OrbitAsk['mark']) =>
@@ -169,6 +202,7 @@ export function orbitOp(
             const raw = Array.isArray(input.asks) ? input.asks : [];
             const added: OrbitAsk[] = [];
             let next = o.next;
+            const born = isTurn ? o.turns + 1 : o.turns;
             for (const item of raw) {
                 const v = (item ?? {}) as Record<string, unknown>;
                 const text = oneLine(v.text);
@@ -179,7 +213,13 @@ export function orbitOp(
                     return {
                         deny: `orbit add: link «${link.slice(0, 40)}» is neither an https url nor a file path (/… or ~/…)`,
                     };
+                const dies = diesOf(v.dies, born);
+                if (dies === 'bad')
+                    return {
+                        deny: `orbit add: dies «${String(v.dies).slice(0, 20)}» is neither "halt" nor a whole number of turns, 1–${DIES_MAX}`,
+                    };
                 added.push({
+                    ...(dies === undefined ? {} : { dies }),
                     hiddenNote: hiddenNote || undefined,
                     id: `o${next++}`,
                     ...(link ? { link } : {}),
@@ -303,13 +343,28 @@ export function orbitOp(
             const unknown = ids.filter(
                 (id) => !o.asks.some((a) => a.id === id),
             );
-            const asks = o.asks.map((a) =>
-                ids.includes(a.id) ? { ...a, isResolved: true } : a,
-            );
+            const words =
+                input.words && typeof input.words === 'object'
+                    ? (input.words as Record<string, unknown>)
+                    : {};
+            const asks = o.asks.map((a) => {
+                if (!ids.includes(a.id)) return a;
+                const word = oneLine(words[a.id]);
+                return word
+                    ? { ...a, isResolved: true, word }
+                    : { ...a, isResolved: true };
+            });
             return {
                 orbit: {
                     ...o,
-                    asks: isTurn ? asks : asks.filter((a) => !a.isResolved),
+                    // outside a turn the turn end already passed: a worded one lingers to the next, the rest leave
+                    asks: isTurn
+                        ? asks
+                        : asks
+                              .filter((a) => !a.isResolved || a.word)
+                              .map((a) =>
+                                  a.isResolved ? { ...a, isClosed: true } : a,
+                              ),
                 },
                 result: `resolved ${ids.filter((id) => !unknown.includes(id)).join(', ') || 'nothing'}${unknown.length ? `; no ask ${unknown.join(', ')}` : ''}`,
             };
@@ -331,12 +386,14 @@ export function orbitOp(
                             ? {
                                   ...a,
                                   isChanged: true,
+                                  isClosed: undefined,
                                   isResolved: false,
                                   mark: undefined,
                                   pick: oneLine(input.pick) || a.pick,
                                   // his steer answered the old question
                                   steer: undefined,
                                   text,
+                                  word: undefined,
                               }
                             : a,
                     ),
