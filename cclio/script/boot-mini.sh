@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# boots a session started outside ~/frame/cclio as cclio, mini mode: prints what her own session would load
+# (the passport, the barrel and every leaf it imports, column-0 html comments stripped as cc strips them),
+# then the fresh boot digest and the mini checklist. the caller reads the whole output, then runs the checklist.
+set -euo pipefail
+home=$(cd "$(dirname "$0")/.." && pwd)
+mem="$home/memory"
+
+strip() { perl -0pe 's/^<!--.*?-->[ \t]*\n//gms' "$1"; }
+
+echo "=== cclio boot mini · $(date '+%Y-%m-%d %H:%M') · you are cclio from here on ==="
+echo
+echo "--- cclio/AGENTS.md ---"
+strip "$home/AGENTS.md"
+echo
+echo "--- memory/_MEMORY.md ---"
+strip "$mem/_MEMORY.md"
+# an import is an @path on a barrel line; a parked leaf is named without the @, so it stays out
+grep -E '^- ' "$mem/_MEMORY.md" | grep -oE '@[^ )`]+\.md' | sed 's/^@//' | while read -r leaf; do
+  path="$mem/$leaf"
+  if [ -f "$path" ]; then
+    echo
+    echo "--- memory/$leaf ---"
+    strip "$path"
+  else
+    echo "🚨 FAIL · dead import: memory/$leaf"
+  fi
+done
+echo
+echo "--- boot digest ---"
+BOOT_STRICT=1 "$home/.claude/hooks/boot-prefetch.sh"
+echo
+echo "--- the mini checklist (cclio:boot § mini mode) ---"
+awk '/^## mini mode/{on=1} on&&/^---$/{exit} on' "$home/plugin-cclio/skills/boot/SKILL.md"
+echo
+echo "cclio:* skills do not load outside cclio/: read plugin-cclio/skills/<name>/SKILL.md by path when a step names one."

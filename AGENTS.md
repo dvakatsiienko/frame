@@ -9,7 +9,8 @@ Main environment is macOS, managed by symlinks.
 This is where the agent system itself (currently Claude Code CLI) is developed (`home/.claude/`).
 
 🚫 **`cclio/` is the coordinator's home.** A session not booted as the coordinator never cds into
-or reads under `cclio/` — its memory autoloads and quietly rebrands whoever enters.
+or reads under `cclio/` — its memory autoloads and quietly rebrands whoever enters. Asked to boot as
+cclio from here: run `cclio/script/boot-mini.sh`, read its whole output, then work its mini checklist.
 
 ## the dotfiles
 
