@@ -203,7 +203,7 @@ describe('reply-check', () => {
 
     it('passes the last-report footer', () => {
         expect(
-            check('📄 last report: **x**, 18:30', undefined, '18:45'),
+            check('ok.\n📄 last report: **x**, 18:30', undefined, '18:45'),
         ).toEqual([]);
     });
 
@@ -230,35 +230,37 @@ describe('reply-check', () => {
 
     it('logs a 📄 stamp later than the reply time', () => {
         expect(
-            check('📄 last report: **x**, 12:40', undefined, '12:05'),
+            check('ok.\n📄 last report: **x**, 12:40', undefined, '12:05'),
         ).toEqual(['future-stamp']);
     });
 
     it('passes a 📄 stamp at or before the reply time', () => {
         expect(
-            check('📄 last report: **x**, 11:58', undefined, '12:05'),
+            check('ok.\n📄 last report: **x**, 11:58', undefined, '12:05'),
         ).toEqual([]);
     });
 
     it('blocks the stop on a 📄 stamp later than the reply time', () => {
-        const out = stop('📄 last report: **x**, 12:40', '12:05');
+        const out = stop('ok.\n📄 last report: **x**, 12:40', '12:05');
         expect(out?.decision).toBe('block');
         expect(out?.reason).toContain('12:05');
     });
 
     it('lets the stop through when a block already ran this stop', () => {
-        expect(stop('📄 last report: **x**, 12:40', '12:05', true)).toBe(
+        expect(stop('ok.\n📄 last report: **x**, 12:40', '12:05', true)).toBe(
             undefined,
         );
     });
 
     it('lets the stop through on a clean stamp', () => {
-        expect(stop('📄 last report: **x**, 11:58', '12:05')).toBe(undefined);
+        expect(stop('ok.\n📄 last report: **x**, 11:58', '12:05')).toBe(
+            undefined,
+        );
     });
 
     it('passes a 📄 stamp from before midnight after it', () => {
         expect(
-            check('📄 last report: **x**, 23:50', undefined, '00:10'),
+            check('ok.\n📄 last report: **x**, 23:50', undefined, '00:10'),
         ).toEqual([]);
     });
 });
@@ -323,5 +325,21 @@ describe('a link checked from the launch folder after a cd', () => {
             }),
         }).stdout.trim();
         expect(out).toBe('');
+    });
+});
+
+describe('a reply that is only the stamp', () => {
+    it('blocks a reply whose lines are only 📄 and 🔭', () => {
+        expect(
+            stop('📄 last report: **x**, 11:58\n\n🔭 waiting on dima', '12:05')
+                ?.reason,
+        ).toContain('only the 📄 stamp');
+    });
+
+    it('passes a lone 🔭 line and a reply with an answer above the stamp', () => {
+        expect(stop('🔭 waiting on dima', '12:05')).toBe(undefined);
+        expect(
+            stop('the answer is 42.\n\n📄 last report: **x**, 11:58', '12:05'),
+        ).toBe(undefined);
     });
 });

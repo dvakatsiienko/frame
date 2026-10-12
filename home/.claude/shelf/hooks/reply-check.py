@@ -206,6 +206,10 @@ def findings(reply: str) -> list[tuple[str, str]]:
     # each fence is judged alone: a Q line in prose between two command fences once matched across them
     found += [("grill-fence", f.group(0)[3:43]) for f in FENCE.finditer(reply) if GRILL_ANSWER.search(f.group(0))]
     found += [("unglossed-id", token) for token in unglossed(prose)]
+    # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (ccrow, 2026-10-12: three in one evening)
+    body = [l for l in reply.splitlines() if l.strip()]
+    if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
+        found.append(("empty-reply", body[0][:40]))
     return found
 
 
@@ -261,6 +265,8 @@ def main() -> None:
     bare = [snippet for rule, snippet in hits if rule == "unglossed-id"]
     if bare:
         reasons.append(f"an internal id with no gloss ({', '.join(bare)}): dima reads it cold. give each its three-word gloss at first use — `o56 (the trash ask)` — or say the plain thing instead.")
+    if any(rule == "empty-reply" for rule, _ in hits):
+        reasons.append("the reply holds only the 📄 stamp and the 🔭 line: the answer sits in a mid-turn block dima never sees. reprint the answer in full above the stamp.")
     dead = [snippet for rule, snippet in hits if rule == "dead-link"]
     if dead:
         reasons.append(f"a relative link that resolves to nothing from this session's folder ({', '.join(dead)}): dima's click opens nothing. write the path from the session folder, or an absolute one.")
