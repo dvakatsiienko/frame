@@ -576,6 +576,34 @@ async function quietLedger($: EngineInterface, now: number) {
     return gaps;
 }
 
+// ccrow's wake, parked by her wake script for a desktop tab: cclio's thread sends the line itself, no tool call of
+// hers (brief 8 item 2), then marks it sent so her prompt hook only starts the harvester; a failed send leaves it parked
+// for that hook's old path, which asks her to forward it
+async function relayCcrowWake($: EngineInterface) {
+    if (!(await isLaneOwner($))) return;
+    const path = `${await $.env.get('HOME')}/.local/state/ccrow/relay.json`;
+    const raw = await $.fs.read(path).catch(() => undefined);
+    if (!raw) return;
+    let parked: Record<string, unknown> | null;
+    try {
+        parked = JSON.parse(raw) as Record<string, unknown> | null;
+    } catch {
+        return;
+    }
+    if (!parked || parked.isSent || typeof parked.line !== 'string') return;
+    const crow = memberOf(await registry($), `${CROW} ccrow`);
+    if (!crow) return;
+    const r = await $.session
+        .send({ text: parked.line, to: { sessionId: crow.base.sid } })
+        .catch(() => undefined);
+    if (!r?.isDelivered) return;
+    // a newer wake parked while this one went out stays as it is
+    if ((await $.fs.read(path).catch(() => undefined)) !== raw) return;
+    await $.fs
+        .write(path, JSON.stringify({ ...parked, isSent: true }))
+        .catch(() => undefined);
+}
+
 // the ledger runs once a minute in cclio's thread; its gaps sit in the store for her board and the boot digest
 let ledgerAt = 0;
 async function quietBooks($: EngineInterface) {
@@ -2738,6 +2766,7 @@ export const register: Register = (on) => {
                     await wakeForMarks($).catch(() => undefined);
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
+                    await relayCcrowWake($).catch(() => undefined);
                     if (await isOpen($))
                         await refreshSpeaking($).catch(() => undefined);
                     tick();

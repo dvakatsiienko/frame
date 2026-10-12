@@ -2,8 +2,11 @@ import { readFileSync, rmSync } from 'node:fs';
 
 import { RELAY_PATH, type Wake, spawnHarvest } from './lib.ts';
 
-// a cclio UserPromptSubmit hook: a wake parked for a desktop-tab ccrow reaches cclio's next turn as context
-let parked: (Wake & { line: string; model?: string }) | undefined;
+// a cclio UserPromptSubmit hook: a wake parked for a desktop-tab ccrow reaches cclio's next turn as context, unless
+// x-mod-stash in her thread already sent it (`isSent`): then it only starts the harvester
+let parked:
+    | (Wake & { line: string; model?: string; isSent?: boolean })
+    | undefined;
 try {
     parked = JSON.parse(readFileSync(RELAY_PATH, 'utf8'));
 } catch {
@@ -12,6 +15,7 @@ try {
 if (!parked) process.exit(0);
 rmSync(RELAY_PATH);
 spawnHarvest(parked);
+if (parked.isSent) process.exit(0);
 console.log(
     JSON.stringify({
         hookSpecificOutput: {

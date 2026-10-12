@@ -611,6 +611,12 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - when the next prompt goes
   - then the board marks them stale and the session's reminder says so in one line
 
+- ⬜ cclio's thread sends ccrow's wake itself (brief 8)
+  - given ccrow's wake script parked a wake for her desktop tab in `~/.local/state/ccrow/relay.json`
+  - when cclio's poll next ticks, then x-mod-stash sends its line to ccrow's session id (`$.session.send`, no model, cclio sees nothing) and marks it `isSent`, so cclio's prompt hook only starts the harvester
+  - given the send does not go out, then the wake stays parked and her prompt hook asks her to forward it, as before
+  - 📌 unprobed live: that a desktop-tab ccrow acts on the socket line — ccrow's 10-09 probe said a tab let one sit; cclio's tab took this coder's socket lines today
+
 ## /board — 🛼 glide (FRM-385)
 
 - ⬜ every board draws the fleet's live lanes

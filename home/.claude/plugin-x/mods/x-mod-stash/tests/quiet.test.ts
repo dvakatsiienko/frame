@@ -16,8 +16,17 @@ const PID = 4242;
 // cclio by default, as the registry names her; `cwd` is where a Bash `cd` left her
 function world(
     on: On,
-    { cwd = '/home/frame/cclio', name = '🦉 cclio', now = EVEN } = {},
+    {
+        cwd = '/home/frame/cclio',
+        name = '🦉 cclio',
+        now = EVEN,
+        // files beside the registry (ccrow's relay), and other live sessions as cc writes their registry files
+        files = {} as Record<string, string>,
+        peers = [] as Record<string, unknown>[],
+    } = {},
 ) {
+    for (const p of peers)
+        files[`/home/.claude/sessions/${p.pid}.json`] = JSON.stringify(p);
     const contexts: string[][] = [];
     const appended: string[] = [];
     const queued: string[] = [];
@@ -35,19 +44,28 @@ function world(
     });
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: cwd }));
-    on('process.run', () => ({
+    on('process.run', (_$, e) => ({
         value: {
             exitCode: 0,
             isStderrTruncated: false,
             isStdoutTruncated: false,
             stderr: '',
-            stdout: `${PID}\nMon Oct 12 15:00:00 2026\n`,
+            stdout:
+                e.argv[0] === 'ps'
+                    ? [PID, ...peers.map((p) => p.pid)].join('\n')
+                    : `${PID}\nMon Oct 12 15:00:00 2026\n`,
         },
     }));
+    on('fs.write', (_$, e) => {
+        files[e.path] = e.text;
+        return { value: undefined };
+    });
     on('fs.read', (_$, e) =>
         e.path === `/home/.claude/sessions/${PID}.json`
-            ? { value: JSON.stringify({ name, pid: PID }) }
-            : { deny: 'no such file' },
+            ? { value: JSON.stringify({ name, pid: PID, sessionId: SID }) }
+            : e.path in files
+              ? { value: files[e.path] ?? '' }
+              : { deny: 'no such file' },
     );
     on('env.get', () => ({ value: '/home' }));
     on('ui.log', () => ({ value: undefined }));
@@ -56,7 +74,18 @@ function world(
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
-    on('fs.list', () => ({ value: [] }));
+    on('fs.list', (_$, e) => ({
+        value:
+            e.path === '/home/.claude/sessions'
+                ? [PID, ...peers.map((p) => p.pid)].map((pid) => ({
+                      isLink: false,
+                      kind: 'file' as const,
+                      mtimeMs: 0,
+                      name: `${pid}.json`,
+                      size: 1,
+                  }))
+                : [],
+    }));
     on('tool.register', (_$, e) => ({
         value: { tool: `mcp__x-mod-stash__${e.name}` },
     }));
@@ -411,4 +440,52 @@ test('the ledger counts a send to cclio by her name, her socket or her session i
             sent('{"to":"uds:/tmp/cc-socks/999.sock","message":"x"}'),
         ].map((l) => to.test(l)),
     ).toEqual([true, true, true, false, false]);
+});
+
+/* brief 8 item 2: cclio's thread sends ccrow's wake itself */
+
+const RELAY = '/home/.local/state/ccrow/relay.json';
+const CROW_SID = 'f9f9f9f9-crow';
+const WAKE = JSON.stringify({
+    id: 'w1',
+    line: 'wake w1 · day · read the last 30 steps',
+});
+const crowPeer = { name: '🐦 ⬛ ccrow', pid: 777, sessionId: CROW_SID };
+
+function relayWorld(on: On, delivered = true) {
+    const files: Record<string, string> = { [RELAY]: WAKE };
+    const sent: { to: unknown; text: string }[] = [];
+    const w = world(on, { files, peers: [crowPeer] });
+    on('session.send', (_$, e) => {
+        sent.push({ text: e.text, to: e.to });
+        return delivered
+            ? { isDelivered: true }
+            : { isDelivered: false, reason: 'not reachable' };
+    });
+    return { ...w, files, sent };
+}
+
+test("a parked ccrow wake goes to her session from cclio's poll, and is marked sent", async ($, on) => {
+    const w = relayWorld(on);
+    await start($);
+    await w.clock.advance(5000);
+    expect([w.sent, JSON.parse(w.files[RELAY] ?? '{}').isSent]).toEqual([
+        [{ text: 'wake w1 · day · read the last 30 steps', to: CROW_SID }],
+        true,
+    ]);
+});
+
+test('a wake that does not go out stays parked for the prompt hook', async ($, on) => {
+    const w = relayWorld(on, false);
+    await start($);
+    await w.clock.advance(5000);
+    expect(w.files[RELAY]).toBe(WAKE);
+});
+
+test('a wake already sent goes out once', async ($, on) => {
+    const w = relayWorld(on);
+    await start($);
+    await w.clock.advance(5000);
+    await w.clock.advance(5000);
+    expect(w.sent.length).toBe(1);
 });
