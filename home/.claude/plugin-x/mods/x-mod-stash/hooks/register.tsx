@@ -3804,17 +3804,17 @@ export const register: Register = (on) => {
                           ? null
                           : lane.items.map((item, i) => (
                                 <Box
-                                    flexDirection='column'
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    gap={1}
                                     // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
-                                    key={`lane:${lane.id}:${i}`}
-                                    rowGap={LINE_GAP}>
-                                    <Box
-                                        alignItems='center'
-                                        flexDirection='row'
-                                        gap={1}>
+                                    key={`lane:${lane.id}:${i}`}>
+                                    {/* the step's text gives way first: the link, tick and note keep their room (dima's shots, 17:41, 17:46) */}
+                                    <Box flexShrink={1} minWidth={0}>
                                         <Text
                                             bold={i === lane.current}
-                                            dimColor={item.isDone}>
+                                            dimColor={item.isDone}
+                                            wrap='truncate-end'>
                                             {item.isDone
                                                 ? '✅'
                                                 : i === lane.current
@@ -3822,23 +3822,26 @@ export const register: Register = (on) => {
                                                   : '⬜'}{' '}
                                             {item.text}
                                         </Text>
-                                        {item.ticket ? (
+                                    </Box>
+                                    {item.ticket ? (
+                                        <Box flexShrink={0}>
                                             <Link
                                                 href={`https://linear.app/x-com/issue/${item.ticket}`}
                                                 key={`lane:${lane.id}:t:${i}`}>
                                                 {item.ticket}
                                             </Link>
-                                        ) : null}
-                                    </Box>
-                                    {/* tick leads, the note follows, on the line under the step — never beside it, where the field
-                                        covered the step's ticket link (dima's shot, 17:41; orbit's cards, 20:19) */}
+                                        </Box>
+                                    ) : null}
+                                    {/* tick leads, the note follows, on the step's own line after its link (dima's shot, 17:46) */}
                                     {i === lane.current ? (
                                         <Box
                                             alignItems='center'
                                             flexDirection='row'
+                                            flexGrow={1}
+                                            flexShrink={0}
                                             gap={1}
                                             key={`lane:${lane.id}:act`}
-                                            paddingLeft={3}>
+                                            minWidth={24}>
                                             {/* the note waits as a draft until 🛎️ tick sends it; no replay, a note has nothing to redo (dima, 20:51) */}
                                             <Button
                                                 key={`lane:${lane.id}:take`}

@@ -691,14 +691,31 @@ test('every board card folds by one rule: open until folded, a member subcard fo
     ]);
 });
 
-test("the current step's tick and note sit on their own line under it, tick first (dima's shot, 17:41)", async ($, on) => {
+test("the current step's tick and note sit on its own line after its link, tick first (dima's shots, 17:41, 17:46)", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
     await create($);
     await lane($, { act: 'step', current: 1, id: 'l1' });
-    const act = await ui.find({ key: 'lane:l1:act', type: 'Box' });
-    expect(
-        (act?.children as { type?: string }[] | undefined)?.map((c) => c.type),
-    ).toEqual(['Button', 'Box']);
+    const step = await ui.find({ key: 'lane:l1:1', type: 'Box' });
+    expect([step?.props.flexDirection, step?.text]).toEqual([
+        'row',
+        expect.stringMatching(/^➡️ the board in cards.*FRM-391🛎️ tick$/u),
+    ]);
+});
+
+test("the step's text gives way before its link: it truncates, the link keeps its width", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await create($);
+    await lane($, { act: 'step', current: 1, id: 'l1' });
+    const text = await ui.find({ text: /the board in cards$/, type: 'Text' });
+    const link = (await ui.findAll({ type: 'Box' })).find(
+        (n) => n.text?.endsWith('FRM-391') && !n.text.includes('cards'),
+    );
+    expect([text?.props.wrap, link?.props.flexShrink]).toEqual([
+        'truncate-end',
+        0,
+    ]);
 });
