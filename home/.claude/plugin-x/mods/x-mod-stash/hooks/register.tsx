@@ -46,6 +46,7 @@ import {
     wrongText,
 } from './orbit.ts';
 import {
+    LEDGER_SENDS,
     backgroundWait,
     backgroundWaits,
     boldFleetWords,
@@ -555,12 +556,13 @@ async function quietLedger($: EngineInterface, now: number) {
         : Date.parse(`${day}T00:00:00Z`);
     const home = await $.env.get('HOME');
     const me = await currentId($);
+    const pid = (await procNow($))?.pid;
     const mine = (await $.fs
-        .read(`${home}/.claude/sessions/${proc?.pid}.json`)
+        .read(`${home}/.claude/sessions/${pid}.json`)
         .then((raw) => JSON.parse(raw) as Record<string, unknown>)
         .catch(() => ({}))) as Record<string, unknown>;
     const to = cclioAddress({
-        pid: proc?.pid,
+        pid,
         sids: [me, text(mine.hostSessionId)].filter(
             (x): x is string => typeof x === 'string',
         ),
@@ -571,15 +573,7 @@ async function quietLedger($: EngineInterface, now: number) {
         const since = Math.max(opened, r.startedAt ?? 0);
         // the transcript by its session id, never the cwd: the registry's cwd follows a Bash `cd`
         const out = await $.process
-            .run([
-                'sh',
-                '-c',
-                'cat "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | grep -F \'"name":"SendMessage"\' | grep -E "$3" | sed -n \'s/.*"timestamp":"\\([^"]*\\)".*/\\1/p\'',
-                'sh',
-                home ?? '',
-                r.base.sid,
-                to,
-            ])
+            .run(['sh', '-c', LEDGER_SENDS, 'sh', home ?? '', r.base.sid, to])
             .catch(() => undefined);
         if (!out) continue;
         const sent = out.stdout
@@ -596,8 +590,8 @@ async function quietLedger($: EngineInterface, now: number) {
 }
 
 // ccrow's wake, parked by her wake script for a desktop tab: cclio's thread sends the line itself, no tool call of
-// hers (brief 8 item 2), then marks it sent so her prompt hook only starts the harvester; a failed send leaves it parked
-// for that hook's old path, which asks her to forward it
+// hers (brief 8 item 2), then marks it sent so her prompt hook starts the harvester; a failed send stays parked for the
+// next poll
 async function relayCcrowWake($: EngineInterface) {
     if (!(await isLaneOwner($))) return;
     const path = `${await $.env.get('HOME')}/.local/state/ccrow/relay.json`;
@@ -1577,11 +1571,19 @@ type Proc = { pid: number; start: string };
 const short = (sid: string) => sid.slice(0, 8);
 
 // the name ListAgents shows lives in the session registry, keyed by the claude process id
+// this session's process, resolved at its first read: a hook can run before a reloaded module's session.start, where
+// a module variable is still unset (cclio's glide was refused after a /reload-plugins, 2026-10-12 20:05)
+async function procNow($: EngineInterface) {
+    proc ??= await procOf($).catch(() => undefined);
+    return proc;
+}
+
 async function sessionName($: EngineInterface) {
-    if (!proc) return undefined;
+    const pid = (await procNow($))?.pid;
+    if (!pid) return undefined;
     const home = await $.env.get('HOME');
     const raw = await $.fs
-        .read(`${home}/.claude/sessions/${proc.pid}.json`)
+        .read(`${home}/.claude/sessions/${pid}.json`)
         .catch(() => undefined);
     if (!raw) return undefined;
     try {
@@ -1843,10 +1845,11 @@ async function setCompactAt(
     compactTrail = isTyping ? [...compactTrail, typed.value] : [];
     // the launch dir cc keeps in the registry is the project its settings resolve from; session.start's cwd can be a
     // later one (cclio's read ~/frame while it launched in ~/frame/cclio, 2026-10-09)
-    const launched = proc
+    const launchPid = (await procNow($))?.pid;
+    const launched = launchPid
         ? await $.fs
               .read(
-                  `${await $.env.get('HOME')}/.claude/sessions/${proc.pid}.json`,
+                  `${await $.env.get('HOME')}/.claude/sessions/${launchPid}.json`,
               )
               .then((raw) => {
                   const { cwd } = JSON.parse(raw) as { cwd?: unknown };

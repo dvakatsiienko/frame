@@ -208,6 +208,20 @@ test('a session the registry does not name 🦉 cclio is refused', async ($, on)
     ]);
 });
 
+test('cclio writes the lanes from a hook that runs before session.start', async ($, on) => {
+    const w = world(on, { files: shelf(keptLane()) });
+    const r = await lane($, { act: 'step', current: 1, id: 'l1' });
+    expect([r.deny, kept(w)[0]?.current]).toEqual([undefined, 1]);
+});
+
+test('cclio still writes the lanes after a plugin reload', async ($, on) => {
+    const w = world(on, { files: shelf(keptLane()) });
+    await start($);
+    await start($);
+    const r = await lane($, { act: 'step', current: 1, id: 'l1' });
+    expect([r.deny, kept(w)[0]?.current]).toEqual([undefined, 1]);
+});
+
 test('a new cclio after a handoff steps and ends a lane it did not create', async ($, on) => {
     const w = world(on, { files: shelf(keptLane()) });
     await start($);

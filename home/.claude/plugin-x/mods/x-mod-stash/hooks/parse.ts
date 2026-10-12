@@ -185,3 +185,12 @@ export function isFleetName(name: string) {
         Object.hasOwn(MEMBERS, name.replace(/[^\w\s]/gu, '').trim())
     );
 }
+
+// the quiet ledger's count of one member's sends to cclio: `sh -c LEDGER_SENDS <home> <session id> <address regex>`
+// prints the timestamp of each SendMessage call whose `to` names her; a call its result answered `success:false`
+// (unreachable, refused by a plugin, a dead socket) never reached her, so it is left out
+export const LEDGER_SENDS = [
+    't=$(cat "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null)',
+    `bad=$(printf '%s\\n' "$t" | grep -F '\\"success\\":false' | sed -n 's/.*"tool_use_id":"\\([^"]*\\)".*/\\1/p')`,
+    `printf '%s\\n' "$t" | grep -F '"name":"SendMessage"' | grep -E "$3" | { if [ -n "$bad" ]; then grep -v -F "$bad"; else cat; fi; } | sed -n 's/.*"timestamp":"\\([^"]*\\)".*/\\1/p'`,
+].join('\n');

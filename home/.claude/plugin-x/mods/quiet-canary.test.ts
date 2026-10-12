@@ -1,6 +1,11 @@
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { expect, test } from 'vitest';
 
 import { canaryState, deadlineOf } from './quiet-canary.ts';
+import { LEDGER_SENDS } from './x-mod-stash/hooks/parse.ts';
 
 const line = (verdict: string, canary?: string) => ({
     at: 1,
@@ -65,4 +70,72 @@ test('a bare deadline follows the idle wait dima set, falling back to 10 outside
     expect([30, 61, 'x', undefined].map((w) => deadlineOf([], w))).toEqual([
         32, 12, 12, 12,
     ]);
+});
+
+// the ledger counts a member's sends to cclio from its own transcript; a send whose result said success:false never
+// reached her, so it is no loss
+function sends(rows: unknown[]) {
+    const home = mkdtempSync(join(tmpdir(), 'ledger-'));
+    mkdirSync(join(home, '.claude/projects/-p'), { recursive: true });
+    writeFileSync(
+        join(home, '.claude/projects/-p/sid-1.jsonl'),
+        rows.map((r) => JSON.stringify(r)).join('\n'),
+    );
+    return spawnSync('sh', ['-c', LEDGER_SENDS, 'sh', home, 'sid-1', 'cclio'], {
+        encoding: 'utf8',
+    })
+        .stdout.split('\n')
+        .filter(Boolean);
+}
+const call = (id: string, at: string) => ({
+    message: {
+        content: [
+            {
+                id,
+                input: { message: '[progress] x', to: '🦉 cclio' },
+                name: 'SendMessage',
+                type: 'tool_use',
+            },
+        ],
+    },
+    timestamp: at,
+    type: 'assistant',
+});
+const answer = (id: string, isSent: boolean) => ({
+    message: {
+        content: [
+            {
+                content: [
+                    {
+                        text: JSON.stringify({ message: 'm', success: isSent }),
+                        type: 'text',
+                    },
+                ],
+                tool_use_id: id,
+                type: 'tool_result',
+            },
+        ],
+    },
+    type: 'user',
+});
+
+test('the ledger counts every send to cclio that went out', () => {
+    expect(
+        sends([
+            call('t1', '2026-10-12T15:01:00Z'),
+            answer('t1', true),
+            call('t2', '2026-10-12T15:02:00Z'),
+        ]),
+    ).toEqual(['2026-10-12T15:01:00Z', '2026-10-12T15:02:00Z']);
+});
+
+test('the ledger leaves out a send whose result said success:false', () => {
+    expect(
+        sends([
+            call('t1', '2026-10-12T15:01:00Z'),
+            answer('t1', false),
+            call('t2', '2026-10-12T15:02:00Z'),
+            answer('t2', true),
+        ]),
+    ).toEqual(['2026-10-12T15:02:00Z']);
 });

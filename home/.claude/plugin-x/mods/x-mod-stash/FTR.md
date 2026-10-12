@@ -586,6 +586,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - then her board draws a red `🚨 quiet ledger: <member> sent cclio <n>, her quiet log holds <m>` row at its top; any other board draws none
   - decision: a `flushed` line is not a delivery, so a held ping counts once
   - decision: the transcript is found by session id under any project folder, never by the registry's cwd, which follows a `cd`
+  - decision: a send whose result said `success:false` (no such session, a plugin refused it, a dead socket) never reached her, so it is not counted (brief 9 item 2)
 - ⬜ a stuck held ping turns cclio's 🤫 n red
   - given a held ping older than the idle wait + 2 min (12 min by default)
   - then her row's `🤫 n` reads red; younger, it reads plain
@@ -636,7 +637,8 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 - ⬜ cclio's thread sends ccrow's wake itself (brief 8)
   - given ccrow's wake script parked a wake for her desktop tab in `~/.local/state/ccrow/relay.json`
   - when cclio's poll next ticks, then x-mod-stash sends its line to ccrow's session id (`$.session.send`, no model, cclio sees nothing) and marks it `isSent`, so cclio's prompt hook only starts the harvester
-  - given the send does not go out, then the wake stays parked and her prompt hook asks her to forward it, as before
+  - given the send does not go out, then the wake stays parked and the next poll sends it; her prompt hook never asks her to forward it
+  - decision: the old «forward this line» ask in cclio's context is retired — the mod-sent wake arrived from `x-mod-stash` and started ccrow's turn in her desktop tab (ccrow, 2026-10-12 19:21; brief 10 item 2)
   - 📌 unprobed live: that a desktop-tab ccrow acts on the socket line — ccrow's 10-09 probe said a tab let one sit; cclio's tab took this coder's socket lines today
 
 ## /board — 🛼 glide (FRM-385)
