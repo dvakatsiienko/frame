@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 16:58'
+updated_date: '2026-10-12 16:59'
 due_date: '2026-10-16'
 labels:
   - m
@@ -38,4 +38,6 @@ dima 18:01: when the memory sweep reaches skills, shape and run nurture-skills (
 dima o76/o77 19:55, don't forget: fleet-models moves into x:crew-lead (models knowledge serves only the spawner, cclio + dima — the one-home test) and merges with crew-lead/models.md, one copy; the shelf drops it.
 
 dima o79–o81 19:57, don't forget: spawning-mechanics moves into x:crew-lead too (its references), with its drafted core (~/frame/cclio/.scratch/knowledge-79/core-6-7.md § 7); crew-lead keeps its procedure, the facts live in its references, delivered on load.
+
+dima 19:59 on o81: spawning-mechanics was kept out of resident memory and skills on purpose, fat and of questionable shape — find the balance of volume, size and use. at the groom: measure crew-lead's loaded bytes (SKILL.md body + what a spawn reads) before and after; the moved files sit in references/, read on demand, and only a ≤4 KB core is ever delivered.
 <!-- SECTION:NOTES:END -->

@@ -38,7 +38,7 @@ then the **blind critic**, on every lane, quick ones too (`docs/research/exit-li
 
 ## 4 · the seal
 
-`x brief preflight` passes. a flag on a verb that exists is proven by one grep and said so beside the line. the print collapses the lines to one row: `🔒 N exit lines, sealed`.
+`x brief preflight` passes. a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules are read against the exit lines: a line its rules forbid is rewritten before the seal (FRM-398's «refused» exit met mods' «warn-only until a verifier's clean»). a board or band change carries a shot of the board with every card open and the redraw cost measured, before the brief (FRM-397). the print collapses the lines to one row: `🔒 N exit lines, sealed`.
 
 ## 5 · the spawn ask
 
