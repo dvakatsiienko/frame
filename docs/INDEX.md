@@ -15,9 +15,7 @@ three rules keep it honest:
 ## knowledge/ — read on demand, the lookups behind the rules
 
 - [claude fleet capabilities](knowledge/fleet-claude-capabilities.md) — what each surface can reach, what memory it keeps, who can operate whom; core coordinator knowledge behind `rules/fleet-identity.md`
-- [authoring — skill](knowledge/authoring-skill.md) — the full reference for writing a skill: frontmatter, invocation control, the listing budget, argument placeholders as measured
-- [authoring — memory](knowledge/authoring-memory.md) — where a fact goes, decided BEFORE it is written: the pre-write checklist, bucket tests, silent hazards
-- [authoring — project memfile](knowledge/authoring-memory-project.md) — how to write a project `AGENTS.md`
+- [authoring — memory and skills](../home/.claude/plugin-x/skills/author-memory/SKILL.md) — the `x:author-memory` skill: where a line goes, the cc mechanics, skill writing, the project `AGENTS.md` skeleton (its references hold the full docs)
 - [models](knowledge/fleet-models.md) — the model cards and prices behind `rules/models.md`
 - [spawning mechanics](knowledge/spawning-mechanics.md) — what is actually true about subagents, `--bg` sessions and their inheritance, per cc build
 - [writing for humans](../home/.claude/plugin-x/skills/writing-for-humans/references/sources.md) — the distilled knowledge behind the `x:writing-for-humans` skill, now in the skill

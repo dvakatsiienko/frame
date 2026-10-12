@@ -1,7 +1,7 @@
 ---
 kind: nurture
 owner: coordinator
-artifacts: [docs/knowledge/authoring-skill.md]
+artifacts: [home/.claude/plugin-x/skills/author-memory/references/skill.md]
 script: none
 groomed: 2026-10-11 (dima)
 was: [nurture-skills-hillclimb]
@@ -25,14 +25,14 @@ his standing call, 2026-10-06: a skill nobody fires that costs context is a prun
 
 ## the run
 
-- **the knowledge is the rulebook**: every groom follows `authoring-skill.md` and matt's `writing-for-agents` (its `SKILL-MECHANICS.md` for frontmatter and invocation), loaded before the first edit.
+- **the knowledge is the rulebook**: every groom follows `author-memory/references/skill.md` and matt's `writing-for-agents` (its `SKILL-MECHANICS.md` for frontmatter and invocation), loaded before the first edit.
 - **one home per line**: a skill line that restates or contradicts resident memory, or another skill, keeps one home; the other becomes a pointer or goes.
 - **a description edit is proven by `claude plugin eval`**, never by reading.
 - **his working rules**, as in `nurture-memory`: no auto-commit, a per-item report, and every action traced in the sweep's run file the same turn.
 
 1. **groom this recipe** — `x:shape-recipe` step 0. done: dima's word, `groomed:` stamped. (open)
 2. **research** — the vectors below, all lanes at once (`x:shape-recipe`). done: every lane landed or failed out loud. (template)
-3. **the distill** — into `authoring-skill.md`, concise without dropping a useful line; bytes before and after. done: the doc touched or «unchanged», sizes logged. (open)
+3. **the distill** — into `author-memory/references/skill.md`, concise without dropping a useful line; bytes before and after. done: the doc touched or «unchanged», sizes logged. (open)
 4. **the census** — per skill: fire count, last use, token cost, from `refresh-fleet-ops`' skill-load measure and `/skill-doctor` (terminal only, dima types it). done: the ranked list in the run file. (script)
 5. **the conflict hunt** — every skill against resident memory (root `CLAUDE.md`, `rules/`, cclio leaves) and against its siblings: a duplicated or contradicting line gets one home. done: every hit verdicted. (open)
 6. **the groom**, one skill per round through `x:step-by-step`, census order: (open)
@@ -56,7 +56,7 @@ his standing call, 2026-10-06: a skill nobody fires that costs context is a prun
 
 - what changed in cc's skill mechanics since the last run: loading, descriptions, `disable-model-invocation`, plugin evals, `/skill-doctor`
 - anthropic's skill best-practice pages, the delta since the snapshot in `docs/research/skill-authoring-best-practices/`
-- prior art in skill evals and hillclimbing: `authoring-skill.md` § evals — prior art
+- prior art in skill evals and hillclimbing: `author-memory/references/skill.md` § evals — prior art
 
 ### analysis
 
@@ -67,7 +67,7 @@ his standing call, 2026-10-06: a skill nobody fires that costs context is a prun
 
 ## artifacts
 
-- `docs/knowledge/authoring-skill.md` — the skill authoring craft and its evals prior art; the distill folds new mechanics and our rules in
+- `home/.claude/plugin-x/skills/author-memory/references/skill.md` — the skill authoring craft and its evals prior art; the distill folds new mechanics and our rules in
 
 ## findings
 

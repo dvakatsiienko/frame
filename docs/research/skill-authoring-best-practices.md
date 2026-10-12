@@ -1,5 +1,5 @@
 ---
-dies-when: the FRM-267 sweep has folded every line below into `docs/knowledge/authoring-skill.md`, `authoring-memory.md`, the skills and the recipes (each action line ends ✅ or ✗ with a reason)
+dies-when: the FRM-267 sweep has folded every line below into `home/.claude/plugin-x/skills/author-memory/references/skill.md`, `authoring-memory.md`, the skills and the recipes (each action line ends ✅ or ✗ with a reason)
 ---
 
 Ticket: FRM-267
@@ -7,7 +7,7 @@ Ticket: FRM-267
 # skill authoring best practices — the sweep's input
 
 The input for the memory + skills sweep: one video, two Anthropic pages, dima's notes on his
-screenshots, our own numbers, and one action line per finding. The sweep reads this file first. The rules we adopt already live in `docs/knowledge/authoring-skill.md` § anthropic's structure rules; this file holds the evidence and the per-skill actions.
+screenshots, our own numbers, and one action line per finding. The sweep reads this file first. The rules we adopt already live in `home/.claude/plugin-x/skills/author-memory/references/skill.md` § anthropic's structure rules; this file holds the evidence and the per-skill actions.
 
 ## contents
 
@@ -93,7 +93,7 @@ Scanned 2026-10-02: 38 skills in plugin-x + plugin-cclio.
    in backticks, which the scan did not count)
    - action: check each one; link it directly from SKILL.md, or confirm the backtick pointer works
 6. **a contents list on a reference file over 100 lines** — us: 1 skill file (`pm/references/workspace.md`,
-   133 lines). Read-on-demand docs: `docs/knowledge/authoring-skill.md` (265) and `authoring-memory.md`
+   133 lines). Read-on-demand docs: `home/.claude/plugin-x/skills/author-memory/references/skill.md` (265) and `authoring-memory.md`
    (393) have none. Resident memory (rules, cclio leaves) loads whole, so it needs no contents list,
    but its size is its own cost (`craft-pm` 216, `craft-spawning` 209, `fleet-output-format` 283)
    - action: ✅ contents lists on `authoring-skill.md` + `authoring-memory.md` (2026-10-02); `pm/references/workspace.md` left; the resident ones go through the size budget
@@ -115,7 +115,7 @@ Scanned 2026-10-02: 38 skills in plugin-x + plugin-cclio.
       needs it; a condition date gets rewritten or deleted
 11. **consistent terminology** — us: `fleet-voice` «one name per concept» · action: none
 12. **description: third person, what + when** — ⚠️ conflicts with our rule «the description is ONLY
-    the load trigger» (`docs/knowledge/authoring-memory.md`). Local wins (the invariant #9), said out loud
+    the load trigger» (`home/.claude/plugin-x/skills/author-memory/references/memory.md`). Local wins (the invariant #9), said out loud
     here. Third person is free to adopt; «what it does» stays out by our rule
     - action: check descriptions read in third person; no «I can help»
 13. **naming: gerund form** (`processing-pdfs`) — ⚠️ conflicts with our entity-first naming; local wins

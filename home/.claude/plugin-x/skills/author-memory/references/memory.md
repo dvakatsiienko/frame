@@ -22,7 +22,7 @@ ticket: FRM-216
 - the method, when a file needs rethinking
 - upkeep is mechanical
 
-sibling to `authoring-skill.md`: that one is how to write a skill, this one is where anything written belongs. **placement is decided before the write, not repaired after it.** claim tags: **[measured]** run here or in a published experiment · **[read]** anthropic's docs or a paper · **[inferred]** our judgment, untested.
+sibling to `skill.md`: that one is how to write a skill, this one is where anything written belongs. **placement is decided before the write, not repaired after it.** claim tags: **[measured]** run here or in a published experiment · **[read]** anthropic's docs or a paper · **[inferred]** our judgment, untested.
 
 ## the buckets — audience decides
 
@@ -32,7 +32,7 @@ sibling to `authoring-skill.md`: that one is how to write a skill, this one is w
 - **`~/.claude/rules/*.md`, no `paths:`** — the same audience, one granular area per file so root stays lean. test: worth paying for in every session on the machine?
 - **`rules/*.md` with `paths:`** — a convention tied to a kind of file or a directory. test: does a glob name when it matters? a topic or an intention has no glob
 - **`~/projects/AGENTS.md`** — every coding session, no coordinator; a deliberate stub today
-- **a project `AGENTS.md`** — that one project (`authoring-memory-project.md`). test: wrong or meaningless in another repo?
+- **a project `AGENTS.md`** — that one project (`memory-project.md`). test: wrong or meaningless in another repo?
 - **`cclio/memory/*`** — the coordinator only. test: would a coder be misled by it?
 - **a skill** — a procedure, or anything needed occasionally; on demand, never resident. test: would someone invoke it by name?
 - **a hook, `settings.json`, `permissions.deny`** — anything that must happen. «always» or «before every» is enforcement, and memory is context, not enforcement **[read]**

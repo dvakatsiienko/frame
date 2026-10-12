@@ -7,7 +7,7 @@ ticket: FRM-216
 
 # project memfile authoring — how to write a project `AGENTS.md`
 
-sibling to `authoring-memory.md` (**where** a fact goes) and `authoring-skill.md` (**how** a skill
+sibling to `memory.md` (**where** a fact goes) and `skill.md` (**how** a skill
 is written). this one is the shape of ONE file: the `AGENTS.md` (or `CLAUDE.md`) at the root of a repo; ours are `AGENTS.md`.
 
 🎯 **the reference is [`pingdotgg/t3code`](https://github.com/pingdotgg/t3code)'s `AGENTS.md`.**
@@ -58,12 +58,12 @@ this today and the drift is invisible — each file is written alone and only fe
 ## the budget
 
 **[read]** target **under 200 lines**; the reference is 155. the only real relief is a `paths:`-scoped
-rule in `.claude/rules/`, which fits a code convention, never an intention (`authoring-memory.md` § the mechanics).
+rule in `.claude/rules/`, which fits a code convention, never an intention (`memory.md` § the mechanics).
 
 **[read]** `/doctor` cuts what is derivable (directory layouts, dependency lists, architecture
 overviews) and keeps pitfalls, rationale, and conventions that differ from tool defaults: the
 correct filter, applied by hand too. the `why` of a rule goes in a block html comment with its
-outcome (`authoring-memory.md` § the synthesis).
+outcome (`memory.md` § the synthesis).
 
 ## the skeleton
 

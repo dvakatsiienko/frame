@@ -1,7 +1,7 @@
 ---
 kind: nurture
 owner: coordinator
-artifacts: [docs/knowledge/authoring-memory.md, docs/knowledge/authoring-memory-project.md]
+artifacts: [home/.claude/plugin-x/skills/author-memory/references/memory.md, home/.claude/plugin-x/skills/author-memory/references/memory-project.md]
 script: none
 groomed: 2026-10-11 (dima)
 ---
@@ -63,7 +63,7 @@ his spec for what a memory file holds, run #1 (2026-08), after «i don't need 90
 
 > info that is useful to **you**, in a format appropriate to **you**
 
-his questions, run #1, answered in `authoring-memory.md` and re-asked every run:
+his questions, run #1, answered in `author-memory/references/memory.md` and re-asked every run:
 
 > «what's the current best-practice target for the ctx size an llm needs to perform well? previously it was ~120k tok — the number after which performance starts to drop. what's the number now? which number to hunt? your current boot ctx is 115k, and after the first boot it becomes ~200k. a 120k target is not realistic. **what do we do wrong?**»
 
@@ -82,7 +82,7 @@ his standing calls:
 - **trace as you go**, two kinds, the same turn (dima, 2026-10-12): every action lands as one line at the end of the sweep's run file (`docs/test-drive/memory-sweep.md`) — a step with no line did not run, and run state never lives in chat; and a round that shows a flaw class, a mistake or a tip adds one line to that file's `## findings` — the patterns of bad memory to hunt next time, what went wrong, what made the sweep faster. step 10's retro reads `## findings` first. `last/groom-list.md` (born at step 4) holds one line per memory file with its state, flipped the turn its step lands.
 - **re-entry, at every start and every resume** (a boot, a checkpoint, a compaction), before any groom (dima, 2026-10-11, after a run groomed 27 files «read whole, unchanged» with the guides out of context: «16k tokens is cheap next to redoing 50 files» — cclio's line, his verdict):
   1. the standard boot: `cclio:boot`, every member woken, «checkpointed» said
-  2. read WHOLE, never skimmed: this recipe · `mattpocock-skills:writing-for-agents` · `docs/knowledge/authoring-memory.md` · `authoring-memory-project.md` · `authoring-skill.md` · `recipes/nurture-skills/recipe.md` — they are this recipe's research distilled, the lens every file is groomed through
+  2. read WHOLE, never skimmed: this recipe · `mattpocock-skills:writing-for-agents` · `x:author-memory` (its SKILL.md and all three references) · `recipes/nurture-skills/recipe.md` — they are this recipe's research distilled, the lens every file is groomed through
      **why whole, every time — the trap is the reflex that skips them.** the guides look long and the next edit looks small, so reading them feels like overhead. it is the work: they hold 5–10 research rounds and dima's video folds from months, and without them in context a groom checks pointers and cuts nothing. measured 2026-10-11: 27 files passed «read whole, unchanged», the resident drop came only from one lucky cut, and 50 files had to be reopened. ~16k tokens of reading is cheap next to redoing 50 files — cclio's own line, dima's verdict: «it very precisely describes the reason to read these guides before a memory sweep»
   3. the state: `last/groom-list.md` and the last lines of `docs/test-drive/memory-sweep.md`; then the sweep, with all of it in context
 - **the goal is the smallest form that does its job** (the want: «as slim as possible … no useless, stale memories»): a groom that checks for staleness and pointers but cuts nothing has not run; size is measured on every file
@@ -101,11 +101,11 @@ his standing calls:
 - **the quote gate, before every commit of a groomed file**: `python3 cclio/script/quote-diff.py HEAD <files>` lists every «…» quote that left; each one of dima's is restored or shown to him beside its new form before the commit, never judged away in silence (10-11: a groom dropped five of his, «all kept» was said unchecked).
 - **dima's `cclio:` comments** (2026-10-11): during a sweep he leaves `<!-- cclio: … -->` notes in the files; each step greps for them first and resolves each in place or answers it in the thread, then removes the note.
 - **a fold keeps what was said**: a future-dated block is written in full and marked deferred, never summarised away — run #1's plan lost a block marked «to be done after setting you up as coordinator» to a summary that read finished.
-- 🚫 **no llm-judge audit**: what code can verify is code (step 4), pruning is human (step 10); the numbers are in `authoring-memory.md` § upkeep.
+- 🚫 **no llm-judge audit**: what code can verify is code (step 4), pruning is human (step 10); the numbers are in `author-memory/references/memory.md` § upkeep.
 
 1. **groom the nurture recipes** — this one and `nurture-skills`, `x:shape-recipe` step 0: every want line true, every vector serving one. done: dima's word, `groomed:` on both. (open)
 2. **research** — no write before it lands. first the snapshot diff, the cheapest: re-download anthropic's two pages as `.md`, `diff` against `docs/research/skill-authoring-best-practices/`, read only the delta, replace the snapshots. then the vectors, all lanes at once (`x:shape-recipe`). done: every lane landed or failed out loud. (template)
-3. **the knowledge distill** — into `authoring-memory*` and every knowledge doc that steers memory edits (`authoring-skill.md` is `nurture-skills`' distill), concise without dropping a useful line. one layer per file: craft is `writing-for-agents`, these hold cc mechanics and our rules. every claim tagged [measured] / [read] / [inferred] with a version; one behind the running cc is re-probed or cut. stories go to a research doc with `dies-when`. a size budget in each file's frontmatter. done: every doc touched or «unchanged», bytes before and after logged. (open)
+3. **the knowledge distill** — into `x:author-memory` and every knowledge doc that steers memory edits (`author-memory/references/skill.md` is `nurture-skills`' distill), concise without dropping a useful line. one layer per file: craft is `writing-for-agents`, these hold cc mechanics and our rules. every claim tagged [measured] / [read] / [inferred] with a version; one behind the running cc is re-probed or cut. stories go to a research doc with `dies-when`. a size budget in each file's frontmatter. done: every doc touched or «unchanged», bytes before and after logged. (open)
 4. **the vertical audit — which memories bleed the most**: the rank is `resident × never-used`, tokens at 2.89 chars/token, measured on disk (`/context` shows the boot snapshot). (template)
    - **the mechanical pass**, code only: a closed `FRM-N` / `BYT-N` within 2 lines of open-state words (`tracks it`, `trial`, `awaiting`, `pending`; run #1: 12 flagged, 11 real) · a dead `@import` · barrel omissions both ways · a named rule, skill or doc that is gone · a named flag missing from `--help` · research past `dies-when`. it runs on commit: drift lands within a day. a naive path regex flagged 94 with ~2 real, so it stays out
    - **inventory and map** — dima's order, binding (run #1): gather ALL memfiles across repos → eval cc's default «go upd memory», asked twice, diff-based: right places? poems? → map `rules/` pointers, dead ones included → map the voice / format / style wiring → **the connection graph first**, a real one (he asks for a drawing; regenerate it from the numbers) → the groom list (the plan is that list, never a new plan file), no edit before it → flush → touch every piece. the connector pass (pointers, precedence, placement) stays apart from pruning content — dima: no cleaning is needed when no trash is produced. then one script over the list (sizes, pointers, inbound links), only its flags read; the connection graph drawn from the numbers; the voice and format wiring. an isolated leaf is where dima looks first
@@ -131,12 +131,12 @@ his standing calls:
      - 🚫 **dima's words in «» are never cut or reworded** — restructure around them; dropping one needs his word, the original shown beside the change
      - the target shape: separable facts, the positive target over the ban, info useful to the agent in a format for the agent — «i do not need 90% of it»
    - **merge** a split decision, never two decisions that share a topic
-   - **placement** — the bucket test in `authoring-memory.md`: «who pays for this, and do they need it». a line that asks for an action names the exact call, or moves to `settings.json`, a hook, `permissions.deny`. a memory that is really a skill is named. cclio is the pm lead, everyone else a senior contributor: lean slightly global
+   - **placement** — the bucket test in `author-memory/references/memory.md`: «who pays for this, and do they need it». a line that asks for an action names the exact call, or moves to `settings.json`, a hook, `permissions.deny`. a memory that is really a skill is named. cclio is the pm lead, everyone else a senior contributor: lean slightly global
    - **deferral** — `paths:` is the only lever that keeps a file out of context: frontmatter alone excludes nothing, Bash `cat`, `Read` and `Edit` fire it, a `Write` of a new matching file does not (measured, cc 2.1.296)
    - **a rename is a graph operation**: grep the whole repo before and after (barrel, wikilinks, docs, code, symlinks), re-probe the barrel; done is the root naming rule's `grep -rn '<old name>'` printing nothing outside dated history
    - open, dima's: the `guide-*` split — «the info in those files is what ccli code does when codifying. that was my intention when i asked ccli opus to create these at a skill lvl. but i was looking far ahead, with the idea of modularization — pick the right tool at the right time. the reality is, when you code, it's 90% typescript and/or react, and both are code. 🤔» his call: skills cost nothing at rest, observe, move as we go. and a generated barrel vs a hand-written one
    - done: every file's groom-list line reads `- ✅ <path> — <before> → <after> B · lenses: dupe · superseded · enforced · unused · no-op · altitude · trim · merge · placement · deferral · protected — <what moved>`, each lens with its verdict; «unchanged» is a verdict only with the evidence for every lens; `recipes/nurture-memory/scripts/groom-list-check.sh` exits 0
-8. **the order across layers**: root `CLAUDE.md` → `rules/` → all resident memory (cclio leaves; the pm surfaces are reviewed here, `.scratch/memory-sweep/issues/085-pm-review.md`) → project leaves (frame, `bytes`, `dvakatsiienko`, `inner-marker`, `reinforcement-learning`; cclio leaves read all first, keep / trim / move, judge filenames, then a filename sweep). a project leaf: `find ~/projects -name AGENTS.md -o -name CLAUDE.md`, the project examined before the file, a restated environment becomes a pointer, a tutorial goes; what a leaf owes is `authoring-memory-project.md`. `~/projects/AGENTS.md` is a deliberate stub ([DOT-195](https://linear.app/x-com/issue/DOT-195)). done: every layer through step 7. (template)
+8. **the order across layers**: root `CLAUDE.md` → `rules/` → all resident memory (cclio leaves; the pm surfaces are reviewed here, `.scratch/memory-sweep/issues/085-pm-review.md`) → project leaves (frame, `bytes`, `dvakatsiienko`, `inner-marker`, `reinforcement-learning`; cclio leaves read all first, keep / trim / move, judge filenames, then a filename sweep). a project leaf: `find ~/projects -name AGENTS.md -o -name CLAUDE.md`, the project examined before the file, a restated environment becomes a pointer, a tutorial goes; what a leaf owes is `author-memory/references/memory-project.md`. `~/projects/AGENTS.md` is a deliberate stub ([DOT-195](https://linear.app/x-com/issue/DOT-195)). done: every layer through step 7. (template)
 9. **skills — run `nurture-skills`** (effort ≈ 60 % mems / 40 % skills: mems are the mess, skills «+- ok»): each skill reviewed, groomed, trimmed and its load rebalanced, against resident memory; that recipe holds the steps. done: its log line for this sweep. (template)
 10. **the review, the gates, the retro** — after the full sweep, in this order (dima, 2026-10-12). (open)
     - **the drift hunt**: one more pass over the whole — what did we miss, and where did a sweep edit drift or break something: a moved section a pointer still names, a dead import, a rule that lost its only home, a skill pointing at a cut line. each one fixed
@@ -176,8 +176,8 @@ his standing calls:
 
 ## artifacts
 
-- `docs/knowledge/authoring-memory.md` — the memory authoring craft (placement, mechanics, measurements); the distill folds cc mechanics and our rules in; the per-file lenses live in step 7 here
-- `docs/knowledge/authoring-memory-project.md` — what a project leaf owes; updated from step 8
+- `home/.claude/plugin-x/skills/author-memory/references/memory.md` — the memory authoring craft (placement, mechanics, measurements); the distill folds cc mechanics and our rules in; the per-file lenses live in step 7 here
+- `home/.claude/plugin-x/skills/author-memory/references/memory-project.md` — what a project leaf owes; updated from step 8
 
 ## findings
 

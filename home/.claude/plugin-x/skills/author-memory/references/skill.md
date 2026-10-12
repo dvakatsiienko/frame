@@ -30,7 +30,7 @@ claim tags: **[measured]** on this machine · **[read]** docs or a practitioner 
 ## two layers: matt's craft, our mechanics
 
 - **craft** — wording, hierarchy, triggers, completion criteria, leading words, pruning, load economics: `mattpocock-skills:writing-for-agents` (1.3.1) and its `SKILL-MECHANICS.md`. read it first; it takes the final word on wording, and this file never restates it
-- **claude code mechanics** — html-comment stripping, `paths:` vs the silent `globs:` typo, `@import` resolution, the listing budget, invocation flags, evals: this file and `authoring-memory.md`. they rot on a different clock
+- **claude code mechanics** — html-comment stripping, `paths:` vs the silent `globs:` typo, `@import` resolution, the listing budget, invocation flags, evals: this file and `memory.md`. they rot on a different clock
 - one authority per layer: a third artifact restating either is the failure. that is why there is no `skillsmith` ([DOT-132](https://linear.app/x-com/issue/DOT-132), closed): `writing-for-agents` already is the trigger for both skills and memory files
 - the two strongest craft claims replicate **[read]**: a description is a trigger, not a summary (theo cut the explanatory half and reliability went up); negation backfires, so prompt the positive
 - what matt does not cover: measured numbers, and the economics — a skill body is paid on invoke, a memfile every turn forever
@@ -41,7 +41,7 @@ claim tags: **[measured]** on this machine · **[read]** docs or a practitioner 
 
 - **`intended-models: fable, opus`** — ours: the models a skill is written for, best first. enforcement is procedural: a model running a skill above its tier prints a note and proceeds. omitted when the skill is model-agnostic, most are. open for `nurture-skills` step 6: it moves under `metadata:`, or drops on touch
 - **theo's `requires:`** **[read]** — the env var or credential the skill cannot work without: «if it is unset, tell the user instead of guessing». worth stealing, same procedural kind
-- model strengths that decide the value: `home/.claude/rules/models.md`
+- model strengths that decide the value: `docs/knowledge/fleet-models.md`
 
 ## writing the description
 
@@ -77,7 +77,7 @@ skills are **half-lazy**: `name` + `description` are resident from boot (~80–1
 
 ## what belongs in a skill rather than a memfile
 
-**[read]** anthropic's split: a multi-step procedure → a skill; something for one part of the codebase → a `paths:`-scoped rule (it loads on a read, `cat` or edit of a matching file, `authoring-memory.md`); something that must run → a hook; what must be true every session → `CLAUDE.md`.
+**[read]** anthropic's split: a multi-step procedure → a skill; something for one part of the codebase → a `paths:`-scoped rule (it loads on a read, `cat` or edit of a matching file, `memory.md`); something that must run → a hook; what must be true every session → `CLAUDE.md`.
 
 ## splitting: by trigger, not by topic
 
