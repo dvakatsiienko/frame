@@ -41,6 +41,8 @@ dima is on a small screen with a software keyboard, often lying down. every repl
       - <move 2>
       - <move 3>
 
+- **🔭 stays the reply's last line** while it is on, even if the mac moves it into the band: his phone draws no mods (dima, 2026-10-12)
+
 mode ends on dima's word: «back at the mac», `/mobile-mode off`, or a 🛎️ or ↩️ press in the board's orbit (he is at the mac; a note, a speak press or a row's ↗ is not). a
 new topic does not end it; once it ends the fence goes and the asks live in orbit again. x-mod-stash keeps the flag and
 swaps the per-prompt orbit reminder for the asks-fence one while it is on.

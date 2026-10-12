@@ -23,7 +23,7 @@ when the news is progress. a decision, a question, a doubt or a find he would wa
 `🔔 <member>: <what>` — and the ask itself goes to orbit. **a coder's report reaches him
 once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name. the digest IS the coder's look card (what · where · try · proven · not checked, FRM-315), and its screenshot goes to him by `SendUserFile` in the same turn.
 
-A `📄 last report: **<topic>**, <HH:MM>` line ends every report; his `rewind` reprints it. **The stamp is a copied clock, never a composed one** — the prompt hook's `now HH:MM` line, or a
+A `📄 last report: **<topic>**, <HH:MM>` line ends every report, except a `🔭` line, which goes after it: the band reads 🔭 only as the reply's last line (2026-10-12, a 🔭 above the stamp drew «not waiting»); his `rewind` reprints it. **The stamp is a copied clock, never a composed one** — the prompt hook's `now HH:MM` line, or a
 `date` run as the last tool step of a long turn; the stamp ran ahead of the clock ten times before
 this line (dima, 2026-10-08). the stamp is cclio's own, for `rewind` in a thread member traffic
 floods; no other member prints one.

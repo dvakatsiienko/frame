@@ -1,10 +1,10 @@
 ---
 id: PK-50
 title: the 10-10 sequence before the memory sweep resumes
-status: claimed
+status: done
 assignee: []
 created_date: '2026-10-10 11:52'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 11:45'
 labels:
   - m
 dependencies: []
@@ -76,4 +76,6 @@ dima, 2026-10-10 14:50, folded. sequential, one at a time, no parallel lanes yet
 2026-10-12 00:15: the mods queue line is current (FRM-386 🐠 catch left, on dima's word); step 6 runs on, the sweep resumes at the next boot
 
 parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
+
+closed 2026-10-12 14:46 (dima: «solve what can be solved, postpone the rest to right after the sweep»). step 3: shipped — orbit/glide/🔭 band (FRM-381/385), plugin-authoring in the mods pick-up (crew-lead), the asks fence → orbit; the stale ⏳-fence Stop-hook flaw died with the fence; leftovers → PK-95; quiet comms → PK-93 on mods lane l8. step 4 → PK-94.
 <!-- SECTION:NOTES:END -->
