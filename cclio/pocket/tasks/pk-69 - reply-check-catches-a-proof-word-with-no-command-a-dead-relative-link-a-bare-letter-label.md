@@ -6,13 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-11 21:17'
+updated_date: '2026-10-12 11:08'
 due_date: '2026-10-13'
 labels:
   - s
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 2000
+ordinal: 10800
 ---
 
 ## Description
@@ -23,3 +24,9 @@ from the 10-11 halt flush (gather clusters 14, 17), cclio's own hook to extend (
 - a relative link that does not resolve from the session folder (16:45 dima-caught)
 - a bare letter label like «abcd» or «E + 5» (23:23 dima-caught)
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
+<!-- SECTION:NOTES:END -->

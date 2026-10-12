@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-11 21:17'
-updated_date: '2026-10-11 21:36'
+updated_date: '2026-10-12 11:08'
 due_date: '2026-10-14'
 labels:
   - m
@@ -31,4 +31,6 @@ from the 10-11 halt flush (gather clusters 7, 12, 21, 10), for the mods coder af
 parked: waits for the next mods coder, after FRM-386 🐠 catch, on dima's word
 
 rides FRM-386 🐠 catch (o309)
+
+parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
 <!-- SECTION:NOTES:END -->

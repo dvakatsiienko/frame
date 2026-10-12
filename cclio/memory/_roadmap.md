@@ -3,4 +3,4 @@
 - order: pm ✅ → fleet → monorepo → speak → chords → trophy-sys → portfolio → monorepo
 - now: the memory sweep, cli in parallel
 - next: merge m1, then the speak redesign
-- started mils: monorepo · m2 · ci boring 2/4, fleet · fleet package 1/2, design-system · apps migrated onto kit 1/3, design-system · tokens pinned + kit skeleton 3/4
+- started mils: monorepo · m2 · ci boring 2/4

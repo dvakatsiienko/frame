@@ -4,9 +4,10 @@ title: 'mods lane retro folds (FRM-388–399), one home each'
 status: open
 assignee: []
 created_date: '2026-10-11 19:26'
+updated_date: '2026-10-12 11:08'
+due_date: '2026-10-12'
 labels:
   - s
-due_date: '2026-10-12'
 dependencies: []
 priority: later
 type: task
@@ -31,3 +32,9 @@ from ~/.claude/shelf/retros/2026-10-11-mods-lane-coder.md, lane l4 ended 22:21 (
 - FRM-400: `x lane commit` formats but does not organise imports; biome's organizeImports refused one commit
 - from the 10-11 halt flush: `x mods edit push` runs `claude plugin validate` on the dev copy and refuses on red (it broke the live stash twice, FRM-385); a refused push prints «nothing written», never «synced» (3 readers took a refusal for success); `x mods edit test` takes `--add` like push; x-mod-stash re-primes the phases nudge after `/clear` (`isPrimed` is process-wide)
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
+<!-- SECTION:NOTES:END -->

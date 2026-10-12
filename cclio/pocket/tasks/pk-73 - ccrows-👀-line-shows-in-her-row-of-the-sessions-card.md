@@ -4,7 +4,7 @@ title: "ccrow's \U0001F440 line shows in her row of the sessions card"
 status: open
 assignee: []
 created_date: '2026-10-11 22:45'
-updated_date: '2026-10-11 22:50'
+updated_date: '2026-10-12 11:17'
 due_date: '2026-10-14'
 labels:
   - s
@@ -28,4 +28,8 @@ parked: the mods queue, after FRM-386, on dima's word
 
 <!-- SECTION:NOTES:BEGIN -->
 dima's yes, o314 (01:49): rides FRM-386 🐠 catch with the next mods coder
+
+parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
+
+dima, 2026-10-12 14:16, relayed by ccrow from her window: «i'd like to see this note somewhere in a mod» — about her 👀 for-you line (1–2 tips for him); narrows his 01:42 «the mods view is already cramped»: the 👀 line only, no numbers
 <!-- SECTION:NOTES:END -->
