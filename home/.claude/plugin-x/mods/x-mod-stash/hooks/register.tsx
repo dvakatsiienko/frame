@@ -304,8 +304,9 @@ export type FieldDraft = {
     at: number;
     isLanded: boolean;
 };
-const FIELD_QUIET_MS = 2000;
-const FIELD_SAVE_MS = 500;
+// dima's o8, 17:14: «1-2 s at least» — a short pause no longer snaps a long field back to its start
+const FIELD_QUIET_MS = 3000;
+const FIELD_SAVE_MS = 1500;
 const pendingSaves = new Map<
     string,
     { save: () => unknown; timer: { cancel: () => void } }

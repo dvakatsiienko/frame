@@ -32,8 +32,8 @@ test('while typing, every redraw draws the value the field showed', () => {
     ).toEqual(['', '', '', '']);
 });
 
-test('after 2 s of quiet the stored text is drawn', () => {
-    expect(drawn(typeAll('', 'a', 'ab'), 'ab', T + 2200)).toBe('ab');
+test('after 3 s of quiet the stored text is drawn', () => {
+    expect(drawn(typeAll('', 'a', 'ab'), 'ab', T + 3200)).toBe('ab');
 });
 
 test('a value set from outside, never typed here, is drawn at once', () => {
@@ -55,10 +55,10 @@ test('a knob value the knob refuses changes nothing drawn while typing', () => {
     expect(drawn(typeAll('0.5', '0', '0.'), '0.5', T + 300)).toBe('0.5');
 });
 
-test('the poll counts a field typed into within 2 s as typing, and an older one as idle', () => {
+test('the poll counts a field typed into within 3 s as typing, and an older one as idle', () => {
     expect([
-        isTypingAt([T], T + 1900),
-        isTypingAt([T], T + 2100),
+        isTypingAt([T], T + 2900),
+        isTypingAt([T], T + 3100),
         isTypingAt([], T),
     ]).toEqual([true, false, false]);
 });

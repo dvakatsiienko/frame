@@ -133,7 +133,7 @@ const savedNote = (store: Map<string, unknown>) =>
     (store.get(`asks:${SID}`) as { items: { note?: string }[] } | undefined)
         ?.items[0]?.note;
 
-test('a note saves once typing pauses, never on each keystroke', async ($, on) => {
+test('a note saves once typing pauses 1.5 s, never on each keystroke', async ($, on) => {
     const { clock, store } = world(on);
     await start($);
     const ui = await board($);
@@ -141,7 +141,7 @@ test('a note saves once typing pauses, never on each keystroke', async ($, on) =
     await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'a' });
     await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'ab' });
     const typing = savedNote(store);
-    await clock.advance(600);
+    await clock.advance(1600);
     expect([typing, savedNote(store)]).toEqual([undefined, 'ab']);
 });
 
