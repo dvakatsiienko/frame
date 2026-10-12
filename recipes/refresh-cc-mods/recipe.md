@@ -37,6 +37,8 @@ what the api can do now, what others built, and whether anything useful is left 
 
 > what other common operations would existing mods be missing, and what features and knobs would you want to smoothen your moves? (2026-10-12)
 
+> my mods wants: know how to make mods look pretty; how to organize them in the UI (layout). my number one mods issues: the lack of space in the desktop app to lay mods out; not knowing what mods can render — no component library to see what i, you or a coder can actually draw; not knowing the best use of mods overall — which mods would help us, given our troubles and bottlenecks. prior art is what i'm most interested in: there is a very large number of mods out there, and borrowing from them should be researched precisely (2026-10-12)
+
 his standing calls: session.measure «not yet, i don't need another ctx meter»; spoken pings «not yet … speak only when i press f4»; sline stays a statusline, not a mod; a mod-authoring skill → no, `mods/AGENTS.md` is the home.
 
 ## the run
@@ -55,12 +57,15 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 ### research
 
 1. the official surface — the mods reference + changelog since the last run: new events, `$` methods, render sites, limits, surfaces; then the generated types in each `<mod>/.claude-plugin/types/` as the authority for our build
-2. **hunt already built to borrow** — published mods and hook plugins (the catalogue at mods.aidojo.si, claudemods.ai, ray-amjad/awesome-claude-code-function-hooks, anthropics/claude-code-playground mods): read the source of the ones near our needs, one «borrow» line each
+2. **hunt already built to borrow — the lead vector** — published mods and hook plugins (the whole catalogue at mods.aidojo.si, claudemods.ai, ray-amjad/claude-code-mods, anthropics/claude-code-playground mods, anthropics/claude-code/mods): read every catalogue entry, not a first page; rank the ones near our needs and troubles; read their source; one «borrow» line each with what it would replace or add for us
 3. **hunt already built for inspo** — unusual or high-value uses we have not thought of (guards, dashboards, presence, cost, privacy)
 4. best practices and pitfalls — hot paths, state lifetimes, reload, composition with other mods and with cc built-ins, testing
 5. **keeping the contract in mind** — how an agent keeps a tool's contract live across turns and compactions: a skill, resident memory, a hook reminder; dima's «the habit is the failure point»
 6. **fail-safe mods on a comms door** — how others guard a hook that can swallow or delay delivery: fail open, canaries, ledgers, kill switches, health rows
 7. **a mod's reach into other sessions** — sending a peer message, reading another session's state, delivering into a tool result's `context`; the size caps on a tool description and on that `context`
+8. **pretty mods** — what makes a mod look good: the visual patterns in the best published mods, color, density, glyphs, motion, light and dark
+9. **layout in a tight space** — how others fit many mods into the desktop side pane and the terminal: folding, tabs, priority, one board vs many
+10. **the component gallery** — every element a mod can render (text, boxes, buttons, inputs, markdown, links, status lines, notifications), how each looks on desktop and in the terminal; the answer feeds a living gallery we can open
 
 ### analysis
 
@@ -76,6 +81,7 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 10. **session identity** — every key a mod uses for «who is this session» (cwd, registry name, cc sessionId, desktop `local_` id) checked against a `cd`, a `/clear`, a rename and a reinit
 11. **leftovers** — dev-mods dirs past their probe, a mod still loaded after its source moved
 12. **cclio's wants list** — each open want of the coordinator's (brief 8 on 10-12) read against the api: buildable, workaround, or engine gap
+13. **our bottlenecks → mods** — the flawlog, the comms ledger and the retros read for the troubles a mod could remove; a ranked list of mods we do not have yet
 
 ## artifacts
 
