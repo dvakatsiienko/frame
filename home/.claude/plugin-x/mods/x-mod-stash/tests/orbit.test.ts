@@ -1838,3 +1838,22 @@ test('a «siesta:» phase draws 🌤️ in place of its moon', async ($, on) => 
         .map((t) => [...t][0]);
     expect(leads).toEqual(['🌕', '🌤', '🌓']);
 });
+
+// o88 wisp (dima, 20:39): a tick on an ask the running turn had just followed up was ignored until the turn ended
+test('a tick on an ask just followed up mid-turn lands at once', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'go');
+    await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'yes',
+        text: 'push FRM-1 to main?',
+    });
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(5_000);
+    expect((await ui.find({ key: 'orbit:accepted:o1' }))?.text).toBe('✅ tick');
+});

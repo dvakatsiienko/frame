@@ -406,6 +406,8 @@ export function orbitOp(
                                   ...a,
                                   isChanged: true,
                                   isClosed: undefined,
+                                  // a new question is no longer the running turn's: dima's next tick on it must land (o88)
+                                  isLocked: undefined,
                                   isResolved: false,
                                   mark: undefined,
                                   pick: oneLine(input.pick) || a.pick,
