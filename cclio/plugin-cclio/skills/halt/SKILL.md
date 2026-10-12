@@ -108,7 +108,7 @@ sharpened, not because it was watched. the boot prints every flow's streak.
 line per item — name · state (vetting n/14, open, due) · days left · today's evidence — built from
 four sources, each read, never recalled: `shelf/jev/vet.json` (the flows, after today's verdicts),
 `pnpm test-drive:list` (each test-drive file's own `status:` and `until:`, o139), the 🔬/👁️ reminders left in
-`memory/_reminders.md`, and the model/effort trials (`docs/knowledge/models.md`, the spawn defaults in
+`memory/_reminders.md`, and the model/effort trials (`docs/knowledge/fleet-models.md`, the spawn defaults in
 `x:crew-lead`). ⏰ leads any line due within 3 days; an item with no evidence today still gets its
 line — a trial nobody names is being dropped by default.
 **then the spawn base:** the first-request `cache_read_input_tokens` / `cache_creation_input_tokens` of the day's fresh agents (their transcripts' first assistant `usage`) — a base that moved re-sizes the grid in `x:crew-lead`.

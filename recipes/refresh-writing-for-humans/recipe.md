@@ -2,7 +2,7 @@
 kind: refresh
 owner: coordinator
 artifacts:
-  - docs/knowledge/writing-for-humans.md
+  - home/.claude/plugin-x/skills/writing-for-humans/references/sources.md
   - home/.claude/plugin-x/skills/writing-for-humans/
 script: none
 ---
@@ -25,7 +25,7 @@ dima's, confirmed 2026-08-27:
 
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. lanes from two briefs (skills + techniques · detectors): the `researcher` agent + `pnpm research:lanes`; add your own read on how the skill should work (dima's standing note). done: every lane landed or failed out loud. (template)
-3. distill: clever-merge findings into `docs/knowledge/writing-for-humans.md` (useful old stays,
+3. distill: clever-merge findings into `home/.claude/plugin-x/skills/writing-for-humans/references/sources.md` (useful old stays,
    useful new enters, no bloat, completeness first); raw researcher output stays in `last/` until the next run's distill. done: the doc carries the merge, or is named «unchanged». (open)
 4. eval + findings print. done: the findings are printed. (template)
 5. resolve with Dima by outcome — typical moves, only as the findings warrant. done: his word on each move. (open)
@@ -61,7 +61,7 @@ the running agent is the instrument:
 
 ## artifacts
 
-- `docs/knowledge/writing-for-humans.md` — the distilled knowledge: existing art, techniques,
+- `home/.claude/plugin-x/skills/writing-for-humans/references/sources.md` — the distilled knowledge: existing art, techniques,
   detector landscape
 - `home/.claude/plugin-x/skills/writing-for-humans/` (+ `references/dima-voice.md`)
 - the humanize pair (`humanize:humanize`, `humanize:ai-check`) — auto-updated from the upstream marketplace since 2026-09-27: read, never edited

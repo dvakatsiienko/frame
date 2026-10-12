@@ -2,7 +2,7 @@
 kind: refresh
 owner: coordinator
 artifacts:
-  - docs/knowledge/operator-agent-comms-optimization.md
+  - docs/knowledge/fleet-comms.md
   - home/.claude/rules/fleet-output-format.md
   - home/.claude/output-styles/output-fun.md
   - cclio/memory/habit-dima-comms-pacing.md
@@ -11,7 +11,7 @@ groomed: 2026-10-10 (dima)
 was: [refresh-comms]
 ---
 
-# refresh-operator-agent-comms-optimization
+# refresh-fleet-comms
 
 keeps the talk between dima and the fleet cheap to read and cheap to steer: what he asks, how the replies land, what costs him turns.
 
@@ -29,7 +29,7 @@ dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-
 - dima's own trackers (🔭, the stat boards, the 📄 stamp) are info he reads, never cut as noise (dima, 2026-10-10)
 - cheap by default (dima, 2026-10-10: «the scrape is big and expensive, how to optimize it»; the first run cost ~830k sonnet tokens of labelling and ~350k opus of reading):
   - the extract and every number are `jq` + `duckdb`, free; a model only labels or reads
-  - incremental: only prompts since the last run get labelled; labels persist in `~/.local/state/refresh-operator-agent-comms-optimization/labels.parquet`, never re-bought
+  - incremental: only prompts since the last run get labelled; labels persist in `~/.local/state/refresh-fleet-comms/labels.parquet`, never re-bought
   - free labels first: bare approvals, slash commands and status words by pattern; the model labels the rest from the first 330 characters
   - the model labels only pushback and the gap (4–7 values, where agreement holds); the 9 kinds come from patterns where mechanical (approve, command, status); the cheapest model that agrees 85 % with the gold set does it (run 1: sonnet, 91 % and 89 %; haiku failed), jev when its credit is back
   - the reply read samples 100 pairs, opus only there
@@ -42,7 +42,7 @@ dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-
    - labels use the SWE-chat pushback kinds (correction, rejection, failure report) beside ours, so rates compare with published ones, and tag the communication challenge a prompt shows (what can the agent do, what is it doing, did it land, which past decision applies)
    - the gold set in the label store (`gold-<date>.csv`, the disputed prompts labelled by cclio from context) grows by each run's new disputes: a labelling lane counts only at 85 % agreement or more
    - the relational numbers come from `duckdb`, no model: ask → answer latency, unanswered asks, the repair span after a correction, turns per decision, a new agent message before his reply
-5. distill into `docs/knowledge/operator-agent-comms-optimization.md` (the ledger, its trend against the last run) and propose the rule, style and habit lines the run showed wrong; a rule changes only on his word. done: every artifact read and touched or named «unchanged». (open)
+5. distill into `docs/knowledge/fleet-comms.md` (the ledger, its trend against the last run) and propose the rule, style and habit lines the run showed wrong; a rule changes only on his word. done: every artifact read and touched or named «unchanged». (open)
 6. findings print, the shared parts plus this recipe's checklist. done: printed. (template)
 7. log today's line in `log.md`. done: the line is there. (open)
 
@@ -78,7 +78,7 @@ dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-
 
 ## artifacts
 
-- `docs/knowledge/operator-agent-comms-optimization.md` — the ledger: the numbers, their trend run over run, the open levers; the distill merges, never appends a second copy
+- `docs/knowledge/fleet-comms.md` — the ledger: the numbers, their trend run over run, the open levers; the distill merges, never appends a second copy
 - `home/.claude/rules/fleet-output-format.md` — the reply shape; the run proposes line changes, dima approves
 - `home/.claude/output-styles/output-fun.md` — the voice; same, his word only
 - `cclio/memory/habit-dima-comms-pacing.md` — cclio's pacing habits; proposals announced, edited on his word

@@ -1,7 +1,7 @@
 ---
 kind: refresh
 owner: coordinator
-artifacts: [home/.claude/plugin-x/skills/crew-lead/, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, docs/knowledge/spawning-mechanics.md, docs/knowledge/models.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md]
+artifacts: [home/.claude/plugin-x/skills/crew-lead/, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, docs/knowledge/spawning-mechanics.md, docs/knowledge/fleet-models.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md]
 script: none
 was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning, refresh-coordinator]
 ---
@@ -109,7 +109,7 @@ on top of the shared vectors of `x:shape-recipe` (the delta covers the cc change
 - watch, not a vector: the cclio-stack bleed into a `--bg` session — unreproduced since 2026-09-02; a coder's first-reply AGENTS.md line is the detector
 
 **tools — models:**
-- **scope rule: only the latest anthropic version of each line** — opus, fable, sonnet, haiku, plus any announced-but-unshipped successor. a new generation REPLACES the old card in `docs/knowledge/models.md` and `x:crew-lead/models.md` in the same run, never sits beside it (dima, 2026-10-09; was «plus one generation back», 2026-10-01)
+- **scope rule: only the latest anthropic version of each line** — opus, fable, sonnet, haiku, plus any announced-but-unshipped successor. a new generation REPLACES the old card in `docs/knowledge/fleet-models.md` and `x:crew-lead/models.md` in the same run, never sits beside it (dima, 2026-10-09; was «plus one generation back», 2026-10-01)
 - capabilities, benchmarks, price, latency (tok/s, TTFT), context, lifecycle — per model in scope. price: input, 5m and 1h cache writes, the cache-hit multiplier per model, output, long-context billing
 - **effort levels per model:** the supported levels, the vendor default per surface (API vs Claude Code), the vendor's starting points per task type, the lowest-reasoning setting, any independent effort-vs-score and effort-vs-cost curve
 - **model per job:** one verdict per model with evidence for each job we spawn — coding, verifying, codebase exploration, mechanical edits under opus review, research by genre — plus what it must NOT be used for; the output is the task → model map in `models.md`
@@ -131,7 +131,7 @@ on top of the shared three:
 - `cclio/memory/craft-pm.md` — the pm judgment; changes through the memory-edit habit
 - `cclio/memory/habit-cto.md` — the CTO hat; changes through the memory-edit habit
 - `docs/knowledge/spawning-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
-- `docs/knowledge/models.md` — THE model reference; claim tags updated, never deleted, dima's [dima] calls never overwritten
+- `docs/knowledge/fleet-models.md` — THE model reference; claim tags updated, never deleted, dima's [dima] calls never overwritten
 - `home/.claude/rules/fleet-flow.md` — who talks to whom; a role added or retired is his word first
 - `home/.claude/rules/fleet-identity.md` — the crew list; a role added or retired is his word first
 

@@ -3,7 +3,7 @@ kind: refresh
 owner: [coder, coordinator]
 artifacts:
   - home/.claude/plugin-x/skills/guide-go/
-  - docs/knowledge/charm.md
+  - docs/knowledge/go-charm.md
   - x/go/go.mod
   - x/PRODUCT.md
   - x/FTR.md
@@ -61,7 +61,7 @@ from the v1.1 coder's retro, 2026-10-06:
 ## artifacts
 
 - `home/.claude/plugin-x/skills/guide-go/` — the go craft
-- `docs/knowledge/charm.md` — the stack page: each lib with its gh link and job, which widget for which view, our gotchas; `x:guide-go` points at it, dima reads it with `x knowledge read charm`; a contract test fails when `go.mod` gains a charm module it does not list
+- `docs/knowledge/go-charm.md` — the stack page: each lib with its gh link and job, which widget for which view, our gotchas; `x:guide-go` points at it, dima reads it with `x knowledge read charm`; a contract test fails when `go.mod` gains a charm module it does not list
 - `x/go/go.mod` — the pins
 - `x/PRODUCT.md`, `x/FTR.md` — what the cli promises
 

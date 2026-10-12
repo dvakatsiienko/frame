@@ -39,5 +39,5 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 - **big or tiny images → crop with pillow first.** a screenshot up to ~2000 px is read directly (≈3k tokens); a larger image, or a detail under ~20 px (a sprite, an icon, a chart tick), is cropped or zoomed with pillow (`from PIL import Image`, installed) and the crop is read (≈300 tokens) — the harness downscales big images and small text dies
 - **uv** — the Python package manager here; pip in any form is not used
   - `uv pip install <package> --system --break-system-packages`, or `uv venv` + `uv pip install`
-- **app removal, a cask** → `brew uninstall --zap --cask <name>`; the cask traps: `docs/knowledge/macos-admin.md`
+- **app removal, a cask** → `brew uninstall --zap --cask <name>`; the cask traps: `docs/knowledge/macos-apps.md`
 - **app removal, anything else** (app store, dmg, hand-installed) → `mo uninstall` (mole): takes the root-owned bundle and its residue in one pass, where `trash` is refused

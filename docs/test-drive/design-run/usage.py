@@ -3,7 +3,7 @@
 import glob, json, os, sys
 from datetime import datetime
 
-# $/MTok: input, output, cache read (docs/knowledge/models.md); cache writes 1.25x (5m) / 2x (1h) of input
+# $/MTok: input, output, cache read (docs/knowledge/fleet-models.md); cache writes 1.25x (5m) / 2x (1h) of input
 PRICES = {'claude-opus-5-5': (4, 20, 0.20), 'claude-fable-5-1': (10, 50, 0.25), 'claude-sonnet-5-5': (2, 10, 0.20)}
 
 def files(sid):

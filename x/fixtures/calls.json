@@ -569,7 +569,7 @@
             "id": "knowledge-list",
             "matrix": "v1.1: the shelf",
             "mode": "tty",
-            "note": "three files; macos-admin is unverified and flagged"
+            "note": "three files; macos-apps is unverified and flagged"
         },
         {
             "argv": ["knowledge", "list"],

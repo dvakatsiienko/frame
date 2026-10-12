@@ -33,7 +33,7 @@ his standing call, 2026-10-06: a skill nobody fires that costs context is a prun
 1. **groom this recipe** — `x:shape-recipe` step 0. done: dima's word, `groomed:` stamped. (open)
 2. **research** — the vectors below, all lanes at once (`x:shape-recipe`). done: every lane landed or failed out loud. (template)
 3. **the distill** — into `authoring-skill.md`, concise without dropping a useful line; bytes before and after. done: the doc touched or «unchanged», sizes logged. (open)
-4. **the census** — per skill: fire count, last use, token cost, from `refresh-agent-ops`' skill-load measure and `/skill-doctor` (terminal only, dima types it). done: the ranked list in the run file. (script)
+4. **the census** — per skill: fire count, last use, token cost, from `refresh-fleet-ops`' skill-load measure and `/skill-doctor` (terminal only, dima types it). done: the ranked list in the run file. (script)
 5. **the conflict hunt** — every skill against resident memory (root `CLAUDE.md`, `rules/`, cclio leaves) and against its siblings: a duplicated or contradicting line gets one home. done: every hit verdicted. (open)
 6. **the groom**, one skill per round through `x:step-by-step`, census order: (open)
    - a completion criterion that can be checked, or why none

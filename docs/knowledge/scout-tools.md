@@ -15,7 +15,7 @@ one line per tool: date · tool [link] · what it is · stars / last push · ver
 - [ntcharts](https://github.com/NimbleMarkets/ntcharts) · bubbletea charts, v2-ready (our exact pins) · 804★, 2026-10-06 · try · api moved four times in a week, heavy deps; bake-off against hand-rolled lipgloss in `.scratch/x-stats-board/`
 - [teatest](https://github.com/charmbracelet/x/tree/main/exp/teatest/v2) · golden-frame tests for bubbletea · try · v2-ready, no tags; goldens are raw escape streams · `x-stats-board` spec
 - [sequin](https://github.com/charmbracelet/sequin) · decodes ansi into words · try · installed; for golden diffs and redraw bugs · `Brewfile`
-- [harmonica](https://github.com/charmbracelet/harmonica) · spring animation · adopt · in the stack upfront (dima), already pulled in by bubbles' progress · `docs/knowledge/charm.md`
+- [harmonica](https://github.com/charmbracelet/harmonica) · spring animation · adopt · in the stack upfront (dima), already pulled in by bubbles' progress · `docs/knowledge/go-charm.md`
 - [wish](https://github.com/charmbracelet/wish) · serves a bubbletea app over ssh · later · no use case yet · `x/PRODUCT.md`
 - [glamour](https://github.com/charmbracelet/glamour) / [glow](https://github.com/charmbracelet/glow) · the markdown renderer library / the reader app built on it · both in use · glamour inside x's views, glow for dima at the terminal
 - [gum](https://github.com/charmbracelet/gum) · charm widgets as a shell binary · skip for x · the go libs give the same widgets natively; fine for bash scripts

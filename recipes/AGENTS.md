@@ -29,7 +29,7 @@ map back.
 
 kind-first, then the main artifact it refreshes, so the recipe sits beside its target:
 `refresh-guide-go` → `x:guide-go`. a recipe that keeps one fleet member true is named after the member
-(`refresh-crew-coordinator`). its script or verb shares the stem (`refresh-agent-ops` ↔ `x fleet ops`).
+(`refresh-crew-coordinator`). its script or verb shares the stem (`refresh-fleet-ops` ↔ `x fleet ops`).
 two recipes that refresh one file merge.
 
 ## recipe.md

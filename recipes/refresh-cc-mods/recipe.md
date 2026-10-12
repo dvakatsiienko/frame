@@ -70,7 +70,7 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 7. **a state-lifetime audit** — every module variable that must survive a reload lives in `$.state` or `$.store` (the 10-04 keep-hot untick looked like a reload resetting one)
 8. **open leads**: every «unprobed» line in `mods/AGENTS.md` and every open child of FRM-304, re-checked on the current build; the test drive verdict in `docs/test-drive/mods.md`
 9. **why the stash asks went unused** — dima kept them folded; plus the fence check that fires after the reply, costing a second print
-10. **the comms targets** — the ledger in `docs/knowledge/operator-agent-comms-optimization.md`: the numbers each comms mod must move (asks pasted back, status questions, re-asks, the reading load)
+10. **the comms targets** — the ledger in `docs/knowledge/fleet-comms.md`: the numbers each comms mod must move (asks pasted back, status questions, re-asks, the reading load)
 
 ## artifacts
 

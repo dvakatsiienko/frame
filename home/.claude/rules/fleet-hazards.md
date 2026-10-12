@@ -9,7 +9,7 @@ live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
 
 📌 hazards that bite one subject live beside it: frame `AGENTS.md` (git-crypt), `schedule/AGENTS.md` (launchd + tcc), frame
 `.claude/rules/scripts.md` (lefthook, the toolchain), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x:github-contrib`
-(github api reads), `x:notes` (the obsidian vault), `docs/knowledge/macos-admin.md` (brew casks, desktop apps).
+(github api reads), `x:notes` (the obsidian vault), `docs/knowledge/macos-apps.md` (brew casks, desktop apps).
 
 <!-- the file-touch hazards (.gitignore, ci workflows, pnpm manifests) live in fleet-hazards-files.md, a paths: rule that loads with its file (2026-10-11 sweep) -->
 

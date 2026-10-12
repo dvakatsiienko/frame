@@ -2,12 +2,12 @@
 kind: refresh
 owner: coordinator
 artifacts:
-  - docs/knowledge/agent-ops.md
+  - docs/knowledge/fleet-ops.md
   - x/go/fleet_ops.go
 script: x fleet ops
 ---
 
-# refresh-agent-ops
+# refresh-fleet-ops
 
 keeps the fleet's upkeep measured: which recurring checks pay, and what our tool-call chains and raw doors cost.
 
@@ -24,7 +24,7 @@ keeps the fleet's upkeep measured: which recurring checks pay, and what our tool
 1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
 2. research: the brief goes through `pnpm research:lanes <brief>` (exa + parallel) and one opus source lane on the papers, the cc docs and `claude plugin eval`, a fresh agent never a fork. done: every lane returned or marked failed. (script)
 3. analysis: `x fleet ops` plus each saved duckdb measure over the last 7 days, set beside the artifact's numbers. done: the numbers side by side. (script)
-4. distill into `docs/knowledge/agent-ops.md`: clever-merge, keep the verdict, update the numbers and the five; raw lane output stays in `last/` until the next run's distill. done: the artifact carries the new numbers. (open)
+4. distill into `docs/knowledge/fleet-ops.md`: clever-merge, keep the verdict, update the numbers and the five; raw lane output stays in `last/` until the next run's distill. done: the artifact carries the new numbers. (open)
 5. findings print, never silent edits; resolve with dima. done: his word on the proposal. (template)
 6. log today's line in `log.md`. done: the line is there. (open)
 
@@ -55,7 +55,7 @@ the four vectors of the brief, in dima's wording, as written there:
 
 ## artifacts
 
-- `docs/knowledge/agent-ops.md` — the verdict, the five activities, the 7-day numbers
+- `docs/knowledge/fleet-ops.md` — the verdict, the five activities, the 7-day numbers
 - `x/go/fleet_ops.go` — `x fleet ops`: cost per ticket, cclio code edits, boot cost; gains a doors measure later
 
 ## findings

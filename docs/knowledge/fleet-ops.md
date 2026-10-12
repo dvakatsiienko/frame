@@ -1,6 +1,6 @@
-# agent-ops — what is worth measuring and maintaining in the fleet
+# fleet-ops — what is worth measuring and maintaining in the fleet
 
-read when asking «are the coder and verifier chains too long?» or planning agent maintenance; maintained by the `refresh-agent-ops` recipe (`recipes/refresh-agent-ops/`).
+read when asking «are the coder and verifier chains too long?» or planning agent maintenance; maintained by the `refresh-fleet-ops` recipe (`recipes/refresh-fleet-ops/`).
 
 verified-on: 2026-10-07 (three lanes: exa, parallel, an opus source lane; numbers from 189 transcripts, 7 days)
 
