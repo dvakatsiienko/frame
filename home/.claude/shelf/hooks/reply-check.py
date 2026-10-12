@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # Stop hook: reads the reply that just ended and logs every shape the output-format rules ban.
-# it blocks the shapes `main` names (a 📄 stamp off the clock, a ·-joined list, a 🔭 on ccrow, a grill answer fence, an unglossed internal id, cclio's 🔭 without dima while his ask is open); every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
+# it blocks the shapes `main` names (a 📄 stamp off the clock, a ·-joined list, a 🔭 on ccrow, a grill answer fence, an unglossed internal id, a relative link that resolves to nothing, cclio's 🔭 without dima while his ask is open); every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
 # fixed instead of a validator stopping every reply. `pnpm reply-check:report` reads it.
 import json
 import os
 import re
 import sys
 import time
+from urllib.parse import unquote
 
 LOG = os.environ.get("REPLY_CHECK_LOG", os.path.expanduser("~/.local/state/reply-check.tsv"))
 
@@ -40,7 +41,7 @@ MD_LINK_LABEL = re.compile(r"\[[^\]]*\]\([^)]*\)")
 def dead_links(prose: str, cwd: str) -> list[str]:
     dead: list[str] = []
     for m in LOCAL_LINK.finditer(prose):
-        target = LINE_SUFFIX.sub("", m.group(1))
+        target = unquote(LINE_SUFFIX.sub("", m.group(1)))
         if not os.path.exists(os.path.join(cwd, os.path.expanduser(target))):
             dead.append(m.group(1))
     return dead
@@ -259,6 +260,9 @@ def main() -> None:
     bare = [snippet for rule, snippet in hits if rule == "unglossed-id"]
     if bare:
         reasons.append(f"an internal id with no gloss ({', '.join(bare)}): dima reads it cold. give each its three-word gloss at first use — `o56 (the trash ask)` — or say the plain thing instead.")
+    dead = [snippet for rule, snippet in hits if rule == "dead-link"]
+    if dead:
+        reasons.append(f"a relative link that resolves to nothing from this session's folder ({', '.join(dead)}): dima's click opens nothing. write the path from the session folder, or an absolute one.")
     if any(rule == "wait-without-dima" for rule, _ in hits):
         reasons.append("orbit holds an ask dima has not answered, and no 🔭 line names him: end with `🔭 waiting on **🙋‍♂️ dima**` (beside any member it also waits on).")
     if reasons and not event.get("stop_hook_active"):

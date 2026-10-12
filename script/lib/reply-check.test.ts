@@ -262,3 +262,40 @@ describe('reply-check', () => {
         ).toEqual([]);
     });
 });
+
+describe('a relative link that resolves to nothing', () => {
+    function stopIn(reply: string, cwd: string) {
+        const home = mkdtempSync(join(tmpdir(), 'reply-check-'));
+        const run = spawnSync('python3', [hook], {
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                REPLY_CHECK_HOME: home,
+                REPLY_CHECK_LOG: join(home, 'log.tsv'),
+                REPLY_CHECK_NOW: '12:00',
+            },
+            input: JSON.stringify({
+                cwd,
+                last_assistant_message: reply,
+                session_id: 'test',
+            }),
+        });
+        const out = run.stdout.trim();
+        return out ? (JSON.parse(out) as { reason: string }) : undefined;
+    }
+    const folder = mkdtempSync(join(tmpdir(), 'reply-check-cwd-'));
+    mkdirSync(join(folder, 'docs'));
+    writeFileSync(join(folder, 'docs/a b.md'), '');
+
+    it('blocks a link whose path is absent from the session folder', () => {
+        expect(stopIn('see [x](docs/gone.md)', folder)?.reason).toContain(
+            'docs/gone.md',
+        );
+    });
+
+    it('passes a present path, a line suffix and a percent-encoded space', () => {
+        expect(
+            stopIn('[a](docs/a%20b.md) and [b](docs/a%20b.md:3)', folder),
+        ).toBe(undefined);
+    });
+});
