@@ -59,7 +59,7 @@ import {
 
 // label: the repo; name: the session's registry name, when it has one
 type Entry = StashEntry;
-// where an ask card's take, replay and note go, and the prefix its keys carry
+// where an ask card's tick, replay and note go, and the prefix its keys carry
 type AskDoor = {
     prefix: string;
     mark: (a: OrbitAsk, mark: 'accepted' | 'rejected') => void;
@@ -232,7 +232,7 @@ const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
 // every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of cclio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
-// dima's note on a lane's current step and its 🛎️ take, one store key per lane: any board writes it, so the shelf file
+// dima's note on a lane's current step and its 🛎️ tick, one store key per lane: any board writes it, so the shelf file
 // keeps its one writer, cclio's lane op
 const LANE_NOTE = 'lane-note:';
 const LANE_OWNER = '🦉 cclio';
@@ -3423,14 +3423,14 @@ export const register: Register = (on) => {
                                         </Box>
                                     ) : null}
                                     {i === lane.current ? (
-                                        // the note waits as a draft until 🛎️ take sends it; no replay, a note has nothing to redo (dima, 20:51)
+                                        // the note waits as a draft until 🛎️ tick sends it; no replay, a note has nothing to redo (dima, 20:51)
                                         <Button
                                             key={`lane:${lane.id}:take`}
                                             onPress={() =>
                                                 void handleLaneTake(lane.id)
                                             }
                                             variant='primary'>
-                                            {`${lane.isNoteTaken ? '✅' : '🛎️'} take`}
+                                            {`${lane.isNoteTaken ? '✅' : '🛎️'} tick`}
                                         </Button>
                                     ) : null}
                                 </Box>

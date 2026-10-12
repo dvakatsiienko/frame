@@ -382,7 +382,7 @@ test('a taken note clears from the box once cclio took it', async ($, on) => {
         typed,
         (await ui.find({ key: 'lane:l1:note', type: 'Input' }))?.props.value,
         (await ui.find({ key: 'lane:l1:take', type: 'Button' }))?.text,
-    ]).toEqual(['cards first', '', '🛎️ take']);
+    ]).toEqual(['cards first', '', '🛎️ tick']);
 });
 
 test('a step past an item marks it done, never leaving the pointer on a done one', async ($, on) => {
