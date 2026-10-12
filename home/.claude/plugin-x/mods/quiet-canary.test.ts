@@ -48,7 +48,7 @@ test("another nonce's lines and other keys are ignored", () => {
     ).toBe('held');
 });
 
-test('the deadline reads 12 bare, n after --deadline, undefined for anything else', () => {
+test('the deadline reads the default wait + 2 bare, n after --deadline, undefined for anything else', () => {
     expect(
         [
             [],
@@ -59,4 +59,10 @@ test('the deadline reads 12 bare, n after --deadline, undefined for anything els
             ['x', '--deadline', '3'],
         ].map(deadlineOf),
     ).toEqual([12, 3, undefined, undefined, undefined, undefined]);
+});
+
+test('a bare deadline follows the idle wait dima set, falling back to 10 outside 1–60', () => {
+    expect([30, 61, 'x', undefined].map((w) => deadlineOf([], w))).toEqual([
+        32, 12, 12, 12,
+    ]);
 });

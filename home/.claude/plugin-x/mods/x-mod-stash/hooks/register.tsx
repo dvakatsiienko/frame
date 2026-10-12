@@ -453,8 +453,18 @@ const QUIET_STUCK_MS = 2 * 60_000;
 // a send younger than the grace may still be on its way, so the ledger counts it next minute
 const LEDGER_GRACE_MS = 2 * 60_000;
 const LEDGER_EVERY_MS = 60_000;
-// a transcript's SendMessage to cclio, whatever ref follows her name
-const SENT_TO_CCLIO = '"name":"SendMessage","input":\\{"to":"[^"]*cclio';
+
+// every way a member addresses cclio in a SendMessage `to`: her name (any ref after it), the socket a reply copies from
+// her envelope's `from`, her session ids — as one grep -E alternation, read wherever `to` sits in the input
+export function cclioAddress(ids: { pid?: number; sids: string[] }) {
+    const literal = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const alts = [
+        'cclio',
+        ...(ids.pid ? [`cc-socks/${ids.pid}\\.sock`] : []),
+        ...ids.sids.filter(Boolean).map(literal),
+    ];
+    return `"to":"[^"]*(${alts.join('|')})`;
+}
 
 // only cclio's thread holds anything, known by her registry name — never the cwd, which a Bash `cd` moves: her pings
 // passed unheld from 16:43, the hour she worked cd'd into ~/frame (cclio's wisp, 17:06)
@@ -524,6 +534,16 @@ async function quietLedger($: EngineInterface, now: number) {
         : Date.parse(`${day}T00:00:00Z`);
     const home = await $.env.get('HOME');
     const me = await currentId($);
+    const mine = (await $.fs
+        .read(`${home}/.claude/sessions/${proc?.pid}.json`)
+        .then((raw) => JSON.parse(raw) as Record<string, unknown>)
+        .catch(() => ({}))) as Record<string, unknown>;
+    const to = cclioAddress({
+        pid: proc?.pid,
+        sids: [me, text(mine.hostSessionId)].filter(
+            (x): x is string => typeof x === 'string',
+        ),
+    });
     const gaps: QuietGap[] = [];
     for (const r of await registry($)) {
         if (!r.isAlive || r.base.sid === me) continue;
@@ -533,11 +553,11 @@ async function quietLedger($: EngineInterface, now: number) {
             .run([
                 'sh',
                 '-c',
-                'cat "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | grep -E "$3" | sed -n \'s/.*"timestamp":"\\([^"]*\\)".*/\\1/p\'',
+                'cat "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | grep -F \'"name":"SendMessage"\' | grep -E "$3" | sed -n \'s/.*"timestamp":"\\([^"]*\\)".*/\\1/p\'',
                 'sh',
                 home ?? '',
                 r.base.sid,
-                SENT_TO_CCLIO,
+                to,
             ])
             .catch(() => undefined);
         if (!out) continue;
@@ -1308,9 +1328,12 @@ async function markRemote(
     change: Omit<RemoteMark, 'at'>,
 ) {
     const key = markKey(sid, ask.id);
-    const prior = ((await $.store.get(key).catch(() => undefined)) as
-        | RemoteMark
-        | undefined) ?? { mark: ask.mark, steer: ask.steer };
+    // a mark saved before the steer rename reads through steered(), or a cleared steer came back from its old `note`
+    const prior = steered(
+        ((await $.store.get(key).catch(() => undefined)) as
+            | RemoteMark
+            | undefined) ?? { mark: ask.mark, steer: ask.steer },
+    );
     await $.store.set(key, { ...prior, ...change, at: await $.clock.now() });
     await showLanes($, await readLanes($));
 }

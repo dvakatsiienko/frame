@@ -110,7 +110,7 @@ export function lockThought(o: StashOrbit, pieces: OrbitCatch[]): StashOrbit {
     };
 }
 
-// what the session reads for each 🤔: the piece, its hidden steer, his steer
+// what the session reads for each 🤔: the piece, its hidden note, his steer
 export const thinkText = (pieces: OrbitCatch[]) =>
     [
         `🐠 catch: dima pressed 🤔 on ${pieces.length === 1 ? 'a piece' : `${pieces.length} pieces`}: explain each in this reply, plainly, with the why. the piece stays until he clears it.`,

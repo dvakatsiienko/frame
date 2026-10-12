@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { peerPing } from '../hooks/register.tsx';
+import { cclioAddress, peerPing } from '../hooks/register.tsx';
 
 // quiet comms (PK-93): a member's [progress] ping is held in cclio's thread, everything else passes
 
@@ -391,4 +391,24 @@ test('/quiet-canary says FAIL with the reason when the send bounces', async ($, 
         command: 'quiet-canary',
     } as never);
     expect(r.text).toBe('quiet canary c7: FAIL, not reachable');
+});
+
+test('the ledger counts a send to cclio by her name, her socket or her session id, wherever `to` sits', () => {
+    const to = new RegExp(
+        cclioAddress({ pid: 35832, sids: ['local_a955'] }),
+        'u',
+    );
+    const sent = (input: string) =>
+        `{"type":"assistant","message":{"content":[{"type":"tool_use","name":"SendMessage","input":${input}}]}}`;
+    expect(
+        [
+            sent('{"to":"🦉 cclio [271ab4]","message":"x"}'),
+            sent(
+                '{"summary":"s","to":"uds:/tmp/cc-socks/35832.sock","message":"x"}',
+            ),
+            sent('{"message":"x","to":"local_a955"}'),
+            sent('{"to":"🔎 verifier","message":"cclio said so"}'),
+            sent('{"to":"uds:/tmp/cc-socks/999.sock","message":"x"}'),
+        ].map((l) => to.test(l)),
+    ).toEqual([true, true, true, false, false]);
 });

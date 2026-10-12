@@ -26,9 +26,11 @@ export function canaryState(
     return 'none';
 }
 
-// minutes to wait for the flush: 12 (the default idle wait + 2) with no args, `--deadline <n>` alone, else undefined
-export function deadlineOf(argv: string[]) {
-    if (!argv.length) return 12;
+// minutes to wait for the flush: the idle wait dima set (1–60, 10 by default) + 2 with no args, `--deadline <n>` alone,
+// else undefined
+export function deadlineOf(argv: string[], wait?: unknown) {
+    const set = Number(wait);
+    if (!argv.length) return (set >= 1 && set <= 60 ? set : 10) + 2;
     const n = Number(argv[1]);
     return argv.length === 2 && argv[0] === '--deadline' && n > 0
         ? n
@@ -38,17 +40,17 @@ export function deadlineOf(argv: string[]) {
 function readStores() {
     const dir = join(homedir(), '.claude/plugins/store');
     const store: Record<string, unknown> = {};
-    for (const f of readdirSync(dir).filter((n) =>
-        /^x-mod-stash_.*\.json$/.test(n),
-    ))
+    let files: string[] = [];
+    try {
+        files = readdirSync(dir);
+    } catch {}
+    for (const f of files.filter((n) => /^x-mod-stash_.*\.json$/.test(n)))
         try {
             const v = JSON.parse(readFileSync(join(dir, f), 'utf8'));
             for (const [k, lines] of Object.entries(v))
-                if (Array.isArray(lines))
-                    store[k] = [
-                        ...((store[k] as unknown[] | undefined) ?? []),
-                        ...lines,
-                    ];
+                store[k] = Array.isArray(lines)
+                    ? [...((store[k] as unknown[] | undefined) ?? []), ...lines]
+                    : lines;
         } catch {}
     return store;
 }
@@ -68,7 +70,7 @@ async function waitFor(
 }
 
 async function main(argv: string[]) {
-    const deadline = deadlineOf(argv);
+    const deadline = deadlineOf(argv, readStores()['quiet-wait']);
     if (deadline === undefined) {
         console.error('usage: pnpm mods:quiet-canary [--deadline <minutes>]');
         return 2;

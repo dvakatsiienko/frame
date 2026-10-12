@@ -750,3 +750,19 @@ test('a lane steer ticked before the rename joins once, never again', async ($, 
         w.contexts.at(-1)?.some((c) => c.includes('«cards first»')),
     ]).toEqual([true, false]);
 });
+
+test('a glide mark saved before the steer rename clears for good when dima empties its steer', async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK]);
+    w.store.set(`marks:${CODER}:o3`, { at: 1, mark: 'accepted', note: 'old' });
+    await start($);
+    const ui = await board($);
+    await ui.press({ key: 'fold:lane:l1:coder' });
+    await ui.input({ key: 'lane:l1:coder:steer:o3', kind: 'submit', text: '' });
+    const m = w.store.get(`marks:${CODER}:o3`) as Record<string, unknown>;
+    expect([m.mark, m.steer, 'note' in m]).toEqual([
+        'accepted',
+        undefined,
+        false,
+    ]);
+});
