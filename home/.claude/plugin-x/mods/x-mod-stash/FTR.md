@@ -461,6 +461,29 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when its third turn ends, the turn it was made in counted
   - then the row leaves
 
+## /board — 🐠 catch
+
+the facts dima likely missed in long replies, parked by the session under orbit ([FRM-386](https://linear.app/x-com/issue/FRM-386)); an experiment, kept or killed on 2026-10-17 from its counts.
+- makes: one `catch-count:<day>` key in x-mod-stash's `$.store`, the day's 🤔 presses, clears and refused adds; the pieces live in the session's orbit in `$.state`
+
+- 🧭 caught pieces show under 🐠 catch
+  - given a session calls the orbit tool with op `catch` and 1–2 pieces
+  - when dima looks at the board
+  - then a `🐠 catch` section under orbit lists each piece, its bold id leading it, with 🤔, 📋 copy, ✖️ clear and a note box; the section is hidden while empty
+  - decision: the tool's own text says when to catch — a fact already printed that dima likely missed, worth a follow-up; 0 is normal (grill Q1, critic)
+- 🧭 the caps refuse, never drop
+  - given a catch of 3 pieces, or 2 already caught this turn, then the tool refuses it in one line
+  - given 5 pieces held and a 6th added, then the tool refuses it with «clear one first» and the 5 stay
+- 🧭 🤔 gets a piece explained without a turn of its own
+  - given dima presses 🤔, with or without a note
+  - when a turn is running, then the piece, its hidden note and his note join that turn at its next tool result, model-only; when none runs, they join his next prompt
+  - then the piece stays until he clears it; while a turn takes it, its 🤔 reads `🔓 🤔` and its note shows as dim text
+  - decision: the tool-result door, as an orbit tick takes, not `$.session.append`: an append landing after the turn's last read starts a turn of its own (`mods/AGENTS.md`, dima 20:31) — the ticket's «never starts a turn» wins
+- 🧭 clear and copy
+  - given dima presses ✖️ clear, then the piece leaves the section and orbit
+  - given he presses 📋 copy, then the piece's text is on the clipboard of the surface he pressed it on; his prompt box is never touched
+  - decision: `$.ui.copy` takes on both surfaces at cc 2.1.296 (step 0), so no prompt-box fallback
+
 ## /board — 🌔 phases
 
 - ✅ phases: the session's next 7 moves, live

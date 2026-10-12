@@ -2,9 +2,11 @@
 import type { EngineInterface, Register, RenderElement } from 'claude-code';
 
 import type {
+    CatchCount,
     LaneItem,
     OrbitAsk,
     OrbitAssumption,
+    OrbitCatch,
     PublishedAsk,
     RemoteMark,
     StashCap,
@@ -19,15 +21,20 @@ import type {
 } from '../types/stash.d.ts';
 import {
     ASSUMED_MAX,
+    CATCH_HELD_MAX,
+    CATCH_TURN_MAX,
     CHANGED_MARK,
     ORBIT_TEXT_MAX,
     ORBIT_TOOL,
     PLAN_MAX,
     isFresh,
+    isThought,
     joinText,
     lockJoined,
+    lockThought,
     oneLine,
     orbitOp,
+    thinkText,
     turnEnded,
     wrongText,
 } from './orbit.ts';
@@ -69,6 +76,8 @@ const PREFIX = 'asks:';
 // a glide card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
 const MARKS = 'marks:';
 const DIMA_AT = 'dima-at';
+// 🐠 catch's experiment counts, one store key per day, read at its keep-or-kill on 2026-10-17 (FRM-386)
+const CATCH_COUNT = 'catch-count:';
 const AFK_KEY = 'afk';
 const AWAY_NOTE =
     'dima is afk: nothing waits on him. take reversible steps and log them, park every ask in orbit for his return, send no ping.';
@@ -255,6 +264,7 @@ const ORBIT_ABOUT = [
     'op resolve, ids: the asks you answered this turn; they leave orbit when the turn ends.',
     `op follow, id, text, pick: an answered ask that needs another round keeps its id and place with the new text (≤${ORBIT_TEXT_MAX} chars) and a ${CHANGED_MARK} mark before its id.`,
     `op assume, texts: choices you made without asking that would cost a redo if wrong, at most ${ASSUMED_MAX} a turn and ≤${ORBIT_TEXT_MAX} chars each; never routine ones. dima's 🛎️ clears one, ↩️ sends it back with his note.`,
+    `op catch, pieces [{ text, hiddenNote }]: a fact you already printed in this or an earlier reply that dima likely missed and would want to follow up, parked under 🐠 catch; 0 is normal, at most ${CATCH_TURN_MAX} a turn, ${CATCH_HELD_MAX} held until he clears one; text ≤${ORBIT_TEXT_MAX} chars, the fact itself, hiddenNote where it came from so a 🤔 turns later still makes sense. his 🤔 asks you to explain it; never print a «you may have missed» block in a reply.`,
     `op plan, lines: your next ${PLAN_MAX} moves, now, next, then, each readable alone and ≤${ORBIT_TEXT_MAX} chars; set it at each turn end; a plan untouched for ${STALE_TURNS} turns reads stale.`,
     `op glide — ${LANE_OWNER} only, every board draws it: act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
@@ -638,6 +648,36 @@ async function changeAssumed(
     await saveOrbit($, {
         ...o,
         assumed: (o.assumed ?? []).flatMap((x) => {
+            const changed = change(x);
+            return changed ? [changed] : [];
+        }),
+    });
+}
+
+// one day's 🐠 counts in the store: 🤔 presses, clears and refused adds (FRM-386 exit 4b)
+async function countCatch($: EngineInterface, field: keyof CatchCount) {
+    const day = new Date(await $.clock.now()).toISOString().slice(0, 10);
+    const was = ((await $.store
+        .get(CATCH_COUNT + day)
+        .catch(() => undefined)) ?? {}) as Partial<CatchCount>;
+    const next: CatchCount = {
+        clears: was.clears ?? 0,
+        refused: was.refused ?? 0,
+        thinks: was.thinks ?? 0,
+    };
+    next[field] += 1;
+    await $.store.set(CATCH_COUNT + day, next).catch(() => undefined);
+}
+
+// a 🐠 piece's 🤔, note or clear; a locked one is the running turn's and keeps its 🤔
+async function changeCaught(
+    $: EngineInterface,
+    change: (x: OrbitCatch) => OrbitCatch | undefined,
+) {
+    const o = await currentOrbit($);
+    await saveOrbit($, {
+        ...o,
+        caught: (o.caught ?? []).flatMap((x) => {
             const changed = change(x);
             return changed ? [changed] : [];
         }),
@@ -2004,6 +2044,7 @@ export const register: Register = (on) => {
                             enum: [
                                 'add',
                                 'assume',
+                                'catch',
                                 'resolve',
                                 'follow',
                                 'plan',
@@ -2012,6 +2053,17 @@ export const register: Register = (on) => {
                             type: 'string',
                         },
                         pick: { type: 'string' },
+                        pieces: {
+                            items: {
+                                properties: {
+                                    hiddenNote: { type: 'string' },
+                                    text: { type: 'string' },
+                                },
+                                required: ['text'],
+                                type: 'object',
+                            },
+                            type: 'array',
+                        },
                         role: { enum: [...LANE_ROLES], type: 'string' },
                         session: { type: 'string' },
                         text: { type: 'string' },
@@ -2106,9 +2158,13 @@ export const register: Register = (on) => {
         const wrong = isUserTurn
             ? (orbit.assumed ?? []).filter((x) => x.isWrong)
             : [];
-        if (marked.length || wrong.length)
+        // a 🤔 joins his next prompt, or any running turn at its next tool call (as a tick does); a piece stays until cleared
+        const thought = isUserTurn
+            ? (orbit.caught ?? []).filter(isThought)
+            : [];
+        if (marked.length || wrong.length || thought.length)
             await saveOrbit($, {
-                ...lockJoined(orbit, marked),
+                ...lockThought(lockJoined(orbit, marked), thought),
                 assumed: (orbit.assumed ?? []).filter((x) => !x.isWrong),
             });
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
@@ -2137,6 +2193,7 @@ export const register: Register = (on) => {
                 ...(afk ? [AWAY_NOTE] : []),
                 ...(marked.length ? [joinText(marked)] : []),
                 ...(wrong.length ? [wrongText(wrong)] : []),
+                ...(thought.length ? [thinkText(thought)] : []),
                 ...(isFirst ? [PHASES_START] : []),
                 ...(reminder ? [reminder] : []),
                 ...laneStale,
@@ -2588,6 +2645,27 @@ export const register: Register = (on) => {
             void changeAssumed($, (y) =>
                 y.id === id ? { ...y, note: value.trim() || undefined } : y,
             );
+        // 🐠 a 🤔 press toggles until a turn takes it; a locked piece is the running turn's and stays as it is
+        const handleThink = async (id: string) => {
+            const piece = (await currentOrbit($)).caught?.find(
+                (x) => x.id === id,
+            );
+            if (!piece || piece.isLocked) return;
+            if (!piece.isAsked) await countCatch($, 'thinks');
+            await changeCaught($, (x) =>
+                x.id === id ? { ...x, isAsked: !x.isAsked } : x,
+            );
+        };
+        const handleClear = async (id: string) => {
+            await countCatch($, 'clears');
+            await changeCaught($, (x) => (x.id === id ? undefined : x));
+        };
+        const handleCatchNote = (id: string, value: string) =>
+            void changeCaught($, (x) =>
+                x.id === id && !x.isLocked
+                    ? { ...x, note: value.trim() || undefined }
+                    : x,
+            );
         // the note keeps every keystroke, no Enter needed
         const handleNote = (id: string, value: string) =>
             void markAsks($, (x) =>
@@ -2841,6 +2919,95 @@ export const register: Register = (on) => {
                                                     }
                                                     onSubmit={(value: string) =>
                                                         handleAssumedNote(
+                                                            x.id,
+                                                            value,
+                                                        )
+                                                    }
+                                                    placeholder='note'
+                                                    value={x.note ?? ''}
+                                                />
+                                            </Box>
+                                        ) : null}
+                                    </Box>
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                ) : null}
+                {!isFolded('orbit') && o.caught?.length ? (
+                    <Box
+                        flexDirection='column'
+                        key='orbit:caught'
+                        marginTop={1}
+                        rowGap={LINE_GAP}>
+                        <Text bold>🐠 catch</Text>
+                        {o.caught.map((x) => {
+                            return (
+                                <Box
+                                    flexDirection='column'
+                                    key={`orbit:catch:${x.id}`}
+                                    rowGap={LINE_GAP}>
+                                    <Text>
+                                        <Text bold>{x.id}</Text>
+                                        {`: ${x.text}`}
+                                    </Text>
+                                    <Box
+                                        alignItems='center'
+                                        flexDirection='row'
+                                        gap={1}>
+                                        <Button
+                                            key={`orbit:think:${x.id}`}
+                                            onPress={() =>
+                                                void handleThink(x.id)
+                                            }
+                                            {...(x.isAsked || x.isLocked
+                                                ? {
+                                                      variant:
+                                                          'secondary' as const,
+                                                  }
+                                                : { plain: true as const })}>
+                                            {x.isLocked
+                                                ? '🔓 🤔'
+                                                : x.isAsked
+                                                  ? '✅ 🤔'
+                                                  : '🤔'}
+                                        </Button>
+                                        <Button
+                                            key={`orbit:copy:${x.id}`}
+                                            onPress={(press) =>
+                                                void $.ui.copy({
+                                                    surface: press.surface,
+                                                    text: x.text,
+                                                })
+                                            }
+                                            plain>
+                                            📋 copy
+                                        </Button>
+                                        <Button
+                                            key={`orbit:clear:${x.id}`}
+                                            onPress={() =>
+                                                void handleClear(x.id)
+                                            }
+                                            plain>
+                                            ✖️ clear
+                                        </Button>
+                                        {x.isLocked ? (
+                                            x.note ? (
+                                                <Text
+                                                    dimColor>{`💬 «${x.note}»`}</Text>
+                                            ) : null
+                                        ) : Input ? (
+                                            <Box flexShrink={1} minWidth={0}>
+                                                <Input
+                                                    key={`orbit:cnote:${x.id}`}
+                                                    onInput={(value: string) =>
+                                                        handleCatchNote(
+                                                            x.id,
+                                                            value,
+                                                        )
+                                                    }
+                                                    onSubmit={(value: string) =>
+                                                        handleCatchNote(
                                                             x.id,
                                                             value,
                                                         )
@@ -3309,7 +3476,11 @@ export const register: Register = (on) => {
                 isTurn,
                 await readNumber($, 'lines'),
             );
-            if ('deny' in op) return { deny: op.deny };
+            if ('deny' in op) {
+                if ((e as Record<string, unknown>).op === 'catch')
+                    await countCatch($, 'refused');
+                return { deny: op.deny };
+            }
             await saveOrbit($, op.orbit);
             return { result: op.result } as never;
         }
@@ -3327,9 +3498,11 @@ export const register: Register = (on) => {
         const o = await currentOrbit($);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
         const fresh = isPing ? [] : o.asks.filter(isFresh);
-        if (fresh.length) {
-            await saveOrbit($, lockJoined(o, fresh));
-            notes.push(joinText(fresh));
+        const thought = isPing ? [] : (o.caught ?? []).filter(isThought);
+        if (fresh.length || thought.length) {
+            await saveOrbit($, lockThought(lockJoined(o, fresh), thought));
+            if (fresh.length) notes.push(joinText(fresh));
+            if (thought.length) notes.push(thinkText(thought));
         }
         // a lane note dima took while cclio's turn runs joins it here too, as an orbit mark does
         if (!isPing && (await isLaneOwner($)))

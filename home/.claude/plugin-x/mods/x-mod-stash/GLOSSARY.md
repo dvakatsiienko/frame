@@ -81,6 +81,10 @@ _Avoid_: threshold, limit, autocompact %
 A choice the session made without asking that would cost a redo if wrong, shown under «assumed» in orbit; at most 3 a turn, 🛎️ clears it, ↩️ sends it back with a note, an unmarked one fades after 3 turns.
 _Avoid_: guess, assumed ask
 
+**Catch**:
+A fact the session already printed that dima likely missed, parked as one line under 🐠 catch in the board by the orbit tool's `catch` op; at most 2 a turn and 5 held, 🤔 gets it explained, it stays until he clears it.
+_Avoid_: highlight, missed fact, fish
+
 **Enhancer**:
 The band's `🪄` enhance, `⏪` prev and `⏩` new: Haiku rewrites the prompt box once per press; prev and new swap his own text and the enhanced one back without a call.
 _Avoid_: prompt rewriter, polish

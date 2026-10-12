@@ -72,6 +72,6 @@ test('an unmarked assumption leaves at its third turn end, one sent back stays',
 
 test('an unknown op is told every op the tool takes', () => {
     expect(orbitOp(orbitOf(), { op: 'nope' }, false)).toEqual({
-        deny: 'orbit: op is add, assume, resolve, follow, plan or glide, got «nope»',
+        deny: 'orbit: op is add, assume, catch, resolve, follow, plan or glide, got «nope»',
     });
 });

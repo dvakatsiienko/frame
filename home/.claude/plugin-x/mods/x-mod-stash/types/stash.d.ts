@@ -115,11 +115,27 @@ export type OrbitAssumption = {
     note?: string;
 };
 
+// 🐠 a fact the session already printed that dima likely missed (FRM-386): born at a turn count; 🤔 asks for it
+// to be explained, locked while a turn takes it; it stays until he clears it
+export type OrbitCatch = {
+    id: string;
+    text: string;
+    hiddenNote?: string;
+    note?: string;
+    at: number;
+    isAsked?: boolean;
+    isLocked?: boolean;
+};
+
+// the 🐠 catch experiment's counts for one day, read at its keep-or-kill
+export type CatchCount = { thinks: number; clears: number; refused: number };
+
 // the session's orbit: its asks oldest first, the next id's number, the main turns ended so far, and the plan with
 // the turn count it was set at
 export type StashOrbit = {
     asks: OrbitAsk[];
     assumed?: OrbitAssumption[];
+    caught?: OrbitCatch[];
     next: number;
     turns: number;
     plan?: { lines: string[]; at: number };

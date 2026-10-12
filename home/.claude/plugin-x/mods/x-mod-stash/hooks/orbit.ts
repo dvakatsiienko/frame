@@ -3,6 +3,7 @@
 import type {
     OrbitAsk,
     OrbitAssumption,
+    OrbitCatch,
     StashOrbit,
 } from '../types/stash.d.ts';
 
@@ -15,6 +16,9 @@ export const ORBIT_TEXT_MAX = 90;
 // at most this many assumptions a turn, and on the board at once (FRM-382 exit 2: under one a turn on average)
 export const ASSUMED_MAX = 3;
 export const ASSUMED_TURNS = 3;
+// 🐠 catch (FRM-386): at most this many new pieces a turn, and held at once until dima clears one
+export const CATCH_TURN_MAX = 2;
+export const CATCH_HELD_MAX = 5;
 
 export const oneLine = (v: unknown) =>
     typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
@@ -47,6 +51,9 @@ export function turnEnded(o: StashOrbit): StashOrbit {
         assumed: (o.assumed ?? []).filter(
             (x) => x.isWrong || o.turns + 2 - x.at < ASSUMED_TURNS,
         ),
+        caught: o.caught?.map((x) =>
+            x.isLocked ? { ...x, isLocked: false } : x,
+        ),
         turns: o.turns + 1,
     };
 }
@@ -61,6 +68,32 @@ export const wrongText = (wrong: OrbitAssumption[]) =>
         ...wrong.map(
             (x) =>
                 `- ${x.id} wrong assumption: ${x.text}` +
+                (x.note ? ` · his note: «${x.note}»` : ''),
+        ),
+    ].join('\n');
+
+// the 🤔 pieces no turn has taken yet
+export const isThought = (x: OrbitCatch) => Boolean(x.isAsked) && !x.isLocked;
+
+// a turn takes the 🤔 pieces once: they lock to it and stay held until dima clears them
+export function lockThought(o: StashOrbit, pieces: OrbitCatch[]): StashOrbit {
+    const ids = new Set(pieces.map((x) => x.id));
+    return {
+        ...o,
+        caught: o.caught?.map((x) =>
+            ids.has(x.id) ? { ...x, isAsked: false, isLocked: true } : x,
+        ),
+    };
+}
+
+// what the session reads for each 🤔: the piece, its hidden note, his note
+export const thinkText = (pieces: OrbitCatch[]) =>
+    [
+        `🐠 catch: dima pressed 🤔 on ${pieces.length === 1 ? 'a piece' : `${pieces.length} pieces`}: explain each in this reply, plainly, with the why. the piece stays until he clears it.`,
+        ...pieces.map(
+            (x) =>
+                `- ${x.id}: ${x.text}` +
+                (x.hiddenNote ? ` · your note: «${x.hiddenNote}»` : '') +
                 (x.note ? ` · his note: «${x.note}»` : ''),
         ),
     ].join('\n');
@@ -157,6 +190,48 @@ export function orbitOp(
                 result: `assumed ${added.map((x) => x.id).join(', ')}; dima sees them under orbit`,
             };
         }
+        case 'catch': {
+            const raw = Array.isArray(input.pieces) ? input.pieces : [];
+            const born = isTurn ? o.turns + 1 : o.turns;
+            const held = o.caught ?? [];
+            let next = o.next;
+            const added: OrbitCatch[] = raw.flatMap((item) => {
+                const v = (item ?? {}) as Record<string, unknown>;
+                const text = oneLine(v.text);
+                if (!text) return [];
+                const hiddenNote = oneLine(v.hiddenNote);
+                return [
+                    {
+                        at: born,
+                        hiddenNote: hiddenNote || undefined,
+                        id: `c${next++}`,
+                        text,
+                    },
+                ];
+            });
+            if (!added.length)
+                return {
+                    deny: 'orbit catch: pieces needs one { text, hiddenNote } or two',
+                };
+            const tooLong = overCap(
+                'catch',
+                added.map((x) => x.text),
+            );
+            if (tooLong) return tooLong;
+            const already = held.filter((x) => x.at === born).length;
+            if (already + added.length > CATCH_TURN_MAX)
+                return {
+                    deny: `orbit catch: at most ${CATCH_TURN_MAX} a turn, ${already} already; 0 is normal, keep the one dima would most want`,
+                };
+            if (held.length + added.length > CATCH_HELD_MAX)
+                return {
+                    deny: `orbit catch: ${held.length} held, at most ${CATCH_HELD_MAX}; clear one first — dima clears them in the board`,
+                };
+            return {
+                orbit: { ...o, caught: [...held, ...added], next },
+                result: `caught ${added.map((x) => x.id).join(', ')}; dima sees them under 🐠 catch, never repeat them in the reply`,
+            };
+        }
         case 'resolve': {
             const ids = idsOf(input.ids);
             const unknown = ids.filter(
@@ -225,7 +300,7 @@ export function orbitOp(
         }
         default:
             return {
-                deny: `orbit: op is add, assume, resolve, follow, plan or glide, got «${String(input.op)}»`,
+                deny: `orbit: op is add, assume, catch, resolve, follow, plan or glide, got «${String(input.op)}»`,
             };
     }
 }
