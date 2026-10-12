@@ -286,6 +286,50 @@ let isWaker = false;
 let shown: Record<string, boolean> = {};
 let isSettingsOpen = false;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
+// a field's text as typed, ahead of its save: a redraw that carried the stored value before the last keystroke's save
+// landed wrote an older string into the field and threw the caret (dima, 16:15: «a caret drifts and breaks the words»)
+export type FieldDraft = {
+    text: string;
+    base: string;
+    sent: string[];
+    isLanded: boolean;
+};
+const drafts = new Map<string, FieldDraft>();
+// the field draws its draft while the stored value is one it typed itself, or — until one of its saves has landed — the
+// value it started from (a knob refuses a half-typed «0.»); any other value (a note cleared after a follow, a lock) is
+// from outside: it drops the draft and draws the stored one
+export const fieldText = (draft: FieldDraft | undefined, saved: string) =>
+    draft &&
+    (draft.sent.includes(saved) || (!draft.isLanded && saved === draft.base))
+        ? draft.text
+        : saved;
+export const typedInto = (
+    draft: FieldDraft | undefined,
+    saved: string,
+    text: string,
+): FieldDraft => {
+    const live =
+        draft && fieldText(draft, saved) === draft.text ? draft : undefined;
+    return {
+        base: live?.base ?? saved,
+        isLanded: (live?.isLanded ?? false) || !!live?.sent.includes(saved),
+        sent: [...(live?.sent ?? []).slice(-50), text],
+        text,
+    };
+};
+function field(key: string, saved: string) {
+    const draft = drafts.get(key);
+    if (draft && !draft.isLanded && draft.sent.includes(saved))
+        drafts.set(key, { ...draft, isLanded: true });
+    const value = fieldText(drafts.get(key), saved);
+    if (value === saved) drafts.delete(key);
+    return {
+        type: (text: string) =>
+            drafts.set(key, typedInto(drafts.get(key), saved, text)),
+        value,
+    };
+}
+
 let turnTools = 0;
 let isNudged = false;
 // the phases nudge fires only on a turn that did real work: an edit, a spawn or a stop, a commit, a lane move — a q&a
@@ -2726,13 +2770,18 @@ export const register: Register = (on) => {
                         <Box flexShrink={0} width={8}>
                             <Input
                                 key={`knob:${key}`}
-                                onInput={(text) =>
-                                    void setKnobNumber($, name, text)
-                                }
+                                onInput={(text) => {
+                                    field(`knob:${key}`, String(value)).type(
+                                        text,
+                                    );
+                                    void setKnobNumber($, name, text);
+                                }}
                                 onSubmit={(text) =>
                                     void setKnobNumber($, name, text)
                                 }
-                                value={String(value)}
+                                value={
+                                    field(`knob:${key}`, String(value)).value
+                                }
                             />
                         </Box>
                         <Text
@@ -2814,17 +2863,26 @@ export const register: Register = (on) => {
                         <Box flexShrink={0} width={8}>
                             <Input
                                 key='compact-at'
-                                onInput={(value) =>
-                                    void setCompactAt($, value, true)
-                                }
+                                onInput={(value) => {
+                                    field(
+                                        'compact-at',
+                                        meter?.compactAt === undefined
+                                            ? ''
+                                            : String(meter.compactAt),
+                                    ).type(value);
+                                    void setCompactAt($, value, true);
+                                }}
                                 onSubmit={(value) =>
                                     void setCompactAt($, value)
                                 }
                                 placeholder='70'
                                 value={
-                                    meter?.compactAt === undefined
-                                        ? ''
-                                        : String(meter.compactAt)
+                                    field(
+                                        'compact-at',
+                                        meter?.compactAt === undefined
+                                            ? ''
+                                            : String(meter.compactAt),
+                                    ).value
                                 }
                             />
                         </Box>
@@ -3098,12 +3156,23 @@ export const register: Register = (on) => {
                         <Box flexShrink={1} minWidth={0}>
                             <Input
                                 key={`${door.prefix}:note:${a.id}`}
-                                onInput={(value: string) => door.note(a, value)}
+                                onInput={(value: string) => {
+                                    field(
+                                        `${door.prefix}:note:${a.id}`,
+                                        a.note ?? '',
+                                    ).type(value);
+                                    door.note(a, value);
+                                }}
                                 onSubmit={(value: string) =>
                                     door.note(a, value)
                                 }
                                 placeholder='note'
-                                value={a.note ?? ''}
+                                value={
+                                    field(
+                                        `${door.prefix}:note:${a.id}`,
+                                        a.note ?? '',
+                                    ).value
+                                }
                             />
                         </Box>
                     ) : null}
@@ -3210,12 +3279,18 @@ export const register: Register = (on) => {
                                             <Box flexShrink={1} minWidth={0}>
                                                 <Input
                                                     key={`orbit:anote:${x.id}`}
-                                                    onInput={(value: string) =>
+                                                    onInput={(
+                                                        value: string,
+                                                    ) => {
+                                                        field(
+                                                            `orbit:anote:${x.id}`,
+                                                            x.note ?? '',
+                                                        ).type(value);
                                                         handleAssumedNote(
                                                             x.id,
                                                             value,
-                                                        )
-                                                    }
+                                                        );
+                                                    }}
                                                     onSubmit={(value: string) =>
                                                         handleAssumedNote(
                                                             x.id,
@@ -3223,7 +3298,12 @@ export const register: Register = (on) => {
                                                         )
                                                     }
                                                     placeholder='note'
-                                                    value={x.note ?? ''}
+                                                    value={
+                                                        field(
+                                                            `orbit:anote:${x.id}`,
+                                                            x.note ?? '',
+                                                        ).value
+                                                    }
                                                 />
                                             </Box>
                                         ) : null}
@@ -3299,12 +3379,18 @@ export const register: Register = (on) => {
                                             <Box flexShrink={1} minWidth={0}>
                                                 <Input
                                                     key={`orbit:cnote:${x.id}`}
-                                                    onInput={(value: string) =>
+                                                    onInput={(
+                                                        value: string,
+                                                    ) => {
+                                                        field(
+                                                            `orbit:cnote:${x.id}`,
+                                                            x.note ?? '',
+                                                        ).type(value);
                                                         handleCatchNote(
                                                             x.id,
                                                             value,
-                                                        )
-                                                    }
+                                                        );
+                                                    }}
                                                     onSubmit={(value: string) =>
                                                         handleCatchNote(
                                                             x.id,
@@ -3312,7 +3398,12 @@ export const register: Register = (on) => {
                                                         )
                                                     }
                                                     placeholder='note'
-                                                    value={x.note ?? ''}
+                                                    value={
+                                                        field(
+                                                            `orbit:cnote:${x.id}`,
+                                                            x.note ?? '',
+                                                        ).value
+                                                    }
                                                 />
                                             </Box>
                                         ) : null}
@@ -3420,12 +3511,16 @@ export const register: Register = (on) => {
                                         <Box flexShrink={1} minWidth={0}>
                                             <Input
                                                 key={`lane:${lane.id}:note`}
-                                                onInput={(value: string) =>
+                                                onInput={(value: string) => {
+                                                    field(
+                                                        `lane:${lane.id}:note`,
+                                                        lane.note ?? '',
+                                                    ).type(value);
                                                     void handleLaneNote(
                                                         lane.id,
                                                         value,
-                                                    )
-                                                }
+                                                    );
+                                                }}
                                                 onSubmit={(value: string) =>
                                                     void handleLaneNote(
                                                         lane.id,
@@ -3433,7 +3528,12 @@ export const register: Register = (on) => {
                                                     )
                                                 }
                                                 placeholder='note'
-                                                value={lane.note ?? ''}
+                                                value={
+                                                    field(
+                                                        `lane:${lane.id}:note`,
+                                                        lane.note ?? '',
+                                                    ).value
+                                                }
                                             />
                                         </Box>
                                     ) : null}
