@@ -250,8 +250,8 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
     const widths = (await ui.findAll({ type: 'Box' }))
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
-    // ticket, ctx, state and its emoji cell, asks
-    expect(widths).toEqual([9, 10, 9, 3, 4, 9, 10, 9, 3, 4]);
+    // ticket, ctx, state, asks
+    expect(widths).toEqual([9, 10, 9, 4, 9, 10, 9, 4]);
 });
 
 test('a session inside a long shell command reads 🐚 with its time', async ($, on) => {
@@ -1174,4 +1174,16 @@ test('every dot comes from the palette, the same name keeping the same hue', () 
         ),
         huesOf(names),
     ]).toEqual([true, hues]);
+});
+
+test("a row's state emoji sits against its time, both right-aligned (dima, 22:11)", async ($, on) => {
+    fleet(on);
+    const ui = await board($);
+    const cell = (await ui.findAll({ type: 'Box' })).find(
+        (b) => b.props.width === 9 && (b.children ?? []).length === 2,
+    );
+    expect([
+        cell?.props.justifyContent,
+        (cell?.children ?? []).map((c) => (c as { type?: string }).type),
+    ]).toEqual(['flex-end', ['Text', 'Text']]);
 });

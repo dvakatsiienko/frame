@@ -538,3 +538,14 @@ test('with nothing caught the section is hidden', async ($, on) => {
     const ui = await board($);
     expect(await ui.find({ text: '🐠 catch', type: 'Text' })).toBe(undefined);
 });
+
+test('the 🐠 catch switch in settings hides the shelf on the board', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await catchOf($, 'f1');
+    const shown = (await piecesShown(ui)).length;
+    w.store.set('shown', { 'stash.catch': false });
+    await w.clock.advance(4000);
+    expect([shown, (await piecesShown(ui)).length]).toEqual([1, 0]);
+});

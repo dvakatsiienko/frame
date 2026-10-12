@@ -182,6 +182,7 @@ const PARTS = [
     },
     { group: 'stash · board', key: 'stash.orbit', label: '🪐 orbit asks' },
     { group: 'stash · board', key: 'stash.assumed', label: 'assumed section' },
+    { group: 'stash · board', key: 'stash.catch', label: '🐠 catch' },
     { group: 'stash · board', key: 'stash.phases', label: '🌔 phases' },
     { group: 'stash · board', key: 'stash.glide', label: '🛼 glide' },
     {
@@ -2581,8 +2582,6 @@ const span = (ms: number) => {
 };
 
 // each fact column's width in cells, sized to its usual reading — `🪐 12`, `FRM-306`, `ctx 54%`, `idle 12m` — so little slack shows between columns; a longer one is cut at its end
-// the state column's emoji cell
-const STATE_EMOJI = 3;
 const COLUMNS = {
     asks: 4,
     // the ctx pill: 64 px on the desktop, a 10-wide bar in the terminal
@@ -4062,7 +4061,9 @@ export const register: Register = (on) => {
                         })}
                     </Box>
                 ) : null}
-                {!isFolded('orbit') && o.caught?.length ? (
+                {!isFolded('orbit') &&
+                isPartOn('stash.catch') &&
+                o.caught?.length ? (
                     <Box
                         flexDirection='column'
                         key='orbit:caught'
@@ -4818,24 +4819,24 @@ export const register: Register = (on) => {
                             </Box>
                             {/* the state: its emoji in a column of its own, the time right-aligned beside it, so every row lines up
                                 (dima's o106, 21:17) */}
+                            {/* the emoji sits against its time, both right-aligned: they say one thing, the state and how long
+                                (dima, 22:11: «join pace emojis with time») */}
                             <Box
                                 flexDirection='row'
+                                gap={1}
+                                justifyContent='flex-end'
                                 key={`state:${m.sid}`}
                                 width={COLUMNS.state}>
-                                <Box flexShrink={0} width={STATE_EMOJI}>
-                                    <Text>{status.emoji}</Text>
-                                </Box>
-                                <Box flexGrow={1} justifyContent='flex-end'>
-                                    {sinceMs === undefined ? null : (
-                                        <Text
-                                            bold
-                                            color={timeTint}
-                                            dimColor={!timeTint}
-                                            wrap='truncate-end'>
-                                            {span(sinceMs)}
-                                        </Text>
-                                    )}
-                                </Box>
+                                <Text>{status.emoji}</Text>
+                                {sinceMs === undefined ? null : (
+                                    <Text
+                                        bold
+                                        color={timeTint}
+                                        dimColor={!timeTint}
+                                        wrap='truncate-end'>
+                                        {span(sinceMs)}
+                                    </Text>
+                                )}
                             </Box>
                             {/* the asks close the row, always drawn: `🪐 0` dimmed when none (dima, 2026-10-05) */}
                             <Box justifyContent='flex-end' width={COLUMNS.asks}>

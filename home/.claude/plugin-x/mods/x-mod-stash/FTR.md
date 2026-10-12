@@ -231,7 +231,7 @@
   - given a coder runs a long shell command inside a turn
   - when the board draws
   - then its row's state column reads `🐚` and for how long, not `💤`
-  - and the state is an emoji in a column of its own, the time right-aligned beside it, no word: 🐆 busy, 💤 idle, 🐚 shell, ⏳ waiting, 🚧 blocked, 🙋 needs_input, ❔ a status cc adds later (dima's o106, 2026-10-12 21:17)
+  - and the state is an emoji set right against its time, both right-aligned in the state column, no word (dima, 22:11: the emoji belongs to the time, not the ctx pill): 🐆 busy, 💤 idle, 🐚 shell, ⏳ waiting, 🚧 blocked, 🙋 needs_input, ❔ a status cc adds later (dima's o106, 2026-10-12 21:17)
   - source: the registry's `status` and `statusUpdatedAt`, written by cc for every session; `busy` and `shell` count as busy in the head's `n busy`
   - decision: the registry over a flag each x-mod-stash wrote — that flag read idle through FRM-305's long `shell` (2026-10-05)
 - ⬜ each row shows how long its session has idled
@@ -522,6 +522,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 
 cclio's keep-in-mind shelf (catch v2, pocket PK-96, [FRM-386](https://linear.app/x-com/issue/FRM-386)): what dima would otherwise re-ask, never what orbit, phases, sessions, glide or the band show; a test drive. The kinds, when to add each and when it leaves live in [catch.md](catch.md), dima's file; the mod holds shape, cap and persistence, never a clock.
 - makes: `catch-shelf:cclio` in x-mod-stash's `$.store`, her pieces as they stand; one `catch-count:<day>` key, the day's 🤔 presses, clears and refused adds
+- ⬜ a `🐠 catch` switch in ⚙️ settings (board group) hides the shelf on every board, as `assumed section` does (dima, 22:11)
 - decision: cc's built-in `cc-plugin-you-should-know` (a side agent's note above the prompt, off by default) is the thing to compare against at the keep-or-kill — dima tried it 2026-10-12 19:19: it draws in the terminal only, never in the desktop app, where cclio runs
 
 - ⬜ catch.md reaches cclio's context
