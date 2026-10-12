@@ -125,29 +125,50 @@ test('with mobile mode on nothing is held', async ($, on) => {
     expect(w.queued).toHaveLength(1);
 });
 
-/* the arm and the switch */
+/* the switch: on by default, every day, /quiet off reverts */
 
-test('on an odd day the arm is off and a [progress] ping passes', async ($, on) => {
+test('quiet holds on an odd day too, with no switch set', async ($, on) => {
     const w = world(on, { now: ODD });
     await start($);
-    await ping($, '[progress] step 2 landed');
-    expect(w.queued).toHaveLength(1);
-});
-
-test("/quiet on beats an odd day's arm", async ($, on) => {
-    const w = world(on, { now: ODD });
-    await start($);
-    await quiet($, 'on');
     await ping($, '[progress] step 2 landed');
     expect(w.queued).toEqual([]);
 });
 
-test("/quiet off beats an even day's arm", async ($, on) => {
+test('/quiet off passes a [progress] ping', async ($, on) => {
     const w = world(on);
     await start($);
     await quiet($, 'off');
     await ping($, '[progress] step 2 landed');
     expect(w.queued).toHaveLength(1);
+});
+
+test('/quiet on after off holds again', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await quiet($, 'off');
+    await quiet($, 'on');
+    await ping($, '[progress] step 2 landed');
+    expect(w.queued).toEqual([]);
+});
+
+test('/quiet off is the same store switch the settings pane reads', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await quiet($, 'off');
+    expect(w.store.get('quiet-comms')).toBe(false);
+});
+
+test('the log names the arm from the switch', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await quiet($, 'off');
+    await ping($, '[progress] a');
+    const day = new Date(EVEN).toISOString().slice(0, 10);
+    expect(
+        (w.store.get(`quiet-log:${day}`) as Record<string, unknown>[]).map(
+            (l) => l.arm,
+        ),
+    ).toEqual(['off']);
 });
 
 /* the flush */

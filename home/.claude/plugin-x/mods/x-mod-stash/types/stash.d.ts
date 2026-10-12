@@ -136,8 +136,8 @@ export type CatchCount = { thinks: number; clears: number; refused: number };
 
 // quiet comms (PK-93): a [progress] ping from a member, held off cclio's thread until her next turn
 export type QuietPing = { at: number; from: string; text: string };
-// the held pings and the switch; no switch means the day's arm: even days on, odd days off
-export type StashQuiet = { held: QuietPing[]; mode?: 'on' | 'off' };
+// the pings held for cclio's next turn; the on/off switch is a settings knob in the store
+export type StashQuiet = { held: QuietPing[] };
 // one delivery as the a/b reads it
 export type QuietLogLine = {
     at: number;

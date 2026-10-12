@@ -108,6 +108,8 @@ const PHASE_LINES = 'phase-lines';
 const SPEAK_ASSUMED = 'speak-assumed';
 // x-mod-guard reads this key from stash's store file: true drops its rewrite, hint and delegate notes, never a refusal
 const GUARD_SILENT = 'guard-silent';
+// quiet comms on or off, one switch for 🎛️ and `/quiet` alike; on by default, `off` is the revert (dima, 16:53)
+const QUIET_ON = 'quiet-comms';
 const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
 const LINES = { max: 7, min: 5 } as const;
 // every 🎛️ knob in one table: its store key and its default; a number knob its range too. a missing or broken value reads
@@ -116,6 +118,7 @@ const SWITCHES = {
     always: { key: BREATH_PREVIEW, of: false },
     breathe: { key: BREATHE, of: true },
     colour: { key: COLOUR, of: false },
+    quiet: { key: QUIET_ON, of: true },
     silent: { key: GUARD_SILENT, of: false },
     speak: { key: SPEAK_ASSUMED, of: true },
 } as const;
@@ -444,10 +447,6 @@ async function isQuietHome($: EngineInterface) {
         return false;
     }
 }
-
-// the switch beats the day's arm: even days on, odd days off, so the same lanes see both
-export const quietArm = (now: number, mode?: StashQuiet['mode']) =>
-    mode ? mode === 'on' : new Date(now).getDate() % 2 === 0;
 
 // a peer delivery's body and sender: a cli peer's envelope names it `from-name`, a desktop one `name` (probe, 14:49)
 export function peerPing(text: string) {
@@ -2404,7 +2403,7 @@ export const register: Register = (on) => {
             await $.command
                 .register({
                     description:
-                        "quiet comms: `/quiet on` holds members' [progress] pings off this thread, `off` passes all, `auto` follows the day's a/b arm; bare shows it",
+                        "quiet comms: `/quiet on` holds members' [progress] pings off this thread, `off` passes them all; bare shows it",
                     name: 'quiet',
                 })
                 .catch(() =>
@@ -2702,7 +2701,7 @@ export const register: Register = (on) => {
         const now = await $.clock.now();
         const { body, from, tag } = peerPing(e.text);
         const q = await quietOf($);
-        const isOn = quietArm(now, q.mode);
+        const isOn = await readSwitch($, 'quiet');
         const isMobile = (await $.state.get(MOBILE)).value === true;
         const isBusyNow =
             (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
@@ -2728,21 +2727,16 @@ export const register: Register = (on) => {
 
     on('command.run', { command: 'quiet' }, async ($, e) => {
         const arg = e.args.trim();
-        const q = await quietOf($);
-        const now = await $.clock.now();
-        if (arg === 'on' || arg === 'off' || arg === 'auto') {
-            await saveQuiet($, {
-                ...q,
-                mode: arg === 'auto' ? undefined : arg,
-            });
-            const isOn = quietArm(now, arg === 'auto' ? undefined : arg);
+        if (arg === 'on' || arg === 'off') {
+            await $.store.set(QUIET_ON, arg === 'on');
+            $.ui.invalidate('ui.render');
             return {
-                text: `quiet comms ${isOn ? 'on' : 'off'}${arg === 'auto' ? " (the day's arm)" : ''}: ${isOn ? "members' [progress] pings wait for your next turn" : 'every member ping passes'}`,
+                text: `quiet comms ${arg}: ${arg === 'on' ? "members' [progress] pings wait for your next turn" : 'every member ping passes'}`,
             };
         }
-        const isOn = quietArm(now, q.mode);
+        const isOn = await readSwitch($, 'quiet');
         return {
-            text: `quiet comms ${isOn ? 'on' : 'off'} (${q.mode ? 'switched' : "the day's arm"}), ${q.held.length} held; /quiet on | off | auto`,
+            text: `quiet comms ${isOn ? 'on' : 'off'}, ${(await quietOf($)).held.length} held; /quiet on | off${arg ? ` («${arg}» is neither)` : ''}`,
         };
     });
 

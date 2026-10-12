@@ -86,7 +86,7 @@ A fact the session already printed that dima likely missed, parked as one line u
 _Avoid_: highlight, missed fact, fish
 
 **Quiet comms**:
-cclio's thread holding a member's `[progress]` ping until her next turn instead of starting one; every other tag passes; `/quiet` is its one switch, the day its a/b arm.
+cclio's thread holding a member's `[progress]` ping until her next turn instead of starting one; every other tag passes; on by default, `/quiet off` (or 🎛️) its revert.
 _Avoid_: mute, silent mode, filter
 
 **Enhancer**:
