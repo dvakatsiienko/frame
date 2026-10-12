@@ -74,3 +74,24 @@ body, in this order. each section holds only its own kind of line:
 ## the check
 
 `script/lib/recipe-shape.test.ts` runs in the pre-commit `pnpm test` and proves this file's shape on every recipe. it also catches drift in content: a line restating `x:shape-recipe`'s shared vectors or run steps, and a backticked repo path or `x:<skill>` that does not exist. a change to the shape here lands with its check in the same commit.
+
+## the shared vectors — every refresh run asks these on top of its own (moved from x:shape-recipe, dima o73, 2026-10-12: a list in a skill was read and still missed)
+
+skip one only by naming why it does not fit (a job-market run has no «agent use» of a tool).
+
+every vector's finding, shared or the recipe's own, is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing» — the want's «use what comes back to find mistakes in our own and the fleet's flows» (`recipes/AGENTS.md`).
+
+research, the outside world:
+- **the delta** — changelogs, release notes, new versions and rebrands since the last run's date
+- **audience: agents** — how the tool or practice reaches its best agent use: what an agent should call, read or avoid
+- **good and bad practices** — the do's and don'ts, with the reason
+- **pitfalls** — gotchas, tricky parts, known problem areas, open issues upstream
+- **prior art** — existing tools and solutions for what we do by hand
+- **alternatives** — better tools than ours, already working, so we don't build them; what we could borrow from one we don't adopt whole
+- **established patterns** — what is proven to work elsewhere and can be adopted as is
+- **cost** — price, free tier and quota changes for anything we pay or might pay for
+
+analysis, our own evidence:
+- **what broke for us** — the flawlog (`#dima-caught` first), coder and verifier retros, test-drive logs since the last run
+- **the artifact against reality** — every claim the artifacts hold re-checked on the current build, or marked stale
+- **drift** — vendored or copied files against their recorded upstream commit
