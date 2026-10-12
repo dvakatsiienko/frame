@@ -25,6 +25,9 @@ var (
 const (
 	pushTries = 3
 	pushPause = 2 * time.Second
+	// a peer session's git holds the shared index lock for a moment; commit waits it out before add and commit
+	lockWait  = 30 * time.Second
+	lockPause = 200 * time.Millisecond
 )
 
 /* Verbs */
@@ -86,17 +89,23 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
+	var waited time.Duration
 	if err := r.Step("stage", "git add", func() (string, error) {
 		if len(present) > 0 {
-			if _, err := mustGit("add", append([]string{"add", "-A", "--"}, present...)...); err != nil {
+			added, took, err := lockedGit(append([]string{"add", "-A", "--"}, present...)...)
+			waited += took
+			if err != nil {
 				return "", err
+			}
+			if !added.ok {
+				return "", &Fail{Msg: "git add failed: " + added.log, Next: "git status"}
 			}
 		}
 		if !isMerging() && ok(git(append([]string{"diff", "--cached", "--quiet", "--"}, paths...)...)) {
 			return "", &Fail{Refused: true, Msg: "nothing staged under those paths — empty diff, no commit",
 				Next: "x lane commit <msg-file> -- <paths that changed>"}
 		}
-		return fmt.Sprintf("%s: %s", plural(len(present), "path"), strings.Join(present, ", ")), nil
+		return withWait(waited, fmt.Sprintf("%s: %s", plural(len(present), "path"), strings.Join(present, ", "))), nil
 	}); err != nil {
 		return nil, err
 	}
@@ -165,13 +174,17 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 			if !isMerging() {
 				commitArgs = append(append(commitArgs, "--"), paths...)
 			}
-			committed, _ := git(commitArgs...)
+			committed, took, err := lockedGit(commitArgs...)
+			waited += took
+			if err != nil {
+				return "", err
+			}
 			if !committed.ok {
 				return "", &Fail{Msg: "commit failed — the hook output is above",
 					Next: "x lane commit " + msgFile + " -- " + strings.Join(paths, " "), Log: nonBlank(committed.log)}
 			}
 			sha, err = head()
-			return short(sha) + "  " + firstLine(message), err
+			return withWait(took, short(sha)+"  "+firstLine(message)), err
 		})
 	}
 	// the held files come back whether the hooks passed or refused
@@ -195,7 +208,70 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 	}
 	branch, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Done(fmt.Sprintf("%s on %s, %s", short(sha), branch.out, plural(len(present), "path")), "x lane push --apply")
-	return ordered{{"branch", branch.out}, {"sha", sha}, {"tree", tree}}, nil
+	data := ordered{{"branch", branch.out}, {"sha", sha}, {"tree", tree}}
+	if said := withWait(waited, ""); said != "" {
+		data = append(data, kv{"waited", said})
+	}
+	return data, nil
+}
+
+// lockedGit runs a git that takes the index lock: it waits out a lock a peer holds, and once more when the lock
+// was taken again in the gap between the wait and the run
+func lockedGit(args ...string) (result, time.Duration, error) {
+	took, err := waitIndexLock()
+	if err != nil {
+		return result{}, took, err
+	}
+	got, _ := git(args...)
+	if got.ok || !strings.Contains(got.log, "index.lock': File exists") {
+		return got, took, nil
+	}
+	again, err := waitIndexLock()
+	if err != nil {
+		return result{}, took + again, err
+	}
+	got, _ = git(args...)
+	return got, took + again, nil
+}
+
+// waitIndexLock waits while the repo's index lock exists, up to lockWait; it never removes a lock itself
+func waitIndexLock() (time.Duration, error) {
+	lock, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-path", "index.lock")
+	if err != nil {
+		return 0, err
+	}
+	deadline := lockWait
+	if os.Getenv("X_TEST") != "" {
+		if d, err := time.ParseDuration(os.Getenv("X_LOCK_WAIT")); err == nil {
+			deadline = d
+		}
+	}
+	started := time.Now()
+	for {
+		info, err := os.Stat(lock)
+		if err != nil {
+			return time.Since(started), nil
+		}
+		if time.Since(started) >= deadline {
+			return time.Since(started), &Fail{
+				Msg:  fmt.Sprintf("index lock still held after %s: %s, %s old", deadline, lock, time.Since(info.ModTime()).Round(time.Second)),
+				Next: "ps -A | grep '[g]it ' — a live git: wait and rerun; none: a crash left the lock, check it, then remove it by hand",
+			}
+		}
+		time.Sleep(lockPause)
+	}
+}
+
+// withWait leads a step's line with the wait, when there was one
+func withWait(waited time.Duration, line string) string {
+	if waited < lockPause {
+		return line
+	}
+	said := fmt.Sprintf("index lock held, waited %s", waited.Round(time.Second))
+	if line == "" {
+		return said
+	}
+	return said + "; " + line
 }
 
 type pushTarget struct {

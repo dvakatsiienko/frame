@@ -470,3 +470,56 @@ func TestShimRebuildsABinaryOlderThanItsSource(t *testing.T) {
 		t.Fatalf("got %q — the stale binary ran", out)
 	}
 }
+
+// a peer's git holds the index lock for 2 s, then lets go: the commit waits it out and lands
+func TestCommitWaitsOutABriefIndexLock(t *testing.T) {
+	target := repo(t)
+	write(t, filepath.Join(target, "readme.txt"), "two\n")
+	lock := filepath.Join(target, ".git", "index.lock")
+	write(t, lock, "")
+	go func() {
+		time.Sleep(2 * time.Second)
+		_ = os.Remove(lock)
+	}()
+
+	got := xIn(t, target, nil, "lane", "commit", message(t), "--", "readme.txt")
+
+	if got.code != 0 || got.data["sha"] != gitT(t, target, "rev-parse", "HEAD") {
+		t.Fatalf("exit %d, data %v\n%s", got.code, got.data, got.stdout)
+	}
+	if waited, _ := got.data["waited"].(string); !strings.HasPrefix(waited, "index lock held, waited ") {
+		t.Errorf("waited %q, want one «index lock held, waited» line", waited)
+	}
+}
+
+// a lock nobody lets go of outlives the wait: the verb names it and its age, and leaves it where it is
+func TestCommitFailsOnAStaleIndexLockAndKeepsIt(t *testing.T) {
+	target := repo(t)
+	write(t, filepath.Join(target, "readme.txt"), "two\n")
+	lock := filepath.Join(target, ".git", "index.lock")
+	write(t, lock, "")
+
+	got := xIn(t, target, []string{"X_LOCK_WAIT=300ms"}, "lane", "commit", message(t), "--", "readme.txt")
+
+	if got.code == 0 {
+		t.Fatalf("exit 0, want a failure on the held lock\n%s", got.stdout)
+	}
+	if !strings.Contains(got.stdout, lock) || !strings.Contains(got.stdout, " old") {
+		t.Errorf("the failure names no lock path and age:\n%s", got.stdout)
+	}
+	if !exists(lock) {
+		t.Error("the lock was removed; the verb must leave it for the caller")
+	}
+}
+
+// no lock, no line: a commit that never waited says nothing about waiting
+func TestCommitWithNoIndexLockSaysNothingOfWaiting(t *testing.T) {
+	target := repo(t)
+	write(t, filepath.Join(target, "readme.txt"), "two\n")
+
+	got := xIn(t, target, nil, "lane", "commit", message(t), "--", "readme.txt")
+
+	if _, has := got.data["waited"]; got.code != 0 || has {
+		t.Errorf("exit %d, data %v: want a commit with no waited field", got.code, got.data)
+	}
+}

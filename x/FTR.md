@@ -92,6 +92,12 @@
   - then `go test ./...` in that module, and the repo's `pnpm typecheck` and `pnpm test` for ts, run before the hooks; a red job refuses the commit with its output, and HEAD does not move
   - given any other branch, then no job runs
   - decision: local, before the commit lands; nothing on github, pr branches untouched (dima, cli grill 2026-10-09)
+- ✅ `x lane commit` waits out a peer's index lock
+  - given another git holds the repo's `index.lock`
+  - when `x lane commit` reaches its `add` or its `commit`
+  - then it waits until the lock goes, up to 30 s, and the commit lands with one «index lock held, waited n s» line
+  - given the lock outlives the wait, then the verb fails naming the lock's path and age, and the lock stays
+  - decision: the verb never deletes a lock — a stale one is a crashed git, the caller's to check (PK-97)
 - ✅ `x lane commit` adds `ftr: none` when an app's code moves without its ftr
   - given a commit whose named paths change an app's code (the paths `x lane gate`'s ftr half counts) and not that app's `FTR.md`
   - when `x lane commit` runs
