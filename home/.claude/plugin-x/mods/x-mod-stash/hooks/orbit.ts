@@ -1,10 +1,12 @@
 // orbit's rules as pure steps over one session's orbit: the tool's ops, dima's marks joining a turn, the turn's end.
 // register.tsx owns every $ call: it reads the orbit from $.state, applies a step here, and saves the result.
 import type {
+    LaneItem,
     OrbitAsk,
     OrbitAssumption,
     OrbitCatch,
     StashOrbit,
+    StashPlan,
 } from '../types/stash.d.ts';
 
 export const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
@@ -443,4 +445,56 @@ export function orbitOp(
                 deny: `orbit: op is add, assume, catch, resolve, follow, plan or glide, got «${String(input.op)}»`,
             };
     }
+}
+
+// o84: a row moves one place up or down; the list stays the same set
+export function moved<T>(list: readonly T[], i: number, by: -1 | 1): T[] {
+    const j = i + by;
+    if (i < 0 || j < 0 || i >= list.length || j >= list.length)
+        return [...list];
+    const out = [...list];
+    [out[i], out[j]] = [out[j] as T, out[i] as T];
+    return out;
+}
+
+// dima's hand on the phases card — a reorder or a tick, his steer riding with them — that a turn has not taken yet
+export const hasPlanMark = (p: StashPlan | undefined): p is StashPlan =>
+    Boolean(p && (p.isMoved || p.mark));
+
+// what the session reads once dima's phases mark joins a turn
+export function planText(p: StashPlan) {
+    return [
+        `🌔 phases: dima ${
+            [
+                p.isMoved ? 'reordered your phases' : '',
+                p.mark ? '🛎️ ticked their order' : '',
+            ]
+                .filter(Boolean)
+                .join(' and ') || 'left a steer on your phases'
+        }; take it into account in this reply.`,
+        ...(p.isMoved ? p.lines.map((l, i) => `${i + 1}. ${l}`) : []),
+        ...(p.steer ? [`his steer: «${p.steer}»`] : []),
+    ].join('\n');
+}
+
+// the mark is spent once a turn takes it: the lines stay as dima left them
+export const planTaken = (p: StashPlan): StashPlan => ({
+    at: p.at,
+    lines: p.lines,
+});
+
+// a glide queue order dima set on a board: the item texts after the current step, in his order; a text the lane no
+// longer holds is skipped, a held one he never placed keeps its place at the end
+export function reordered(
+    items: LaneItem[],
+    current: number,
+    order: string[],
+): LaneItem[] {
+    const head = items.slice(0, current + 1);
+    const queue = items.slice(current + 1);
+    const placed = order.flatMap((text) => {
+        const item = queue.find((x) => x.text === text);
+        return item ? [item] : [];
+    });
+    return [...head, ...placed, ...queue.filter((x) => !placed.includes(x))];
 }

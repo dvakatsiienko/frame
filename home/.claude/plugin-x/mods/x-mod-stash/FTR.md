@@ -549,7 +549,7 @@ cclio's keep-in-mind shelf (catch v2, pocket PK-96, [FRM-386](https://linear.app
   - given dima presses 🤔, with or without a steer
   - when a turn is running, then the piece, its hidden note and his steer join that turn at its next tool result, model-only; when none runs, they join his next prompt
   - then the piece stays until it is cleared; while a turn takes it, its 🤔 reads `🔓 🤔`
-  - decision: the tool-result door, as an orbit tick takes, not `$.session.append`: an append landing after the turn's last read starts a turn of its own (`mods/AGENTS.md`, dima 20:31)
+  - decision: the tool-result door, as an orbit tick takes, not `$.session.append`: an append landing after the turn's last read starts a turn of its own (`mods/engine.md`, dima 20:31)
 - ✅ clear and copy
   - given dima presses ✖️, then the piece leaves; given he opens its line and presses 📋 copy, then its text is on the clipboard of the surface he pressed it on
   - decision: `$.ui.copy` takes on both surfaces at cc 2.1.296, so no prompt-box fallback
@@ -637,6 +637,12 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: phases set in the last 2 turns still hold, so a working turn that did not move them stays quiet (cclio's brief 8, 2026-10-12)
   - decision: never a Stop block, never an extra turn (dima's o14, 2026-10-11 11:27)
   - decision: a q&a turn of reads gets no nudge — the 3-turn stale mark covers it; the nudge on every turn drove 235 plan calls in one session (PK-70, dima 00:28: «fewer redundant tool calls, phases still real-time»)
+- ⬜ dima reorders, ticks and steers the phases on the board (o84)
+  - given the session's 🌔 phases card shows its plan
+  - then each line ends in `↑` `↓` at its right edge (the first line no ↑, the last no ↓), and one `🛎️ tick` with a `steer` field sits under the card's head
+  - when dima presses an arrow, then the line moves at once on the board; when he ticks, the button reads `📨 tick` for 5 s, then `✅ tick`
+  - then the move or the tick, his steer riding with them, joins the session's running turn at its next tool call once 5 s pass, or his next prompt at once: one model-only note with the new order and his steer, once
+  - and a steer alone joins nothing; a new plan from the session clears his marks
 - ✅ stale phases are named
   - given the phases were not touched for 3 turns
   - when the next prompt goes
@@ -677,6 +683,12 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
 - ⬜ a lane that moved nothing for 8 of cclio's turns reads stale
   - given the pointer and the done flags unmoved for 8 of cclio's turns, then her next prompt carries «lane <id> «…» moved nothing for n of your turns, stale»; a step that moves nothing keeps the count; no other session nags; with no lane, no lane text
   - decision: 8, not phases' 3 — a lane step spans many turns
+- ⬜ dima reorders a lane's queue from any board (o84)
+  - given a glide card shows steps after the current one
+  - then each of those ends in `↑` `↓` at its right edge (the first queued step no ↑, the last no ↓); done steps and the current one carry none
+  - when dima presses one, then the card shows the new order at once, and `lane-order:<id>` in the store holds it
+  - then cclio's own stash writes it into the lanes file once 5 s pass (at her next tool call), or at her next prompt from dima, and she reads one note naming the new queue; no other session ever writes the file
+  - decision: only the queue moves, so every step before the pointer stays done (dima's o84 shot, 20:25)
 - ⬜ a glide card holds its members' asks (exit 3)
   - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
   - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ tick, 🔁 replay, 🔊 and the steer; a locked one shows its mark and its steer, no control

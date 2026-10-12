@@ -189,7 +189,18 @@ export type StashOrbit = {
     caught?: OrbitCatch[];
     next: number;
     turns: number;
-    plan?: { lines: string[]; at: number };
+    plan?: StashPlan;
+};
+
+// the session's phases: its next moves, the turn count they were set at, and what dima did to them on the board — a
+// reorder, a tick on the order, his steer — waiting, like an orbit tick, until `sendAt` before a turn takes it (o84)
+export type StashPlan = {
+    lines: string[];
+    at: number;
+    isMoved?: boolean;
+    mark?: 'accepted';
+    steer?: string;
+    sendAt?: number;
 };
 
 // 🛼 glide (FRM-385): one live lane of the fleet, kept in one shelf file every board reads and only cclio writes;
@@ -212,6 +223,8 @@ export type StashLane = {
     // dima's steer on the current step: a draft until his take, then it joins cclio's next prompt or running turn once
     steer?: string;
     isSteerTaken?: boolean;
+    // the board's view only: dima's reorder of the queue after the current step, waiting for cclio's stash to apply it
+    isReordered?: boolean;
     history: { at: number; act: string; current: number; done: number }[];
     endedAt?: number;
 };

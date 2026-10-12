@@ -1639,3 +1639,79 @@ test("an ask's row puts its steer before its file link (dima, 20:57)", async ($,
     );
     expect(types.slice(-2)).toEqual(['Box', 'Button']);
 });
+
+/* o84: dima reorders, ticks and steers the phases on the board */
+
+const phaseLines = async (ui: Board) =>
+    (await ui.findAll({ type: 'Text' }))
+        .map((t) => t.text ?? '')
+        .filter((t) => /^[🌕🌔🌓🌒🌑] (?!phases)/u.test(t));
+
+test('a ↑ on a phase moves it up on the board at once', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a', 'next: b', 'then: c'], op: 'plan' });
+    await ui.press({ key: 'plan:1:up' });
+    expect((await phaseLines(ui)).map((t) => t.slice(-1))).toEqual([
+        'b',
+        'a',
+        'c',
+    ]);
+});
+
+test('a reorder joins the running turn once its 5 s pass, the new order listed', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
+    await say($, 'go');
+    await ui.press({ key: 'plan:0:down' });
+    const early =
+        (await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? [];
+    await w.clock.advance(5_000);
+    const late =
+        (await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? [];
+    const again =
+        (await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? [];
+    expect([
+        early.some((c) => /reordered your phases/.test(c)),
+        late.join('\n'),
+        again.some((c) => /reordered your phases/.test(c)),
+    ]).toEqual([
+        false,
+        expect.stringMatching(
+            /reordered your phases[\s\S]*1\. next: b\n2\. now: a/,
+        ),
+        false,
+    ]);
+});
+
+test("a phases tick and its steer ride dima's next prompt", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await ui.press({ key: 'plan:tick' });
+    await ui.input({
+        key: 'plan:steer',
+        kind: 'submit',
+        text: 'a first, it unblocks b',
+    });
+    await w.clock.advance(5_000);
+    await say($, 'go');
+    expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
+        /🛎️ ticked their order[\s\S]*his steer: «a first, it unblocks b»/,
+    );
+});
+
+test('a phases steer alone never joins a turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await ui.input({ key: 'plan:steer', kind: 'submit', text: 'just a note' });
+    await w.clock.advance(5_000);
+    await say($, 'go');
+    expect((w.contexts.at(-1) ?? []).join('\n')).not.toMatch(/🌔 phases: dima/);
+});

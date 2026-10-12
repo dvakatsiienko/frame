@@ -20,6 +20,7 @@ import type {
     StashMember,
     StashMeter,
     StashOrbit,
+    StashPlan,
     StashQuiet,
     StashView,
 } from '../types/stash.d.ts';
@@ -32,6 +33,7 @@ import {
     PLAN_MAX,
     SEND_MS,
     halted,
+    hasPlanMark,
     isDue,
     isFresh,
     isSending,
@@ -39,8 +41,12 @@ import {
     joinText,
     lockJoined,
     lockThought,
+    moved,
     oneLine,
     orbitOp,
+    planTaken,
+    planText,
+    reordered,
     shelved,
     steered,
     steeredOrbit,
@@ -254,6 +260,8 @@ const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
 // dima's steer on a lane's current step and its 🛎️ tick, one store key per lane: any board writes it, so the shelf file
 // keeps its one writer, cclio's lane op
 const LANE_STEER = 'lane-steer:';
+// dima's reorder of a lane's queue (o84): `lane-order:<id>` = { order, at }, any board writes it, cclio's stash applies it
+const LANE_ORDER = 'lane-order:';
 // a lane steer typed before the rename sits under the old prefix: read as a steer, retired at its next write
 const LANE_STEER_OLD = 'lane-note:';
 const LANE_OWNER = '🦉 cclio';
@@ -1464,14 +1472,89 @@ async function changeLaneSteer(
     await showLanes($, await readLanes($));
 }
 
+type LaneOrder = { order: string[]; at: number };
+
+async function laneOrders($: EngineInterface) {
+    const orders: Record<string, LaneOrder> = {};
+    for (const key of await $.store.keys().catch(() => [] as string[]))
+        if (key.startsWith(LANE_ORDER)) {
+            const o = (await $.store.get(key).catch(() => undefined)) as
+                | LaneOrder
+                | undefined;
+            if (o && Array.isArray(o.order))
+                orders[key.slice(LANE_ORDER.length)] = o;
+        }
+    return orders;
+}
+
+// a ↑ or ↓ on a queued step: the order as this board shows it, one place moved; the current step and the done ones stay
+async function moveLaneStep(
+    $: EngineInterface,
+    lane: StashLane,
+    i: number,
+    by: -1 | 1,
+) {
+    const queue = moved(
+        lane.items.map((x) => x.text),
+        i,
+        by,
+    ).slice(lane.current + 1);
+    await $.store.set(LANE_ORDER + lane.id, {
+        at: await $.clock.now(),
+        order: queue,
+    });
+    await showLanes($, await readLanes($));
+    $.clock.after(SEND_MS, () => $.ui.invalidate('ui.render'));
+}
+
+// cclio's stash, the lanes' one writer, applies dima's queue orders: all of them on his own prompt, else those past
+// their sending window; each becomes one note for her
+async function applyLaneOrders($: EngineInterface, isAll: boolean) {
+    const orders = await laneOrders($);
+    const now = await $.clock.now();
+    const due = Object.entries(orders).filter(
+        ([, o]) => isAll || now >= o.at + SEND_MS,
+    );
+    if (!due.length) return [];
+    const lanes = await readLanes($);
+    const notes: string[] = [];
+    const next = lanes.map((l) => {
+        const o = due.find(([id]) => id === l.id)?.[1];
+        if (!o || l.endedAt) return l;
+        const items = reordered(l.items, l.current, o.order);
+        notes.push(
+            `🛼 glide: dima reordered lane ${l.id} «${l.title}»; its queue after the current step now reads: ${items
+                .slice(l.current + 1)
+                .map((x) => x.text)
+                .join(' → ')}`,
+        );
+        return { ...l, items };
+    });
+    for (const [id] of due) await $.store.delete(LANE_ORDER + id);
+    await writeLanes($, next);
+    return notes;
+}
+
 // the live lanes into this session's state, only when they changed: a write redraws the board; each carries its steer
+// and dima's pending queue order
 let lanesShown = '';
 async function showLanes($: EngineInterface, lanes: StashLane[]) {
     const steers = await laneSteers($);
+    const orders = await laneOrders($);
     const live = lanes
         .filter((l) => !l.endedAt)
         .map((l) => ({
             ...l,
+            ...(orders[l.id]
+                ? {
+                      isReordered: true,
+                      items: reordered(
+                          l.items,
+                          l.current,
+                          orders[l.id]?.order ?? [],
+                      ),
+                  }
+                : {}),
             isSteerTaken: steers[l.id]?.isTaken,
             steer: steers[l.id]?.steer,
         }));
@@ -2961,6 +3044,13 @@ export const register: Register = (on) => {
                     `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`,
             );
         const laneSteers = isUserTurn ? await takeLaneSteers($, lanes) : [];
+        const laneOrdered =
+            isUserTurn && isOwner ? await applyLaneOrders($, true) : [];
+        // dima's own prompt sends his phases mark at once, as it sends a tick still sending
+        const planMark =
+            isUserTurn && hasPlanMark(orbit.plan) ? orbit.plan : undefined;
+        if (planMark)
+            await saveOrbit($, { ...orbit, plan: planTaken(planMark) });
         // held member pings ride the next prompt of any origin, once (quiet comms)
         const quiet = await quietOf($);
         if (quiet.held.length) {
@@ -2981,6 +3071,8 @@ export const register: Register = (on) => {
                 ...(reminder ? [reminder] : []),
                 ...laneStale,
                 ...laneSteers,
+                ...laneOrdered,
+                ...(planMark ? [planText(planMark)] : []),
                 ...(quiet.held.length ? [quietNote(quiet.held)] : []),
                 ...(tickets ? [tickets] : []),
             ],
@@ -4212,6 +4304,62 @@ export const register: Register = (on) => {
                 </Box>
             );
         };
+        // o84: dima's hand on this session's phases — a move, a tick, a steer — waits SEND_MS like an orbit tick
+        const changePlan = async (
+            change: (p: StashPlan) => StashPlan,
+            isSend = true,
+        ) => {
+            const was = await currentOrbit($);
+            if (!was.plan) return;
+            const sendAt = isSend
+                ? (await $.clock.now()) + SEND_MS
+                : was.plan.sendAt;
+            await saveOrbit($, {
+                ...was,
+                plan: { ...change(was.plan), sendAt },
+            });
+            if (isSend)
+                $.clock.after(SEND_MS, () => $.ui.invalidate('ui.render'));
+        };
+        const handlePlanMove = (i: number, by: -1 | 1) =>
+            void changePlan((p) => ({
+                ...p,
+                isMoved: true,
+                lines: moved(p.lines, i, by),
+            }));
+        const handlePlanTick = () =>
+            void changePlan((p) => ({
+                ...p,
+                mark: p.mark ? undefined : 'accepted',
+            }));
+        const handlePlanSteer = (value: string) =>
+            changePlan(
+                (p) => ({ ...p, steer: value.trim() || undefined }),
+                false,
+            );
+        const arrowsJSX = (
+            key: string,
+            canUp: boolean,
+            canDown: boolean,
+            onMove: (by: -1 | 1) => void,
+        ) => (
+            <Box
+                flexDirection='row'
+                flexShrink={0}
+                gap={1}
+                key={`${key}:arrows`}>
+                {canUp ? (
+                    <Button key={`${key}:up`} onPress={() => onMove(-1)} plain>
+                        ↑
+                    </Button>
+                ) : null}
+                {canDown ? (
+                    <Button key={`${key}:down`} onPress={() => onMove(1)} plain>
+                        ↓
+                    </Button>
+                ) : null}
+            </Box>
+        );
         const handleLaneSteer = (id: string, value: string) =>
             changeLaneSteer($, id, (n) => ({
                 ...n,
@@ -4335,6 +4483,21 @@ export const register: Register = (on) => {
                                             ) : null}
                                         </Box>
                                     ) : null}
+                                    {/* the queue after the current step reorders at the row's right edge (dima's o84) */}
+                                    {i > lane.current
+                                        ? arrowsJSX(
+                                              `lane:${lane.id}:${i}`,
+                                              i > lane.current + 1,
+                                              i < lane.items.length - 1,
+                                              (by) =>
+                                                  void moveLaneStep(
+                                                      $,
+                                                      lane,
+                                                      i,
+                                                      by,
+                                                  ),
+                                          )
+                                        : null}
                                 </Box>
                             ))}
                       {isFolded(`lane:${lane.id}`)
@@ -4361,35 +4524,102 @@ export const register: Register = (on) => {
                               </Text>
                               {foldJSX('phases')}
                           </Box>
+                          {/* one tick and one steer for the whole order (dima's o84): tick = agreed, the steer says why */}
+                          {isFolded('phases') ? null : (
+                              <Box
+                                  alignItems='center'
+                                  flexDirection='row'
+                                  gap={1}
+                                  key='plan:act'>
+                                  <Button
+                                      key='plan:tick'
+                                      onPress={handlePlanTick}
+                                      variant='primary'>
+                                      {`${o.plan.mark ? (isSending(o.plan, drawnAt) ? '📨' : '✅') : '🛎️'} tick`}
+                                  </Button>
+                                  {Input ? (
+                                      <Box flexGrow={1} minWidth={0}>
+                                          <Input
+                                              key={
+                                                  field(
+                                                      $,
+                                                      'plan:steer',
+                                                      o.plan.steer ?? '',
+                                                  ).key
+                                              }
+                                              onInput={(value: string) => {
+                                                  field(
+                                                      $,
+                                                      'plan:steer',
+                                                      o.plan?.steer ?? '',
+                                                  ).type(value, () =>
+                                                      handlePlanSteer(value),
+                                                  );
+                                              }}
+                                              onSubmit={(value: string) =>
+                                                  void handlePlanSteer(value)
+                                              }
+                                              placeholder='steer'
+                                              value={
+                                                  field(
+                                                      $,
+                                                      'plan:steer',
+                                                      o.plan.steer ?? '',
+                                                  ).value
+                                              }
+                                          />
+                                      </Box>
+                                  ) : null}
+                              </Box>
+                          )}
                           {(isFolded('phases') ? [] : o.plan.lines).map(
                               (line, i) => {
                                   // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
                                   const lead = line.match(PLAN_LEAD);
                                   return (
                                       // the moon fills by nearness, the then lines dim (dima, 20:58); only the now lead is green (21:08)
-                                      <Text
-                                          dimColor={i > 1}
+                                      <Box
+                                          alignItems='center'
+                                          flexDirection='row'
+                                          gap={1}
                                           // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
                                           key={`plan:${i}`}>
-                                          {`${PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
-                                          {lead ? (
-                                              <Text
-                                                  bold
-                                                  color={
-                                                      i === 0
-                                                          ? METER_TINTS.calm5h
-                                                          : undefined
-                                                  }>
-                                                  {lead[0]}
+                                          <Box
+                                              flexGrow={1}
+                                              flexShrink={1}
+                                              minWidth={0}>
+                                              <Text dimColor={i > 1}>
+                                                  {`${PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
+                                                  {lead ? (
+                                                      <Text
+                                                          bold
+                                                          color={
+                                                              i === 0
+                                                                  ? METER_TINTS.calm5h
+                                                                  : undefined
+                                                          }>
+                                                          {lead[0]}
+                                                      </Text>
+                                                  ) : null}
+                                                  {linkedJSX(
+                                                      lead
+                                                          ? line.slice(
+                                                                lead[0].length,
+                                                            )
+                                                          : line,
+                                                      `plan:${i}`,
+                                                  )}
                                               </Text>
-                                          ) : null}
-                                          {linkedJSX(
-                                              lead
-                                                  ? line.slice(lead[0].length)
-                                                  : line,
+                                          </Box>
+                                          {arrowsJSX(
                                               `plan:${i}`,
+                                              i > 0,
+                                              i <
+                                                  (o.plan?.lines.length ?? 0) -
+                                                      1,
+                                              (by) => handlePlanMove(i, by),
                                           )}
-                                      </Text>
+                                      </Box>
                                   );
                               },
                           )}
@@ -4850,8 +5080,23 @@ export const register: Register = (on) => {
             if (thought.length) notes.push(thinkText(thought));
         }
         // a lane steer dima took while cclio's turn runs joins it here too, as an orbit mark does
-        if (!isPing && (await isLaneOwner($)))
+        if (!isPing && (await isLaneOwner($))) {
             notes.push(...(await takeLaneSteers($, await readLanes($))));
+            notes.push(...(await applyLaneOrders($, false)));
+        }
+        // dima's phases mark joins the running turn once its sending window passed
+        const p = (await currentOrbit($)).plan;
+        if (
+            !isPing &&
+            hasPlanMark(p) &&
+            (p.sendAt ?? 0) <= (await $.clock.now())
+        ) {
+            await saveOrbit($, {
+                ...(await currentOrbit($)),
+                plan: planTaken(p),
+            });
+            notes.push(planText(p));
+        }
         if (
             !isNudged &&
             ++turnTools >= NUDGE_AT &&
