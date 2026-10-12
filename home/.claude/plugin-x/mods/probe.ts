@@ -17,6 +17,29 @@ export function swapDir(
     return at === -1 ? [...dirs, dev] : dirs.with(at, dev);
 }
 
+// a mod dir's plugin name from its manifest; undefined when it holds none
+export function manifestName(dir: string, home: string) {
+    const manifest = join(
+        dir.replace(/^~(?=\/|$)/, home),
+        '.claude-plugin/plugin.json',
+    );
+    if (!existsSync(manifest)) return undefined;
+    const { name } = JSON.parse(readFileSync(manifest, 'utf8')) as {
+        name?: unknown;
+    };
+    return typeof name === 'string' ? name : undefined;
+}
+
+// the user's live mod dirs, from settings.json's env
+export function liveDirs(home: string) {
+    const settings = JSON.parse(
+        readFileSync(join(home, '.claude/settings.json'), 'utf8'),
+    ) as { env?: Record<string, string> };
+    return (settings.env?.CLAUDE_CODE_PLUGIN_DIRS ?? '')
+        .split(':')
+        .filter(Boolean);
+}
+
 // the folder the engine read the mod's hooks from, out of the child's debug lines; undefined when it never loaded
 export function loadedFrom(lines: string[], name: string) {
     const read = new RegExp(
@@ -39,27 +62,11 @@ if (import.meta.main) {
         fail('usage: pnpm mods:probe <mod dir> "<prompt>" [-- <claude args…>]');
     const dev = realpathSync(resolve(modArg as string));
     const home = homedir();
-    const nameOf = (dir: string) => {
-        const manifest = join(
-            dir.replace(/^~(?=\/|$)/, home),
-            '.claude-plugin/plugin.json',
-        );
-        if (!existsSync(manifest)) return undefined;
-        const { name } = JSON.parse(readFileSync(manifest, 'utf8')) as {
-            name?: unknown;
-        };
-        return typeof name === 'string' ? name : undefined;
-    };
+    const nameOf = (dir: string) => manifestName(dir, home);
     const name =
         nameOf(dev) ??
         fail(`${dev} holds no .claude-plugin/plugin.json with a name`);
-    const settings = JSON.parse(
-        readFileSync(join(home, '.claude/settings.json'), 'utf8'),
-    ) as { env?: Record<string, string> };
-    const live = (settings.env?.CLAUDE_CODE_PLUGIN_DIRS ?? '')
-        .split(':')
-        .filter(Boolean);
-    const dirs = swapDir(live, dev, name, nameOf);
+    const dirs = swapDir(liveDirs(home), dev, name, nameOf);
     const tmp = realpathSync(
         mkdtempSync(join(tmpdir(), `mods-probe-${name}-`)),
     );

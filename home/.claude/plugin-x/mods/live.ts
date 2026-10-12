@@ -23,6 +23,7 @@ import pty from 'node-pty';
 
 import { type LiveVerb, parseLive } from './live-args.ts';
 import { reloadVerdict, sourceHash } from './live-verdict.ts';
+import { liveDirs, manifestName, swapDir } from './probe.ts';
 
 const COLS = 140;
 const ROWS = 40;
@@ -140,21 +141,20 @@ async function serve() {
         cols: COLS,
         rows: ROWS,
     });
+    // the dev copy takes the live mod's place in the child's own plugin dirs, as mods:probe does: a second copy on
+    // --plugin-dir lost the name clash to the live one (PK-65); a mod not live yet joins last
+    const home = process.env.HOME ?? '';
+    const dirs = swapDir(liveDirs(home), mod, name, (d) =>
+        manifestName(d, home),
+    );
     // named, so the fleet board reads what it is
     const session = pty.spawn(
         'claude',
-        [
-            '-n',
-            `mods-live: ${name}`,
-            '--plugin-dir',
-            mod,
-            '--debug-file',
-            debugLog,
-        ],
+        ['-n', `mods-live: ${name}`, '--debug-file', debugLog],
         {
             cols: COLS,
             cwd: process.cwd(),
-            env: process.env,
+            env: { ...process.env, CLAUDE_CODE_PLUGIN_DIRS: dirs.join(':') },
             name: 'xterm-256color',
             rows: ROWS,
         },
