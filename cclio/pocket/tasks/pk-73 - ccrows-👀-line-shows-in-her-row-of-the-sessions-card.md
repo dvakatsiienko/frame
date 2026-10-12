@@ -1,10 +1,10 @@
 ---
 id: PK-73
 title: "ccrow's \U0001F440 line shows in her row of the sessions card"
-status: open
+status: done
 assignee: []
 created_date: '2026-10-11 22:45'
-updated_date: '2026-10-12 11:17'
+updated_date: '2026-10-12 12:50'
 due_date: '2026-10-14'
 labels:
   - s
@@ -32,4 +32,6 @@ dima's yes, o314 (01:49): rides FRM-386 🐠 catch with the next mods coder
 parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
 
 dima, 2026-10-12 14:16, relayed by ccrow from her window: «i'd like to see this note somewhere in a mod» — about her 👀 for-you line (1–2 tips for him); narrows his 01:42 «the mods view is already cramped»: the 👀 line only, no numbers
+
+done: shipped by the mods coder, lane l8 (PK-73 a7844123, PK-77 bb26ee18); mods:test exit 0 on cclio's run 15:45
 <!-- SECTION:NOTES:END -->

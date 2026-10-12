@@ -4,7 +4,7 @@ title: phases nudge fires only on turns that did real work
 status: open
 assignee: []
 created_date: '2026-10-11 21:28'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 12:51'
 due_date: '2026-10-13'
 labels:
   - s
@@ -36,4 +36,6 @@ rides FRM-386 🐠 catch (o309)
 2026-10-12 01:01 correction (ccrow, re-checked): the 00:28 counts double-counted transcript copies. one row per tool_use id and per message.id: 656 orbit calls (plan 235, add 183), cclio output 1.32M tokens; orbit inputs ≈ 4 % of output, all-in ≈ 1.7 % (phases ~0.8 %, glide ~0.1 %). goal: all-in under 1 %. measure with cclio/script/orbit-cost.sql (dedupe by uuid, usage per message.id)
 
 parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — solve everything new turn by turn, quality first, then plan the next moves from the new drops»
+
+15:55: queued in mods lane l8, brief 4 (dima's o309)
 <!-- SECTION:NOTES:END -->

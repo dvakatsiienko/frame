@@ -28,6 +28,10 @@ A `📄 last report: **<topic>**, <HH:MM>` line ends every report, except a `�
 this line (dima, 2026-10-08). the stamp is cclio's own, for `rewind` in a thread member traffic
 floods; no other member prints one.
 
+**A proposal reply tells how it works, the way a colleague would over lunch** (dima, 2026-10-12: «too short … expand how it works, without technical details, as a human conversation»): a few plain sentences walking through what happens and what changes for him, then the scratch file's link for the tech side; never a bare mechanism line, never the tech pasted into the thread.
+
+**A grill prints in the thread and rides orbit too** (dima, 2026-10-12: «grill questions are important to be expanded, and deserve to be printed in your thread; keep the orbit part too»): each round in matt's shape, every question expanded with its choices and a ➡️ pick, and each question also an orbit ask he ticks.
+
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel lanes (researchers, coders, probes),
 their results land at different times — hold them and print ONE unified reply when the picture
 is whole. A lane arriving early gets a one-line «N of M in» at most, never its findings. Dima

@@ -1,10 +1,10 @@
 ---
 id: PK-80
 title: rename docs/knowledge/models.md → fleet-models.md on every surface
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-12 12:26'
 due_date: '2026-10-13'
 labels:
   - xs
@@ -24,4 +24,6 @@ dima, inbox 2026-10-12: /Users/dima/frame/docs/knowledge/models.md → /Users/di
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
+
+done in cc048e1e: fleet-models
 <!-- SECTION:NOTES:END -->

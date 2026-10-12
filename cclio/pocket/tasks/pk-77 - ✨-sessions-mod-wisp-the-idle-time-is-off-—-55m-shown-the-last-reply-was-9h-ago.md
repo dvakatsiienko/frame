@@ -3,10 +3,10 @@ id: PK-77
 title: >-
   ✨ sessions mod wisp: the idle time is off — 55m shown, the last reply was 9h
   ago
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:33'
+updated_date: '2026-10-12 12:50'
 due_date: '2026-10-13'
 labels:
   - s
@@ -30,4 +30,6 @@ dima, boot 2026-10-12: «plus, possibly a sessions (mod) wisp». his screenshot 
 fix (S): for an idle row, statusSince = the newest assistant entry's timestamp in the transcript tail (~/.claude/projects/<cwd-slug>/<sessionId>.jsonl), registry stamp as the fallback; one FTR line under the state column (FTR.md:233–242); a test with a fixture transcript whose tail holds a custom-title after the last assistant line. 📌 the same stamp likely feeds 🔥 keep-hot's «idle since» (register.tsx:188) — check it in the same lane.
 
 dima o6 2026-10-12: rides the FRM-386 mods coder with PK-73 — one mods coder, three fixes
+
+done: shipped by the mods coder, lane l8 (PK-73 a7844123, PK-77 bb26ee18); mods:test exit 0 on cclio's run 15:45
 <!-- SECTION:NOTES:END -->

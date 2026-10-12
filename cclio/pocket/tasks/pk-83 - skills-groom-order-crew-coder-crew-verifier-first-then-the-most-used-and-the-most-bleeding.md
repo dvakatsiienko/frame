@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:31'
+updated_date: '2026-10-12 12:50'
 due_date: '2026-10-16'
 labels:
   - m
@@ -28,4 +28,8 @@ dima, boot 2026-10-12: when we switch to skills, the first to groom are crew-cod
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
 
 from the x domain-modeling coder's retro (2026-10-12): crew-coder has no line for empty args (`/x:crew-coder` with no ticket and no «dima» word) — the coder guessed dima mode; matt's domain-modeling is grill-first with no solo-audit mode — the coder ran it solo, open questions went to its report
+
+15:27: crew-coder/SKILL.md's worktree carries one cclio line beside dima's draft — the impeccable-refine link now points at crew-lead/impeccable-refine.md (moved in cc048e1e); it rides the draft's commit at the groom; the plugin cache 0.11.285 already serves it
+
+15:51 (wishkeeper): committed HEAD's crew-coder/SKILL.md:19 still points at the gone docs/knowledge/impeccable-refine.md until the draft's commit; writing-for-humans/SKILL.md never names references/sources.md — add the pointer at the groom
 <!-- SECTION:NOTES:END -->

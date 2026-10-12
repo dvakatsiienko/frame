@@ -4,7 +4,7 @@ title: 'mini-cclio: any coder in bytes or frame turns into cclio in one or two c
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 12:04'
+updated_date: '2026-10-12 12:50'
 due_date: '2026-10-14'
 labels:
   - m
@@ -28,4 +28,6 @@ proposal 14:49: .scratch/mini-cclio/mini-cclio-proposal.md (one name «cclio mod
 dima 14:52: o8 a) mini by default, --full on ask; o9 a) a go verb in x; o10 a) mini writes pocket + linear, each named; o11 snapshot freebie done (cw builds again). and: running x:cclio-mode IS his grant to enter cclio/, the skill never asks. next: a cli coder lane (x cclio mode verb + x:cclio-mode skill + cw tool on its --full output), on his word
 
 15:05: cli lane planner → .scratch/cli-lane-10-12/lane-proposal.md (PK-78 ~280k est + 5 riders ~525k). FRM-383 (sealed, the nearest planned chunk) left out at ~450k est. Read caps: snapshot 138 KB ≈ 47k tokens, past one Read; mini ~35 KB fits, --full pages. FRM-384's planned «x lane gate -- <cmd>» collides with the shipped commit-msg «x lane gate» — rename before sealing 384
+
+dima o16 (2026-10-12 15:27), verbatim: «I'd like for a CLI lane to solve as many CLI chores as possible and solve the most wanted things about CLI, and afterwards do one nearest planned chunk for CLI lane.» the most wanted list is his o46 ranked candidates (x pocket, x linear line, x hook test, x recipe list, x retro gather), now in PK-94; the lane planner (15:03) never saw it — re-plan before the seal
 <!-- SECTION:NOTES:END -->
