@@ -8,7 +8,9 @@ const TOOL = 'mcp__x-mod-stash__orbit';
 function world(on: On) {
     const contexts: string[][] = [];
     const appended: string[] = [];
-    mock.clock(on, { now: new Date(2026, 9, 10, 19, 0).getTime() });
+    const clock = mock.clock(on, {
+        now: new Date(2026, 9, 10, 19, 0).getTime(),
+    });
     // a store in memory the test reads back: the shared store other sessions' boards count from
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
@@ -46,7 +48,7 @@ function world(on: On) {
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { appended, contexts, store };
+    return { appended, clock, contexts, store };
 }
 
 const start = ($: Engine) =>
@@ -124,6 +126,40 @@ test('a note being typed keeps the value it showed, so a redraw never moves the 
     expect(
         (await ui.find({ key: 'orbit:note:o1', type: 'Input' }))?.props.value,
     ).toBe('');
+});
+
+// the note as the session's published asks hold it, the store mirror every board reads
+const savedNote = (store: Map<string, unknown>) =>
+    (store.get(`asks:${SID}`) as { items: { note?: string }[] } | undefined)
+        ?.items[0]?.note;
+
+test('a note saves once typing pauses, never on each keystroke', async ($, on) => {
+    const { clock, store } = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'a' });
+    await ui.input({ key: 'orbit:note:o1', kind: 'change', text: 'ab' });
+    const typing = savedNote(store);
+    await clock.advance(600);
+    expect([typing, savedNote(store)]).toEqual([undefined, 'ab']);
+});
+
+test('a tick pressed right after typing carries the note still waiting to save', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.input({
+        key: 'orbit:note:o1',
+        kind: 'change',
+        text: 'not a pelican',
+    });
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'next');
+    expect(joined(w.contexts).join('\n')).toContain(
+        'his note: «not a pelican»',
+    );
 });
 
 test("an ask's row reads its text and cclio's pick", async ($, on) => {

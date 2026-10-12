@@ -298,6 +298,18 @@ export type FieldDraft = {
     isLanded: boolean;
 };
 const FIELD_QUIET_MS = 2000;
+const FIELD_SAVE_MS = 500;
+const pendingSaves = new Map<
+    string,
+    { save: () => unknown; timer: { cancel: () => void } }
+>();
+// every save still waiting on a pause runs now: before a press, a prompt or a tool call reads what was typed
+async function flushFields() {
+    const due = [...pendingSaves];
+    pendingSaves.clear();
+    for (const [, p] of due) p.timer.cancel();
+    await Promise.all(due.map(([, p]) => p.save()));
+}
 const drafts = new Map<string, FieldDraft>();
 const remounts = new Map<string, number>();
 export type FieldView =
@@ -334,7 +346,7 @@ export const typedInto = (
 // a note field remounts on a clear it cannot otherwise show; a number field keeps its typed text beside its refusal line
 const isNumberField = (key: string) =>
     key.startsWith('knob:') || key === 'compact-at';
-function field(key: string, saved: string) {
+function field($: EngineInterface, key: string, saved: string) {
     const view = fieldView(drafts.get(key), saved, Date.now());
     if (view.kind === 'held') drafts.set(key, view.draft);
     else drafts.delete(key);
@@ -344,11 +356,24 @@ function field(key: string, saved: string) {
     const gen = remounts.get(key);
     return {
         key: gen ? `${key}#${gen}` : key,
-        type: (text: string) =>
+        // the save waits for a pause: each save redraws the board, and a redraw mid-typing scrolled the field back to its
+        // start (dima's video, 16:40); a press, a prompt or a tool call flushes it first
+        type: (text: string, save: () => unknown) => {
             drafts.set(
                 key,
                 typedInto(drafts.get(key), value, text, Date.now()),
-            ),
+            );
+            // a number is a few characters and never scrolls: it saves on each keystroke, as its refusal line needs
+            if (isNumberField(key)) return void save();
+            pendingSaves.get(key)?.timer.cancel();
+            pendingSaves.set(key, {
+                save,
+                timer: $.clock.after(FIELD_SAVE_MS, () => {
+                    pendingSaves.delete(key);
+                    void save();
+                }),
+            });
+        },
         value,
     };
 }
@@ -2414,7 +2439,14 @@ export const register: Register = (on) => {
     });
 
     // only dima's own hands make his turn; a reply to any other origin may drop the block
+    // a press reads what was typed: a note still waiting for its pause saves first
+    on('ui.press', async (_$, e, next) => {
+        await flushFields();
+        return next(e);
+    });
+
     on('prompt.submit', async ($, e, next) => {
+        await flushFields();
         const isUser =
             e.text.trim().length > 0 &&
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
@@ -2792,18 +2824,20 @@ export const register: Register = (on) => {
                         <Text>{label}</Text>
                         <Box flexShrink={0} width={8}>
                             <Input
-                                key={field(`knob:${key}`, String(value)).key}
+                                key={field($, `knob:${key}`, String(value)).key}
                                 onInput={(text) => {
-                                    field(`knob:${key}`, String(value)).type(
+                                    field($, `knob:${key}`, String(value)).type(
                                         text,
+                                        () => {
+                                            return setKnobNumber($, name, text);
+                                        },
                                     );
-                                    void setKnobNumber($, name, text);
                                 }}
                                 onSubmit={(text) =>
                                     void setKnobNumber($, name, text)
                                 }
                                 value={
-                                    field(`knob:${key}`, String(value)).value
+                                    field($, `knob:${key}`, String(value)).value
                                 }
                             />
                         </Box>
@@ -2887,6 +2921,7 @@ export const register: Register = (on) => {
                             <Input
                                 key={
                                     field(
+                                        $,
                                         'compact-at',
                                         meter?.compactAt === undefined
                                             ? ''
@@ -2895,12 +2930,14 @@ export const register: Register = (on) => {
                                 }
                                 onInput={(value) => {
                                     field(
+                                        $,
                                         'compact-at',
                                         meter?.compactAt === undefined
                                             ? ''
                                             : String(meter.compactAt),
-                                    ).type(value);
-                                    void setCompactAt($, value, true);
+                                    ).type(value, () => {
+                                        return setCompactAt($, value, true);
+                                    });
                                 }}
                                 onSubmit={(value) =>
                                     void setCompactAt($, value)
@@ -2908,6 +2945,7 @@ export const register: Register = (on) => {
                                 placeholder='70'
                                 value={
                                     field(
+                                        $,
                                         'compact-at',
                                         meter?.compactAt === undefined
                                             ? ''
@@ -3187,16 +3225,19 @@ export const register: Register = (on) => {
                             <Input
                                 key={
                                     field(
+                                        $,
                                         `${door.prefix}:note:${a.id}`,
                                         a.note ?? '',
                                     ).key
                                 }
                                 onInput={(value: string) => {
                                     field(
+                                        $,
                                         `${door.prefix}:note:${a.id}`,
                                         a.note ?? '',
-                                    ).type(value);
-                                    door.note(a, value);
+                                    ).type(value, () => {
+                                        return door.note(a, value);
+                                    });
                                 }}
                                 onSubmit={(value: string) =>
                                     door.note(a, value)
@@ -3204,6 +3245,7 @@ export const register: Register = (on) => {
                                 placeholder='note'
                                 value={
                                     field(
+                                        $,
                                         `${door.prefix}:note:${a.id}`,
                                         a.note ?? '',
                                     ).value
@@ -3315,6 +3357,7 @@ export const register: Register = (on) => {
                                                 <Input
                                                     key={
                                                         field(
+                                                            $,
                                                             `orbit:anote:${x.id}`,
                                                             x.note ?? '',
                                                         ).key
@@ -3323,13 +3366,15 @@ export const register: Register = (on) => {
                                                         value: string,
                                                     ) => {
                                                         field(
+                                                            $,
                                                             `orbit:anote:${x.id}`,
                                                             x.note ?? '',
-                                                        ).type(value);
-                                                        handleAssumedNote(
-                                                            x.id,
-                                                            value,
-                                                        );
+                                                        ).type(value, () => {
+                                                            return handleAssumedNote(
+                                                                x.id,
+                                                                value,
+                                                            );
+                                                        });
                                                     }}
                                                     onSubmit={(value: string) =>
                                                         handleAssumedNote(
@@ -3340,6 +3385,7 @@ export const register: Register = (on) => {
                                                     placeholder='note'
                                                     value={
                                                         field(
+                                                            $,
                                                             `orbit:anote:${x.id}`,
                                                             x.note ?? '',
                                                         ).value
@@ -3420,6 +3466,7 @@ export const register: Register = (on) => {
                                                 <Input
                                                     key={
                                                         field(
+                                                            $,
                                                             `orbit:cnote:${x.id}`,
                                                             x.note ?? '',
                                                         ).key
@@ -3428,13 +3475,15 @@ export const register: Register = (on) => {
                                                         value: string,
                                                     ) => {
                                                         field(
+                                                            $,
                                                             `orbit:cnote:${x.id}`,
                                                             x.note ?? '',
-                                                        ).type(value);
-                                                        handleCatchNote(
-                                                            x.id,
-                                                            value,
-                                                        );
+                                                        ).type(value, () => {
+                                                            return handleCatchNote(
+                                                                x.id,
+                                                                value,
+                                                            );
+                                                        });
                                                     }}
                                                     onSubmit={(value: string) =>
                                                         handleCatchNote(
@@ -3445,6 +3494,7 @@ export const register: Register = (on) => {
                                                     placeholder='note'
                                                     value={
                                                         field(
+                                                            $,
                                                             `orbit:cnote:${x.id}`,
                                                             x.note ?? '',
                                                         ).value
@@ -3557,19 +3607,22 @@ export const register: Register = (on) => {
                                             <Input
                                                 key={
                                                     field(
+                                                        $,
                                                         `lane:${lane.id}:note`,
                                                         lane.note ?? '',
                                                     ).key
                                                 }
                                                 onInput={(value: string) => {
                                                     field(
+                                                        $,
                                                         `lane:${lane.id}:note`,
                                                         lane.note ?? '',
-                                                    ).type(value);
-                                                    void handleLaneNote(
-                                                        lane.id,
-                                                        value,
-                                                    );
+                                                    ).type(value, () => {
+                                                        return handleLaneNote(
+                                                            lane.id,
+                                                            value,
+                                                        );
+                                                    });
                                                 }}
                                                 onSubmit={(value: string) =>
                                                     void handleLaneNote(
@@ -3580,6 +3633,7 @@ export const register: Register = (on) => {
                                                 placeholder='note'
                                                 value={
                                                     field(
+                                                        $,
                                                         `lane:${lane.id}:note`,
                                                         lane.note ?? '',
                                                     ).value
@@ -3958,6 +4012,7 @@ export const register: Register = (on) => {
     // orbit's write door, where the session adds, resolves and follows up its asks and sets its plan; and afk flipped
     // mid-turn: the next tool result carries the new state once
     on('tool.call', async ($, e, next) => {
+        await flushFields();
         if (
             (e.tool as string) === ORBIT_TOOL &&
             (e as Record<string, unknown>).op === 'glide'
