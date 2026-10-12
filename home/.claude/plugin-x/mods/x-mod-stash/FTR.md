@@ -494,26 +494,42 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 
 ## /board — 🐠 catch
 
-the facts dima likely missed in long replies, parked by the session under orbit ([FRM-386](https://linear.app/x-com/issue/FRM-386)); an experiment, kept or killed on 2026-10-17 from its counts.
-- makes: one `catch-count:<day>` key in x-mod-stash's `$.store`, the day's 🤔 presses, clears and refused adds; the pieces live in the session's orbit in `$.state`
+cclio's keep-in-mind shelf (catch v2, pocket PK-96, [FRM-386](https://linear.app/x-com/issue/FRM-386)): what dima would otherwise re-ask, never what orbit, phases, sessions, glide or the band show; a test drive. The kinds, when to add each and when it leaves live in [catch.md](catch.md), dima's file; the mod holds shape, cap and persistence, never a clock.
+- makes: `catch-shelf:cclio` in x-mod-stash's `$.store`, her pieces as they stand; one `catch-count:<day>` key, the day's 🤔 presses, clears and refused adds
 
-- 🧭 caught pieces show under 🐠 catch
-  - given a session calls the orbit tool with op `catch` and 1–2 pieces
-  - when dima looks at the board
-  - then a `🐠 catch` section under orbit lists each piece, its bold id leading it, with 🤔, 📋 copy, ✖️ clear and a steer box; the section is hidden while empty
-  - decision: the tool's own text says when to catch — a fact already printed that dima likely missed, worth a follow-up; 0 is normal (grill Q1, critic)
-- 🧭 the caps refuse, never drop
-  - given a catch of 3 pieces, or 2 already caught this turn, then the tool refuses it in one line
-  - given 5 pieces held and a 6th added, then the tool refuses it with «clear one first» and the 5 stay
-- 🧭 🤔 gets a piece explained without a turn of its own
+- ⬜ catch.md reaches cclio's context
+  - given catch.md on disk, when cclio's session sends its first prompt, then the file's text rides it once, read fresh, so his edit binds from her next session with no plugin bump
+  - decision: her first prompt, as phases' start line rides, not the system prompt (mods/AGENTS.md: the desktop may skip that event «?»)
+- ⬜ catch is cclio's alone
+  - given a session not named «🦉 cclio» in the registry, when it calls orbit op catch, then it is refused naming her, checked at call time
+  - and orbit's description carries one catch line — `cclio only, her rules come from catch.md` — never the kinds
+- ⬜ a piece is one row: kind, line, age
+  - given a piece with one of the seven kinds and ≤60 chars, then it draws as one row: its kind emoji, its line, a dim age (`12m`), 🤔, ✖️
+  - given a kind outside the seven or a line past 60 chars, then the add is refused naming the kinds or the limit
+  - when dima presses a piece's line, then its hidden note, 📋 copy and the steer box open under it in place; a second press folds them
+  - decision: copy and the steer fold under the line, so a piece takes one row of a tight board (dima's «space is tight»)
+- ⬜ 5 drawn, 7 held
+  - given 7 pieces, then 5 rows draw and a `+2` opens the rest
+  - given 7 held and an 8th added, then the oldest 💡 leaves; with no 💡 the add is refused naming the cap and nothing moves
+- ⬜ the shelf outlives the session
+  - given pieces held, when cclio is compacted, checkpointed or a new «🦉 cclio» session starts, then the same pieces draw again; new ids count past theirs
+  - decision: kept per coordinator in the store, not per session (dima's o51–o56)
+  - decision: a piece kept before the kinds reads as a 💡 born at the load
+- ⬜ cclio clears a piece when its lifetime ends
+  - given catch.md names a piece's lifetime, when it ends, then cclio calls catch with `clear: [ids]`; an id not held is refused naming the held ones
+  - and her per-prompt orbit line names the held ids, so a compacted cclio can still clear them
+  - decision: an op the brief did not name — catch.md has her clear pieces, and no session could before (coder, brief 7)
+- ⬜ a receipt lives in catch alone
+  - given cclio files dima's ask to the pocket, then a 🧷 piece («crew-dna skill: PK-N, 3rd») sits in catch until he clears it, and no orbit ask row and no phases line carry it
+- ✅ 🤔 gets a piece explained without a turn of its own
   - given dima presses 🤔, with or without a steer
   - when a turn is running, then the piece, its hidden note and his steer join that turn at its next tool result, model-only; when none runs, they join his next prompt
-  - then the piece stays until he clears it; while a turn takes it, its 🤔 reads `🔓 🤔` and its note shows as dim text
-  - decision: the tool-result door, as an orbit tick takes, not `$.session.append`: an append landing after the turn's last read starts a turn of its own (`mods/AGENTS.md`, dima 20:31) — the ticket's «never starts a turn» wins
-- 🧭 clear and copy
-  - given dima presses ✖️ clear, then the piece leaves the section and orbit
-  - given he presses 📋 copy, then the piece's text is on the clipboard of the surface he pressed it on; his prompt box is never touched
-  - decision: `$.ui.copy` takes on both surfaces at cc 2.1.296 (step 0), so no prompt-box fallback
+  - then the piece stays until it is cleared; while a turn takes it, its 🤔 reads `🔓 🤔`
+  - decision: the tool-result door, as an orbit tick takes, not `$.session.append`: an append landing after the turn's last read starts a turn of its own (`mods/AGENTS.md`, dima 20:31)
+- ✅ clear and copy
+  - given dima presses ✖️, then the piece leaves; given he opens its line and presses 📋 copy, then its text is on the clipboard of the surface he pressed it on
+  - decision: `$.ui.copy` takes on both surfaces at cc 2.1.296, so no prompt-box fallback
+- decision: no per-turn cap any more — catch.md is the one rulebook, and it sets none (coder, brief 7)
 
 ## quiet comms — member pings off cclio's thread
 

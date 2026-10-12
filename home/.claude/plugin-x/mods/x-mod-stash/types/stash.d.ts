@@ -125,10 +125,12 @@ export type OrbitAssumption = {
     steer?: string;
 };
 
-// 🐠 a fact the session already printed that dima likely missed (FRM-386): born at a turn count; 🤔 asks for it
-// to be explained, locked while a turn takes it; it stays until he clears it
+// 🐠 a piece of cclio's keep-in-mind shelf (FRM-386, PK-96): one of catch.md's seven kinds, born at `at` (ms); 🤔 asks
+// for it to be explained, locked while a turn takes it; it stays until dima or cclio clears it
 export type OrbitCatch = {
     id: string;
+    // one of CATCH_KINDS; a piece kept before the kinds has none and reads as 💡
+    kind?: string;
     text: string;
     hiddenNote?: string;
     steer?: string;

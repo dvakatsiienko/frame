@@ -1,19 +1,31 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-// 🐠 catch (FRM-386): the facts dima likely missed, parked under orbit by the orbit tool's catch op
+// 🐠 catch v2 (PK-96, FRM-386): cclio's keep-in-mind shelf, seven kinds, the rules in dima's catch.md
 
 const SID = 'c1c1c1c1-catch';
+const PID = 4343;
 const TOOL = 'mcp__x-mod-stash__orbit';
 const DAY = '2026-10-12';
+const NOW = new Date(`${DAY}T15:00:00Z`).getTime();
+const MIN = 60_000;
+const CCLIO = '🦉 cclio';
 
-// one session: each prompt's model-only context, each hidden appended message, the copies, the tool's description
-function world(on: On) {
+// one session, named `name` in the registry (cclio by default): each prompt's model-only context, the copies, the tool's
+// description, the store; `rules` is catch.md as the file reads now
+function world(
+    on: On,
+    {
+        name = CCLIO,
+        state = undefined as Record<string, unknown> | undefined,
+    } = {},
+) {
     const contexts: string[][] = [];
     const appended: string[] = [];
     const copies: string[] = [];
     const described: string[] = [];
-    mock.clock(on, { now: new Date(`${DAY}T15:00:00Z`).getTime() });
+    const files = { rules: 'CATCH RULES v1' };
+    const clock = mock.clock(on, { now: NOW });
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
@@ -25,8 +37,32 @@ function world(on: On) {
         store.delete(e.key);
         return { value: undefined };
     });
+    if (state) {
+        on('state.get', (_$, e) => ({
+            value: { value: state[e.key], version: e.key in state ? 1 : 0 },
+        }));
+        on('state.set', (_$, e) => {
+            state[e.key] = e.value;
+            return { value: { isSet: true, version: 2 } };
+        });
+    }
     on('session.id', () => ({ value: SID }));
     on('env.get', () => ({ value: '/home' }));
+    on('process.run', () => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: `${PID}\nMon Oct 12 15:00:00 2026\n`,
+        },
+    }));
+    on('fs.read', (_$, e) => {
+        if (e.path === `/home/.claude/sessions/${PID}.json`)
+            return { value: JSON.stringify({ name, pid: PID }) };
+        if (e.path.endsWith('/catch.md')) return { value: files.rules };
+        return { deny: 'no such file' };
+    });
     on('ui.log', () => ({ value: undefined }));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
     on('ui.copy', (_$, e) => {
@@ -55,18 +91,43 @@ function world(on: On) {
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { appended, contexts, copies, described, store };
+    return { appended, clock, contexts, copies, described, files, store };
 }
 
 const start = ($: Engine) =>
     $.session.start({ cwd: '/tmp', isInteractive: true, surface: 'desktop' });
 
-const catchOf = ($: Engine, ...texts: string[]) =>
+// the board pane open, so the poll publishes its clock and an age reads from it
+const paneOpen = (on: On) =>
+    on('ui.panes', () => ({
+        value: [
+            {
+                id: 'fleet-board',
+                isFocused: false,
+                isPlaced: true,
+                isShown: true,
+                plugin: 'x-mod-stash',
+                title: 'fleet board',
+            },
+        ],
+    }));
+
+type Piece = { kind?: string; text: string; hiddenNote?: string };
+const catchOf = ($: Engine, ...pieces: (Piece | string)[]) =>
     $.tool.call({
         op: 'catch',
-        pieces: texts.map((text) => ({ hiddenNote: `from ${text}`, text })),
+        pieces: pieces.map((p) =>
+            typeof p === 'string'
+                ? { hiddenNote: `from ${p}`, kind: '💡', text: p }
+                : p,
+        ),
         tool: TOOL,
-    } as never);
+    } as never) as Promise<{ deny?: string; result?: string }>;
+
+const clearOf = ($: Engine, ...ids: string[]) =>
+    $.tool.call({ clear: ids, op: 'catch', tool: TOOL } as never) as Promise<{
+        deny?: string;
+    }>;
 
 const say = ($: Engine, text: string) =>
     $.prompt.submit({ origin: { kind: 'composer' }, text, wait: false });
@@ -100,86 +161,285 @@ type Board = Awaited<ReturnType<typeof board>>;
 
 async function piecesShown(ui: Board) {
     return (await ui.findAll({ type: 'Box' }))
-        .filter((n) => n.key?.startsWith('orbit:catch:'))
-        .map((n) => n.key?.slice('orbit:catch:'.length));
+        .map((n) => n.key?.match(/^orbit:catch:(c\d+)$/)?.[1])
+        .filter(Boolean);
 }
 
 const thought = (lines: readonly string[]) =>
     lines.filter((c) => c.startsWith('🐠 catch: dima pressed 🤔')).join('\n');
 
-// two pieces a turn: hold n of them over as many turns as it takes
-async function hold($: Engine, n: number) {
-    for (let i = 0; i < n; i += 2) {
-        await say($, `turn ${i}`);
-        await catchOf(
-            $,
-            ...[`fact ${i + 1}`, `fact ${i + 2}`].slice(0, Math.min(2, n - i)),
-        );
-        await endTurn($);
-    }
-}
+const deny = (r: { deny?: string }) => r.deny;
 
-/* exit 1 — the section */
+/* exit 1 — catch.md reaches her context */
 
-test('caught pieces show under 🐠 catch, each with 🤔, copy, clear and a steer box', async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await catchOf($, 'the 5h window resets at 16:40', 'qc-recv never slept');
-    const keys = (await ui.findAll({})).map((n) => n.key).filter(Boolean);
-    expect([
-        (await ui.find({ text: '🐠 catch', type: 'Text' }))?.text,
-        await piecesShown(ui),
-        [
-            'orbit:think:c1',
-            'orbit:copy:c1',
-            'orbit:clear:c1',
-            'orbit:csteer:c1',
-        ].every((k) => keys.includes(k)),
-    ]).toEqual(['🐠 catch', ['c1', 'c2'], true]);
-});
-
-test('with nothing caught the section is hidden', async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    expect(await ui.find({ text: '🐠 catch', type: 'Text' })).toBe(undefined);
-});
-
-test("the tool's description says when to catch, at most 2 a turn, 0 normal", async ($, on) => {
+test("catch.md reaches cclio's first prompt once", async ($, on) => {
     const w = world(on);
     await start($);
-    expect(w.described.join('\n')).toMatch(
-        /op catch.*already printed.*likely missed.*0 is normal, at most 2 a turn/s,
-    );
+    await say($, 'go');
+    await say($, 'again');
+    expect([
+        w.contexts[0]?.includes('CATCH RULES v1'),
+        w.contexts[1]?.includes('CATCH RULES v1'),
+    ]).toEqual([true, false]);
 });
 
-/* exit 2 — the caps */
+test('catch.md is read when her first prompt goes, so an edit since the load shows', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files.rules = 'CATCH RULES v2';
+    await say($, 'go');
+    expect(w.contexts[0]).toContain('CATCH RULES v2');
+});
 
-test('a catch of 3 pieces is refused in one line', async ($, on) => {
-    world(on);
+test('a session not named cclio never reads catch.md', async ($, on) => {
+    const w = world(on, { name: '☕️ 🔧 coder: mods' });
     await start($);
     await say($, 'go');
-    const r = await catchOf($, 'a', 'b', 'c');
-    expect((r as { deny?: string }).deny).toMatch(
-        /^orbit catch: at most 2 a turn/,
+    expect(w.contexts[0]?.some((c) => c.includes('CATCH RULES'))).toBe(false);
+});
+
+/* exit 2 — cclio only, one line in the description */
+
+test('a catch from a session not named cclio is refused, naming her', async ($, on) => {
+    world(on, { name: '☕️ 🔧 coder: mods' });
+    await start($);
+    expect(deny(await catchOf($, 'a fact'))).toBe(
+        `orbit catch: catch is ${CCLIO}'s alone; this session is not her`,
     );
 });
 
-test('a 6th piece with 5 held is refused with «clear one first» and nothing leaves', async ($, on) => {
+test("the description's catch line names cclio and catch.md and carries no kind rule", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const line = w.described
+        .join('\n')
+        .split('\n')
+        .find((l) => l.startsWith('op catch'));
+    expect(line).toBe(
+        'op catch, pieces [{ kind, text, hiddenNote }], clear [ids]: cclio only, her rules come from catch.md.',
+    );
+});
+
+/* exit 3 — the shape */
+
+test('a piece past 60 chars is refused naming the limit', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await catchOf($, { kind: '💡', text: 'x'.repeat(61) });
+    expect(deny(r)).toMatch(/is 61 chars; keep it ≤60/);
+});
+
+test('a kind outside the seven is refused naming them', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await catchOf($, { kind: '🔤', text: 'o56 = a gloss' });
+    expect(deny(r)).toBe(
+        'orbit catch: kind «🔤» is not one of 📍 🧷 ✅ 🎯 ⏰ 💡 📦; catch.md names them',
+    );
+});
+
+test('a valid piece draws one row: its kind, its line, a dim age, 🤔 and ✖️', async ($, on) => {
+    const w = world(on);
+    paneOpen(on);
+    await start($);
+    const ui = await board($);
+    await catchOf($, { kind: '📍', text: 'memory sweep: 01–03 done, next 04' });
+    await w.clock.advance(12 * MIN);
+    const age = await ui.find({ text: '12m', type: 'Text' });
+    expect([
+        (await ui.find({ key: 'orbit:catch:c1', type: 'Box' }))?.text,
+        age?.props.dimColor,
+    ]).toEqual(['📍 memory sweep: 01–03 done, next 0412m🤔✖️', true]);
+});
+
+test("a press on a piece's line opens its hidden note, copy and steer in place, and a second folds them", async ($, on) => {
     world(on);
     await start($);
     const ui = await board($);
-    await hold($, 5);
-    await say($, 'one more');
-    const r = await catchOf($, 'fact 6');
-    expect([(r as { deny?: string }).deny, await piecesShown(ui)]).toEqual([
-        expect.stringContaining('clear one first'),
+    await catchOf($, 'qc-recv never slept');
+    const before = await ui.find({ key: 'orbit:csteer:c1', type: 'Input' });
+    await ui.press({ key: 'orbit:open:c1' });
+    const open = (await ui.find({ key: 'orbit:catch:c1:open', type: 'Box' }))
+        ?.text;
+    await ui.press({ key: 'orbit:open:c1' });
+    const after = await ui.find({ key: 'orbit:catch:c1:open', type: 'Box' });
+    expect([
+        before,
+        open?.startsWith('from qc-recv never slept'),
+        after,
+    ]).toEqual([undefined, true, undefined]);
+});
+
+/* exit 4 — 5 rows, cap 7 */
+
+test('7 pieces draw 5 rows and a +2 fold, which opens the rest', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await catchOf($, 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7');
+    const folded = await piecesShown(ui);
+    const more = (await ui.find({ key: 'fold:catch:more', type: 'Button' }))
+        ?.text;
+    await ui.press({ key: 'fold:catch:more' });
+    expect([folded, more, (await piecesShown(ui)).length]).toEqual([
         ['c1', 'c2', 'c3', 'c4', 'c5'],
+        '+2',
+        7,
     ]);
 });
 
-/* exit 3 — 🤔 joins, never starts a turn */
+test('an 8th piece drops the oldest 💡', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await catchOf(
+        $,
+        { kind: '🧷', text: 'r1' },
+        'f2',
+        'f3',
+        { kind: '📍', text: 'e4' },
+        'f5',
+        'f6',
+        'f7',
+    );
+    const r = await catchOf($, { kind: '⏰', text: 'ask about quiet comms' });
+    await ui.press({ key: 'fold:catch:more' });
+    expect([r.result, await piecesShown(ui)]).toEqual([
+        expect.stringContaining('the cap dropped the oldest 💡: c2'),
+        ['c1', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8'],
+    ]);
+});
+
+test('an 8th piece with no 💡 held is refused naming the cap, and nothing moves', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    const seven = ['📍', '🧷', '✅', '🎯', '⏰', '📦', '🧷'].map((kind, i) => ({
+        kind,
+        text: `p${i + 1}`,
+    }));
+    await catchOf($, ...seven);
+    const r = await catchOf($, 'one more fact');
+    await ui.press({ key: 'fold:catch:more' });
+    expect([deny(r), (await piecesShown(ui)).length]).toEqual([
+        'orbit catch: 7 held, the cap is 7 and no 💡 to drop; clear one first',
+        7,
+    ]);
+});
+
+/* exit 5 — the same pieces after a compaction or a new session */
+
+test('a new cclio session draws the shelf her last one held', async ($, on) => {
+    const w = world(on);
+    w.store.set('catch-shelf:cclio', [
+        {
+            at: NOW - 5 * MIN,
+            id: 'c4',
+            kind: '🧷',
+            text: 'crew-dna skill: PK-N, 3rd',
+        },
+    ]);
+    await start($);
+    const ui = await board($);
+    await catchOf($, 'a fresh fact');
+    expect(await piecesShown(ui)).toEqual(['c4', 'c5']);
+});
+
+test('every change to her pieces is kept on the shelf', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await catchOf($, 'f1', 'f2');
+    await clearOf($, 'c1');
+    expect(
+        (w.store.get('catch-shelf:cclio') as { id: string }[]).map((x) => x.id),
+    ).toEqual(['c2']);
+});
+
+test('pieces held in her state survive a reload, and one kept before the kinds reads as a 💡 born at the load', async ($, on) => {
+    paneOpen(on);
+    world(on, {
+        state: {
+            orbit: {
+                asks: [],
+                caught: [{ at: 1, id: 'c4', text: 'kept across a reload' }],
+                next: 5,
+                turns: 2,
+            },
+        },
+    });
+    await start($);
+    const ui = await board($);
+    expect((await ui.find({ key: 'orbit:catch:c4', type: 'Box' }))?.text).toBe(
+        '💡 kept across a reload0m🤔✖️',
+    );
+});
+
+test("a piece's text kept as «note» before the steer rename is drawn in its steer field after a reload", async ($, on) => {
+    world(on, {
+        state: {
+            // the piece opened, as a press leaves it: a mocked state redraws nothing on a write
+            folds: { 'catch:c4': false },
+            orbit: {
+                asks: [],
+                caught: [
+                    { at: 1, id: 'c4', note: 'why so early?', text: 'kept' },
+                ],
+                next: 5,
+                turns: 2,
+            },
+        },
+    });
+    await start($);
+    const ui = await board($);
+    expect(
+        (await ui.find({ key: 'orbit:csteer:c4', type: 'Input' }))?.props.value,
+    ).toBe('why so early?');
+});
+
+/* exit 6 — a receipt lives in catch alone */
+
+test('a 🧷 receipt sits in catch, and no orbit ask or phases line carries it', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await catchOf($, { kind: '🧷', text: 'crew-dna skill: PK-N, 3rd' });
+    const all = (await ui.findAll({ type: 'Text' })).map((n) => n.text ?? '');
+    expect([
+        await piecesShown(ui),
+        all.filter((t) => t.includes('crew-dna skill')).length,
+        await ui.find({ text: /phases/, type: 'Text' }),
+    ]).toEqual([['c1'], 0, undefined]);
+});
+
+/* her clears */
+
+test('cclio clears a piece by id when its lifetime ends', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await catchOf($, 'f1', 'f2');
+    await clearOf($, 'c1');
+    expect(await piecesShown(ui)).toEqual(['c2']);
+});
+
+test('a clear of an id not held is refused naming the held ones', async ($, on) => {
+    world(on);
+    await start($);
+    await catchOf($, 'f1');
+    expect(deny(await clearOf($, 'c9'))).toBe(
+        'orbit catch: no piece c9; held: c1',
+    );
+});
+
+test('her prompt reminder names the held ids, so a compacted cclio can still clear them', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await catchOf($, 'f1', 'f2');
+    await say($, 'go');
+    expect(w.contexts.at(-1)?.join('\n')).toContain('🐠 catch holds c1, c2');
+});
+
+/* 🤔, clear, copy, the counts — kept from v1 */
 
 test('🤔 while a turn runs joins it at the next tool result and starts no turn', async ($, on) => {
     const w = world(on);
@@ -188,6 +448,7 @@ test('🤔 while a turn runs joins it at the next tool result and starts no turn
     await catchOf($, 'the 5h window resets at 16:40');
     await say($, 'go');
     await ui.press({ key: 'orbit:think:c1' });
+    await ui.press({ key: 'orbit:open:c1' });
     await ui.input({
         key: 'orbit:csteer:c1',
         kind: 'change',
@@ -230,9 +491,7 @@ test('a 🤔 joins one turn only, and the piece stays until cleared', async ($, 
     ]);
 });
 
-/* exit 4 — clear, copy, the counts */
-
-test('clear removes the piece from the section and from orbit', async ($, on) => {
+test("dima's ✖️ removes the piece from the section and from orbit", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -248,11 +507,12 @@ test('clear removes the piece from the section and from orbit', async ($, on) =>
     ]).toEqual([['c2'], true, false]);
 });
 
-test('copy puts the piece text on the clipboard', async ($, on) => {
+test("copy, opened from the piece's line, puts its text on the clipboard", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await catchOf($, 'the 5h window resets at 16:40');
+    await ui.press({ key: 'orbit:open:c1' });
     await ui.press({ key: 'orbit:copy:c1' });
     expect(w.copies).toEqual(['the 5h window resets at 16:40']);
 });
@@ -261,9 +521,8 @@ test("the store counts the day's 🤔 presses, clears and refused adds", async (
     const w = world(on);
     await start($);
     const ui = await board($);
-    await say($, 'go');
     await catchOf($, 'a', 'b');
-    await catchOf($, 'c');
+    await catchOf($, { kind: '🔤', text: 'c' });
     await ui.press({ key: 'orbit:think:c1' });
     await ui.press({ key: 'orbit:clear:c2' });
     expect(w.store.get(`catch-count:${DAY}`)).toEqual({
@@ -273,50 +532,9 @@ test("the store counts the day's 🤔 presses, clears and refused adds", async (
     });
 });
 
-/* exit 5 — a reload keeps them */
-
-test('held pieces survive a reload', async ($, on) => {
+test('with nothing caught the section is hidden', async ($, on) => {
     world(on);
-    const state: Record<string, unknown> = {
-        orbit: {
-            asks: [],
-            caught: [{ at: 1, id: 'c4', text: 'kept across a reload' }],
-            next: 5,
-            turns: 2,
-        },
-    };
-    on('state.get', (_$, e) => ({
-        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
-    }));
-    on('state.set', (_$, e) => {
-        state[e.key] = e.value;
-        return { value: { isSet: true, version: 2 } };
-    });
     await start($);
     const ui = await board($);
-    expect(await piecesShown(ui)).toEqual(['c4']);
-});
-
-test("a piece's text kept as «note» before the steer rename is drawn in its steer field after a reload", async ($, on) => {
-    world(on);
-    const state: Record<string, unknown> = {
-        orbit: {
-            asks: [],
-            caught: [{ at: 1, id: 'c4', note: 'why so early?', text: 'kept' }],
-            next: 5,
-            turns: 2,
-        },
-    };
-    on('state.get', (_$, e) => ({
-        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
-    }));
-    on('state.set', (_$, e) => {
-        state[e.key] = e.value;
-        return { value: { isSet: true, version: 2 } };
-    });
-    await start($);
-    const ui = await board($);
-    expect(
-        (await ui.find({ key: 'orbit:csteer:c4', type: 'Input' }))?.props.value,
-    ).toBe('why so early?');
+    expect(await ui.find({ text: '🐠 catch', type: 'Text' })).toBe(undefined);
 });

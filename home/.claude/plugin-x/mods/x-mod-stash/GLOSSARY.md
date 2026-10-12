@@ -85,8 +85,12 @@ _Avoid_: threshold, limit, autocompact %
 A choice the session made without asking that would cost a redo if wrong, shown under «assumed» in orbit; at most 3 a turn, 🛎️ clears it, ↩️ sends it back with a steer, an unmarked one fades after 3 turns.
 _Avoid_: guess, assumed ask
 
+**Kind**:
+One of a catch piece's seven types, its leading emoji: 📍 effort, 🧷 receipt, ✅ unseen, 🎯 taken as, ⏰ remind-me, 💡 fact, 📦 unshipped; `catch.md` says when each is added and when it leaves.
+_Avoid_: type, tag, category
+
 **Catch**:
-A fact the session already printed that dima likely missed, parked as one line under 🐠 catch in the board by the orbit tool's `catch` op; at most 2 a turn and 5 held, 🤔 gets it explained, it stays until he clears it.
+Cclio's keep-in-mind shelf under 🐠 catch: one-line pieces of seven kinds that dima would otherwise re-ask, added by her orbit `catch` op alone; 5 drawn, 7 held, 🤔 gets one explained, she or dima clears it. The kinds and their lifetimes live in `catch.md`, his file.
 _Avoid_: highlight, missed fact, fish
 
 **Quiet comms**:
