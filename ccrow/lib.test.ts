@@ -22,6 +22,7 @@ import {
     isLocated,
     leavesToSend,
     ledgerLine,
+    meterLine,
     planNotes,
     planPrompt,
     prViewArgs,
@@ -539,6 +540,39 @@ describe('prViewArgs', () => {
             ...view,
             ...json,
         ]);
+    });
+});
+
+describe('meterLine', () => {
+    const NOW = new Date(Date.UTC(2026, 9, 12, 11, 0));
+    const sec = (ms: number) => Math.floor(ms / 1000);
+    test('prints both windows, their resets and the reading age', () => {
+        const path = join(
+            mkdtempSync(join(tmpdir(), 'ccrow-meter-')),
+            'u.json',
+        );
+        writeFileSync(
+            path,
+            JSON.stringify({
+                rate_limits: {
+                    five_hour: {
+                        resets_at: sec(NOW.getTime() + 3 * 36e5),
+                        used_percentage: 6,
+                    },
+                    seven_day: {
+                        resets_at: sec(NOW.getTime() + 160 * 36e5),
+                        used_percentage: 1,
+                    },
+                },
+                written_at: sec(NOW.getTime() - 4 * 6e4),
+            }),
+        );
+        expect(meterLine(NOW, path)).toBe(
+            '⏱️ 5h 6 %, resets in 3 h | weekly 1 %, resets in 160 h | read 4 min ago',
+        );
+    });
+    test('a missing usage file prints nothing', () => {
+        expect(meterLine(NOW, '/nonexistent/u.json')).toBe('');
     });
 });
 

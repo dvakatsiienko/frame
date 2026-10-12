@@ -19,6 +19,7 @@ const STORE_DIR = join(homedir(), '.claude/plugins/store');
 const HOT = 'hot:';
 export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');
 export const VERDICTS_PATH = join(STATE_DIR, 'verdicts.jsonl');
+export const USAGE_PATH = join(homedir(), '.claude/shelf/cc-usage-window.json');
 // every 5th note ccrow would send is a holdout until this day (x:crew-adviser, the holdout)
 const HOLDOUT_UNTIL = '2026-10-20';
 export const WAKE_GAP_MS = 30 * 60_000;
@@ -572,6 +573,7 @@ export function buildPacket({
     dir,
     leaves,
     ledger,
+    meter,
     missing,
     proposal,
     unchanged = [],
@@ -591,6 +593,7 @@ export function buildPacket({
         : '';
     const body = [
         ...(ledger ? [ledger] : []),
+        ...(meter ? [meter] : []),
         `# cclio since the last wake\n\n${cut ? `${cut}\n\n` : ''}${deltaText || '(no text)'}`,
         proposalBlock,
         ...leafBlocks,
@@ -753,6 +756,7 @@ export function packWake({
         dir: join(STATE_DIR, 'packets', wakeId),
         leaves: toSend.changed,
         ledger: ledgerLine(now),
+        meter: meterLine(now),
         missing: leaves.missing,
         proposal,
         unchanged: toSend.unchanged,
@@ -816,6 +820,24 @@ export function appendJsonl(
 }
 
 // ccrow's day in one line: notes sent today, the holdout's next send in k, the last send's time, today's ok verdicts
+// the budget hunt quotes this line; x-mod-stash writes the file on every session.measure
+export function meterLine(now: Date, usagePath = USAGE_PATH) {
+    try {
+        const { rate_limits: limits, written_at: writtenAt } = JSON.parse(
+            readFileSync(usagePath, 'utf8'),
+        ) as UsageFile;
+        const fiveHour = limits?.five_hour;
+        const week = limits?.seven_day;
+        if (!fiveHour || !week) return '';
+        const hoursLeft = (at: number) =>
+            Math.max(0, Math.round((at * 1000 - now.getTime()) / 36e5));
+        const age = Math.round((now.getTime() - (writtenAt ?? 0) * 1000) / 6e4);
+        return `⏱️ 5h ${fiveHour.used_percentage} %, resets in ${hoursLeft(fiveHour.resets_at)} h | weekly ${week.used_percentage} %, resets in ${hoursLeft(week.resets_at)} h | read ${age} min ago`;
+    } catch {
+        return '';
+    }
+}
+
 export function ledgerLine(
     now: Date,
     notesPath = NOTES_PATH,
@@ -1150,6 +1172,14 @@ export interface Cut {
     outputs: number;
 }
 
+interface UsageFile {
+    rate_limits?: Record<
+        'five_hour' | 'seven_day',
+        { used_percentage: number; resets_at: number } | undefined
+    >;
+    written_at?: number;
+}
+
 interface PacketInput {
     cut?: string;
     dir: string;
@@ -1158,6 +1188,7 @@ interface PacketInput {
     missing: string[];
     proposal?: string;
     ledger?: string;
+    meter?: string;
     deltaText: string;
 }
 
