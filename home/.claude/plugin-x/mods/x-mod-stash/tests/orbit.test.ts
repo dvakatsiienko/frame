@@ -7,6 +7,12 @@ const TOOL = 'mcp__x-mod-stash__orbit';
 // one session: `contexts` holds each prompt's model-only context, `appended` each hidden mid-turn message
 // the orbit tool's description as the last start registered it
 let described = '';
+let schema: {
+    properties?: Record<
+        string,
+        { items?: { properties?: Record<string, unknown> }; enum?: string[] }
+    >;
+} = {};
 let isDeferred: boolean | undefined;
 
 function world(on: On) {
@@ -38,6 +44,7 @@ function world(on: On) {
     on('fs.list', () => ({ value: [] }));
     on('tool.register', (_$, e) => {
         described = e.description;
+        schema = e.inputSchema as typeof schema;
         isDeferred = e.isDeferred;
         return { value: { tool: `mcp__x-mod-stash__${e.name}` } };
     });
@@ -1714,4 +1721,42 @@ test('a phases steer alone never joins a turn', async ($, on) => {
     await w.clock.advance(5_000);
     await say($, 'go');
     expect((w.contexts.at(-1) ?? []).join('\n')).not.toMatch(/🌔 phases: dima/);
+});
+
+// the engine drops an argument its schema does not name: catch's `clear` reached no op until it joined (cclio, 21:08)
+test("orbit's schema names every argument its ops read", async ($, on) => {
+    world(on);
+    await start($);
+    const props = schema.properties ?? {};
+    const inner = (name: string) =>
+        Object.keys(props[name]?.items?.properties ?? {}).sort();
+    expect([
+        [
+            'act',
+            'asks',
+            'clear',
+            'current',
+            'id',
+            'ids',
+            'items',
+            'lines',
+            'op',
+            'pick',
+            'pieces',
+            'role',
+            'session',
+            'text',
+            'texts',
+            'title',
+            'words',
+        ].filter((name) => !(name in props)),
+        inner('asks'),
+        inner('pieces'),
+        props.act?.enum,
+    ]).toEqual([
+        [],
+        ['dies', 'hiddenNote', 'link', 'pick', 'text'],
+        ['hiddenNote', 'kind', 'text'],
+        ['create', 'edit', 'link', 'step', 'end'],
+    ]);
 });

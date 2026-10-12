@@ -2819,7 +2819,7 @@ export const register: Register = (on) => {
                 inputSchema: {
                     properties: {
                         act: {
-                            enum: ['create', 'link', 'step', 'end'],
+                            enum: ['create', 'edit', 'link', 'step', 'end'],
                             type: 'string',
                         },
                         asks: {
@@ -2836,6 +2836,7 @@ export const register: Register = (on) => {
                             },
                             type: 'array',
                         },
+                        clear: { items: { type: 'string' }, type: 'array' },
                         current: { type: 'number' },
                         id: { type: 'string' },
                         ids: { items: { type: 'string' }, type: 'array' },
@@ -2869,6 +2870,7 @@ export const register: Register = (on) => {
                             items: {
                                 properties: {
                                     hiddenNote: { type: 'string' },
+                                    kind: { type: 'string' },
                                     text: { type: 'string' },
                                 },
                                 required: ['text'],
