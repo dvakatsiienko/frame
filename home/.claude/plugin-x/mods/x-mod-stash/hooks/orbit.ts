@@ -169,7 +169,7 @@ export const wrongText = (wrong: OrbitAssumption[]) =>
         ...wrong.map(
             (x) =>
                 `- ${x.id} wrong assumption: ${x.text}` +
-                (x.steer ? ` · his steer: «${x.steer}»` : ''),
+                (x.steer ? ` · his steer: «${x.steer.trim()}»` : ''),
         ),
     ].join('\n');
 
@@ -195,7 +195,7 @@ export const thinkText = (pieces: OrbitCatch[]) =>
             (x) =>
                 `- ${x.id}: ${x.text}` +
                 (x.hiddenNote ? ` · your note: «${x.hiddenNote}»` : '') +
-                (x.steer ? ` · his steer: «${x.steer}»` : ''),
+                (x.steer ? ` · his steer: «${x.steer.trim()}»` : ''),
         ),
     ].join('\n');
 
@@ -204,7 +204,7 @@ export function joinText(asks: OrbitAsk[]) {
     const lines = asks.map(
         (a) =>
             `- ${a.id} ${markWord(a.mark)}: ${a.text} (your pick: ${a.pick})` +
-            (a.steer ? ` · his steer: «${a.steer}»` : '') +
+            (a.steer ? ` · his steer: «${a.steer.trim()}»` : '') +
             (a.hiddenNote ? ` · your note: «${a.hiddenNote}»` : ''),
     );
     return [
@@ -490,7 +490,7 @@ export function planText(p: StashPlan) {
                 .join(' and ') || 'left a steer on your phases'
         }; take it into account in this reply.`,
         ...(p.isMoved ? p.lines.map((l, i) => `${i + 1}. ${l}`) : []),
-        ...(p.steer ? [`his steer: «${p.steer}»`] : []),
+        ...(p.steer ? [`his steer: «${p.steer.trim()}»`] : []),
     ].join('\n');
 }
 

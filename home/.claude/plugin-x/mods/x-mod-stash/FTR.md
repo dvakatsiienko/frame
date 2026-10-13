@@ -391,6 +391,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: two toggles side by side at the row's left, no checkbox — the ☐ was a third control for the same choice (dima, 19:45)
   - decision: the steer keeps every keystroke — Enter saved it silently, and «nothing happened» (dima, 19:45)
   - decision: a field never redraws because of its own typing — it holds the value it showed while typed into and 3 s after, then shows the stored text; a change from outside (a follow clearing the steer) shows at once, a note field remounting when the clear matches what it showed (dima, 16:15 and 16:22: «a caret drifts and breaks the words»; drawing the latest typed text still drifted)
+  - decision: a steer is kept as typed, trailing spaces included, and trimmed only where the model reads it — a trimmed save was drawn back once typing went quiet, and the field lost what the trim cut (dima's ✨ wisp, 10-13 15:42); a steer of only spaces is none
   - decision: a steer saves once typing pauses for 1.5 s, so no redraw lands mid-typing and scrolls the field back to its start; a press, a prompt or a tool call saves a waiting steer first (dima's video, 16:40)
   - decision: the board's 4 s poll holds its redraw while a field was typed into in the last 3 s — after the save delay it was the one redraw left that snapped the field back (dima's o8, 16:54)
   - decision: the ask on its own line; under it one row: 🛎️ ↩️ 🔊 ▶️ ⏹️, then the steer; a full row of air between asks (dima, 19:52, 20:08, 20:17, 20:19)

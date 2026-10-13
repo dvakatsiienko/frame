@@ -404,6 +404,9 @@ export const typedInto = (
 // a steer field remounts on a clear it cannot otherwise show; a number field keeps its typed text beside its refusal line
 const isNumberField = (key: string) =>
     key.startsWith('knob:') || key === 'compact-at';
+// a steer keeps its text as typed: a trimmed save was drawn back once typing went quiet, and the desktop field lost
+// what the trim cut (dima's wisp, 10-13 15:42); only spaces is no steer, and the model reads it trimmed
+const steerOf = (value: string) => (value.trim() ? value : undefined);
 function field($: EngineInterface, key: string, saved: string) {
     const view = fieldView(drafts.get(key), saved, Date.now());
     if (view.kind === 'held') drafts.set(key, view.draft);
@@ -1619,7 +1622,7 @@ async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
     await showLanes($, lanes);
     return taken.map(
         (l) =>
-            `lane steer from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${steers[l.id]?.steer}»`,
+            `lane steer from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${steers[l.id]?.steer?.trim()}»`,
     );
 }
 
@@ -3752,7 +3755,7 @@ export const register: Register = (on) => {
         );
         const handleAssumedSteer = (id: string, value: string) =>
             void changeAssumed($, (y) =>
-                y.id === id ? { ...y, steer: value.trim() || undefined } : y,
+                y.id === id ? { ...y, steer: steerOf(value) } : y,
             );
         // 🐠 a 🤔 press toggles until a turn takes it; a locked piece is the running turn's and stays as it is
         const handleThink = async (id: string) => {
@@ -3772,13 +3775,13 @@ export const register: Register = (on) => {
         const handleCatchSteer = (id: string, value: string) =>
             void changeCaught($, (x) =>
                 x.id === id && !x.isLocked
-                    ? { ...x, steer: value.trim() || undefined }
+                    ? { ...x, steer: steerOf(value) }
                     : x,
             );
         // the steer keeps every keystroke, no Enter needed
         const handleSteer = (id: string, value: string) =>
             void markAsks($, (x) =>
-                x.id === id ? { ...x, steer: value.trim() || undefined } : x,
+                x.id === id ? { ...x, steer: steerOf(value) } : x,
             );
         // a locked ask is the running turn's: no control at all, its mark and steer as dim text (the api has no disabled)
         // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
@@ -4364,7 +4367,7 @@ export const register: Register = (on) => {
                                   steer: (x, value) =>
                                       void markRemote($, markSid, x, {
                                           mark: x.mark,
-                                          steer: value.trim() || undefined,
+                                          steer: steerOf(value),
                                       }),
                               }),
                           )
@@ -4401,10 +4404,7 @@ export const register: Register = (on) => {
                 mark: p.mark ? undefined : 'accepted',
             }));
         const handlePlanSteer = (value: string) =>
-            changePlan(
-                (p) => ({ ...p, steer: value.trim() || undefined }),
-                false,
-            );
+            changePlan((p) => ({ ...p, steer: steerOf(value) }), false);
         const arrowsJSX = (
             key: string,
             canUp: boolean,
@@ -4437,7 +4437,7 @@ export const register: Register = (on) => {
         const handleLaneSteer = (id: string, value: string) =>
             changeLaneSteer($, id, (n) => ({
                 ...n,
-                steer: value.trim() || undefined,
+                steer: steerOf(value),
             }));
         const handleLaneTake = (id: string) =>
             changeLaneSteer($, id, (n) => ({

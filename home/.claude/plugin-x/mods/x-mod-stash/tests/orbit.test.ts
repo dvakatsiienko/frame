@@ -160,6 +160,39 @@ test('a steer saves once typing pauses 1.5 s, never on each keystroke', async ($
     expect([typing, savedSteer(store)]).toEqual([undefined, 'ab']);
 });
 
+// a save mid-typing keeps the text as typed: a trimmed save was drawn back once typing went quiet, and the desktop
+// field lost what the trim cut (dima's wisp, 10-13 15:42)
+test('a steer saved after a pause keeps its trailing space, so the field never loses it', async ($, on) => {
+    const { clock, store } = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'not a ' });
+    await clock.advance(1600);
+    expect(savedSteer(store)).toBe('not a ');
+});
+
+test('a steer of only spaces saves as no steer', async ($, on) => {
+    const { clock, store } = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: '   ' });
+    await clock.advance(1600);
+    expect(savedSteer(store)).toBe(undefined);
+});
+
+test('a steer typed with a trailing space joins the turn trimmed', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron ' });
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'next');
+    expect(joined(w.contexts).join('\n')).toContain('his steer: «a heron»');
+});
+
 test('a tick pressed right after typing carries the steer still waiting to save', async ($, on) => {
     const w = world(on);
     await start($);
