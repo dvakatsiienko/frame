@@ -490,6 +490,32 @@ test("ccrow's tip line carries speak's buttons, reading the tip", async ($, on) 
     ).toBe(true);
 });
 
+test("ccrow's line leads with read and pause, and stop closes it (dima, 18:29)", async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            patch: { 3: { name: '🐦 ⬛ ccrow', sessionId: 'c3c3c3c3-crow' } },
+            reads: {
+                '/home/.local/state/ccrow/notes.jsonl': JSON.stringify({
+                    at: new Date(NOW - MIN).toISOString(),
+                    note: '- 👀 **for you:** read me aloud',
+                }),
+            },
+        },
+    );
+    const ui = await board($);
+    const row =
+        (await ui.find({ key: 'm:c3c3c3c3-crow', type: 'Box' }))?.text ?? '';
+    const at = (s: string) => row.indexOf(s);
+    expect([
+        at('🔊') < at('👀'),
+        at('▶️') < at('👀'),
+        at('⏹️') > at('👀'),
+    ]).toEqual([true, true, true]);
+});
+
 const held = (from: string, text: string, ago: number) => ({
     at: NOW - ago * MIN,
     from,
@@ -1446,11 +1472,11 @@ test('the undo delay field sits on the 📨 undo tick line, no label of its own'
     ]).toEqual([true, true, undefined]);
 });
 
-test('the state column keeps half a cell of air after the ctx meter on the desktop', async ($, on) => {
+test('the state column keeps a cell of air after the ctx meter on the desktop', async ($, on) => {
     fleet(on);
     const view = await board($);
     const margins = (await view.findAll({ type: 'Box' }))
         .filter((n) => n.key?.startsWith('state:'))
         .map((n) => n.props.marginLeft);
-    expect(margins).toEqual([0.5, 0.5]);
+    expect(margins).toEqual([1, 1]);
 });

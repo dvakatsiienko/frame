@@ -266,7 +266,7 @@
 - ⬜ ccrow's row carries her newest 👀 tip for dima
   - given ccrow's newest note written today holds a `👀 **for you:** …` line, with or without a leading `- `
   - when the board draws
-  - then her row's second line reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row, with 🔊 ▶️ ⏹️ that read it through speak; no other row ever carries it, and a tip from a past day never draws, even under 24 h old (dima, 10-13: yesterday's tip showed today)
+  - then her row's second line reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row, 🔊 ▶️ before it and ⏹️ after it, reading it through speak (dima's shot, 10-13 18:29); no other row ever carries it, and a tip from a past day never draws, even under 24 h old (dima, 10-13: yesterday's tip showed today)
   - source: `~/.local/state/ccrow/notes.jsonl`, read by the poll for her row only
   - decision: on her one line, in the wait slot — no strip and no numbers, the board is already cramped (PK-73, dima 01:42 and 14:16; his o5 pick, 15:35: «let's try»)
   - source: the session's own last reply, kept by its x-mod-stash at each reply end
@@ -345,7 +345,7 @@
 ## /board — 🐦‍🔥 second wind (todo 16, lane l14)
 
 - ⬜ the state column is as wide as the board's longest time
-  - given every row reads a short time (`1m`, `12m`), then the state column sizes to the longest of them, plus a cell of air so `21m` never clips (dima's shot, 18:01) and half a cell after the ctx meter on the desktop (18:14), so no row leaves a gap before its `🪐 n` (dima's shot, 10-13 17:45: «wasted horizontal space»)
+  - given every row reads a short time (`1m`, `12m`), then the state column sizes to the longest of them, plus a cell of air so `21m` never clips (dima's shot, 18:01) and a cell of air after the ctx meter on the desktop (18:14, 18:29), so no row leaves a gap before its `🪐 n` (dima's shot, 10-13 17:45: «wasted horizontal space»)
 - ⬜ a 🐦‍🔥 button beside every row's ctx meter asks that session for a second wind
   - makes: a `wind:<session id>` key in the store, read by every board and by that session's own stash
   - given the board is open, then every row, cclio's and this one's included, draws a plain 🐦‍🔥 left of its ctx meter
@@ -357,7 +357,7 @@
   - decision: name and emoji are dima's, 10-13 17:31 (o1, over «graceful-ctx-refresh»); the session's state is drawn in the line under its row, since a pane holds no hover card (`engine.md`)
   - decision: compact, never clear: the session id keeps its orbit, phases, kept state and glide link (`.scratch/mods-l13/refresh-proposal.md`)
 - ⬜ the band's 🐦‍🔥 asks this session for a second wind
-  - given the band, then a plain 🐦‍🔥 sits left of 🎛️; it presses as a row's button does, for this session only, and reads its state (📨, ✍️, 🌀), its hover naming it (dima, 10-13 18:01)
+  - given the band, then a plain 🐦‍🔥 leads the band's buttons, left of 🔥 keep-hot (dima's o8 and o11, 18:29–18:35); it presses as a row's button does, for this session only, and reads its state (📨, ✍️, 🌀), its hover naming it (dima, 10-13 18:01)
 - ⬜ a second press takes a second wind back
   - given the button reads 📨, when dima presses it again, then the ask is gone unseen and the button reads 🐦‍🔥
   - given it reads ✍️, when dima presses it, then it reads 📨 (`cancelled, tells it at its next turn`), and that turn carries one «second wind cancelled» line; a third press before then asks again

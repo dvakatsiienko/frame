@@ -148,10 +148,10 @@ test('every control in the row carries a hover card that names it', async ($, on
         '0 open asks for you',
         '0 phases',
         'enhance prompt',
+        'second wind: refresh this session at a good stop',
         "keep this session's cache hot: ping every 50 min",
         'wake every session stopped on the 5h cap',
         'afk: tell fleet that dima is away',
-        'second wind: refresh this session at a good stop',
         'settings: show or hide each part',
         'unfold fleet board',
     ]);
@@ -173,9 +173,8 @@ test("a toggle's hover card names what the next press does", async ($, on) => {
     const cards = (await ui.findAll({ type: 'Box' }))
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
-    expect(cards.slice(-4)).toEqual([
+    expect(cards.slice(-3)).toEqual([
         'back: tell fleet that dima is here',
-        'second wind: refresh this session at a good stop',
         'settings: show or hide each part',
         'unfold fleet board',
     ]);

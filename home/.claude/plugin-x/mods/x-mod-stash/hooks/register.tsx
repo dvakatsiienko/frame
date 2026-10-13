@@ -5348,7 +5348,7 @@ export const register: Register = (on) => {
                                 gap={1}
                                 justifyContent='flex-start'
                                 key={`state:${m.sid}`}
-                                marginLeft={e.surface === 'desktop' ? 0.5 : 0}
+                                marginLeft={e.surface === 'desktop' ? 1 : 0}
                                 width={stateColumns}>
                                 <Text>{status.emoji}</Text>
                                 {sinceMs === undefined ? null : (
@@ -5379,6 +5379,10 @@ export const register: Register = (on) => {
                             flexDirection='row'
                             gap={1}
                             paddingLeft={2}>
+                            {/* read and pause lead the tip, stop closes it (dima's shot, 18:29) */}
+                            {m.tip
+                                ? speakJSX(`crow:${m.sid}`, m.tip).slice(0, 2)
+                                : null}
                             {m.tip ? (
                                 <Box
                                     flexShrink={1}
@@ -5422,7 +5426,9 @@ export const register: Register = (on) => {
                                     </Text>
                                 </Box>
                             ) : null}
-                            {m.tip ? speakJSX(`crow:${m.sid}`, m.tip) : null}
+                            {m.tip
+                                ? speakJSX(`crow:${m.sid}`, m.tip).slice(2)
+                                : null}
                         </Box>
                     ) : null}
                     {/* a pane draws no hover card (engine.md), so second wind names its state and wait here */}
@@ -5885,6 +5891,25 @@ export const register: Register = (on) => {
         );
         const switches = (
             <Box flexDirection='row' flexShrink={0} gap={1} key='switches'>
+                {!isShown('stash.second-wind') || !view.selfId
+                    ? null
+                    : tip(
+                          'wind',
+                          view.wind
+                              ? `second wind: ${WIND_SAY[view.wind]}`
+                              : 'second wind: refresh this session at a good stop',
+                          <Button
+                              key='wind'
+                              onPress={() =>
+                                  void pressWind($, view.selfId ?? '')
+                              }
+                              {...(view.wind
+                                  ? { variant: 'secondary' as const }
+                                  : { plain: true as const })}>
+                              {WIND_EMOJI[view.wind ?? 'idle']}
+                          </Button>,
+                          leftOf(WIND_EMOJI[view.wind ?? 'idle'], !!view.wind),
+                      )}
                 {!isShown('stash.hot')
                     ? null
                     : tip(
@@ -5935,25 +5960,6 @@ export const register: Register = (on) => {
                               💨
                           </Button>,
                           leftOf('💨', view.afk),
-                      )}
-                {!isShown('stash.second-wind') || !view.selfId
-                    ? null
-                    : tip(
-                          'wind',
-                          view.wind
-                              ? `second wind: ${WIND_SAY[view.wind]}`
-                              : 'second wind: refresh this session at a good stop',
-                          <Button
-                              key='wind'
-                              onPress={() =>
-                                  void pressWind($, view.selfId ?? '')
-                              }
-                              {...(view.wind
-                                  ? { variant: 'secondary' as const }
-                                  : { plain: true as const })}>
-                              {WIND_EMOJI[view.wind ?? 'idle']}
-                          </Button>,
-                          leftOf(WIND_EMOJI[view.wind ?? 'idle'], !!view.wind),
                       )}
                 {tip(
                     'settings',
