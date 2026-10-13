@@ -512,7 +512,7 @@ test("ccrow's line leads with read and pause, and stop closes it (dima, 18:29)",
     expect([
         at('🔊') < at('👀'),
         at('▶️') < at('👀'),
-        at('⏹️') > at('👀'),
+        at('⏹️') < at('👀'),
     ]).toEqual([true, true, true]);
 });
 

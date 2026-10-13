@@ -5563,10 +5563,8 @@ export const register: Register = (on) => {
                             flexDirection='row'
                             gap={1}
                             paddingLeft={2}>
-                            {/* read and pause lead the tip, stop closes it (dima's shot, 18:29) */}
-                            {m.tip
-                                ? speakJSX(`crow:${m.sid}`, m.tip).slice(0, 2)
-                                : null}
+                            {/* read, pause and stop all lead the tip (dima's shots, 18:29, 19:40) */}
+                            {m.tip ? speakJSX(`crow:${m.sid}`, m.tip) : null}
                             {m.tip ? (
                                 <Box
                                     flexShrink={1}
@@ -5622,9 +5620,6 @@ export const register: Register = (on) => {
                                     </Text>
                                 </Box>
                             ) : null}
-                            {m.tip
-                                ? speakJSX(`crow:${m.sid}`, m.tip).slice(2)
-                                : null}
                         </Box>
                     ) : null}
                     {/* a pane draws no hover card (engine.md), so second wind names its state and wait here */}

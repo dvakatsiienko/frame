@@ -266,7 +266,7 @@
 - ⬜ ccrow's row carries her newest 👀 tip for dima
   - given ccrow's newest note written today holds a `👀 **for you:** …` line, with or without a leading `- `
   - when the board draws
-  - then her row's second line reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row, 🔊 ▶️ before it and ⏹️ after it, reading it through speak (dima's shot, 10-13 18:29); no other row ever carries it, and a tip from a past day never draws, even under 24 h old (dima, 10-13: yesterday's tip showed today)
+  - then her row's second line reads `👀 <the tip>` in the wait's place, bold markers stripped, clipped to the row, 🔊 ▶️ ⏹️ all before it, reading it through speak (dima's shots, 10-13 18:29, 19:40: «you forgot to move stop btn to the left too»); no other row ever carries it, and a tip from a past day never draws, even under 24 h old (dima, 10-13: yesterday's tip showed today)
   - source: `~/.local/state/ccrow/notes.jsonl`, read by the poll for her row only
   - decision: on her one line, in the wait slot — no strip and no numbers, the board is already cramped (PK-73, dima 01:42 and 14:16; his o5 pick, 15:35: «let's try»)
   - source: the session's own last reply, kept by its x-mod-stash at each reply end
