@@ -2534,9 +2534,10 @@ async function isUnstarted(
     );
 }
 
-// ccrow's newest 👀 «for you» line from her notes file, under a day old, its bold stripped (PK-73, dima 14:16: «i'd like to
-// see this note somewhere in a mod», the 👀 line only, no numbers)
-const CROW_TIP = /^- 👀 \*\*for you:\*\*\s*(.+)$/mu;
+// ccrow's newest 👀 «for you» line from her notes file, written today, its bold stripped (PK-73, dima 14:16: «i'd like to
+// see this note somewhere in a mod», the 👀 line only, no numbers); a past day's tip is stale even under 24 h (dima, 10-13),
+// and her notes print the line with or without a leading bullet
+const CROW_TIP = /^(?:- )?👀 \*\*for you:\*\*\s*(.+)$/mu;
 async function crowTip(
     $: EngineInterface,
     home: string | undefined,
@@ -2548,7 +2549,8 @@ async function crowTip(
     for (const line of raw.trim().split('\n').reverse()) {
         try {
             const v = JSON.parse(line) as { at?: string; note?: unknown };
-            if (now - Date.parse(v.at ?? '') > STALE_MS) return undefined;
+            const day = new Date(Date.parse(v.at ?? '')).toDateString();
+            if (day !== new Date(now).toDateString()) return undefined;
             const tip =
                 typeof v.note === 'string' && v.note.match(CROW_TIP)?.[1];
             if (tip) return tip.replaceAll('**', '').trim();

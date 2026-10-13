@@ -624,6 +624,44 @@ test('a tip over a day old leaves her row', async ($, on) => {
     expect(await row($, CROW_SID)).not.toContain('👀');
 });
 
+// NOW reads 1970-01-01 early morning in any zone from UTC-2 to UTC+14, so 6 h back is the day before, under 24 h old
+test('a tip from yesterday never draws, even under a day old', async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            patch: asCrow,
+            reads: crowNotes([
+                {
+                    at: NOW - 6 * 60 * MIN,
+                    note: "- 👀 **for you:** yesterday's advice",
+                },
+                { at: NOW - 5 * MIN, note: '🐦‍⬛ **15:30** wake\n🔴 no tip' },
+            ]),
+        },
+    );
+    expect(await row($, CROW_SID)).not.toContain('👀');
+});
+
+test('a tip line with no leading bullet draws, as her notes print it now', async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            patch: asCrow,
+            reads: crowNotes([
+                {
+                    at: NOW - 5 * MIN,
+                    note: '🐦‍⬛ **15:27** wake\n\n👀 **for you:** the rule was the right size',
+                },
+            ]),
+        },
+    );
+    expect(await row($, CROW_SID)).toContain('👀 the rule was the right size');
+});
+
 test("no other session's row carries her tip", async ($, on) => {
     fleet(
         on,
