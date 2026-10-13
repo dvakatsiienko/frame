@@ -91,6 +91,11 @@ type Reply = {
 };
 
 const PREFIX = 'asks:';
+// what the board draws from this session's $.state, kept per conversation in the store, so a session resumed in a new
+// process — a mac reboot relaunches every one — draws it again: $.state starts empty there (dima's ✨ wisps, 10-13 16:26
+// orbit and the sessions rows, 16:44 phases); kept past an exit, dropped after a week unused
+const KEPT = 'kept:';
+const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 // a glide card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
 const MARKS = 'marks:';
 const DIMA_AT = 'dima-at';
@@ -822,6 +827,7 @@ async function saveOrbit($: EngineInterface, next: StashOrbit) {
         await $.store
             .set(CATCH_SHELF, orbit.caught ?? [])
             .catch(() => undefined);
+    await keepState($, { orbit }).catch(() => undefined);
     const sid = await currentId($);
     if (!sid) return;
     const open = orbit.asks.filter((a) => !a.isResolved);
@@ -1701,10 +1707,63 @@ async function retire($: EngineInterface, sid: string) {
         } satisfies Reply);
 }
 
-// an ended session's reply is dropped a day after it ended
+type Kept = {
+    folds?: Record<string, boolean>;
+    mobile?: boolean;
+    orbit?: StashOrbit;
+    quiet?: StashQuiet;
+};
+// a part at its empty value keeps nothing, so a /clear leaves no copy of the conversation it left
+const isKeptBlank = (k: Kept) =>
+    !(
+        k.orbit?.asks.length ||
+        k.orbit?.assumed?.length ||
+        k.orbit?.caught?.length ||
+        k.orbit?.plan
+    ) &&
+    !Object.keys(k.folds ?? {}).length &&
+    !k.quiet?.held.length &&
+    !k.mobile;
+let keptJson = '';
+// every $.state part the board draws, written when one changed; a save passes its new value, since a read in the
+// same dispatch still sees the old one
+async function keepState($: EngineInterface, fresh: Kept = {}) {
+    const sid = await currentId($);
+    if (!sid) return;
+    const k: Kept = {
+        folds: fresh.folds ?? (await $.state.get(FOLDS)).value,
+        mobile: fresh.mobile ?? (await $.state.get(MOBILE)).value === true,
+        orbit: fresh.orbit ?? (await $.state.get(ORBIT)).value,
+        quiet: fresh.quiet ?? (await $.state.get(QUIET)).value,
+    };
+    const json = JSON.stringify([sid, k]);
+    if (json === keptJson) return;
+    keptJson = json;
+    if (isKeptBlank(k)) await $.store.delete(KEPT + sid);
+    else await $.store.set(KEPT + sid, { ...k, at: await $.clock.now() });
+}
+
+// a new process with an empty $.state takes back what its conversation kept: folds, mobile mode and held pings into
+// $.state now, the orbit returned for the start to load; a lock the old process held clears at the next turn end
+async function resumeState($: EngineInterface): Promise<StashOrbit> {
+    const sid = await $.session.id();
+    const kept = (await $.store.get(KEPT + sid)) as Kept | undefined;
+    if (!kept) return EMPTY_ORBIT;
+    if (kept.folds) await $.state.set(FOLDS, kept.folds);
+    if (kept.mobile) await $.state.set(MOBILE, true);
+    if (kept.quiet?.held.length) await $.state.set(QUIET, kept.quiet);
+    return kept.orbit ? steeredOrbit(kept.orbit) : EMPTY_ORBIT;
+}
+
+// an ended session's reply is dropped a day after it ended, a kept state a week after its last save
 async function pruneEnded($: EngineInterface) {
     const now = await $.clock.now();
     for (const key of await $.store.keys()) {
+        if (key.startsWith(KEPT)) {
+            const v = (await $.store.get(key)) as { at?: number } | undefined;
+            if (now - (v?.at ?? 0) >= KEPT_MS) await $.store.delete(key);
+            continue;
+        }
         if (!key.startsWith(REPLY)) continue;
         const v = (await $.store.get(key)) as Reply | undefined;
         if (v?.ended !== undefined && now - v.ended >= STALE_MS)
@@ -2609,6 +2668,23 @@ async function isUnstarted(
     );
 }
 
+// a session under a minute old is a probe, unless its transcript is older than its process: a resume, as every session
+// is after a mac reboot (dima's ✨ wisp, 10-13 16:26: the card showed cclio alone); FsStat has no birth time, so one
+// `stat` asks, and only for a young row
+async function isResumed(
+    $: EngineInterface,
+    home: string | undefined,
+    r: Registered,
+) {
+    if (!home || !r.cwd || r.startedAt === undefined) return false;
+    const path = `${home}/.claude/projects/${r.cwd.replace(/[^a-zA-Z0-9]/g, '-')}/${r.base.sid}.jsonl`;
+    const out = await $.process
+        .run(['stat', '-f', '%B', path])
+        .catch(() => undefined);
+    const born = Number(out?.stdout.trim()) * 1000;
+    return born > 0 && born < r.startedAt - SHORT_MS;
+}
+
 // ccrow's newest 👀 «for you» line from her notes file, written today, its bold stripped (PK-73, dima 14:16: «i'd like to
 // see this note somewhere in a mod», the 👀 line only, no numbers); a past day's tip is stale even under 24 h (dima, 10-13),
 // and her notes print the line with or without a leading bullet
@@ -2638,13 +2714,15 @@ async function crowTip(
 async function members($: EngineInterface): Promise<Member[]> {
     const out: Member[] = [];
     const now = await $.clock.now();
-    const shown = (await registry($)).filter(
-        (r) =>
-            r.isAlive &&
-            !HEADLESS.test(r.base.name) &&
-            !(r.startedAt !== undefined && now - r.startedAt < SHORT_MS),
-    );
     const home = await $.env.get('HOME');
+    const shown: Registered[] = [];
+    for (const r of await registry($)) {
+        if (!r.isAlive || HEADLESS.test(r.base.name)) continue;
+        const isYoung =
+            r.startedAt !== undefined && now - r.startedAt < SHORT_MS;
+        if (isYoung && !(await isResumed($, home, r))) continue;
+        shown.push(r);
+    }
     const stuckMs =
         (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
     for (const { bg, cwd, base: r } of shown) {
@@ -2902,11 +2980,14 @@ export const register: Register = (on) => {
         };
         orbit = await shelfOrbit(
             $,
-            kept.orbit ? steeredOrbit(kept.orbit) : EMPTY_ORBIT,
+            kept.orbit
+                ? steeredOrbit(kept.orbit)
+                : await resumeState($).catch(() => EMPTY_ORBIT),
         );
         // a reload after the steer rename or catch v2 keeps a held text: the migrated orbit is written back once
+        // through saveOrbit, so a resumed orbit's open asks reach the store every board counts from
         if (JSON.stringify(orbit) !== JSON.stringify(kept.orbit ?? EMPTY_ORBIT))
-            await $.state.set(ORBIT, orbit).catch(() => undefined);
+            await saveOrbit($, orbit);
         // every board reads the fleet's lanes from the shelf file: at a start, a reload, and on each poll
         lanesShown = '';
         await showLanes($, await readLanes($));
@@ -3053,6 +3134,8 @@ export const register: Register = (on) => {
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
                     await relayCcrowWake($).catch(() => undefined);
+                    // a fold or mobile mode is kept within one poll of its change
+                    await keepState($).catch(() => undefined);
                     if (await isOpen($))
                         await refreshSpeaking($).catch(() => undefined);
                     tick();
@@ -5110,7 +5193,11 @@ export const register: Register = (on) => {
             // the process goes on under a new id with no session.start: the next read takes it fresh
             selfId = undefined;
             await forget($, e.sessionId);
-        } else await retire($, e.sessionId);
+        } else {
+            // a quit keeps what the board drew, so the resumed session draws it again
+            await keepState($).catch(() => undefined);
+            await retire($, e.sessionId);
+        }
         return next(e);
     });
 

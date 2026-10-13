@@ -44,6 +44,8 @@ function fleet(
         dirs = {} as Record<string, FsEntry[]>,
         isOwner = false,
         sends = {} as Record<string, string[]>,
+        // a transcript's birth, epoch seconds by path, as `stat -f %B` prints it
+        born = {} as Record<string, number>,
     } = {},
 ) {
     const runs: string[][] = [];
@@ -97,15 +99,17 @@ function fleet(
                 stderr: '',
                 // `sh` is the board's own pid lookup: pid 1, the registry's cclio, when the board is hers
                 stdout:
-                    e.argv[0] === 'ps'
-                        ? alive.map((p) => `    ${p}\n`).join('')
-                        : e.argv[0] !== 'sh'
-                          ? ''
-                          : e.argv[2]?.includes('PPID')
-                            ? isOwner
-                                ? '1\nMon Oct 12 15:00:00 2026\n'
-                                : ''
-                            : (sends[e.argv[5] ?? ''] ?? []).join('\n'),
+                    e.argv[0] === 'stat'
+                        ? `${born[e.argv.at(-1) ?? ''] ?? ''}\n`
+                        : e.argv[0] === 'ps'
+                          ? alive.map((p) => `    ${p}\n`).join('')
+                          : e.argv[0] !== 'sh'
+                            ? ''
+                            : e.argv[2]?.includes('PPID')
+                              ? isOwner
+                                  ? '1\nMon Oct 12 15:00:00 2026\n'
+                                  : ''
+                              : (sends[e.argv[5] ?? ''] ?? []).join('\n'),
             },
         };
     });
@@ -218,6 +222,32 @@ test('a headless run named t-<hex> gets no row', async ($, on) => {
 
 test('a session started under a minute ago gets no row', async ($, on) => {
     fleet(on, {}, { patch: { 2: { startedAt: NOW - 59_000 } } });
+    expect(Object.keys(await rowsBySid($))).toEqual([HERE]);
+});
+
+// a reboot relaunches every session under a new pid: one resumed has a transcript older than its process, a new one
+// does not (dima's ✨ wisp, 10-13 16:26: the card showed cclio alone)
+test('a session resumed under a minute ago keeps its row', async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            born: { [`${PROJECT}/${PEER}.jsonl`]: (NOW - 2 * MIN) / 1000 },
+            patch: { 2: { cwd: '/home/frame', startedAt: NOW - 20_000 } },
+        },
+    );
+    expect(Object.keys(await rowsBySid($))).toEqual([HERE, PEER]);
+});
+
+test('a new session under a minute old, its transcript as young, still gets no row', async ($, on) => {
+    fleet(
+        on,
+        {},
+        {
+            born: { [`${PROJECT}/${PEER}.jsonl`]: (NOW - 15_000) / 1000 },
+            patch: { 2: { cwd: '/home/frame', startedAt: NOW - 20_000 } },
+        },
+    );
     expect(Object.keys(await rowsBySid($))).toEqual([HERE]);
 });
 

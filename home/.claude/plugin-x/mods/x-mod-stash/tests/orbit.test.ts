@@ -2098,3 +2098,178 @@ test('with mobile mode off and orbit on, no prompt carries the no-board reminder
     await say($, 'hi');
     expect(noBoard(w)).toEqual([]);
 });
+
+/* a mac reboot relaunches every session: its orbit comes back (dima's ✨ wisp, 10-13 16:26: o169 was gone) */
+
+// the session's $.state as a map the test can wipe, as a new process starts with none
+function stateOf(on: On) {
+    const state = new Map<string, unknown>();
+    on('state.get', (_$, e) => ({
+        value: { value: state.get(e.key), version: state.has(e.key) ? 1 : 0 },
+    }));
+    on('state.set', (_$, e) => {
+        state.set(e.key, e.value);
+        return { value: { isSet: true, version: 2 } };
+    });
+    on('session.end', (_$, e) => ({ sessionId: e.sessionId }));
+    return state;
+}
+
+// the old process quits as a reboot quits it: session.end, not a /clear
+const quit = ($: Engine) =>
+    $.session.end({ reason: 'other', sessionId: SID } as never);
+
+test('open asks come back when the session is resumed in a new process', async ($, on) => {
+    world(on);
+    const state = stateOf(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes'], ['trash the probe', 'no']);
+    await quit($);
+    state.clear();
+    await start($);
+    const ui = await board($);
+    expect(await asksShown(ui)).toEqual(['o1', 'o2']);
+});
+
+test('a resumed orbit keeps counting its ids where it stopped', async ($, on) => {
+    world(on);
+    const state = stateOf(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await quit($);
+    state.clear();
+    await start($);
+    const r = (await add($, ['one more', 'yes'])) as { result?: string };
+    expect(r.result).toMatch(/^added o2 /);
+});
+
+test('a /clear starts the next conversation with an empty orbit', async ($, on) => {
+    world(on);
+    const state = stateOf(on);
+    on('command.run', () => ({ text: '' }));
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await $.command.run({
+        args: '',
+        command: 'clear',
+        origin: { kind: 'composer' },
+        presentation: { columns: 80, isFullscreen: false },
+    });
+    state.clear();
+    await start($);
+    const ui = await board($);
+    expect(await asksShown(ui)).toEqual([]);
+});
+
+test('a kept state unsaved for a week is dropped at the next start', async ($, on) => {
+    const w = world(on);
+    const week = 7 * 24 * 60 * 60 * 1000;
+    w.store.set('kept:gone-sid', { at: w.clock.now() - week, orbit: {} });
+    w.store.set('kept:recent-sid', {
+        at: w.clock.now() - week + 60_000,
+        orbit: {},
+    });
+    await start($);
+    expect([...w.store.keys()].filter((k) => k.startsWith('kept:'))).toEqual([
+        'kept:recent-sid',
+    ]);
+});
+
+test("a resumed orbit's open asks reach the store again, so every board counts them", async ($, on) => {
+    const w = world(on);
+    const state = stateOf(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await quit($);
+    state.clear();
+    await start($);
+    expect(
+        (w.store.get(`asks:${SID}`) as { asks?: string[] } | undefined)?.asks,
+    ).toEqual(['push FRM-1']);
+});
+
+test('🌔 phases come back when the session is resumed in a new process', async ($, on) => {
+    const w = world(on);
+    const state = stateOf(on);
+    await start($);
+    await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
+    await quit($);
+    state.clear();
+    await start($);
+    await say($, 'hi');
+    expect(lines(w)).toMatch(/plan set/);
+});
+
+test('a folded card comes back folded when the session is resumed in a new process', async ($, on) => {
+    world(on);
+    const state = stateOf(on);
+    await start($);
+    state.set('folds', { 'orbit:assumed': true });
+    await quit($);
+    state.clear();
+    await start($);
+    expect(state.get('folds')).toEqual({ 'orbit:assumed': true });
+});
+
+test('📱 mobile mode comes back on when the session is resumed in a new process', async ($, on) => {
+    const w = world(on);
+    const state = stateOf(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await mobile($);
+    await quit($);
+    state.clear();
+    await start($);
+    await say($, 'hi');
+    expect(lines(w)).toMatch(/no board reaches dima/);
+});
+
+test("held member pings come back when cclio's session is resumed in a new process", async ($, on) => {
+    world(on);
+    const state = stateOf(on);
+    await start($);
+    const held = {
+        held: [{ at: 1, from: '☕️ 🔧 coder: mods', text: 'step 2 landed' }],
+    };
+    state.set('quiet', held);
+    await quit($);
+    state.clear();
+    await start($);
+    expect(state.get('quiet')).toEqual(held);
+});
+
+// a crash or a power cut ends the process with no session.end: what was saved before it comes back
+test('asks saved before a crash come back, with no clean quit', async ($, on) => {
+    world(on);
+    const state = stateOf(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    state.clear();
+    await start($);
+    const ui = await board($);
+    expect(await asksShown(ui)).toEqual(['o1']);
+});
+
+test('a fold made a poll before a crash comes back, with no clean quit', async ($, on) => {
+    const w = world(on);
+    const state = stateOf(on);
+    await start($);
+    state.set('folds', { 'orbit:assumed': true });
+    await w.clock.advance(4_000);
+    state.clear();
+    await start($);
+    expect(state.get('folds')).toEqual({ 'orbit:assumed': true });
+});
+
+test('a poll that finds nothing changed leaves the kept copy as it was', async ($, on) => {
+    const w = world(on);
+    stateOf(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const before = (w.store.get(`kept:${SID}`) as { at?: number } | undefined)
+        ?.at;
+    await w.clock.advance(8_000);
+    expect(
+        (w.store.get(`kept:${SID}`) as { at?: number } | undefined)?.at,
+    ).toBe(before);
+});

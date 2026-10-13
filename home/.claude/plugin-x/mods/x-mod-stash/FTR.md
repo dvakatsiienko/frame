@@ -231,6 +231,7 @@
   - decision: cards over strips and the dashboard, tried side by side in a throwaway `board-lab` mod (dima, 16:48 «strips — no, windows 92 look», «colors are ugly»; 16:54 «apply the cards layout»)
   - decision: cc's registry stores «🐦‍⬛ ccrow» with the zero-width joiner as a space, so the board puts the joiner back for that one sequence — a plain string fix, no emoji parser (FRM-325)
   - decision: a session younger than a minute, counted from the registry's `startedAt`, gets no row — a probe that exits within a minute never shows; one that lives on gets its row once it is a minute old (FRM-325)
+  - and a session resumed under a minute ago keeps its row from the first poll: its transcript is older than its process, as every session's is after a mac reboot (dima's ✨ wisp, 10-13 16:26: the card showed cclio alone)
   - decision: a session that never ran a turn gets no row and no count — its project folder under `~/.claude/projects/` holds no `<session id>.jsonl` yet; the desktop's warm spares sit in the registry like this (cclio-9a, 2026-10-09; that they are spares is an inference). a missing project folder keeps the row, since cc hashes a long path's folder name
   - decision: a session named `t-` + hex (`t-70`) gets no row — dima, 2026-10-05; that these are short-lived headless `claude -p` runs is an inference, no cc source names them
   - decision: a full row between members on every surface, no rule — the pane has room the one-row band does not (dima, 2026-10-05)
@@ -341,6 +342,11 @@
   - decision: the registry name says whose board it is, never the cwd; a probe left loaded swallowed cclio's 16:03 brief after its proof (pk-93 retro)
 
 ## /board — 🪐 orbit
+
+- ⬜ the board survives a mac reboot (dima's ✨ wisps, 10-13 16:26, 16:44)
+  - makes: one `kept:<session id>` key in x-mod-stash's `$.store`: the orbit (asks, assumptions, catch, phases), the folded cards, mobile mode and the held member pings, written on each orbit save, each poll and at a quit; none while all are empty; dropped a week after its last write
+  - given open asks, phases, a folded card, mobile mode or held pings, when the session is resumed in a new process — a reboot, a crash, a quit and `claude -r` — then the board draws them again and the ids count on; a /clear starts the next conversation empty
+  - decision: one path for every `$.state` part the board draws, since `$.state` starts empty in a new process; the rest of `$.state` is redrawn by the next poll or measure
 
 - ⬜ an ask carries one link dima opens in a click (brief 8)
   - given cclio adds an ask with `link` — an https url, or a file path from `/` or `~/`
