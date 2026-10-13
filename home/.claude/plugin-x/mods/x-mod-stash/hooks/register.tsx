@@ -3848,7 +3848,7 @@ export const register: Register = (on) => {
                         flexDirection='row'
                         gap={1}
                         key={`knob:${key}`}>
-                        <Text>{label}</Text>
+                        {label ? <Text>{label}</Text> : null}
                         <Box flexShrink={0} width={8}>
                             <Input
                                 key={field($, `knob:${key}`, String(value)).key}
@@ -3915,15 +3915,17 @@ export const register: Register = (on) => {
                         })}
                     </Box>
                     {numberJSX('lines', '🌔 phase lines', knobs.lines, 'lines')}
-                    {switchJSX('undo', '📨 undo tick', knobs.undo)}
-                    {knobs.undo
-                        ? numberJSX(
-                              'undoDelay',
-                              '📨 undo delay',
-                              knobs.undoDelay,
-                              's',
-                          )
-                        : null}
+                    {/* the toggle and its seconds on one line, as phase lines reads (dima, 10-13 18:14) */}
+                    <Box
+                        alignItems='center'
+                        flexDirection='row'
+                        gap={1}
+                        key='knob:undo-row'>
+                        {switchJSX('undo', '📨 undo tick', knobs.undo)}
+                        {knobs.undo
+                            ? numberJSX('undoDelay', '', knobs.undoDelay, 's')
+                            : null}
+                    </Box>
                     {switchJSX(
                         'speak',
                         '🔊 read-aloud on assumptions',
@@ -4285,24 +4287,20 @@ export const register: Register = (on) => {
         // the ask on its own line, the bold id leading it; under it one row: the steer, 🛎️ ↩️, then speak's 🔊 ⏯ ⏹
         // (dima, 20:08); a full row of air between asks (dima, 19:52)
         // an ask resolved with a closing word draws dim, the word after its text and no controls, for its turn and one more
-        // one line, no card: its emoji from the word, the word kept whole and the ask cut short (dima's shot, 20:37)
+        // no card: its emoji from the word and the ask on one line, the word under it, dim and whole (dima's shots,
+        // 20:37 and 10-13 18:20: on one line the word got cut)
         const closedJSX = (a: OrbitAsk, i: number, door: AskDoor) => (
             <Box
-                flexDirection='row'
-                gap={1}
+                flexDirection='column'
                 key={`${door.prefix}:ask:${a.id}`}
                 marginTop={i > 0 ? 0.5 : 0}
                 paddingX={1}>
-                <Box flexShrink={1} minWidth={0}>
-                    <Text dimColor wrap='truncate-end'>
-                        {`${closedMark(a.word ?? '')} ${a.id}: ${a.text}`}
-                    </Text>
-                </Box>
-                <Box flexShrink={0}>
-                    <Text bold dimColor>
-                        {a.word}
-                    </Text>
-                </Box>
+                <Text dimColor wrap='truncate-end'>
+                    {`${closedMark(a.word ?? '')} ${a.id}: ${a.text}`}
+                </Text>
+                <Text bold dimColor>
+                    {`➡️ ${a.word}`}
+                </Text>
             </Box>
         );
         // an ask with an expiry says what it is beside its controls (dima, 20:37: «⌛ halt» did not read)
@@ -5344,11 +5342,13 @@ export const register: Register = (on) => {
                             {/* the emoji sits against its time, both packed left: they say one thing, the state and how long
                                 (dima, 22:11: «join pace emojis with time»), and every row's emoji lines up (dima, 10-13 16:59:
                                 right-aligned, they read as a ladder) */}
+                            {/* a little air after the ctx meter (dima's shot, 18:14: «slightly more breathing room») */}
                             <Box
                                 flexDirection='row'
                                 gap={1}
                                 justifyContent='flex-start'
                                 key={`state:${m.sid}`}
+                                marginLeft={e.surface === 'desktop' ? 0.5 : 0}
                                 width={stateColumns}>
                                 <Text>{status.emoji}</Text>
                                 {sinceMs === undefined ? null : (

@@ -1433,3 +1433,24 @@ test('the ctx meter type is two buttons, one lit; pressing the lit one changes n
         ['knob:ctx-bar'],
     ]);
 });
+
+test('the undo delay field sits on the 📨 undo tick line, no label of its own', async ($, on) => {
+    fleet(on);
+    await board($);
+    const settings = await settingsPane($);
+    const line = await settings.find({ key: 'knob:undo-row', type: 'Box' });
+    expect([
+        line?.text?.includes('📨 undo tick'),
+        line?.text?.includes('s (1–30)'),
+        (await settings.find({ text: /undo delay/, type: 'Text' }))?.text,
+    ]).toEqual([true, true, undefined]);
+});
+
+test('the state column keeps half a cell of air after the ctx meter on the desktop', async ($, on) => {
+    fleet(on);
+    const view = await board($);
+    const margins = (await view.findAll({ type: 'Box' }))
+        .filter((n) => n.key?.startsWith('state:'))
+        .map((n) => n.props.marginLeft);
+    expect(margins).toEqual([0.5, 0.5]);
+});

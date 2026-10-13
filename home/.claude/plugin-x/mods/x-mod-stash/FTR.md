@@ -345,7 +345,7 @@
 ## /board — 🐦‍🔥 second wind (todo 16, lane l14)
 
 - ⬜ the state column is as wide as the board's longest time
-  - given every row reads a short time (`1m`, `12m`), then the state column sizes to the longest of them, plus a cell of air so `21m` never clips (dima's shot, 18:01), so no row leaves a gap before its `🪐 n` (dima's shot, 10-13 17:45: «wasted horizontal space»)
+  - given every row reads a short time (`1m`, `12m`), then the state column sizes to the longest of them, plus a cell of air so `21m` never clips (dima's shot, 18:01) and half a cell after the ctx meter on the desktop (18:14), so no row leaves a gap before its `🪐 n` (dima's shot, 10-13 17:45: «wasted horizontal space»)
 - ⬜ a 🐦‍🔥 button beside every row's ctx meter asks that session for a second wind
   - makes: a `wind:<session id>` key in the store, read by every board and by that session's own stash
   - given the board is open, then every row, cclio's and this one's included, draws a plain 🐦‍🔥 left of its ctx meter
@@ -479,11 +479,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - and no running turn takes it before the 5 s pass; after them it joins the turn at its next tool call, as before
   - decision: dima's own prompt sends a tick still sending at once — submitting is his «send», and the moment to unsend has passed (lane l12, 2026-10-12)
 - ⬜ the 🎛️ `📨 undo tick` switch and its `📨 undo delay` field set the «sending» wait
-  - given the switch is on (the default), then a `📨 undo delay` field under it holds the wait in seconds, 5 by default, 1–30, and every tick, replay and phases change waits that long (dima, 10-13 18:01)
+  - given the switch is on (the default), then a seconds field on its own line, right of it, holds the wait, 5 by default, 1–30, and every tick, replay and phases change waits that long (dima, 10-13 18:01)
   - given it is off, when dima ticks or replays an ask on any board, a glide card included, or ticks his phases, then the button reads `✅` at once and the next turn, or the running turn at its next tool call, takes it, and the field is hidden (dima, 10-13 17:49)
 - ⬜ a resolve can carry a closing word
   - given a session resolves an ask with a closing word (`words: { o1: "landed" }`)
-  - then the ask collapses to one dim line, no card and no controls: an emoji from the word (🗑️ dropped, ▶️ started or queued, ✅ anything else), its id and text cut short, the word in bold at the end — `✅ o1: <ask> **landed**` (dima's shot, 20:37)
+  - then the ask collapses to two dim lines, no card and no controls: an emoji from the word (🗑️ dropped, ▶️ started or queued, ✅ anything else) with its id and text, cut short, then `➡️ <word>` in bold under it, never cut — `✅ o1: <ask>` / `➡️ **landed**` (dima's shots, 20:37, 10-13 18:20)
   - when the turn ends, then it stays, dim, through the next turn; at that turn's end it leaves
   - decision: an ask resolved with no word leaves at its turn end as before (cclio's brief 8, 2026-10-12)
 - ⬜ an ask can carry an expiry

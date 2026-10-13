@@ -443,6 +443,19 @@ test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
 const texts = async (ui: Board) =>
     (await ui.findAll({ type: 'Text' })).map((t) => t.text ?? '').join('\n');
 
+test('a resolved ask reads its closing word on a line of its own under it', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await orbit($, { ids: ['o1'], op: 'resolve', words: { o1: 'landed' } });
+    const box = await ui.find({ key: 'orbit:ask:o1', type: 'Box' });
+    expect([
+        box?.props.flexDirection,
+        (await ui.find({ text: '➡️ landed', type: 'Text' }))?.text,
+    ]).toEqual(['column', '➡️ landed']);
+});
+
 test('an ask resolved with a closing word shows dim with it for one more turn, then leaves', async ($, on) => {
     world(on);
     await start($);
