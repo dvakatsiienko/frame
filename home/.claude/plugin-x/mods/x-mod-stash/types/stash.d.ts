@@ -88,6 +88,8 @@ export type StashView = {
 export type StashBoardView = {
     members?: StashMember[];
     isColour: boolean;
+    // the ctx meter drawn as a ring (C), else the % with a bar under it (B)
+    isRing: boolean;
     // the poll's clock, so the board's «busy 3m» spans move on their own
     at: number;
     // cclio's board only: each dev-mods probe past its probe, «<mod> (<session short id>)»

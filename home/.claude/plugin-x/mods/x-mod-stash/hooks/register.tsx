@@ -119,6 +119,8 @@ const CONTEXT = 'context:';
 const MODEL = 'model:';
 // the board's colour MVP: one fleet-wide switch, `/board colour`, off by default (FRM-329)
 const COLOUR = 'board-colour';
+// the row's ctx meter as a ring (C) or the % with a thin bar under it (B): dima keeps both, a 🎛️ switch picks (10-13 17:00)
+const CTX_RING_KEY = 'ctx-ring';
 // `/board breathe`: the bars breathe idle too, while dima refines the look (2026-10-11 12:20); off by default, a try
 const BREATH_PREVIEW = 'breath-preview';
 // the 🎛️ knobs (FRM-391 slice 06), fleet-wide in stash's store like the switches: a missing key is the default
@@ -142,6 +144,7 @@ const SWITCHES = {
     breathe: { key: BREATHE, of: true },
     colour: { key: COLOUR, of: false },
     quiet: { key: QUIET_ON, of: true },
+    ring: { key: CTX_RING_KEY, of: true },
     silent: { key: GUARD_SILENT, of: false },
     speak: { key: SPEAK_ASSUMED, of: true },
 } as const;
@@ -2068,6 +2071,7 @@ async function publish($: EngineInterface) {
         const board = {
             at: now,
             isColour: await readSwitch($, 'colour'),
+            isRing: await readSwitch($, 'ring'),
             members: await members($).catch(() => undefined),
             ...((await isLaneOwner($))
                 ? {
@@ -2379,36 +2383,37 @@ export const effortLevel = (word: string | undefined) => {
 };
 export const effortCells = (level: number) =>
     meterCells((level / EFFORTS.length) * 100, EFFORTS.length);
-// a session row's two meters, effort and context, in one look (dima, 10-12 22:11: «windows 92 … try gruvbox», «consistent
-// with the effort level meter»; 10-13 16:04: «unified look», effort «slightly brighter … or cells 1px bigger»): 6 px cells,
-// a px over the band's, in gruvbox — its faded tones on light, 3.8:1 or more on white where the band's ramp fell to 1.9:1,
-// its bright tones on dark
-export const ROW_RAMP = {
-    dark: ['#b8bb26', '#fabd2f', '#fe8019', '#fb4934'],
-    light: ['#79740e', '#b57614', '#af3a03', '#9d0006'],
+// a session row's two meters, effort and context, in one bright look (dima, 10-13 16:50: «looks like a swamp. make
+// prettier, brighter»): five steps, green, lime, amber, orange, red, never blended — an RGB mix of green and amber is
+// the olive he saw; light mode takes tailwind's 600s (3:1 or more on white), dark its 400s (6:1 or more)
+export const ROW_STEPS = {
+    dark: ['#4ade80', '#a3e635', '#fbbf24', '#fb923c', '#f87171'],
+    light: ['#16a34a', '#65a30d', '#d97706', '#ea580c', '#dc2626'],
 } as const;
-const RAMP_STOPS = [0, 0.45, 0.75, 1] as const;
+const TRACK = { dark: '#3a3836', light: '#e5e7eb' } as const;
 const ROW_CELL = { gap: 2, size: 6 } as const;
 const ROW_STEP = ROW_CELL.size + ROW_CELL.gap;
-const stopsCss = (ramp: readonly string[]) =>
-    ramp.map((c, i) => `.r${i}{stop-color:${c}}`).join('');
-const ROW_STYLE =
-    `:root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.6}${stopsCss(ROW_RAMP.light)}` +
-    `@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.55}${stopsCss(ROW_RAMP.dark)}}`;
-const rampDefs = (to: number) =>
-    `<defs><linearGradient id="ramp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${to.toFixed(1)}" y2="0">` +
-    RAMP_STOPS.map((at, i) => `<stop class="r${i}" offset="${at}"/>`).join('') +
-    '</linearGradient></defs>';
-const rowCell = (x: number, y: number, isLit: boolean) =>
-    `<rect${isLit ? '' : ' class="off"'} x="${x}" y="${y}" width="${ROW_CELL.size}" height="${ROW_CELL.size}" rx="1.5"${isLit ? ' fill="url(#ramp)"' : ''}/>`;
+// the step at t: four below the compaction point (t < 1), red from it on
+const stepOf = (t: number) => (t >= 1 ? 4 : Math.max(0, Math.floor(t * 4)));
+const themed = (light: string, dark: string) =>
+    `:root{color-scheme:light dark}${light}@media (prefers-color-scheme:dark){${dark}}`;
+const svgOf = (w: number, h: number, style: string, body: string) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><style>${style}</style>${body}</svg>`;
+const NUMBER_FONT =
+    'font-family="-apple-system,system-ui,sans-serif" font-size="12" font-weight="650" style="font-variant-numeric:tabular-nums"';
 export function effortSvg(level: number) {
     const w = EFFORTS.length * ROW_STEP - ROW_CELL.gap;
-    const cells = effortCells(level).map((c, i) =>
-        rowCell(i * ROW_STEP, 0, c.kind === 'fill'),
+    const css = (mode: 'light' | 'dark') =>
+        `.off{fill:${TRACK[mode]}}${ROW_STEPS[mode].map((c, i) => `.e${i}{fill:${c}}`).join('')}`;
+    const cells = effortCells(level).map(
+        (c, i) =>
+            `<rect class="${c.kind === 'fill' ? `e${i}` : 'off'}" x="${i * ROW_STEP}" y="0" width="${ROW_CELL.size}" height="${ROW_CELL.size}" rx="1.5"/>`,
     );
-    return (
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${ROW_CELL.size}" viewBox="0 0 ${w} ${ROW_CELL.size}">` +
-        `<style>${ROW_STYLE}</style>${rampDefs(w)}${cells.join('')}</svg>`
+    return svgOf(
+        w,
+        ROW_CELL.size,
+        themed(css('light'), css('dark')),
+        cells.join(''),
     );
 }
 export const EFFORT_CELL = ROW_CELL.size;
@@ -2433,14 +2438,7 @@ export function contrastOf(a: string, b: string) {
     const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
     return ((hi ?? 0) + 0.05) / ((lo ?? 0) + 0.05);
 }
-// the ramp's colour at t (0–1), the gradient's own stops
-const rampAt = (ramp: readonly string[], t: number) => {
-    const i = RAMP_STOPS.findIndex((at) => at >= t);
-    if (i <= 0) return ramp[0] ?? '#000000';
-    const [from, to] = [RAMP_STOPS[i - 1] ?? 0, RAMP_STOPS[i] ?? 1];
-    return mix(ramp[i - 1] ?? '', ramp[i] ?? '', (t - from) / (to - from));
-};
-// a light-pane text tint darkened until it reads at 4.5:1 on white; the dark ramp reads at 4.8:1 or more as it is
+// a light-pane text tint darkened until it reads at 4.5:1 on white; the dark steps read at 6:1 or more as they are
 const readable = (tint: string) => {
     let c = tint;
     for (let k = 1; contrastOf(c, '#ffffff') < 4.5 && k <= 20; k++)
@@ -2448,37 +2446,57 @@ const readable = (tint: string) => {
     return c;
 };
 
-// a row's context: 8 cells and its % beside them, one svg of one width at any fill; the cells and the number warm
-// along the ramp, red reached at the session's compaction point (80 when it is unknown)
-const CTX_CELLS = 8;
-const CTX_NUMBER_W = 32;
-const CTX_CELLS_W = CTX_CELLS * ROW_STEP - ROW_CELL.gap;
-export const CTX_METER = {
-    height: 14,
-    width: CTX_CELLS_W + 4 + CTX_NUMBER_W,
-} as const;
+// a row's context, its % merged into the meter (dima, 10-13 16:50), the meter and the % in the step the fill has reached,
+// red at the session's compaction point (80 when it is unknown); two takes he switches in 🎛️ (17:00: «i like B (more
+// compact) and C (more pretty)»)
 const CTX_FALLBACK_AT = 80;
-export function ctxMeterSvg(percent: number, compactAt = CTX_FALLBACK_AT) {
-    const { height: h, width: w } = CTX_METER;
-    const p = Math.min(100, Math.max(0, Math.round(percent)));
-    const lit = Math.round((p / 100) * CTX_CELLS);
-    const y = (h - ROW_CELL.size) / 2;
-    const cells = Array.from({ length: CTX_CELLS }, (_, i) =>
-        rowCell(i * ROW_STEP, y, i < lit),
+const ctxStyle = (
+    percent: number,
+    compactAt: number,
+    mark: 'fill' | 'stroke',
+) => {
+    const i = stepOf(percent / compactAt);
+    const css = (mode: 'light' | 'dark') => {
+        const tint = ROW_STEPS[mode][i] ?? '';
+        return `.t{${mark}:${TRACK[mode]}}.c{${mark}:${tint}}.n{fill:${mode === 'light' ? readable(tint) : tint}}`;
+    };
+    return themed(css('light'), css('dark'));
+};
+const pctOf = (percent: number) =>
+    Math.min(100, Math.max(0, Math.round(percent)));
+// B: the % with a 3-px bar under it, as wide as «100%»
+export const CTX_BAR = { height: 18, width: 34 } as const;
+export function ctxBarSvg(percent: number, compactAt = CTX_FALLBACK_AT) {
+    const { height: h, width: w } = CTX_BAR;
+    const p = pctOf(percent);
+    const fill = (p / 100) * w;
+    return svgOf(
+        w,
+        h,
+        ctxStyle(p, compactAt, 'fill'),
+        `<text class="n" x="${w}" y="10" text-anchor="end" ${NUMBER_FONT}>${p}%</text>` +
+            `<rect class="t" x="0" y="14" width="${w}" height="3" rx="1.5"/>` +
+            (p > 0
+                ? `<rect class="c" x="0" y="14" width="${fill.toFixed(1)}" height="3" rx="1.5"/>`
+                : ''),
     );
-    const t = Math.min(1, p / compactAt);
-    const light = readable(rampAt(ROW_RAMP.light, t));
-    const dark = rampAt(ROW_RAMP.dark, t);
-    const redAt = Math.min(
-        CTX_CELLS_W,
-        Math.max(ROW_STEP, (compactAt / 100) * CTX_CELLS_W),
-    );
-    return (
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
-        `<style>${ROW_STYLE}.n{fill:${light}}@media (prefers-color-scheme:dark){.n{fill:${dark}}}</style>` +
-        `${rampDefs(redAt)}${cells.join('')}` +
-        `<text class="n" x="${w}" y="${h / 2}" dy=".35em" text-anchor="end" font-family="-apple-system,system-ui,sans-serif" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">${p}%</text>` +
-        '</svg>'
+}
+// C: a ring filled to the %, the % beside it
+export const CTX_RING = { height: 16, width: 50 } as const;
+export function ctxRingSvg(percent: number, compactAt = CTX_FALLBACK_AT) {
+    const { height: h, width: w } = CTX_RING;
+    const p = pctOf(percent);
+    const [r, c] = [6, 8];
+    const whole = 2 * Math.PI * r;
+    return svgOf(
+        w,
+        h,
+        ctxStyle(p, compactAt, 'stroke'),
+        `<circle class="t" cx="${c}" cy="${c}" r="${r}" fill="none" stroke-width="3"/>` +
+            (p > 0
+                ? `<circle class="c" cx="${c}" cy="${c}" r="${r}" fill="none" stroke-width="3" stroke-linecap="round" stroke-dasharray="${((p / 100) * whole).toFixed(2)} ${whole.toFixed(2)}" transform="rotate(-90 ${c} ${c})"/>`
+                : '') +
+            `<text class="n" x="${w}" y="${h / 2}" dy=".35em" text-anchor="end" ${NUMBER_FONT}>${p}%</text>`,
     );
 }
 // the terminal's pill: five cells and the %, always 10 wide
@@ -2796,8 +2814,8 @@ const span = (ms: number) => {
 // each fact column's width in cells, sized to its usual reading — `🪐 12`, `FRM-306`, `ctx 54%`, `idle 12m` — so little slack shows between columns; a longer one is cut at its end
 const COLUMNS = {
     asks: 4,
-    // the ctx meter: 98 px on the desktop, a 10-wide bar in the terminal
-    context: 13,
+    // the terminal's 10-wide ctx bar; the desktop's svg takes its own width (CTX_COLUMNS)
+    context: 10,
     state: 9,
     ticket: 9,
 } as const;
@@ -2856,7 +2874,7 @@ async function readNumber($: EngineInterface, name: NumberName) {
 async function flipKnob($: EngineInterface, name: SwitchName) {
     const isOn = !(await readSwitch($, name));
     await $.store.set(SWITCHES[name].key, isOn);
-    if (name === 'colour') await publish($);
+    if (name === 'colour' || name === 'ring') await publish($);
     $.ui.invalidate('ui.render');
     return isOn;
 }
@@ -3592,6 +3610,7 @@ export const register: Register = (on) => {
                 lines: await readNumber($, 'lines'),
                 quiet: await readSwitch($, 'quiet'),
                 quietWait: await readNumber($, 'quietWait'),
+                ring: await readSwitch($, 'ring'),
                 speak: await readSwitch($, 'speak'),
                 speed: await readNumber($, 'speed'),
             };
@@ -3661,6 +3680,7 @@ export const register: Register = (on) => {
                     rowGap={air ? 0.3 : 0}>
                     <Text bold>stash · knobs</Text>
                     {switchJSX('colour', '🎨 board colour', knobs.colour)}
+                    {switchJSX('ring', '🧠 ctx meter as a ring', knobs.ring)}
                     {numberJSX('lines', '🌔 phase lines', knobs.lines, 'lines')}
                     {switchJSX(
                         'speak',
@@ -4883,6 +4903,10 @@ export const register: Register = (on) => {
             (await $.state.get(METER)).value?.compactAt ?? CTX_FALLBACK_AT;
         const PillSvg =
             e.surface === 'desktop' && 'Svg' in ui ? ui.Svg : undefined;
+        // the desktop's ctx meter as dima switched it: the ring takes 7 cells, the bar 5, the terminal's text bar 10
+        const isRing = board.isRing;
+        const ctxTake = isRing ? CTX_RING : CTX_BAR;
+        const contextColumns = PillSvg ? (isRing ? 7 : 5) : COLUMNS.context;
         const hues = huesOf(list.map((m) => m.name));
         // the ticket column is drawn only when some row names a ticket: empty on every row, it was 9 cells of nothing (dima, 15:41)
         const hasTickets = list.some((m) => ticketOf(m.name));
@@ -5026,17 +5050,16 @@ export const register: Register = (on) => {
                             ) : null}
                             <Box
                                 justifyContent='flex-end'
-                                width={COLUMNS.context}>
-                                {/* every row's meter the same width, its cells and number warming to red at the compaction point */}
+                                width={contextColumns}>
+                                {/* every row's meter one width, its % merged in, stepping to red at the compaction point */}
                                 {m.context === undefined ? null : PillSvg ? (
                                     <PillSvg
                                         alt={`ctx ${m.context}%`}
-                                        height={CTX_METER.height}
+                                        height={ctxTake.height}
                                         key={`ctx:${m.sid}`}
-                                        source={ctxMeterSvg(
-                                            m.context,
-                                            compactAt,
-                                        )}
+                                        source={(isRing
+                                            ? ctxRingSvg
+                                            : ctxBarSvg)(m.context, compactAt)}
                                     />
                                 ) : (
                                     <Text

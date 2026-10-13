@@ -281,7 +281,7 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
     // ticket, ctx, state, asks
-    expect(widths).toEqual([9, 13, 9, 4, 9, 13, 9, 4]);
+    expect(widths).toEqual([9, 7, 9, 4, 9, 7, 9, 4]);
 });
 
 test('a session inside a long shell command reads 🐚 with its time', async ($, on) => {
@@ -826,7 +826,7 @@ test("a row shows its session's model on the name's line, its effort as lit cell
     expect([
         nameSide?.text?.includes('opus 5.5'),
         cells?.props.alt,
-        String(cells?.props.source).match(/url\(#ramp\)/g)?.length,
+        String(cells?.props.source).match(/class="e\d"/g)?.length,
         String(cells?.props.source).match(/class="off"/g)?.length,
     ]).toEqual([true, 'effort medium', 2, 3]);
 });
@@ -838,7 +838,7 @@ test('max effort lights all five cells', async ($, on) => {
     const cells = (await ui.findAll({ type: 'Svg' })).find((n) =>
         String(n.props.alt).startsWith('effort'),
     );
-    expect(String(cells?.props.source).match(/url\(#ramp\)/g)?.length).toBe(5);
+    expect(String(cells?.props.source).match(/class="e\d"/g)?.length).toBe(5);
 });
 
 test('an effort cc names off the five words reads as its word', async ($, on) => {
@@ -970,8 +970,8 @@ test("every row's ctx meter on the board is one width and prints its own %", asy
             ];
         }),
     ).toEqual([
-        ['98', '3%'],
-        ['98', '100%'],
+        ['50', '3%'],
+        ['50', '100%'],
     ]);
 });
 
@@ -1248,4 +1248,57 @@ test("a row's state emoji sits against its time, both packed left, so every row'
         cell?.props.justifyContent,
         (cell?.children ?? []).map((c) => (c as { type?: string }).type),
     ]).toEqual(['flex-start', ['Text', 'Text']]);
+});
+
+// dima keeps both takes (10-13 17:00): the 🎛️ switch picks the ring (C) or the % with a bar under it (B), every board
+test('the 🎛️ ctx switch draws the bar instead of the ring, in a narrower column', async ($, on) => {
+    fleet(on, { [`context:${HERE}`]: 43, 'ctx-ring': false });
+    const ui = await board($);
+    const meter = (await ui.findAll({ type: 'Svg' })).find(
+        (n) => n.props.alt === 'ctx 43%',
+    );
+    const cell = (await ui.findAll({ type: 'Box' })).find(
+        (b) => b.props.justifyContent === 'flex-end' && b.props.width === 5,
+    );
+    expect([
+        String(meter?.props.source).includes('<circle'),
+        cell !== undefined,
+    ]).toEqual([false, true]);
+});
+
+test('the ring is the default ctx meter', async ($, on) => {
+    fleet(on, { [`context:${HERE}`]: 43 });
+    const ui = await board($);
+    const meter = (await ui.findAll({ type: 'Svg' })).find(
+        (n) => n.props.alt === 'ctx 43%',
+    );
+    expect(String(meter?.props.source).includes('<circle')).toBe(true);
+});
+
+test("the 🎛️ ctx switch, pressed in settings, turns the open board's ring into the bar at once", async ($, on) => {
+    fleet(on, { [`context:${HERE}`]: 43 });
+    const view = await board($);
+    const isRing = async () =>
+        String(
+            (await view.findAll({ type: 'Svg' })).find(
+                (n) => n.props.alt === 'ctx 43%',
+            )?.props.source,
+        ).includes('<circle');
+    const before = await isRing();
+    const settings = await $.ui.mount({
+        component: 'Pane',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 80,
+            isFocused: false,
+            placement: 'dock',
+            scroll: { bodyRows: 40, offset: 0 },
+            title: '🎛️ settings',
+            view: {},
+        },
+        requestId: 'stash-settings',
+        surface: 'terminal',
+    });
+    await settings.press({ key: 'knob:ctx-ring' });
+    expect([before, await isRing()]).toEqual([true, false]);
 });
