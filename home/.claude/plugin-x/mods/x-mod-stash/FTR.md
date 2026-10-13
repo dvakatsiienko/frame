@@ -77,6 +77,12 @@
   - makes: one `words:<yyyy-mm-dd>:<session>` key in x-mod-stash's `$.store`, `{ <word>: <rewrites> }`, counted from the stored row only (a redraw never counts); keys older than 30 days are dropped
   - decision: fixed in the output, never policed — cclio wrote «that becomes a wisp» plain at 17:43 and dima wanted it fixed in place (2026-10-08)
   - proven live 2026-10-08: a headless reply told to print «that becomes a wisp, then a siesta; i wish the wish were a freebie» was stored with all four bolded, the verb left, and the day's key written; freebie took its 🍀 the same day (dima, 18:25)
+- ⬜ three more reply-style misses are redrawn on screen, never blocked (todo 29, dima's o171)
+  - given a reply line runs ①②③, then it draws as one `n.` line each, a label before the first kept as its own line; a lone circled digit stays
+  - given a bare `FRM-n` or `BYT-n` in prose, then it draws as its link into linear; one in a link, a url, a path, inline code or a fence stays
+  - given a 🔭 line carries an (aside), then it draws without it; a link's url keeps its parens
+  - and each has its own 🎛️ switch under `stash · replies` (`①②③ drawn as numbered lines`, `bare ticket ids drawn as links`, `a 🔭 line's (aside) dropped`); fences and the 📄 line are never touched
+  - decision: what a render fixes, `reply-check.py` stops checking (circled-digits, bare-ticket, wait-paren); the rest stays its log and reminder (cclio, 19:40)
 - ⬜ a reply's 📄 stamp is stored with the real clock
   - given a reply row whose 📄 line carries an `HH:MM` that is not now (a long turn outran its prompt's clock, or the model guessed)
   - when the row is kept (`session.append`, the response door)
@@ -775,12 +781,12 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given the pointer at 3, when the coder names 2, or the step count, or the verifier, an unlinked session or an ended lane names any step, or 🛼 glide is off, then the pointer stays and the file gains nothing; the finish stays cclio's act
   - and cclio's step back holds until the coder names a step again; a move counts as movement for the stale nag, and drops dima's steer on the step it left
   - and a step that is not a whole number from 0 is refused in one line; nothing of the lane enters the coder's context — its brief numbers the steps
-- ⬜ a glide card holds its members' asks, impossible to miss (exit 3; todo 28, dima's o170: «make it pretty; I'll keep the useful and drop the redundant»)
-  - given a lane with a linked coder holding 3 open asks, then right under the lane's current step a bold amber `🙋 coder asks · 3` head, then one compact line per ask — its bold id and text, cut short, and its 🛎️ tick — the coder's block above the verifier's
-  - when dima presses an ask's text, then its full orbit card opens under the line (the bold id and text, the bold `➡️ pick`, 🛎️ tick, 🔁 replay, 🔊 and the steer; a locked one its mark and steer); a second press folds it back
-  - and the board's top draws a strip while any lane member's asks wait on dima, an ask he marked not counted: `🙋 3 asks wait for you · 🔧 coder 3`, an amber border; a press on a member scrolls the board to its asks
-  - given a member with 0 asks, then neither its head, its lines nor the strip draw; 🛼 glide off draws none of them
-  - decision: the head is amber and bold, the palette's `warn`, the one colour dima reads as «waits on you» (⏳, 🙋, `🪐 n`)
+- ⬜ a glide card holds its members' asks (exit 3)
+  - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
+  - and a subcard holding asks heads bold amber with a 🙋 — `🙋 🔧 coder · 1 ask` — the palette's `warn`, the one colour dima reads as «waits on you»; at 0 it reads plain (todo 28; dima, 19:45: «revert to previous layout and keep color update plus emoji»)
+  - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ tick, 🔁 replay, 🔊 and the steer; a locked one shows its mark and its steer, no control
+  - decision: the lane draws orbit's own ask card, never a smaller copy; the subcards stay folded, the head names the role (dima's o4, o5, o10, 20:46); a compact line per ask under the current step was tried and dropped as cramped (dima, 19:45)
+  - and the board's top draws a strip while any lane member's asks wait on dima, an ask he marked not counted: `🙋 3 asks wait for you · 🔧 coder 3`, an amber border, a row of air before the sessions card; a press on a member scrolls the board to its asks; at 0 asks or with 🛼 glide off it is gone
   - when dima marks or steers a row, then it waits in the store and the member's own stash takes it into its orbit: a running member gets it in that turn, after its next tool call
   - decision: one store key per marked ask (`marks:<member>:<ask id>`), so two boards never overwrite each other and the member deletes only the marks it read (FRM-400)
   - and an idle member with marks wakes once, within a poll of dima's next prompt in any thread, one turn carrying all of them; no turn starts before that prompt

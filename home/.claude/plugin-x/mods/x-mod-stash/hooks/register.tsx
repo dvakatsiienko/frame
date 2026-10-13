@@ -60,7 +60,10 @@ import {
     backgroundWaits,
     boldFleetWords,
     bulletDots,
+    dropWaitAside,
     isFleetName,
+    linkTickets,
+    numberCircled,
     parseWait,
     ticketOf,
 } from './parse.ts';
@@ -236,6 +239,21 @@ export const PARTS = [
         group: 'stash · replies',
         key: 'stash.boldwords',
         label: 'fleet words bold with their badge',
+    },
+    {
+        group: 'stash · replies',
+        key: 'stash.circled',
+        label: '①②③ drawn as numbered lines',
+    },
+    {
+        group: 'stash · replies',
+        key: 'stash.tickets',
+        label: 'bare ticket ids drawn as links',
+    },
+    {
+        group: 'stash · replies',
+        key: 'stash.waitaside',
+        label: "a 🔭 line's (aside) dropped",
     },
     {
         group: 'stash · replies',
@@ -3659,10 +3677,20 @@ export const register: Register = (on) => {
             switches['stash.bullets'] !== false
                 ? bulletDots(e.props.text)
                 : e.props.text;
+        // each fix is mechanical and behind its own switch; reply-check no longer logs what these redraw (todo 29)
+        const fixes: [string, (t: string) => string][] = [
+            ['stash.circled', numberCircled],
+            ['stash.tickets', linkTickets],
+            ['stash.waitaside', dropWaitAside],
+        ];
+        const fixed = fixes.reduce(
+            (t, [key, fix]) => (switches[key] !== false ? fix(t) : t),
+            dotted,
+        );
         const { text } =
             switches['stash.boldwords'] !== false
-                ? boldFleetWords(dotted)
-                : { text: dotted };
+                ? boldFleetWords(fixed)
+                : { text: fixed };
         if (text === e.props.text) return next(e);
         return next({ ...e, props: { ...e.props, text } });
     });
@@ -4306,7 +4334,8 @@ export const register: Register = (on) => {
         // one fold rule for every card: open until folded, but a glide card's member subcard starts folded to its count, and a
         // catch piece's hidden note and the shelf past its 5th row start folded
         const foldedOf = (kept: Record<string, boolean>, card: string) =>
-            kept[card] ?? /^(quiet:.+|catch:.+)$/.test(card);
+            kept[card] ??
+            /^(lane:[^:]+:(coder|verifier)|quiet:.+|catch:.+)$/.test(card);
         const flipFold = async (card: string) => {
             const was = (await $.state.get(FOLDS)).value ?? {};
             await $.state.set(FOLDS, { ...was, [card]: !foldedOf(was, card) });
@@ -4840,70 +4869,50 @@ export const register: Register = (on) => {
         // current one «← we are here»; a steer on it reaches cclio's next prompt, whichever board took it
         const lanes = (await $.state.get(LANES)).value ?? [];
         const laneAsks = (await $.state.get(LANE_ASKS)).value ?? {};
-        // 🙋 a member's asks right under the lane's current step, impossible to miss (todo 28, dima's o170): a bold amber head,
-        // one compact line per ask — its text and its tick — and its full orbit card on a press of the text
+        // a member's asks on the glide card: folded to their count by default, its rows marked as on the member's own board
         const memberJSX = (
             lane: StashLane,
             role: (typeof LANE_ROLES)[number],
         ) => {
             const sid = lane.members[role];
-            const asks = (sid ? (laneAsks[sid] ?? []) : []) as OrbitAsk[];
-            if (!sid || !asks.length) return null;
+            if (!sid) return null;
+            const asks = laneAsks[sid] ?? [];
             // a mark goes to the session the member runs under now, which its own stash absorbs
             const markSid = lane.memberSids?.[role] ?? sid;
             const card = `lane:${lane.id}:${role}`;
-            const door: AskDoor = {
-                mark: (x, mark) =>
-                    void markRemote($, markSid, x, {
-                        mark: x.mark === mark ? undefined : mark,
-                        steer: x.steer,
-                    }),
-                prefix: card,
-                steer: (x, value) =>
-                    void markRemote($, markSid, x, {
-                        mark: x.mark,
-                        steer: steerOf(value),
-                    }),
-            };
+            const isOpen = !isFolded(card);
+            const badge = role === 'coder' ? '🔧' : '🔎';
             return (
-                <Box
-                    flexDirection='column'
-                    key={card}
-                    paddingLeft={3}
-                    rowGap={LINE_GAP}>
-                    <Text bold color={PALETTE.warn}>
-                        {`🙋 ${role} asks · ${asks.length}`}
-                    </Text>
-                    {asks.flatMap((a, i) => {
-                        const full = `${card}:full:${a.id}`;
-                        const isFull = folds[full] === true;
-                        return [
-                            <Box
-                                alignItems='center'
-                                flexDirection='row'
-                                gap={1}
-                                key={`${card}:line:${a.id}`}>
-                                <Box flexShrink={1} minWidth={0}>
-                                    <Button
-                                        key={full}
-                                        label={`${isFull ? 'fold' : 'open'} ${a.id}`}
-                                        onPress={() => void flipFold(full)}
-                                        plain>
-                                        <Text wrap='truncate-end'>
-                                            <Text bold>{a.id}</Text>
-                                            {`: ${a.text}`}
-                                        </Text>
-                                    </Button>
-                                </Box>
-                                {isFull ? null : (
-                                    <Box flexShrink={0}>
-                                        {markJSX(a, 'accepted', door)}
-                                    </Box>
-                                )}
-                            </Box>,
-                            ...(isFull ? [askJSX(a, i, door)] : []),
-                        ];
-                    })}
+                <Box flexDirection='column' key={card} rowGap={LINE_GAP}>
+                    <Box alignItems='center' flexDirection='row' gap={1}>
+                        {/* asks waiting read amber with a 🙋, the one colour dima reads as «waits on you» (dima, 19:45) */}
+                        <Text
+                            bold
+                            color={asks.length ? PALETTE.warn : undefined}>
+                            {`${asks.length ? '🙋 ' : ''}${badge} ${role} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}
+                        </Text>
+                        {foldJSX(card)}
+                    </Box>
+                    {isOpen
+                        ? asks.map((a, i) =>
+                              askJSX(a as OrbitAsk, i, {
+                                  mark: (x, mark) =>
+                                      void markRemote($, markSid, x, {
+                                          mark:
+                                              x.mark === mark
+                                                  ? undefined
+                                                  : mark,
+                                          steer: x.steer,
+                                      }),
+                                  prefix: card,
+                                  steer: (x, value) =>
+                                      void markRemote($, markSid, x, {
+                                          mark: x.mark,
+                                          steer: steerOf(value),
+                                      }),
+                              }),
+                          )
+                        : null}
                 </Box>
             );
         };
@@ -4930,7 +4939,8 @@ export const register: Register = (on) => {
                 borderColor={PALETTE.warn}
                 columnGap={1}
                 flexDirection='row'
-                flexWrap='wrap'>
+                flexWrap='wrap'
+                marginBottom={1}>
                 <Text bold color={PALETTE.warn}>
                     {`🙋 ${waitingCount} ask${waitingCount === 1 ? ' waits' : 's wait'} for you`}
                 </Text>
@@ -5034,7 +5044,7 @@ export const register: Register = (on) => {
                       </Box>
                       {isFolded(`lane:${lane.id}`)
                           ? null
-                          : lane.items.flatMap((item, i) => [
+                          : lane.items.map((item, i) => (
                                 <Box
                                     alignItems='center'
                                     flexDirection='row'
@@ -5134,14 +5144,11 @@ export const register: Register = (on) => {
                                             ) : null}
                                         </Box>
                                     ) : null}
-                                </Box>,
-                                ...(i ===
-                                Math.min(lane.current, lane.items.length - 1)
-                                    ? LANE_ROLES.map((role) =>
-                                          memberJSX(lane, role),
-                                      )
-                                    : []),
-                            ])}
+                                </Box>
+                            ))}
+                      {isFolded(`lane:${lane.id}`)
+                          ? null
+                          : LANE_ROLES.map((role) => memberJSX(lane, role))}
                   </Box>
               ))
             : null;

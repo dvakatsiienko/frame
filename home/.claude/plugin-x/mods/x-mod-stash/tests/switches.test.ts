@@ -294,6 +294,7 @@ const NO_MODEL: Record<string, string> = {
         'its rewrite of the stored reply already reads its switch',
     'stash.bullets': 'its rewrite of the stored reply already reads its switch',
     'stash.chips': 'band chips, drawn only',
+    'stash.circled': 'a redraw of the reply on screen, drawn only',
     'stash.ctx': 'a band bar, drawn only',
     'stash.digest': 'a band card for dima, drawn only',
     'stash.enhancer':
@@ -302,7 +303,9 @@ const NO_MODEL: Record<string, string> = {
     'stash.reset': 'a band timer, drawn only',
     'stash.rowmeta': 'board row text, drawn only',
     'stash.speak': 'board buttons, drawn only',
+    'stash.tickets': 'a redraw of the reply on screen, drawn only',
     'stash.wait': 'the band line the last reply wrote, drawn only',
+    'stash.waitaside': 'a redraw of the reply on screen, drawn only',
 };
 
 test('every 🎛️ part has a switch scenario or says why it never reaches a model', () => {

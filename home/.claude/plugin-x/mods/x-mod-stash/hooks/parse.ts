@@ -39,6 +39,80 @@ export function bulletDots(text: string) {
         .join('\n');
 }
 
+// each prose line of a reply, fences and the 📄 stamp left whole, with its inline code masked at the same length so a
+// match's offsets land on the real line
+function proseLines(
+    text: string,
+    fix: (line: string, masked: string) => string,
+) {
+    let isFence = false;
+    return text
+        .split('\n')
+        .map((line) => {
+            if (/^\s*```/.test(line)) isFence = !isFence;
+            if (isFence || line.includes('📄')) return line;
+            return fix(
+                line,
+                line.replace(/`[^`\n]*`/g, (m) => '\0'.repeat(m.length)),
+            );
+        })
+        .join('\n');
+}
+
+const CIRCLED = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
+
+// a run of ①②③ in one line becomes one numbered line each (rules/fleet-output-format.md: «glyph run-ons»); a lone
+// circled digit stays, it is no list
+export function numberCircled(text: string) {
+    return proseLines(text, (line, masked) => {
+        const at = [...masked.matchAll(/[①-⑳]/gu)];
+        if (at.length < 2) return line;
+        const head = line.slice(0, at[0]?.index).trimEnd();
+        const indent = line.match(/^\s*/)?.[0] ?? '';
+        const items = at.map((m, k) => {
+            const end = at[k + 1]?.index ?? line.length;
+            const n = CIRCLED.indexOf(m[0]) + 1;
+            return `${indent}${n}. ${line.slice((m.index ?? 0) + m[0].length, end).trim()}`;
+        });
+        return [...(head.trim() ? [head] : []), ...items].join('\n');
+    });
+}
+
+// a bare ticket id becomes its one-click link; one already in a link, a url or inline code stays
+export function linkTickets(text: string) {
+    return proseLines(text, (line, masked) => {
+        const hidden = masked
+            .replace(/\[[^\]\n]*\]\([^)\n]*\)/g, (m) => '\0'.repeat(m.length))
+            .replace(/https?:\/\/\S+/g, (m) => '\0'.repeat(m.length));
+        let out = '';
+        let from = 0;
+        for (const m of hidden.matchAll(
+            /(?<![\w/[-])(?:FRM|BYT)-\d+(?![\w-])/g,
+        )) {
+            out += `${line.slice(from, m.index)}[${m[0]}](https://linear.app/x-com/issue/${m[0]})`;
+            from = (m.index ?? 0) + m[0].length;
+        }
+        return out + line.slice(from);
+    });
+}
+
+// a 🔭 line is «🔭 waiting on <who>», nothing more: its (aside) is dropped; a link's url keeps its parens
+export function dropWaitAside(text: string) {
+    return proseLines(text, (line, masked) => {
+        if (!/^\s*(?:[-*]\s+)?🔭/u.test(masked)) return line;
+        const hidden = masked.replace(/\]\((?:[^()\n]|\([^()\n]*\))*\)/g, (m) =>
+            '\0'.repeat(m.length),
+        );
+        let out = '';
+        let from = 0;
+        for (const m of hidden.matchAll(/\s*\([^()\n]*\)/g)) {
+            out += line.slice(from, m.index);
+            from = (m.index ?? 0) + m[0].length;
+        }
+        return (out + line.slice(from)).trimEnd();
+    });
+}
+
 // a fleet word or member prints bold with its badge glued on (rules/fleet-output-format.md); a bare one in prose is fixed,
 // not policed. fences, quotes, inline code, bold text and links keep theirs; «wish» only as a noun, after a determiner.
 // members are rules/fleet-identity.md's, minus the names that are plain english too (helper, retro, classifier,
