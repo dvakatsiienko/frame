@@ -278,6 +278,7 @@
   - given a session has open asks, a context reading or a ticket in its name
   - when the board draws
   - then its row shows the ticket as a link to linear, `ctx n%`, its state and `🪐 n`, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
+  - and a 🔭 line with several waits is one plain dim run cut at the row's end, never wrapped; one wait keeps its who bold (dima's shot, 19:36)
   - decision: `🪐 n` closes the row and is always drawn, `🪐 0` dimmed — dima reads it first, at the far right (2026-10-05)
   - and while it holds asks it reads bold amber, the palette's `warn` (todo 28, dima's o170)
   - decision: the count reads 🪐 like the band's chip, never ⏳, which is the 5h reset timer (dima, 21:20)

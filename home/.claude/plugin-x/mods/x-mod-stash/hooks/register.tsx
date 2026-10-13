@@ -5577,6 +5577,18 @@ export const register: Register = (on) => {
                                         {line}
                                     </Text>
                                 </Box>
+                            ) : line && (m.wait ?? '').includes('; ') ? (
+                                // several waits are one plain run: styled pieces wrap on the desktop, and the clip then showed the
+                                // middle of two lines (dima's shot, 19:36: «what is this? looks off»)
+                                <Box
+                                    flexShrink={1}
+                                    height={1}
+                                    minWidth={0}
+                                    overflow='hidden'>
+                                    <Text dimColor wrap='truncate-end'>
+                                        {line}
+                                    </Text>
+                                </Box>
                             ) : line ? (
                                 // one row, clipped: the desktop wraps a run of styled pieces instead of cutting it (dima, 15:41)
                                 <Box

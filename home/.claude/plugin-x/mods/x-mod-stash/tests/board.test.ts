@@ -1059,6 +1059,24 @@ test("a row's 🔭 line prints only the who bold", async ($, on) => {
     ]).toEqual([true, false]);
 });
 
+test("a row's 🔭 line with several waits is one plain run, so it cuts instead of wrapping", async ($, on) => {
+    fleet(on);
+    await stop(
+        $,
+        'done.\n\n🔭 waiting on prompt-audit slice A: the root files; prompt-audit slice B: rules and agents',
+    );
+    const ui = await board($);
+    const texts = await ui.findAll({ type: 'Text' });
+    const line = texts.find((t) => t.text?.startsWith('🔭 waiting on'));
+    expect([
+        line?.text,
+        texts.some((t) => t.props.bold === true && t.text?.includes('slice')),
+    ]).toEqual([
+        '🔭 waiting on prompt-audit slice A: the root files; prompt-audit slice B: rules and agents',
+        false,
+    ]);
+});
+
 // a probe mod left in ~/.claude/dev-mods past its probe (pk-93's qc-view swallowed a brief after its proof)
 const DEV = '/home/.claude/dev-mods';
 const dir = (name: string, mtimeMs = 0): FsEntry => ({
