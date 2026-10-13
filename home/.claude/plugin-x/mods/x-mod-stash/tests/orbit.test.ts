@@ -1857,3 +1857,109 @@ test('a tick on an ask just followed up mid-turn lands at once', async ($, on) =
     await w.clock.advance(5_000);
     expect((await ui.find({ key: 'orbit:accepted:o1' }))?.text).toBe('✅ tick');
 });
+
+/* a part switched off in 🎛️ settings is off for the model too (l13 r4) */
+
+const partOff = (w: { store: Map<string, unknown> }, key: string) =>
+    w.store.set('shown', { [key]: false });
+
+const lines = (w: { contexts: string[][] }) =>
+    (w.contexts.at(-1) ?? []).join('\n');
+
+test('with assumed switched off, a sent-back assumption joins no prompt', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await assume($, 'kept the old port');
+    await ui.press({ key: 'orbit:wrong:a1' });
+    partOff(w, 'stash.assumed');
+    await say($, 'next');
+    expect(lines(w)).not.toContain('wrong assumption');
+});
+
+test('with assumed switched off, op assume is refused in one line naming the switch', async ($, on) => {
+    const w = world(on);
+    await start($);
+    partOff(w, 'stash.assumed');
+    const r = (await assume($, 'kept the old port')) as { deny?: string };
+    expect([r.deny?.includes('\n'), r.deny]).toEqual([
+        false,
+        expect.stringContaining(
+            'assumed section is switched off in 🎛️ settings',
+        ),
+    ]);
+});
+
+test('with 🌔 phases switched off, no prompt names phases or the plan', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    partOff(w, 'stash.phases');
+    await say($, 'hi');
+    expect(lines(w)).not.toMatch(/phases|plan/);
+});
+
+test('with 🌔 phases switched off, a working turn gets no nudge', async ($, on) => {
+    const w = world(on);
+    await start($);
+    partOff(w, 'stash.phases');
+    await say($, 'go');
+    expect((await edits($, 4)).some((c) => /phases/.test(c))).toBe(false);
+});
+
+test("with 🌔 phases switched off, dima's phases tick joins no prompt", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await ui.press({ key: 'plan:tick' });
+    await w.clock.advance(5_000);
+    partOff(w, 'stash.phases');
+    await say($, 'go');
+    expect(lines(w)).not.toContain('🌔 phases: dima');
+});
+
+test('with 🌔 phases switched off, op plan is refused in one line naming the switch', async ($, on) => {
+    const w = world(on);
+    await start($);
+    partOff(w, 'stash.phases');
+    const r = (await orbit($, { lines: ['now: a'], op: 'plan' })) as {
+        deny?: string;
+    };
+    expect([r.deny?.includes('\n'), r.deny]).toEqual([
+        false,
+        expect.stringContaining('🌔 phases is switched off in 🎛️ settings'),
+    ]);
+});
+
+test('with 🌔 phases switched off, the mobile reminder asks for no next moves', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await mobile($);
+    partOff(w, 'stash.phases');
+    await say($, 'hi');
+    expect(lines(w)).not.toMatch(/🌔|plan/);
+});
+
+test('with 🌔 phases switched off, a plan alone brings no orbit reminder', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    partOff(w, 'stash.phases');
+    await say($, 'hi');
+    expect(lines(w)).not.toContain('orbit holds');
+});
+
+test("with 🌔 phases switched off, dima's phases tick joins no running turn", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await say($, 'go');
+    await ui.press({ key: 'plan:tick' });
+    await w.clock.advance(5_000);
+    partOff(w, 'stash.phases');
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).join('\n')).not.toContain('🌔 phases: dima');
+});

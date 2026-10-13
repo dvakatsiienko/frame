@@ -170,6 +170,8 @@
   - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
   - decision: the band's 12 parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; cclio's «build the rest of slice 05 meanwhile»)
   - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ▶️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
+  - given `🐠 catch`, the `assumed` section, `🌔 phases` or `🛼 glide` switched off, then it is off for every model too: no line of it rides a prompt or a tool result, and its orbit op (`catch`, `assume`, `plan`, `glide`) is refused in one line naming the switch; switched back on, both return
+  - decision: a part hidden in settings is off for the model too, so no session spends effort there (dima, 10-12); `🪐 orbit asks` and the hidden-while-on `💨` `🔥` `⏰` wait on dima, since both clash with a rule or his open ask (o150)
   - given a reply switch off (`·-lists drawn as bullets`, `fleet words bold with their badge`), then the reply is both stored and drawn as written: the switch gates the stored rewrite, not only its look (the part list's 📌)
   - decision: the switches live in stash's own store, the one the 💨 and ⏰ switches already share across sessions — a separate file joins only if another mod's parts do
 - ⬜ two live meters, full width under the row on the desktop (FRM-366)
@@ -491,6 +493,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the per-prompt reminder tells the session to end its reply with the asks fence — «⏳ waiting on your word:» and every open orbit ask with its id and pick — instead of the orbit reminder
   - decision: on mobile mods draw nothing, so orbit is invisible there; orbit stays the one store and the session writes his answers back by id (dima, 2026-10-10)
   - and the reminder asks for «🌔 next:» and the plan's next 3 moves as bullets under the fence, and names a stale plan to set again — the board's phases are gone on mobile too (dima's o112, 2026-10-11; the `x:mobile-mode` skill prints the same shape)
+  - given `🌔 phases` switched off in settings, then the reminder asks for no next moves and names no stale plan
 - ✅ mobile mode ends at the mac
   - given mobile mode is on
   - when dima says «back at the mac», types `/mobile-mode off`, or presses 🛎️ or ↩️ in the board's orbit
@@ -517,6 +520,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given nobody marked an assumption
   - when its third turn ends, the turn it was made in counted
   - then the row leaves
+- ⬜ `assumed section` switched off in settings is off for the model
+  - given it off, then a sent-back assumption joins no prompt and `op assume` is refused in one line naming the switch
 
 ## /board — 🐠 catch
 
@@ -526,7 +531,6 @@ cclio's keep-in-mind shelf (catch v2, pocket PK-96, [FRM-386](https://linear.app
   - given `🐠 catch` switched off, when any session sends a prompt or a tool runs, then no catch line rides it: no catch.md, no `🐠 catch holds` ids, no 🤔
   - and orbit op catch is refused in one line naming the switch
   - given it switched back on, then catch.md rides cclio's next prompt if she has not had it yet, and the op works again
-  - decision: a part hidden in settings is off for the model too, so no session spends effort there (dima, 10-12)
 - decision: cc's built-in `cc-plugin-you-should-know` (a side agent's note above the prompt, off by default) is the thing to compare against at the keep-or-kill — dima tried it 2026-10-12 19:19: it draws in the terminal only, never in the desktop app, where cclio runs
 
 - ⬜ catch.md reaches cclio's context
@@ -636,6 +640,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: 7 lines, not 5, the lines past the fifth keep 🌑 — a try, dima may revert (dima, 2026-10-10 23:54)
   - decision: the now line's text stays plain, only its lead word stands out, green and bold (dima, 21:08)
 - ⬜ the phases guard: a start line and one nudge, never an extra turn
+  - given `🌔 phases` switched off in settings, then no start line, no nudge, no plan in the orbit reminder, no phases tick joins a prompt or a tool result, and `op plan` is refused in one line naming the switch
   - given a session's first prompt
   - then it carries one model-only line: phases are the live plan, set them with orbit's plan op and keep them current
   - given a `/clear` or a resume, then the next conversation's first prompt carries the line again — the process outlives the conversation (o59)
@@ -675,6 +680,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - decision: ➡️ marks the current step, no «← we are here» (dima's o9 note, o10)
   - and nothing of a lane enters a member's model context
   - and each card folds with its own `📂`, and the `🛼 glide` 🎛️ switch hides every glide card
+  - given `🛼 glide` switched off, then no stale lane and no taken steer reach cclio's prompt or tool result, and `op glide` is refused in one line naming the switch
   - decision: the glide cards stick to the board's bottom, on top of 🌔 phases, the gap above them (dima's shot, 20:12)
 - ⬜ only cclio writes the lanes
   - given any session calls op `glide`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create

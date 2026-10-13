@@ -697,6 +697,61 @@ test('with no lane the reminder carries no lane text', async ($, on) => {
     expect(w.contexts.at(-1)?.some((c) => c.includes('lane'))).toBe(false);
 });
 
+/* a part switched off in 🎛️ settings is off for the model too (l13 r4) */
+
+const glideOff = (w: { store: Map<string, unknown> }) =>
+    w.store.set('shown', { 'stash.glide': false });
+
+test("with 🛼 glide switched off, a stale lane reaches no prompt of cclio's", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($, { title: 't' });
+    for (let i = 0; i < 8; i++) await endTurn($);
+    glideOff(w);
+    await say($, 'go');
+    expect(w.contexts.at(-1)?.some((c) => c.includes('stale'))).toBe(false);
+});
+
+test("with 🛼 glide switched off, a taken steer joins no prompt of cclio's", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await create($);
+    await steer(ui, 'cards first');
+    await take(ui);
+    glideOff(w);
+    await say($, 'go');
+    expect(w.contexts.at(-1)?.some((c) => c.includes('cards first'))).toBe(
+        false,
+    );
+});
+
+test("with 🛼 glide switched off, a taken steer joins no tool call of cclio's", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await create($);
+    await say($, 'go');
+    await steer(ui, 'stop and look');
+    await take(ui);
+    glideOff(w);
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
+    expect(r.context?.some((c) => c.includes('stop and look')) ?? false).toBe(
+        false,
+    );
+});
+
+test('with 🛼 glide switched off, op glide is refused in one line naming the switch', async ($, on) => {
+    const w = world(on);
+    await start($);
+    glideOff(w);
+    const r = (await create($)) as { deny?: string };
+    expect([r.deny?.includes('\n'), r.deny]).toEqual([
+        false,
+        expect.stringContaining('🛼 glide is switched off in 🎛️ settings'),
+    ]);
+});
+
 /* Types */
 
 interface KeptLane {

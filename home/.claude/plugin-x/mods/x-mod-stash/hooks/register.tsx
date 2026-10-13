@@ -206,6 +206,8 @@ const PARTS = [
         label: 'fleet words bold with their badge',
     },
 ] as const;
+type PartKey = (typeof PARTS)[number]['key'];
+type IsPartOn = (key: PartKey) => boolean;
 // the registry names a short-lived headless run `t-` + hex (`t-70`); the board leaves those out (dima, 2026-10-05)
 const HEADLESS = /^t-[0-9a-f]+$/;
 // a session younger than this, counted from the registry's `startedAt`, is a probe: it gets no row until it outlives it
@@ -937,36 +939,42 @@ const planAge = (o: StashOrbit) =>
     o.plan === undefined ? undefined : Math.max(0, o.turns - o.plan.at);
 
 // the per-prompt note that keeps the habit through a compaction; none while orbit is empty
-function orbitReminder(o: StashOrbit, isCatchOn: boolean) {
+function orbitReminder(o: StashOrbit, isOn: IsPartOn) {
     const open = o.asks.filter((a) => !a.isResolved);
-    const age = planAge(o);
-    const caught = isCatchOn ? (o.caught ?? []) : [];
+    const isPhasesOn = isOn('stash.phases');
+    const age = isPhasesOn ? planAge(o) : undefined;
+    const caught = isOn('stash.catch') ? (o.caught ?? []) : [];
     if (!open.length && age === undefined && !caught.length) return undefined;
     const asks = open.length
         ? `orbit holds ${open.length} open ask${open.length === 1 ? '' : 's'} (${open.map((a) => a.id).join(', ')})`
         : 'orbit holds no open ask';
-    const plan =
-        age === undefined
-            ? 'no plan set'
-            : `plan set ${age} turn${age === 1 ? '' : 's'} ago${age >= STALE_TURNS ? ', stale: set it again' : ''}`;
+    const plan = !isPhasesOn
+        ? ''
+        : age === undefined
+          ? '; no plan set'
+          : `; plan set ${age} turn${age === 1 ? '' : 's'} ago${age >= STALE_TURNS ? ', stale: set it again' : ''}`;
     // her held ids, so a compacted cclio can still clear a piece whose lifetime ended
     const held = caught.length
         ? `; 🐠 catch holds ${caught.map((x) => x.id).join(', ')}`
         : '';
-    return `${asks}; ${plan}${held}. asks and the plan go through ${ORBIT_TOOL}, never into a reply.`;
+    return `${asks}${plan}${held}. asks${isPhasesOn ? ' and the plan' : ''} go through ${ORBIT_TOOL}, never into a reply.`;
 }
 
 // on mobile the asks reach dima only through the reply: the asks fence, its header line kept as the skill prints it
-function mobileReminder(o: StashOrbit) {
+function mobileReminder(o: StashOrbit, isOn: IsPartOn) {
     const open = o.asks.filter((a) => !a.isResolved);
     const ids = open.length ? ` (${open.map((a) => a.id).join(', ')})` : '';
     // the phases are gone on mobile too: the plan's next 3 moves print under the fence (dima's o112, 2026-10-11)
+    const isPhasesOn = isOn('stash.phases');
     const age = planAge(o);
     const stale =
-        age !== undefined && age >= STALE_TURNS
+        isPhasesOn && age !== undefined && age >= STALE_TURNS
             ? ` the plan is stale, untouched ${age} turns: set it again through ${ORBIT_TOOL}.`
             : '';
-    return `dima is on mobile, where the board draws nothing: end the reply with the asks fence, «⏳ waiting on your word:» and every open orbit ask${ids} with its id and pick, then «🌔 next:» and the plan's next 3 moves as bullets, and write his answer by id back through ${ORBIT_TOOL} the same turn.${stale}`;
+    const moves = isPhasesOn
+        ? ", then «🌔 next:» and the plan's next 3 moves as bullets"
+        : '';
+    return `dima is on mobile, where the board draws nothing: end the reply with the asks fence, «⏳ waiting on your word:» and every open orbit ask${ids} with its id and pick${moves}, and write his answer by id back through ${ORBIT_TOOL} the same turn.${stale}`;
 }
 
 const enhancerOf = async ($: EngineInterface): Promise<StashEnhancer> =>
@@ -1762,10 +1770,24 @@ function shownOf(v: unknown): Record<string, boolean> {
 
 // a part hidden in 🎛️ settings is off for the model too (dima, 10-12); read fresh, since another session may have
 // flipped it since this one's poll
-async function isPartShown($: EngineInterface, key: string) {
-    return (
-        shownOf(await $.store.get(SHOWN).catch(() => undefined))[key] !== false
-    );
+async function partsShown($: EngineInterface): Promise<IsPartOn> {
+    const now = shownOf(await $.store.get(SHOWN).catch(() => undefined));
+    return (key) => now[key] !== false;
+}
+
+// the orbit ops a settings switch owns: hidden, the op is refused, so no session writes what nobody sees
+const OP_PART: Partial<Record<string, PartKey>> = {
+    assume: 'stash.assumed',
+    catch: 'stash.catch',
+    glide: 'stash.glide',
+    plan: 'stash.phases',
+};
+
+async function partRefusal($: EngineInterface, op: unknown) {
+    const key = typeof op === 'string' ? OP_PART[op] : undefined;
+    if (!key || (await partsShown($))(key)) return undefined;
+    const label = PARTS.find((p) => p.key === key)?.label ?? key;
+    return `orbit ${op}: ${label} is switched off in 🎛️ settings; nothing to write`;
 }
 
 // a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
@@ -2982,24 +3004,27 @@ export const register: Register = (on) => {
         await currentOrbit($);
         const marked = isUserTurn ? orbit.asks.filter(isFresh) : [];
         // an assumption dima sent back joins his prompt once and leaves orbit
-        const wrong = isUserTurn
-            ? (orbit.assumed ?? []).filter((x) => x.isWrong)
-            : [];
+        const isOn = await partsShown($);
+        const wrong =
+            isUserTurn && isOn('stash.assumed')
+                ? (orbit.assumed ?? []).filter((x) => x.isWrong)
+                : [];
         // a 🤔 joins his next prompt, or any running turn at its next tool call (as a tick does); a piece stays until cleared
-        const isCatchOn = await isPartShown($, 'stash.catch');
         const thought =
-            isUserTurn && isCatchOn
+            isUserTurn && isOn('stash.catch')
                 ? (orbit.caught ?? []).filter(isThought)
                 : [];
         if (marked.length || wrong.length || thought.length)
             await saveOrbit($, {
                 ...lockThought(lockJoined(orbit, marked), thought),
-                assumed: (orbit.assumed ?? []).filter((x) => !x.isWrong),
+                assumed: (orbit.assumed ?? []).filter(
+                    (x) => !wrong.includes(x),
+                ),
             });
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
         const reminder = (await $.state.get(MOBILE)).value
-            ? mobileReminder(orbit)
-            : orbitReminder(orbit, isCatchOn);
+            ? mobileReminder(orbit, isOn)
+            : orbitReminder(orbit, isOn);
         const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
         isPrimed = true;
         // the lanes speak only in cclio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
@@ -3008,13 +3033,13 @@ export const register: Register = (on) => {
         // catch.md is dima's file: read fresh into her first prompt, so his edit binds from her next session
         if (isFirst && isOwner) isCatchRulesDue = true;
         const catchRules =
-            isCatchRulesDue && isCatchOn
+            isCatchRulesDue && isOn('stash.catch')
                 ? await $.fs
                       .read(`${$.plugin.root}/catch.md`)
                       .catch(() => undefined)
                 : undefined;
         if (catchRules) isCatchRulesDue = false;
-        const lanes = isOwner ? await readLanes($) : [];
+        const lanes = isOwner && isOn('stash.glide') ? await readLanes($) : [];
         const live = lanes.filter((l) => !l.endedAt);
         const laneStale = live
             .filter((l) => orbit.turns - l.movedAt >= LANE_STALE)
@@ -3026,7 +3051,9 @@ export const register: Register = (on) => {
         if (isOwner) await dropLaneOrders($);
         // dima's own prompt sends his phases mark at once, as it sends a tick still sending
         const planMark =
-            isUserTurn && hasPlanMark(orbit.plan) ? orbit.plan : undefined;
+            isUserTurn && isOn('stash.phases') && hasPlanMark(orbit.plan)
+                ? orbit.plan
+                : undefined;
         if (planMark)
             await saveOrbit($, { ...orbit, plan: planTaken(planMark) });
         // held member pings ride the next prompt of any origin, once (quiet comms)
@@ -3044,7 +3071,7 @@ export const register: Register = (on) => {
                 ...(marked.length ? [joinText(marked)] : []),
                 ...(wrong.length ? [wrongText(wrong)] : []),
                 ...(thought.length ? [thinkText(thought)] : []),
-                ...(isFirst ? [PHASES_START] : []),
+                ...(isFirst && isOn('stash.phases') ? [PHASES_START] : []),
                 ...(catchRules ? [catchRules] : []),
                 ...(reminder ? [reminder] : []),
                 ...laneStale,
@@ -4995,6 +5022,13 @@ export const register: Register = (on) => {
     // mid-turn: the next tool result carries the new state once
     on('tool.call', async ($, e, next) => {
         await flushFields();
+        if ((e.tool as string) === ORBIT_TOOL) {
+            const hidden = await partRefusal(
+                $,
+                (e as Record<string, unknown>).op,
+            );
+            if (hidden) return { deny: hidden };
+        }
         if (
             (e.tool as string) === ORBIT_TOOL &&
             (e as Record<string, unknown>).op === 'glide'
@@ -5048,13 +5082,6 @@ export const register: Register = (on) => {
                 return {
                     deny: `orbit catch: catch is ${LANE_OWNER}'s alone; this session is not her`,
                 };
-            if (
-                (e as Record<string, unknown>).op === 'catch' &&
-                !(await isPartShown($, 'stash.catch'))
-            )
-                return {
-                    deny: 'orbit catch: 🐠 catch is switched off in 🎛️ settings; keep the piece in mind, nothing to write',
-                };
             const op = orbitOp(
                 await currentOrbit($),
                 e as Record<string, unknown>,
@@ -5091,8 +5118,9 @@ export const register: Register = (on) => {
         const o = await currentOrbit($);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
         const fresh = isPing ? [] : o.asks.filter(isDue(await $.clock.now()));
+        const isOn = await partsShown($);
         const thought =
-            isPing || !(await isPartShown($, 'stash.catch'))
+            isPing || !isOn('stash.catch')
                 ? []
                 : (o.caught ?? []).filter(isThought);
         if (fresh.length || thought.length) {
@@ -5101,13 +5129,14 @@ export const register: Register = (on) => {
             if (thought.length) notes.push(thinkText(thought));
         }
         // a lane steer dima took while cclio's turn runs joins it here too, as an orbit mark does
-        if (!isPing && (await isLaneOwner($))) {
+        if (!isPing && isOn('stash.glide') && (await isLaneOwner($))) {
             notes.push(...(await takeLaneSteers($, await readLanes($))));
         }
         // dima's phases mark joins the running turn once its sending window passed
         const p = (await currentOrbit($)).plan;
         if (
             !isPing &&
+            isOn('stash.phases') &&
             hasPlanMark(p) &&
             (p.sendAt ?? 0) <= (await $.clock.now())
         ) {
@@ -5119,6 +5148,7 @@ export const register: Register = (on) => {
         }
         if (
             !isNudged &&
+            isOn('stash.phases') &&
             ++turnTools >= NUDGE_AT &&
             isWorkTurn &&
             !(o.plan && o.plan.at >= o.turns + 1 - PLAN_QUIET_TURNS)
