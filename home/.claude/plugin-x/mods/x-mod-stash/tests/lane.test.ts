@@ -847,7 +847,13 @@ interface KeptLane {
     members: Record<string, string>;
     steer?: string;
     isSteerTaken?: boolean;
-    history: { act: string; at: number; current: number; done: number }[];
+    history: {
+        act: string;
+        at: number;
+        by?: string;
+        current: number;
+        done: number;
+    }[];
     endedAt?: number;
 }
 
@@ -1168,4 +1174,120 @@ test("a lane-order key a board left before o138 is dropped by cclio's stash, nev
         w.store.has('lane-order:l1'),
         kept(w)[0]?.items.map((x) => x.text),
     ]).toEqual([false, ['a', 'b', 'c', 'd']]);
+});
+
+/* todo 6 — glide steps itself from the linked coder's plan step (spec exits 3–4) */
+
+const STEP_VERIFIER = '☕️ 🔎 verify: mods';
+const NOW = new Date(2026, 9, 11, 18, 30).getTime();
+const stepKey = (name: string) =>
+    `lane-step:${name.replaceAll(/[\s\u200d]/g, '')}`;
+const fiveSteps = (done = 0) =>
+    ['a', 'b', 'c', 'd', 'e'].map((text, i) => ({ isDone: i < done, text }));
+const coderLane = (over: Partial<KeptLane> = {}) =>
+    keptLane({ items: fiveSteps(), members: { coder: CODER_NAME }, ...over });
+const pointerOf = (w: ReturnType<typeof world>) => {
+    const l = kept(w)[0];
+    return [
+        l?.current,
+        l?.items.map((x) => x.isDone),
+        l?.history.map((h) => h.by),
+    ];
+};
+
+test("a session's plan step lands in the store under its registry name", async ($, on) => {
+    const w = world(on, { name: CODER_NAME });
+    await start($);
+    const r = await lane($, { lines: ['now: b'], op: 'plan', step: 2 });
+    expect([r.deny, w.store.get(stepKey(CODER_NAME))]).toEqual([
+        undefined,
+        { at: NOW, step: 2 },
+    ]);
+});
+
+for (const step of [1.5, -1, '2'])
+    test(`a plan step of ${JSON.stringify(step)} is refused in one line`, async ($, on) => {
+        const w = world(on, { name: CODER_NAME });
+        await start($);
+        const r = await lane($, { lines: ['now: b'], op: 'plan', step });
+        expect([r.deny, w.store.has(stepKey(CODER_NAME))]).toEqual([
+            'orbit plan: step is your lane step now, a whole number from 0, as your brief numbers it',
+            false,
+        ]);
+    });
+
+test("the linked coder's step 3 moves the lane while cclio idles, and her next prompt hears it once", async ($, on) => {
+    const w = world(on, { files: shelf(coderLane()) });
+    w.store.set(stepKey(CODER_NAME), { at: NOW + 1, step: 3 });
+    await start($);
+    await w.clock.advance(5_000);
+    const moved = pointerOf(w);
+    await say($, 'hi');
+    await say($, 'again');
+    const note = 'lane l1 «kept» moved to step 3 by ☕️ 🔧 coder: mods';
+    expect([
+        moved,
+        w.contexts.map((c) => c.filter((x) => x === note).length),
+    ]).toEqual([
+        [3, [true, true, true, false, false], [CODER_NAME]],
+        [1, 0],
+    ]);
+});
+
+test("a move reaches cclio's running turn at her next tool call", async ($, on) => {
+    const w = world(on, { files: shelf(coderLane()) });
+    w.store.set(stepKey(CODER_NAME), { at: NOW + 1, step: 2 });
+    await start($);
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
+    expect([pointerOf(w)[0], r.context]).toEqual([
+        2,
+        expect.arrayContaining([
+            'lane l1 «kept» moved to step 2 by ☕️ 🔧 coder: mods',
+        ]),
+    ]);
+});
+
+const AT_3 = coderLane({
+    current: 3,
+    history: [{ act: 'step', at: NOW, current: 3, done: 3 }],
+    items: fiveSteps(3),
+});
+for (const [why, lanes, key, step, shown] of [
+    ['the coder names a step behind the pointer', [AT_3], CODER_NAME, 2],
+    ['the coder names the step count', [AT_3], CODER_NAME, 5],
+    [
+        'the verifier names a step',
+        [{ ...AT_3, members: { coder: CODER_NAME, verifier: STEP_VERIFIER } }],
+        STEP_VERIFIER,
+        4,
+    ],
+    ['an unlinked session names a step', [AT_3], '☕️ 🔧 coder: cli', 4],
+    ['the lane is ended', [{ ...AT_3, endedAt: NOW }], CODER_NAME, 4],
+    ['🛼 glide is switched off', [AT_3], CODER_NAME, 4, false],
+] as const)
+    test(`the pointer stays and the file gains nothing when ${why}`, async ($, on) => {
+        const w = world(on, { files: shelf(...lanes) });
+        const before = w.files[FILE];
+        w.store.set(stepKey(key), { at: NOW + 1, step });
+        if (shown === false) w.store.set('shown', { 'stash.glide': false });
+        await start($);
+        await w.clock.advance(5_000);
+        await say($, 'hi');
+        expect([
+            w.files[FILE] === before,
+            w.contexts.flat().some((c) => c.includes('moved to step')),
+        ]).toEqual([true, false]);
+    });
+
+test("cclio's step back holds until the coder names a step again", async ($, on) => {
+    const w = world(on, { files: shelf(coderLane()) });
+    w.store.set(stepKey(CODER_NAME), { at: NOW + 1, step: 3 });
+    await start($);
+    await w.clock.advance(5_000);
+    await lane($, { act: 'step', current: 1, id: 'l1' });
+    await w.clock.advance(5_000);
+    const held = pointerOf(w)[0];
+    w.store.set(stepKey(CODER_NAME), { at: NOW + 10_001, step: 2 });
+    await w.clock.advance(5_000);
+    expect([held, pointerOf(w)[0]]).toEqual([1, 2]);
 });

@@ -239,7 +239,14 @@ export type StashLane = {
     // dima's steer on the current step: a draft until his take, then it joins cclio's next prompt or running turn once
     steer?: string;
     isSteerTaken?: boolean;
-    history: { at: number; act: string; current: number; done: number }[];
+    // `by`: the linked coder whose plan step moved the pointer forward, written by cclio's stash
+    history: {
+        at: number;
+        act: string;
+        by?: string;
+        current: number;
+        done: number;
+    }[];
     endedAt?: number;
 };
 

@@ -102,6 +102,10 @@ const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 const SUCC = 'succ:';
 // a glide card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
 const MARKS = 'marks:';
+// 🛼 a member's lane step from its plan op, one key per registry name, written only by that session (todo 6)
+const LANE_STEP = 'lane-step:';
+// the moves cclio's stash made from a coder's step, held for her next tool call or prompt
+const LANE_MOVES = 'lane-moves';
 const DIMA_AT = 'dima-at';
 // 🐠 catch's experiment counts, one store key per day, read at its keep-or-kill on 2026-10-17 (FRM-386)
 const CATCH_COUNT = 'catch-count:';
@@ -356,7 +360,7 @@ const ORBIT_ABOUT = [
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
     'op catch, pieces [{ kind, text, hiddenNote }], clear [ids]: cclio only, her rules come from catch.md.',
-    `op plan, lines: your next ${PLAN_MAX} moves (now, next, then), each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale.`,
+    `op plan, lines: your next ${PLAN_MAX} moves (now, next, then), each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step.`,
     `op glide — ${LANE_OWNER} only, every board draws it: act create, title, items [{ text, ticket, done }]: a lane's whole scope as 1–${LANE_MAX} steps dima reads at a glance — plain words, ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket is an optional id; the result names the lane id. act link, id, session, role (coder or verifier): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a step whose text stays keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the step count marks the lane finished. act end, id: at the siesta after it finished. nothing moved for ${LANE_STALE} of your turns reads stale.`,
 ].join('\n');
 
@@ -1482,6 +1486,75 @@ function laneCreate(
 // one topic, one open lane: the topic is the title before « — » or «:», case-blind; a finished lane counts until ended
 const laneTopic = (title: string) =>
     (title.split(/ — |:/)[0] ?? '').trim().toLowerCase();
+
+type LaneStep = { at: number; step: number };
+
+// a linked coder's plan step moves its lane forward: a step ahead of the pointer and newer than the lane's last move,
+// never the finish, which stays cclio's act; her own step back holds until the coder names a step again (todo 6)
+async function followCoders($: EngineInterface) {
+    if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
+        return;
+    const lanes = await readLanes($);
+    const now = await $.clock.now();
+    const turns = (await currentOrbit($)).turns;
+    const moves: string[] = [];
+    const next: StashLane[] = [];
+    for (const lane of lanes) {
+        const coder = lane.members.coder;
+        const m =
+            lane.endedAt || !coder
+                ? undefined
+                : ((await $.store
+                      .get(LANE_STEP + bare(coder))
+                      .catch(() => undefined)) as LaneStep | undefined);
+        if (
+            !m ||
+            m.at <= (lane.history.at(-1)?.at ?? 0) ||
+            m.step <= lane.current ||
+            m.step >= lane.items.length
+        ) {
+            next.push(lane);
+            continue;
+        }
+        const stepped = pointed(lane.items, m.step);
+        next.push({
+            ...lane,
+            current: stepped.current,
+            history: [
+                ...lane.history,
+                {
+                    act: 'step',
+                    at: now,
+                    by: coder,
+                    current: stepped.current,
+                    done: stepped.done,
+                },
+            ],
+            items: stepped.items,
+            movedAt: turns,
+        });
+        await $.store.delete(LANE_STEER + lane.id).catch(() => undefined);
+        moves.push(
+            `lane ${lane.id} «${lane.title}» moved to step ${stepped.current} by ${coder}`,
+        );
+    }
+    if (!moves.length) return;
+    await writeLanes($, next);
+    await $.store.set(LANE_MOVES, [...(await heldLaneMoves($)), ...moves]);
+}
+
+async function heldLaneMoves($: EngineInterface) {
+    const held = await $.store.get(LANE_MOVES).catch(() => undefined);
+    return Array.isArray(held) ? (held as string[]) : [];
+}
+
+// the held moves, once: they leave the store as they join cclio's turn
+async function takeLaneMoves($: EngineInterface) {
+    await followCoders($);
+    const held = await heldLaneMoves($);
+    if (held.length) await $.store.delete(LANE_MOVES);
+    return held;
+}
 
 // a lane's steps as cclio sends them: 1 to LANE_MAX, each plain text ≤LANE_TEXT_MAX, an optional ticket id
 function laneItems(input: unknown): LaneItem[] | { deny: string } {
@@ -3298,6 +3371,7 @@ export const register: Register = (on) => {
                         role: { enum: [...LANE_ROLES], type: 'string' },
                         session: { type: 'string' },
                         slug: { type: 'string' },
+                        step: { type: 'number' },
                         text: { type: 'string' },
                         texts: { items: { type: 'string' }, type: 'array' },
                         title: { type: 'string' },
@@ -3374,6 +3448,7 @@ export const register: Register = (on) => {
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
                     await relayCcrowWake($).catch(() => undefined);
+                    await followCoders($).catch(() => undefined);
                     // a fold or mobile mode is kept within one poll of its change
                     await keepState($).catch(() => undefined);
                     if (await isOpen($))
@@ -3472,6 +3547,8 @@ export const register: Register = (on) => {
                       .catch(() => undefined)
                 : undefined;
         if (catchRules) isCatchRulesDue = false;
+        const laneMoves =
+            isOwner && isOn('stash.glide') ? await takeLaneMoves($) : [];
         const lanes = isOwner && isOn('stash.glide') ? await readLanes($) : [];
         const live = lanes.filter((l) => !l.endedAt);
         const laneStale = live
@@ -3516,6 +3593,7 @@ export const register: Register = (on) => {
                 ...(catchRules ? [catchRules] : []),
                 ...(reminder ? [reminder] : []),
                 ...laneStale,
+                ...laneMoves,
                 ...laneSteers,
                 ...(planMark ? [planText(planMark)] : []),
                 ...(quiet.held.length ? [quietNote(quiet.held)] : []),
@@ -5620,6 +5698,16 @@ export const register: Register = (on) => {
                 return {
                     deny: `orbit catch: catch is ${LANE_OWNER}'s alone; this session is not her`,
                 };
+            const step = (e as Record<string, unknown>).step;
+            const isPlan = (e as Record<string, unknown>).op === 'plan';
+            if (
+                isPlan &&
+                step !== undefined &&
+                !(Number.isInteger(step) && (step as number) >= 0)
+            )
+                return {
+                    deny: 'orbit plan: step is your lane step now, a whole number from 0, as your brief numbers it',
+                };
             const op = orbitOp(
                 await currentOrbit($),
                 e as Record<string, unknown>,
@@ -5633,6 +5721,12 @@ export const register: Register = (on) => {
                 return { deny: op.deny };
             }
             await saveOrbit($, op.orbit);
+            const name = isPlan && step !== undefined && (await sessionName($));
+            if (name)
+                await $.store.set(LANE_STEP + bare(name), {
+                    at: await $.clock.now(),
+                    step,
+                });
             return { result: op.result } as never;
         }
         const r = await next(e);
@@ -5671,6 +5765,7 @@ export const register: Register = (on) => {
         }
         // a lane steer dima took while cclio's turn runs joins it here too, as an orbit mark does
         if (!isPing && isOn('stash.glide') && (await isLaneOwner($))) {
+            notes.push(...(await takeLaneMoves($)));
             notes.push(...(await takeLaneSteers($, await readLanes($))));
         }
         // dima's phases mark joins the running turn once its sending window passed

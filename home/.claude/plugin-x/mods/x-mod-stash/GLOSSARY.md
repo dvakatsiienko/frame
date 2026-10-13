@@ -44,6 +44,10 @@ _Avoid_: project, run
 A lane's progress card on every board: its steps in order, done ones kept, the current marked, its members' asks beneath; kept in one shelf file, written only by 🦉 cclio through orbit op `glide`, drawn until her siesta ends it.
 _Avoid_: lane tracker, lane card
 
+**Plan step**:
+The lane step a linked coder names with its plan (orbit `plan`, `step`), as its brief numbers them; cclio's stash moves the lane's pointer forward to it.
+_Avoid_: progress, mirror step
+
 **Step**:
 One of a lane's 1–5 plain-word items; done steps stay listed, the current one is «← we are here».
 _Avoid_: item, task, phase

@@ -745,7 +745,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - and each card folds with its own `📂`, and the `🛼 glide` 🎛️ switch hides every glide card
   - given `🛼 glide` switched off, then no stale lane and no taken steer reach cclio's prompt or tool result, and `op glide` is refused in one line naming the switch
   - decision: the glide cards stick to the board's bottom, on top of 🌔 phases, the gap above them (dima's shot, 20:12)
-- ⬜ only cclio writes the lanes
+- ⬜ only cclio writes the lanes — one exception: the pointer's forward move from a linked coder's plan step, still written by cclio's stash
   - given any session calls op `glide`, when the registry does not name it 🦉 cclio, then it is refused with one line; a new cclio after a handoff steps and ends a lane it did not create
   - and act `create` refuses while a lane of the same topic is open — the topic is the title before « — » or «:», case-blind — naming the open lane and its fix: «lane l13 «mods — …» is still open: end it first (glide end l13)»; a lane whose last step is done counts as open until ended; a different topic always passes (todo 11, dima's 18:55 go)
   - and act `edit` with an id and a new title, new steps or both refreshes the card in place: the id, the members and the history stay, the history gains one `edit` entry, a step whose text stays keeps its done flag, the pointer lands on the first step not done, and dima's steer stays while the current step's text does (cclio's ask, 18:01)
@@ -764,6 +764,12 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given the pointer and the done flags unmoved for 8 of cclio's turns, then her next prompt carries «lane <id> «…» moved nothing for n of your turns, stale»; a step that moves nothing keeps the count; no other session nags; with no lane, no lane text
   - decision: 8, not phases' 3 — a lane step spans many turns
 - decision: no reorder arrows on a glide step — a glide card reads as a status, not a control panel, and a reorder lands in cclio's own turn through act `edit` (dima's o138, 2026-10-12 21:51; the o84 arrows lived 20:25–22:05); a `lane-order:` key a board wrote before that is dropped by cclio's stash, never applied
+- ⬜ a lane follows its coder's plan step (todo 6, dima's 18:55 shot: «I want to see the coder's future progress»)
+  - makes: a `lane-step:<registry name>` key in the store, `{ at, step }`, written only by that session's plan op
+  - given a lane with a coder linked, when that coder's orbit `plan` op carries `step: 3` (the numbering act `step` uses) and cclio is idle, then within one poll the lanes file's pointer is 3, the steps before it done, one history entry `by` the coder, and cclio's next tool call or prompt carries «lane <id> «<title>» moved to step 3 by <coder>» once
+  - given the pointer at 3, when the coder names 2, or the step count, or the verifier, an unlinked session or an ended lane names any step, or 🛼 glide is off, then the pointer stays and the file gains nothing; the finish stays cclio's act
+  - and cclio's step back holds until the coder names a step again; a move counts as movement for the stale nag, and drops dima's steer on the step it left
+  - and a step that is not a whole number from 0 is refused in one line; nothing of the lane enters the coder's context — its brief numbers the steps
 - ⬜ a glide card holds its members' asks (exit 3)
   - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
   - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ tick, 🔁 replay, 🔊 and the steer; a locked one shows its mark and its steer, no control
