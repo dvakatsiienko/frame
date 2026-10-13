@@ -23,7 +23,7 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
   test drive to 10-20 (`docs/test-drive/ccrow.md`).
 - ⚡ **`classifier`** — jev (typesafe.ai): typed judgments over a state, no tools, no memory.
   ~20–200× faster and 40–550× cheaper than a model call — any classification runs through a jev
-  flow, docs first — frozen until the credit refills (~10-18, cclio's `_MEMORY.md` § the system itself).
+  flow, docs first — frozen until the credit refills (cclio's `_MEMORY.md` § the system itself); no session routes to jev or the `quicksilver` skill until it is unfrozen.
 - 🤝 **`cw`** — Cowork, reaching the mac over the device bridge. A peer: either side may open the
   exchange.
 - ☁️ **`cc cloud`** — Claude Code on Anthropic's machines, on a test drive to 11-04 (`x:crew-cloud`).

@@ -8,10 +8,10 @@ skill reaches it as text. a contract change goes there, never here.
 
 ## how it runs
 
-- ccrow lives one cclio session: cclio's boot runs `pnpm ccrow:keep-cache-hot`, its halt runs
+- ccrow lives one cclio session: cclio's boot runs `pnpm ccrow:start opus`, its halt runs
   `pnpm ccrow:stop` (FRM-335).
-  - `pnpm ccrow:keep-cache-hot` — finds the live tab by name and writes its 🔥 key; no tab → one line asking dima to open it (cclio cannot open a desktop tab).
-  - `pnpm ccrow:start opus|fable` — the old `--bg` start, a fallback when no tab can be opened; refuses while one is live.
+  - `pnpm ccrow:start opus` — the `--bg` start on opus 5.5 medium; refuses while one is live.
+  - `pnpm ccrow:keep-cache-hot` — the desktop-tab fallback: finds the tab by name and writes its 🔥 key.
   - `pnpm ccrow:stop` — `claude stop <jobId>`, switches 🔥 off, waits until the process is gone.
     it harvests nothing; the halt reads `notes.jsonl` and `verdicts.jsonl` itself.
 - a start is `--bg --remote-control` from `~/.local/state/ccrow/`, effort medium. that home is
@@ -25,14 +25,14 @@ skill reaches it as text. a contract change goes there, never here.
   leaves named in `~/.local/state/ccrow/leaves.txt` plus the transcript delta into
   `packets/<id>/`, writes one line to ccrow's inbox socket, and leaves a detached `harvest.ts`
   to log the note. live from day 1 (dima, 2026-10-06; the 3 silent days were cut after day 1 proved the notes worth reading live); a silent phase would have the other arm answer the same
-  packet as a `claude -p` one-shot. live days alternate the arm (day 4 opus, day 5 fable, …);
-  `wake` prints the restart line when the running arm is the wrong one, it never restarts ccrow.
+  packet as a `claude -p` one-shot. ccrow runs opus 5.5 medium only (dima, 2026-10-13, the day alternation cut);
+  `wake` prints the restart line when it runs another arm, it never restarts ccrow.
 - `pnpm ccrow:decision` — cclio's `PreToolUse` hook on Bash, filtered by `if` to `gh pr merge*` and `claude *`
   (FRM-380). a merge or a `claude --bg` spawn gets a `mode decision` wake outside the gates (no 30-min gap, no step
   count, `lastWakeAt` untouched); a push to main gets none. the merge line carries `merge <repo>#<n> · verified · head ·
   note <path>`, the verified sha read from `~/.claude/shelf/pr-verified.json` (the verifier writes it through
   `pr-watch.sh --verified`). a `--bg` ccrow gets the line on its socket and the merge waits ≤ 90 s for the note file;
-  a tab gets none, so the first merge is denied with the line for cclio to `send_message`, and a rerun within 10 min
+  a tab gets none, so the first merge is denied with the line for cclio to send with SendMessage by ccrow's registry name, and a rerun within 10 min
   (`decisions/<repo>-<n>-<head>.json`) waits for the note instead. a spawn never waits. every failure exits 0 with
   a context line: a PreToolUse exit 2 or timeout would block the merge.
   the same script is cclio's `PostToolUse` hook on `Write|Edit` (FRM-396): a write to `.scratch/**/*-proposal.md` gets a
@@ -45,7 +45,7 @@ skill reaches it as text. a contract change goes there, never here.
   transcript; ccrow reads its tail only then.
 - `pnpm ccrow:plan-critique <plan file>` — the plan review at `x:shape-idea` step 4 (FRM-336, the
   FRM-287 template). never ccrow's own session, which has read
-  cclio's thread: two fresh `claude -p` one-shots on the day's arm (the `ccrow:keep-cache-hot` pick),
+  cclio's thread: two fresh `claude -p` one-shots on opus,
   effort high, cwd a fresh `plans/<run>/` in the home. pass 1 gets only the sections whose heading
   says want, constraints, not or done test; pass 2 gets the whole plan plus pass 1's take and a
   `--json-schema` for the template. both run with `--tools ''`: a one-shot that can read reaches
@@ -54,9 +54,10 @@ skill reaches it as text. a contract change goes there, never here.
   the model, the run's cost, and `located` — whether its quote is really in the plan. accepted is a
   `ccrow:note-vet` on that id; the full review sits in `plans/<run>/review.json`.
 - `pnpm ccrow:note-vet ok|miss <note-id> <why>` — appends the verdict to `verdicts.jsonl`, keyed by
-  note id; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
+  note id, waiting ≤60 s for a note harvest.ts has not logged yet (PK-113); `pnpm ccrow:unvetted`, cclio's Stop hook,
+  blocks her turn end once per «🔴 sent» note still without a verdict, naming the command; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
 - `pnpm ccrow:reconcile <note-id> <evidence>` — cclio's answer when her evidence contradicts a note (FRM-396): sends
-  `reconcile <note-id>: <evidence>` to a `--bg` ccrow, or prints it for cclio to `send_message` to a tab, and leaves a
+  `reconcile <note-id>: <evidence>` to a `--bg` ccrow, or prints it for cclio to send with SendMessage by her registry name (a tab or a terminal resume), and leaves a
   harvester (`harvest.ts reconcile <id> <evidence>`) that logs ccrow's one answer as `<note-id>-reconcile`, with
   `reconciles` and `evidence`, in `notes.jsonl`. an unknown id, a reconciled note, or one whose reconcile is still
   pending (`reconciles/<id>.json`, younger than the harvester's 15 min) exits 2; a timeout logs no row, only a
@@ -101,6 +102,3 @@ skill reaches it as text. a contract change goes there, never here.
   (haiku probe, 2026-10-06); `total_cost_usd` is there too.
 - dates (`{today}`, the wake id) are local time; `wake.lock` keeps two hooks firing in one second
   from both passing the 30-min gate.
-- **a retro, when dima or cclio asks for one** (≤12 lines, ranked by cost): the standing focus is
-  what cclio missed and when your note landed late, plus one line on what a better adviser would
-  have said; an ask's `focus:` line replaces it for that retro (dima, 2026-10-08).

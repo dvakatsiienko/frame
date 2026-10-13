@@ -10,7 +10,7 @@ five emoji candidates for one topic, his favourites first, one pick marked. he a
 
 1. **pick the five.** his handpicked set (`rules/fleet-output-format.md` § emoji) leads with every one that fits the
    topic; fresh fits fill the rest. five distinct emojis, each one reads as the topic at a glance.
-2. **print exactly this shape**, nothing before or after; `⭐` leads all five lines, favourite or fresh:
+2. **print exactly this shape**, nothing before or after; this shape overrides the emoji-prefix rule of `fleet-output-format.md`. `⭐` leads all five lines, favourite or fresh:
 
 ```
 top 5 emojis for **<topic>**.

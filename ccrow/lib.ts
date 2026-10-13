@@ -225,6 +225,7 @@ export function findSessions(): LiveSession[] {
                     cwd: entry.cwd,
                     jobId: entry.jobId,
                     messagingSocketPath: entry.messagingSocketPath,
+                    name: entry.name,
                     pid: entry.pid,
                     sessionId: entry.sessionId,
                 });
@@ -793,10 +794,8 @@ export function dayOf(firstWakeAt: number, now: number) {
     return Math.floor((now - firstWakeAt) / 86_400_000) + 1;
 }
 
-// live days alternate the arm: day 4 opus, day 5 fable, …
-export function armOfDay(day: number): Arm {
-    return armList[day % 2] ?? 'opus';
-}
+// dima, 2026-10-13: opus 5.5 medium only, the day alternation is gone
+export const liveArm: Arm = 'opus';
 
 export function sendLine(socketPath: string, text: string) {
     const frame = JSON.stringify({

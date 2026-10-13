@@ -70,7 +70,7 @@ this file says how every member does it. A section headed with roles binds only 
 - on a main lane the verifier's one linear write is its `clean` verdict comment; on a pr lane it writes none (`pr-watch.sh --verified`); the coder's done comment says «verified clean, round N»
 
 **proof**
-- a worktree is `git worktree add .claude/worktrees/<ticket>-<slug>`, then `pnpm worktree:seed` <!-- mac -->
+- a worktree is `git worktree add .claude/worktrees/<ticket>-<slug>`, then `pnpm worktree:seed` in bytes, `x lane seed <path>` in frame <!-- mac -->
 - skill loads: `x:guide-code` before code, `x:browser-headless` before a ui check, `x:github-contrib` before a `gh` write
 - run the thing first: `agent-browser` at 390 and 1280 plus the failing path, and the essentials on every touched view
 - a test is proven by making it fail

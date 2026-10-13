@@ -53,7 +53,7 @@ brew "go"                        # sline and x are written in Go
 brew "govulncheck"               # go dependency vulnerability scan (pnpm x-go:vuln)
 brew "gopls"                     # the go language server, for the LSP and editors
 brew "staticcheck"               # go lint; brew rebuilds it on each go release
-brew "delve"                     # dlv, the go debugger — on a test drive (2026-10-06)
+brew "delve"                     # dlv, the go debugger — on a test drive, docs/test-drive/delve.md
 brew "uv"                        # the only approved Python package manager
 brew "typescript"                # global tsc/tsserver; the pnpm global shim died in the
                                  # brew move. no global `turbo` on purpose — it has no
@@ -114,8 +114,7 @@ cask "notion-cli"                # `ntn` — notion's official cli; the agent ch
 cask "battle-net"                # blizzard launcher — the cask is an INSTALLER (Battle.net-Setup.app), run it once; intel-only, needs rosetta until blizzard ships silicon
 cask "keka"                      # archiver — bundles its own 7zz/unar/unrar/zstd, so no archive CLIs are needed alongside it
 brew "mas"                       # app store cli — the door for App-Store-only apps below; an app must be «gotten» once on the account first
-mas "Marco", id: 6746069877      # email client on trial (free, native, no AI); newton is a direct download from newtonhq.com, no cask, no mas
-cask "clearvpn"                  # the vpn — macpaw, premium free for ukrainians via diia; on test drive 2026-10-10
+cask "clearvpn"                  # the vpn — macpaw, premium free for ukrainians via diia (adopted 2026-10-13)
 cask "coderabbit"                # `coderabbit` cli — local ai code review; the gh app is retired, cli only
 cask "wispr-flow"                # voice-to-text dictation, ai auto-edit; auto_updates, brew only installs
 cask "superwhisper"              # dictation, local whisper/parakeet models + llm reformat; auto_updates, adopted 2026-09-12

@@ -5,6 +5,9 @@ import { dirname, join } from 'node:path';
 
 const endpoint = 'https://api.typesafe.ai/v1/systemone';
 
+// jev is wanted, and non-blocking: keep finding flows where it gains, and build each so a 402 or JevBudgetError falls
+// back to the by-hand path (unlaned, router off) and a dead jev never stops the fleet (dima, 2026-10-13, after the bench burn)
+
 // pinned on purpose: thresholds are tuned per version, `jev-latest` moves under them
 export const model = 'jev-1.13.0';
 

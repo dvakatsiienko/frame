@@ -33,7 +33,9 @@ const WAIT_MS = Number(process.env.CCROW_DECISION_WAIT_MS ?? 90_000);
 const MARKER_TTL_MS = 10 * 60_000;
 // the boot's draft board (cclio:boot step 7): dima wants ccrow's note on it before it prints
 const BOOT_BOARD = /(^|\/)\.scratch\/boot-[^/]+\/[^/]+-proposal\.md$/;
-const SEND = `through mcp__ccd_session_mgmt__send_message to the session titled «${SESSION_NAME}»`;
+// a ccrow without a job id is a desktop tab or a terminal resume; SendMessage by her registry name reaches both
+const sendVia = (name = SESSION_NAME) =>
+    `with SendMessage to «${name}», her registry name`;
 
 const input: HookInput = JSON.parse(readFileSync(0, 'utf8'));
 const decision =
@@ -100,7 +102,7 @@ async function merge(
                 JSON.stringify({ at: Date.now(), wakeId: wake.id }),
             );
             return deny(
-                `🐦‍⬛ ccrow decides on this merge first (${heads}): send the line below, alone, ${SEND}, then rerun the same merge command; the rerun waits up to ${WAIT_MS / 1000} s for ccrow's note. no need to report it to dima unless he asks.\n${wake.line}`,
+                `🐦‍⬛ ccrow decides on this merge first (${heads}): send the line below, alone, ${sendVia(live.ccrow.name)}, then rerun the same merge command; the rerun waits up to ${WAIT_MS / 1000} s for ccrow's note. no need to report it to dima unless he asks.\n${wake.line}`,
             );
         }
         return context(`🐦‍⬛ ${about}: ${await noteOf(asked.wakeId)}`);
@@ -131,7 +133,7 @@ async function noWaitWake(
     });
     if (!live.ccrow.jobId)
         context(
-            `🐦‍⬛ ccrow wake for this ${fields.split(' ')[0]}: after this call, send the line below, alone, ${SEND}; ${proposal && BOOT_BOARD.test(proposal) ? 'the board waits on her note: end the turn on the 🔭 line, print the board once her note and wishkeeper are folded.' : 'do not wait for it, no need to report it to dima unless he asks.'}\n${wake.line}`,
+            `🐦‍⬛ ccrow wake for this ${fields.split(' ')[0]}: after this call, send the line below, alone, ${sendVia(live.ccrow.name)}; ${proposal && BOOT_BOARD.test(proposal) ? 'the board waits on her note: end the turn on the 🔭 line, print the board once her note and wishkeeper are folded.' : 'do not wait for it, no need to report it to dima unless he asks.'}\n${wake.line}`,
         );
 }
 

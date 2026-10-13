@@ -53,9 +53,8 @@ per pass:
 - opens **at the end of the first verb**, not the phase (the HIGH sat four commits once)
 - exit lines are concrete observables («204 chords, 82 + 103 apps, 13 never pressed»), re-read
   against the head when a pass removes something
-- the loop runs coder ↔ verifier; the coordinator reads one checkpoint line per round
-  (verdict · head sha · findings by severity · any finding that is a decision, not a defect);
-  cap counts findings, a one-line round is free; a decision goes to dima as a look call
+- the loop runs coder ↔ verifier as `x:crew-dna`'s pr pair says: the coordinator hears nothing per round;
+  cap counts findings, a one-line round is free; a finding that is a decision goes to dima as a look call
 - harness affordances on day one: a port override and a `--data-dir` so a round never writes to
   dima's real data; a write-path probe uses a key nothing is filed under
 - the adversarial review lane (coderabbit, greptile fallback) runs before the verifier's first

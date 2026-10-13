@@ -49,9 +49,9 @@ spawnHarvester(['reconcile', id, evidence]);
 if (ccrow.jobId) {
     console.log(`sent to ccrow: ${line}`);
 } else {
-    // a desktop tab takes no socket line; only the desktop's send_message reaches it
+    // a desktop tab or a terminal resume takes no socket line from here; SendMessage by her registry name reaches both
     console.log(
-        `send the line below, alone, to the session titled «${SESSION_NAME}» through mcp__ccd_session_mgmt__send_message; her answer is logged by itself.\n${line}`,
+        `send the line below, alone, with SendMessage to «${ccrow.name ?? SESSION_NAME}»; her answer is logged by itself.\n${line}`,
     );
 }
 

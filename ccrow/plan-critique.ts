@@ -8,17 +8,15 @@ import {
     STATE_DIR,
     appendJsonl,
     armModels,
-    armOfDay,
     blindPrompt,
     blindSections,
     claudeArgs,
-    dayOf,
     fail,
+    liveArm,
     oneShotModel,
     planNotes,
     planPrompt,
     planSchema,
-    readState,
     runOneShot,
     tokensIn,
     wakeIdOf,
@@ -26,7 +24,7 @@ import {
 
 const usage = `ccrow:plan-critique <plan file>
 
-  a fresh claude -p review of one plan, on the day's arm at effort high: pass 1 sees only the
+  a fresh claude -p review of one plan, on opus at effort high: pass 1 sees only the
   want / constraints / done test sections, pass 2 the whole plan on the fixed template. each
   finding is one line in ${NOTES_PATH}; the full review lands in ${STATE_DIR}/plans/<run>/.`;
 
@@ -47,9 +45,7 @@ try {
 if (!planText.trim()) fail(`plan is empty: ${planPath}`);
 
 const now = new Date();
-const arm = armOfDay(
-    dayOf(readState().firstWakeAt ?? now.getTime(), now.getTime()),
-);
+const arm = liveArm;
 const effort = 'high';
 const id = `${wakeIdOf(now)}${String(now.getSeconds()).padStart(2, '0')}`;
 const runDir = `${STATE_DIR}/plans/${id}`;

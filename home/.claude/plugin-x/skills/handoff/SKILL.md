@@ -31,7 +31,7 @@ and a pending list that says `any lane · by any` is a writer that skipped them.
 
 ## Before writing any CST
 
-- 🚨 **The sibling check is mandatory, and it comes first.** `list --for <this session's
+- **Run the sibling check first.** `list --for <this session's
   audience>`. A pending handoff of THIS thread → fold its live content into the new CST and pass
   `--replaces <its slug>`, which deletes it as the new one lands. One thread leaves ONE file.
 - **Build META's fleet roster** from `ListAgents` (fresh — refs rotate): only sessions worth
@@ -70,7 +70,7 @@ Offer with a 💡 tip, specific and occasional, never a running commentary.
 📌 The store is shared: CSTs flow `cc`↔`cw` through one directory, served to `cw` by the `x-cw`
 mcp server, which shells out to the same `x handoff` this skill calls.
 
-## DELIVERY FAILURE RULE (MANDATORY — triggers A and D)
+## delivery failure — triggers A and D
 
 A send bounces (error, "not reachable") → do NOT retry inline. Write the CST to the store
 immediately, then send ONE one-line message carrying only the path; that bounces too → tell
@@ -135,8 +135,8 @@ A CST (Continuation State Transfer) of my thread is at <path>. Read it, then ing
 
 ## Trigger E — `/handoff delete`
 
-1. `list` first (filename + age). Empty → "store already empty", done.
-2. `delete --all` — it takes `-shared` files too.
+1. `list --for <this session's audience>` first (filename + age). Empty → "store already empty", done.
+2. `delete <slug>` for each file that list showed — never `delete --all`, which also takes other agents' files and `-shared` ones.
 3. One line: `deleted N handoff(s): <slugs>`.
 
 No confirmation dance — a deliberately destructive verb on disposable files. No CST on this path.

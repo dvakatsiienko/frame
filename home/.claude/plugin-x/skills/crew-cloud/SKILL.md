@@ -29,16 +29,16 @@ Sources: `docs/test-drive/browserbase.md` round 1 (the probe, 2026-09-28), the d
 The VM clones the remote at the current branch. `git status` clean, the base pushed, and every
 file the brief points at committed and pushed. A brief that names an unpushed file names nothing.
 
-- `frame` works: git-crypt covers one file (`gmail/blocklist.json`); a fresh clone has no filter
-  config, so it stays ciphertext and the rest commits normally (? inferred from git's
-  undefined-filter rule, unproven in a VM). the brief bans touching that file.
+- `frame` works: the encrypted set is every `filter=git-crypt` line in `.gitattributes`; a fresh clone has no filter
+  config, so those paths stay ciphertext and the rest commits normally (? inferred from git's
+  undefined-filter rule, unproven in a VM). the brief bans touching them.
 
 ## step 2 — launch
 
 `--cloud` refuses a non-tty (measured). From a Bash tool call, wrap it in `script`:
 
 ```bash
-cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '☁️ cloud: <ticket> <what>' --effort medium --cloud "<the brief>" </dev/null >/dev/null
+cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '<☕️|🎯> ☁️ <ticket> cloud: <what>' --effort medium --cloud "<the brief>" </dev/null >/dev/null
 ```
 
 - **effort is medium by default**, like every coder and verifier (dima 2026-09-28); high only for
@@ -92,11 +92,11 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 - comments only for a non-obvious why, one line.
 - tests prove a contract, one behaviour each, runner vitest; a test is proven by making it fail once.
 - setup: `CI=1 pnpm install` (keeps git-hook shims out). typecheck + the touched tests must pass.
-<frame only: never touch gmail/blocklist.json.>
+<frame only: never touch a path `.gitattributes` marks `filter=git-crypt`.>
 
 ## git and the pr
 - branch `coder/<BYT-N>-<slug>` from the base. step commits.
-- commit subject `<emoji> <scope>: <lowercase imperative>`; emoji: 🔧 feature/config · 🐞 fix · ✨ refactor · 🗑️ delete · 📜 docs · 🎨 visual · 📦 deps. body: hyphen bullets, a line `- ticket: <BYT-N>`, last line `Agent: crew-cloud · <model>`.
+- commit subject `<emoji> <scope>: <lowercase imperative>`; emoji: 🔧 feature/config · 🐞 fix · ✨ refactor · 🗑️ delete · 📜 docs · 🎨 visual · 📦 deps. body: hyphen bullets, a line `- ticket: <BYT-N>`, last line `Agent: cloud · <model>`.
 - never write a linear keyword (closes, fixes, resolves, refs …) next to a ticket id, anywhere. never write a skip-ci marker.
 - push the branch and open ONE pr (not a draft) with `gh` as soon as the first commit exists. pr body ≤ 25 lines: what shipped, what is left, the exit lines with ✅/❌, one line per known defect.
 
@@ -159,8 +159,8 @@ claude plugin install x@x
 - ✅ proven by probe 3b (2026-09-28, environment «cloud base», network Custom: default list +
   `*.browserbase.com`): a fresh session listed 19 `x:*` skills, `gh` 2.45 came from ubuntu's
   archive (`apt-get install -y gh`), node 24 + pnpm 12.3.4 from dima's fnm block
-- user-invoked skills (`crew-coder`, `crew-verifier`) never show in the model's list, and a prompt
-  that starts with `/x:crew-coder` still expands (probe 4) — step 3's short form
+- `crew-coder` and `crew-verifier` are model-loadable but fire only on a brief that names them; a prompt
+  that starts with `/x:crew-coder` expands (probe 4) — step 3's short form
 
 ## keys and browsers
 

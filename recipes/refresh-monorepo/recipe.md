@@ -1,66 +1,77 @@
 ---
 kind: refresh
-owner: coordinator
+owner: [coder, coordinator]
 artifacts:
-  - docs/research/monorepo-agents.md
-  - cclio/memory/_reminders.md
+  - docs/knowledge/monorepo.md
+  - ~/projects/bytes/AGENTS.md
 script: none
+groomed: 2026-10-13 (dima)
 was: [refresh-branch-monorepo]
 ---
 
 # refresh-monorepo
 
-keeps the fleet's monorepo craft true: how agents run bytes (pnpm + turborepo), the do / don't / easy wins, and the order of the frame → bytes merge. born 2026-10-05.
+keeps the fleet operating a monorepo efficiently with agents: the baseline every bytes coder reads, the expanded monorepo knowledge, and the wins that land each run, sharpened against turborepo. born 2026-10-05.
 
 ## the want
 
-> how to use monorepo/turborepo efficiently with agents? power usage recipes, tips and tricks, best practices? pitfalls? things NOT to do? easy things todo to to get most gains? (2026-10-05)
+> i want the fleet to operate a monorepo efficiently and use most features of the monorepo and turborepo to get the most gains. i think turborepo scripts and workflows can be especially useful to you, because you are a coordinator — my inference; we'll see more closely as we get to the monorepo. (2026-10-13)
 
-> and this research would also allow to answer a frame→bytes merge questions — should we do it? how to correctly research this? (2026-10-05)
+> this recipe is only for improving your overall knowledge of efficient monorepo operations with agents. sharpen it against turborepo, because we use it. (2026-10-13)
 
-> we use turborepo — why don't we exploit it? … it's actually an orchestration tool! Why don't you befriend turborepo? (the big prompt, T5, ~2026-10-01)
+> since we plan the move to bytes and your folder will most likely migrate there, everyone should have a baseline knowledge of how to operate a monorepo efficiently with agents: that goes in the agents doc, the expanded part in the knowledge folder. we refine how much it holds as we move closer to bytes. (2026-10-13)
 
-> plan bytes merge in a way, so it is gradual, mixed between our lanes, part by part and not folded into a long shelf (2026-10-05)
+> refresh incrementally, as we find new best practices and tips and tricks. (2026-10-13)
 
-his standing calls: turbo's want is a + b (the task graph and cache for gates; fleet scripts as a graph), the clock stays `launchd`; the merge is incremental, one slice per lane; bun and oxc stay out of the merge.
+> how to use a monorepo and turborepo efficiently with agents? power-usage recipes, tips and tricks, best practices? pitfalls? things NOT to do? easy things to do for the most gain? (2026-10-05)
+
+> we use turborepo — why don't we exploit it? … it's actually an orchestration tool! why don't you befriend turborepo? (the big prompt, T5, ~2026-10-01)
+
+his standing calls: turbo's want is a + b (the task graph and cache for gates; fleet scripts as a graph), the clock stays `launchd`.
 
 ## the run
 
-- suggest a run when: a turbo minor ships, a merge milestone starts (BYT-109, BYT-124)
+- a run's gains never stay parked: each small win lands in the run itself; a bigger one becomes a dated pocket item, never only a ticket line; the print names what landed
+- each bytes coder lane proposes this recipe's vector changes at its end (the coder seat)
+- suggest a run when: a turbo minor ships
 
-1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
-2. **research** — one brief from the vectors; `pnpm research:lanes <brief> <out>` + an opus source lane (turbo docs + both repos, measured) + a blind `advise-project-approach` lane for the merge. done: every lane returned or marked failed. (script)
-3. **distill** — merge into `docs/research/monorepo-agents.md`; raw lane output stays in `last/` until the next run's distill. done: the cookbook carries the merge, or is named «unchanged». (open)
-4. **eval + findings** — grade the lanes in `docs/test-drive/{exa,parallel}.md`; findings print. done: the grades are in the test-drive files. (template)
-5. **resolve** — with dima; each win becomes a merge slice or a line on its ticket; noop is fine. done: his word on each win. (open)
+1. **shape**: `x:shape-recipe` step 0, the grill. done: his word on the round. (open)
+2. **research** — the brief from `pnpm recipe:brief refresh-monorepo`; `pnpm research:lanes <brief> <out>` + an opus source lane (turbo docs + bytes, measured). done: every lane returned or marked failed. (script)
+3. **distill** — the baseline into bytes' `AGENTS.md` (short, every coder reads it), the rest into `docs/knowledge/monorepo.md`; raw lane output stays in `last/` until the next run's distill. done: both read and touched, or named «unchanged». (open)
+4. **land** — every small win done in the run; the rest dated pocket items. done: each win landed or dated. (open)
+5. **findings** — the print, naming what landed. done: printed. (template)
 6. **log** today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
 
 ### research
 
-1. **power usage** — turbo with coding agents: task graphs as agent gates, `--affected` / `turbo query affected`, local and remote cache, `turbo watch`, boundaries, generators, `futureFlags`, task `description`s, the turbo ai guide and its agent skill
-2. **pitfalls and don'ts** — cache poisoning, env vars outside the hash, worktrees sharing a cache (absolute paths in outputs), remote cache from worktrees, lockfile churn marking everything affected, context bloat
-3. **easy wins** — the few changes with the most gain per effort, ranked
-4. **scheduling** — re-check each turbo minor: still no time-based runs?
-5. **the merge** — real cases of a dotfiles or agent-infra repo folded into an apps monorepo; what breaks; the least-pain order
-6. **agent layout** — nested `AGENTS.md` / `CLAUDE.md` loading, settings scoping in worktrees, per-task context, gates only for what a coder touched
+1. **efficient agentic monorepo use** — how teams run a pnpm + turborepo monorepo with coding agents: what works, the measured gains, the agent loop
+2. **the coder's loop** — what a coder runs before a commit or a pr in a turbo monorepo: affected gates, `turbo query affected`, caching across worktrees
+3. **turborepo for a coordinator** — turbo scripts and workflows as an orchestration layer for fleet jobs (dima's inference, tested here): task graphs, `turbo watch`, generators, tags
+4. **power usage** — task graphs as agent gates, local and remote cache, boundaries, `futureFlags`, task `description`s, the turbo ai guide and its agent skill
+5. **pitfalls and don'ts** — cache poisoning, env vars outside the hash, worktrees sharing a cache (absolute paths in outputs), lockfile churn marking everything affected, context bloat
+6. **easy wins** — the few changes with the most gain per effort, ranked
+7. **scheduling** — re-check each turbo minor: still no time-based runs?
+8. **agent layout** — settings scoping in worktrees, per-task context, gates only for what a coder touched
 
 ### analysis
 
-1. `turbo.jsonc` + root scripts in bytes against the cookbook — every easy win applied or named as open
+1. `turbo.jsonc` + root scripts in bytes against the knowledge file — every easy win applied or named as open
 2. the lockfile fallback — `turbo query affected` on the last lockfile commits: still all packages?
-3. the merge's path blast radius — `rg -l '/Users/dima/frame|~/frame|\$HOME/frame'`, the home symlinks, the plists, cc's path-keyed state; the count per run
-4. worktree health — does a fresh bytes worktree pass its gates with frame's hooks merged in
-5. turbo version vs latest, and what the next minor changes (`agentGuidance` writes into `AGENTS.md`)
-6. the merge slices since the last run (FRM-330–333, BYT-106/125/126): which broke a gate or a worktree, and why
+3. worktree health — does a fresh bytes worktree pass its gates today
+4. turbo version vs latest, and what the next minor changes
+5. what tripped bytes coders since the last run — the flawlog's bytes lines and the coder retros
+
+### cut
+
+- nested `AGENTS.md` loading — answered by the 10-12 probe (its notes sit in frame's gitignored scratch, research/nested-agents-hunt.md)
 
 ## artifacts
 
-- `docs/research/monorepo-agents.md` — the cookbook: verdict, risks, do / don't / easy wins
-- [BYT-125](https://linear.app/x-com/issue/BYT-125) turborepo · [BYT-106](https://linear.app/x-com/issue/BYT-106) the docs filter · the monorepo milestones m1–m4 ([BYT-109](https://linear.app/x-com/issue/BYT-109), [BYT-124](https://linear.app/x-com/issue/BYT-124))
-- the ⏰📌 «one merge slice per lane» reminder in `cclio/memory/_reminders.md`
+- `~/projects/bytes/AGENTS.md` — § «operating this monorepo with agents»: the baseline every bytes coder loads; short, the distill adds or cuts lines there only
+- `docs/knowledge/monorepo.md` — the expanded reference (core first, then what we have, then the next bump); its open wins sit in [BYT-125](https://linear.app/x-com/issue/BYT-125)
 
 ## findings
 
-- print dima the delta: new wins, new don'ts, a moved merge order
+- print dima the delta: new wins, new don'ts, what landed this run

@@ -17,6 +17,7 @@ the vault's hazards first (moved from `rules/fleet-hazards.md`, 2026-10-09; the 
 - 🚫 **icloud sync is whole-file, last-writer-wins, no conflict copy**: never edit before the synced
   version has arrived (sync lags minutes after obsidian opens; a relaunch often forces the pull), keep
   obsidian closed on the ipad during a session, and re-read right before every write
+- a lost edit is recoverable from obsidian's file-recovery store (IndexedDB, snappy `.ldb`); its text is UTF-16, so search with `strings -e l`, which a plain `strings` or `rg` misses
 
 - **read · append · property edit → raw files.** `cat`, `>>`, a frontmatter edit in place. 2–5 ms
   per note, payload only, nothing to time out. the vault lives at
@@ -37,7 +38,7 @@ the vault's hazards first (moved from `rules/fleet-hazards.md`, 2026-10-09; the 
 
 ## notion
 
-- **a page → `ntn`** (`brew "notion-cli"`, token in `~/.zshenv.local`): `ntn pages get <id>`
+- **a page → `ntn`** (`brew "notion-cli"`), always run as `~/frame/script/op-run.sh ntn …`: the token is `op://dev/notion-api-golden/credential` in `op.env`, and a bare `ntn` has none (exit 4). `ntn api` reads a body from stdin and waits forever without one: give it `-d` or `</dev/null`. `ntn pages get <id>`
   returns markdown (~170 bytes a page); `ntn pages create --parent page:<id> --content '# title …'`;
   append = `ntn api /v1/pages/<id>/markdown -X PATCH --notion-version 2026-03-11 -d
   '{"type":"insert_content","insert_content":{"content":"\n…\n","position":{"type":"end"}}}'`.

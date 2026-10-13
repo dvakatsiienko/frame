@@ -30,7 +30,7 @@ map back.
 kind-first, then the main artifact it refreshes, so the recipe sits beside its target:
 `refresh-guide-go` → `x:guide-go`. a recipe that keeps one fleet member true is named after the member
 (`refresh-crew-coordinator`). its script or verb shares the stem (`refresh-fleet-ops` ↔ `x fleet ops`).
-two recipes that refresh one file merge.
+two recipes that refresh one file merge. a refresh recipe's artifact carries its stem or the stem's last word (`refresh-code-storage` → `code-storage.md`), and the shape test reds one that does not; a member-named recipe is exempt.
 
 ## recipe.md
 
@@ -73,7 +73,7 @@ body, in this order. each section holds only its own kind of line:
 
 ## the check
 
-`script/lib/recipe-shape.test.ts` runs in the pre-commit `pnpm test` and proves this file's shape on every recipe. it also catches drift in content: a line restating `x:shape-recipe`'s shared vectors or run steps, and a backticked repo path or `x:<skill>` that does not exist. a change to the shape here lands with its check in the same commit.
+`script/lib/recipe-shape.test.ts` runs in the pre-commit `pnpm test` and proves this file's shape on every recipe. it also catches drift in content: a line restating the shared vectors below or `x:shape-recipe`'s run steps, and a backticked repo path or `x:<skill>` that does not exist. a change to the shape here lands with its check in the same commit.
 
 ## the shared vectors — every refresh run asks these on top of its own (moved from x:shape-recipe, dima o73, 2026-10-12: a list in a skill was read and still missed)
 

@@ -64,3 +64,26 @@ the workaround in place, the undo. checked against the changelog through 2.1.296
   up-front cap to 4,096, and the fleet still runs both builds
 - workaround: the description is held under 2,048 (x-mod-stash's `ORBIT_ABOUT`, a test pins it)
 - undo when no 2.1.295 session runs: let the ops' rules breathe again, up to 4,096
+
+## the board in the desktop's empty space
+
+- want: the board uses the free bottom half of the left sidebar and the chat column's side margins (dima, 2026-10-13, three shots)
+- issue: [claude-code#101759](https://github.com/anthropics/claude-code/issues/101759) — a mod draws only in `AbovePrompt`, a `Pane` and the engine's rows (2.1.296); related [#101525](https://github.com/anthropics/claude-code/issues/101525), several panes at once
+- workaround: none drawn; the board stays one `Pane` with folds, and dima refines its layout himself (o155: no split for now)
+- undo when a sidebar or margin site ships: move the asks list there first
+
+## x-mod-redact: an argv prompt's enqueue row
+
+- want: no secret lands raw in any transcript record (x-mod-redact, todo 24)
+- issue: none filed yet — a prompt given on `claude -p`'s command line gets its `queue-operation` `enqueue` row
+  written before any hook runs, so `prompt.submit` and `session.append` both come too late (probed 2026-10-13 18:44,
+  cc 2.1.296, `pnpm mods:probe-x-mod-redact`); a prompt queued mid-turn is masked through `prompt.submit` since todo 24
+- workaround: none possible from a mod; the probe exempts that one row and checks every other record
+- undo when fixed: drop the `enqueue` exemption in `probe-x-mod-redact.ts` and the 📌 line in `x-mod-redact/FTR.md`
+
+## a sync clock read
+
+- want: every clock read in a mod goes through `$.clock`, so tests control time (the date-bomb class, mods todo 25)
+- issue: none filed — `$.clock.now()` is async only, so a sync path cannot use it
+- workaround: a sync read carries `// clock-ok: <why>` on the line above, and `mods:test` lets it pass
+- undo when fixed: swap each `clock-ok` read for the sync api, drop the exemption in `test.ts` `clockReads`

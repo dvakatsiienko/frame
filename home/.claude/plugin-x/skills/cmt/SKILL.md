@@ -86,9 +86,7 @@ revert, or bisect on its own.
 
 ## 3 · Author identity
 
-🚫 **The shared fleet identity is RETIRED — never pass `-c user.name` / `-c user.email`.**
-Commit under Dima's configured identity, no flags. GitHub cannot match `fleet@x-com.local` to
-an account, so the verified badge dies; Dima wants verified commits. The full investigation
+**Commit under Dima's configured git identity, with no identity flags** — GitHub verifies only an identity it can match to an account, and Dima wants verified commits. The full investigation
 (and why the author field never drove the Linear assign) lives in
 the header of `~/frame/x/go/linear_push.go`.
 
@@ -214,7 +212,7 @@ body's ticket-id-pattern hits are counted and each one is intended. Say the hash
 
 - Sanity check before every commit: leftover debug/test code, commented-out code, stray
   debuggers → pause, report, resume when resolved.
-- Pre-commit hook failure → never self-fix; summarize and stop.
+- Pre-commit hook failure → never self-fix; summarize and stop. One exception: frame's known sub-second pre-commit test flake (red in under 1 s on the first commit after staging) gets one identical retry, per `~/frame/AGENTS.md`; a second red is real.
 - a commit's output reaches you whole — the hooks print the only error channel there is. `>/dev/null` on a commit turned a biome refusal into a bare «exit 1» (2026-09-27).
 - in a shared tree, push the sha you counted — `git push origin <sha>:<branch>` — never the moving
   `HEAD`: a peer's commit landed 18 s before a push and went out unchecked (2026-09-26).

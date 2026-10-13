@@ -150,7 +150,7 @@ on partly done, flatten an exact string into prose casing.
 
 ## byproducts and cleaning habits
 
-- keep scratch outside the worktree: plans, research notes, working files. after an operation, `trash` the scratch files you created this session; anything else waits for his word (the invariant, item 8)
+- keep scratch outside git — a gitignored `.scratch/` or the session scratchpad: plans, research notes, working files. after an operation, `trash` the scratch files you created this session; anything else waits for his word (the invariant, item 8)
 - pick a produce's shape before its first line: who reads it, the one question it answers for them, and what it points to instead of copying. a log answers «did it run, what changed, where», never the findings, which live in the target
 
 <!-- why: the 10-07 recipe logs restated their artifacts at ~400 chars a line; one reached 5 KB -->

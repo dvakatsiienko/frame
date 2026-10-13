@@ -2,7 +2,6 @@
 name: remind
 description: Load when Dima types /remind, or asks to be reminded of something / to drop or list a reminder.
 argument-hint: "[stick|unstick|forget|list|clear]"
-disable-model-invocation: true
 ---
 
 # Remind

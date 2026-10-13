@@ -46,7 +46,7 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 
 - suggest a run when: a cc minor touches mods, the test-drive verdict (2026-10-19)
 
-1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
+1. **groom**: `x:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. **research** — one brief from the vectors; `pnpm research:lanes <brief> <out>` + an opus lane when source must be read (vector 2). done: every lane returned or marked failed. (script)
 3. **distill** — a probed engine fact merges into `mods/engine.md`, a door or a rule into `mods/AGENTS.md` (claims marked unprobed until probed; the core stays near 8 KB) and the FRM-304 open list; raw lane output stays in `last/` until the next run's distill. done: the artifacts carry the merge, or are named «unchanged». (open)
 4. **eval + findings** — grade the lanes in `docs/test-drive/{exa,parallel}.md`; findings print. done: the grades are in the test-drive files. (template)

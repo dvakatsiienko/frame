@@ -90,8 +90,8 @@ I am a fresh session taking over your thread. Pause current work, do this in one
 - Verified: idle interactive peers wake on receipt. An unresponsive peer is usually a zombie
   twin (same sessionId, stale pid) or a session blocked on a dialog — retry the twin, then
   FILE MODE.
-- KNOWN CC BUG (temporary — delete this bullet, plus sline's `peerSocketAlive`/⚠ segment, once
-  fixed upstream): a session can register in `~/.claude/sessions/` with its
+- KNOWN CC BUG (upstream closed it unfixed, 2026-10-03; re-probe with `test -S`, and drop this
+  bullet plus sline's `peerSocketAlive`/⚠ segment when a probe shows it gone): a session can register in `~/.claude/sessions/` with its
   `/tmp/cc-socks/<pid>.sock` never bound — outgoing sends work, inbound is dead, ListAgents
   omits it, peers get "not reachable". Verify: `test -S /tmp/cc-socks/<pid>.sock`; heal via
   restart or `/exit` + `claude --continue`; the file tier covers delivery meanwhile. Tracking:

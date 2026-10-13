@@ -10,7 +10,7 @@ This is where the agent system itself (currently Claude Code CLI) is developed (
 
 🚫 **`cclio/` is the coordinator's home.** A session not booted as the coordinator never cds into
 or reads under `cclio/` — its memory autoloads and quietly rebrands whoever enters. Asked to boot as
-cclio from here: run `cclio/script/cclio-boot-mini.sh`, read its whole output, then work its mini checklist.
+cclio from here: load `x:cclio-mode`.
 
 ## the dotfiles
 
@@ -114,7 +114,7 @@ multi-context: `GLOSSARY-MAP.md` lists every `GLOSSARY.md`. See `docs/agents/dom
 - `gmail/` — the `gmailctl` filter set and the block list; `schedule/` — every launchd job.
 - `logos/` — `@frame/logos`, the one logo store every app imports (`workspace:*`); marks enter only
   through art-kit's `logo.ts`, never into an app's own tree.
-- `x/` — `x`, the personal cli (bun, from source, `x/AGENTS.md` is the verb contract); on PATH
+- `x/` — `x`, the personal cli (go + charm, rebuilt from source by its shim, `x/AGENTS.md` is the verb contract); on PATH
   through `home/.local/bin/x`.
 - `cc` is a symlink to `home/.claude/`, a short path for the agent system.
 

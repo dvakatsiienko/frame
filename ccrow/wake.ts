@@ -17,11 +17,11 @@ import {
     WAKE_GAP_MS,
     type Wake,
     armModels,
-    armOfDay,
     dayOf,
     fail,
     isCoordinatorTranscript,
     isMode,
+    liveArm,
     modeList,
     oneCcrow,
     packWake,
@@ -144,7 +144,7 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
             JSON.stringify({
                 ...wakeInfo,
                 line: wakeLine(wakeInfo),
-                model: armModels[armOfDay(day)],
+                model: armModels[liveArm],
             }),
         );
     }
@@ -163,10 +163,9 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     console.log(
         `woke ${wakeInfo.id} (${viaSocket ? 'socket' : 'relay: cclio forwards it'}): day ${day} ${wakeInfo.phase}, ${delta.steps} steps, ${packed.files.length} files${unmatched}`,
     );
-    const dayArm = armOfDay(day);
-    if (wakeInfo.phase === 'live' && state.arm && state.arm !== dayArm) {
+    if (wakeInfo.phase === 'live' && state.arm && state.arm !== liveArm) {
         console.log(
-            `day ${day} belongs to ${dayArm}, ccrow runs ${state.arm}: pnpm ccrow:stop, then pnpm ccrow:start ${dayArm}`,
+            `ccrow runs ${state.arm}, the arm is ${liveArm}: pnpm ccrow:stop, then pnpm ccrow:start ${liveArm}`,
         );
     }
 }

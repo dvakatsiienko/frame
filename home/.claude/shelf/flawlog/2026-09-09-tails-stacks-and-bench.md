@@ -1,6 +1,0 @@
-# 2026-09-09 — tails, stacks and the notes bench · run cclio-memory-bridge
-
-- the evergreen fork said graphql 17 «merge» after grepping src; the coder had said on 2026-09-08 that apollo server is not ready — `npm view @apollo/server peerDependencies.graphql` = `^16.11.0`, so the pr breaks the peer contract · cost: one wrong ➡️ in front of dima · lesson: «what breaks» must read the PEER RANGES of every dependant (`pnpm why <pkg>` + `npm view <dependant> peerDependencies`), src grep is the second half — fold into `cclio:evergreen` step 3
-- printed a `·` chain in the taste-interview recommendations line right after the ban was re-read at boot · cost: dima flagged it again · lesson: the pre-send scan must run on the LAST paragraph too, recommendations lines are where it slips
-- good find: renovate's conflicted-PR fix is the `<!-- rebase-check -->` checkbox in the body, tickable with `gh pr edit --body-file` (a `@renovate-bot rebase` comment is not documented for the hosted app) — in the skill now
-- the evergreen «breaks» answer missed pnpm 12 dropping the `-s` short flag: the coder-brief token snippets (`pnpm -s linear:agent-token`) broke on his machine the same evening · cost: one failed create, found by luck · lesson: «your machine» must include the cli flags our own scripts and skills pass — grep the repo for `pnpm <flag>` usages on a pnpm major

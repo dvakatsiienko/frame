@@ -183,16 +183,6 @@ describe('reply-check: an internal id carries a gloss at first use', () => {
 });
 
 describe('reply-check', () => {
-    it('logs a ticket id outside a linear link', () => {
-        expect(check('closed FRM-12 today')).toEqual(['bare-ticket']);
-    });
-
-    it('passes a ticket id inside a linear link', () => {
-        expect(
-            check('[FRM-12](https://linear.app/x-com/issue/FRM-12): closed'),
-        ).toEqual([]);
-    });
-
     it('logs a markdown table', () => {
         expect(check('| a | b |\n| --- | --- |\n| 1 | 2 |')).toEqual(['table']);
     });
@@ -219,13 +209,6 @@ describe('reply-check', () => {
 
     it('ignores everything inside a code fence', () => {
         expect(check('```\nFRM-12 | a |\nc8f653f2\n```')).toEqual([]);
-    });
-
-    it('logs circled digits', () => {
-        expect(check('① read ② write')).toEqual([
-            'circled-digits',
-            'circled-digits',
-        ]);
     });
 
     it('logs a 📄 stamp later than the reply time', () => {
@@ -340,23 +323,6 @@ describe('a reply that is only the stamp', () => {
         expect(stop('🔭 waiting on dima', '12:05')).toBe(undefined);
         expect(
             stop('the answer is 42.\n\n📄 last report: **x**, 11:58', '12:05'),
-        ).toBe(undefined);
-    });
-});
-
-describe('a 🔭 line with an aside', () => {
-    it('blocks a 🔭 line that carries a parenthetical', () => {
-        expect(
-            stop('ok.\n\n🔭 waiting on dima (the glide pick)', '12:05')?.reason,
-        ).toContain('(…) aside');
-    });
-
-    it('passes a 🔭 line whose only parens are a markdown link', () => {
-        expect(
-            stop(
-                'ok.\n\n🔭 waiting on the bots on [🔎 #70](https://github.com/x/y/pull/70)',
-                '12:05',
-            ),
         ).toBe(undefined);
     });
 });

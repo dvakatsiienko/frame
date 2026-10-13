@@ -1,9 +1,10 @@
 ---
 kind: nurture
 owner: coordinator
-artifacts: [home/.claude/plugin-x/skills/author-memory/references/memory.md, home/.claude/plugin-x/skills/author-memory/references/memory-project.md]
+artifacts: [home/.claude/plugin-x/skills/author-memory/references/memory.md, home/.claude/plugin-x/skills/author-memory/references/memory-project.md, home/.claude/plugin-x/skills/author-memory/references/skill.md]
 script: none
-groomed: 2026-10-11 (dima)
+groomed: 2026-10-13 (dima)
+was: [nurture-skills]
 ---
 
 # nurture-memory
@@ -77,12 +78,25 @@ his standing calls:
 - cw: «it is manual now and no longer automated» (the bridge recipe retired, 2026-10-02) · «cc is the source of truth, generally. cw memory is a derived view, never the origin.» · «i don't want a mess there» · «memory must be pretty» · «no poems!»
 - a check firing often is a root to fix (2026-10-02): «if it triggers too much on a repeating answer, it forces you to do additional turns … if a certain assert repeats a lot, then it needs to be fixed instead»
 
+skills, dima, 2026-10-11 (the want of the old `nurture-skills`, merged here on his word, 2026-10-13):
+
+> «then do the same with skills: review each skill and groom, trim, cut, and rebalance the info load across the other parts where it makes most sense.»
+
+> «i want all skills to be lean and clear, while not conflicting with resident memory.»
+
+> «skills should be shaped via the best practices defined in our skills knowledge.»
+
+his standing calls on skills:
+- a skill nobody fires that costs context is a prune candidate before any hillclimb (2026-10-06)
+- `x:author-memory` stays one skill, with references `memory.md`, `memory-project.md` and `skill.md` (2026-10-13)
+- `claude plugin eval` is wanted, but no eval runs at all until his $200 plan: «evals blow ctx too quickly» (2026-10-13, 20:03; it replaced his same-day call to run evals on a free quota window)
+
 ## the run
 
 - **trace as you go**, two kinds, the same turn (dima, 2026-10-12): every action lands as one line at the end of the sweep's run file (`docs/test-drive/memory-sweep.md`) — a step with no line did not run, and run state never lives in chat; and a round that shows a flaw class, a mistake or a tip adds one line to that file's `## findings` — the patterns of bad memory to hunt next time, what went wrong, what made the sweep faster. step 10's retro reads `## findings` first. `last/groom-list.md` (born at step 4) holds one line per memory file with its state, flipped the turn its step lands.
 - **re-entry, at every start and every resume** (a boot, a checkpoint, a compaction), before any groom (dima, 2026-10-11, after a run groomed 27 files «read whole, unchanged» with the guides out of context: «16k tokens is cheap next to redoing 50 files» — cclio's line, his verdict):
   1. the standard boot: `cclio:boot`, every member woken, «checkpointed» said
-  2. read WHOLE, never skimmed: this recipe · `mattpocock-skills:writing-for-agents` · `x:author-memory` (its SKILL.md and all three references) · `recipes/nurture-skills/recipe.md` — they are this recipe's research distilled, the lens every file is groomed through
+  2. read WHOLE, never skimmed: this recipe · `mattpocock-skills:writing-for-agents` · `x:author-memory` (its SKILL.md and all three references) — they are this recipe's research distilled, the lens every file is groomed through
      **why whole, every time — the trap is the reflex that skips them.** the guides look long and the next edit looks small, so reading them feels like overhead. it is the work: they hold 5–10 research rounds and dima's video folds from months, and without them in context a groom checks pointers and cuts nothing. measured 2026-10-11: 27 files passed «read whole, unchanged», the resident drop came only from one lucky cut, and 50 files had to be reopened. ~16k tokens of reading is cheap next to redoing 50 files — cclio's own line, dima's verdict: «it very precisely describes the reason to read these guides before a memory sweep»
   3. the state: `last/groom-list.md` and the last lines of `docs/test-drive/memory-sweep.md`; then the sweep, with all of it in context
 - **the goal is the smallest form that does its job** (the want: «as slim as possible … no useless, stale memories»): a groom that checks for staleness and pointers but cuts nothing has not run; size is measured on every file
@@ -104,9 +118,9 @@ his standing calls:
 - **a fold keeps what was said**: a future-dated block is written in full and marked deferred, never summarised away — run #1's plan lost a block marked «to be done after setting you up as coordinator» to a summary that read finished.
 - 🚫 **no llm-judge audit**: what code can verify is code (step 4), pruning is human (step 10); the numbers are in `author-memory/references/memory.md` § upkeep.
 
-1. **groom the nurture recipes** — this one and `nurture-skills`, `x:shape-recipe` step 0: every want line true, every vector serving one. done: dima's word, `groomed:` on both. (open)
+1. **groom this recipe** — `x:shape-recipe` step 0: every want line true, every vector serving one, skills included. done: dima's word, `groomed:` stamped. (open)
 2. **research** — no write before it lands. first the snapshot diff, the cheapest: re-download anthropic's two pages as `.md`, `diff` against `docs/research/skill-authoring-best-practices/`, read only the delta, replace the snapshots. then the vectors, all lanes at once (`x:shape-recipe`). done: every lane landed or failed out loud. (template)
-3. **the knowledge distill** — into `x:author-memory` and every knowledge doc that steers memory edits (`author-memory/references/skill.md` is `nurture-skills`' distill), concise without dropping a useful line. one layer per file: craft is `writing-for-agents`, these hold cc mechanics and our rules. every claim tagged [measured] / [read] / [inferred] with a version; one behind the running cc is re-probed or cut. stories go to a research doc with `dies-when`. a size budget in each file's frontmatter. done: every doc touched or «unchanged», bytes before and after logged. (open)
+3. **the knowledge distill** — into `x:author-memory` and every knowledge doc that steers memory and skill edits (`author-memory/references/skill.md` takes the skill mechanics and the evals prior art), concise without dropping a useful line. one layer per file: craft is `writing-for-agents`, these hold cc mechanics and our rules. every claim tagged [measured] / [read] / [inferred] with a version; one behind the running cc is re-probed or cut. stories go to a research doc with `dies-when`. a size budget in each file's frontmatter. done: every doc touched or «unchanged», bytes before and after logged. (open)
 4. **the vertical audit — which memories bleed the most**: the rank is `resident × never-used`, tokens at 2.89 chars/token, measured on disk (`/context` shows the boot snapshot). (template)
    - **the mechanical pass**, code only: a closed `FRM-N` / `BYT-N` within 2 lines of open-state words (`tracks it`, `trial`, `awaiting`, `pending`; run #1: 12 flagged, 11 real) · a dead `@import` · barrel omissions both ways · a named rule, skill or doc that is gone · a named flag missing from `--help` · research past `dies-when`. it runs on commit: drift lands within a day. a naive path regex flagged 94 with ~2 real, so it stays out
    - **inventory and map** — dima's order, binding (run #1): gather ALL memfiles across repos → eval cc's default «go upd memory», asked twice, diff-based: right places? poems? → map `rules/` pointers, dead ones included → map the voice / format / style wiring → **the connection graph first**, a real one (he asks for a drawing; regenerate it from the numbers) → the groom list (the plan is that list, never a new plan file), no edit before it → flush → touch every piece. the connector pass (pointers, precedence, placement) stays apart from pruning content — dima: no cleaning is needed when no trash is produced. then one script over the list (sizes, pointers, inbound links), only its flags read; the connection graph drawn from the numbers; the voice and format wiring. an isolated leaf is where dima looks first
@@ -138,7 +152,23 @@ his standing calls:
    - open, dima's: the `guide-*` split — «the info in those files is what ccli code does when codifying. that was my intention when i asked ccli opus to create these at a skill lvl. but i was looking far ahead, with the idea of modularization — pick the right tool at the right time. the reality is, when you code, it's 90% typescript and/or react, and both are code. 🤔» his call: skills cost nothing at rest, observe, move as we go. and a generated barrel vs a hand-written one
    - done: every file's groom-list line reads `- ✅ <path> — <before> → <after> B · lenses: dupe · superseded · enforced · unused · no-op · altitude · trim · merge · placement · deferral · protected — <what moved>`, each lens with its verdict; «unchanged» is a verdict only with the evidence for every lens; `recipes/nurture-memory/scripts/groom-list-check.sh` exits 0
 8. **the order across layers**: root `CLAUDE.md` → `rules/` → all resident memory (cclio leaves; the pm surfaces are reviewed here, `.scratch/memory-sweep/issues/085-pm-review.md`) → project leaves (frame, `bytes`, `dvakatsiienko`, `inner-marker`, `reinforcement-learning`; cclio leaves read all first, keep / trim / move, judge filenames, then a filename sweep). a project leaf: `find ~/projects -name AGENTS.md -o -name CLAUDE.md`, the project examined before the file, a restated environment becomes a pointer, a tutorial goes; what a leaf owes is `author-memory/references/memory-project.md`. `~/projects/AGENTS.md` is a deliberate stub ([DOT-195](https://linear.app/x-com/issue/DOT-195)). done: every layer through step 7. (template)
-9. **skills — run `nurture-skills`** (effort ≈ 60 % mems / 40 % skills: mems are the mess, skills «+- ok»): each skill reviewed, groomed, trimmed and its load rebalanced, against resident memory; that recipe holds the steps. done: its log line for this sweep. (template)
+9. **skills** (effort ≈ 60 % mems / 40 % skills: mems are the mess, skills «+- ok»): each skill reviewed, groomed, trimmed and its load rebalanced, against resident memory. the rulebook is `author-memory/references/skill.md` and `writing-for-agents` (its `SKILL-MECHANICS.md` for frontmatter and invocation); a skill line that restates or contradicts resident memory or a sibling keeps one home. (open)
+   1. **the skills research** — a small run of its own, before the groom: the `skills:` vectors, all lanes at once (`x:shape-recipe`), distilled into `author-memory/references/skill.md`, bytes before and after. done: every lane landed or failed out loud, the doc touched or «unchanged»
+   2. **the census** — per skill: fire count, last use, token cost, size, from `refresh-fleet-ops`' skill-load measure and `/skill-doctor` (terminal only, dima types it). done: the ranked list in the run file
+   3. **the conflict hunt** — every skill against resident memory (root `CLAUDE.md`, `rules/`, cclio leaves) and its siblings: a duplicated or contradicting line gets one home. done: every hit verdicted
+   4. **the groom**, the order in the pocket's skills-groom item (crew-coder and crew-verifier first, then the most used and the most bleeding), step 7's size batching:
+      - a completion criterion that can be checked, or why none
+      - keep, trim, merge or drop
+      - the description leads with WHEN; a pair gets symmetric descriptions
+      - steps tagged by freedom, a fragile one becomes a script
+      - contents past 100 lines; tables become bullets
+      - a heavy human-only skill gets `disable-model-invocation: true`
+      - entity-first names carry a scope (`x:*`, `cclio:*`)
+      - the info load rebalanced: what every branch needs stays inline, the rest behind a pointer
+      - **Claude B**: a fresh session runs one real ask per changed skill; an unopened file or a skipped step sends it back
+      - done: every skill verdicted, each changed one past Claude B
+   5. **the fire loop** — only for a skill with a miss (a flawlog «skill not loaded» line, a router near-miss 0.30–0.70), and only once the $200 plan is live (parked in the pocket until then): his real prompts as `plugin-x/evals/<skill>-*` cases, split train and held-out test (`cmt`, `notes`, `pm` are the pattern); a baseline `claude plugin eval` on both; change one thing, keep it only if train rises and test does not drop; a round cap set first; each round logged in `docs/test-drive/`. a description edit is proven this way, never by reading. done: every missed skill looped, capped or parked for the $200 plan
+   - done: steps 1–5 done, each traced in the run file
 10. **the review, the gates, the retro** — after the full sweep, in this order (dima, 2026-10-12). (open)
     - **the drift hunt**: one more pass over the whole — what did we miss, and where did a sweep edit drift or break something: a moved section a pointer still names, a dead import, a rule that lost its only home, a skill pointing at a cut line. each one fixed
     - **the human gate**: pruning is never delegated; candidates go out as a digest:
@@ -161,6 +191,9 @@ his standing calls:
 - new agent-doc craft from primary sources: anthropic's blog and docs, matt's skills repo
 - new memory-hygiene practice and tooling for agent fleets
 - the context budget: dima's «what do we do wrong» outranks any token number
+- skills: memory and skill authoring practice, what writes well for agents now
+- skills: the cc skills docs delta since the snapshot in `docs/research/skill-authoring-best-practices/` (loading, descriptions, `disable-model-invocation`, plugin evals, `/skill-doctor`)
+- skills: plugin eval methods, and prior art in skill evals and hillclimbing (`author-memory/references/skill.md` § evals — prior art)
 
 ### analysis
 
@@ -170,6 +203,10 @@ his standing calls:
 - did a silent-failure class fire, and does `method-silent-failures` name its shape?
 - placement drift: a leaf past one decision, a fact at the wrong altitude
 - the failure-mode scrape, theo's method: `~/.claude/projects/`, `~/.claude/history.jsonl`, `~/.claude/shelf/flawlog/`; events not opinions, bucket then count, scripted with duckdb — never an agent sampling transcripts
+- skills: which fire, and the flawlog's skill misses since the last run, `#dima-caught` first
+- skills: resident cost and size per skill; the ones that cost context and never fire
+- skills: conflicts with resident memory, where a skill restates or contradicts it
+- skills: `x:crew-coder` and the other crew skills against the 5k-token re-inject cap
 
 ### cut
 
@@ -179,11 +216,13 @@ his standing calls:
 
 - `home/.claude/plugin-x/skills/author-memory/references/memory.md` — the memory authoring craft (placement, mechanics, measurements); the distill folds cc mechanics and our rules in; the per-file lenses live in step 7 here
 - `home/.claude/plugin-x/skills/author-memory/references/memory-project.md` — what a project leaf owes; updated from step 8
+- `home/.claude/plugin-x/skills/author-memory/references/skill.md` — the skill authoring craft and its evals prior art; step 9.1's distill folds new mechanics and our rules in
 
 ## findings
 
 beyond the shared shape:
 - resident tokens before → after, on disk, per layer
 - what moved, merged and died, each with its reason
+- tokens per skill before → after, and fire rates for every looped skill, train and test
 - each mechanical check's precision, and any new check earned
 - what the run proved wrong here, fixed here

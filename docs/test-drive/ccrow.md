@@ -9,7 +9,7 @@ window: 2026-10-06 → 2026-10-20 (two weeks from the first live wake). ticket: 
 
 ## the arms
 
-opus 5.5 medium vs fable 5.1 medium. live from day 1 since 2026-10-06 (dima: «enable it live, continue measures») — the paired silent phase ran day 1 only: notes were logged, not sent, and the other arm answers the same packet as a `claude -p` one-shot (a paired, blind comparison). days 4–14 live, alternating by day; `wake` prints the restart line when the running arm is the wrong one.
+opus 5.5 medium vs fable 5.1 medium. live from day 1 since 2026-10-06 (dima: «enable it live, continue measures») — the paired silent phase ran day 1 only: notes were logged, not sent, and the other arm answers the same packet as a `claude -p` one-shot (a paired, blind comparison). days 4–7 live, alternating by day; from 2026-10-13 opus 5.5 medium only (dima: «change to opus 5.5 medium only»).
 
 ## what each run logs (`~/.local/state/ccrow/notes.jsonl`)
 

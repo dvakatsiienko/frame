@@ -10,7 +10,7 @@ An app's product docs are three files with two owners. The **map** is ours: one 
 each line a check the app must pass. It answers «what does X do» in one read and supplies the
 exit lines a verifier checks.
 
-## the two files
+## the files
 
 - `PRODUCT.md` — impeccable's: character, users, purpose, principles. Hand edits are allowed. Never
   put features here: every impeccable session loads the whole file.

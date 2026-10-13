@@ -12,13 +12,10 @@ from urllib.parse import unquote
 LOG = os.environ.get("REPLY_CHECK_LOG", os.path.expanduser("~/.local/state/reply-check.tsv"))
 
 FENCE = re.compile(r"```.*?```", re.S)
-LINEAR_LINK = re.compile(r"\[[^\]]*\]\(https://linear\.app/[^)]*\)")
 URL = re.compile(r"https?://\S+")
-TICKET = re.compile(r"\b(?:FRM|BYT|DOT)-\d+\b")
 TABLE_SEPARATOR = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$", re.M)
 INLINE_CODE = re.compile(r"`[^`\n]*`")
 MIDDOT = re.compile(r"\w[^\n·]*\s·\s[^\n·]*\w")
-CIRCLED = re.compile(r"[①-⑳]")
 HASH = re.compile(r"(?<![\w/.-])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}(?![\w/.-])")
 REPORT_STAMP = re.compile(r"📄[^\n]*?\b(\d{1,2}):(\d{2})\b")
 # a ccrow wake is a Stop-hook side effect, never a block: a 🔭 line naming it read as a hang (dima, 2026-10-10)
@@ -192,24 +189,17 @@ def last_reply(path: str) -> str:
 def findings(reply: str) -> list[tuple[str, str]]:
     prose = FENCE.sub("", reply)
     found: list[tuple[str, str]] = []
-    unlinked = URL.sub("", LINEAR_LINK.sub("", prose))
-    found += [("bare-ticket", m.group(0)) for m in TICKET.finditer(unlinked)]
     found += [("table", m.group(0).strip()[:40]) for m in TABLE_SEPARATOR.finditer(prose)]
     # inline code quotes a machine string, and the 📄 line is a stamp, not a list
     for line in INLINE_CODE.sub("", prose).split("\n"):
         if "📄" not in line:
             found += [("middot", m.group(0)[:40]) for m in MIDDOT.finditer(line)]
-    found += [("circled-digits", m.group(0)) for m in CIRCLED.finditer(prose)]
     found += [("commit-hash", m.group(0)) for m in HASH.finditer(URL.sub("", prose))]
     found += [("future-stamp", stamp) for stamp in future_stamps(prose)]
     found += [("wait-on-ccrow", m.group(0)[:40]) for m in WAIT_ON_CCROW.finditer(prose)]
     # each fence is judged alone: a Q line in prose between two command fences once matched across them
     found += [("grill-fence", f.group(0)[3:43]) for f in FENCE.finditer(reply) if GRILL_ANSWER.search(f.group(0))]
     found += [("unglossed-id", token) for token in unglossed(prose)]
-    # the 🔭 line is «🔭 waiting on <who>», nothing more; a (…) aside there was caught by dima three times on 10-12
-    for line in WAIT_LINE.findall(MD_LINK_LABEL.sub("", prose)):
-        if "(" in line:
-            found.append(("wait-paren", line.strip()[:40]))
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (ccrow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
@@ -269,8 +259,6 @@ def main() -> None:
     bare = [snippet for rule, snippet in hits if rule == "unglossed-id"]
     if bare:
         reasons.append(f"an internal id with no gloss ({', '.join(bare)}): dima reads it cold. give each its three-word gloss at first use — `o56 (the trash ask)` — or say the plain thing instead.")
-    if any(rule == "wait-paren" for rule, _ in hits):
-        reasons.append("the 🔭 line carries a (…) aside: it is «🔭 waiting on <who>», nothing more (a link with its emoji label is fine). drop the aside and reprint the line.")
     if any(rule == "empty-reply" for rule, _ in hits):
         reasons.append("the reply holds only the 📄 stamp and the 🔭 line: the answer sits in a mid-turn block dima never sees. reprint the answer in full above the stamp.")
     dead = [snippet for rule, snippet in hits if rule == "dead-link"]
@@ -279,6 +267,8 @@ def main() -> None:
     if any(rule == "wait-without-dima" for rule, _ in hits):
         reasons.append("orbit holds an ask dima has not answered, and no 🔭 line names him: end with `🔭 waiting on **🙋‍♂️ dima**` (beside any member it also waits on).")
     if reasons and not event.get("stop_hook_active"):
+        # the blocked reply already shows; a full reprint doubled the boot board (dima, 2026-10-13)
+        reasons.append("dima already sees the reply above: print only the corrected lines, never the whole reply again.")
         print(json.dumps({"decision": "block", "reason": " ".join(reasons)}))
 
 

@@ -55,6 +55,8 @@ the facts a mod round needs only when a probe or a test bites; the doors and rul
   - a terminal grid that animates every frame is one `Raster` redrawn by `$.ui.blit`, which skips the render pass (docs: `$.ui.blit`); a redraw tick written to a `$.state` key only one site reads redraws only that site, where `$.ui.invalidate('ui.render')` re-runs every render hook of the plugin (stash's terminal bars did it, FRM-391, until they left for sline)
   - doors worth knowing before building, all types-only: `agent.offer` `{ isOffered: false }` withholds an agent type (`AgentOfferResult`); `agent.spawn` answers `{ deny }`; `$.model.classify` (weigh it beside jev); `$.ui.selection`, `undefined` with fullscreen off, in `-p` and on a surface that reports none; `session.send` / `session.receive`
   - hooks run in the terminal, the desktop Code tab and headless `claude -p` (live: the budget probe); on the host under remote control too, drawing in the local terminal only (the overview's «Where mods run», run #4); in a cloud session where the build allows one (types: `AgentSpawnInput`)
+  - a `Button` with both `label` and `Text` children draws the label on the desktop; the harness reads the children, so a test never sees it (mods todo 28, 2026-10-13)
+  - `$.command.run` resolves only after the command ran, so a typed prompt can slip in between two awaited runs (the second-wind ingest, 656cfd8c)
 
   - drawings: `RenderSurface` is `terminal | desktop | mobile | vscode`  — the terminal draws the whole tree, the others where they have a slot
 
@@ -75,4 +77,4 @@ the facts a mod round needs only when a probe or a test bites; the doors and rul
 
 ## what a mod cannot reach
 
-- what a mod cannot reach (measured, so nobody retries it): the queued-prompt `queue-operation` record is written before any hook (x-mod-redact); the «<mod> reloaded (n hooks)» line is the terminal's `InfoNotice`, not a mod site; the desktop draws cc's own prompt suggestion, so a mod suggestion races it (dropped, FRM-303)
+- what a mod cannot reach (measured, so nobody retries it): the `queue-operation` `enqueue` row of a prompt passed on `claude -p`'s command line is written before any hook (a prompt queued mid-turn is reachable: `prompt.submit` sees it before the engine queues it, x-mod-redact, 2026-10-13, cc 2.1.296); the «<mod> reloaded (n hooks)» line is the terminal's `InfoNotice`, not a mod site; the desktop draws cc's own prompt suggestion, so a mod suggestion races it (dropped, FRM-303)

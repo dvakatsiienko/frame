@@ -33,6 +33,7 @@
         "ccrow:decision": "node ./ccrow/decision.ts",
         "ccrow:relay": "node ./ccrow/relay.ts",
         "ccrow:note-vet": "node ./ccrow/note-vet.ts",
+        "ccrow:unvetted": "node ./ccrow/unvetted.ts",
         "ccrow:reconcile": "node ./ccrow/reconcile.ts",
         "design:contrast": "node ./design/contrast.ts",
         "design:comp-render": "node ./design/comp-render.ts",

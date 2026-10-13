@@ -15,8 +15,8 @@ resolution recipe is blurry, and each item's verdict shapes the next.
 Pretty, this exact shape. The item name keeps its file extension, in backticks:
 
 - 🔎 **«[item name] — what is it?»** — tldr, one or two lines
-- 🤔 **«why?»** — think hard: why does it exist, who pays for it
-- ⚖️ **«is it truly useful?»** — think hard: honest verdict against reality, not against its own intent
+- 🤔 **«why?»** — why does it exist, who pays for it
+- ⚖️ **«is it truly useful?»** — honest verdict against reality, not against its own intent
 - ➡️ **suggestion** — how to resolve, one concrete move
 
 Then STOP. No edits, no peeking at the next item.

@@ -28,7 +28,7 @@ not into headcount.
 
 The split is **disposable-vs-watchable**, not research-vs-code.
 
-- **the Code tab door (dima opens, cclio briefs)** — dima opens a session in the app dir (root when the job crosses apps), pastes a one-line pointer to a brief file in cclio's scratchpad, the coder pings back through `mcp__ccd_session_mgmt__send_message`. a brief that says «dima's word» starts without a y/n round; a steer relayed by cclio is NOT his grant to the coder (the coder confirms with him — by our own rule). every brief starts from `x:crew-coder` (dima types it in the coder's session; cclio pastes the file body into a `--bg` prompt).
+- **the Code tab door (dima opens, cclio briefs)** — dima opens a session in the app dir (root when the job crosses apps), pastes a one-line pointer to a brief file in cclio's scratchpad, the coder pings back through `mcp__ccd_session_mgmt__send_message`. a brief that says «dima's word» starts without a y/n round; a steer relayed by cclio is NOT his grant to the coder (the coder confirms with him — by our own rule). every brief starts from `x:crew-coder` (dima types it in the coder's session; a `--bg` prompt opens with `/x:crew-coder …`, which expands).
   📌 **desktop auto-archive (on since 2026-09-28) ends a Code-tab session the moment its pr merges or closes** — it archives AND stops it. measured on 4 probes: a desktop-made local session went at its merge; `--bg` and `--cloud` sessions stayed, merged or closed; docs: «only applies to local sessions that have finished running». so a job that may need rounds after its merge spawns `--bg`, never from the Code tab; cloud cards are archived by hand (`x:crew-cloud` step 5).
 - **cloud (`claude --cloud`)** — a coder on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the whole procedure is `x:crew-cloud`.
 - **a mods coder is spawned by dima, never by cclio** (dima, 2026-10-10): he watches mods live in the coder's own tab, and a `--bg` session shows no mods in the desktop app over remote control. so a lane prepped for a mods coder ends with the brief file and the ask «open a Code tab in `~/frame` and paste: <pointer>», plus a second fence holding the tab name to paste (`☕️ 🔧 <ticket> code: <what>`, dima, 2026-10-11), then the pick-up below
@@ -73,6 +73,6 @@ The split is **disposable-vs-watchable**, not research-vs-code.
 4. **ticket** — pass the id; a `- ticket:` line on every commit, never a close marker —
    **cclio verifies, then closes**, with the closing word in the body.
 5. **identity** — the coder token and the done-comment mechanics live in `x:crew-coder`; check the
-   brief carries them. 📌 **cap the comment at ~12 lines** — what shipped, what is left, measured
+   brief carries them. 📌 **cap the comment as `x:crew-coder` §6 says (≤20 lines)** — what shipped, what is left, measured
    numbers, one line per defect; the essay stays in the coder's transcript. dima on the uncapped
    ones: «comments are poems for me».

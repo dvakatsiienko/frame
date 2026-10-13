@@ -52,7 +52,7 @@ a fresh session and ends in one design-loupe round (his answers, handed back to 
 
 1. **outline** — greyscale wireframes of the structure only: the page's layout, where each block lives,
    the rows of a component. no colour, no type choices. he picks a structure.
-2. **direction** — 2–3 styled takes on the picked structure: palette, type, the feel of the key piece. he
+2. **direction** — 4 styled takes at the corners of the axes (step 2), on the picked structure: palette, type, the feel of the key piece. he
    picks a look. steps 2–4 below run here.
 3. **states** — the pick across every state and window shape the brief names. each board's root
    names the states it shows (`data-states="paused, stuck"`); every state on the app's `FTR.md`
@@ -126,7 +126,7 @@ middle take tends to win because it is in the middle, so dima picks the corner h
 - a mash-up across takes is the expected outcome of that review, not a failure; it still says the
   axes bundled two choices — name which, for the next brief.
 - after the pick: **2–3 variants** of it, now covering the brief's states.
-- **three iteration rounds at most.** a fourth means the brief is wrong: back to the interview.
+- **three iteration rounds at most per phase, polish excepted.** a fourth means the brief is wrong: back to the interview.
 
 ## 6. critique before the handoff
 

@@ -33,7 +33,7 @@ paths:
 ## general
 
 - **cutting complexity is the work, not a step in it.**
-- don't hesitate to delete dead code (obvious or not) during task execution
+- dead code your change orphans, or in a file you touch, goes; elsewhere it is named in the report
 - **package.json** — exact pins, `npm view` before any version, script order and `family:name` keys: the whole shape is `x:guide-conventions` → `conventions/package-json.md`, read before printing or editing any manifest
 
 ## typescript

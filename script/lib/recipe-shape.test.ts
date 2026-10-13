@@ -104,20 +104,21 @@ const engine = readFileSync(
     path.join(skillsDir, 'shape-recipe/SKILL.md'),
     'utf8',
 );
+const contract = readFileSync(path.join(recipesDir, 'AGENTS.md'), 'utf8');
 const topLevel = new Set(readdirSync(root));
 
-function engineSection(title: string) {
-    return engine.split(/^## /m).find((part) => part.startsWith(title)) ?? '';
+function section(text: string, title: string) {
+    return text.split(/^## /m).find((part) => part.startsWith(title)) ?? '';
 }
 
-// the bullets of x:shape-recipe's shared vectors, bold label and text, and its numbered run steps up to done:
+// the bullets of the shared vectors in recipes/AGENTS.md, bold label and text, and x:shape-recipe's numbered run steps up to done:
 export const sharedLines = [
     ...[
-        ...engineSection('the shared vectors').matchAll(
+        ...section(contract, 'the shared vectors').matchAll(
             /^- (\*\*[^*]+\*\* — .+)$/gm,
         ),
     ].map((m) => m[1] ?? ''),
-    ...[...engineSection('running one').matchAll(/^\d+\. (.+)$/gm)].map(
+    ...[...section(engine, 'running one').matchAll(/^\d+\. (.+)$/gm)].map(
         (m) => (m[1] ?? '').split(' done:')[0] ?? '',
     ),
 ].filter(Boolean);
@@ -235,6 +236,21 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     const artifacts = Array.isArray(fields?.artifacts) ? fields.artifacts : [];
     const missing = artifacts.filter((artifact) => !artifactExists(artifact));
     expect(missing, `${name}: artifacts that do not exist`).toEqual([]);
+
+    // recipes/AGENTS.md § names: a refresh sits beside its target, so an artifact carries the stem
+    // or its last word (`/` read as `-`); a recipe named after a fleet member (`crew-*`) is exempt
+    const stem = name.replace(/^(refresh|nurture)-/, '');
+    if (fields?.kind === 'refresh' && !stem.startsWith('crew-')) {
+        const words = [stem, stem.split('-').at(-1) ?? stem];
+        expect(
+            artifacts.some((artifact) =>
+                words.some((word) =>
+                    artifact.replaceAll('/', '-').includes(word),
+                ),
+            ),
+            `${name}: no artifact carries the stem «${stem}» (recipes/AGENTS.md § names)`,
+        ).toBe(true);
+    }
 
     expect(
         text.match(/^# (.+)$/m)?.[1],

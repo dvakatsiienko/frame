@@ -64,7 +64,7 @@ a trigger that touches only the tools (a cc minor, a new model) runs the tools h
 half skipped, with the reason — the shared rule of `x:shape-recipe`.
 - suggest a run when: a cc minor ships, a new claude model ships, a spawn behaves against a [verified] row, the crew changes
 
-1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the list. (open)
+1. **groom**: `x:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. **probe the mechanics** (tools): execute `spawning-mechanics.md`'s «the test suite» section against the current build. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
 3. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `x:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
 4. **distill** into the artifacts:

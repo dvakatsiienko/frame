@@ -6,8 +6,7 @@ argument-hint: "<thing to do later>"
 
 # Queue
 
-Exists so Dima never has to type "queue this after that" again. The inverse of `/pre`.
-
+Exists so Dima never has to type "queue this after that" again.
 `/queue <thing>` — push it. Confirm in one line with the new depth: `📋 queued (3): <thing>`.
 
 ## Where it lives — durable, hidden, one per place

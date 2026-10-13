@@ -16,13 +16,14 @@ source file is newer.
 - `needsApply: true` for a verb that publishes or destroys: it splits into `Plan` and `Apply`; dispatch
   exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal; why, and the
   shape a new exception needs: `docs/adr/X-0003`.
-  the one exception: the `handoff` verbs delete without it — the store is disposable by contract
-  (ADR-0002), every removal goes to the macos trash, and the envelope names each file it took.
-  the second: the `linear` writes (`body --set`, `set`, `link`, `comment`, `update`) go out in one call —
-  the hottest door stays one call, and the stale check, the printed actor and linear's own history guard
-  them; `linear archive` destroys from the board's view and keeps `--apply` (FRM-344, dima 2026-10-07)
-  the third: `lane review` re-adds the review label without it — it acts only on a stale verdict under
-  the cap, which are its own checks, and the coder's «final» runs it as one call (FRM-355)
+  three verbs skip it, each because its own check guards it:
+  - the `handoff` verbs delete without it — the store is disposable by contract (ADR-0002), every
+    removal goes to the macos trash, and the envelope names each file it took
+  - the `linear` writes (`body --set`, `set`, `link`, `comment`, `update`) go out in one call — the
+    stale check, the printed actor and linear's own history guard them; `linear archive` destroys
+    from the board's view and keeps `--apply` (FRM-344, dima 2026-10-07)
+  - `lane review` re-adds the review label without it — it acts only on a stale verdict under the
+    cap, which are its own checks, and the coder's «final» runs it as one call (FRM-355)
 - a verb that took over a script names it in `replaces:`; `replaces_test.go` stays red while that
   file exists or any tracked file outside history names it. `touches:` names what the verb reads or
   writes outside the repo; `x schema` prints both.

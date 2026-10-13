@@ -2,8 +2,8 @@
 
 common traps any surface can hit. one section per subject; add a section only for a hazard
 that bites 2+ repos or every session — a hazard that bites one repo goes to that repo's `AGENTS.md`.
-every hazard names its guard — `guard: <hook | x verb>` or `guard: none`; a line whose guard
-exists dies, so the file shrinks as the `x` cli grows. cc-only, deliberately not mirrored; the vault hazards
+every hazard names its guard — `guard: <hook | x verb>` or `guard: none`; a line dies when its guard
+makes the failure impossible, a partial guard is named beside the line, so the file shrinks as the `x` cli grows. cc-only, deliberately not mirrored; the vault hazards
 live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
 📌 **a Bash-shaped hazard becomes an `x-mod-guard` rule first** (the cc mod, `plugin-x/mods/x-mod-guard`; a ticket under FRM-304); a line lands here only for what a Bash check cannot see — a judgment call, a non-Bash tool, a browser-only look (dima, 2026-10-05).
 
@@ -34,7 +34,7 @@ live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
 ## the bash tool
 
 - **a cli new to you is probed with a bare `<cli> --help`, never `<cli> <verb> --help`** — some clis run the verb and ignore the flag. guard: `x-mod-guard` for obsidian; any other unknown cli, none
-- **a hand edit goes through `Edit`/`Write`; a bulk transform may script** — the tools fire the hooks (biome format, the stash holds lock, read-before-write) and fail loud; a script sees no hook and fails silent. a change across many files (a rename, a date shift, 40 files) stays one script call, never 40 Edits. guard: the stash cc mod's holds veto refuses a Bash write to a held file; a Bash write still takes no hold and fires no format hook
+- **a hand edit goes through `Edit`/`Write`; a bulk transform may script** — the tools fire the hooks (biome format, the `x-mod-holds` lock, read-before-write) and fail loud; a script sees no hook and fails silent. a change across many files (a rename, a date shift, 40 files) stays one script call, never 40 Edits. guard: `x-mod-guard` refuses a Bash write to a file `x-mod-holds` holds; a Bash write still takes no hold and fires no format hook
 - **a delete names the file the grep proved, never its dir** — «TriangleSvg has no users» was true, `trash src/elements/icons` took the live `ExternalLinkSvg.tsx` with it (2026-09-21); the unit of a delete is the path the evidence named
 - **a hand-kept plist or json changed for one value gets a one-line edit, never a re-serialize** —
   `plistlib.dumps` rewrote all 984 lines of the iterm prefs for one spacing value (2026-10-01)
