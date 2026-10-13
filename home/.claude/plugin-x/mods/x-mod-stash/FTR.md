@@ -355,6 +355,7 @@
   - given cclio's row is asked, then her note names her good stop: no new todos, the tails solved, `cclio:checkpoint`, the fleet told, her after-pickup ask into orbit
   - and every note, cclio's included, has the handoff open with the role's init list as its first first-act — the skills the role loads at its start, the files it reads whole — since a compact re-attaches only some skills (todo 26, cclio's audit of the first live press, 18:57)
   - given the note, when the session calls orbit's `op second-wind` with the slug of the handoff it wrote, then the button reads 🌀 (`compacting onto its handoff`); at that turn's end the mod runs `/compact` with a keep line naming the slug, then `/x:handoff-ingest <slug>`, once, and the button goes back to 🐦‍🔥
+  - and the ingest is queued with the compact, while it still runs, so a prompt dima types meanwhile never lands between them (cclio's 19:17 press: her ingest ran after his 19:19 prompt); the op's answer tells the session to end its turn with no «waiting on» line, the refresh runs on its own
   - given no slug, or a slug `x handoff peek` cannot find, then the op is refused in one line and nothing compacts
   - decision: name and emoji are dima's, 10-13 17:31 (o1, over «graceful-ctx-refresh»); the session's state is drawn in the line under its row, since a pane holds no hover card (`engine.md`)
   - decision: compact, never clear: the session id keeps its orbit, phases, kept state and glide link (`.scratch/mods-l13/refresh-proposal.md`)

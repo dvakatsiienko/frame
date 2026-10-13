@@ -2117,7 +2117,7 @@ async function windReady(
         state: 'refreshing',
     } satisfies StashWind);
     return {
-        result: `second wind: at this turn's end the mod compacts, then ingests ${name}. end your turn now.`,
+        result: `second wind: at this turn's end the mod compacts, then ingests ${name}. end your turn now, with no «waiting on» line: the refresh runs on its own.`,
     };
 }
 
@@ -2138,12 +2138,16 @@ async function runWind($: EngineInterface, sid: string, slug: string) {
             at: await $.clock.now(),
             state: 'refreshing',
         } satisfies StashWind);
-        await $.command.run({
-            args: `keep nothing past the handoff ${slug}; it carries the state`,
-            command: 'compact',
-        });
+        // both queue at once: an awaited compact let a prompt dima typed during it queue ahead of the ingest (cclio's
+        // 19:17 press: compact 19:17, his prompt 19:19, the ingest 19:20)
+        await Promise.all([
+            $.command.run({
+                args: `keep nothing past the handoff ${slug}; it carries the state`,
+                command: 'compact',
+            }),
+            $.command.run({ args: slug, command: 'x:handoff-ingest' }),
+        ]);
         await $.store.delete(WIND + sid);
-        await $.command.run({ args: slug, command: 'x:handoff-ingest' });
     } catch (err) {
         await $.store.delete(WIND + sid).catch(() => undefined);
         $.ui.toast(

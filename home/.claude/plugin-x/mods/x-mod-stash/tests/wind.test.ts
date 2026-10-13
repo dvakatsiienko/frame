@@ -268,6 +268,30 @@ test('🐦‍🔥 second wind switched off never compacts, even with a handoff n
     expect(w.commands).toEqual([]);
 });
 
+test('the ingest is queued while the compact still runs, so no prompt slips between', async ($, on) => {
+    let queued: string[] = [];
+    const w = world(on, undefined, undefined, async () => {
+        for (let i = 0; i < 50; i++) await Promise.resolve();
+        queued = [...w.commands];
+    });
+    await start($);
+    await ready($, SLUG);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect(queued.map((c) => c.split(' ')[0])).toEqual([
+        '/compact',
+        '/x:handoff-ingest',
+    ]);
+});
+
+test('the op tells the session to end its turn with no waiting line', async ($, on) => {
+    world(on);
+    await start($);
+    expect((await ready($, SLUG)).result).toMatch(
+        /end your turn now, with no «waiting on» line/,
+    );
+});
+
 test('a turn end that lands during the compact starts no second one', async ($, on) => {
     const w = world(on, undefined, undefined, async () => {
         await endTurn($);
