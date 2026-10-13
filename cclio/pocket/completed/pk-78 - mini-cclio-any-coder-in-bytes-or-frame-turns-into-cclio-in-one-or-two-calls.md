@@ -1,10 +1,10 @@
 ---
 id: PK-78
 title: 'mini-cclio: any coder in bytes or frame turns into cclio in one or two calls'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 19:22'
+updated_date: '2026-10-13 14:11'
 due_date: '2026-10-14'
 labels:
   - m

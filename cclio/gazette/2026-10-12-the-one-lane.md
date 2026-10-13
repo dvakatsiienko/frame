@@ -2,7 +2,7 @@
 date: 2026-10-12
 slug: the-one-lane
 tickets: [FRM-386, FRM-389, FRM-339, FRM-383]
-posted: {health: no}
+posted: {health: yes}
 ---
 
 # 🗞️ cclio's gazette · the one lane
@@ -30,9 +30,9 @@ dima's steer for the day: new drops first, turn by turn, one parallel lane at a 
 
 ## trail
 
-- shipped: boot review gate · mods lane l8 (catch, idle clock, quiet comms, tick) · knowledge families · cw snapshot fixed · x ADRs
-- open: primer sealed (waits on the shelf revamp) · cli lane held · PK-81/83 skills · quiet + catch questions
-- state: frame unpushed · mods coder on brief 4 · ccrow paused for the checkpoint
+- shipped: memory sweep steps 5–8 done (every memory layer) · mods lanes l12 + l13 (glide, pick, sessions card) · index-run private gate (PK-97) · nested AGENTS.md rule, probe-proven
+- open: the nurture-skills recipe pass + run, then the skills groom · PK-78 as a skill · the ctx meter redesign on dima's steer · glide auto-step spec'd
+- state: frame + bytes pushed at the halt · the mods coder parked at 75 % (handoff mods-l13-3) · arm A, qc-send, ccrow stopped
 
 ⸻ upd 20:15 — checkpoint 2
 
@@ -50,3 +50,23 @@ dima's steer for the day: new drops first, turn by turn, one parallel lane at a 
 
 ## state
 - open: mods lane l12 (glide regression after a reload, 🔭 rule, retro C, drag-drop glide ask) · arm A coder parked for chores · the primer build after l12 · the memory sweep next, skills groom inside it
+
+⸻ upd 22:36 — the halt
+
+## shipped
+- memory sweep steps 5–8 done: every memory layer groomed (r32–r43, 85 files), mods/AGENTS.md → an 8 KB core + `mods/engine.md`, bytes root and trophy-sys AGENTS split; trophy-sys auth and charts live in nested `AGENTS.md` files beside their code (ccrow's idea, a canary probe proved a Read loads them)
+- mods lane l12 closed and l13 nearly: reversible pick, ↑↓ reorder on phases, the closed-ask one-liner, the catch fix, the sessions card (palette, ctx pill, state emojis), glide arrows out
+- PK-97: index-run gives the gate a private git that sees only the commit; `x lane commit` waits out an index lock — the first coder job run from a spec
+- the AGENTS.md loader hook loads in-project nested files on a Bash read; reply-check blocks a dead link, a stamp-only reply and a 🔭 aside; `apps:essentials` reads the registry's bullets
+- linear:// dropped everywhere but x-ray's Hyper+G door; [FRM-224](https://linear.app/x-com/issue/FRM-224) (the nvim want) up to p3
+
+## tricks gained
+- a Read loads a nested AGENTS.md inside the session's project, a Bash `cat` does not (probed blind, with a control) — now the loader hook's job
+- a probe whose question names its canary proves nothing; ask blind
+- lefthook and index-run read the index, so an unstaged sweep passes their gates unseen — the sweep's per-round gate runs the working-tree forms
+- a coder job of 3+ items goes through a spec (cclio:shape-lane § 2.5); arm A's PK-97 run proved the shape
+
+## state
+- next: PK-78 as a skill (`x:cclio-mode` + a curated leaf list, 75 → ~40 KB), then the nurture-skills recipe pass + run, then the skills groom, then sweep step 10
+- the mods coder parked at 75 % with handoff mods-l13-3: the ctx meter redesign on dima's steer, the look card; glide auto-step spec'd, waits on his go
+

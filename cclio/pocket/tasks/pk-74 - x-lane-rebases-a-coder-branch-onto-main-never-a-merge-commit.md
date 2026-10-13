@@ -34,3 +34,5 @@ parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — 
 
 dima o87 ✓ 20:37: **waiting for:** the cli lane opening — its first chunk. the lease force-push is approved for this verb only (x lane rebase-main, coder/* branches, --force-with-lease on the read-back sha).
 <!-- SECTION:NOTES:END -->
+
+halt flush 2026-10-13 (o181): x brief check flags a todo whose exit-line words match a commit subject from the last week (todo 23 was already built), and a pointer into a doc whose heading grep cannot find.

@@ -1,10 +1,10 @@
 ---
 id: PK-95
 title: "after the sweep: reply add-ons leave the reply — the \U0001F4C4 stamp and the skills line to the band or a log"
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:45'
-updated_date: '2026-10-12 11:49'
+updated_date: '2026-10-13 15:34'
 due_date: '2026-10-26'
 labels:
   - s
@@ -26,4 +26,8 @@ split from PK-50 step 3 (dima, 2026-10-10 15:50, folded): the trackers he reads 
 parked: right after the memory sweep (FRM-267) closes — dima, 2026-10-12 14:44; or a rider on the mods lane l8 on his word
 
 dima 2026-10-12 14:49: whatever leaves the reply for the band, mobile mode still prints 🔭 as the reply's last line — phones draw no mods (line added to mobile-mode SKILL.md)
+
+18:33 dima o158: the 📄 stamp stays in cclio's replies, never the band. left in this item: the stat boards, the skills line (a root CLAUDE.md rule, needs his word), 🃏 and 🔥 → a hook log or the band
+
+18:35 closed (dima o158): every reply add-on stays as is — the 📄 stamp, the stat boards, the skills line, 🃏 and 🔥
 <!-- SECTION:NOTES:END -->

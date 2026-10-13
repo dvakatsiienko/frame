@@ -59,8 +59,8 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
   status; busy → wait a tick, retry): a merge that races the coder's tail push had its worktree
   removed under a live push twice on 2026-09-08. dima merges, cclio cleans; the monitor dies
   with the session.
-- 📡 **the two plugin monitors must run**: `ps -ax -o command | grep -c '[p]r-watch.sh\|[c]i-watch.sh'` prints 2. less → arm each missing one as a one-shot background watch: Bash `run_in_background`, `~/frame/cclio/.claude/hooks/watch-once.sh ~/frame/cclio/.claude/hooks/<pr|ci>-watch.sh # deadline: 6 h inside the wrapper` — it ends on the first event line, so only a real event wakes a turn; after handling it, re-arm once, silently, and a no-event end is never a reply to dima. say so on the board. without pr-watch a cloud report branch lands in silence, and silence reads as «still running» (2026-10-08: the adviser cloud lane sat done, unseen).
-- 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:keep-cache-hot` — it finds dima's desktop tab by name and writes its 🔥 key; no tab → it prints one line, and the board asks dima to open the tab.
+- 📡 **the boot arms both watches, every time**: a project-scope plugin starts no monitors (cc docs, plugins/loading), so pr-watch and ci-watch run only when cclio arms them. `ps -ax -o command | grep -c '[p]r-watch.sh\|[c]i-watch.sh'` prints 2, or arm each missing one as a one-shot background watch: Bash `run_in_background`, `~/frame/cclio/.claude/hooks/watch-once.sh ~/frame/cclio/.claude/hooks/<pr|ci>-watch.sh # deadline: 6 h inside the wrapper` — it ends on the first event line, so only a real event wakes a turn; after handling it, re-arm once, silently, and a no-event end is never a reply to dima. say so on the board. without pr-watch a cloud report branch lands in silence, and silence reads as «still running» (2026-10-08: the adviser cloud lane sat done, unseen).
+- 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:start opus` — a `--bg` session on opus 5.5 medium that writes its own 🔥 key; it refuses when one already runs, which counts as up. the halt stops it.
 - 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or a Wednesday boot
   whose apps lane says DUE → fire the `/cclio:evergreen` digest as a fork DURING the boot**: the apps
   lane runs on Wednesdays only, as the full changelog since the last `--mark` (dima, 2026-10-11); any
@@ -93,13 +93,20 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
 - write the draft board to `~/frame/cclio/.scratch/boot-<YYYY-MM-DD>/board-proposal.md` — the write
   fires ccrow's `proposal` decision wake (`ccrow/decision.ts`), the whole thread in her packet: she
   checks the parse, the plan, and how cclio read his prompt
-- in the same step, `wishkeeper` 🐬 in boot mode, in the background, with the raw inbox text, his
+- in the same step, `wishkeeper` 🐬 in boot mode, in the **foreground**, with the raw inbox text, his
   boot prompt and each item's landing spot (pocket id, ticket, or answer): data loss of his drops is
-  the worst outcome
-- end the turn on one line, `🔭 waiting on 🐦‍⬛ ccrow + 🐬 wishkeeper`; fold each finding as it lands,
-  and print the board when both are in. ccrow down (step 4 printed no tab) → wishkeeper alone, and
-  the board says so. the board's wake also starts ccrow's 30-min gap, so this turn end never wakes her a
-  second time on the same half boot (the 10-11 failure)
+  the worst outcome. a foreground call holds the turn open, so ccrow's note drains in at the next tool round.
+  its brief also asks three checks: every CST first-act sits in the board's plan; every question of his is
+  answered on the board, never only routed to a pocket item; the board carries the stuck reminders and the
+  roadmap + bytes line (dima's o160, 2026-10-13)
+- ccrow's note not in when wishkeeper returns → wait on her notes file, deadline 5 min:
+  `until [ "$(wc -l < ~/.local/state/ccrow/notes.jsonl)" -gt <count before the write> ]; do sleep 5; done`;
+  past the deadline the board says «ccrow silent»
+- fix every finding of both, then print the board — the boot's first and only reply. nothing prints
+  before it: no «waiting on» line, no partial board
+- completion: one reply holds the whole board, both reviews folded in
+<!-- 10-13: the boot printed a waiting line, then the board twice (a reply-check reprint); dima: «gather everything, fix their findings, only then print the report» -->
+
 
 the board, one message, short lines, **no queries here — pure assembly**:
 - «hey <model> here» (the root claude.md rule)

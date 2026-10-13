@@ -13,8 +13,8 @@ line, not a date:
     ✅ background sessions survive a coordinator reset — `kill -0 <pid>` after the reset
     ❌ background sessions survive a coordinator reset
 
-**A rule with no such command is an inference and says so in its own text.** Test it, then write
-it — «inferred» as a label does not help; a rule reads as a rule regardless.
+**Test a rule before writing it.** A rule no command can prove carries `inference:` in its own
+text, so a reader can tell it from a fact.
 
 🚫 Never sweep existing rules to add commands — that fabricates tests nobody ran. Add the line
 when a rule is touched anyway.

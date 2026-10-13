@@ -43,8 +43,6 @@ Store contract: the `x:remind` skill. Both tiers die only when Dima drops them.
 
 ⏰ 🦉📜 refresh-cc-mods at every cc minor that touches mods — at each cc version bump read the changelog for mod/function-hook lines (new events, `$` methods, render sites, limits, surfaces); any hit → run `recipes/refresh-cc-mods/recipe.md` (its «next run» list holds the hot leads from 10-05). dima 2026-10-05: «write it while your traces about mods are hot» — set 2026-10-05
 
-⏰📌 🦉📜 the frame → bytes merge, one slice per lane — every lane takes one session-sized merge slice beside its main work, in the order of `docs/research/monorepo-agents.md` (turbo wins → the lockfile probe → step 0: clone-and-rename, git-crypt out, a launchd deploy step → m1 the apps → hooks merged + `mirror` scoped → frame's infra last); each slice leaves both repos working and is proven by a check. re-sliced 2026-10-06: S1 → BYT-106, S2 → BYT-125, step 0 → FRM-330 / FRM-331 / FRM-332, m1 → BYT-126 + BYT-109, hooks → FRM-333, in that sortOrder; m4 is re-sliced once those land. dies when m4 closes. dima 2026-10-05: «plan the bytes merge so it's gradual, mixed between our lanes, part by part and not folded into a long shelf» — set 2026-10-05
-
 ⏰ 🔬 comms-trim verdict, 2026-10-15 — the crew pings cclio on three events only, retros go to `shelf/retros/`, round lines are gone (dima, 2026-10-08). each halt prints the comms count and the `comms:` gaps; on 10-15 decide keep / loosen, then drop the `until 2026-10-15` lines in crew-coder, crew-verifier, crew-designer, x:crew-lead and the halt skill — set 2026-10-08 · due: 2026-10-15
 
 ⏰ 🐦‍⬛ at the next halt: park ccrow, never stop it — dima runs his own keep-hot test and watches it himself (the stash pings fired every 50 min overnight, cache held warm, `docs/test-drive/ccrow.md` 10-09). dies when dima says his test is done. dima 2026-10-09: «keep ccrow for my own keep-hot test … keep it parked, so I will keep an eye on it» — set 2026-10-09
@@ -59,3 +57,11 @@ Store contract: the `x:remind` skill. Both tiers die only when Dima drops them.
 ⏰📌 🦉🎨 a small UI ask on an app the design flow covers (atelier now, speak next) goes to a coder with its `DESIGN.md` + a live screenshot, no designer; one rounds line in `docs/test-drive/design-drift.md` (dima, 2026-10-11: «keep this trial reminding me to run a coder on applicable apps») — standing — set 2026-10-11
 
 ⏰ 🦉🛡️ 2026-10-18: flip FRM-398 from warn to refuse — remove `raw-linear` from `WARN_ONLY` in `home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts` (one line, through `x mods edit`); a warning that shows a wrong hit reopens FRM-398 instead. dima o234: «warn-only for a week, then refuse» — set 2026-10-11 · due: 2026-10-18
+
+⏰📌 🦉🐞 the next cli lane: its coder's brief says nothing about delve; at his retro (at done, or before a 🐦‍🔥 second wind) ask whether he reached for delve on a red test and whether it helped, and have a sifter count his `dlv` calls — the round goes into `docs/test-drive/delve.md` (dima, 2026-10-13: «a used tool is not a proven one; let him pick it up naturally»). dies when that round is written — set 2026-10-13
+
+⏰ 🦉💸 2026-10-27: remind dima of the $200 month planning session — one dedicated grill that fills the 11-05 month with sealed chunks (cli, apps, sweeps, evals, designs) and smooths the flows first; cclio drafts the candidate list from the roadmap, the pocket and PK-108's spend notes before it, dima cuts (dima o154, 2026-10-13) — set 2026-10-13
+
+⏰ 🦉💸 2026-11-03: dima turns off auto-renew on max $100 (≥24 h before the 11-05 renewal), billing settings; the 20× month starts fresh on 11-05 (dima o153, 2026-10-13) — set 2026-10-13
+
+⏰ 🦉💸 2026-11-05: dima buys max 20× (~$240 with VAT), right after his weekly reset (Settings → Usage), then auto-renew off again; the month measures the real weekly cap vs 5× (~1.6–2.3× by user reports) — set 2026-10-13

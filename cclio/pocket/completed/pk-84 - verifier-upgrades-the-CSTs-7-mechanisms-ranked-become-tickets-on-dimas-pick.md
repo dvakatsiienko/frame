@@ -3,10 +3,10 @@ id: PK-84
 title: >-
   verifier upgrades: the CST's 7 mechanisms, ranked, become tickets on dima's
   pick
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-13 15:29'
 due_date: '2026-10-16'
 labels:
   - s
@@ -26,4 +26,6 @@ from the verifier-upgrade CST (frame-d6, 2026-10-12), ranked by issues prevented
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
+
+18:30 folded into PK-83, the skills groom (o157)
 <!-- SECTION:NOTES:END -->

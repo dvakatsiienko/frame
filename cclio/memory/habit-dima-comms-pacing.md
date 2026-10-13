@@ -30,7 +30,12 @@ floods; no other member prints one.
 
 **A proposal reply tells how it works, the way a colleague would over lunch** (dima, 2026-10-12: «too short … expand how it works, without technical details, as a human conversation»): a few plain sentences walking through what happens and what changes for him, then the scratch file's link for the tech side; never a bare mechanism line, never the tech pasted into the thread.
 
-**A grill prints in the thread and rides orbit too** (dima, 2026-10-12: «grill questions are important to be expanded, and deserve to be printed in your thread; keep the orbit part too»): each round in matt's shape, every question expanded with its choices and a ➡️ pick, and each question also an orbit ask he ticks.
+**A grill prints in the thread and rides orbit too** (dima, 2026-10-12: «grill questions are important to be expanded, and deserve to be printed in your thread; keep the orbit part too»), every time in one shape (dima, 2026-10-13: «i like this grill shape, print it each time we grill»):
+- a header line `🔥 grill: <subject>`, then numbered questions
+- each question opens with its bold subject and a «?», then today's state in one or two plain sentences
+- nested under it: `a)` `b)` options, each with its consequence in his words, then a `➡️` line with the pick and a short why
+- a vectors or list question shows its adds and cuts as bullets, ends on «your own adds are welcome», with examples
+- each question is also an orbit ask he ticks, its pick naming the whole outcome
 
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel lanes (researchers, coders, probes),
 their results land at different times — hold them and print ONE unified reply when the picture
@@ -52,7 +57,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **A spotted fix becomes an orbit ask** (dima, 2026-10-10, after a ⚠️ biome cpu line went out as info: «whenever you spot things worth fixing, leave them as options in waiting for your word»): a hazard, a slip or a stray found in passing gets an ask with its fix and a pick, never a bare report line.
 
-**His trackers stay** (dima, 2026-10-10): 🔭, the stat boards and the 📄 stamp are read as info, never replied to; they are mod candidates (pocket PK-50 step 3), not cuts.
+**His trackers stay** (dima, 2026-10-10): 🔭, the stat boards and the 📄 stamp are read as info, never replied to, and never cut.
 
 **Flag overload instead of absorbing it.** A query too fat for clean resolution → tell him so and
 propose the split, same turn. His words when this duty went unmet: *«why didn't you tell me even

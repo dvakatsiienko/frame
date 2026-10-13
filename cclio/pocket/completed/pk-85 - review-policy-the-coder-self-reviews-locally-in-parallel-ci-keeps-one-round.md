@@ -1,10 +1,10 @@
 ---
 id: PK-85
 title: 'review policy: the coder self-reviews locally in parallel, ci keeps one round'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-13 15:29'
 due_date: '2026-10-16'
 labels:
   - m
@@ -24,4 +24,6 @@ dima, inbox 2026-10-12, folded. what is the current self-review policy for a cod
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
+
+18:32 folded into FRM-72, the pm review (o157)
 <!-- SECTION:NOTES:END -->

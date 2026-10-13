@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:45'
-updated_date: '2026-10-12 18:46'
+updated_date: '2026-10-13 15:51'
 due_date: '2026-10-26'
 labels:
   - m
@@ -67,4 +67,10 @@ dima o62: x knowledge list gains the recipe ↔ shelf map, both ways; red on a s
 guard candidate (18:01 flawlog, ccrow 18:19): x brief check reds a ~/frame/cclio/ path in a brief for a non-cclio session.
 
 10-12 retro fold (lane l12 + arm A), verb candidates for the cli big picture: `x mods edit test --tsc` (tsc inside the overlay test — cost commits twice) · `red-proof --names` + `--keep-output` (a flake in red-proof is unreadable today) · `x mods edit red <pairs-file>` · `x peer send --after <s>` (idle-delivery probes, no model) · `pnpm mods:banner <text>` · `x eval why <run>`
+
+halt flush 10-12 (o148): x lane commit's envelope gains `hooks: <n> ran, <list>` — today «did the gates run» is unprovable from a green envelope (arm A retro)
+
+18:30 folded from PK-92 (o157): x lane gate must not let a glossary rewrite drop a term silently — a cli lane chunk
+
+18:52 two cli chunks from the mods coder's l14 retro (automation candidates): red-proof --pairs accepts \n escapes in anchors; x mods edit push runs biome check on the files it writes (biome's key sort failed two commits at the hook). and one from cclio's own brief miss: x brief check reds a «<file> § <heading>» pointer whose heading grep can't find (the brief named fleet-models.md § cost, which doesn't exist)
 <!-- SECTION:NOTES:END -->

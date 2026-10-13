@@ -1,10 +1,10 @@
 ---
 id: PK-96
 title: "\U0001F420 catch v2 test drive: is the keep-in-mind shelf used and useful"
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-12 13:12'
-updated_date: '2026-10-12 17:55'
+updated_date: '2026-10-13 15:29'
 due_date: '2026-10-17'
 labels:
   - s
@@ -17,6 +17,7 @@ ordinal: 100095
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+**waiting for:** dima re-enables 🐠 catch (paused 2026-10-13, not judged)
 dima 2026-10-12 16:12 (o29): «yes, I see the catch, but I also want to refine it a bit. also, catch should work only for your thread. it's a clarification as of now.» FRM-386 stays open until his refine is heard; ask him for it when the mods lane is free.
 <!-- SECTION:DESCRIPTION:END -->
 
@@ -32,4 +33,6 @@ decided 17:22 (o51–o56): catch v2 = keep-in-mind shelf, 7 kinds, survives comp
 19:26 narrowed: dima's refine was heard and shipped (catch v2, 32de7758 + 581600bc). this item is now the test drive: pieces per kind, clears vs expiries, 🤔 presses, re-asks of a class with a live piece.
 
 round 20:55: a miss — cclio used catch 0 times from 20:16 to 20:55 (4 receipts, an effort, unpushed work fit it); dima had to ask «why don't you use catch?». 4 pieces added after. the reach is the weak side, not the shelf.
+
+18:32 paused, dima: «i temporarily disabled catch, it appears not useful for me and its shape is tricky; i can't figure out how to get use out of it» — the trial is paused, not judged
 <!-- SECTION:NOTES:END -->

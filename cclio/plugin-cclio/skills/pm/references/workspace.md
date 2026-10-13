@@ -49,4 +49,4 @@ x linear api 'query { issue(id: "FRM-39") { identifier sortOrder } }'
 x linear api 'query { issues(first: 250, filter: {}) { nodes { id } } }' | jq '.data.issues.nodes | length'
 ```
 
-auto-archive is on: teams archive completed and canceled tickets after 6 months; `x linear archive --days 14 --apply` does the rest.
+auto-archive is on: FRM and BYT archive completed and canceled tickets after 1 month (`autoArchivePeriod: 1`, read 2026-10-13), but never while their project or cycle is open; `x linear archive --days 14 --apply` does the rest.

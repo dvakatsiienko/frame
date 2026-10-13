@@ -1,6 +1,6 @@
 # exit lines — what a sealed line holds
 
-read at step 4 of `shape-lane`, before the first line is drafted. each rule is a round some coder or verifier once lost.
+read at step 3 of `shape-lane`, before the first line is drafted. each rule is a round some coder or verifier once lost.
 
 ## it names real things
 

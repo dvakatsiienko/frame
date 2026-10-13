@@ -35,9 +35,9 @@ one short message, then straight into phase 1:
   note) · **already done**
 - state the order you are taking, as a fact rather than a proposal
 
-📌 the ONE thing that still stops for him: a **decision** inside a landing step — the flawlog
-flush needs his single approval on what becomes a rule, a ticket, or nothing. That is a decision,
-not a confirmation. Everything else proceeds.
+📌 four things stop for him, each a **decision**, never a confirmation: the flawlog flush (3a),
+the wire y/n (4.5), «continue here or a fresh thread?» (5), and the one push ask unless `slay`
+stands. Everything else proceeds.
 
 ## phase 1 — land the leaves
 execute the «can land now» list. small only — a halt is not the time to start work. bigger than
@@ -79,7 +79,7 @@ proposal starts from its lanes, not from a blank read. then cluster, ONE batched
 approval, execute and commit. see `/cclio:flawlog`.
 **the retros, in the flush:** `ls ~/.claude/shelf/retros/` — every file is read and its lines enter the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file. **until 2026-10-15** the flush also prints the comms count: pings received this session, `comms:` gaps named, and whether cclio missed anything — the comms-trim verdict is due 10-15.
 **retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody (dima, 2026-10-04). the same for look-card shots: `find ~/.local/state/looks -type f -mtime +14 -exec trash {} +` (FRM-315).
-🚨 **the flush is the one stop in a full halt, whatever the args** (`wire+` included): print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
+🚨 **the flush stops the halt**: print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before
 the reason — those go to `memory/dima-stories.md` as appends (the leaf's own rule), not to the
 flawlog's drop pile. skipped for two weeks once (2026-09-05).

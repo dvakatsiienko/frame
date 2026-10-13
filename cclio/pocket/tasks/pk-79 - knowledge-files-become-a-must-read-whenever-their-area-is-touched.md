@@ -4,7 +4,7 @@ title: knowledge files become a must-read whenever their area is touched
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 16:58'
+updated_date: '2026-10-13 14:41'
 due_date: '2026-10-15'
 labels:
   - m
@@ -60,4 +60,12 @@ dima o64 18:13, the shelf test for knowledge/AGENTS.md: a subject that lives in 
 19:50: steps 1, 2, 4, 5 done (scouts 98569e9d, author-memory d05e6323, primer trace in docs/test-drive/primer.md); step 3 shelf: 4 of 7 landed, 5–7 drafted (o76, o78, o79); knowledge/AGENTS.md landed. left: land 5–7, then the primer build joins the mods lane after l12.
 
 19:57: shelf 6 capabilities landed; 5 fleet-models + 7 spawning-mechanics leave the shelf for x:crew-lead (o76, o81) at the skills groom, PK-83. the shelf revamp is done.
+
+ccrow 17:46 holdout, unvetted at the halt: «step 1 of PK-79 was reported done with half of it skipped» — check it before the primer build starts
+
+17:37 ccrow's holdout checked (Explore census): step 1 half done, confirmed. trials with no test-drive file: delve (Brewfile:56, 10-06), clearvpn (Brewfile:118, 10-10), Marco (Brewfile:117), jj (code-storage.md:29, waits on PK-114), lottie-rive (BYT-127). stale trial markers whose file exists: vorssaint, ctx7 (Brewfile), explore (fleet-models.md:168). notes-stack/ has no top-level file with status:. waits on dima: which of the 5 are live.
+
+17:42 dima: clearvpn adopted, Marco dropped (verdict files + Brewfile, done); delve explained, his call pending. x-mod-primer parked: «let's not rush with x-mod-primer yet, i'll refine the sessions mod first».
 <!-- SECTION:NOTES:END -->
+
+halt flush 2026-10-13 (o181): `x fleet flow --days 14` shows the 12 knowledge files read 0 times; 16:14 a cost answer came from recall while fleet-models.md held the number. add: a token, cache or cost question loads fleet-models.md (a rules-lazy trigger).

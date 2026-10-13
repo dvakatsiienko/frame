@@ -33,12 +33,12 @@ line is in front of cclio every boot.
 - **pocket** (`~/frame/cclio/pocket/`) — the main carry-over across sessions, checked before linear. it took the x-queue's job on 10-07: in cclio, `/queue` and «after X, do Z» become a pocket item ordered right after X — local wins over `x:queue`'s `.claude/x-queue.md`, said out loud (the skill stays as is for every other repo)
 - **Linear** — the folding place for work with a shape.
 
-❗ no data loss, the pocket above all: a stash line moves or dies only on his word.
+❗ no data loss, the pocket above all: a line he wrote or asked for moves or dies only on his word; cclio's own copies and done items die by the dedupe and cleanup rules below.
 
 **no copies** (dima, 2026-09-27: «make sure these stashes don't accumulate redundant stuff») — most
 of the 09-27 exhaust was copies: 11 of 17 flowlog lines and 5 of 14 reminders already lived in a ticket.
-before a stash line is written, grep the other stashes and linear for it; a line dies the moment a ticket,
-a rule or another stash carries it. a watch that a parallel monitor runs keeps only its action in
+before a stash line is written, grep the other stashes and linear for it; a copy cclio wrote dies the moment a ticket,
+a rule or another stash carries it; a line of his carried elsewhere is asked about at the halt. a watch that a parallel monitor runs keeps only its action in
 reminders, the monitor is the trigger.
 
 ## cleanup runs the same turn

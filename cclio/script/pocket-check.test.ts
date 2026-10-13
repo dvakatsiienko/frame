@@ -40,6 +40,26 @@ describe('checkPocket', () => {
         expect(checkPocket(config, [task({})], today)).toEqual([]);
     });
 
+    test("a «can't» park line goes red unless it names the probe it ran", () => {
+        const bare = task(
+            {},
+            "ticket: FRM-1\nparked: a headless run can't queue a prompt",
+        );
+        expect(checkPocket(config, [bare], today)).toEqual([
+            "PK-1: a «can't» park or wait line names no probe: put the `command` it tried on that line",
+        ]);
+        const probed = task(
+            {},
+            "ticket: FRM-1\nparked: can't queue a prompt — `claude -p --input-format stream-json` showed it",
+        );
+        expect(checkPocket(config, [probed], today)).toEqual([]);
+        const other = task(
+            {},
+            "ticket: FRM-1\nparked: after the sweep\nnote: we can't rush it",
+        );
+        expect(checkPocket(config, [other], today)).toEqual([]);
+    });
+
     test('an open task whose ticket linear closed goes red', () => {
         const pointing = task({}, 'body\nticket: FRM-371 (the guard rule)');
         expect(

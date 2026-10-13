@@ -90,6 +90,17 @@ export function checkPocket(
         )
             report('waiting without a `**waiting for:**` first line');
 
+        // an unproven «can't» parked a live secret leak (PK-98, 2026-10-13): the line names the probe it ran
+        for (const line of text.split('\n'))
+            if (
+                /^(parked:|\*\*waiting for:\*\*)/.test(line.trim()) &&
+                /\b(can['’]?t|cannot|impossible|unreachable)\b/i.test(line) &&
+                !/`[^`]+`/.test(line)
+            )
+                report(
+                    "a «can't» park or wait line names no probe: put the `command` it tried on that line",
+                );
+
         const due = front.scalars.due_date;
         const isExpiring = sizes.some((size) => EXPIRING.includes(size));
         if (isExpiring && status !== 'waiting' && !due)

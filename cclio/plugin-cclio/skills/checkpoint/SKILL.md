@@ -5,17 +5,19 @@ argument-hint: "[what to drop, comma-separated]"
 
 # /cclio:checkpoint [drop …]
 
-**the trigger beside his word: context at 600–700k** (dima, 2026-10-07: «you reach 400k extremely fast … a good number for you to checkpoint is about 600k to 700k») — `get_usage` shows it at every siesta; past 600k the ➡️ offers a checkpoint. **a half-halt, no exit.** frees the thread of a finished topic while everything else survives —
+**the trigger beside his word: context at 600–700k** (dima, 2026-10-07: «you reach 400k extremely fast … a good number for you to checkpoint is about 600k to 700k») — `get_usage` shows it at every siesta; past 600k the ➡️ offers a checkpoint; a 🐦‍🔥 second wind press on my sessions row is the same trigger, its note slipstreamed into my next turn. **a half-halt, no exit.** frees the thread of a finished topic while everything else survives —
 the same guarantees as a halt, minus the goodbye. dima's spec (2026-09-10): as few steps as
 possible; memory as precise as possible after the resume; only the unwanted absent. since
 2026-10-01 the drop list is mine to decide, no approval round: «when you run checkpoint, just print
 me a compact prompt upfront, saving a turn».
 
-📌 `/compact` is dima's to type; nothing here can run it. the ritual ends by handing him the line.
+📌 who runs the compact: on his word, `/compact` is his to type and the ritual ends by handing him the line; on a 🐦‍🔥 press, it ends with the stash tool's `second-wind` op naming the CST slug, and the mod runs the compact + ingest at that turn's end.
 
-## 0. pause the members — first act
+## 0. stop taking new work, tell the fleet — first act
 
-every live member (`ListAgents`) gets one `SendMessage`: «pause — cclio is checkpointing, hold every
+- **no new todo starts** after the trigger: the small open tails close first (an ask whose answer is known, an uncommitted fix, a reply a member waits on); a bigger one goes to the CST as a first-act, never half-done (dima, 2026-10-13, the 9 steps)
+- **the after-pickup move goes to orbit at once**, mid-turn too: «right after the pickup i'd do X» as an ask he can tick before the reset
+- **tell the fleet**: every live member (`ListAgents`) gets one `SendMessage`: «pause — cclio is checkpointing, hold every
 message to me until «resume»; finish and commit what you are on». a message that lands mid-compact
 arrives in a thinned thread and its detail is lost (dima, 2026-09-30). the roster with each paused
 member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/state/ccrow/paused`
@@ -65,7 +67,9 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
 
 `wishkeeper` 🐬 reads the CST draft against the live state: every open orbit ask, every open pocket item, every unfinished groom-list line and each member's queue is present; nothing done is carried as open; a step that needs a fresh session says so as a first-act. each finding is folded into the CST before it is saved (ccrow, 2026-10-11, o143: checkpoint 2's CST lost the pm review's «dedicated session», queued two landed asks and dropped a reseal).
 
-## 4. hand him the two lines
+## 4. hand him the two lines — or the second-wind op
+
+on a 🐦‍🔥 press: no fence; the `second-wind` op with the CST slug, and the reply says the reset runs at this turn's end. on his word:
 
 📋 **copy → this session** 📋
 
@@ -86,4 +90,4 @@ handoffs, reminders).
 ## completion criterion
 
 the `/compact` line names every drop with its file, the CST is in the store, the coder roster is stopped or
-carried on purpose, and the two-line fence is the last thing in the reply.
+carried on purpose, the after-pickup ask is in orbit, and the two-line fence (his word) or the `second-wind` op (a 🐦‍🔥 press) is the last act.

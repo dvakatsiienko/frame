@@ -1,9 +1,10 @@
 ---
 id: PK-92
 title: 'x lane gate: a glossary rewrite can''t drop a term silently'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:31'
+updated_date: '2026-10-13 15:29'
 due_date: '2026-10-19'
 labels:
   - s
@@ -23,4 +24,6 @@ the x domain-modeling coder's retro (2026-10-12), automation candidate: every **
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12
+
+18:30 folded into PK-94, the cli big picture (o157)
 <!-- SECTION:NOTES:END -->

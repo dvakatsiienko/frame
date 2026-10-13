@@ -15,21 +15,11 @@ hash `d03f3da` in [[sys-settings-drift]]). Cannot name it → the chain broke, s
 the barrel by hand. **Re-probe after any rename, move, or barrel edit.** Counting files proves
 existence, never loading.
 
-## ❗ a bare `git commit` takes the WHOLE index
-
-```sh
-git commit -F msg.txt -- <explicit paths>   # the fix: pathspec on COMMIT
-git diff --cached --name-only               # or read the index before every commit
-```
-
-`git add <paths>` narrows staging only. A failed pre-commit hook leaves the index dirty, so **a
-failed commit attempt is a second writer too.**
+## ❗ a bare `git commit` takes the whole index — guard: `x-mod-guard` refuses one with no `--` paths; the door is `x lane commit`
 
 <!-- failure: fired twice in one day; «check afterwards» caught it once and prevented nothing -->
 
-📌 `git commit --only <paths>` is NOT the fix either — it commits the **worktree** content of
-those paths, ignoring the index, so it sweeps in unstaged hunks.
-The pathspec-on-commit form above commits the INDEX for those paths; only it is safe.
+📌 `git commit --only <paths>` passes the guard and is not the fix: it commits the worktree content of those paths, unstaged hunks included.
 
 <!-- failure: --only swept in unstaged hunks on a coder, 2026-08-25 -->
 
@@ -50,11 +40,9 @@ lines = open(p).read().split("\n"); open(p,"w").write(...)  # ✅ read fully, th
 
 **verify a bulk edit by grepping every old value across the repo**, never by the filter that chose the targets.
 
-## ❗ zsh: unquoted args that abort or misfire
+## ❗ zsh: an unquoted `$VAR` is one word
 
-- an unquoted `=word` (`echo ===DIVIDER===`) aborts the whole chain on equals-expansion — guard: `x-mod-guard` quotes it before any hook runs
-- an unquoted `*` in an option value (`grep --include=*.md`) is a glob that aborts the chain — guard: `x-mod-guard` quotes it
-- the inverse trap, unguarded: **zsh does not word-split an unquoted `$VAR`** — `for f in $FILES` runs once with
+- unguarded: **zsh does not word-split an unquoted `$VAR`** — `for f in $FILES` runs once with
 the whole string as one word, and a snapshot loop copied nothing (2026-09-26). split with
 `${=FILES}` or feed a `while read -r f`.
 

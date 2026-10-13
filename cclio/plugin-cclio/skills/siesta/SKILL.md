@@ -4,7 +4,7 @@ description: load at every siesta — a member's done report lands, a batch of c
 
 # /cclio:siesta — the pause between batches
 
-dima, 2026-10-10: a siesta should be useful with the least noise — once we kick off from it, the next thing is already picked. this skill is the whole flow; `fleet-vibe` holds the word, `habit-ctx-load-balancing` says when to fire it.
+dima, 2026-10-10: a siesta should be useful with the least noise — once we kick off from it, the next thing is already picked. this skill is the whole flow and its «when» is the one trigger list; `fleet-vibe` holds the word.
 
 ## when
 

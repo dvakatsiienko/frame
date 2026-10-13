@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 19:08'
+updated_date: '2026-10-13 15:29'
 due_date: '2026-10-16'
 labels:
   - m
@@ -33,7 +33,7 @@ from the x domain-modeling coder's retro (2026-10-12): crew-coder has no line fo
 
 15:51 (wishkeeper): committed HEAD's crew-coder/SKILL.md:19 still points at the gone docs/knowledge/impeccable-refine.md until the draft's commit; writing-for-humans/SKILL.md never names references/sources.md — add the pointer at the groom
 
-dima 18:01: when the memory sweep reaches skills, shape and run nurture-skills (never run yet) as the groom's engine.
+dima 18:01: when the memory sweep reaches skills, shape and run the skills recipe (never run yet) as the groom's engine.
 
 dima o76/o77 19:55, don't forget: fleet-models moves into x:crew-lead (models knowledge serves only the spawner, cclio + dima — the one-home test) and merges with crew-lead/models.md, one copy; the shelf drops it.
 
@@ -45,5 +45,9 @@ wishkeeper 21:44 → step 9: 7 app skills still say next dev rewrites AGENTS.md 
 
 retro fold 10-12 (x domain-modeling coder): crew-coder has no line for empty args (a mid-turn `/x:crew-coder` with no ticket was read as dima mode) — one line in the skill groom
 
-dima 22:07: before any skill groom, the nurture-skills recipe gets its x:shape-recipe pass (step 0 groom: it is old) and a real run (its research lanes); only then the groom order below
+dima 22:07: before any skill groom, the skills recipe gets its x:shape-recipe pass (step 0 groom: it is old) and a real run (its research lanes); only then the groom order below
+
+18:30 folded from PK-84 (o157): the verifier upgrades — the CST's 7 mechanisms, ranked, become tickets on dima's pick — land in the crew-verifier groom
+
+19:25 (o161): the skills recipe is merged into recipes/nurture-memory as its step 9 (9.1 the skills research, 9.2 census, 9.3 conflict hunt, 9.4 this groom order, 9.5 the fire loop); the 18:01 and 22:07 asks above now mean that step
 <!-- SECTION:NOTES:END -->

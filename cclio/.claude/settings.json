@@ -97,6 +97,11 @@
             "type": "command",
             "command": "/Users/dima/frame/cclio/.claude/hooks/pocket-mirror.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "pnpm -C /Users/dima/frame --silent ccrow:unvetted",
+            "timeout": 10
           }
         ]
       }
@@ -117,7 +122,8 @@
     "cclio@cclio": true,
     "neuroarxiv@neuroarxiv": true,
     "adhd@adhd": true,
-    "fast-jev-compaction@fast-jev-compaction": false
+    "fast-jev-compaction@fast-jev-compaction": false,
+    "cc-plugin-you-should-know@builtin": true
   },
   "extraKnownMarketplaces": {
     "cclio": {

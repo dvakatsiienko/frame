@@ -24,7 +24,7 @@ write the day's post: `cclio/gazette/YYYY-MM-DD-<short-slug>.md`.
 - **source from evidence, not memory of your own turns**: `git log --since=<today>` across
   touched repos, the day's linear activity, the session context last — coders and cw leave
   traces cclio's thread never saw.
-- frontmatter: `date` · `slug` · `tickets: [DOT-N, …]` · `posted: {health: no}`
+- frontmatter: `date` · `slug` · `tickets: [FRM-N, BYT-N, …]` · `posted: {health: no}`
 - header line: `# 🗞️ cclio's gazette · <slug title>` — the masthead leads every post
 - skeleton, soft cap ~25 lines:
   - **shipped** — what landed, every fact linear-linked
@@ -38,8 +38,7 @@ write the day's post: `cclio/gazette/YYYY-MM-DD-<short-slug>.md`.
 
 the release — derived from the tweet, pushed outward.
 
-- **gate:** bare halt → ask «🗞️ the wire? y/n» and **block until a literal answer**; stop lane →
-  auto-yes, run without asking.
+- **gate:** ask «🗞️ the wire? y/n» and **block until a literal answer**; the question stands alone on its line.
 - **health update** for each project the tweet touched — **no title line**: pulse already shows the
   date and the author, the body starts at the first paragraph (dima, 2026-09-02) — ⚠️ full markdown
   links (health updates do not auto-link ids). **the house style — settled by the 4-round live test with dima,

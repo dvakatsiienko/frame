@@ -10,7 +10,7 @@ The failure shapes:
 - 🚨 **when your own check contradicts a report, suspect YOUR CHECK first.** **A null result from your own tooling
   is the weakest evidence in the room** — and when a mechanism returns nothing, suspect your own
   inputs before the mechanism.
-- 🚨 **the sharpest case is your OWN inference.** The label «inferred» did not help; [[method-rule-proof]] is the fix.
+- 🚨 **the sharpest case is your OWN inference.** [[method-rule-proof]] is the fix: test it, or label it.
 - 🚨 **name the FIELD the test observed, never the behaviour class it seemed to settle.**
 
 - 🚨 **my own recall is a relay too.** a fact i remember (an api verb, a token lifetime, a

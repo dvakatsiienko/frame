@@ -15,7 +15,7 @@ two lines in the reply. non-blocking, informational — never a topic change, ne
 request:
 
 ```
-⚠️ flaw — <what broke, one clause>
+🩹 flaw — <what broke, one clause>
 💡 fix — <the suggestion>
 ```
 

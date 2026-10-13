@@ -3,10 +3,10 @@ id: PK-86
 title: >-
   init ctx awareness: every thread knows its boot token count; cclio traces it
   and raises a bloat alarm
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-12 11:08'
+updated_date: '2026-10-13 15:29'
 due_date: '2026-10-17'
 labels:
   - m
@@ -26,4 +26,6 @@ dima, inbox 2026-10-12, folded. any cc thread knows its init ctx number (spawned
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: queued under the ≤5 open cap, 2026-10-12 — worked in ordinal order after PK-75–79
+
+18:32 folded into FRM-72, the pm review (dima 18:28: «connect this to your pm revamp ticket»)
 <!-- SECTION:NOTES:END -->

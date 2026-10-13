@@ -24,7 +24,7 @@ a card is an h2 heading and two plain lines (dima, 2026-10-09, after a fence, a 
 
 ## 2 · the grill
 
-load `mattpocock-skills:grilling` and ask in its round shape (❓ **Qn** - **title**: body, ➡️ pick, `---`). a fact the environment holds is looked up, never asked. the round prints whole in the reply, where dima reads it (dima, 2026-10-10: «grills print as usual in a response, orbit only sends my reply»); each question also goes to orbit as one answer row — `Qn <short title>` with the pick — so he ticks to agree and notes to steer; an unmarked question stays open. orbit is the only answer door: no pre-filled answer fence in the reply (dima, 2026-10-11; reply-check blocks one). his answers fold into `decided` the same turn, then the next round recomputes the frontier.
+load `mattpocock-skills:grilling` for the method; the round prints in the grill shape of `habit-dima-comms-pacing` (🔥 header, numbered bold questions, a) b) with consequences, ➡️ pick). a fact the environment holds is looked up, never asked. the round prints whole in the reply, where dima reads it (dima, 2026-10-10: «grills print as usual in a response, orbit only sends my reply»); each question also goes to orbit as one answer row — `Qn <short title>` with the pick — so he ticks to agree and notes to steer; an unmarked question stays open. orbit is the only answer door: no pre-filled answer fence in the reply (dima, 2026-10-11; reply-check blocks one). his answers fold into `decided` the same turn, then the next round recomputes the frontier.
 
 ## 2.5 · the spec — feature and app lanes, and any coder job of 3+ items
 

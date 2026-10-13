@@ -177,9 +177,9 @@ cw_err=$(mktemp)
 "$(dirname "$0")/ci-watch.sh" --boot 2>"$cw_err" || fail "ci-watch --boot exited $?: $(grep . "$cw_err" | tail -1 || echo 'no stderr')"
 rm -f "$cw_err"
 
-# the two in-session watches wake cclio only when she arms them herself; a hook cannot, so a missing one is a FAIL (down at boot 10-10, 10-11, 10-12)
+# a project-scope plugin starts no monitors (code.claude.com/docs/en/plugins/loading, «Background monitors do not load»), so the boot arms both every time; a hook cannot, since only her own background job wakes her
 watches=$(ps -ax -o command | grep -c '[p]r-watch.sh --watch\|[c]i-watch.sh --watch' || true)
-[ "$watches" -ge 2 ] || fail "watches: $watches of 2 running — arm pr-watch + ci-watch (watch-once.sh) as the boot's first act"
+echo "watches: $watches of 2 running — the boot arms the missing ones (watch-once.sh), as every boot does"
 
 if [ -z "${COMPACT:-}" ]; then
 echo "-- app essentials (bytes/script/apps-essentials.ts, BYT-111; 🔴 = a gap to fold into today) --"
