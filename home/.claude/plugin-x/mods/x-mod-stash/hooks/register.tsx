@@ -151,7 +151,7 @@ type NumberName = keyof typeof NUMBERS;
 // re-reads, so a flip reaches every band within one poll; a missing key is shown
 const SHOWN = 'shown';
 // the parts dima approved (o2, 2026-10-11 13:15), grouped by where they draw; a mod's own parts, so a new one joins here
-const PARTS = [
+export const PARTS = [
     {
         group: 'stash · band',
         key: 'stash.chips',
@@ -923,6 +923,7 @@ async function wakeForMarks($: EngineInterface) {
         isBusy
     )
         return;
+    if (!(await partsShown($))('stash.orbit')) return;
     const o = await currentOrbit($);
     const due = o.asks
         .filter(isDue(await $.clock.now()))
@@ -940,24 +941,39 @@ const planAge = (o: StashOrbit) =>
 
 // the per-prompt note that keeps the habit through a compaction; none while orbit is empty
 function orbitReminder(o: StashOrbit, isOn: IsPartOn) {
-    const open = o.asks.filter((a) => !a.isResolved);
+    const isAsksOn = isOn('stash.orbit');
+    const open = isAsksOn ? o.asks.filter((a) => !a.isResolved) : [];
     const isPhasesOn = isOn('stash.phases');
     const age = isPhasesOn ? planAge(o) : undefined;
     const caught = isOn('stash.catch') ? (o.caught ?? []) : [];
-    if (!open.length && age === undefined && !caught.length) return undefined;
-    const asks = open.length
-        ? `orbit holds ${open.length} open ask${open.length === 1 ? '' : 's'} (${open.map((a) => a.id).join(', ')})`
-        : 'orbit holds no open ask';
+    if (!open.length && age === undefined && !caught.length)
+        return isAsksOn ? undefined : ASKS_IN_REPLY;
+    const asks = !isAsksOn
+        ? undefined
+        : open.length
+          ? `orbit holds ${open.length} open ask${open.length === 1 ? '' : 's'} (${open.map((a) => a.id).join(', ')})`
+          : 'orbit holds no open ask';
     const plan = !isPhasesOn
-        ? ''
+        ? undefined
         : age === undefined
-          ? '; no plan set'
-          : `; plan set ${age} turn${age === 1 ? '' : 's'} ago${age >= STALE_TURNS ? ', stale: set it again' : ''}`;
+          ? 'no plan set'
+          : `plan set ${age} turn${age === 1 ? '' : 's'} ago${age >= STALE_TURNS ? ', stale: set it again' : ''}`;
     // her held ids, so a compacted cclio can still clear a piece whose lifetime ended
     const held = caught.length
-        ? `; 🐠 catch holds ${caught.map((x) => x.id).join(', ')}`
-        : '';
-    return `${asks}${plan}${held}. asks${isPhasesOn ? ' and the plan' : ''} go through ${ORBIT_TOOL}, never into a reply.`;
+        ? `🐠 catch holds ${caught.map((x) => x.id).join(', ')}`
+        : undefined;
+    const doors = [isAsksOn && 'asks', isPhasesOn && 'the plan'].filter(
+        Boolean,
+    );
+    return [
+        `${[asks, plan, held].filter(Boolean).join('; ')}.`,
+        ...(doors.length
+            ? [
+                  `${doors.join(' and ')} go through ${ORBIT_TOOL}, never into a reply.`,
+              ]
+            : []),
+        ...(isAsksOn ? [] : [ASKS_IN_REPLY]),
+    ].join(' ');
 }
 
 // on mobile the asks reach dima only through the reply: the asks fence, its header line kept as the skill prints it
@@ -1777,17 +1793,25 @@ async function partsShown($: EngineInterface): Promise<IsPartOn> {
 
 // the orbit ops a settings switch owns: hidden, the op is refused, so no session writes what nobody sees
 const OP_PART: Partial<Record<string, PartKey>> = {
+    add: 'stash.orbit',
     assume: 'stash.assumed',
     catch: 'stash.catch',
+    follow: 'stash.orbit',
     glide: 'stash.glide',
     plan: 'stash.phases',
+    resolve: 'stash.orbit',
 };
+// 🪐 orbit switched off still leaves dima's asks somewhere: the reply (o152)
+const ASKS_IN_REPLY =
+    '🪐 orbit is switched off in 🎛️ settings: an ask for dima goes into the reply as one ➡️ line.';
 
 async function partRefusal($: EngineInterface, op: unknown) {
     const key = typeof op === 'string' ? OP_PART[op] : undefined;
     if (!key || (await partsShown($))(key)) return undefined;
     const label = PARTS.find((p) => p.key === key)?.label ?? key;
-    return `orbit ${op}: ${label} is switched off in 🎛️ settings; nothing to write`;
+    return key === 'stash.orbit'
+        ? `orbit ${op}: ${ASKS_IN_REPLY}`
+        : `orbit ${op}: ${label} is switched off in 🎛️ settings; nothing to write`;
 }
 
 // a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
@@ -1805,7 +1829,7 @@ async function armWake($: EngineInterface) {
         const waker = (await $.store.get(WAKER_KEY)) as
             | { on?: boolean }
             | undefined;
-        if (waker?.on !== true) return;
+        if (waker?.on !== true || !(await partsShown($))('stash.waker')) return;
         $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
         await selfSubmit($, RESUME);
     });
@@ -2090,6 +2114,7 @@ async function armHot($: EngineInterface) {
     const wait = hot.since + HOT_MS - (await $.clock.now());
     $.clock.after(Math.max(0, wait), async () => {
         if (!hot || isBusy || mine !== hotGen) return;
+        if (!(await partsShown($))('stash.hot')) return;
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
         await selfSubmit($, PING);
     });
@@ -3002,9 +3027,10 @@ export const register: Register = (on) => {
                 .catch(() => undefined);
         await absorbMarks($);
         await currentOrbit($);
-        const marked = isUserTurn ? orbit.asks.filter(isFresh) : [];
-        // an assumption dima sent back joins his prompt once and leaves orbit
         const isOn = await partsShown($);
+        const marked =
+            isUserTurn && isOn('stash.orbit') ? orbit.asks.filter(isFresh) : [];
+        // an assumption dima sent back joins his prompt once and leaves orbit
         const wrong =
             isUserTurn && isOn('stash.assumed')
                 ? (orbit.assumed ?? []).filter((x) => x.isWrong)
@@ -3022,9 +3048,10 @@ export const register: Register = (on) => {
                 ),
             });
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
-        const reminder = (await $.state.get(MOBILE)).value
-            ? mobileReminder(orbit, isOn)
-            : orbitReminder(orbit, isOn);
+        const reminder =
+            (await $.state.get(MOBILE)).value && isOn('stash.orbit')
+                ? mobileReminder(orbit, isOn)
+                : orbitReminder(orbit, isOn);
         const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
         isPrimed = true;
         // the lanes speak only in cclio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
@@ -3067,7 +3094,7 @@ export const register: Register = (on) => {
             context: [
                 ...(e.context ?? []),
                 clock,
-                ...(afk ? [AWAY_NOTE] : []),
+                ...(afk && isOn('stash.afk') ? [AWAY_NOTE] : []),
                 ...(marked.length ? [joinText(marked)] : []),
                 ...(wrong.length ? [wrongText(wrong)] : []),
                 ...(thought.length ? [thinkText(thought)] : []),
@@ -5107,9 +5134,10 @@ export const register: Register = (on) => {
         )
             isWorkTurn = true;
         const notes: string[] = [];
+        const isOn = await partsShown($);
         if (turnAfk !== undefined && turnAfk !== afk) {
             turnAfk = afk;
-            notes.push(afk ? AWAY_NOTE : BACK_NOTE);
+            if (isOn('stash.afk')) notes.push(afk ? AWAY_NOTE : BACK_NOTE);
         }
         // a mark dima made while any turn of this session runs joins it here, model-only, and locks — a peer's or a task's
         // turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11); the turn is read from $.state, which a
@@ -5117,8 +5145,10 @@ export const register: Register = (on) => {
         await absorbMarks($);
         const o = await currentOrbit($);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
-        const fresh = isPing ? [] : o.asks.filter(isDue(await $.clock.now()));
-        const isOn = await partsShown($);
+        const fresh =
+            isPing || !isOn('stash.orbit')
+                ? []
+                : o.asks.filter(isDue(await $.clock.now()));
         const thought =
             isPing || !isOn('stash.catch')
                 ? []

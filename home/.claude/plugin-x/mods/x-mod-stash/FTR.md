@@ -170,8 +170,12 @@
   - given any band part's switch off (`🪐 🌔` chips, `🔋 🪫` pace, `⏳` reset, `🔭` wait line, enhancer, `🔥` keep-hot, `⏰` waker, `💨` afk, `🚦` board button, the desktop's `🔥 5h` and `🧠 ctx` bars, the «while you were away» digest), then that part leaves every band within one poll, and a switch saved before a session starts holds from its first draw
   - decision: the band's 12 parts land first, the board's 5 and the replies' 2 follow in their own batch (the advisor's small-batch call, 2026-10-11 15:30; cclio's «build the rest of slice 05 meanwhile»)
   - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ▶️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
-  - given `🐠 catch`, the `assumed` section, `🌔 phases` or `🛼 glide` switched off, then it is off for every model too: no line of it rides a prompt or a tool result, and its orbit op (`catch`, `assume`, `plan`, `glide`) is refused in one line naming the switch; switched back on, both return
-  - decision: a part hidden in settings is off for the model too, so no session spends effort there (dima, 10-12); `🪐 orbit asks` and the hidden-while-on `💨` `🔥` `⏰` wait on dima, since both clash with a rule or his open ask (o150)
+  - given any part switched off, then the whole feature is off, for every model too: nothing drawn, no line of it in a prompt or a tool result, no turn it would start, and its orbit op refused in one line naming the switch; switched back on, all of it returns
+    - `🐠 catch`, the `assumed` section, `🌔 phases`, `🛼 glide`: their lines leave, ops `catch` `assume` `plan` `glide` refused
+    - `🪐 orbit asks`: no reminder, no tick joins a prompt or a tool call, no idle wake for marks; `add` `resolve` `follow` refused, and the reminder and the refusal tell the model an ask goes into the reply as one ➡️ line (o152)
+    - `💨 afk`: no away or back note; `🔥 keep-hot`: no ping turn; `⏰ waker`: no resume turn, the reset still spent
+    - every other part draws only, and `tests/switches.test.ts` names why for each
+  - decision: a switch is the whole feature, every mod, future parts too (dima, 2026-10-13, `mods/AGENTS.md` § the rules); `tests/switches.test.ts` walks every registered part, so a new one without a scenario or a reason goes red
   - given a reply switch off (`·-lists drawn as bullets`, `fleet words bold with their badge`), then the reply is both stored and drawn as written: the switch gates the stored rewrite, not only its look (the part list's 📌)
   - decision: the switches live in stash's own store, the one the 💨 and ⏰ switches already share across sessions — a separate file joins only if another mod's parts do
 - ⬜ two live meters, full width under the row on the desktop (FRM-366)
