@@ -212,6 +212,16 @@
   - decision: a required line, never a guess at «mechanical» — a keyword guess was unreliable (51 loose hits, most of them real research); a fork carries the whole parent context, ~220k (FRM-323)
   - 📌 harness-proven only: a headless `claude -p` offers no `fork` type («Agent type 'fork' not found»), so the live check is a fork from an interactive session
 
+## every SendMessage
+
+- ⬜ a coder's job of 3+ items goes through a spec, warn-only (dima's o143)
+  - given a `SendMessage` to a session whose name carries `🔧` or `coder`, holding 3 or more lines that open with an item number (`1.` or `1)`), outside a code fence, and no `.scratch/<feature>/spec.md` path
+  - when x-mod-guard reads it
+  - then it is sent, the model gets «x-mod-guard would refuse this (rule spec, …): a 3+-item job goes through a spec (cclio:shape-lane § 2.5); write the job to .scratch/<feature>/spec.md and send its path», and a `warned` guard event is kept
+  - given 1 or 2 items, a list in a `>` quote or a code fence, a spec path, or a session not named a coder, then it is sent unwarned
+  - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); `rule-mode:spec` = «enforce» refuses it unsent
+  - decision: fail open — a message is never stopped by a broken check
+
 ## every Edit and Write
 
 - ✅ a cclio session gets one delegate hint at its 8th code edit

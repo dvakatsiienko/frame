@@ -5,6 +5,7 @@ import type { Brief, Context, Refusal } from './rules/command.ts';
 import { hints } from './rules/hint.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
+import { SPEC_DOOR, SPEC_WHY, isSpecMissing } from './rules/spec.ts';
 import {
     addedPaths,
     check,
@@ -174,6 +175,7 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
     'raw-linear',
     'raw-plugin-update',
+    'spec',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (verifier, 15:08)
@@ -763,6 +765,40 @@ export const register: Register = (on) => {
             return result;
         },
     ).catch(() => ({ deny: FAILED }));
+
+    // fail open: a message is never stopped by a broken check
+    on('tool.call', { tool: 'SendMessage' }, async ($, e, next) => {
+        const { message, to } = e as { message?: unknown; to?: unknown };
+        if (
+            typeof to !== 'string' ||
+            typeof message !== 'string' ||
+            !isSpecMissing(to, message)
+        )
+            return next(e);
+        const isWarn = await isWarnOnly($, 'spec').catch(() => true);
+        await record($, {
+            command: `SendMessage → ${to}: ${message}`,
+            door: SPEC_DOOR,
+            kind: isWarn ? 'warned' : 'refused',
+            rule: 'spec',
+            target: to,
+            why: SPEC_WHY,
+        }).catch(() => undefined);
+        if (!isWarn)
+            return {
+                deny: `x-mod-guard stopped this message. instead: ${SPEC_DOOR}. why: ${SPEC_WHY}`,
+            };
+        const sent = await next(e);
+        return sent.deny !== undefined
+            ? sent
+            : {
+                  ...sent,
+                  context: [
+                      ...(sent.context ?? []),
+                      wouldRefuse('spec', `${SPEC_WHY}; ${SPEC_DOOR}`),
+                  ],
+              };
+    });
 
     on('prompt.submit', async ($, e, next) => {
         if (TYPED_BY_DIMA.has(e.origin.kind)) {
