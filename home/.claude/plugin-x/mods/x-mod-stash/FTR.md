@@ -532,6 +532,16 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - when the call ends
   - then the box keeps his text and the band names the reason in one red line
 
+## cost questions — the price facts, never recall (todo 17)
+
+- ⬜ a cost question sends cclio to the price file
+  - given dima's own prompt to cclio names tokens, a cache, a ctx or context cost, pricing or MTok
+  - then that prompt carries one model-only line: read `~/frame/docs/knowledge/fleet-models.md` before answering — each model's price line and the «cache reads are where agents spend» bullet — never from recall
+  - and a member's ping, a wake, or any session not named 🦉 cclio carries none; «the ctx meter», «a tokenizer», «the context menu» are no cost question
+  - given `💵 cost questions read fleet-models.md` switched off in 🎛️ settings, then no prompt carries it
+  - decision: a word list, once per prompt; a false hit costs one small read (o171: 10-13 cclio quoted a cache read at 1/10 of input, the file says 1/20)
+  - decision: the brief named a «§ cost» section; the file has none, so the line names the price lines and the cache bullet instead
+
 ## mobile mode — the asks fence
 
 - ✅ `/mobile-mode` brings the asks fence back while dima is away from the board

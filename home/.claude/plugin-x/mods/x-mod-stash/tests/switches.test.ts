@@ -193,6 +193,12 @@ const SCENARIOS: Record<string, Scenario> = {
         },
         trace: /🐠|CATCH RULES/,
     },
+    'stash.cost': {
+        // the world is cclio's session, and dima asks her about cost
+        arm: async () => undefined,
+        fire: ($) => say($, 'what does a cache read cost on opus?'),
+        trace: /a cost question/,
+    },
     'stash.glide': {
         arm: async ($) => {
             await orbit($, {

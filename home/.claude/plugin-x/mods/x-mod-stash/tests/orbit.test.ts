@@ -2380,3 +2380,11 @@ test('a poll that finds nothing changed leaves the kept copy as it was', async (
         (w.store.get(`kept:${SID}`) as { at?: number } | undefined)?.at,
     ).toBe(before);
 });
+
+// todo 17: the cost hint is cclio's alone; this world's session is no cclio
+test('a cost question in a session that is not cclio carries no cost hint', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($, 'what does a cache read cost?');
+    expect((w.contexts.at(-1) ?? []).join('\n')).not.toMatch(/a cost question/);
+});

@@ -233,6 +233,11 @@ export const PARTS = [
         key: 'stash.boldwords',
         label: 'fleet words bold with their badge',
     },
+    {
+        group: 'stash · replies',
+        key: 'stash.cost',
+        label: '💵 cost questions read fleet-models.md',
+    },
 ] as const;
 type PartKey = (typeof PARTS)[number]['key'];
 type IsPartOn = (key: PartKey) => boolean;
@@ -527,6 +532,12 @@ const QUIET_HELD = 'quiet-held:';
 // 🐦‍🔥 second wind (todo 16): `wind:<sid>`, written by any board's press and read by that session's own stash at its next
 // turn, so the ask rides the turn and never starts one (dima's slipstream)
 const WIND = 'wind:';
+// dima asking cclio about cost: her context points at the price facts once, so she never answers from recall (o171; 10-13
+// she quoted a cache read at 1/10 of input, the file says 1/20)
+export const COST_WORDS =
+    /\b(?:tokens?|cach(?:e|ed|ing)|(?:ctx|context) costs?|pricing|mtok)\b/i;
+const COST_HINT =
+    "💵 a cost question: read ~/frame/docs/knowledge/fleet-models.md before answering (each model's price line, and the «cache reads are where agents spend» bullet), never from recall.";
 // the button's emoji per state; idle draws the bird
 export const WIND_EMOJI = {
     asked: '📨',
@@ -3471,6 +3482,10 @@ export const register: Register = (on) => {
             await quietFlushed($, quiet.held).catch(() => undefined);
         }
         // 🐦‍🔥 a board asked this session for a second wind: the note rides this turn, whatever started it
+        const costHint =
+            isUser && isOwner && isOn('stash.cost') && COST_WORDS.test(e.text)
+                ? COST_HINT
+                : undefined;
         const wind = isOn('stash.second-wind')
             ? await takeWind($, isOwner).catch(() => undefined)
             : undefined;
@@ -3492,6 +3507,7 @@ export const register: Register = (on) => {
                 ...(quiet.held.length ? [quietNote(quiet.held)] : []),
                 ...(tickets ? [tickets] : []),
                 ...(wind ? [wind] : []),
+                ...(costHint ? [costHint] : []),
             ],
         });
     });
