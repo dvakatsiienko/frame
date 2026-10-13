@@ -252,6 +252,51 @@ test('a second link of a role replaces the first', async ($, on) => {
     expect(kept(w)[0]?.members).toEqual({ coder: 'new-coder', verifier: 'v' });
 });
 
+test('a second open lane of one topic is refused, naming the open one and its fix', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($, { title: 'mods — x' });
+    expect([
+        await denied($, { act: 'create', items: ITEMS, title: 'MODS — y' }),
+        await denied($, { act: 'create', items: ITEMS, title: 'mods: z' }),
+        kept(w).map((l) => l.id),
+    ]).toEqual([
+        'orbit glide: lane l1 «mods — x» is still open: end it first (glide end l1)',
+        'orbit glide: lane l1 «mods — x» is still open: end it first (glide end l1)',
+        ['l1'],
+    ]);
+});
+
+test('a finished lane holds its topic until it is ended', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($, { items: [{ text: 'a' }], title: 'mods — x' });
+    await lane($, { act: 'step', current: 1, id: 'l1' });
+    const whileFinished = await denied($, {
+        act: 'create',
+        items: ITEMS,
+        title: 'mods — y',
+    });
+    await lane($, { act: 'end', id: 'l1' });
+    const afterEnd = await denied($, {
+        act: 'create',
+        items: ITEMS,
+        title: 'mods — y',
+    });
+    expect([
+        whileFinished,
+        afterEnd,
+        kept(w).map((l) => [l.id, l.endedAt === undefined]),
+    ]).toEqual([
+        'orbit glide: lane l1 «mods — x» is still open: end it first (glide end l1)',
+        undefined,
+        [
+            ['l1', false],
+            ['l2', true],
+        ],
+    ]);
+});
+
 test('two lanes live at once both persist', async ($, on) => {
     const w = world(on);
     await start($);

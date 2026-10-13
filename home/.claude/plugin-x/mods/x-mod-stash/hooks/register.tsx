@@ -1446,6 +1446,13 @@ function laneCreate(
 ): { lanes: StashLane[]; result: string } | { deny: string } {
     const title = oneLine(input.title);
     if (!title) return { deny: 'orbit glide: a title names the lane' };
+    const open = lanes.find(
+        (l) => !l.endedAt && laneTopic(l.title) === laneTopic(title),
+    );
+    if (open)
+        return {
+            deny: `orbit glide: lane ${open.id} «${open.title}» is still open: end it first (glide end ${open.id})`,
+        };
     const items = laneItems(input.items);
     if (!Array.isArray(items)) return items;
     const id = `l${1 + Math.max(0, ...lanes.map((l) => Number(l.id.slice(1)) || 0))}`;
@@ -1471,6 +1478,10 @@ function laneCreate(
         result: laneSummary(id, title, stepped),
     };
 }
+
+// one topic, one open lane: the topic is the title before « — » or «:», case-blind; a finished lane counts until ended
+const laneTopic = (title: string) =>
+    (title.split(/ — |:/)[0] ?? '').trim().toLowerCase();
 
 // a lane's steps as cclio sends them: 1 to LANE_MAX, each plain text ≤LANE_TEXT_MAX, an optional ticket id
 function laneItems(input: unknown): LaneItem[] | { deny: string } {
