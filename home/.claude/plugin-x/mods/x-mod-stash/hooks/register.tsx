@@ -23,6 +23,7 @@ import type {
     StashPlan,
     StashQuiet,
     StashView,
+    StashWind,
 } from '../types/stash.d.ts';
 import {
     ASSUMED_MAX,
@@ -132,6 +133,9 @@ const SPEAK_ASSUMED = 'speak-assumed';
 const GUARD_SILENT = 'guard-silent';
 // quiet comms on or off, one switch for 🎛️ and `/quiet` alike; on by default, `off` is the revert (dima, 16:53)
 const QUIET_ON = 'quiet-comms';
+// a tick, a replay or a phases change waits SEND_MS in «sending», undoable; off, it is ready for the next turn at once
+// (dima, 10-13 17:49)
+const UNDO_WINDOW = 'undo-window';
 const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
 const LINES = { max: 7, min: 5 } as const;
 // how long held member pings wait before the hidden idle append, in minutes (dima, 16:53: 10 by default, maybe 15)
@@ -147,6 +151,7 @@ const SWITCHES = {
     ring: { key: CTX_RING_KEY, of: true },
     silent: { key: GUARD_SILENT, of: false },
     speak: { key: SPEAK_ASSUMED, of: true },
+    undo: { key: UNDO_WINDOW, of: true },
 } as const;
 const NUMBERS = {
     lines: { key: PHASE_LINES, of: PLAN_MAX, range: LINES },
@@ -202,6 +207,11 @@ export const PARTS = [
         group: 'stash · board',
         key: 'stash.rowmeta',
         label: 'session rows: model, effort and wait',
+    },
+    {
+        group: 'stash · board',
+        key: 'stash.second-wind',
+        label: '🐦‍🔥 second wind',
     },
     {
         group: 'stash · replies',
@@ -500,6 +510,31 @@ let isOrbitLoaded = false;
 // idle append after 10 min. the a/b reads one log line per delivery from the store (docs/test-drive/quiet-comms.md)
 const QUIET = { key: 'quiet', plugin: 'x-mod-stash' } as const;
 const QUIET_HELD = 'quiet-held:';
+// 🐦‍🔥 second wind (todo 16): `wind:<sid>`, written by any board's press and read by that session's own stash at its next
+// turn, so the ask rides the turn and never starts one (dima's slipstream)
+const WIND = 'wind:';
+// the button's emoji per state; idle draws the bird
+export const WIND_EMOJI = {
+    asked: '📨',
+    cancelled: '📨',
+    idle: '🐦‍🔥',
+    refreshing: '🌀',
+    writing: '✍️',
+} as const;
+const WIND_SAY = {
+    asked: 'asked, waits for its next turn',
+    cancelled: 'cancelled, tells it at its next turn',
+    refreshing: 'compacting onto its handoff',
+    writing: 'finishing its step, then its handoff',
+} as const;
+const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>), then call ${ORBIT_TOOL} op second-wind with its slug: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
+const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. finish the step you are on, nothing interrupts it; a member mid-round (a verifier's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
+// cclio's good stop is todo 16's nine steps (dima, 10-13)
+const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint at a good stop. take no new todos, solve the tails so the picture after is good, run cclio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit as soon as you can. then ${WIND_HOW}`;
+const WIND_CANCELLED =
+    '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
+// the turn's end lets the engine settle before the compact runs
+const WIND_DELAY_MS = 1_000;
 const QUIET_LOG = 'quiet-log:';
 const QUIET_LOG_MAX = 500;
 const QUIET_TAG = /^\s*\[(done|blocked|ask|progress)\]/i;
@@ -917,6 +952,7 @@ async function absorbMarks($: EngineInterface) {
     for (const id of Object.keys(marks))
         await $.store.delete(markKey(sid, id)).catch(() => undefined);
     const o = await currentOrbit($);
+    const win = await sendWindow($);
     await saveOrbit($, {
         ...o,
         asks: o.asks.map((a) => {
@@ -927,7 +963,7 @@ async function absorbMarks($: EngineInterface) {
                 isChanged: false,
                 mark: m.mark,
                 markedAt: m.mark ? m.at : undefined,
-                sendAt: m.mark ? (m.markAt ?? m.at) + SEND_MS : undefined,
+                sendAt: m.mark ? (m.markAt ?? m.at) + win : undefined,
                 steer: m.steer,
             };
         }),
@@ -1534,6 +1570,7 @@ async function dropLaneOrders($: EngineInterface) {
 let lanesShown = '';
 async function showLanes($: EngineInterface, lanes: StashLane[]) {
     const steers = await laneSteers($);
+    const win = await sendWindow($);
     const live = lanes
         .filter((l) => !l.endedAt)
         .map((l) => ({
@@ -1571,7 +1608,7 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
                 ? {
                       ...a,
                       mark: m.mark,
-                      sendAt: m.mark ? (m.markAt ?? m.at) + SEND_MS : undefined,
+                      sendAt: m.mark ? (m.markAt ?? m.at) + win : undefined,
                       steer: m.steer,
                   }
                 : a;
@@ -1698,7 +1735,7 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
 
 // everything this mod keeps for one conversation: one store key per prefix, the session id after it, plus its pending
 // lane marks; a new per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
-const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL] as const;
+const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL, WIND] as const;
 
 async function forget($: EngineInterface, sid: string) {
     for (const prefix of SESSION_KEYS) await $.store.delete(prefix + sid);
@@ -1862,6 +1899,7 @@ const OP_PART: Partial<Record<string, PartKey>> = {
     glide: 'stash.glide',
     plan: 'stash.phases',
     resolve: 'stash.orbit',
+    'second-wind': 'stash.second-wind',
 };
 // 🪐 orbit switched off still leaves dima's asks somewhere: the reply (o152)
 const ASKS_IN_REPLY =
@@ -1874,6 +1912,106 @@ async function partRefusal($: EngineInterface, op: unknown) {
     return key === 'stash.orbit'
         ? `orbit ${op}: ${ASKS_IN_REPLY}`
         : `orbit ${op}: ${label} is switched off in 🎛️ settings; nothing to write`;
+}
+
+async function windOf($: EngineInterface, sid: string) {
+    return (await $.store.get(WIND + sid).catch(() => undefined)) as
+        | StashWind
+        | undefined;
+}
+
+// a board's press on a row: asks, or takes the ask back; a note already delivered is taken back at the next turn, a
+// press on a cancel not yet delivered asks again, and a session already compacting goes on (no timer cancels, o2)
+async function pressWind($: EngineInterface, sid: string) {
+    const was = await windOf($, sid);
+    const at = await $.clock.now();
+    const key = WIND + sid;
+    if (!was)
+        await $.store.set(key, { at, state: 'asked' } satisfies StashWind);
+    else if (was.state === 'asked') await $.store.delete(key);
+    else if (was.state === 'writing')
+        await $.store.set(key, { at, state: 'cancelled' } satisfies StashWind);
+    else if (was.state === 'cancelled')
+        await $.store.set(key, { at, state: 'writing' } satisfies StashWind);
+    await publish($);
+}
+
+// at a turn's start: the ask joins once and becomes writing; a cancel joins once and leaves
+async function takeWind($: EngineInterface, isOwner: boolean) {
+    const sid = await currentId($);
+    const was = sid ? await windOf($, sid) : undefined;
+    if (!sid || !was) return undefined;
+    if (was.state === 'asked') {
+        await $.store.set(WIND + sid, {
+            at: await $.clock.now(),
+            state: 'writing',
+        } satisfies StashWind);
+        return isOwner ? WIND_NOTE_OWNER : WIND_NOTE;
+    }
+    if (was.state !== 'cancelled') return undefined;
+    await $.store.delete(WIND + sid);
+    return WIND_CANCELLED;
+}
+
+// the op second-wind: the session names the handoff it wrote; the compact waits for this turn's end
+async function windReady(
+    $: EngineInterface,
+    slug: unknown,
+): Promise<{ deny: string } | { result: string }> {
+    const name = typeof slug === 'string' ? slug.trim() : '';
+    if (!/^[\w][\w.-]*$/.test(name))
+        return {
+            deny: 'orbit second-wind: name the handoff you just wrote, slug: "<lane or topic>-<n>"',
+        };
+    const home = await $.env.get('HOME');
+    const peek = await $.process
+        .run([`${home}/.local/bin/x`, 'handoff', 'peek', name])
+        .catch(() => undefined);
+    if (peek?.exitCode !== 0)
+        return {
+            deny: `orbit second-wind: no handoff «${name}» in the store; write it with x:handoff first`,
+        };
+    const sid = await currentId($);
+    if (!sid) return { deny: 'orbit second-wind: this session has no id yet' };
+    await $.store.set(WIND + sid, {
+        at: await $.clock.now(),
+        slug: name,
+        state: 'refreshing',
+    } satisfies StashWind);
+    return {
+        result: `second wind: at this turn's end the mod compacts, then ingests ${name}. end your turn now.`,
+    };
+}
+
+// at a main turn's end: a session that named its handoff compacts onto it, then ingests it, once
+async function windAfterTurn($: EngineInterface) {
+    const sid = await currentId($);
+    const was = sid ? await windOf($, sid) : undefined;
+    if (!sid || was?.state !== 'refreshing' || !was.slug) return;
+    if (!(await partsShown($))('stash.second-wind')) return;
+    const slug = was.slug;
+    $.clock.after(WIND_DELAY_MS, () => runWind($, sid, slug));
+}
+
+async function runWind($: EngineInterface, sid: string, slug: string) {
+    try {
+        // the slug goes first, so a turn end during the compact finds nothing to run; the board keeps 🌀
+        await $.store.set(WIND + sid, {
+            at: await $.clock.now(),
+            state: 'refreshing',
+        } satisfies StashWind);
+        await $.command.run({
+            args: `keep nothing past the handoff ${slug}; it carries the state`,
+            command: 'compact',
+        });
+        await $.store.delete(WIND + sid);
+        await $.command.run({ args: slug, command: 'x:handoff-ingest' });
+    } catch (err) {
+        await $.store.delete(WIND + sid).catch(() => undefined);
+        $.ui.toast(
+            `🐦‍🔥 second wind stopped: ${errorText(err)}; the handoff ${slug} is still in the store`,
+        );
+    }
 }
 
 // a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
@@ -2779,6 +2917,7 @@ async function members($: EngineInterface): Promise<Member[]> {
                 reply?.waits && reply.waits.length > 1
                     ? `waiting on ${reply.waits.join('; ')}`
                     : reply?.wait,
+            wind: await windOf($, r.sid),
         });
     }
     // the coordinator first, her adviser second, the rest by name
@@ -2824,7 +2963,6 @@ const COLUMNS = {
     asks: 4,
     // the terminal's 10-wide ctx bar; the desktop's svg takes its own width (CTX_COLUMNS)
     context: 10,
-    state: 9,
     ticket: 9,
 } as const;
 
@@ -2870,6 +3008,11 @@ function numberOf(v: unknown, range: { min: number; max: number }) {
 async function readSwitch($: EngineInterface, name: SwitchName) {
     const v = await $.store.get(SWITCHES[name].key).catch(() => undefined);
     return typeof v === 'boolean' ? v : SWITCHES[name].of;
+}
+
+// how long a mark waits in «sending» before a turn may take it: SEND_MS, or nothing with the undo window off
+async function sendWindow($: EngineInterface) {
+    return (await readSwitch($, 'undo')) ? SEND_MS : 0;
 }
 
 async function readNumber($: EngineInterface, name: NumberName) {
@@ -3067,6 +3210,7 @@ export const register: Register = (on) => {
                                 'follow',
                                 'plan',
                                 'glide',
+                                'second-wind',
                             ],
                             type: 'string',
                         },
@@ -3085,6 +3229,7 @@ export const register: Register = (on) => {
                         },
                         role: { enum: [...LANE_ROLES], type: 'string' },
                         session: { type: 'string' },
+                        slug: { type: 'string' },
                         text: { type: 'string' },
                         texts: { items: { type: 'string' }, type: 'array' },
                         title: { type: 'string' },
@@ -3282,6 +3427,10 @@ export const register: Register = (on) => {
             await saveQuiet($, { ...quiet, held: [] });
             await quietFlushed($, quiet.held).catch(() => undefined);
         }
+        // 🐦‍🔥 a board asked this session for a second wind: the note rides this turn, whatever started it
+        const wind = isOn('stash.second-wind')
+            ? await takeWind($, isOwner).catch(() => undefined)
+            : undefined;
         return next({
             ...e,
             context: [
@@ -3299,6 +3448,7 @@ export const register: Register = (on) => {
                 ...(planMark ? [planText(planMark)] : []),
                 ...(quiet.held.length ? [quietNote(quiet.held)] : []),
                 ...(tickets ? [tickets] : []),
+                ...(wind ? [wind] : []),
             ],
         });
     });
@@ -3396,6 +3546,7 @@ export const register: Register = (on) => {
         if (e.agentId) return r;
         isBusy = false;
         await saveOrbit($, turnEnded(await currentOrbit($)));
+        await windAfterTurn($).catch(() => undefined);
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
@@ -3622,6 +3773,7 @@ export const register: Register = (on) => {
                 ring: await readSwitch($, 'ring'),
                 speak: await readSwitch($, 'speak'),
                 speed: await readNumber($, 'speed'),
+                undo: await readSwitch($, 'undo'),
             };
             const switchJSX = (
                 name: SwitchName,
@@ -3689,8 +3841,41 @@ export const register: Register = (on) => {
                     rowGap={air ? 0.3 : 0}>
                     <Text bold>stash · knobs</Text>
                     {switchJSX('colour', '🎨 board colour', knobs.colour)}
-                    {switchJSX('ring', '🧠 ctx meter as a ring', knobs.ring)}
+                    {/* one of two shapes, so two buttons, the one in use lit (dima, 10-13 17:45) */}
+                    <Box
+                        alignItems='center'
+                        flexDirection='row'
+                        gap={1}
+                        key='knob:ctx-shape'>
+                        <Text>🧠 sessions: ctx meter type</Text>
+                        {(
+                            [
+                                ['ring', '◯ ring', true],
+                                ['bar', '▬ bar', false],
+                            ] as const
+                        ).map(([shape, label, isRing]) => {
+                            return (
+                                <Button
+                                    key={`knob:ctx-${shape}`}
+                                    onPress={() =>
+                                        void (knobs.ring === isRing
+                                            ? undefined
+                                            : flipKnob($, 'ring'))
+                                    }
+                                    {...(knobs.ring === isRing
+                                        ? { variant: 'primary' as const }
+                                        : { dimColor: true })}>
+                                    {label}
+                                </Button>
+                            );
+                        })}
+                    </Box>
                     {numberJSX('lines', '🌔 phase lines', knobs.lines, 'lines')}
+                    {switchJSX(
+                        'undo',
+                        '↩️ undo window on ticks (5 s)',
+                        knobs.undo,
+                    )}
                     {switchJSX(
                         'speak',
                         '🔊 read-aloud on assumptions',
@@ -3882,6 +4067,7 @@ export const register: Register = (on) => {
             mark: (a, mark) =>
                 void (async () => {
                     const now = await $.clock.now();
+                    const win = await sendWindow($);
                     await markAsks(
                         $,
                         (x) => {
@@ -3891,12 +4077,13 @@ export const register: Register = (on) => {
                                 ...x,
                                 isChanged: false,
                                 mark: isOff ? undefined : mark,
-                                sendAt: isOff ? undefined : now + SEND_MS,
+                                sendAt: isOff || !win ? undefined : now + win,
                             };
                         },
                         true,
                     );
-                    $.clock.after(SEND_MS, () => $.ui.invalidate('ui.render'));
+                    if (win)
+                        $.clock.after(win, () => $.ui.invalidate('ui.render'));
                 })(),
             prefix: 'orbit',
             steer: (a, value) => handleSteer(a.id, value),
@@ -4546,15 +4733,16 @@ export const register: Register = (on) => {
         ) => {
             const was = await currentOrbit($);
             if (!was.plan) return;
+            const win = await sendWindow($);
             const sendAt = isSend
-                ? (await $.clock.now()) + SEND_MS
+                ? (await $.clock.now()) + win
                 : was.plan.sendAt;
             await saveOrbit($, {
                 ...was,
                 plan: { ...change(was.plan), sendAt },
             });
-            if (isSend)
-                $.clock.after(SEND_MS, () => $.ui.invalidate('ui.render'));
+            if (isSend && win)
+                $.clock.after(win, () => $.ui.invalidate('ui.render'));
         };
         const handlePlanMove = (i: number, by: -1 | 1) =>
             void changePlan((p) => ({
@@ -4919,6 +5107,17 @@ export const register: Register = (on) => {
         const hues = huesOf(list.map((m) => m.name));
         // the ticket column is drawn only when some row names a ticket: empty on every row, it was 9 cells of nothing (dima, 15:41)
         const hasTickets = list.some((m) => ticketOf(m.name));
+        // the state column as wide as the board's longest time, its emoji and gap included: a fixed 9 left «1m» rows a
+        // gap before their 🪐 n (dima, 10-13 17:45)
+        const stateColumns = Math.max(
+            ...list.map(
+                (m) =>
+                    3 +
+                    (m.statusSince === undefined
+                        ? 0
+                        : span(now - m.statusSince).length),
+            ),
+        );
         const row = (m: Member, i: number) => {
             const status = statusOf(m.status);
             const sinceMs =
@@ -5057,6 +5256,18 @@ export const register: Register = (on) => {
                                     ) : null}
                                 </Box>
                             ) : null}
+                            {/* 🐦‍🔥 second wind beside the meter it answers: the emoji alone, its state under the row */}
+                            {isPartOn('stash.second-wind') ? (
+                                <Box flexShrink={0}>
+                                    <Button
+                                        dimColor={!m.wind}
+                                        key={`wind:${m.sid}`}
+                                        onPress={() => pressWind($, m.sid)}
+                                        plain>
+                                        {WIND_EMOJI[m.wind?.state ?? 'idle']}
+                                    </Button>
+                                </Box>
+                            ) : null}
                             <Box
                                 justifyContent='flex-end'
                                 width={contextColumns}>
@@ -5090,7 +5301,7 @@ export const register: Register = (on) => {
                                 gap={1}
                                 justifyContent='flex-start'
                                 key={`state:${m.sid}`}
-                                width={COLUMNS.state}>
+                                width={stateColumns}>
                                 <Text>{status.emoji}</Text>
                                 {sinceMs === undefined ? null : (
                                     <Text
@@ -5164,6 +5375,14 @@ export const register: Register = (on) => {
                                 </Box>
                             ) : null}
                             {m.tip ? speakJSX(`crow:${m.sid}`, m.tip) : null}
+                        </Box>
+                    ) : null}
+                    {/* a pane draws no hover card (engine.md), so second wind names its state and wait here */}
+                    {m.wind && isPartOn('stash.second-wind') ? (
+                        <Box key={`wind:say:${m.sid}`} paddingLeft={2}>
+                            <Text dimColor wrap='truncate-end'>
+                                {`🐦‍🔥 second wind: ${WIND_SAY[m.wind.state]} (${span(Math.max(0, now - m.wind.at))})`}
+                            </Text>
                         </Box>
                     ) : null}
                     {/* the held member pings, opened from 🤫 n: sender, age, first line (dima's o34) */}
@@ -5255,6 +5474,13 @@ export const register: Register = (on) => {
                 (e as Record<string, unknown>).op,
             );
             if (hidden) return { deny: hidden };
+            if ((e as Record<string, unknown>).op === 'second-wind') {
+                const r = await windReady(
+                    $,
+                    (e as Record<string, unknown>).slug,
+                );
+                return 'deny' in r ? r : ({ result: r.result } as never);
+            }
         }
         if (
             (e.tool as string) === ORBIT_TOOL &&

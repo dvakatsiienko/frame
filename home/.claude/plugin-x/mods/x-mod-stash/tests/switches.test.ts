@@ -250,6 +250,15 @@ const SCENARIOS: Record<string, Scenario> = {
         op: { lines: ['now: b'], op: 'plan' },
         trace: /phases|plan/,
     },
+    'stash.second-wind': {
+        // a board asked this session: the note rides its next prompt, and the op takes the handoff it wrote
+        arm: async (_$, w) => {
+            w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+        },
+        fire: ($) => say($, 'go'),
+        op: { op: 'second-wind', slug: 'mods-l14-2' },
+        trace: /second wind/,
+    },
     'stash.waker': {
         arm: async ($, _w, ui) => {
             await ui.band.press({ key: 'waker' });

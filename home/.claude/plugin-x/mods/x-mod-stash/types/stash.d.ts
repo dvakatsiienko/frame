@@ -55,6 +55,16 @@ export type StashMember = {
     context?: number;
     model?: string;
     offPattern: boolean;
+    // second wind asked of this session from a board, and where it stands
+    wind?: StashWind;
+};
+
+// second wind for one session, a store key every board reads: asked from a board, writing once its turn carried the
+// note, refreshing once it named its handoff, cancelled when a second press took it back after the note went out
+export type StashWind = {
+    state: 'asked' | 'writing' | 'refreshing' | 'cancelled';
+    at: number;
+    slug?: string;
 };
 
 // the band's two meters: this session's context against its compaction point, and the account's 5h window;

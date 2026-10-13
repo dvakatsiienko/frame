@@ -1722,6 +1722,50 @@ test('a running turn takes no tick still sending', async ($, on) => {
     expect((r.context ?? []).join('\n')).not.toMatch(/o1 🛎️ accepted/);
 });
 
+// the 🎛️ `↩️ undo window on ticks` knob off: no «sending», a tick is ready for the next turn at once (dima, 10-13 17:49)
+test('with the undo window off, a tick reads ✅ tick at once', async ($, on) => {
+    const w = world(on);
+    w.store.set('undo-window', false);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect((await ui.find({ key: 'orbit:accepted:o1' }))?.text).toBe('✅ tick');
+});
+
+test('with the undo window off, a running turn takes a tick at its next tool call', async ($, on) => {
+    const w = world(on);
+    w.store.set('undo-window', false);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'run the long job');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
+});
+
+test("with the undo window off, a tick from another board's glide card joins the running turn at once", async ($, on) => {
+    const w = world(on);
+    w.store.set('undo-window', false);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'run the long job');
+    w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
+});
+
+test('with the undo window off, a phases tick is ready at once', async ($, on) => {
+    const w = world(on);
+    w.store.set('undo-window', false);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
+    await ui.press({ key: 'plan:tick' });
+    expect((await ui.find({ key: 'plan:tick' }))?.text).toBe('✅ tick');
+});
+
 test("dima's own prompt sends a tick still sending, at once", async ($, on) => {
     const w = world(on);
     await start($);

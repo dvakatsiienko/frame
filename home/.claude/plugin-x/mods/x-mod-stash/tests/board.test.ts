@@ -280,8 +280,8 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
     const widths = (await ui.findAll({ type: 'Box' }))
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
-    // ticket, ctx, state, asks
-    expect(widths).toEqual([9, 7, 9, 4, 9, 7, 9, 4]);
+    // ticket, ctx, state (as wide as «12m»), asks
+    expect(widths).toEqual([9, 7, 6, 4, 9, 7, 6, 4]);
 });
 
 test('a session inside a long shell command reads 🐚 with its time', async ($, on) => {
@@ -559,6 +559,7 @@ test("a row shows its session's context fill", async ($, on) => {
 });
 
 // the 9-cell fact columns on the whole board: each row's state, plus its ticket column when one is drawn
+// the ticket column is the one 9 cells wide, now the state column sizes to its times
 async function nineCellColumns($: Engine) {
     const ui = await board($);
     return (await ui.findAll({ type: 'Box' })).filter(
@@ -568,12 +569,12 @@ async function nineCellColumns($: Engine) {
 
 test('with no ticket on any row, no row draws the ticket column', async ($, on) => {
     fleet(on, {}, { patch: { 2: { name: '☕️ 🔧 code: x' } } });
-    expect(await nineCellColumns($)).toBe(2);
+    expect(await nineCellColumns($)).toBe(0);
 });
 
 test('with a ticket on one row, every row keeps the ticket column', async ($, on) => {
     fleet(on);
-    expect(await nineCellColumns($)).toBe(4);
+    expect(await nineCellColumns($)).toBe(2);
 });
 
 test("a row's wait sits in one clipped row, never wrapping to a second", async ($, on) => {
@@ -1242,7 +1243,7 @@ test("a row's state emoji sits against its time, both packed left, so every row'
     fleet(on);
     const ui = await board($);
     const cell = (await ui.findAll({ type: 'Box' })).find(
-        (b) => b.props.width === 9 && (b.children ?? []).length === 2,
+        (b) => b.key?.startsWith('state:') && (b.children ?? []).length === 2,
     );
     expect([
         cell?.props.justifyContent,
@@ -1299,6 +1300,136 @@ test("the 🎛️ ctx switch, pressed in settings, turns the open board's ring i
         requestId: 'stash-settings',
         surface: 'terminal',
     });
-    await settings.press({ key: 'knob:ctx-ring' });
+    await settings.press({ key: 'knob:ctx-bar' });
     expect([before, await isRing()]).toEqual([true, false]);
+});
+
+/* 🐦‍🔥 second wind (todo 16): a button beside every row's ctx meter asks that session to refresh at a good stop */
+
+const windButton = async (
+    view: Awaited<ReturnType<typeof board>>,
+    sid: string,
+) => (await view.find({ key: `wind:${sid}`, type: 'Button' }))?.text;
+
+test('every row draws the 🐦‍🔥 button, its own included', async ($, on) => {
+    fleet(on);
+    const view = await board($);
+    expect([
+        await windButton(view, HERE),
+        await windButton(view, PEER),
+    ]).toEqual(['🐦‍🔥', '🐦‍🔥']);
+});
+
+test('a press asks that session: the button and the line under its row say so', async ($, on) => {
+    fleet(on);
+    const view = await board($);
+    await view.press({ key: `wind:${PEER}` });
+    expect([
+        await windButton(view, PEER),
+        (
+            await view.find({
+                text: /second wind: asked, waits for its next turn/,
+                type: 'Text',
+            })
+        )?.text,
+    ]).toEqual(['📨', expect.stringContaining('second wind')]);
+});
+
+test('a second press before the note went out takes the ask back, unseen', async ($, on) => {
+    fleet(on);
+    const view = await board($);
+    await view.press({ key: `wind:${PEER}` });
+    await view.press({ key: `wind:${PEER}` });
+    expect([
+        await windButton(view, PEER),
+        await view.find({ text: /second wind:/, type: 'Text' }),
+    ]).toEqual(['🐦‍🔥', undefined]);
+});
+
+test('a press after the note went out cancels, and a third asks again', async ($, on) => {
+    const store: Record<string, unknown> = {
+        [`wind:${PEER}`]: { at: NOW, state: 'writing' },
+    };
+    fleet(on, store);
+    const view = await board($);
+    const said = async () =>
+        (await view.find({ text: /second wind:/, type: 'Text' }))?.text;
+    await view.press({ key: `wind:${PEER}` });
+    const cancelled = await said();
+    await view.press({ key: `wind:${PEER}` });
+    expect([cancelled, await said()]).toEqual([
+        expect.stringContaining('cancelled, tells it at its next turn'),
+        expect.stringContaining('finishing its step, then its handoff'),
+    ]);
+});
+
+test('a press while the session compacts changes nothing', async ($, on) => {
+    const store: Record<string, unknown> = {
+        [`wind:${PEER}`]: { at: NOW, slug: 'x-1', state: 'refreshing' },
+    };
+    fleet(on, store);
+    const view = await board($);
+    await view.press({ key: `wind:${PEER}` });
+    expect(await windButton(view, PEER)).toBe('🌀');
+});
+
+test('🐦‍🔥 second wind switched off draws no button and no line', async ($, on) => {
+    fleet(on, {
+        shown: { 'stash.second-wind': false },
+        [`wind:${PEER}`]: { at: NOW, state: 'asked' },
+    });
+    const view = await board($);
+    expect([
+        await windButton(view, PEER),
+        await view.find({ text: /second wind:/, type: 'Text' }),
+    ]).toEqual([undefined, undefined]);
+});
+
+test("the state column is as wide as the board's longest time, never a fixed 9", async ($, on) => {
+    fleet(on);
+    const view = await board($);
+    const widths = (await view.findAll({ type: 'Box' }))
+        .filter((n) => n.key?.startsWith('state:'))
+        .map((n) => n.props.width);
+    // 🦉 busy 3m, the coder idle 12m: «12m» and its emoji and gap
+    expect(widths).toEqual([6, 6]);
+});
+
+const settingsPane = ($: Engine) =>
+    $.ui.mount({
+        component: 'Pane',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 80,
+            isFocused: false,
+            placement: 'dock',
+            scroll: { bodyRows: 40, offset: 0 },
+            title: '🎛️ settings',
+            view: {},
+        },
+        requestId: 'stash-settings',
+        surface: 'terminal',
+    });
+
+test('the ctx meter type is two buttons, one lit; pressing the lit one changes nothing', async ($, on) => {
+    fleet(on);
+    await board($);
+    const settings = await settingsPane($);
+    const lit = async () =>
+        (await settings.findAll({ type: 'Button' }))
+            .filter(
+                (b) =>
+                    b.key?.startsWith('knob:ctx-') &&
+                    b.props.variant === 'primary',
+            )
+            .map((b) => b.key);
+    const before = await lit();
+    await settings.press({ key: 'knob:ctx-ring' });
+    const still = await lit();
+    await settings.press({ key: 'knob:ctx-bar' });
+    expect([before, still, await lit()]).toEqual([
+        ['knob:ctx-ring'],
+        ['knob:ctx-ring'],
+        ['knob:ctx-bar'],
+    ]);
 });

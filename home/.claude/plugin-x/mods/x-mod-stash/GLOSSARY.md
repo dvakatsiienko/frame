@@ -128,3 +128,7 @@ _Avoid_: blocker, status, watch
 **Fleet word**:
 A word of the fleet's own vocabulary that prints bold, its badge glued on: **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**, and the members' names (**🦉 cclio**, **🔧 coder** …); the words and badges are `rules/fleet-vibe.md`'s, the members `rules/fleet-identity.md`'s.
 _Avoid_: keyword, vibe word
+
+**Second wind**:
+A refresh asked of one session from a board's 🐦‍🔥 button: the session finishes its step, writes its handoff, names it through orbit's `op second-wind`, and the mod compacts onto that handoff and ingests it; its states are asked 📨, writing ✍️, refreshing 🌀, cancelled.
+_Avoid_: refresh, graceful refresh, checkpoint request, molt

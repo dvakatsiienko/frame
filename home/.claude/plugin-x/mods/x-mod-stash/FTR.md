@@ -309,7 +309,7 @@
 - ⬜ `/board colour` tries colour as an MVP
   - given colour is off, the default
   - when dima types `/board colour`
-  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), 🚧 blocked's time red, ⏳ waiting's and 🙋 needs_input's amber, every colour read from one palette table (ok, warn, hot, dim, accent, the ctx meter's calm blue, and the six member dot hues, none equal to a state tint — the 1st and 4th nudged off calm and ok, each 3.6:1 on white and 4.2:1 on the dark pane; dima's o107, l13), each row's context its % merged into the meter, one fixed width at any fill — a ring and the % (50 px, 7 cells) by default, the % with a 3-px bar under it (34 px, 5 cells) with the `🧠 ctx meter as a ring` 🎛️ knob off — the meter and the % in one step of green, lime, amber, orange, red, red at the compaction point (80 when the point is unknown), the % 4.5:1 or more on both panes, the terminal a fixed 10-wide `▮▮▯▯▯  43%` bar, every row the same width (dima's o105); the model stays dim and orange is left to `🪐 n` alone; typed again, it goes back
+  - then every session's board takes the reference's colours: each member's dot its own hue (stable by name, never shared by two rows up to six members, dimmed while idle), 🚧 blocked's time red, ⏳ waiting's and 🙋 needs_input's amber, every colour read from one palette table (ok, warn, hot, dim, accent, the ctx meter's calm blue, and the six member dot hues, none equal to a state tint — the 1st and 4th nudged off calm and ok, each 3.6:1 on white and 4.2:1 on the dark pane; dima's o107, l13), each row's context its % merged into the meter, one fixed width at any fill — a ring and the % (50 px, 7 cells) by default, the % with a 3-px bar under it (34 px, 5 cells) with `▬ bar` picked in the 🎛️ `🧠 sessions: ctx meter type` row, two buttons, the one in use lit (dima, 10-13 17:45) — the meter and the % in one step of green, lime, amber, orange, red, red at the compaction point (80 when the point is unknown), the % 4.5:1 or more on both panes, the terminal a fixed 10-wide `▮▮▯▯▯  43%` bar, every row the same width (dima's o105); the model stays dim and orange is left to `🪐 n` alone; typed again, it goes back
   - decision: calm by default, a colour only where something is live — the first MVP put the same orange on the busy dot, the busy word, the head and the asks, and painted a calm context green (dima, 2026-10-08: «colors like in SS»)
   - decision: the head leads with `🚦`, the board's own button in the row, not the reference's `◆` (dima, 2026-10-08: «dont' like the diamond»); the context climbs sline's ramp, not the theme's dull amber (dima: «pick prettier color ctx filling»)
   - decision: theme keys (`success`, `warning`, `error`) for every state colour, so light and dark both read; the six dot hues are fixed mid-tones at 3.6:1 or more on white and 4.2:1 on a dark pane, with no coral beside the asks' orange
@@ -341,6 +341,28 @@
   - when cclio's board draws
   - then one amber row at its top reads `🧪 stale probe mods in ~/.claude/dev-mods, unload them: <mod> (<session short id>)`, every stale mod in that row; any other board draws none
   - decision: the registry name says whose board it is, never the cwd; a probe left loaded swallowed cclio's 16:03 brief after its proof (pk-93 retro)
+
+## /board — 🐦‍🔥 second wind (todo 16, lane l14)
+
+- ⬜ the state column is as wide as the board's longest time
+  - given every row reads a short time (`1m`, `12m`), then the state column sizes to the longest of them, so no row leaves a gap before its `🪐 n` (dima's shot, 10-13 17:45: «wasted horizontal space»)
+- ⬜ a 🐦‍🔥 button beside every row's ctx meter asks that session for a second wind
+  - makes: a `wind:<session id>` key in the store, read by every board and by that session's own stash
+  - given the board is open, then every row, cclio's and this one's included, draws a plain 🐦‍🔥 left of its ctx meter
+  - when dima presses a row's 🐦‍🔥, then it reads 📨 and a dim line under the row reads `🐦‍🔥 second wind: asked, waits for its next turn (<age>)`; no turn starts
+  - given the ask, when that session's next turn starts — dima's prompt, a member's ping, a wake — then its context carries the second wind note once and the button reads ✍️ (`finishing its step, then its handoff`)
+  - given cclio's row is asked, then her note names her good stop: no new todos, the tails solved, `cclio:checkpoint`, the fleet told, her after-pickup ask into orbit
+  - given the note, when the session calls orbit's `op second-wind` with the slug of the handoff it wrote, then the button reads 🌀 (`compacting onto its handoff`); at that turn's end the mod runs `/compact` with a keep line naming the slug, then `/x:handoff-ingest <slug>`, once, and the button goes back to 🐦‍🔥
+  - given no slug, or a slug `x handoff peek` cannot find, then the op is refused in one line and nothing compacts
+  - decision: name and emoji are dima's, 10-13 17:31 (o1, over «graceful-ctx-refresh»); the session's state is drawn in the line under its row, since a pane holds no hover card (`engine.md`)
+  - decision: compact, never clear: the session id keeps its orbit, phases, kept state and glide link (`.scratch/mods-l13/refresh-proposal.md`)
+- ⬜ a second press takes a second wind back
+  - given the button reads 📨, when dima presses it again, then the ask is gone unseen and the button reads 🐦‍🔥
+  - given it reads ✍️, when dima presses it, then it reads 📨 (`cancelled, tells it at its next turn`), and that turn carries one «second wind cancelled» line; a third press before then asks again
+  - given it reads 🌀, then a press changes nothing
+  - decision: no timer ever cancels or compacts: an idle session waits on 📨 until its next turn (dima, o2; cclio 17:32)
+- ⬜ `🐦‍🔥 second wind` switched off in 🎛️ settings is off for the model too
+  - given it is off, then no row draws the button or the line, no turn carries a second wind note, `op second-wind` is refused in one line naming the switch, and a named handoff never compacts
 
 ## /board — 🪐 orbit
 
@@ -454,6 +476,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - and a second press inside the 5 s unsends it: no turn ever takes it
   - and no running turn takes it before the 5 s pass; after them it joins the turn at its next tool call, as before
   - decision: dima's own prompt sends a tick still sending at once — submitting is his «send», and the moment to unsend has passed (lane l12, 2026-10-12)
+- ⬜ the 🎛️ `↩️ undo window on ticks (5 s)` knob turns the «sending» wait off
+  - given the knob is off (on by default), when dima ticks or replays an ask on any board, a glide card included, or ticks his phases, then the button reads `✅` at once and the next turn, or the running turn at its next tool call, takes it — no 5 s wait (dima, 10-13 17:49)
 - ⬜ a resolve can carry a closing word
   - given a session resolves an ask with a closing word (`words: { o1: "landed" }`)
   - then the ask collapses to one dim line, no card and no controls: an emoji from the word (🗑️ dropped, ▶️ started or queued, ✅ anything else), its id and text cut short, the word in bold at the end — `✅ o1: <ask> **landed**` (dima's shot, 20:37)
