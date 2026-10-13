@@ -598,20 +598,72 @@ const ASK = { id: 'o3', pick: 'cut it', text: 'cut the second probe?' };
 const subText = async (ui: Board, role: string) =>
     (await ui.find({ key: `lane:l1:${role}`, type: 'Box' }))?.text;
 
-test('a coder subcard sits above a verifier subcard, each folded to its count', async ($, on) => {
+test("the coder's asks sit right under the current step, above the verifier's, one compact line each", async ($, on) => {
     const w = world(on, { files: linked() });
     published(w, CODER, [ASK, { ...ASK, id: 'o4' }]);
     published(w, VERIFIER, [ASK]);
     await start($);
-    const text = await laneText(await board($));
+    const text = (await laneText(await board($))) ?? '';
+    const at = (s: string) => text.indexOf(s);
     expect([
-        text?.indexOf('🔧 coder · 2 asks'),
-        text?.includes('cut the second probe'),
-    ]).toEqual([expect.any(Number), false]);
+        at('➡️ a') < at('🙋 coder asks · 2'),
+        at('🙋 coder asks · 2') < at('o3: cut the second probe?'),
+        at('o3: cut the second probe?') < at('🙋 verifier asks · 1'),
+        at('🙋 verifier asks · 1') < at('⬜ b'),
+        text.includes('➡️ cut it'),
+    ]).toEqual([true, true, true, true, false]);
+});
+
+test('the asks block heads in bold amber; a press on an ask opens its full card, a second folds it', async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK]);
+    await start($);
+    const ui = await board($);
+    const head = await ui.find({ text: '🙋 coder asks · 1', type: 'Text' });
+    await ui.press({ key: 'lane:l1:coder:full:o3' });
+    const full = await subText(ui, 'coder');
+    await ui.press({ key: 'lane:l1:coder:full:o3' });
+    expect([
+        head?.props.bold,
+        head?.props.color,
+        full?.includes('➡️ cut it'),
+        (await subText(ui, 'coder'))?.includes('➡️ cut it'),
+    ]).toEqual([true, '#d9661a', true, false]);
+});
+
+test("at 0 asks a member draws nothing on the card and the board's top has no strip", async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, []);
+    await start($);
+    const ui = await board($);
+    expect([
+        await ui.find({ key: 'lane:l1:coder', type: 'Box' }),
+        await ui.find({ key: 'asks-strip', type: 'Box' }),
+        (await laneText(ui))?.includes('asks'),
+    ]).toEqual([undefined, undefined, false]);
+});
+
+test("the board's top strip counts the asks waiting on dima, per member, a marked one not counted", async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK, { ...ASK, id: 'o4' }, { ...ASK, id: 'o5' }]);
+    published(w, VERIFIER, [{ ...ASK, mark: 'accepted' }]);
+    await start($);
+    const ui = await board($);
+    const keys = (await ui.findAll({ type: 'Box' })).map((b) => b.key ?? '');
+    expect([
+        (await ui.find({ key: 'asks-strip', type: 'Box' }))?.text,
+        keys.indexOf('asks-strip') < keys.indexOf('lane:l1'),
+    ]).toEqual(['🙋 3 asks wait for you· 🔧 coder 3', true]);
+});
+
+test('🛼 glide switched off draws no strip', async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, CODER, [ASK]);
+    w.store.set('shown', { 'stash.glide': false });
+    await start($);
     expect(
-        (text?.indexOf('🔧 coder · 2 asks') ?? -1) <
-            (text?.indexOf('🔎 verifier · 1 ask') ?? -1),
-    ).toBe(true);
+        await (await board($)).find({ key: 'asks-strip', type: 'Box' }),
+    ).toBe(undefined);
 });
 
 // todo 21: a /clear left the l14 card linked to the coder's old id, so its asks never drew there
@@ -624,7 +676,7 @@ test('a member linked by an id it cleared away from keeps its asks on the card',
     w.store.set(`succ:${OLD}`, { at: 1, sid: CODER });
     published(w, CODER, [ASK, { ...ASK, id: 'o4' }]);
     await start($);
-    expect(await laneText(await board($))).toContain('🔧 coder · 2 asks');
+    expect(await laneText(await board($))).toContain('🙋 coder asks · 2');
 });
 
 test('a /clear records the id the session goes on under', async ($, on) => {
@@ -643,7 +695,7 @@ test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {
     published(w, CODER, [ASK]);
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
+    await ui.press({ key: 'lane:l1:coder:full:o3' });
     expect(await subText(ui, 'coder')).toMatch(
         /o3: cut the second probe\?.*➡️ cut it.*tick.*replay/su,
     );
@@ -654,7 +706,6 @@ test("a tick on the card waits in the store for the member's own stash", async (
     published(w, CODER, [ASK]);
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
     await ui.press({ key: 'lane:l1:coder:accepted:o3' });
     await w.clock.advance(5_000);
     expect([
@@ -857,7 +908,7 @@ interface KeptLane {
     endedAt?: number;
 }
 
-test('every board card folds by one rule: open until folded, a member subcard folded until opened', async ($, on) => {
+test('every board card folds by one rule: open until folded', async ($, on) => {
     const w = world(on, { files: linked() });
     published(w, CODER, [ASK]);
     await start($);
@@ -869,8 +920,7 @@ test('every board card folds by one rule: open until folded, a member subcard fo
     const ui = await board($);
     const label = async (card: string) =>
         (await ui.find({ key: `fold:${card}`, type: 'Button' }))?.text;
-    // the subcard first: a folded glide card hides it
-    const cards = ['lane:l1:coder', 'orbit', 'phases'];
+    const cards = ['orbit', 'phases'];
     const before = await Promise.all(cards.map(label));
     const after: (string | undefined)[] = [];
     for (const card of cards) {
@@ -879,8 +929,8 @@ test('every board card folds by one rule: open until folded, a member subcard fo
     }
     await ui.press({ key: 'fold:lane:l1' });
     expect([before, after, await label('lane:l1')]).toEqual([
-        ['📁', '📂', '📂'],
-        ['📂', '📁', '📁'],
+        ['📂', '📂'],
+        ['📁', '📁'],
         '📁',
     ]);
 });
@@ -951,7 +1001,7 @@ test('a glide mark saved before the steer rename clears for good when dima empti
     w.store.set(`marks:${CODER}:o3`, { at: 1, mark: 'accepted', note: 'old' });
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
+    await ui.press({ key: 'lane:l1:coder:full:o3' });
     await ui.input({ key: 'lane:l1:coder:steer:o3', kind: 'submit', text: '' });
     const m = w.store.get(`marks:${CODER}:o3`) as Record<string, unknown>;
     expect([m.mark, m.steer, 'note' in m]).toEqual([
@@ -1006,7 +1056,7 @@ test("after a /clear mints a new session id, the card still shows the member's a
     published(w, 'n3n3n3n3-after-clear', [ASK]);
     await start($);
     const ui = await board($);
-    expect(await subText(ui, 'coder')).toContain('1 ask');
+    expect(await subText(ui, 'coder')).toContain('asks · 1');
 });
 
 test("a tick on the card reaches the member's session id of now", async ($, on) => {
@@ -1017,7 +1067,6 @@ test("a tick on the card reaches the member's session id of now", async ($, on) 
     published(w, 'n3n3n3n3-after-clear', [ASK]);
     await start($);
     const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:coder' });
     await ui.press({ key: 'lane:l1:coder:accepted:o3' });
     expect(
         (w.store.get('marks:n3n3n3n3-after-clear:o3') as { mark?: string })
@@ -1037,7 +1086,7 @@ test('two live sessions under one name: the card follows the newer', async ($, o
     published(w, 'n2n2n2n2-newer', [ASK, { ...ASK, id: 'o4' }]);
     await start($);
     const ui = await board($);
-    expect(await subText(ui, 'coder')).toContain('2 asks');
+    expect(await subText(ui, 'coder')).toContain('asks · 2');
 });
 
 /* rider (cclio's ask, 18:01): a card edits in place, up to 7 steps */

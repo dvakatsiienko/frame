@@ -279,6 +279,7 @@
   - when the board draws
   - then its row shows the ticket as a link to linear, `ctx n%`, its state and `🪐 n`, in that order, each in its own right-aligned column; a fact with no reading leaves its column empty, so every row lines up
   - decision: `🪐 n` closes the row and is always drawn, `🪐 0` dimmed — dima reads it first, at the far right (2026-10-05)
+  - and while it holds asks it reads bold amber, the palette's `warn` (todo 28, dima's o170)
   - decision: the count reads 🪐 like the band's chip, never ⏳, which is the 5h reset timer (dima, 21:20)
   - decision: fixed-width columns over a packed row — it takes more room, and dima values the alignment more (2026-10-05)
   - decision: each column is sized to its usual reading, so little slack shows between columns (dima asked for ~8px gaps, 2026-10-05)
@@ -596,7 +597,7 @@ cclio's keep-in-mind shelf (catch v2, pocket PK-96, [FRM-386](https://linear.app
   - given `🐠 catch` switched off, when any session sends a prompt or a tool runs, then no catch line rides it: no catch.md, no `🐠 catch holds` ids, no 🤔
   - and orbit op catch is refused in one line naming the switch
   - given it switched back on, then catch.md rides cclio's next prompt if she has not had it yet, and the op works again
-- decision: cc's built-in `cc-plugin-you-should-know` (a side agent's note above the prompt, off by default) is the thing to compare against at the keep-or-kill — dima tried it 2026-10-12 19:19: it draws in the terminal only, never in the desktop app, where cclio runs
+- decision: cc's built-in `cc-plugin-you-should-know` (a side agent's note above the prompt, off by default) is the thing to compare against at the keep-or-kill — the desktop app has its own switch for it and runs it on its bundled cc 2.1.295 (dima turned it on, 2026-10-13; it once drew in the terminal only, 10-12)
 
 - ⬜ catch.md reaches cclio's context
   - given catch.md on disk, when cclio's session sends its first prompt, then the file's text rides it once, read fresh, so his edit binds from her next session with no plugin bump
@@ -773,10 +774,12 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given the pointer at 3, when the coder names 2, or the step count, or the verifier, an unlinked session or an ended lane names any step, or 🛼 glide is off, then the pointer stays and the file gains nothing; the finish stays cclio's act
   - and cclio's step back holds until the coder names a step again; a move counts as movement for the stale nag, and drops dima's steer on the step it left
   - and a step that is not a whole number from 0 is refused in one line; nothing of the lane enters the coder's context — its brief numbers the steps
-- ⬜ a glide card holds its members' asks (exit 3)
-  - given a lane with a linked coder and verifier, then a `🔧 coder · n asks` subcard sits above a `🔎 verifier · n asks` one, each folded by default with its own `📁`
-  - when unfolded, then each ask is drawn as an orbit ask is: the bold id and text, the bold `➡️ pick` on its own line, then 🛎️ tick, 🔁 replay, 🔊 and the steer; a locked one shows its mark and its steer, no control
-  - decision: the lane draws orbit's own ask card, never a smaller copy; the subcards stay folded, the head names the role (dima's o4, o5, o10, 20:46)
+- ⬜ a glide card holds its members' asks, impossible to miss (exit 3; todo 28, dima's o170: «make it pretty; I'll keep the useful and drop the redundant»)
+  - given a lane with a linked coder holding 3 open asks, then right under the lane's current step a bold amber `🙋 coder asks · 3` head, then one compact line per ask — its bold id and text, cut short, and its 🛎️ tick — the coder's block above the verifier's
+  - when dima presses an ask's text, then its full orbit card opens under the line (the bold id and text, the bold `➡️ pick`, 🛎️ tick, 🔁 replay, 🔊 and the steer; a locked one its mark and steer); a second press folds it back
+  - and the board's top draws a strip while any lane member's asks wait on dima, an ask he marked not counted: `🙋 3 asks wait for you · 🔧 coder 3`, an amber border; a press on a member scrolls the board to its asks
+  - given a member with 0 asks, then neither its head, its lines nor the strip draw; 🛼 glide off draws none of them
+  - decision: the head is amber and bold, the palette's `warn`, the one colour dima reads as «waits on you» (⏳, 🙋, `🪐 n`)
   - when dima marks or steers a row, then it waits in the store and the member's own stash takes it into its orbit: a running member gets it in that turn, after its next tool call
   - decision: one store key per marked ask (`marks:<member>:<ask id>`), so two boards never overwrite each other and the member deletes only the marks it read (FRM-400)
   - and an idle member with marks wakes once, within a poll of dima's next prompt in any thread, one turn carrying all of them; no turn starts before that prompt

@@ -4306,8 +4306,7 @@ export const register: Register = (on) => {
         // one fold rule for every card: open until folded, but a glide card's member subcard starts folded to its count, and a
         // catch piece's hidden note and the shelf past its 5th row start folded
         const foldedOf = (kept: Record<string, boolean>, card: string) =>
-            kept[card] ??
-            /^(lane:[^:]+:(coder|verifier)|quiet:.+|catch:.+)$/.test(card);
+            kept[card] ?? /^(quiet:.+|catch:.+)$/.test(card);
         const flipFold = async (card: string) => {
             const was = (await $.state.get(FOLDS)).value ?? {};
             await $.state.set(FOLDS, { ...was, [card]: !foldedOf(was, card) });
@@ -4841,49 +4840,117 @@ export const register: Register = (on) => {
         // current one «← we are here»; a steer on it reaches cclio's next prompt, whichever board took it
         const lanes = (await $.state.get(LANES)).value ?? [];
         const laneAsks = (await $.state.get(LANE_ASKS)).value ?? {};
-        // a member's asks on the glide card: folded to their count by default, its rows marked as on the member's own board
+        // 🙋 a member's asks right under the lane's current step, impossible to miss (todo 28, dima's o170): a bold amber head,
+        // one compact line per ask — its text and its tick — and its full orbit card on a press of the text
         const memberJSX = (
             lane: StashLane,
             role: (typeof LANE_ROLES)[number],
         ) => {
             const sid = lane.members[role];
-            if (!sid) return null;
-            const asks = laneAsks[sid] ?? [];
+            const asks = (sid ? (laneAsks[sid] ?? []) : []) as OrbitAsk[];
+            if (!sid || !asks.length) return null;
             // a mark goes to the session the member runs under now, which its own stash absorbs
             const markSid = lane.memberSids?.[role] ?? sid;
             const card = `lane:${lane.id}:${role}`;
-            const isOpen = !isFolded(card);
-            const badge = role === 'coder' ? '🔧' : '🔎';
+            const door: AskDoor = {
+                mark: (x, mark) =>
+                    void markRemote($, markSid, x, {
+                        mark: x.mark === mark ? undefined : mark,
+                        steer: x.steer,
+                    }),
+                prefix: card,
+                steer: (x, value) =>
+                    void markRemote($, markSid, x, {
+                        mark: x.mark,
+                        steer: steerOf(value),
+                    }),
+            };
             return (
-                <Box flexDirection='column' key={card} rowGap={LINE_GAP}>
-                    <Box alignItems='center' flexDirection='row' gap={1}>
-                        <Text
-                            bold>{`${badge} ${role} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}</Text>
-                        {foldJSX(card)}
-                    </Box>
-                    {isOpen
-                        ? asks.map((a, i) =>
-                              askJSX(a as OrbitAsk, i, {
-                                  mark: (x, mark) =>
-                                      void markRemote($, markSid, x, {
-                                          mark:
-                                              x.mark === mark
-                                                  ? undefined
-                                                  : mark,
-                                          steer: x.steer,
-                                      }),
-                                  prefix: card,
-                                  steer: (x, value) =>
-                                      void markRemote($, markSid, x, {
-                                          mark: x.mark,
-                                          steer: steerOf(value),
-                                      }),
-                              }),
-                          )
-                        : null}
+                <Box
+                    flexDirection='column'
+                    key={card}
+                    paddingLeft={3}
+                    rowGap={LINE_GAP}>
+                    <Text bold color={PALETTE.warn}>
+                        {`🙋 ${role} asks · ${asks.length}`}
+                    </Text>
+                    {asks.flatMap((a, i) => {
+                        const full = `${card}:full:${a.id}`;
+                        const isFull = folds[full] === true;
+                        return [
+                            <Box
+                                alignItems='center'
+                                flexDirection='row'
+                                gap={1}
+                                key={`${card}:line:${a.id}`}>
+                                <Box flexShrink={1} minWidth={0}>
+                                    <Button
+                                        key={full}
+                                        label={`${isFull ? 'fold' : 'open'} ${a.id}`}
+                                        onPress={() => void flipFold(full)}
+                                        plain>
+                                        <Text wrap='truncate-end'>
+                                            <Text bold>{a.id}</Text>
+                                            {`: ${a.text}`}
+                                        </Text>
+                                    </Button>
+                                </Box>
+                                {isFull ? null : (
+                                    <Box flexShrink={0}>
+                                        {markJSX(a, 'accepted', door)}
+                                    </Box>
+                                )}
+                            </Box>,
+                            ...(isFull ? [askJSX(a, i, door)] : []),
+                        ];
+                    })}
                 </Box>
             );
         };
+        // 🙋 the board's top while a lane member's asks wait on dima: their count, then each member, a press scrolls to its asks
+        const waitingOn = isPartOn('stash.glide')
+            ? lanes.flatMap((lane) =>
+                  LANE_ROLES.flatMap((role) => {
+                      const sid = lane.members[role];
+                      const n = sid
+                          ? ((laneAsks[sid] ?? []) as OrbitAsk[]).filter(
+                                (a) => !a.mark,
+                            ).length
+                          : 0;
+                      return n ? [{ lane, n, role }] : [];
+                  }),
+              )
+            : [];
+        const waitingCount = waitingOn.reduce((sum, w) => sum + w.n, 0);
+        const stripJSX = waitingCount ? (
+            <Box
+                key='asks-strip'
+                {...cardProps}
+                alignItems='center'
+                borderColor={PALETTE.warn}
+                columnGap={1}
+                flexDirection='row'
+                flexWrap='wrap'>
+                <Text bold color={PALETTE.warn}>
+                    {`🙋 ${waitingCount} ask${waitingCount === 1 ? ' waits' : 's wait'} for you`}
+                </Text>
+                {waitingOn.map((w) => (
+                    <Button
+                        key={`asks-strip:${w.lane.id}:${w.role}`}
+                        onPress={() =>
+                            void $.ui
+                                .scroll({
+                                    block: 'start',
+                                    to: { key: `lane:${w.lane.id}:${w.role}` },
+                                })
+                                .catch(() => undefined)
+                        }
+                        plain>
+                        {`· ${w.role === 'coder' ? '🔧' : '🔎'} ${w.role} ${w.n}`}
+                    </Button>
+                ))}
+            </Box>
+        ) : null;
         // o84: dima's hand on this session's phases — a move, a tick, a steer — waits SEND_MS like an orbit tick
         const changePlan = async (
             change: (p: StashPlan) => StashPlan,
@@ -4967,7 +5034,7 @@ export const register: Register = (on) => {
                       </Box>
                       {isFolded(`lane:${lane.id}`)
                           ? null
-                          : lane.items.map((item, i) => (
+                          : lane.items.flatMap((item, i) => [
                                 <Box
                                     alignItems='center'
                                     flexDirection='row'
@@ -5067,11 +5134,14 @@ export const register: Register = (on) => {
                                             ) : null}
                                         </Box>
                                     ) : null}
-                                </Box>
-                            ))}
-                      {isFolded(`lane:${lane.id}`)
-                          ? null
-                          : LANE_ROLES.map((role) => memberJSX(lane, role))}
+                                </Box>,
+                                ...(i ===
+                                Math.min(lane.current, lane.items.length - 1)
+                                    ? LANE_ROLES.map((role) =>
+                                          memberJSX(lane, role),
+                                      )
+                                    : []),
+                            ])}
                   </Box>
               ))
             : null;
@@ -5235,6 +5305,7 @@ export const register: Register = (on) => {
         });
         const arranged = (top: RenderElement) => (
             <Box flexDirection='column' minHeight={fill}>
+                {stripJSX}
                 {gapsJSX}
                 {probesJSX}
                 {top}
@@ -5476,7 +5547,8 @@ export const register: Register = (on) => {
                             {/* the asks close the row, always drawn: `🪐 0` dimmed when none (dima, 2026-10-05) */}
                             <Box justifyContent='flex-end' width={COLUMNS.asks}>
                                 <Text
-                                    color={m.asks ? ACCENT : undefined}
+                                    bold={!!m.asks}
+                                    color={m.asks ? PALETTE.warn : undefined}
                                     dimColor={!m.asks}>
                                     🪐 {m.asks}
                                 </Text>

@@ -566,6 +566,21 @@ test("a row counts its session's open asks", async ($, on) => {
     expect(await row($, PEER)).toContain('🪐 2');
 });
 
+test("a row's 🪐 n reads bold amber while it holds asks, dim at 0", async ($, on) => {
+    fleet(on, {
+        [`asks:${PEER}`]: { asks: ['a', 'b'], at: NOW, label: 'frame' },
+    });
+    const ui = await board($);
+    const count = async (text: string) => {
+        const t = await ui.find({ text, type: 'Text' });
+        return [t?.props.bold, t?.props.color, t?.props.dimColor];
+    };
+    expect([await count('🪐 2'), await count('🪐 0')]).toEqual([
+        [true, '#d9661a', false],
+        [false, undefined, true],
+    ]);
+});
+
 test("a row shows its session's context fill", async ($, on) => {
     fleet(on);
     await $.session.measure({
