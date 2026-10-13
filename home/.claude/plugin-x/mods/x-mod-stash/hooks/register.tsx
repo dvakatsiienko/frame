@@ -451,6 +451,8 @@ const WORK_BASH =
 export const isWork = (tool: string, command?: string) =>
     WORK_TOOLS.has(tool) || (tool === 'Bash' && WORK_BASH.test(command ?? ''));
 let isPrimed = false;
+// catch.md owed to cclio: set at her first prompt, paid at the first one with 🐠 catch switched on
+let isCatchRulesDue = false;
 // the 5h reset as the last session.measure reported it, and this session's cap state
 let fiveHourResetsAt: number | undefined;
 // the dir the session started in: its project, whose .claude settings the threshold input writes
@@ -935,10 +937,10 @@ const planAge = (o: StashOrbit) =>
     o.plan === undefined ? undefined : Math.max(0, o.turns - o.plan.at);
 
 // the per-prompt note that keeps the habit through a compaction; none while orbit is empty
-function orbitReminder(o: StashOrbit) {
+function orbitReminder(o: StashOrbit, isCatchOn: boolean) {
     const open = o.asks.filter((a) => !a.isResolved);
     const age = planAge(o);
-    const caught = o.caught ?? [];
+    const caught = isCatchOn ? (o.caught ?? []) : [];
     if (!open.length && age === undefined && !caught.length) return undefined;
     const asks = open.length
         ? `orbit holds ${open.length} open ask${open.length === 1 ? '' : 's'} (${open.map((a) => a.id).join(', ')})`
@@ -1755,6 +1757,14 @@ function shownOf(v: unknown): Record<string, boolean> {
     if (!v || typeof v !== 'object') return {};
     return Object.fromEntries(
         Object.entries(v).filter(([, on]) => typeof on === 'boolean'),
+    );
+}
+
+// a part hidden in 🎛️ settings is off for the model too (dima, 10-12); read fresh, since another session may have
+// flipped it since this one's poll
+async function isPartShown($: EngineInterface, key: string) {
+    return (
+        shownOf(await $.store.get(SHOWN).catch(() => undefined))[key] !== false
     );
 }
 
@@ -2976,9 +2986,11 @@ export const register: Register = (on) => {
             ? (orbit.assumed ?? []).filter((x) => x.isWrong)
             : [];
         // a 🤔 joins his next prompt, or any running turn at its next tool call (as a tick does); a piece stays until cleared
-        const thought = isUserTurn
-            ? (orbit.caught ?? []).filter(isThought)
-            : [];
+        const isCatchOn = await isPartShown($, 'stash.catch');
+        const thought =
+            isUserTurn && isCatchOn
+                ? (orbit.caught ?? []).filter(isThought)
+                : [];
         if (marked.length || wrong.length || thought.length)
             await saveOrbit($, {
                 ...lockThought(lockJoined(orbit, marked), thought),
@@ -2987,19 +2999,21 @@ export const register: Register = (on) => {
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
         const reminder = (await $.state.get(MOBILE)).value
             ? mobileReminder(orbit)
-            : orbitReminder(orbit);
+            : orbitReminder(orbit, isCatchOn);
         const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
         isPrimed = true;
         // the lanes speak only in cclio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
         // riding her next prompt once, from any board
         const isOwner = await isLaneOwner($);
         // catch.md is dima's file: read fresh into her first prompt, so his edit binds from her next session
+        if (isFirst && isOwner) isCatchRulesDue = true;
         const catchRules =
-            isFirst && isOwner
+            isCatchRulesDue && isCatchOn
                 ? await $.fs
                       .read(`${$.plugin.root}/catch.md`)
                       .catch(() => undefined)
                 : undefined;
+        if (catchRules) isCatchRulesDue = false;
         const lanes = isOwner ? await readLanes($) : [];
         const live = lanes.filter((l) => !l.endedAt);
         const laneStale = live
@@ -5034,6 +5048,13 @@ export const register: Register = (on) => {
                 return {
                     deny: `orbit catch: catch is ${LANE_OWNER}'s alone; this session is not her`,
                 };
+            if (
+                (e as Record<string, unknown>).op === 'catch' &&
+                !(await isPartShown($, 'stash.catch'))
+            )
+                return {
+                    deny: 'orbit catch: 🐠 catch is switched off in 🎛️ settings; keep the piece in mind, nothing to write',
+                };
             const op = orbitOp(
                 await currentOrbit($),
                 e as Record<string, unknown>,
@@ -5070,7 +5091,10 @@ export const register: Register = (on) => {
         const o = await currentOrbit($);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
         const fresh = isPing ? [] : o.asks.filter(isDue(await $.clock.now()));
-        const thought = isPing ? [] : (o.caught ?? []).filter(isThought);
+        const thought =
+            isPing || !(await isPartShown($, 'stash.catch'))
+                ? []
+                : (o.caught ?? []).filter(isThought);
         if (fresh.length || thought.length) {
             await saveOrbit($, lockThought(lockJoined(o, fresh), thought));
             if (fresh.length) notes.push(joinText(fresh));

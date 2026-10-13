@@ -549,3 +549,58 @@ test('the 🐠 catch switch in settings hides the shelf on the board', async ($,
     await w.clock.advance(4000);
     expect([shown, (await piecesShown(ui)).length]).toEqual([1, 0]);
 });
+
+/* the switch reaches the model too (l13 r4): a part dima hides costs no model effort */
+
+const catchOff = (w: ReturnType<typeof world>, isOff = true) =>
+    w.store.set('shown', { 'stash.catch': !isOff });
+
+const catchLines = (lines: readonly string[]) =>
+    lines.filter((c) => c.includes('CATCH RULES') || c.includes('🐠 catch'));
+
+test('with 🐠 catch switched off, her prompt carries no catch line', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await catchOf($, 'f1');
+    await ui.press({ key: 'orbit:think:c1' });
+    catchOff(w);
+    await say($, 'go');
+    expect(catchLines(w.contexts[0] ?? [])).toEqual([]);
+});
+
+test('with 🐠 catch switched off, a 🤔 joins no running turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await catchOf($, 'f1');
+    await say($, 'go');
+    await ui.press({ key: 'orbit:think:c1' });
+    catchOff(w);
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect(catchLines(r.context ?? [])).toEqual([]);
+});
+
+test('with 🐠 catch switched off, the catch op is refused in one line naming the switch', async ($, on) => {
+    const w = world(on);
+    await start($);
+    catchOff(w);
+    const r = await catchOf($, 'f1');
+    expect([r.deny?.includes('\n'), r.deny]).toEqual([
+        false,
+        expect.stringContaining('🎛️ settings'),
+    ]);
+});
+
+test('🐠 catch switched back on brings her rules to the next prompt and the op back', async ($, on) => {
+    const w = world(on);
+    await start($);
+    catchOff(w);
+    await say($, 'go');
+    catchOff(w, false);
+    await say($, 'again');
+    expect([
+        w.contexts[1]?.includes('CATCH RULES v1'),
+        deny(await catchOf($, 'f1')),
+    ]).toEqual([true, undefined]);
+});

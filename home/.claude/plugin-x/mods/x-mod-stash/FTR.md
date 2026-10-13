@@ -523,6 +523,10 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 cclio's keep-in-mind shelf (catch v2, pocket PK-96, [FRM-386](https://linear.app/x-com/issue/FRM-386)): what dima would otherwise re-ask, never what orbit, phases, sessions, glide or the band show; a test drive. The kinds, when to add each and when it leaves live in [catch.md](catch.md), dima's file; the mod holds shape, cap and persistence, never a clock.
 - makes: `catch-shelf:cclio` in x-mod-stash's `$.store`, her pieces as they stand; one `catch-count:<day>` key, the day's 🤔 presses, clears and refused adds
 - ⬜ a `🐠 catch` switch in ⚙️ settings (board group) hides the shelf on every board, as `assumed section` does (dima, 22:11)
+  - given `🐠 catch` switched off, when any session sends a prompt or a tool runs, then no catch line rides it: no catch.md, no `🐠 catch holds` ids, no 🤔
+  - and orbit op catch is refused in one line naming the switch
+  - given it switched back on, then catch.md rides cclio's next prompt if she has not had it yet, and the op works again
+  - decision: a part hidden in settings is off for the model too, so no session spends effort there (dima, 10-12)
 - decision: cc's built-in `cc-plugin-you-should-know` (a side agent's note above the prompt, off by default) is the thing to compare against at the keep-or-kill — dima tried it 2026-10-12 19:19: it draws in the terminal only, never in the desktop app, where cclio runs
 
 - ⬜ catch.md reaches cclio's context
