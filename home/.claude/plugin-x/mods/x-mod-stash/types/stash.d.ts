@@ -88,6 +88,8 @@ export type StashView = {
     isWaker: boolean;
     digest?: StashDigest;
     isBoardOpen: boolean;
+    // this session's own second wind, for the band's button
+    wind?: StashWind['state'];
     // the settings view: open in this session, and each part's switch as every session reads it (a missing key is shown)
     isSettingsOpen: boolean;
     shown: Record<string, boolean>;

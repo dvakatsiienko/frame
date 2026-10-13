@@ -49,6 +49,7 @@ function world(
     on('ui.log', () => ({ value: undefined }));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
+    on('session.end', (_$, e) => ({ sessionId: e.sessionId }));
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
@@ -320,6 +321,20 @@ const steer = async (ui: Board, text: string) =>
     ui.input({ key: 'lane:l1:steer', kind: 'change', text });
 const take = (ui: Board) => ui.press({ key: 'lane:l1:take' });
 
+test("a bare tick on the current step reaches cclio's next prompt once as «good to go»", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await create($);
+    await take(ui);
+    await say($, 'go');
+    await say($, 'again');
+    expect([
+        w.contexts.at(-2)?.some((c) => c.includes('🛎️ good to go')),
+        w.contexts.at(-1)?.some((c) => c.includes('🛎️ good to go')),
+    ]).toEqual([true, false]);
+});
+
 test("one steer box and one take, on the current step only; a taken steer joins dima's next prompt once", async ($, on) => {
     const w = world(on);
     await start($);
@@ -552,6 +567,30 @@ test('a coder subcard sits above a verifier subcard, each folded to its count', 
         (text?.indexOf('🔧 coder · 2 asks') ?? -1) <
             (text?.indexOf('🔎 verifier · 1 ask') ?? -1),
     ).toBe(true);
+});
+
+// todo 21: a /clear left the l14 card linked to the coder's old id, so its asks never drew there
+const OLD = 'o0o0o0o0-old';
+
+test('a member linked by an id it cleared away from keeps its asks on the card', async ($, on) => {
+    const w = world(on, {
+        files: shelf(keptLane({ members: { coder: OLD } })),
+    });
+    w.store.set(`succ:${OLD}`, { at: 1, sid: CODER });
+    published(w, CODER, [ASK, { ...ASK, id: 'o4' }]);
+    await start($);
+    expect(await laneText(await board($))).toContain('🔧 coder · 2 asks');
+});
+
+test('a /clear records the id the session goes on under', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await $.session.end({ reason: 'clear', sessionId: OLD } as never);
+    await endTurn($);
+    expect(w.store.get(`succ:${OLD}`)).toEqual({
+        at: expect.any(Number),
+        sid: SID,
+    });
 });
 
 test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {

@@ -281,7 +281,7 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
     // ticket, ctx, state (as wide as «12m»), asks
-    expect(widths).toEqual([9, 7, 6, 4, 9, 7, 6, 4]);
+    expect(widths).toEqual([9, 7, 7, 4, 9, 7, 7, 4]);
 });
 
 test('a session inside a long shell command reads 🐚 with its time', async ($, on) => {
@@ -1391,8 +1391,8 @@ test("the state column is as wide as the board's longest time, never a fixed 9",
     const widths = (await view.findAll({ type: 'Box' }))
         .filter((n) => n.key?.startsWith('state:'))
         .map((n) => n.props.width);
-    // 🦉 busy 3m, the coder idle 12m: «12m» and its emoji and gap
-    expect(widths).toEqual([6, 6]);
+    // 🦉 busy 3m, the coder idle 12m: «12m», its emoji, its gap and a cell of air
+    expect(widths).toEqual([7, 7]);
 });
 
 const settingsPane = ($: Engine) =>

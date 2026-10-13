@@ -97,6 +97,9 @@ const PREFIX = 'asks:';
 // orbit and the sessions rows, 16:44 phases); kept past an exit, dropped after a week unused
 const KEPT = 'kept:';
 const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
+// `succ:<old id>` → the id a /clear continued under, so a lane linked by a session id follows it (todo 21: a clear left
+// the l14 card on the coder's old id, its asks gone from the card); dropped a week after it was written
+const SUCC = 'succ:';
 // a glide card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
 const MARKS = 'marks:';
 const DIMA_AT = 'dima-at';
@@ -140,6 +143,8 @@ const SPEED = { max: 5, min: 0.1, of: 0.5 } as const;
 const LINES = { max: 7, min: 5 } as const;
 // how long held member pings wait before the hidden idle append, in minutes (dima, 16:53: 10 by default, maybe 15)
 const QUIET_WAIT = 'quiet-wait';
+// the undo window's length in seconds, set beside its switch (dima, 10-13 18:01)
+const UNDO_DELAY = 'undo-delay';
 const WAIT = { max: 60, min: 1 } as const;
 // every 🎛️ knob in one table: its store key and its default; a number knob its range too. a missing or broken value reads
 // as the default, and every read and write goes through readSwitch, readNumber, flipKnob and setKnobNumber
@@ -157,6 +162,11 @@ const NUMBERS = {
     lines: { key: PHASE_LINES, of: PLAN_MAX, range: LINES },
     quietWait: { key: QUIET_WAIT, of: 10, range: WAIT },
     speed: { key: BREATH_SPEED, of: SPEED.of, range: SPEED },
+    undoDelay: {
+        key: UNDO_DELAY,
+        of: SEND_MS / 1000,
+        range: { max: 30, min: 1 },
+    },
 } as const;
 type SwitchName = keyof typeof SWITCHES;
 type NumberName = keyof typeof NUMBERS;
@@ -346,6 +356,10 @@ const ORBIT_ABOUT = [
 ].join('\n');
 
 let selfId: string | undefined;
+// the id a /clear left, until the next load reads the new one and writes the successor
+let clearedFrom: string | undefined;
+// this session's own second wind as the store holds it, read at each load for the band's button
+let selfWind: StashWind['state'] | undefined;
 let label = 'session';
 let isUserTurn = false;
 // what this session's last reply waits on, its 🔭 line
@@ -1553,7 +1567,8 @@ async function changeLaneSteer(
 ) {
     const was = (await laneSteers($))[id] ?? {};
     const n = change(was);
-    if (n.steer) await $.store.set(LANE_STEER + id, n);
+    // a bare tick counts too: «good to go on this step», no steer needed (dima's shot, 10-13 18:01: the tick did nothing)
+    if (n.steer || n.isTaken) await $.store.set(LANE_STEER + id, n);
     else await $.store.delete(LANE_STEER + id);
     await $.store.delete(LANE_STEER_OLD + id).catch(() => undefined);
     await showLanes($, await readLanes($));
@@ -1587,8 +1602,10 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
     for (const member of new Set(
         live.flatMap((l) => Object.values(l.members)),
     )) {
-        if (member)
-            sids.set(member, memberOf(rows, member)?.base.sid ?? member);
+        if (member) {
+            const id = await successorOf($, member);
+            sids.set(member, memberOf(rows, id)?.base.sid ?? id);
+        }
     }
     for (const lane of live)
         lane.memberSids = Object.fromEntries(
@@ -1650,19 +1667,20 @@ async function markRemote(
 // the lane steers dima took with 🛎️, as cclio reads them; each leaves the lane once read
 async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
     const steers = await laneSteers($);
-    const taken = lanes.filter(
-        (l) => !l.endedAt && steers[l.id]?.steer && steers[l.id]?.isTaken,
-    );
+    const taken = lanes.filter((l) => !l.endedAt && steers[l.id]?.isTaken);
     if (!taken.length) return [];
     for (const l of taken) {
         await $.store.delete(LANE_STEER + l.id);
         await $.store.delete(LANE_STEER_OLD + l.id).catch(() => undefined);
     }
     await showLanes($, lanes);
-    return taken.map(
-        (l) =>
-            `lane steer from dima on ${l.id} «${l.items[l.current]?.text ?? l.title}»: «${steers[l.id]?.steer?.trim()}»`,
-    );
+    return taken.map((l) => {
+        const step = `${l.id} «${l.items[l.current]?.text ?? l.title}»`;
+        const steer = steers[l.id]?.steer?.trim();
+        return steer
+            ? `lane steer from dima on ${step}: «${steer}»`
+            : `lane tick from dima on ${step}: 🛎️ good to go`;
+    });
 }
 
 // the registry names the coordinator, so a handoff's new 🦉 cclio keeps the lanes
@@ -1807,7 +1825,7 @@ async function resumeState($: EngineInterface): Promise<StashOrbit> {
 async function pruneEnded($: EngineInterface) {
     const now = await $.clock.now();
     for (const key of await $.store.keys()) {
-        if (key.startsWith(KEPT)) {
+        if (key.startsWith(KEPT) || key.startsWith(SUCC)) {
             const v = (await $.store.get(key)) as { at?: number } | undefined;
             if (now - (v?.at ?? 0) >= KEPT_MS) await $.store.delete(key);
             continue;
@@ -1850,6 +1868,13 @@ async function load($: EngineInterface) {
     shown = shownOf(await $.store.get(SHOWN).catch(() => undefined));
     // after a /clear the process goes on under a new id, and no session.start fires
     selfId = await $.session.id().catch(() => selfId);
+    selfWind = selfId ? (await windOf($, selfId))?.state : undefined;
+    if (clearedFrom && selfId && selfId !== clearedFrom) {
+        await $.store
+            .set(SUCC + clearedFrom, { at: await $.clock.now(), sid: selfId })
+            .catch(() => undefined);
+        clearedFrom = undefined;
+    }
     // the band's 🔭 line: what this session's last reply said it waits on
     const reply = selfId
         ? ((await $.store.get(REPLY + selfId).catch(() => undefined)) as
@@ -1872,6 +1897,7 @@ function viewOf(isBoardOpen: boolean): StashView {
         selfId,
         shown,
         wait,
+        wind: selfWind,
     };
 }
 
@@ -1914,6 +1940,21 @@ async function partRefusal($: EngineInterface, op: unknown) {
         : `orbit ${op}: ${label} is switched off in 🎛️ settings; nothing to write`;
 }
 
+// the id a session continues under after its /clears, followed a few hops; the id itself when it never cleared
+async function successorOf($: EngineInterface, sid: string) {
+    let id = sid;
+    for (let hop = 0; hop < 5; hop++) {
+        const next = (
+            (await $.store.get(SUCC + id).catch(() => undefined)) as
+                | { sid?: string }
+                | undefined
+        )?.sid;
+        if (!next || next === id) break;
+        id = next;
+    }
+    return id;
+}
+
 async function windOf($: EngineInterface, sid: string) {
     return (await $.store.get(WIND + sid).catch(() => undefined)) as
         | StashWind
@@ -1933,7 +1974,7 @@ async function pressWind($: EngineInterface, sid: string) {
         await $.store.set(key, { at, state: 'cancelled' } satisfies StashWind);
     else if (was.state === 'cancelled')
         await $.store.set(key, { at, state: 'writing' } satisfies StashWind);
-    await publish($);
+    await load($);
 }
 
 // at a turn's start: the ask joins once and becomes writing; a cancel joins once and leaves
@@ -3012,7 +3053,9 @@ async function readSwitch($: EngineInterface, name: SwitchName) {
 
 // how long a mark waits in «sending» before a turn may take it: SEND_MS, or nothing with the undo window off
 async function sendWindow($: EngineInterface) {
-    return (await readSwitch($, 'undo')) ? SEND_MS : 0;
+    return (await readSwitch($, 'undo'))
+        ? (await readNumber($, 'undoDelay')) * 1000
+        : 0;
 }
 
 async function readNumber($: EngineInterface, name: NumberName) {
@@ -3774,6 +3817,7 @@ export const register: Register = (on) => {
                 speak: await readSwitch($, 'speak'),
                 speed: await readNumber($, 'speed'),
                 undo: await readSwitch($, 'undo'),
+                undoDelay: await readNumber($, 'undoDelay'),
             };
             const switchJSX = (
                 name: SwitchName,
@@ -3871,11 +3915,15 @@ export const register: Register = (on) => {
                         })}
                     </Box>
                     {numberJSX('lines', '🌔 phase lines', knobs.lines, 'lines')}
-                    {switchJSX(
-                        'undo',
-                        '↩️ undo window on ticks (5 s)',
-                        knobs.undo,
-                    )}
+                    {switchJSX('undo', '📨 undo tick', knobs.undo)}
+                    {knobs.undo
+                        ? numberJSX(
+                              'undoDelay',
+                              '📨 undo delay',
+                              knobs.undoDelay,
+                              's',
+                          )
+                        : null}
                     {switchJSX(
                         'speak',
                         '🔊 read-aloud on assumptions',
@@ -5112,7 +5160,7 @@ export const register: Register = (on) => {
         const stateColumns = Math.max(
             ...list.map(
                 (m) =>
-                    3 +
+                    4 +
                     (m.statusSince === undefined
                         ? 0
                         : span(now - m.statusSince).length),
@@ -5444,6 +5492,7 @@ export const register: Register = (on) => {
             isPrimed = false;
             // the process goes on under a new id with no session.start: the next read takes it fresh
             selfId = undefined;
+            clearedFrom = e.sessionId;
             await forget($, e.sessionId);
         } else {
             // a quit keeps what the board drew, so the resumed session draws it again
@@ -5886,6 +5935,25 @@ export const register: Register = (on) => {
                               💨
                           </Button>,
                           leftOf('💨', view.afk),
+                      )}
+                {!isShown('stash.second-wind') || !view.selfId
+                    ? null
+                    : tip(
+                          'wind',
+                          view.wind
+                              ? `second wind: ${WIND_SAY[view.wind]}`
+                              : 'second wind: refresh this session at a good stop',
+                          <Button
+                              key='wind'
+                              onPress={() =>
+                                  void pressWind($, view.selfId ?? '')
+                              }
+                              {...(view.wind
+                                  ? { variant: 'secondary' as const }
+                                  : { plain: true as const })}>
+                              {WIND_EMOJI[view.wind ?? 'idle']}
+                          </Button>,
+                          leftOf(WIND_EMOJI[view.wind ?? 'idle'], !!view.wind),
                       )}
                 {tip(
                     'settings',

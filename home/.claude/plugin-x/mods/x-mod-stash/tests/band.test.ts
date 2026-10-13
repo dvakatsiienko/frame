@@ -151,6 +151,7 @@ test('every control in the row carries a hover card that names it', async ($, on
         "keep this session's cache hot: ping every 50 min",
         'wake every session stopped on the 5h cap',
         'afk: tell fleet that dima is away',
+        'second wind: refresh this session at a good stop',
         'settings: show or hide each part',
         'unfold fleet board',
     ]);
@@ -172,8 +173,9 @@ test("a toggle's hover card names what the next press does", async ($, on) => {
     const cards = (await ui.findAll({ type: 'Box' }))
         .filter((n) => n.props.display === 'none')
         .map((n) => n.text);
-    expect(cards.slice(-3)).toEqual([
+    expect(cards.slice(-4)).toEqual([
         'back: tell fleet that dima is here',
+        'second wind: refresh this session at a good stop',
         'settings: show or hide each part',
         'unfold fleet board',
     ]);
@@ -274,4 +276,20 @@ test('a watch named only by its watch-once.sh command is not a wait', async ($, 
     expect((await ui.find({ text: /^🔭/, type: 'Text' }))?.text).toBe(
         '🔭 not waiting',
     );
+});
+
+// 🐦‍🔥 on the band asks this session alone for a second wind (dima, 10-13 18:01)
+test("the band's 🐦‍🔥 asks this session, and reads its state", async ($, on) => {
+    world(on);
+    const ui = await band($);
+    const before = (await ui.find({ key: 'wind', type: 'Button' }))?.text;
+    await ui.press({ key: 'wind' });
+    const cards = (await ui.findAll({ type: 'Box' }))
+        .filter((n) => n.props.display === 'none')
+        .map((n) => n.text);
+    expect([
+        before,
+        (await ui.find({ key: 'wind', type: 'Button' }))?.text,
+        cards.includes('second wind: asked, waits for its next turn'),
+    ]).toEqual(['🐦‍🔥', '📨', true]);
 });

@@ -1756,6 +1756,17 @@ test("with the undo window off, a tick from another board's glide card joins the
     expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
+test('the undo delay field sets how long a tick reads 📨', async ($, on) => {
+    const w = world(on);
+    w.store.set('undo-delay', 2);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(2_000);
+    expect((await ui.find({ key: 'orbit:accepted:o1' }))?.text).toBe('✅ tick');
+});
+
 test('with the undo window off, a phases tick is ready at once', async ($, on) => {
     const w = world(on);
     w.store.set('undo-window', false);

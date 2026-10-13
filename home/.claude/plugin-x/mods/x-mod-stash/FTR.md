@@ -345,7 +345,7 @@
 ## /board — 🐦‍🔥 second wind (todo 16, lane l14)
 
 - ⬜ the state column is as wide as the board's longest time
-  - given every row reads a short time (`1m`, `12m`), then the state column sizes to the longest of them, so no row leaves a gap before its `🪐 n` (dima's shot, 10-13 17:45: «wasted horizontal space»)
+  - given every row reads a short time (`1m`, `12m`), then the state column sizes to the longest of them, plus a cell of air so `21m` never clips (dima's shot, 18:01), so no row leaves a gap before its `🪐 n` (dima's shot, 10-13 17:45: «wasted horizontal space»)
 - ⬜ a 🐦‍🔥 button beside every row's ctx meter asks that session for a second wind
   - makes: a `wind:<session id>` key in the store, read by every board and by that session's own stash
   - given the board is open, then every row, cclio's and this one's included, draws a plain 🐦‍🔥 left of its ctx meter
@@ -356,6 +356,8 @@
   - given no slug, or a slug `x handoff peek` cannot find, then the op is refused in one line and nothing compacts
   - decision: name and emoji are dima's, 10-13 17:31 (o1, over «graceful-ctx-refresh»); the session's state is drawn in the line under its row, since a pane holds no hover card (`engine.md`)
   - decision: compact, never clear: the session id keeps its orbit, phases, kept state and glide link (`.scratch/mods-l13/refresh-proposal.md`)
+- ⬜ the band's 🐦‍🔥 asks this session for a second wind
+  - given the band, then a plain 🐦‍🔥 sits left of 🎛️; it presses as a row's button does, for this session only, and reads its state (📨, ✍️, 🌀), its hover naming it (dima, 10-13 18:01)
 - ⬜ a second press takes a second wind back
   - given the button reads 📨, when dima presses it again, then the ask is gone unseen and the button reads 🐦‍🔥
   - given it reads ✍️, when dima presses it, then it reads 📨 (`cancelled, tells it at its next turn`), and that turn carries one «second wind cancelled» line; a third press before then asks again
@@ -476,8 +478,9 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - and a second press inside the 5 s unsends it: no turn ever takes it
   - and no running turn takes it before the 5 s pass; after them it joins the turn at its next tool call, as before
   - decision: dima's own prompt sends a tick still sending at once — submitting is his «send», and the moment to unsend has passed (lane l12, 2026-10-12)
-- ⬜ the 🎛️ `↩️ undo window on ticks (5 s)` knob turns the «sending» wait off
-  - given the knob is off (on by default), when dima ticks or replays an ask on any board, a glide card included, or ticks his phases, then the button reads `✅` at once and the next turn, or the running turn at its next tool call, takes it — no 5 s wait (dima, 10-13 17:49)
+- ⬜ the 🎛️ `📨 undo tick` switch and its `📨 undo delay` field set the «sending» wait
+  - given the switch is on (the default), then a `📨 undo delay` field under it holds the wait in seconds, 5 by default, 1–30, and every tick, replay and phases change waits that long (dima, 10-13 18:01)
+  - given it is off, when dima ticks or replays an ask on any board, a glide card included, or ticks his phases, then the button reads `✅` at once and the next turn, or the running turn at its next tool call, takes it, and the field is hidden (dima, 10-13 17:49)
 - ⬜ a resolve can carry a closing word
   - given a session resolves an ask with a closing word (`words: { o1: "landed" }`)
   - then the ask collapses to one dim line, no card and no controls: an emoji from the word (🗑️ dropped, ▶️ started or queued, ✅ anything else), its id and text cut short, the word in bold at the end — `✅ o1: <ask> **landed**` (dima's shot, 20:37)
@@ -723,6 +726,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - given 🦉 cclio calls orbit op `glide` act `create` with a title and 1–7 steps (5 until 2026-10-12) (plain text, an optional ticket id, a done flag)
   - then every session's board draws a `🛼 glide: <title>` card right above 🌔 phases, its head naming its mod as sessions, orbit and phases do (dima's board shot, 23:41): every step in order, a done one `✅` and dim but still listed, the current one `➡️` and bold, the rest `⬜`; a ticket id is a link into linear; two live lanes are two cards
   - and one 🛎️ tick and a steer box sit on the current step's line after its ticket link, tick first; the step's text cuts short before the link, tick or steer give way (dima's shots, 17:41, 17:46) — on any board; the text stays a draft until tick, then joins cclio's next prompt from dima, or her running turn at its next tool call, once, model-only and no other session's; the box and the tick clear once it did (the button read «take» until dima's o28)
+  - and a tick with an empty steer box sends too: cclio's next prompt reads «lane tick from dima on <step>: 🛎️ good to go», once (dima's shot, 10-13 18:01: «tick does not work here»)
   - decision: the steer and its take live in the stash store, one key per lane, so the shelf file keeps one writer, cclio's lane op; a step that moves the pointer drops the steer (FRM-400)
   - decision: take only, no replay — a steer has nothing to redo; a peer's prompt never carries it (dima, 20:51)
   - decision: ➡️ marks the current step, no «← we are here» (dima's o9 note, o10)
@@ -735,6 +739,7 @@ an mvp on by default ([test drive](../../../../../docs/test-drive/quiet-comms.md
   - and act `edit` with an id and a new title, new steps or both refreshes the card in place: the id, the members and the history stay, the history gains one `edit` entry, a step whose text stays keeps its done flag, the pointer lands on the first step not done, and dima's steer stays while the current step's text does (cclio's ask, 18:01)
   - and act `link` with a session id and a role (coder, verifier) links a member; a second link of a role replaces the first
   - and the lane keeps the member's registry name — a link by its session id, an 8-char prefix or its desktop `local_` id is mapped to it — and each draw finds the session that name runs under now, so a `/clear` or a desktop id never leaves the card at «0 asks»; two live under one name, the newer; an id the registry does not know is kept as given (cclio's wisp, 18:01)
+  - and a member linked by a session id it left through a `/clear` follows the id it goes on under: each `/clear` records old → new in the store, the card follows that chain, so its asks stay on the card with no relink (todo 21, dima's shot 10-13 17:55)
   - and act `step` with a step index marks every step before it done; the pointer never sits on a done step; the step count marks the lane finished
   - and a step back moves the pointer back and reopens every step from it on (`current: 1` after `current: 2` once left «2 of 5 done», cclio 15:18)
   - and a 6th step, an empty list, a step over 60 chars, a malformed ticket id, an unknown lane id or a step out of range is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
