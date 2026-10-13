@@ -1238,7 +1238,7 @@ test('every dot comes from the palette, the same name keeping the same hue', () 
     ]).toEqual([true, hues]);
 });
 
-test("a row's state emoji sits against its time, both right-aligned (dima, 22:11)", async ($, on) => {
+test("a row's state emoji sits against its time, both packed left, so every row's emoji lines up (dima, 10-13 16:59)", async ($, on) => {
     fleet(on);
     const ui = await board($);
     const cell = (await ui.findAll({ type: 'Box' })).find(
@@ -1247,5 +1247,5 @@ test("a row's state emoji sits against its time, both right-aligned (dima, 22:11
     expect([
         cell?.props.justifyContent,
         (cell?.children ?? []).map((c) => (c as { type?: string }).type),
-    ]).toEqual(['flex-end', ['Text', 'Text']]);
+    ]).toEqual(['flex-start', ['Text', 'Text']]);
 });

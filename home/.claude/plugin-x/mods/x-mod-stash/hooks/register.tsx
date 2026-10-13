@@ -5050,12 +5050,13 @@ export const register: Register = (on) => {
                             </Box>
                             {/* the state: its emoji in a column of its own, the time right-aligned beside it, so every row lines up
                                 (dima's o106, 21:17) */}
-                            {/* the emoji sits against its time, both right-aligned: they say one thing, the state and how long
-                                (dima, 22:11: «join pace emojis with time») */}
+                            {/* the emoji sits against its time, both packed left: they say one thing, the state and how long
+                                (dima, 22:11: «join pace emojis with time»), and every row's emoji lines up (dima, 10-13 16:59:
+                                right-aligned, they read as a ladder) */}
                             <Box
                                 flexDirection='row'
                                 gap={1}
-                                justifyContent='flex-end'
+                                justifyContent='flex-start'
                                 key={`state:${m.sid}`}
                                 width={COLUMNS.state}>
                                 <Text>{status.emoji}</Text>

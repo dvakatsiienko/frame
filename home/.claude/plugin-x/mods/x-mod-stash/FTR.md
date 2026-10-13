@@ -243,7 +243,7 @@
   - given a coder runs a long shell command inside a turn
   - when the board draws
   - then its row's state column reads `🐚` and for how long, not `💤`
-  - and the state is an emoji set right against its time, both right-aligned in the state column, no word (dima, 22:11: the emoji belongs to the time, not the ctx pill): 🐆 busy, 💤 idle, 🐚 shell, ⏳ waiting, 🚧 blocked, 🙋 needs_input, ❔ a status cc adds later (dima's o106, 2026-10-12 21:17)
+  - and the state is an emoji set right against its time, both packed left in the state column so every row's emoji lines up (dima, 10-13 16:59: right-aligned they read as a ladder), no word (dima, 22:11: the emoji belongs to the time, not the ctx pill): 🐆 busy, 💤 idle, 🐚 shell, ⏳ waiting, 🚧 blocked, 🙋 needs_input, ❔ a status cc adds later (dima's o106, 2026-10-12 21:17)
   - source: the registry's `status` and `statusUpdatedAt`, written by cc for every session; `busy` and `shell` count as busy in the head's `n busy`
   - decision: the registry over a flag each x-mod-stash wrote — that flag read idle through FRM-305's long `shell` (2026-10-05)
 - ⬜ each row shows how long its session has idled
