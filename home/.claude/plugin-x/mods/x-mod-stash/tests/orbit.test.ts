@@ -2131,6 +2131,45 @@ test('open asks come back when the session is resumed in a new process', async (
     expect(await asksShown(ui)).toEqual(['o1', 'o2']);
 });
 
+// an app restart mid-turn: the new process's first hook is that turn's end, before its session.start (10-13 17:22,
+// cclio's o158 gone)
+test('open asks come back when the new process ends a turn before its start', async ($, on) => {
+    const w = world(on);
+    stateOf(on);
+    w.store.set(`kept:${SID}`, {
+        at: w.clock.now(),
+        orbit: {
+            asks: [
+                { id: 'o1', pick: 'yes', text: 'push FRM-1' },
+                { id: 'o2', pick: 'no', text: 'trash the probe' },
+            ],
+            next: 3,
+            turns: 4,
+        },
+    });
+    await endTurn($);
+    await start($);
+    const ui = await board($);
+    expect(await asksShown(ui)).toEqual(['o1', 'o2']);
+});
+
+test('a process that quits before its start leaves the kept asks for the next one', async ($, on) => {
+    const w = world(on);
+    stateOf(on);
+    w.store.set(`kept:${SID}`, {
+        at: w.clock.now(),
+        orbit: {
+            asks: [{ id: 'o1', pick: 'yes', text: 'push FRM-1' }],
+            next: 2,
+            turns: 4,
+        },
+    });
+    await quit($);
+    await start($);
+    const ui = await board($);
+    expect(await asksShown(ui)).toEqual(['o1']);
+});
+
 test('a resumed orbit keeps counting its ids where it stopped', async ($, on) => {
     world(on);
     const state = stateOf(on);

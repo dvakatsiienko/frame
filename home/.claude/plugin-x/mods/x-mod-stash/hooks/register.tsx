@@ -490,6 +490,9 @@ let digest: Digest | undefined;
 const EMPTY_ORBIT: StashOrbit = { asks: [], next: 1, turns: 0 };
 // mirrors `$.state`'s orbit, which survives a reload: a get inside one dispatch reads the moment it began
 let orbit: StashOrbit = EMPTY_ORBIT;
+// false until this process read its orbit back, from $.state or the kept store; until then nothing is kept, so an
+// empty module copy never writes over the kept one
+let isOrbitLoaded = false;
 
 // one json line to x-speak's control socket; the text rides argv, never the shell's words
 // quiet comms (PK-93, dima's o17: an a/b mvp, one switch to revert): in cclio's thread a member's [progress] ping is
@@ -880,6 +883,10 @@ async function shelfOrbit($: EngineInterface, o: StashOrbit) {
 async function currentOrbit($: EngineInterface) {
     const kept = (await $.state.get(ORBIT).catch(() => undefined))?.value;
     if (kept) orbit = steeredOrbit(kept);
+    // a new process whose first hook is a turn's end, before its start (an app restart mid-turn): the kept copy first
+    else if (!isOrbitLoaded)
+        orbit = await resumeState($).catch(() => EMPTY_ORBIT);
+    isOrbitLoaded = true;
     return orbit;
 }
 
@@ -1731,6 +1738,7 @@ let keptJson = '';
 // every $.state part the board draws, written when one changed; a save passes its new value, since a read in the
 // same dispatch still sees the old one
 async function keepState($: EngineInterface, fresh: Kept = {}) {
+    if (!isOrbitLoaded) return;
     const sid = await currentId($);
     if (!sid) return;
     const k: Kept = {
@@ -3002,6 +3010,7 @@ export const register: Register = (on) => {
                 ? steeredOrbit(kept.orbit)
                 : await resumeState($).catch(() => EMPTY_ORBIT),
         );
+        isOrbitLoaded = true;
         // a reload after the steer rename or catch v2 keeps a held text: the migrated orbit is written back once
         // through saveOrbit, so a resumed orbit's open asks reach the store every board counts from
         if (JSON.stringify(orbit) !== JSON.stringify(kept.orbit ?? EMPTY_ORBIT))
