@@ -3265,7 +3265,7 @@ export const register: Register = (on) => {
         } catch (err) {
             await quietLog($, {
                 arm,
-                at: Date.now(),
+                at: await $.clock.now().catch(() => Date.now()),
                 from,
                 startedTurn: false,
                 tag,
