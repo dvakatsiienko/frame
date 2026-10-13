@@ -183,9 +183,10 @@
   - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
   - and cclio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as cclio, a member's door is `x linear read`
-- ⬜ a foreground `claude -p` is refused (FRM-395)
+- ✅ a foreground `claude -p` is refused (FRM-395)
   - given a Bash call whose command runs `claude -p` or `claude --print` without `run_in_background`, then nothing runs and the refusal names `run_in_background`
   - given the same call with `run_in_background`, or ending in `# fg-ok: <why>`, then it runs; a foreground `sleep`, `gh run watch` or any command with no `claude -p` is untouched
+  - proven live 2026-10-13 19:50: cclio's foreground `claude -p` was refused, its `foreground-claude` event in x-mod-guard's store names the `run_in_background` door
   - decision: a refusal, never warn-only — a warning fires after the block it means to prevent (dima's o102; cclio, 18:16)
   - decision: its own escape, `# fg-ok:`, never `# dima-ok:` — a real need is the session's call, as with a wait
 
