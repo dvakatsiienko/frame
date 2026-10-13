@@ -554,7 +554,7 @@ const WIND_SAY = {
     refreshing: 'compacting onto its handoff',
     writing: 'finishing its step, then its handoff',
 } as const;
-const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>), then call ${ORBIT_TOOL} op second-wind with its slug: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
+const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (a coder: x:crew-coder, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods coder; cclio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
 const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. finish the step you are on, nothing interrupts it; a member mid-round (a verifier's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
 // cclio's good stop is todo 16's nine steps (dima, 10-13)
 const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint at a good stop. take no new todos, solve the tails so the picture after is good, run cclio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit as soon as you can. then ${WIND_HOW}`;

@@ -132,6 +132,21 @@ test("cclio's note names her good stop", async ($, on) => {
     expect(notes(w.lines)[0]).toMatch(/take no new todos.*cclio:checkpoint/);
 });
 
+const INIT_LIST =
+    /first first-act is your role's init list.*x:crew-coder, x:crew-dna read whole.*plugin-authoring.*cclio: her boot/;
+
+for (const [who, name] of [
+    ['a coder', undefined],
+    ['cclio', '🦉 cclio'],
+] as const)
+    test(`${who}'s note makes the handoff open with the role's init list`, async ($, on) => {
+        const w = world(on, name);
+        w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+        await start($);
+        await say($);
+        expect(notes(w.lines).map((n) => INIT_LIST.test(n))).toEqual([true]);
+    });
+
 test('a session nobody asked reads no second wind line', async ($, on) => {
     const w = world(on);
     await start($);
