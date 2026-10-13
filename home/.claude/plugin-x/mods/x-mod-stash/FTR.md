@@ -502,10 +502,14 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ `/mobile-mode` brings the asks fence back while dima is away from the board
   - given dima types `/mobile-mode`
   - when his next prompt arrives
-  - then the per-prompt reminder tells the session to end its reply with the asks fence — «⏳ waiting on your word:» and every open orbit ask with its id and pick — instead of the orbit reminder
+  - then the no-board reminder below tells the session to end its reply with the asks fence — «⏳ waiting on your word:» and every open orbit ask with its id and pick — instead of the orbit reminder
   - decision: on mobile mods draw nothing, so orbit is invisible there; orbit stays the one store and the session writes his answers back by id (dima, 2026-10-10)
   - and the reminder asks for «🌔 next:» and the plan's next 3 moves as bullets under the fence, and names a stale plan to set again — the board's phases are gone on mobile too (dima's o112, 2026-10-11; the `x:mobile-mode` skill prints the same shape)
   - given `🌔 phases` switched off in settings, then the reminder asks for no next moves and names no stale plan
+- ⬜ one no-board reminder, for 📱 mobile mode and 🪐 orbit switched off alike (dima's o162)
+  - given mobile mode on, or `🪐 orbit asks` switched off in settings, then the prompt carries the same reminder, word for word: «no board reaches dima: …», the asks fence with every open ask's id and pick, each new ask as one ➡️ line, the plan's next 3 moves
+  - given mobile mode off and orbit on, then no prompt carries it, only the orbit reminder
+  - decision: the reminder lives in the mod and either switch triggers it; `x:mobile-mode` keeps only its phone bits and points at it — «buried, but fine if no one forgets it», so a test proves both switches inject it
 - ✅ mobile mode ends at the mac
   - given mobile mode is on
   - when dima says «back at the mac», types `/mobile-mode off`, or presses 🛎️ or ↩️ in the board's orbit

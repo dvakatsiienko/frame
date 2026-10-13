@@ -944,46 +944,32 @@ const planAge = (o: StashOrbit) =>
 
 // the per-prompt note that keeps the habit through a compaction; none while orbit is empty
 function orbitReminder(o: StashOrbit, isOn: IsPartOn) {
-    const isAsksOn = isOn('stash.orbit');
-    const open = isAsksOn ? o.asks.filter((a) => !a.isResolved) : [];
+    const open = o.asks.filter((a) => !a.isResolved);
     const isPhasesOn = isOn('stash.phases');
     const age = isPhasesOn ? planAge(o) : undefined;
     const caught = isOn('stash.catch') ? (o.caught ?? []) : [];
-    if (!open.length && age === undefined && !caught.length)
-        return isAsksOn ? undefined : ASKS_IN_REPLY;
-    const asks = !isAsksOn
-        ? undefined
-        : open.length
-          ? `orbit holds ${open.length} open ask${open.length === 1 ? '' : 's'} (${open.map((a) => a.id).join(', ')})`
-          : 'orbit holds no open ask';
+    if (!open.length && age === undefined && !caught.length) return undefined;
+    const asks = open.length
+        ? `orbit holds ${open.length} open ask${open.length === 1 ? '' : 's'} (${open.map((a) => a.id).join(', ')})`
+        : 'orbit holds no open ask';
     const plan = !isPhasesOn
-        ? undefined
+        ? ''
         : age === undefined
-          ? 'no plan set'
-          : `plan set ${age} turn${age === 1 ? '' : 's'} ago${age >= STALE_TURNS ? ', stale: set it again' : ''}`;
+          ? '; no plan set'
+          : `; plan set ${age} turn${age === 1 ? '' : 's'} ago${age >= STALE_TURNS ? ', stale: set it again' : ''}`;
     // her held ids, so a compacted cclio can still clear a piece whose lifetime ended
     const held = caught.length
-        ? `🐠 catch holds ${caught.map((x) => x.id).join(', ')}`
-        : undefined;
-    const doors = [isAsksOn && 'asks', isPhasesOn && 'the plan'].filter(
-        Boolean,
-    );
-    return [
-        `${[asks, plan, held].filter(Boolean).join('; ')}.`,
-        ...(doors.length
-            ? [
-                  `${doors.join(' and ')} go through ${ORBIT_TOOL}, never into a reply.`,
-              ]
-            : []),
-        ...(isAsksOn ? [] : [ASKS_IN_REPLY]),
-    ].join(' ');
+        ? `; 🐠 catch holds ${caught.map((x) => x.id).join(', ')}`
+        : '';
+    return `${asks}${plan}${held}. asks${isPhasesOn ? ' and the plan' : ''} go through ${ORBIT_TOOL}, never into a reply.`;
 }
 
-// on mobile the asks reach dima only through the reply: the asks fence, its header line kept as the skill prints it
-function mobileReminder(o: StashOrbit, isOn: IsPartOn) {
+// the one reply shape while no board reaches dima — 📱 mobile mode, where mods draw nothing, or 🪐 orbit switched off —
+// the same text either way (dima's o162); x:mobile-mode keeps only its phone bits and points here
+function noBoardReminder(o: StashOrbit, isOn: IsPartOn) {
     const open = o.asks.filter((a) => !a.isResolved);
     const ids = open.length ? ` (${open.map((a) => a.id).join(', ')})` : '';
-    // the phases are gone on mobile too: the plan's next 3 moves print under the fence (dima's o112, 2026-10-11)
+    // the phases are gone off the board too: the plan's next 3 moves print under the fence (dima's o112, 2026-10-11)
     const isPhasesOn = isOn('stash.phases');
     const age = planAge(o);
     const stale =
@@ -993,7 +979,7 @@ function mobileReminder(o: StashOrbit, isOn: IsPartOn) {
     const moves = isPhasesOn
         ? ", then «🌔 next:» and the plan's next 3 moves as bullets"
         : '';
-    return `dima is on mobile, where the board draws nothing: end the reply with the asks fence, «⏳ waiting on your word:» and every open orbit ask${ids} with its id and pick${moves}, and write his answer by id back through ${ORBIT_TOOL} the same turn.${stale}`;
+    return `no board reaches dima: end the reply with the asks fence, «⏳ waiting on your word:», every open orbit ask${ids} with its id and pick, and each new ask as one ➡️ line${moves}. his answers come back in his prompt; resolve the ones he answered by id through ${ORBIT_TOOL} while 🪐 orbit is switched on.${stale}`;
 }
 
 const enhancerOf = async ($: EngineInterface): Promise<StashEnhancer> =>
@@ -3080,8 +3066,8 @@ export const register: Register = (on) => {
             });
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
         const reminder =
-            (await $.state.get(MOBILE)).value && isOn('stash.orbit')
-                ? mobileReminder(orbit, isOn)
+            (await $.state.get(MOBILE)).value || !isOn('stash.orbit')
+                ? noBoardReminder(orbit, isOn)
                 : orbitReminder(orbit, isOn);
         const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
         isPrimed = true;

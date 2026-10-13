@@ -2062,3 +2062,39 @@ test("with 🌔 phases switched off, dima's phases tick joins no running turn", 
     const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
     expect((r.context ?? []).join('\n')).not.toContain('🌔 phases: dima');
 });
+
+/* one no-board reply reminder: 📱 mobile mode and 🪐 orbit switched off both inject it (dima's o162) */
+
+const NO_BOARD = /^no board reaches dima/;
+const noBoard = (w: { contexts: string[][] }) =>
+    (w.contexts.at(-1) ?? []).filter((c) => NO_BOARD.test(c));
+
+test('📱 mobile mode on puts the no-board reminder on the prompt', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await mobile($);
+    await say($, 'hi');
+    expect(noBoard(w)).toEqual([expect.stringMatching(/\(o1\)/)]);
+});
+
+test('🪐 orbit switched off puts the same no-board reminder as mobile mode', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await mobile($);
+    await say($, 'hi');
+    const onMobile = noBoard(w);
+    await mobile($, 'off');
+    w.store.set('shown', { 'stash.orbit': false });
+    await say($, 'again');
+    expect([onMobile.length, noBoard(w)]).toEqual([1, onMobile]);
+});
+
+test('with mobile mode off and orbit on, no prompt carries the no-board reminder', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'hi');
+    expect(noBoard(w)).toEqual([]);
+});
