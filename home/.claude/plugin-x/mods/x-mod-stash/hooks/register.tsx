@@ -318,7 +318,7 @@ const cardBorder = (surface: string) =>
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 const ORBIT_ABOUT = [
     'orbit: your asks to dima on the fleet board; an ask goes here, never into a reply. 🛎️ tick = pick good to go, 🔁 replay = another round, plus his steer; marked asks reach you model-only. a --bg session has no board: its asks go to its coordinator.',
-    `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url or file path he opens in a click; dies: "halt" or N turns unpicked. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
+    `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url or file path he opens in a click; dies: "halt" or N of dima's prompts unpicked, your own turns never count. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
     'op resolve, ids, words { id: closing word }: the asks answered this turn; they leave when it ends, a worded one shown dim a turn more.',
     `op follow, id, text, pick: another round on an answered ask, same id and place, text ≤${ORBIT_TEXT_MAX} chars, marked ${CHANGED_MARK}.`,
     `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
@@ -3030,6 +3030,12 @@ export const register: Register = (on) => {
         await absorbMarks($);
         await currentOrbit($);
         const isOn = await partsShown($);
+        // an ask's expiry counts dima's own prompts, frozen while 💨 afk is in effect (o164/o165)
+        if (isUser && !(afk && isOn('stash.afk')))
+            await saveOrbit($, {
+                ...orbit,
+                prompts: (orbit.prompts ?? 0) + 1,
+            });
         const marked =
             isUserTurn && isOn('stash.orbit') ? orbit.asks.filter(isFresh) : [];
         // an assumption dima sent back joins his prompt once and leaves orbit
@@ -3880,10 +3886,10 @@ export const register: Register = (on) => {
         // an ask with an expiry says what it is beside its controls (dima, 20:37: «⌛ halt» did not read)
         const expiryText = (a: OrbitAsk) => {
             if (a.dies === 'halt') return '⌛ dies at halt';
-            const left = (a.dies ?? 0) - o.turns - 1;
+            const left = (a.dies ?? 0) - (o.prompts ?? 0);
             return left < 1
                 ? '⌛ dies this turn'
-                : `⌛ dies in ${left} turn${left === 1 ? '' : 's'}`;
+                : `⌛ dies in ${left} prompt${left === 1 ? '' : 's'}`;
         };
         const askJSX = (a: OrbitAsk, i: number, door: AskDoor = ownDoor) =>
             a.word ? (

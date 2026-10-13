@@ -433,32 +433,98 @@ test('an ask resolved with a closing word shows dim with it for one more turn, t
     ]).toEqual([['o1'], true, []]);
 });
 
-test('an unpicked ask with dies: 2 leaves at the end of the second turn after its own; a ticked one stays', async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await say($, 'go');
-    await add($, ['push FRM-1', 'yes']);
-    await orbit($, {
+// expiry counts dima's own prompts, never the session's turns (o164/o165): a member ping or a wake moves nothing
+const peerTurn = async ($: Engine) => {
+    await $.prompt.submit({
+        origin: { kind: 'peer' } as never,
+        text: '[progress] a member ping',
+        wait: false,
+    });
+    await endTurn($);
+};
+
+const diesTwo = ($: Engine) =>
+    orbit($, {
         asks: [
             { dies: 2, pick: 'yes', text: 'trash the probe' },
             { dies: 2, pick: 'yes', text: 'rename the band' },
         ],
         op: 'add',
     });
-    expect(await texts(ui)).toContain('⌛ dies in 2 turns');
-    await endTurn($);
-    await ui.press({ key: 'orbit:accepted:o3' });
+
+test('an ask with dies: 2 reads «dies in 2 prompts» and outlives 5 member-woken turns', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await diesTwo($);
+    const label = await texts(ui);
+    for (let i = 0; i < 5; i++) await peerTurn($);
+    expect([
+        label.includes('⌛ dies in 2 prompts'),
+        await asksShown(ui),
+    ]).toEqual([true, ['o1', 'o2']]);
+});
+
+test("an unpicked ask with dies: 2 leaves with dima's second prompt; a ticked one stays", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await diesTwo($);
+    await ui.press({ key: 'orbit:accepted:o2' });
     const seen: string[][] = [];
     for (let i = 0; i < 2; i++) {
         await say($, 'go on');
         await endTurn($);
         seen.push((await asksShown(ui)) as string[]);
     }
-    expect(seen).toEqual([
-        ['o1', 'o2', 'o3'],
-        ['o1', 'o3'],
-    ]);
+    expect(seen).toEqual([['o1', 'o2'], ['o2']]);
+});
+
+test("an ask's expiry counts from dima's prompts at its birth, never the session's turns", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    for (let i = 0; i < 3; i++) await say($, 'queued');
+    await endTurn($);
+    await diesTwo($);
+    await say($, 'go on');
+    await endTurn($);
+    expect(await asksShown(ui)).toEqual(['o1', 'o2']);
+});
+
+test("with 💨 afk on, dima's prompts never count toward an ask's expiry", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await diesTwo($);
+    w.store.set('afk', { at: 0, on: true });
+    await w.clock.advance(4_000);
+    for (let i = 0; i < 3; i++) {
+        await say($, 'go on');
+        await endTurn($);
+    }
+    expect(await asksShown(ui)).toEqual(['o1', 'o2']);
+});
+
+test("an orbit kept before prompts counted keeps each ask's turns left as prompts", async ($, on) => {
+    world(on);
+    // the orbit a reload finds, until the start writes its migrated copy back
+    let kept: unknown = {
+        asks: [{ dies: 12, id: 'o1', pick: 'yes', text: 'kept' }],
+        next: 2,
+        turns: 10,
+    };
+    on('state.get', (_$, e, next) =>
+        e.key === 'orbit' ? { value: { value: kept, version: 1 } } : next(e),
+    );
+    on('state.set', (_$, e, next) => {
+        if (e.key !== 'orbit') return next(e);
+        kept = e.value;
+        return { value: { isSet: true, version: 2 } };
+    });
+    await start($);
+    const ui = await board($);
+    expect(await texts(ui)).toContain('⌛ dies in 2 prompts');
 });
 
 test('an ask with dies: "halt" leaves when the halt skill expands; the rest stay', async ($, on) => {

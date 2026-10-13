@@ -57,12 +57,29 @@ export function steered<T extends { steer?: string }>(x: T): T {
     ) as T;
 }
 
-export const steeredOrbit = (o: StashOrbit): StashOrbit => ({
-    ...o,
-    asks: o.asks.map(steered),
-    ...(o.assumed ? { assumed: o.assumed.map(steered) } : {}),
-    ...(o.caught ? { caught: o.caught.map(steered) } : {}),
-});
+// an orbit kept before prompts counted holds each `dies` as a turn end: its turns left become prompts left
+const prompted = (o: StashOrbit): StashOrbit =>
+    o.prompts !== undefined
+        ? o
+        : {
+              ...o,
+              asks: o.asks.map((a) =>
+                  typeof a.dies === 'number'
+                      ? { ...a, dies: Math.max(1, a.dies - o.turns) }
+                      : a,
+              ),
+              prompts: 0,
+          };
+
+export const steeredOrbit = (kept: StashOrbit): StashOrbit => {
+    const o = prompted(kept);
+    return {
+        ...o,
+        asks: o.asks.map(steered),
+        ...(o.assumed ? { assumed: o.assumed.map(steered) } : {}),
+        ...(o.caught ? { caught: o.caught.map(steered) } : {}),
+    };
+};
 
 // a piece kept before catch v2 has no kind and a turn count in `at`: it reads as a 💡 born at the load
 export const shelved = (x: OrbitCatch, now: number): OrbitCatch =>
@@ -93,10 +110,9 @@ export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
 }
 
 // the turn's answers leave, one with a closing word drawn dim one turn more; a marked ask it never resolved unlocks
-// and rides dima's next prompt; an unmarked ask past its `dies` turn leaves; an unmarked assumption leaves at its third
+// and rides dima's next prompt; an unmarked ask whose `dies` prompt came leaves; an unmarked assumption leaves at its third
 // turn end, the turn it was made in counted; one sent back waits for his prompt
 export function turnEnded(o: StashOrbit): StashOrbit {
-    const ending = o.turns + 1;
     return {
         ...o,
         asks: o.asks
@@ -108,7 +124,7 @@ export function turnEnded(o: StashOrbit): StashOrbit {
                         typeof a.dies === 'number' &&
                         !a.mark &&
                         !a.isResolved &&
-                        ending >= a.dies
+                        (o.prompts ?? 0) >= a.dies
                     ),
             )
             .map((a) => (a.isResolved ? { ...a, isClosed: true } : a))
@@ -129,7 +145,7 @@ export const halted = (o: StashOrbit): StashOrbit => ({
     asks: o.asks.filter((a) => a.dies !== 'halt' || a.isLocked),
 });
 
-// an ask's expiry as the tool takes it: «halt», or 1–DIES_MAX turns unpicked counted from the birth turn's end
+// an ask's expiry as the tool takes it: «halt», or 1–DIES_MAX of dima's prompts unpicked, counted from its birth
 export const DIES_MAX = 20;
 function diesOf(v: unknown, born: number): OrbitAsk['dies'] | 'bad' {
     if (v === undefined || v === null || v === '') return undefined;
@@ -220,7 +236,7 @@ export function orbitOp(
             const raw = Array.isArray(input.asks) ? input.asks : [];
             const added: OrbitAsk[] = [];
             let next = o.next;
-            const born = isTurn ? o.turns + 1 : o.turns;
+            const born = o.prompts ?? 0;
             for (const item of raw) {
                 const v = (item ?? {}) as Record<string, unknown>;
                 const text = oneLine(v.text);
@@ -234,7 +250,7 @@ export function orbitOp(
                 const dies = diesOf(v.dies, born);
                 if (dies === 'bad')
                     return {
-                        deny: `orbit add: dies «${String(v.dies).slice(0, 20)}» is neither "halt" nor a whole number of turns, 1–${DIES_MAX}`,
+                        deny: `orbit add: dies «${String(v.dies).slice(0, 20)}» is neither "halt" nor a whole number of dima's prompts, 1–${DIES_MAX}`,
                     };
                 added.push({
                     ...(dies === undefined ? {} : { dies }),

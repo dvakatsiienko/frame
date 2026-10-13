@@ -447,7 +447,9 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: an ask resolved with no word leaves at its turn end as before (cclio's brief 8, 2026-10-12)
 - ⬜ an ask can carry an expiry
   - given a session adds an ask with `dies: "halt"`, then its row reads `⌛ dies at halt`, and when cclio's halt skill expands, the ask leaves orbit, unless a running turn holds it
-  - given an ask added with `dies: 2`, then its row reads `⌛ dies in 2 turns`, counting down to `⌛ dies this turn`; unmarked, it leaves at the end of the second turn after its own; a 🛎️ or 🔁 keeps it and drops the ⌛
+  - given an ask added with `dies: 2`, then its row reads `⌛ dies in 2 prompts`, counting down to `⌛ dies this turn`; unmarked, it leaves at the end of the turn dima's second prompt after its birth starts; a 🛎️ or 🔁 keeps it and drops the ⌛
+  - and only dima's own prompts count: a member ping, an idle wake or a keep-hot turn moves nothing, and while 💨 afk is on his prompts don't count either; an orbit kept before this counts each ask's turns left as prompts left
+  - decision: expiry runs on dima's prompts, never the session's turns, so an ask waits for him however busy the session is (o164/o165)
   - given a `dies` that is neither «halt» nor a whole number 1–20, then the tool refuses the add in one line
 - ✅ every prompt reminds the session of orbit
   - given orbit holds open asks or a plan
