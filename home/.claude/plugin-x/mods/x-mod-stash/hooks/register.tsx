@@ -547,7 +547,7 @@ const COST_HINT =
 // the button's emoji per state; idle draws the bird
 export const WIND_EMOJI = {
     asked: '🥚',
-    cancelled: '📨',
+    cancelled: '↩️',
     idle: '🐦‍🔥',
     refreshing: '🌀',
     writing: '✍️',

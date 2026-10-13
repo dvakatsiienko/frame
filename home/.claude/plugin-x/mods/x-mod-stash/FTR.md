@@ -363,10 +363,10 @@
   - given the band, then a plain 🐦‍🔥 leads the band's buttons, left of 🔥 keep-hot (dima's o8 and o11, 18:29–18:35); it presses as a row's button does, for this session only, and reads its state (🥚, ✍️, 🌀), its hover naming it (dima, 10-13 18:01)
 - ⬜ a second press takes a second wind back
   - given the button reads 🥚, when dima presses it again, then the ask is gone unseen and the button reads 🐦‍🔥
-  - given it reads ✍️, when dima presses it, then it reads 📨 (`cancelled, tells it at its next turn`), and that turn carries one «second wind cancelled» line; a third press before then asks again
+  - given it reads ✍️, when dima presses it, then it reads ↩️ (`cancelled, tells it at its next turn`), and that turn carries one «second wind cancelled» line; a third press before then asks again
   - given it reads 🌀, then a press changes nothing
   - decision: no timer ever cancels or compacts: an idle session waits on 🥚 until its next turn (dima, o2; cclio 17:32)
-  - decision: asked reads 🥚, the phoenix before it hatches: 📨 is the undo tick's (dima's emoji battle, o13, 19:14)
+  - decision: asked reads 🥚, the phoenix before it hatches: 📨 is the undo tick's (dima's emoji battle, o13, 19:14); the cancel reads ↩️ for the same reason (o13's follow, 19:26)
 - ⬜ `🐦‍🔥 second wind` switched off in 🎛️ settings is off for the model too
   - given it is off, then no row draws the button or the line, no turn carries a second wind note, `op second-wind` is refused in one line naming the switch, and a named handoff never compacts
 

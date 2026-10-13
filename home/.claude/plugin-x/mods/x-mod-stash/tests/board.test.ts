@@ -1382,8 +1382,10 @@ test('a press after the note went out cancels, and a third asks again', async ($
         (await view.find({ text: /second wind:/, type: 'Text' }))?.text;
     await view.press({ key: `wind:${PEER}` });
     const cancelled = await said();
+    const cancelButton = await windButton(view, PEER);
     await view.press({ key: `wind:${PEER}` });
-    expect([cancelled, await said()]).toEqual([
+    expect([cancelButton, cancelled, await said()]).toEqual([
+        '↩️',
         expect.stringContaining('cancelled, tells it at its next turn'),
         expect.stringContaining('finishing its step, then its handoff'),
     ]);
