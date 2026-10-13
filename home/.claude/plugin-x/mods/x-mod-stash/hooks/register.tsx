@@ -2320,39 +2320,105 @@ export const effortLevel = (word: string | undefined) => {
 };
 export const effortCells = (level: number) =>
     meterCells((level / EFFORTS.length) * 100, EFFORTS.length);
+// a session row's two meters, effort and context, in one look (dima, 10-12 22:11: «windows 92 … try gruvbox», «consistent
+// with the effort level meter»; 10-13 16:04: «unified look», effort «slightly brighter … or cells 1px bigger»): 6 px cells,
+// a px over the band's, in gruvbox — its faded tones on light, 3.8:1 or more on white where the band's ramp fell to 1.9:1,
+// its bright tones on dark
+export const ROW_RAMP = {
+    dark: ['#b8bb26', '#fabd2f', '#fe8019', '#fb4934'],
+    light: ['#79740e', '#b57614', '#af3a03', '#9d0006'],
+} as const;
+const RAMP_STOPS = [0, 0.45, 0.75, 1] as const;
+const ROW_CELL = { gap: 2, size: 6 } as const;
+const ROW_STEP = ROW_CELL.size + ROW_CELL.gap;
+const stopsCss = (ramp: readonly string[]) =>
+    ramp.map((c, i) => `.r${i}{stop-color:${c}}`).join('');
+const ROW_STYLE =
+    `:root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.6}${stopsCss(ROW_RAMP.light)}` +
+    `@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.55}${stopsCss(ROW_RAMP.dark)}}`;
+const rampDefs = (to: number) =>
+    `<defs><linearGradient id="ramp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${to.toFixed(1)}" y2="0">` +
+    RAMP_STOPS.map((at, i) => `<stop class="r${i}" offset="${at}"/>`).join('') +
+    '</linearGradient></defs>';
+const rowCell = (x: number, y: number, isLit: boolean) =>
+    `<rect${isLit ? '' : ' class="off"'} x="${x}" y="${y}" width="${ROW_CELL.size}" height="${ROW_CELL.size}" rx="1.5"${isLit ? ' fill="url(#ramp)"' : ''}/>`;
 export function effortSvg(level: number) {
-    const w = EFFORTS.length * CELL_STEP - CELL.gap;
-    const cells = effortCells(level).map((c, i) => {
-        const x = i * CELL_STEP;
-        return c.kind === 'fill'
-            ? `<rect x="${x}" y="0" width="${CELL.size}" height="${CELL.size}" rx="1" fill="url(#ramp)"/>`
-            : `<rect class="off" x="${x}" y="0" width="${CELL.size}" height="${CELL.size}" rx="1"/>`;
-    });
+    const w = EFFORTS.length * ROW_STEP - ROW_CELL.gap;
+    const cells = effortCells(level).map((c, i) =>
+        rowCell(i * ROW_STEP, 0, c.kind === 'fill'),
+    );
     return (
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${CELL.size}" viewBox="0 0 ${w} ${CELL.size}">` +
-        `<style>${BAR_STYLE}</style>` +
-        `<defs><linearGradient id="ramp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${w}" y2="0">` +
-        '<stop class="r0" offset="0"/><stop class="r1" offset=".45"/><stop class="r2" offset=".75"/><stop class="r3" offset="1"/>' +
-        `</linearGradient></defs>${cells.join('')}</svg>`
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${ROW_CELL.size}" viewBox="0 0 ${w} ${ROW_CELL.size}">` +
+        `<style>${ROW_STYLE}</style>${rampDefs(w)}${cells.join('')}</svg>`
     );
 }
-export const EFFORT_CELL = CELL.size;
-// a row's context as a fixed 64×18 pill (dima's o105): the meter's off-gray track, the fill in the band's ctx tint, the %
-// centered at 12px with a halo so it reads over the fill and the track, on light and dark
-export const PILL = { height: 18, width: 64 } as const;
+export const EFFORT_CELL = ROW_CELL.size;
+
+const rgbOf = (hex: string) =>
+    [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
+const hexOf = (rgb: number[]) =>
+    `#${rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
+const mix = (a: string, b: string, t: number) => {
+    const [x, y] = [rgbOf(a), rgbOf(b)];
+    return hexOf(x.map((v, i) => v + ((y[i] ?? v) - v) * t));
+};
+// WCAG's contrast ratio of two #rrggbb colours
+export function contrastOf(a: string, b: string) {
+    const lum = (hex: string) => {
+        const [r = 0, g = 0, bl = 0] = rgbOf(hex).map((v) => {
+            const c = v / 255;
+            return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+    };
+    const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+    return ((hi ?? 0) + 0.05) / ((lo ?? 0) + 0.05);
+}
+// the ramp's colour at t (0–1), the gradient's own stops
+const rampAt = (ramp: readonly string[], t: number) => {
+    const i = RAMP_STOPS.findIndex((at) => at >= t);
+    if (i <= 0) return ramp[0] ?? '#000000';
+    const [from, to] = [RAMP_STOPS[i - 1] ?? 0, RAMP_STOPS[i] ?? 1];
+    return mix(ramp[i - 1] ?? '', ramp[i] ?? '', (t - from) / (to - from));
+};
+// a light-pane text tint darkened until it reads at 4.5:1 on white; the dark ramp reads at 4.8:1 or more as it is
+const readable = (tint: string) => {
+    let c = tint;
+    for (let k = 1; contrastOf(c, '#ffffff') < 4.5 && k <= 20; k++)
+        c = mix(tint, '#000000', k * 0.05);
+    return c;
+};
+
+// a row's context: 8 cells and its % beside them, one svg of one width at any fill; the cells and the number warm
+// along the ramp, red reached at the session's compaction point (80 when it is unknown)
+const CTX_CELLS = 8;
+const CTX_NUMBER_W = 32;
+const CTX_CELLS_W = CTX_CELLS * ROW_STEP - ROW_CELL.gap;
+export const CTX_METER = {
+    height: 14,
+    width: CTX_CELLS_W + 4 + CTX_NUMBER_W,
+} as const;
 const CTX_FALLBACK_AT = 80;
-export function ctxPillSvg(percent: number, tint: string) {
-    const { height: h, width: w } = PILL;
+export function ctxMeterSvg(percent: number, compactAt = CTX_FALLBACK_AT) {
+    const { height: h, width: w } = CTX_METER;
     const p = Math.min(100, Math.max(0, Math.round(percent)));
-    const fill = Math.max(p > 0 ? h : 0, (p / 100) * w);
+    const lit = Math.round((p / 100) * CTX_CELLS);
+    const y = (h - ROW_CELL.size) / 2;
+    const cells = Array.from({ length: CTX_CELLS }, (_, i) =>
+        rowCell(i * ROW_STEP, y, i < lit),
+    );
+    const t = Math.min(1, p / compactAt);
+    const light = readable(rampAt(ROW_RAMP.light, t));
+    const dark = rampAt(ROW_RAMP.dark, t);
+    const redAt = Math.min(
+        CTX_CELLS_W,
+        Math.max(ROW_STEP, (compactAt / 100) * CTX_CELLS_W),
+    );
     return (
         `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
-        '<style>:root{color-scheme:light dark}.off{fill:#cfcfcf;opacity:.5}.t{fill:#1d1d1d;stroke:#ffffff}' +
-        '@media (prefers-color-scheme:dark){.off{fill:#504945;opacity:.45}.t{fill:#f2f2f2;stroke:#1d1d1d}}</style>' +
-        `<defs><clipPath id="pill"><rect width="${w}" height="${h}" rx="${h / 2}"/></clipPath></defs>` +
-        `<g clip-path="url(#pill)"><rect class="off" width="${w}" height="${h}"/>` +
-        `<rect width="${fill}" height="${h}" fill="${tint}"/></g>` +
-        `<text class="t" x="${w / 2}" y="${h / 2}" dy=".35em" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="12" font-weight="600" stroke-width="3" paint-order="stroke">${p}%</text>` +
+        `<style>${ROW_STYLE}.n{fill:${light}}@media (prefers-color-scheme:dark){.n{fill:${dark}}}</style>` +
+        `${rampDefs(redAt)}${cells.join('')}` +
+        `<text class="n" x="${w}" y="${h / 2}" dy=".35em" text-anchor="end" font-family="-apple-system,system-ui,sans-serif" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">${p}%</text>` +
         '</svg>'
     );
 }
@@ -2652,8 +2718,8 @@ const span = (ms: number) => {
 // each fact column's width in cells, sized to its usual reading — `🪐 12`, `FRM-306`, `ctx 54%`, `idle 12m` — so little slack shows between columns; a longer one is cut at its end
 const COLUMNS = {
     asks: 4,
-    // the ctx pill: 64 px on the desktop, a 10-wide bar in the terminal
-    context: 10,
+    // the ctx meter: 98 px on the desktop, a 10-wide bar in the terminal
+    context: 13,
     state: 9,
     ticket: 9,
 } as const;
@@ -4878,15 +4944,15 @@ export const register: Register = (on) => {
                             <Box
                                 justifyContent='flex-end'
                                 width={COLUMNS.context}>
-                                {/* every row's pill the same width, coloured by the band's ctx ramp (dima's o105, 21:13) */}
+                                {/* every row's meter the same width, its cells and number warming to red at the compaction point */}
                                 {m.context === undefined ? null : PillSvg ? (
                                     <PillSvg
                                         alt={`ctx ${m.context}%`}
-                                        height={PILL.height}
+                                        height={CTX_METER.height}
                                         key={`ctx:${m.sid}`}
-                                        source={ctxPillSvg(
+                                        source={ctxMeterSvg(
                                             m.context,
-                                            contextFill(m.context, compactAt),
+                                            compactAt,
                                         )}
                                     />
                                 ) : (

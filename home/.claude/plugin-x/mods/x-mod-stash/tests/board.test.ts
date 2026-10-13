@@ -251,7 +251,7 @@ test('every row draws the same fact columns, empty ones included', async ($, on)
         .map((n) => n.props.width)
         .filter((w) => w !== undefined);
     // ticket, ctx, state, asks
-    expect(widths).toEqual([9, 10, 9, 4, 9, 10, 9, 4]);
+    expect(widths).toEqual([9, 13, 9, 4, 9, 13, 9, 4]);
 });
 
 test('a session inside a long shell command reads 🐚 with its time', async ($, on) => {
@@ -925,30 +925,24 @@ test("with colour on, an idle member's dot is dimmed and a busy one's is not", a
     expect(dots.map((d) => d.dim)).toEqual([false, true]);
 });
 
-test("a row's ctx pill takes the band's ramp: calm blue, red at the compaction point", async ($, on) => {
-    fleet(on, { [`context:${HERE}`]: 31, [`context:${PEER}`]: 86 });
-    const ui = await board($);
-    const pills = (await ui.findAll({ type: 'Svg' })).filter((n) =>
-        /^ctx /.test(String(n.props.alt)),
-    );
-    expect(
-        pills.map(
-            (n) => String(n.props.source).match(/fill="(#[0-9a-f]{6})"/)?.[1],
-        ),
-    ).toEqual(['#4f83e0', '#e5484d']);
-});
-
-test('every ctx pill is the same 64-px width, whatever the fill', async ($, on) => {
+test("every row's ctx meter on the board is one width and prints its own %", async ($, on) => {
     fleet(on, { [`context:${HERE}`]: 3, [`context:${PEER}`]: 100 });
     const ui = await board($);
-    const pills = (await ui.findAll({ type: 'Svg' })).filter((n) =>
+    const meters = (await ui.findAll({ type: 'Svg' })).filter((n) =>
         /^ctx /.test(String(n.props.alt)),
     );
     expect(
-        pills.map(
-            (n) => String(n.props.source).match(/<svg[^>]* width="(\d+)"/)?.[1],
-        ),
-    ).toEqual(['64', '64']);
+        meters.map((n) => {
+            const svg = String(n.props.source);
+            return [
+                svg.match(/<svg[^>]* width="(\d+)"/)?.[1],
+                svg.match(/>(\d+%)</)?.[1],
+            ];
+        }),
+    ).toEqual([
+        ['98', '3%'],
+        ['98', '100%'],
+    ]);
 });
 
 test('the sessions head leads with 🌌, since the tab holds 🚦', async ($, on) => {
