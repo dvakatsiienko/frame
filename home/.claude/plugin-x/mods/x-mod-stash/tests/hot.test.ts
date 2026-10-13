@@ -275,3 +275,88 @@ test("a keep-hot ping's one-character reply keeps the 🔭 wait the last real re
         'waiting on ci',
     ]);
 });
+
+/* 💨 afk warms every remote-controlled session (o161): its own stash pings it, no new button */
+
+const PID = 5151;
+
+// this session in the registry, remote-controlled when `isBridged`, its stash store holding `store`
+async function rcSession(
+    $: Engine,
+    on: On,
+    { isBridged = true, store = {} as Record<string, unknown> } = {},
+) {
+    on('env.get', () => ({ value: '/home' }));
+    on('fs.list', (_$, e) => ({
+        value:
+            e.path === '/home/.claude/sessions'
+                ? [
+                      {
+                          isLink: false,
+                          kind: 'file' as const,
+                          mtimeMs: 0,
+                          name: `${PID}.json`,
+                          size: 1,
+                      },
+                  ]
+                : [],
+    }));
+    on('fs.read', (_$, e) =>
+        e.path === `/home/.claude/sessions/${PID}.json`
+            ? {
+                  value: JSON.stringify({
+                      pid: PID,
+                      sessionId: SID,
+                      ...(isBridged ? { bridgeSessionId: 'session_01rc' } : {}),
+                  }),
+              }
+            : { deny: 'no such file' },
+    );
+    on('process.run', () => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: `${PID}\n`,
+        },
+    }));
+    const s = await started($, on, store);
+    await endTurn($);
+    return { ...s, store };
+}
+
+const afkOn = { afk: { at: NOW, on: true } };
+
+test('with 💨 afk on, a remote-controlled session with 🔥 off gets its keep-hot ping', async ($, on) => {
+    const s = await rcSession($, on, { store: { ...afkOn } });
+    await s.clock.advance(50 * MIN);
+    expect(s.pings).toEqual([expect.stringContaining('keep-hot ping')]);
+});
+
+test('💨 afk switched on while idle warms a remote-controlled session at its next poll', async ($, on) => {
+    const s = await rcSession($, on);
+    s.store.afk = { at: NOW, on: true };
+    await s.clock.advance(50 * MIN + 5_000);
+    expect(s.pings).toEqual([expect.stringContaining('keep-hot ping')]);
+});
+
+test('with 💨 afk on, a session no remote control holds is never pinged', async ($, on) => {
+    const s = await rcSession($, on, { isBridged: false, store: { ...afkOn } });
+    await s.clock.advance(60 * MIN);
+    expect(s.pings).toEqual([]);
+});
+
+test('with 💨 afk off, a remote-controlled session with 🔥 off is never pinged', async ($, on) => {
+    const s = await rcSession($, on);
+    await s.clock.advance(60 * MIN);
+    expect(s.pings).toEqual([]);
+});
+
+test('💨 afk switched off before the interval passes cancels the warm ping', async ($, on) => {
+    const s = await rcSession($, on, { store: { ...afkOn } });
+    await s.clock.advance(20 * MIN);
+    s.store.afk = { at: NOW, on: false };
+    await s.clock.advance(40 * MIN);
+    expect(s.pings).toEqual([]);
+});

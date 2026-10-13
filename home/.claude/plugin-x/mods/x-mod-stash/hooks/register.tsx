@@ -1743,7 +1743,10 @@ async function countWords($: EngineInterface, hits: Record<string, number>) {
 
 async function load($: EngineInterface) {
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
+    const wasAfk = afk;
     afk = flag?.on === true;
+    // afk flipped from any board re-arms keep-hot here, since afk warms a remote-controlled session
+    if (afk !== wasAfk) await armHot($);
     const waker = (await $.store.get(WAKER_KEY)) as
         | { on?: boolean }
         | undefined;
@@ -2108,12 +2111,26 @@ async function saveHot($: EngineInterface) {
     else await $.store.delete(HOT + sid);
 }
 
+// 💨 afk on keeps every remote-controlled session warm too, as if its 🔥 were on (o161): each session's own stash
+// pings itself, counted from its last turn end
+async function isAfkWarm($: EngineInterface) {
+    if (!afk || !(await partsShown($))('stash.afk')) return false;
+    const sid = await currentId($);
+    return (await registry($).catch(() => [])).some(
+        (r) => r.base.sid === sid && r.isBridged,
+    );
+}
+
 async function armHot($: EngineInterface) {
     const mine = ++hotGen;
-    if (!hot || isBusy) return;
-    const wait = hot.since + HOT_MS - (await $.clock.now());
-    $.clock.after(Math.max(0, wait), async () => {
-        if (!hot || isBusy || mine !== hotGen) return;
+    if (isBusy) return;
+    const now = await $.clock.now();
+    const since =
+        hot?.since ?? ((await isAfkWarm($)) ? (endedAt ?? now) : undefined);
+    if (since === undefined) return;
+    $.clock.after(Math.max(0, since + HOT_MS - now), async () => {
+        if (isBusy || mine !== hotGen) return;
+        if (!hot && !(await isAfkWarm($))) return;
         if (!(await partsShown($))('stash.hot')) return;
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
         await selfSubmit($, PING);
@@ -2436,6 +2453,8 @@ type Registered = {
     startedAt?: number;
     // the desktop's own id for the session (`local_…`), which a peer's envelope or a link may carry
     hostId?: string;
+    // remote control holds the session: the registry names its bridge
+    isBridged?: boolean;
     base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince'>;
 };
 
@@ -2494,6 +2513,7 @@ async function registry($: EngineInterface): Promise<Registered[]> {
                 bg,
                 cwd: text(v.cwd),
                 hostId: text(v.hostSessionId),
+                isBridged: Boolean(text(v.bridgeSessionId)),
                 pid: v.pid,
                 startedAt:
                     typeof v.startedAt === 'number' ? v.startedAt : undefined,

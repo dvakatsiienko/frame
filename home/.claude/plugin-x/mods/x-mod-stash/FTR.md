@@ -108,6 +108,11 @@
   - given 🔥 is on
   - when two pings fire, or the mod reloads in between
   - then 🔥 is still ticked, and the next ping comes 50 minutes after the last turn ended
+- ⬜ 💨 afk keeps every remote-controlled session warm (o161)
+  - given 💨 afk on and a session the registry names a remote-control bridge for, with its 🔥 off
+  - when 50 minutes pass after its last turn ended, then it gets the keep-hot ping; afk switched on from any board arms it at that session's next poll
+  - given afk off, or a session no remote control holds, then only a 🔥 that is on pings it; afk switched off before the ping cancels it
+  - decision: no new button — afk is the switch; each session's own stash pings itself, nothing pings another session
 - ✅ a ping's turn keeps what the session waits on
   - given the session's last reply ended on a 🔭 line
   - when a keep-hot ping fires and its one-character reply ends
