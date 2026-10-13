@@ -349,7 +349,7 @@
 - ⬜ a 🐦‍🔥 button beside every row's ctx meter asks that session for a second wind
   - makes: a `wind:<session id>` key in the store, read by every board and by that session's own stash
   - given the board is open, then every row, cclio's and this one's included, draws a plain 🐦‍🔥 left of its ctx meter
-  - when dima presses a row's 🐦‍🔥, then it reads 📨 and a dim line under the row reads `🐦‍🔥 second wind: asked, waits for its next turn (<age>)`; no turn starts
+  - when dima presses a row's 🐦‍🔥, then it reads 🥚 and a dim line under the row reads `🐦‍🔥 second wind: asked, waits for its next turn (<age>)`; no turn starts
   - given the ask, when that session's next turn starts — dima's prompt, a member's ping, a wake — then its context carries the second wind note once and the button reads ✍️ (`finishing its step, then its handoff`)
   - given cclio's row is asked, then her note names her good stop: no new todos, the tails solved, `cclio:checkpoint`, the fleet told, her after-pickup ask into orbit
   - and every note, cclio's included, has the handoff open with the role's init list as its first first-act — the skills the role loads at its start, the files it reads whole — since a compact re-attaches only some skills (todo 26, cclio's audit of the first live press, 18:57)
@@ -358,12 +358,13 @@
   - decision: name and emoji are dima's, 10-13 17:31 (o1, over «graceful-ctx-refresh»); the session's state is drawn in the line under its row, since a pane holds no hover card (`engine.md`)
   - decision: compact, never clear: the session id keeps its orbit, phases, kept state and glide link (`.scratch/mods-l13/refresh-proposal.md`)
 - ⬜ the band's 🐦‍🔥 asks this session for a second wind
-  - given the band, then a plain 🐦‍🔥 leads the band's buttons, left of 🔥 keep-hot (dima's o8 and o11, 18:29–18:35); it presses as a row's button does, for this session only, and reads its state (📨, ✍️, 🌀), its hover naming it (dima, 10-13 18:01)
+  - given the band, then a plain 🐦‍🔥 leads the band's buttons, left of 🔥 keep-hot (dima's o8 and o11, 18:29–18:35); it presses as a row's button does, for this session only, and reads its state (🥚, ✍️, 🌀), its hover naming it (dima, 10-13 18:01)
 - ⬜ a second press takes a second wind back
-  - given the button reads 📨, when dima presses it again, then the ask is gone unseen and the button reads 🐦‍🔥
+  - given the button reads 🥚, when dima presses it again, then the ask is gone unseen and the button reads 🐦‍🔥
   - given it reads ✍️, when dima presses it, then it reads 📨 (`cancelled, tells it at its next turn`), and that turn carries one «second wind cancelled» line; a third press before then asks again
   - given it reads 🌀, then a press changes nothing
-  - decision: no timer ever cancels or compacts: an idle session waits on 📨 until its next turn (dima, o2; cclio 17:32)
+  - decision: no timer ever cancels or compacts: an idle session waits on 🥚 until its next turn (dima, o2; cclio 17:32)
+  - decision: asked reads 🥚, the phoenix before it hatches: 📨 is the undo tick's (dima's emoji battle, o13, 19:14)
 - ⬜ `🐦‍🔥 second wind` switched off in 🎛️ settings is off for the model too
   - given it is off, then no row draws the button or the line, no turn carries a second wind note, `op second-wind` is refused in one line naming the switch, and a named handoff never compacts
 

@@ -1358,7 +1358,7 @@ test('a press asks that session: the button and the line under its row say so', 
                 type: 'Text',
             })
         )?.text,
-    ]).toEqual(['📨', expect.stringContaining('second wind')]);
+    ]).toEqual(['🥚', expect.stringContaining('second wind')]);
 });
 
 test('a second press before the note went out takes the ask back, unseen', async ($, on) => {

@@ -290,5 +290,5 @@ test("the band's 🐦‍🔥 asks this session, and reads its state", async ($, 
         before,
         (await ui.find({ key: 'wind', type: 'Button' }))?.text,
         cards.includes('second wind: asked, waits for its next turn'),
-    ]).toEqual(['🐦‍🔥', '📨', true]);
+    ]).toEqual(['🐦‍🔥', '🥚', true]);
 });

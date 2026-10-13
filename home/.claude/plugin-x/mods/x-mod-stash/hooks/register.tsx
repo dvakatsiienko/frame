@@ -546,7 +546,7 @@ const COST_HINT =
     "💵 a cost question: read ~/frame/docs/knowledge/fleet-models.md before answering (each model's price line, and the «cache reads are where agents spend» bullet), never from recall.";
 // the button's emoji per state; idle draws the bird
 export const WIND_EMOJI = {
-    asked: '📨',
+    asked: '🥚',
     cancelled: '📨',
     idle: '🐦‍🔥',
     refreshing: '🌀',
