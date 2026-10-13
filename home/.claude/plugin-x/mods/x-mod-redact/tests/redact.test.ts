@@ -67,3 +67,23 @@ test('a kept tool result is stored masked', async ($, on) => {
         .catch(() => undefined);
     expect(JSON.stringify(stored)).toMatch(/key: ‹sk-ant…[0-9a-f]{8}›/);
 });
+
+// built at run time, so no literal key sits in the file: a live redactor would mask the source too (engine.md)
+const FAKE_KEY = ['sk', 'ant', 'api03', 'FAKEFAKEFAKEFAKEFAKE0000'].join('-');
+
+test('a submitted prompt reaches the engine masked, before it is queued', async ($, on) => {
+    const seen: string[] = [];
+    on('prompt.submit', (_$, e) => {
+        seen.push(e.text);
+        return { text: e.text };
+    });
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: `use ${FAKE_KEY} for the probe`,
+        wait: false,
+    });
+    expect([
+        seen.some((t) => t.includes(FAKE_KEY)),
+        seen.some((t) => /‹sk-ant…[0-9a-f]{8}›/.test(t)),
+    ]).toEqual([false, true]);
+});

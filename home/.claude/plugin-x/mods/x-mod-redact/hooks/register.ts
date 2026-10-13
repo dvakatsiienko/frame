@@ -112,6 +112,16 @@ export const register: Register = (on) => {
         return next({ ...e, message: { ...e.message, content } });
     }).catch(appendCaught);
 
+    // a prompt is masked as it is submitted, before the engine queues it: a prompt typed mid-turn is stored raw in its
+    // queue-operation and queued_command records, which session.append never sees (todo 24, probed 10-13 18:35)
+    on('prompt.submit', async ($, e, next) => {
+        const text = await redactOrMask($, e.text, next.budget.remainingMs);
+        return text === e.text ? next(e) : next({ ...e, text });
+    }).catch(($, e, next) => {
+        $.ui.log('x-mod-redact: the prompt hook failed; masked one way');
+        return next({ ...e, text: maskText(e.text) });
+    });
+
     // `/clear` and `/resume` leave the conversation: its placeholders stop meaning anything at once
     on('command.run', async ($, e, next) => {
         const r = await next(e);

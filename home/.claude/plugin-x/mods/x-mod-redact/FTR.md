@@ -14,7 +14,9 @@
   - decision: one `session.append` hook rewrites every row — a tool result, a prompt, a reply — since the engine stores and sends the rewritten form; the screen may flash the raw row first
   - decision: the placeholder carries no glob characters — the model writes it into shell commands, and `[redacted]` broke a zsh `echo` in the live probe
   - proven live 2026-10-05 for the one-way mask: a headless `claude --plugin-dir` run echoed a planted `sk-ant-…` fake; 8 rows came out masked, the reply too
-  - 📌 one raw copy stays: a queued prompt's `queue-operation` record, which the engine writes before any hook runs — a mod cannot reach it; 2.1.295 fixed that record for a prompt a `prompt.submit` hook rewrote, but redact rewrites in `session.append`, so the copy is expected to stay — unprobed at 2.1.296 (queue a prompt holding a fake key while a turn runs, then grep the jsonl's `queue-operation` row)
+  - and a prompt is masked as it is submitted: a `prompt.submit` hook rewrites its text before the engine queues it, so a prompt typed mid-turn reads the placeholder in its `queue-operation` and `queued_command` records too, which `session.append` never sees (todo 24)
+  - proven live 2026-10-13 18:40 on cc 2.1.296: a stream-json `claude -p` got a fake `sk-ant-…` key 5 s into a sleeping turn; the jsonl held it 0 times raw, 3 times as the placeholder, the queue's `remove` row and the `queued_command` attachment included (cclio's 18:35 probe, before the hook: raw in 3 records)
+  - 📌 one raw copy stays: the `enqueue` row of a prompt given on `claude -p`'s command line, written before any hook runs (probed 18:44, `pnpm mods:probe-x-mod-redact`); the gap is in `mods/workarounds.md`
 - ✅ one value reads as one placeholder
   - given the same key appears in two rows
   - then both read the same placeholder, so the model can tell two keys apart and name the one it means
@@ -51,7 +53,7 @@
 - ✅ `pnpm mods:probe-x-mod-redact` proves x-mod-redact live, end to end
   - given x-mod-redact is loaded (`CLAUDE_CODE_PLUGIN_DIRS`)
   - when the probe runs: a headless `claude -p` gets a planted fake key in its prompt and must `printf` it through `tee` into a file
-  - then it exits 0 when the file holds the real value, the session's jsonl holds the value only in its `queue-operation` record, and at least one row reads the placeholder; else it exits 1 and names which check failed
+  - then it exits 0 when the file holds the real value, no record of the session's jsonl holds the value raw but the argv prompt's own `queue-operation` enqueue row, and at least one row reads the placeholder; else it exits 1 and names which check failed
   - makes: one transcript under `~/.claude/projects/` holding the fake only, named by the probe's `--session-id`, printed in its output
   - decision: the fake is built by concatenation, so no source line reads as a secret to a live redactor
   - proven red 2026-10-05: with x-mod-redact's tool-result step removed, the probe exits 1; restored, it exits 0
