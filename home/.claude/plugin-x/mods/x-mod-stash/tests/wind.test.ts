@@ -147,6 +147,33 @@ for (const [who, name] of [
         expect(notes(w.lines).map((n) => INIT_LIST.test(n))).toEqual([true]);
     });
 
+const WIND_HEAD = '🐦‍🔥 second wind: dima asked you';
+
+test('a press on a busy session joins its next tool step once', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+    const first = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
+    const second = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
+    expect([
+        notes([...(first.context ?? [])]).map((n) => n.startsWith(WIND_HEAD)),
+        notes([...(second.context ?? [])]),
+        (w.store.get(`wind:${SID}`) as { state?: string }).state,
+    ]).toEqual([[true], [], 'writing']);
+});
+
+test('a press on an idle session wakes nothing: the ask waits for its next turn', async ($, on) => {
+    const w = world(on);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+    await start($);
+    await w.clock.advance(60_000);
+    expect([
+        notes(w.lines),
+        (w.store.get(`wind:${SID}`) as { state?: string }).state,
+    ]).toEqual([[], 'asked']);
+});
+
 test('a session nobody asked reads no second wind line', async ($, on) => {
     const w = world(on);
     await start($);

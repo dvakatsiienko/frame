@@ -5768,6 +5768,14 @@ export const register: Register = (on) => {
             notes.push(...(await takeLaneMoves($)));
             notes.push(...(await takeLaneSteers($, await readLanes($))));
         }
+        // 🐦‍🔥 a press while this session works slipstreams into its next tool step, as a tick does; an idle one waits
+        // for its next turn, never woken (dima, 19:14)
+        if (isOn('stash.second-wind')) {
+            const wind = await takeWind($, await isLaneOwner($)).catch(
+                () => undefined,
+            );
+            if (wind) notes.push(wind);
+        }
         // dima's phases mark joins the running turn once its sending window passed
         const p = (await currentOrbit($)).plan;
         if (

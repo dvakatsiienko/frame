@@ -351,6 +351,7 @@
   - given the board is open, then every row, cclio's and this one's included, draws a plain 🐦‍🔥 left of its ctx meter
   - when dima presses a row's 🐦‍🔥, then it reads 🥚 and a dim line under the row reads `🐦‍🔥 second wind: asked, waits for its next turn (<age>)`; no turn starts
   - given the ask, when that session's next turn starts — dima's prompt, a member's ping, a wake — then its context carries the second wind note once and the button reads ✍️ (`finishing its step, then its handoff`)
+  - and a press while that session works joins its next tool step instead, once, the way a tick slipstreams; an idle session is never woken (dima, 19:14, todo 27)
   - given cclio's row is asked, then her note names her good stop: no new todos, the tails solved, `cclio:checkpoint`, the fleet told, her after-pickup ask into orbit
   - and every note, cclio's included, has the handoff open with the role's init list as its first first-act — the skills the role loads at its start, the files it reads whole — since a compact re-attaches only some skills (todo 26, cclio's audit of the first live press, 18:57)
   - given the note, when the session calls orbit's `op second-wind` with the slug of the handoff it wrote, then the button reads 🌀 (`compacting onto its handoff`); at that turn's end the mod runs `/compact` with a keep line naming the slug, then `/x:handoff-ingest <slug>`, once, and the button goes back to 🐦‍🔥
