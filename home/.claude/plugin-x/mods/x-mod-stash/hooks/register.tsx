@@ -445,6 +445,7 @@ const isNumberField = (key: string) =>
 // what the trim cut (dima's wisp, 10-13 15:42); only spaces is no steer, and the model reads it trimmed
 const steerOf = (value: string) => (value.trim() ? value : undefined);
 function field($: EngineInterface, key: string, saved: string) {
+    // clock-ok: a field draws in a sync render, where $.clock.now() cannot be awaited
     const view = fieldView(drafts.get(key), saved, Date.now());
     if (view.kind === 'held') drafts.set(key, view.draft);
     else drafts.delete(key);
@@ -459,6 +460,7 @@ function field($: EngineInterface, key: string, saved: string) {
         type: (text: string, save: () => unknown) => {
             drafts.set(
                 key,
+                // clock-ok: a keystroke lands in a sync handler, where $.clock.now() cannot be awaited
                 typedInto(drafts.get(key), value, text, Date.now()),
             );
             // a number is a few characters and never scrolls: it saves on each keystroke, as its refusal line needs
@@ -2300,6 +2302,7 @@ async function publish($: EngineInterface) {
             boardText !== boardPublished &&
             !isTypingAt(
                 [...drafts.values()].map((d) => d.at),
+                // clock-ok: compared with the drafts' own Date.now() stamps, so both sides read one clock
                 Date.now(),
             )
         ) {

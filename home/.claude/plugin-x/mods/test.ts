@@ -2,12 +2,18 @@
 // tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test file with the mod's
 // harness on a copy of the one mod named (FRM-388)
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdtempSync, readdirSync } from 'node:fs';
+import {
+    cpSync,
+    existsSync,
+    mkdtempSync,
+    readFileSync,
+    readdirSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
-type Run = { mod: string; output: string };
+type Run = { clockReads?: string[]; mod: string; output: string };
 
 // claude plugin test's words, read the same way by `x mods edit test` (x/go/mods.go testOutcome); both parsers are
 // held to plugin-test.sample.txt: a test file that cannot load is «errored», a test that runs and fails is «failed»
@@ -34,7 +40,7 @@ export function summary(runs: Run[]) {
     let pass = 0;
     let fail = 0;
     const red: string[] = [];
-    for (const { mod, output } of runs) {
+    for (const { clockReads, mod, output } of runs) {
         const { errored, failed, passed } = outcome(output);
         if (!passed && !failed.length && !errored.length) {
             red.push(`${mod} (no tally)`);
@@ -42,7 +48,9 @@ export function summary(runs: Run[]) {
         }
         pass += passed;
         fail += failed.length + errored.length;
-        if (errored.length)
+        if (clockReads?.length)
+            red.push(`${mod} (clock read at ${clockReads.join(', ')})`);
+        else if (errored.length)
             red.push(`${mod} (${errored.join(', ')} did not load)`);
         else if (failed.length) red.push(mod);
     }
@@ -78,6 +86,45 @@ export function failures(output: string) {
     return kept.filter(Boolean).join('\n');
 }
 
+// a bare clock read in a mod's hooks is a date bomb: a test fakes `$.clock`, never Date, so the read passes until the
+// day moves (todo 1's baseline: 511 pass, 2 red). `$.clock.now().catch(() => Date.now())` passes; a sync path with no
+// `$.clock` to await names itself with `// clock-ok: <why>` on the line above. answers the 1-based lines of each read
+export function clockReads(source: string) {
+    const blank = (m: string) => m.replace(/[^\n]/g, ' ');
+    const code = source
+        .replace(CLOCK_FALLBACK, blank)
+        .replace(
+            /(^|[ \t])\/\/[^\n]*/gm,
+            (m, lead: string) => lead + blank(m.slice(lead.length)),
+        )
+        .replace(/^[ \t]*\*[^\n]*/gm, blank);
+    const lines = source.split('\n');
+    const hits: number[] = [];
+    for (const m of code.matchAll(CLOCK_READ)) {
+        const line = code.slice(0, m.index).split('\n').length;
+        if (!/\/\/\s*clock-ok:\s*\S/.test(lines[line - 2] ?? ''))
+            hits.push(line);
+    }
+    return hits;
+}
+const CLOCK_READ = /\bDate\s*\.\s*now\b|\bnew\s+Date\b(?!\s*\(\s*[^)\s])/g;
+const CLOCK_FALLBACK =
+    /\$\.clock\s*\.\s*now\(\s*\)\s*\.catch\(\s*(?:\(\s*\)\s*=>\s*Date\.now\(\s*\)|Date\.now)\s*,?\s*\)/g;
+
+// every clock read under a mod's hooks/, as `hooks/<file>:<line>`
+function hookClockReads(dir: string) {
+    const hooks = join(dir, 'hooks');
+    return readdirSync(hooks, { recursive: true })
+        .map(String)
+        .filter((f) => /\.tsx?$/.test(f))
+        .sort()
+        .flatMap((f) =>
+            clockReads(readFileSync(join(hooks, f), 'utf8')).map(
+                (line) => `hooks/${f}:${line}`,
+            ),
+        );
+}
+
 if (import.meta.main) {
     const root = import.meta.dirname;
     const { positionals, values } = parseArgs({
@@ -111,7 +158,12 @@ if (import.meta.main) {
         const output = `${r.stdout}${r.stderr}`;
         const failed = failures(output);
         if (failed) process.stdout.write(`${mod}:\n${failed}\n`);
-        runs.push({ mod, output, status: r.status });
+        const clock = hookClockReads(dir);
+        if (clock.length)
+            process.stdout.write(
+                `${mod}: a clock read outside $.clock (date bomb), give it the $.clock fallback or a clock-ok line above:\n${clock.map((c) => `  ${c}`).join('\n')}\n`,
+            );
+        runs.push({ clockReads: clock, mod, output, status: r.status });
     }
     const line = summary(runs);
     console.log(`\n${line}`);
