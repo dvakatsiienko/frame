@@ -50,4 +50,6 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 
 ## rounds
 
+- round 1 (2026-10-14): composer started as e80c18d2, Haiku 5.5 medium, bgIsolation none; first batch b1
+
 ## verdict
