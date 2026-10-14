@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-14 15:17'
+updated_date: '2026-10-14 16:25'
 due_date: '2026-10-16'
 labels:
   - m
@@ -54,4 +54,10 @@ dima 22:07: before any skill groom, the skills recipe gets its x:shape-recipe pa
 parked: it is the order of sweep step 9.5 (the groom), read there; nothing to do before it. 15:34: step order is now 9.2 census → 9.3 prune → 9.4 conflict hunt → 9.5 groom
 
 2026-10-14 round A riders in the uncommitted crew-coder draft: line 1 (ping events → x:crew-dna pointer), line 12 (essentials | separator), o64 (x lane merge-main, no rebase), line 19 (how-you-work: one bulk-edit door). they ship with the PK-83 commit.
+
+18:58 round 1 (crew-coder, crew-verifier) committed after a deep wishkeeper read + two Claude B dry runs; x 0.11.303. next: round 2 crew-lead + fleet-models + spawning-mechanics (o76–o81), then most-used/most-bleeding, the 7 bytes next-dev lines
+
+19:08 round 2 (o75): fleet-models + spawning-mechanics → crew-lead/references, committed 12e11d45; spawn read unchanged 47.3 KB (the drafted core would have duplicated SKILL.md, so none was added); next: crew-lead SKILL.md + briefing groom to cut the spawn read, then most-used/most-bleeding
+
+19:24 round 3 crew-lead committed (96646041) after wishkeeper + ccrow; parked on dima's word. next: most-used and most-bleeding skills, the 7 bytes next-dev lines, then commit round B's edits composer holds
 <!-- SECTION:NOTES:END -->

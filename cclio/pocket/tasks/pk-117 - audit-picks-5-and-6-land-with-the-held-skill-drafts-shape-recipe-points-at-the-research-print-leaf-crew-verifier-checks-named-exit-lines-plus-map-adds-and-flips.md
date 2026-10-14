@@ -4,10 +4,10 @@ title: >-
   audit picks 5 and 6 land with the held skill drafts: shape-recipe points at
   the research print leaf, crew-verifier checks named exit lines plus map adds
   and flips
-status: open
+status: done
 assignee: []
 created_date: '2026-10-13 16:58'
-updated_date: '2026-10-14 12:57'
+updated_date: '2026-10-14 15:55'
 due_date: '2026-10-15'
 labels:
   - s
@@ -28,4 +28,6 @@ dima ticked both in o176 (19:48). they wait on the uncommitted shape-recipe and 
 <!-- SECTION:NOTES:BEGIN -->
 16:00 pick 5 landed: shape-recipe step 3 prints in habit-research-lanes's research-print shape, plus its checklist and open vectors; the owner section's duplicate print list is gone.
 parked: pick 6 (crew-verifier checks named exit lines plus map adds and flips) lands with PK-83's groom of the crew-verifier drafts
+
+18:58 landed: crew commit bc274fcb + crew-dna c4fe555a, x 0.11.303
 <!-- SECTION:NOTES:END -->

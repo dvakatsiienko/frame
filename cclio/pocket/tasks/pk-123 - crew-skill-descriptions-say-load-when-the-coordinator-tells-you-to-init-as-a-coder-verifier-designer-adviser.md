@@ -3,10 +3,10 @@ id: PK-123
 title: >-
   crew skills load by name: descriptions fire on a brief naming the skill,
   misses measured
-status: claimed
+status: done
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 13:03'
+updated_date: '2026-10-14 15:55'
 due_date: '2026-10-14'
 labels:
   - xs
@@ -44,4 +44,6 @@ parked: the last two descriptions (crew-coder, crew-verifier) land with PK-83's 
 16:03 superseded: the «init yourself as …» notes above are the version dima rejected (15:39: «don't copy my prompt verbatim, optimize it»); live descriptions read «Load when your brief or first prompt names this skill …».
 his want (15:39): «optimize it, and ask crew coders to optimize it to activate themselves in a way that is optimal … assume it is not expanded, so we have to measure it».
 next step: the next coder or verifier spawn's brief asks it to propose its own trigger wording in its first reply; that reply is round 1 in docs/test-drive/skill-named-load.md (named vs loaded + its wording).
+
+18:58 landed: crew commit bc274fcb + crew-dna c4fe555a, x 0.11.303
 <!-- SECTION:NOTES:END -->

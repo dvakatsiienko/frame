@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:23'
-updated_date: '2026-10-12 17:54'
+updated_date: '2026-10-14 16:09'
 due_date: '2026-10-26'
 labels:
   - m
@@ -29,4 +29,6 @@ dima, 2026-10-12 (o3): postpone the spawning-mechanics refresh to right after th
 parked: waits for the memory sweep (FRM-267) to close; dima, 2026-10-12
 
 dima o94 ✓ 20:54: this run also measures the auto-compact threshold — exercise CLAUDE_AUTOCOMPACT_PCT_OVERRIDE / autoCompactWindow / --autocompact (spawning-mechanics.md:325-329), and where quality drops; the 600–700k manual checkpoint stays until then
+
+19:08: spawning-mechanics now lives at home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md (o75), fleet-models at references/model-cards.md
 <!-- SECTION:NOTES:END -->
