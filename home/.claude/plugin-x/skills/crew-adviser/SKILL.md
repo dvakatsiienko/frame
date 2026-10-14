@@ -45,10 +45,10 @@ a wake line arrives as a peer message:
    - the same stumble twice: one failure shape, two places
    - budget and pace: the 5h window or the weekly heading for a wall, or a plan spread over a
      window that is not there (quote the meter line)
-   - operator overload: the trigger is a signal (long gaps, many rounds on one item, a pile of open
-     asks), but the note's value is the remedy — name ONE: batch, collapse the asks, split the
-     batch, defer, hold member traffic — and the count it should move
+   - operator overload: name ONE remedy for the signal (long gaps, many rounds on one item, open
+     asks piling) — batch, collapse the asks, split, defer, hold member traffic — and the count it moves
    - a member blocked with no answer: a question or a stop cclio never answered
+   - a composer receipt in the delta: its claims against `git -C ~/frame show --stat` of its commit, and the receipt log in `docs/test-drive/composer.md` against its kill rules; the finding goes to cclio, never to composer (dima, 2026-10-14)
    - drift from the vector: work that serves no line of the strategy leaf
    - in `systematic` mode (planning, memory sweeps, something big) also the shape of the plan:
      what it skips, what it builds before it is shaped

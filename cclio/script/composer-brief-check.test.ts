@@ -13,9 +13,14 @@ writeFileSync(
 );
 
 const brief = (...chores: string[]) =>
-    [`# batch bX`, '', `paths under ${root}/. no commit.`, '', ...chores].join(
-        '\n',
-    );
+    [
+        `# batch bX`,
+        '',
+        `paths under ${root}/. no commit.`,
+        '',
+        ...chores,
+        'done: rg prints nothing',
+    ].join('\n');
 
 describe('composer-brief-check', () => {
     test('passes an anchor that matches once on one line', () => {
@@ -67,5 +72,14 @@ describe('composer-brief-check', () => {
                 readHolds(store),
             ).reds,
         ).toEqual([expect.stringContaining('held by session 8956ae99')]);
+    });
+
+    test('reds a brief with no done: line', () => {
+        expect(
+            checkBrief(
+                `paths under ${root}/.\n1 a.md\n- old: \`one line here\``,
+                new Map(),
+            ).reds,
+        ).toEqual([expect.stringContaining('no done: line')]);
     });
 });

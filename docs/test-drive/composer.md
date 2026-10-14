@@ -38,7 +38,11 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 ## the rules of the trial
 
 - calibration: cclio reads every diff of the first 10 chores, never the receipt alone, and logs each
-  miss a receipt hid; rerun-on-surprise starts only after a clean 10 (the plan critic)
+  miss a receipt hid; rerun-on-surprise starts only after a clean 10 (the plan critic) — closed
+  2026-10-14: 18 chores, 15 green first pass, 1 rework, every consult traced to cclio's brief
+- after calibration (dima, 2026-10-14): cclio lints each brief (`composer-brief-check.ts`) and stops
+  reading every diff; ccrow checks the receipts at her own wakes (`x:crew-adviser` hunts) and names a
+  miss to cclio; the measure is cclio's tool calls per batch, before (b1–b11) and after
 - the ceiling, named up front: Edit and Write were ~1 % of cclio's tool output on 10-14, Bash ~61 % —
   composer's gain lives in retry loops and multi-file replaces, not in edit echoes
 - the quiet-comms trial ends 2026-10-19: if `[progress]` holding is dropped then, composer's receipts

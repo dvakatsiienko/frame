@@ -25,6 +25,10 @@ export function parseBrief(text: string) {
 export function checkBrief(text: string, holds: Map<string, Hold>) {
     const { chores, root } = parseBrief(text);
     const reds: string[] = [];
+    if (!/^done:/m.test(text))
+        reds.push(
+            'the brief has no done: line — composer proves a chore by it',
+        );
     for (const chore of chores) {
         const file = path.resolve(root, chore.path);
         if (!existsSync(file)) {
