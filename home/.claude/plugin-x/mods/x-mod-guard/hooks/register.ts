@@ -2,7 +2,7 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context, Refusal } from './rules/command.ts';
-import { hints } from './rules/hint.ts';
+import { hints, slowHint, slowShapes } from './rules/hint.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
 import { SPEC_DOOR, SPEC_WHY, isSpecMissing } from './rules/spec.ts';
@@ -518,6 +518,30 @@ async function lookUp(
     return { briefs, cleanTrees, kinds, manifestDirs, missing };
 }
 
+// a foreground Bash that held the session over a minute is remembered by its shapes; the next foreground run of one
+// reads a hint toward run_in_background (dima's o113: the 2-minute gates of 10-14 added up)
+const SLOW = 'slow:';
+const SLOW_MS = 60_000;
+async function rememberSlow(
+    $: EngineInterface,
+    shapes: string[],
+    took: number,
+) {
+    if (took < SLOW_MS) return;
+    for (const shape of shapes)
+        await $.store.set(SLOW + shape, { ms: took }).catch(() => undefined);
+}
+async function slowSeen($: EngineInterface, shapes: string[]) {
+    const seen: string[] = [];
+    for (const shape of shapes) {
+        const was = (await $.store.get(SLOW + shape).catch(() => undefined)) as
+            | { ms: number }
+            | undefined;
+        if (was) seen.push(slowHint(shape, Math.round(was.ms / 1000)));
+    }
+    return seen;
+}
+
 export const register: Register = (on) => {
     // a Monitor's command is a shell command too
     on('tool.call', { tool: /^(Bash|Monitor)$/ }, async ($, e, next) => {
@@ -551,7 +575,15 @@ export const register: Register = (on) => {
         });
         // the model typed the old command: it is told what changed, or it reads a surprise
         const go = async () => {
+            const isForeground =
+                e.tool === 'Bash' && e.run_in_background !== true;
+            const shapes = isForeground ? slowShapes(command, cwd) : [];
+            const slow = await slowSeen($, shapes);
+            const started = await $.clock.now().catch(() => undefined);
             const result = await next(notes.length ? { ...e, command } : e);
+            const ended = await $.clock.now().catch(() => undefined);
+            if (started !== undefined && ended !== undefined)
+                await rememberSlow($, shapes, ended - started);
             if (result.deny !== undefined) return deny(result.deny);
             const isQuiet = await isSilent($, ctx.home);
             const context = [
@@ -562,6 +594,7 @@ export const register: Register = (on) => {
                     : []),
                 ...(drift && result.isError ? [drift] : []),
                 ...(isQuiet ? [] : hints(command, cwd, ctx)),
+                ...(isQuiet ? [] : slow),
             ];
             if (!context.length) return result;
             return {
