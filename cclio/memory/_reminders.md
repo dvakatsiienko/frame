@@ -49,12 +49,10 @@ Store contract: the `x:remind` skill. Both tiers die only when Dima drops them.
 
 ⏰ 🦡 before every halt: dima runs his own retro in this thread, and in ccrow's window he types «read /Users/dima/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md and run it over cclio's session from your packets; focus: <his steer>» (`ls ~/.claude/plugins/cache/mattpocock/mattpocock-skills/` names the version). cclio reminds him, then runs its own retro beside it, one flush. dima 2026-10-07: «yes remind me» · «i want to gather the retro from ccrow myself next time» — set 2026-10-07, moved from the pocket 2026-10-09
 
-⏰📌 🦉🎨 the next atelier touch carries [BYT-127](https://linear.app/x-com/issue/BYT-127) (lottie / rive test drive) into its brief — dima, 2026-10-10: «pick it up next time we touch atelier, but don't forget». dies when BYT-127 starts — set 2026-10-10
 ⏰ 🦉📊 the #dima-caught recheck — 2026-10-25: `x fleet flow --days 14` vs today's 31 (baseline 23), tallied by type with a sifter this time; the 06.5 ledger line in `docs/test-drive/memory-sweep.md` names it — set 2026-10-11 · due: 2026-10-25
 ⏰ 🦉🧠 when the jev router comes back on (credit ~10-18): the two «skills (jev router)» lines parked at the end of `sys-jev.md` go back into root `CLAUDE.md` § skills — set 2026-10-11 · due: 2026-10-18
 ⏰ 🦉🔀 2026-10-25, with the #dima-caught recheck: count Agent + `run_in_background` calls per cclio session for 14 days vs the 14 before 10-11 (duckdb over transcripts) — root's parallel-work lines were cut to one on 10-11, dima: «let's try to delete and see how your performance changes» — set 2026-10-11 · due: 2026-10-25
 
-⏰📌 🦉🎨 a small UI ask on an app the design flow covers (atelier now, speak next) goes to a coder with its `DESIGN.md` + a live screenshot, no designer; one rounds line in `docs/test-drive/design-drift.md` (dima, 2026-10-11: «keep this trial reminding me to run a coder on applicable apps») — standing — set 2026-10-11
 
 ⏰ 🦉🛡️ 2026-10-18: flip FRM-398 from warn to refuse — remove `raw-linear` from `WARN_ONLY` in `home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts` (one line, through `x mods edit`); a warning that shows a wrong hit reopens FRM-398 instead. dima o234: «warn-only for a week, then refuse» — set 2026-10-11 · due: 2026-10-18
 
