@@ -49,8 +49,10 @@ age from `createdAt`, ci from `statusCheckRollup`.
 the judge reads notes, never titles. **every updated renovate and apps entry gets its notes read over
 the whole range** before step 3 decides anything. **brew is read by use**: a formula or cask whose binary
 shows in the last 14 days of our Bash calls or dima's zsh history (one `duckdb` query over the
-transcripts plus `~/.zsh_history`) gets the full read; any other one only on a major, head note only
-(ccrow, 2026-10-14: the 96-entry brew read was most of the 350k, and every keep passed this filter); a line that
+transcripts plus `~/.zsh_history`) gets the full read; every other updated one still gets a skim of its newest release headline,
+promoted to a full read when the headline names a new capability, a rewrite or a perf number — the
+cut saves tokens, never the news (dima, 2026-10-14: «don't cut everything, or evergreens get too bare»;
+ccrow: the 96-entry brew read was most of the 350k). the apps lane and renovate keep the full read; a line that
 says «notes unread» is a step skipped (dima 2026-09-28: «how this line is useful for me without
 knowing whats interesting new in a major?»). the read is heavy (31 entries = ~215k tokens,
 ~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs in a fresh agent on Sonnet 5.5, never a fork,
