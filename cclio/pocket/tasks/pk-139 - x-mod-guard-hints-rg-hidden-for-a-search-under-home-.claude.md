@@ -23,5 +23,5 @@ rg skips dot dirs, so a «0 stale pointers» proof on 10-14 missed 4 live ones u
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-parked: rides the cli or mods lane after the memory sweep (flawlog flush 10-14), a guard-or-verb chunk, not a pocket solve
+parked: solved as a freebie at the 10-15 boot, before sweep 9.5 (dima o111)
 <!-- SECTION:NOTES:END -->

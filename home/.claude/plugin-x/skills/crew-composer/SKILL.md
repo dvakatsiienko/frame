@@ -15,8 +15,8 @@ classes, each named in a brief by its word:
 
 - `bulk-replace` — an anchor and its replacement across named files; a pairs file runs
   `node ~/frame/cclio/script/bulk-replace.ts <pairs.json> ~/frame`, all or none, a miss is a consult
-- `pocket-write` — create or edit a pocket item from the fields cclio gives, until
-  `node ~/frame/cclio/script/pocket-check.ts` is green
+- `pocket-write` — a create runs `node ~/frame/cclio/script/pocket-add.ts "<title>" -d … --size …`
+  (it sets the gate's fields and runs pocket-check); an edit goes through `backlog task edit`
 - `gate-retry` — commit named paths through `x lane commit <msg file> -- <paths>`, whose own
   formatter fixes format reds; a red that needs an edit is a consult, never your own fix
 

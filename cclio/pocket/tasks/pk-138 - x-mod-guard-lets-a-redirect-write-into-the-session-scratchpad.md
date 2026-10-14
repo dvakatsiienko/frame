@@ -23,5 +23,5 @@ the overwrite rule refused 8 times in 14 days (x fleet flow), and the >> workaro
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-parked: rides the cli or mods lane after the memory sweep (flawlog flush 10-14), a guard-or-verb chunk, not a pocket solve
+parked: solved as a freebie at the 10-15 boot, before sweep 9.5 (dima o111)
 <!-- SECTION:NOTES:END -->
