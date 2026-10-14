@@ -6,7 +6,7 @@ title: >-
 status: claimed
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 12:31'
+updated_date: '2026-10-14 12:43'
 due_date: '2026-10-14'
 labels:
   - xs
@@ -36,4 +36,8 @@ done 15:37: crew-coder, crew-verifier, crew-adviser descriptions lead with «ini
 15:33 reopened to claimed (wishkeeper): done only when the commit and the x + cclio plugin bumps land.
 
 15:33: crew-designer description now leads with «init yourself as a designer» too.
+
+15:46: crew-adviser/designer descriptions + briefing committed (198b8d33), x 0.11.294 cache carries them. crew-coder + crew-verifier descriptions sit uncommitted beside the PK-83 drafts — they land with PK-83's groom.
+
+parked: the last two descriptions (crew-coder, crew-verifier) land with PK-83's groom of those drafts
 <!-- SECTION:NOTES:END -->

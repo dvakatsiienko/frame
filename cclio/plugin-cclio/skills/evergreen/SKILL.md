@@ -8,10 +8,17 @@ description: load when dima types /cclio:evergreen, asks «updates?», «what's 
 renovate opens the PRs (`renovate.json` in `bytes` and `frame`: patches daily + automerge on
 green, minors wednesday 09:00 kyiv, majors one PR each with no schedule so they land as found after
 the 3-day cooldown, 0.x never automerges). this skill is the half a bot cannot do: **read, judge,
-tell dima only what he would want to know, act on his word.** 🌲 is her commit prefix (renovate
-writes it), 🧬 her voice here. cadence: **daily, at boot, whenever PRs exist** (dima 2026-09-09:
-«try daily first, refine, then loosen»). the digest itself runs in a fork — the boot path stays
-light.
+tell dima only what he would want to know, keep brew fresh, act on his word.** 🌲 is her commit
+prefix (renovate writes it), 🧬 her voice here. cadence: **daily, at boot, whenever PRs exist** (dima
+2026-09-09: «try daily first, refine, then loosen»).
+
+**the evergreen day flow** (dima, 2026-10-14: the boot parses the plan, evergreen never crowds the inbox):
+1. the boot loads this skill and starts the § 2 read in the background — a fresh agent on Sonnet 5.5,
+   its brief this file's path; the board prints without waiting for it
+2. the report is the first step after dima answers the board: printed whole, each borrow its own orbit ask
+3. batches start only after his evergreen reply; the borrows he ticks run first
+4. every run ends with `brew upgrade` (pinned never), no ask — brew never upgrades itself, keeping it
+   fresh is this skill's job (dima, 2026-10-14)
 
 ## 1. gather
 
@@ -43,7 +50,7 @@ the judge reads notes, never titles. **every updated entry in all three lanes �
 apps — gets its notes read over the whole range** before step 3 decides anything; a line that
 says «notes unread» is a step skipped (dima 2026-09-28: «how this line is useful for me without
 knowing whats interesting new in a major?»). the read is heavy (31 entries = ~215k tokens,
-~7 min, 2026-09-28), so it runs in a fresh general-purpose agent, never the digest fork, with
+~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs in a fresh agent on Sonnet 5.5, never a fork, with
 `parallel-cli extract --full-content` as the first door. no notes anywhere → name the urls
 tried; for a major, diff the old and new npm tarballs (commands, flags) and label that inference.
 
@@ -121,9 +128,9 @@ between. a release post on the project's blog beats the github release body when
 - 🟠 <app> <entry> — [notes](url)
   - 1–4 facts
 
-📋 copy → terminal 📋   ```brew upgrade```   ✂️ end ✂️   ← kept for the day he wants his own hands on it
+🍺 brew upgrade ran: <n> upgraded, <failures or none>
 
-(two orbit asks) merge round: <pkgs> ➡️ yes, and brew upgrade ➡️ yes
+(one orbit ask) merge round: <pkgs> ➡️ yes
 ```
 
 - the four labels are fixed words in a fixed order so his eye lands on the same spot per card.
@@ -143,8 +150,8 @@ between. a release post on the project's blog beats the github release body when
 
 ## 5. act on his word — «approve evergreen» is the whole round
 
-a plain «approve evergreen» (or a 🛎️ on its orbit ask) means: **every ➡️ merge in the report AND
-`brew upgrade` (all outdated, pinned never) run now, by cclio, no second ask.** steers inside the
+a plain «approve evergreen» (or a 🛎️ on its orbit ask) means: **every ➡️ merge in the report runs
+now, by cclio, no second ask.** `brew upgrade` is not part of the ask: it ran with the digest. steers inside the
 same message («hold #61») subtract from the round.
 
 - **the round ends with a loot in every repo it merged into** (`git pull --ff-only`, or a
@@ -167,7 +174,7 @@ same message («hold #61») subtract from the round.
 - **hold** → a peer-range hold gets `gh pr close --comment` with the range named; renovate
   reopens it on the next release of the package. any other hold: nothing, the age prefix
   carries it.
-- **brew** → `brew upgrade` in the background (a long run), the result line in the next reply.
+- **brew** → `brew upgrade` in the background at the end of every run (a long run, `timeout 2400`), the result line in the report.
   the same round diffs `~/Applications/*.app` launchers (a `Contents/MacOS/run.sh` calling `steam://`) against `~/Library/Application Support/Steam/steamapps/common`: a launcher with no game folder is a steam tail every cleaner skips — `trash` it, one line in the digest.
 - after the round: `git pull` both mains, then `pnpm install` in each (his tree is stale until then; lockfile-driven, fast); a merged bytes round redeploys prod, say so. `pnpm dedupe` is its own deliberate commit once in a while, never a reinstall — a wipe re-resolves peers and floats transitives, which is the «different lockfile» he noticed.
   then `/run` on every app the round touched (dima, 2026-09-27: «use run as a sanity check everywhere»); a red run is a digest line and a hold on the next merge.
@@ -195,5 +202,5 @@ same message («hold #61») subtract from the round.
 every open renovate PR is a card or silent with a green ci; every card carries all
 five answers, the breaks answer names the peer-range check; every ➡️ is one of merge / coder /
 hold; on a wednesday every app in the index was read and is a line or silent, and the markers
-advanced after the digest; on «approve evergreen» every merge and the brew upgrade ran and the
+advanced after the digest; `brew upgrade` ran and its line is in the report; on «approve evergreen» every merge ran and the
 reply names what landed, what waits on a rebase, and the new prod deploy count.

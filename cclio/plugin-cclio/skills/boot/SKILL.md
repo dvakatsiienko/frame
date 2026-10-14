@@ -62,8 +62,9 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
 - 📡 **the boot arms both watches, every time**: a project-scope plugin starts no monitors (cc docs, plugins/loading), so pr-watch and ci-watch run only when cclio arms them. `ps -ax -o command | grep -c '[p]r-watch.sh\|[c]i-watch.sh'` prints 2, or arm each missing one as a one-shot background watch: Bash `run_in_background`, `~/frame/cclio/.claude/hooks/watch-once.sh ~/frame/cclio/.claude/hooks/<pr|ci>-watch.sh # deadline: 6 h inside the wrapper` — it ends on the first event line, so only a real event wakes a turn; after handling it, re-arm once, silently, and a no-event end is never a reply to dima. say so on the board. without pr-watch a cloud report branch lands in silence, and silence reads as «still running» (2026-10-08: the adviser cloud lane sat done, unseen).
 - 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:start opus` — a `--bg` session on opus 5.5 medium that writes its own 🔥 key; it refuses when one already runs, which counts as up. the halt stops it.
 - 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or a Wednesday boot
-  whose apps lane says DUE → load `cclio:evergreen` in this thread, then hand its § 2 read to a fresh
-  general-purpose agent DURING the boot**, its brief the skill path itself, never a summary of it (a fork
+  whose apps lane says DUE → load `cclio:evergreen` in this thread, then start its § 2 read in the background
+  on Sonnet 5.5 DURING the boot**, its brief the skill path itself, never a summary of it; the board prints
+  without it, the report is the first step after his board reply (the skill's evergreen day flow) (a fork
   is refused by x-mod-guard; a narrowed helper brief once shipped a skim): the apps
   lane runs on Wednesdays only, as the full changelog since the last `--mark` (dima, 2026-10-11); any
   other day it waits for the next Wednesday, no ask (dima, 2026-10-12). report-only, and say

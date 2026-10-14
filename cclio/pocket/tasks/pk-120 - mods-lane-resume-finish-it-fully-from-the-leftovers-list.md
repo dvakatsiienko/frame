@@ -4,7 +4,7 @@ title: 'mods lane resume: finish it fully from the leftovers list'
 status: open
 assignee: []
 created_date: '2026-10-13 17:06'
-updated_date: '2026-10-13 17:06'
+updated_date: '2026-10-14 12:49'
 labels:
   - m
 dependencies: []
@@ -18,3 +18,9 @@ ordinal: 100500
 <!-- SECTION:DESCRIPTION:BEGIN -->
 parked: dima 20:05, tomorrow opens on the memory sweep; the mods lane resumes at a good point to finish fully. the list: ~/frame/.scratch/mods-l13/leftovers-2026-10-13.md (open todos, looks dima never saw, engine gaps, half-true docs), with ~/frame/.scratch/mods-l13/todo.md
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+rider for the mods lane resume (dima o14, 15:49): a probe in the second wind mod — after every compaction the mod submits /reload-skills itself (cc changelog: «re-sends the full skill list, which is how to get skills back after compaction»).
+<!-- SECTION:NOTES:END -->
