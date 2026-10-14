@@ -1,6 +1,6 @@
 ---
 status: live
-until: the sweep's seal
+until: 2026-10-17
 ---
 
 # memory sweep — the log

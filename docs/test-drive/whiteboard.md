@@ -1,6 +1,6 @@
 ---
 status: live
-until: none
+until: 2026-10-28
 ---
 
 # test drive — dev.fast whiteboard
@@ -19,6 +19,8 @@ a free, local, MIT desktop code-review canvas (a fork of VS Code's open-source c
 
 ## stress list
 
+- **cclio proposes it** (dima, 2026-10-14): any ask a picture of code would answer — a pr review, «how does X flow», a diff across arms — gets a one-line «whiteboard this?» offer
+
 - review the cli a/b/c arms (FRM-284) when they report — two codebases, diagrams per arm
 - a scratchpad «show me how X works» beside `/show-me` on the same question
 - a pr review on a real coder pr
@@ -32,6 +34,8 @@ a free, local, MIT desktop code-review canvas (a fork of VS Code's open-source c
 - untracked files need `git add -N` to show in a review
 
 ## log
+
+- 2026-10-14 · extended to 10-28 on dima's word: the fleet is in meta work and no case fits; the next app-coding lane is where it gets tried · no round
 
 one line per use: date · case · blocks it drew · dima's verdict · note
 - 2026-10-06 · install + first probe · `whiteboard api session_capabilities` → desktopAvailable true, scratchpad off · the PATH-button install left ~/.zprofile untouched (the comment line held) · cli-driven, no mcp

@@ -1,9 +1,14 @@
 ---
-status: live
-until: standing, every tool dima drops for a look
+fed-by: incidents
+when:
+  - { kind: skill, value: cclio:shape-test-drive }
+  - { kind: command, value: brew install }
+  - { kind: command, value: pnpm add -g }
 ---
 
 # scouts — every tool we looked at once, and what we decided
+
+## core
 
 read before any new scout: a tool already here is answered from its line. a **scout** is the one-shot look at a tool dima drops (a link plus his lens: for him, for the fleet, for cclio), before any test drive. the flow: this file → a miss goes to the `researcher` agent with the lens → a verdict → one line here. a «try» hands into `x:shape-test-drive`; a «skip» keeps its reason, so a research brief can carry «decided against: …» instead of proposing it again. later: `x scout <url> "<lens>"` (`x/PRODUCT.md`).
 

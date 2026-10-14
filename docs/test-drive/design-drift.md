@@ -1,6 +1,6 @@
 ---
-status: live
-until: standing, every app the design flow covers
+status: adopted
+until: 2026-10-14
 ---
 
 # design drift — a small UI ask on a designed app goes to a coder, no designer
@@ -19,3 +19,5 @@ the atelier rounds so far live in `design-run.md` (2026-09-30 →); new rounds l
 ## the reminder, moved here (2026-10-11, o139) — superseded by the standing scope above (dima, 18:01)
 
 ⏰ 🔬 design drift policy test drive — two weeks (dima 2026-09-30), started 2026-09-30 (atelier's `DESIGN.md` shipped with bytes #116), verdict 2026-10-16; the verdict also answers dima's FRM-244 note «designs are not throwaway. ideally they would be live, and at least ± synced with live app state»: every small UI ask goes to a coder with `DESIGN.md` + a live screenshot, no designer; log each ask and whether dima rejected the result for a visual reason in `docs/test-drive/design-run.md`. over 25 % visual rejections, or a mid-way ask for a comp → the policy is wrong, and a single-take designer pass becomes the default for small asks. then `docs/research/design-drift.md` dies. dima 2026-09-30: adopted, «structured layer lives, comps retire» — set 2026-09-30
+
+adopted, 2026-10-14 (dima's tick) — the freebie lane in `craft-fleet-flow` runs it; each small UI ask on a designed app still appends its round here.

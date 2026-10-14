@@ -1,5 +1,5 @@
 ---
-status: live
+status: frozen
 until: 2026-10-28
 ---
 
@@ -35,9 +35,13 @@ one line per round: date · session · card topic · useful / known / noise · t
 
 - 2026-10-10 · store + transcripts, cc 2.1.296 · 32 sessions tracked, cards in 26 · all `entrypoint: cli`, 31 of them cclio `--bg` crew spawns dima never reads; 0 of 6 desktop sessions since the first tracked one · cost ≤ ~$21 api-equivalent: the gap between each session's `cost-state` and its logged main-thread usage, 4.9 % of their $427 opus, ~1.1 % of $1,910 across 229 sessions since 10-06 — an upper bound, the gap holds other side calls too · it forks far less than every 6th step would predict (~16 % of cache reads vs a 2.8 % gap)
 
+## frozen, 2026-10-14 — an upstream bug
+
+meant to run in the desktop app, but it never does: its `turn.step` check passes only with a terminal surface or its own above-prompt render, which the desktop never reaches (0 of 16 big desktop sessions vs 32 terminal, 10-06 → 10-10). no desktop ban in the code. upstream: [claude-code#100843](https://github.com/anthropics/claude-code/issues/100843). on in cclio only (`cclio/.claude/settings.json`), off at user scope. thaws when #100843 closes fixed; the read: `.scratch/memory-sweep/you-should-know-desktop.md`.
+
 ## verdict
 
-dropped, 2026-10-10 — turned off in `settings.json`. not because of the feature: dima likes it and wants it, but he works in the desktop app ~99 % of the time, where it never fires, and in the terminal it only reaches unattended `--bg` sessions. it goes back on the day it works in the desktop app.
+(10-10: dropped, then reset on 10-14 — dima wants it the day it works in the desktop app)
 
 ## the reminder, moved here (2026-10-11, o139)
 

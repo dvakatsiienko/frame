@@ -1,6 +1,6 @@
 ---
-status: live
-until: three runs
+status: adopted
+until: 2026-10-14
 ---
 
 # test drive — the spec pipeline: to-spec → to-tickets → implement-spec
@@ -37,3 +37,7 @@ one line per run: date · ticket · tickets in the graph · subagents · minutes
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 spec pipeline test drive, three runs — to-spec → to-tickets → implement-spec on a local `.scratch/` tracker, linear stays global (`docs/test-drive/spec-pipeline.md`); run 1 while dima is at the keyboard, on an almost-freebie with several parts. raise «🎓 a /to-spec moment» when a lane or shift starts from a ticket with several parts. dima 2026-10-06: «have Linear tickets as global … but structured via to spec right before execution» — set 2026-10-06
+
+## verdict
+
+adopted, 2026-10-14 (dima's tick) — three runs (10-06, 10-07, 10-10): to-spec → to-tickets is the lane flow in `cclio:pm` § the body; this file stays its run log.
