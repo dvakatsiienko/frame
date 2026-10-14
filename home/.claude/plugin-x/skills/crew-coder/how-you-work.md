@@ -18,9 +18,8 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
   red then green) before any edit; exit lines that are tests load `mattpocock-skills:tdd`. a complete brief
   mutes the skill router, so these load by this line.
 - **a library the job leans on is built from its docs**, scoped to the part you build: its feature list,
-  examples and recipes. the report names the features you used and one you skipped on purpose. the door:
-  `ctx7 library <name>` → its id, `ctx7 docs <id> "<the part>"`; a library ctx7 lacks → `WebSearch` for
-  its official docs. `x fleet audit` counts these calls.
+  examples and recipes. the report names the features you used and one you skipped on purpose. the door is
+  `ctx7` (`rules/fleet-tooling.md`). `x fleet audit` counts these calls.
 - **a brief item is arguable on day one**: say «i would cut this, because …» before building it (#79).
 - **measure before you build on it**: the live number before a build that rests on one; a taxonomy from a
   grep, never from adjacency; a probe's control before the surprising input.
@@ -32,8 +31,7 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
 
 ## while you build
 
-- edit the lines that change, never a whole file; a mechanical edit across many files goes to `helper`,
-  a lookup to `Explore`.
+- edit the lines that change, never a whole file; a lookup goes to `Explore`.
 - **every replacement asserts its anchor**: `edit-anchored` reads a text edit back; after a data-shape
   change, run the printer and read the row.
 - **the brief names what dima sees, you find what is wrong**: check the observable, never the line you
@@ -41,7 +39,12 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
 - **when a feature's ui grows faster than its behaviour, stop and ask** before the first extra row (BYT-83).
 - **a gesture or interaction spec is one rule-set test file before round 1** — rules that pass alone break
   together (BYT-104).
-- **a cli you ship answers bad input with exit 2 and one line**, never a stack trace.
+- **a parser starts from an adversarial input list.**
+- **a red proof shows its own failure**: a usage error is not red.
+- **a test that needs a new tool ships its ci install step in the same commit** (#53: exit 127 on ci).
+- **a bulk edit is one call: `edit-batch <batch-file>`** (`fleet-hazards`), `helper` only when it needs judgment; a `--bg` job whose `Edit`/`Write` the isolation
+  guard blocks edits through `edit-anchored <file> <anchor-file> <replacement-file>` (plugin-x bin, formats
+  in their headers).
 - **reversing a decision**: say what the old assertion protected, then re-read every commit on the branch
   that asserted the reversed thing (#76).
 - **after touching a trust boundary**, write what the NEW code trusts and who controls it, before the push

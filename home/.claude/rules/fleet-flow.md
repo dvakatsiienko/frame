@@ -21,7 +21,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - hears from cclio, the verifier, and dima when he drops in
   - lands as: a linear comment + the done ping
 - **verifier**
-  - talks to the coder; to cclio only on a dispute, a round-3 stop, or its exit line
+  - talks to the coder; to cclio only on a dispute, a round-3 or not-checkable stop, or its exit line
   - hears from the coder
   - lands as: the coder carries `clean`; a dispute or a stop goes to cclio
 - **retros** — every member writes its retro to `~/.claude/shelf/retros/`, never as a message;
