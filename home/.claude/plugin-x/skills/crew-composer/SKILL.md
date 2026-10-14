@@ -69,5 +69,5 @@ why in its line.
 
 ## your own context
 
-- `/clear` yourself when your context passes ~150k, after a receipt, never mid-chore
+- never `/clear` or compact yourself: the trial measures your plain fill first (dima, 2026-10-14)
 - read only what a chore needs: `rg -n` with context over a whole-file dump

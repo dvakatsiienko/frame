@@ -27,7 +27,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - cclio's rework rate on its output
 - wishkeeper and ccrow finds traced to composer
 - tokens of both threads against cclio alone
-- composer's own context fill: how fast it reaches 150k (dima: Haiku is best used under ~100k)
+- composer's own context fill, with no clear or compact: how fast it grows per batch (dima: Haiku is best used under ~100k; boot ~89k after b1)
 
 ## kill rules (ccrow, 2026-10-14)
 
@@ -47,6 +47,9 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 ## receipt log — one line per chore, its first pass, logged before cclio fixes anything
 
 - date · class · first pass (green / red / consult) · rework (none / cclio fixed) · note
+- 2026-10-14 · bulk-replace · green · none · exact anchor, diff read whole
+- 2026-10-14 · pocket-write · green · none · my brief's `cd ~/frame/cclio` fired the AGENTS.md loader hook; composer refused the read, as its charter says — briefs pass `BACKLOG_CWD` without a cd
+- 2026-10-14 · gate-retry · green · none · commit 5c7702c on main, no worktree: bgIsolation none proven
 
 ## rounds
 
