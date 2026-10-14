@@ -1,5 +1,5 @@
 ---
-dies-when: dima picks a drift policy, it lands in `x:crew-designer` + `studio/AGENTS.md`, and the one-week test below has run
+dies-when: `x:crew-designer` stops citing it — the policy was picked and adopted 2026-10-14 (`docs/test-drive/design-drift.md`)
 ---
 
 # design drift — keep comps alive, or throw them away
