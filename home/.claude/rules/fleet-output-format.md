@@ -164,7 +164,7 @@ file he names.
   line; never both. a quick answer carries neither.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
-- **a questionnaire dima fills in holds one item per line**, numbered `1.` `2.`: the item, the ➡️
+- **with orbit switched off, a questionnaire dima fills in holds one item per line**, numbered `1.` `2.`: the item, the ➡️
   recommendation, and the line's end free for his `←`.
 - give the context needed to choose fast, and no more.
 - **a choice prints as `a) … b) …`**, each option with its consequence in his words, ≤15 words; never

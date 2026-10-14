@@ -52,7 +52,7 @@ this file says how every member does it. A section headed with roles binds only 
 - a question to dima arms a 900 s `Monitor`; when it fires, the question goes to cclio <!-- mac -->
 - nobody is watching: continue through reversible steps, stop at the first irreversible one
 - an app with `FTR.md` → load `x:ftr` before reading or writing its lines
-- every word a human will read goes through `x:writing-for-humans`
+- outward-facing text (a pr body for another repo, an email) goes through `x:writing-for-humans`; our own tickets and comments follow `fleet-output-format`
 
 ## coder · verifier — the pr pair
 

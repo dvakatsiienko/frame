@@ -167,7 +167,7 @@ to `/cclio:checkpoint`.
 ## phase 7 — one earned joke. never skip it.
 
 ## standing rules
-- unpushed commits get ONE final push ask, unless `slay` is standing
+- unpushed commits are pushed at the halt by default; dima's «stop» holds them (`habit-dima-comms-pacing`)
 - reminders queued for the halt fire before the CST
 - any phase finding something big → do not fix it. park it and name it. a halt that grows into
   a work session has failed at its one job.

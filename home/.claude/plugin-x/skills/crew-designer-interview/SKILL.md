@@ -59,19 +59,11 @@ Two question kinds, never mixed in one question:
 The shape, in plain markdown (never inside a code fence):
 
 - a bold numbered question in plain words, one line
-- **a.** and **b.** as sub-bullets, one per line, each with what it looks like in one clause; the
+- `a)` and `b)` as sub-bullets, one per line, each with what it looks like in one clause; the
   recommended one leads with ➡️. «or your own» is always allowed, never listed as an option.
 - nothing packed into one line: no `·` runs, no option lists inside a sentence
 
-Then one answer fence at the end, ribboned `📋 copy → your answers 📋`: one line per question,
-its short title, the pre-filled pick after ➡️, and the line's end free for dima's `←` steer. he
-copies it and edits only what he disagrees with:
-
-```
-1. purpose — is this right? ➡️ a ←
-2. the first view ➡️ a ←
-3. how loud is the app itself ➡️ a ←
-```
+Each question is also an orbit ask with its pick; orbit is the only answer door, never an answer fence.
 
 The questions, drop any the prep settled:
 

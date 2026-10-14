@@ -182,8 +182,8 @@ with `- ticket: BYT-N` and its step line), `gh pr create` with `- ticket: BYT-N`
 ticket after the merge, with its closing word (dima, 2026-10-11), then
 **squash-merge** on Dima's word — the squash body lists the steps. On a `coder/*` branch the coder holds `y+` and `push+` (commit each step, push, **open the PR at the first push** — a real one, never a draft: dima wants no drafts, the PR is the review surface from its first commit); on `main` the default lane's rules hold unchanged. Load `x:github-contrib`
 before the `gh` call. **The PR url goes to Dima as a one-click link the moment `gh pr create`
-prints it** — in the coder's chat and in its ping to the coordinator. `frame` keeps the
-default lane.
+prints it** — in the coder's chat and in its ping to the coordinator. `frame` commits to
+main unless the lane is a feature (`craft-fleet-flow`).
 
 ### Exception lane — other pull requests
 
@@ -216,8 +216,8 @@ body's ticket-id-pattern hits are counted and each one is intended. Say the hash
 - a commit's output reaches you whole — the hooks print the only error channel there is. `>/dev/null` on a commit turned a biome refusal into a bare «exit 1» (2026-09-27).
 - in a shared tree, push the sha you counted — `git push origin <sha>:<branch>` — never the moving
   `HEAD`: a peer's commit landed 18 s before a push and went out unchecked (2026-09-26).
-- stage the paths the plan names, never `git add -A`, and commit with a pathspec
-  (`git commit -F msg.txt -- <paths>`): a shared tree holds other sessions' work.
-- in a biome repo (frame, bytes) commit through `x lane commit msg.txt -- <paths>`: it formats
+- commit only the paths the plan names, never `git add -A`: a shared tree holds other sessions' work.
+- in a biome repo (frame, bytes) commit through `x lane commit msg.txt -- <paths>`, never a raw
+  `git commit -- <paths>`, which also takes those files' unstaged hunks: it formats
   exactly those paths with the repo's biome before staging, so a Bash-written file never meets
   the hook's format refusal (19 flawlog sightings by 2026-10-04); the hook itself never writes.

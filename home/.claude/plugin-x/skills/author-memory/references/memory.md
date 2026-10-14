@@ -162,7 +162,7 @@ the mechanics above hold the wrong key, the import cost and the `MEMORY.md` cut;
 ## how the files are organised
 
 - one leaf, one decision; colocate by area — dima's test: *«optimize your linear activity habits»* lands him in one place
-- a stale pointer means delete the line and the file, no tombstones
+- a stale pointer means proposing to delete the line and the file, no tombstones (deletions need dima's word, `habit-memory-edits`)
 
 ## the method, when a file needs rethinking
 

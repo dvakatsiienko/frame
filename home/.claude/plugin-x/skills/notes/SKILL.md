@@ -13,7 +13,7 @@ pick per op is the cheapest lane that does not break the vault; nothing here is 
 the vault's hazards first (moved from `rules/fleet-hazards.md`, 2026-10-09; the cw leaf
 `/topics/obsidian.md` keeps a hand copy):
 - the vault is **not under git** — no undo, no history; a bad overwrite is gone
-- **writes only when dima asks**; reads anytime
+- **writes only when dima asks**, except cclio's inbox reset and pocket mirror (`habit-shared-files`); reads anytime
 - 🚫 **icloud sync is whole-file, last-writer-wins, no conflict copy**: never edit before the synced
   version has arrived (sync lags minutes after obsidian opens; a relaunch often forces the pull), keep
   obsidian closed on the ipad during a session, and re-read right before every write

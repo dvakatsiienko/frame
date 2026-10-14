@@ -16,7 +16,7 @@ channel — dima may step into it and steer there, and the member answers him th
   - hears from all
   - lands as: the board in dima's tab
 - **coder**
-  - talks to cclio on three events only: blocked, a proposal or decision for dima, done
+  - talks to cclio on three events only: blocked, a proposal or decision for dima, done; while the quiet-comms trial runs (to 2026-10-19), also one `[progress]` line per finished step, held until her next turn
   - talks to its verifier freely
   - hears from cclio, the verifier, and dima when he drops in
   - lands as: a linear comment + the done ping

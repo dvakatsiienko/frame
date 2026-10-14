@@ -189,7 +189,7 @@ same message («hold #61») subtract from the round.
   reopens it on the next release of the package. any other hold: nothing, the age prefix
   carries it.
 - **brew** → `brew upgrade` runs with the digest, before the report (flow step 4), never in this round.
-  the same round diffs `~/Applications/*.app` launchers (a `Contents/MacOS/run.sh` calling `steam://`) against `~/Library/Application Support/Steam/steamapps/common`: a launcher with no game folder is a steam tail every cleaner skips — `trash` it, one line in the digest.
+  the same round diffs `~/Applications/*.app` launchers (a `Contents/MacOS/run.sh` calling `steam://`) against `~/Library/Application Support/Steam/steamapps/common`: a launcher with no game folder is a steam tail every cleaner skips — listed in the digest by path, trashed only on dima's word.
 - after the round: `git pull` both mains, then `pnpm install` in each (his tree is stale until then; lockfile-driven, fast); a merged bytes round redeploys prod, say so. `pnpm dedupe` is its own deliberate commit once in a while, never a reinstall — a wipe re-resolves peers and floats transitives, which is the «different lockfile» he noticed.
   then `/run` on every app the round touched (dima, 2026-09-27: «use run as a sanity check everywhere»); a red run is a digest line and a hold on the next merge.
 - **skills lane, weekly with brew** — the agent skills renovate cannot see. the `skills` cli has no
