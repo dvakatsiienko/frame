@@ -7,7 +7,7 @@ argument-hint: "[stick|unstick|forget|list|clear]"
 # Remind
 
 A reminder outlives the conversation — it lives in the memory system, never in a chat message
-or scratch file. The inverse of `/queue`, which parks work for this session only.
+or scratch file.
 
 Store: the auto-memory dir for the current project, as one `⏰` line in a memory file the index
 points at. **Exception — cclio:** a session booted in `~/frame/cclio` stores in

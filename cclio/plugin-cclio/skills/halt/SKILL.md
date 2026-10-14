@@ -42,7 +42,7 @@ stands. Everything else proceeds.
 ## phase 1 — land the leaves
 execute the «can land now» list. small only — a halt is not the time to start work. bigger than
 it looked → stop, park it, say so.
-each park gets its resume note **where the work lives** (ticket comment, pocket item, `/queue`),
+each park gets its resume note **where the work lives** (ticket comment, pocket item),
 not in the report. a park that only exists in a chat message is a strand.
 
 ## phase 1.5 — the inbox, cleared unasked 📬
