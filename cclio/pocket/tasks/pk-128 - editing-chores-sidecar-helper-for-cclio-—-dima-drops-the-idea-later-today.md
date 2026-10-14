@@ -1,11 +1,11 @@
 ---
 id: PK-128
-title: editing chores sidecar helper for cclio — dima drops the idea later today
+title: composer test drive — cclio's Haiku 5.5 editing sidecar
 status: claimed
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 14:35'
-due_date: '2026-10-14'
+updated_date: '2026-10-14 15:24'
+due_date: '2026-10-21'
 labels:
   - s
 dependencies: []
@@ -24,4 +24,6 @@ composer — cclio's Haiku 5.5 editing sidecar, on a test drive to 2026-10-21. s
 
 <!-- SECTION:NOTES:BEGIN -->
 started 2026-10-14 17:37 as e80c18d2; first batch b1
+
+b1–b5 done 17:37–18:18, 33/36 first-pass green; ctx 137k
 <!-- SECTION:NOTES:END -->
