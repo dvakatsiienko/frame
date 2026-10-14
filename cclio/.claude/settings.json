@@ -1,13 +1,14 @@
 {
-  "bashOutputMaxChars": 8000,
   "env": {
     "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1",
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70"
   },
   "permissions": {
-    "additionalDirectories": ["/Users/dima/frame"],
     "deny": [
       "Skill(adhd:adhd)"
+    ],
+    "additionalDirectories": [
+      "/Users/dima/frame"
     ]
   },
   "hooks": {
@@ -40,14 +41,14 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(gh pr merge*)",
             "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
+            "if": "Bash(gh pr merge*)",
             "timeout": 120
           },
           {
             "type": "command",
-            "if": "Bash(claude *)",
             "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
+            "if": "Bash(claude *)",
             "timeout": 30
           }
         ]
@@ -119,10 +120,10 @@
       }
     ]
   },
+  "bashOutputMaxChars": 8000,
   "enabledPlugins": {
     "cclio@cclio": true,
     "neuroarxiv@neuroarxiv": true,
-    "adhd@adhd": true,
     "fast-jev-compaction@fast-jev-compaction": false,
     "cc-plugin-you-should-know@builtin": true
   },
@@ -139,12 +140,6 @@
         "repo": "UditAkhourii/neuroarxiv"
       },
       "autoUpdate": true
-    },
-    "adhd": {
-      "source": {
-        "source": "github",
-        "repo": "UditAkhourii/adhd"
-      }
     }
   }
 }
