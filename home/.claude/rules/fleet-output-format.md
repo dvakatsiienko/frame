@@ -178,7 +178,7 @@ file he names.
 - **shape**: `🔭 waiting on <who>`, nothing more — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70)`; the band shows this line, so how the answer arrives stays out (dima, 2026-10-10).
   - a thing with a page is a link labelled with an emoji and a short word; several things, one per line
   - a member is bold with its role emoji, no link: **🦉 cclio**, **🔧 coder**, **🔎 verifier**,
-    **🎨 designer**, **🐝 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**
+    **🎨 designer**, **🐝 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**, **🎼 composer**
   - a subagent is bold with its badge and name from `fleet-identity`, never its launch text: **🐬 wishkeeper**
 
 ### 🪐 open asks — orbit
