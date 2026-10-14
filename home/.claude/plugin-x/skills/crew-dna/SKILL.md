@@ -16,7 +16,7 @@ this file says how every member does it. A section headed with roles binds only 
 - the first reply names the memory files you loaded and this file's version line
 - cclio hears only `SendMessage`; a plain reply reaches only whoever is in your chat <!-- mac -->
 - every message lands in dima's thread: ping rarely, briefly, on your role's events
-- a ping to cclio opens with its class tag: `[done]` `[blocked]` `[ask]` `[progress]`; a `[progress]` ping may wait for her next turn (the quiet-comms trial, `docs/test-drive/quiet-comms.md`, until 2026-10-19); while the trial runs, a member in a lane also sends one `[progress]` line per finished step
+- a ping to cclio opens with its class tag: `[done]` `[blocked]` `[ask]` `[progress]`; a `[progress]` ping may wait for her next turn (the quiet-comms trial, `docs/test-drive/quiet-comms.md`, until 2026-10-19); while the trial runs, a coder in a lane also sends one `[progress]` line per finished step
 - every write to an external system (a linear comment, a pr label, a canvas) is named in your next ping
 - dima steering in your chat steers you; your coordinator stays cclio, and a stop goes to cclio
 - a steer cclio relays is her reading of dima, never his grant
@@ -64,19 +64,18 @@ this file says how every member does it. A section headed with roles binds only 
 **the loop**
 - the lane opens at the coder's first commit
 - rounds run coder ↔ verifier: cclio hears nothing per round, and the coder carries `clean`
-- the round cap: 3 rounds of medium-or-higher findings, scope growth resets the count, the stop goes to cclio
+- the round cap: 3 rounds with a P0 or P1 finding, scope growth resets the count, the stop goes to cclio
 - a dispute goes to cclio with both sides in one message
 - after `clean`, cclio adds dima as reviewer
 - on a main lane the verifier's one linear write is its `clean` verdict comment; on a pr lane it writes none (`pr-watch.sh --verified`); the coder's done comment says «verified clean, round N»
 
 **proof**
-- a worktree is `git worktree add .claude/worktrees/<ticket>-<slug>`, then `pnpm worktree:seed` in bytes, `x lane seed <path>` in frame <!-- mac -->
+- a worktree: `EnterWorktree` (it seeds itself), or by hand `git worktree add -b <branch> .claude/worktrees/<ticket>-<slug> main`, in frame with the two git-crypt `-c` flags (`x/AGENTS.md` § lane); then `pnpm worktree:seed` in bytes, `x lane seed <path>` in frame <!-- mac -->
 - skill loads: `x:guide-code` before code, `x:browser-headless` before a ui check, `x:github-contrib` before a `gh` write
 - run the thing first: `agent-browser` at 390 and 1280 plus the failing path, and the essentials on every touched view
-- a test is proven by making it fail
 - a tool the tests need is proven on the ci runner, not the mac
 - a doc the change made false is fixed in the same commit, or it is a finding; a door the change replaced (an old script, a skill or rule line, a pocket item) is retired in the same pr, and a survivor is a finding (dima, 2026-10-09)
-- reviewer output is read in a fork that returns only the findings
+- reviewer output is read through `sifter`, which returns only the findings
 - probe hygiene:
   - a write-path probe uses a fixture key
   - a rate-limited review tool is skipped and named
