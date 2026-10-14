@@ -42,6 +42,8 @@ function rgMissesDots(c: Command, ctx: Context) {
         return false;
     const dir = resolve(c.dir, '/', ctx);
     const paths = operands(c.args).slice(1);
+    // no path and a pipe or a $( ) feeding it: rg reads stdin and searches no folder
+    if (!paths.length && c.feeders.length) return false;
     const roots = paths.length ? paths.map((p) => resolve(p, dir, ctx)) : [dir];
     const frame = `${ctx.home}/frame`;
     return (

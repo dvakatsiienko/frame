@@ -177,6 +177,7 @@ const RG_FINE = [
     ['/home/frame', "rg --hidden -n 'shape-idea' ."],
     ['/home/frame', "rg -uu -l 'x'"],
     ['/repo', "rg -n 'foo' src"],
+    ['/home/frame', "sed -n 1,9p a.md | rg 'status'"],
 ] as const;
 for (const [cwd, typed] of RG_FINE)
     test(`an rg that reaches dot dirs or needs none gets no hint: ${typed}`, async ($, on) => {
