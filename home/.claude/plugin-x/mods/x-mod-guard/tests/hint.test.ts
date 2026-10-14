@@ -164,6 +164,7 @@ const RG_MISSES = [
     ['/repo', "rg -l 'x:shape' /home/frame"],
     ['/home/frame', "rg -n 'shape-idea'"],
     ['/repo', "rg -c 'foo' /home/frame/home"],
+    ['/home/frame', "rg -l 'x' --glob '*.py' ."],
 ] as const;
 for (const [cwd, typed] of RG_MISSES)
     test(`an rg that skips dot dirs runs with a --hidden hint: ${typed}`, async ($, on) => {
@@ -179,6 +180,8 @@ const RG_FINE = [
     ['/repo', "rg -n 'foo' src"],
     ['/home/frame', "sed -n 1,9p a.md | rg 'status'"],
     ['/home/frame', "rg -c 'x' home/.claude/shelf/flawlog/a.md"],
+    ['/home/frame', "rg -n -e '- dead code' -A1 home/.claude/skills/a.md"],
+    ['/home/frame', "rg -n -g '!*.jsonl' 'x' src"],
 ] as const;
 for (const [cwd, typed] of RG_FINE)
     test(`an rg that reaches dot dirs or needs none gets no hint: ${typed}`, async ($, on) => {

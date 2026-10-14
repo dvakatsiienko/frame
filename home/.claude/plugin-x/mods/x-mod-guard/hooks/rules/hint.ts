@@ -32,6 +32,56 @@ const LOOP_HINT =
 // rg skips dot dirs: a «0 left» proof over frame missed 4 live pointers under home/.claude (PK-139, 2026-10-14)
 const RG_HINT =
     'x-mod-guard hint: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them';
+// rg's options that take the next word, and the ones that carry the pattern so no positional one comes first
+const RG_VALUE = new Set([
+    '-e',
+    '--regexp',
+    '-f',
+    '--file',
+    '-g',
+    '--glob',
+    '--iglob',
+    '-t',
+    '--type',
+    '-T',
+    '--type-not',
+    '-A',
+    '-B',
+    '-C',
+    '--after-context',
+    '--before-context',
+    '--context',
+    '-m',
+    '--max-count',
+    '--max-depth',
+    '-d',
+    '-r',
+    '--replace',
+    '-M',
+    '--max-columns',
+    '-j',
+    '--threads',
+    '--sort',
+    '--sortr',
+    '--encoding',
+    '-E',
+]);
+const RG_PATTERN = new Set(['-e', '--regexp', '-f', '--file']);
+function rgPaths(args: Command['args']) {
+    const words: string[] = [];
+    let isPatternGiven = false;
+    let isRest = false;
+    for (let i = 0; i < args.length; i++) {
+        const t = args[i]?.text ?? '';
+        if (isRest || !t.startsWith('-')) words.push(t);
+        else if (t === '--') isRest = true;
+        else if (RG_VALUE.has(t)) {
+            isPatternGiven ||= RG_PATTERN.has(t);
+            i++;
+        } else if (/^--(regexp|file)=/.test(t)) isPatternGiven = true;
+    }
+    return isPatternGiven ? words : words.slice(1);
+}
 // an rg rooted where dot dirs live below it (frame, frame/home, ~): a path naming a dot dir outright is searched
 function rgMissesDots(c: Command, ctx: Context) {
     if (
@@ -40,7 +90,7 @@ function rgMissesDots(c: Command, ctx: Context) {
     )
         return false;
     const dir = resolve(c.dir, '/', ctx);
-    const paths = operands(c.args).slice(1);
+    const paths = rgPaths(c.args);
     // no path and a pipe or a $( ) feeding it: rg reads stdin and searches no folder
     if (!paths.length && c.feeders.length) return false;
     const roots = paths.length ? paths.map((p) => resolve(p, dir, ctx)) : [dir];
