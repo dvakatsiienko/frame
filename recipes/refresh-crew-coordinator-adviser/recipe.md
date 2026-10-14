@@ -28,7 +28,7 @@ keeps cclio's adviser (today: ccrow) true: what it hunts, how it talks to her, w
 
 - suggest a run when: the trial verdict (2026-10-20), a new anthropic model ships, a cc change to mods, advisor or cross-session messaging
 
-1. **groom** (step 0 of `x:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «read first: this recipe (`recipes/refresh-crew-coordinator-adviser/recipe.md`), `x:crew-adviser`, `ccrow/AGENTS.md`, your `notes.jsonl` + `verdicts.jsonl`, and the last findings in `last/`. then: what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why» — the adviser co-owns the recipe and answers from its whole contract, never blind (dima, 2026-10-08). its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
+1. **groom** (step 0 of `cclio:shape-recipe`): first the consult — ping the parked adviser by `SendMessage` with «read first: this recipe (`recipes/refresh-crew-coordinator-adviser/recipe.md`), `x:crew-adviser`, `ccrow/AGENTS.md`, your `notes.jsonl` + `verdicts.jsonl`, and the last findings in `last/`. then: what should this recipe research to make you a better adviser? your own judgment: the vectors you would add, cut or sharpen, and why» — the adviser co-owns the recipe and answers from its whole contract, never blind (dima, 2026-10-08). its answer lands in `last/consult.md` and rides into the owner's cuts and adds; then dima verdicts in one block. done: his word. (the adviser is a co-author of the research, never only a witness — dima, 2026-10-08)
 2. **distill the last run's `last/`** before any new lane; name what it already answered. done: a list of answered vs open vectors.
 3. **lanes, from one brief**: `researcher` (sources, papers, code) + `pnpm research:lanes` (exa + parallel); `neuroarxiv` when the prior-art vector is open. done: every lane landed or failed out loud. (template)
 4. **the built-in head-to-head**, only while `docs/test-drive/ccrow.md` has no `/advisor` verdict: a day of `/advisor fable` beside ccrow, both logging notes, acted-on and tokens. done: the verdict, or «settled <date>». (template)
@@ -76,6 +76,6 @@ settled: «the comms model: pings or reads» — it reads her transcript on a wa
 
 ## findings
 
-done = the run happened (the `x:shape-recipe` rule). the print always carries the setup verdict (keep / revamp / retire) — the adviser is experimental, so every run reviews it whole.
+done = the run happened (the `cclio:shape-recipe` rule). the print always carries the setup verdict (keep / revamp / retire) — the adviser is experimental, so every run reviews it whole.
 
-the print follows `x:shape-recipe` step 3 (the research-print shape, plus the checklist and the `open` vectors); its checklist is `x:crew-adviser` hunt by hunt: fired, caught, never fired.
+the print follows `cclio:shape-recipe` step 3 (the research-print shape, plus the checklist and the `open` vectors); its checklist is `x:crew-adviser` hunt by hunt: fired, caught, never fired.

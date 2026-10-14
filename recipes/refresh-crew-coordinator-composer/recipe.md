@@ -26,7 +26,7 @@ keeps cclio's editing sidecar (today: composer, Haiku 5.5) true: what cclio actu
 - run rules: the hunt comes first and is numbers, never impressions; every finding gets one home (a composer chore, a script, a settings knob or habit, a guard); the consult reaches composer only through the charter's message shape
 - suggest a run when: the test-drive verdict (2026-10-21), a compaction day (2+ compactions), a new Haiku or a cc change to `--bg` sessions or cross-session messaging
 
-1. **groom** (step 0 of `x:shape-recipe`), with composer's self-report folded in: ping it «read `x:crew-composer` and your receipt log in `docs/test-drive/composer.md`; which chores did you fail, which briefs were unclear, what would you take next?». done: dima's word. (template)
+1. **groom** (step 0 of `cclio:shape-recipe`), with composer's self-report folded in: ping it «read `x:crew-composer` and your receipt log in `docs/test-drive/composer.md`; which chores did you fail, which briefs were unclear, what would you take next?». done: dima's word. (template)
 2. **the hunt**: `sifter` agents (never general-purpose: no fleet memory) over cclio's transcripts since the last run, answering the analysis vectors with counts and the command that produced them. done: one numbers file in `last/`, every vector answered or «no data». (template)
 3. **route**: each finding gets its home — a composer chore class, a graduation to a script or `x` verb, a settings knob or habit, a guard; nothing stays a bare finding. done: the routing list, one line per finding. (open)
 4. **lanes, from one brief**, only for the vectors the hunt left open: `researcher` + `pnpm research:lanes`; `neuroarxiv` reads go to `sifter`/`researcher` agents. done: every lane landed or failed out loud. (template)
@@ -62,4 +62,4 @@ keeps cclio's editing sidecar (today: composer, Haiku 5.5) true: what cclio actu
 
 ## findings
 
-done = the run happened (the `x:shape-recipe` rule). the print always carries the keep / revamp / retire verdict and the hunt's top 3 context sinks with their numbers. its checklist: every chore class in the charter (taken, clean, graduated, regressed), and the 8k Bash output cap (kept, moved, or dropped).
+done = the run happened (the `cclio:shape-recipe` rule). the print always carries the keep / revamp / retire verdict and the hunt's top 3 context sinks with their numbers. its checklist: every chore class in the charter (taken, clean, graduated, regressed), and the 8k Bash output cap (kept, moved, or dropped).

@@ -43,7 +43,7 @@ skill reaches it as text. a contract change goes there, never here.
   last send's time, today's ok verdicts — `ledgerLine` in `lib.ts`
 - every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
   transcript; ccrow reads its tail only then.
-- `pnpm ccrow:plan-critique <plan file>` — the plan review at `x:shape-idea` step 4 (FRM-336, the
+- `pnpm ccrow:plan-critique <plan file>` — the plan review at `cclio:shape-idea` step 4 (FRM-336, the
   FRM-287 template). never ccrow's own session, which has read
   cclio's thread: two fresh `claude -p` one-shots on opus,
   effort high, cwd a fresh `plans/<run>/` in the home. pass 1 gets only the sections whose heading

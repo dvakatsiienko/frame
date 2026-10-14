@@ -45,7 +45,7 @@ wishkeeper 21:44 → step 9: 7 app skills still say next dev rewrites AGENTS.md 
 
 retro fold 10-12 (x domain-modeling coder): crew-coder has no line for empty args (a mid-turn `/x:crew-coder` with no ticket was read as dima mode) — one line in the skill groom
 
-dima 22:07: before any skill groom, the skills recipe gets its x:shape-recipe pass (step 0 groom: it is old) and a real run (its research lanes); only then the groom order below
+dima 22:07: before any skill groom, the skills recipe gets its cclio:shape-recipe pass (step 0 groom: it is old) and a real run (its research lanes); only then the groom order below
 
 18:30 folded from PK-84 (o157): the verifier upgrades — the CST's 7 mechanisms, ranked, become tickets on dima's pick — land in the crew-verifier groom
 

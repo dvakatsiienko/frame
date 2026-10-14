@@ -61,12 +61,12 @@ one run, two halves whose lanes run in parallel and land in one findings print:
 - **craft** — how a coordinator works, the crew and its gaps, tickets, the flow
 
 a trigger that touches only the tools (a cc minor, a new model) runs the tools half and names the craft
-half skipped, with the reason — the shared rule of `x:shape-recipe`.
+half skipped, with the reason — the shared rule of `cclio:shape-recipe`.
 - suggest a run when: a cc minor ships, a new claude model ships, a spawn behaves against a [verified] row, the crew changes
 
-1. **groom**: `x:shape-recipe` step 0, the grill. done: his word on the list. (open)
+1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. **probe the mechanics** (tools): execute `crew-lead/references/spawn-mechanics.md`'s «the test suite» section against the current build. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
-3. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `x:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
+3. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `cclio:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
 4. **distill** into the artifacts:
    - `crew-lead/references/spawn-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
    - `crew-lead/references/model-cards.md` — THE model reference; claim tags ([dima] / [bench] / [vendor] / [community] / [?]) updated, never deleted; dima's [dima] calls never overwritten, outside evidence sits beside them
@@ -82,7 +82,7 @@ half skipped, with the reason — the shared rule of `x:shape-recipe`.
 
 ### research
 
-on top of the shared vectors of `x:shape-recipe` (the delta covers the cc changelog since the last run's build; prior art and established patterns cover coordination frameworks and orchestrator tools).
+on top of the shared vectors of `cclio:shape-recipe` (the delta covers the cc changelog since the last run's build; prior art and established patterns cover coordination frameworks and orchestrator tools).
 
 **craft — the coordinator:**
 - how a coordinator agent should work in general and coordinate efficiently: planning, routing work to members, gates, comms, attention economy with the operator
@@ -139,7 +139,7 @@ on top of the shared three:
 
 **the craft half's done-test: ≤3 verdicts** — a role to add, merge or retire · a practice to adopt and what it replaces · a thing to drop — each with its evidence against our own flow numbers, or `noop`. `noop` is valid only when every craft vector names its sources; a vector with none prints as `open`, never as `noop`. the tools half's done-test is the rows flipped and the grid re-sized.
 
-the print carries the parts of `x:shape-recipe`; its checklists here: the crew, seat by seat (still needed · merged · missing), and the classifier seat (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named).
+the print carries the parts of `cclio:shape-recipe`; its checklists here: the crew, seat by seat (still needed · merged · missing), and the classifier seat (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named).
 
 beyond that shape, the print answers:
 - a role to add, merge or retire, with the evidence

@@ -50,5 +50,5 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🧪 sys-jev.md (parked, NOT imported: jev is frozen until the credit refills ~10-18; re-add the `@` then) — jev lanes the inbox and routes skills; the criteria are the prompt, every rubric in one file, the sharpening loop runs at every halt
 - @sys-settings-drift.md — CC writes it at runtime; a real file where the symlink belongs is silent divergence
 
-- 📐 recipes live in `~/frame/recipes/<name>/` (recipe.md · log.md · scripts/ · last/); the `x:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)
+- 📐 recipes live in `~/frame/recipes/<name>/` (recipe.md · log.md · scripts/ · last/); the `cclio:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)
 - 🧹 «memory sweep» = a run of `~/frame/recipes/nurture-memory/recipe.md`: read it whole and follow its re-entry rule, never a fresh plan (plain pointer)

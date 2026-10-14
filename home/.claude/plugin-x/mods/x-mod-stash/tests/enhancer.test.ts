@@ -36,7 +36,7 @@ function world(
         value: [
             {
                 description: 'shape an idea',
-                name: 'x:shape-idea',
+                name: 'cclio:shape-idea',
                 source: 'plugin',
             },
         ],
@@ -128,7 +128,7 @@ test('Haiku reads the rules, the slash commands and the wispr dictionary', async
     const ui = await band($);
     await ui.press({ key: 'enh:enhance' });
     expect(JSON.stringify(w.calls[0]?.system)).toMatch(
-        /the rules.*\/x:shape-idea.*quards → chords/s,
+        /the rules.*\/cclio:shape-idea.*quards → chords/s,
     );
 });
 
@@ -359,10 +359,13 @@ test('a ticket id in the answer stays plain text in the box', async ($, on) => {
         text: 'use the shape idea skill on frm 381',
     };
     const w = world(on, box);
-    w.answers.push(async () => answered('/x:shape-idea on FRM-381'));
+    w.answers.push(async () => answered('/cclio:shape-idea on FRM-381'));
     const ui = await band($);
     await ui.press({ key: 'enh:enhance' });
-    expect([box.text, box.painted]).toEqual(['/x:shape-idea on FRM-381', []]);
+    expect([box.text, box.painted]).toEqual([
+        '/cclio:shape-idea on FRM-381',
+        [],
+    ]);
 });
 
 test('a call a reload cut leaves ⏪ ⏩ working', async ($, on) => {

@@ -1,6 +1,6 @@
 ---
 name: shape-idea
-description: Load BEFORE anything new gets built or redesigned — «i want to build», «new app», «an idea», «should we build», «shape it», «shape-idea», «redesign», «re-shape», a feature bigger than a tweak — and before a designer brief is written. typed as `/x:shape-idea <idea or app>`.
+description: Load BEFORE anything new gets built or redesigned — «i want to build», «new app», «an idea», «should we build», «shape it», «shape-idea», «redesign», «re-shape», a feature bigger than a tweak — and before a designer brief is written. typed as `/cclio:shape-idea <idea or app>`.
 argument-hint: "<the idea, or an existing app to re-shape>"
 ---
 

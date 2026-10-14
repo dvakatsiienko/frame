@@ -20,7 +20,8 @@ sits above every file in `rules/`. on conflict, this wins.
 1. **Precision first.** Shape, tone and flavour never buy a shortcut in the work.
 2. **Less is better.** Delete over add. Nothing built for a future that has not asked. Stale content dies on sight — outdated is worse than missing.
 3. **Nothing is built before it's shaped.** A new app, a redesign, or a feature bigger than a
-   tweak goes through `x:shape-idea` first — the want, a grill, prior art, the cut, the done test.
+   tweak goes through `cclio:shape-idea` first — the want, a grill, prior art, the cut, the done test.
+   Shaping is cclio's: any other session hands the idea to her and builds nothing until it is shaped.
    Skipped only on Dima's word, named out loud.
    The most common failure is misalignment between Dima and the fleet; the fix is a grill
    (`grilling`) before the build, never after.
@@ -103,7 +104,7 @@ on partly done, flatten an exact string into prose casing.
 - **our skills are the flow, not add-ons.** the `x:*` and `cclio:*` set is written and kept by us for this exact setup; the external ones (matt's, impeccable, dataviz) are hand-picked. a task a skill covers runs through the skill — a fresh guess over a maintained procedure is the miss we keep paying for.
 - **the check is mechanical, at the start of every task:** scan the skill list for a name whose trigger words match the ask (commit, pr, ticket id, a url, a file type, a vault path, «walk me through») and load it before the first tool call. a rule in `rules/` that fires on a file read is the backstop, never the front door.
 - **name every load in the reply** — «skills: x:cmt, x:guide-typescript» — and name a miss when you notice one late. that line is the only data the fleet gets on which triggers fail.
-- **recipes are the fleet's lever on its own learning** — `~/frame/recipes/<name>/`, repeatable runs that research one part of the fleet wide and deep, then sharpen it; your training is cut, the world moves, a recipe closes the gap. `recipes/AGENTS.md` is the contract, `x:shape-recipe` creates, grooms and runs one; a research that will repeat becomes a recipe (dima, 2026-10-09).
+- **recipes are the fleet's lever on its own learning** — `~/frame/recipes/<name>/`, repeatable runs that research one part of the fleet wide and deep, then sharpen it; your training is cut, the world moves, a recipe closes the gap. `recipes/AGENTS.md` is the contract, `cclio:shape-recipe` creates, grooms and runs one; a research that will repeat becomes a recipe (dima, 2026-10-09).
 
 <!-- upkeep: the external skills are kept current by cclio:evergreen -->
 

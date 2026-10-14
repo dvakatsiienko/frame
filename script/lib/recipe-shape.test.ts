@@ -99,9 +99,12 @@ function inOrder(items: string[], allowed: readonly string[]) {
     return true;
 }
 
-const skillsDir = path.join(root, 'home/.claude/plugin-x/skills');
+const skillsDirs = {
+    cclio: path.join(root, 'cclio/plugin-cclio/skills'),
+    x: path.join(root, 'home/.claude/plugin-x/skills'),
+};
 const engine = readFileSync(
-    path.join(skillsDir, 'shape-recipe/SKILL.md'),
+    path.join(skillsDirs.cclio, 'shape-recipe/SKILL.md'),
     'utf8',
 );
 const contract = readFileSync(path.join(recipesDir, 'AGENTS.md'), 'utf8');
@@ -111,7 +114,7 @@ function section(text: string, title: string) {
     return text.split(/^## /m).find((part) => part.startsWith(title)) ?? '';
 }
 
-// the bullets of the shared vectors in recipes/AGENTS.md, bold label and text, and x:shape-recipe's numbered run steps up to done:
+// the bullets of the shared vectors in recipes/AGENTS.md, bold label and text, and cclio:shape-recipe's numbered run steps up to done:
 export const sharedLines = [
     ...[
         ...section(contract, 'the shared vectors').matchAll(
@@ -123,7 +126,7 @@ export const sharedLines = [
     ),
 ].filter(Boolean);
 
-// a recipe names x:shape-recipe's shared parts, never restates them; a copy drifts from the engine
+// a recipe names cclio:shape-recipe's shared parts, never restates them; a copy drifts from the engine
 export function sharedCopies(text: string, shared: string[]) {
     return text
         .split('\n')
@@ -153,8 +156,11 @@ export function deadPointers(
 
 // true, false, or undefined for a token that is no repo pointer
 function pointerExists(pointer: string) {
-    const skill = pointer.match(/^x:([\w-]+)$/)?.[1];
-    if (skill) return existsSync(path.join(skillsDir, skill, 'SKILL.md'));
+    const [, plugin, skill] = pointer.match(/^(x|cclio):([\w-]+)$/) ?? [];
+    if (skill)
+        return existsSync(
+            path.join(skillsDirs[plugin as 'x' | 'cclio'], skill, 'SKILL.md'),
+        );
     if (pointer.startsWith('~/frame/'))
         return existsSync(path.join(root, pointer.slice(8)));
     if (pointer.startsWith('~/projects/')) {
@@ -208,7 +214,7 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     ).toBe(true);
     expect(
         sharedCopies(text, sharedLines),
-        `${name}: lines restating x:shape-recipe`,
+        `${name}: lines restating cclio:shape-recipe`,
     ).toEqual([]);
     expect(
         deadPointers(text, pointerExists),
@@ -339,7 +345,7 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     );
 });
 
-test('a line restating x:shape-recipe is caught', () => {
+test('a line restating cclio:shape-recipe is caught', () => {
     const copied = `# refresh-x\n\n- ${sharedLines[0]}\n`;
 
     expect(sharedCopies(copied, sharedLines)).toEqual([

@@ -35,7 +35,7 @@ dima, 2026-10-10: «after we run this recipe first time, i get the most meaningf
   - the model labels only pushback and the gap (4–7 values, where agreement holds); the 9 kinds come from patterns where mechanical (approve, command, status); the cheapest model that agrees 85 % with the gold set does it (run 1: sonnet, 91 % and 89 %; haiku failed), jev when its credit is back
   - the reply read samples 100 pairs, opus only there
 
-1. **groom**: `x:shape-recipe` step 0, the grill. done: his word on the vectors. (open)
+1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the vectors. (open)
 2. research fan-out: one brief quoting the want and the research vectors, through `pnpm research:lanes <brief>` (exa + parallel) and one `researcher` lane on sources. done: every lane landed or failed out loud. (script)
 3. sharpen the hunts: each research finding that names something measurable becomes a scrape hunt for this run, or is named «not measurable here». done: the hunt list for this run is written in `last/`. (open)
 4. scrape: `scripts/prompts-extract.sh` and `scripts/replies-extract.sh` over the transcripts since the last run, then labelling lanes (sonnet over his prompts, opus over reply → reaction pairs). done: the numbers and the labels sit in `last/`. (script)

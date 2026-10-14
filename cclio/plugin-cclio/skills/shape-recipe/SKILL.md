@@ -1,6 +1,6 @@
 ---
 name: shape-recipe
-description: Load BEFORE creating, reshaping or running a recipe — «recipe», «refresh <x>», «nurture <x>», «run the <x> recipe», a research about to be repeated, a branch (design, voice, tooling) that will need refreshing again. typed as `/x:shape-recipe <name or idea>`.
+description: Load BEFORE creating, reshaping or running a recipe — «recipe», «refresh <x>», «nurture <x>», «run the <x> recipe», a research about to be repeated, a branch (design, voice, tooling) that will need refreshing again. typed as `/cclio:shape-recipe <name or idea>`.
 argument-hint: "<recipe name to run, or the thing a new recipe would keep fresh>"
 ---
 
@@ -45,9 +45,9 @@ coordinator, should act in a special way here.» so:
   at that, never at the whole subject
 - **the grill is the owner's duty at every run** (step 0): the owner brings proposed cuts and adds into the
   round, dima answers it; a recipe dima has to rewrite by hand is a recipe its owner neglected
-- **the owner is a seat, never a spawn**: whoever holds that seat next grooms the vectors as a last act
-  of its session (the next design lane grooms `refresh-art-kit`); no seat due → cclio proxies with the
-  seat's skill loaded and says so. nobody is spawned for a groom
+- **the owner is a seat, never a spawn**: whoever holds that seat next proposes its vector cuts and adds
+  as a last act of its session, in its retro (the next design lane for `refresh-art-kit`); cclio runs the
+  groom and the grill from them, with the seat's skill loaded, and says so. nobody is spawned for a groom
 
 ## creating one
 

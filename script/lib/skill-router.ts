@@ -39,7 +39,7 @@ export const mustNotMiss: readonly string[] = [
     'x:guide-ui-ux',
     'x:handoff-ingest',
     'cclio:pm',
-    'x:shape-idea',
+    'cclio:shape-idea',
     'x:writing-for-humans',
 ];
 
