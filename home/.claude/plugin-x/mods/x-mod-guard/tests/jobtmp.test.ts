@@ -45,6 +45,11 @@ const RUNS = [
         `${JOB}/tmp/v1/out.json`,
     ],
     ['an mv onto a tmp file', `mv ${JOB}/tmp/a ${JOB}/tmp/b`, `${JOB}/tmp/b`],
+    [
+        "a > over a file in the session's scratchpad",
+        'echo x > /private/tmp/claude-501/-Users-dima-frame/8956ae99-b6dc-4d7d-b4c5-8766ee817366/scratchpad/msg.txt',
+        '/private/tmp/claude-501/-Users-dima-frame/8956ae99-b6dc-4d7d-b4c5-8766ee817366/scratchpad/msg.txt',
+    ],
 ] as const;
 
 for (const [shape, command, file] of RUNS)
@@ -66,6 +71,11 @@ const REFUSED = [
         "another job's tmp",
         'echo x > /home/.claude/jobs/j2/tmp/a.log',
         '/home/.claude/jobs/j2/tmp/a.log',
+    ],
+    [
+        'a tmp dir that only looks like a scratchpad',
+        'echo x > /private/tmp/claude-501/p/notes/scratchpad/a.md',
+        '/private/tmp/claude-501/p/notes/scratchpad/a.md',
     ],
 ] as const;
 

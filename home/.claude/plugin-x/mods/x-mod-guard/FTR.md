@@ -113,7 +113,7 @@
   - then the nearest harmless form runs: `diskutil list`, `dd` onto a file, `chmod -R` inside `~`, `csrutil status`, a `>` onto a new file, `>>`, `> /dev/null 2>&1`, `mv` onto a new name or into a dir without that file, `git gc`, `crontab -l`, `gh release view`, `vercel env ls`, `linear issue view`, `trash` of a file in `~/Documents` or a note in the vault, `defaults delete <domain> <key>`
   - then `sudo` ahead of a floor command keeps the floor's door (`sudo rm` → trash)
   - then a history rewrite inside a job's own scratch clone runs, like the other local rewrites
-  - decision: an overwrite is refused only when the file is on disk — x-mod-guard looks each target up before the call; a plain `cp` onto a file is left alone, only `cp -f` and `cp /dev/null` are read (FRM-324's list)
+  - decision: an overwrite is refused only when the file is on disk — x-mod-guard looks each target up before the call; a plain `cp` onto a file is left alone, only `cp -f` and `cp /dev/null` are read (FRM-324's list); a file under a claude session's own scratchpad is never an overwrite (PK-138)
   - 📌 not read: an overwrite inside `bash -c` or `eval` (the lookup reads the top command only), `tee`, `truncate`, `rsync --delete`; a remote delete sent through `gh api` or a raw `curl` to any api but linear's
 
 - ✅ an obsidian cli call never acts on the active note by accident

@@ -91,10 +91,16 @@ function sedFiles(args: Word[]) {
     return isScripted ? files : files.slice(1);
 }
 // the file a `>`, an mv, a cp -f or a cp /dev/null would empty or replace; the job's own tmp is its scratch to write over
+// a claude session's own scratchpad holds only what that session wrote (PK-138: 8 refusals in 14 days, and the >>
+// workaround glued two commit messages)
+const SCRATCHPAD =
+    /^(\/private)?\/tmp\/claude-\d+\/[^/]+\/[0-9a-f-]{36}\/scratchpad\/[^/]/;
 export function overwrite(c: Command, ctx: Context): Refusal | undefined {
     const dir = resolve(c.dir, '/', ctx);
     const isFile = (p: string) =>
-        ctx.kinds?.get(p) === 'file' && !isJobTmp(p, ctx);
+        ctx.kinds?.get(p) === 'file' &&
+        !isJobTmp(p, ctx) &&
+        !SCRATCHPAD.test(p);
     const written = c.writes.filter((w) => isFile(resolve(w, dir, ctx)));
     if (written.length)
         return {
