@@ -16,6 +16,7 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 - **pnpm** — preferred package manager for node/typescript/javascript projects
 - **obsidian = raw files, the `obsidian` cli only for rename/move and the link graph; notion = `ntn`; never an mcp for either** — the recipe and the hazards: `x:notes`
 - **himalaya** — the mail cli (`himalaya envelope list`, `message read <id>`, `message delete`, `message reply`; `compose|reply|forward --json` with no send prints a decoded template, the hand-off for an email draft); one gmail account, app password from 1password `gmail-himalaya-golden`, config in `home/.config/himalaya/`. filters are not its job — those are `gmailctl` over `gmail/blocklist.json`
+- **fj** — the codeberg cli (`brew "forgejo-cli"`), always `fj -H codeberg.org …`: without `-H` it takes the host from the cwd's git remote and answers 410 Gone; signed in with 1Password `codeberg-golden` (`CODEBERG_TOKEN` in `op.env`). codeberg holds read-only mirrors of frame and bytes, pushed by `.github/workflows/codeberg-mirror.yml`
 - **slk** — slack cli (package `slkcli`; binary is `slk`, auth rides the slack desktop session; `slk --help` is the whole api)
 - **jq** — prefer it for JSON parsing, filtering, and transformation
 - **code examples across public github → `grep-mcp` first** (regex over ~1M repos, deferred, ~0 resident cost); `gh search code` only for one known repo — no cli exists for grep.app
