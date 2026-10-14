@@ -36,6 +36,7 @@ floods; no other member prints one.
 - nested under it: `a)` `b)` options, each with its consequence in his words, then a `➡️` line with the pick and a short why
 - a vectors or list question shows its adds and cuts as bullets, ends on «your own adds are welcome», with examples
 - each question is also an orbit ask he ticks, its pick naming the whole outcome
+- the grill is written once, the numbered list first: each orbit ask copies its question's number and subject, and a question lives only in that list, never in prose beside it (dima, 2026-10-14: the reply held 5, orbit Q1–Q6)
 
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel lanes (researchers, coders, probes),
 their results land at different times — hold them and print ONE unified reply when the picture

@@ -206,3 +206,37 @@ describe('a second wind turn', () => {
         expect(out).toBe('');
     });
 });
+
+describe('the grill-drift rule', () => {
+    const withAsks = (texts: string[]) => {
+        const home = mkdtempSync(join(tmpdir(), 'rc-home-'));
+        mkdirSync(join(home, '.claude/plugins/store'), { recursive: true });
+        const items = texts.map((text, i) => ({ id: `o${i}`, pick: 'p', text }));
+        writeFileSync(
+            join(home, '.claude/plugins/store/x-mod-stash_a.json'),
+            JSON.stringify({ [`asks:${SESSION}`]: { at: Date.now(), items } }),
+        );
+        return (reply: string) =>
+            execFileSync('python3', [HOOK], {
+                encoding: 'utf8',
+                env: { ...process.env, REPLY_CHECK_HOME: home, REPLY_CHECK_LOG: join(home, 'log.tsv'), REPLY_CHECK_REMIND: REMIND },
+                input: JSON.stringify({ last_assistant_message: reply, session_id: SESSION, stop_hook_active: true }),
+            });
+    };
+    const grill = '🔥 grill: x\n1. **a?** one\n2. **b?** two\n\n🔭 waiting on **🙋‍♂️ dima**';
+
+    it('reminds when orbit holds a question the reply does not', () => {
+        withAsks(['x Q1 a', 'x Q2 b', 'x Q3 c'])(grill);
+        expect(nextPrompt()).toContain('the grill drifted from orbit');
+    });
+
+    it('passes when the numbers match', () => {
+        withAsks(['x Q1 a', 'x Q2 b'])(grill);
+        expect(nextPrompt()).not.toContain('grill drifted');
+    });
+
+    it('passes a reply with no grill', () => {
+        withAsks(['x Q1 a', 'x Q2 b', 'x Q3 c'])('plain answer\n\n🔭 waiting on **🙋‍♂️ dima**');
+        expect(nextPrompt()).not.toContain('grill drifted');
+    });
+});

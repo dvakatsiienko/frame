@@ -1,10 +1,10 @@
 ---
 id: PK-128
 title: editing chores sidecar helper for cclio — dima drops the idea later today
-status: waiting
+status: claimed
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 11:48'
+updated_date: '2026-10-14 14:30'
 due_date: '2026-10-14'
 labels:
   - s
@@ -17,6 +17,5 @@ ordinal: 100005
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**waiting for:** dima's idea drop, later today
-boot prompt 2026-10-14: «at some point i will drop on you another idea — create an editing chores sidecar helper for you (prepping meanwhile)». runs through x:shape-idea when it lands.
+composer — cclio's Haiku 5.5 editing sidecar, on a test drive to 2026-10-21. shaped 2026-10-14: the want and the decisions in ~/frame/.scratch/composer-shape/PRODUCT.md, the charter x:crew-composer, the trial docs/test-drive/composer.md, the recipe recipes/refresh-crew-coordinator-composer. next: start it (--bg, bgIsolation none), first chore batch.
 <!-- SECTION:DESCRIPTION:END -->

@@ -31,6 +31,8 @@ word. skipping a step happens only on his word, named out loud.
    written with their reasons.
 4. **sharpen** — `neuroarxiv` when the question is an architecture or a method; `adhd` for a name
    or a fork with no clear answer. only where one applies; say which ran and what it changed.
+   neuroarxiv's per-paper reads go to a `sifter` or `researcher` agent (no fleet memory, ~10k a read), never a
+   general-purpose one (~115k each, 2026-10-14).
    then, on every shape, a plan critic: write the plan to a file and run `pnpm -C ~/frame ccrow:plan-critique
    <file>` — a fresh one-shot on ccrow's day arm, blind to the thread; its verdict and ≤5 located
    findings go to dima beside the grill (on trial with ccrow to 10-20, FRM-336).

@@ -23,6 +23,9 @@ REPORT_STAMP = re.compile(r"📄[^\n]*?\b(\d{1,2}):(\d{2})\b")
 # a ccrow wake is a Stop-hook side effect, never a block: a 🔭 line naming it read as a hang (dima, 2026-10-10)
 WAIT_ON_CCROW = re.compile(r"^\s*🔭.*ccrow.*$", re.M)
 GRILL_ANSWER = re.compile(r"^\s*Q\d+\s*[:\-–]?\s*[a-e]\b", re.M)
+GRILL_HEAD = re.compile(r"^🔥 grill:.*$", re.M)
+GRILL_QUESTION = re.compile(r"^(\d+)\. \*\*", re.M)
+ASK_NUMBER = re.compile(r"\bQ(\d+)\b")
 # a link the desktop pane opens: no scheme, no #anchor; the pane resolves it from the session's folder (dima, 2026-10-11, o125)
 LOCAL_LINK = re.compile(r"\]\((?![a-z][a-z0-9+.-]*:|#)([^)\s]+)\)")
 LINE_SUFFIX = re.compile(r":\d+(?::\d+)?$")
@@ -104,6 +107,22 @@ def in_second_wind(session: str) -> bool:
 
 def unproven_cants(prose: str) -> list[str]:
     return [m.group(0) for para in re.split(r"\n\s*\n", prose) if "`" not in para for m in [CANT.search(para)] if m]
+
+
+def grill_drift(prose: str, session: str) -> str:
+    # the reply's grill and its orbit asks are one list: the numbers must match (dima, 2026-10-14: the reply held 5, orbit Q1–Q6)
+    head = GRILL_HEAD.search(prose)
+    if not head:
+        return ""
+    entry = store_entry(f"asks:{session}")
+    if time.time() * 1000 - float(entry.get("at") or 0) > 24 * 3600 * 1000:
+        return ""
+    in_reply = {int(n) for n in GRILL_QUESTION.findall(prose[head.end():])}
+    items = [i for i in entry.get("items") or [] if isinstance(i, dict) and not i.get("mark")]
+    in_orbit = {int(m.group(1)) for i in items for m in ASK_NUMBER.finditer(str(i.get("text", "")))}
+    if in_orbit and in_reply != in_orbit:
+        return f"reply {sorted(in_reply)}, orbit Q{sorted(in_orbit)}"
+    return ""
 
 
 def waits_without_dima(prose: str, session: str) -> bool:
@@ -240,6 +259,9 @@ def main() -> None:
         hits += [("dead-link", link) for link in dead_links(FENCE.sub("", reply), roots)]
     if waits_without_dima(FENCE.sub("", reply), str(event.get("session_id", ""))):
         hits.append(("wait-without-dima", "🔭"))
+    drift = grill_drift(FENCE.sub("", reply), str(event.get("session_id", "")))
+    if drift:
+        hits.append(("grill-drift", drift))
     path = event.get("transcript_path")
     prompted = prompt_now(path) if path and os.path.exists(path) else None
     if prompted is not None and not is_rewind(path):
@@ -273,6 +295,8 @@ def main() -> None:
         reminds.append("a ·-joined list — one bullet per item")
     if by_rule("grill-fence"):
         reminds.append("a grill answer fence — grill picks go to orbit")
+    if by_rule("grill-drift"):
+        reminds.append(f"the grill drifted from orbit ({by_rule('grill-drift')[0]}) — write the grill once, each ask copies its number")
     if by_rule("unglossed-id"):
         reminds.append(f"unglossed ids ({', '.join(by_rule('unglossed-id'))}) — a three-word gloss at first use")
     if by_rule("dead-link"):

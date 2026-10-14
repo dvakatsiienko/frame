@@ -6,7 +6,9 @@ argument-hint: "<recipe name to run, or the thing a new recipe would keep fresh>
 
 # shape-recipe — the recipe engine
 
-The procedure for running, grooming and creating a recipe. **What a recipe is, its folder, the
+The procedure for running, grooming and creating a recipe. **two flows**: on a new name it creates
+(§ creating one); on an existing recipe it sharpens — step 0's grill re-asks the want, the vectors and
+where the gains land every time, with or without a run after it, because recipes evolve (dima, 2026-10-14). **What a recipe is, its folder, the
 `recipe.md` and `log.md` shapes and the names: `~/frame/recipes/AGENTS.md`** — read it first; the
 shape test (`script/lib/recipe-shape.test.ts`) proves it.
 

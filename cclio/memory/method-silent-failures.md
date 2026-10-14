@@ -53,6 +53,10 @@ the whole string as one word, and a snapshot loop copied nothing (2026-09-26). s
 **When a quote looks incomplete, re-read the original before writing the gap
 into a rule.**
 
+## ❗ the 8k Bash cap previews the head, and errors sit at the tail
+
+cclio's `bashOutputMaxChars` is 8000 (dima's o48, 2026-10-14: «save your context, never cut your precision»): a longer output lands in a file and only its first 2KB reaches the thread. a long gate or test run ends `> <file> 2>&1; echo "exit $?"` and its tail is read; a whole file goes through `Read`, never `cat`.
+
 ## ❗ an «everywhere» delete is a graph operation
 
 <!-- failure: two agent files deleted on request were spawned by name in three places inside a skill -->
