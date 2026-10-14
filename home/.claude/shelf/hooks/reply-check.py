@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # Stop hook: reads the reply that just ended and logs every shape the output-format rules ban.
-# it blocks only what misleads: a 🔭 on ccrow, cclio's 🔭 without dima while his ask is open, a table, an answer buried mid-turn.
-# a style miss (a stamp off the clock, a ·-list, a grill fence, an unglossed id, a dead link) is logged and returns as one
-# reminder line on the next prompt (`--prompt`, a UserPromptSubmit hook). `pnpm reply-check:report` reads the log.
+# it never blocks: a re-prompt reprints a reply dima already read (dima, 2026-10-14, o94). every miss is logged and returns
+# as one reminder line on the next prompt (`--prompt`, a UserPromptSubmit hook). `pnpm reply-check:report` reads the log.
 import json
 import os
 import re
@@ -98,11 +97,6 @@ def store_entry(key: str) -> dict:
         return {}
     with open(max(files, key=os.path.getmtime)) as f:
         return (json.load(f) or {}).get(key) or {}
-
-
-def in_second_wind(session: str) -> bool:
-    # a 🐦‍🔥 second wind turn is writing its handoff or compacting; a block there costs the refresh (dima, PK-118)
-    return store_entry(f"wind:{session}").get("state") in ("writing", "refreshing")
 
 
 def unproven_cants(prose: str) -> list[str]:
@@ -278,16 +272,15 @@ def main() -> None:
             clean = snippet.replace("\t", " ").replace("\n", " ")
             log.write(f"{stamp}\t{session}\t{where}\t{rule}\t{clean}\n")
     by_rule = lambda name: [snippet for rule, snippet in hits if rule == name]
-    blocks: list[str] = []
-    if by_rule("wait-on-ccrow"):
-        blocks.append("a 🔭 line names ccrow: a wake never holds the session. drop the 🔭 line, or name what really holds it (a ci run, a coder).")
-    if by_rule("wait-without-dima"):
-        blocks.append("orbit holds an ask dima has not answered, and no 🔭 line names him: end with `🔭 waiting on **🙋‍♂️ dima**` (beside any member it also waits on).")
-    if by_rule("table"):
-        blocks.append("a markdown table: it renders broken in his panes. reprint it as `- key — value` bullets.")
-    if by_rule("empty-reply"):
-        blocks.append("the reply holds only the 📄 stamp and the 🔭 line: the answer sits in a mid-turn block dima never sees. reprint the answer in full above the stamp.")
     reminds: list[str] = []
+    if by_rule("empty-reply"):
+        reminds.append("the answer sat in a mid-turn block dima never sees — open this reply with it in full")
+    if by_rule("wait-on-ccrow"):
+        reminds.append("a 🔭 line named ccrow — a wake never holds the session")
+    if by_rule("wait-without-dima"):
+        reminds.append("an open orbit ask and no 🔭 line naming **🙋‍♂️ dima** — end on `🔭 waiting on **🙋‍♂️ dima**`")
+    if by_rule("table"):
+        reminds.append("a markdown table — `- key — value` bullets")
     late, stale = by_rule("future-stamp"), by_rule("stale-stamp")
     if late or stale:
         reminds.append(f"📄 stamp {(late or stale)[0]} was off the clock — copy the prompt hook's now")
@@ -305,10 +298,6 @@ def main() -> None:
         os.makedirs(REMIND_DIR, exist_ok=True)
         with open(os.path.join(REMIND_DIR, f"{event.get('session_id') or 'none'}.txt"), "w") as f:
             f.write("; ".join(reminds))
-    if blocks and not event.get("stop_hook_active") and not in_second_wind(str(event.get("session_id", ""))):
-        # the blocked reply already shows; a full reprint doubled the boot board (dima, 2026-10-13)
-        blocks.append("dima already sees the reply above: print only the corrected lines, never the whole reply again.")
-        print(json.dumps({"decision": "block", "reason": " ".join(blocks)}))
 
 
 def prompt() -> None:

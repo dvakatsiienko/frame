@@ -110,7 +110,7 @@ function fleet(name: string, marks: (string | undefined)[]) {
 }
 
 describe('reply-check: cclio names dima in her 🔭 while his ask is open', () => {
-    it('blocks her reply whose 🔭 omits dima while an ask waits on him', () => {
+    it('reminds, never blocks, her reply whose 🔭 omits dima while an ask waits on him', () => {
         const home = fleet('🦉 cclio', [undefined]);
         const out = stop(
             'done.\n\n🔭 waiting on **🔧 coder**',
@@ -119,7 +119,10 @@ describe('reply-check: cclio names dima in her 🔭 while his ask is open', () =
             home,
             'sid-1',
         );
-        expect(out?.reason).toMatch(/no 🔭 line names him/);
+        expect(out).toBeUndefined();
+        expect(readFileSync(join(home, 'remind/sid-1.txt'), 'utf8')).toMatch(
+            /no 🔭 line naming/,
+        );
     });
 
     it('passes her reply whose 🔭 names dima', () => {
@@ -309,11 +312,19 @@ describe('a link checked from the launch folder after a cd', () => {
 });
 
 describe('a reply that is only the stamp', () => {
-    it('blocks a reply whose lines are only 📄 and 🔭', () => {
+    it('reminds, never blocks, a reply whose lines are only 📄 and 🔭', () => {
+        const home = mkdtempSync(join(tmpdir(), 'reply-check-'));
         expect(
-            stop('📄 last report: **x**, 11:58\n\n🔭 waiting on dima', '12:05')
-                ?.reason,
-        ).toContain('only the 📄 stamp');
+            stop(
+                '📄 last report: **x**, 11:58\n\n🔭 waiting on dima',
+                '12:05',
+                false,
+                home,
+            ),
+        ).toBeUndefined();
+        expect(readFileSync(join(home, 'remind/test.txt'), 'utf8')).toContain(
+            'mid-turn block',
+        );
     });
 
     it('passes a lone 🔭 line and a reply with an answer above the stamp', () => {

@@ -17,7 +17,7 @@ const nextPrompt = () =>
     });
 
 // the hook's stdout for one ended reply: empty when it lets the stop through
-const stop = (reply: string, isActive = false) =>
+const stop = (reply: string) =>
     execFileSync('python3', [HOOK], {
         encoding: 'utf8',
         env: {
@@ -29,7 +29,6 @@ const stop = (reply: string, isActive = false) =>
         input: JSON.stringify({
             last_assistant_message: reply,
             session_id: SESSION,
-            stop_hook_active: isActive,
         }),
     });
 
@@ -54,10 +53,9 @@ describe('the · rule', () => {
         expect(stop(reply)).toBe('');
     });
 
-    it('blocks a 🔭 line that waits on a ccrow wake', () => {
-        expect(stop('done.\n\n🔭 waiting on 🐦‍⬛ ccrow’s 22:16 wake')).toContain(
-            'a wake never holds the session',
-        );
+    it('never blocks a 🔭 line on a ccrow wake, and reminds at the next prompt', () => {
+        expect(stop('done.\n\n🔭 waiting on 🐦‍⬛ ccrow’s 22:16 wake')).toBe('');
+        expect(nextPrompt()).toContain('a wake never holds the session');
     });
 
     it('passes prose that mentions the 🔭 rule and ccrow', () => {
@@ -68,12 +66,14 @@ describe('the · rule', () => {
         expect(stop('done.\n\n🔭 waiting on ci for the pushed head')).toBe('');
     });
 
-    it('lets a second stop through, so a block never loops', () => {
-        expect(stop('done.\n\n🔭 waiting on ccrow', true)).toBe('');
+    it('never blocks a markdown table, and reminds at the next prompt', () => {
+        expect(stop('| a | b |\n| --- | --- |\n| 1 | 2 |')).toBe('');
+        expect(nextPrompt()).toContain('a markdown table');
     });
 
-    it('blocks a markdown table', () => {
-        expect(stop('| a | b |\n| --- | --- |\n| 1 | 2 |')).toContain('a markdown table');
+    it('never blocks a reply holding only the stamp and the 🔭 line, and reminds', () => {
+        expect(stop('📄 last report: **mods**, 15:09\n🔭 waiting on ci')).toBe('');
+        expect(nextPrompt()).toContain('mid-turn block');
     });
 });
 
@@ -190,23 +190,6 @@ describe('the unproven can’t, log-only', () => {
     });
 });
 
-describe('a second wind turn', () => {
-    it('never blocks while the session writes its handoff', () => {
-        const home = mkdtempSync(join(tmpdir(), 'rc-home-'));
-        mkdirSync(join(home, '.claude/plugins/store'), { recursive: true });
-        writeFileSync(
-            join(home, '.claude/plugins/store/x-mod-stash_a.json'),
-            JSON.stringify({ [`wind:${SESSION}`]: { at: 0, state: 'writing' } }),
-        );
-        const out = execFileSync('python3', [HOOK], {
-            encoding: 'utf8',
-            env: { ...process.env, REPLY_CHECK_HOME: home, REPLY_CHECK_LOG: join(home, 'log.tsv'), REPLY_CHECK_REMIND: REMIND },
-            input: JSON.stringify({ last_assistant_message: '| a | b |\n| --- | --- |', session_id: SESSION }),
-        });
-        expect(out).toBe('');
-    });
-});
-
 describe('the grill-drift rule', () => {
     const withAsks = (texts: string[]) => {
         const home = mkdtempSync(join(tmpdir(), 'rc-home-'));
@@ -220,7 +203,7 @@ describe('the grill-drift rule', () => {
             execFileSync('python3', [HOOK], {
                 encoding: 'utf8',
                 env: { ...process.env, REPLY_CHECK_HOME: home, REPLY_CHECK_LOG: join(home, 'log.tsv'), REPLY_CHECK_REMIND: REMIND },
-                input: JSON.stringify({ last_assistant_message: reply, session_id: SESSION, stop_hook_active: true }),
+                input: JSON.stringify({ last_assistant_message: reply, session_id: SESSION }),
             });
     };
     const grill = '🔥 grill: x\n1. **a?** one\n2. **b?** two\n\n🔭 waiting on **🙋‍♂️ dima**';
