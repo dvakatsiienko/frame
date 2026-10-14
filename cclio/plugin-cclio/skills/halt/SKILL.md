@@ -36,8 +36,9 @@ the wire y/n (4.5), «continue here or a fresh thread?» (5). the push is the de
 «stop» (`habit-dima-comms-pacing`). Everything else proceeds.
 
 ## phase 1 — land the leaves
-execute the «can land now» list. small only — a halt is not the time to start work. bigger than
-it looked → stop, park it, say so.
+execute the «can land now» list, freebies included: a halt finishes the main lane and solves what is small on the
+way (dima, 2026-10-14: «not intended to prevent you from resolving stuff efficiently»). only work bigger than a
+freebie parks.
 each park gets its resume note **where the work lives** (ticket comment, pocket item),
 not in the report. a park that only exists in a chat message is a strand.
 
@@ -167,5 +168,5 @@ to `/cclio:checkpoint`.
 ## standing rules
 - unpushed commits are pushed at the halt by default; dima's «stop» holds them (`habit-dima-comms-pacing`)
 - reminders queued for the halt fire before the CST
-- any phase finding something big → do not fix it. park it and name it. a halt that grows into
-  a work session has failed at its one job.
+- any phase finding a freebie solves it in place; finding something bigger parks it and names it — a new lane never
+  starts inside a halt.
