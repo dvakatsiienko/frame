@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-10-14
 dies-when: browserbase is adopted as a door or dropped at the test-drive verdict (2026-10-14, extended by dima on 10-06)
 ---
@@ -46,3 +46,7 @@ Ticket: none
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 browserbase test drive, extended to 2026-10-14 (dima 10-06) — walk the stress list in `docs/test-drive/browserbase.md`, one real ask per feature, widest over deepest (`habit-test-drive`); the free hour is the budget, log minutes per round. on 10-14: adopt as the cloud-agent browser door, or drop. dima 2026-09-28: «pick good browserbase features for us to stress test, and find how to make use of cloud agents» — set 2026-09-28
+
+## verdict
+
+- 2026-10-14 · **dropped** (dima, o92): local `agent-browser` covered every check the rounds ran; the key stays in 1Password `browserbase-golden`.

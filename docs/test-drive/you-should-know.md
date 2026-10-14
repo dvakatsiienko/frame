@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-13
+until: 2026-10-28
 ---
 
 # test drive — cc-plugin-you-should-know
@@ -42,3 +42,9 @@ dropped, 2026-10-10 — turned off in `settings.json`. not because of the featur
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 you-should-know test drive, one week to 2026-10-13 — the built-in `cc-plugin-you-should-know`, on in dima's terminal sessions (user scope, so coders get it too); walk the stress list in `docs/test-drive/you-should-know.md`, one log line per card. on 10-13: keep on, keep for dima only, or off. dima 2026-10-06: «how to test drive it? can i test drive now?» — set 2026-10-06
+
+## reset 2026-10-14 (dima, o90)
+
+**test card:** we believe the «you should know» card helps dima in cclio's thread · we test it by enabling it for cclio's folder only, every other session off · we measure cards shown per day in cclio's desktop thread and dima's keep/dismiss · we're right if it shows in cclio's desktop thread at least daily and dima keeps more than he dismisses.
+**kill rule:** research after the 10-14 second wind proves the card cannot render in a desktop-app thread → dropped.
+**first:** research whether the card works in a desktop-app thread (he saw a screenshot that says it does; it never popped in cclio's thread), then check the cclio-folder-only enablement is actually on.

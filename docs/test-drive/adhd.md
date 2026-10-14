@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-10-14
 dies-when: adhd is adopted as a user-only skill or dropped after the test-drive window (2026-10-14)
 ---
@@ -56,3 +56,7 @@ Ticket: none
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 adhd test drive, extended one week to 2026-10-14 (dima 10-06: «outputs were meh») — every real naming / design-fork / fuzzy-bug ask offers `/adhd:adhd` beside a plain opus baseline, blind a/b to dima, one line per round in `docs/test-drive/adhd.md` (the protocol is there). any real case counts from the weekly reset on — candidates named so far: the `crew-designer` four phases + the 10 atelier looks, the shift-model «what's missing» pass, a fuzzy bug with no known cause (BYT-88 refetch, the barrel-probe false red). not bytes naming (dima: the frame rename settles first). on 10-14: adopt user-only or uninstall. dima 2026-09-28: «install and vet for 1wk, and measure its perf» — set 2026-09-28
+
+## verdict
+
+- 2026-10-14 · **dropped** (dima, o91): «The idea is interesting, but it doesn't produce anything meaningful. I didn't like even one idea it produced.» plugin `adhd@adhd` uninstalled, marketplace `adhd` removed; the dead `Skill(adhd:adhd)` deny in `cclio/.claude/settings.json` left for dima's word (a permissions edit).
