@@ -103,7 +103,7 @@ between. a release post on the project's blog beats the github release body when
 - **every borrow carries a tag**: `apply` — a revertible change on the fleet's side (a cc setting, a hook
   flag, an agent's frontmatter, a doc fact); `ask` — his tools, his money, or a workflow change
 - **every number on a card links its source**; a model price or limit is checked against
-  `docs/knowledge/fleet-models.md`, and a disagreement prints as ⚠️ on the card (10-14: a misread
+  `x:crew-lead`'s `references/model-cards.md`, and a disagreement prints as ⚠️ on the card (10-14: a misread
   haiku price reached the report, his screenshot caught it)
 - **the rest is one count line per section** — `+ 14 more read, nothing to borrow`. an entry that did not update is never printed (dima
   2026-09-21: «if formulas didn't update, do not print them»). the apps lane obeys the same rule:
@@ -190,8 +190,8 @@ same message («hold #61») subtract from the round.
   carries it.
 - **brew** → `brew upgrade` runs with the digest, before the report (flow step 4), never in this round.
   the same round diffs `~/Applications/*.app` launchers (a `Contents/MacOS/run.sh` calling `steam://`) against `~/Library/Application Support/Steam/steamapps/common`: a launcher with no game folder is a steam tail every cleaner skips — listed in the digest by path, trashed only on dima's word.
-- after the round: `git pull` both mains, then `pnpm install` in each (his tree is stale until then; lockfile-driven, fast); a merged bytes round redeploys prod, say so. `pnpm dedupe` is its own deliberate commit once in a while, never a reinstall — a wipe re-resolves peers and floats transitives, which is the «different lockfile» he noticed.
-  then `/run` on every app the round touched (dima, 2026-09-27: «use run as a sanity check everywhere»); a red run is a digest line and a hold on the next merge.
+- after the round: `git pull` both mains, then install per `x:github-contrib`'s package.json merge bullet; a merged bytes round redeploys prod, say so. `pnpm dedupe` is its own deliberate commit once in a while, never a reinstall — a wipe re-resolves peers and floats transitives, which is the «different lockfile» he noticed.
+  then `/run` every app the round touched (dima, 2026-09-27: «use run as a sanity check everywhere»); a red run is a digest line and a hold on the next merge.
 - **skills lane, weekly with brew** — the agent skills renovate cannot see. the `skills` cli has no
   machine-wide list and no check command: `list`/`update` see the cwd's project OR global (`-g`),
   never both, so every scope runs on its own. the three lockfiles are the source of truth:

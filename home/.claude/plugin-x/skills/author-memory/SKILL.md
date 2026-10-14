@@ -28,7 +28,7 @@ before the write: who needs it · what it costs resident · does it already exis
 
 ## how it is written
 
-- one instruction per line; the why goes in a block html comment **at column 0, after its list** (failure · why · outcome, ≤3 lines) — an indented comment loads whole
+- one instruction per line; the why goes in a block html comment **at column 0, after its list** (failure · why · outcome, ≤3 lines) — an indented comment loads whole; a doc opened with `Read` keeps its comments, so there the story goes to git or a research doc
 - a rule carries the one command that proves it, or is labelled an inference
 - prompt the positive; no CAPS, no «ALWAYS», no enumerated cases
 - no timestamps or lineage in prose, unless the date is the fact

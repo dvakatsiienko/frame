@@ -60,6 +60,11 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-14 · bulk-replace · green · none · b4 chores 2–19: 18 anchors each once, rg confirms every replacement
 - 2026-10-14 · bulk-replace · blocked · none · b4 chores 1 and 20: crew-coder/SKILL.md held by session 8956ae99 (x-mod-holds, 165 min); chore 20 not retried
 - 2026-10-14 · gate-retry · green · none · b4 chore 21: commit ee94ba5 on main, 13 files (18 insertions), subject as briefed
+- 2026-10-14 · bulk-replace · green · none · b5 chore 1: three trace lines appended after the census line, tail -3 matches
+- 2026-10-14 · bulk-replace · green · none · b5 chore 2: census file last line appended, not in git
+- 2026-10-14 · bulk-replace · green · none · b5 chore 3: b4 receipt phrase changed to «13 files (18 insertions)», rg prints 1
+- 2026-10-14 · gate-retry · green · none · b5 chore 4: commit 22459e1 on main, waited 3s on an index lock, subject as briefed
+- 2026-10-14 · bulk-replace · green · none · b6 chores 1–14: 14 edits, 13 files, each anchor matched once; the evergreen pair needed two edits (its second line carries more text after the anchor)
 
 ## rounds
 

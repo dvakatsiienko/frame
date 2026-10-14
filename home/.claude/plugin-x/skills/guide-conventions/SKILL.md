@@ -8,11 +8,7 @@ description: Load BEFORE designing a shape that is expensive to change later —
 One skill, many rules. The rules live in [`conventions/`](conventions/) as separate files and are
 **read on demand**, never up front.
 
-📌 Why the shape is this and not one skill per rule: a skill's `description` is resident in every
-session from boot (~80–100 tokens), and on `cc` the whole skill listing shares a character budget —
-overflow truncates descriptions and then drops them, quietest-first. A library of narrow convention
-skills therefore taxes every session and eventually silences itself. One umbrella pays that toll
-once; the rule files cost nothing until Read.
+📌 one umbrella skill, N rule files read on demand: the listing budget is why (`author-memory/references/skill.md`).
 
 ## How to use it
 

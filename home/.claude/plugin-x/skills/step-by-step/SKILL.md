@@ -26,7 +26,6 @@ Then STOP. No edits, no peeking at the next item.
 - **«next» / «approve»** — the suggestion is accepted. Execute it (if it edits, show the diff),
   then open the next round.
 - **anything else is a steer** — apply it to THIS item, re-print the changed part, wait again.
-- skipped questions inside a steer mean accepted recommendation — never re-ask.
 
 ## the frame
 

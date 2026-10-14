@@ -29,7 +29,6 @@ Calls this decides:
 
 - A rare operation gets a documented one-liner, not a command.
 - A wrapper that only forwards arguments gets deleted, not renamed.
-- Dead code your change orphans, or in a file you touch, goes; elsewhere it is named in the report.
 - A config option is a decision you failed to make — pick the default, delete the knob.
 - Two ways to do one thing means one is wrong; find out which.
 

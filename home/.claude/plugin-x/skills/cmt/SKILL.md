@@ -180,7 +180,7 @@ the moment it lands. `frame` deploys nothing — no watch.
 assignment, not by hash: branch `coder/BYT-N-<slug>` from `main`, step-commits on it (each
 with `- ticket: BYT-N` and its step line), `gh pr create` with `- ticket: BYT-N` in the body and never a closing keyword — cclio closes the
 ticket after the merge, with its closing word (dima, 2026-10-11), then
-**squash-merge** on Dima's word — the squash body lists the steps. On a `coder/*` branch the coder holds `y+` and `push+` (commit each step, push, **open the PR at the first push** — a real one, never a draft: dima wants no drafts, the PR is the review surface from its first commit); on `main` the default lane's rules hold unchanged. Load `x:github-contrib`
+**squash-merge** on Dima's word — the squash body lists the steps. On a `coder/*` branch the coder holds `y+` and `push+` (commit each step, push, **open the PR at the first push**, a real one, `x:github-contrib`); on `main` the default lane's rules hold unchanged. Load `x:github-contrib`
 before the `gh` call. **The PR url goes to Dima as a one-click link the moment `gh pr create`
 prints it** — in the coder's chat and in its ping to the coordinator. `frame` commits to
 main unless the lane is a feature (`craft-fleet-flow`).
@@ -212,7 +212,7 @@ body's ticket-id-pattern hits are counted and each one is intended. Say the hash
 
 - Sanity check before every commit: leftover debug/test code, commented-out code, stray
   debuggers → pause, report, resume when resolved.
-- Pre-commit hook failure → never self-fix; summarize and stop. One exception: frame's known sub-second pre-commit test flake (red in under 1 s on the first commit after staging) gets one identical retry, per `~/frame/AGENTS.md`; a second red is real.
+- Pre-commit hook failure → never self-fix; summarize and stop. One exception: frame's known flake gets one identical retry (`~/frame/AGENTS.md`).
 - a commit's output reaches you whole — the hooks print the only error channel there is. `>/dev/null` on a commit turned a biome refusal into a bare «exit 1» (2026-09-27).
 - in a shared tree, push the sha you counted — `git push origin <sha>:<branch>` — never the moving
   `HEAD`: a peer's commit landed 18 s before a push and went out unchecked (2026-09-26).

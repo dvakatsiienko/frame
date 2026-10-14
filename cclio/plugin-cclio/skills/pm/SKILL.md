@@ -76,7 +76,7 @@ traps:
 - **proposed** — his vision of the solve, open until a grill moves a line to decided
 - **decided** — each call with its source (dima, a grill, an adr)
 - **open** — `?` lines; a ticket goes to `to-spec` only with this empty
-- **exit** — given/when/then, 3–6 lines (`cclio:shape-lane`)
+- **exit** — given/when/then (`cclio:shape-lane`)
 - **out** — out of scope and «decided against», so nobody re-proposes it
 - **refs** — research, designs, prior art
 - **closing word** — at close

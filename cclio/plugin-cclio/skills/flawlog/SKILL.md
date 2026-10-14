@@ -60,8 +60,7 @@ both directions.
 the log is short by construction; it holds only unresolved items. cluster them, produce ONE
 batched proposal (memory / rules / tickets / drop), ONE approve from dima, then
 execute and commit. never ticketify catches one at a time.
-a hazard's home is the repo it bites: one repo → that repo's `AGENTS.md`; `rules/fleet-hazards.md`
-takes only what bites 2+ repos or every session.
+a hazard's home: `rules/fleet-hazards.md`'s header (one repo or 2+, and a Bash-shaped one becomes an `x-mod-guard` rule first).
 when a flaw class repeats, reference past logs — a repeat is stronger evidence than a first sighting.
 
 ## 4. the failure mode to watch

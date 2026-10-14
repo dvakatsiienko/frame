@@ -40,8 +40,3 @@ run one probe there, then write «proven».
 concept it is named after: `cat` via Bash and the `Read` tool are different events to the harness,
 and only one fires a scoped rule. A null result is a claim about your instrument first
 ([[method-report-verify]]).
-
-## CSTs
-
-**A CST's live-state claims are candidates, verified before use** — tickets by query, sessions by
-pid, files by `ls`. Lives in `CST-SPEC.md`; costs ~three shell calls.

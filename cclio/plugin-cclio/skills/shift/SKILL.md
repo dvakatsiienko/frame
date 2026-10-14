@@ -15,7 +15,7 @@ A **shift** is a lane built to run without dima (FRM-266). A lane asks and waits
 - `away` — nothing waits on him. at most one y/n that fits a phone, and only for an irreversible
   step that blocks everything else.
 
-Members are named `🎯 🔧 <shift> code: …`, `🎯 🔎 <shift> verify: …`.
+Members are named per `x:crew-lead` § preflight, names, mode `🎯`.
 
 ## comms while he is away
 

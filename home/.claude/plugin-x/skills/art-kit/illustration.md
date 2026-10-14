@@ -50,10 +50,6 @@ one bounded change → render again. iterate privately; dima sees takes, not eve
 - `agent-browser wait <selector>` waits for a *visible* element: an empty `#done` div never
   counts, so every wait ran its whole timeout and a 1 s render read as «100 s». a page signals
   through its title, read with `wait --fn`
-- biome sorts object keys on write: an order that matters (the readme's app rows) needs an
-  explicit list, never `Object.keys`
 - a filter rect over the whole canvas paints a faint box around a transparent sign: clip the
   grain to the shape
-- a new `.ts` dir is outside `tsconfig.json` `include` until added; the gate caught a bad cast
-  the moment it was
 - sky and far mountains must not receive shadows in the raster, or the edge pines paint the sky

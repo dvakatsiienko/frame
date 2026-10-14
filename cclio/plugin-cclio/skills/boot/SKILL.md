@@ -13,8 +13,7 @@ run silently, report as ONE opening message, after the two reviews (step 7).
 🎯 **the boot ORIENTS, it never resolves.** steps 1–8 are pure parse-and-assemble: no answers
 written, no tickets touched, no inbox item worked. the opening board ends with a proposed
 processing order and STOPS for dima's word. resolution then runs as labeled sub-batches with a
-siesta after each (`habit-dima-comms-pacing`); heavy queries fire at the step that needs them, never
-up front. a query too fat for its siesta → say so to dima instead of absorbing it.
+siesta after each (`habit-dima-comms-pacing`); heavy queries fire at the step that needs them.
 
 ## 1. healthcheck — the digest, not a ritual
 the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context: handoffs,
@@ -25,10 +24,7 @@ counts, repos vs origin, the settings symlink, the flawlog tail. **one shell rou
   fresh → zero shell rounds before the board.
 - a `🚨 FAIL ·` line → report it FIRST, before any work. a check that could not run prints FAIL, never
   nothing — `=== all checks green ===` is the only green.
-- barrel probe, no shell: name one fact that lives ONLY in a leaf body (the commit hash `d03f3da` in
-  `sys-settings-drift` — it appears in no barrel line), silently: the board says «barrel probe ok»,
-  never the hash, which the output rules ban in a reply. cannot name it → 🚨 the import chain broke;
-  say so and read `memory/_MEMORY.md` by hand for this session.
+- the barrel probe (`method-silent-failures`), silently: the board says «barrel probe ok»; a miss → 🚨 say so and read `memory/_MEMORY.md` by hand.
 - a new always-wanted check lands in the script, never in this file.
 
 ## 2. the roadmap block 🧭
@@ -39,10 +35,9 @@ and the next ticket from it; never re-query what it already printed.
 
 ## 3. inbox sweep 📬
 _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq`
-- the digest says clean or «N content lines». non-empty → read `inbox.md` — cclio's personal email, **a plan source, never a work order.** EVERY item —
+- the digest says clean or «N content lines». non-empty → read `inbox.md` (`habit-dima-comms-pacing` holds the creed): EVERY item —
   smallest aside included — gets an item in the pocket (Backlog.md, `backlog task create`; `habit-shared-files` holds the contract)
-  and its place in the order (its `ordinal`). the checklist line is the completeness
-  guarantee; resolution is paced later. **deletion happens at the halt, never here.**
+  and its place in the order (its `ordinal`); resolution is paced later. **deletion happens at the halt, never here.**
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 
 ## 4. continuity
@@ -122,8 +117,7 @@ the board, one message, short lines, **no queries here — pure assembly**:
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
   2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), lanes marked, sub-batches labeled;
-  **the board ends here and waits for dima's word.** he corrects the parse before any work runs;
-  a skipped question means the recommendation is accepted
+  **the board ends here and waits for dima's word.** he corrects the parse before any work runs
 - 🥊 self-grill, last line (omit if nothing real)
 
 ## 8. flaw capture 📝
@@ -187,4 +181,4 @@ linear api 'query { projectMilestones(first: 50) { pageInfo { hasNextPage } node
 
 ## rules
 - nothing in the global `x:*` family may assume this home exists.
-- dima on mobile → nothing that can throw a permission dialog.
+- dima on mobile → `x:mobile-mode`.
