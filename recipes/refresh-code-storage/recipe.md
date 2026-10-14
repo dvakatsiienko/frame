@@ -18,6 +18,8 @@ keeps the fleet's picture of code hosting true: our backup, github's state under
 
 > it's good to have a prepped recipe to see what's happening via a run, instead of me explaining every time why and what to research. keep it compact. (2026-10-13)
 
+> i wish code storage had a cli, ideally — a door like gh, so the fleet works it from the shell. (2026-10-14)
+
 his standing calls: gitlab is out (archaic); the backup is codeberg-first until a run says otherwise; jj is tried in a bytes lane only.
 
 ## the run
@@ -37,6 +39,7 @@ his standing calls: gitlab is out (archaic); the backup is codeberg-first until 
 - next-gen hosts: new or relaunched ones, their free tiers, agent features (api-first repos, ephemeral branches, sync), and whether they look good
 - beyond git: jj, sapling, pijul and the like — adoption, which hosts serve them
 - the shortlist re-checked item by item: tangled, mesa, code.storage, cloudflare artifacts, depot code
+- the cli for every host: is there one (official or community), is it in brew, maintained, and how close to `gh` (repos, prs, issues, actions, a raw api escape hatch); codeberg's `fj` vs `berg` re-checked each run
 
 ### analysis
 - the backup itself: does the mirror still match github's head, is the key still in 1password
