@@ -16,7 +16,7 @@ prefix (renovate writes it), 🧬 her voice here. cadence: **daily, at boot, whe
 1. the boot loads this skill and starts the § 2 read in the background — a fresh agent on Sonnet 5.5,
    its brief this file's path; the board prints without waiting for it
 2. the report is the first step after dima answers the board: printed whole, each borrow its own orbit ask
-3. batches start only after his evergreen reply; the borrows he ticks run first
+3. the `apply` borrows ran before the report; batches start only after his evergreen reply, the `ask` borrows he ticks first
 4. every run ends with `brew upgrade` (pinned never), no ask — brew never upgrades itself, keeping it
    fresh is this skill's job (dima, 2026-10-14)
 
@@ -46,11 +46,15 @@ age from `createdAt`, ci from `statusCheckRollup`.
 
 ## 2. read the release — every lane, every updated entry
 
-the judge reads notes, never titles. **every updated entry in all three lanes — renovate, brew,
-apps — gets its notes read over the whole range** before step 3 decides anything; a line that
+the judge reads notes, never titles. **every updated renovate and apps entry gets its notes read over
+the whole range** before step 3 decides anything. **brew is read by use**: a formula or cask whose binary
+shows in the last 14 days of our Bash calls or dima's zsh history (one `duckdb` query over the
+transcripts plus `~/.zsh_history`) gets the full read; any other one only on a major, head note only
+(ccrow, 2026-10-14: the 96-entry brew read was most of the 350k, and every keep passed this filter); a line that
 says «notes unread» is a step skipped (dima 2026-09-28: «how this line is useful for me without
 knowing whats interesting new in a major?»). the read is heavy (31 entries = ~215k tokens,
-~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs in a fresh agent on Sonnet 5.5, never a fork, with
+~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs in a fresh agent on Sonnet 5.5, never a fork,
+returning the report as its reply (capped at the printed items, never a file write), with
 `parallel-cli extract --full-content` as the first door. no notes anywhere → name the urls
 tried; for a major, diff the old and new npm tarballs (commands, flags) and label that inference.
 
@@ -93,6 +97,11 @@ between. a release post on the project's blog beats the github release body when
   not interesting 95 % of cases»); a fix prints only when it ends a bug we hit. every printed
   entry carries its 1–4 facts as nested bullets — a name with a version and no facts is an empty
   line.
+- **every borrow carries a tag**: `apply` — a revertible change on the fleet's side (a cc setting, a hook
+  flag, an agent's frontmatter, a doc fact); `ask` — his tools, his money, or a workflow change
+- **every number on a card links its source**; a model price or limit is checked against
+  `docs/knowledge/fleet-models.md`, and a disagreement prints as ⚠️ on the card (10-14: a misread
+  haiku price reached the report, his screenshot caught it)
 - **the rest is one count line per section** — `+ 14 more read, nothing to borrow`. an entry that did not update is never printed (dima
   2026-09-21: «if formulas didn't update, do not print them»). the apps lane obeys the same rule:
   a feature change is a 🟠 line with its facts, a rewrite or a capability we would use is a 🌟
@@ -130,7 +139,9 @@ between. a release post on the project's blog beats the github release body when
 
 🍺 brew upgrade ran: <n> upgraded, <failures or none>
 
-(one orbit ask) merge round: <pkgs> ➡️ yes
+✅ applied: <borrow> — undo: <one line>   ← every `apply` borrow, run before the report
+
+(one orbit ask) the `ask` borrows: all except … ➡️ yes; merge round: <pkgs> ➡️ yes
 ```
 
 - the four labels are fixed words in a fixed order so his eye lands on the same spot per card.
