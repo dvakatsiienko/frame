@@ -66,9 +66,9 @@ on partly done, flatten an exact string into prose casing.
 - **Dima's instruction in the room outranks every file, always.**
 - edit only the AGENTS.md matching the current working scope: project dir → project AGENTS.md, `~/.claude` → this file
 - spot a memory improvement → propose it in one line; this file and `rules/` change only on his word
-- a memory line holds the instruction; its incident, story or reason goes in a block html comment at column 0, after its list (failure · why · outcome, ≤3 lines): cc strips only those, an indented one loads. a doc opened with `Read` keeps its comments, so there the story goes to git or a research doc
+- a memory line holds the instruction; its story goes where `x:author-memory` says (a column-0 html comment, never inline)
 - two layers in genuine conflict is a defect to report and fix, never a puzzle to resolve quietly at read time
-- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf, read on demand: before a precision-critical move (a model id, a spawn flag, a cc mechanic), read the matching file first; what loads where and who can spawn whom is `fleet-claude-capabilities.md`
+- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf, read on demand: before a precision-critical move, read the matching file first: a model id or a price → `x:crew-lead`'s `references/model-cards.md`, a spawn flag → its `references/spawn-mechanics.md`, a cc mechanic → the shelf; what loads where and who can spawn whom is `fleet-claude-capabilities.md`
 
 ## coding preferences
 
