@@ -72,6 +72,7 @@ function world(
         return { text: '' };
     });
     on('turn.complete', () => ({ text: '' }));
+    on('session.compact', (_$, e) => ({ messages: e.messages }));
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     return { clock, commands, lines, store };
@@ -302,4 +303,33 @@ test('a turn end that lands during the compact starts no second one', async ($, 
     await endTurn($);
     await w.clock.advance(2_000);
     expect(w.commands.filter((c) => c.startsWith('/compact'))).toHaveLength(1);
+});
+
+const compact = (
+    $: Engine,
+    trigger: 'auto' | 'manual' | 'plugin' | 'precompute',
+) =>
+    $.session.compact({
+        messages: [{ role: 'user', text: 'hi', toolUses: [] }],
+        trigger,
+    } as never);
+
+for (const state of ['asked', 'writing'] as const)
+    test(`a threshold compact clears a wind left ${state}, so the board stops waiting`, async ($, on) => {
+        const w = world(on);
+        w.store.set(`wind:${SID}`, { at: NOW, state });
+        await start($);
+        await compact($, 'auto');
+        expect(w.store.has(`wind:${SID}`)).toBe(false);
+    });
+
+test('a compact keeps a wind that is refreshing, and a precompute keeps a writing one', async ($, on) => {
+    const w = world(on);
+    w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refreshing' });
+    await start($);
+    await compact($, 'plugin');
+    const kept = w.store.has(`wind:${SID}`);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'writing' });
+    await compact($, 'precompute');
+    expect([kept, w.store.has(`wind:${SID}`)]).toEqual([true, true]);
 });

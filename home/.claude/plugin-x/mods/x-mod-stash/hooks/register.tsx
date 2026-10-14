@@ -2139,6 +2139,15 @@ async function windReady(
     };
 }
 
+// a compact the wind did not run (the threshold, a typed /compact) already refreshed the session: an ask or a handoff
+// still being written dies with it, or the board keeps «finishing its step» forever (cclio's 10-14 auto-compact, o96)
+async function windOnCompact($: EngineInterface) {
+    const sid = await currentId($);
+    const was = sid ? await windOf($, sid) : undefined;
+    if (!sid || (was?.state !== 'asked' && was?.state !== 'writing')) return;
+    await $.store.delete(WIND + sid);
+}
+
 // at a main turn's end: a session that named its handoff compacts onto it, then ingests it, once
 async function windAfterTurn($: EngineInterface) {
     const sid = await currentId($);
@@ -3750,6 +3759,15 @@ export const register: Register = (on) => {
         }
         await armHot($);
         await load($);
+        return r;
+    });
+
+    on('session.compact', async ($, e, next) => {
+        const r = await next(e);
+        if (!e.agentId && e.trigger !== 'precompute') {
+            await windOnCompact($).catch(() => undefined);
+            await load($);
+        }
         return r;
     });
 
