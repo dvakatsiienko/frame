@@ -6,8 +6,8 @@ ticket: DOT-130
 
 # Models — the full reference
 
-**Read on demand when a model-selection question opens.** The distilled version cclio acts on
-lives in `home/.claude/plugin-x/skills/crew-lead/`; the two must agree line by line.
+**Read on demand when a model-selection question opens.** The contract cclio acts on is
+`crew-lead/models.md`; this file holds the cards and the evidence behind it.
 
 📌 This file stays evergreen — [DOT-130](https://linear.app/x-com/issue/DOT-130) owns that, and
 `recipes/refresh-crew-coordinator/recipe.md` runs it. Add measurements and Dima's live
@@ -145,36 +145,16 @@ dima's screenshots of the Anthropic webinar (Lucas Gonzalez), read through his s
 - sonnet 5.5's api default effort is `high`, opus 5.5's is `medium` (matches the cards above)
 - **effort mid-session** (verified 2026-10-12, `.scratch/effort-switch/`): changing effort keeps the cache on opus 5.5, sonnet 5.5, haiku 5.5 and fable 5.1 (fable since cc 2.1.260) on a subscription or api key, never on bedrock, vertex, a gateway or HIPAA; `/model` still re-reads the whole history uncached; `/effort` during a turn applies to the next request in that turn, not the next message ([model-config](https://code.claude.com/docs/en/model-config)), the desktop picker undocumented. dima's habit: high for planning and thinking, medium for the usual work, switched live
 
-## spawn defaults — set by Dima, binding on every surface that spawns
+## evidence behind the contract (the contract itself: `crew-lead/models.md`)
 
-- **opus-5.5 · the default coder** · `--effort medium` standing default (dima's call 2026-09-25,
-  backed by the migration guide) · `high` for large scaffolding, migrations and cross-cutting
-  refactors · the **verifier** always opus-5.5 `medium` · `xhigh`/`max` only after a measured gain
-- **fable-5.1** · 🚫 never spawned unless Dima asks by name · then `medium`; for design «not lower
-  than medium, maybe high, not extrahigh, not max» (dima, 2026-10-01) **[dima]**
-  - the 2026-10-01 speak a/b, one design spread at list prices: opus-5.5 medium $4.35, fable-5.1
-    medium $13.44, fable-5.1 high $15.52 (`docs/test-drive/design-run.md`); Dima judged fable's
-    drawing the better. **[measured]**
-- **sonnet-5.5 · the helper, never the coder** · `medium` is the baseline — the vendor default in
-  Claude Code and its starting point for agentic tool use [verified]. jobs: Explore / codebase
-  reading, scoped mechanical edits under an opus review of diff + check output, retrieval sub-lanes
-  under an opus synthesiser [inferred from thin evidence — one community bench, vendor
-  positioning]. `high` for a harder read; never `low` for code (skips verification [verified,
-  vendor]); never `xhigh`/`max` (dearer than opus, scores drop [verified, bench]). doors: an agent
-  file with `model: sonnet` + `effort: medium` for subagents, Workflow `agent()` with
-  `{model, effort}`, or `claude --bg --model sonnet --effort medium` [doors verified from docs/CLI;
-  a sonnet spawn not probed on 2.1.286].
-- **Explore** · runs on sonnet-5.5 `medium`: `home/.claude/agents/explore.md` pins `model: sonnet`,
-  `effort: medium`, on a one-week test drive to 2026-10-08 (`docs/test-drive/explore.md`); without
-  that file it inherits the session model (opus-5.5)
-- **haiku-5.5** · retrieval, extraction, bulk, bare probes, sidekick subagents · `medium` baseline; classification unmeasured
-
-📌 **`--effort` is a flag on `claude --bg` and is honoured; it is never inherited** — pass it every
-time. `--model opus` resolves to `claude-opus-5-5` (cc 2.1.280+, probed).
-
-📌 the old «opus always `high`» line was opus-5 era: a full day of `high` raised weekly usage by only
-~10 %, which killed the cost argument for `low`. On opus-5.5 the default moved to `medium` on the
-vendor's migration evidence — revisit only with a measured miss, never a hunch.
+- the 2026-10-01 speak a/b, one design spread at list prices: opus-5.5 medium $4.35, fable-5.1
+  medium $13.44, fable-5.1 high $15.52 (`docs/test-drive/design-run.md`); Dima judged fable's
+  drawing the better. **[measured]**
+- sonnet-5.5 `medium` is the vendor default in Claude Code [verified]; never `low` for code (skips
+  verification [verified, vendor]); never `xhigh`/`max` (dearer than opus, scores drop [verified, bench])
+- the old «opus always `high`» line was opus-5 era: a full day of `high` raised weekly usage by only
+  ~10 %; on opus-5.5 the default moved to `medium` on the vendor's migration evidence — revisit only
+  with a measured miss, never a hunch
 
 ## conv picks 2026-08-19 — task→model data (Dima's live calls, keep growing)
 

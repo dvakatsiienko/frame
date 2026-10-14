@@ -8,7 +8,7 @@ procedure: recipes/refresh-crew-coordinator/recipe.md
 # spawn mechanics — what is actually true
 
 the evidence base for every way a claude code session can start another worker. the resident
-distillate is `home/.claude/plugin-x/skills/crew-lead/`; this is the on-demand detail behind it.
+distillate is `x:crew-lead`'s SKILL.md; this is the on-demand detail behind it.
 
 claim tags: **[verified]** ran it, observed the result · **[schema]** read from a tool definition
 or `--help` · **[docs]** anthropic documentation only · **[inferred]** reasoning, not evidence ·

@@ -33,7 +33,7 @@
             "name": "probe"
         },
         {
-            "example": "x knowledge read spawning-mechanics",
+            "example": "x knowledge read go-charm",
             "gist": "the fleet reference shelf, docs/knowledge",
             "name": "knowledge"
         },
