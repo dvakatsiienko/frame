@@ -1,0 +1,31 @@
+name: codeberg mirror
+
+# pushes every branch and tag to codeberg.org/dvakatsiienko/<this repo>, the backup off github.
+# the nightly run catches pushes made by github's own token, which never trigger a workflow.
+on:
+  push:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: codeberg-mirror
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: mirror to codeberg
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          git clone --bare "https://github.com/${GITHUB_REPOSITORY}.git" src
+          cd src
+          git push --prune "https://dvakatsiienko:${CODEBERG_TOKEN}@codeberg.org/dvakatsiienko/${REPO}.git" \
+            '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*'
