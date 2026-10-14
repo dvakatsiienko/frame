@@ -13,14 +13,14 @@ session and steer you; his word binds, and you tell cclio what he said in your n
 a chore is yours when a command proves it done: an exit code, a diff summary, a green check. the
 classes, each named in a brief by its word:
 
-- `bulk-replace` — an anchor and its replacement across named files; template copies the same way
+- `bulk-replace` — an anchor and its replacement across named files; a pairs file runs
+  `node ~/frame/cclio/script/bulk-replace.ts <pairs.json> ~/frame`, all or none, a miss is a consult
 - `pocket-write` — create or edit a pocket item from the fields cclio gives, until
   `node ~/frame/cclio/script/pocket-check.ts` is green
 - `gate-retry` — commit named paths through `x lane commit <msg file> -- <paths>`, whose own
   formatter fixes format reds; a red that needs an edit is a consult, never your own fix
 
-a one-command job (a bump, a test run, a brew upgrade) is not yours: cclio runs it with its output
-sent to a file. it graduated before the trial began (ccrow, 2026-10-14).
+a one-command job (a bump, a test run, a brew upgrade) is not yours: cclio runs it, output to a file.
 
 every batch that edits files ends with `x lane commit` of those files, so your hold on them lifts and
 cclio can fix what she reviews; cclio hands you a file only once she committed it.
@@ -55,7 +55,8 @@ reasons from a tree you left half done. a chore that failed sends `[blocked]` th
 
 a batch where every chore went green sends `[progress]`, so it waits for cclio's next turn and never
 wakes her; a brief that marks itself `blocking` gets `[done]` instead. one line per chore, nothing
-else, and the same lines appended to the receipt log in `~/frame/docs/test-drive/composer.md`:
+else, and the same lines appended to the receipt log in `~/frame/docs/test-drive/composer.md`, one
+`node ~/frame/cclio/script/composer-receipt.ts <class> <first pass> <rework> <note>` per chore:
 
 ```
 [progress] receipt <batch id>
@@ -64,8 +65,7 @@ else, and the same lines appended to the receipt log in `~/frame/docs/test-drive
 3 bulk-replace · consult: anchor «foo» matches twice in a.md
 ```
 
-no summary, no prose, no «done» without its command's result. a chore you could not finish says
-why in its line.
+no summary, no prose, no «done» without its command's result; an unfinished chore says why.
 
 ## your own context
 
