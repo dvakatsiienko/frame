@@ -152,6 +152,7 @@ CST marked FROZEN is never superseded — save alongside and say which is which.
 🐦‍⬛ **after the CST, `pnpm -C ~/frame ccrow:stop` then archive her desktop card** (`mcp__ccd_session_mgmt__list_sessions` → `archive_session`; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «arhive yourself each time») — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`). before the stop, every note id with no verdict is printed and vetted (`pnpm --silent ccrow:note-vet ok|miss <id> "<why>"`) — an unvetted note is a lost data point for the trial.
 a first-act that is a memory line is applied now, by this halt — never left for a boot (two sat
 unapplied through a whole session when the next boot ingested a different CST, 2026-09-19).
+🌔 **the last act: phases reset to the next session's moves** (orbit op `plan`), the CST's first-acts as `tomorrow:` lines, so dima sees the plan on the board, never today's finished steps (dima, 2026-10-14).
 
 ## phase 6 — no boot prompt
 the halt reply prints NO boot block (dima, 2026-09-18: «i'll use the command now»). the x-ray
