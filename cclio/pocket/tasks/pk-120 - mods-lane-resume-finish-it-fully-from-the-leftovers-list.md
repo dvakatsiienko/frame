@@ -4,7 +4,7 @@ title: 'mods lane resume: finish it fully from the leftovers list'
 status: open
 assignee: []
 created_date: '2026-10-13 17:06'
-updated_date: '2026-10-14 12:49'
+updated_date: '2026-10-14 13:09'
 labels:
   - m
 dependencies: []
@@ -23,4 +23,6 @@ parked: dima 20:05, tomorrow opens on the memory sweep; the mods lane resumes at
 
 <!-- SECTION:NOTES:BEGIN -->
 rider for the mods lane resume (dima o14, 15:49): a probe in the second wind mod — after every compaction the mod submits /reload-skills itself (cc changelog: «re-sends the full skill list, which is how to get skills back after compaction»).
+
+riders (dima o19, 16:09): probe a Button wrapping an Svg (desktop draws Svg as a non-clickable image, engine.md:7); every mods coder brief names x:art-kit for finer drawings.
 <!-- SECTION:NOTES:END -->

@@ -19,6 +19,7 @@ import {
     buildPacket,
     cutLine,
     decisionOf,
+    dropStaleRelay,
     isCoordinatorTranscript,
     isLocated,
     leavesToSend,
@@ -649,4 +650,32 @@ test('an unsent parked wake stays parked and puts nothing in cclio’s context',
         env: { ...process.env, CCROW_STATE_DIR: state },
     });
     expect([run.status, run.stdout, existsSync(relay)]).toEqual([0, '', true]);
+});
+
+describe('dropStaleRelay', () => {
+    const parked = () => {
+        const path = join(mkdtempSync(join(tmpdir(), 'relay-')), 'relay.json');
+        writeFileSync(path, '{}');
+        return path;
+    };
+
+    test('drops a wake parked longer than the gap', () => {
+        const path = parked();
+        const old = new Date(Date.now() - 31 * 60_000);
+        utimesSync(path, old, old);
+        expect(dropStaleRelay(path)).toBe(true);
+        expect(existsSync(path)).toBe(false);
+    });
+
+    test('keeps a wake parked inside the gap', () => {
+        const path = parked();
+        expect(dropStaleRelay(path)).toBe(false);
+        expect(existsSync(path)).toBe(true);
+    });
+
+    test('is quiet with no parked wake', () => {
+        expect(dropStaleRelay(join(tmpdir(), 'no-relay-here.json'))).toBe(
+            false,
+        );
+    });
 });

@@ -2,6 +2,7 @@ import {
     SESSION_NAME,
     STATE_DIR,
     armList,
+    dropStaleRelay,
     fail,
     findSession,
     isArm,
@@ -24,4 +25,6 @@ if (running) {
     );
 }
 
+// a fresh ccrow never inherits a wake parked for the last one
+dropStaleRelay();
 await startCcrow(arm);

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 11:51'
+updated_date: '2026-10-14 13:09'
 due_date: '2026-10-16'
 labels:
   - s
@@ -26,4 +26,6 @@ inbox 2026-10-14 (coder svg). how does a coder draw prettier svgs in mods — a 
 
 <!-- SECTION:NOTES:BEGIN -->
 fold of his words kept: the svgs coders drew so far look ugly, or plain at best; his hope is that a modder builds something bigger with svg.
+
+answered 16:05; parked: its two riders ride the mods lane resume (PK-120), dima o19
 <!-- SECTION:NOTES:END -->

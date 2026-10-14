@@ -5,6 +5,7 @@ import {
     mkdirSync,
     readFileSync,
     readdirSync,
+    rmSync,
     statSync,
     writeFileSync,
 } from 'node:fs';
@@ -305,6 +306,14 @@ const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
 
 // a /clear or a reopened desktop tab starts a new transcript in ccrow's project dir; the newest is the live one
 export const RELAY_PATH = join(STATE_DIR, 'relay.json');
+
+// a wake parked past the gap advises on a dead state: a 10-13 20:28 wake reached the next day's ccrow (PK-129)
+export function dropStaleRelay(path = RELAY_PATH, now = Date.now()) {
+    const parkedAt = statSync(path, { throwIfNoEntry: false })?.mtimeMs;
+    if (parkedAt === undefined || now - parkedAt < WAKE_GAP_MS) return false;
+    rmSync(path);
+    return true;
+}
 export const HARVEST_DEADLINE_MS = 15 * 60_000;
 
 export function spawnHarvest(wake: Wake) {
