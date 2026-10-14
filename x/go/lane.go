@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,6 +34,15 @@ const (
 /* Verbs */
 func commit(r *Run, args []string, flags Flags) (any, error) {
 	msgFile, paths := args[0], args[1:]
+	// `-` takes the message on stdin, so no message file is kept or reused (a reused one glued two messages, 2026-10-14)
+	if msgFile == "-" {
+		piped, err := stdinMessage()
+		if err != nil {
+			return nil, err
+		}
+		defer os.Remove(piped)
+		msgFile = piped
+	}
 	if _, err := os.Stat(msgFile); err != nil {
 		return nil, usageFail("no message file at "+msgFile, "x lane commit <msg-file> -- <paths…>")
 	}
@@ -180,8 +190,7 @@ func commit(r *Run, args []string, flags Flags) (any, error) {
 				return "", err
 			}
 			if !committed.ok {
-				return "", &Fail{Msg: "commit failed — the hook output is above",
-					Next: "x lane commit " + msgFile + " -- " + strings.Join(paths, " "), Log: nonBlank(committed.log)}
+				return "", hookFail(committed.log, "x lane commit "+msgFile+" -- "+strings.Join(paths, " "))
 			}
 			sha, err = head()
 			return withWait(took, short(sha)+"  "+firstLine(message)), err
@@ -862,6 +871,50 @@ func gitReason(log string) string {
 		return "git printed nothing"
 	}
 	return lines[len(lines)-1]
+}
+
+// a refused commit: the whole hook log goes to a file, the reply carries only the lines that say why — the caller
+// never pipes the commit into `tail` (8 guard refusals on 10-14)
+var hookRed = regexp.MustCompile(`(?i)error|fail|refus|✖|×|lane gate|exit status|did not match|not found`)
+
+func hookFail(log, next string) *Fail {
+	full := filepath.Join(os.TempDir(), fmt.Sprintf("x-commit-%d.log", os.Getpid()))
+	saved := os.WriteFile(full, []byte(log), 0o600) == nil
+	var why []string
+	for _, line := range nonBlank(log) {
+		if hookRed.MatchString(line) && len(why) < 20 {
+			why = append(why, line)
+		}
+	}
+	if len(why) == 0 {
+		why = nonBlank(log)
+		why = why[max(0, len(why)-20):]
+	}
+	msg := "commit failed — the hook's own lines are below"
+	if saved {
+		msg += ", the whole log at " + full
+	}
+	return &Fail{Msg: msg, Next: next, Log: why}
+}
+
+// stdinMessage saves the message piped on stdin to a temp file the commit reads, refusing an empty one
+func stdinMessage() (string, error) {
+	raw, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		return "", err
+	}
+	if len(bytes.TrimSpace(raw)) == 0 {
+		return "", usageFail("an empty message on stdin", "x lane commit - -- <paths…> <<'MSG' … MSG")
+	}
+	file, err := os.CreateTemp("", "x-msg-*.txt")
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	if _, err := file.Write(raw); err != nil {
+		return "", errors.Join(err, os.Remove(file.Name()))
+	}
+	return file.Name(), nil
 }
 
 func nonBlank(log string) []string {

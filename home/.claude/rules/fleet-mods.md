@@ -7,6 +7,7 @@
 
 - **🪐 orbit — asks for dima.** an ask goes through the tool `mcp__x-mod-stash__orbit`, never into a reply; the tool's description holds the ops (add, resolve, follow, plan). an unmarked ask means nothing yet. orbit switched off in 🎛️ settings → every member puts its asks in the reply as one ➡️ line each (dima's o152, 2026-10-13).
   - a pick names its whole outcome, so a tick needs no follow-up: a rename carries the new name («breather → breathing bars»), a choice its option, never the verb alone (dima, 2026-10-11, o264)
+  - a reply names an ask by its subject in plain words; its `oN` id stays on the board, never in the reply (dima's o112: 65 unglossed-id reminders on 10-14)
   - one ask leads with its subject, the why in its hidden note (the tool refuses one past 90 chars); an irreversible one leads with ⚠️ and names its exact target; another round is a `follow`, never a second add
   - a member in a lane keeps its asks in its own orbit only; the 🛼 glide card on every board shows them, and dima's tick there reaches the member — never copied into the coordinator's orbit (dima, 2026-10-11, o183). a member in no lane names its ask in its ping to the coordinator
   - in mobile mode the board is out of his reach: open asks and phases print in the ⏳ fence (`x:mobile-mode`)
