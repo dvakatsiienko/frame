@@ -15,6 +15,9 @@ me a compact prompt upfront, saving a turn».
 
 ## 0. stop taking new work, tell the fleet — first act
 
+- **my own background work lands first**: every agent and job this session started is listed; each lands and its findings fold before the CST is written (deadline 5 min, then it rides the CST as an open first-act), and the wishkeeper of the batch being closed is always waited for, never carried
+<!-- 10-14 16:28 #dima-caught: the second wind nearly compacted with wishkeeper batch C still running -->
+
 - **no new todo starts** after the trigger: the small open tails close first (an ask whose answer is known, an uncommitted fix, a reply a member waits on); a bigger one goes to the CST as a first-act, never half-done (dima, 2026-10-13, the 9 steps)
 - **the after-pickup move goes to orbit at once**, mid-turn too: «right after the pickup i'd do X» as an ask he can tick before the reset
 - **tell the fleet**: every live member (`ListAgents`) gets one `SendMessage`: «pause — cclio is checkpointing, hold every

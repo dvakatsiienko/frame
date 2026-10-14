@@ -25,5 +25,5 @@ ccrow note 2026-10-14 14:47 (vet 202610132028-opus): packets/202610132028/packet
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-16:30 done: the stale id half was already fixed (stop.ts reads findSession, not a cached id); the real path was relay.json — a wake parked for a desktop-tab ccrow survived the night. dropStaleRelay drops it past the 30-min gap at every cclio prompt and at ccrow start. 90 ccrow tests, red-proven.
+16:23 done: the stale id half was already fixed (stop.ts reads findSession, not a cached id); the real path was relay.json — a wake parked for a desktop-tab ccrow survived the night. dropStaleRelay drops it past the 30-min gap at every cclio prompt and at ccrow start. 90 ccrow tests, red-proven.
 <!-- SECTION:NOTES:END -->

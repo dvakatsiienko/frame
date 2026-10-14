@@ -12,7 +12,7 @@ where the prep's state lives: the ticket body (`decided`, `exit`) once a ticket 
 
 read the ticket's wish block and its `decided` section (or the pocket item's notes) before the first question. a grill that re-asks a settled answer is the 16-file pocket miss.
 
-then the open children of the app's `🌠 <app> wishes` parent ticket: one that rides along — a trial, a test drive, a «carry into the next touch» — joins the brief or is named in the grill. a small UI ask on an app the design flow covers (atelier, speak) goes to a coder with its `DESIGN.md` and a live screenshot, no designer, and leaves one rounds line in `docs/test-drive/design-drift.md` (dima's standing trial).
+then the open children of the app's `🌠 <app> wishes` parent ticket: one that rides along — a trial, a test drive, a «carry into the next touch» — joins the brief or is named in the grill. a small UI ask on an app the design flow covers (atelier, speak) goes to a coder with its `DESIGN.md` and a live screenshot, no designer, and leaves one rounds line in `docs/test-drive/design-drift.md` (dima, 2026-10-11: «keep this trial reminding me to run a coder on applicable apps»).
 <!-- 10-14: two ⏰📌 reminders (BYT-127 lottie/rive, the design-drift coder trial) sat stuck only because a ticket never fires at brief time · dima: «why keep stuck?» · this read replaced them -->
 
 

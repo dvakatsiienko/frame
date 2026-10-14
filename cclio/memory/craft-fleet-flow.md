@@ -21,7 +21,7 @@ each stage names its gate, its owner, its door and its wait budget.
 
 the lane is the ticket's first body line, `lane: <name>`. cclio proposes it and silence accepts; a coder pings at a named trigger and cclio promotes. a lane's 🛼 glide title reads `<topic> — <what>`, one colon only, the card head's (dima, 2026-10-12).
 
-- **freebie** — done in place, no ticket: drop, build, land, look
+- **freebie** — done in place, no ticket: drop, build, land, look; a small UI ask on atelier or speak still goes to a coder with its `DESIGN.md` + a screenshot, and leaves a `docs/test-drive/design-drift.md` rounds line
 - **quick** — main, no pr, no verifier: drop, ticket, brief, build, land, look, fold
 - **prototype** — throwaway, never lands: drop, build, look, fold
 - **feature** — worktree, pr and verifier: every stage, design when it earns it

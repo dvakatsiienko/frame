@@ -18,7 +18,7 @@ keeps the fleet's picture of code hosting true: our backup, github's state under
 
 > it's good to have a prepped recipe to see what's happening via a run, instead of me explaining every time why and what to research. keep it compact. (2026-10-13)
 
-> i wish code storage had a cli, ideally — a door like gh, so the fleet works it from the shell. (2026-10-14)
+> i wish code storage had a cli, ideally, like gh. (2026-10-14)
 
 his standing calls: gitlab is out (archaic); the backup is codeberg-first until a run says otherwise; jj is tried in a bytes lane only.
 
@@ -50,4 +50,4 @@ his standing calls: gitlab is out (archaic); the backup is codeberg-first until 
 
 ## findings
 
-the print adds the shortlist's movement (up, down, new, gone) and the backup's health; checklist: the five shortlist hosts, the backup mirror, the key.
+the print adds the shortlist's movement (up, down, new, gone) and the backup's health; checklist: the five shortlist hosts, the cli per host, the backup mirror, the key.

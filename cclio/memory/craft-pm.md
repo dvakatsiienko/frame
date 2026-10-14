@@ -77,6 +77,8 @@ destination, and waits for his verdict on every one; «closable, because …» i
 
 ## the freebie rule — verdict before plan
 
+- **a small fix inside our own tooling is a freebie, done without asking** (dima, 2026-10-14: «you can do stuff like this as a freebie without asking me») — still reported, every time
+
 Dima: *«if i ask for a freebie but it turns out not to be one — better tell me than try to solve it, because
 i often ask for "small things" without knowing the details. and if it turns out not to be a freebie, then
 it's large scope blur and drift.»*
