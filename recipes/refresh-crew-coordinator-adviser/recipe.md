@@ -78,4 +78,4 @@ settled: «the comms model: pings or reads» — it reads her transcript on a wa
 
 done = the run happened (the `x:shape-recipe` rule). the print always carries the setup verdict (keep / revamp / retire) — the adviser is experimental, so every run reviews it whole.
 
-the print carries the parts of `x:shape-recipe`: decisions · facts that move something · prior art (only what is interesting) · the checklist (`x:crew-adviser`, hunt by hunt: fired · caught · never fired) · open.
+the print follows `x:shape-recipe` step 3 (the research-print shape, plus the checklist and the `open` vectors); its checklist is `x:crew-adviser` hunt by hunt: fired, caught, never fired.

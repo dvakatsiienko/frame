@@ -1,12 +1,12 @@
 ---
 id: PK-123
 title: >-
-  crew-* skill descriptions say: load when the coordinator tells you to init as
-  a coder / verifier / designer / adviser
+  crew skills load by name: descriptions fire on a brief naming the skill,
+  misses measured
 status: claimed
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 12:43'
+updated_date: '2026-10-14 13:03'
 due_date: '2026-10-14'
 labels:
   - xs
@@ -40,4 +40,8 @@ done 15:37: crew-coder, crew-verifier, crew-adviser descriptions lead with «ini
 15:46: crew-adviser/designer descriptions + briefing committed (198b8d33), x 0.11.294 cache carries them. crew-coder + crew-verifier descriptions sit uncommitted beside the PK-83 drafts — they land with PK-83's groom.
 
 parked: the last two descriptions (crew-coder, crew-verifier) land with PK-83's groom of those drafts
+
+16:03 superseded: the «init yourself as …» notes above are the version dima rejected (15:39: «don't copy my prompt verbatim, optimize it»); live descriptions read «Load when your brief or first prompt names this skill …».
+his want (15:39): «optimize it, and ask crew coders to optimize it to activate themselves in a way that is optimal … assume it is not expanded, so we have to measure it».
+next step: the next coder or verifier spawn's brief asks it to propose its own trigger wording in its first reply; that reply is round 1 in docs/test-drive/skill-named-load.md (named vs loaded + its wording).
 <!-- SECTION:NOTES:END -->

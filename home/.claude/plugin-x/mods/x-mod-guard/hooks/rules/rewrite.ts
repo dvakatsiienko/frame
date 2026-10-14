@@ -22,7 +22,7 @@ export function edits(segments: Segment[]): Edit[] {
                         at: w.at,
                         from: w.text,
                         to: '--silent',
-                        why: 'pnpm 12.9+ reads -s as --sequential',
+                        why: 'pnpm 12 reads -s as --sequential',
                     },
                 ];
             // `--include=*.ts` matches no file, so zsh's NOMATCH aborts the command before grep sees it

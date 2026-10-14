@@ -361,7 +361,8 @@ test('a pointer at a missing path or skill is caught', () => {
 // R7
 test.each(recipes)('%s folder holds only the shape files', (name) => {
     const stray = readdirSync(path.join(recipesDir, name)).filter(
-        (file) => !folderFiles.test(file),
+        // Finder writes .DS_Store into any folder he opens; it is gitignored and never a recipe file
+        (file) => file !== '.DS_Store' && !folderFiles.test(file),
     );
     expect(stray, `${name}: files outside the shape`).toEqual([]);
 });

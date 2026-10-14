@@ -48,7 +48,7 @@ if [ -d "$main" ] && [ "$main" != "$wt" ]; then
 fi
 [ -f "$wt/package.json" ] || exit 0
 if jq -e '.scripts["worktree:seed"]' "$wt/package.json" >/dev/null 2>&1; then
-  # no `-s`: pnpm 12 dropped it, and the error hid behind the redirect for a month
+  # no `-s`: pnpm 12 reads it as --sequential, and the error hid behind the redirect for a month
   CI=1 pnpm --dir "$wt" worktree:seed "$wt" >/dev/null 2>&1 \
     || echo "worktree:seed failed in $wt — run \`pnpm worktree:seed $wt\` by hand to see why"
 elif [ -f "$wt/pnpm-lock.yaml" ]; then

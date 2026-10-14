@@ -15,10 +15,11 @@ prefix (renovate writes it), 🧬 her voice here. cadence: **daily, at boot, whe
 **the evergreen day flow** (dima, 2026-10-14: the boot parses the plan, evergreen never crowds the inbox):
 1. the boot loads this skill and starts the § 2 read in the background — a fresh agent on Sonnet 5.5,
    its brief this file's path; the board prints without waiting for it
-2. the report is the first step after dima answers the board: printed whole, each borrow its own orbit ask
+2. the report is the first step after dima answers the board: printed whole in the chat, the `apply` list and one combined `ask`
 3. the `apply` borrows ran before the report; batches start only after his evergreen reply, the `ask` borrows he ticks first
-4. every run ends with `brew upgrade` (pinned never), no ask — brew never upgrades itself, keeping it
-   fresh is this skill's job (dima, 2026-10-14)
+4. after the § 2 read and before the report prints, cclio runs `timeout 2400 brew upgrade` in the background
+   (pinned never), no ask, and its line goes in the report — brew never upgrades itself, keeping it fresh
+   is this skill's job (dima, 2026-10-14)
 
 ## 1. gather
 
@@ -79,7 +80,7 @@ between. a release post on the project's blog beats the github release body when
   `^16.11.0`, missed by a src-only grep on 2026-09-09); (b) grep the repo for the apis the notes
   name as removed or changed
 - **since last major** — on every major card, one clause: `<prev major> shipped <yyyy-mm-dd>, <n> months ago` (dima 2026-09-09, «for curiosity»). npm: `npm view <pkg> time --json`; others: the project's release page
-- **machine** — on a pnpm / node / biome major, also grep our own repos for the cli flags we pass (`grep -rn 'pnpm -' home/.claude cclio script` and the bytes scripts): pnpm 12 dropped `-s` and broke every token snippet the same evening (2026-09-09). then `packageManager`, `engines.node`, a cli he runs by hand, a brew formula. the
+- **machine** — on a pnpm / node / biome major, also grep our own repos for the cli flags we pass (`grep -rn 'pnpm -' home/.claude cclio script` and the bytes scripts): pnpm 12 reads `-s` as `--sequential` and broke every token snippet the same evening (2026-09-09). then `packageManager`, `engines.node`, a cli he runs by hand, a brew formula. the
   repo can be green and his shell still broken
 - **🌟 or 🟠** — his taste (interview 2026-09-09): a **rewrite** (zig → rust, a new bundler
   core), a **perf claim with numbers**, a **new capability** he could use → 🌟 with a `🔬 deep`
@@ -157,7 +158,7 @@ between. a release post on the project's blog beats the github release body when
   chip per borrow (shipped · waiting · queued), the brew lines worth reading, the count line,
   and a chart where a perf claim has numbers. its source lives at
   `cclio/evergreen/page.html` — read it, swap the content, keep the design. the chat carries
-  the link and one verdict line; the merge and brew asks go to orbit.
+  the whole report (dima, 2026-10-14) and the page mirrors it; the `ask` borrows and the merge round go to orbit.
 - his knob: «too much» / «missed X» → tighten or widen in `memory/craft-evergreen.md` (create on
   first steer, one line per rule).
 
@@ -187,7 +188,7 @@ same message («hold #61») subtract from the round.
 - **hold** → a peer-range hold gets `gh pr close --comment` with the range named; renovate
   reopens it on the next release of the package. any other hold: nothing, the age prefix
   carries it.
-- **brew** → `brew upgrade` in the background at the end of every run (a long run, `timeout 2400`), the result line in the report.
+- **brew** → `brew upgrade` runs with the digest, before the report (flow step 4), never in this round.
   the same round diffs `~/Applications/*.app` launchers (a `Contents/MacOS/run.sh` calling `steam://`) against `~/Library/Application Support/Steam/steamapps/common`: a launcher with no game folder is a steam tail every cleaner skips — `trash` it, one line in the digest.
 - after the round: `git pull` both mains, then `pnpm install` in each (his tree is stale until then; lockfile-driven, fast); a merged bytes round redeploys prod, say so. `pnpm dedupe` is its own deliberate commit once in a while, never a reinstall — a wipe re-resolves peers and floats transitives, which is the «different lockfile» he noticed.
   then `/run` on every app the round touched (dima, 2026-09-27: «use run as a sanity check everywhere»); a red run is a digest line and a hold on the next merge.

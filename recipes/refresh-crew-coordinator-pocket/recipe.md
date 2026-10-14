@@ -64,6 +64,6 @@ born 2026-10-10 from PK-34.
 
 ## findings
 
-the print carries the parts of `x:shape-recipe`: decisions · facts that move something · prior art (only what is interesting) · the checklist · open.
+the print follows `x:shape-recipe` step 3 (the research-print shape, plus the checklist and the `open` vectors).
 
 the checklist, every run: the birth gate rule by rule (xs solved, bigger in order, linear on his word, waiting with its line, parked with its reason, done completed) — held or broken, with the count.

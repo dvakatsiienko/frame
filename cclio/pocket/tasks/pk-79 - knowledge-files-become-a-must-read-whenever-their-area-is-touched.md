@@ -4,7 +4,7 @@ title: knowledge files become a must-read whenever their area is touched
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-13 14:41'
+updated_date: '2026-10-14 13:03'
 due_date: '2026-10-15'
 labels:
   - m
@@ -20,6 +20,8 @@ ordinal: 10200
 dima, inbox 2026-10-12, folded. your line «better to spend 16k tokens reading our knowledge than redo 50 sweep steps» is the why. your token thrift is a double-edged sword: knowledge files look stray and big, so you skip them — but your training has a cutoff, and nothing replaces facts. they are the distilled product of our recipes (my wants → a recipe → its research vector → distilled into knowledge files, kept tidy → repeat), nearly as useful as skills or resident memory; they are not resident only for size and situational use. the sweep already loads its knowledge files up front; the same skeleton should hold for any area a knowledge file covers (a mod, the cli with charm): a coder reads that part up front, mandatory. that makes knowledge files as important as resident memory, so they must stay in a really good shape.
 strays to check: docs/knowledge/macos-admin.md (wtf is it?) [now macos-apps.md] · spawning-mechanics.md (not stray, but too fat even as crew-lead's must-have) · writing-for-humans.md (move into the skill, and its recipe updates the skill?) · impeccable-refine.md (how was it made, should it sit parked like this?) · agent-ops.md (wants a rename) · charm.md (wants a prefix, go-charm?)
 <!-- SECTION:DESCRIPTION:END -->
+
+halt flush 2026-10-13 (o181): `x fleet flow --days 14` shows the 12 knowledge files read 0 times; 16:14 a cost answer came from recall while fleet-models.md held the number. add: a token, cache or cost question loads fleet-models.md (a rules-lazy trigger).
 
 ## Implementation Notes
 
@@ -66,6 +68,6 @@ ccrow 17:46 holdout, unvetted at the halt: «step 1 of PK-79 was reported done w
 17:37 ccrow's holdout checked (Explore census): step 1 half done, confirmed. trials with no test-drive file: delve (Brewfile:56, 10-06), clearvpn (Brewfile:118, 10-10), Marco (Brewfile:117), jj (code-storage.md:29, waits on PK-114), lottie-rive (BYT-127). stale trial markers whose file exists: vorssaint, ctx7 (Brewfile), explore (fleet-models.md:168). notes-stack/ has no top-level file with status:. waits on dima: which of the 5 are live.
 
 17:42 dima: clearvpn adopted, Marco dropped (verdict files + Brewfile, done); delve explained, his call pending. x-mod-primer parked: «let's not rush with x-mod-primer yet, i'll refine the sessions mod first».
-<!-- SECTION:NOTES:END -->
 
-halt flush 2026-10-13 (o181): `x fleet flow --days 14` shows the 12 knowledge files read 0 times; 16:14 a cost answer came from recall while fleet-models.md held the number. add: a token, cache or cost question loads fleet-models.md (a rules-lazy trigger).
+parked: rides the mods lane resume beside PK-120 — sequence steps 5-7 (the x-mod-primer trace, the coder build, the 7-day test drive); steps 1-4 done (dima o18, 16:02)
+<!-- SECTION:NOTES:END -->
