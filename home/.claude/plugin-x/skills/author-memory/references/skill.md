@@ -41,7 +41,7 @@ claim tags: **[measured]** on this machine · **[read]** docs or a practitioner 
 
 - **`intended-models: fable, opus`** — ours: the models a skill is written for, best first. enforcement is procedural: a model running a skill above its tier prints a note and proceeds. omitted when the skill is model-agnostic, most are. open for `nurture-memory` step 9.4: it moves under `metadata:`, or drops on touch
 - **theo's `requires:`** **[read]** — the env var or credential the skill cannot work without: «if it is unset, tell the user instead of guessing». worth stealing, same procedural kind
-- model strengths that decide the value: `docs/knowledge/fleet-models.md`
+- model strengths that decide the value: `x:crew-lead`'s `references/model-cards.md`
 
 ## writing the description
 

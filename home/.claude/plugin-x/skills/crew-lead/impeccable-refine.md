@@ -40,10 +40,7 @@ per pass:
   puts the pass in both tabs and reads as «identical»
 - a behaviour pass (`harden`) says what to DO to see it (kill the daemon, select no key); a
   visual pass ships a per-route «where to look» list and a before/after screenshot pair
-- **measure, both themes, enabled state**: text ≥ 4.5:1, marks/rings/bars ≥ 3:1; a control is
-  measured armed, not disabled (the primary button shipped invisible through `polish` once);
-  dark is selected per theme, never flipped
-- **a structural change invalidates every layout number banked before it** — re-run them
+- **measure both themes** against `x:guide-ui-ux` (contrast, the enabled state, re-measure after a structural change); dark is selected per theme, never flipped
 - the detector (`impeccable detect --json`) at the end of the pass; every finding closed or named
   with its reason in the ticket. prove the detector with a planted violation before trusting `[]`
 - one commit, gates green, the ping: sha · links · where to look
@@ -53,13 +50,12 @@ per pass:
 - opens **at the end of the first verb**, not the phase (the HIGH sat four commits once)
 - exit lines are concrete observables («204 chords, 82 + 103 apps, 13 never pressed»), re-read
   against the head when a pass removes something
-- the loop runs coder ↔ verifier as `x:crew-dna`'s pr pair says: the coordinator hears nothing per round;
-  cap counts findings, a one-line round is free; a finding that is a decision goes to dima as a look call
+- the loop and its cap are `x:crew-dna`'s pr pair; a round that closes one scoped line is free; a finding that is a decision goes to dima as a look call
 - harness affordances on day one: a port override and a `--data-dir` so a round never writes to
   dima's real data; a write-path probe uses a key nothing is filed under
-- the adversarial review lane (coderabbit, greptile fallback) runs before the verifier's first
-  round, not when someone remembers; a big PR runs **both** adversaries; a long-lived PR is a
-  reason for MORE review, never less
+- the adversarial review lane (coderabbit) runs before the verifier's first
+  round, not when someone remembers (`x:crew-coder` § 3); a long-lived PR is a reason for MORE
+  review, never less
 
 ## what the tool fights, and who wins
 

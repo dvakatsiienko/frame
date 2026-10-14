@@ -68,8 +68,8 @@ half skipped, with the reason — the shared rule of `x:shape-recipe`.
 2. **probe the mechanics** (tools): execute `crew-lead/references/spawn-mechanics.md`'s «the test suite» section against the current build. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
 3. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `x:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
 4. **distill** into the artifacts:
-   - `spawn-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
-   - `models.md` — THE model reference; claim tags ([dima] / [bench] / [vendor] / [community] / [?]) updated, never deleted; dima's [dima] calls never overwritten, outside evidence sits beside them
+   - `crew-lead/references/spawn-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
+   - `crew-lead/references/model-cards.md` — THE model reference; claim tags ([dima] / [bench] / [vendor] / [community] / [?]) updated, never deleted; dima's [dima] calls never overwritten, outside evidence sits beside them
    - `x:crew-lead`, `craft-fleet-flow`, `craft-pm`, `habit-cto` — a finding changes a line only through the memory-edit habit (announced; deletions and his words need his word first)
    - `rules/fleet-flow.md`, `rules/fleet-identity.md` — the crew list and who talks to whom; a role added or retired is his word first
    - raw research stays in `last/` until the next run's distill. done: every artifact touched, or named «unchanged» with the finding that left it so. (open)
@@ -122,7 +122,7 @@ on top of the shared three:
 - the flow numbers (`x fleet flow --days 14`): `#dima-caught`, `#brief`, the pr open → merge median — which stage and which member keep failing
 - each member's retros since the last run: what a role keeps missing, and whether a new role would have caught it
 - which bundled skills does this cc build ship, gated ones included? name any new one to dima
-- do the spawn choices made since the last run agree with `models.md` — and where a card was overridden, was the card wrong or the moment special?
+- do the spawn choices made since the last run agree with `crew-lead/models.md` (the contract) and `references/model-cards.md` — and where a card was overridden, was the card wrong or the moment special?
 
 ## artifacts
 

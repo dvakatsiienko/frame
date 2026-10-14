@@ -258,7 +258,7 @@ export const PARTS = [
     {
         group: 'stash · replies',
         key: 'stash.cost',
-        label: '💵 cost questions read fleet-models.md',
+        label: '💵 cost questions read model-cards.md',
     },
 ] as const;
 type PartKey = (typeof PARTS)[number]['key'];
@@ -561,7 +561,7 @@ const WIND = 'wind:';
 export const COST_WORDS =
     /\b(?:tokens?|cach(?:e|ed|ing)|(?:ctx|context) costs?|pricing|mtok)\b/i;
 const COST_HINT =
-    "💵 a cost question: read ~/frame/docs/knowledge/fleet-models.md before answering (each model's price line, and the «cache reads are where agents spend» bullet), never from recall.";
+    "💵 a cost question: read ~/frame/home/.claude/plugin-x/skills/crew-lead/references/model-cards.md before answering (each model's price line, and the «cache reads are where agents spend» bullet), never from recall.";
 // the button's emoji per state; idle draws the bird
 export const WIND_EMOJI = {
     asked: '🥚',
