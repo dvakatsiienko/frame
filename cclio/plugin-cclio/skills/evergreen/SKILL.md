@@ -132,7 +132,7 @@ between. a release post on the project's blog beats the github release body when
 - **pick, never paste.** the facts are the few a reader would want from the whole range; the
   release page is one click for the rest.
 - **every digest is also the artifact** (dima 2026-09-28: «let's have it as a habit part») —
-  one standing page, [Evergreen](https://claude.ai/artifact/RTG9tfdMKvL7sCiuxVpLi4), republished
+  one standing page, [Evergreen](https://claude.ai/artifact/PAtTzAYyYCXCsXd9qWsCdy), republished
   by `url` each run with that run's date in its header: 🌟 cards with a borrow line and a status
   chip per borrow (shipped · waiting · queued), the brew lines worth reading, the count line,
   and a chart where a perf claim has numbers. its source lives at

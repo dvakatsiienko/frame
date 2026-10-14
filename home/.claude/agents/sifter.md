@@ -3,6 +3,7 @@ name: sifter
 description: Haiku reader that pulls counts, fields and lines out of big files so the caller never reads them raw — a session transcript (jsonl), a daemon or ci log, a json dump, a long command output saved to a file. Given the paths and the exact question («how many Bash calls per head», «the lines around 01:51», «every tool error with its timestamp»), it returns the answer and the command that produced it. Not for judgment, design, edits or anything that needs fleet rules.
 model: haiku
 effort: medium
+autoCompactWindow: 100000
 omitClaudeMd: true
 tools: Read, Grep, Glob, Bash
 ---

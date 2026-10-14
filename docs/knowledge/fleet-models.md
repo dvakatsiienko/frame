@@ -107,7 +107,7 @@ Launched 2026-09-28. **$2/$10**, cache writes $2.50, **cache reads $0.20 (same a
 
 ## haiku-5.5 — `claude-haiku-5-5`
 
-Shipped 2026-10-07. $0.10 / $0.50 per MTok for prompts ≤100K, **1M** context, effort supported, needs cc
+Shipped 2026-10-07. Two price tiers by prompt size: ≤100K tokens **$0.10 in / $0.50 out**, cache reads $0.01, cache writes $0.125; over 100K **$0.50 in / $2.50 out**, cache reads $0.05 — 5× on every line, so a Haiku subagent compacts at 100K (`autoCompactWindow: 100000`, sifter). **[vendor]**, read off anthropic.com/claude-haiku-5-5 2026-10-14. **1M** context, effort supported, needs cc
 2.1.293+ (the `haiku` alias resolves to it on 2.1.294 **[verified]**, probed 2026-10-08). **[vendor]**
 
 - Terminal-Bench 4.0 39.2 % (4.5: 0.0 %); pitched as a sidekick subagent under an Opus or Sonnet lead;

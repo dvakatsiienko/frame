@@ -1,4 +1,4 @@
-<title>Evergreen 09-28</title>
+<title>Evergreen 10-14</title>
 <link href="https://fonts.googleapis.com" rel="preconnect" >
 <link crossorigin href="https://fonts.gstatic.com" rel="preconnect" >
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" >
@@ -61,9 +61,6 @@ ul.facts li::marker{color:var(--pine);}
 .row p{margin:0;}
 .row .b{margin-top:6px;font-size:14px;color:var(--pine);}
 .quiet{margin:0;font-size:14px;color:var(--muted);}
-.ledger{display:flex;flex-direction:column;gap:8px;}
-.ledger li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline;}
-.ledger ul{display:flex;flex-direction:column;gap:10px;padding:0;margin:0;list-style:none;}
 code{padding:1px 5px;font:13px var(--mono);background:var(--pine-soft);border-radius:4px;}
 a{color:var(--pine);text-underline-offset:2px;}
 a:focus-visible{outline:2px solid var(--pine);outline-offset:2px;border-radius:2px;}
@@ -73,96 +70,108 @@ footer{padding-top:16px;font-size:13px;color:var(--muted);border-top:1px solid v
 
 <div class="wrap">
 <header>
-  <span class="eyebrow">🧬 evergreen · mon 28-09-2026</span>
+  <span class="eyebrow">🧬 evergreen · wed 14-10-2026</span>
   <h1>What updated, and what we can take from it</h1>
-  <p class="lede">Every entry below had its release notes read over the whole range. Printed only when it brings a feature for Dima or the fleet; fixes and library internals are read for borrows and left out.</p>
+  <p class="lede">Every entry below had its release notes read over the whole range since the 10-05 mark. Printed only when it brings a feature for Dima or the fleet; fixes and library internals are read for borrows and left out.</p>
   <div class="counts">
     <span class="count"><b>0</b> renovate PRs</span>
-    <span class="count"><b>31</b> brew bumps, all upgraded</span>
+    <span class="count"><b>96</b> brew outdated</span>
     <span class="count"><b>15</b> apps read</span>
-    <span class="count"><b>8</b> borrows approved</span>
+    <span class="count"><b>21</b> printed</span>
   </div>
 </header>
 
 <section>
-  <div class="sec-head"><h2>🌟 The five worth reading</h2><p>each with its borrow and where it stands</p></div>
+  <div class="sec-head"><h2>🌟 The six worth reading</h2><p>each with its borrow and where it stands</p></div>
   <div class="stars">
     <article class="card">
-      <div class="card-top"><h3>Claude Code</h3><span class="ver">2.1.278 → <span class="to">2.1.283</span></span></div>
+      <div class="card-top"><h3><a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md">Claude Code</a></h3><span class="ver">2.1.290 → <span class="to">2.1.299</span></span></div>
       <ul class="facts">
-        <li>Opus 5.5 is the default Opus: 1M context, $4 / $20 per Mtok. Old saved effort levels don't carry over.</li>
-        <li><code>/doctor prompt-audit</code> finds prompting patterns written for older models in CLAUDE.md, skills and commands.</li>
-        <li>Send-now (ctrl+enter) moves running tools to the background instead of cancelling the turn.</li>
-        <li>New settings: <code>attribution: false</code>, <code>maxProseWidth</code>. <code>anthropic-skills:</code> and <code>claude-ai:</code> namespaces are reserved.</li>
+        <li>Idle compaction: a 200K+ conversation left idle ~54 min compacts before its prompt cache expires. <code>"idleCompaction": false</code> turns it off.</li>
+        <li><code>/reload-skills</code> re-sends the skill list after a compaction; <code>UserPromptSubmit</code> hooks now run before a skill expands.</li>
+        <li>Hooks take <code>onFailure: "block"</code> to fail closed; mods gain <code>$.ui.notify</code> and <code>prompt.autocomplete</code>.</li>
+        <li>The Agent tool takes <code>effort</code>; subagents take <code>autoCompactWindow</code>.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>prompt-audit becomes a lane of the nurture sweep (<a href="https://linear.app/x-com/issue/FRM-267">FRM-267</a>). <span class="chip next">queued</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>cclio's PreCompact hook wakes ccrow, so an idle compaction may wake it with nobody at the keyboard — one probe. <code>/reload-skills</code> settles the «read skill lost after compaction» question. <span class="chip next">queued</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3>Linear</h3><span class="ver">changelog <span class="to">09-24</span></span></div>
+      <div class="card-top"><h3><a href="https://github.com/pnpm/pnpm/releases/tag/v12.11.0">pnpm</a></h3><span class="ver">12.6.0 → <span class="to">12.11.2</span></span></div>
       <ul class="facts">
-        <li>Projects and initiatives have durable IDs that survive renames: trophy-sys is <code>P-BYT-19</code>, cli is <code>P-FRM-18</code>.</li>
-        <li>The coding agent routes simple tasks to a faster model and can run GLM open-weight models.</li>
-        <li>Loops can trigger on team create, join or leave, and team assignment.</li>
+        <li>12.11: <code>pnpm install</code> links skills that direct deps ship under <code>skills/&lt;name&gt;/SKILL.md</code> into <code>.claude/skills</code>, after <code>pnpm approve</code>.</li>
+        <li>A <code>permissions</code> setting records what each dependency may do; its <code>build</code> capability beats <code>allowBuilds</code>.</li>
+        <li>12.10 relinks 1,000 workspace projects in 45 ms on macOS.</li>
+        <li>Breaks: <code>-s</code> is back, but means <code>--sequential</code> now, not silent. Both repos pin 12.6.0.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>the roadmap initiative names projects by durable ID. <span class="chip wait">probe first: does linear auto-link it</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>x-mod-guard's <code>-s</code> rewrite stays right, its reason line («pnpm 12 refuses -s») goes stale. Dep-shipped skills could shrink the weekly skills lane. <span class="chip next">queued</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3>pnpm</h3><span class="ver">12.5.1 → <span class="to">12.6.0</span></span></div>
+      <div class="card-top"><h3><a href="https://github.com/schpet/linear-cli/releases/tag/v3.0.0">linear cli</a></h3><span class="ver">2.6.0 → <span class="to">3.0.0</span></span></div>
       <ul class="facts">
-        <li><code>autoDedupe</code> merges compatible duplicate versions on every install.</li>
-        <li><code>node_modules</code> can move with its project; the bin shims keep working.</li>
-        <li><code>add --save-types</code> pulls matching <code>@types/*</code>. Upstream 12.8 warns when a <code>.env</code> would be published.</li>
+        <li>Rewritten in Rust: one native binary, faster start.</li>
+        <li><code>--template</code> on issue create, <code>--description-file -</code> reads stdin, every command takes a pasted URL.</li>
+        <li>Exit codes split: 2 usage, 3 not found, 4 auth, 5 unavailable.</li>
+        <li>Breaks: <code>--json</code> lists drop the <code>{ nodes, pageInfo }</code> wrapper. Our raw uses keep their flags (read, not run). 2.0 shipped 6 months ago.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>autoDedupe on in both repos: frame had nothing to merge, bytes merged 9 duplicates and all 7 app builds pass. Time Machine exclusion via env. <span class="chip done">frame shipped</span> <span class="chip wait">bytes waits for push</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>map exit codes 3 and 4 to named refusals in <code>x as cclio -- linear</code>. <span class="chip wait">after a smoke run on 3.0</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3>vorssaint</h3><span class="ver">3.3.5 → <span class="to">3.4.0</span></span></div>
+      <div class="card-top"><h3><a href="https://www.raycast.com/changelog">Raycast</a></h3><span class="ver">2.6 → <span class="to">2.8</span></span></div>
       <ul class="facts">
-        <li>A Dynamic Island: music with synced lyrics, timers, and a panel for local AI agent activity with plan limits and task-done alerts.</li>
-        <li>Quarter and third window layouts; audio switches to the best connected output on its own.</li>
+        <li>2.8: file search up to 6× faster, extension installs ~4× faster, ~20% less memory at start.</li>
+        <li>2.7: Send Element to AI and Send Window to AI; custom providers can use Raycast's built-in tools.</li>
+        <li>2.7: each script command toggles its background refresh.</li>
+        <li>2.6: Auto model's balanced mode uses ~70% fewer credits; <code>/usage</code> shows Claude subscription usage.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>the agent panel as a free test for the visibility branch. <span class="chip done">island already on</span> <span class="chip done">upgraded</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>give Send Element to AI a chord in <code>hotkeys/</code>. <span class="chip next">queued</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3>Claude Desktop</h3><span class="ver">2.110 → <span class="to">2.9939</span></span></div>
+      <div class="card-top"><h3><a href="https://obsidian.md/changelog/2026-10-05-desktop-v1.14.4/">Obsidian</a></h3><span class="ver">1.13.7 → <span class="to">1.14.4</span></span></div>
       <ul class="facts">
-        <li>09-16: Cowork is merged into every chat; Design, Slides and Docs artifacts reach every plan.</li>
-        <li>09-22: Opus 5.5 launched, 40% cheaper than Opus 5.</li>
-        <li>09-25: a plugin developer portal with directory submission and usage analytics.</li>
+        <li>Opens single <code>.md</code> files from outside the vault, with Quick Look previews — needs the new installer, not the in-app update.</li>
+        <li>Bases gain a kanban view; six highlight colours; fuzzy search at any vault size.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>check that cw still works after the merge. <span class="chip done">Dima tested, good</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>the phone pocket mirror as a base, kanban by status. <span class="chip next">idea</span></span></div>
+    </article>
+    <article class="card">
+      <div class="card-top"><h3><a href="https://support.claude.com/en/articles/12138966-release-notes">Claude Desktop</a></h3><span class="ver">notes <span class="to">10-07</span></span></div>
+      <ul class="facts">
+        <li>Max plans include monthly API credits.</li>
+        <li>Haiku 5.5 launched at $0.10 / $0.50 per Mtok and is now the default Haiku.</li>
+      </ul>
+      <div class="borrow"><span class="k">borrow</span><span>an API key from those credits makes <code>claude --bare</code> work, which fails on our login today. <span class="chip wait">dima's key</span></span></div>
     </article>
   </div>
 </section>
 
 <section>
-  <div class="sec-head"><h2>🍺 Brew, with a feature to use</h2><p>31 upgraded · none pinned</p></div>
-  <div class="warn"><b>vercel 60 shipped with no written notes.</b> The major rides a jump of every bundled builder by 3 majors. <code>vercel ls --prod</code> and <code>vercel inspect</code> were smoked on 60.1.3 and read Ready.</div>
+  <div class="sec-head"><h2>🍺 Brew, with a feature to use</h2><p>65 formulae + 31 casks outdated · none pinned · brew 7.0.9</p></div>
+  <div class="warn"><b>openssl@3 goes 3.6.4 → 3.5.9, a downgrade.</b> Brew moved <code>openssl@3</code> to the 3.5 LTS line and added <code>openssl@3.6</code>; 20 installed formulae link it, node and python among them. Six casks (raycast, claude, wispr-flow, bartender, 1password, cursor) already run newer — only brew's record is stale.</div>
   <div class="rows">
-    <div class="row"><div class="name">vercel<span class="ver">59.25.2 → <span class="to">60.1.3</span></span></div><div><p>New: schedule <code>executions</code>, <code>traces search</code>, <code>cache purge --type</code>; team <code>members</code> can invite and remove.</p></div></div>
-    <div class="row"><div class="name">raycast<span class="ver">2.4.1 → <span class="to">2.5.3</span></span></div><div><p>Extensions supply their own AI models (Ollama, LM Studio, Groq); apps found by alternate names; File Search respects <code>.metadata_never_index</code>.</p><p class="b">borrow: the new Secure Input warning is the first place to look when a chord goes deaf</p></div></div>
-    <div class="row"><div class="name">bartender<span class="ver">7.0.1 → <span class="to">7.0.4</span></span></div><div><p>Ends the menu bar getting stuck on macOS 27; the clipboard helper pastes into Electron apps.</p></div></div>
-    <div class="row"><div class="name">mole<span class="ver">1.55 → <span class="to">1.56.1</span></span></div><div><p><code>optimize</code> no longer drops VPN tunnels; <code>mo clean --dry-run</code> lists old brew versions it would remove.</p></div></div>
-    <div class="row"><div class="name">node<span class="ver">26.9 → <span class="to">26.10</span></span></div><div><p>Built-in <code>util.throttle</code> and <code>util.debounce</code>; <code>sqlite</code> binds <code>undefined</code> as NULL.</p><p class="b">borrow: our scripts can drop hand-rolled debounce helpers</p></div></div>
-    <div class="row"><div class="name">coderabbit<span class="ver">0.8.0 → <span class="to">0.8.1</span></span></div><div><p><code>cr code handoff</code> moves a local session to a cloud task; <code>cr handoff</code> output format changed.</p></div></div>
-    <div class="row"><div class="name">railway<span class="ver">5.58 → <span class="to">5.62</span></span></div><div><p><code>railway trace</code>, MySQL point-in-time recovery, an experimental cloud-agents integration.</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/biomejs/biome/releases/tag/%40biomejs%2Fbiome%402.5.15">biome</a><span class="ver">2.5.14 → <span class="to">2.5.15</span></span></div><div><p>Nursery rule <code>noTailwindRawColors</code> bans palette classes like <code>bg-pink-500</code>; type inference ~2–240× faster on zod and drizzle.</p><p class="b">borrow: turn the rule on in bytes — a design-system default becomes a lint</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/git/git/blob/master/Documentation/RelNotes/2.56.0.adoc">git</a><span class="ver">2.55.0 → <span class="to">2.56.0</span></span></div><div><p><code>branch --delete-merged</code>, <code>history drop</code>, <code>add --resolved</code>; <code>includeIf</code> matches worktree location; config locking retries under parallel writes.</p><p class="b">borrow: the lock retry helps parallel coders in one repo</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/astral-sh/uv/releases/tag/0.13.0">uv</a><span class="ver">0.12.19 → <span class="to">0.13.1</span></span></div><div><p>Breaks: Python 3.15 is the default download (<code>uv python pin 3.14</code> holds a project); <code>-c "a b"</code> is one path; stricter tar extraction.</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/pimalaya/himalaya/releases/tag/v2.2.1">himalaya</a><span class="ver">2.1.0 → <span class="to">2.2.1</span></span></div><div><p>Mailbox roles in <code>mailbox list</code>; <code>compose|reply|forward --json</code> prints a decoded template; <code>--posting-style none</code>.</p><p class="b">borrow: the JSON template as the hand-off for email drafts</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/mbrt/gmailctl/releases/tag/v0.13.0">gmailctl</a><span class="ver">0.12.0 → <span class="to">0.13.0</span></span></div><div><p>Breaks: quotes that can't form a valid Gmail query are rejected; <code>deliveredto</code> native.</p><p class="b">borrow: one <code>gmailctl diff</code> over the blocklist before the next apply</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/vercel-labs/agent-browser/releases/tag/v0.39.0">agent-browser</a><span class="ver">0.38.1 → <span class="to">0.39.1</span></span></div><div><p>A lost daemon response returns <code>outcome_unknown</code> instead of re-running a mutating command; <code>--auto-connect</code> waits 30 s.</p><p class="b">borrow: headless checks treat outcome_unknown as «inspect, never retry»</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/upstash/context7/releases/tag/ctx7%400.6.0">ctx7</a><span class="ver">0.5.12 → <span class="to">0.6.0</span></span></div><div><p><code>ctx7 docs --language &lt;lang&gt;</code> ranks examples in that language first.</p><p class="b">borrow: <code>--language typescript</code> on the tooling line</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/tw93/Mole/releases/tag/V1.59.0">mole</a><span class="ver">1.56.1 → <span class="to">1.59.1</span></span></div><div><p><code>mo clean</code> keeps git-tracked caches; dry run now matches the real run (purge 27 s → 12 s); uninstall lists in 0.9 s.</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/vercel/vercel/blob/main/packages/cli/CHANGELOG.md">vercel</a><span class="ver">60.1.3 → <span class="to">63.1.2</span></span></div><div><p>Three majors in two weeks, no public notes. Inference from the tarballs: no command added or removed.</p></div></div>
+    <div class="row"><div class="name"><a href="https://nodejs.org/en/blog/release/v26.11.0">node</a><span class="ver">26.10.0 → <span class="to">26.11.1</span></span></div><div><p><code>--process-timeout=N</code>, <code>Buffer.stringLength()</code>; <code>node:sqlite</code> renames <code>DatabaseSync</code> (alias likely kept, inference).</p><p class="b">watch: wispr-add.ts imports DatabaseSync when frame moves to 26</p></div></div>
   </div>
-  <p class="quiet">+ 24 more read, nothing to borrow — the libraries (gnupg, ggml, llama.cpp, libuv, nss, utf8proc, simdutf), fix-only casks, and five with no notes published.</p>
+  <p class="quiet">+ 51 formulae and 23 casks read, nothing to borrow — rebuilds, libraries, fixes (gh and fzf carry security fixes). No notes reachable for notion-cli, coderabbit, 1password-cli or iterm2.</p>
 </section>
 
 <section>
-  <div class="sec-head"><h2>📲 Apps lane</h2><p>markers advanced 28-09</p></div>
-  <p class="quiet">Claude Code, Linear and Claude Desktop are the cards above. Raycast is in brew. Chrome 154 posted only a commit log. Nothing new since the last mark for Wispr Flow, Obsidian, Notion, Things, CleanShot X, 1Password or Newton. Cursor's 09-23 bots are Teams/Enterprise only.</p>
+  <div class="sec-head"><h2>📲 Apps lane, the rest</h2><p>markers held until Dima reads</p></div>
+  <div class="rows">
+    <div class="row"><div class="name"><a href="https://linear.app/changelog/2026-10-08-stacked-pull-requests">Linear</a><span class="ver">10-08</span></div><div><p>Stacked PRs in Linear Diffs; <code>[[</code> finds or creates a doc inline; webhooks capped at 30 per team.</p></div></div>
+    <div class="row"><div class="name"><a href="https://www.notion.com/releases/2026-10-13">Notion</a><span class="ver">3.8</span></div><div><p>A Skills API syncs skills to GitHub; version history attributes each edit to a person or an agent.</p><p class="b">borrow: agent attribution makes ntn writes reviewable</p></div></div>
+    <div class="row"><div class="name"><a href="https://cursor.com/changelog">Cursor</a><span class="ver">10-2026</span></div><div><p>See and reply to local agents from iOS; a marketplace of 20+ integrations.</p></div></div>
+    <div class="row"><div class="name"><a href="https://wisprflow.ai/whats-new">Wispr Flow</a><span class="ver">1.6.897</span></div><div><p>Warns at once when the mic picks up no sound.</p></div></div>
+    <div class="row"><div class="name"><a href="https://chromereleases.googleblog.com/">Chrome</a><span class="ver">154 → <span class="to">155</span></span></div><div><p>155.0.8059.80: 37 security fixes, 7 critical; this Mac runs .41, a relaunch is pending. Several critical bugs credited to Anthropic, «assisted by Claude».</p></div></div>
+  </div>
+  <p class="quiet">Superwhisper and Bartender read, nothing to borrow. No new entry: Things, CleanShot X, 1Password, Newton. Markers to re-seed: Raycast, Chrome; Obsidian's read points at the wrong page.</p>
 </section>
 
-<section>
-  <div class="sec-head"><h2>What changed in how we read</h2></div>
-  <ul class="facts">
-    <li>Every updated entry in all three lanes has its notes read over the whole range, in a fresh agent: about 215k tokens and 7 minutes this week.</li>
-    <li>A line prints when it brings a feature for Dima or the fleet, with its borrow. Fixes and library internals stay out.</li>
-    <li>The rules live in <code>cclio:evergreen</code> 0.3.80.</li>
-  </ul>
-</section>
-
-<footer>Sources: each project's release page or changelog, read 28-09-2026 through <code>parallel-cli extract</code>, <code>gh api</code> and npm. vercel 60's content comes from a diff of the two npm tarballs.</footer>
+<footer>Sources: each project's release page or changelog, read 14-10-2026 through <code>parallel-cli extract</code>, <code>gh api</code> and the web. vercel 63's content is an inference from the npm tarballs.</footer>
 </div>
