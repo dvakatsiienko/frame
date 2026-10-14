@@ -14,7 +14,7 @@ Shared files are Dima's living space; leftovers cost him attention and blur what
 
 ## the pocket — cclio's local work pool (Backlog.md in `~/frame/cclio/pocket/`, dima 2026-10-07, Backlog.md adopted 2026-10-11)
 
-one `pk-N` task per item (`backlog task create|edit|list --plain --sort ordinal`, from a script `BACKLOG_CWD=~/frame/cclio`): status open · claimed · waiting · done, the `ordinal` is the order, a size label xs · s · m · l; a spec-sized item gets its spec in the target repo's `.scratch/`. the old file is frozen as `_pocket.md`.
+one `pk-N` task per item (`backlog task create|edit|list --plain --sort ordinal`, from a script `BACKLOG_CWD=~/frame/cclio`): status open · claimed · waiting · done, the `ordinal` is the order, a size label xs · s · m · l; a spec-sized item gets its spec in the target repo's `.scratch/`.
 **checked and emptied before linear**; it holds ticketless by-hand work too. an item points at its
 linear ticket when one exists; a new ticket is made only when a coder takes the item. every inbox
 item lands here at parse time, before any resolution; a resolved item is set `done`, and the halt files it (`backlog task complete`) after the day's gazette post carries it.
