@@ -1,12 +1,12 @@
 ---
-status: frozen
-until: 2026-11-05
+status: closed
+until: 2026-10-14
 dies-when: both measurement prs are scored and the two decisions (local order; greptile cli / ci / both) are written into `x:crew-coder`'s «final» chain — then the sheets fold into gh-stack-adoption's decision log and this file is deleted
 ---
 
 # review stack — the measurement run
 
-**frozen, 2026-10-14** (dima): no capacity for a graphite lane yet; re-checked 11-05, when the bigger plan starts. what it measures: which local reviewer (coderabbit, greptile, matt's `code-review`) leads a coder's one pre-push review, and whether greptile runs local, on ci or both — 8 prs scored so far, every layer found something unique.
+**closed, 2026-10-14** (dima): the parallel adversary reviews are measured — greptile dropped, coderabbit adopted and live for every coder, matt's `code-review` the free floor. graphite and github's native stacks are their own trial: `graphite.md`.
 
 split out of `gh-stack-adoption.md` step 3b on 2026-09-10 so the stack plan stays a plan and the measurement stays a sheet. the pre-run on trophy-sys (overnight 2026-09-10, sequence-biased) is `adversary-lane-greptile-vs-coderabbit.md`.
 
