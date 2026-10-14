@@ -30,7 +30,7 @@ line is in front of cclio every boot.
 
 - **reminders** (`memory/_reminders.md`) — a date or a condition: «in 2 days», «before we halt»,
   «when cc ships X, test it with me».
-- **pocket** (`~/frame/cclio/pocket/`) — the main carry-over across sessions, checked before linear. it took the x-queue's job on 10-07: in cclio, `/queue` and «after X, do Z» become a pocket item ordered right after X — local wins over `x:queue`'s `.claude/x-queue.md`, said out loud (the skill stays as is for every other repo)
+- **pocket** (`~/frame/cclio/pocket/`) — the main carry-over across sessions, checked before linear. «after X, do Z» becomes a pocket item ordered right after X (`x:queue` retired 2026-10-14, dima)
 - **Linear** — the folding place for work with a shape.
 
 ❗ no data loss, the pocket above all: a line he wrote or asked for moves or dies only on his word; cclio's own copies and done items die by the dedupe and cleanup rules below.
