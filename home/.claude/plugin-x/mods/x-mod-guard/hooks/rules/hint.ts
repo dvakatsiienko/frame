@@ -32,8 +32,7 @@ const LOOP_HINT =
 // rg skips dot dirs: a «0 left» proof over frame missed 4 live pointers under home/.claude (PK-139, 2026-10-14)
 const RG_HINT =
     'x-mod-guard hint: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them';
-const DOT_SEGMENT = /(^|\/)\.[^./]/;
-// the search roots of an rg that skips dot dirs: its path operands after the pattern, or its cwd
+// an rg rooted where dot dirs live below it (frame, frame/home, ~): a path naming a dot dir outright is searched
 function rgMissesDots(c: Command, ctx: Context) {
     if (
         hasFlag(c.args, ['--hidden'], '.') ||
@@ -46,11 +45,8 @@ function rgMissesDots(c: Command, ctx: Context) {
     if (!paths.length && c.feeders.length) return false;
     const roots = paths.length ? paths.map((p) => resolve(p, dir, ctx)) : [dir];
     const frame = `${ctx.home}/frame`;
-    return (
-        paths.some((p) => DOT_SEGMENT.test(p)) ||
-        roots.some(
-            (r) => r === frame || r === `${frame}/home` || r === ctx.home,
-        )
+    return roots.some(
+        (r) => r === frame || r === `${frame}/home` || r === ctx.home,
     );
 }
 const REPLACERS = new Set(['sd', 'sed', 'python', 'python3']);

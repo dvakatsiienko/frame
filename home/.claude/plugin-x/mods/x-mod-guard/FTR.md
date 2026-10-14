@@ -39,8 +39,8 @@
   - given `gh … --json f | jq …`, then no hint
   - decision: a hint, never a refusal — the program may well be right; the `fleet-hazards.md` line goes to its holder's commit
 - ✅ an `rg` that skips dot dirs gets a `--hidden` hint (PK-139)
-  - given an rg with no `--hidden` and no `-uu` whose path has a dot segment, or that searches `~/frame`, `~/frame/home` or `~` (or runs from there with no path), then it runs as typed and the model reads: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them
-  - given an rg over a plain repo folder (`src`), then no hint
+  - given an rg with no `--hidden` and no `-uu` that searches `~/frame`, `~/frame/home` or `~` (or runs from there with no path and no pipe in), then it runs as typed and the model reads: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them
+  - given an rg over a plain repo folder (`src`), a path naming a dot dir outright, or a pipe, then no hint
 - ✅ a git add of a missing path is refused before git runs
   - given a `git add` that names a path not on disk (`git add a b`, `b` gone), resolved from the dir its `cd` or `-C` left
   - then it is refused, the reason names the missing path, and the door is «stage only paths that exist; a deleted file stages with git rm <path>»

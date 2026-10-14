@@ -163,7 +163,7 @@ test('claude -p inside while read with </dev/null runs unhinted', async ($, on) 
 const RG_MISSES = [
     ['/repo', "rg -l 'x:shape' /home/frame"],
     ['/home/frame', "rg -n 'shape-idea'"],
-    ['/repo', "rg -c 'foo' /home/frame/home/.claude/rules"],
+    ['/repo', "rg -c 'foo' /home/frame/home"],
 ] as const;
 for (const [cwd, typed] of RG_MISSES)
     test(`an rg that skips dot dirs runs with a --hidden hint: ${typed}`, async ($, on) => {
@@ -178,6 +178,7 @@ const RG_FINE = [
     ['/home/frame', "rg -uu -l 'x'"],
     ['/repo', "rg -n 'foo' src"],
     ['/home/frame', "sed -n 1,9p a.md | rg 'status'"],
+    ['/home/frame', "rg -c 'x' home/.claude/shelf/flawlog/a.md"],
 ] as const;
 for (const [cwd, typed] of RG_FINE)
     test(`an rg that reaches dot dirs or needs none gets no hint: ${typed}`, async ($, on) => {
