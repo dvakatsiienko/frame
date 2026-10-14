@@ -17,7 +17,9 @@ id=$(printf '%s' "$payload" | jq -r '.agent_id // empty' 2>/dev/null)
 
 if [[ -n $(printf '%s' "$payload" | jq -r '.agent_type // empty' 2>/dev/null) ]]; then
 	key=$id
+	sound=spawn-sub-steam-friend-online.wav
 else
+	sound=spawn-bg-steam-friend-join.wav
 	session=$(printf '%s' "$payload" | jq -r '.session_id // empty' 2>/dev/null)
 	kind=$(jq -r --arg s "$session" 'select(.sessionId == $s) | .kind' \
 		"$HOME"/.claude/sessions/*.json 2>/dev/null | head -1)
@@ -34,4 +36,10 @@ if (($(wc -l <"$seen") > 200)); then
 fi
 
 printf '%s  SubagentStart  %s\n' "$(date +%H:%M:%S)" "$key" >>"$HOME/.claude/hook-trace.log"
-afplay -v 0.5 "$HOME/.claude/shelf/sounds/bg-mage-male-evocation.m4a" >/dev/null 2>&1 &
+# a burst (ten research readers at once) rings once per kind: one play per 10 s
+stamp="$HOME/.claude/shelf/sounds/.rang-$sound"
+now=$(date +%s)
+last=$(cat "$stamp" 2>/dev/null || echo 0)
+((now - last < 10)) && exit 0
+echo "$now" >"$stamp"
+afplay "$HOME/.claude/shelf/sounds/$sound" >/dev/null 2>&1 &
