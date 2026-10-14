@@ -1,6 +1,6 @@
 ---
 name: crew-designer
-description: Load BEFORE drawing any take, comp or variant in `~/projects/studio` — the designer contract, typed as `/x:crew-designer <app> [quick]`.
+description: Load when your brief or first prompt names this skill — «use the crew-designer skill», `x:crew-designer`, or `/x:crew-designer <app> [quick]` — and before drawing any take, comp or variant in `~/projects/studio`.
 argument-hint: "<app> [quick]"
 ---
 
