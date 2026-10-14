@@ -69,6 +69,17 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-14 · bulk-replace · green · none · b5 chore 3: b4 receipt phrase changed to «13 files (18 insertions)», rg prints 1
 - 2026-10-14 · gate-retry · green · none · b5 chore 4: commit 22459e1 on main, waited 3s on an index lock, subject as briefed
 - 2026-10-14 · bulk-replace · green · none · b6 chores 1–14: 14 edits, 13 files, each anchor matched once; the evergreen pair needed two edits (its second line carries more text after the anchor)
+- 2026-10-14 · bulk-replace · green · none · b7 chore 1: halt anchor swapped to craft-fleet-flow stage 10
+- 2026-10-14 · bulk-replace · green · none · b7 chore 2: evergreen stray paren fixed
+- 2026-10-14 · bulk-replace · green · none · b8 chore 1: boot and evergreen wishkeeper edits (1 and 1b)
+- 2026-10-14 · bulk-replace · green · none · b8 chore 2: boot inbox line cites habit-dima-comms-pacing
+- 2026-10-14 · bulk-replace · green · none · b8 chore 3: boot ordinal line, guarantee line deleted
+- 2026-10-14 · bulk-replace · green · none · b8 chore 4: evergreen install line cites the package.json merge bullet
+- 2026-10-14 · bulk-replace · green · none · b8 chore 5: evergreen /run clause restored
+- 2026-10-14 · gate-retry · green · none · b9 chore 1: crew-dna committed c4fe555
+- 2026-10-14 · bulk-replace · green · none · b10 chore 1: halt pointer to x:crew-lead model-cards
+- 2026-10-14 · bulk-replace · green · none · b10 chore 2: evergreen pointer to x:crew-lead model-cards
+- 2026-10-14 · bulk-replace · green · none · b11 chore 1: shift pointer to x:crew-lead preflight, names, mode
 
 ## rounds
 

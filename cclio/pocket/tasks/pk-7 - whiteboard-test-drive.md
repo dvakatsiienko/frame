@@ -1,10 +1,10 @@
 ---
 id: PK-7
 title: whiteboard test drive
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-10 10:53'
+updated_date: '2026-10-14 17:42'
 due_date: '2026-10-17'
 labels:
   - s
@@ -28,4 +28,6 @@ dev.fast whiteboard, installed, cli-driven. first case: the cli a/b/c review. re
 
 <!-- SECTION:NOTES:BEGIN -->
 no round since 10-06 (dima: «keep for now»); the next real review that needs a board uses it.
+
+2026-10-14: a copy of docs/test-drive/whiteboard.md (extended to 10-28), which owns the trial now
 <!-- SECTION:NOTES:END -->
