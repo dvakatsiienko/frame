@@ -90,6 +90,8 @@ his standing calls on skills:
 - a skill nobody fires that costs context is a prune candidate before any hillclimb (2026-10-06)
 - `x:author-memory` stays one skill, with references `memory.md`, `memory-project.md` and `skill.md` (2026-10-13)
 - `claude plugin eval` is wanted, but no eval runs at all until his $200 plan: «evals blow ctx too quickly» (2026-10-13, 20:03; it replaced his same-day call to run evals on a free quota window)
+- «when the skills groom phase is reached, one of the first actions is to find and delete obviously unneeded skills: stray test-drive leftovers, dated ones, ones i don't like, ones that never proved themselves. scan the marketplace the same way: keep only skills, plugins and mods proven useful. include project-scoped skills, they are easy to miss.» (2026-10-14)
+- «have only what proved to be useful» — skills, memories, tools (2026-10-14)
 
 ## the run
 
@@ -154,9 +156,10 @@ his standing calls on skills:
 8. **the order across layers**: root `CLAUDE.md` → `rules/` → all resident memory (cclio leaves; the pm surfaces are reviewed here, `.scratch/memory-sweep/issues/085-pm-review.md`) → project leaves (frame, `bytes`, `dvakatsiienko`, `inner-marker`, `reinforcement-learning`; cclio leaves read all first, keep / trim / move, judge filenames, then a filename sweep). a project leaf: `find ~/projects -name AGENTS.md -o -name CLAUDE.md`, the project examined before the file, a restated environment becomes a pointer, a tutorial goes; what a leaf owes is `author-memory/references/memory-project.md`. `~/projects/AGENTS.md` is a deliberate stub ([DOT-195](https://linear.app/x-com/issue/DOT-195)). done: every layer through step 7. (template)
 9. **skills** (effort ≈ 60 % mems / 40 % skills: mems are the mess, skills «+- ok»): each skill reviewed, groomed, trimmed and its load rebalanced, against resident memory. the rulebook is `author-memory/references/skill.md` and `writing-for-agents` (its `SKILL-MECHANICS.md` for frontmatter and invocation); a skill line that restates or contradicts resident memory or a sibling keeps one home. (open)
    1. **the skills research** — a small run of its own, before the groom: the `skills:` vectors, all lanes at once (`x:shape-recipe`), distilled into `author-memory/references/skill.md`, bytes before and after. done: every lane landed or failed out loud, the doc touched or «unchanged»
-   2. **the census** — per skill: fire count, last use, token cost, size, from `refresh-fleet-ops`' skill-load measure and `/skill-doctor` (terminal only, dima types it). done: the ranked list in the run file
-   3. **the conflict hunt** — every skill against resident memory (root `CLAUDE.md`, `rules/`, cclio leaves) and its siblings: a duplicated or contradicting line gets one home. done: every hit verdicted
-   4. **the groom**, the order in the pocket's skills-groom item (crew-coder and crew-verifier first, then the most used and the most bleeding), step 7's size batching:
+   2. **the census** — per skill, every scope (plugin, user `~/.agents/skills/`, project `.claude/skills/`, the marketplace plugins and the mods): fire count, last use, token cost, size, from real Skill calls in the transcripts (`duckdb`, `refresh-fleet-ops`' skill-load measure); `/skill-doctor` is never the source, it overcounts ~10× (#92327). done: the ranked list in the run file
+   3. **the prune**: every skill, plugin and mod the census shows unproven goes before any other work on it — a stray test-drive leftover, a dated one, one dima never liked, one that never earned its place; each a keep or drop pick for dima. done: every unproven entry verdicted
+   4. **the conflict hunt** — every surviving skill against resident memory (root `CLAUDE.md`, `rules/`, cclio leaves) and its siblings: a duplicated or contradicting line gets one home. done: every hit verdicted
+   5. **the groom**, the order in the pocket's skills-groom item (crew-coder and crew-verifier first, then the most used and the most bleeding), step 7's size batching:
       - a completion criterion that can be checked, or why none
       - keep, trim, merge or drop
       - the description leads with WHEN; a pair gets symmetric descriptions

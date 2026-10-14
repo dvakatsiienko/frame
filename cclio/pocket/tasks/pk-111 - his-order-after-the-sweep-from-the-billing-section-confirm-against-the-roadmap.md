@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:47'
-updated_date: '2026-10-13 15:29'
+updated_date: '2026-10-14 12:31'
 due_date: '2026-10-27'
 labels:
   - s
@@ -28,4 +28,6 @@ dima, 10-12 (recovered billing section): «after memory sweep we're gonna do som
 parked: ask at the next siesta
 
 18:30 dima: the first item once the memory sweep is done
+
+parked: confirmed at the 10-27 planning session, after the sweep
 <!-- SECTION:NOTES:END -->

@@ -21,7 +21,8 @@ born 2026-10-10 from the operator ledger and the reply analysis (pocket PK-50).
 
 dima, 2026-10-10: «the recent sweeps that gathered data about our communications were very useful and should be saved in this shape for future runs … the findings are extremely useful. what else could we hunt to improve our communications, and what else interesting could we search for along with this run, because it's wide?»
 
-dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-out to hunt for info about how to improve communications between humans and agents. based on that, we will know what else we should look for during the scrape.»
+dima, 2026-10-10: «designed to improve communications between humans and agents.»
+dima, 2026-10-10: «after we run this recipe first time, i get the most meaningful fleet/me comms upgrade i ever had. after the data was scraped, and cclio tweaked the fleet output knobs, the comms chaos almost stopped, let's evolve this recipe even more!»
 
 ## the run
 
@@ -34,7 +35,7 @@ dima, 2026-10-10: «each time we run this recipe, we first spawn a research fan-
   - the model labels only pushback and the gap (4–7 values, where agreement holds); the 9 kinds come from patterns where mechanical (approve, command, status); the cheapest model that agrees 85 % with the gold set does it (run 1: sonnet, 91 % and 89 %; haiku failed), jev when its credit is back
   - the reply read samples 100 pairs, opus only there
 
-1. **groom**: `x:shape-recipe` steps 0 and 2. done: his word on the vectors. (open)
+1. **groom**: `x:shape-recipe` step 0, the grill. done: his word on the vectors. (open)
 2. research fan-out: one brief quoting the want and the research vectors, through `pnpm research:lanes <brief>` (exa + parallel) and one `researcher` lane on sources. done: every lane landed or failed out loud. (script)
 3. sharpen the hunts: each research finding that names something measurable becomes a scrape hunt for this run, or is named «not measurable here». done: the hunt list for this run is written in `last/`. (open)
 4. scrape: `scripts/prompts-extract.sh` and `scripts/replies-extract.sh` over the transcripts since the last run, then labelling lanes (sonnet over his prompts, opus over reply → reaction pairs). done: the numbers and the labels sit in `last/`. (script)

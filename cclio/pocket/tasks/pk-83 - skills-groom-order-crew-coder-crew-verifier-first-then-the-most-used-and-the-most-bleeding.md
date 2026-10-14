@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-13 15:29'
+updated_date: '2026-10-14 12:31'
 due_date: '2026-10-16'
 labels:
   - m
@@ -50,4 +50,6 @@ dima 22:07: before any skill groom, the skills recipe gets its x:shape-recipe pa
 18:30 folded from PK-84 (o157): the verifier upgrades — the CST's 7 mechanisms, ranked, become tickets on dima's pick — land in the crew-verifier groom
 
 19:25 (o161): the skills recipe is merged into recipes/nurture-memory as its step 9 (9.1 the skills research, 9.2 census, 9.3 conflict hunt, 9.4 this groom order, 9.5 the fire loop); the 18:01 and 22:07 asks above now mean that step
+
+parked: it is the order of sweep step 9.5 (the groom), read there; nothing to do before it. 15:34: step order is now 9.2 census → 9.3 prune → 9.4 conflict hunt → 9.5 groom
 <!-- SECTION:NOTES:END -->

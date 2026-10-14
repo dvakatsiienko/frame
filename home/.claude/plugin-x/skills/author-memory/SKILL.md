@@ -7,6 +7,11 @@ description: Load BEFORE writing or grooming any file an agent reads as instruct
 
 craft (wording, triggers, pruning, leading words) is `mattpocock-skills:writing-for-agents`: load it beside this one. this body is the core; the references hold the measurements, probes and full skeletons.
 
+## the two tests every line passes
+
+- **keep only what proved useful** — a skill, a memory line, a tool earns its place by use; an unproven one goes
+- **not maximum instructions, but the minimum useful context at the right time** — the right bucket and the right moment beat more words
+
 ## where a line goes — audience decides, never topic
 
 the widest bucket whose whole audience benefits:

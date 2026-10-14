@@ -12,6 +12,10 @@ where the prep's state lives: the ticket body (`decided`, `exit`) once a ticket 
 
 read the ticket's wish block and its `decided` section (or the pocket item's notes) before the first question. a grill that re-asks a settled answer is the 16-file pocket miss.
 
+then the open children of the app's `🌠 <app> wishes` parent ticket: one that rides along — a trial, a test drive, a «carry into the next touch» — joins the brief or is named in the grill.
+<!-- 10-14: two ⏰📌 reminders (BYT-127 lottie/rive, the design-drift coder trial) sat stuck only because a ticket never fires at brief time · dima: «why keep stuck?» · this read replaced them -->
+
+
 ## 1 · the chunk card
 
 a card is an h2 heading and two plain lines (dima, 2026-10-09, after a fence, a `·` and a blockquote of bullets each broke it, and an h4 read too small): no fence (a fence means «copy me»), no blockquote, no bullets, no `·`. the shape, as raw markdown:
