@@ -20,7 +20,6 @@ If a TARGET/focus was stated (what the continuation is for), weight R/D/S toward
 
 - **META**: five fields, omit any that is empty.
   - **scope** — omit entirely when the CST is full (the default). On a scoped handoff write `scope: partial — <what>`, so the ingesting session knows it is NOT a full continuation and does not act as if it holds the rest of the thread.
-  - **queues** — cross-session `/queue` items still owed, one line each.
   - **first-acts** — ordered actions the ingesting session performs before anything else. Numbered; the order is the content.
   - **fleet roster** — living sessions worth reattaching to, one line each: session title, role, what it holds (e.g. `🔬 research: proto lab — proto owner — the running prototype + its findings`). Titles follow the spawn naming convention, so the title IS the address. Purpose: a coordinator that lost its conversation reconnects to the persistent `cc`s listed here instead of spawning new ones. Only sessions actually worth resuming — a roster of everything is a roster of nothing.
   - **run marker** — the active tracker run id (`cc·20260819·batch1`), if one was minted. The
@@ -129,4 +128,4 @@ check is a few shell calls; cost of skipping it is work done against a fiction.
 📌 This applies to S and META only. R and D are the user's words and decisions — those are honoured,
 not re-verified.
 
-Ingest silently — never echo the CST into visible output; confirm in ≤2 lines (thread topic + next step). Run META's first-acts before anything else, in their given order, and carry its queues into this thread. Persist `C→memory:` lines into the memory system if one exists (else keep them in C when re-handing-off). Honor R and D as if the user said them in this thread. Then proceed exactly as the old thread from S.
+Ingest silently — never echo the CST into visible output; confirm in ≤2 lines (thread topic + next step). Run META's first-acts before anything else, in their given order. Persist `C→memory:` lines into the memory system if one exists (else keep them in C when re-handing-off). Honor R and D as if the user said them in this thread. Then proceed exactly as the old thread from S.

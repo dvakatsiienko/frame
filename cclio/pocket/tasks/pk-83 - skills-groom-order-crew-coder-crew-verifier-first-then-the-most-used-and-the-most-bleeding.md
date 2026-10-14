@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-14 12:31'
+updated_date: '2026-10-14 15:17'
 due_date: '2026-10-16'
 labels:
   - m
@@ -52,4 +52,6 @@ dima 22:07: before any skill groom, the skills recipe gets its x:shape-recipe pa
 19:25 (o161): the skills recipe is merged into recipes/nurture-memory as its step 9 (9.1 the skills research, 9.2 census, 9.3 conflict hunt, 9.4 this groom order, 9.5 the fire loop); the 18:01 and 22:07 asks above now mean that step
 
 parked: it is the order of sweep step 9.5 (the groom), read there; nothing to do before it. 15:34: step order is now 9.2 census → 9.3 prune → 9.4 conflict hunt → 9.5 groom
+
+2026-10-14 round A riders in the uncommitted crew-coder draft: line 1 (ping events → x:crew-dna pointer), line 12 (essentials | separator), o64 (x lane merge-main, no rebase), line 19 (how-you-work: one bulk-edit door). they ship with the PK-83 commit.
 <!-- SECTION:NOTES:END -->

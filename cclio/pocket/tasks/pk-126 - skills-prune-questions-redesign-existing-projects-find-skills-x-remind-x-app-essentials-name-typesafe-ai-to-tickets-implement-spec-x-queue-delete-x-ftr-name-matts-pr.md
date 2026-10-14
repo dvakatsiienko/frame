@@ -4,10 +4,10 @@ title: >-
   skills prune questions: redesign-existing-projects, find-skills, x:remind,
   x:app-essentials name, typesafe-ai, to-tickets, implement-spec, x:queue
   delete, x:ftr name, matt's pr
-status: waiting
+status: open
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 12:31'
+updated_date: '2026-10-14 15:17'
 due_date: '2026-10-16'
 labels:
   - s
@@ -20,8 +20,7 @@ ordinal: 10620
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**waiting for:** memory sweep step 9.2 (the census) — its answers are census numbers
-inbox 2026-10-14 (other skills, memory sweep scope). each answered with usage data from the 9.2 census, then a keep / rename / delete pick per skill for dima. x:queue: he says delete. app-essentials and ftr: a name that says what it does (init vs verify).
+skills prune questions from the inbox (2026-10-14). settled at sweep 9.3 (o56–o61): find-skills, redesign-existing-projects, greploop and x:queue dropped; greptile-cli, x:mobile-mode, x:cclio-mode, typesafe-ai, quicksilver, advise-project-approach kept. matt's skills: PK-125 kept his full install. the census replaces /skill-doctor (it overcounts ~10×, #92327) and now counts reads by hand too. open for 9.5: rename x:app-essentials and x:ftr to say what they do (init or verify); x:remind fold or keep; to-tickets and implement-spec stay read-by-hand.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes

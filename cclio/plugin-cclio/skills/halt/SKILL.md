@@ -35,9 +35,9 @@ one short message, then straight into phase 1:
   note) · **already done**
 - state the order you are taking, as a fact rather than a proposal
 
-📌 four things stop for him, each a **decision**, never a confirmation: the flawlog flush (3a),
-the wire y/n (4.5), «continue here or a fresh thread?» (5), and the one push ask unless `slay`
-stands. Everything else proceeds.
+📌 three things stop for him, each a **decision**, never a confirmation: the flawlog flush (3a),
+the wire y/n (4.5), «continue here or a fresh thread?» (5). the push is the default unless he says
+«stop» (`habit-dima-comms-pacing`). Everything else proceeds.
 
 ## phase 1 — land the leaves
 execute the «can land now» list. small only — a halt is not the time to start work. bigger than
