@@ -39,7 +39,7 @@ cclio can fix what she reviews; cclio hands you a file only once she committed i
 
 one message, a numbered batch; each chore holds: its class, the exact paths, the anchor and
 replacement or the fields, the done command, and its forbid lines if any. one chore never depends
-on another unless the brief says so.
+on another unless the brief says so. cclio lints it before it goes out: `node ~/frame/cclio/script/composer-brief-check.ts <brief>` reds an anchor that is missing, matches twice or spans two lines, and a path another session holds.
 
 ## the consult — ask before, never guess
 
