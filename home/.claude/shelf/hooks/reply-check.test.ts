@@ -1,10 +1,20 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const HOOK = join(import.meta.dirname, 'reply-check.py');
+const REMIND = mkdtempSync(join(tmpdir(), 'rc-remind-'));
+const SESSION = 'rc-test';
+
+// the line the next prompt carries after a style miss; reading it consumes it, as the real prompt does
+const nextPrompt = () =>
+    execFileSync('python3', [HOOK, '--prompt'], {
+        encoding: 'utf8',
+        env: { ...process.env, REPLY_CHECK_REMIND: REMIND },
+        input: JSON.stringify({ session_id: SESSION }),
+    });
 
 // the hook's stdout for one ended reply: empty when it lets the stop through
 const stop = (reply: string, isActive = false) =>
@@ -14,18 +24,20 @@ const stop = (reply: string, isActive = false) =>
             ...process.env,
             REPLY_CHECK_LOG: join(mkdtempSync(join(tmpdir(), 'rc-')), 'log.tsv'),
             REPLY_CHECK_NOW: '15:10',
+            REPLY_CHECK_REMIND: REMIND,
         },
         input: JSON.stringify({
             last_assistant_message: reply,
+            session_id: SESSION,
             stop_hook_active: isActive,
         }),
     });
 
 describe('the · rule', () => {
-    it('blocks a one-line list joined by ·', () => {
-        expect(stop('the crew: 🐜 chores · 🐝 researcher · 🦡 retro')).toContain(
-            'three things in a row are three bullets',
-        );
+    it('lets a ·-joined list through and reminds at the next prompt, once', () => {
+        expect(stop('the crew: 🐜 chores · 🐝 researcher · 🦡 retro')).toBe('');
+        expect(nextPrompt()).toContain('one bullet per item');
+        expect(nextPrompt()).toBe('');
     });
 
     it('passes the same items as bullets', () => {
@@ -57,7 +69,11 @@ describe('the · rule', () => {
     });
 
     it('lets a second stop through, so a block never loops', () => {
-        expect(stop('a · b · c', true)).toBe('');
+        expect(stop('done.\n\n🔭 waiting on ccrow', true)).toBe('');
+    });
+
+    it('blocks a markdown table', () => {
+        expect(stop('| a | b |\n| --- | --- |\n| 1 | 2 |')).toContain('a markdown table');
     });
 });
 
@@ -80,15 +96,15 @@ const stopAfter = (reply: string, transcript: string) =>
             ...process.env,
             REPLY_CHECK_LOG: join(mkdtempSync(join(tmpdir(), 'rc-')), 'log.tsv'),
             REPLY_CHECK_NOW: '15:10',
+            REPLY_CHECK_REMIND: REMIND,
         },
-        input: JSON.stringify({ last_assistant_message: reply, transcript_path: transcript }),
+        input: JSON.stringify({ last_assistant_message: reply, session_id: SESSION, transcript_path: transcript }),
     });
 
 describe('the composed clock', () => {
-    it('blocks a 📄 stamp more than 2 minutes before the prompt hook’s now', () => {
-        expect(stopAfter('done.\n\n📄 last report: **mods**, 14:58', promptedAt('15:06'))).toContain(
-            '14:58 and 15:06',
-        );
+    it('reminds of a 📄 stamp more than 2 minutes before the prompt hook’s now', () => {
+        expect(stopAfter('done.\n\n📄 last report: **mods**, 14:58', promptedAt('15:06'))).toBe('');
+        expect(nextPrompt()).toContain('📄 stamp 14:58 was off the clock');
     });
 
     it('passes a 📄 stamp copied from the prompt hook’s now', () => {
@@ -111,10 +127,9 @@ describe('the composed clock', () => {
 });
 
 describe('the grill answer fence', () => {
-    it('blocks a fence pre-filled with grill answers', () => {
-        expect(stop('round 1.\n\n```\nQ1 b\nQ2 a\nQ3 a\n```')).toContain(
-            'grill answers go to orbit',
-        );
+    it('reminds of a fence pre-filled with grill answers', () => {
+        expect(stop('round 1.\n\n```\nQ1 b\nQ2 a\nQ3 a\n```')).toBe('');
+        expect(nextPrompt()).toContain('grill picks go to orbit');
     });
 
     it('passes a Q line in prose between two command fences', () => {
@@ -160,5 +175,34 @@ describe('the dead-link rule, log-only', () => {
             '[e](#terminal/3)',
         ].join('\n');
         expect(logged(reply, home)).toBe('');
+    });
+});
+
+describe('the unproven can’t, log-only', () => {
+    it('logs a can’t with no command in its paragraph', () => {
+        expect(logged('the hook cannot see that tool.', mkdtempSync(join(tmpdir(), 'rc-')))).toContain(
+            'unproven-cant\tcannot',
+        );
+    });
+
+    it('passes a can’t that names its command', () => {
+        expect(logged('it cannot: `claude --bare` fails on our login.', mkdtempSync(join(tmpdir(), 'rc-')))).toBe('');
+    });
+});
+
+describe('a second wind turn', () => {
+    it('never blocks while the session writes its handoff', () => {
+        const home = mkdtempSync(join(tmpdir(), 'rc-home-'));
+        mkdirSync(join(home, '.claude/plugins/store'), { recursive: true });
+        writeFileSync(
+            join(home, '.claude/plugins/store/x-mod-stash_a.json'),
+            JSON.stringify({ [`wind:${SESSION}`]: { at: 0, state: 'writing' } }),
+        );
+        const out = execFileSync('python3', [HOOK], {
+            encoding: 'utf8',
+            env: { ...process.env, REPLY_CHECK_HOME: home, REPLY_CHECK_LOG: join(home, 'log.tsv'), REPLY_CHECK_REMIND: REMIND },
+            input: JSON.stringify({ last_assistant_message: '| a | b |\n| --- | --- |', session_id: SESSION }),
+        });
+        expect(out).toBe('');
     });
 });

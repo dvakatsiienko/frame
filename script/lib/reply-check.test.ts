@@ -39,6 +39,7 @@ function check(reply: string, lastMessage?: string, now = '12:00') {
             REPLY_CHECK_HOME: dir,
             REPLY_CHECK_LOG: log,
             REPLY_CHECK_NOW: now,
+            REPLY_CHECK_REMIND: join(dir, 'remind'),
         },
         input: JSON.stringify({
             last_assistant_message: lastMessage,
@@ -67,6 +68,7 @@ function stop(
             REPLY_CHECK_HOME: home,
             REPLY_CHECK_LOG: join(home, 'log.tsv'),
             REPLY_CHECK_NOW: now,
+            REPLY_CHECK_REMIND: join(home, 'remind'),
         },
         input: JSON.stringify({
             last_assistant_message: reply,
@@ -144,16 +146,8 @@ describe('reply-check: cclio names dima in her 🔭 while his ask is open', () =
 });
 
 describe('reply-check: an internal id carries a gloss at first use', () => {
-    it('blocks an orbit id with no gloss', () => {
-        expect(stop('ticked o56, moving on', '12:00')?.reason).toMatch(
-            /no gloss \(o56\)/,
-        );
-    });
-
-    it('blocks a pocket id and a letter-digit label with no gloss', () => {
-        expect(stop('PK-50 and I7 are next', '12:00')?.reason).toMatch(
-            /no gloss \(PK-50, I7\)/,
-        );
+    it('lets an unglossed id through: a style miss returns as a reminder, never a block', () => {
+        expect(stop('ticked o56, moving on', '12:00')).toBeUndefined();
     });
 
     it('passes an id glossed in brackets, after a colon or a dash', () => {
@@ -223,10 +217,13 @@ describe('reply-check', () => {
         ).toEqual([]);
     });
 
-    it('blocks the stop on a 📄 stamp later than the reply time', () => {
-        const out = stop('ok.\n📄 last report: **x**, 12:40', '12:05');
-        expect(out?.decision).toBe('block');
-        expect(out?.reason).toContain('12:05');
+    it('logs a 📄 stamp later than the reply time without blocking', () => {
+        expect(
+            stop('ok.\n📄 last report: **x**, 12:40', '12:05'),
+        ).toBeUndefined();
+        expect(
+            check('ok.\n📄 last report: **x**, 12:40', undefined, '12:05'),
+        ).toContain('future-stamp');
     });
 
     it('lets the stop through when a block already ran this stop', () => {
@@ -258,6 +255,7 @@ describe('a relative link that resolves to nothing', () => {
                 REPLY_CHECK_HOME: home,
                 REPLY_CHECK_LOG: join(home, 'log.tsv'),
                 REPLY_CHECK_NOW: '12:00',
+                REPLY_CHECK_REMIND: join(home, 'remind'),
             },
             input: JSON.stringify({
                 cwd,
@@ -272,10 +270,8 @@ describe('a relative link that resolves to nothing', () => {
     mkdirSync(join(folder, 'docs'));
     writeFileSync(join(folder, 'docs/a b.md'), '');
 
-    it('blocks a link whose path is absent from the session folder', () => {
-        expect(stopIn('see [x](docs/gone.md)', folder)?.reason).toContain(
-            'docs/gone.md',
-        );
+    it('lets a link whose path is absent through: it returns as a reminder', () => {
+        expect(stopIn('see [x](docs/gone.md)', folder)).toBeUndefined();
     });
 
     it('passes a present path, a line suffix and a percent-encoded space', () => {
@@ -300,6 +296,7 @@ describe('a link checked from the launch folder after a cd', () => {
                 REPLY_CHECK_HOME: home,
                 REPLY_CHECK_LOG: join(home, 'log.tsv'),
                 REPLY_CHECK_NOW: '12:00',
+                REPLY_CHECK_REMIND: join(home, 'remind'),
             },
             input: JSON.stringify({
                 cwd: join(project, 'sub'),

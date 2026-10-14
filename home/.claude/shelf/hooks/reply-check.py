@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # Stop hook: reads the reply that just ended and logs every shape the output-format rules ban.
-# it blocks the shapes `main` names (a 📄 stamp off the clock, a ·-joined list, a 🔭 on ccrow, a grill answer fence, an unglossed internal id, a relative link that resolves to nothing, cclio's 🔭 without dima while his ask is open); every other rule is log-only. the log measures which rules break, so a rule that fires often gets its root
-# fixed instead of a validator stopping every reply. `pnpm reply-check:report` reads it.
+# it blocks only what misleads: a 🔭 on ccrow, cclio's 🔭 without dima while his ask is open, a table, an answer buried mid-turn.
+# a style miss (a stamp off the clock, a ·-list, a grill fence, an unglossed id, a dead link) is logged and returns as one
+# reminder line on the next prompt (`--prompt`, a UserPromptSubmit hook). `pnpm reply-check:report` reads the log.
 import json
 import os
 import re
@@ -10,6 +11,7 @@ import time
 from urllib.parse import unquote
 
 LOG = os.environ.get("REPLY_CHECK_LOG", os.path.expanduser("~/.local/state/reply-check.tsv"))
+REMIND_DIR = os.environ.get("REPLY_CHECK_REMIND", os.path.expanduser("~/.local/state/reply-check-remind"))
 
 FENCE = re.compile(r"```.*?```", re.S)
 URL = re.compile(r"https?://\S+")
@@ -33,6 +35,8 @@ INTERNAL_ID = re.compile(r"(?<![\w/.#-])(o\d{1,4}|[Pp][Kk]-\d{1,4}|[A-PR-Z]\d{1,
 # glossed: words right after it in brackets, or after a colon or a dash, at least two of them
 GLOSS_AFTER = re.compile(r"^\s*(?:\(|:\s|[—–-]\s|=\s)\s*[^\s)]+\s+[^\s)]+")
 MD_LINK_LABEL = re.compile(r"\[[^\]]*\]\([^)]*\)")
+# a can't with no command beside it is an inference dressed as a fact (two unproven can'ts on 10-13: PK-98, the hook claim)
+CANT = re.compile(r"\b(?:can't|cannot|can not|impossible)\b", re.I)
 
 
 def dead_links(prose: str, roots: list[str]) -> list[str]:
@@ -75,18 +79,31 @@ def session_name(session: str) -> str:
 
 def open_asks(session: str) -> int:
     # the asks x-mod-stash mirrors for its board: dima's unmarked ones, under a day old, from the newest store file
-    folder = os.path.join(HOME, ".claude/plugins/store")
-    files = [os.path.join(folder, f) for f in os.listdir(folder) if f.startswith("x-mod-stash_")] if os.path.isdir(folder) else []
-    if not files:
-        return 0
-    with open(max(files, key=os.path.getmtime)) as f:
-        entry = (json.load(f) or {}).get(f"asks:{session}") or {}
+    entry = store_entry(f"asks:{session}")
     if time.time() * 1000 - float(entry.get("at") or 0) > 24 * 3600 * 1000:
         return 0
     items = entry.get("items")
     if isinstance(items, list):
         return sum(1 for item in items if isinstance(item, dict) and not item.get("mark"))
     return len(entry.get("asks") or [])
+
+
+def store_entry(key: str) -> dict:
+    folder = os.path.join(HOME, ".claude/plugins/store")
+    files = [os.path.join(folder, f) for f in os.listdir(folder) if f.startswith("x-mod-stash_")] if os.path.isdir(folder) else []
+    if not files:
+        return {}
+    with open(max(files, key=os.path.getmtime)) as f:
+        return (json.load(f) or {}).get(key) or {}
+
+
+def in_second_wind(session: str) -> bool:
+    # a 🐦‍🔥 second wind turn is writing its handoff or compacting; a block there costs the refresh (dima, PK-118)
+    return store_entry(f"wind:{session}").get("state") in ("writing", "refreshing")
+
+
+def unproven_cants(prose: str) -> list[str]:
+    return [m.group(0) for para in re.split(r"\n\s*\n", prose) if "`" not in para for m in [CANT.search(para)] if m]
 
 
 def waits_without_dima(prose: str, session: str) -> bool:
@@ -200,6 +217,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
     # each fence is judged alone: a Q line in prose between two command fences once matched across them
     found += [("grill-fence", f.group(0)[3:43]) for f in FENCE.finditer(reply) if GRILL_ANSWER.search(f.group(0))]
     found += [("unglossed-id", token) for token in unglossed(prose)]
+    found += [("unproven-cant", word) for word in unproven_cants(prose)]
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (ccrow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
@@ -237,44 +255,54 @@ def main() -> None:
         for rule, snippet in hits:
             clean = snippet.replace("\t", " ").replace("\n", " ")
             log.write(f"{stamp}\t{session}\t{where}\t{rule}\t{clean}\n")
-    late = [snippet for rule, snippet in hits if rule == "future-stamp"]
-    dots = [snippet for rule, snippet in hits if rule == "middot"]
-    crow = [snippet for rule, snippet in hits if rule == "wait-on-ccrow"]
-    grill = [snippet for rule, snippet in hits if rule == "grill-fence"]
-    # the two blocking rules: logging alone changed nothing (28 stamp hits in a day, dima 2026-10-06; the · list, dima 2026-10-08); a second stop passes, so a block never loops
-    reasons: list[str] = []
-    if late:
-        now = os.environ.get("REPLY_CHECK_NOW", time.strftime("%H:%M"))
-        reasons.append(f"the 📄 stamp {', '.join(late)} is later than now ({now}). run `date` and reprint the 📄 line with the real time.")
-    if dots:
-        reasons.append(f"a ·-joined list in prose («{dots[0]}»): three things in a row are three bullets. reprint it as one `- ` line per item.")
-    if crow:
-        reasons.append("a 🔭 line names ccrow: a wake never holds the session. drop the 🔭 line, or name what really holds it (a ci run, a coder).")
-    stale = [snippet for rule, snippet in hits if rule == "stale-stamp"]
-    if stale and prompted is not None:
-        asked = f"{prompted // 60:02d}:{prompted % 60:02d}"
-        reasons.append(f"the 📄 stamp is a composed clock: {stale[0]} and {asked} (the prompt hook's now) differ by over 2 minutes. copy the hook's now, or run `date`, and reprint the 📄 line.")
-    if grill:
-        reasons.append("a fence pre-filled with grill answers: grill answers go to orbit, one `Qn <title>` row per question with your pick (dima, 2026-10-11). drop the fence; the round itself stays in the reply.")
-    bare = [snippet for rule, snippet in hits if rule == "unglossed-id"]
-    if bare:
-        reasons.append(f"an internal id with no gloss ({', '.join(bare)}): dima reads it cold. give each its three-word gloss at first use — `o56 (the trash ask)` — or say the plain thing instead.")
-    if any(rule == "empty-reply" for rule, _ in hits):
-        reasons.append("the reply holds only the 📄 stamp and the 🔭 line: the answer sits in a mid-turn block dima never sees. reprint the answer in full above the stamp.")
-    dead = [snippet for rule, snippet in hits if rule == "dead-link"]
-    if dead:
-        reasons.append(f"a relative link that resolves to nothing from this session's folder ({', '.join(dead)}): dima's click opens nothing. write the path from the session folder, or an absolute one.")
-    if any(rule == "wait-without-dima" for rule, _ in hits):
-        reasons.append("orbit holds an ask dima has not answered, and no 🔭 line names him: end with `🔭 waiting on **🙋‍♂️ dima**` (beside any member it also waits on).")
-    if reasons and not event.get("stop_hook_active"):
+    by_rule = lambda name: [snippet for rule, snippet in hits if rule == name]
+    blocks: list[str] = []
+    if by_rule("wait-on-ccrow"):
+        blocks.append("a 🔭 line names ccrow: a wake never holds the session. drop the 🔭 line, or name what really holds it (a ci run, a coder).")
+    if by_rule("wait-without-dima"):
+        blocks.append("orbit holds an ask dima has not answered, and no 🔭 line names him: end with `🔭 waiting on **🙋‍♂️ dima**` (beside any member it also waits on).")
+    if by_rule("table"):
+        blocks.append("a markdown table: it renders broken in his panes. reprint it as `- key — value` bullets.")
+    if by_rule("empty-reply"):
+        blocks.append("the reply holds only the 📄 stamp and the 🔭 line: the answer sits in a mid-turn block dima never sees. reprint the answer in full above the stamp.")
+    reminds: list[str] = []
+    late, stale = by_rule("future-stamp"), by_rule("stale-stamp")
+    if late or stale:
+        reminds.append(f"📄 stamp {(late or stale)[0]} was off the clock — copy the prompt hook's now")
+    if by_rule("middot"):
+        reminds.append("a ·-joined list — one bullet per item")
+    if by_rule("grill-fence"):
+        reminds.append("a grill answer fence — grill picks go to orbit")
+    if by_rule("unglossed-id"):
+        reminds.append(f"unglossed ids ({', '.join(by_rule('unglossed-id'))}) — a three-word gloss at first use")
+    if by_rule("dead-link"):
+        reminds.append(f"a dead relative link ({by_rule('dead-link')[0]}) — path from the session folder")
+    if reminds:
+        os.makedirs(REMIND_DIR, exist_ok=True)
+        with open(os.path.join(REMIND_DIR, f"{event.get('session_id') or 'none'}.txt"), "w") as f:
+            f.write("; ".join(reminds))
+    if blocks and not event.get("stop_hook_active") and not in_second_wind(str(event.get("session_id", ""))):
         # the blocked reply already shows; a full reprint doubled the boot board (dima, 2026-10-13)
-        reasons.append("dima already sees the reply above: print only the corrected lines, never the whole reply again.")
-        print(json.dumps({"decision": "block", "reason": " ".join(reasons)}))
+        blocks.append("dima already sees the reply above: print only the corrected lines, never the whole reply again.")
+        print(json.dumps({"decision": "block", "reason": " ".join(blocks)}))
 
+
+def prompt() -> None:
+    # UserPromptSubmit: the last reply's style misses join this prompt once, then the file is gone
+    event = json.load(sys.stdin)
+    path = os.path.join(REMIND_DIR, f"{event.get('session_id') or 'none'}.txt")
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        line = f.read().strip()
+    os.remove(path)
+    if line:
+        context = f"↩️ reply-check, your last reply: {line}. fix the shape from now on; no reprint needed."
+        print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, ensure_ascii=False))
 
 if __name__ == "__main__":
     try:
-        main()
+        prompt() if sys.argv[1:] == ["--prompt"] else main()
     except Exception as error:  # a logging hook must never break a session's stop
         print(f"reply-check: {error}", file=sys.stderr)
     sys.exit(0)
