@@ -35,7 +35,7 @@ word. skipping a step happens only on his word, named out loud.
    general-purpose one (~115k each, 2026-10-14).
    then, on every shape, a plan critic: write the plan to a file and run `pnpm -C ~/frame ccrow:plan-critique
    <file>` — a fresh one-shot on ccrow's day arm, blind to the thread; its verdict and ≤5 located
-   findings go to dima beside the grill (on trial with ccrow to 10-20, FRM-336).
+   findings go to dima beside the grill (on trial with ccrow, `docs/test-drive/ccrow.md`, FRM-336).
 5. **the cut** — the smallest version worth using, and a written «out» list of what it is not.
    it names the **polish tier**: an internal tool stops at «works and clear»; a showcase app
    (the portfolio, speak, sys) gets the designer's polish phase — the last 10 % is where the

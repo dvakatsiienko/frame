@@ -296,6 +296,17 @@ echo "📌 this hook proves the FILE chain in a fresh process; the running sessi
 
 fi
 
+echo "-- test drives (pnpm test-drive:check; a red runs cclio:shape-test-drive § 4) --"
+if out=$(node "$HOME/frame/script/test-drive-list.ts" --check 2>&1); then
+  echo "$out"
+elif printf '%s\n' "$out" | head -1 | grep -q '^test-drive:check:'; then
+  printf '%s\n' "$out" | head -1
+  echo "🔴 $(printf '%s\n' "$out" | grep -c '^🔴') off contract:"
+  printf '%s\n' "$out" | grep '^🔴' | head -6
+else
+  fail "test-drive:check could not run: $(printf '%s' "$out" | head -1)"
+fi
+
 echo "-- pocket (Backlog.md, cclio/script/pocket-check.ts; a red is drift to fix today, not a broken boot) --"
 if out=$(node "$HOME/frame/cclio/script/pocket-check.ts" 2>&1); then
   echo "$out"

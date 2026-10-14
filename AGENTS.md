@@ -89,6 +89,7 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
   `ctx-burn`, `notes-stack/` with its bench scripts). A test drive is a running measurement any session
   may append a round to, so it lives here and never under `cclio/`; it closes with a verdict line
   (adopted / dropped) and stays as the record. A research doc answers once; a test drive accumulates.
+  Its flow is cclio's `cclio:shape-test-drive`; `pnpm test-drive:check` reds an overdue, undated or copied date.
 
 ## Agent skills
 
@@ -123,7 +124,7 @@ multi-context: `GLOSSARY-MAP.md` lists every `GLOSSARY.md`. See `docs/agents/dom
 ## hazards that bite this repo
 
 - **a pre-commit `test` red in under 1 s on the first commit after staging is the known flake** — vitest needs ~2.5 s, and the identical retry went green both times (2026-10-04); retry once, a second red is real. guard: none, cause unknown
-- a frame worktree pushes only through `x lane push` (it pushes from the main checkout; a plain `git push` there dies on the `mirror` gate, which reads `~` symlinks that point at the main checkout)
+- a frame worktree pushes only through `x lane push` (it pushes from the main checkout; a plain `git push` there dies on the `mirror` gate, which reads `~` symlinks that point at the main checkout), and runs `pnpm` only as `CI=1 pnpm install`: a plain install moves the shared hook shims into the worktree, and only `x lane seed` puts them back
 - **the encrypted set is `.gitattributes`** (the `filter=git-crypt` lines) — read it before calling a task git-crypt-blocked; every other file works in a fresh clone or a cloud session with no key. a commit that moves a file out of the set is refused by the `git-crypt-rename` pre-commit check — the new path needs its own filter line
 - a git-crypt repo keeps its key in the main `.git`, so a fresh worktree holds ciphertext and even a pathspec `git add` dies on the clean filter: `x lane seed <path>` unlocks a hand-made tree (`EnterWorktree` trees unlock through `shelf/hooks/worktree-seed.sh`); the by-hand recipe lives in `x/AGENTS.md` § lane
 - **biome lints `.svg` in frame** (`useSortedAttributes`) — art shipped outside `assets/` and `brand/` gets its `!path` exclusion in `biome.jsonc` in the same commit, or the commit is refused

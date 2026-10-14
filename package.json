@@ -74,6 +74,7 @@
         "recipe:brief": "node ./script/recipe-brief.ts",
         "research:lanes": "./script/research-lanes.sh",
         "test-drive:list": "node ./script/test-drive-list.ts",
+        "test-drive:check": "node ./script/test-drive-list.ts --check",
         "schedule:install": "node ./schedule/install.ts",
         "schedule:restart": "node ./schedule/restart.ts",
         "skill:cclio-mode-snapshot": "node ./script/skill-cclio-mode-snapshot.ts",

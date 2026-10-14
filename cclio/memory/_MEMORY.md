@@ -40,7 +40,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
 - 🎯 @habit-ray-hoist.md — a repeated ask lands on FRM-252 the same turn as an x-ray candidate; guesses never do
 - 🔬 @habit-research-lanes.md — every research runs exa + parallel (`pnpm research:lanes`) + an opus source lane at once, one brief, one reply
-- 🧪 @habit-test-drive.md — a tool on trial: docs research + stress list on day 0, reached first on every fitting ask, widest over deepest
+- 🧪 @habit-test-drive.md — a tool on trial is reached first on every fitting ask; its flow is `cclio:shape-test-drive`
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit
 - 💸 @habit-ctx-load-balancing.md — the 5h window paces lane starts: ahead of pace, no new lane, running ones finish; read at every spawn, done and siesta, never printed; weekly ~15 %/day is a one-line ping, never a stop
 

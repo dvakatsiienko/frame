@@ -6,10 +6,6 @@ description: load when dima means the SESSION is done — «let's wrap», «that
 
 loads on `/cclio:halt`, `/halt`, `/wrap`, or when dima says to finish the day.
 
-📌 **never open the halt plan unprompted mid-task.** if dima has not asked to finish, do not
-suggest it unless the session is genuinely at a natural boundary. reading the room beats running
-the ritual.
-
 ## phase 0 — the halt plan, printed then executed
 
 🚨 **typing the command IS the go.** Print the plan and start working through it in the same
@@ -59,6 +55,9 @@ and dima found six done lines at the next boot).
 ## phase 1.7 — github notifications, cleared unasked
 mark done every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr: `gh api notifications`, then `PATCH /notifications/threads/<id>`. what stays is an open pr's review ask. dima's yes, 2026-09-28.
 
+## phase 1.8 — glides, cleared unasked 🛼
+every 🛼 glide card on the board gets orbit op `glide` act `end`, finished or parked alike; a parked lane gets a new card when it resumes (dima's o78, 2026-10-14: a lane's card sat on his board a day after the halt).
+
 ## phase 2 — missed sweep
 re-read the pocket and this thread for dropped asks and unanswered
 questions. a pocket item marked «before the halt» FIRES now. mid-turn messages from dima are the usual casualty — check
@@ -86,7 +85,7 @@ flawlog's drop pile. skipped for two weeks once (2026-09-05).
 **verify recipes, in the flush:** a retro line naming a verify-recipe gap or a check worth adding is
 placed by cclio into that app's `.claude/skills/verify/SKILL.md` in the flush — coders and
 verifiers only suggest; the recipe stays short (commands that worked, flows worth driving, gotchas).
-**second sighting = teeth (FRM-314):** before a lesson enters the proposal, `rg -i '<its key words>' ~/.claude/shelf/flawlog/` over the last 30 days; a hit makes it a repeat, and a repeat leaves the flush as a guard, a verb, a check or a ticket, never a memory line. a stopgap memory line is written with `until: <ticket>`.
+**second sighting = teeth (FRM-314):** before a lesson enters the proposal, `rg -i '<its key words>' ~/.claude/shelf/flawlog/` over the last 30 days; a hit makes it a repeat, and a repeat leaves the flush per `craft-fleet-flow` stage 10, never as a memory line. a stopgap memory line is written with `until: <ticket>`.
 **the redundancy hunt** (dima, 2026-10-07: «hunt redundant memories each time, and also propose grooms, trims to keep it tidy»): every memory file and skill the flush or the day touched gets `recipes/nurture-memory/recipe.md` step 7's lenses; each finding joins the proposal. dima, 2026-10-11: «During the halt, you process retros gathered across the lanes and flush them into the corresponding skills and memory files. This causes the memory bloat we have right now, so this step in your halt is meant to stop endless memory growth.»
 **notes expire:** `rg -n 'until: (FRM|BYT)-[0-9]+' ~/frame/cclio/memory ~/.claude/rules` and check each id's state; a line whose ticket closed goes into the proposal for deletion.
 **the flow numbers, before the proposal:** `x fleet flow --days 14` in `~/frame` — the
@@ -106,11 +105,10 @@ sharpened, not because it was watched. the boot prints every flow's streak.
 **then `pnpm jev:report`**, printed right after the flush verdicts — one block per flow; a flow with a miss today gets its criterion sharpened in place, `RUNS=3`, same halt. its health line carries the router latency (`avg · p95`): a p95 over 2 s or a rising avg is a finding for the flush, since every prompt waits on it.
 **then the trial board — everything on trial, not only jev** (dima, 2026-09-25, «let's try»): one
 line per item — name · state (vetting n/14, open, due) · days left · today's evidence — built from
-four sources, each read, never recalled: `shelf/jev/vet.json` (the flows, after today's verdicts),
-`pnpm test-drive:list` (each test-drive file's own `status:` and `until:`, o139), the 🔬/👁️ reminders left in
-`memory/_reminders.md`, and the model/effort trials (`docs/knowledge/fleet-models.md`, the spawn defaults in
-`x:crew-lead`). ⏰ leads any line due within 3 days; an item with no evidence today still gets its
-line — a trial nobody names is being dropped by default.
+two sources, each read, never recalled: `shelf/jev/vet.json` (the flows, after today's verdicts) and
+`pnpm test-drive:check` (every trial's own `status:` and `until:`). ⏰ leads any line due within 3 days, and a
+red runs `cclio:shape-test-drive` § 4; an item with no evidence today still gets its line — a trial nobody
+names is being dropped by default.
 **then the spawn base:** the first-request `cache_read_input_tokens` / `cache_creation_input_tokens` of the day's fresh agents (their transcripts' first assistant `usage`) — a base that moved re-sizes the grid in `x:crew-lead`.
 
 ## phase 3.5 — milestones, before the board

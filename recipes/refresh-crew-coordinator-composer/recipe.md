@@ -11,7 +11,7 @@ script: none
 
 keeps cclio's editing sidecar (today: composer, Haiku 5.5) true: what cclio actually wastes context on, which of it composer takes, which of composer's chores graduate into scripts, and whether the sidecar still earns its place.
 
-📌 on a test drive to 2026-10-21: dropped → this recipe is deleted with it.
+📌 on a test drive (`docs/test-drive/composer.md`): dropped → this recipe is deleted with it.
 
 ## the want
 
