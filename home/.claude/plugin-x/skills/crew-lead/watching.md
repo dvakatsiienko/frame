@@ -31,6 +31,7 @@ Per-case judgment: keep a coder warm when its context is expensive and the next 
 nearby; respawn when the work is unrelated or the context is polluted. **Always stop probes.**
 🧪 **until 2026-10-15, the comms-trim check before every stop**: read the member's retro `comms:` line; no retro → one message «did you need cclio at any point and not reach her?» before `claude stop`. a gap found goes to the halt count (dima, 2026-10-08).
 
+- **the stop of a lane's last member (its coder, its verifier when one runs) ends its 🛼 glide the same turn** — orbit op `glide` act `end`, finished or parked alike; a parked lane gets a new card when it resumes (dima, 2026-10-14: l14 sat on his board a day after its coder stopped)
 - 🚨 **stop with `claude stop <jobId>`, never `kill <pid>`** — four rc sessions killed by pid came
   back with new pids (2026-08-30, cause unconfirmed). the registry file removes itself on exit,
   so `ls` is the whole verification. never pattern-kill.
