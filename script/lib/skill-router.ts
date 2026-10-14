@@ -34,7 +34,7 @@ export const sideEffectSkills: ReadonlySet<string> = new Set([
 export const mustNotMiss: readonly string[] = [
     'x:browser-headless',
     'x:cmt',
-    'x:ftr',
+    'x:app-author-ftr',
     'x:github-contrib',
     'x:guide-ui-ux',
     'x:handoff-ingest',

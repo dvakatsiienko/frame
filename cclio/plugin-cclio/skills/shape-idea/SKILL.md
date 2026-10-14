@@ -41,8 +41,8 @@ word. skipping a step happens only on his word, named out loud.
    (the portfolio, speak, sys) gets the designer's polish phase — the last 10 % is where the
    look comes from, and a reviewer who sees a generic look clicks away.
 6. **the done test** — how we will know it works, as given/when/then lines.
-7. **the outputs** — `PRODUCT.md` (why, who, the cut), an `FTR.md` draft from the done test (`x:ftr`),
-   `GLOSSARY.md` words (`domain-modeling`). a new app scaffolds through `x:app-essentials`. a
+7. **the outputs** — `PRODUCT.md` (why, who, the cut), an `FTR.md` draft from the done test (`x:app-author-ftr`),
+   `GLOSSARY.md` words (`domain-modeling`). a new app scaffolds through `x:app-setup-essentials`. a
    re-shape of an existing app runs `domain-modeling` over its current code too, so the redesign
    starts from the real terms (dima, 2026-10-06: every app goes through it, on its next touch).
 

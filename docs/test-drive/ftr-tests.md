@@ -16,4 +16,4 @@ the checker is skill-shaped first; a hook only if the gaps are real and greenabl
   - why: 0/49 lines proven end to end; the 5 ✅ error lines rest on manual checks; test names never use the ftr words, so a grep would miss most links — the mapping needs meaning (a skill or a jev pass); most gaps are ui behaviour a node unit test cannot reach → the fix is a browser test lane, not more unit tests; a hook would be red on day one
   - finds: `build.test:17` tests a real feature with no ftr line (the list of other ateliers in sibling worktrees, `server/build.ts:62`); `build.test:9` asserts the 8-char sha while `FTR.md:51` says the ui never shows one — `sha` may be dead data
 
-**verdict — closed, cclio's pick, dima's tick (o151, 18:12):** a one-shot baseline, FRM-286 done; the ftr ↔ test check lives on in `x:ftr` and the verifiers.
+**verdict — closed, cclio's pick, dima's tick (o151, 18:12):** a one-shot baseline, FRM-286 done; the ftr ↔ test check lives on in `x:app-author-ftr` and the verifiers.

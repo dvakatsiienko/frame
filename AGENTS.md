@@ -80,7 +80,7 @@ chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `loc
   (ADR-nnnn). Tracker context: `docs/tracker/GLOSSARY.md` + `docs/tracker/adr/` (TRK-nnnn).
   Glossary vocabulary is binding in outputs (titles, proposals, test names); an output
   contradicting an ADR surfaces the conflict, never silently overrides.
-- **`x lane gate` holds the ftr line and the glossary entry at commit-msg** for an app with `FTR.md` (`x:ftr`): the ftr line always, the glossary for the files a context lists as its `contract:` in `GLOSSARY-MAP.md`; both land in the same commit as the code
+- **`x lane gate` holds the ftr line and the glossary entry at commit-msg** for an app with `FTR.md` (`x:app-author-ftr`): the ftr line always, the glossary for the files a context lists as its `contract:` in `GLOSSARY-MAP.md`; both land in the same commit as the code
 - **Research** — `docs/research/<subject>.md`, subject-first filename, never a ticket-id prefix, so
   a doc survives the ticket that prompted it. `Ticket: FRM-N` on its own line at the top, mandatory — a doc no ticket owns writes `Ticket: none`. **Every research doc carries `dies-when:` frontmatter at creation** — the condition that
   retires it (distilled into an artifact, hatched into a skill/rule, or acted on). Reading a doc

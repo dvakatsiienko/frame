@@ -1,5 +1,5 @@
 ---
-name: app-essentials
+name: app-setup-essentials
 description: Load BEFORE creating or wiring up an app — «new app», «scaffold an app», «add an app to bytes», «wire up the app», «app essentials», «apps:essentials is red», a new dir under bytes apps/ — and before a coder spawn into an app that fails the checker. Not for a question about an existing app.
 ---
 
@@ -20,7 +20,7 @@ script**: `bytes/script/apps-essentials.ts` (BYT-111). Read its data, never a co
 ## birth — a new app, in order
 
 1. `AGENTS.md`: what the app is, how it runs, its hazards. The repo's root `AGENTS.md` gets its registry row.
-2. `x:ftr` drafts `FTR.md` from the running app. Every line starts ⬜ until its check runs.
+2. `x:app-author-ftr` drafts `FTR.md` from the running app. Every line starts ⬜ until its check runs.
 3. matt's `domain-modeling` writes `GLOSSARY.md` and `docs/adr/0001-*.md`, with the stack pick as ADR-0001.
 4. `/run-skill-generator <app>` makes `<app>-run`. It is user-invoked, so dima types it, or cclio
    spawns a one-shot session whose prompt is that command. Then write `<app>-verify` from it.

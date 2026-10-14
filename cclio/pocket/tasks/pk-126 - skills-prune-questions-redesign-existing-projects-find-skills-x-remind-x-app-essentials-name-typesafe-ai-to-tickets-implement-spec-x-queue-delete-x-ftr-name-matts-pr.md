@@ -7,7 +7,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 15:17'
+updated_date: '2026-10-14 18:01'
 due_date: '2026-10-16'
 labels:
   - s
@@ -28,4 +28,6 @@ skills prune questions from the inbox (2026-10-14). settled at sweep 9.3 (o56–
 <!-- SECTION:NOTES:BEGIN -->
 his reminder in the same drop: «remind me to paste you skill-doctor output so we optimize skills» — due at 9.2: tell him the census (transcripts via duckdb) replaces skill-doctor, which overcounts ~10× (#92327).
 renames, their own ask: x:app-essentials and x:ftr get names that say what they do (init or verify) — a rename pick per skill, not a census number.
+
+2026-10-14 21:01: renames landed on dima's pick (o106 r4): x:app-essentials → x:app-setup-essentials, x:ftr → x:app-author-ftr (pairs with x:author-memory, scoped to an app)
 <!-- SECTION:NOTES:END -->

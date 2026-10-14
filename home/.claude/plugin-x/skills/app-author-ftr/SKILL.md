@@ -1,5 +1,5 @@
 ---
-name: ftr
+name: app-author-ftr
 description: Load BEFORE reading or writing an app's ftr — «ftr», «features doc», «the ftr», `FTR.md`, «what does <feature> do», «draft the ftr», «ftr lines», «map lines», exit lines for an app that has an ftr, a coder or verifier brief that names ftr lines. Not for `PRODUCT.md` or `DESIGN.md`.
 argument-hint: "[draft|update|read] <app dir>"
 ---
@@ -82,7 +82,7 @@ losing variant's line is deleted.
    and two lines — the bridge is resident in every session in the repo:
    - the repo's root `AGENTS.md` carries the rule once (add it if missing): «an app with
      `FTR.md` updates its ftr line, and any new domain word its `GLOSSARY.md` entry, in the
-     same commit as the code (`x:ftr`)»
+     same commit as the code (`x:app-author-ftr`)»
    - the app's `AGENTS.md` carries only the pointer: `FTR.md` + `GLOSSARY.md` — read your
      section before changing what the app does
 6. Report the cost: minutes and a rough token count for the draft. The pilot measures this.
