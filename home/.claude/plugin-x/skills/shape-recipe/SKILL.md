@@ -52,7 +52,7 @@ coordinator, should act in a special way here.» so:
 ## creating one
 
 a branch (design, voice, a tool stack) or a research with several vectors that will run again becomes a
-recipe the same session: the folder, `recipe.md` with dima's want quoted from the thread, a
+recipe the same session: the folder, `recipe.md` with dima's want folded from the thread, a
 header-only `log.md`. the tell is writing research vectors from scratch for a subject researched before. its first
 run starts with step 0's grill like any other, and `groomed: <today> (dima)` lands on his word, before any lane.
 

@@ -69,7 +69,7 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   -f base=main` nudges github to recompute; run it after every main push while a pr is open.
 - merge only per the disposition given (merge-when-green, or stop and report). none given →
   report and ask.
-- a merged PR is the implementation record — close or update the tracking item when the work
+- a merged PR is the implementation record — the tracking item's close is cclio's (`x:cmt` § 5) when the work
   lands; keep no second checklist in the repo.
 
 ## issues

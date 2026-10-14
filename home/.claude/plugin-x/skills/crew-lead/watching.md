@@ -50,6 +50,6 @@ every model bump — the curve is per-release.
 **Cost of a reading agent = bodies × size, never agents × a flat number** — the board-sweep
 workflow was guessed at ~150k and spent 1.27M for 82 ticket bodies + comments.
 
-**a coder's last act is a retro** (dima, 2026-09-08, after a test that surfaced nine ranked findings): ≤12 lines into `~/.claude/shelf/retros/` (never a message since 2026-10-08; folded at the halt), most important first (the cap lives in `x:crew-dna`), with the WHY stated in the ask — the fleet improves itself only from what its members saw. the shape of the ask matters: name the angles (the brief, the steers, the lane, the reporting, what nobody asked), ask for blunt, name-the-moment specifics. cclio folds it into the flawlog flush. the contract line lives in `x:crew-coder`.
+**a coder's last act is a retro** (dima, 2026-09-08, after a test that surfaced nine ranked findings): ≤12 lines into `~/.claude/shelf/retros/` (never a message since 2026-10-08; folded when its lane ends, the rest by the halt's gatherer), most important first (the cap lives in `x:crew-dna`), with the WHY stated in the ask — the fleet improves itself only from what its members saw. the shape of the ask matters: name the angles (the brief, the steers, the lane, the reporting, what nobody asked), ask for blunt, name-the-moment specifics. cclio folds it into the flawlog flush. the contract line lives in `x:crew-coder`.
 
 Full evidence base: `docs/knowledge/spawning-mechanics.md`, on demand.

@@ -45,7 +45,7 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
 
 - inbox: every item has a pocket item — then it gets a `✅ ` prefix IN PLACE, text and headers
   intact, nothing deleted (dima, 2026-09-11: the inbox survives a checkpoint so he can diff it;
-  the halt clears only `✅` lines). the mark tells him what is handled; the resume diff below
+  the halt resets it from `inbox-template.md`). the mark tells him what is handled; the resume diff below
   tells me what is missing
 - flawlog flush: one batched proposal, his one approve, execute (halt phase 3a); stories appended
 - milestones refreshed (halt phase 3.5)

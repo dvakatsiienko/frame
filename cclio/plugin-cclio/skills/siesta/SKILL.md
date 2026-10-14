@@ -25,7 +25,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
    - 🍀 **freebie**: what, and why it is small; a duplication finding offers `/simplify` here
    - ➡️ **next**: the main-lane item
    - the asks and the plan go to orbit, never into the card
-   - the light line only as «meanwhile I did <freebie>», when that is true
+   - one light line: a fact with a twist, a dry joke, or «meanwhile I did <freebie>» when that is true (`fleet-vibe`)
 
 ## boot
 

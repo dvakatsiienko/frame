@@ -23,7 +23,7 @@ born from the DOT-157/DOT-158 tours.
 
 ## the hook line — every turn, last line
 
-    ➡️ next: <one line naming the next stop> · (2/5)
+    ➡️ next: <one line naming the next stop> | (2/5)
 
 - the counter tracks **stops completed / total**, updated every turn, including after map reshapes
 - on the final stop it becomes `✅ tour done (5/5)` plus what to explore next

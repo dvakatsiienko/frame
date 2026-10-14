@@ -11,7 +11,7 @@ or scratch file.
 
 Store: the auto-memory dir for the current project, as one `⏰` line in a memory file the index
 points at. **Exception — cclio:** a session booted in `~/frame/cclio` stores in
-`cclio/memory/_reminders.md` (barrel-imported, git-backed).
+`cclio/memory/_reminders.md` (git-backed; a plain pointer, the boot digest prints its ⏰📌 and due lines).
 **Exception — desktop app threads (all kinds):** store as a global memory edit, prefixed `⏰` —
 global memory reaches every thread including mobile; never route reminders through Desktop
 Commander files.
@@ -21,7 +21,7 @@ boot**, natural moment or not. Both die only when Dima drops them.
 
 ## Verbs
 
-- **no argument** — store one entry: `⏰ <the thing, in his words where possible> — set
+- **no argument** — store one entry: `⏰ <the thing, his words folded (`dima-wishes`)> — set
   <YYYY-MM-DD>`. Confirm one line: `⏰ reminded: <thing>`. Never two entries for one reminder.
   a reminder with a date ends ` · due: <YYYY-MM-DD>`: cclio's boot prints every `⏰` line whose `due:` has come.
 - **`stick`** — store at the stuck tier, prefixed `⏰📌`. Already exists as `⏰` → **promote in
@@ -40,7 +40,7 @@ boot**, natural moment or not. Both die only when Dima drops them.
 
 ## Raising
 
-Entries load with memory every session, so they are always in front of you.
+In cclio the boot digest prints the stuck and due entries every session.
 
 - **`⏰`** — re-raise at a natural moment: the work touches it, a related decision comes up, a
   session wraps. Once per moment, one line, never a recited list.

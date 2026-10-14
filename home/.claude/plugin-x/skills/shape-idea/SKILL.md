@@ -15,7 +15,7 @@ word. skipping a step happens only on his word, named out loud.
 
 ## the steps
 
-1. **the want** — his idea in his words, quoted, into `PRODUCT.md`'s opening. done when he agrees the
+1. **the want** — his idea in his words, folded (`dima-wishes`), into `PRODUCT.md`'s opening. done when he agrees the
    quote says what he means.
 2. **grill** — `mattpocock-skills:grilling` + `mattpocock-skills:domain-modeling` together (what
    matt's user-only `grill-with-docs` does), so every term the grill settles lands in `GLOSSARY.md`

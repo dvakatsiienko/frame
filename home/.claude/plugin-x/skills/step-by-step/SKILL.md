@@ -35,11 +35,11 @@ Then STOP. No edits, no peeking at the next item.
   for one line of intent, then go.
 - **order by leverage**: fattest or riskiest first, unless he names an order.
 - **track position and name the next stop**: every round ends
-  `⏭️ «approve|next» or steer — next: <item> · (3/14)`.
+  `⏭️ «approve|next» or steer — next: <item> | (3/14)`.
 - **a digression never consumes a round** — answer it, then re-anchor to the current item.
 
 ## completion criterion
 
 Done when every item in the opening map has had a round — the last round says `✅ pass done
-(N/N)` and prints the tally: resolved · steered · skipped. A set abandoned mid-pass gets the
+(N/N)` and prints the tally: resolved | steered | skipped. A set abandoned mid-pass gets the
 tally anyway, marked partial, plus where to resume.
