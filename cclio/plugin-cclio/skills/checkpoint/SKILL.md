@@ -15,6 +15,7 @@ me a compact prompt upfront, saving a turn».
 
 ## 0. stop taking new work, tell the fleet — first act
 
+- **a 🐦‍🔥 second wind is graceful, never urgent** (dima, 2026-10-14: «a request, not an ask to do it as soon as possible … gracefully prepare yourself: resolve all subagents and park all stuff before compacting, to avoid data loss») — the same for a coder's
 - **my own background work lands first**: every agent and job this session started is listed; each lands and its findings fold before the CST is written (deadline 5 min, then it rides the CST as an open first-act), and the wishkeeper of the batch being closed is always waited for, never carried
 <!-- 10-14 16:28 #dima-caught: the second wind nearly compacted with wishkeeper batch C still running -->
 
