@@ -39,6 +39,7 @@ live in `run.sh`'s header.
   `tab-walk.sh` alone
 📌 essentials skip `[aria-disabled=true]` — dnd-kit sets it on every draggable item (61 of 84 chords
 caps), so a drag-and-drop view needs its own checks for those.
+📌 an `outcome_unknown` reply (0.39+) means the daemon lost the answer to a command that may have run: inspect the page state, never retry a click or a type blind.
 📌 the tab walk scrolls the page: a screenshot taken after it can lie (a sticky header hid a row, 2026-09-28) — scroll back to the top, or shoot before the walk.
 
 ## the split — which browser when

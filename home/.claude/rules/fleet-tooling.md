@@ -15,7 +15,7 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
   - an item an agent creates carries: `--url` where a new key is minted, a one-line note (what it unlocks, which config reads it), tags `fleet` + the surface (`cc`, `cw`, `raycast`), the account, and the expiry when the service sets one
 - **pnpm** — preferred package manager for node/typescript/javascript projects
 - **obsidian = raw files, the `obsidian` cli only for rename/move and the link graph; notion = `ntn`; never an mcp for either** — the recipe and the hazards: `x:notes`
-- **himalaya** — the mail cli (`himalaya envelope list`, `message read <id>`, `message delete`, `message reply`); one gmail account, app password from 1password `gmail-himalaya-golden`, config in `home/.config/himalaya/`. filters are not its job — those are `gmailctl` over `gmail/blocklist.json`
+- **himalaya** — the mail cli (`himalaya envelope list`, `message read <id>`, `message delete`, `message reply`; `compose|reply|forward --json` with no send prints a decoded template, the hand-off for an email draft); one gmail account, app password from 1password `gmail-himalaya-golden`, config in `home/.config/himalaya/`. filters are not its job — those are `gmailctl` over `gmail/blocklist.json`
 - **slk** — slack cli (package `slkcli`; binary is `slk`, auth rides the slack desktop session; `slk --help` is the whole api)
 - **jq** — prefer it for JSON parsing, filtering, and transformation
 - **code examples across public github → `grep-mcp` first** (regex over ~1M repos, deferred, ~0 resident cost); `gh search code` only for one known repo — no cli exists for grep.app
@@ -34,7 +34,7 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 - **a bare cc for clean runs** — `claude -p --model haiku --safe-mode --strict-mcp-config '<prompt>'` from a temp dir, run in the background (a foreground `claude -p` is refused, FRM-395): no `CLAUDE.md`, rules, plugins, hooks, mods or MCP, only cc's built-ins. reach for it when our setup must not touch the answer: «is it us or cc?» probes, a model A/B, an upstream bug repro, a blind lane, the token weight of our memory (bare `/context` vs ours). `--bare` needs an API key, so it fails on our login (2026-10-06)
 - **duckdb** — SQL over jsonl, md and git where they lie, no import, no server: `duckdb -json -c "…"`; the measuring engine for transcripts and x traces (🧪 `docs/test-drive/duckdb.md`)
 - **fnm** — node version manager, use if needed
-- **ctx7** — library docs: `ctx7 library <name>` → id, `ctx7 docs <id> "<query>"`; a library it lacks → `WebSearch`
+- **ctx7** — library docs: `ctx7 library <name>` → id, `ctx7 docs <id> "<query>" --language typescript` (examples in that language first); a library it lacks → `WebSearch`
 - **archives → keka's bundled binaries**, `/Applications/Keka.app/Contents/MacOS/Keka --cli <bin>` — `7z` `7zz` `unar` `unrar` `tar` `xz` `zstd` `brotli` `lz4` `lzip` `pigz` and friends. macos ships no `unrar` and no 7z at all, so this is the only door to those; plain `zip`/`tar`/`ditto` still handle the ordinary cases
 - **big or tiny images → crop with pillow first.** a screenshot up to ~2000 px is read directly (≈3k tokens); a larger image, or a detail under ~20 px (a sprite, an icon, a chart tick), is cropped or zoomed with pillow (`from PIL import Image`, installed) and the crop is read (≈300 tokens) — the harness downscales big images and small text dies
 - **uv** — the Python package manager here; pip in any form is not used

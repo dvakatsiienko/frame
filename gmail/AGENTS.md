@@ -13,7 +13,7 @@ only adds delete-on-arrival filters for dima's picks and keeps newton's spam cou
 
 ⚠️ **the config is the whole truth: `apply` deletes every gmail filter the config does not name.** on a
 new account, or after hand-made filters in the web ui, run `gmailctl download --config ~/frame/gmail`
-first and fold what it prints into `config.jsonnet`.
+first and fold what it prints into `config.jsonnet`. every apply runs `gmailctl diff --config ~/frame/gmail` first: since 0.13 a quote that cannot form a valid gmail query is rejected, and the diff shows it before anything is deleted.
 
 📌 a filter never touches mail that already arrived — after adding a sender, the sweep of old mail
 is one gmail search by hand. 📌 «delete» is gmail's trash, purged after 30 days; there is no

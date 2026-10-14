@@ -15,7 +15,7 @@ shape test (`script/lib/recipe-shape.test.ts`) proves it.
 0. **every run is shaped with dima first, a create and a rerun alike — a grill, never a tick list** (dima, 2026-10-13, o151: «fully shape a recipe each time … everything changes and recipes go stale — my wants, the vectors, and what we want out of recipes themselves»). read `recipe.md` and the last 5 lines of `log.md` as the thing under review: is every want line still true, does every vector serve a want line and ask today's question, do the artifacts still reach the readers who should use them, and does the recipe as a whole do what it was made for? then grill him (`grilling`), one round in the thread, each question with its choices and a ➡️ pick and each also an orbit ask (`habit-dima-comms-pacing`): his want first («what do you want out of this recipe now?»), then the vectors printed with the shared ones from `recipes/AGENTS.md` for him to cut and add, then where the gains land. a groom printed as fixes to tick is not this step (#dima-caught 2026-10-13, refresh-monorepo). done: the round answered, the recipe edited from it, dima said «run it», and on that word `groomed: <today> (dima)` is in the frontmatter — `pnpm research:lanes` refuses a brief under `last/` without it
 1. research, all lanes at once from one brief built by `pnpm recipe:brief <name>` (the recipe's want and vectors plus the shared vectors, verbatim; run #4 of refresh-cc-mods shipped without the shared ones, 2026-10-12): the `researcher` agent (sources, code, docs) + `pnpm research:lanes <brief>` (exa + parallel). raw output → `last/`. done: every lane landed or failed out loud
 2. distill — clever-merge into each artifact: keep what still holds, add only what is new and useful, delete what the run proved stale. raw research never lands in an artifact. done: every artifact in `artifacts:` read and touched or named «unchanged»
-3. the findings print, one message to dima: what is new · our mistakes (every flow step, file or habit a vector showed wrong, with the vector that showed it) · what it changes in our setup · tools to try (a test drive, `habit-test-drive`) · steps that could become a script · the recipe's own weak spots. a noop run says «noop» and stops there. done: printed
+3. the findings print, one message to dima, in the research-print shape of `~/frame/cclio/memory/habit-research-lanes.md` (the headline, then the ~3 sections that carry most); on top of it, every recipe print names its checklist items and its `open` vectors. a noop run says «noop» and stops there. done: printed
 4. append the log line, update `recipe.md` only where the run proved it wrong. done: `log.md` has today's line
 
 ## the shared vectors
@@ -35,18 +35,6 @@ coordinator, should act in a special way here.» so:
   dima, the log line is written. a run that finds nothing to change is a full run; a change is
   adopted on dima's word, never made because the run must produce one. the weight of a recipe is
   its want and its vectors, sharpened at every groom. a vector with no sources prints as `open`
-- **the verdicts are the decisions, never the whole print** (dima, 2026-10-08, after a run printed
-  three verdicts and dropped the tools facts he called the most useful part). every recipe's findings
-  print carries these parts:
-  - **decisions** — uncapped, ranked, each with its evidence
-  - **prior art** — who already solved it and where it broke; only what is interesting, one line
-    «nothing worth borrowing» otherwise
-  - **facts that move something** — uncapped: every fact that changes a pick, a price, a default or a
-    date, with its source and the artifact line it moves — or tagged «informative» when it moves
-    nothing yet, so a useful fact is kept, never forced into a change
-  - **the recipe's checklist** — the standing list it re-checks every run (a crew, a set of apps, a
-    set of rules), item by item, even when the last run said «nothing changed»
-  - **open** — every vector left unanswered, by name
 - **a brief quotes the want and the vectors verbatim** — never re-describes them; before launch, diff
   it against the recipe and fix any line that reframes the subject (a brief that called the classifier
   «a frozen model» got «retire» from every lane, 2026-10-08)

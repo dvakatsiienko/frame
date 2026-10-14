@@ -67,7 +67,7 @@ test('a rewrite tells the model what ran', async ($, on) => {
     world(on);
     const r = await bash($, 'pnpm -s x');
     expect(r.context?.join()).toContain(
-        '`-s` → `--silent` (pnpm 12 refuses -s). it ran: pnpm --silent x',
+        '`-s` → `--silent` (pnpm 12.9+ reads -s as --sequential). it ran: pnpm --silent x',
     );
 });
 
