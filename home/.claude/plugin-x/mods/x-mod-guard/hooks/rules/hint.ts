@@ -7,6 +7,7 @@ import {
     gitParts,
     hasFlag,
     operands,
+    resolve,
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
 import { writtenPaths } from './overwrite.ts';
@@ -28,6 +29,28 @@ const ECHO_JSON_HINT =
     "x-mod-guard hint: zsh's `echo` reads `\\n` and other escapes inside json — print it with `printf '%s\\n'` or build it with `jq -n`";
 const LOOP_HINT =
     "x-mod-guard hint: `claude -p` inside `while read` eats the loop's stdin — end it with `</dev/null`";
+// rg skips dot dirs: a «0 left» proof over frame missed 4 live pointers under home/.claude (PK-139, 2026-10-14)
+const RG_HINT =
+    'x-mod-guard hint: `rg` skips dot dirs like `home/.claude` — add `--hidden` when the search must reach them';
+const DOT_SEGMENT = /(^|\/)\.[^./]/;
+// the search roots of an rg that skips dot dirs: its path operands after the pattern, or its cwd
+function rgMissesDots(c: Command, ctx: Context) {
+    if (
+        hasFlag(c.args, ['--hidden'], '.') ||
+        c.args.some((w) => /^-u{2,}$/.test(w.text))
+    )
+        return false;
+    const dir = resolve(c.dir, '/', ctx);
+    const paths = operands(c.args).slice(1);
+    const roots = paths.length ? paths.map((p) => resolve(p, dir, ctx)) : [dir];
+    const frame = `${ctx.home}/frame`;
+    return (
+        paths.some((p) => DOT_SEGMENT.test(p)) ||
+        roots.some(
+            (r) => r === frame || r === `${frame}/home` || r === ctx.home,
+        )
+    );
+}
 const REPLACERS = new Set(['sd', 'sed', 'python', 'python3']);
 const isJsonish = (text: string) => /^\s*[[{].*["\\]/s.test(text);
 const isGhJq = (args: Command['args']) =>
@@ -78,6 +101,8 @@ export function hints(command: string, cwd: string, ctx: Context) {
         )
             found.add(PR_HINT);
         if (c.name === 'gh' && isGhJq(c.args)) found.add(JQ_HINT);
+        if (c.name === 'rg' && ctx.home && rgMissesDots(c, ctx))
+            found.add(RG_HINT);
         if (c.name === 'git') {
             const git = gitParts(c.args).sub;
             if (

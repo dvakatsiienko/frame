@@ -159,3 +159,28 @@ test('claude -p inside while read with </dev/null runs unhinted', async ($, on) 
     });
     expect(looped(r.context)).toEqual([]);
 });
+
+const RG_MISSES = [
+    ['/repo', "rg -l 'x:shape' /home/frame"],
+    ['/home/frame', "rg -n 'shape-idea'"],
+    ['/repo', "rg -c 'foo' /home/frame/home/.claude/rules"],
+] as const;
+for (const [cwd, typed] of RG_MISSES)
+    test(`an rg that skips dot dirs runs with a --hidden hint: ${typed}`, async ($, on) => {
+        const w = world(on, cwd);
+        const r = await bash($, typed);
+        expect(w.ran).toEqual([typed]);
+        expect(hinted(r.context, 'rg')).toHaveLength(1);
+    });
+
+const RG_FINE = [
+    ['/home/frame', "rg --hidden -n 'shape-idea' ."],
+    ['/home/frame', "rg -uu -l 'x'"],
+    ['/repo', "rg -n 'foo' src"],
+] as const;
+for (const [cwd, typed] of RG_FINE)
+    test(`an rg that reaches dot dirs or needs none gets no hint: ${typed}`, async ($, on) => {
+        const w = world(on, cwd);
+        expect(hinted((await bash($, typed)).context, 'rg')).toHaveLength(0);
+        expect(w.ran).toEqual([typed]);
+    });
