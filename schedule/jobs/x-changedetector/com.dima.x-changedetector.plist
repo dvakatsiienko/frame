@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  🔭 x-changedetector — keeps changedetection.io running: the one place that watches what we follow upstream.
+
+  - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 10s
+  - serves — http://127.0.0.1:7390 — the watch list, the diffs, and the api (GET /api/v1/watch)
+  - watches — github issues and prs as api json filtered to state + labels + comments + updated_at, release feeds, pages
+  - output — ~/.local/share/x-changedetector/daemon.log, daemon.err.log for stderr; the data dir is ~/.local/share/x-changedetector/data
+  - source — `uv tool install changedetection.io --python 3.12` (the binary in ~/.local/bin); the research: frame cclio/.scratch/research-watcher/
+  - setup — mkdir -p ~/.local/share/x-changedetector/data; launchd will not create a missing dir
+  - gotcha — needs no permission; it binds 127.0.0.1 only, so nothing outside the mac reaches it
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dima.x-changedetector</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- launchd does not expand ~, so every path is absolute by necessity. -->
+        <string>/Users/dima/.local/bin/changedetection.io</string>
+        <string>-d</string>
+        <string>/Users/dima/.local/share/x-changedetector/data</string>
+        <string>-h</string>
+        <string>127.0.0.1</string>
+        <string>-p</string>
+        <string>7390</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/dima/.local/share/x-changedetector</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/dima/.local/share/x-changedetector/daemon.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/dima/.local/share/x-changedetector/daemon.err.log</string>
+</dict>
+</plist>

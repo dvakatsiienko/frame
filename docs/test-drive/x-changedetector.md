@@ -1,0 +1,36 @@
+---
+status: live
+until: 2026-10-22
+dies-when: the verdict line below is written
+---
+
+# 🔭 x-changedetector — changedetection.io under launchd, the one place that watches what we follow upstream
+
+Ticket: none
+
+born 2026-10-15 on dima's ask (PK-136): `schedule/jobs/x-changedetector/` (127.0.0.1:7390, data in
+`~/.local/share/x-changedetector/data`), installed with `uv tool install changedetection.io --python 3.12`. the research:
+`cclio/.scratch/research-watcher/` (3 lanes; parallel's monitors caught 1 of 6 events on 09-27, the bar).
+
+**test card:** we believe one local watcher replaces the boot's gh watch, the release reminders and dima pasting links ·
+we test it by every github issue we follow (52 open, gathered from our files, the boot list, issues dima filed or
+commented, his subscriptions) as api json filtered to state, reason, labels, comment count and closed_at, every 6 h
+with 30 min jitter and no token (github's anonymous budget is 60 an hour per machine), plus release feeds · we measure caught vs missed against the boot's gh watch, latency from the real event,
+false alarms, github rate-limit errors · we're right if it catches every event the gh watch catches, with no rate-limit
+error, over 7 days
+
+**kill rule:** a real event missed that the gh watch caught · rate-limit errors two days running
+
+## stress list
+
+- a close, a label, a comment on one issue — the positive control on a test issue of ours
+- a release — `MrLesk/Backlog.md` releases.atom (1.54 expected), `anthropics/claude-code` releases.atom
+- the agent's read — `GET /api/v1/watch`, `last_changed` vs `last_viewed`, in one call at boot
+- a push channel — apprise to a macOS notification or ntfy (untried)
+- a plain page — a changelog or pricing page (untried)
+
+## rounds
+
+- 2026-10-15 · seed · 54 watches (52 issues + 2 release feeds), all checked within ~1 min · then 40 went red with 403: the seed burst plus a recheck spent the anonymous 60/h · fix: 6 h interval, 30 min jitter, 2 workers (~9 calls an hour) · renamed x-watcher → x-changedetector on dima's word
+
+## verdict
