@@ -1,8 +1,9 @@
 ---
 kind: refresh
 owner: coordinator
-artifacts: [home/.claude/plugin-x/skills/crew-lead/, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md, home/.claude/plugin-x/skills/crew-lead/references/model-cards.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md]
+artifacts: [home/.claude/plugin-x/skills/crew-lead/, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md, home/.claude/plugin-x/skills/crew-lead/references/model-cards.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md, home/.claude/agents/, cclio/.claude/agents/]
 script: none
+groomed: 2026-10-15 (dima)
 was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning, refresh-coordinator]
 ---
 
@@ -50,6 +51,18 @@ the cards against the ladder (dima's, 2026-10-08):
 
 > «we have a few subagents — a helper, a researcher, an explorer — and we use specific models for them: the helper is sonnet 5.5, meant for a quick one-off job it does well at less spend than opus (opus is for granular, sophisticated changes where thoughtful decisions are needed). this is a checkup across every subagent and crew member: do we still have the right model for what each is meant to do, at the right effort? is chores on sonnet 5.5 medium still the right pick, or would opus 5.5 medium be better? the recipe gathers our settled baseline picks and searches whether they hold.»
 
+the subagents, card by card (dima's, 2026-10-15, folded):
+
+> «i want our subagents to serve a well-defined, clear purpose and do the right job, with a good subagent file (description, instructions) and good frontmatter settings. every run hunts what helps sharpen each of them — researcher, sifter, wishkeeper and the rest — so which questions should the research ask to find the most relevant data?»
+>
+> «every run includes all our custom subagents, the old ones too: we change them often, and we create new ones between runs.»
+
+haiku 5.5 (dima's, 2026-10-15, folded):
+
+> «haiku 5.5 holds real roles now (composer, sifter), so refresh its knowledge thoroughly: its best use cases, its baseline effort, as a subagent and as a sidecar. i want you to know this very well.»
+>
+> «keep haiku as a classifier engine in the search: it can be a powerful classifier, and we never sharpened jev well enough or found a good use case for it yet.»
+
 the tracker and the CTO hat (dima's, standing):
 > «optimize the fleet flow.»
 > «i want you to identify inefficiencies and resolve problems from the root.»
@@ -65,18 +78,19 @@ half skipped, with the reason — the shared rule of `cclio:shape-recipe`.
 - suggest a run when: a cc minor ships, a new claude model ships, a spawn behaves against a [verified] row, the crew changes
 
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
-2. **probe the mechanics** (tools): execute `crew-lead/references/spawn-mechanics.md`'s «the test suite» section against the current build. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
-3. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `cclio:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
-4. **distill** into the artifacts:
+2. **the roster**: `ls home/.claude/agents/ cclio/.claude/agents/` plus the built-in types and the parked sidecars (`jq -r .name ~/.claude/sessions/*.json`) — every card and seat found is in this run, the old ones too; one new since the last run is named in the print. done: the roster list in `last/`, each card with its file. (script)
+3. **probe the mechanics** (tools): execute `crew-lead/references/spawn-mechanics.md`'s «the test suite» section against the current build, plus every `probe:` line in the vectors. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
+4. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `cclio:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
+5. **distill** into the artifacts:
    - `crew-lead/references/spawn-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
    - `crew-lead/references/model-cards.md` — THE model reference; claim tags ([dima] / [bench] / [vendor] / [community] / [?]) updated, never deleted; dima's [dima] calls never overwritten, outside evidence sits beside them
    - `x:crew-lead`, `craft-fleet-flow`, `craft-pm`, `habit-cto` — a finding changes a line only through the memory-edit habit (announced; deletions and his words need his word first)
    - `rules/fleet-flow.md`, `rules/fleet-identity.md` — the crew list and who talks to whom; a role added or retired is his word first
    - raw research stays in `last/` until the next run's distill. done: every artifact touched, or named «unchanged» with the finding that left it so. (open)
-5. **re-size the grid**: the spawn base measured from our own sessions times the run's prices → the spawn-or-reuse grid in `x:crew-lead`. then read `x:crew-lead` against both docs line by line. done: the grid's numbers equal this run's base and prices, and no line disagrees with a doc — else go back to step 4. (template)
-6. **thin-data check**: a model in scope under ~4 weeks old, or a lane that found no independent measurement → a dated re-run **12 weeks** out in `cclio/memory/_reminders.md`. done: the reminder is written, or «no thin data». (script)
-7. **findings print** (below), then resolve with dima by outcome; noop is first-class. done: printed, each item verdicted. (open)
-8. **log** today's line in `log.md`. done: the line is there.
+6. **re-size the grid**: the spawn base measured from our own sessions times the run's prices → the spawn-or-reuse grid in `x:crew-lead`. then read `x:crew-lead` against both docs line by line. done: the grid's numbers equal this run's base and prices, and no line disagrees with a doc — else go back to step 5. (template)
+7. **thin-data check**: a model in scope under ~4 weeks old, or a lane that found no independent measurement → a dated re-run **12 weeks** out in `cclio/memory/_reminders.md`. done: the reminder is written, or «no thin data». (script)
+8. **findings print** (below), then resolve with dima by outcome; noop is first-class. done: printed, each item verdicted. (open)
+9. **log** today's line in `log.md`. done: the line is there.
 
 ## vectors
 
@@ -108,6 +122,26 @@ on top of the shared vectors of `cclio:shape-recipe` (the delta covers the cc ch
 - the long-context probe (10-needle recall + one edit at 100k / 400k / 800k) at every model bump
 - watch, not a vector: the cclio-stack bleed into a `--bg` session — unreproduced since 2026-09-02; a coder's first-reply AGENTS.md line is the detector
 
+- probe: claude-code#88822 — does a subagent's final report still come back as a bare pointer, body lost (auto-closed stale 2026-10-15; reproduces → refile with a fresh repro)
+- probe: the auto-compact threshold — `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, `autoCompactWindow`, `--autocompact` (`spawn-mechanics.md`), and where quality drops; the 600–700k manual checkpoint stays until then
+- probe: a parked sidecar's keep-warm — a cold restart's cache write against pings' reads over an idle hour (composer went cold after 1h32m, 2026-10-15)
+
+**tools — the subagents, card by card** (the roster is step 2's list, never a list kept here):
+- per card, every run: its official role in plain words beside its vibe name (ccrow = adviser; what are wishkeeper and composer?) · is its purpose well defined, does its shape cover the role · what it does not do that its contract should hold, does it want an extension · model and effort against the task → model map · which instructions work in a subagent file and which do not · the frontmatter (`description` as the trigger, `model`, `effort`, `tools`, `omitClaudeMd`) · body leanness and first-request size, measured
+- seeds, dima's: researcher — which model researches best (opus or sonnet, can haiku research?), its baseline effort, how a solid researcher file reads · wishkeeper — opus still right, a coordinator's verifier by role? · sifter — are its settings right for a bulk reader
+- generic against ours: what `general-purpose` is (model, memory, tools), when it beats a card, or never while our cards exist; one table of the doors — generic, fork, our cards, arms A/B, `--bg` — with stats and capabilities
+- probe: `Agent(general-purpose)` in `permissions.deny` of cclio's project settings blocks the type, per the [sub-agents doc](https://code.claude.com/docs/en/sub-agents) § disable specific subagents (read 2026-10-15, unprobed); proven by one refused call
+
+**tools — fan-out:**
+- when x10 or x100 is right, who cuts the chunks, which card runs them — for any worker tier, haiku, sonnet or opus
+- the common shapes and use cases: a strong orchestrator over smaller workers, or mixed tiers, and how to mix them
+- probe: one sifter x10 fan-out on a real job — tokens and wall time against one agent doing it whole
+
+**tools — haiku 5.5:**
+- the effort curve, the >100k ×5 price cliff, sidecar against subagent, anchor-edit reliability
+- haiku as a classifier engine: where it beats a model call we make today
+- images: the best way to bulk-read screenshots with agents, data precise and image reads out of the main thread; haiku's image accuracy against opus
+
 **tools — models:**
 - **scope rule: only the latest anthropic version of each line** — opus, fable, sonnet, haiku, plus any announced-but-unshipped successor. a new generation REPLACES the old card in `crew-lead/references/model-cards.md` and `x:crew-lead/models.md` in the same run, never sits beside it (dima, 2026-10-09; was «plus one generation back», 2026-10-01)
 - capabilities, benchmarks, price, latency (tok/s, TTFT), context, lifecycle — per model in scope. price: input, 5m and 1h cache writes, the cache-hit multiplier per model, output, long-context billing
@@ -126,7 +160,7 @@ on top of the shared three:
 
 ## artifacts
 
-- `home/.claude/plugin-x/skills/crew-lead/` — the spawn craft and the spawn-or-reuse grid; the distill changes a line only through the memory-edit habit, and the grid is re-sized at step 5
+- `home/.claude/plugin-x/skills/crew-lead/` — the spawn craft and the spawn-or-reuse grid; the distill changes a line only through the memory-edit habit, and the grid is re-sized at step 6
 - `cclio/memory/craft-fleet-flow.md` — the path from idea to hands; changes through the memory-edit habit
 - `cclio/memory/craft-pm.md` — the pm judgment; changes through the memory-edit habit
 - `cclio/memory/habit-cto.md` — the CTO hat; changes through the memory-edit habit
@@ -134,12 +168,14 @@ on top of the shared three:
 - `home/.claude/plugin-x/skills/crew-lead/references/model-cards.md` — THE model reference; claim tags updated, never deleted, dima's [dima] calls never overwritten
 - `home/.claude/rules/fleet-flow.md` — who talks to whom; a role added or retired is his word first
 - `home/.claude/rules/fleet-identity.md` — the crew list; a role added or retired is his word first
+- `home/.claude/agents/` — the global cards; a card's frontmatter or body changes through the memory-edit habit, a new or retired card is his word first
+- `cclio/.claude/agents/` — cclio's own cards (wishkeeper); same rule
 
 ## findings
 
 **the craft half's done-test: ≤3 verdicts** — a role to add, merge or retire · a practice to adopt and what it replaces · a thing to drop — each with its evidence against our own flow numbers, or `noop`. `noop` is valid only when every craft vector names its sources; a vector with none prints as `open`, never as `noop`. the tools half's done-test is the rows flipped and the grid re-sized.
 
-the print carries the parts of `cclio:shape-recipe`; its checklists here: the crew, seat by seat (still needed · merged · missing), and the classifier seat (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named).
+the print carries the parts of `cclio:shape-recipe`; its checklists here: every card on step 2's roster, one line each (role · keep, sharpen, merge or retire · frontmatter changes), the crew, seat by seat (still needed · merged · missing), and the classifier seat (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named).
 
 beyond that shape, the print answers:
 - a role to add, merge or retire, with the evidence

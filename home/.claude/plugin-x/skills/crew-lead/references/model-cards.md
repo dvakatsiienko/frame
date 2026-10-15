@@ -1,6 +1,6 @@
 ---
 researched: 2026-10-01
-refresh-when: haiku 5.5 ships, a new model ships, a benchmark lands, Dima's read changes — and a scheduled re-run ~2026-12-24 (sonnet 5.5 data thin at launch)
+refresh-when: a new model ships, a benchmark lands, Dima's read changes — and a scheduled re-run ~2026-12-24 (sonnet 5.5 data thin at launch)
 ticket: DOT-130
 ---
 
@@ -11,9 +11,8 @@ ticket: DOT-130
 
 📌 This file stays evergreen — [DOT-130](https://linear.app/x-com/issue/DOT-130) owns that, and
 `recipes/refresh-crew-coordinator/recipe.md` runs it. Add measurements and Dima's live
-calls; never delete a claim tag. Sources of the 2026-09-28 run: the bundled `claude-api` skill
-(Anthropic's own model tables and migration guides) + one `parallel-cli` research lane
-(`docs/research/` holds no copy — this file is the distillate).
+calls; never delete a claim tag. this file is the distillate: raw lanes live only in the recipe's
+`last/` until the next run.
 
 Claim tags: **[dima]** his own assessment, assert it · **[bench]** published benchmark (who ran it
 is named) · **[vendor]** Anthropic's framing · **[community]** repeated practitioner pattern ·
@@ -42,11 +41,11 @@ output. Fast mode $8/$40 (API only).
 - Clearer prose in its work reports — says what it did, found and needs, less jargon. **[vendor]**
   Whether that fixes opus-5's prose habits (below) is **[?]** until Dima reads a week of it.
 - SWE-bench Pro **89.9 %**, FrontierCode **54.4 %**, Terminal-Bench 4.0 **66.4 %** at xhigh,
-  ProgramBench (to the full 1M window) **91.2 %**, OSWorld 2.0 81.8 % partial / 48.7 % strict
+  ProgramBench (to the full 1M window) **91.2 %**, OSWorld 2.1 81.8 % partial / 48.7 % strict
   (Anthropic system card). **[bench]** Independent: CursorBench 4.0 **52.5 % medium · 56.0 %
   high/xhigh · 57.8 % max** (Cursor); FrontierSWE v2 62.3 %, behind GPT-6 Astra (Proximal);
   GDPval-AA 1846 Elo (Artificial Analysis). **[bench]**
-- AA Intelligence Index: medium **51**, max **58**; **73 tok/s** at medium (Artificial Analysis).
+- AA Intelligence Index: medium **51**, max **58**; **85 tok/s** at medium (Artificial Analysis, read 2026-10-15).
   **[bench]**
 - ⚠️ **Weak at** — can state an unverified inference as fact, drop its own doubts, or make a narrow
   change without asking whether the design is right (its own system card). More likely than
@@ -59,8 +58,8 @@ output. Fast mode $8/$40 (API only).
 
 ## fable-5.1 — `claude-fable-5-1` · the escalation
 
-Launched 2026-09-01 at **$10/$50**, cache reads **$0.25** (a
-quarter of input). 1M / 128K. Mythos 5.1 is the same model for Project Glasswing only.
+Launched 2026-09-01 at **$10/$50**, cache reads **$0.25** (0.025×
+input). 1M / 128K. Mythos 5.1 is the same model for Project Glasswing only.
 
 - Effort defaults to `high`; thinking is always on; single turns on hard tasks can run many
   minutes; **prompts written for older models are often too prescriptive and lower its output
@@ -82,7 +81,7 @@ quarter of input). 1M / 128K. Mythos 5.1 is the same model for Project Glasswing
 
 ## sonnet-5.5 — `claude-sonnet-5-5` · the helper
 
-Launched 2026-09-28. **$2/$10**, cache writes $2.50, **cache reads $0.20 (same as opus-5.5)**,
+Launched 2026-09-28. **$2/$10**, cache writes $2.50, **cache reads $0.10** (0.05× input, cut from $0.20 on 2026-10-07),
 1M / 128K. **[vendor]**
 
 - Effort: default `high` on the API, `medium` in Claude Code; levels are recalibrated from
@@ -107,7 +106,7 @@ Launched 2026-09-28. **$2/$10**, cache writes $2.50, **cache reads $0.20 (same a
 
 ## haiku-5.5 — `claude-haiku-5-5`
 
-Shipped 2026-10-07. Two price tiers by prompt size: ≤100K tokens **$0.10 in / $0.50 out**, cache reads $0.01, cache writes $0.125; over 100K **$0.50 in / $2.50 out**, cache reads $0.05 — 5× on every line, so a Haiku subagent compacts at 100K (`autoCompactWindow: 100000`, sifter). **[vendor]**, read off anthropic.com/claude-haiku-5-5 2026-10-14. **1M** context, effort supported, needs cc
+Shipped 2026-10-07. Two price tiers by prompt size: ≤100K tokens **$0.10 in / $0.50 out**, cache reads $0.01, cache writes $0.125; over 100K **$0.50 in / $2.50 out**, cache reads $0.05 — 5× on every line, output included; cache reads and writes count toward the 100K, and the tier is set per request. **[vendor]**, pricing page read 2026-10-15. a Haiku session's default compaction sits at ~967K, so without a window set most requests of a long run pay 5× (Theo: 47 of 51 **[community]**); the sifter sets `autoCompactWindow: 100000` (frontmatter, cc 2.1.296+). where inside the window compaction fires is undocumented: one blog saw 100K fire at ~67K and 130K at ~97K, and recommends 130000 **[community]**, one run per setting. **1M** context, effort supported, needs cc
 2.1.293+ (the `haiku` alias resolves to it on 2.1.294 **[verified]**, probed 2026-10-08). **[vendor]**
 
 - Terminal-Bench 4.0 39.2 % (4.5: 0.0 %); pitched as a sidekick subagent under an Opus or Sonnet lead;
@@ -115,16 +114,32 @@ Shipped 2026-10-07. Two price tiers by prompt size: ≤100K tokens **$0.10 in / 
 - **Pick it for** — retrieval, extraction, bulk transforms, bare probes, sidekick subagents. dima's pick
   over 4.5 everywhere, 2026-10-08 **[dima]**. **Avoid** — complex agentic coding, low effort on long
   prompts. **[vendor]**
-- as a classifier engine: unmeasured. the 4.5 arm on our skill router read 27 % precision, 6.6–9.6 s per
-  call through `claude -p` (`docs/research/skill-router.md`) **[verified, 4.5 only]**. re-measure rides the
-  2026-10-15 and 2026-10-22 research reminders.
+- vs 4.5: ~30 % more tokens per text (tokenizer); every earlier turn's thinking stays in context, so a
+  multi-turn session grows faster; min cacheable prompt 512 tokens; prefill and `temperature` return 400;
+  thinking can be off only at `high` or below. **[vendor]**
+- **effort curve** (Artificial Analysis index, cost per task, without the >100K tier): low 29 $0.02 · medium 34
+  $0.05 · high 38 $0.08 · xhigh 41 $0.12 · max 43 $0.21. haiku high ≈ sonnet low (36), haiku xhigh = sonnet
+  medium (41), each at under a quarter of the cost. **[bench]** at `low` on long agent prompts it skips
+  searches and checks; low → medium halved early stops. **[vendor]**
+- **images** (Roboflow, 2026-10-13, haiku vs opus): transcription 93–95 % vs ~96 %, structured json 82–85 % vs
+  92–94 %, **a single value 45–47 % vs 68–70 %**, text position 32–46 % vs 61 %; $0.0006 vs $0.015 a sample.
+  **[bench]** with a crop tool, Chartography 46 → 86 % (opus 89 %). **[vendor]** so: transcribe with haiku,
+  read a deciding number with opus or a crop.
+- **research**: retrieval sub-lanes only — AA-Omniscience 36 % accuracy, 40 % hallucination **[bench]**; needs
+  today's date and a search nudge **[vendor]**. **judgment or verifying**: never — it took «clean» on github
+  as «merge ready» **[community]**.
+- as a classifier engine: built for it **[vendor]** (HubSpot, AlphaSense quotes); GPQA at medium 85 % vs 91 %
+  at ~1/20 opus's cost per correct answer **[vendor]**. the right door is the api direct with a cached system
+  prompt and a strict schema, adaptive thinking kept on — never `claude -p`, never thinking off (a worse
+  pass rate, **[community]**). our router precision on 5.5: unmeasured; the 4.5 arm read 27 %, 6.6–9.6 s
+  per call through `claude -p` (`docs/research/skill-router.md`) **[verified, 4.5 only]**.
 
 ## anthropic's own advice — the 5.5 family webinar, 2026-10-01 [vendor]
 
 dima's screenshots of the Anthropic webinar (Lucas Gonzalez), read through his shelf:
 
 - **start with opus 5.5**, the recommended default; fable for power users and frontier work; sonnet 5.5 when cost or
-  latency matters most; «haiku next» is coming for high-volume api work
+  latency matters most
 - **bounded vs unbounded tasks**: past a point more intelligence adds nothing to a bounded task (cheaper models fit);
   an unbounded task keeps paying for intelligence (fable's lane). the vendor's claim: there are far more unbounded
   tasks than teams believe
@@ -141,7 +156,7 @@ dima's screenshots of the Anthropic webinar (Lucas Gonzalez), read through his s
   - the final answer goes missing: «Finish your tool calls first. Write the final answer last»
 - **cache reads are where agents spend**: an agent re-sends its context every turn; opus 5.5 cache reads are $0.20/M,
   5 % of input (was 10 % on opus 5); a 50-turn run re-reading 100k tokens costs ~$1.00 cached vs $20 uncached.
-  sonnet 5.5 reads cache at the same $0.20, so a long sonnet loop saves on output, not on re-reads
+  sonnet 5.5 reads cache at $0.10 since 2026-10-07 (the webinar said $0.20), so a long sonnet loop saves on re-reads too
 - sonnet 5.5's api default effort is `high`, opus 5.5's is `medium` (matches the cards above)
 - **effort mid-session** (verified 2026-10-12, `.scratch/effort-switch/`): changing effort keeps the cache on opus 5.5, sonnet 5.5, haiku 5.5 and fable 5.1 (fable since cc 2.1.260) on a subscription or api key, never on bedrock, vertex, a gateway or HIPAA; `/model` still re-reads the whole history uncached; `/effort` during a turn applies to the next request in that turn, not the next message ([model-config](https://code.claude.com/docs/en/model-config)), the desktop picker undocumented. dima's habit: high for planning and thinking, medium for the usual work, switched live
 

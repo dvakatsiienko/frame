@@ -1,5 +1,5 @@
 ---
-verified-against: claude code 2.1.283, on this mac, 2026-09-27
+verified-against: claude code 2.1.299, on this mac, 2026-10-15 (34 rows held, 4 flipped, 11 not re-run)
 method: real spawns — bg sessions, subagents, a fork, worktree isolation, cross-session sends, forced tool calls, transcript + registry inspection. docs/schema only where execution was ruled out, and labelled so.
 refresh-when: the claude code minor version changes
 procedure: recipes/refresh-crew-coordinator/recipe.md
@@ -34,7 +34,7 @@ runs on anthropic machines and nobody in the fleet can start one.
   user-role message with the agent's final text plus a token/duration block.
 - **model is settable and honoured** [verified] — `model: "haiku"` from an opus parent produced
   `claude-haiku-4-5-20251001` in the child's transcript.
-- **effort takes no param; inherited only by a child whose model carries effort** [verified], §6.
+- **effort: a per-call param since 2.1.292, else inherited by an effort-capable child**, §6.
 - **`name` is accepted** [verified] though absent from the printed parameter list; regex
   `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$` — no emoji, colons or spaces [verified]. `🔬 probe: emoji name`
   is an `InputValidationError`; transliterate to `probe-emoji-name`. 📌 `claude --bg -n` has no
@@ -91,8 +91,7 @@ the door for all coding work: real, watchable, outlives the session that started
   rule that the session comes up idle and needs a `SendMessage` brief. `SendMessage` remains the way
   to brief it *after* launch, and the only way to attach `notify_when_idle`.
 - **model and effort are both flags, both honoured** [verified 2.1.283] — `--model opus --effort low`
-  wrote `effort=low model=claude-opus-5-5` onto every assistant record (`claude-opus-5` on 2.1.258). the earlier
-  `effort: null` came from pairing the flag with `--model haiku`, not from the flag.
+  wrote `effort=low model=claude-opus-5-5` onto every assistant record (`claude-opus-5` on 2.1.258).
   - ⚠️ **always pass `--model`** — the settings default moved (fable until 09-24, `opus[1m]` at
     `effortLevel: high` on 2026-09-27) and a spawn must not ride it silently.
 - 🚨 **`--bg` now checks workspace trust** [docs, changelog 2.1.281] — in a directory that has not
@@ -139,11 +138,13 @@ for any claim about it:
 
 - `claude --effort <low|medium|high|xhigh|max>` — honoured [verified]
 - `claude --bg --effort` on an effort-capable model — honoured [verified], §5
-- `Agent` tool — no param; **inherited by an effort-capable child** [verified]: an opus subagent
-  of a `high` parent had `CLAUDE_EFFORT=high` in its env and `effort=high` on its records
-- 🚨 **a haiku child carries no effort at all** [verified] — no `CLAUDE_EFFORT`, `effort=null` on
-  its records, same `high` parent. a property of the model, not broken inheritance. 📌 this
-  confound produced a wrong conclusion twice: **never measure effort with haiku in the loop.**
+- `Agent` tool — a per-call `effort` since 2.1.292; it overrides the card's `effort:` and holds on
+  resume, only `CLAUDE_CODE_EFFORT_LEVEL` beats both [docs, read 2026-10-15]. without one, **inherited by
+  an effort-capable child** [verified]: an opus subagent of a `high` parent had `CLAUDE_EFFORT=high` in
+  its env and `effort=high` on its records
+- **a haiku 5.5 child inherits effort** [verified 2.1.299] — `medium` inherited. 🔁 flipped from 4.5,
+  whose child carried `effort=null`: the «never measure effort with haiku» confound holds for
+  claude-haiku-4-5 only
 - `Workflow` → `agent(prompt, {effort})` — per call, honoured [verified 2.1.258], §4
 
 ## 7. base context — what a spawn knows before it reads anything
@@ -167,9 +168,10 @@ builds, three answers — never write a brief that depends on either.
 🎯 **consequence:** a subagent or workflow agent spawned by cclio wears the coordinator's brain
 on this build, and no `cd` sheds it. a coder that must think as a plain session goes through
 `claude --bg` from the target repo — the only door that derives from cwd.
-- 🆕 **`omitClaudeMd`** in agent frontmatter and `--agents` JSON runs a custom or plugin subagent
-  without user, project and local CLAUDE.md files [docs, changelog 2.1.271; unprobed]. the first
-  in-tool lever against the inherited stack — but it drops the fleet rules too, not only cclio's.
+- **`omitClaudeMd`** in agent frontmatter runs a card without user, project and local CLAUDE.md
+  files [verified by size 2026-10-15: 8–10k first request against 82–117k, §12] — the lever that sheds
+  the inherited stack; it drops the fleet rules too, and subdirectory CLAUDE.md files and path rules
+  still load when the card touches files there [docs].
 
 **conversation is not inherited by a plain subagent** [verified]; a **fork** inherits everything,
 tool results included (§2).
@@ -190,7 +192,7 @@ directory in the brief, every path absolute.**
     `["notify_idle"]` alone on 2.1.239.
 - `~/.claude/jobs/<jobId>/state.json` — richer, and the **only place the launch flags survive**
   [verified 2.1.251]: `respawnFlags` (the literal argv: model, effort, `-n`, `--remote-control`),
-  `template`, `cliVersion` (`null` on 2.1.283), `cwd`, `tokens`, `state`/`detail`, a `fan` array mirroring the live
+  `template`, `cliVersion` (`null` on 2.1.283, the version string on 2.1.299), `cwd`, `tokens`, `state`/`detail`, a `fan` array mirroring the live
   todo list; `timeline.jsonl` alongside. 🎯 this answers "how was that session started?" without
   asking it.
 - `claude agents --json` prints the live set; gated by `disableAgentView`, which does not gate the
@@ -259,8 +261,8 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
 - ⚠️ **a subagent starts in the parent's bash cwd and inherits cclio's whole stack regardless
   of it** (2.1.258 and 2.1.283; flipped on each of the three builds before — re-probe every build). keep every
   path in a brief absolute.
-- ⚠️ **effort is inherited only by an effort-capable child** — an opus subagent gets
-  `CLAUDE_EFFORT`, a haiku one records `effort=null`. never measure effort with haiku in the loop.
+- ⚠️ **effort is inherited only by an effort-capable child** — opus, sonnet and haiku 5.5 inherit;
+  a haiku 4.5 child recorded `effort=null` (§6).
 - ⚠️ **a worktree agent branches from `origin/<default-branch>`, not local HEAD** — it cannot see
   unpushed commits.
 - 📌 `~/.claude/jobs/<jobId>/state.json` carries `respawnFlags` — the only place a session's
@@ -275,6 +277,20 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
   waking peers.
 - `ListAgents` and `Workflow` are absent from subagent toolsets — only the coordinator surveys the
   fleet.
+- **`Agent(<type>)` in `permissions.deny` refuses that subagent type** [verified 2.1.299, flag settings]:
+  «Agent type 'general-purpose' has been denied by permission rule 'Agent(general-purpose)' from
+  flagSettings»; the control without it called fine. from a project `settings.json` [docs only].
+- **who costs what on the first request** [verified 2026-10-07 → 10-15, 256 subagent first requests, duckdb]:
+  `omitClaudeMd` cards 8–10k cold · Explore 35–57k and helper 118k (both load fleet memory) ·
+  general-purpose 82k, 117k from cclio · fork 270k warm. parallel spawns of one card shared no prefix
+  cache (warm 0 in 111); a workflow fan-out holds siblings up to 5 s so they do [docs].
+- **a x10 fan-out of one card** [verified 2.1.299, sifter on haiku 5.5, a real job]: 10 agents 139k
+  tokens and 19 s wall against one agent 35k and 98 s, answers identical — 4× tokens for 5× speed;
+  the per-agent floor is ~12k.
+- **a subagent's final report arrived whole** in every one of this run's 14 subagents (2.1.299);
+  [claude-code#88822](https://github.com/anthropics/claude-code/issues/88822) was auto-closed stale,
+  not planned, 2026-10-15. the recovery path if a body is lost: `subagents/agent-<id>.jsonl` keeps 30
+  days, and `SendMessage` to the id resumes it [docs].
 
 ## 11. open questions
 
@@ -319,7 +335,16 @@ asked for the canary with no tools.
 - order: `PreCompact`, then ~20 s of summarising, then `PostCompact` and `SessionStart:compact`
   in the same second.
 - the `compact_boundary` record carries `compactMetadata` with `trigger`, `preTokens`,
-  `postTokens`, `durationMs`, `preservedMessages` (22.6k → 2.5k, 2 messages kept verbatim).
+  `postTokens`, `durationMs`, `cumulativeDroppedTokens` [verified 2.1.299: 34.4k → 1.9k]. 🔁 flipped:
+  2.1.283 carried `preservedMessages` in its place.
+- **auto-compact knobs** [docs, read 2026-10-15]: precedence `CLAUDE_CODE_AUTO_COMPACT_WINDOW` (integer,
+  100000–1000000) > `--autocompact` > `/autocompact` (saved per model in `modelSettings`) > top-level
+  `autoCompactWindow`; agent frontmatter `autoCompactWindow` (2.1.296+) only lowers it and is ignored
+  under the env var; `200k` there reads as 200 and is dropped. `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` only
+  lowers the trigger, default unstated. where inside the window it fires and where quality drops:
+  undocumented — the 600–700k manual checkpoint has no vendor basis either way.
+- **idle compaction** (2.1.299) [docs]: an interactive terminal session, 1h cache, ≥200K context, ~54 min
+  idle; whether a `--bg` session counts [unknown].
 - 📌 `/compact` via `-p --resume` works, which makes this a cheap re-runnable probe.
 - `--setting-sources project` kept the user-scope hooks out; flag `--settings` hooks still ran.
 - present in the binary, not exercised: `CLAUDE_CODE_AUTO_COMPACT_WINDOW`,
@@ -367,7 +392,7 @@ env | grep -i CLAUDE_EFFORT                           # inside the subagent
 
 # worktree isolation — brief it read-only, no pnpm, no writing git
 #   pwd → <repo>/.claude/worktrees/agent-<agentId>, branch worktree-agent-<agentId>
-git rev-parse --short main origin/main                # base ref is ORIGIN, not local HEAD
+git rev-parse --short main; git rev-parse --short origin/main   # base ref is ORIGIN, not local HEAD; discriminates only when the two differ
 git worktree list                                     # empty after an unchanged agent = auto-clean
 
 # compaction hooks — one haiku -p session in a scratch dir, hooks via --settings
@@ -378,8 +403,9 @@ claude -p … --resume <uuid> 'no tools: what canary word do you see?'   # must 
 #   then trash ~/.claude/projects/<scratch-slug>/ — the probe writes auto-memory there
 
 # bundled skills — the names, gated ones included (a gated skill never shows in a session list)
-strings -n 6 ~/.local/share/claude/versions/<v> | …  # python: the registrar is the most common caller of
-#   re.findall(r'\b(\w{1,3})\(\{name:', s) — the minifier renames it per build (ds on 2.1.283, Ms on 2.1.292);
+strings -n 6 ~/.local/share/claude/versions/<v> | …  # python: the registrar was the most common caller of
+#   re.findall(r'\b(\w{1,3})\(\{name:', s) — the minifier renames it per build (ds on 2.1.283, Ms on 2.1.292,
+#   Xs on 2.1.299, where it ranks third: pick the caller whose literal names are known skills);
 #   a name that is a variable resolves through its X="…" assignment. 0 hits = a broken probe, never «no skills»
 
 # stopping — both work; verify by the registry file vanishing
