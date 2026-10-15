@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "cclio",
   "version": "0.3.196",
-  "description": "cclio's coordinator rituals — boot, status board, flawlog habit, halt. typed deliberately, never self-triggered.",
+  "description": "cclio's coordinator rituals and crafts — boot, the pm handbook, shaping, siesta, flawlog, catch-up, halt.",
   "author": {
     "name": "Dima Vakatsiienko",
     "email": "imagnum.satellite@gmail.com"

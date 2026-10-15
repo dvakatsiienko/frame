@@ -45,12 +45,14 @@ cclio can fix what she reviews; cclio hands you a file only once she committed i
 - an exact string never changes case: paths, ids, identifiers, keys, urls, his quoted words
 - a hand edit goes through `Edit`; json through `jq`; a cli new to you is probed with a bare `<cli> --help`
 - a guard or hook refusal is obeyed and reported in the receipt, never routed around
+- the AGENTS.md loader hook lists files to read before an edit: read the ones outside `~/frame/cclio/` and go on; a `cclio/` path on its list is skipped, never a consult
 
 ## the brief you get
 
 one message, a numbered batch; each chore holds: its class, the exact paths, the anchor and
 replacement or the fields, the done command, and its forbid lines if any. one chore never depends
-on another unless the brief says so.
+on another unless the brief says so. a `gate-retry` names only files this batch edited or cclio already
+committed; a path cclio still holds is a consult.
 
 ## the consult — ask before, never guess
 
@@ -78,5 +80,5 @@ command's result (an unfinished chore says why), nothing else, and the same line
 
 ## your own context
 
-- never `/clear` yourself; you auto-compact near ~97k, under haiku's price line (a 130k window: a ~75k boot with fleet memory thrashed at 100k; yours is ~52k without it), and idle compaction is off fleet-wide
+- never `/clear` yourself; you auto-compact near ~97k, under haiku's price line (a 130k window: a ~75k boot with fleet memory thrashed at 100k; yours is ~53.6k without it), and idle compaction is off fleet-wide
 - read only what a chore needs: `rg -n` with context over a whole-file dump

@@ -88,6 +88,9 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-15 · pocket-write · 1 · 0 · PK-141 price-line and role-name steer appended, backlog exit 0, pocket-check green
 - 2026-10-15 · pocket-write · 2 · 0 · PK-90 run #5 status and open screenshot case appended, backlog exit 0, pocket-check green
 - 2026-10-15 · pocket-write · yes · 0 · band-wisp PK-147 created, pocket-check green
+- 2026-10-15 · pocket-write · 1 · 0 · b-watch 1: PK-146 done, pocket-check green
+- 2026-10-15 · gate-retry · 0 · 0 · b-watch 2: consult, hook demanded cclio/AGENTS.md read; commit held
+- 2026-10-15 · gate-retry · consult · cclio fixed · b-watch chore 2: two causes — cclio's brief handed over a file she still held, and the kept AGENTS.md loader listed cclio/AGENTS.md to a memory-less composer; charter now skips the cclio/ read-list and limits gate-retry to unheld files
 
 ## rounds
 
@@ -96,6 +99,6 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-14 (halt, sifter over cclio's transcript 11:45–18:21Z): 2.12M chars of tool output, 1,290 Bash / 275 Edit / 60 Write calls, 29 composer briefs; ~17 pocket items closed → ~125k chars per item against the 34k morning baseline. not comparable: the day was mostly sweep and crew grooms, not pocket items, and no pre-composer half exists in this session. the measure needs a fixed ruler — chars per edit-shaped chore, cclio-alone vs via composer, on a matched batch
 
 - 2026-10-15 · the composer recipe run (helper-lite hunts, exa + parallel, an opus + arXiv lane): 65 chores since 10-14, 61 green first pass, 1 rework (1.5 % against the 1-in-5 kill rule), 2 consult, 2 blocked; cclio briefed it in 4 messages, 2,971 chars, on 10-15; composer spent 18.35M tokens, peaking at 187k on 10-14 (past the 100k price line, ×5). per chore in haiku dollars a warm sidecar costs ~1.7–2.5× a fresh `helper-lite`, ~3–6× under one chore an hour. Devin Fusion is the same design; its lesson: a weaker sidekick needs more prescriptive briefs, so the lead's brief tokens decide it. the split (stateless → `helper-lite`, stateful → composer) leaves composer with pocket writes, commits, inbox prep and commit-batch sweeps. the critical review: **keep to the 10-21 verdict** — no kill rule tripped; what 10-21 decides is whether that narrower load pays for a parked session
-- 2026-10-15 · the boot probe (dima's tick): `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` drops every CLAUDE.md and rules file, hooks and mods stay (x-mod-guard still refused an `rm`); composer restarted as job 435b4046 without fleet memory, the charter's floor section standing in — boot **~75k → 53.6k**. watch: a chore that breaks a fleet rule the floor dropped
+- 2026-10-15 · the boot probe (dima's tick): `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` drops every CLAUDE.md and rules file, hooks and mods stay (x-mod-guard still refused an `rm`); composer restarted as job 435b4046 without fleet memory, the charter's floor section standing in — boot **~75k → 53.6k**. watch: a chore that breaks a fleet rule the floor dropped, and the next memory-less `inbox-prep` (it handles dima's raw words, so «no prose, low risk» is an inference)
 
 ## verdict
