@@ -14,7 +14,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 
 ## the start
 
-- `claude --bg -n '🎼 composer' --model haiku --effort medium --settings '{"worktree":{"bgIsolation":"none"},"autoCompactWindow":130000}' "<boot prompt>" --remote-control` — the 130k window compacts near ~97k, under haiku's price line (dima's want, 2026-10-15; 100k thrashed: a ~75k boot refilled the window within 3 turns, 3 times in a row)
+- `claude --bg -n '🎼 composer' --model haiku --effort medium --settings '{"worktree":{"bgIsolation":"none"},"autoCompactWindow":130000,"env":{"CLAUDE_CODE_DISABLE_CLAUDE_MDS":"1"}}' "<boot prompt>" --remote-control` — no fleet memory since 2026-10-15 (the charter's floor section stands in; the env goes through `--settings`, a shell var never reaches a `--bg` session); the 130k window compacts near ~97k, under haiku's price line (dima's want, 2026-10-15; 100k thrashed: a ~75k boot refilled the window within 3 turns, 3 times in a row)
   from `~/.local/state/composer/` — without the flag a `--bg` session's edits in the shared checkout are
   refused until it isolates (ccrow, 2026-10-14); the flag replaced a home `.claude/settings.json` that was gone
   on 2026-10-15
@@ -96,5 +96,6 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-14 (halt, sifter over cclio's transcript 11:45–18:21Z): 2.12M chars of tool output, 1,290 Bash / 275 Edit / 60 Write calls, 29 composer briefs; ~17 pocket items closed → ~125k chars per item against the 34k morning baseline. not comparable: the day was mostly sweep and crew grooms, not pocket items, and no pre-composer half exists in this session. the measure needs a fixed ruler — chars per edit-shaped chore, cclio-alone vs via composer, on a matched batch
 
 - 2026-10-15 · the composer recipe run (helper-lite hunts, exa + parallel, an opus + arXiv lane): 65 chores since 10-14, 61 green first pass, 1 rework (1.5 % against the 1-in-5 kill rule), 2 consult, 2 blocked; cclio briefed it in 4 messages, 2,971 chars, on 10-15; composer spent 18.35M tokens, peaking at 187k on 10-14 (past the 100k price line, ×5). per chore in haiku dollars a warm sidecar costs ~1.7–2.5× a fresh `helper-lite`, ~3–6× under one chore an hour. Devin Fusion is the same design; its lesson: a weaker sidekick needs more prescriptive briefs, so the lead's brief tokens decide it. the split (stateless → `helper-lite`, stateful → composer) leaves composer with pocket writes, commits, inbox prep and commit-batch sweeps. the critical review: **keep to the 10-21 verdict** — no kill rule tripped; what 10-21 decides is whether that narrower load pays for a parked session
+- 2026-10-15 · the boot probe (dima's tick): `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` drops every CLAUDE.md and rules file, hooks and mods stay (x-mod-guard still refused an `rm`); composer restarted as job 435b4046 without fleet memory, the charter's floor section standing in — boot **~75k → 53.6k**. watch: a chore that breaks a fleet rule the floor dropped
 
 ## verdict

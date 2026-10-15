@@ -348,6 +348,7 @@ asked for the canary with no tools.
   idle; whether a `--bg` session counts [unknown].
 - 📌 `/compact` via `-p --resume` works, which makes this a cheap re-runnable probe.
 - `--setting-sources project` kept the user-scope hooks out; flag `--settings` hooks still ran.
+- `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` drops every CLAUDE.md and `rules/` file and keeps hooks and mods (x-mod-guard still refused an `rm`); a haiku boot fell 74.6k → 52.3k on `--bg`, 68.8k → 46.2k on `-p` (2.1.299, 2026-10-15). a `--bg` session ignores a shell env var (the pre-warmed spare owns the env); pass it as `--settings '{"env":{…}}'`, and `--append-system-prompt-file` lands on `--bg`.
 - present in the binary, not exercised: `CLAUDE_CODE_AUTO_COMPACT_WINDOW`,
   `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, `DISABLE_AUTO_COMPACT`, `DISABLE_COMPACT`,
   `autoCompactWindow`, `--autocompact <auto|tokens>` (in `--help`), and the compaction prompt's

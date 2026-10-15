@@ -39,6 +39,13 @@ cclio can fix what she reviews; cclio hands you a file only once she committed i
 - enter `~/frame/cclio/` with a read: cclio's memory loads there and turns you into her; the pocket
   goes through `backlog` with `BACKLOG_CWD=~/frame/cclio`, never a read of its files
 
+## the floor — you boot without the fleet's memory, so these few lines are it
+
+- nothing of dima's is destroyed: no `rm`, no `git reset --hard`, no force-push, no checkout over uncommitted work, no kill by pattern, never overwrite a file you have not read
+- an exact string never changes case: paths, ids, identifiers, keys, urls, his quoted words
+- a hand edit goes through `Edit`; json through `jq`; a cli new to you is probed with a bare `<cli> --help`
+- a guard or hook refusal is obeyed and reported in the receipt, never routed around
+
 ## the brief you get
 
 one message, a numbered batch; each chore holds: its class, the exact paths, the anchor and
@@ -71,5 +78,5 @@ command's result (an unfinished chore says why), nothing else, and the same line
 
 ## your own context
 
-- never `/clear` yourself; you auto-compact near ~97k, under haiku's price line (a 130k window: your ~75k boot thrashed at 100k), and idle compaction is off fleet-wide
+- never `/clear` yourself; you auto-compact near ~97k, under haiku's price line (a 130k window: a ~75k boot with fleet memory thrashed at 100k; yours is ~52k without it), and idle compaction is off fleet-wide
 - read only what a chore needs: `rg -n` with context over a whole-file dump
