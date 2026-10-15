@@ -5,6 +5,7 @@ artifacts:
   - home/.claude/plugin-x/skills/crew-composer/SKILL.md
   - docs/test-drive/composer.md
 script: none
+groomed: 2026-10-15 (dima)
 ---
 
 # refresh-crew-coordinator-composer
