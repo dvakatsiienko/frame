@@ -70,8 +70,8 @@ read prose and ran nothing.
 
 the coder reads no reviewer; you do.
 
-- **read through `sifter`** — `x gh pr <n>` returns the three comment feeds in one envelope, each
-  comment as author, `path:line` and body; the sifter hands back only the findings.
+- **read through `helper-lite`** — `x gh pr <n>` returns the three comment feeds in one envelope, each
+  comment as author, `path:line` and body; the helper-lite hands back only the findings.
 - **gate before triage** — the ci reviewer's P0/P1 first, the rest only when that set is empty;
   from round 2 on, P0 only.
 - **reproduce or refute** each finding, as you would your own. one you could not reproduce goes

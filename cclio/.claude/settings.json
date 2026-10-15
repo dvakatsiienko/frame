@@ -6,9 +6,6 @@
   "permissions": {
     "additionalDirectories": [
       "/Users/dima/frame"
-    ],
-    "deny": [
-      "Agent(general-purpose)"
     ]
   },
   "hooks": {

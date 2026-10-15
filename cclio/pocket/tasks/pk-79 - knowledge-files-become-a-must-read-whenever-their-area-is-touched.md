@@ -43,7 +43,7 @@ starts after the mods lane's brief 4 (dima 16:01: one parallel lane at a time). 
 dima o31 16:06: the mod is named x-mod-primer («let's try»)
 
 ## decided, grill r2 (dima 16:19)
-- Q9 a delivery log line (time, session, signal kind, file, bytes); usefulness by a 10-session sifter audit at the verdict
+- Q9 a delivery log line (time, session, signal kind, file, bytes); usefulness by a 10-session helper-lite audit at the verdict
 - Q10 each shelf file opens with an authored `## core` ≤4 KB; none → red in x knowledge list, never a byte cut. dima: the shelf gets an AGENTS.md naming the primer mod, a connection pointer both ways (the mod's docs name the shelf)
 - Q11 once per session per file, re-armed after a compaction
 - Q12 a 7-day test drive, a 15k tokens/session cap (past it: skip + log), adopt at 8/10 in the audit

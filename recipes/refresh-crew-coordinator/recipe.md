@@ -53,13 +53,13 @@ the cards against the ladder (dima's, 2026-10-08):
 
 the subagents, card by card (dima's, 2026-10-15, folded):
 
-> «i want our subagents to serve a well-defined, clear purpose and do the right job, with a good subagent file (description, instructions) and good frontmatter settings. every run hunts what helps sharpen each of them — researcher, sifter, wishkeeper and the rest — so which questions should the research ask to find the most relevant data?»
+> «i want our subagents to serve a well-defined, clear purpose and do the right job, with a good subagent file (description, instructions) and good frontmatter settings. every run hunts what helps sharpen each of them — researcher, helper-lite, wishkeeper and the rest — so which questions should the research ask to find the most relevant data?»
 >
 > «every run includes all our custom subagents, the old ones too: we change them often, and we create new ones between runs.»
 
 haiku 5.5 (dima's, 2026-10-15, folded):
 
-> «haiku 5.5 holds real roles now (composer, sifter), so refresh its knowledge thoroughly: its best use cases, its baseline effort, as a subagent and as a sidecar. i want you to know this very well.»
+> «haiku 5.5 holds real roles now (composer, helper-lite), so refresh its knowledge thoroughly: its best use cases, its baseline effort, as a subagent and as a sidecar. i want you to know this very well.»
 >
 > «keep haiku as a classifier engine in the search: it can be a powerful classifier, and we never sharpened jev well enough or found a good use case for it yet.»
 
@@ -83,7 +83,7 @@ half skipped, with the reason — the shared rule of `cclio:shape-recipe`.
 4. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `cclio:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
 5. **distill** into the artifacts:
    - `crew-lead/references/spawn-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
-   - `crew-lead/references/model-cards.md` — THE model reference; claim tags ([dima] / [bench] / [vendor] / [community] / [?]) updated, never deleted; dima's [dima] calls never overwritten, outside evidence sits beside them
+   - `crew-lead/references/model-cards.md` — the cards: per model only price · effort · pick for · never · ≤3 deciding numbers, each tagged; a stale number is replaced, a benchmark list or anecdote stays in `last/`; dima's [dima] calls never overwritten; under 8 KB (its cap test)
    - `x:crew-lead`, `craft-fleet-flow`, `craft-pm`, `habit-cto` — a finding changes a line only through the memory-edit habit (announced; deletions and his words need his word first)
    - `rules/fleet-flow.md`, `rules/fleet-identity.md` — the crew list and who talks to whom; a role added or retired is his word first
    - raw research stays in `last/` until the next run's distill. done: every artifact touched, or named «unchanged» with the finding that left it so. (open)
@@ -102,7 +102,7 @@ on top of the shared vectors of `cclio:shape-recipe` (the delta covers the cc ch
 - how a coordinator agent should work in general and coordinate efficiently: planning, routing work to members, gates, comms, attention economy with the operator
 - the adviser: read `refresh-crew-coordinator-adviser`'s latest verdicts (the arm, the setup keep/revamp/retire) — its research is that recipe's, never this one's
 - the full crew: which roles a mature agent team has, against ours (coder, verifier, designer, classifier, ccrow, the ci reviewers coderabbit + cc); which we lack. the crew checklist re-runs every run, even when the last said «nothing missing» — the field moves
-- per seat: each crew role (coder, verifier, designer, the ci reviewers) and each card (`helper`, `researcher`, `retro`, `sifter`, `Explore`, `wishkeeper`) judged by its own job — still needed, merged or missing, plus the prior art for that job (reviewer agents, design agents). the designer reads `refresh-crew-designer`'s latest verdicts, the way the adviser reads its own recipe
+- per seat: each crew role (coder, verifier, designer, the ci reviewers) and each card (`helper`, `researcher`, `retro`, `helper-lite`, `Explore`, `wishkeeper`) judged by its own job — still needed, merged or missing, plus the prior art for that job (reviewer agents, design agents). the designer reads `refresh-crew-designer`'s latest verdicts, the way the adviser reads its own recipe
 - the subagent roster against outside practice: which in-session subagent roles mature setups run (anthropic's own cards and plugins, public `<repo>/.claude/agents/` collections, multi-agent frameworks), which jobs our cards miss, which overlap enough to merge; seed: `docs/research/subagent-roster.md` (dima, 2026-10-10)
 - the review shape: what a review subagent reads (the wish and spec, not only the diff), its output cap, its model tier, checking a finding at its cited line before acting, and whether cleanup is a separate pass (`/simplify`) — measured where a source measured it
 - role drift: roles that appear as capabilities grow, roles that go obsolete as models improve
@@ -128,14 +128,14 @@ on top of the shared vectors of `cclio:shape-recipe` (the delta covers the cc ch
 
 **tools — the subagents, card by card** (the roster is step 2's list, never a list kept here):
 - per card, every run: its official role in plain words beside its vibe name (ccrow = adviser; what are wishkeeper and composer?) · is its purpose well defined, does its shape cover the role · what it does not do that its contract should hold, does it want an extension · model and effort against the task → model map · which instructions work in a subagent file and which do not · the frontmatter (`description` as the trigger, `model`, `effort`, `tools`, `omitClaudeMd`) · body leanness and first-request size, measured
-- seeds, dima's: researcher — which model researches best (opus or sonnet, can haiku research?), its baseline effort, how a solid researcher file reads · wishkeeper — opus still right, a coordinator's verifier by role? · sifter — are its settings right for a bulk reader
+- seeds, dima's: researcher — which model researches best (opus or sonnet, can haiku research?), its baseline effort, how a solid researcher file reads · wishkeeper — opus still right, a coordinator's verifier by role? · helper-lite — are its settings right for a bulk reader
 - generic against ours: what `general-purpose` is (model, memory, tools), when it beats a card, or never while our cards exist; one table of the doors — generic, fork, our cards, arms A/B, `--bg` — with stats and capabilities
 - probe: `Agent(general-purpose)` in `permissions.deny` of cclio's project settings blocks the type, per the [sub-agents doc](https://code.claude.com/docs/en/sub-agents) § disable specific subagents (read 2026-10-15, unprobed); proven by one refused call
 
 **tools — fan-out:**
 - when x10 or x100 is right, who cuts the chunks, which card runs them — for any worker tier, haiku, sonnet or opus
 - the common shapes and use cases: a strong orchestrator over smaller workers, or mixed tiers, and how to mix them
-- probe: one sifter x10 fan-out on a real job — tokens and wall time against one agent doing it whole
+- probe: one helper-lite x10 fan-out on a real job — tokens and wall time against one agent doing it whole
 
 **tools — haiku 5.5:**
 - the effort curve, the >100k ×5 price cliff, sidecar against subagent, anchor-edit reliability
@@ -147,7 +147,7 @@ on top of the shared vectors of `cclio:shape-recipe` (the delta covers the cc ch
 - capabilities, benchmarks, price, latency (tok/s, TTFT), context, lifecycle — per model in scope. price: input, 5m and 1h cache writes, the cache-hit multiplier per model, output, long-context billing
 - **effort levels per model:** the supported levels, the vendor default per surface (API vs Claude Code), the vendor's starting points per task type, the lowest-reasoning setting, any independent effort-vs-score and effort-vs-cost curve
 - **model per job:** one verdict per model with evidence for each job we spawn — coding, verifying, codebase exploration, mechanical edits under opus review, research by genre — plus what it must NOT be used for; the output is the task → model map in `models.md`
-- the cards against the ladder: every agent card (`helper`, `researcher`, `retro`, `sifter`, `Explore`, `wishkeeper`), every crew skill (coder, verifier, designer), ccrow and cclio — model + effort as settled today, re-checked against this run's task → model map; a mismatch is a finding with its evidence, never a silent flip
+- the cards against the ladder: every agent card (`helper`, `researcher`, `retro`, `helper-lite`, `Explore`, `wishkeeper`), every crew skill (coder, verifier, designer), ccrow and cclio — model + effort as settled today, re-checked against this run's task → model map; a mismatch is a finding with its evidence, never a silent flip
 - the spawn base from our own data: first-request `cache_read` / `cache_creation` per spawn door from transcripts (duckdb) and `x` traces, measured instead of assumed
 
 ### analysis
@@ -165,7 +165,7 @@ on top of the shared three:
 - `cclio/memory/craft-pm.md` — the pm judgment; changes through the memory-edit habit
 - `cclio/memory/habit-cto.md` — the CTO hat; changes through the memory-edit habit
 - `home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
-- `home/.claude/plugin-x/skills/crew-lead/references/model-cards.md` — THE model reference; claim tags updated, never deleted, dima's [dima] calls never overwritten
+- `home/.claude/plugin-x/skills/crew-lead/references/model-cards.md` — the model cards in a fixed shape, under 8 KB; dima's [dima] calls never overwritten
 - `home/.claude/rules/fleet-flow.md` — who talks to whom; a role added or retired is his word first
 - `home/.claude/rules/fleet-identity.md` — the crew list; a role added or retired is his word first
 - `home/.claude/agents/` — the global cards; a card's frontmatter or body changes through the memory-edit habit, a new or retired card is his word first

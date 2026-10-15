@@ -284,7 +284,7 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
   `omitClaudeMd` cards 8–10k cold · Explore 35–57k and helper 118k (both load fleet memory) ·
   general-purpose 82k, 117k from cclio · fork 270k warm. parallel spawns of one card shared no prefix
   cache (warm 0 in 111); a workflow fan-out holds siblings up to 5 s so they do [docs].
-- **a x10 fan-out of one card** [verified 2.1.299, sifter on haiku 5.5, a real job]: 10 agents 139k
+- **a x10 fan-out of one card** [verified 2.1.299, helper-lite on haiku 5.5, a real job]: 10 agents 139k
   tokens and 19 s wall against one agent 35k and 98 s, answers identical — 4× tokens for 5× speed;
   the per-agent floor is ~12k.
 - **a subagent's final report arrived whole** in every one of this run's 14 subagents (2.1.299);

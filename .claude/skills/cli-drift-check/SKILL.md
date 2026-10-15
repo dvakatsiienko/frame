@@ -48,7 +48,7 @@ the door is still in use.
    for that verb, label the answer an inference. A fix or a refactor that adds nothing gets
    one line and no rule answers. Then rank the chunks by the cli's evolve contract (dima,
    2026-10-10: the cli grows beside every roadmap step, one chunk at a time): which **solves the
-   most fleet issues** (retro and flawlog hits, through one `sifter` read), **helps the most**
+   most fleet issues** (retro and flawlog hits, through one `helper-lite` read), **helps the most**
    (callers and runs), and **automates the most** (raw heads it absorbs). Done when every
    addition has a fit verdict and three rule answers, and the chunks carry a rank.
 

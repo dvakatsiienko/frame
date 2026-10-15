@@ -124,8 +124,8 @@ const MEMBERS = {
     cw: '🤝',
     designer: '🎨',
     dima: '🙋‍♂️',
+    'helper-lite': '🪶',
     researcher: '🐝',
-    sifter: '🪶',
     verifier: '🔎',
 } as const;
 const BADGES = {
@@ -217,9 +217,9 @@ export function backgroundWaits(
 const AGENT_BADGE: Record<string, string> = {
     Explore: '🦊',
     helper: '🐜',
+    'helper-lite': '🪶',
     researcher: '🐝',
     retro: '🦡',
-    sifter: '🪶',
     wishkeeper: '🐬',
 };
 
@@ -256,7 +256,7 @@ const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
 export function isFleetName(name: string) {
     return (
         FLEET_NAME.test(name) ||
-        Object.hasOwn(MEMBERS, name.replace(/[^\w\s]/gu, '').trim())
+        Object.hasOwn(MEMBERS, name.replace(/[^\w\s-]/gu, '').trim())
     );
 }
 

@@ -48,14 +48,14 @@ Store contract: the `x:remind` skill. Both tiers die only when Dima drops them.
 
 ⏰ 🦡 before every halt: dima runs his own retro in this thread, and in ccrow's window he types «read /Users/dima/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md and run it over cclio's session from your packets; focus: <his steer>» (`ls ~/.claude/plugins/cache/mattpocock/mattpocock-skills/` names the version). cclio reminds him, then runs its own retro beside it, one flush. dima 2026-10-07: «yes remind me» · «i want to gather the retro from ccrow myself next time» — set 2026-10-07, moved from the pocket 2026-10-09
 
-⏰ 🦉📊 the #dima-caught recheck — 2026-10-25: `x fleet flow --days 14` vs today's 31 (baseline 23), tallied by type with a sifter this time; the 06.5 ledger line in `docs/test-drive/memory-sweep.md` names it — set 2026-10-11 · due: 2026-10-25
+⏰ 🦉📊 the #dima-caught recheck — 2026-10-25: `x fleet flow --days 14` vs today's 31 (baseline 23), tallied by type with a helper-lite this time; the 06.5 ledger line in `docs/test-drive/memory-sweep.md` names it — set 2026-10-11 · due: 2026-10-25
 ⏰ 🦉🧠 when the jev router comes back on (credit ~10-18): the two «skills (jev router)» lines parked at the end of `sys-jev.md` go back into root `CLAUDE.md` § skills — set 2026-10-11 · due: 2026-10-18
 ⏰ 🦉🔀 2026-10-25, with the #dima-caught recheck: count Agent + `run_in_background` calls per cclio session for 14 days vs the 14 before 10-11 (duckdb over transcripts) — root's parallel-work lines were cut to one on 10-11, dima: «let's try to delete and see how your performance changes» — set 2026-10-11 · due: 2026-10-25
 
 
 ⏰ 🦉🛡️ 2026-10-18: flip FRM-398 from warn to refuse — remove `raw-linear` from `WARN_ONLY` in `home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts` (one line, through `x mods edit`); a warning that shows a wrong hit reopens FRM-398 instead. dima o234: «warn-only for a week, then refuse» — set 2026-10-11 · due: 2026-10-18
 
-⏰📌 🦉🐞 the next cli lane: its coder's brief says nothing about delve; at his retro (at done, or before a 🐦‍🔥 second wind) ask whether he reached for delve on a red test and whether it helped, and have a sifter count his `dlv` calls — the round goes into `docs/test-drive/delve.md` (dima, 2026-10-13: «a used tool is not a proven one; let him pick it up naturally»). dies when that round is written — set 2026-10-13
+⏰📌 🦉🐞 the next cli lane: its coder's brief says nothing about delve; at his retro (at done, or before a 🐦‍🔥 second wind) ask whether he reached for delve on a red test and whether it helped, and have a helper-lite count his `dlv` calls — the round goes into `docs/test-drive/delve.md` (dima, 2026-10-13: «a used tool is not a proven one; let him pick it up naturally»). dies when that round is written — set 2026-10-13
 
 ⏰ 🦉💸 2026-10-27: remind dima of the $200 month planning session — one dedicated grill that fills the 11-05 month with sealed chunks (cli, apps, sweeps, evals, designs) and smooths the flows first; cclio drafts the candidate list from the roadmap, the pocket and PK-108's spend notes before it, dima cuts (dima o154, 2026-10-13) — set 2026-10-13
 

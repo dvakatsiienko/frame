@@ -31,7 +31,7 @@
   - given a reply ends with no 🔭 line while a background shell, monitor, subagent or workflow still runs
   - when the turn stops
   - then the row reads «🔭 waiting on <who>», the first task in three words at most, «+n» for the rest; a reply's own 🔭 line wins
-  - and a fleet subagent (`wishkeeper`, `helper`, `researcher`, `retro`, `sifter`, `Explore`) is <who> as its badge and type, `🐬 wishkeeper`, never its description; only <who> prints bold (dima, 2026-10-11 15:34: «why no emoji? bold only <who>»)
+  - and a fleet subagent (`wishkeeper`, `helper`, `researcher`, `retro`, `helper-lite`, `Explore`) is <who> as its badge and type, `🐬 wishkeeper`, never its description; only <who> prints bold (dima, 2026-10-11 15:34: «why no emoji? bold only <who>»)
   - decision: short, «waiting on <who>», nothing more (dima's o88, 23:15)
   - given the only tasks running are cclio's standing watches — a task whose command runs `watch-once.sh`, else one described «Arm the one-shot pr watch» or «… ci watch» — then the 🔭 reads «not waiting»; beside a real wait they are not counted in the +n
   - decision: the standing watches run all day and are no wait (dima's o52, 2026-10-11)
@@ -70,8 +70,8 @@
 - ✅ a bare fleet word or member in a reply prints bold with its badge before dima sees it
   - given a reply in prose names a fleet word plain: `wisp`, `siesta`, `wish` after a determiner (`a`, `the`, `his` …), `freebie`, or their plurals
   - then the drawing and the stored row both read **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**; a word already badged only gains the bold
-  - given a reply names a fleet member from `rules/fleet-identity.md` plain: `cclio`, `ccrow`, `coder`, `verifier`, `designer`, `researcher`, `sifter`, `cw`, `dima`, or their plurals
-  - then it reads **🦉 cclio**, **🐦‍⬛ ccrow**, **🔧 coder**, **🔎 verifier**, **🎨 designer**, **🐝 researcher**, **🪶 sifter**, **🤝 cw**, **🙋‍♂️ dima** (FRM-357)
+  - given a reply names a fleet member from `rules/fleet-identity.md` plain: `cclio`, `ccrow`, `coder`, `verifier`, `designer`, `researcher`, `helper-lite`, `cw`, `dima`, or their plurals
+  - then it reads **🦉 cclio**, **🐦‍⬛ ccrow**, **🔧 coder**, **🔎 verifier**, **🎨 designer**, **🐝 researcher**, **🪶 helper-lite**, **🤝 cw**, **🙋‍♂️ dima** (FRM-357)
   - decision: members that are plain english too stay out — `helper`, `retro`, `classifier`, `Explore`, `cc` would badge a helper function, the retro file or the verb
   - then a fence, a `>` quote, a «quote», inline code, bold text, a link or url, a session name (`☕️ 🔧 mods coder`), a word behind another word's badge (`🔎 coder`), and a name like `x-mod-wisp`, `wisp.md` or `cclio:halt` keep theirs; «i wish» stays a verb; «lane» is never touched
   - makes: one `words:<yyyy-mm-dd>:<session>` key in x-mod-stash's `$.store`, `{ <word>: <rewrites> }`, counted from the stored row only (a redraw never counts); keys older than 30 days are dropped

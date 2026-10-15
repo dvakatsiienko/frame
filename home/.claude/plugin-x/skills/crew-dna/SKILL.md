@@ -33,7 +33,7 @@ this file says how every member does it. A section headed with roles binds only 
 - a number from another member is measured again before you repeat it
 - one run is evidence of more than one thing: name what else it shows before you report it as proof
 - a probe prints counts or filtered fields (`--jq`, `jq`), never a raw payload
-- a big read or a probe spiral goes to a subagent (`sifter` for counts out of a log or transcript), and only its verdict comes back <!-- mac -->
+- a big read or a probe spiral goes to a subagent (`helper-lite` for counts out of a log or transcript), and only its verdict comes back <!-- mac -->
 
 **voice**: plain words, no praise, no essay.
 
@@ -74,7 +74,7 @@ this file says how every member does it. A section headed with roles binds only 
 - run the thing first: `agent-browser` at 390 and 1280 plus the failing path, and the essentials on every touched view
 - a tool the tests need is proven on the ci runner, not the mac
 - a doc the change made false is fixed in the same commit, or it is a finding; a door the change replaced (an old script, a skill or rule line, a pocket item) is retired in the same pr, and a survivor is a finding (dima, 2026-10-09)
-- reviewer output is read through `sifter`, which returns only the findings
+- reviewer output is read through `helper-lite`, which returns only the findings
 - probe hygiene:
   - a write-path probe uses a fixture key
   - a rate-limited review tool is skipped and named

@@ -6,9 +6,9 @@ dies-when: the verdict line below is written (2026-10-22, beside the second haik
 
 Ticket: none
 
-# 🪶 sifter — a haiku 5.5 extraction card, on trial
+# 🪶 helper-lite — a haiku 5.5 extraction card, on trial
 
-the card: `home/.claude/agents/sifter.md` — haiku 5.5 `medium`, `omitClaudeMd`, read-only (Read, Grep, Glob,
+the card: `home/.claude/agents/helper-lite.md` — haiku 5.5 `medium`, `omitClaudeMd`, read-only (Read, Grep, Glob,
 Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else could use it».
 
 ## stress list — every use, each with the ask it replaces and what the round records
@@ -22,14 +22,14 @@ Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else 
 - **bash census** — head counts over many transcripts (the cli grill's 484-transcript census) · seconds,
   cost, counts equal to the census script's
 - **flow numbers off raw files** — anything `x fleet flow` does not print yet · seconds, cost, match
-- **a coder's own big reads** — a `--bg` coder hands a log or a big json to sifter instead of reading it
+- **a coder's own big reads** — a `--bg` coder hands a log or a big json to helper-lite instead of reading it
   (`x:crew-coder`'s «hand big reads to subagents») · steps saved in the coder's context
 - **failure probes** — a question with no answer in the file (must say «not found»), a file over 100K tokens
   (haiku's price ×5 past 100K), an ambiguous question (must name its reading)
 
 ## rounds
 
-- 2026-10-08 17:27 · transcript sums, via `claude -p --agent sifter` (the card loads only in a fresh session)
+- 2026-10-08 17:27 · transcript sums, via `claude -p --agent helper-lite` (the card loads only in a fresh session)
   · 14 s, $0.0078, `claude-haiku-5-5` · **exact match** on entries, three usage sums and timestamps · **and it
   flagged what the hand command missed**: 39 entries are 9 responses, so summing usage counts streaming
   snapshots several times — the 16:41 cloud grade read ~$4.75 where the deduped cost is ~$1.17 · grade 5/5
@@ -38,4 +38,4 @@ Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else 
 - 2026-10-15 18:03 · images, first rounds (haiku 5.5 medium, cc 2.1.299):
   - dima's number test (a 2146×1276 screenshot of the Code tab): plain read 38 of 39 numbers, 0 misreads, 43 s, 22.8k tokens; crop-tiled 38 of 39, 0 misreads, 63 s, 31.4k tokens, 6 tiles — both missed one small «3» in an orbit card's pick text; crops bought nothing on large UI text · grade 5/5 against cclio's own read
   - 16 video screenshots in 2 batches of 8 (theo, posthog): 150 values, 9 marked unreadable (all truly hidden or cut), 38 read off crops; cclio's spot-check of 2 shots (a 32-cell benchmark table, an 8-value results table): 0 mismatches · ~80 s and ~50k tokens a batch · grade 5/5
-  - `sips -c … --cropOffset 0 0` returned the full image; offset 1 cropped (the arm-B sifter found it)
+  - `sips -c … --cropOffset 0 0` returned the full image; offset 1 cropped (the arm-B helper-lite found it)

@@ -1,6 +1,5 @@
 {
   "cleanupPeriodDays": 90,
-  "idleCompaction": false,
   "syncClaudeAiSkills": false,
   "syncClaudeAiPlugins": false,
   "skillListingBudgetFraction": 0.025,
@@ -27,7 +26,8 @@
       "CronList",
       "AskUserQuestion",
       "EnterPlanMode",
-      "ExitPlanMode"
+      "ExitPlanMode",
+      "Agent(general-purpose)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
@@ -325,6 +325,7 @@
   "editorMode": "vim",
   "verbose": false,
   "preferredNotifChannel": "notifications_disabled",
+  "idleCompaction": false,
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": false,
