@@ -5,8 +5,7 @@ description: >
   «reply to this», «compose a message», «answer the recruiter», pastes a message asking for a
   response, or an outward-facing text (health update, announcement, readme prose) is about to
   ship. Not for answering dima's own question in the chat, nor for our own tickets, docs or
-  memory. Pairs with matt's writing-for-agents:
-  that one writes for machines, this one for people.
+  memory.
 ---
 
 # writing-for-humans
@@ -22,8 +21,7 @@ record; detectors are directional signals only.
    job-related, strangers). Unstated → infer from the destination and say which you picked.
 2. **Reset the voice.** Whatever output style or fleet formatting is active in the session, the
    draft ignores it — no fleet emoji prefixes, no bullet skeletons, no lowercase law, no ➡️
-   lines. The draft obeys only this skill and the register. (The reply *around* the draft stays
-   in fleet voice; fence the draft per the copy-paste rule.)
+   lines. The draft obeys only this skill and the register.
 3. **Draft in Dima's voice, not «a human» voice.** Read
    [references/dima-voice.md](references/dima-voice.md) first — few-shot samples and the tell
    list. Rewriting an AI-shaped draft never fully escapes the footprint; drafting in-voice from
@@ -36,8 +34,7 @@ record; detectors are directional signals only.
    gold gate — [pangram.com](https://www.pangram.com) (2,000 words/day free, the accuracy leader),
    run by Dima's hand, never automated. print lane 1, hand the draft to Dima; disagreement between
    the two is itself signal. detector scores are directional, never pass/fail: light editing swings
-   every tool 15–30 points. Dima is the validator of record. (🧪 on a test drive: he compares the lanes
-   himself; the lane earns its keep after a few real runs, or goes.) This step alone may be
+   every tool 15–30 points. Dima is the validator of record. This step alone may be
    skipped for a two-line chat reply; step 4 never is.
 6. **Hand over fenced.** The final draft ships in a copy fence with a destination ribbon.
    Done when the reply's skills line names both `humanize:ai-check` and `humanize:humanize` — a
@@ -55,5 +52,6 @@ record; detectors are directional signals only.
 
 - Health updates and the gazette's outward texts may be proxied through this skill — Dima's
   standing word, given because the first health updates read «machinic».
+- The techniques and the detector landscape behind this skill: [references/sources.md](references/sources.md).
 - The voice corpus is Dima-owned: he refreshes [references/dima-voice.md](references/dima-voice.md)
   samples; agents fix only mechanical rot (dead links, renames) there.

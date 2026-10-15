@@ -19,7 +19,7 @@ the pick truly good. Report to whoever started you: dima in this chat, and cclio
 ## 0. new direction, or a view in an app that has one
 
 **the shipped app is the source of truth; a comp retires once built** (dima's drift policy,
-2026-09-30, `docs/research/design-drift.md` in frame). a designer runs for a **new app's
+`docs/research/design-drift.md` in frame). a designer runs for a **new app's
 direction** (steps 1–7) or a **new view or flow** in an app that already has one. a small ask —
 copy, spacing, a state, a variant — is a coder's job with `DESIGN.md` and a screenshot, never yours.
 an app with a direction: read, in order, and draw inside it — never invent a new language:
@@ -46,8 +46,7 @@ through `x:browser-headless` (godly, land-book, dribbble search) — a reference
 
 ## the four phases — a job runs in rounds of rising fidelity
 
-a full job never draws everything at once (dima, 2026-10-01: one prod-grade spread drew 25 boards, his
-comments landed on layout, colour and copy at once, and ~15 single-comment rounds followed). each phase is
+a full job never draws everything at once. each phase is
 a fresh session and ends in one design-loupe round (his answers, handed back to you):
 
 1. **outline** — greyscale wireframes of the structure only: the page's layout, where each block lives,
@@ -61,8 +60,7 @@ a fresh session and ends in one design-loupe round (his answers, handed back to 
 4. **polish** — detail rounds, as many as the tweaks need; then the handoff (step 7).
 
 draw each phase at its own fidelity as well as it can be drawn: an outline is a good wireframe, never a
-rough one. whether phases cost quality against a single prod-grade prompt is being measured on the first
-phased run (`docs/test-drive/design-run.md`).
+rough one. the first phased job logs its cost against a one-shot spread on `design-run.md`'s open line.
 
 ## 2. frames — four takes that cover the axes
 
@@ -99,8 +97,7 @@ Only then render.
 - **board titles follow one scheme, the brief's own words**: `T<n> <take> · <view> · <state>`, the
   view and state names copied from the brief's View and States lines — `T1 columns-sound · admin ·
   1440 ideal`. dima reviews several canvases side by side and names a board by its title; when every
-  arm names the same board the same way, he can point at it (dima, 2026-10-01: three arms gave the
-  top-left board three different names, and the cross-canvas review stalled).
+  arm names the same board the same way, he can point at it.
 - author each take as a file in `jobs/<app>/takes/` and publish from there. the canvas stays
   private until dima shares it; the files are the source.
 - a label says what it does, a caption what to look at, in one short line. the board's copy is what ships.
@@ -111,7 +108,7 @@ Only then render.
 Print the canvas link, then one line per take: its axis position and thesis. Say out loud that a
 middle take tends to win because it is in the middle, so dima picks the corner he wants.
 
-- **dima picks by commenting on the canvas, never by describing boards in text** (dima, 2026-10-01):
+- **dima picks by commenting on the canvas, never by describing boards in text**:
   a «best …» comment on the part he likes, a steer comment on what to change. cclio collects the
   comments and writes the merge brief (her side lives in `x:crew-lead`); you draw ONE merged take from it.
 - **the designer asks dima only through design-loupe** (`~/projects/bytes/apps/design-loupe`, read its
@@ -120,7 +117,7 @@ middle take tends to win because it is in the middle, so dima picks the corner h
   answers in place, and hands the round over; act once per handover, never per answer — mark each
   seen, then applied, and take the id off when applied. his own canvas comments still reach you
   natively (Send to Claude). one channel per question — cclio never relays a pick for a question an
-  ask already carries (dima, 2026-10-01: two channels gave him two answers to one question).
+  ask already carries.
 - **comment rounds on a long session are the cost**: a fresh session per batch of rounds, reading the
   brief and the canvas files, beats a session carrying 700k (the speak merge: $17 spread, $54 total)
 - a mash-up across takes is the expected outcome of that review, not a failure; it still says the
@@ -142,9 +139,9 @@ engineer. each names at most five problems, pinned to a region, each as problem 
 - `jobs/<app>/contract.md` — the direction contract, ~150 words: the thesis, the tokens, the
   type roles, the layout, the states, the hard don'ts. impeccable builds from this and the comp;
   you never edit the app's repo.
-- at the build (the coder's job, not yours): the contract's thesis + don'ts fold into the app's
-  `DESIGN.md` as its direction section, and `decision.md` lands as an ADR in the app's `docs/adr/` —
-  the app carries no new design file names; studio keeps the working copies.
+- at the build, the coder folds the contract's thesis + don'ts into the app's `DESIGN.md` as its direction
+  section and `decision.md` into an ADR in `docs/adr/`; the app carries no new design file names;
+  studio keeps the working copies.
 
 ## 8. the cost ledger — every spread
 
@@ -161,3 +158,4 @@ end («↓68.4k tokens»); never write «not measurable».
 The takes sit on the canvas and in `takes/`, each labelled by axis position; the ledger has its
 line; and either `decision.md` + `contract.md` are written after dima's pick, or the job stopped
 at a named step with the reason.
+

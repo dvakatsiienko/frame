@@ -12,3 +12,4 @@ one home for every scheduled daemon (`schedule/jobs/<name>/`: plist, source, `bi
   work, the trash call is brokered and refused; log a `folder writable` line in the error path and the scanned count, since a bare «trashed 0 / exit 0» on a folder with nothing old enough reads identical to a deny
 - `plutil -convert json` drops xml comments — prose in a plist is read from the raw file; `launchctl
   print` repeats `state =` in nested blocks — anchor the parse on the top-level line
+- **an AppKit daemon's `main` is synchronous** — `NSApplication.run()` inside `static func main() async` starves the main actor, so no hotkey or timer Task ever runs; a one-shot test never runs the app loop, so only a real key press shows it (speak, 40 min, 2026-09-29)

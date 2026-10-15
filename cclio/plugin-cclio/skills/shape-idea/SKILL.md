@@ -21,18 +21,16 @@ word. skipping a step happens only on his word, named out loud.
    matt's user-only `grill-with-docs` does), so every term the grill settles lands in `GLOSSARY.md`
    and every hard decision in an ADR as it happens; one question at a time, until the open decisions are
    settled or parked by name. always; skipped only on his word. a re-shape grills what exists: why,
-   for whom, what is missing, what should go. where the session draws a fleet board, each question
-   is also an orbit ask with the pick, and orbit is the only answer door.
+   for whom, what is missing, what should go. in the grill shape (`habit-dima-comms-pacing`).
 3. **prior art** — does it exist already, and can we use it instead of building?
    `advise-project-approach` for a plan or a stack; the research lanes (`habit-research-lanes`) for
    the market. then the lib search: per part of the build (a waveform, a hotkey, a pan/zoom surface),
    the solid, maintained libraries that already solve it — dima thinks in frontend, so the under-the-hood
-   parts are the ones to hunt (2026-10-02). done when the build-or-reuse call and the lib per part are
+   parts are the ones to hunt. done when the build-or-reuse call and the lib per part are
    written with their reasons.
 4. **sharpen** — `neuroarxiv` when the question is an architecture or a method; `adhd` for a name
    or a fork with no clear answer. only where one applies; say which ran and what it changed.
-   neuroarxiv's per-paper reads go to a `helper-lite` or `researcher` agent (no fleet memory, ~10k a read), never a
-   general-purpose one (~115k each, 2026-10-14).
+   neuroarxiv's per-paper reads go to a `helper-lite` or `researcher` agent (no fleet memory, ~10k a read).
    then, on every shape, a plan critic: write the plan to a file and run `pnpm -C ~/frame ccrow:plan-critique
    <file>` — a fresh one-shot on ccrow's day arm, blind to the thread; its verdict and ≤5 located
    findings go to dima beside the grill (on trial with ccrow, `docs/test-drive/ccrow.md`, FRM-336).
@@ -45,7 +43,8 @@ word. skipping a step happens only on his word, named out loud.
    `GLOSSARY.md` words (`domain-modeling`). a new app scaffolds through `x:app-setup-essentials`. a
    re-shape of an existing app runs `domain-modeling` over its current code too, so the redesign
    starts from the real terms (dima, 2026-10-06: every app goes through it, on its next touch).
+   a skill or a fleet tool outputs its `PRODUCT.md` and the `SKILL.md`; `FTR.md` and the glossary only when it is an app.
 
-**completion criterion:** the three outputs exist in the app, dima said «shaped», and only then does
+**completion criterion:** step 7's outputs exist, dima said «shaped», and only then does
 design start (`x:crew-designer-interview`) or code (`x:crew-coder`). a design brief is written from
 these outputs, never from the original ask.

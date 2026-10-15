@@ -27,8 +27,8 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   against the source; fix real ones, dismiss false positives with a written reason; fix CI
   failures, distinguishing real breaks from infra flakes. nothing new → stay quiet. stop when
   the bots are green on the latest commit.
-- **the ci reviewer reads the diff and runs nothing** — no `node`, no tests (2026-09-28: it passed a surviving mutation and a cross-view rounding gap the verifier caught). it finds reading bugs the verifier misses; the verifier stays the runtime check.
-- **the ci reviewer lands its verdict by editing its «working…» comment in place** — a watcher keyed on `created_at` never sees it; key on `updated_at` (atelier #115, 2026-09-29). `x gh pr --since` times a comment by its last edit.
+- **the ci reviewer reads the diff and runs nothing** — no `node`, no tests. it finds reading bugs the verifier misses; the verifier stays the runtime check.
+- **the ci reviewer lands its verdict by editing its «working…» comment in place** — a watcher keyed on `created_at` never sees it; key on `updated_at`. `x gh pr --since` times a comment by its last edit.
 - **reading a reviewer, measured 2026-09-11**: the ci reviewer posts to a different endpoint per
   round — read all three (`issues/N/comments`, `pulls/N/reviews`, `pulls/N/comments`; `x gh pr <n>`
   is the one read), never the workflow run (an `issue_comment` workflow runs on the default branch;
@@ -41,9 +41,8 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   names the judged commit, counts the rounds (two per pr), and at the cap names dima's approval,
   the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
   own verdict marker gates it, the findings live in its comment — read that.
-- a claude-code-action pr that edits a workflow already on the default branch IS reviewed
-  (measured 2026-09-12: #79 got two rounds with verdict lines; the «self-skips» belief in
-  older comments was wrong). only a pr that edits `claude.yml` itself is unproven.
+- a claude-code-action pr that edits a workflow already on the default branch IS reviewed (#79, two rounds
+  with verdict lines); only a pr that edits `claude.yml` itself is unproven.
 - `performed_via_github_app` exists on issue comments only — absent on `pulls/N/comments` and
   `pulls/N/reviews`; identity of an inline thread comes from `user.login` + `user.type`.
 - a `gh api …/runs` waiter keys on `id > <last seen>`, never on `status == completed` with
@@ -51,26 +50,23 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
 - `gh pr review …` without a checkout needs `--repo <o>/<r>`, or it dies on «not a git
   repository».
 - **`--delete-branch` on a merge auto-closes every pr based on that branch** — `gh pr list
-  --base <branch>` before the merge; retarget the stacked prs first (#80 died this way).
+  --base <branch>` before the merge; retarget the stacked prs first.
 - **when main moves under an open pr, merge it into the branch within the hour** — github creates
   no `pull_request` run while a pr is CONFLICTING (no merge ref), and `gh pr checks` reads «no
-  checks reported» as calm; ten heads ran nothing on dotfiles #45 (2026-09-20). a red run beats no run
+  checks reported» as calm; a red run beats no run
 - **a merge that changes a `package.json` is followed, in the same turn, by `pnpm install` in the main
   checkout and a restart of every live dev server it feeds** (`launchctl kickstart -k gui/$(id -u)/<label>`) —
-  a pull alone left atelier's `:5180` on a vite «failed to resolve import» overlay for half an hour
-  (bytes #102, 2026-09-26); vite keeps a failed resolution until it restarts
-  then `/run` on every app the merge touched — the sanity pass that would have caught #102's dead import in a minute.
+  vite keeps a failed resolution until it restarts — then `/run` on every app the merge touched.
 - **the squash-merge commit message is written `x:cmt`-style at merge** (`--subject` + `--body` on
   `gh pr merge`), never the pr body pasted in — it describes what landed, never the plan, and
   carries no session-url trailer (the commit contract bans it; the harness's pr-body ask would
   smuggle it in through the squash)
 - **a push to main after a pr opened does not refresh that pr's base** — the diff keeps showing the
-  coordinator's commits (#42: 46 files for a 7-file change) until `gh api -X PATCH repos/<o>/<r>/pulls/<n>
+  coordinator's commits until `gh api -X PATCH repos/<o>/<r>/pulls/<n>
   -f base=main` nudges github to recompute; run it after every main push while a pr is open.
+- a merged PR is the implementation record: keep no second checklist in the repo.
 - merge only per the disposition given (merge-when-green, or stop and report). none given →
   report and ask.
-- a merged PR is the implementation record — the tracking item's close is cclio's (`x:cmt` § 5) when the work
-  lands; keep no second checklist in the repo.
 
 ## issues
 
@@ -92,13 +88,12 @@ and neither is one merged when the request said report and ask.
 
 ## github api reads
 
-- **a ci watcher waits for the run to exist before `gh run watch`** — github creates the run a few seconds after the push; asked at +15 s for the head sha it answered nothing and the watcher died on a 404 (2026-09-23). poll `gh run list --commit <sha>` until an id appears, then watch that id
-- **a file from another repo reads raw with one header** — `gh api -H "Accept: application/vnd.github.raw+json" repos/<o>/<r>/contents/<path>` prints the file itself, no base64 and no jq (proven on cli/cli's README, 2026-10-10); a dir still answers a json list
+- **a ci watcher waits for the run to exist before `gh run watch`** — github creates the run a few seconds after the push, and an early ask dies on a 404. poll `gh run list --commit <sha>` until an id appears, then watch that id
+- **a file from another repo reads raw with one header** — `gh api -H "Accept: application/vnd.github.raw+json" repos/<o>/<r>/contents/<path>` prints the file itself, no base64 and no jq (proven on cli/cli's README); a dir still answers a json list
 - `gh api --paginate` emits one json array PER PAGE — `.[0]` reads the first 30 items and looks
-  complete; fold with `jq -s add` (a review guard nearly read half the threads, 2026-09-11)
+  complete; fold with `jq -s add`
 - a poller that seeds its window at «now» is blind to everything that made it worth starting —
-  seed two hours back (greptile's findings sat unseen for a round, 2026-09-11)
-- **a conflicting pr gets no `pull_request` run at all** — github creates none without a merge ref, and «no checks reported» reads calm. main moves under an open pr → merge it in within the hour (ten heads ran no ci, 2026-09-20)
+  seed two hours back
 
 ## posting under dima's account outside our repos
 

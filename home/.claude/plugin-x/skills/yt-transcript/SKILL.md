@@ -65,7 +65,7 @@ language code, never a pattern or list (YouTube answers 429) · the dir name bui
 (a failure must never make the shelf root the target) · both subs flags, `|| true`, success
 judged by the file · identifiers repaired from the video's own metadata · work dir trashed.
 
-### 6. Read it, then report
+### Read it, then report
 
 📌 **Check size before reading whole** — a 50-min talk ≈ 60k chars ≈ 15k tokens; narrow ask →
 grep or slice, and say which you did. Report one line: title, channel, duration, path in

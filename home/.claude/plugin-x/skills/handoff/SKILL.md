@@ -67,9 +67,6 @@ Offer with a 💡 tip, specific and occasional, never a running commentary.
 - **Cross-thread awareness** — one topic worked in both frontends → offer a sync handoff
   rather than letting both sides work blind.
 
-📌 The store is shared: CSTs flow `cc`↔`cw` through one directory, served to `cw` by the `x-cw`
-mcp server, which shells out to the same `x handoff` this skill calls.
-
 ## delivery failure — triggers A and D
 
 A send bounces (error, "not reachable") → do NOT retry inline. Write the CST to the store

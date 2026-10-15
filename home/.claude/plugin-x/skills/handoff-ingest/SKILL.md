@@ -28,7 +28,7 @@ If the user stated what THIS thread is for, that is a TARGET — peer mode passe
 x handoff ingest [<topic>] --for <this session's audience> --json
 ```
 
-🚫 **never silence an ingest.** it prints the CST once — the envelope's `data.body` — and deletes the file; piping it to `/dev/null` destroys the handoff (measured 2026-09-07: halt8, reconstructed from a peek, tail lost). read the print in full; a peek is not an ingest.
+🚫 **never silence an ingest.** it prints the CST once — the envelope's `data.body` — and deletes the file; piping it to `/dev/null` destroys the handoff. read the print in full; a peek is not an ingest.
 
 `<audience>` is this session's own token — `cclio` for a coordinator session, `ccli` for a plain
 one; an ingest without `--for` is refused. x does the mechanics and refuses rather than guessing:
@@ -90,12 +90,12 @@ I am a fresh session taking over your thread. Pause current work, do this in one
 - Verified: idle interactive peers wake on receipt. An unresponsive peer is usually a zombie
   twin (same sessionId, stale pid) or a session blocked on a dialog — retry the twin, then
   FILE MODE.
-- KNOWN CC BUG (upstream closed it unfixed, 2026-10-03; re-probe with `test -S`, and drop this
-  bullet plus sline's `peerSocketAlive`/⚠ segment when a probe shows it gone): a session can register in `~/.claude/sessions/` with its
+- KNOWN CC BUG (closed unfixed upstream; re-probe with `test -S`, and drop this bullet and sline's
+  `peerSocketAlive`/⚠ segment when a probe shows it gone): a session can register in `~/.claude/sessions/` with its
   `/tmp/cc-socks/<pid>.sock` never bound — outgoing sends work, inbound is dead, ListAgents
   omits it, peers get "not reachable". Verify: `test -S /tmp/cc-socks/<pid>.sock`; heal via
   restart or `/exit` + `claude --continue`; the file tier covers delivery meanwhile. Tracking:
-  https://github.com/anthropics/claude-code/issues/85497 (ours; dupes #85412, #84945, #85160, #84894).
+  [claude-code#85497](https://github.com/anthropics/claude-code/issues/85497).
 
 ## Completion criterion
 

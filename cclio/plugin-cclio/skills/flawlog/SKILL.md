@@ -7,8 +7,7 @@ description: load on «flawlog», «flush the flawlog», «flaw», the moment a 
 **a flaw just happened → try to fix it NOW. log only what survives the attempt.**
 
 loads at boot alongside `/cclio:boot`, whenever a mistake/friction/retry just happened, or when
-dima asks «do you keep an eye on flawlog». coordinator-only, on purpose — do not generalise it
-into an `x:*` skill yet.
+dima asks «do you keep an eye on flawlog». coordinator-only, on purpose.
 
 ## 1. flag on the spot, same turn
 two lines in the reply. non-blocking, informational — never a topic change, never a permission
@@ -27,8 +26,7 @@ now and a rewind at wrap.
 that re-litigates a settled thing hours later.
 
 **a line that still earns its place after a fix opens with `fixed:`** — the fix landed, the lesson
-stays. jev's flawlog lanes read an unmarked line as an open rule candidate (two such lines were
-laned «rule» on 2026-09-22); the marker is how the lane knows it is closed.
+stays; a reader of the log (jev's flawlog lanes, parked) takes an unmarked line as open.
 
 ## 2. what actually reaches the log
 only what could NOT be closed on the spot:
@@ -46,8 +44,7 @@ not lost: it stays in the file's H1, where provenance belongs and legibility doe
 
 📌 name it when the session's shape is clear, not at the first entry — a log opened as
 `misc-flaws` never gets renamed. if the first flaw lands before the topic does, use a working
-slug and fix it at the halt. one dir, all
-history — the pre-migration archive was merged in. the shelf is a symlink into
+slug and fix it at the halt. the shelf is a symlink into
 `home/.claude/shelf/`, so the log is git-tracked; write the `~/.claude/...` path and let the
 mirror rule do the rest.
 line shape: `what broke · cost · lesson`. one line, no essay.
@@ -69,7 +66,5 @@ was missed, fix what is still fixable.
 the opposite failure: flagging so eagerly every turn carries a ⚠️. if it cost nothing and changes
 nothing, it is not a flaw. **silence is the correct output for a clean turn.**
 
-📌 **the two logs are different things and the names now say so.** the pocket (Backlog.md, `cclio/pocket/`) is the
-**work** pool — what we are doing, statuses, carry-over. `~/.claude/shelf/flawlog/` is the **flaw** journal — process defects caught mid-session.
-one tracks the flow, one tracks the flaws. never write a flaw into the pocket or a task
-into the flawlog.
+📌 the pocket (`cclio/pocket/`) is the **work** pool, `~/.claude/shelf/flawlog/` the **flaw** journal: a flaw
+goes to the flawlog, a task to the pocket.

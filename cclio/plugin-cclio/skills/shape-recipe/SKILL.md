@@ -14,8 +14,8 @@ shape test (`script/lib/recipe-shape.test.ts`) proves it.
 
 ## running one
 
-0. **every run is shaped with dima first, a create and a rerun alike — a grill, never a tick list** (dima, 2026-10-13, o151: «fully shape a recipe each time … everything changes and recipes go stale — my wants, the vectors, and what we want out of recipes themselves»). read `recipe.md` and the last 5 lines of `log.md` as the thing under review: is every want line still true, does every vector serve a want line and ask today's question, do the artifacts still reach the readers who should use them, and does the recipe as a whole do what it was made for? then grill him (`grilling`), one round in the thread, each question with its choices and a ➡️ pick and each also an orbit ask (`habit-dima-comms-pacing`): his want first («what do you want out of this recipe now?»), then the vectors printed with the shared ones from `recipes/AGENTS.md` for him to cut and add, then where the gains land. a groom printed as fixes to tick is not this step (#dima-caught 2026-10-13, refresh-monorepo). done: the round answered, the recipe edited from it, dima said «run it», and on that word `groomed: <today> (dima)` is in the frontmatter — `pnpm research:lanes` refuses a brief under `last/` without it
-1. research, all lanes at once from one brief built by `pnpm recipe:brief <name>` (the recipe's want and vectors plus the shared vectors, verbatim; run #4 of refresh-cc-mods shipped without the shared ones, 2026-10-12): the `researcher` agent (sources, code, docs) + `pnpm research:lanes <brief>` (exa + parallel). raw output → `last/`. done: every lane landed or failed out loud
+0. **every run is shaped with dima first, a create and a rerun alike — a grill, never a tick list** (dima, 2026-10-13, o151: «fully shape a recipe each time … everything changes and recipes go stale — my wants, the vectors, and what we want out of recipes themselves»). read `recipe.md` and the last 5 lines of `log.md` as the thing under review: is every want line still true, does every vector serve a want line and ask today's question, do the artifacts still reach the readers who should use them, and does the recipe as a whole do what it was made for? then grill him (`grilling`), one round in the thread, each question with its choices and a ➡️ pick and each also an orbit ask (`habit-dima-comms-pacing`): his want first («what do you want out of this recipe now?»), then the vectors printed with the shared ones from `recipes/AGENTS.md` for him to cut and add, then where the gains land. the owner brings its proposed cuts and adds into the round (a recipe dima has to rewrite by hand is a recipe its owner neglected); a groom printed as fixes to tick is not this step. done: the round answered, the recipe edited from it, dima said «run it», and on that word `groomed: <today> (dima)` is in the frontmatter — `pnpm research:lanes` refuses a brief under `last/` without it
+1. research, all lanes at once from one brief built by `pnpm recipe:brief <name>` (the recipe's want and vectors plus the shared vectors, verbatim): the `researcher` agent (sources, code, docs) + `pnpm research:lanes <brief>` (exa + parallel). raw output → `last/`. done: every lane landed or failed out loud
 2. distill — clever-merge into each artifact: keep what still holds, add only what is new and useful, delete what the run proved stale. raw research never lands in an artifact. done: every artifact in `artifacts:` read and touched or named «unchanged»
 3. the findings print, one message to dima, in the research-print shape of `~/frame/cclio/memory/habit-research-lanes.md` (the headline, then the ~3 sections that carry most); on top of it, every recipe print names its checklist items and its `open` vectors. a noop run says «noop» and stops there. done: printed
 4. append the log line, update `recipe.md` only where the run proved it wrong. done: `log.md` has today's line
@@ -37,14 +37,8 @@ coordinator, should act in a special way here.» so:
   dima, the log line is written. a run that finds nothing to change is a full run; a change is
   adopted on dima's word, never made because the run must produce one. the weight of a recipe is
   its want and its vectors, sharpened at every groom. a vector with no sources prints as `open`
-- **a brief quotes the want and the vectors verbatim** — never re-describes them; before launch, diff
-  it against the recipe and fix any line that reframes the subject (a brief that called the classifier
-  «a frozen model» got «retire» from every lane, 2026-10-08)
-- **vectors start from our own evidence, then look outside**: the flawlog, the retros, the test-drive
-  logs and the flow numbers since the last run say where the owner failed; outside research is pointed
-  at that, never at the whole subject
-- **the grill is the owner's duty at every run** (step 0): the owner brings proposed cuts and adds into the
-  round, dima answers it; a recipe dima has to rewrite by hand is a recipe its owner neglected
+- **a brief is built by `pnpm recipe:brief <name>`**, never by hand: a hand brief re-describes the want and the lanes answer the reframing
+- **outside research is pointed at where the owner failed** (the flawlog, the retros, the test-drive logs since the last run), never at the whole subject
 - **the owner is a seat, never a spawn**: whoever holds that seat next proposes its vector cuts and adds
   as a last act of its session, in its retro (the next design lane for `refresh-art-kit`); cclio runs the
   groom and the grill from them, with the seat's skill loaded, and says so. nobody is spawned for a groom
@@ -59,10 +53,7 @@ run starts with step 0's grill like any other, and `groomed: <today> (dima)` lan
 ## practices
 
 - ✅ a claimed fact in a findings print carries its source or «?»
-- ✅ noop is a real outcome — a run that found nothing new changes nothing
 - ✅ every run asks «can a step here become a script?» and names the step
-- ❌ raw research kept past the distill
-- ❌ a re-groom skipped because «the vectors look fine» — stale vectors give confident answers to old questions
 
 **completion criterion:** for a run — `log.md` holds the line and the findings print reached dima; for a
 new or reshaped recipe — `pnpm test` passes the recipe shape test (`script/lib/recipe-shape.test.ts`).

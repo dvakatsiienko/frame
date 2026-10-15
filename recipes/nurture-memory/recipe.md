@@ -134,7 +134,7 @@ his standing calls on skills:
 6. **then every layer in step 8's order; inside a layer, the worst bleeder first** (step 4's ranking). done: step 8's done. (open)
 7. **then every leaf**, one per round through `x:step-by-step`, placement before prose; every file gets EVERY lens below, a verdict for each, its bytes before → after measured on disk. (open)
    - **the redundant kinds** — a line goes, moves or shrinks when it is:
-     - **a dupe** — the same claim in another file or layer: one home keeps it, the copies go, a pointer only where a reader would not find it. duplication multiplies decay: one board change once falsified twelve files
+     - **a dupe** — the same claim in another file or layer, the verdict naming the grep that found the other home (10-15: three «dupe» cuts were the only copy): one home keeps it, the copies go, a pointer only where a reader would not find it. duplication multiplies decay: one board change once falsified twelve files
      - **superseded** — a newer decision says otherwise, or it names a Done/Canceled ticket in open-state words, a dead file, a dead flag
      - **enforced** — a hook, a mod, a check or `settings.json` now does it: the prose line goes, the guard is the rule
      - **unused** — never load-bearing since the last sweep; the cost is `resident × never-used`. no instrument measures a memory line's use yet: the verdict names its evidence (a transcript grep for the line's trigger, a flawlog hit) or says «unmeasured», never a guess

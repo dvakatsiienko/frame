@@ -31,7 +31,7 @@ fleet sees whether the page earns its place.
 - a transcript fixture is encoded with `SetEscapeHTML(false)`: `json.Marshal` writes `<` as
   `\u003c`, so a fixture never holds `<command-name>` the way a real transcript does.
 
-## bubbletea v2 traps
+## charm traps
 
 - the inline renderer erases its last frame on exit: a run step's still `✓` line is printed after
   its program quits, never left as the final view (`run.go`).
@@ -39,3 +39,11 @@ fleet sees whether the page earns its place.
   picker) is measured before it runs and wiped after (`runForm`); a form whose height moves
   (inputs, validation errors) takes the alt screen (`runFullScreen`).
 - `go-runewidth` below v0.0.30 spends ~13 ms at init on two 1.1 MB tables; keep it ≥ v0.0.30.
+- anything taller than the terminal is a `bubbles/viewport` pager on the alt screen, only when
+  stdin and stdout are both a terminal; q leaves.
+- a wait gets a `bubbles/spinner` in the family colour, with the elapsed time after 1 s; the
+  spinner's view goes empty on done and the still line takes its place.
+- `lipgloss.HasDarkBackground` is a terminal round trip — compute the theme in the human view only.
+- vhs never overwrites a `Screenshot` (shoot into a fresh dir), takes it a frame late (`Sleep 600ms`
+  after it), and inherits `CLAUDECODE` (unset it in the hidden init). freeze needs
+  `--font.file=…` and `--flag=value` forms; a spaced value hangs it on stdin.

@@ -8,17 +8,12 @@ description: Load BEFORE designing a shape that is expensive to change later —
 One skill, many rules. The rules live in [`conventions/`](conventions/) as separate files and are
 **read on demand**, never up front.
 
-📌 one umbrella skill, N rule files read on demand: the listing budget is why (`author-memory/references/skill.md`).
-
 ## How to use it
 
 1. Run `ls` on the `conventions/` directory next to this file. Filenames are the index — there is
    no catalogue to maintain and nothing to keep in sync.
 2. Read **only** the files matching the work in hand.
-3. Apply them as binding. These are rules Dima already enforces by correcting mid-task; the file
-   exists so the correction is not needed.
-
-Do not read the whole directory "to be safe". That defeats the point of the split.
+3. Apply them as binding.
 
 **Completion criterion:** before calling the shaping work done, **say which convention files you
 read and which applied** — a named list, not "conventions checked". Zero matching files is a legal

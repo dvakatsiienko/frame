@@ -42,30 +42,23 @@ their head.
   unsnooze, close needs reopen. A one-way door is a bug.
 - **Every entry point.** Before calling a change done, name the other paths reaching the same
   behavior — the most common defect is a fix that works only where you tested it.
-- **Every use site.** A TypeScript rename or «who uses X» starts with the `LSP` tool's
-  `findReferences` (`ToolSearch select:LSP` first): the exact sites, re-exports and same-named
-  strings told apart. grep follows for strings, docs and non-TS files.
+- **Every use site.** Before a rename or a change to a shared name, find every caller — in TypeScript
+  through the `LSP` tool (`guide-typescript`), elsewhere through grep.
 - **Smallest proof.** Targeted tests and typecheck for what you touched; CI owns the full
   suite — no repo-wide checks unasked.
 - **A red-proof edits the existing line.** Prove a test by mutating the line it reads, never by adding a sibling
   key — biome sorts keys on save and the original silently wins, so the test reads «hollow» when it is not.
   `red-proof <file> <anchor> <replacement> <test>` (plugin bin) does the swap, runs the vitest file, and
-  restores byte-for-byte; exit 0 only on red-then-green. Many lines at once: `red-proof --pairs <pairs> <file> <test>`,
-  one `anchor<TAB>replacement` per line, each swapped alone. Any other runner: `--cmd` first and `-- <command…>`
-  in place of `<test>` — `red-proof --cmd <file> <anchor> <replacement> -- claude plugin test home/.claude/plugin-x/mods/<mod>`.
+  restores byte-for-byte; exit 0 only on red-then-green. `red-proof --help` for many lines or another runner.
 - **A red-proof covers each allow, exemption and parse branch**, not only the refusal branch — a parser or
-  lint gets ten hostile inputs (`--flag=true`, a spread, a quote, a variable path) before its first green;
-  lint rounds ran 2–4 each without them (10-08 retros).
+  lint gets ten hostile inputs (`--flag=true`, a spread, a quote, a variable path) before its first green.
 - **A test reads fixtures, never live state** — no real `origin/main`, no real registry; a fixture plants
-  its own (FRM-355: a preflight test passed on the mac and failed on the runner).
+  its own.
 - **A test that spawns a paid or networked script runs a copy with the spender stubbed**, never the
-  real path (FRM-352 spent ~$0.20 of real lanes in a test).
+  real path.
 
-## traps that cost hours
+## a trap that costs hours
 
-- **an AppKit daemon's `main` is synchronous.** `NSApplication.run()` inside `static func main() async`
-  starves the main actor, so no hotkey or timer Task ever runs — and a one-shot test never runs the
-  app loop, so only a real key press shows it (speak, 40 min, 2026-09-29).
 - **a UI order lives in an array, never in object keys.** a formatter's key sort (biome) reorders an
   object silently, and the columns move with it.
 

@@ -12,6 +12,12 @@ refinements. Binding when printing TypeScript — follow exactly, no freestyle.
 
 - Latest ECMAScript features, accepted-step members only — no proposals.
 
+## Every use site — the LSP tool
+
+A rename or «who uses X» starts with the `LSP` tool's `findReferences` (`ToolSearch select:LSP`
+first): the exact sites, re-exports and same-named strings told apart. grep follows for strings,
+docs and non-TS files.
+
 ## Naming
 
 - **camelCase every identifier** — variables, functions, parameters, properties, object keys.
@@ -113,7 +119,7 @@ const describeState = (state: FetchState) => {
 - A shared type earns its own module only when 2+ files import it.
 - **A script that dispatches with top-level `await` keeps its helpers as `function` declarations** — a
   `const` helper defined below the dispatch is still in its TDZ when the await runs, and the script
-  crashes on first use (BYT-116 coder, 2026-10-02).
+  crashes on first use.
 
 ## Stack idioms
 

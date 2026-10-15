@@ -92,9 +92,8 @@ brief says which, and when it does not, ask once, up front.
 2. **`mattpocock-skills:code-review`** over the branch: matt's standards and spec review, the second angle
    beside the built-in review ci already runs. fix what it finds.
 3. **`coderabbit review --agent --base main`** (a main lane: `--committed --base-commit <base>^`), one run,
-   while its free quota lasts (`coderabbit review --usage`); with none left, skip it and say so. until
-   2026-10-16 log its findings in `~/frame/docs/test-drive/coderabbit.md`; the drive's verdict decides
-   whether this step stays. push.
+   while its free quota lasts (`coderabbit review --usage`); with none left, skip it
+   and say so — step 2 already gave the review. push.
    steps 1–3 run on every assignment, main-lane ones included, before a verifier's first round.
 4. **with a verifier** named in the brief (`☕️ 🔎 <ticket> verify: #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a main lane: `main:<base sha>` and your local head sha, no pr url). it reads the ci reviewer for you; every reviewer thread is still yours to

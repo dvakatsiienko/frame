@@ -16,7 +16,7 @@ module dir:
 ```bash
 gofmt -l .                 # prints nothing, or run gofmt -w on what it names
 go vet ./...
-staticcheck ./...          # ~/go/bin, built with the module's go — see below
+staticcheck ./...          # brew, built with the module's go — see below
 go fix -diff ./...         # the modernizer: SplitSeq, errors.AsType, min/max, range-over-int
 go test -count=1 ./...
 ```
@@ -96,23 +96,9 @@ dlv test . --init <file> --allow-non-terminal-interactive=true -- -test.run '^<T
   as `<msg-file>`. key order is not a contract; tests compare parsed json.
 - width is `lipgloss.Width`, never `len` — ansi codes and wide runes break a byte count.
 
-## Charm traps (bubbletea v2, lipgloss v2, huh v2)
+## Charm (bubbletea v2, lipgloss v2, huh v2)
 
-- **the inline renderer erases its last frame on quit.** a step's still line is printed with
-  `fmt.Println` after `program.Run()` returns; the model's last view is empty.
-- **a view that shrinks leaves its upper rows.** a fixed-height huh form (confirm, select) is
-  measured with `View()` before it runs and wiped after with `\x1b[{h-1}A\x1b[J`; a form whose
-  height moves (inputs, validation) takes the alt screen via `WithViewHook`.
-- **anything taller than the terminal is a `bubbles/viewport` pager** on the alt screen, only when
-  stdin and stdout are both a terminal; q leaves.
-- **a wait gets a `bubbles/spinner`** in the family colour, with the elapsed time after 1 s; the
-  spinner's view goes empty on done and the still line takes its place.
-- `lipgloss.HasDarkBackground` is a terminal round trip — compute the theme in the human view only.
-- keep `github.com/mattn/go-runewidth` at v0.0.30 or later: older ones spend ~13 ms of every start
-  building two 1.1 MB tables.
-- vhs never overwrites a `Screenshot` (shoot into a fresh dir), takes it a frame late (`Sleep 600ms`
-  after it), and inherits `CLAUDECODE` (unset it in the hidden init). freeze needs
-  `--font.file=…` and `--flag=value` forms; a spaced value hangs it on stdin.
+the traps live in `x/go/AGENTS.md` § charm traps, beside the only charm code; the stack is `docs/knowledge/go-charm.md`.
 
 ## The worktree guard
 

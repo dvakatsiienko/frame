@@ -6,16 +6,13 @@ description: Load EVERY time you write, edit, or review React/JSX components —
 # React Guide
 
 `guide-code` carries the values that govern this one; these are the language-specific
-refinements. Binding when printing React — follow exactly, no freestyle. Types side:
-`guide-typescript`.
+refinements. Binding when printing React.
 
 ## Components
 
-- **Named exports, arrow functions.** `export const Button = (props: ButtonProps) => …`.
-  Default exports only where a framework demands them (Next.js pages/layouts).
+- **Arrow functions** — `export const Button = (props: ButtonProps) => …`; exports per `guide-typescript`.
 - **`props.x` accessor — no destructuring.** The prefix keeps data origin visible at every use
   site. Destructure only when applying defaults.
-- **No `import React from 'react'`** — noise under the modern JSX transform.
 - **Derived JSX lives in named consts** before the return, suffixed `JSX` (`ListJSX` for
   collections): `const optionListJSX = props.options.map(…)`.
 - **Explicit `return` in map/render callbacks** — block body over implicit-return arrow: a
@@ -26,11 +23,17 @@ refinements. Binding when printing React — follow exactly, no freestyle. Types
 - **Body = logic, return = markup.** The body prepares data; the return stays pure JSX. Simple
   expressions inline are fine — complexity graduates to a named const.
 
+## React 19 (19.3)
+
+- **`ref` is a prop** — a new component takes `ref` like any prop; `forwardRef` only where it already is.
+- **With the compiler on** (`reactCompiler` in `next.config`), new code writes no `useMemo`, `useCallback` or `memo`, except as an escape hatch (a value an effect depends on); existing memoization stays unless tested out. Without it (chords, speak), memoize only a measured slow render or an effect dependency.
+- **Derived values are computed during render**, never mirrored into state through an effect.
+- **Non-reactive logic an effect calls goes through `useEffectEvent`**, never into the dependency list.
+
 ## Server components (Next.js)
 
 - **Server Components by default** — a component is RSC until it needs state, an effect, or a browser API.
 - **`'use client'` sits as deep as it goes** — the smallest leaf that needs it, never a route's top.
-- **Every async boundary carries an error boundary** — the section rules are in «Error boundaries» below.
 - **`Suspense` wraps every async child**, with a fallback holding the final layout so nothing shifts
   when data lands.
 
@@ -62,8 +65,7 @@ Three groups, fixed order — every dependency has one obvious home:
 2. **Components** — local React components
 3. **Instruments** — everything else: api, helpers, styles, assets, type imports
 
-`/* Core */` · `/* Components */` · `/* Instruments */` comments are optional flourish — add
-them in import-heavy files, skip when the list is short.
+The `/* Core */` · `/* Components */` · `/* Instruments */` comments are optional.
 
 ## File anatomy
 
@@ -134,11 +136,6 @@ A large edit visiting an unpatterned file → propose aligning the whole file to
   `resolver.ts`, private SVGs): `LoginForm/{LoginForm.tsx, resolver.ts, img/, index.ts}`.
 - **Route-local compositions** live in the route's `parts/` dir — they serve one page.
 
-## UI/UX floor
-
-Every rendered element also passes `guide-ui-ux` — the floor for anything a human looks at,
-react or not. Load it alongside this guide.
-
 ## Vendored code (shadcn `ui/`)
 
 Owned, not sacred — **convert-on-touch**: bring a file to house style only while editing it
@@ -148,5 +145,5 @@ for real work. No style-only chore commits.
 
 _Bytes-flavoured; apply where the stack matches._
 
-- **cva** — variants under `/* Styles */`; types via `VariantProps<typeof xxxCva>`.
+- **cva** — variants under `/* Styles */`.
 - **Forms** — react-hook-form + zod, resolver in its own `resolver.ts` beside the form.
