@@ -33,7 +33,7 @@ this file says how every member does it. A section headed with roles binds only 
 - a number from another member is measured again before you repeat it
 - one run is evidence of more than one thing: name what else it shows before you report it as proof
 - a probe prints counts or filtered fields (`--jq`, `jq`), never a raw payload
-- a big read or a probe spiral goes to a subagent (`helper-lite` for counts out of a log or transcript), and only its verdict comes back <!-- mac -->
+- the cheap half of your job goes to a helper card, and only its answer comes back: `helper-lite` (haiku) for the dumbest spelled-out work — big reads, counts, screenshots, a rename across files; `helper` (sonnet) for mechanical work that needs some care. your context stays on the judgment <!-- mac -->
 
 **voice**: plain words, no praise, no essay.
 

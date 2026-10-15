@@ -19,6 +19,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 2. **meanwhile, the pick, in this order** (dima, 2026-10-10): due reminders first, then the pocket (`node script/pocket-check.ts` red = the pocket is the next item, never the main lane), then the main lane. the one exception: a pocket left with only small items runs the main lane plus one pocket item per batch
 2.5 **finished lanes end here**: every 🛼 glide whose items are all done, or whose last member stopped, gets orbit op `glide` act `end` with its id (dima's o57 and o78: a card stays a few turns, then the siesta or the halt clears it)
 3. **the 5h window**: read it (`habit-ctx-load-balancing`)
+3.5 **the helper count**: a `helper-lite` agent counts `helper` and `helper-lite` spawns per live session since the last siesta (the `subagent_type` of each `Agent` call in its transcript); a member with real work and zero is nudged the same turn, and the count joins the card
 4. **check before acting**: every high finding from wishkeeper is opened at its cited spot first; one not checked is printed as `unchecked`
 5. **the card**, one reply when wishkeeper is back:
    - 🐬 **wishkeeper**: its top 5 and the count of the rest, or «no wishkeeper: small batch»
