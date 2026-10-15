@@ -1,0 +1,23 @@
+{
+    "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+    "cleanTempDir": "always",
+    "coverageAnalysis": "perTest",
+    "ignorePatterns": [
+        "**",
+        "!script/**",
+        "!package.json",
+        "!vitest.config.*",
+        "!tsconfig*.json",
+        "!.node-version"
+    ],
+    "incremental": true,
+    "incrementalFile": ".stryker/incremental.json",
+    "jsonReporter": {
+        "fileName": ".stryker/report.json"
+    },
+    "plugins": ["@stryker-mutator/vitest-runner"],
+    "reporters": ["clear-text", "progress", "json"],
+    "tempDirName": ".stryker/tmp",
+    "testRunner": "vitest",
+    "tsconfigFile": "stryker-no-tsconfig.json"
+}
