@@ -16,10 +16,10 @@ me a compact prompt upfront, saving a turn».
 ## 0. stop taking new work, tell the fleet — first act
 
 - **a 🐦‍🔥 second wind is graceful, never urgent** (dima, 2026-10-14: «a request, not an ask to do it as soon as possible … gracefully prepare yourself: resolve all subagents and park all stuff before compacting, to avoid data loss») — the same for a coder's
-- **my own background work lands first**: every agent and job this session started is listed; each lands and its findings fold before the CST is written (deadline 5 min, then it rides the CST as an open first-act), and the wishkeeper of the batch being closed is always waited for, never carried
-<!-- 10-14 16:28 #dima-caught: the second wind nearly compacted with wishkeeper batch C still running -->
+- **the topic in flight finishes whole first** (dima, 2026-10-15: «fully resolve composer and leave no tails, because splitting the composer part into two parts between compaction is not a good idea»): every lane and agent it started lands, its findings fold, its distill, print, log and commit run — however long that takes. the checkpoint starts only at the end of a topic, never in its middle
+- **only a topic not yet started waits**: it goes to the CST as a first-act; the small open tails close first (an ask whose answer is known, an uncommitted fix, a reply a member waits on), and the wishkeeper of the batch being closed is always waited for, never carried
+<!-- 10-14 16:28 #dima-caught: the second wind nearly compacted with wishkeeper batch C still running. 10-15 18:58 #dima-caught: the checkpoint started mid composer recipe run, its opus lane still out -->
 
-- **no new todo starts** after the trigger: the small open tails close first (an ask whose answer is known, an uncommitted fix, a reply a member waits on); a bigger one goes to the CST as a first-act, never half-done (dima, 2026-10-13, the 9 steps)
 - **the after-pickup move goes to orbit at once**, mid-turn too: «right after the pickup i'd do X» as an ask he can tick before the reset
 - **tell the fleet**: every live member (`ListAgents`) gets one `SendMessage`: «pause — cclio is checkpointing, hold every
 message to me until «resume»; finish and commit what you are on». a message that lands mid-compact

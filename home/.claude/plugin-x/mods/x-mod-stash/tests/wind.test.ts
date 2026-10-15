@@ -130,7 +130,9 @@ test("cclio's note names her good stop", async ($, on) => {
     w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
     await start($);
     await say($);
-    expect(notes(w.lines)[0]).toMatch(/take no new todos.*cclio:checkpoint/);
+    expect(notes(w.lines)[0]).toMatch(
+        /finish that topic whole first.*never split.*cclio:checkpoint/,
+    );
 });
 
 const INIT_LIST =
