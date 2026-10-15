@@ -45,7 +45,8 @@ not in the report. a park that only exists in a chat message is a strand.
 ## phase 1.5 — the inbox, cleared unasked 📬
 every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item has a home
 (a pocket item, a ticket, an answer given, a fold), then reset it by copying his template over
-it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear (dima, 2026-09-28). the template
+it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear (dima, 2026-09-28) — and
+`trash _hq/inbox-composer.md`, composer's prepped sibling, rebuilt at the next boot. the template
 is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
 the same pass prunes the pocket first: every `done` item is filed with `backlog task complete <id>` (pocket-check lets a done item stay listed through its day, then reds it); the gazette post (phase 4.5) carries the day's done items and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
@@ -77,7 +78,7 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 `pnpm jev:flawlog` first: jev lanes every line (memory / rule / story / ticket / drop) and the
 proposal starts from its lanes, not from a blank read. then cluster, ONE batched proposal, ONE
 approval, execute and commit. see `/cclio:flawlog`.
-**the retros, in the flush:** `ls ~/.claude/shelf/retros/` — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file. **until 2026-10-15** the flush also prints the comms count: pings received this session, `comms:` gaps named, and whether cclio missed anything — the comms-trim verdict is due 10-15.
+**the retros, in the flush:** `ls ~/.claude/shelf/retros/` — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file.
 **retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody (dima, 2026-10-04). the same for look-card shots: `find ~/.local/state/looks -type f -mtime +14 -exec trash {} +` (FRM-315).
 🚨 **the flush stops the halt**: print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before

@@ -19,6 +19,8 @@ classes, each named in a brief by its word:
   (it sets the gate's fields and runs pocket-check); an edit goes through `backlog task edit`
 - `gate-retry` — commit named paths through `x lane commit <msg file> -- <paths>`, whose own
   formatter fixes format reds; a red that needs an edit is a consult, never your own fix
+- `inbox-prep` — dima's obsidian inbox, groomed and sorted into its sibling `inbox-composer.md`; the
+  shape and the done command are [inbox-prep.md](inbox-prep.md), read whole before each run
 
 a one-command job (a bump, a test run, a brew upgrade) is not yours: cclio runs it, output to a file.
 
@@ -27,7 +29,8 @@ cclio can fix what she reviews; cclio hands you a file only once she committed i
 
 ## what you never do
 
-- write prose: skill or memory lines, dima's words, tickets, replies to anyone but cclio
+- write prose: skill or memory lines, dima's words, tickets, replies to anyone but cclio — `inbox-prep`
+  is the one exception, and it never touches his `inbox.md`
 - linear in any form
 - touch a file the brief does not name, delete anything (`trash` only when the brief says), commit
   without a brief that says commit, push
@@ -39,7 +42,7 @@ cclio can fix what she reviews; cclio hands you a file only once she committed i
 
 one message, a numbered batch; each chore holds: its class, the exact paths, the anchor and
 replacement or the fields, the done command, and its forbid lines if any. one chore never depends
-on another unless the brief says so. cclio lints it before it goes out: `node ~/frame/cclio/script/composer-brief-check.ts <brief>` reds an anchor that is missing, matches twice or spans two lines, and a path another session holds.
+on another unless the brief says so.
 
 ## the consult — ask before, never guess
 
@@ -54,8 +57,8 @@ reasons from a tree you left half done. a chore that failed sends `[blocked]` th
 ## the receipt — the only thing you send
 
 a batch where every chore went green sends `[progress]`, so it waits for cclio's next turn and never
-wakes her; a brief that marks itself `blocking` gets `[done]` instead. one line per chore, nothing
-else, and the same lines appended to the receipt log in `~/frame/docs/test-drive/composer.md`, one
+wakes her; a brief that marks itself `blocking` gets `[done]` instead. one line per chore with its
+command's result (an unfinished chore says why), nothing else, and the same lines appended to the receipt log in `~/frame/docs/test-drive/composer.md`, one
 `node ~/frame/cclio/script/composer-receipt.ts <class> <first pass> <rework> <note>` per chore:
 
 ```
@@ -64,8 +67,6 @@ else, and the same lines appended to the receipt log in `~/frame/docs/test-drive
 2 pocket-write · exit 0 · PK-140 · pocket-check green
 3 bulk-replace · consult: anchor «foo» matches twice in a.md
 ```
-
-no summary, no prose, no «done» without its command's result; an unfinished chore says why.
 
 ## your own context
 

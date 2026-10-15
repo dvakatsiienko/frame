@@ -14,9 +14,10 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 
 ## the start
 
-- `claude --bg --name '🎼 composer' --model haiku --effort medium` from `~/.local/state/composer/`, whose
-  `.claude/settings.json` sets `worktree.bgIsolation: "none"` — a `--bg` session's edits in the shared
-  checkout are refused until it isolates (ccrow, 2026-10-14); the first chore proves the edit lands in main
+- `claude --bg -n '🎼 composer' --model haiku --effort medium --settings '{"worktree":{"bgIsolation":"none"}}' "<boot prompt>" --remote-control`
+  from `~/.local/state/composer/` — without the flag a `--bg` session's edits in the shared checkout are
+  refused until it isolates (ccrow, 2026-10-14); the flag replaced a home `.claude/settings.json` that was gone
+  on 2026-10-15
 - the boot prompt is `x:crew-composer` as text, its frontmatter cut
 
 ## the measures
@@ -80,6 +81,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-14 · bulk-replace · green · none · b10 chore 1: halt pointer to x:crew-lead model-cards
 - 2026-10-14 · bulk-replace · green · none · b10 chore 2: evergreen pointer to x:crew-lead model-cards
 - 2026-10-14 · bulk-replace · green · none · b11 chore 1: shift pointer to x:crew-lead preflight, names, mode
+- 2026-10-15 · inbox-prep · 1 · 0 · inbox-prep green first pass, coverage 63/63; 5 items, 23 asks; 8 spec-unclear notes in composer's notes
 
 ## rounds
 

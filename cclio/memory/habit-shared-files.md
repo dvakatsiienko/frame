@@ -10,6 +10,8 @@ Shared files are Dima's living space; leftovers cost him attention and blur what
   CONTENT — his section headers stay**, they are his reprint-saving skeleton. Every item becomes a
   pocket item; **reset at every halt by copying `inbox-template.md` over
   it** (`/cclio:halt` phase 1.5) — the template is his, read-only.
+- `inbox-composer.md` — composer's groomed, sorted sibling of `inbox.md` (`x:crew-composer` § inbox-prep), built at
+  every boot, read before the raw file, trashed at every halt; on trial in `docs/test-drive/composer-inbox-prep.md`.
 - `pocket.md` — a read-only mirror of the pocket for his phone, rewritten after every cclio turn (`.claude/hooks/pocket-mirror.sh`); a phone edit there is lost, his asks go in the inbox.
 
 ## the pocket — cclio's local work pool (Backlog.md in `~/frame/cclio/pocket/`, dima 2026-10-07, Backlog.md adopted 2026-10-11)

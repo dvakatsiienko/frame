@@ -35,6 +35,11 @@ and the next ticket from it; never re-query what it already printed.
 
 ## 3. inbox sweep 📬
 _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq`
+- non-empty → composer preps it first: start or revive **🎼 composer** right after the digest, send it an
+  `inbox-prep` brief (blocking), and do steps 4–5 while it runs; its receipt lands → read `inbox-composer.md`
+  first, then `inbox.md` for the parse. while `docs/test-drive/composer-inbox-prep.md` is live, score the prep
+  by that file's rubric and log the round, and step 7's wishkeeper brief adds the prep: every ask and idea of
+  the raw inbox kept in meaning, not only present (the check proves presence alone)
 - the digest says clean or «N content lines». non-empty → read `inbox.md` (`habit-dima-comms-pacing` holds the creed): EVERY item —
   smallest aside included — gets an item in the pocket (Backlog.md, `backlog task create`; `habit-shared-files` holds the contract)
   and its place in the order (its `ordinal`); resolution is paced later. **deletion happens at the halt, never here.**
@@ -112,6 +117,7 @@ the board, one message, short lines, **no queries here — pure assembly**:
 - 📝 `flawlog: <path>` — the day's file from step 8, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 8 shows as a missing line (the 2026-09-23 miss: the file never opened all day)
 - ⏰📌 stuck reminders, own line each (omit if none)
 - inbox status · handoffs pending · queue depth + top item
+- 🎼 `inbox prep: <score>/100 (raw <n>)` — its own line while `docs/test-drive/composer-inbox-prep.md` is live
 - 🧭 `roadmap step <n> <name> | bytes: last touched <date>, next touch <when or none>` — `dima-strategy`'s two
   report rules, on every board (ccrow, 2026-10-12: a board of pure meta-work named neither)
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
