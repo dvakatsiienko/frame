@@ -14,7 +14,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 
 ## the start
 
-- `claude --bg -n '🎼 composer' --model haiku --effort medium --settings '{"worktree":{"bgIsolation":"none"}}' "<boot prompt>" --remote-control`
+- `claude --bg -n '🎼 composer' --model haiku --effort medium --settings '{"worktree":{"bgIsolation":"none"},"autoCompactWindow":100000}' "<boot prompt>" --remote-control` — the 100k window keeps every chore under haiku's price line (dima, 2026-10-15)
   from `~/.local/state/composer/` — without the flag a `--bg` session's edits in the shared checkout are
   refused until it isolates (ccrow, 2026-10-14); the flag replaced a home `.claude/settings.json` that was gone
   on 2026-10-15

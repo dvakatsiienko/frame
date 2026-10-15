@@ -19,6 +19,8 @@ keeps cclio's editing sidecar (today: composer, Haiku 5.5) true: what cclio actu
 - «haiku can't think well, it only works well in a narrow, defined scope. how to use it best is yours to think through. … you verify haiku's work, and make that optimal.» (2026-10-14)
 - «before sharpening composer through sql, research and prior art, one of the first steps should be finding what to optimize: a subagent or several that hunt where your context actually goes — the sifter just found most of it is Bash output.» (sifter, now `helper-lite`) (2026-10-14)
 - «a quick refresh recipe for the sidecar: adopted and useful → we already have it shaped; it doesn't land → you just delete the recipe.» (2026-10-14)
+- «agree, and let's measure both composer and helper-lite to see how much each of them unloads you and the fleet.» (2026-10-15, on the split: stateless chores to helper-lite, stateful ones to composer)
+- «compaction actually works pretty well, so we can trust it. set composer's auto compact to 100k.» (2026-10-15)
 - his standing calls: Haiku 5.5 medium, Sonnet 5.5 only for writing use cases later; one working dir, no worktrees; composer slipstreams its messages, never pushes; it consults cclio up front on a tricky spot instead of waiting for corrections.
 
 ## the run
@@ -29,7 +31,7 @@ keeps cclio's editing sidecar (today: composer, Haiku 5.5) true: what cclio actu
 1. **groom** (step 0 of `cclio:shape-recipe`), with composer's self-report folded in: ping it «read `x:crew-composer` and your receipt log in `docs/test-drive/composer.md`; which chores did you fail, which briefs were unclear, what would you take next?». done: dima's word. (template)
 2. **the hunt**: `helper-lite` agents (never general-purpose: no fleet memory) over cclio's transcripts since the last run, answering the analysis vectors with counts and the command that produced them. done: one numbers file in `last/`, every vector answered or «no data». (template)
 3. **route**: each finding gets its home — a composer chore class, a graduation to a script or `x` verb, a settings knob or habit, a guard; nothing stays a bare finding. done: the routing list, one line per finding. (open)
-4. **lanes, from one brief**, only for the vectors the hunt left open: `researcher` + `pnpm research:lanes`; `neuroarxiv` reads go to `helper-lite`/`researcher` agents. done: every lane landed or failed out loud. (template)
+4. **lanes, from one brief**, only for the vectors the hunt left open: `researcher` + `pnpm research:lanes` + a `neuroarxiv` lane every run (dima, 2026-10-15), its paper reads on `researcher` agents. done: every lane landed or failed out loud. (template)
 5. **the critical review**: keep, revamp, or retire composer, against the kill rules in the test-drive file. done: one verdict line with its numbers, never skipped. (open)
 6. **distill** into the charter and the test-drive file; the findings print. done: printed, each change verdicted by dima. (open)
 7. **log** today's line. done: `log.md` has it.
@@ -41,6 +43,7 @@ keeps cclio's editing sidecar (today: composer, Haiku 5.5) true: what cclio actu
 - who runs a cheap executor beside a strong lead, and what moved since the last run: Devin Fusion, aider architect/editor, Anthropic's advisor pattern turned around, cc's own background-session and cross-session features
 - edit reliability of small models: anchor formats, merge failures on long files, verify-by-command patterns
 - graduation: work that keeps passing on a model, turned into deterministic scripts (progressive crystallization and its kin)
+- a parked sidecar against a fresh agent per chore: what each costs per chore (re-read context vs a fresh base), what the sidecar's memory buys, and when it stops paying
 
 ### analysis
 
@@ -54,6 +57,8 @@ keeps cclio's editing sidecar (today: composer, Haiku 5.5) true: what cclio actu
 - context per closed pocket item, compactions per day
 - composer's receipt log: first-pass green and rework per chore class; a class clean 5 runs in a row is a graduation candidate, a regressed one goes back to review
 - the net: cclio tokens saved minus tokens spent briefing and verifying — the number no paper measures
+- the unload, composer and `helper-lite` side by side: chores and tokens each took off cclio's and the members' threads since the last run, against what briefing and checking them cost
+- the split holds: a stateless chore that went to composer, or a stateful one that went to `helper-lite`
 
 ## artifacts
 
