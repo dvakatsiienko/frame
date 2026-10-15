@@ -37,4 +37,6 @@ error, over 7 days
 
 - 2026-10-15 · the token · `dev/github-changedetector` (fine-grained, public read-only, no permissions) set as a header on the 38 github api watches, hourly · a recheck of all 40: 0 errors, the anonymous budget untouched (36/60) · dima pruned 7 watches by hand
 
+- 2026-10-15 · the watch review (PK-146) · 37 → 33 on dima's word: claude-code#97924 (Projects, unused), #92327 (skill-doctor numbers), #87113 (stacked slash-skills, never hit), superwhisper-claude-code#16 (not his voice path) · #91870, the 260-comment mods umbrella, now watches state, reason, labels and closed_at, no comment count · all 35 watched issues were open at the review
+
 ## verdict
