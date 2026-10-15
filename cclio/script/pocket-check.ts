@@ -178,6 +178,35 @@ function frontmatter(text: string) {
     return { lists, scalars };
 }
 
+// a close with `backlog task edit --notes` replaces every note, dima's quoted steers included
+export function lostNoteLines(current: string, head: string): string[] {
+    const kept = new Set(noteLines(current));
+    return noteLines(head).filter((line) => !kept.has(line));
+}
+
+function noteLines(text: string): string[] {
+    const body =
+        text
+            .split('<!-- SECTION:NOTES:BEGIN -->\n')[1]
+            ?.split('<!-- SECTION:NOTES:END -->')[0] ?? '';
+    return body
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+}
+
+function headText(path: string): string {
+    try {
+        return execFileSync('git', ['show', `HEAD:./${path}`], {
+            cwd: join(import.meta.dirname, '..'),
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+        });
+    } catch {
+        return '';
+    }
+}
+
 function firstDescriptionLine(text: string): string {
     const body = text.split('<!-- SECTION:DESCRIPTION:BEGIN -->\n')[1] ?? '';
     return body.split('\n')[0]?.trim() ?? '';
@@ -201,6 +230,16 @@ if (import.meta.main) {
         today,
         closedOf([...new Set(open.flatMap(({ text }) => ticketsOf(text)))]),
     );
+    for (const { name, text } of tasks) {
+        const lost = lostNoteLines(
+            text,
+            headText(join('pocket', 'tasks', name)),
+        );
+        if (lost.length > 0)
+            problems.push(
+                `${name.split(' ')[0]}: ${lost.length} note line(s) gone since HEAD — a close appends (\`--append-notes\`); restore from \`git show HEAD:\``,
+            );
+    }
     if (problems.length === 0)
         console.log(`pocket: ${tasks.length} tasks, all checks green`);
     for (const problem of problems) console.log(`🔴 ${problem}`);

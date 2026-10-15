@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { checkPocket } from './pocket-check.ts';
+import { checkPocket, lostNoteLines } from './pocket-check.ts';
 
 const config = [
     'statuses: ["open", "claimed", "waiting", "done"]',
@@ -240,5 +240,29 @@ describe('checkPocket', () => {
                 today,
             ),
         ).toEqual([]);
+    });
+});
+
+describe('lostNoteLines', () => {
+    const notes = (lines: string) =>
+        `## Implementation Notes\n\n<!-- SECTION:NOTES:BEGIN -->\n${lines}\n<!-- SECTION:NOTES:END -->\n`;
+
+    test('an appended note loses nothing', () => {
+        expect(
+            lostNoteLines(
+                notes('dima: «keep it»\n\nnew line'),
+                notes('dima: «keep it»'),
+            ),
+        ).toEqual([]);
+    });
+
+    test('a replaced note names the line it dropped', () => {
+        expect(lostNoteLines(notes('done'), notes('dima: «keep it»'))).toEqual([
+            'dima: «keep it»',
+        ]);
+    });
+
+    test('a task with no notes at HEAD has nothing to lose', () => {
+        expect(lostNoteLines(notes('done'), 'no notes here')).toEqual([]);
     });
 });

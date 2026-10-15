@@ -80,7 +80,10 @@ test('every prompt carries the local clock', async ($, on) => {
         text: 'hi',
         wait: false,
     });
-    expect(seen[0]).toContainEqual('now 14:05');
+    const offset = -new Date(2026, 9, 7, 14, 5).getTimezoneOffset() / 60;
+    expect(seen[0]).toContainEqual(
+        `now 14:05 UTC${offset >= 0 ? '+' : ''}${offset}`,
+    );
 });
 
 test('a prompt carries the away note only while afk is on', async ($, on) => {

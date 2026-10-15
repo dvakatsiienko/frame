@@ -3525,7 +3525,9 @@ export const register: Register = (on) => {
         }
         await startTurn($, e.text, isUser);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
-        const clock = `now ${new Date(await $.clock.now()).toTimeString().slice(0, 5)}`;
+        const at = new Date(await $.clock.now());
+        const offset = -at.getTimezoneOffset() / 60;
+        const clock = `now ${at.toTimeString().slice(0, 5)} UTC${offset >= 0 ? '+' : ''}${offset}`;
         // only dima's own prompt carries his marks; each joins once and locks until the turn ends
         if (isUserTurn)
             await $.store
