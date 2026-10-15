@@ -44,6 +44,7 @@ keeps cclio's editing sidecar (today: composer, Haiku 5.5) true: what cclio actu
 - who runs a cheap executor beside a strong lead, and what moved since the last run: Devin Fusion, aider architect/editor, Anthropic's advisor pattern turned around, cc's own background-session and cross-session features
 - edit reliability of small models: anchor formats, merge failures on long files, verify-by-command patterns
 - graduation: work that keeps passing on a model, turned into deterministic scripts (progressive crystallization and its kin)
+- a middle door: a named subagent resumed across a burst of chores reads its own warm cache — memory without a parked session; and turns per chore, which explain most of an agent's cost
 - a parked sidecar against a fresh agent per chore: what each costs per chore (re-read context vs a fresh base), what the sidecar's memory buys, and when it stops paying
 
 ### analysis
