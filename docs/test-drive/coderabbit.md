@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-16
 ---
 
@@ -59,6 +59,10 @@ crew-coder's rule cuts a layer with no unique finds after two real prs; this tes
 - 2026-10-10 · frame worktree FRM-379 (x fleet ops size misses, 5 files) · cli --agent --base main · 0 findings · matt code-review found 1 real defect it missed (a miss reported again at every halt while the ticket's sessions sat in the window: «closed» ignored when) plus a hollow no-section test, the size numbers hand-copied into the header, three words for one threshold · free tier · ~2 min
 - 2026-10-12 · frame main, mods lane l9 brief 6 (x-mod-stash quiet safety net, stale probe row, note → steer rename, orbit description trim, quiet-canary; 8 commits interleaved on main, 15 files) · cli --agent --committed --base-commit 33f44ad9^ --dir home/.claude/plugin-x/mods (no other commit touched the dir, so the scope held) · 0 findings · matt code-review found 6 real it missed (a pre-rename glide mark whose steer cannot be cleared, the ledger's to-cclio regex missing sends by socket or id, the grace applied to sends but not log lines, a fixed 12-min canary deadline beside a 1–60 min wait knob, the canary's exit codes untested, a hidden note called a steer) · free tier · ~2 min
 
-## the reminder, moved here (2026-10-11, o139)
+## the reminder, moved here (2026-10-11, o139) — closed by the 10-15 verdict below
 
 ⏰ 🔬 coderabbit test drive, two weeks to 2026-10-16 — crew-coder keeps running it; every pr logs its findings and its unique finds in `docs/test-drive/coderabbit.md`, and the day-0 reads (free tier vs paid, cli modes, an assertive config) run before the next round. on 10-16: keep it as a lane or cut it. dima 2026-09-30: «move it into a test drive for 2 weeks instead … it's still a free code review» — set 2026-09-30
+
+## verdict
+
+- 2026-10-15 · **adopted** (dima: «CodeRabbit is free, there is nothing wrong with using it, and it is actually fine; the only flaw is the low quota, about 3 reviews an hour — the coder then skips it and uses matt's code review instead») · it stays step 3 of crew-coder's review chain, skipped when the quota is out

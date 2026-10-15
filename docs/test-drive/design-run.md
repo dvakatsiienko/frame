@@ -114,3 +114,4 @@ fable 5.1, speak brief v1.2, 2 takes + the blind pill side take each, one line p
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🦉🔬 design run test drive — the designer flow is on trial: the first atelier run walks the test list in `docs/test-drive/design-run.md` (brief gate, canvas fill, a real spread, pick time, rounds, the blinding, cost, comp → build, two A/Bs), one ledger line per spread; raise when a design job starts and at the verdict (adopt / reshape / drop). dima 2026-09-29: «a tested and proven design flow … a reminder of what we have to test» — set 2026-09-29
+- open (moved from crew-designer, 2026-10-15): does a phased job (outline → direction → states → polish) cost quality against one prod-grade spread? measured on the first phased run

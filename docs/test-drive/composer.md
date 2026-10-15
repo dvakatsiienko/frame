@@ -91,6 +91,9 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-15 · pocket-write · 1 · 0 · b-watch 1: PK-146 done, pocket-check green
 - 2026-10-15 · gate-retry · 0 · 0 · b-watch 2: consult, hook demanded cclio/AGENTS.md read; commit held
 - 2026-10-15 · gate-retry · consult · cclio fixed · b-watch chore 2: two causes — cclio's brief handed over a file she still held, and the kept AGENTS.md loader listed cclio/AGENTS.md to a memory-less composer; charter now skips the cclio/ read-list and limits gate-retry to unheld files
+- 2026-10-15 · pocket-write · 1 · 0 · b-nudge 1: PK-148 created (x-mod-guard helper-lite nudge), pocket-check green
+- 2026-10-15 · pocket-write · 1 · 0 · b-guard 1: PK-150 created (x-mod-guard refuse --notes on task with notes)
+- 2026-10-15 · pocket-write · 0 · 0 · b-guard 2: PK-150 set waiting; pocket-check red: waiting without **waiting for:** first line; not fixed, consult
 
 ## rounds
 

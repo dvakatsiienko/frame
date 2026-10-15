@@ -3,11 +3,11 @@ id: PK-90
 title: >-
   refresh-crew-coordinator run: re-verify spawning-mechanics, right after the
   memory sweep
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-12 11:23'
-updated_date: '2026-10-15 15:37'
-due_date: '2026-10-15'
+updated_date: '2026-10-15 17:26'
+due_date: '2026-10-22'
 labels:
   - m
 dependencies: []
@@ -19,6 +19,7 @@ ordinal: 1000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+**waiting for:** the next 5+ screenshot batch, read through helper-lite — the path still has no first real run
 dima, 2026-10-12 (o3): postpone the spawning-mechanics refresh to right after the memory sweep (FRM-267) is fully resolved. moved here from _reminders.md, whole line kept:
 ⏰ 🦉📜 spawning-mechanics artifact freshness — `docs/knowledge/spawning-mechanics.md` verified against cc 2.1.283 (2026-09-27, run #3 of `refresh-crew-coordinator`: no row flipped; the compaction hooks proven end to end); re-run the procedure when the cc version changes, or when a spawn behaves against a [verified] row. the subagent stack row is [volatile] — the first thing run #3 probes — set 2026-08-30 · input for the refresh (dima, 2026-10-12): theo's «finally a good small model» on the shelf, `~/.claude/shelf/yt-transcripts/theo-t3gg-finally-a-good-small-model-38_6C0dkKmU/` · due: 2026-10-12
 <!-- SECTION:DESCRIPTION:END -->
@@ -46,4 +47,6 @@ unparked 2026-10-15 by dima's inbox steering: this run goes FIRST, inside the me
 2026-10-15, dima: after the haiku 5.5 refresh, measure whether a keep-warm ping for composer pays: a cold restart's cache write vs a ping's reads over an idle hour (composer went cold after 1h32m today).
 
 2026-10-15 18:40: run #5 shipped (recipe log line, spawn-mechanics on 2.1.299, model-cards reshaped, 6 cards sharpened, generic agents denied fleet-wide, helper-lite renamed and editing). left: dima's sill settings screenshots — the first real case for the 5+ screenshot rule, read through helper-lite when he drops them.
+
+2026-10-15 20:17: run #5's last leftover came — dima's Sill screenshots — but cclio read all 6 by hand against the 5+ rule (#dima-caught); the rule was rewritten (fleet-tooling.md) and a helper-lite nudge pocketed (PK-148); the helper-lite path still waits for its first real batch (wishkeeper, 20:2x)
 <!-- SECTION:NOTES:END -->
