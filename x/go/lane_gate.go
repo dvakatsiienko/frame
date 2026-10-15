@@ -219,7 +219,7 @@ func skillRefusals(tree string, staged []stagedFile) []string {
 		}
 		// a rename counts as one only inside its own skill; a move in from anywhere else lands a new file
 		if f.status == "A" || f.old != "" && skillDir(f.old) != skillDir(f.name) {
-			refusals = append(refusals, fmt.Sprintf("%s is a new file in a crew-/guide- skill — read the skill whole and fold it in, or add «groom: read whole — <what was cut>» to the message", f.name))
+			refusals = append(refusals, fmt.Sprintf("%s is a new file in a crew-/guide- skill — read the skill whole and fold it in, or add a message line starting «groom: read whole — <what was cut>», at column 0 with no bullet", f.name))
 			continue
 		}
 		paths := []string{f.name}
@@ -240,7 +240,7 @@ func skillRefusals(tree string, staged []stagedFile) []string {
 			}
 		}
 		if added-removed >= skillGrowth {
-			refusals = append(refusals, fmt.Sprintf("%s grows by %d non-blank lines net — read the skill whole and groom it, then add «groom: read whole — <what was cut>» to the message", f.name, added-removed))
+			refusals = append(refusals, fmt.Sprintf("%s grows by %d non-blank lines net — read the skill whole and groom it, then add a message line starting «groom: read whole — <what was cut>», at column 0 with no bullet", f.name, added-removed))
 		}
 	}
 	return refusals
