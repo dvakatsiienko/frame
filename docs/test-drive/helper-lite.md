@@ -29,7 +29,7 @@ Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else 
 
 ## rounds
 
-- 2026-10-08 17:27 · transcript sums, via `claude -p --agent helper-lite` (the card loads only in a fresh session)
+- 2026-10-08 17:27 · transcript sums, via `claude -p --agent sifter` (the card loads only in a fresh session)
   · 14 s, $0.0078, `claude-haiku-5-5` · **exact match** on entries, three usage sums and timestamps · **and it
   flagged what the hand command missed**: 39 entries are 9 responses, so summing usage counts streaming
   snapshots several times — the 16:41 cloud grade read ~$4.75 where the deduped cost is ~$1.17 · grade 5/5

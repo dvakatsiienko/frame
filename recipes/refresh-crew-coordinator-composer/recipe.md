@@ -17,7 +17,7 @@ keeps cclio's editing sidecar (today: composer, Haiku 5.5) true: what cclio actu
 
 - «your context grows too quickly, but i still want you capable of doing everything. so an experiment: offload your mechanical work to a sidecar. … you complete turns faster and clearer, you make fewer mistakes because chores stop distracting you, your context grows slower — fewer compactions. … your context and the sidecar's together grow roughly like your single one did, but split between two places, so the overall pace is calmer.» (2026-10-14, the full drop folded in `.scratch/composer-shape/PRODUCT.md`)
 - «haiku can't think well, it only works well in a narrow, defined scope. how to use it best is yours to think through. … you verify haiku's work, and make that optimal.» (2026-10-14)
-- «before sharpening composer through sql, research and prior art, one of the first steps should be finding what to optimize: a subagent or several that hunt where your context actually goes — the helper-lite just found most of it is Bash output.» (2026-10-14)
+- «before sharpening composer through sql, research and prior art, one of the first steps should be finding what to optimize: a subagent or several that hunt where your context actually goes — the sifter just found most of it is Bash output.» (sifter, now `helper-lite`) (2026-10-14)
 - «a quick refresh recipe for the sidecar: adopted and useful → we already have it shaped; it doesn't land → you just delete the recipe.» (2026-10-14)
 - his standing calls: Haiku 5.5 medium, Sonnet 5.5 only for writing use cases later; one working dir, no worktrees; composer slipstreams its messages, never pushes; it consults cclio up front on a tricky spot instead of waiting for corrections.
 

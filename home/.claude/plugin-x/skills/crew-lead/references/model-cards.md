@@ -56,4 +56,14 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 - **cache reads are where agents spend**: an agent re-sends its context every turn; at 0.05× input a 50-turn run re-reading 100k tokens costs ~$1 on opus against $20 uncached. sonnet's $0.10 read makes a long sonnet loop cheap on re-reads too. **[vendor]**
 - **effort mid-session keeps the cache** on all four models on a subscription or api key, never on bedrock, vertex, a gateway or HIPAA; `/model` re-reads the history uncached **[verified 2026-10-12]**.
 - **bounded vs unbounded**: past a point more intelligence adds nothing to a bounded task, so a cheaper model fits; an unbounded one keeps paying for it **[vendor]**. writing the code is cheap, gathering context and verifying is the cost — haiku takes the legwork, the strong model writes **[community]**.
-- **Dima's live calls** **[dima]**: audits with taste and public-facing pretty output → fable; locked-spec builds, research rounds and debugging → opus; a verdict-shaped deliverable → opus researches, fable writes the verdict.
+## Dima's live calls — task → model, his words kept (keep growing) [dima]
+
+- fable's line: all-round writing, PM and coordination — «opus picks pragmatically, fable = flavour; i want best picks»
+- public-facing pretty output (gh profile opener): **fable** — «opus prints pretty, fable prettier; must be even prettier»
+- overhaul-audits with taste (git, zsh configs): **fable**
+- server and scripting builds with locked specs: **opus**; research rounds and debugging investigations: **opus**
+- verdict-shaped deliverables: opus researches upfront, **fable verdicts** — split the ticket's phases across models
+- haiku 5.5 over 4.5 everywhere (2026-10-08)
+- his idea, open: «fable as an adviser in shape-idea» (the vendor's architect split, fable with opus, is the same shape)
+- model labels (`fable 5`, `opus 5`) ARE the assignment mechanism — self-descriptive, no extra vocab
+- opus 5.5's clearer prose is **[?]** until Dima reads a week of it

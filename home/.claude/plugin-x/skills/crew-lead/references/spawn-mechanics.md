@@ -277,11 +277,11 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
   waking peers.
 - `ListAgents` and `Workflow` are absent from subagent toolsets — only the coordinator surveys the
   fleet.
-- **`Agent(<type>)` in `permissions.deny` refuses that subagent type** [verified 2.1.299, flag settings]:
+- **`Agent(<type>)` in `permissions.deny` refuses that subagent type** [verified 2.1.299 from flag, project and user settings]:
   «Agent type 'general-purpose' has been denied by permission rule 'Agent(general-purpose)' from
-  flagSettings»; the control without it called fine. from a project `settings.json` [docs only].
+  flagSettings»; the control without it called fine; the user `settings.json` holds it fleet-wide since 2026-10-15.
 - **who costs what on the first request** [verified 2026-10-07 → 10-15, 256 subagent first requests, duckdb]:
-  `omitClaudeMd` cards 8–10k cold · Explore 35–57k and helper 118k (both load fleet memory) ·
+  `omitClaudeMd` cards 8–10k cold · Explore 35–57k and helper 118k before both got `omitClaudeMd` on 2026-10-15 ·
   general-purpose 82k, 117k from cclio · fork 270k warm. parallel spawns of one card shared no prefix
   cache (warm 0 in 111); a workflow fan-out holds siblings up to 5 s so they do [docs].
 - **a workflow `agent()` without `agentType` loads the whole fleet memory** [verified 2.1.299]: the default workflow agent (haiku) wrote 115k on its first request, one on `agentType: 'helper-lite'` 7.5k; the `general-purpose` deny does not touch the default. both answered a question from the parent's latest user turn, so a workflow agent sees part of the parent's last turn [verified, mechanism unknown]

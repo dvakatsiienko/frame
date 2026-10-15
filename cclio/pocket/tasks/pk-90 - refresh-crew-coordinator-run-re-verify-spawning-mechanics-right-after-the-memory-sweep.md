@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-12 11:23'
-updated_date: '2026-10-15 12:40'
+updated_date: '2026-10-15 15:37'
 due_date: '2026-10-15'
 labels:
   - m
@@ -44,4 +44,6 @@ unparked 2026-10-15 by dima's inbox steering: this run goes FIRST, inside the me
 2026-10-15, the first real screenshot case (dima, o4): sill (installed today, a mac window on the iphone/ipad) works very well; he drops ~8 settings screenshots with his questions once the screenshot-reading habit is set, and I suggest good settings for the app.
 
 2026-10-15, dima: after the haiku 5.5 refresh, measure whether a keep-warm ping for composer pays: a cold restart's cache write vs a ping's reads over an idle hour (composer went cold after 1h32m today).
+
+2026-10-15 18:40: run #5 shipped (recipe log line, spawn-mechanics on 2.1.299, model-cards reshaped, 6 cards sharpened, generic agents denied fleet-wide, helper-lite renamed and editing). left: dima's sill settings screenshots — the first real case for the 5+ screenshot rule, read through helper-lite when he drops them.
 <!-- SECTION:NOTES:END -->

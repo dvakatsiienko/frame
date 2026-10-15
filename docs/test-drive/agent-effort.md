@@ -25,3 +25,4 @@ memory line names the effort — `craft-spawning`'s 🎚️ line (dima's yes, 20
 ## rounds
 
 - 2026-10-15 · extended once to 10-22 on dima's tick (0 rounds by the first end): its rounds are logged by PK-90, the spawning refresh, whose subagent research passes effort per call and records it
+- 2026-10-15 18:25 · round 1, card calls: wishkeeper's siesta at `effort: high` over a card set to `medium` — 225k tokens, 10 min, 17 findings (3 high, all checked true at their spots) · the question this trial now owns: does a per-call `high` on a card catch what its `medium` default would miss? revert rule (dima's o34): a later pass catches what a medium siesta missed → the card goes back to high. the generic-agent half is gone (generic denied fleet-wide)

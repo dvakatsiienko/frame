@@ -96,7 +96,7 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
 - write the draft board to `~/frame/cclio/.scratch/boot-<YYYY-MM-DD>/board-proposal.md` — the write
   fires ccrow's `proposal` decision wake (`ccrow/decision.ts`), the whole thread in her packet: she
   checks the parse, the plan, and how cclio read his prompt
-- in the same step, `wishkeeper` 🐬 in boot mode, in the **foreground**, with the raw inbox text, his
+- in the same step, `wishkeeper` 🐬 in boot mode at `effort: high`, in the **foreground**, with the raw inbox text, his
   boot prompt and each item's landing spot (pocket id, ticket, or answer): data loss of his drops is
   the worst outcome. a foreground call holds the turn open, so ccrow's note drains in at the next tool round.
   its brief also asks three checks: every CST first-act sits in the board's plan; every question of his is

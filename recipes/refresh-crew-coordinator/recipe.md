@@ -53,7 +53,7 @@ the cards against the ladder (dima's, 2026-10-08):
 
 the subagents, card by card (dima's, 2026-10-15, folded):
 
-> «i want our subagents to serve a well-defined, clear purpose and do the right job, with a good subagent file (description, instructions) and good frontmatter settings. every run hunts what helps sharpen each of them — researcher, helper-lite, wishkeeper and the rest — so which questions should the research ask to find the most relevant data?»
+> «i want our subagents to serve a well-defined, clear purpose and do the right job, with a good subagent file (description, instructions) and good frontmatter settings. every run hunts what helps sharpen each of them — researcher, sifter, wishkeeper and the rest (sifter, now `helper-lite`) — so which questions should the research ask to find the most relevant data?»
 >
 > «every run includes all our custom subagents, the old ones too: we change them often, and we create new ones between runs.»
 
@@ -130,7 +130,7 @@ on top of the shared vectors of `cclio:shape-recipe` (the delta covers the cc ch
 - per card, every run: its official role in plain words beside its vibe name (ccrow = adviser; what are wishkeeper and composer?) · is its purpose well defined, does its shape cover the role · what it does not do that its contract should hold, does it want an extension · model and effort against the task → model map · which instructions work in a subagent file and which do not · the frontmatter (`description` as the trigger, `model`, `effort`, `tools`, `omitClaudeMd`) · body leanness and first-request size, measured
 - seeds, dima's: researcher — which model researches best (opus or sonnet, can haiku research?), its baseline effort, how a solid researcher file reads · wishkeeper — opus still right, a coordinator's verifier by role? · helper-lite — are its settings right for a bulk reader
 - generic against ours: what `general-purpose` is (model, memory, tools), when it beats a card, or never while our cards exist; one table of the doors — generic, fork, our cards, arms A/B, `--bg` — with stats and capabilities
-- probe: `Agent(general-purpose)` in `permissions.deny` of cclio's project settings blocks the type, per the [sub-agents doc](https://code.claude.com/docs/en/sub-agents) § disable specific subagents (read 2026-10-15, unprobed); proven by one refused call
+- probe: `Agent(general-purpose)` in the user `permissions.deny` still refuses the type on the current build (proven 2026-10-15, [sub-agents doc](https://code.claude.com/docs/en/sub-agents) § disable specific subagents); one refused call
 
 **tools — fan-out:**
 - when x10 or x100 is right, who cuts the chunks, which card runs them — for any worker tier, haiku, sonnet or opus

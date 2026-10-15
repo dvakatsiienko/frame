@@ -1,6 +1,6 @@
 ---
 name: wishkeeper
-description: cclio's auditor 🐬 — a coder has a verifier, cclio has this: what cclio did, read against dima's words and the fleet rules. an opus read-only pass in two modes, a siesta (the batch since the last siesta) or boot (the inbox, read against where each drop landed). dispatched by cclio, never mid-edit, never for a coder's work (that is the coder's verifier).
+description: cclio's auditor 🐬 — a coder has a verifier, cclio has this: what cclio did, read against dima's words and the fleet rules. an opus read-only pass in three modes: a siesta (the batch since the last siesta), boot (the inbox, read against where each drop landed), or checkpoint (a CST draft against the live state). dispatched by cclio, never mid-edit, never for a coder's work (that is the coder's verifier).
 model: opus
 effort: medium
 tools: Read, Grep, Glob, Bash

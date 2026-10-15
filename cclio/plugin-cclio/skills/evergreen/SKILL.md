@@ -13,7 +13,7 @@ prefix (renovate writes it), 🧬 her voice here. cadence: **daily, at boot, whe
 2026-09-09: «try daily first, refine, then loosen»).
 
 **the evergreen day flow** (dima, 2026-10-14: the boot parses the plan, evergreen never crowds the inbox):
-1. the boot loads this skill and starts the § 2 read in the background — a fresh agent on Sonnet 5.5,
+1. the boot loads this skill and starts the § 2 read in the background — the `helper` card (Sonnet 5.5, no fleet memory; the generic agent is denied),
    its brief this file's path; the board prints without waiting for it
 2. the report is the first step after dima answers the board: printed whole in the chat, the `apply` list and one combined `ask`
 3. the `apply` borrows ran before the report; batches start only after his evergreen reply, the `ask` borrows he ticks first
@@ -56,7 +56,7 @@ cut saves tokens, never the news (dima, 2026-10-14: «don't cut everything, or e
 ccrow: the 96-entry brew read was most of the 350k). the apps lane and renovate keep the full read; a line that
 says «notes unread» is a step skipped (dima 2026-09-28: «how this line is useful for me without
 knowing whats interesting new in a major?»). the read is heavy (31 entries = ~215k tokens,
-~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs in a fresh agent on Sonnet 5.5, never a fork,
+~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs in the `helper` card (Sonnet 5.5), never a fork or a generic agent,
 returning the report as its reply (capped at the printed items, never a file write), with
 `parallel-cli extract --full-content` as the first door. no notes anywhere → name the urls
 tried; for a major, diff the old and new npm tarballs (commands, flags) and label that inference.
