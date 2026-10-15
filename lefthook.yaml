@@ -61,21 +61,6 @@ pre-push:
       # The engine's own dogfood: if the manifest stops deriving, catch it here
       # rather than on the next machine.
       run: pnpm frame:link
-    linear-push:
-      # Links a pushed commit to the ticket its body names, and reverses the
-      # writes Linear's own integration still makes. `bytes` runs the same
-      # verb — one implementation, two callers, and an `x` missing from PATH
-      # fails LOUD: the shell exits 127 and lefthook fails the push.
-      #
-      # {1} and {2} are git's own pre-push argv — remote name and remote url —
-      # and the url is the guard that keeps this off repos we do not own.
-      # use_stdin hands this command git's ref lines; lefthook gives them to
-      # this command alone, so `mirror` beside it is unaffected.
-      #
-      # It must never fail a push for its own reasons: the verb swallows
-      # everything and exits 0.
-      use_stdin: true
-      run: x linear push {1} {2}
 
 commit-msg:
   commands:
@@ -101,14 +86,8 @@ commit-msg:
           echo "commit-msg: this message contains a CI-skip marker; write «the skip directive» in prose instead."
           exit 1
         fi
-    no-linear-keyword:
-      # Linear's parser reads every push: one of its keywords next to a ticket id
-      # («fixes DOT-1», «closes BYT-2», «ref DOT-3») assigns dima and moves the
-      # ticket behind our back. The only allowed form is `- ticket: FRM-N` with an
-      # optional `(closes)` AFTER the id, which the pre-push hook applies itself.
-      # A coder hand-scanned 18 bodies for this on 2026-09-20; the hook does it now.
-      run: |
-        if grep -qiE '\b(refs?|references|part of|contributes to|towards?|close[sd]?|fix(es|ed)?|resolve[sd]?|complete[sd]?|implement(s|ed)?)\b[[:space:]]*:?[[:space:]]*(FRM|DOT|BYT)-[0-9]+' {1}; then
-          echo "commit-msg: a Linear keyword sits next to a ticket id — Linear would assign dima and move the ticket. Write «- ticket: FRM-N» (with «(closes)» after the id) and nothing else beside an id."
-          exit 1
-        fi
+    agent-trailer:
+      # an agent's commit gets `Agent: <role> · <model>` here, because `attribution.commit: ""`
+      # tells every model to write no attribution line — the why: script/commit-agent-trailer.ts.
+      # last in the block (commit-msg runs in sequence), and a human commit is left untouched
+      run: node ./script/commit-agent-trailer.ts {1}

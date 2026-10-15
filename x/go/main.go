@@ -71,7 +71,6 @@ var impls = map[string]Impl{
 	"linear comment":   {Run: linearComment, Undone: "nothing was posted"},
 	"linear update":    {Run: linearUpdate, Undone: "nothing was posted"},
 	"linear api":       {Run: linearAPI},
-	"linear push":      {Run: linearPush},
 	"linear archive":   {Plan: archivePlanOf, Apply: archiveApply, Undone: "nothing was archived", Ask: askArchive},
 	"fleet flow":       {Run: fleetFlow},
 	"fleet audit":      {Run: fleetAudit},

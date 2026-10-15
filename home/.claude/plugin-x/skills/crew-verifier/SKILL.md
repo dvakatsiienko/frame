@@ -165,8 +165,8 @@ holds it). a base or final sha that does not resolve → ask the coder. everythi
 holds, with these swaps:
 
 - **the diff** — `git diff <base>..<final sha> -- <the ticket's paths>` and
-  `git log --oneline <base>..<final sha>`, the sha the coder's «final» names (pushed or not), filtered to the commits carrying the ticket's
-  `- ticket:` line. another lane's commit in that range is context, not yours to judge.
+  `git log --oneline <base>..<final sha>`, the sha the coder's «final» names (pushed or not), filtered to the commits whose first body line names the ticket's
+  step (`step N of <id>`). another lane's commit in that range is context, not yours to judge.
 - **the head** is that final sha; the worktree checks it out.
 - **reviewers** — `ci reviewer: n/a (main lane)`; step 2 shrinks to the coder's own
   pre-verification.

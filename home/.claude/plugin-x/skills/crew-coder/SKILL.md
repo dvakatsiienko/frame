@@ -71,8 +71,7 @@ brief says which, and when it does not, ask once, up front.
 - **«pushed»** means what `x lane push` read back from the remote, never `@{u}`.
 - **commit as you go**, and push the first real commit the same turn, then every step (`/cmt y+`
   stands): the verifier reads only the pushed head.
-- **every commit body**: first line names the step (`step 3 of BYT-25: …`), one `- ticket: <id>` line,
-  no linear keywords, trailer `Agent: coder · <model>`, and nothing else.
+- **every commit body**: first line names the step (`step 3 of BYT-25: …`), no closing keyword next to an id, trailer `Agent: coder · <model>`, and nothing else.
 - **the pr opens at your first push**, through `x lane pr-open --apply <title> <body-file>`, a real pr (`x:github-contrib`). its title takes
   the `x:cmt` shape, because the squash commit takes the title and body verbatim. its body follows
   `mattpocock-skills:pr` in ≤ ~25 lines, with `- ticket: <id>` and never a closing keyword (cclio closes after the merge, `x:cmt`).

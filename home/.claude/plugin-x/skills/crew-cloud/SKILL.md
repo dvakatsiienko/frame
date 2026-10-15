@@ -96,7 +96,7 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
 
 ## git and the pr
 - branch `coder/<BYT-N>-<slug>` from the base. step commits.
-- commit subject `<emoji> <scope>: <lowercase imperative>`; emoji: 🔧 feature/config · 🐞 fix · ✨ refactor · 🗑️ delete · 📜 docs · 🎨 visual · 📦 deps. body: hyphen bullets, a line `- ticket: <BYT-N>`, last line `Agent: cloud · <model>`.
+- commit subject `<emoji> <scope>: <lowercase imperative>`; emoji: 🔧 feature/config · 🐞 fix · ✨ refactor · 🗑️ delete · 📜 docs · 🎨 visual · 📦 deps. body: hyphen bullets, last line `Agent: cloud · <model>`.
 - never write a linear keyword (closes, fixes, resolves, refs …) next to a ticket id, anywhere. never write a skip-ci marker.
 - push the branch and open ONE pr (not a draft) with `gh` as soon as the first commit exists. pr body ≤ 25 lines: what shipped, what is left, the exit lines with ✅/❌, one line per known defect.
 

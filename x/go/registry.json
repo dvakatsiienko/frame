@@ -710,41 +710,6 @@
             ]
         },
         {
-            "args": [
-                {
-                    "description": "the remote's name, from git's pre-push argv",
-                    "isOptional": true,
-                    "name": "remote-name"
-                },
-                {
-                    "description": "the remote's url, from git's pre-push argv",
-                    "isOptional": true,
-                    "name": "remote-url"
-                }
-            ],
-            "flags": {
-                "job": {
-                    "description": "the run half: the job file the hook half wrote",
-                    "type": "string",
-                    "value": "path"
-                }
-            },
-            "hidden": true,
-            "name": "linear push",
-            "needsApply": false,
-            "purpose": "the pre-push hook's door: link pushed commits to their `- ticket:` lines, undo linear's auto-assign",
-            "replaces": [
-                "script/linear-push.ts",
-                "script/lib/linear-push.ts",
-                "script/lib/linear-push.test.ts",
-                "linear:push"
-            ],
-            "touches": [
-                "linear's graphql api, as the cclio app (a hook has no terminal)",
-                "<repo>/.git/linear-push.log and the job file beside it, in the repo's common git dir"
-            ]
-        },
-        {
             "flags": {
                 "as": {
                     "description": "the member to act as; cclio's session defaults to cclio, any other agent to coder, dima's terminal to dima",

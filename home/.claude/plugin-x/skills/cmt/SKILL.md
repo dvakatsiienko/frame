@@ -19,29 +19,25 @@ remaining text = correction instruction (reword, rescope, …).
 No `y`/`y+` → draft the message, print it, wait for "y"/correction — THEN run the full
 pipeline. `y` or `y+` present → run unprompted, zero questions.
 
-**Every keyword grants permission, never timing.** None of them means "right now" — pick the
-moment yourself: a commit lands when the work is complete and verified, at a boundary a reader
-would want to bisect on. Committing broken work fast is worse than committing good work late.
-When Dima wants it this instant he says so in words — "commit now", "push it".
+**Every keyword grants permission, never timing.** A commit lands when the work is complete and
+verified, at a boundary a reader would want to bisect on. When Dima wants it this instant he says
+so in words — "commit now", "push it".
 
 ### 1.1 · Never push mid-session
 
-Commits accumulate locally; the remote is touched once, at the end. Mid-session pushes publish
-half-finished thinking, and rewriting local history stops being free once it is on the remote.
+Commits accumulate locally; the remote is touched once, at the end.
 
 - Without `push`: commit only — never push, never offer to.
-- At session end say how many commits are unpushed and ask once whether to push. One ask, not
-  a nag per commit.
+- At session end say how many commits are unpushed and ask once whether to push.
 
 ### 1.2 · The standing grants — `y+` and `push+`
 
-Each keeps its one-shot grant for the rest of the session, however a later commit is invoked.
-Both die at session end, a `/clear`, or Dima's revoke — never carried across a handoff.
+Each keeps its grant for the rest of the session, however a later commit is invoked; both die at
+session end, a `/clear`, or Dima's revoke, never carried across a handoff.
 
-- The grants are independent: `y+` covers only the confirm (a standing yes never reaches a
-  remote); `push+` covers only the push (the draft is still shown unless `y`/`y+` is also on).
-- While `push+` is on, §1.1 is suspended — it exists to stop unasked-for remote writes, and
-  `push+` is the ask. The end-of-session unpushed count also goes quiet.
+- independent: `y+` covers only the confirm (a standing yes never reaches a remote); `push+`
+  covers only the push (the draft is still shown unless `y`/`y+` is on too)
+- while `push+` is on, §1.1 and the end-of-session unpushed count are suspended
 
 ## 2 · Format — the brand
 
@@ -78,146 +74,86 @@ revert, or bisect on its own.
 - Split when the tree holds more than one: unrelated areas touched in one session, separate
   standalone features, work piled up uncommitted for hours.
 - Keep as one commit when the bulk is a single concern however large: a scaffolded app, a
-  generated migration, a repo-wide rename. Volume alone never forces a split — 🍱 exists for
-  work genuinely inseparable across scopes.
-- Mechanics: `git add <paths>` per commit instead of `-A`, ordered so each commit leaves the
-  tree working. Print the whole plan as subject lines before the first commit; one confirm
-  covers the set.
+  generated migration, a repo-wide rename. Volume alone never forces a split.
+- Mechanics: one path set per commit, ordered so each commit leaves the tree working. Print the
+  whole plan as subject lines before the first commit; one confirm covers the set.
 
 ## 3 · Author identity
 
-**Commit under Dima's configured git identity, with no identity flags** — GitHub verifies only an identity it can match to an account, and Dima wants verified commits. The full investigation
-(and why the author field never drove the Linear assign) lives in
-the header of `~/frame/x/go/linear_push.go`.
+**Commit under Dima's configured git identity, with no identity flags** — GitHub verifies only an
+identity it can match to an account, and Dima wants verified commits (the investigation: the
+header of `~/frame/x/go/linear_push.go`).
 
 📌 **The agent fingerprint is a trailer, not the author field.** Every agent commit ends with
 an `Agent:` trailer (§4) and Dima's hand-typed commits do not, so `git log --grep='^Agent:'`
-tells the two apart. Older history carries `Co-Authored-By: Claude …` for the same purpose —
-`git who` counts both. A surface whose harness forbids attribution lines says so in its report
-instead of silently omitting the trailer. Measured 2026-09-07: a terminal-born cclio (`CLAUDE_CODE_ENTRYPOINT=cli`) writes the trailer on every commit; the desktop-born note was the `Claude-Session` line, now hook-stripped.
+tells the two apart; older history carries `Co-Authored-By: Claude …`, and `git who` counts both.
+In `frame` and `bytes` the `commit-msg` hook stamps it (`script/commit-agent-trailer.ts`, the why inside); elsewhere write it yourself.
 
 ## 4 · Body
 
 - Hyphen bullets, one change per line, `subject: what changed`; `→` for before/after
   (`- model: sonnet → fable-5`). Prose paragraphs only for single-concern commits needing a why.
 - 📦 bodies: `pkg old → new` lines + `- regenerate pnpm-lock.yaml`.
-- End: blank line + the trailer `Agent: <role> · <model>` — role is the session's fleet name
-  (`coder`, `cclio`), model is the product name as it reads: `Agent: coder · Claude Fable 5.1`.
-  One spelling; twelve once made `git who` a zoo (2026-09-03). No `Co-Authored-By` line.
-  🚫 **No `Claude-Session:` trailer either**, whatever the harness note at session start asks —
-  Dima: useless to both sides. A `commit-msg` hook strips it in `frame` and `bytes` regardless.
+- End: the trailer `Agent: <role> · <model>` (`Agent: coder · Claude Fable 5.1`), stamped by the
+  hook where it runs, one spelling. No `Co-Authored-By`, no `Claude-Session:` (Dima: useless to both sides; a
+  `commit-msg` hook strips it in `frame` and `bytes`).
 - A coder's step-commit names its step in the first body line (`step 3 of BYT-25: …`) so an
   interleaved `main` still reads as a sequence.
 
-## 5 · The ticket line
+<!-- twelve trailer spellings once made `git who` a zoo (2026-09-03). -->
 
-Linear↔GitHub **issue sync is off** — tickets must never leak to GitHub. A commit body is the
-only thread tying code back to its ticket, and it carries that thread in **one form**:
+## 5 · Linear and the parser traps
 
-```
-- ticket: FRM-N
-```
+A commit carries **no ticket line**: a PR is what links to Linear — its branch name
+(`coder/<ticket>-<slug>`) and one `- ticket: FRM-N` line in its body; the id comes from the
+conversation, the branch name or Dima, never a guess.
 
-**We do the linking ourselves.** The pre-push hook reads this line and attaches the commit to the
-ticket through Linear's API. The ticket gains a link and nothing else — no assignee, no state
-churn, no history noise.
+- **no closing keyword next to an id** — `close(s|d)` `fix(es|ed)` `resolve(s|d)` `complete(s|d)`:
+  Linear's GitHub integration reads every push and would close the ticket; the close is cclio's
+  (or Dima's), made in Linear with a closing word
+- **never the literal skip-ci markers** (`[skip ci]`, `[ci skip]`, `[skip actions]`,
+  `[actions skip]`), quoting included: github reads them anywhere in the message and silently
+  creates no run; write «the skip-ci marker»
 
-🚫 **Linear's own keywords are BANNED in a commit body** — `ref` `refs` `references` `part of`
-`contributes to` `toward(s)` `close(s|d)` `fix(es|ed)` `resolve(s|d)` `complete(s|d)`
-`implement(s|ed)`, each followed by an id. Linear's parser still watches every push, and any of
-them assigns Dima and moves the ticket behind our back. `- ticket:` is inert to it — measured
-on [DOT-229](https://linear.app/x-com/issue/DOT-229) 2026-08-28, six forms, one push.
+<!-- bytes #84, 2026-09-12: «the [skip ci] note» in a body cost a pr its ci and review lane for an hour. -->
 
-### Default lane — commit to `main`
+### The lanes
 
-Dima's lane: no branch, no PR, commit and push. The **commit body carries everything**.
-
-- **Every commit touching the work**: a `- ticket: FRM-N` line.
-- **A commit never closes its ticket.** The close is the coordinator's move (or Dima's), made in
-  Linear after verifying, with a closing word in the body — never a marker in a commit.
-- **No ticket → no line.** Most commits have none. The id comes from the conversation, the
-  branch name, or Dima — nowhere else. Never guess, never grep for a plausible match, never
-  write `FRM-?`. Omitting the line is always correct.
-- 🎯 **A commit body is PARSED, not read — writing *about* a banned keyword IS using one.**
-  Linear cannot tell a quotation from an intent (measured: a quoted example assigned Dima and
-  moved the ticket five seconds after push). **Before pushing, grep the body for the id pattern
-  and count the hits** — the count is what fires, never the intent. Write "a `ticket:` line
-  naming DOT-1", never a banned keyword next to an id.
-- Scoped to Dima's tracker (`FRM`/`BYT`); an oss repo's conventions belong to that project.
-- 🎯 **the same parser trap on the github side: a body never contains the literal `[skip ci]`,
-  `[ci skip]`, `[skip actions]` or `[actions skip]`, quoting included.** github reads the marker
-  anywhere in the message and creates no push or pull_request run for that head, silently — a
-  coder wrote «the `[skip ci]` note» in a body and its pr lost ci and the review lane for an
-  hour (bytes #84, 2026-09-12). write «the skip-ci marker».
+- **default: `main`** — no branch, no PR, the commit body carries everything
+- **a coder lane: a PR** in its own worktree — the flow is `x:crew-coder`; the branch name `coder/<ticket>-<slug>` links it in Linear by itself, and its
+  url reaches Dima as a one-click link the moment it prints
+- **any other PR** (`claude/…` cloud branches, one Dima opens) — the same `- ticket:` line in its
+  body, never a closing keyword; a branch never checked out here is worded with `gh pr edit`, never by rewriting
+  remote commits
 
 ### A push to a repo with a deployed app arms the deploy watch
 
 Green CI answers «did it fail», never «did it build» — the deploy state lives only in
 `vercel inspect`. So the session that pushes `bytes` arms a `Monitor` on
-`~/frame/cclio/.claude/hooks/deploy-watch.sh <sha> ~/projects/bytes` in the same turn (ci runs for that head,
-then the newest prod deploy of every app the head touched; terminal states only, a heartbeat
-every 2 min, 30 min cap). The reply says **done** only on the `Ready` line, and a red is reported
-the moment it lands. `frame` deploys nothing — no watch.
-
-### What a push actually does to the ticket
-
-- The pre-push hook (`x linear push`, run as a `lefthook` pre-push job) waits for the
-  push to land, then attaches each commit. It logs to
-  `.git/linear-push.log` and fires only in **`frame` and `bytes`** — the two repos whose
-  `lefthook` config calls it; a third repo needs those lines copied from `bytes` first. Nothing
-  to do or say after a push — the hook owns it. Report only a miss: no Resources entry 30s
-  after the push.
-- **An external repo gets nothing.** The hook stands down unless the push remote is
-  `github.com` under an owner of ours — no Linear call, no log line, pure delegation.
-- **PR events** (exception lane): `start` → In Progress, `review` → In Review, `merge` → Done,
-  wired on both teams. No `draft` row — a draft PR jumps straight to In Review.
-  a merge that lands a ticket in Done through this wiring still gets cclio's closing word the same turn.
-- Reading a Resources entry: ours carries the commit subject and `<short sha> · <branch>`.
-
-### Coder lane — PR by default, in `bytes`
-
-**A coder assignment lands through a PR by default** (dima, 2026-09-07: he cannot review at the pace agents print; the PR is the review surface). The exceptions are a freebie or a genuinely small change — when in doubt the brief says «PR or main?» once, up front, never mid-flight. The flow: so `main` reverts by
-assignment, not by hash: branch `coder/BYT-N-<slug>` from `main`, step-commits on it (each
-with `- ticket: BYT-N` and its step line), `gh pr create` with `- ticket: BYT-N` in the body and never a closing keyword — cclio closes the
-ticket after the merge, with its closing word (dima, 2026-10-11), then
-**squash-merge** on Dima's word — the squash body lists the steps. On a `coder/*` branch the coder holds `y+` and `push+` (commit each step, push, **open the PR at the first push**, a real one, `x:github-contrib`); on `main` the default lane's rules hold unchanged. Load `x:github-contrib`
-before the `gh` call. **The PR url goes to Dima as a one-click link the moment `gh pr create`
-prints it** — in the coder's chat and in its ping to the coordinator. `frame` commits to
-main unless the lane is a feature (`craft-fleet-flow`).
-
-### Exception lane — other pull requests
-
-Cloud-agent branches (`claude/…`) and anything Dima explicitly opens a PR for follow the same
-shape: branch commits and the PR description carry `- ticket: FRM-N`, never a closing keyword —
-cclio closes after the merge; a PR dima opens himself is his to word. For a branch never checked out here, write it with `gh pr edit`, never by
-rewriting remote commits.
-
-### Wiring a new repo
-
-**Nothing to wire.** The hook links through Linear's API, so a repo is covered the moment its
-remote is `github.com` under an owner of ours. The per-repo push webhook Linear's own parser
-needs is no longer part of committing.
-
-⚠️ Those webhooks still exist on `frame` and `bytes`, and all repos share **one**
-`githubCommit` integration — so a banned keyword that slips into a body still reaches Linear
-from either of them. That is what §5's grep-before-push is for.
+`~/frame/cclio/.claude/hooks/deploy-watch.sh <sha> ~/projects/bytes` in the same turn (ci runs for
+that head, then the newest prod deploy of every app the head touched; terminal states only, a
+heartbeat every 2 min, 30 min cap). The reply says **done** only on the `Ready` line, and a red is
+reported the moment it lands. `frame` deploys nothing — no watch.
 
 ## 6 · Completion criterion
 
 Done when `git log -1` shows the new hash (a silent no-op and a silent sweep are both observed
-failures), the tree holds nothing staged the plan did not name, and — before any push — the
-body's ticket-id-pattern hits are counted and each one is intended. Say the hash.
+failures), the tree holds nothing staged the plan did not name, and no closing keyword sits
+next to an id in the body. Say the hash.
 
 ## 7 · Guardrails
 
 - Sanity check before every commit: leftover debug/test code, commented-out code, stray
   debuggers → pause, report, resume when resolved.
-- Pre-commit hook failure → never self-fix; summarize and stop. One exception: frame's known flake gets one identical retry (`~/frame/AGENTS.md`).
-- a commit's output reaches you whole — the hooks print the only error channel there is. `>/dev/null` on a commit turned a biome refusal into a bare «exit 1» (2026-09-27).
+- Pre-commit hook failure → never self-fix; summarize and stop. One exception: frame's known
+  flake gets one identical retry (`~/frame/AGENTS.md`).
+- a commit's output reaches you whole — the hooks print the only error channel there is; never
+  `>/dev/null` a commit.
 - in a shared tree, push the sha you counted — `git push origin <sha>:<branch>` — never the moving
-  `HEAD`: a peer's commit landed 18 s before a push and went out unchecked (2026-09-26).
+  `HEAD`.
 - commit only the paths the plan names, never `git add -A`: a shared tree holds other sessions' work.
 - in a biome repo (frame, bytes) commit through `x lane commit msg.txt -- <paths>`, never a raw
-  `git commit -- <paths>`, which also takes those files' unstaged hunks: it formats
-  exactly those paths with the repo's biome before staging, so a Bash-written file never meets
-  the hook's format refusal (19 flawlog sightings by 2026-10-04); the hook itself never writes.
+  `git commit -- <paths>`, which also takes those files' unstaged hunks: it formats exactly those
+  paths before staging, so a Bash-written file never meets the hook's format refusal.
+
+<!-- >/dev/null turned a biome refusal into a bare «exit 1» (2026-09-27). a peer's commit landed 18 s before a push and went out unchecked (2026-09-26). the format refusal: 19 flawlog sightings by 2026-10-04. -->

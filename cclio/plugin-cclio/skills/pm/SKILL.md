@@ -48,7 +48,8 @@ traps:
   set as the word (`x linear set --estimate S`); L and XL are never set, an old 4 or 5 is resized when touched;
   **project**, unless it is a one-off or an idea pool; **parent** by the test «which story does it
   die with?», none → flat; **milestone** inherited from the parent
-- **never an assignee**; a ticket assigned to dima is strictly his. the delegate says who works it:
+- **an assignee carries no meaning**: Linear may assign dima through a linked commit, and that is fine
+  (dima, 2026-10-15); his own tickets carry the `human` label. the delegate says who works it:
   cclio starts it → `delegateId` cclio (`0e9bab8b-1e99-4d9c-90f8-57ce3166ca7a`); handed to a
   coder → the coder app (`195a6ec0-ed0c-4519-9750-948eac4e5e00`)
 - **work starts** → In Progress the same turn, and the sline pin:
@@ -86,7 +87,7 @@ traps:
 - 🚨 **dima's words never go into a comment**: the body is read by everyone, a comment by a
   graphql fetch. comments carry trail only — run stamps, «done, see commit», a member's done report
 - a `standing` ticket carries no comments: a round on it is a child ticket, which takes the state,
-  the `- ticket:` lines, the pr and the done report; a coder brief names the child, never the
+  the pr and the done report; a coder brief names the child, never the
   standing ticket (dima, 2026-09-30, BYT-105)
 
 ## writing — pretty, short, true

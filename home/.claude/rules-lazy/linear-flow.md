@@ -20,7 +20,6 @@ repo with another tracker, or none, follows its own conventions.
 
 - create a ticket, edit a body, move a state or a label: cclio does it the turn your ping lands.
   the slices `to-tickets` cuts live in `.scratch/<feature>/issues/`, never in linear
-- pass `--assignee`: an assignee says the ticket is dima's, and a ticket assigned to him is strictly his
 - start a ticket labelled `human` (dima, 2026-09-30, after BYT-86 was proposed as a shift
   candidate); labels are read from the ticket the same turn, never recalled
 - invent an id: an id comes from dima, the conversation or the branch name, never a plausible grep;
@@ -28,9 +27,8 @@ repo with another tracker, or none, follows its own conventions.
 
 ## commits and ids
 
-- a commit body names its ticket as `- ticket: FRM-N`, nothing else — linear's own keywords
-  (`ref`, `closes`, …) next to an id make its parser assign dima; `x:cmt` owns the contract, and
-  the pre-push hook (`x linear push`) does the linking
+- a commit carries no ticket line; a pr links to its ticket through its branch name and a `- ticket: FRM-N`
+  line in its body, never a closing keyword (`x:cmt`)
 - an id printed to dima is a link plus a short tldr (`rules/fleet-output-format.md`)
 - a `standing` ticket stays in Todo between rounds; a round on it is a child ticket, which carries
-  the state, the `- ticket:` lines, the pr and the done report (dima, 2026-09-30)
+  the state, the pr and the done report (dima, 2026-09-30)

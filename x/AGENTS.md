@@ -61,7 +61,7 @@ the checks the FRM-340 verifier built by hand; a verifier or coder on `x` starts
 - **a `replaces:` claim** is proven by planting a caller of the old name and watching `replaces_test.go` go red.
 - **a secret-shape check** plants every key form it claims: base64 pem, `OPENSSH`, `ghp_`.
 - **an actor rule** (tty vs agent) runs in a python pty with and without `CLAUDECODE`.
-- **a never-fail path** (`x linear push` in a hook) runs against a dead-port `X_LINEAR_URL`.
+- **a never-fail path** (a verb a hook runs) runs against a dead-port `X_LINEAR_URL`.
 
 ## output
 
