@@ -87,6 +87,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-15 · pocket-write · 1 · 0 · PK-141 notes appended (grill points), backlog exit 0, pocket-check green
 - 2026-10-15 · pocket-write · 1 · 0 · PK-141 price-line and role-name steer appended, backlog exit 0, pocket-check green
 - 2026-10-15 · pocket-write · 2 · 0 · PK-90 run #5 status and open screenshot case appended, backlog exit 0, pocket-check green
+- 2026-10-15 · pocket-write · yes · 0 · band-wisp PK-147 created, pocket-check green
 
 ## rounds
 
