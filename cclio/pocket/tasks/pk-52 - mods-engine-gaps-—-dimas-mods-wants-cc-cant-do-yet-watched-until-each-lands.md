@@ -4,8 +4,8 @@ title: 'mods engine gaps — dima''s mods wants cc can''t do yet, watched until 
 status: waiting
 assignee: []
 created_date: '2026-10-10 19:37'
-updated_date: '2026-10-12 18:46'
-due_date: '2026-10-17'
+updated_date: '2026-10-15 11:42'
+due_date: '2026-10-24'
 labels:
   - s
 dependencies: []
@@ -39,4 +39,6 @@ dima, 2026-10-10 22:34 (via the mods coder): his mods wants the engine can't do 
 2026-10-12: more space in the board view (dima 00:29) — he tried it with the coder; the mods api is too barebones to allow it, kept as is until it lands upstream (dima 00:30, o306)
 
 for the next refresh-cc-mods run's step 0 (mods coder's verdict on run #4, 21:40): useful — the researcher lane alone found a real loss path it had shipped (quiet's swallowed saves), api-map named every door used; noise — exa/parallel's local analysis. its proposal: add a pass that greps our own mods for the failure patterns the research finds, and a tool schema-vs-ops check per mod (today's catch-clear bug was one); cut the local-analysis vectors from exa/parallel
+
+2026-10-15 re-checked: #101089, #101090, #99395 all still open, no news since 10-13; next look at the refresh-cc-mods run.
 <!-- SECTION:NOTES:END -->

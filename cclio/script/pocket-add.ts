@@ -83,9 +83,13 @@ if (import.meta.main) {
             env: { ...process.env, BACKLOG_CWD: pocket },
         }).split('\n')[0],
     );
-    execFileSync('node', [path.join(pocket, 'script/pocket-check.ts')], {
-        stdio: 'inherit',
-    });
+    try {
+        execFileSync('node', [path.join(pocket, 'script/pocket-check.ts')], {
+            stdio: 'inherit',
+        });
+    } catch {
+        process.exitCode = 1;
+    }
 }
 
 /* Types */

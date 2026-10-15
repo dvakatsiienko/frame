@@ -3,10 +3,10 @@ id: PK-127
 title: >-
   coder svg in mods: finer drawings, and svg as a UI layer with the mods api
   attached
-status: open
+status: done
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 13:09'
+updated_date: '2026-10-15 11:42'
 due_date: '2026-10-16'
 labels:
   - s
@@ -28,4 +28,6 @@ inbox 2026-10-14 (coder svg). how does a coder draw prettier svgs in mods — a 
 fold of his words kept: the svgs coders drew so far look ugly, or plain at best; his hope is that a modder builds something bigger with svg.
 
 answered 16:05; parked: its two riders ride the mods lane resume (PK-120), dima o19
+
+2026-10-15 closed in the tail sweep: answered 10-14 16:05, both riders live in PK-120 (the Button-wraps-Svg probe, x:art-kit in every mods brief).
 <!-- SECTION:NOTES:END -->

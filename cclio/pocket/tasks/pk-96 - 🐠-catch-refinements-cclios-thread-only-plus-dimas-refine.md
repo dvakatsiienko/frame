@@ -4,8 +4,8 @@ title: "\U0001F420 catch v2 test drive: is the keep-in-mind shelf used and usefu
 status: waiting
 assignee: []
 created_date: '2026-10-12 13:12'
-updated_date: '2026-10-13 15:29'
-due_date: '2026-10-17'
+updated_date: '2026-10-15 11:43'
+due_date: '2026-11-15'
 labels:
   - s
 dependencies: []
@@ -17,7 +17,7 @@ ordinal: 100095
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**waiting for:** dima re-enables 🐠 catch (paused 2026-10-13, not judged)
+**waiting for:** dima's word to revive catch — parked, not dropped (2026-10-15: catch feels clunky to him, no capacity or want to evolve it now, so it stays off)
 dima 2026-10-12 16:12 (o29): «yes, I see the catch, but I also want to refine it a bit. also, catch should work only for your thread. it's a clarification as of now.» FRM-386 stays open until his refine is heard; ask him for it when the mods lane is free.
 <!-- SECTION:DESCRIPTION:END -->
 

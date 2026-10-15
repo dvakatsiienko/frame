@@ -4,8 +4,8 @@ title: knowledge files become a must-read whenever their area is touched
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-14 13:03'
-due_date: '2026-10-15'
+updated_date: '2026-10-15 11:42'
+due_date: '2026-10-22'
 labels:
   - m
 dependencies: []
@@ -70,4 +70,6 @@ ccrow 17:46 holdout, unvetted at the halt: «step 1 of PK-79 was reported done w
 17:42 dima: clearvpn adopted, Marco dropped (verdict files + Brewfile, done); delve explained, his call pending. x-mod-primer parked: «let's not rush with x-mod-primer yet, i'll refine the sessions mod first».
 
 parked: rides the mods lane resume beside PK-120 — sequence steps 5-7 (the x-mod-primer trace, the coder build, the 7-day test drive); steps 1-4 done (dima o18, 16:02)
+
+2026-10-15: due pushed in the tail sweep — the delivery rides the knowledge-shelf revamp inside the memory sweep, not a tail.
 <!-- SECTION:NOTES:END -->

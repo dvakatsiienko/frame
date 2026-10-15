@@ -4,8 +4,8 @@ title: 'x lane rebases a coder branch onto main, never a merge commit'
 status: waiting
 assignee: []
 created_date: '2026-10-12 01:13'
-updated_date: '2026-10-12 17:38'
-due_date: '2026-10-15'
+updated_date: '2026-10-15 11:42'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []

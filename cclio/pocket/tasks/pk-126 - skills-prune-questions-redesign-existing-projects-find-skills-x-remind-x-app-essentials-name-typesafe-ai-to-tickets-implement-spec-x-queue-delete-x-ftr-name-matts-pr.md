@@ -4,10 +4,10 @@ title: >-
   skills prune questions: redesign-existing-projects, find-skills, x:remind,
   x:app-essentials name, typesafe-ai, to-tickets, implement-spec, x:queue
   delete, x:ftr name, matt's pr
-status: open
+status: done
 assignee: []
 created_date: '2026-10-14 11:48'
-updated_date: '2026-10-14 18:01'
+updated_date: '2026-10-15 11:42'
 due_date: '2026-10-16'
 labels:
   - s
@@ -30,4 +30,6 @@ his reminder in the same drop: «remind me to paste you skill-doctor output so w
 renames, their own ask: x:app-essentials and x:ftr get names that say what they do (init or verify) — a rename pick per skill, not a census number.
 
 2026-10-14 21:01: renames landed on dima's pick (o106 r4): x:app-essentials → x:app-setup-essentials, x:ftr → x:app-author-ftr (pairs with x:author-memory, scoped to an app)
+
+2026-10-15 closed in the tail sweep: every prune question settled at 9.3, both renames landed 10-14; the skill-doctor answer (the census replaces it, it overcounts ~10×) told to dima on the 10-15 board.
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'mods lane resume: finish it fully from the leftovers list'
 status: open
 assignee: []
 created_date: '2026-10-13 17:06'
-updated_date: '2026-10-14 13:30'
+updated_date: '2026-10-15 12:34'
 labels:
   - m
 dependencies: []
@@ -27,4 +27,6 @@ rider for the mods lane resume (dima o14, 15:49): a probe in the second wind mod
 riders (dima o19, 16:09): probe a Button wrapping an Svg (desktop draws Svg as a non-clickable image, engine.md:7); every mods coder brief names x:art-kit for finer drawings.
 
 rider (dima o31, 16:31): the second-wind op takes a required pending: field, only none lets it compact. his steer for the mod's note text (WIND_NOTE + WIND_NOTE_OWNER): a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.
+
+✨ wisp, dima 2026-10-15 (screenshot): the board's sessions card shows a thread whose cache went cold (composer idle 1h32m) with a ⚠️ — it should show ❄️.
 <!-- SECTION:NOTES:END -->
