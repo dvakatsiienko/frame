@@ -34,6 +34,9 @@ done: printed under the budget.
 
 ## 3. the routes — 2–3 orbit asks
 
+matt's `teach` (mattpocock-skills, user-only, read by path) is a multi-session course of html lessons:
+offered as a route only when an area deserves real study, in this skill's format, never by default.
+
 wider, deeper, what changed — each an orbit ask whose pick names where it goes («deeper: how a recipe
 run's lanes fan out»); his tick takes the route, an unticked one dies with the turn. never numbered
 lines in the reply.
