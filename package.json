@@ -16,6 +16,7 @@
         "vorssaint:shelf": "node ./script/vorssaint-shelf.ts",
         "wispr:add": "node --disable-warning=ExperimentalWarning ./script/wispr-add.ts",
         "github:agent-token": "node ./script/github-agent-token.ts",
+        "commit:agent-trailer": "node ./script/commit-agent-trailer.ts",
         "autoclean-screenshots:build": "mkdir -p ./schedule/jobs/x-autoclean-screenshots/bin && swiftc -O ./schedule/jobs/x-autoclean-screenshots/main.swift -o ./schedule/jobs/x-autoclean-screenshots/bin/x-autoclean-screenshots && ./script/lib/sign.sh ./schedule/jobs/x-autoclean-screenshots/bin/x-autoclean-screenshots",
         "monitor-hotkey:keycodes": "node ./script/monitor-hotkey-keycodes.ts",
         "monitor-hotkey:test": "mkdir -p ./schedule/jobs/x-monitor-hotkey-stats/bin && swiftc -parse-as-library ./schedule/jobs/x-monitor-hotkey-stats/keycodes.swift ./schedule/jobs/x-monitor-hotkey-stats/chord.swift ./schedule/jobs/x-monitor-hotkey-stats/chord.test.swift -o ./schedule/jobs/x-monitor-hotkey-stats/bin/chord-test && ./schedule/jobs/x-monitor-hotkey-stats/bin/chord-test",
