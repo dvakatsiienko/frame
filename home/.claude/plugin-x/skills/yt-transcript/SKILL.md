@@ -12,7 +12,7 @@ Downloads YouTube captions, cleans them into readable text, shelves them so a vi
 fetched twice. **Captions only** — Whisper is deliberately not here
 ([DOT-211](https://linear.app/x-com/issue/DOT-211)); never download a model, point at the ticket.
 
-Plain shell — run via `Bash` on cc, Desktop Commander on `cw`. Needs `yt-dlp`, `jq`, `python3`.
+Needs `yt-dlp`, `jq`, `python3`.
 
 ## The store
 
@@ -43,96 +43,27 @@ staying searchable, not disk — safe as a bare flag because captions re-downloa
 
 ## Fetch
 
-⚠️ **Shell variables do not survive between tool calls** — repeat this preamble atop every
-batch. **`WORK` is a fixed dotfile path, not `mktemp -d`** — a random dir cannot be found from
-the next call, and a dotfile never shows in `ls` or dedupe.
+One call does metadata, dedupe, language pick, download, clean and record:
 
 ```bash
-URL='<the youtube url>'
-SHELF="$HOME/.claude/shelf/yt-transcripts"
-SCRIPTS="$HOME/frame/home/.claude/plugin-x/skills/yt-transcript/scripts"
-WORK="$SHELF/.work-$$"   # per run: two parallel transits shared one dir and one's delete killed the other's meta.json (2026-09-10)
-mkdir -p "$SHELF" "$WORK"
-# after step 1 exists, this belongs in the preamble too:
-VID=$(jq -r .id "$WORK/meta.json")
+bash ~/frame/home/.claude/plugin-x/skills/yt-transcript/scripts/fetch.sh '<url>'
 ```
 
-📌 **Two round trips total**: steps 1–2 end on a language decision only you can make — one
-call; steps 3–5 need no judgment — the second call.
+Optional language override as a second argument (`... '<url>' de`) — one code, only when the
+default pick came back with no captions. `--mode transit` stamps `mode: transit` in
+`metadata.json` (see Transit); the default is `fetch`.
 
-### 1. One metadata call — never `--list-subs`
+Output: `reused: <dir>` = already on the shelf, nothing downloaded — read it and say you reused
+it. Otherwise the last lines are `dir: <path>` (read `transcript.txt` there) and `chars: <n>`,
+preceded by any `Repaired … identifier spelling(s)` line — repeat it when reporting, so a wrong
+repair is visible. A non-zero exit prints one line on stderr (the language tried, or the failing
+step); report it, never improvise a fallback.
 
-```bash
-yt-dlp -J --skip-download "$URL" 2>/dev/null > "$WORK/meta.json"
-jq '{video_id: .id, title, channel: (.channel // .uploader), duration,
-     manual: (.subtitles | keys),
-     auto: (.automatic_captions | keys | map(select(startswith("en"))))}' "$WORK/meta.json"
-```
-
-⚠️ `--list-subs` prints every machine-translatable language — hundreds of noise rows. `-J`
-gives the same facts plus title and channel in one ~2s call.
-
-### 2. Dedupe before downloading anything
-
-```bash
-ls "$SHELF" 2>/dev/null | grep -E -- "-${VID}$"
-```
-
-A hit = transcript exists: **read it and stop**, say you reused it. ⚠️ Anchor with `$` exactly
-as written (the id is always the name's tail; unanchored matches slugs merely containing those
-letters; `--` because the pattern starts with a hyphen). 📌 Never a glob or `find -name` — the
-old `title [id]` naming made `*[PXzHKuBuyJU]` a **character class**; do not reintroduce that shape.
-
-### 3. Pick exactly ONE language code
-
-1. a manual caption language (`.subtitles`) — human-written, best
-2. else the auto key ending `-orig` (`en-orig`) — spoken language, untranslated
-3. else plain `en`
-
-⚠️ One code, never a pattern — `'en.*'` or `'en,en-orig'` fetches many tracks and YouTube
-answers **429**, blocking the whole run.
-
-### 4. Download into the target directory
-
-```bash
-TITLE=$(jq -r .title "$WORK/meta.json")
-CHANNEL=$(jq -r '.channel // .uploader // ""' "$WORK/meta.json")
-NAME=$(python3 "$SCRIPTS/sanitize_title.py" "$CHANNEL" "$TITLE" "$VID") || exit 1
-DIR="$SHELF/$NAME"
-mkdir -p "$DIR" && cd "$DIR"
-
-yt-dlp --skip-download --write-subs --write-auto-subs \
-       --sub-langs '<the one code>' --sub-format vtt -o captions "$URL" >/dev/null 2>&1 || true
-
-ls captions.*.vtt && mv captions.*.vtt captions.vtt
-```
-
-⚠️ Looks wrong, is not: **`|| true` + success judged by `ls`** — yt-dlp exits non-zero on
-conditions that still produced the file. **Both subs flags** — manual and auto are separate;
-a video can have one without the other (`Me at the zoo`: manual `en`, zero auto). yt-dlp
-appends the language code to the filename, hence the rename.
-⚠️ **Build `NAME` separately and bail on failure — never inline into `DIR`**: an inlined
-failing `$(...)` leaves `DIR="$SHELF/"` and the download lands in the store root.
-
-### 5. Clean and record
-
-```bash
-python3 "$SCRIPTS/clean_captions.py" captions.vtt transcript.txt "$WORK/meta.json"
-
-jq -n --slurpfile m "$WORK/meta.json" --arg url "$URL" --arg lang '<the one code>' \
-      --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg mode '<fetch|transit>' \
-  '{url: $url, video_id: $m[0].id, title: $m[0].title,
-    channel: ($m[0].channel // $m[0].uploader), duration_seconds: $m[0].duration,
-    upload_date: $m[0].upload_date, source: "captions", caption_lang: $lang, fetched_at: $at, mode: $mode}' \
-  > metadata.json
-
-trash "$WORK"
-```
-
-📌 **Pass the third argument** — it repairs mangled identifiers (`Claude MD`, `cloud.md` →
-`CLAUDE.md`) from the video's own title/description/tags. Measured on DOT-211's test videos:
-**5/18 correct before, 18/18 after.** The script prints what it changed — repeat that line when
-reporting, so a wrong repair is visible.
+The script guards, so never bypass it with hand-run yt-dlp: one metadata call, never
+`--list-subs` · dedupe anchored on the id tail, never a glob or `find -name` · exactly one
+language code, never a pattern or list (YouTube answers 429) · the dir name built on its own
+(a failure must never make the shelf root the target) · both subs flags, `|| true`, success
+judged by the file · identifiers repaired from the video's own metadata · work dir trashed.
 
 ### 6. Read it, then report
 
@@ -142,14 +73,13 @@ backticks.
 
 ## Transit
 
-Fetch through step 6, then:
+Fetch with `--mode transit` through step 6, then trash the `dir:` from the output (the script
+never deletes it) and `ls ~/.claude/shelf/yt-transcripts` as the receipt:
 
 ```bash
-trash "$DIR"
-ls "$SHELF"
+trash '<the dir: path>'
 ```
 
-📌 `trash`, never `rm -rf` on a variable path: claude code's safety check refuses `rm -rf "$DIR"` outright (2026-09-27), and trash keeps the delete recoverable.
 Delete only AFTER the transcript is in the conversation; the `ls` is the receipt — confirm the
 dir is gone. A dir whose `metadata.json` says `mode: transit` is a transit that died
 before this step — delete it on sight and say so; `mode: fetch` dirs are kept on purpose. 🚫 Never delete anything but this video's dir. 🚫 `transit` never applies in recall.
@@ -169,9 +99,3 @@ grep -li -- '<fragment>' "$SHELF"/*/metadata.json      # search real titles
 fragments → search `metadata.json`. Then read `transcript.txt` + `metadata.json`.
 **Recall never deletes** (opposite of `handoff-ingest`). No match: list the shelf, offer to
 fetch — never invent a url.
-
-## Not in this skill
-
-- **Whisper** — [DOT-211](https://linear.app/x-com/issue/DOT-211); trigger is "the captions are
-  wrong", detectable only by a human.
-- **`parakeet-cli`** — possible future experiment; not wired, not installed, do not reach for it.
