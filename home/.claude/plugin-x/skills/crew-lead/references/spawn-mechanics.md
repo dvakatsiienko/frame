@@ -284,6 +284,7 @@ moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none
   `omitClaudeMd` cards 8–10k cold · Explore 35–57k and helper 118k (both load fleet memory) ·
   general-purpose 82k, 117k from cclio · fork 270k warm. parallel spawns of one card shared no prefix
   cache (warm 0 in 111); a workflow fan-out holds siblings up to 5 s so they do [docs].
+- **a workflow `agent()` without `agentType` loads the whole fleet memory** [verified 2.1.299]: the default workflow agent (haiku) wrote 115k on its first request, one on `agentType: 'helper-lite'` 7.5k; the `general-purpose` deny does not touch the default. both answered a question from the parent's latest user turn, so a workflow agent sees part of the parent's last turn [verified, mechanism unknown]
 - **a x10 fan-out of one card** [verified 2.1.299, helper-lite on haiku 5.5, a real job]: 10 agents 139k
   tokens and 19 s wall against one agent 35k and 98 s, answers identical — 4× tokens for 5× speed;
   the per-agent floor is ~12k.
