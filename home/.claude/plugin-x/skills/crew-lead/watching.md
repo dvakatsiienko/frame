@@ -29,7 +29,6 @@
 
 Per-case judgment: keep a coder warm when its context is expensive and the next assignment is
 nearby; respawn when the work is unrelated or the context is polluted. **Always stop probes.**
-🧪 **until 2026-10-15, the comms-trim check before every stop**: read the member's retro `comms:` line; no retro → one message «did you need cclio at any point and not reach her?» before `claude stop`. a gap found goes to the halt count (dima, 2026-10-08).
 
 - **a lane whose last member stopped has its 🛼 glide ended at the next siesta or the halt** (`cclio:siesta` 2.5, `cclio:halt` phase 1.8); a parked lane gets a new card when it resumes
 - 🚨 **stop with `claude stop <jobId>`, never `kill <pid>`** — four rc sessions killed by pid came

@@ -43,7 +43,6 @@ Store contract: the `x:remind` skill. Both tiers die only when Dima drops them.
 
 ⏰ 🦉📜 refresh-cc-mods at every cc minor that touches mods — at each cc version bump read the changelog for mod/function-hook lines (new events, `$` methods, render sites, limits, surfaces); any hit → run `recipes/refresh-cc-mods/recipe.md` (its «next run» list holds the hot leads from 10-05). dima 2026-10-05: «write it while your traces about mods are hot» — set 2026-10-05
 
-⏰ 🔬 comms-trim verdict, 2026-10-15 — the crew pings cclio on three events only, retros go to `shelf/retros/`, round lines are gone (dima, 2026-10-08). each halt prints the comms count and the `comms:` gaps; on 10-15 decide keep / loosen, then drop the `until 2026-10-15` lines in crew-coder, crew-verifier, crew-designer, x:crew-lead and the halt skill — set 2026-10-08 · due: 2026-10-15
 
 ⏰ 🐦‍⬛ at the next halt: park ccrow, never stop it — dima runs his own keep-hot test and watches it himself (the stash pings fired every 50 min overnight, cache held warm, `docs/test-drive/ccrow.md` 10-09). dies when dima says his test is done. dima 2026-10-09: «keep ccrow for my own keep-hot test … keep it parked, so I will keep an eye on it» — set 2026-10-09
 
@@ -63,3 +62,5 @@ Store contract: the `x:remind` skill. Both tiers die only when Dima drops them.
 ⏰ 🦉💸 2026-11-03: dima turns off auto-renew on max $100 (≥24 h before the 11-05 renewal), billing settings; the 20× month starts fresh on 11-05 (dima o153, 2026-10-13) — set 2026-10-13
 
 ⏰ 🦉💸 2026-11-05: dima buys max 20× (~$240 with VAT), right after his weekly reset (Settings → Usage), then auto-renew off again; the month measures the real weekly cap vs 5× (~1.6–2.3× by user reports) — set 2026-10-13
+
+⏰ 🦉📦 Backlog.md past 1.53.0: the j/k fix ([#1070](https://github.com/MrLesk/Backlog.md/issues/1070)) and the priority column + ordinal sort ([#1071](https://github.com/MrLesk/Backlog.md/issues/1071)) merged 10-14, unreleased. each due date: `brew info --json backlog-md | jq -r ".[0].versions.stable"` — still 1.53.0 → push the due a week; newer → `brew upgrade backlog-md`, then dima opens the pocket in his own view (`backlog board` / the task list) and checks j/k after `E` and the list sorted by ordinal with priorities; both work → drop the `/` workaround in `docs/test-drive/backlog-md.md` and this line (dima, 2026-10-15: «so i know when it lands in our version and works») — set 2026-10-15 · due: 2026-10-21

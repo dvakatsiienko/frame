@@ -43,7 +43,6 @@ this file says how every member does it. A section headed with roles binds only 
 - at most 12 lines, most important first, walked through matt's retro categories; a brief's `focus:` line
   replaces your standing focus for that run
 - it names one automation candidate: a script, a verb or a guard
-- until 10-15 it ends with `comms:` — a moment you needed cclio and could not reach her, or «none»
 
 ## coder · verifier · designer
 

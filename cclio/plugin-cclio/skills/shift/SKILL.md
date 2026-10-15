@@ -69,7 +69,7 @@ In the plan file, then one chat message:
   - **compactions**: count, and what survived each
   - **failures**: ci, keys, access, permissions, the 5h window — each with its state now
   - **merging**: count, and anything a checkup or a verifier held
-  - **retros**: filed per member, and the `comms:` gaps they name
+  - **retros**: filed per member
   - **the flow**: planning, briefs, comms — good and off, with the fix for each off
   - **ticket readiness**: which tickets ran straight, which exit lines were rewritten mid-lane and why
   - **anything else** dima would want: one line or `none`

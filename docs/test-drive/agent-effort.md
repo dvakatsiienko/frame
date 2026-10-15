@@ -1,7 +1,7 @@
 ---
 status: live
-until: 2026-10-15
-dies-when: the verdict line below is written (2026-10-15)
+until: 2026-10-22
+dies-when: the verdict line below is written (2026-10-22)
 ---
 
 Ticket: none
@@ -24,4 +24,4 @@ memory line names the effort — `craft-spawning`'s 🎚️ line (dima's yes, 20
 
 ## rounds
 
-(none yet)
+- 2026-10-15 · extended once to 10-22 on dima's tick (0 rounds by the first end): its rounds are logged by PK-90, the spawning refresh, whose subagent research passes effort per call and records it
