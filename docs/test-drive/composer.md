@@ -82,6 +82,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-14 · bulk-replace · green · none · b10 chore 2: evergreen pointer to x:crew-lead model-cards
 - 2026-10-14 · bulk-replace · green · none · b11 chore 1: shift pointer to x:crew-lead preflight, names, mode
 - 2026-10-15 · inbox-prep · 1 · 0 · inbox-prep green first pass, coverage 63/63; 5 items, 23 asks; 8 spec-unclear notes in composer's notes
+- 2026-10-15 · pocket-write · 1 · 0 · PK-146 x-changedetector watch review created, size s, pocket-check green
 
 ## rounds
 
