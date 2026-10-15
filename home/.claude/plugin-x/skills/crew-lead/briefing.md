@@ -13,6 +13,8 @@
 - **a long-run fork's brief says «wait in the foreground until the run ends»** — a fork that arms a background watcher returns at once and its run dies unreported.
 - **a brief touching an `x` view carries «`x knowledge read charm` before the first view edit»** — the same line sits in `x/go/AGENTS.md`, and 0 of 8 x coders read it from there alone.
 - **a blind run gets a cwd outside the repo and «do not read ~/frame»** — a «blind» advisor once read the built code through its cwd.
+- **a job across several apps or repos** carries «before taking any action, explore broadly with tool calls».
+- **a member whose final answer goes missing** gets «finish your tool calls first, write the final answer last».
 
 ## before it is sent — every word checked
 

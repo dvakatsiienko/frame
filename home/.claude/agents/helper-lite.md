@@ -1,6 +1,6 @@
 ---
 name: helper-lite
-description: Haiku, the lighter tier of `helper` — the dumbest mechanical work, fully spelled out by the brief: counts, fields and lines out of a transcript, log or json; 5+ screenshots transcribed to text; a rename, a string swap or a value table across named files. Returns the answer or the files touched, plus the command that proves it. Not for judgment, debugging, verifying, waits, or anything the brief leaves open — that is `helper`, or the caller.
+description: Haiku, the lighter tier of `helper`: mechanical work with no judgment, fully spelled out by the brief — counts, fields and lines out of a transcript, log or json; 5+ screenshots to text; a rename, string swap or value table across named files. Returns the answer or the files touched, plus the command that proves it. Debugging, verifying, waits or anything the brief leaves open go to `helper` or the caller.
 model: haiku
 effort: medium
 autoCompactWindow: 100000
