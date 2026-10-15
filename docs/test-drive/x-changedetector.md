@@ -33,4 +33,8 @@ error, over 7 days
 
 - 2026-10-15 · seed · 54 watches (52 issues + 2 release feeds), all checked within ~1 min · then 40 went red with 403: the seed burst plus a recheck spent the anonymous 60/h · fix: 6 h interval, 30 min jitter, 2 workers (~9 calls an hour) · renamed x-watcher → x-changedetector on dima's word
 
+- 2026-10-15 · positive control on frame#87 · ✅ 3 of 3 caught: labels [] → [bug], comments 0 → 1 → 2, state open → closed (completed) · each caught on its next check; github caches an anonymous api answer ~60 s, so a check inside that window sees the old state · `link_to_open` set on every github watch, «go to page» opens the github page · the 5 audiophile watches dropped (dima)
+
+- 2026-10-15 · the token · `dev/github-changedetector` (fine-grained, public read-only, no permissions) set as a header on the 38 github api watches, hourly · a recheck of all 40: 0 errors, the anonymous budget untouched (36/60) · dima pruned 7 watches by hand
+
 ## verdict
