@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  🛰️ x-cc-otel — the fleet's OpenTelemetry tap: every Claude Code session sends its metrics and events here.
+
+  - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 10s
+  - serves — http://127.0.0.1:4318 — an OTLP http/json receiver (/v1/metrics, /v1/logs, /v1/traces)
+  - idle cost — a resting node server; one append per export (logs every ~5s, metrics every ~60s while a session runs)
+  - output — ~/.local/share/x-cc-otel/YYYY-MM-DD.jsonl, one line per export; daemon.log, daemon.err.log beside it
+  - source — ~/frame/schedule/jobs/x-cc-otel/server.ts
+  - read — duckdb -c "select signal, count(*) from read_json_auto('~/.local/share/x-cc-otel/*.jsonl') group by 1"
+  - turned on by — the CLAUDE_CODE_ENABLE_TELEMETRY + OTEL_* lines in home/.claude/settings.json env
+  - setup — mkdir -p ~/.local/share/x-cc-otel; launchd will not create a missing log dir
+  - gotcha — needs no permission; a session started before the settings change exports nothing until restarted
+
+  node is fnm's `default` alias for the same reason as x-monitor-hotkey-live: a shell's node dies
+  with that shell, the alias is a stable symlink fnm repoints on every version bump.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dima.x-cc-otel</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- launchd does not expand ~, so every path is absolute by necessity. -->
+        <string>/Users/dima/.local/share/fnm/aliases/default/bin/node</string>
+        <string>/Users/dima/frame/schedule/jobs/x-cc-otel/server.ts</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/dima/.local/share/x-cc-otel/daemon.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/dima/.local/share/x-cc-otel/daemon.err.log</string>
+</dict>
+</plist>

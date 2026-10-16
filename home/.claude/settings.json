@@ -9,7 +9,14 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "opus",
     "CLAUDE_CODE_PLUGIN_DIRS": "~/frame/home/.claude/plugin-x/mods/x-mod-stash:~/frame/home/.claude/plugin-x/mods/x-mod-holds:~/frame/home/.claude/plugin-x/mods/x-mod-guard:~/frame/home/.claude/plugin-x/mods/x-mod-redact",
     "CLAUDE_CODE_PLUGIN_DIR_WATCH": "1",
-    "CLAUDE_CODE_FORK_SUBAGENT": "1"
+    "CLAUDE_CODE_FORK_SUBAGENT": "1",
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://127.0.0.1:4318",
+    "OTEL_LOG_TOOL_DETAILS": "1",
+    "OTEL_LOG_USER_PROMPTS": "1"
   },
   "attribution": {
     "commit": "",
@@ -205,7 +212,6 @@
     "typesafe@typesafe-ai": true,
     "humanize@humanize": true,
     "cc-plugin-telemetry@builtin": false,
-    "mindful-claude@mindful-claude": false,
     "cc-plugin-you-should-know@builtin": false,
     "show-me@skills": true,
     "mattpocock-skills@mattpocock": true

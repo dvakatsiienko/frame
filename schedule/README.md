@@ -26,14 +26,16 @@ the installer is idempotent, and it waits for a job to actually leave the domain
 rebootstrapping it. `bootout` returns before the teardown finishes, and a bootstrap that races
 it is refused.
 
-## the six local jobs
+## the eight local jobs
 
 - `x-monitor-hotkey-stats` — always on, counts chord presses, never keystrokes
 - `x-monitor-hotkey-live` — always on, keeps the hotkey map's data current
-- `x-autoclean-screenshots` — daily 12:00, trashes screenshots older than 30 days
+- `x-autoclean-screenshots` — daily 12:00, trashes screenshots older than 7 days
 - `x-atelier-live` — always on, serves atelier (bytes `apps/atelier`) at localhost:5180
 - `x-speak` — always on, F4 reads the selection aloud (nothing selected: pause / resume), ⇧F4 pauses / resumes, F5 stops
 - `x-speak-admin` — always on, serves speak, the voice admin, at 127.0.0.1:7386
+- `x-changedetector` — always on, changedetection.io at 127.0.0.1:7390, watching every upstream issue and release we follow
+- `x-cc-otel` — always on, takes every Claude Code session's OpenTelemetry export at 127.0.0.1:4318 into daily jsonl files; while the pm2 trial runs (`docs/test-drive/pm2.md`) pm2 runs it from `ecosystem.config.cjs` and the launchd job is disabled, so raycast shows it red
 
 each plist opens with a comment describing itself; the raycast `schedule` command renders it.
 
@@ -120,7 +122,7 @@ one rule, both sources: the first line of a plist's `<!-- -->` comment, or the h
 
 - `⌨️ x-monitor-hotkey-stats — counts keyboard shortcuts, never keystrokes.`
 - `📡 x-monitor-hotkey-live — keeps the hotkey map's data current, with no terminal open.`
-- `📷 x-autoclean-screenshots — trashes screenshots older than 30 days, recoverably.`
+- `📷 x-autoclean-screenshots — trashes screenshots older than 7 days, recoverably.`
 
 ## telling the two kinds apart
 

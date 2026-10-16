@@ -28,6 +28,7 @@
         "hotkeys/*.ts",
         "speak/server.ts",
         "schedule/*.ts",
+        "schedule/jobs/*/*.ts",
         "design/**/*.ts",
         "brand/profile/*.ts",
         "ccrow/*.ts",

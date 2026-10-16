@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  📷 x-autoclean-screenshots — trashes screenshots older than 30 days, recoverably.
+  📷 x-autoclean-screenshots — trashes screenshots older than 7 days, recoverably.
 
   - schedule — daily at 12:00; a slot slept through runs at the next wake, unlike cron
-  - moves — files under ~/Desktop/screenshots aged past 30 days, into ~/.Trash
+  - moves — files under ~/Desktop/screenshots aged past 7 days, into ~/.Trash
   - spares — hidden files, .DS_Store included
   - output — ~/.local/share/x-autoclean-screenshots/run.log, run.err.log for stderr
   - source — ~/frame/schedule/jobs/x-autoclean-screenshots/main.swift
