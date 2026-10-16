@@ -1,10 +1,10 @@
 ---
 id: PK-140
-title: a Sonnet 5.5 sidecar — shape and test-drive it after composer's verdict
+title: composer on Sonnet 5.5 — shape-idea over its contract after the trial verdict
 status: waiting
 assignee: []
 created_date: '2026-10-14 18:27'
-updated_date: '2026-10-14 18:40'
+updated_date: '2026-10-16 10:24'
 due_date: '2026-10-21'
 labels:
   - m
@@ -19,11 +19,15 @@ ordinal: 125000
 <!-- SECTION:DESCRIPTION:BEGIN -->
 **waiting for:** composer's trial verdict (2026-10-21); then shape, review and test-drive this.
 
-dima, 2026-10-14: a third sidecar on Sonnet 5.5, between composer (Haiku, mechanical chores) and ccrow (Opus, adviser). candidate jobs from cclio's general-knowledge read: draft skill grooms from her findings so she only reviews the diff, write pocket and ticket bodies from bullet notes, read a long transcript or a coder's pr and return findings, run a test suite and fix trivial reds. the question is overlap with helper (the on-demand Sonnet subagent): a parked session wins only when context carries across chores. proposed trial: one job class (sweep groom drafts) for a week, against cclio alone and against helper.
+the want (dima, 2026-10-16): promote composer itself from Haiku 5.5 to Sonnet 5.5 — the base composer contract stays, cclio:shape-idea extends it with Sonnet 5.5's strengths in mind; medium as baseline, cclio proposes the effort. the gain: more chores off cclio, maybe minimal-intelligence work; less overlap with helper-lite. the cost: pricier than haiku, and sonnet may stop at a dead end where Opus 5.5 keeps trying.
+
+the alternative kept (dima, 2026-10-14): a third sidecar on Sonnet 5.5, between composer (Haiku, mechanical chores) and ccrow (Opus, adviser). candidate jobs from cclio's general-knowledge read: draft skill grooms from her findings so she only reviews the diff, write pocket and ticket bodies from bullet notes, read a long transcript or a coder's pr and return findings, run a test suite and fix trivial reds. the question is overlap with helper (the on-demand Sonnet subagent): a parked session wins only when context carries across chores. proposed trial: one job class (sweep groom drafts) for a week, against cclio alone and against helper.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
 a real case, dima 2026-10-14 21:34: the four retro fixes (a rule line, x lane commit stdin + why-lines, the guard replay tool, an rg flag parser), each specified, small and tested, were Sonnet-shaped work; cclio's share was the spec and the review
+
+inbox 10-16, idea in his words: composer on Haiku 5.5 overlaps helper-lite; promote composer to Sonnet 5.5 (medium as baseline, cclio proposes the effort) so it takes more chores off cclio, maybe minimal-intelligence work too. sonnet does well when properly instructed, though it may stop at a dead end where Opus 5.5 keeps trying, and it costs more than haiku. keep the base composer contract, shape-idea over it with sonnet's capabilities in mind. not now: cclio's opinion only, no grill; resume right after the composer trial ends.
 <!-- SECTION:NOTES:END -->

@@ -3,10 +3,10 @@ id: PK-83
 title: >-
   skills groom order: crew-coder + crew-verifier first, then the most used and
   the most bleeding
-status: open
+status: done
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-14 16:25'
+updated_date: '2026-10-16 11:07'
 due_date: '2026-10-16'
 labels:
   - m
@@ -60,4 +60,6 @@ parked: it is the order of sweep step 9.5 (the groom), read there; nothing to do
 19:08 round 2 (o75): fleet-models + spawning-mechanics → crew-lead/references, committed 12e11d45; spawn read unchanged 47.3 KB (the drafted core would have duplicated SKILL.md, so none was added); next: crew-lead SKILL.md + briefing groom to cut the spawn read, then most-used/most-bleeding
 
 19:24 round 3 crew-lead committed (96646041) after wishkeeper + ccrow; parked on dima's word. next: most-used and most-bleeding skills, the 7 bytes next-dev lines, then commit round B's edits composer holds
+
+10-16: crew-coder + crew-verifier were groomed first (10-14 18:56, Claude B dry runs). progress: steps 5–8 done (every memory layer); step 9.5 ~33 of ~48 of our skills groomed, 15 left (~70 KB: app-author-ftr, browser-headless, guide-ui-ux, crew-designer-interview, gazette, notes, crew-cloud, crew-dna, remind, app-setup-essentials, catch-up, walkthrough, step-by-step, art-kit, emoji-battle) ≈ 4–5 rounds, then step 10 (2–3 turns).
 <!-- SECTION:NOTES:END -->

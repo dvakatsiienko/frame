@@ -3,7 +3,7 @@ id: PK-114
 title: >-
   jj test drive: one bytes coder lane on jj, on the next bytes coder spawn,
   never frame
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-13 12:54'
 updated_date: '2026-10-13 13:06'
@@ -19,6 +19,7 @@ ordinal: 100114
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+**waiting for:** the next bytes coder spawn (it rides that lane).
 dima's o168 ✓ (10-13). frame stays on git: jj (inference) skips gitattributes filters, so git-crypt files would break. measure: rebase conflicts, undo use, x lane compatibility.
 <!-- SECTION:DESCRIPTION:END -->
 

@@ -1,0 +1,30 @@
+---
+id: PK-159
+title: >-
+  cclio bench — shape-idea: a small mvp that measures cclio's performance from
+  her threads and logs
+status: waiting
+assignee: []
+created_date: '2026-10-16 10:24'
+updated_date: '2026-10-16 10:57'
+due_date: '2026-10-24'
+labels:
+  - m
+dependencies: []
+priority: later
+type: wish
+ordinal: 100010
+---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+**waiting for:** the memory sweep (FRM-267) to close — it runs right after.
+inbox 10-16, wish: build a solid cclio bench, not too complex — a script, recipe or other shape that searches her threads, traces and logs for performance data; any shape that proves to work and look good. the goal: optimise her workload. which data to hunt? reviewing a flow model like hers, what would count as not performant? a small mvp, little effort; made solid only if it works at all, and useful. why: the operator-comms recipe found his comms patterns and flaws, the memory fixes after it felt like a x7 upgrade — the same for cclio: what affects her performance now, what to hunt to bench her properly, her own baseline. she reads her threads and logs herself, hunts inefficiencies in her flows, and fixes them. measures are synthesised through grilling and her own grooming pass after. shape it with cclio:shape-idea. order: right after the memory sweep.
+<!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+10-16: OpenTelemetry is a bench input — proposal in cclio/.scratch/otel/proposal.md (cost, active time, cache hits, tool decisions per role).
+<!-- SECTION:NOTES:END -->

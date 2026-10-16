@@ -94,6 +94,8 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-15 · pocket-write · 1 · 0 · b-nudge 1: PK-148 created (x-mod-guard helper-lite nudge), pocket-check green
 - 2026-10-15 · pocket-write · 1 · 0 · b-guard 1: PK-150 created (x-mod-guard refuse --notes on task with notes)
 - 2026-10-15 · pocket-write · 0 · 0 · b-guard 2: PK-150 set waiting; pocket-check red: waiting without **waiting for:** first line; not fixed, consult
+- 2026-10-16 · inbox-prep · 0 · 1 · 9 items, 23 asks; check 42/42 exit 0; rework: 2 quoted lines mistyped, fixed
+- 2026-10-16 · anchor-edit · consult · n/a · s10r1 withdrawn by cclio: brief miss (cclio's), sent into cclio/ against floor; drafts not strict pairs; dry run caught parser gaps; nothing written
 
 ## rounds
 

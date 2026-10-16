@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-16
+until: 2026-10-30
 ---
 
 # test drive — the TypeScript LSP (native TS 7 server)
@@ -56,3 +56,8 @@ beat grep or lost to it.
 ⏰ 🔬 ts-lsp test drive, two weeks to 2026-10-16 — the native TS 7 server through plugin `x` (`.lsp.json` → `bin/ts-lsp`); walk the stress list in `docs/test-drive/ts-lsp.md`, read `python3 docs/test-drive/ts-lsp/usage.py` at every halt (LSP calls beside grep calls per session), one line per round in its log. on 10-16: keep (and sharpen the `x:guide-code` «every use site» line) or drop the entry. dima 2026-09-30: «measure it under a weight for 2 weeks» — set 2026-09-30
 - 2026-10-15 20:46 · usage count (siesta freebie, helper-lite over 1,285 transcripts since 10-01) · **0 LSP calls** since 10-01; all-time 6 (hover 2, findReferences 2, documentSymbol 2), the last 2026-09-30 · the diagnostics bridge's value is not in that count (it pushes errors without a call) — the verdict tomorrow weighs the bridge, not the tool
 - 2026-10-15 20:50 · dima's steer (o99): the use-site rule moved from guide-code to guide-typescript, where a TS session loads it · the «only Go lately» reading checked: since 10-01 git touched 1,562 .ts/.tsx paths in frame (+40 bytes) against 207 .go — TS work was plenty, the tool still drew 0 calls; the next round asks why (the trigger sat in guide-code, which fires before the TS guide)
+- 2026-10-16 14:17 · verdict round · **the bridge paid for real**: cclio's Write of a new `schedule/jobs/x-cc-otel/server.ts` came back with 9 diagnostics (no node types, implicit any) one call later — the tell that the dir sat in no tsconfig; `schedule/jobs/*/*.ts` joined frame's include, `--listFilesOnly` proved it (the fleet-hazards «green typecheck, unconfigured files» trap, caught by the bridge, not a planted error) · the `LSP` tool: still 0 calls; the guide-typescript placement is 1 day old and today's renames were strings, not identifiers · ask: adopt the bridge, extend the tool once to 10-30
+
+## verdict
+
+- 2026-10-16 · **the diagnostics bridge: adopted** (dima's tick, o6) — it caught a new dir outside frame's tsconfig on its first real write · **the `LSP` tool: extended once to 10-30** — 0 calls in 15 days; its trigger moved into guide-typescript on 10-15, and two weeks decide it; a second extension needs a new test card

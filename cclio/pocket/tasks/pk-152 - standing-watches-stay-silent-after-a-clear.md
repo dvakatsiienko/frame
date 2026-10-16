@@ -1,0 +1,30 @@
+---
+id: PK-152
+title: standing watches stay silent after a /clear
+status: waiting
+assignee: []
+created_date: '2026-10-15 23:08'
+updated_date: '2026-10-16 10:47'
+due_date: '2026-10-19'
+labels:
+  - s
+dependencies: []
+priority: next
+type: task
+ordinal: 99999
+---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+**waiting for:** the first real /clear of cclio — the done test (a /clear, then no wake) runs then; fixture-proven 10-16, the live registry rewrite is an inference.
+dima, 2026-10-16: «why are they firing? make them not fire after i clear you.» the boot arms pr-watch and ci-watch as one-shot background Bash tasks (watch-once.sh, 6 h deadline, cclio:boot step 📡). a /clear resets the conversation but not the session's background tasks, so their end notice lands in a fresh context that never armed them, and a no-event deadline end reads as news (2026-10-16 01:58: both ended «watch: 6 h, no event», cclio reported it). the fix: a no-event end must never wake or reach a cleared context — e.g. arm the watches outside the harness (launchd or a detached process that pings only on an event), or a re-arm that checks the arming conversation. done: a /clear, then a 6 h no-event end, prints nothing.
+<!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+inbox 10-16, wisp in his words: cleared cclio ~20:00, chatted with cw ~02:00, then her thread suddenly woke about monitors — fix it so a cleared cclio never wakes suddenly. relates the fork question (inbox Q6).
+
+fixed 10-16: watch-once.sh records the arming session id; a /clear mints a new id (proven: the 10-15 transcripts split at the clear), so the wrapper then ends silently with its session. fixture-proven: same session prints, cleared session silent, an event prints. inference: the ~/.claude/sessions registry file updates its sessionId on a live /clear — first real clear confirms. also fixed: the «6 h, no event» branch never fired (the pid was killed before the check).
+<!-- SECTION:NOTES:END -->
