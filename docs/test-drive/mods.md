@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-19
+until: 2026-10-21
 dies-when: the verdict line below is written (2026-10-19) — mods become a fleet-aware layer (rules line + contracts), stay dima's own toy, or get pruned
 ---
 Ticket: [FRM-303](https://linear.app/x-com/issue/FRM-303)

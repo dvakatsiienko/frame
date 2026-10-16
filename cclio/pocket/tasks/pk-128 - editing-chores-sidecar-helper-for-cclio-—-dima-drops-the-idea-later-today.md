@@ -17,8 +17,8 @@ ordinal: 100005
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**waiting for:** the composer trial verdict (2026-10-21).
-composer — cclio's Haiku 5.5 editing sidecar, on a test drive to 2026-10-21. shaped 2026-10-14: the want and the decisions in ~/frame/.scratch/composer-shape/PRODUCT.md, the charter x:crew-composer, the trial docs/test-drive/composer.md, the recipe recipes/refresh-crew-coordinator-composer. next: start it (--bg, bgIsolation none), first chore batch.
+**waiting for:** the composer trial verdict (its date: `docs/test-drive/composer.md`).
+composer — cclio's Haiku 5.5 editing sidecar, on a test drive (`docs/test-drive/composer.md`). shaped 2026-10-14: the want and the decisions in ~/frame/.scratch/composer-shape/PRODUCT.md, the charter x:crew-composer, the trial docs/test-drive/composer.md, the recipe recipes/refresh-crew-coordinator-composer. next: start it (--bg, bgIsolation none), first chore batch.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes

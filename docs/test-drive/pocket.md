@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-21
+until: 2026-10-23
 dies-when: the pocket is kept or dropped at the verdict (2026-10-21)
 ---
 

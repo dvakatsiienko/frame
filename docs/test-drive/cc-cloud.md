@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-04
+until: 2026-11-06
 dies-when: every candidate use below has a verdict, written into `x:crew-cloud` (by 2026-11-04)
 ---
 

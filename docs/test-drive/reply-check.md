@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-18
+until: 2026-10-20
 ---
 
 # reply-check — test drive, 2026-10-02 → 2026-10-16

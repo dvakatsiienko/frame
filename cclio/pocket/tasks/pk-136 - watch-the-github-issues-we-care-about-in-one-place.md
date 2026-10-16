@@ -17,7 +17,7 @@ ordinal: 1500
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**waiting for:** the x-changedetector trial verdict (2026-10-22) — it is the one-place watch this asks for.
+**waiting for:** the x-changedetector trial verdict (its date: `docs/test-drive/x-changedetector.md`) — it is the one-place watch this asks for.
 dima, 2026-10-14: we track random github issues scattered everywhere (#100843 you-should-know, #95589 bg-spare, #99217 mod panels, the ones in workarounds.md and test-drive files), and there are a lot of them. whenever a fix lands, someone should know — ideally the way parallel monitors work: everything hoisted to one place, we look and see the updates we care about. parallel monitors were tried and did not report issue state changes well, so they may not fit this. not now.
 
 parked: dima's word, «not now» (2026-10-14)

@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-20
+until: 2026-10-22
 ---
 
 # test drive — bare cc

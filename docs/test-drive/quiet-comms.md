@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-19
+until: 2026-10-21
 dies-when: the verdict line below is written (adopted → the switch stays on; dropped → the mod part and the tag line leave)
 ---
 

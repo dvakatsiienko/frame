@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-21
+until: 2026-10-23
 dies-when: the verdict line below is written (2026-10-21, at the refresh-crew-coordinator-composer run)
 ---
 

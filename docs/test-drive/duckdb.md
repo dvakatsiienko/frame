@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-21
+until: 2026-10-23
 ---
 
 # test drive — duckdb, the fleet's measuring engine

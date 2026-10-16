@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-28
+until: 2026-10-30
 ---
 
 # skill-named-load — does a skill named in plain words load in a spawned session

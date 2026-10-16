@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-28
+until: 2026-10-30
 ---
 
 # want line — dima reads one exit line per feature ticket

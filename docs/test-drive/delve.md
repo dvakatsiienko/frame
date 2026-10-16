@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-28
+until: 2026-10-30
 ---
 
 # delve — the go debugger (`dlv`), for a red test whose cause is not in the diff

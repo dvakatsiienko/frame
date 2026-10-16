@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-19
+until: 2026-10-21
 ---
 
 Ticket: none · built c9533240 (mods lane l12)
