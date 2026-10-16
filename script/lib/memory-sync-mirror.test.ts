@@ -94,6 +94,13 @@ describe('tags', () => {
         ).toThrow('rules/x.md: unknown sync tag «cww»');
     });
 
+    test('a line tagged `<!-- cc -->` stays out of cw, its nested lines with it, its siblings kept', () => {
+        const { text } = selectFor(
+            '## a\n<!-- sync: cw -->\n\n- kept\n- orbit asks <!-- cc -->\n  - nested orbit detail\n- also kept\n',
+        );
+        expect(text).toBe('## a\n\n- kept\n- also kept');
+    });
+
     test('selection drops the tag line, pulls ancestor headings, keeps a prose-only leaf, sizes the section', () => {
         const { text, sections } = selectFor(
             '# t\n\n## parent\n\nparent prose\n\n### kept\n<!-- sync: cw -->\n\nleaf prose only\n\n### other\n\n- no\n',

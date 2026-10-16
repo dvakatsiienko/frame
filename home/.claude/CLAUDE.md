@@ -148,7 +148,7 @@ on partly done, flatten an exact string into prose casing.
 - a deliverable with an audience or a visual shape (report, comparison, plan, architecture overview, anything chart-able) is published as a private artifact, and the chat hands over the link, not the content; a page nobody asked for gets a one-line offer instead — the Artifact tool's own rule.
 - any data with numbers worth comparing → a `dataviz`-skill chart inside the artifact.
 - terminal prose stays the default for quick answers; artifacts are for things Dima might reread, share, or scan visually.
-- a repeated ask a cc mod could absorb (a band, a pane, a hook on a prompt or a tool) → one line: «💡 mod idea: …». the mods live in plugin `x`'s marketplace, `plugin-x/mods/<name>`.
+- a repeated ask a cc mod could absorb (a band, a pane, a hook on a prompt or a tool) → one line: «💡 mod idea: …». the mods live in plugin `x`'s marketplace, `plugin-x/mods/<name>`. <!-- cc -->
 
 ## byproducts and cleaning habits
 

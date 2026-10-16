@@ -68,3 +68,4 @@ Store contract: the `cclio:remind` skill. Both tiers die only when Dima drops th
 
 ⏰ right after the boot: review how our commit habits work now, for cclio and the whole fleet — the memory sweep may have changed them, and coders could drift; ccrow read cclio's memory as «commit only at the halt», which dima never asked for, so that line is wrong and gets fixed at its source (dima, 2026-10-16: «it is important») — set 2026-10-16 · due: 2026-10-17
 ⏰ 🐦‍⬛ at the next halt: park ccrow, never stop it — dima runs his own keep-hot test and watches it himself (the stash pings fired every 50 min overnight, cache held warm, `docs/test-drive/ccrow.md` 10-09). dies when dima says his test is done. dima 2026-10-09: «keep ccrow for my own keep-hot test … keep it parked, so I will keep an eye on it» — set 2026-10-09
+⏰ before the next mods lane starts (or beside it): shape the re-ask catcher (PK-168) through cclio:shape-idea first — set 2026-10-16

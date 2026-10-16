@@ -247,6 +247,36 @@ const turnWith = (...messages: { id: string; calls: { name: string; card?: strin
 };
 const wishkeeper = { card: 'wishkeeper', name: 'Agent' };
 
+// a turn whose first assistant message prints text before a tool call, then the final reply
+const turnWithText = (midText: string) => {
+    const path = join(mkdtempSync(join(tmpdir(), 'rc-')), 't.jsonl');
+    const lines: unknown[] = [
+        { message: { content: 'proceed', role: 'user' }, type: 'user' },
+        { message: { content: [{ text: midText, type: 'text' }, { input: {}, name: 'Bash', type: 'tool_use' }], id: 'm1' }, type: 'assistant' },
+        { message: { content: [{ type: 'tool_result' }] }, type: 'user' },
+    ];
+    writeFileSync(path, `${lines.map((l) => JSON.stringify(l)).join('\n')}\n`);
+    return path;
+};
+const longList = ['1. the first step of the plan, spelled out', '2. the second step of the plan, spelled out', '3. the third step of the plan, spelled out', 'x'.repeat(200)].join('\n');
+
+describe('the never-reached text', () => {
+    it('reminds when a long mid-turn block is missing from the last message', () => {
+        stopAfter('done, all steps ran.', turnWithText(longList));
+        expect(nextPrompt()).toContain('never reached dima');
+    });
+
+    it('passes when the last message repeats a line of it', () => {
+        stopAfter('done:\n- the second step of the plan, spelled out', turnWithText(longList));
+        expect(nextPrompt()).not.toContain('never reached dima');
+    });
+
+    it('passes a short mid-turn update', () => {
+        stopAfter('done.', turnWithText('checking the gate now, then the commit.'));
+        expect(nextPrompt()).not.toContain('never reached dima');
+    });
+});
+
 describe('the siesta freebie', () => {
     it('reminds when the wishkeeper spawn is followed only by orbit and wrap-up', () => {
         const t = turnWith({ calls: [wishkeeper], id: 'm1' }, { calls: [{ name: 'mcp__x-mod-stash__orbit' }, { name: 'mcp__ccd_turn__wrap_up' }], id: 'm2' });

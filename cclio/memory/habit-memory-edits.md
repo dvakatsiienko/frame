@@ -4,9 +4,11 @@ Adopted from Dima's inbox ask, option b of two he approved: **announce-always, g
 
 - **every memory edit is named in the reply the same turn it happens** — file + one line on what
   changed. A silent memory edit is the failure this habit kills.
-- **approval BEFORE the edit** for the risky class: deletions, rewrites of Dima's own words, and
-  anything under `rules/` (fleet-wide blast radius).
-- ordinary leaf tweaks and barrel line updates: edit, then announce — no round-trip.
+- **the line between alone and asked** (dima, 2026-10-16, from the sweep's comms read: 48 of 61 edit asks passed with no note, and all his catches were the second kind):
+  - alone, then one line at the siesta: an edit that keeps every rule's meaning and every word of his — a dead or renamed pointer, a bare tag or badge, a typo or format fix, a duplicate whose twin still loads for the same reader, a trim that drops no rule
+  - asked, per line: his words (a quote, a wish, a want), what a rule permits or forbids, a line moved to a file with other readers, the last copy a reader sees, anything under `rules/`, a deletion
+  - fragile all the same: «automating your mechanical edits doesn't mean that you can edit your memory yourself, because you often make mistakes» — consult when in doubt, a balanced approach
+- **a proposal reaches him in the thread** (dima, 2026-10-16: the sweep's report files were «written in a technical shape … far away and not very convenient to read»): the items that need his eye print in the reply, readable on their own; the rest stays in the report file, linked — never a wall of text, never only a file
 
 ## an edit is a groom, never a drop (dima, 2026-10-09)
 

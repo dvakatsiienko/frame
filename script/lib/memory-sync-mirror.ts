@@ -9,7 +9,8 @@
  * ?
  * ? ROUTING IS A TAG IN THE MASTER, never a list here. a line `<!-- sync: cw -->` directly under a
  * ? heading sends that section — and every subsection under it — to `account / profile / instructions`; a subsection may opt
- * ? back out with `<!-- sync: none -->`. a tag on its own line before the first heading routes the
+ * ? back out with `<!-- sync: none -->`, and one line inside it with a trailing `<!-- cc -->` (its deeper-indented
+ * ? lines go with it). a tag on its own line before the first heading routes the
  * ? whole file. cc strips html comments at load, so a tag costs cc nothing and the masters keep
  * ? their natural section order. `pnpm memory-sync:map` prints the routing table.
  * ?
@@ -130,6 +131,25 @@ export const compact = (body: string) =>
         })
         .join('\n\n');
 
+const CC_ONLY = '<!-- cc -->';
+
+/** drops a line tagged `<!-- cc -->` and the deeper-indented lines under it: cc-only detail inside a cw section. */
+export const dropCcOnly = (body: string) => {
+    const out: string[] = [];
+    let cut: number | undefined;
+    for (const line of body.split('\n')) {
+        const indent = line.length - line.trimStart().length;
+        if (cut !== undefined && line.trim() && indent > cut) continue;
+        cut = undefined;
+        if (line.includes(CC_ONLY)) {
+            cut = indent;
+            continue;
+        }
+        out.push(line);
+    }
+    return out.join('\n');
+};
+
 /** drops comments and navigation blocks, keeps prose — the fallback for a prose-only leaf. */
 const clean = (body: string) =>
     body
@@ -222,9 +242,9 @@ export function selectFor(
             const next = parts[i + 1];
             const hasRoutedChild =
                 !!next && next.level > part.level && next.eff === 'cw';
-            let text = compact(part.text.trim());
-            if (!hasRoutedChild && !text.includes('\n'))
-                text = clean(part.text.trim());
+            const own = dropCcOnly(part.text.trim());
+            let text = compact(own);
+            if (!hasRoutedChild && !text.includes('\n')) text = clean(own);
             if (text) {
                 out.push(text);
                 if (current) current.chars += text.length;
