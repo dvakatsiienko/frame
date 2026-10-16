@@ -23,6 +23,13 @@ home/.claude/shelf/handoffs/
 home/.claude/shelf/boot-digest.stamp
 # sline rewrites it on every render
 home/.claude/shelf/cc-usage-window.json
+# runtime state the mods and hooks rewrite (x-mod-stash's glide lanes, pr-watch's verifier verdicts, the retired queue's file), untracked on purpose since 10-12
+home/.claude/shelf/lanes.json
+home/.claude/shelf/lanes/
+home/.claude/shelf/pr-verified.json
+home/.claude/shelf/stash/
+# a stray `go build` output; the x shim builds and runs x/go/bin/x
+x/go/x
 
 # yt-transcripts are the shelf's second exception, for the same reason as handoffs:
 # they are bulky downloads (a 50-min talk is ~550 KB of raw .vtt), they re-download
