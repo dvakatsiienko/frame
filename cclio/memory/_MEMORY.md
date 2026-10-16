@@ -5,7 +5,7 @@ One line per leaf, pointing into this dir. Content lives in the leaf, never here
 📌 `@slug.md` is an **import**, not a link — it is what loads the leaf. Paths resolve relative to
 **this file**, never the cwd, and a wrong one loads nothing silently. See [[method-silent-failures]].
 
-A leaf is one decision, not a topic dump. A stale pointer means delete both the line and the file.
+A leaf is one decision, not a topic dump. A stale pointer means proposing to delete both the line and the file.
 **Every leaf carries a type prefix — `dima-` `craft-` `habit-` `method-` `sys-` — and joins that
 barrel section.** A new leaf picks its type at create time; a leaf fitting no type is a signal to
 rethink, not a license for a bare name. (`_`-prefixed files are infrastructure, not leaves.)
@@ -23,12 +23,12 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 ## running the work
 - ⭐ @craft-pm.md — the every-turn pm judgment: fold or drop, wishes, the pace contract, the pending block, the ask-guard, the freebie rule; the ticket handbook is `cclio:pm`
 - 🧭 @craft-fleet-flow.md — the path from idea to his hands: ten stages, five lanes, each stage's gate and owner, the done test
-- ⭐ `x:crew-lead` (plain pointer, not imported: the spawn craft loads on demand) — load it before any spawn, brief, watch or stop: the doors, the models, the preflight, briefing, watching, the shared tree
+- ⭐ `x:crew-lead` (plain pointer, not imported: the lane craft loads on demand) — load it before a lane spawn, brief, watch or stop: a coder, verifier, designer, probe or cloud session
 - ⭐ @habit-halt.md — a session ends with the halt ritual; run it on his signal, never open it mid-task
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn
 - ⭐ @habit-dima-comms-pacing.md — a fat drop gets labeled sub-batches with siestas; every ask handled, a missed one is the worst outcome
-- ⏰ `_reminders.md` (plain pointer, not imported: the boot digest prints every ⏰📌 line and every ⏰ whose `due:` has come, the trials live in each test-drive file, `pnpm test-drive:list`) — dima's standing reminders; ⏰📌 stuck ones raised every boot
+- ⏰ `_reminders.md` (plain pointer, not imported) — dima's standing reminders; `cclio:remind` stores, raises and drops them
 
 ## method — how a claim earns belief
 - ⭐ @method-rule-proof.md — a rule states the ONE command that proves it, or is labelled an inference
@@ -50,5 +50,5 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🧪 sys-jev.md (parked, NOT imported: jev is frozen until the credit refills ~10-18; re-add the `@` then) — jev lanes the inbox and routes skills; the criteria are the prompt, every rubric in one file, the sharpening loop runs at every halt
 - @sys-settings-drift.md — CC writes it at runtime; a real file where the symlink belongs is silent divergence
 
-- 📐 recipes live in `~/frame/recipes/<name>/` (recipe.md · log.md · scripts/ · last/); the `cclio:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)
+- 📐 recipes live in `~/frame/recipes/<name>/`; the `cclio:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)
 - 🧹 «memory sweep» = a run of `~/frame/recipes/nurture-memory/recipe.md`: read it whole and follow its re-entry rule, never a fresh plan (plain pointer)

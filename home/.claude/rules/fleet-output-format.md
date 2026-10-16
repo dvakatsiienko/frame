@@ -64,8 +64,7 @@ an emoji is a **line prefix**, never inline decoration.
   **🌤️ siesta**, **🌠 wish**, **🍀 freebie**, **lane** (dima's verdict after a thread trial, 2026-10-08: «bold
   reads much better than non-bold for vibe keywords»). the badge never travels alone: a bare ✨ reads as
   llm slop sparkles, «✨ wisp» reads as the bug list. the words and badges live in `rules/fleet-vibe.md`.
-- **picking an emoji for anything** — offer a few from dima's own favourites first, then a few fresh
-  fits; he picks. his set (handpicked, 2026-10-08): 🐋 🐬 🐠 🫍 🦈 🐆 🪶 🐉 🐦‍🔥 🪸 🌼 🌻 🌞 🌘 🌗 🌔 🪐 💫 💨
+- **picking an emoji for anything** — `x:top-seven`; his favourites below lead every emoji pick. his set (handpicked, 2026-10-08): 🐋 🐬 🐠 🫍 🦈 🐆 🪶 🐉 🐦‍🔥 🪸 🌼 🌻 🌞 🌘 🌗 🌔 🪐 💫 💨
   🛼 🫟 🎑 🌠 🌌 🧞‍♂️ 🦅
 
 ## links and paths — one click, always
@@ -80,7 +79,7 @@ a page you named, never navigates from a site root to the page you meant.
   permission: deep-link the exact page or pane so the click IS the action, never «go find X».
   before asking at all, look for the door that does it for him (a `defaults write`, a script).
 - **ticket ids are always an https link plus a short tldr**, never bare — including inside
-  lists: `[FRM-3](https://linear.app/x-com/issue/FRM-3): setup audit — in progress`. https is the
+  lists: `[FRM-N](https://linear.app/x-com/issue/FRM-N): <tldr> — in progress`. https is the
   one form every surface renders (the desktop Code tab and cw strip custom schemes); dima opens a
   ticket in the app with his Hyper+G raycast command.
 - **an issue or pr from another repo is a full link** — `[vhs#787](https://github.com/charmbracelet/vhs/issues/787)`.
@@ -172,11 +171,12 @@ file he names.
 
 ### 🔭 blocked on something external
 - **when**: only while a review bot, ci, a background job or another agent genuinely holds the
-  session, or while the next move waits on dima's answer — then **🙋‍♂️ dima** is named beside any member (dima, 2026-10-12). not blocked → no 🔭 line, or the marker rots into decoration.
+  session, or while the next move waits on dima's answer — then **🙋‍♂️ dima** is named beside any member. not blocked → no 🔭 line, or the marker rots into decoration.
 - **where**: the LAST line, after the ➡️. ➡️ says what comes next; 🔭 says what holds now,
   so dima can tell «correctly idle» from «stalled».
-- **shape**: `🔭 waiting on <who>`, nothing more — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70)`; the band shows this line, so how the answer arrives stays out (dima, 2026-10-10).
-  - a thing with a page is a link labelled with an emoji and a short word; several things, one per line
+- **shape**: `🔭 waiting on <who>`, nothing more — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70)`; the band shows this line, so how the answer arrives stays out.
+  - a thing with a page is a link labelled with an emoji and a short word
+  - several holders share one line and one «waiting on», split by commas — `🔭 waiting on **🐬 wishkeeper**, **🐝 researcher**, **🙋‍♂️ dima**` · until: PK-160, the band merges them itself
   - a member is bold with its role emoji, no link: **🦉 cclio**, **🔧 coder**, **🔎 verifier**,
     **🎨 designer**, **🐝 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**, **🎼 composer**
   - a subagent is bold with its badge and name from `fleet-identity`, never its launch text: **🐬 wishkeeper**

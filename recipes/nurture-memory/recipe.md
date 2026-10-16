@@ -70,6 +70,14 @@ his questions, run #1, answered in `author-memory/references/memory.md` and re-a
 
 > «how do you teach agents to properly write and maintain skills and memory?» · «who is better at writing skills and mems — a human or an agent?» · «writing-for-agents most likely is only good for skills» (answered by his own verdict below: it covers both)
 
+dima, 2026-10-16, on why the run must be efficient and why step 10 and its retro matter as much as the sweep:
+
+> «memory sweep by itself is a very important operation because it is about creating a high-quality driver for you, which is your memory and skills, but it's also expensive to run. that's why it has to be in pristine shape.» · «memory sweep is a big and expensive recipe that wants a lot of my attention and effort. because of this, it has to be as efficient as possible. that's why I've asked you to trace how we do memory sweep during the entire process. that's why we have a retro over it to catch mistakes and inefficiencies, think, and maybe even grill how to make the nurture memory recipe better and sharpen and smoothen it for the next run.»
+
+> «step 10 is important because it will allow us to catch drifts and mistakes we might make during the memory sweep.» · «while doing a drift check, we should also review if we maybe forgot to groom some items (e.g. skipped ones), and see if we vertically rebalanced memory across skills and memories. when we do a memory sweep, we change a lot, and the memory system and skill system state at the start of the memory sweep might be different from what it will be at the end. a final vertical rebucketing check is also important.» · «a final retro step of a memory sweep is not less important than the memory sweep itself because it settles the next memory sweep.»
+
+> on run #2 (traced 10-11 → 10-16): «it is actually hard to measure how much time we spent on memory sweep because we did a lot of additional chores in parallel and switched our context to different stuff, like lane modes. our distractions were actually useful — we created a lot of mods and solved a lot of other operational stuff, so it's fine and natural.» and «our current memory sweep was pretty chaotic and destructive, and we switched a lot to different stuff while pausing memory sweep for even a few days, like with mods lanes.»
+
 his standing calls:
 - between sweeps: `cclio:halt` phase 3a, «the redundancy hunt» (dima, 2026-10-07)
 - what the cuts never touch (2026-10-11): «i'm interested in memory cuts, but i want to keep things like output format, emojis, and other stuff, and our main flow frameworks. let's see what we can remove without breaking our flow or making your output ugly.»
@@ -168,12 +176,21 @@ his standing calls on skills:
       - a heavy human-only skill gets `disable-model-invocation: true`
       - entity-first names carry a scope (`x:*`, `cclio:*`)
       - the info load rebalanced: what every branch needs stays inline, the rest behind a pointer
-      - **Claude B**: a fresh session runs one real ask per changed skill; an unopened file or a skipped step sends it back
-      - done: every skill verdicted, each changed one past Claude B
+      - **the cold test**: a fresh session runs one real ask per changed skill; an unopened file or a skipped step sends it back
+      - done: every skill verdicted, each changed one past the cold test
    5. **the fire loop** — only for a skill with a miss (a flawlog «skill not loaded» line, a router near-miss 0.30–0.70), and only once the $200 plan is live (parked in the pocket until then): his real prompts as `plugin-x/evals/<skill>-*` cases, split train and held-out test (`cmt`, `notes`, `pm` are the pattern); a baseline `claude plugin eval` on both; change one thing, keep it only if train rises and test does not drop; a round cap set first; each round logged in `docs/test-drive/`. a description edit is proven this way, never by reading. done: every missed skill looped, capped or parked for the $200 plan
    - done: steps 1–5 done, each traced in the run file
-10. **the review, the gates, the retro** — after the full sweep, in this order (dima, 2026-10-12). (open)
-    - **the drift hunt**: one more pass over the whole — what did we miss, and where did a sweep edit drift or break something: a moved section a pointer still names, a dead import, a rule that lost its only home, a skill pointing at a cut line. each one fixed
+10. **the review, the gates, the retro** — after the full sweep, one pass (dima, 2026-10-12; reshaped 2026-10-16). (open)
+    - **why it regrooms everything** (dima, 2026-10-16): «memory sweep is a long process, and during this process we shuffle and rebucket memory pieces. that's why already groomed memory leaves may grow … that's why we need this final step 10 that is intended to regroom everything (e.g., smoothen the moves).» regrowth is expected, never a failure: step 10 finds it and grooms it
+    - **every finding is also a retro row**: it is fixed, and tagged `escaped from <step>` — the step that should have caught it (re-entry, 3, 4, 5–8, 9.x, a siesta, «none could»). rows land in `last/step10-findings.tsv`: `lens · file · what · fix · escaped-from · cost (dima turns)`; the retro reads escapes per step, never impressions
+    - **10.1–10.3 run at once**, three `helper` cards writing rows, cclio judging; wishkeeper reads the folded batch as the step's siesta:
+      - **10.1 drift**: every backticked path and `x:`/`cclio:` name in memory, rules and skills resolves (`test -e`); names of cut, moved or renamed things still pointed at; closed tickets in open-state words; dima's quotes lost across the whole sweep (`quote-diff.py <the sweep's start commit>` over every groomed file — run #2: `40a58e9c`, 2026-10-07); trial dates copied outside their test-drive file
+      - **10.2 coverage — depth, never presence** (dima, 2026-10-16: «sharpen step 10 to hunt misses like this, so none of the memory sweep recipe runs will miss anything»): `groom-list-check.sh --final` exits 0, which proves three misses gone:
+        - **a partial pass read as a groom** — a skill whose only verdict is a dupes pass, a prune keep or side work; a skill line needs a whole-groom round
+        - **a file changed after its groom** — its size on disk off its recorded after by more than 2 %: the lines added since the groom (`git log --since=<groom date> -p -- <file>`) get the lenses, the line its new bytes
+        - **a file no line names** — born, moved or renamed during the sweep; each groomed or verdicted
+        - the skills' verdicts live in the groom list's skills section, so one file holds every verdict
+      - **10.3 vertical rebucket**: a cross-file duplicate scan (a sentence of ≥12 words in 2+ resident or skill files); resident lines only one surface needs (cclio-only in `rules/`, coder-only in root); skill lines restating resident memory — keep, move down, or cut
     - **the human gate**: pruning is never delegated; candidates go out as a digest:
       - ≤5 clusters per halt, related lines together; each line: the text quoted, why it goes (the kind above), the evidence (a grep, a ticket state, the guard's name, a load count), where the reason survives
       - dima answers per line: **yes** / **keep** / **later** — no «approve all», silence changes nothing
@@ -183,8 +200,15 @@ his standing calls on skills:
       - the agent drafts; existence and deletion are his (an llm grading its own memory cannot tell good from bad)
     - **self-correction**: a flaw seen twice becomes a check, a script or a hook; a check that fires often is a root to fix (`pnpm reply-check:report`)
     - **the cw field**, only when a `<!-- sync: cw -->` section changed: `pnpm memory-sync:map` → `pnpm memory-sync:copy` → dima pastes it into cw → a cw thread runs `/x-cw:memory-update check`
-    - **the retro on the trace**: read `docs/test-drive/memory-sweep.md` end to end and answer three questions — what were the interesting findings, what were the mistakes, how does this recipe change so the next run goes better; the answers refresh this recipe, then it is sealed until the next sweep
-    - done: the gates passed, today's line in `log.md`, the refresh committed
+    - **the numbers, after every edit of step 10** (dima, 2026-10-16: step 10 still edits, grooms and deletes, so the count waits for it): resident bytes per layer now vs the sweep start, from the groom list's before → after plus a fresh `wc -c` over every resident file; the skills listing bytes; dima types `/context` once (run #1's 10-07 reading: memory 81.2k, boot 117k); per-session token use over the sweep's days (`x fleet ops --days <n>`)
+    - **the retro on the trace**: inputs in order — `last/step10-findings.tsv` (escapes per step), the trace's `## findings`, the trace itself (rounds, siestas, wishkeeper findings per siesta and how many were high, unchecked folds, pauses), the flawlog's `#dima-caught` lines over the sweep's days, the numbers. one `retro` card reads trace + flawlog + tsv (the trace is the record, never the transcripts); cclio adds the numbers. it answers four questions, printed as a research read:
+      - what were the interesting findings
+      - what were the mistakes
+      - **how well was the run locked** — did the trace, the groom list and each CST carry the state through every pause, side lane and compaction, and if anything slipped, the mechanism (a check, a gate, a recipe line) that locks it next time
+      - how does this recipe change so the next run goes better
+      - **how does upkeep between sweeps get smoother** (dima, 2026-10-16: «there are a lot of stray stuff everywhere … hopefully we sharpen the recipe and habits so the memory maintenance will be smoother in future»): each stray class in the trace's `## findings` gets a home — a step-10 check, a halt-time lens, a guard — so the next sweep finds less sediment
+    - then a grill round with dima on the recipe changes (the whole frontier at once), the recipe refreshed, sealed until the next sweep
+    - done: the gates passed (typecheck, test, `groom-list-check.sh --final` 0, `quote-diff` vs the start commit, `pnpm test-drive:check`), today's line in `log.md`, the refresh committed
 
 ## vectors
 

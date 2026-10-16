@@ -54,9 +54,7 @@ live in `x:notes`, copied by hand into the cw leaf `/topics/obsidian.md`.
   prints a short calm list and nothing is red. before trusting a quiet pr, ask «was a RUN
   created for this head», never «is a check green». guard: a `commit-msg` hook in frame and bytes
 - **a green typecheck answers «did the configured files pass», never «are my files configured»** — `hotkeys/*.ts` sat in no tsconfig for a week and a reverted interface field left the gate green (2026-09-20). a new dir of `.ts` is proven by planting a type error and watching `pnpm typecheck` go red
-- **github's `Deploy · success` is the hook trigger, never the build** — guard: `deploy-watch.sh`, armed by `x:cmt` on every bytes push
 
-<!-- failure: three production builds were red 20 min behind a green Actions page (2026-09-21) -->
 <!-- failure: bytes #84 (2026-09-12), a commit body quoted the skip marker and no run was created for its head -->
 
 ## app exports

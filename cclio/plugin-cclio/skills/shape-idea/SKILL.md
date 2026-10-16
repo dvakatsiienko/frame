@@ -19,7 +19,7 @@ word. skipping a step happens only on his word, named out loud.
    quote says what he means.
 2. **grill** — `mattpocock-skills:grilling` + `mattpocock-skills:domain-modeling` together (what
    matt's user-only `grill-with-docs` does), so every term the grill settles lands in `GLOSSARY.md`
-   and every hard decision in an ADR as it happens; one question at a time, until the open decisions are
+   and every hard decision in an ADR as it happens; in rounds, each round the whole frontier of open questions at once, until the open decisions are
    settled or parked by name. always; skipped only on his word. a re-shape grills what exists: why,
    for whom, what is missing, what should go. in the grill shape (`habit-dima-comms-pacing`).
 3. **prior art** — does it exist already, and can we use it instead of building?

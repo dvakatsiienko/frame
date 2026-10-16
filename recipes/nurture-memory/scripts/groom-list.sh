@@ -16,4 +16,4 @@ print "\n## 4 · frame project\n"; rows $F ${(f)"$(cd $F && git ls-files '*AGENT
 print "\n## 5 · other projects (~/projects)\n"; rows ~/projects ${(f)"$(find ~/projects -maxdepth 4 \( -name AGENTS.md -o -name CLAUDE.md \) -not -path '*/node_modules/*' -not -path '*/.claude/worktrees/*' -not -path '*/.scratch/*' 2>/dev/null)"}
 print "\n## 6 · knowledge docs that steer memory edits\n"; rows $F $F/docs/knowledge/authoring-*.md
 print "\n## 7 · always loaded, outside the layers\n"; rows $F $F/home/.claude/output-styles/*.md $F/home/.claude/agents/*.md $F/cclio/.claude/agents/*.md
-print "\nskills are step 9, groomed in the order of the pocket's skills-groom item."
+print "\nskills are step 9, groomed in the order of recipe.md step 9.5."

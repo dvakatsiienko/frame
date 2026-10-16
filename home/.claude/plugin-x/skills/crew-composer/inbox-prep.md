@@ -21,23 +21,27 @@ not content: leave it out. each item becomes one block:
 - `❓ asks:` then one sub-bullet per question of his, numbered across the whole file (`1.` … `23.`), so cclio
   answers by number; an item with none skips the label
 - `🏠 home:` — a pocket item or file the text points at, named by its id and title: «the reminder he means is
-  PK-90»; only a match you can show from the pocket list, never a guess
+  PK-90»; only an item whose body says the same thing (`backlog task view <id> --plain`), never a title that
+  only shares a word — no such item, no home line
 - `🔗 relates:` — another item sharing its subject: `W1 — both about subagent spawning`
 - `> [!quote]- original` — his lines, verbatim, each prefixed `> `, the bold title included; this is what the check reads
 
 ## grooming — the fold
 
 - a loss is an ask or idea of his forgotten or dropped, or a line groomed so far its context is gone; a
-  reworded sentence that keeps his intention is the goal (dima, 2026-10-15)
+  reworded sentence that keeps his intention is the goal
 - so every sentence of his lands in a bullet or an ask, with spelling and grammar fixed; only filler words go
   (openers, hedges); his meaning, manner, jargon, vibe words and lowercase stay
 - his voice, first person: «i want…», «my idea…», as he wrote it; never «he» or «dima»
-- a question stays a question: a suggestive one («map them yourself, rather than via composer?») lands as an
-  ask, never as a decided bullet
+- a question stays a question, in the asks and in the bullets: a suggestive one («map them yourself, rather than
+  via composer?») lands as an ask, never as a decided bullet; «they are not git tracked yes?» is never the
+  bullet «they are not git tracked»
+- his goal and method lines stay whole: «the idea is …», «we just shape-idea over it», «the idea was …» each keep
+  a bullet; a «they» keeps every member it names
 - an ask is a question he wants answered; a rhetorical lead-in to his own reasons («why i ask?», then the why)
   is a bullet, never an ask
 - a point he makes twice lands once: in one item, one bullet; across items, one bullet and a `🔗 relates:` line
-  in the other (dima, 2026-10-15)
+  in the other
 - freeze exact strings: paths, file names, skill and command names, ids, urls, identifiers, names of ours like
   «clio» (cclio) — kept as written, never marked
 - add nothing: no answers, no advice, no facts of yours; a word you cannot read stays as written, marked `(?)`
@@ -67,6 +71,3 @@ prepped: YYYY-MM-DD HH:MM
 ## 🎼 composer's notes
 - <a move out of his section and why, a word you could not read, a judgment call>
 ```
-
-<!-- born 2026-10-15 on dima's boot ask; a 7-day trial in docs/test-drive/composer-inbox-prep.md decides it -->
-<!-- round 1 sharpened the same day: composer's 8 spec gaps closed, questions kept questions, his voice, pocket homes -->

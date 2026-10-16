@@ -6,7 +6,6 @@ description: Load when Dima says «walk me through» something, a ticket carries
 # /walkthrough — teach by showing, on his machine
 
 the mode dima wants: he runs one command, looks at HIS data, gets ONE insight, says «next».
-born from the DOT-157/DOT-158 tours.
 
 ## the flow
 

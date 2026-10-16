@@ -23,10 +23,12 @@ when the news is progress. a decision, a question, a doubt or a find he would wa
 `🔔 <member>: <what>` — and the ask itself goes to orbit. **a coder's report reaches him
 once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name. the digest IS the coder's look card (`craft-fleet-flow` stage 9), and its screenshot goes to him by `SendUserFile` in the same turn.
 
-A `📄 last report: **<topic>**, <HH:MM>` line ends every report, except a `🔭` line, which goes after it: the band reads 🔭 only as the reply's last line (2026-10-12, a 🔭 above the stamp drew «not waiting»); his `rewind` reprints it. **The stamp is a copied clock, never a composed one** — the prompt hook's `now HH:MM` line, or a
+A `📄 last report: **<topic>**, <HH:MM>` line ends every report, except a `🔭` line, which stays the reply's last line (`rules/fleet-output-format.md`); his `rewind` reprints it. **The stamp is a copied clock, never a composed one** — the prompt hook's `now HH:MM` line, or a
 `date` run as the last tool step of a long turn; the stamp ran ahead of the clock ten times before
 this line (dima, 2026-10-08). the stamp is cclio's own, for `rewind` in a thread member traffic
 floods; no other member prints one.
+
+<!-- 2026-10-12: a 🔭 above the stamp drew «not waiting» -->
 
 **A proposal reply tells how it works, the way a colleague would over lunch** (dima, 2026-10-12: «too short … expand how it works, without technical details, as a human conversation»): a few plain sentences walking through what happens and what changes for him, then the scratch file's link for the tech side; never a bare mechanism line, never the tech pasted into the thread.
 
@@ -35,8 +37,12 @@ floods; no other member prints one.
 - each question opens with its bold subject and a «?», then today's state in one or two plain sentences
 - nested under it: `a)` `b)` options, each with its consequence in his words, then a `➡️` line with the pick and a short why
 - a vectors or list question shows its adds and cuts as bullets, ends on «your own adds are welcome», with examples
-- each question is also an orbit ask he ticks, its pick naming the whole outcome
-- the grill is written once, the numbered list first: each orbit ask copies its question's number and subject, and a question lives only in that list, never in prose beside it (dima, 2026-10-14: the reply held 5, orbit Q1–Q6)
+- the grill is written once, the numbered list first; each question is also an orbit ask he ticks, copying the question's number and subject, its pick naming the whole outcome; a question lives only in that list, never in prose beside it
+
+<!-- 2026-10-14: the reply held 5 questions, orbit Q1–Q6 -->
+
+
+**What he must read sits in the turn's last message** — a list, a step plan, the seven names: text between tool calls may never reach him (10-16: the step-10 list and the top-seven names were both lost that way), so the closing message carries it whole.
 
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel lanes (researchers, coders, probes),
 their results land at different times — hold them and print ONE unified reply when the picture

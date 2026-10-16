@@ -29,10 +29,9 @@ on every view the change touched:
 
 It runs `essentials.js` and the tab walk at 1280 and 390, scrolls back to the top, counts console
 and page errors, and prints one line — the report quotes it as the `essentials:` line. Exit 1 on any
-fail. **Reading `essentials/essentials.md` is only needed when a check fails or misfires**; the flags
-live in `run.sh`'s header.
+fail. `essentials/essentials.md` is read only on a fail or a misfire; the flags live in `run.sh`'s header.
 - `--wait` names what the page shows once its data landed — without it the checks can hit a
-  half-rendered page and flake (speak's 390 «covered», 2026-09-29)
+  half-rendered page and flake
 - `--allow` is the only way a baseline fail stays green, and the line counts every item it allowed —
   an app's `<app>-verify` names its allows with the reason (the page-level sticky bar, chords' n cap)
 - a single state (a popover open, an item selected) is one `essentials.js` eval on the open page, or
@@ -40,7 +39,7 @@ live in `run.sh`'s header.
 📌 essentials skip `[aria-disabled=true]` — dnd-kit sets it on every draggable item (61 of 84 chords
 caps), so a drag-and-drop view needs its own checks for those.
 📌 an `outcome_unknown` reply (0.39+) means the daemon lost the answer to a command that may have run: inspect the page state, never retry a click or a type blind.
-📌 the tab walk scrolls the page: a screenshot taken after it can lie (a sticky header hid a row, 2026-09-28) — scroll back to the top, or shoot before the walk.
+📌 the tab walk scrolls the page: a screenshot taken after it can lie — scroll back to the top, or shoot before the walk.
 
 ## the split — which browser when
 
@@ -53,18 +52,15 @@ caps), so a drag-and-drop view needs its own checks for those.
   `ResizeObserver`/`ParentSize` never measure and every chart renders blank (measured on
   trophy-sys, 2026-09-04: pane saw 2 svgs, agent-browser 58). layout checks go through
   agent-browser, always; the pane is for Dima's eyes.
-- 🚫 no playwright/puppeteer, ever — not installed anywhere in the fleet by decision (2026-09-03):
-  cold start ~700 ms per run, a version-pinned browser cache, and nothing the verbs above do not
-  already cover. A flaky element wants `wait <sel>` then the action, never a script.
-- 🚫 no browser mcp — cli only, the resident schema is not worth it.
+- 🚫 no playwright/puppeteer for a check — by decision: ~700 ms cold start, a pinned browser cache,
+  nothing the verbs above miss (an app may ship one for its own output, as atelier's shots do). A flaky element wants `wait <sel>` then the action, never a script.
 
 ## hazards — measured on a chart app, 2026-09-03
 
 - **`press <key>` reaches every window-level key handler, not only the focused element** — inside a
-  Base UI popover it fired ~3,000 keydowns (measured twice on atelier's pieces popover), and the last
-  lands after the popover closes and reads as «a key leaks through the list»; design-loupe's window
-  handlers fired the same way. count the keydowns before blaming the app (BYT-113 verifier, 2026-09-30;
-  BYT-116 coder, 2026-10-02).
+  Base UI popover it fired ~3,000 keydowns, and the last lands after the popover closes and reads as
+  «a key leaks through the list». count the keydowns before blaming the app.
+- **a long-lived agent-browser session drifts to `visibilityState: hidden`** — css fades freeze at their start, focus-visible buttons read invisible (8 false essentials flags at 390 px), requestAnimationFrame stops. start a fresh session per verify; a suspicious run checks `document.visibilityState` first.
 - ⚠️ **an unknown flag is swallowed as a positional arg and reports success** — `screenshot
   out.png --selector x` wrote a png named `--selector` into the cwd with a green ✓. verbs are
   positional: `screenshot <selector> <path>`. check `--help` for the verb before a first use.
@@ -77,19 +73,16 @@ caps), so a drag-and-drop view needs its own checks for those.
   and exits with agent-browser's code.
 - **`fill <sel> ""` does NOT clear an input** — the old value stays and the verb reports success.
   clearing is `eval` with the native value setter plus a dispatched `input` event.
-- **token bombs:** `network requests` unfiltered ≈ 11k tokens, `snapshot -i` ≈ 6.5k on a dense
-  page. always `--filter`, always scope to a selector.
-
+- **headless chrome ignores ⌘A** — select a field's text with `el.select()` in an eval before typing,
+  or the new text is appended.
 - **a gesture is tested through chrome's real input path** — CDP `Input.dispatchMouseEvent` type
   `mouseWheel` with `modifiers` (2 = ctrl → a pinch, 4 = meta) and fractional `deltaY`, never a
   page-script `dispatchEvent`, which bypasses the input path and cannot catch an input bug; read the
-  state after **every** event, never between bursts (it caught a pinch-drift regression on #96)
-- **headless chrome ignores ⌘A** — select a field's text with `el.select()` in an eval before typing,
-  or the new text is appended (two false «failed» repros, 2026-09-25)
+  state after **every** event, never between bursts.
 - **`network route --status` filters requests, it does not set a status** — fake a failing endpoint
-  with `--abort`, or a real server error
-
-- **a long-lived agent-browser session drifts to `visibilityState: hidden`** — css fades freeze at their start, focus-visible buttons read invisible (8 false essentials flags at 390 px), requestAnimationFrame stops. start a fresh session per verify; a suspicious run checks `document.visibilityState` first (the BYT-113 verifier, 2026-09-30).
+  with `--abort`, or a real server error.
+- **token bombs:** `network requests` unfiltered ≈ 11k tokens, `snapshot -i` ≈ 6.5k on a dense
+  page. always `--filter`, always scope to a selector.
 
 ## habits
 

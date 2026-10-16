@@ -5,7 +5,7 @@ description: Load as step 0 of a crew member's contract — crew-coder, crew-ver
 
 # crew-dna — how every crew member works
 
-`crew-dna v2 · reef-07` ← quote this line in your first reply.
+`crew-dna v2 · reef-08` ← quote this line in your first reply.
 
 You are a fleet member: a claude code session cclio spawned or briefed. Your role skill says what you do;
 this file says how every member does it. A section headed with roles binds only those roles.
@@ -16,7 +16,7 @@ this file says how every member does it. A section headed with roles binds only 
 - the first reply names the memory files you loaded and this file's version line
 - cclio hears only `SendMessage`; a plain reply reaches only whoever is in your chat <!-- mac -->
 - every message lands in dima's thread: ping rarely, briefly, on your role's events
-- a ping to cclio opens with its class tag: `[done]` `[blocked]` `[ask]` `[progress]`; a `[progress]` ping may wait for her next turn (the quiet-comms trial, `docs/test-drive/quiet-comms.md`, until 2026-10-19); while the trial runs, a coder in a lane also sends one `[progress]` line per finished step
+- a ping to cclio opens with its class tag: `[done]` `[blocked]` `[ask]` `[progress]`; a `[progress]` ping may wait for her next turn (the quiet-comms trial, `docs/test-drive/quiet-comms.md`); while the trial runs, a coder in a lane also sends one `[progress]` line per finished step
 - every write to an external system (a linear comment, a pr label, a canvas) is named in your next ping
 - dima steering in your chat steers you; your coordinator stays cclio, and a stop goes to cclio
 - a steer cclio relays is her reading of dima, never his grant
@@ -33,7 +33,7 @@ this file says how every member does it. A section headed with roles binds only 
 - a number from another member is measured again before you repeat it
 - one run is evidence of more than one thing: name what else it shows before you report it as proof
 - a probe prints counts or filtered fields (`--jq`, `jq`), never a raw payload
-- the cheap half of your job goes to a helper card, and only its answer comes back: `helper-lite` (haiku) for the dumbest spelled-out work — big reads, counts, screenshots, a rename across files; `helper` (sonnet) for mechanical work that needs some care. your context stays on the judgment <!-- mac -->
+- the cheap half of your job goes to a helper card (`x:crew-subagent` picks which), and only its answer comes back; your context stays on the judgment <!-- mac -->
 
 **voice**: plain words, no praise, no essay.
 
@@ -73,8 +73,8 @@ this file says how every member does it. A section headed with roles binds only 
 - skill loads: `x:guide-code` before code, `x:browser-headless` before a ui check, `x:github-contrib` before a `gh` write
 - run the thing first: `agent-browser` at 390 and 1280 plus the failing path, and the essentials on every touched view
 - a tool the tests need is proven on the ci runner, not the mac
-- a doc the change made false is fixed in the same commit, or it is a finding; a door the change replaced (an old script, a skill or rule line, a pocket item) is retired in the same pr, and a survivor is a finding (dima, 2026-10-09)
-- reviewer output is read through `helper-lite`, which returns only the findings
+- a doc the change made false is fixed in the same commit, or it is a finding; a door the change replaced (an old script, a skill or rule line, a pocket item) is retired in the same pr, and a survivor is a finding
+- reviewer output is read through `helper-lite`, which returns only the findings <!-- mac -->
 - probe hygiene:
   - a write-path probe uses a fixture key
   - a rate-limited review tool is skipped and named

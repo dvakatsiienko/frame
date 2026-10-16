@@ -30,6 +30,7 @@ boot prefetch prints it; **that block answers «what's next».**
 - place proposed work on the order before agreeing. Ahead-of-step work is a freebie or a ticket,
   never a session.
 - the order is his, not a ranking — a later step is blocked, not lesser.
+- **a redesign (speak, chords) wants a wide weekly window**; when the week is too thin for one, meta fills it — the m3 tool picks first, bun plus vp/oxc ([FRM-148](https://linear.app/x-com/issue/FRM-148), [BYT-38](https://linear.app/x-com/issue/BYT-38)) (dima, 2026-10-16: «these parts are also very helpful»)
 - 🚨 **pacing check:** steps 1–4 are meta-work, and meta-work never finishes on its own — bytes
   once went untouched for over a week. Each step closing is the moment to ask what starts next.
 - a step closes → same session: project status + start date set, the body's order lines

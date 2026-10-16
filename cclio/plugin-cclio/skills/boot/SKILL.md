@@ -1,5 +1,5 @@
 ---
-description: load when dima types /cclio:boot or «cclio:boot», «cclio:init», «boot» — the coordinator's session-opening ritual; «mini» for a one-ask night, «board» / «full» for the tracker picture, any other argument names the handoff to ingest.
+description: load when dima types /cclio:boot or «cclio:boot», «cclio:init», «boot»; «mini» for a one-ask night, «board» / «full» for the tracker picture, any other argument names the handoff to ingest.
 argument-hint: "[mini | board | <handoff slug>]"
 ---
 
@@ -19,12 +19,11 @@ siesta after each (`habit-dima-comms-pacing`); heavy queries fire at the step th
 the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context: handoffs,
 inbox, the roadmap block, stuck reminders, live sessions · worktrees · coder prs, renovate
 counts, repos vs origin, the settings symlink, the flawlog tail. **one shell round at most:**
-- digest older than 30 min (its header time vs now — a `/clear` in the evening prints a digest that is
-  stale by midday) or absent → re-run it: `BOOT_STRICT=1 ~/frame/cclio/.claude/hooks/boot-prefetch.sh`.
+- digest older than 30 min (its header time vs now) or absent → re-run it: `BOOT_STRICT=1 ~/frame/cclio/.claude/hooks/boot-prefetch.sh`.
   fresh → zero shell rounds before the board.
 - a `🚨 FAIL ·` line → report it FIRST, before any work. a check that could not run prints FAIL, never
   nothing — `=== all checks green ===` is the only green.
-- the barrel probe (`method-silent-failures`), silently: the board says «barrel probe ok»; a miss → 🚨 say so and read `memory/_MEMORY.md` by hand.
+- the barrel probe (`method-silent-failures`), silently: the board says «barrel probe ok»; a miss → the move `method-silent-failures` holds.
 - a new always-wanted check lands in the script, never in this file.
 
 ## 2. the roadmap block 🧭
@@ -34,8 +33,8 @@ with its tickets in `sortOrder`. **that block is the answer to «what's next»**
 and the next ticket from it; never re-query what it already printed.
 
 ## 3. inbox sweep 📬
-_hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq`
-- non-empty → composer preps it first: start or revive **🎼 composer** right after the digest, send it an
+- non-empty → composer preps it first: start or revive **🎼 composer** right after the digest (the start
+  command: `docs/test-drive/composer.md` § the start; a sidecar needs no `x:crew-lead`), send it an
   `inbox-prep` brief (blocking), and do steps 4–5 while it runs; its receipt lands → read `inbox-composer.md`
   first, then `inbox.md` for the parse. while `docs/test-drive/composer-inbox-prep.md` is live, score the prep
   by that file's rubric and log the round, and step 7's wishkeeper brief adds the prep: every ask and idea of
@@ -54,32 +53,22 @@ _hq folder: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Di
 - active run id from the last CST META → continue it, never mint one mid-story. a CST marked
   FROZEN is not the active one.
 - the digest lists live sessions and open `coder/*` prs; a coder alive with one → arm the merge monitor: a
-  `Monitor` (`timeout_ms` at the 30-min max, re-armed on every expiry notice — `persistent` is gone since 2.1.271) polling `gh pr list --state merged --search 'head:coder/'` every 60 s and running
+  `Monitor` (`timeout_ms` at the 30-min max, re-armed on every expiry notice) polling `gh pr list --state merged --search 'head:coder/'` every 60 s and running
   `gprune -d` on each new merge — **only while the owning coder is idle** (`claude agents --json`
-  status; busy → wait a tick, retry): a merge that races the coder's tail push had its worktree
-  removed under a live push twice on 2026-09-08. dima merges, cclio cleans; the monitor dies
+  status; busy → wait a tick, retry): a merge that races the coder's tail push removes its worktree under a live push. dima merges, cclio cleans; the monitor dies
   with the session.
-- 📡 **the boot arms both watches, every time**: a project-scope plugin starts no monitors (cc docs, plugins/loading), so pr-watch and ci-watch run only when cclio arms them. `ps -ax -o command | grep -c '[p]r-watch.sh\|[c]i-watch.sh'` prints 2, or arm each missing one as a one-shot background watch: Bash `run_in_background`, `~/frame/cclio/.claude/hooks/watch-once.sh ~/frame/cclio/.claude/hooks/<pr|ci>-watch.sh # deadline: 6 h inside the wrapper` — it ends on the first event line, so only a real event wakes a turn; after handling it, re-arm once, silently, and a no-event end is never a reply to dima. say so on the board. without pr-watch a cloud report branch lands in silence, and silence reads as «still running» (2026-10-08: the adviser cloud lane sat done, unseen).
-- 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:start opus` — a `--bg` session on opus 5.5 medium that writes its own 🔥 key; it refuses when one already runs, which counts as up. the halt stops it.
+- 📡 **the boot arms both watches, every time**: a project-scope plugin starts no monitors (cc docs, plugins/loading), so pr-watch and ci-watch run only when cclio arms them. the digest's `watches: N of 2 running` line counts them; arm each missing one as a one-shot background watch: Bash `run_in_background`, `~/frame/cclio/.claude/hooks/watch-once.sh ~/frame/cclio/.claude/hooks/<pr|ci>-watch.sh # deadline: 6 h inside the wrapper` — it ends on the first event line, so only a real event wakes a turn; after handling it, re-arm once, silently, and a no-event end is never a reply to dima. say so on the board. without pr-watch a cloud report branch lands in silence, and silence reads as «still running».
+- 🐦‍⬛ **ccrow lives one cclio session**: `pnpm -C ~/frame ccrow:start opus` — a `--bg` session on opus 5.5 medium that writes its own 🔥 key; it refuses when one already runs, which counts as up. the halt stops it. a pick-up of either sidecar after dima reinits it: ccrow boots from `ccrow/AGENTS.md` + the `x:crew-adviser` charter, composer from `x:crew-composer`.
+- 🐙 every upstream change the digest prints (a gh watch line, a changedetector watch changed since last viewed) is read during the boot — the new comments or the release notes — and the board carries one line each: what moved and whether it touches us, or «nothing that touches us» (dima, 2026-10-16: «did you read them during the boot?» — 5 changes sat unread on the board)
 - 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or a Wednesday boot
-  whose apps lane says DUE → load `cclio:evergreen` in this thread, then start its § 2 read in the background
-  on Sonnet 5.5 DURING the boot**, its brief the skill path itself, never a summary of it; the board prints
-  without it, the report is the first step after his board reply (the skill's evergreen day flow) (a fork
-  is refused by x-mod-guard; a narrowed helper brief once shipped a skim): the apps
-  lane runs on Wednesdays only, as the full changelog since the last `--mark` (dima, 2026-10-11); any
-  other day it waits for the next Wednesday, no ask (dima, 2026-10-12). report-only, and say
-  so on the board; the report lands as its own message and waits for his word. it never queues
-  behind the session plan (2026-09-21: it sat behind a 40-min flush until dima asked). zero and
-  not due → say nothing.
+  whose apps lane says DUE → load `cclio:evergreen` in this thread and follow its evergreen day flow**: its § 2 read starts in the background during the boot, the board prints without it, the report is the first step after his board reply. zero and not due → say nothing.
 
-## 5. stuck reminders ⏰📌
-cclio's `⏰📌` reminders live in `memory/_reminders.md` and the boot digest prints each one; **raise
-every one at every boot, unprompted** — that is the whole difference from an ordinary `⏰`. an answered stuck
-reminder still surfaces; it dies only when dima says drop it. none → say nothing.
+## 5. reminders ⏰📌
+the digest prints every `⏰📌` and every `⏰` whose `due:` has come; each gets its own board line (the `cclio:remind` contract: a stuck one is raised at every boot, unprompted, and dies only when dima says drop it). none → say nothing.
 
 ## 6. self-grill 🥊
 print the 🥊 pair from the ingested CST's META — the halt wrote it while the flawlog flush had the
-day's log open, so the boot reads no flawlog (dima, 2026-09-26: a boot starts unloaded from
+day's log open, so the boot reads no flawlog (a boot starts unloaded from
 settled lines). no CST, or no pair in it → skip the step. **two lines, last lines of the board:**
 
 ```
@@ -87,8 +76,7 @@ settled lines). no CST, or no pair in it → skip the step. **two lines, last li
 ➡️ <the approach, one line>
 ```
 
-no evidence paragraph, no options, no quotes. **grounded or silent — never invent one.** nothing
-real in the logs → skip the step entirely.
+no evidence paragraph, no options, no quotes. **grounded or silent — never invent one.**
 
 ## 7. two reviews, then the opening board
 **the board prints once, after both reviews are folded** (dima, 2026-10-12: «first gather all
@@ -101,26 +89,21 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
   the worst outcome. a foreground call holds the turn open, so ccrow's note drains in at the next tool round.
   its brief also asks three checks: every CST first-act sits in the board's plan; every question of his is
   answered on the board, never only routed to a pocket item; the board carries the stuck reminders and the
-  roadmap + bytes line (dima's o160, 2026-10-13)
-- ccrow's note not in when wishkeeper returns → wait on her notes file, deadline 5 min:
+  roadmap + bytes line- ccrow's note not in when wishkeeper returns → wait on her notes file, deadline 5 min:
   `until [ "$(wc -l < ~/.local/state/ccrow/notes.jsonl)" -gt <count before the write> ]; do sleep 5; done`;
   past the deadline the board says «ccrow silent»
-- fix every finding of both, then print the board — the boot's first and only reply. nothing prints
+- fix every finding of both, then print the board (dima, 2026-10-13: «gather everything, fix their findings, only then print the report») — the boot's first and only reply. nothing prints
   before it: no «waiting on» line, no partial board
 - completion: one reply holds the whole board, both reviews folded in
-<!-- 10-13: the boot printed a waiting line, then the board twice (a reply-check reprint); dima: «gather everything, fix their findings, only then print the report» -->
-
 
 the board, one message, short lines, **no queries here — pure assembly**:
 - «hey <model> here» (the root claude.md rule)
 - healthcheck verdict (one line if green)
-- 📝 `flawlog: <path>` — the day's file from step 8, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 8 shows as a missing line (the 2026-09-23 miss: the file never opened all day)
-- ⏰📌 stuck reminders, own line each (omit if none)
-- inbox status · handoffs pending · queue depth + top item
+- 📝 `flawlog: <path>` — the day's file from step 8, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 8 shows as a missing line- ⏰📌 stuck and due ⏰ reminders, own line each (omit if none)
+- inbox status · handoffs pending · pocket depth + top item
 - 🎼 `inbox prep: <score>/100 (raw <n>)` — its own line while `docs/test-drive/composer-inbox-prep.md` is live
 - 🧭 `roadmap step <n> <name> | bytes: last touched <date>, next touch <when or none>` — `dima-strategy`'s two
-  report rules, on every board (ccrow, 2026-10-12: a board of pure meta-work named neither)
-- 📋 the proposed processing order — a numbered session plan, one line per item, with a
+  report rules, on every board- 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
   2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), lanes marked, sub-batches labeled;
   **the board ends here and waits for dima's word.** he corrects the parse before any work runs
@@ -154,37 +137,4 @@ stops.
 
 ## board mode — `/cclio:boot board`
 
-adds tracker orientation to the boot. **state is queried, never remembered** — a stored board
-goes stale silently and gets read with confidence.
-
-**one query serves the skeleton** (per-project counts blow linear's complexity cap — derive
-counts client-side):
-
-```
-linear api 'query { teams(first: 10) { nodes { key name } } projects(first: 50) { pageInfo { hasNextPage } nodes { name state description } } issues(filter: { state: { type: { nin: ["completed","canceled"] } } }, first: 250) { pageInfo { hasNextPage } nodes { identifier project { name } parent { identifier project { name } } } } }'
-```
-
-- **skeleton**: one bullet line per project — project, state, open count, what it is for (the
-  `description` is the payload). count no-project issues too; an unprojected ticket is invisible on every board.
-- **milestones** — the first source of truth for «what's next»:
-
-```
-linear api 'query { projectMilestones(first: 50) { pageInfo { hasNextPage } nodes { name project { name } issues(first: 50) { nodes { identifier state { type } } } } } }'
-```
-
-  one line per milestone: `project · milestone · done/total`. ⚠️ flag on sight: a milestone with
-  0 issues, and one whose done-count disagrees with the board — both mean nobody maintains it.
-  📌 milestones are project-scoped; `Initiative` is the cross-project layer.
-- **placement drift**: flag every open sub-issue whose project differs from its parent's. clean →
-  one line. non-zero → list ids, do NOT fix unasked.
-- ⚠️ **read both `pageInfo.hasNextPage` values before printing any number** — a capped page looks
-  complete, and this has already produced two wrong counts.
-- 📌 the class this cannot catch: two stories cutting one domain on different dimensions (DOT-184
-  by artifact vs DOT-28 by channel). before creating or splitting a story, name the dimension it
-  cuts on and compare against the stories already covering that domain.
-
----
-
-## rules
-- nothing in the global `x:*` family may assume this home exists.
-- dima on mobile → `x:mobile-mode`.
+adds tracker orientation: read [references/board.md](references/board.md) first — state is queried, never remembered. ⚠️ read both `pageInfo.hasNextPage` values before printing any number: a capped page looks complete.

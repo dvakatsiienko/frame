@@ -1,5 +1,6 @@
 The rules memories say *what to do*. This one says *what happened*, so the rules keep their reasons.
 Append short entries; never rewrite an old one into a rule — link to the rule instead.
+Cap ~12: at the cap, cclio drops the oldest story itself, no ask (Dima, 2026-09-12).
 Date every new entry in its heading (`· yyyy-mm-dd`); entries without a date predate 2026-08-24.
 
 ## why he wants the stories kept
@@ -8,31 +9,6 @@ my lazy tech inside only realized it was an imprecise move.» He often *feels* a
 name why. The stories are how the felt sense gets recovered later as a reason. So when he makes an
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
-
-## «why not here?» · 2026-09-30
-the atelier lens ring was built from the comp and clean in the verifier's eyes. on his wide screen the art sat
-letterboxed, and he circled the empty dark band above it: «why not here?». two rounds moved the pills toward the band,
-and each still felt off to him; then he named it — sticking them to the art's edge «reads off … they break out of a
-horizontal rhythm compared to the other pills». the comp had drawn only one window shape, where the art fills the screen,
-so nobody had designed the letterbox case; his eye was the spec. → «The One Frame Rule» in atelier's `DESIGN.md`, the
-window-shapes question in `crew-designer-interview`
-
-## «why? not good» · 2026-10-01
-he sneaked back to the keyboard after sleep, and speak's admin said the daemon was unreachable; F4, his most-used
-hotkey, had read nothing since the mac woke. I probed the socket twice, both answered in ~10 ms, and I wrote «not
-reproduced». his reply: «why? not good. my most used feature is flawed». no theory, only the sense that a probe of
-the present could not clear a failure of the past. the daemon's own log held it one awk away: the F4 at 01:51 hung
-6.5 minutes, then twelve queued presses flushed in the same millisecond — a blocked main thread, which also starved
-the control socket. his felt sense read the claim's timeframe before I did. → `method-report-verify`, the speak wake gremlin
-
-## «today was chaotic for me» · 2026-10-01
-three designers drew speak at full fidelity, 25 boards each, and he reviewed all of it by hopping across canvases, hunting the spots my messages named while the boards carried three naming schemes. late in the evening he named the feeling first, «designing is a bit chaotic … because of this rough back-and-forth with scattered places», and only then the cause: «initially we planned a design flow like this, split into four phases … that phase idea got buried somewhere». the first spread had asked layout, colour, copy and states in one go, so every comment was a polish comment on everything; and the canvas lets only a human open a thread, so every question came back to him as words to search for. his felt sense read the process before the cost did ($63 on one fable session). → `x:crew-designer` four phases, ballot ([FRM-293](https://linear.app/x-com/issue/FRM-293)), `docs/research/design-review-comms.md`
-
-## «why were you waiting on an already completed, green pr?» · 2026-10-02
-he had said «merge once ready», and bytes #120 sat in his browser with «All checks have passed» and a live squash button while I told him the merge waited on the ci review. my pr watch printed «green, ready to merge» once per head, and it had fired on the final head before the required `review:clean` check even existed; when the review went green on the same head, the watch stayed silent. he sent a screenshot, «looks clean to me», then asked why I was waiting at all. his eye on the page read the state my watch had stopped reading. → `pr-watch.sh` keys on github's merge state `CLEAN`, and a green-but-blocked head prints once
-
-## «why does biome so often prevent you from committing?» · 2026-10-04
-the row commit had just been refused by the biome format check, the second stumble of the night, and he asked why it keeps happening and whether a format-on-edit hook would solve it. the hook already existed: `biome-format.sh` runs after every `Edit`/`Write`. the miss was mine: bypass mode had me writing files through Bash heredocs and python replaces, which no tool hook sees — 19 biome lines across 11 flawlog files. the commit hook could not take the fix, it is banned from writing because it once lost a file; so the format moved into the commit door, `x lane commit`, on the named paths only. his felt sense counted the stumbles before any log did. → `x lane commit` 0.11.206, `x:cmt`
 
 ## «your cache will most likely be cold» · 2026-10-04
 mid-session he pictured the end of a shift: he comes back to the keyboard, asks a few simple questions, and the first one re-reads a 600k thread at the 1h cache-write price. nobody had priced the return. the numbers agreed with him — a cold first ask costs about forty warm reads — and the answer split in two: a shift now ends with a report artifact and a CST so his questions go to a fresh cclio, and a keep-hot switch pings an idle session when a window runs dry before its reset. his sense of the cost arrived before any measurement of it. → `cclio:shift` 0.3.94, stash keep-hot (FRM-302)
@@ -68,3 +44,6 @@ in the morning he watched my context climb toward 400k in a few fat turns of boo
 
 ## «I thought we agreed: 5+ screenshots go to helper-lite» · 2026-10-15
 he dropped six Sill screenshots for a settings review and I read every one in my own thread, filing them all under the rule's «a deciding number» exception. no check fired; he caught it from memory of a rule written that same day. the fix was a guard (a nudge at the 3rd image read, PK-148), a rule with no exception left in it, and his own 2–3 shot spot-check brought back — never «next time I will».
+
+## «why keep stuck?» · 2026-10-14
+two ⏰📌 reminders (the BYT-127 lottie/rive pick, the design-drift coder trial) sat stuck at every boot only because a ticket never fires at brief time. he asked one question, before either of us had the mechanism; the shape-lane read of the app's open wish children at brief time replaced both reminders. → `cclio:shape-lane` § 0

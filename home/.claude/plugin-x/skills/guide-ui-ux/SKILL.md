@@ -9,7 +9,6 @@ Binding on every rendered element, whatever the stack; a review flags each miss.
 from WCAG 2.2, MDN and Material 3 — the rules a senior reviewer flags on sight. Stack-specific
 guides (`guide-react`) sit on top of this one.
 
-
 - **text ≥14px, dense data ≥12px, never below** — small AND dim is the failure pair; ≥4.5:1
   contrast for text, ≥3:1 for icons, chart marks, axis lines, focus rings
 - **`user-select: none` only on chrome** — buttons, icons, chart marks, drag handles. Values,
@@ -33,36 +32,33 @@ guides (`guide-react`) sit on top of this one.
 - **every text a person reads in the app is written with `x:writing-for-humans` loaded** — a caption
   says what to look at, never how it is computed, in one short line; «hours played against completion ·
   log scale · mark size is the trophy count · titles with no trophy earned are hidden» was the tell
-  (trophy-sys, dima, 2026-09-30)
 - **text a person may read, copy or have read aloud stays selectable** — a sentence is plain text;
   the link or drag handle is a separate, smaller target (a header line, an icon), never a wrapper
-  around the words. dima selects lines to read them aloud with F4 (design-loupe, 2026-10-02)
+  around the words. dima selects lines to read them aloud with F4
 - **a control that opens a list gets a single-key shortcut, its hint shown on the control** like
-  its keyed siblings — a picker is reached as fast as the actions beside it (dima, 2026-09-30:
-  atelier's pieces list)
+  its keyed siblings — a picker is reached as fast as the actions beside it
 - **a scroll box never clips a focus ring** — a ring on an element inside an overflow container
   is `ring-inset` / a negative `outline-offset`, or the container carries padding for it
 - **an icon-only control names itself on hover, on keyboard focus and to a screen reader** — a short
   hint with its key when it has one («pause ⇧F4»), and the same words as its accessible name; an icon
-  alone is a guess (dima, 2026-10-01, speak's pill)
+  alone is a guess
 - **every clickable is `<button>`/`<a>` with its cursor and a visible hover state** — the
   surface, border or underline shifts under the pointer; an image that opens a zoom is a
   clickable too. A `div` with onClick is a keyboard hole. Hit target ≥24×24 (44 touch); a dense
   chart gets a transparent padded hit rect per cell, empty cells included
 - **the app's logo or name, top-left, is always a link to the app's root (`/`)** with
-  `cursor: pointer` — the one way home from any screen (dima, 2026-09-25)
+  `cursor: pointer` — the one way home from any screen
 - **state never by colour alone** — pair with weight, underline, border. `:focus-visible` ring
   ≥2px, never removed
 - **honour `prefers-reduced-motion` and `prefers-color-scheme`** — both palettes as tokens
 - **every action gets a visible reaction, sized to the app's kind** — a daily tool (chords, an
   admin) reacts quietly and fast; a showcase page earns more motion. a reaction that delays the
-  next action is wrong at any size (dima's video fold, 2026-10-06)
+  next action is wrong at any size
 - **leaving a view stops what it started** — autoplay, animation loops, audio, polling: a route
   change or a closed panel halts them, and coming back resumes from a still frame, never mid-play
-  (dima, 2026-09-26)
 - **a detail panel fills its reserved space with a useful default** — nothing selected shows the
   overview (top items, the last event, what is free), so the height never jumps and never sits
-  blank (dima, 2026-09-28: chords' selected-key block)
+  blank
 - **`tabular-nums` on every numeric column**; truncated text carries the full value in a
   tooltip; tooltips are hoverable and Esc-dismissible
 - **dark surface ≈ `#121212`, never `#000`** — elevation by lighter surface, accents
@@ -75,10 +71,13 @@ guides (`guide-react`) sit on top of this one.
   a primary button at 1.16:1 (shipped through a polish pass, 2026-09-20)
 - **a new visual style ships on one screen first** — it scales to the other screens only after
   dima approves that one, and each approved screen becomes a reference the next brief links, so the
-  design language settles from refs, not re-steers (dima, 2026-10-10: x's stats board)
+  design language settles from refs, not re-steers
 - **a visual fix is measured, never eyeballed** — before the change, read the computed geometry of
   the element and its container (bounding boxes, at 390 / 768 / 1280); state the delta in px; make
   ONE change that closes it; re-measure. three guessed offsets on one emoji is the failure this kills
 
-A rule here grows only from a defect Dima saw — the trigger was trophy-sys: dim colours on
-10px text, `user-select` on chart marks, dead clicks on empty cells.
+**done** when `x:browser-headless`' essentials line is green on every touched view and each rule
+above was read against it; a rule the essentials cannot prove (a caption, a reaction's size) is
+named in the report as checked by eye.
+
+A rule here grows only from a defect Dima saw.

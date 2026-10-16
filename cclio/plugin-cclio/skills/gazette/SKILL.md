@@ -5,8 +5,7 @@ description: load when /cclio:halt reaches phase 4.5, when /cclio:checkpoint wri
 
 # /cclio:gazette — cclio's gazette 🗞️ the tweet and the wire
 
-**cclio's gazette** — cclio writes it, cclio owns it, the masthead says so. the durable event
-history plus its outward release. the halt calls this BEFORE the CST, so the
+**cclio's gazette** — the durable event history plus its outward release. the halt calls this BEFORE the CST, so the
 handoff carries only what the gazette did not already say.
 
 **what it is (dima, 2026-09-03): the memory of what meaningful stuff we did, not a mirror of
@@ -33,6 +32,7 @@ write the day's post: `cclio/gazette/YYYY-MM-DD-<short-slug>.md`.
 - fleet voice. only facts that changed something; a fact links its ticket, never restates the
   body; dates absolute, never «today».
 - dedup: read the previous post before writing.
+- every post ends with a `## trail` section: three bullets, `shipped:` / `open:` / `state:`, one line each — the only part that stays resident. after writing, run `cclio/.claude/hooks/gazette-trail.sh` (from the frame root): it regenerates `gazette/_trail.md`, which the memory barrel imports into every cclio boot
 
 ## phase 2 — the wire (gated)
 
@@ -41,8 +41,7 @@ the release — derived from the tweet, pushed outward.
 - **gate:** ask «🗞️ the wire? y/n» and **block until a literal answer**; the question stands alone on its line.
 - **health update** for each project the tweet touched — **no title line**: pulse already shows the
   date and the author, the body starts at the first paragraph (dima, 2026-09-02) — ⚠️ full markdown
-  links (health updates do not auto-link ids). **the house style — settled by the 4-round live test with dima,
-  2026-08-27, screenshots verified in linear:**
+  links (health updates do not auto-link ids). **the house style:**
   - **hybrid voice**: fleet structure carries the scanning (emoji line-prefix per paragraph,
     bold verdict openers), the sentences underneath stay human — `x:writing-for-humans` flow,
     no id-stuffing, no arrow chains, rhythm varies
@@ -53,7 +52,7 @@ the release — derived from the tweet, pushed outward.
     badge is the door. **one badge per paragraph, ~3 per update**, never inside parentheses
   - **the inverse of a commit message**: not what changed — **what got easier for dima**, each
     paragraph a gain written for him, not for an agent
-- **pulse is the feed** — dima enabled linear's pulse (2026-08-30), so the reply names WHICH
+- **pulse is the feed** — the reply names WHICH
   projects got a post, one line total; no per-post links, no gists.
 - flip the `posted:` marks after each fanout — a re-run with marks already yes is a no-op, so
   the wire fires at most once per day's content.
@@ -65,14 +64,10 @@ never daily (dima, 2026-09-03: «gazette - daily, initiative - per mil (end)»).
 literal: a milestone reached done/total this session, or a roadmap step closed. nothing → skip
 silently. when it fires: three sentences — what became true, what starts, what it unblocks —
 through `initiativeUpdateCreate` (same shape as the project update, `health` included), full
-markdown links for ids. a step transition also rewrites the initiative body's nine-line list and
+markdown links for ids. a step transition also rewrites the initiative body's step list and
 moves the attached projects to the new step (`memory/dima-strategy.md`, the roadmap section).
 
 ## completion criterion
 
-the day's file holds today's facts with correct `posted:` marks, and the reply names what went
-out on the wire (or that it was declined).
-
-## 👁️ ingest side (for reference)
-
-every post ends with a `## trail` section: three bullets, `shipped:` / `open:` / `state:`, one line each — the only part of the post that stays resident. after writing the post, run `cclio/.claude/hooks/gazette-trail.sh` (from the frame root) — it regenerates `gazette/_trail.md`, which the memory barrel imports into every cclio boot. the full posts sit in `gazette/`; a multi-day arc may warrant reading one — the boot judges.
+the day's file holds today's facts with correct `posted:` marks, `gazette/_trail.md` is
+regenerated, and the reply names what went out on the wire (or that it was declined).

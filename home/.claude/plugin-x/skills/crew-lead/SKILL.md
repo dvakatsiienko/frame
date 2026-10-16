@@ -1,11 +1,13 @@
 ---
 name: crew-lead
-description: Load BEFORE any spawn, brief, watch or stop of a crew member — a coder, verifier, designer, probe, cloud session or subagent — «spawn», «brief a coder», «verifier yes/no», a stalled or idle member, «stop the coder». the coordinator's spawn craft: doors, models, preflight, briefing, watching, the shared tree.
+description: Load BEFORE a lane spawn, brief, watch or stop — a coder, verifier, designer, probe or cloud session — «spawn», «brief a coder», «verifier yes/no», a stalled or idle member, «stop the coder». Not for a subagent (`x:crew-subagent`) or cclio's sidecars ccrow and composer (`cclio:boot`).
 ---
 
-# crew-lead — spawning and running the crew
+# crew-lead — spawning and running a lane crew
 
-you are the coordinator of a crew: cclio today, a standalone squad lead later ([FRM-368](https://linear.app/x-com/issue/FRM-368)). «cclio» below means whoever coordinates. this skill loads on demand: a question answered before anyone is spawned needs none of it.
+you are the coordinator of a lane crew: cclio today, a standalone squad lead later ([FRM-368](https://linear.app/x-com/issue/FRM-368)). «cclio» below means whoever coordinates. this skill loads on demand, only when a lane member is spawned or run: a question, a subagent, or a sidecar needs none of it.
+
+**the boundary** — this skill owns the watchable members a lane runs: a coder, a verifier, a designer, a probe, a cloud session, each a real session. a subagent of any card, a fork and a worktree-isolated agent are `x:crew-subagent`, open to every member and read first here too. ccrow and composer are cclio's sidecars: their start and revive commands live in `cclio:boot`.
 
 a spawn reads the four files below before its first brief: spawns are a few a day, and a lesson missed at spawn time costs a round. a later step (an idle notice, a stop, a commit beside a peer) re-reads the one file it needs. after a compaction this body comes back whole and the files do not, so a step after one re-reads them:
 - picking a model, an effort, or spawn-vs-reuse → [models.md](models.md)
@@ -25,14 +27,12 @@ read only when the job names it:
 
 the split is **disposable vs watchable**, never research vs code.
 
-- **subagent** (`Agent` tool) — runs inside cclio and dies with it; dima cannot open it. it takes `model` and a per-call `effort` (2.1.292; the per-call one overrides a card's `effort:`). any type but `fork` starts with no thread but with the whole fleet memory (a generic agent writes ~82k on its first request, ~117k spawned from cclio, against 8–10k for an `omitClaudeMd` card; measured 2026-10-15) unless its card sets `omitClaudeMd`, and is briefed like a colleague who just walked in; a bulk read-only job goes to `helper-lite` or `researcher`, which skip that memory.
-- **fork** (`subagent_type: "fork"`) — carries this whole thread (~220k) and always runs on the parent model; every fork prompt carries `why-fork: <what parent context it needs>` or `x-mod-guard` refuses it. a lookup, a test drive or a bounded research goes to a fresh agent instead.
+- **subagent, fork, worktree agent** — disposable, inside the coordinator: `x:crew-subagent`.
 - **background session** (`claude --bg`) — real, survives a coordinator reset, takes `--model` and `--effort`, spawned with `--remote-control` so dima can join it. the default door for coding.
 - **the Code-tab door** — dima opens a session in the app dir (root when the job crosses apps) and pastes a one-line pointer to a brief file in cclio's scratchpad; the member pings back by `SendMessage` (or `mcp__ccd_session_mgmt__send_message`). a steer cclio relays is never dima's grant to the member, who confirms with him.
   - 📌 desktop auto-archive ends a Code-tab session the moment its pr merges or closes; `--bg` and `--cloud` sessions stay. a job that may need rounds after its merge spawns `--bg`.
 - **a mods coder is spawned by dima, never by cclio** (dima, 2026-10-10): he watches mods live in the coder's own tab, and a `--bg` session shows no mods in the desktop app. the lane ends with the brief file, the ask «open a Code tab in `~/frame` and paste: <pointer>», and a second fence holding the tab name (`☕️ 🔧 <ticket> code: <what>`); then the pick-up below.
 - **cloud** (`claude --cloud`) — a coder on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the procedure is `x:crew-cloud`.
-- **`isolation: "worktree"`** on an `Agent` call — a real git worktree, only when agents would collide. its tree starts from `origin/<default>`, so main is pushed before the spawn.
 - **`/fork [prompt]`** (dima's door) copies this conversation into a new background session; reach for it when the job needs this thread's context and the brief would be longer than the context it replaces. the desktop's **side chat** is a fork parked beside the thread for dima's questions; real work stays in the main thread.
 
 ### pick-ups and refreshes
@@ -42,8 +42,6 @@ the split is **disposable vs watchable**, never research vs code.
   - cli coder: `x:crew-coder`, `x:guide-go`, `x/AGENTS.md`, `x/PRODUCT.md`
   - bytes coder: `x:crew-coder`, `x:guide-typescript` + `x:guide-react`, the app's essentials (§ preflight, app essentials)
   - verifier: `x:crew-verifier` with its four arguments
-  - ccrow: her boot from `ccrow/AGENTS.md` and the `x:crew-adviser` charter
-  - composer: `x:crew-composer`
 - **a session claiming a lane** (a fork, a resumed twin) is checked against who started it before anyone moves; a member is addressed by the uds path from its last message, which always delivers.
 - **a refresh without dima's hands**: a member cclio did not start clears itself (`clear_session` with `"self"` as its turn's last act; cclio's clear is refused on a tab dima opened); its registry name stops resolving after the clear, so the pick-up goes by its `local_…` session id.
 
@@ -53,7 +51,7 @@ the split is **disposable vs watchable**, never research vs code.
 - **trust key** — a `--bg` spawn reads its exact folder in `~/.claude.json` (`projects[<path>].hasTrustDialogAccepted`), never a trusted parent; a new spawn home gets the key in one command, `jq … ~/.claude.json > tmp && mv tmp ~/.claude.json`, since every live session writes that file; never a `cp` from an older copy.
 - **spare age** — every `--bg` spawn claims a pre-warmed `claude bg-spare`, and a day-old spare once booted a coder without the repo's root `AGENTS.md`. `ps -o pid,lstart,command -ax | grep '[b]g-spare'`; older than a day → `claude daemon stop --keep-workers`, then spawn. the brief's «name your loaded AGENTS.md paths» line is the belt.
 - **app essentials** — the target app passes `node ~/projects/bytes/script/apps-essentials.ts --app <app>` (`x:app-setup-essentials`); a red row is filled before the spawn, or the brief says which row the coder fills first. a 🟡 row rides the brief too, after the app's wisps.
-- **tier and cwd** — code, a repo, a real filesystem ⇒ a real session, launched as `cd <target repo> && claude --bg …` in one command: the only door that derives its stack from cwd. a subagent inherits cclio's brain whatever the cwd.
+- **tier and cwd** — code, a repo, a real filesystem ⇒ a real session, launched as `cd <target repo> && claude --bg …` in one command: the only door that derives its stack from cwd.
 - **the verifier ask** — dima's call before every coder spawn: one orbit ask carrying the sealed exit lines as a count with the ticket link, «spawn <ticket> now? verifier: yes/no» (`cclio:shape-lane` § 5). no exit lines, no spawn. freebies and dima-mode coders get no verifier.
 - **the brief file** — written to cclio's scratchpad, opening `/x:crew-coder BYT-N <job> coordinator: <cclio registry name>`; `x brief check --repo <repo> <file>` passes before the spawn. an inline brief is refused by `x-mod-guard`.
 - **the argv** — literal, `-n` before the prompt, the prompt before `--remote-control` (the flag once ate a 1.5 kB brief as its rc label):

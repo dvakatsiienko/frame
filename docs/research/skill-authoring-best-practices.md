@@ -125,7 +125,7 @@ Scanned 2026-10-02: 38 skills in plugin-x + plugin-cclio.
 15. **Claude A writes, Claude B tests; observe how Claude navigates** — files read in an unexpected
     order, links not followed, a file never opened
     - us: `crew:audit` reads coder transcripts for one file; the jev router logs loads
-    - action: during the sweep, one fresh session per changed skill runs a real ask (Claude B); its
+    - action: during the sweep, one fresh session per changed skill runs a real ask (the cold test; anthropic calls the tester «Claude B»); its
       transcript is read for unopened files and skipped links
 16. **solve, don't defer; no voodoo constants** — scripts handle their errors; every constant says why
     - action: one pass over `plugin-x/bin/*` and our hooks for bare constants and errors left to Claude
@@ -207,7 +207,7 @@ Sweep progress:
 - [ ] 6. skills: rules 2, 5, 6, 8, 12, 18 above; the reasoning-extraction grep
 - [ ] 7. scripts: rules 16, 21 above
 - [ ] 8. read `pnpm reply-check:report --days 14`: fix the root of each frequent rule, then shrink fleet-output-format to the positive targets
-- [ ] 9. Claude B: a fresh session per changed skill runs one real ask; read its transcript
+- [ ] 9. the cold test: a fresh session per changed skill runs one real ask; read its transcript
          (if it skipped a file or a step, return to step 6)
 - [ ] 10. size budget per memory file written down; fleet-hazards split (FRM-267 scope)
 - [ ] 11. this file's dies-when: every action line above ends ✅ or ✗ with a reason

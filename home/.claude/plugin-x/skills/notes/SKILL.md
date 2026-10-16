@@ -10,8 +10,8 @@ pick per op is the cheapest lane that does not break the vault; nothing here is 
 
 ## obsidian
 
-the vault's hazards first (moved from `rules/fleet-hazards.md`, 2026-10-09; the cw leaf
-`/topics/obsidian.md` keeps a hand copy):
+the vault's hazards first (the cw leaf `/topics/obsidian.md` keeps a hand copy — an edit here is
+copied there by hand):
 - the vault is **not under git** — no undo, no history; a bad overwrite is gone
 - **writes only when dima asks**, except cclio's inbox reset and pocket mirror (`habit-shared-files`); reads anytime
 - 🚫 **icloud sync is whole-file, last-writer-wins, no conflict copy**: never edit before the synced
@@ -53,13 +53,5 @@ the vault's hazards first (moved from `rules/fleet-hazards.md`, 2026-10-09; the 
   an icon is `ntn api /v1/pages/<id> -X PATCH -d '{"icon":{"type":"emoji","emoji":"📷"}}'`
   (`pages create` has no icon flag; dima wants every page iconed).
 - `WebFetch` on a notion url returns the app shell, never content — notion is `ntn`-only.
-- 🚫 the notion connector (hosted mcp) for edits: one appended paragraph cost 23 s, 5 tool calls
-  and 1 % of a 5-hour window; `ntn` did it in 0.7 s and 271 bytes. it is disconnected.
-
-## cw
-
-cw has no cheap door. the connector cost 1 % of a 5-hour window and 23 s for one appended
-paragraph; `ntn` through Desktop Commander's shell cost the same 1 % (9 `start_process` calls, three
-lost to the blocking wrapper's timeouts). the process wrapper is the price, not the api. so on cw:
-reads through the connector are fine, an edit is one paragraph at a time either way, and a batch
-belongs to cc on the mac — hand it over. a chat thread on mobile has no shell at all.
+- 🚫 the notion connector (hosted mcp) for edits: one paragraph cost 23 s and 5 tool calls, `ntn`
+  did it in 0.7 s and 271 bytes; it is disconnected.

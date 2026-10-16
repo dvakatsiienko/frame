@@ -10,20 +10,23 @@ Shared files are Dima's living space; leftovers cost him attention and blur what
   CONTENT — his section headers stay**, they are his reprint-saving skeleton. Every item becomes a
   pocket item; **reset at every halt by copying `inbox-template.md` over
   it** (`/cclio:halt` phase 1.5) — the template is his, read-only.
-- `inbox-composer.md` — composer's groomed, sorted sibling of `inbox.md` (`x:crew-composer` § inbox-prep), built at
-  every boot, read before the raw file, trashed at every halt; on trial in `docs/test-drive/composer-inbox-prep.md`.
+- `inbox-composer.md` — composer's groomed, sorted sibling of `inbox.md`; the flow is in `cclio:boot` and `cclio:halt` (`x:crew-composer` § inbox-prep); on trial in `docs/test-drive/composer-inbox-prep.md`.
 - `pocket.md` — a read-only mirror of the pocket for his phone, rewritten after every cclio turn (`.claude/hooks/pocket-mirror.sh`); a phone edit there is lost, his asks go in the inbox.
 
 ## the pocket — cclio's local work pool (Backlog.md in `~/frame/cclio/pocket/`, dima 2026-10-07, Backlog.md adopted 2026-10-11)
 
 one `pk-N` task per item (`backlog task create|edit|list --plain --sort ordinal`, from a script `BACKLOG_CWD=~/frame/cclio`): status open · claimed · waiting · done, the `ordinal` is the order, a size label xs · s · m · l; a spec-sized item gets its spec in the target repo's `.scratch/`.
-**a note is appended, never replaced**: `backlog task edit <id> --append-notes "…"`; `--notes` replaces every note, his quoted steers included.
+**a note is appended, never replaced**: `backlog task edit <id> --append-notes "…"`; `pocket-check` reds a note line lost since HEAD.
+<!-- failure: a `--notes` close replaced PK-90's and PK-141's notes, dima's quoted steers (memory-sweep log, wishkeeper siesta rounds 7–13); `--notes` replaces every note -->
+
 **checked and emptied before linear**; it holds ticketless by-hand work too. an item points at its
 linear ticket when one exists; a new ticket is made only when a coder takes the item. every inbox
 item lands here at parse time, before any resolution; a resolved item is set `done`, and the halt files it (`backlog task complete`) after the day's gazette post carries it.
 **what the pocket is for** (dima, 2026-10-10): items to be done first, things never meant for the long shelf. linear is the long shelf, for bigger settled wishes he allows to wait. moving an item from the pocket to linear is never its solve, only a postponement, and he wants things done — so keeping an item in the pocket is fine, cluttering it is not.
-**the birth gate** (dima, 2026-10-10, after a 60-item pocket ate a whole day): an item gets its fate the turn it is born, and an ask of his born anywhere — a grill, a sweep plan, a log or test-drive line — is born here too, never with that line as its only home (#dima-caught 10-09 crew-dna, 10-10 the verbatim-fold sweep) — `xs` (minutes) is solved now or at the next siesta; a bigger one stays in the pocket and gets worked in order; it goes to linear only on his word that it may wait; blocked goes to waiting with its `**waiting for:**` first line and a due date, a deliberately deferred one gets a `parked: <reason>` line. a done item is set `done` the turn it closes and filed by the halt — he reads the pocket often, a stale state is not allowed. `pocket-check` reds every breach and runs on every status move (`onStatusChange`, a notification when red); a red pocket runs before the main lane.
-**a pocket write with its fields known goes to composer as a `pocket-write` chore** (dima, 2026-10-14: 1 of ~6 went to him that day); a write that needs wording stays mine.
+**the birth gate** (dima, 2026-10-10, after a 60-item pocket ate a whole day): an item gets its fate the turn it is born, and an ask of his born anywhere — a grill, a sweep plan, a log or test-drive line — is born here too, never with that line as its only home — `xs` (minutes) is solved now or at the next siesta; a bigger one stays in the pocket and gets worked in order; it goes to linear only on his word that it may wait; blocked goes to waiting with its `**waiting for:**` first line and a due date, a deliberately deferred one gets a `parked: <reason>` line. a done item is set `done` the turn it closes and filed by the halt — he reads the pocket often, a stale state is not allowed. `pocket-check` reds every breach and runs on every status move (`onStatusChange`, a notification when red); a red pocket runs before the main lane.
+**a pocket write with its fields known goes to composer as a `pocket-write` chore**; a write that needs wording stays mine.
+<!-- 2026-10-14, dima: 1 of ~6 pocket writes went to composer that day -->
+
 **an item that gets a ticket carries a `ticket: FRM-N` line**; `pocket-check` (the boot runs it) reds any open item whose ticket linear has closed (dima, 2026-10-09, after pk-44 stayed open behind a closed FRM-371: «keep your pocket up to date»).
 
 ## the stash hierarchy — dima's, 2026-09-27
@@ -34,10 +37,14 @@ line is in front of cclio every boot.
 
 - **reminders** (`memory/_reminders.md`) — a date or a condition: «in 2 days», «before we halt»,
   «when cc ships X, test it with me».
-- **pocket** (`~/frame/cclio/pocket/`) — the main carry-over across sessions, checked before linear. «after X, do Z» becomes a pocket item ordered right after X (`x:queue` retired 2026-10-14, dima)
-- **Linear** — the folding place for work with a shape.
+- **pocket** (`~/frame/cclio/pocket/`) — the main carry-over across sessions, checked before linear. «after X, do Z» becomes a pocket item ordered right after X- **Linear** — the folding place for work with a shape.
+- **watches** — every upstream thing we follow (a github issue or pr, a release feed, a page) is a watch in x-changedetector, `http://127.0.0.1:7390`, never a link kept in prose to re-fetch; cclio owns every watch (dima, 2026-10-16: «I lean towards yourself, but you have to properly shape your habit»):
+  - the trigger is an upstream link met anywhere: a member's report or retro, a ticket body, a hazard or reminder line, his inbox — the watch goes in the same turn, after a `GET` shows it is not there yet
+  - members never add one; a coder names the link in its done report (`x:crew-coder` § the report)
+  - add: `POST /api/v1/watch`, an issue as `api.github.com` json with a `jq:` filter and `link_to_open` set to its github page; read: `GET /api/v1/watch`, `last_changed` > `last_viewed`; the boot reads what changed (`cclio:boot` step 4)
+  - on trial, `docs/test-drive/x-changedetector.md`; a watch that closed upstream is removed at the halt
 
-❗ no data loss, the pocket above all: a line he wrote or asked for moves or dies only on his word; cclio's own copies and done items die by the dedupe and cleanup rules below.
+❗ no data loss, the pocket above all: a line he wrote or asked for moves or dies only on his word.
 
 **no copies** (dima, 2026-09-27: «make sure these stashes don't accumulate redundant stuff») — most
 of the 09-27 exhaust was copies: 11 of 17 flowlog lines and 5 of 14 reminders already lived in a ticket.

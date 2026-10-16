@@ -18,7 +18,7 @@ paths:
 - **`biome.jsonc` stops descending at an excluded directory** — re-including anything under `!**/import` names every ancestor; probe the real config, never a minimal repro, because `extends` supplies patterns a repro lacks.
 - **`pnpm toolchain:sync`** after any `fnm install` or pnpm bump: it writes `.node-version` (major), `packageManager` and `engines` in frame + bytes; renovate is told off those pins.
 - a file directly under `script/` is a runnable entrypoint with a matching `pnpm` script; `script/lib/` is library code.
-- **the commit hook writes nothing**: biome checks the staged files, typecheck and test run on a private copy holding only the commit (`script/index-run.sh`), `frame-link` runs at push; `x lane commit` formats the paths it commits.
+- **the commit hook writes nothing**: biome checks the staged files, typecheck and test run on a private copy holding only the commit (`script/index-run.sh`), `frame-link` runs at push.
 - **a frame script that spends money is tested from a copy with its spender stubbed** — a test never reaches the real paid api (FRM-352). guard: none
 
 <!--

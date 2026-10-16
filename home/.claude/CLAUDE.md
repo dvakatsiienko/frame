@@ -76,7 +76,6 @@ on partly done, flatten an exact string into prose casing.
 <!-- the code rules load when code is touched: `rules/code.md`. what stays here decides before any file exists. -->
 
 - don't be scared to propose bold ideas if they can meaningfully benefit
-- never spin up a local dev server (e.g. `next dev`) after finishing a task — I do this myself if needed
 - if not already specified in project, I generally like to use the following tech: TypeScript, React, Next.js, Tailwind, Vite, Convex, pnpm (considering bun)
 - when building more complex web apps, I like to pull in shadcn, Zustand, React Query, Clerk (or better-auth if selfhosting), zod, react-hook-form. motion.dev is good for animations.
 - when you have a choice of an npm package to install — prefer top tier, state of the art tools, avoid low quality, inactive maintained picks.
@@ -84,6 +83,7 @@ on partly done, flatten an exact string into prose casing.
 ## background work
 
 - **prefer parallel, non-blocking work whenever it is a good idea** (dima, 2026-10-11: «my want is for everyone to prefer parallelization when it is a good idea»): a wait, a build, a watch or a wide read goes to a background job or a subagent, and the talk with me goes on.
+- **a subagent is open to every member** — any `Agent` call loads `x:crew-subagent` first: which card, what effort, how wide to fan out.
 - **a spawned routine is yours until it resolves.** never fire and forget the supervision.
 - every wait gets a deadline. when it passes, stop and report. never extend silently.
 - a check that needs a timeout to pass is wrong.
@@ -104,7 +104,7 @@ on partly done, flatten an exact string into prose casing.
 - **our skills are the flow, not add-ons.** the `x:*` and `cclio:*` set is written and kept by us for this exact setup; the external ones (matt's, impeccable, dataviz) are hand-picked. a task a skill covers runs through the skill — a fresh guess over a maintained procedure is the miss we keep paying for.
 - **the check is mechanical, at the start of every task:** scan the skill list for a name whose trigger words match the ask (commit, pr, ticket id, a url, a file type, a vault path, «walk me through») and load it before the first tool call. a rule in `rules/` that fires on a file read is the backstop, never the front door.
 - **name every load in the reply** — «skills: x:cmt, x:guide-typescript» — and name a miss when you notice one late. that line is the only data the fleet gets on which triggers fail.
-- **recipes are the fleet's lever on its own learning** — `~/frame/recipes/<name>/`, repeatable runs that research one part of the fleet wide and deep, then sharpen it; your training is cut, the world moves, a recipe closes the gap. `recipes/AGENTS.md` is the contract, `cclio:shape-recipe` creates, grooms and runs one; a research that will repeat becomes a recipe (dima, 2026-10-09).
+- **recipes are the fleet's lever on its own learning** — `~/frame/recipes/<name>/`, repeatable runs that research one part of the fleet wide and deep, then sharpen it; your training is cut, the world moves, a recipe closes the gap. `recipes/AGENTS.md` is the contract, `cclio:shape-recipe` creates, grooms and runs one; a research that will repeat becomes a recipe.
 
 <!-- upkeep: the external skills are kept current by cclio:evergreen -->
 
@@ -126,6 +126,7 @@ on partly done, flatten an exact string into prose casing.
 
 ## global naming conventions
 
+- **seven names before the build.** a new name for anything lasting — a skill, a job, an app, a memory leaf, a verb, a file family — goes to dima as seven candidates first through `x:top-seven`, a pick marked; the build starts with his pick (dima, 2026-10-16: «I very often ask you to rename things you created. instead, let's think of a name first, and then implement with the correct name»).
 - **entity-first.** the entity leads, the verb or qualifier follows: `<entity>-<qualifier>`
   - ✅ `handoff-delete`, `handoff-create`, `plugin-x`, `plugin-x-cw`
   - ❌ `delete-handoff`, `create-handoff`, `x-plugin`, `desktop-plugin-x`
@@ -144,7 +145,7 @@ on partly done, flatten an exact string into prose casing.
 ## artifacts + dataviz — use proactively
 <!-- sync: cw -->
 
-- a deliverable with an audience or a visual shape (report, comparison, plan, architecture overview, anything chart-able) is published as a private artifact, and the chat hands over the link, not the content; a page nobody asked for gets a one-line offer instead — the Artifact tool's own rule (dima, 2026-10-11).
+- a deliverable with an audience or a visual shape (report, comparison, plan, architecture overview, anything chart-able) is published as a private artifact, and the chat hands over the link, not the content; a page nobody asked for gets a one-line offer instead — the Artifact tool's own rule.
 - any data with numbers worth comparing → a `dataviz`-skill chart inside the artifact.
 - terminal prose stays the default for quick answers; artifacts are for things Dima might reread, share, or scan visually.
 - a repeated ask a cc mod could absorb (a band, a pane, a hook on a prompt or a tool) → one line: «💡 mod idea: …». the mods live in plugin `x`'s marketplace, `plugin-x/mods/<name>`.

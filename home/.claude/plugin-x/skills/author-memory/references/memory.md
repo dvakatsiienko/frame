@@ -26,7 +26,7 @@ sibling to `skill.md`: that one is how to write a skill, this one is where anyth
 
 ## the buckets — audience decides
 
-🎯 **audience decides, never topic.** a memory lands in the widest bucket whose whole audience benefits.
+🎯 **audience decides, never topic.** a memory lands in the widest bucket whose whole audience benefits; the short list is `SKILL.md` § where a line goes, below are the tests and the extra buckets.
 
 - **root `~/.claude/CLAUDE.md`** — every session, every project. test: would a new session in any repo be worse without it?
 - **`~/.claude/rules/*.md`, no `paths:`** — the same audience, one granular area per file so root stays lean. test: worth paying for in every session on the machine?
@@ -36,7 +36,6 @@ sibling to `skill.md`: that one is how to write a skill, this one is where anyth
 - **`cclio/memory/*`** — the coordinator only. test: would a coder be misled by it?
 - **a skill** — a procedure, or anything needed occasionally; on demand, never resident. test: would someone invoke it by name?
 - **a hook, `settings.json`, `permissions.deny`** — anything that must happen. «always» or «before every» is enforcement, and memory is context, not enforcement **[read]**
-- **`docs/`** — long, occasional, or a lookup, read on demand
 
 📌 pnpm feels coder-specific, but any session may run it, so it lives in `rules/fleet-tooling.md`; a trap that bit 2+ repos goes to `rules/fleet-hazards.md`.
 
@@ -50,21 +49,18 @@ see `writing-for-agents` for the craft (pointers, the ladder, pruning, no-ops, l
 
 ## the pre-write checklist
 
-1. **who needs this?** the buckets above
-2. **what does it cost?** a `rules/` file with no `paths:` is resident in every session forever; a skill description is resident; a command or a doc costs nothing until used
-3. **does it already exist?** a second copy is worse than none: the two drift and nobody can tell which is live
-4. **a fact, a rule, or a story?** different homes, different decay rates
-5. **a measurement or a standing fact?** a dated «as of» line is a measurement and belongs in the commit that measured it; two went stale within a day (2026-09-08)
-6. **can the agent find it by looking?** then it is a cache (`writing-for-agents` § pruning)
+`SKILL.md` § where a line goes holds the short checks (who needs it, a fact/rule/story, findable by looking); the detail:
+
+1. **what does it cost?** a `rules/` file with no `paths:` is resident in every session forever; a skill description is resident; a command or a doc costs nothing until used
+2. **does it already exist?** a second copy is worse than none: the two drift and nobody can tell which is live
+3. **a measurement or a standing fact?** a dated «as of» line is a measurement and belongs in the commit that measured it; two went stale within a day (2026-09-08)
 
 ## the mechanics, and their probes
 
 - **block html comments** — `<!-- … -->` at column 0 is stripped before injection: free storage for the why. ❗ an indented one, inside a list item, is NOT stripped and loads whole **[measured 2026-10-11, cclio's own root attachment + a sonnet probe]**: put the comment at column 0, after the list. **[measured]** in a `CLAUDE.md`, an imported leaf and a `rules/` file (cc 2.1.292; re-run on 2.1.296, haiku + sonnet, 2026-10-11); an `AGENTS.md` loaded as project instructions too (cclio's own: its line-51 comment is on disk and absent from the loaded copy, 2026-10-11)
 - **`paths:` frontmatter** — a `.claude/rules/*.md` with `paths:` is absent at boot and fires on touching a matching file, never on an intention. **[measured, cc 2.1.296, 2026-10-11]** opus and sonnet 5.5, 24/24: Bash `cat`, `Edit`, and a `Write` followed by a read load it; haiku: `Read` too, a bare `Write` of a new file not; touching nothing matching loads nothing (`recipes/nurture-memory/scripts/paths-probe.sh`). 📌 the rule arrives inside the tool result, so write it as a plain project convention: a secret-token probe read as injected text to haiku
-- ❗ **a wrong frontmatter key** — `globs:` is not a key; the rule silently loads unconditionally. **[measured]**
 - **`@imports`** — expand at launch: they buy organisation, not context **[read]**
-- **size** — under 200 lines per `CLAUDE.md`; over 4 MiB is skipped **[read]**
-- **`MEMORY.md`** — the auto-memory index is cut at 200 lines or 25 KB, the rest dropped on load **[read]**
+- **size** — a `CLAUDE.md` over 4 MiB is skipped (the 200-line and `MEMORY.md` cuts are in `SKILL.md`) **[read]**
 - **delivery** — `CLAUDE.md` arrives as a user message after the system prompt: context, never enforcement **[read]**
 - **compaction** — the project-root `CLAUDE.md` is re-read from disk after `/compact`; nested files and `paths:` rules reload only when re-matched; conversation-only instructions are gone **[read]**
 - **did it load?** — `/context` (and `/memory`) list every loaded memory file, AGENTS.md included: the probe of record. the `InstructionsLoaded` hook never reports an AGENTS.md loaded as project instructions, how frame and cclio load **[read, 2026-10-11]**; a one-line `CLAUDE.md` holding `@AGENTS.md` makes it fire
@@ -141,12 +137,11 @@ outcome: held. no orphan rows in 11 months.
 
 ## precedence — which layer wins
 
-more specific wins, narrowest last: root `CLAUDE.md` → `rules/*.md` → `~/projects/CLAUDE.md` → project `CLAUDE.md` → leaf `CLAUDE.md`. the person in the room outranks all of it. layers are additive: a leaf overrides root only where they disagree; a genuine conflict is root's house rule. conflicting instructions may get resolved arbitrarily **[inferred]**, though McMillan saw no adherence effect from adjacent-file conflicts: fix them either way.
+more specific wins, narrowest last: root `CLAUDE.md` → `rules/*.md` → `~/projects/AGENTS.md` → project `AGENTS.md` → leaf `AGENTS.md`. the person in the room outranks all of it. layers are additive: a leaf overrides root only where they disagree; a genuine conflict is root's house rule. conflicting instructions may get resolved arbitrarily **[inferred]**, though McMillan saw no adherence effect from adjacent-file conflicts: fix them either way.
 
 ## what never goes in
 
 - **an expanded version for the reader** — dima's spec: *info that is useful to **you**, in a format appropriate to **you***. roughly 70 % of written text is not needed
-- **timestamps and lineage in prose** — keep a date that IS the fact (an expiry, a deadline, a measurement); the rest goes in a comment
 - **a rule inferred but not tested** — the label does not help (the auto-unassign fix, falsified by the first push)
 - **a claim relayed from another agent** — attribute it, or verify it
 - **a no-op or a needless ban** — `writing-for-agents` § pruning, § leading words
@@ -155,27 +150,20 @@ more specific wins, narrowest last: root `CLAUDE.md` → `rules/*.md` → `~/pro
 
 the mechanics above hold the wrong key, the import cost and the `MEMORY.md` cut; these bite on top:
 
-- ❗ **a broken `@import` loads nothing and says nothing** — paths resolve relative to the importing file: from `memory/_MEMORY.md` a sibling is `@leaf.md`, and `@memory/leaf.md` fails silently. on-disk presence is not loading: check `/context`
+- ❗ **an `@import` path** resolves from the importing file: from `memory/_MEMORY.md` a sibling is `@leaf.md`, and `@memory/leaf.md` fails silently
 - ❗ **a hand-written barrel can lie** — `cclio/memory/` is index-authoritative, so a missing line disables a memory; cclio's barrel makes every leaf resident from turn one
 - ❗ **a subagent does not inherit the parent's cwd** — every path in a brief or a memfile is absolute
 
 ## how the files are organised
 
 - one leaf, one decision; colocate by area — dima's test: *«optimize your linear activity habits»* lands him in one place
-- a stale pointer means proposing to delete the line and the file, no tombstones (deletions need dima's word, `habit-memory-edits`)
-
+- a stale pointer means proposing to delete the line and the file, no tombstones
 ## the method, when a file needs rethinking
 
 ⭐ **two alternative drafts, dima picks**, rather than an edit in place: incremental editing preserves the layout, and a rethink exists because the layout is wrong. 76.8 % of real deletions happen in rewrites anyway **[read]**.
 
 ## upkeep is mechanical — regression checks, never an llm judge
 
-run when a file is touched; a quarterly cadence catches nothing (drift measured under 24 hours **[measured]**):
-
-- a rule naming a **command** → its `--help` holds the flag
-- a rule naming a **file** → it exists
-- a rule naming a **ticket** → the state matches the tense, the sharpest check (~92 %, 11 real defects on its first run) **[measured 2026-08-23]**
-- a rule carrying a **probe** → rerun it
-- a groomed file → `python3 cclio/script/quote-diff.py HEAD <file>`: every «…» quote that left is listed, and each of dima's is restored or shown to him (2026-10-11)
+the checks (command · file · ticket · probe · quote-diff) are `SKILL.md` § upkeep; run them when a file is touched, since a quarterly cadence catches nothing (drift measured under 24 hours **[measured]**). the ticket check is the sharpest: ~92 %, 11 real defects on its first run **[measured 2026-08-23]**
 
 🚫 **never an llm-judge memory audit**: agents draft memory well, but llm evaluators cannot separate good from bad instructional material, so existence and deletion stay human **[read]**. judge models agree on verdicts >99.88 % of the time while fabricating different reasoning per run (~19 % stability). deterministic checks in code; llms only for semantics a human confirms **[read]**.

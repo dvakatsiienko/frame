@@ -82,7 +82,7 @@ revert, or bisect on its own.
 
 **Commit under Dima's configured git identity, with no identity flags** — GitHub verifies only an
 identity it can match to an account, and Dima wants verified commits (the investigation: the
-header of `~/frame/x/go/linear_push.go`).
+header of `x/go/linear_push.go`, retired in `7e9ad33f` — `git show 7e9ad33f^:x/go/linear_push.go`).
 
 📌 **The agent fingerprint is a trailer, not the author field.** Every agent commit ends with
 an `Agent:` trailer (§4) and Dima's hand-typed commits do not, so `git log --grep='^Agent:'`

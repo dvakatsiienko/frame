@@ -1,5 +1,5 @@
 ---
-description: load when dima types /cclio:shift <plan>, says «start shift», «i go, run it», «i'm afk», or leaves a written plan to run without him — the mode that decides, logs and continues instead of asking.
+description: load when dima types /cclio:shift <plan>, says «start shift», «i go, run it», «i'm afk», or leaves a written plan to run without him.
 argument-hint: "<plan file>"
 ---
 
@@ -15,22 +15,16 @@ A **shift** is a lane built to run without dima (FRM-266). A lane asks and waits
 - `away` — nothing waits on him. at most one y/n that fits a phone, and only for an irreversible
   step that blocks everything else.
 
-Members are named per `x:crew-lead` § preflight, names, mode `🎯`.
-
 ## comms while he is away
 
 - the main thread is cclio's own log: only what a post-compaction cclio or a returning dima needs.
-- members message cclio only on done, blocked or a decision; progress is never sent.
 - when he returns: **one** digest — done, decisions taken, parked asks — then the lane resumes.
 
 ## surviving a compaction
 
 state lives on disk, never only in context: after **every** step, the plan file's `## log` gets
-the current step, the decisions and the open asks. after a compaction, re-read the plan file
-before the next action. the `SessionStart:compact` hook (`.claude/hooks/shift-recompact.sh`) enforces
-it: a plan whose header says `status: running` makes the compacted cclio Read the plan and this skill
-first, with the log's tail printed. 📌 the next shift forces one `/compact` mid-run and checks that the
-step and the decisions survive.
+the current step, the decisions and the open asks. the `SessionStart:compact` hook (`.claude/hooks/shift-recompact.sh`)
+re-reads a plan whose header says `status: running` after a compaction, and `pnpm shift:checkup` proves the hook.
 
 ## 1 · start — the last chat message
 
@@ -51,8 +45,8 @@ Every decision is one of three:
 - a coder's premise doubt is built and flagged the same minute, never found at review
 - events go to the plan file's `## log` (time · who · what · evidence), never to chat. when `near`,
   dima's lane messages still get normal replies; shift events stay out of them
-- **orbit asks are suspended** while a shift runs: decide, log and park instead of asking; the report carries the decisions
-- watch per `x:crew-lead`: a watch lives until its pr merges; every idle notice is a check
+- **orbit asks are suspended** while a shift runs
+- watch per `x:crew-lead`
 
 ## 3 · end — the report
 
@@ -63,7 +57,7 @@ In the plan file, then one chat message:
 - severity: 🔴 touches sign-in or data (read it) · 🟢 cosmetic (skim)
 - stated plainly: **an unanswered item counts as accepted**
 - the spend, the steer log, what the next plan changes
-- then the return sections, every shift, one or two lines each, in plain words (dima's return questions, 2026-10-09):
+- then the return sections, every shift, one or two lines each, in plain words:
   - **how it went**: per lane, merged / parked / not run
   - **what waited on dima**: each wait, and how it resolved — his word, or a decision of cclio's with its reason
   - **compactions**: count, and what survived each

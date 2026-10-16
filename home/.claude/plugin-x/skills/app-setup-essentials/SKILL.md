@@ -24,7 +24,7 @@ script**: `bytes/script/apps-essentials.ts` (BYT-111). Read its data, never a co
 3. matt's `domain-modeling` writes `GLOSSARY.md` and `docs/adr/0001-*.md`, with the stack pick as ADR-0001.
 4. `/run-skill-generator <app>` makes `<app>-run`. It is user-invoked, so dima types it, or cclio
    spawns a one-shot session whose prompt is that command. Then write `<app>-verify` from it.
-   A tooling area that is not an app keeps an `<area>-verify` skill too, so a verifier's recipe lines have a home: `x-verify` (`x/`), `mods-verify` (`home/.claude/plugin-x/mods/`), `ci-verify` (bytes `.github`) (dima, 2026-10-11, o39); the checker does not walk areas yet.
+   A tooling area that is not an app keeps an `<area>-verify` skill too, so a verifier's recipe lines have a home: `x-verify` (`x/`), `mods-verify` (`home/.claude/plugin-x/mods/`), `ci-verify` (bytes `.github`); the checker does not walk areas yet.
 5. A ui app: impeccable `init` for `PRODUCT.md`, and `document` for `DESIGN.md` after the first build.
 6. Run the checker until it is green, then commit. The hook refuses a commit that leaves a gap.
 
@@ -32,8 +32,8 @@ script**: `bytes/script/apps-essentials.ts` (BYT-111). Read its data, never a co
 
 ## verify kits — shared as they repeat, not hoisted later
 
-trophy-sys has the first kit (`apps/trophy-sys/.claude/skills/trophy-sys-verify/kit.sh`). dima's
-goal (2026-09-28): by the time every app has a kit, the shared part already exists, so no app's kit
+two apps have a kit: trophy-sys (`apps/trophy-sys/.claude/skills/trophy-sys-verify/kit.sh`) and
+design-loupe (`apps/design-loupe/.claude/skills/design-loupe-verify/kit.sh`). dima's goal: by the time every app has a kit, the shared part already exists, so no app's kit
 is written twice. when a second app's kit needs a step another kit has, the step moves to a shared
 home and both call it. the steps expected to repeat, each with its likely home:
 

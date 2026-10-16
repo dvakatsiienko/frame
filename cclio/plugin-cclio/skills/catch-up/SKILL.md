@@ -1,6 +1,6 @@
 ---
 name: catch-up
-description: load when dima asks how a part of our system or the fleet works, or what is happening in it — «remind me how our … works», «how does our … work now», «what's happening in our …», «i forgot how …», «catch me up on …» — and on your own when his words show an outdated picture of a part. not for setting a reminder (that is x:remind).
+description: load when dima asks how a part of our system or the fleet works, or what is happening in it — «remind me how our … works», «how does our … work now», «what's happening in our …», «i forgot how …», «catch me up on …» — and on your own when his words show an outdated picture of a part. not for setting a reminder (that is cclio:remind).
 ---
 
 # cclio:catch-up — help dima recall, explore and learn our system
@@ -28,7 +28,7 @@ done: the home file read, the paths proven, the log read.
 - **a map** of ≤8 ascii lines, only when the area is a flow
 - **the source** named as a link; code newer than the doc → «docs lag the code by N days»
 - his picture was off → name the one thing that changed, without a lesson
-- light emojis, dense ones where they fit (`x:emoji-battle` style), clean
+- light emojis, dense ones where they fit (`x:top-seven` style), clean
 
 done: printed under the budget.
 

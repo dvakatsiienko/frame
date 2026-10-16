@@ -1,10 +1,8 @@
 ---
-description: load when dima means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop» — or types the command; «that's it for now from my side» mid-flow closes a list or a batch, not the session. Not for a question or a doubt about ending.
+description: load when dima types /cclio:halt or means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop»; «that's it for now from my side» mid-flow closes a list or a batch, not the session. Not for a question or a doubt about ending.
 ---
 
 # /cclio:halt
-
-loads on `/cclio:halt`, `/halt`, `/wrap`, or when dima says to finish the day.
 
 ## phase 0 — the halt plan, printed then executed
 
@@ -14,9 +12,8 @@ turn — never stop to ask. He invoked a halt; asking «shall I halt?» makes hi
 one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a spawned session, an
   unanswered question put to dima, an unpushed commit
-- **the lingering-ticket sweep** — query, never recall (dima, 2026-09-13: two tickets sat In
-  Review two days past their merge; no linear automation, a merge is not a done):
-  `linear api 'query { issues(filter: { state: { name: { in: ["In Progress","In Review"] } } }, first: 50) { nodes { identifier title state { name } labels { nodes { name } } } } }'`
+- **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
+  `x linear list --state "In Progress"` and `x linear list --state "In Review"` (ids, titles, labels)
   — every hit without the `standing` label gets one line: «closable, because …» (his word
   closes, with a closing word in the body) or «stays, because …». a ticket whose pr merged
   with asks left open moves to Todo, never closes
@@ -24,16 +21,13 @@ one short message, then straight into phase 1:
 - **the coder roster, two questions per coder: retro filed in `~/.claude/shelf/retros/`? `claude stop <id>` done?** a coder
   has outlived a halt before; `claude agents --json` is the check, never memory. **a coder the CST
   calls «warm» is verified alive at write time** (a registry entry in `~/.claude/sessions/` +
-  `kill -0 <pid>`) and written as dead when dead — halt15 promised a warm coder that was gone
-  at boot (2026-09-12). **ccrow is on the roster too** — its stop is phase 5's last line, named in this
-  plan so it is not lost (it outlived the 10-06 halt)
-- sort each into **can land now** (small, finishable here) · **must park** (needs a resume
+  `kill -0 <pid>`) and written as dead when dead. **ccrow is on the roster too** — its stop is phase 5's last line, named in this
+  plan so it is not lost- sort each into **can land now** (small, finishable here) · **must park** (needs a resume
   note) · **already done**
 - state the order you are taking, as a fact rather than a proposal
 
 📌 three things stop for him, each a **decision**, never a confirmation: the flawlog flush (3a),
-the wire y/n (4.5), «continue here or a fresh thread?» (5). the push is the default unless he says
-«stop» (`habit-dima-comms-pacing`). Everything else proceeds.
+the wire y/n (4.5), «continue here or a fresh thread?» (5). Everything else proceeds.
 
 ## phase 1 — land the leaves
 execute the «can land now» list, freebies included: a halt finishes the main lane and solves what is small on the
@@ -45,20 +39,19 @@ not in the report. a park that only exists in a chat message is a strand.
 ## phase 1.5 — the inbox, cleared unasked 📬
 every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item has a home
 (a pocket item, a ticket, an answer given, a fold), then reset it by copying his template over
-it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear (dima, 2026-09-28) — and
+it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear — and
 `trash _hq/inbox-composer.md`, composer's prepped sibling, rebuilt at the next boot. the template
 is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
 the same pass prunes the pocket first: every `done` item is filed with `backlog task complete <id>` (pocket-check lets a done item stay listed through its day, then reds it); the gazette post (phase 4.5) carries the day's done items and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
-inbox clears — before the CST is written, every halt, both lanes (the 09-20 halt skipped the prune
-and dima found six done lines at the next boot).
-**size misses** (FRM-379): the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
+inbox clears — before the CST is written.
+**size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
 ## phase 1.7 — github notifications, cleared unasked
-mark done every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr: `gh api notifications`, then `PATCH /notifications/threads/<id>`. what stays is an open pr's review ask. dima's yes, 2026-09-28.
+mark done every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr: `gh api notifications`, then `PATCH /notifications/threads/<id>`. what stays is an open pr's review ask.
 
 ## phase 1.8 — glides, cleared unasked 🛼
-every 🛼 glide card on the board gets orbit op `glide` act `end`, finished or parked alike; a parked lane gets a new card when it resumes (dima's o78, 2026-10-14: a lane's card sat on his board a day after the halt).
+every 🛼 glide card on the board gets orbit op `glide` act `end`, finished or parked alike; a parked lane gets a new card when it resumes.
 
 ## phase 2 — missed sweep
 re-read the pocket and this thread for dropped asks and unanswered
@@ -79,15 +72,14 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 proposal starts from its lanes, not from a blank read. then cluster, ONE batched proposal, ONE
 approval, execute and commit. see `/cclio:flawlog`.
 **the retros, in the flush:** `ls ~/.claude/shelf/retros/` — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file.
-**retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody (dima, 2026-10-04). the same for look-card shots: `find ~/.local/state/looks -type f -mtime +14 -exec trash {} +` (FRM-315).
+**retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody. the same for look-card shots: `find ~/.local/state/looks -type f -mtime +14 -exec trash {} +`.
 🚨 **the flush stops the halt**: print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before
 the reason — those go to `memory/dima-stories.md` as appends (the leaf's own rule), not to the
-flawlog's drop pile. skipped for two weeks once (2026-09-05).
-**verify recipes, in the flush:** a retro line naming a verify-recipe gap or a check worth adding is
+flawlog's drop pile.**verify recipes, in the flush:** a retro line naming a verify-recipe gap or a check worth adding is
 placed by cclio into that app's `.claude/skills/verify/SKILL.md` in the flush — coders and
 verifiers only suggest; the recipe stays short (commands that worked, flows worth driving, gotchas).
-**second sighting = teeth (FRM-314):** before a lesson enters the proposal, `rg -i '<its key words>' ~/.claude/shelf/flawlog/` over the last 30 days; a hit makes it a repeat, and a repeat leaves the flush per `craft-fleet-flow` stage 10, never as a memory line. a stopgap memory line is written with `until: <ticket>`. **a fix that is a freebie (our own tooling, minutes) is solved in the flush, never filed** — the proposal marks it «solve now», his yes runs it before the gazette; only a fix bigger than a freebie gets a pocket item (dima, 2026-10-14: three freebies filed, then solved anyway, cost a file, a read and a close each).
+**second sighting = teeth:** before a lesson enters the proposal, `rg -i '<its key words>' ~/.claude/shelf/flawlog/` over the last 30 days; a hit makes it a repeat, and a repeat leaves the flush per `craft-fleet-flow` stage 10, never as a memory line. a stopgap memory line is written with `until: <ticket>`. **a fix that is a freebie (our own tooling, minutes) is solved in the flush, never filed** — the proposal marks it «solve now», his yes runs it before the gazette; only a fix bigger than a freebie gets a pocket item (filing one costs a file, a read and a close).
 **the redundancy hunt** (dima, 2026-10-07: «hunt redundant memories each time, and also propose grooms, trims to keep it tidy»): every memory file and skill the flush or the day touched gets `recipes/nurture-memory/recipe.md` step 7's lenses; each finding joins the proposal. dima, 2026-10-11: «During the halt, you process retros gathered across the lanes and flush them into the corresponding skills and memory files. This causes the memory bloat we have right now, so this step in your halt is meant to stop endless memory growth.»
 **notes expire:** `rg -n 'until: (FRM|BYT)-[0-9]+' ~/frame/cclio/memory ~/.claude/rules` and check each id's state; a line whose ticket closed goes into the proposal for deletion.
 **the flow numbers, before the proposal:** `x fleet flow --days 14` in `~/frame` — the
@@ -115,8 +107,7 @@ names is being dropped by default.
 
 ## phase 3.5 — milestones, before the board
 
-the boot ritual reads milestones as the first answer to «what's next», so a stale one misinforms
-the next session directly. before writing the CST:
+the boot prints every open milestone with the roadmap block, so a stale one misinforms the next session directly. before writing the CST:
 
 - attach anything finished this session to its milestone, and anything newly started
 - if a milestone is complete, say so to dima — completing it is his call, not an agent's
@@ -126,7 +117,7 @@ the next session directly. before writing the CST:
 - one line in the wrap: `milestone · done/total · what moved`
 - `x linear archive --apply` — archives closed tickets untouched for 14 days (`--days N`). linear's own
   auto-archive waits for the project to close, ours never do, and the free plan counts closed
-  tickets toward its 250 (a create was refused at the cap, 2026-10-01). its count goes in the wrap line
+  tickets toward its 250. its count goes in the wrap line
 
 
 ## phase 4 — the board
@@ -139,9 +130,7 @@ ticket ids as links in the `rules/fleet-output-format.md` form.
 
 ## phase 4.5 — the gazette 🗞️ (before the CST, always)
 
-run `/cclio:gazette`: the tweet writes unconditionally; the wire asks «🗞️ the wire? y/n» and
-**blocks until dima answers literally** — he may miss an inline line, so the question stands
-alone. the CST afterwards carries only what the gazette did not.
+run `/cclio:gazette` — its wire gate stops for dima's literal answer. the CST afterwards carries only what the gazette did not.
 
 ## phase 5 — handoff CST 📬
 **mandatory, never skipped.** cclio cannot see sibling sessions, so the CST is its ONLY
@@ -150,10 +139,9 @@ auto-save via the handoff store (`/x:handoff` writes, `/x:handoff-ingest` reads)
 before writing, whether the work continues here or in a fresh thread — a CST followed by more
 work in the same thread is wasted tokens and a stale file. slug `<runid-topic>-halt`. a previous
 CST marked FROZEN is never superseded — save alongside and say which is which.
-🐦‍⬛ **after the CST, `pnpm -C ~/frame ccrow:stop` then archive her desktop card** (`mcp__ccd_session_mgmt__list_sessions` → `archive_session`; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «arhive yourself each time») — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`). before the stop, every note id with no verdict is printed and vetted (`pnpm --silent ccrow:note-vet ok|miss <id> "<why>"`) — an unvetted note is a lost data point for the trial.
-a first-act that is a memory line is applied now, by this halt — never left for a boot (two sat
-unapplied through a whole session when the next boot ingested a different CST, 2026-09-19).
-🌔 **the last act: phases reset to the next session's moves** (orbit op `plan`), the CST's first-acts as `tomorrow:` lines, so dima sees the plan on the board, never today's finished steps (dima, 2026-10-14).
+🐦‍⬛ **after the CST, `pnpm -C ~/frame ccrow:stop` then archive her desktop card** (`mcp__ccd_session_mgmt__list_sessions` → `archive_session`; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «archive yourself each time») — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`). before the stop, every note id with no verdict is printed and vetted (`pnpm --silent ccrow:note-vet ok|miss <id> "<why>"`) — an unvetted note is a lost data point for the trial.
+a first-act that is a memory line is applied now, by this halt — never left for a boot.
+🌔 **the last act: phases reset to the next session's moves** (orbit op `plan`), the CST's first-acts as `tomorrow:` lines, so dima sees the plan on the board, never today's finished steps.
 
 ## phase 6 — no boot prompt
 the halt reply prints NO boot block (dima, 2026-09-18: «i'll use the command now»). the x-ray
@@ -167,8 +155,9 @@ to `/cclio:checkpoint`.
 
 ## phase 7 — one earned joke. never skip it.
 
+done when: the CST slug is in the store, ccrow is stopped and her card archived, orbit holds the `tomorrow:` lines, the joke closed the reply.
+
 ## standing rules
 - unpushed commits are pushed at the halt by default; dima's «stop» holds them (`habit-dima-comms-pacing`)
 - reminders queued for the halt fire before the CST
-- any phase finding a freebie solves it in place; finding something bigger parks it and names it — a new lane never
-  starts inside a halt.
+- a new lane never starts inside a halt.

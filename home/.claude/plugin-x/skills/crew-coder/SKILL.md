@@ -138,7 +138,8 @@ on diff lines.
 ## 6. the report
 
 - **the done report** is one linear comment, ≤20 lines, opening with the look card (`how-you-work.md`):
-  shipped, left, measured numbers, one line per defect.
+  shipped, left, measured numbers, one line per defect; every upstream issue, pr or release your work
+  hit or waits on, as a link — cclio watches it.
 - **a fact a future reader of the repo needs** (an api that lies, a setting that is really two, a tool that
   queues instead of failing) goes into that app's `AGENTS.md`, never only the comment.
 - **the retro's standing focus**: the brief and the tools first — what blocked you, every guard refusal

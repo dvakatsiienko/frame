@@ -10,9 +10,8 @@ GitHub repo, runs while the mac sleeps, and dies when idle. It carries **nothing
 user `CLAUDE.md`, no rules, no plugin `x`, no memory, no 1password, no launchd. It does load the
 repo's own `AGENTS.md` / `CLAUDE.md`. So the brief carries the rest, and the PR carries the report.
 
-Sources: `docs/test-drive/browserbase.md` round 1 (the probe, 2026-09-28), the day's research in
-`docs/research/cc-cloud.md`, code.claude.com `claude-code-on-the-web` and
-`cloud-environments`.
+Sources: `docs/research/cc-cloud.md`, `docs/test-drive/cc-cloud.md`, code.claude.com
+`claude-code-on-the-web` and `cloud-environments`.
 
 ## when the cloud, when `--bg`
 
@@ -42,13 +41,12 @@ cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '<☕️|🎯> ☁
 ```
 
 - **effort is medium by default**, like every coder and verifier (dima 2026-09-28); high only for
-  a big sweep or migration. BYT-97 ran without the flag and came up on high. (? unproven that
+  a big sweep or migration. (? unproven that
   `--effort` reaches the VM — the first job with it asks the session its effort through
   `--teleport`, then this line loses its `?`)
 
 - **`-n` comes before `--cloud`** — `--cloud` takes the brief as its own value; `--cloud -n …` dies
-  on «--cloud requires a description» (measured 2026-09-28, «☁️ cloud: name probe» landed as the
-  title). the name is type-first like every spawn (`x:crew-lead`); an unnamed session titles
+  on «--cloud requires a description» (measured, `docs/test-drive/cc-cloud.md` round 1). the name is type-first like every spawn (`x:crew-lead`); an unnamed session titles
   itself from the brief and is unfindable in the sidebar.
 - the log ends with `Created cloud session: <title>`, `View: <url>` and `Resume with: claude
   --teleport <session_id>`. Keep all three; the session shows in `ListAgents` as `cloud`.
@@ -69,55 +67,21 @@ cloud mode — you run on an anthropic vm, not the mac:
 - your last act, pr or no pr: push your final report as REPORT.md to a branch `cloud/<short-slug>` — cclio's pr-watch sees that branch; nothing else tells it you finished.
 ```
 
-**Without plugin `x` in the environment**, the self-contained brief below carries the core
-rules inline. Fill every `<…>`; the fence body is the prompt. the `<crew-dna>` slot takes
-`crew-dna-cloud`'s output verbatim (plugin-x bin: the dna minus its mac-only lines), never a retyped copy.
-
-```
-you are a cloud coder for ticket <BYT-N>: <one-line job>.
-repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, then the ticket body below.
-
-## the job
-<ticket body, or the plan file path you pushed>
-
-## exit — done means every line holds
-<3–6 given/when/then lines from the ticket>
-
-<crew-dna>
-
-## how we code (our fleet rules; the VM does not have them)
-- less is more: delete, derive or inline before you add. no speculative abstraction, no unasked docs.
-- typescript: no `any`; inferred types over annotations; zod at boundaries only.
-- names are entity-first: `usageSave`, not `saveUsage`; `crew-coder`, not `coder-crew`.
-- comments only for a non-obvious why, one line.
-- tests prove a contract, one behaviour each, runner vitest; a test is proven by making it fail once.
-- setup: `CI=1 pnpm install` (keeps git-hook shims out). typecheck + the touched tests must pass.
-<frame only: never touch a path `.gitattributes` marks `filter=git-crypt`.>
-
-## git and the pr
-- branch `coder/<BYT-N>-<slug>` from the base. step commits.
-- commit subject `<emoji> <scope>: <lowercase imperative>`; emoji: 🔧 feature/config · 🐞 fix · ✨ refactor · 🗑️ delete · 📜 docs · 🎨 visual · 📦 deps. body: hyphen bullets, last line `Agent: cloud · <model>`.
-- never write a linear keyword (closes, fixes, resolves, refs …) next to a ticket id, anywhere. never write a skip-ci marker.
-- push the branch and open ONE pr (not a draft) with `gh` as soon as the first commit exists. pr body ≤ 25 lines: what shipped, what is left, the exit lines with ✅/❌, one line per known defect.
-
-## you are alone
-- nobody answers questions: a decision you cannot make goes in the pr body as `? <question>` and you continue with the safer option.
-- run everything in the foreground; the vm is reclaimed when idle and background jobs die with it.
-- finish with the pr body updated. that is your report.
-```
+**Without plugin `x` in the environment** (no setup script), the self-contained brief is
+[references/brief-no-plugin.md](references/brief-no-plugin.md): the coder contract and our
+coding rules inline, the `<crew-dna>` slot filled by `crew-dna-cloud`.
 
 ## step 4 — watch and read
 
 - **the pr is the signal.** arm the pr watch from `x:crew-lead`, keyed on the ticket id in the
   pr body (`gh pr list --state all --search '<BYT-N> in:body'`), never on the head branch: a cloud
-  session is pinned to its own `claude/<slug>` branch and ignores the brief's `coder/…` name
-  (BYT-97, 2026-09-28: the head-keyed watch saw nothing while #105 sat open).
+  session is pinned to its own `claude/<slug>` branch and ignores the brief's `coder/…` name.
 - **send** a steer with `claude -p "<msg>" --cloud <id>`, which lands as a task. a `SendMessage` reaches a cloud session only as information, never a task (2026-09-28).
 - 🚫 **it cannot answer by message** — ListAgents' own doc: a cloud session «cannot message any
   session back yet». never brief it to ping; never wait for one.
 - **read** its transcript in a scratch clone of the same repo, never the main checkout:
   `claude -p "<question>" --teleport <session_id>` (measured: answers from the cloud history).
-- `notify_when_idle` is same-machine only. the done signal is the session's `ListAgents` status turning `idle` — never a fixed sleep before a read (a 150 s timer read probe 2 three minutes late).
+- `notify_when_idle` is same-machine only. the done signal is the session's `ListAgents` status turning `idle` — never a fixed sleep before a read.
 
 ## step 5 — close
 
@@ -126,15 +90,15 @@ repo: <owner/repo>, base <branch>. its AGENTS.md is binding — read it first, t
   `REPORT.md`, act on what it says (a finding → a ticket line or a fix, a `?` → a question to dima),
   then delete the `cloud/<slug>` branch (`git push origin --delete cloud/<slug>`) and archive the
   card. the branch is the done signal: while it lives, every fresh session's pr-watch announces it
-  again (two handled reports re-fired at the 10-07 boot).
+  again.
 - archive and delete are web-ui only (claude.ai/code sidebar or the session menu; docs
   `claude-code-on-the-web#archive-sessions`, read 2026-09-28) — no cli verb, no api. an idle
   session costs nothing, its VM is reclaimed; the archive is sidebar hygiene. the pr merged or
   closed → the session is archived by the coordinator, never left for dima (his call, 2026-09-28:
   «if another army appears — you clean»): `claude-in-chrome` on claude.ai/code, after asking him
-  to have that tab open; one line per archived name in the reply. (? unproven: on 2026-09-28 the
-  web app answered «session couldn't be found» for a cli-made cloud session — until a probe lands,
-  dima archives in the desktop sidebar, hover → archive)
+  to have that tab open; one line per archived name in the reply. stopgap until a probe lands (the
+  web app answered «session couldn't be found» for a cli-made cloud session): dima archives in the
+  desktop sidebar, hover → archive.
 - the verifier, the ci reviewer (`review.yml`, subscription oauth) and the done-comment in linear
   are the local flow's, unchanged: cclio reads the pr and writes the comment.
 

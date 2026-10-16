@@ -1,25 +1,23 @@
 ---
 name: evergreen
-description: load when dima types /cclio:evergreen, asks «updates?», «what's new in deps», «anything to merge?», says «approve evergreen», or when the boot finds open renovate PRs — the news layer over renovate + brew, and the merge hand.
+description: load when dima types /cclio:evergreen, asks «updates?», «what's new in deps», «anything to merge?», says «approve evergreen», or when the boot finds open renovate PRs or a due apps lane.
 ---
 
 # /cclio:evergreen 🧬 — the news layer over renovate and brew
 
-renovate opens the PRs (`renovate.json` in `bytes` and `frame`: patches daily + automerge on
-green, minors wednesday 09:00 kyiv, majors one PR each with no schedule so they land as found after
-the 3-day cooldown, 0.x never automerges). this skill is the half a bot cannot do: **read, judge,
+renovate opens the PRs (`renovate.json` in `bytes` and `frame` holds the schedule and the automerge tiers). this skill is the half a bot cannot do: **read, judge,
 tell dima only what he would want to know, keep brew fresh, act on his word.** 🌲 is her commit
 prefix (renovate writes it), 🧬 her voice here. cadence: **daily, at boot, whenever PRs exist** (dima
 2026-09-09: «try daily first, refine, then loosen»).
 
-**the evergreen day flow** (dima, 2026-10-14: the boot parses the plan, evergreen never crowds the inbox):
+**the evergreen day flow:**
 1. the boot loads this skill and starts the § 2 read in the background — the `helper` card (Sonnet 5.5, no fleet memory; the generic agent is denied),
    its brief this file's path; the board prints without waiting for it
 2. the report is the first step after dima answers the board: printed whole in the chat, the `apply` list and one combined `ask`
 3. the `apply` borrows ran before the report; batches start only after his evergreen reply, the `ask` borrows he ticks first
 4. after the § 2 read and before the report prints, cclio runs `timeout 2400 brew upgrade` in the background
    (pinned never), no ask, and its line goes in the report — brew never upgrades itself, keeping it fresh
-   is this skill's job (dima, 2026-10-14)
+   is this skill's job
 
 ## 1. gather
 
@@ -27,18 +25,16 @@ prefix (renovate writes it), 🧬 her voice here. cadence: **daily, at boot, whe
 gh pr list -R dvakatsiienko/<repo> --search 'author:app/renovate' --json number,title,headRefName,createdAt,statusCheckRollup,body
 brew outdated --json=v2 --greedy   # the brew lane, same digest
 brew list --pinned
-brew --version                     # brew ITSELF — a major is a digest line; auto-update jumped 4 → 7 unseen (2026-09-14)
+brew --version                     # brew ITSELF — a major is a digest line; auto-update once jumped 4 → 7 unseen
 pnpm skill:evergreen-apps          # the apps lane — due when the boot digest says a wednesday passed since the last mark
 ```
 
-**the apps lane** — the self-updating apps neither renovate nor brew reads: raycast, claude code,
-wispr flow, cursor, linear, claude desktop / cowork, superwhisper, obsidian, notion, things,
-cleanshot x, 1password, bartender, newton, chrome. `cclio/evergreen/sources.json` is the index
+**the apps lane** — the self-updating apps neither renovate nor brew reads. `cclio/evergreen/sources.json` is the index and the app list
 (one entry per app: changelog url, read shape, the `marker` = newest entry the last run saw); the
 reader prints every entry newer than its marker, the skill judges, then `pnpm skill:evergreen-apps
 --mark` advances the markers — **after the digest went out, never before.** the markers make the lane
 skip-proof: a run on any day prints everything since the last mark, and the boot digest's `apps
-lane` line says when it is due — **a wednesday has passed since the last mark** — the run fires by itself on a wednesday boot only (dima, 2026-10-11); any other day it waits for the next wednesday, no ask (dima, 2026-10-12). a dead url or a
+lane` line says when it is due — **a wednesday has passed since the last mark** — the run fires by itself on a wednesday boot only; any other day it waits for the next wednesday, no ask. a dead url or a
 changed page shape is fixed in the index by hand, the run never searches. a new app = one hunted
 entry; a `⚠️ marker not found` line means the page changed shape — re-seed that marker.
 
@@ -71,27 +67,26 @@ gh api repos/<owner>/<repo>/releases --jq '.[] | select(.tag_name | test("^v?<fr
 read the whole range, not the head tag — a `4.1 → 5.0` jump carries every breaking change in
 between. a release post on the project's blog beats the github release body when both exist.
 
-## 3. judge — five answers per card
+## 3. judge — the answers per card
 
 - **brings** — the 1–2 facts he would use, numbers where the release gives them
 - **breaks** — two halves, both mandatory: (a) **peer ranges of every dependant** —
   `pnpm why <pkg>` in the repo, then `npm view <dependant> peerDependencies` for each; a range
-  that excludes the new major is a hold, whatever the src says (graphql 17 vs `@apollo/server`
-  `^16.11.0`, missed by a src-only grep on 2026-09-09); (b) grep the repo for the apis the notes
+  that excludes the new major is a hold, whatever the src says; (b) grep the repo for the apis the notes
   name as removed or changed
 - **since last major** — on every major card, one clause: `<prev major> shipped <yyyy-mm-dd>, <n> months ago` (dima 2026-09-09, «for curiosity»). npm: `npm view <pkg> time --json`; others: the project's release page
-- **machine** — on a pnpm / node / biome major, also grep our own repos for the cli flags we pass (`grep -rn 'pnpm -' home/.claude cclio script` and the bytes scripts): pnpm 12 reads `-s` as `--sequential` and broke every token snippet the same evening (2026-09-09). then `packageManager`, `engines.node`, a cli he runs by hand, a brew formula. the
+- **machine** — on a pnpm / node / biome major, also grep our own repos for the cli flags we pass (`grep -rn 'pnpm -' home/.claude cclio script` and the bytes scripts): pnpm 12 reads `-s` as `--sequential`. then `packageManager`, `engines.node`, a cli he runs by hand, a brew formula. the
   repo can be green and his shell still broken
-- **🌟 or 🟠** — his taste (interview 2026-09-09): a **rewrite** (zig → rust, a new bundler
+- **🌟 or 🟠** — his taste: a **rewrite** (zig → rust, a new bundler
   core), a **perf claim with numbers**, a **new capability** he could use → 🌟 with a `🔬 deep`
   block: 2–4 lines of researched facts with the numbers, one source link. a perf claim
   **without** numbers → one line, flagged unmeasured, he asks to detail if he wants. **ci-only
   majors are interesting too** (postgres container, actions) — a card, never silent.
-- **💡 borrow** — the fifth answer, on every card that is not silent: what we could take from
+- **💡 borrow** — the last answer, on every card that is not silent: what we could take from
   this — a flow of ours it changes, a feature that replaces something we built, a setting that
   shipped with a new default. one line; a card with nothing to borrow prints no borrow line.
   **claude code and linear get the thought on every notable entry**, not only majors — they are
-  the tools we run all day (dima, 2026-09-20).
+  the tools we run all day.
 - **a feature he or we can use** — the bar for a printed line is a new capability for dima or for
   the fleet, with the borrow it opens; «nothing to act on» never makes an entry silent, and «under
   the hood» never makes it loud. every entry is still read in full — the borrow hunt runs over
@@ -103,9 +98,7 @@ between. a release post on the project's blog beats the github release body when
 - **every borrow carries a tag**: `apply` — a revertible change on the fleet's side (a cc setting, a hook
   flag, an agent's frontmatter, a doc fact); `ask` — his tools, his money, or a workflow change
 - **every number on a card links its source**; a model price or limit is checked against
-  `x:crew-lead`'s `references/model-cards.md`, and a disagreement prints as ⚠️ on the card (10-14: a misread
-  haiku price reached the report, his screenshot caught it)
-- **the rest is one count line per section** — `+ 14 more read, nothing to borrow`. an entry that did not update is never printed (dima
+  `x:crew-lead`'s `references/model-cards.md`, and a disagreement prints as ⚠️ on the card- **the rest is one count line per section** — `+ 14 more read, nothing to borrow`. an entry that did not update is never printed (dima
   2026-09-21: «if formulas didn't update, do not print them»). the apps lane obeys the same rule:
   a feature change is a 🟠 line with its facts, a rewrite or a capability we would use is a 🌟
   card with the borrow line.
@@ -147,7 +140,7 @@ between. a release post on the project's blog beats the github release body when
 (one orbit ask) the `ask` borrows: all except … ➡️ yes; merge round: <pkgs> ➡️ yes
 ```
 
-- the four labels are fixed words in a fixed order so his eye lands on the same spot per card.
+- the labels are fixed words in a fixed order so his eye lands on the same spot per card.
 - a red ci on any tier → ⚠️ on the card and ➡️ coder. age ≥ 7 days unmerged → `⏳ 9d` before
   the name; the number is the reminder.
 - **pick, never paste.** the facts are the few a reader would want from the whole range; the
@@ -157,64 +150,20 @@ between. a release post on the project's blog beats the github release body when
   by `url` each run with that run's date in its header: 🌟 cards with a borrow line and a status
   chip per borrow (shipped · waiting · queued), the brew lines worth reading, the count line,
   and a chart where a perf claim has numbers. its source lives at
-  `cclio/evergreen/page.html` — read it, swap the content, keep the design. the chat carries
-  the whole report (dima, 2026-10-14) and the page mirrors it; the `ask` borrows and the merge round go to orbit.
-- his knob: «too much» / «missed X» → tighten or widen in `memory/craft-evergreen.md` (create on
-  first steer, one line per rule).
+  `cclio/evergreen/page.html` — read it, swap the content, keep the design. the page mirrors the
+  report; the `ask` borrows and the merge round go to orbit.
+- his knob: «too much» / «missed X» → tighten or widen the rule in this skill.
 
-## 5. act on his word — «approve evergreen» is the whole round
+## 5. act on his word
 
-a plain «approve evergreen» (or a 🛎️ on its orbit ask) means: **every ➡️ merge in the report runs
-now, by cclio, no second ask.** `brew upgrade` is not part of the ask: it ran with the digest. steers inside the
-same message («hold #61») subtract from the round.
+«approve evergreen» (or a 🛎️ on its orbit ask) runs every ➡️ merge in the report now, by cclio, no second ask: read [references/merge-round.md](references/merge-round.md) first — the merge, the rebase, the hold and the after-round steps.
 
-- **the round ends with a loot in every repo it merged into** (`git pull --ff-only`, or a
-  proposed rebase when the tree is ahead too) — patches automerge without anyone saying so, and
-  the boot prefetch's ahead/behind line is the tell: behind-only = loot as a freebie at boot.
-- **before a merge that moves a shared dependency's major in one app only**, check the repo's one-version
-  rule (bytes: the `package-json-shape` hook) — renovate commits skip our hooks, so #95 put jotai 3 in
-  atelier beside 2.20.3 in x-com-chat and the next human commit tripped on it. a bump in a deployed app
-  is proven by that app's local `pnpm --filter <app> build`, never its typecheck — jotai-devtools broke
-  x-com-chat's prod build behind a green typecheck (2026-09-26).
-- **merge** → `gh pr merge <n> -R dvakatsiienko/<repo> --squash --delete-branch` — the title
-  already wears `🌲 evergreen:`. one back-to-back round per day: each bytes merge costs 6 prod
-  deploys, so never one per PR across the day.
-- a PR that answers «merge conflicts» after a sibling merged (lockfile) → tick renovate's
-  `<!-- rebase-check -->` box in the PR body via `gh pr edit --body-file`; renovate rebases
-  within its next scan (~hourly); report it as pending, never rebase by hand.
-- **coder** → a red or held-for-migration PR gets a coder on its branch through
-  `x:crew-coder` («make this bump green; migrate what the release notes say changed»).
-  renovate stops rebasing once a human commit lands, which is right.
-- **hold** → a peer-range hold gets `gh pr close --comment` with the range named; renovate
-  reopens it on the next release of the package. any other hold: nothing, the age prefix
-  carries it.
-- **brew** → `brew upgrade` runs with the digest, before the report (flow step 4), never in this round.
-  the same round diffs `~/Applications/*.app` launchers (a `Contents/MacOS/run.sh` calling `steam://`) against `~/Library/Application Support/Steam/steamapps/common`: a launcher with no game folder is a steam tail every cleaner skips — listed in the digest by path, trashed only on dima's word.
-- after the round: `git pull` both mains, then install per `x:github-contrib`'s package.json merge bullet; a merged bytes round redeploys prod, say so. `pnpm dedupe` is its own deliberate commit once in a while, never a reinstall — a wipe re-resolves peers and floats transitives, which is the «different lockfile» he noticed.
-  then `/run` every app the round touched (dima, 2026-09-27: «use run as a sanity check everywhere»); a red run is a digest line and a hold on the next merge.
-- **skills lane, weekly with brew** — the agent skills renovate cannot see. the `skills` cli has no
-  machine-wide list and no check command: `list`/`update` see the cwd's project OR global (`-g`),
-  never both, so every scope runs on its own. the three lockfiles are the source of truth:
-  `npx -y skills@latest update -p -y` in `~/projects/bytes` (`skills-lock.json`: next.js, shadcn,
-  turborepo) and in `~/projects/bytes/apps/x-com-chat` (the convex set — sat 5 months stale
-  because nobody looked there), then `npx -y skills@latest update -g -y` once
-  (`~/.agents/.skill-lock.json`, untracked — snapshot it to the scratchpad first), and
-  `npx -y skills@latest update -p -y` in `~/frame/cclio` (`skills-lock.json`: advise-project-approach,
-  on a test drive). the digest line per scope is
-  the lockfile diff (`git diff -- '**/skills-lock.json'` in bytes, a byte-compare for global);
-  a moved hash names the skill.
-- **plugins lane, same weekly slot** — a marketplace refreshes itself only where
-  `known_marketplaces.json` says `autoUpdate: true` (`x`, warp today); the rest, and a disabled
-  plugin, sit still (measured 2026-09-16: impeccable cached 4.2.1, upstream 4.3.1, disabled).
-  `claude plugin marketplace update` then `claude plugin update <name>` for those; a bump is one
-  digest line and binds next session.
-  - cw updates nothing by itself: when the `humanize` marketplace moved since the last run, the
-    digest carries «cw humanize: update it in cw» for dima.
+weekly with brew, the skills lane and the plugins lane join the digest: read [references/weekly-lanes.md](references/weekly-lanes.md).
 
 ## completion criterion
 
-every open renovate PR is a card or silent with a green ci; every card carries all
-five answers, the breaks answer names the peer-range check; every ➡️ is one of merge / coder /
+every open renovate PR is a card or silent with a green ci; every card carries brings, breaks and, on a major, since;
+the breaks answer names the peer-range check; every ➡️ is one of merge / coder /
 hold; on a wednesday every app in the index was read and is a line or silent, and the markers
 advanced after the digest; `brew upgrade` ran and its line is in the report; on «approve evergreen» every merge ran and the
 reply names what landed, what waits on a rebase, and the new prod deploy count.

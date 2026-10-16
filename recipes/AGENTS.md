@@ -19,6 +19,7 @@ dima, 2026-10-08: «recipes are special, they are not plain scripts, they want i
 - `recipe.md` — the recipe, shaped below
 - `log.md` — that each run happened, shaped below
 - `log-<year>.md` — older log entries, once `log.md` passes 8 KB; nothing is deleted
+- `retire-log.md` — a nurture recipe's prune proposals dima answered «keep», each with his reason, so none resurfaces unchanged; born by the first keep
 - `scripts/` — helpers the recipe owns, only when it has any
 - `last/` — only for a recipe that runs lanes: the current run's briefs and raw lane output. gitignored, cleared when the next run's distill finishes, never named in `log.md` or `artifacts:`
 

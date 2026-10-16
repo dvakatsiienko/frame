@@ -11,8 +11,7 @@ design and his eye works as a **veto on concrete things**: offer picks, examples
 recommendation on every line, and never ask him to describe a vibe. Keep his part light: one
 message of questions, one round of answers.
 
-The output is `~/projects/studio/jobs/<app>/brief.md`. The input decides the output, so the brief
-is the whole job.
+The output is `~/projects/studio/jobs/<app>/brief.md`.
 
 ## 1. mode
 
@@ -32,7 +31,7 @@ is the whole job.
 
 ## 3. the links — print them every time
 
-Dima browses before he picks. print this block at the top of the questions message, every job:
+Print this block at the top of the questions message, every job:
 
 - 🖼️ shipped app screens and flows
   - [Mobbin](https://mobbin.com/)
@@ -61,9 +60,8 @@ The shape, in plain markdown (never inside a code fence):
 - a bold numbered question in plain words, one line
 - `a)` and `b)` as sub-bullets, one per line, each with what it looks like in one clause; the
   recommended one leads with ➡️. «or your own» is always allowed, never listed as an option.
-- nothing packed into one line: no `·` runs, no option lists inside a sentence
 
-Each question is also an orbit ask with its pick; orbit is the only answer door, never an answer fence.
+Each question is also an orbit ask with its pick.
 
 The questions, drop any the prep settled:
 
@@ -84,8 +82,7 @@ The questions, drop any the prep settled:
 9. states — the takes draw the ideal state + one more and the rest go on the pick, or all
    states now
    - the window shapes too: the key view at the app's real sizes (wide, tall, narrow — and for a
-     piece that does not fill the screen, what the empty bands hold). atelier's comp drew one shape,
-     and the chrome placement on a letterboxed piece fell to dima's eye for 3 rounds (2026-09-30)
+     piece that does not fill the screen, what the empty bands hold)
 10. the spread — 4 takes, blind, files only, or his changes
 
 ## 5. the gate — before the brief is written

@@ -17,9 +17,8 @@ exit lines a verifier checks.
 - `FTR.md` — ours, never read by impeccable. The feature ledger.
 - `GLOSSARY.md` — ours, the app's glossary: every domain word the ftr uses, defined once. Written
   with matt's `domain-modeling` skill; the ftr, the ui labels and the code use its words.
-
-`DESIGN.md` stays impeccable's own (`document` writes it after a build, and its sidecar json
-regenerates with it).
+- `DESIGN.md` stays impeccable's own: `document` writes it after a build, and its sidecar json
+  regenerates with it.
 
 ## the line shape
 
@@ -80,12 +79,11 @@ losing variant's line is deleted.
    lines to its words. A new app runs this order the other way: the glossary first, then the ftr.
 5. Commit `FTR.md`, `GLOSSARY.md`, the app's `GLOSSARY-MAP.md` entry when the repo has one,
    and two lines — the bridge is resident in every session in the repo:
-   - the repo's root `AGENTS.md` carries the rule once (add it if missing): «an app with
-     `FTR.md` updates its ftr line, and any new domain word its `GLOSSARY.md` entry, in the
-     same commit as the code (`x:app-author-ftr`)»
+   - the repo's root `AGENTS.md` carries the rule (frame and bytes already do; a new repo gets it):
+     «an app with `FTR.md` updates its ftr line, and any new domain word its `GLOSSARY.md` entry,
+     in the same commit as the code (`x:app-author-ftr`)»
    - the app's `AGENTS.md` carries only the pointer: `FTR.md` + `GLOSSARY.md` — read your
      section before changing what the app does
-6. Report the cost: minutes and a rough token count for the draft. The pilot measures this.
 
 ## map-first — a new ask becomes a ftr line before anything else
 
@@ -99,7 +97,8 @@ losing variant's line is deleted.
 
 ## update — every change to what the app does
 
-- lines and `GLOSSARY.md` words change in the same pr as the code (on main: the same commit): a new
+- lines and `GLOSSARY.md` words change in the same pr as the code (on main: the same commit); `x lane commit`
+  stamps «ftr: none» on a commit that skips it, so the stamp is a question, never a pass: a new
   feature adds its 🧭 line, a changed behaviour edits its given/when/then, a removed feature
   deletes its line, a new or shifted domain word updates its `GLOSSARY.md` entry.
 - status flips once, in the pr's last commit: each line whose check now passes in the verify
@@ -116,8 +115,8 @@ losing variant's line is deleted.
   the ask may add steering lines on top; product behaviour never lives only in ticket prose.
 - the verifier checks each line, its status, that its `makes:` output exists as written, and
   that every domain word the line uses is defined.
-- at close, cclio runs `gh pr diff <n> --name-only`: an app pr that changes source and not
-  `FTR.md` gets one question — «no feature changed?» — before the merge.
+- at close, cclio greps the pr's commits for `ftr: none`: each hit gets one question — «no feature
+  changed?» — before the merge.
 - no map → hand-written exit lines, and the app's `AGENTS.md` carries `map: none — <reason>`
   (not drafted yet, or none by choice).
 

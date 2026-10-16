@@ -4,7 +4,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 
 ## entities — what we handle
 
-- **turn / step / tool call** — a **turn** is dima's message plus the agent's whole reply (claude code's own word: «finished a turn»); a **step** is one model request inside it, which may batch tool calls; a **tool call** is one invocation. «saves a turn» = one message of dima's; «saves a step» = tokens and latency (dima, 2026-10-05).
+- **turn / step / tool call** — a **turn** is dima's message plus the agent's whole reply (claude code's own word: «finished a turn»); a **step** is one model request inside it, which may batch tool calls; a **tool call** is one invocation. «saves a turn» = one message of dima's; «saves a step» = tokens and latency.
 <!-- sync: cw -->
 
 - **CST** — a handoff transcript, the thing that carries a thread to its successor.
@@ -19,15 +19,15 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **✨ wisp** — a bug: a small glow to tend before it burns, a will-o'-the-wisp that leads the app
   astray (dima, 2026-10-08, replacing «gremlins»). each app keeps a «<app> wisps» stash ticket; the
   inbox's ✨ section is the drop point.
-- **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (FRM-381, 2026-10-10; every session since 10-11, `rules/fleet-mods.md`).
-- **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held `[progress]` ping, a 🐠 catch; «slipstreamed» = delivered that way; its opposite is **push** (dima, 2026-10-12; networking calls it piggybacking, apple's notifications the «passive» level).
+- **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (`rules/fleet-mods.md`).
+- **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held `[progress]` ping, a 🐠 catch; «slipstreamed» = delivered that way; its opposite is **push**.
 - **🌠 wish** — what dima wants, in his words (dima, 2026-10-08: the word replaces «todo»). he prints
   wishes in the inbox and mid-prompt; the inbox's wishes section is the drop point; the pocket, then linear, is where a wish lives; a spec points at its wish, never copies it.
 - **🌤️ siesta** — the pause between batches (dima, 2026-10-08; was «pit stop»): he reads and steers, the fleet checks what just landed (cclio: `wishkeeper` 🐬, `cclio:siesta`), and the reply ends with one light line — a fact with a twist, a dry joke, or «meanwhile i did <freebie>». never inside a ticket's build.
 - **lane / shift** — a lane is our usual day: dima present, he steers, his asks fold in place. a
   shift runs from a written plan with dima `near` (a y/n ping only for a real decision) or `away`;
   `cclio:shift` is the contract. a session name leads with
-  its mode — `☕️` lane, `🎯` shift — then the role: `🎯 🔧 sys code: gremlins`.
+  its mode — `☕️` lane, `🎯` shift — then the role: `🎯 🔧 sys code: wisps`.
 
 ## fleet words — how he steers an agent
 <!-- sync: cw -->

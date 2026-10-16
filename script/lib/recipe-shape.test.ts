@@ -68,7 +68,8 @@ const sections = [
 ] as const;
 const vectorSubs = ['research', 'analysis', 'cut'] as const;
 const owners = ['coordinator', 'coder', 'designer', 'fleet'];
-const folderFiles = /^(recipe\.md|log\.md|log-\d{4}\.md|last|scripts)$/;
+const folderFiles =
+    /^(recipe\.md|log\.md|log-\d{4}\.md|retire-log\.md|last|scripts)$/;
 const logEntry = /^- \d{4}-\d{2}-\d{2} · [^·]+ · [^·]+ · [^·]+ · [^·]+$/;
 
 // a heading inside a code fence is example text, not structure
