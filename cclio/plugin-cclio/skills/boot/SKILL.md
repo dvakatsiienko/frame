@@ -107,7 +107,7 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
 the board, one message, short lines, **no queries here — pure assembly**:
 - «hey <model> here» (the root claude.md rule)
 - healthcheck verdict (one line if green)
-- 📝 `flawlog: <path>` — the day's file from step 7, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 8 shows as a missing line
+- 📝 `flawlog: <path>` — the day's file from step 7, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 7 shows as a missing line
 - ⏰📌 stuck and due ⏰ reminders, own line each (omit if none)
 - inbox status · handoffs pending · pocket depth + top item
 - 🎼 `inbox prep: <score>/100 (raw <n>)` — its own line while `docs/test-drive/composer-inbox-prep.md` is live

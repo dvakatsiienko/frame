@@ -3,10 +3,10 @@ id: PK-158
 title: >-
   a cclio fork: explore in a fork without confusing monitors, ccrow, composer or
   lanes
-status: claimed
+status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-16 15:48'
+updated_date: '2026-10-16 16:47'
 due_date: '2026-10-17'
 labels:
   - s
@@ -19,6 +19,7 @@ ordinal: 10106
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+**waiting for:** the next boot (dima, 10-16 18:47: «fork-guard: next boot, not today»).
 inbox 10-16, Q (relates to the monitors wisp, PK-152): he wants to fork cclio to explore a few things, then stop the fork, so her context stays clean. how well does the setup allow it — duplicated monitors, confusion with ccrow, composer and live lanes, will they mix up the real cclio and a fork? how to fork so the fork knows it is a fork and doesn't rush to do everything, and cclio isn't surprised — without him re-explaining «this is a cclio fork» to everyone each time.
 <!-- SECTION:DESCRIPTION:END -->
 
@@ -38,4 +39,6 @@ inbox 10-16, Q (relates to the monitors wisp, PK-152): he wants to fork cclio to
 2026-10-16 15:58: the plan critic said «revise» (5 findings, 3 high) — all folded into .scratch/fork-prior-art/plan.md, but folded without a check at the source, so each gets checked again at build time; ccrow's /clear catch (a /clear keeps the pid) folded as a pid match — still a premise until the /clear probe runs; the start line now prints the topic («🍴 fork <topic> started», dima's Q5); a /btw done line added (9 lines now). dima: «shaped» (o48). next: the build, then the probes, then his /btw test.
 
 dima 10-16 18:47: «fork-guard: next boot, not today»
+
+**waiting for:** the next boot (dima, 10-16 18:47: «fork-guard: next boot, not today»)
 <!-- SECTION:NOTES:END -->

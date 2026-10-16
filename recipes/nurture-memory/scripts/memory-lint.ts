@@ -23,6 +23,10 @@ const MEMORY = [
     '*AGENTS.md',
     'home/.claude/plugin-x/skills/*/SKILL.md',
     'cclio/plugin-cclio/skills/*/SKILL.md',
+    'home/.claude/plugin-x/skills/*/references/*.md',
+    'cclio/plugin-cclio/skills/*/references/*.md',
+    'home/.claude/agents/*.md',
+    'cclio/.claude/agents/*.md',
 ];
 const GROWTH = 1.15;
 const MERGED = /[\w.)»*]- [^\s-]|[^\s\d-]\d+\. \*\*/;

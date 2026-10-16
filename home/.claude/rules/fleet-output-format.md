@@ -161,7 +161,8 @@ file he names.
 ## questions, options, and the ➡️ cta
 
 - every question round ends with a ➡️ recommendation.
-- **one home for the next move**: an orbit ask holds it, one he ticks; nothing to ask → one ➡️ line; never both. a quick answer carries neither. <!-- cc -->
+- **one home for the next move**: an orbit ask holds it, one he ticks; never both. <!-- cc -->
+- nothing to ask → one ➡️ line; a quick answer carries neither.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
 - **with orbit switched off, a questionnaire dima fills in holds one item per line**, numbered `1.` `2.`: the item, the ➡️

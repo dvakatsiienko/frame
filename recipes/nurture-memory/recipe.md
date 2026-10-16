@@ -34,7 +34,7 @@ dima, 2026-08-27, the purpose:
 
 **this recipe is the sweep's script** (2026-10-11, after he printed the whole sweep plan a second time):
 
-> «make sure the memory sweep script is clearly defined in a recipe so it is not buried. it serves as the global plan outline for each memory sweep and evolves with the live sweep … after the sweep we do a retro on the actions we performed, refresh the script one more time at the very end, and seal it until the next memory sweep.»
+> «i printed the whole script again, which i shouldn't — we already did such a big sweep once. make sure the memory sweep script is clearly defined in a recipe so it is not buried. it serves as the global plan outline for each memory sweep and evolves with the live sweep: we refresh this recipe live as we gain new findings. that's why i asked you to log our memory sweep process as we go and trace it. after the sweep we do a retro on the actions we performed, refresh the script one more time at the very end, and seal it until the next memory sweep.»
 
 - his outline (10-12): trace the sweep → the full sweep → review, hunt drifts, fix → a retro on the trace: findings, mistakes, how this recipe improves → done; the trace-and-evergreen idea is his from run #1 (2026-08)
 - step 10 regrooms everything: a sweep moves a lot, so skipped files and the vertical rebalance are hunted at the end (10-16)
@@ -44,15 +44,15 @@ dima, 2026-08-27, the purpose:
 
 **delete-first** (his brief for run #2, 2026-10-07 in `_hq/memory-sweep.md`; what it means, 2026-10-12):
 
-> «i don't ask you to delete everything. the system should work, and our habits should stay. what i don't want in a memory is fluff or unnecessary info: it holds only the instructions i asked for, or instructions that help the fleet operate. nothing else — no duplicates, no unnecessary explanations.»
+> «i don't ask you to delete everything. the system should work, and our habits should stay. what i don't want in a memory is fluff or unnecessary info: it holds only the instructions i asked for, or instructions that help the fleet operate. nothing else — no duplicates, no unnecessary explanations. delete first is only about this.»
 
 - the tactic: delete first, see how it affects you, add back gradually, never aggressively; it covers memories, skills and recipes alike (10-07)
 - why memory bloats: the fleet mostly adds (retro and flawlog folds) and nothing reduces it, so the halt trims what it folds into (10-12)
-- a memory file is written for the agent, in the agent's format; dima operates it, so he owns it, peeks into it and edits it — it stays readable to him (run #1, 10-16)
+- a memory file is written for the agent, in the agent's format; dima operates the agent, so he is responsible for its memory — he peeks into it and edits it, and it stays readable to him (run #1, 10-16)
 
 **the weight**, re-asked every run (answered in `author-memory/references/memory.md`):
 
-> «… a 120k target is not realistic. **what do we do wrong?**» (run #1)
+> «what's the current best-practice target for the ctx size an llm needs to perform well? previously it was ~120k tok — the number after which performance starts to drop. what's the number now? which number to hunt? your current boot ctx is 115k, and after the first boot it becomes ~200k. a 120k target is not realistic. **what do we do wrong?**» (run #1)
 
 - is everything preloaded truly useful? (10-07: boot 117k, memory files 81.2k; run #2 ended near 60k)
 - how to teach agents to write and keep skills and memory, and who writes them better; `writing-for-agents` covers both
@@ -108,7 +108,7 @@ dima, 2026-08-27, the purpose:
 2. **research** — no write before it lands. first the snapshot diff, the cheapest: re-download anthropic's two pages as `.md`, `diff` against `docs/research/skill-authoring-best-practices/`, read only the delta, replace the snapshots. then the vectors, all lanes at once (`cclio:shape-recipe`). done: every lane landed or failed out loud. (template)
 3. **the knowledge distill** — into `x:author-memory` and every knowledge doc that steers memory and skill edits (`author-memory/references/skill.md` takes the skill mechanics and the evals prior art), concise without dropping a useful line. one layer per file: craft is `writing-for-agents`, these hold cc mechanics and our rules. every claim tagged [measured] / [read] / [inferred] with a version; one behind the running cc is re-probed or cut. stories go to a research doc with `dies-when`. a size budget in each file's frontmatter. done: every doc touched or «unchanged», bytes before and after logged. (open)
 4. **the vertical audit — which memories bleed the most**: the rank is `resident × never-used`, tokens at 2.89 chars/token, measured on disk (`/context` shows the boot snapshot). (template)
-   - **the mechanical pass**, code only: a closed `FRM-N` / `BYT-N` within 2 lines of open-state words (`tracks it`, `trial`, `awaiting`, `pending`; run #1: 12 flagged, 11 real) · a dead `@import` · barrel omissions both ways · a named rule, skill or doc that is gone · a named flag missing from `--help` · research past `dies-when`. it runs on commit: drift lands within a day. a naive path regex flagged 94 with ~2 real, so it stays out
+   - **the mechanical pass**, code only: a closed `FRM-N` / `BYT-N` within 2 lines of open-state words (`tracks it`, `trial`, `awaiting`, `pending`; run #1: 12 flagged, 11 real) · a dead `@import` · barrel omissions both ways · a named rule, skill or doc that is gone · a named flag missing from `--help` · research past `dies-when`. today `memory-lint` runs at commit (budgets, merged bullets); the rest of this pass runs here, by script, until each check joins it (PK-169). a naive path regex flagged 94 with ~2 real, so it stays out
    - **inventory and map** (his order, run #1): every memory file across repos → cc's default «go upd memory» asked twice, diff-based (right places? poems?) → the connection graph drawn from one script's numbers (sizes, pointers, inbound links, dead `rules/` pointers, the voice and format wiring) → the groom list, no edit before it. the connector pass (pointers, precedence, placement) stays apart from content pruning; an isolated leaf is where dima looks first
    - **the cruft pass**: a prompt audit (`/doctor prompt-audit`, terminal, dima types it; or the `claude-api` skill's per file), reused when it predates no big memory change, rerun at step 10 for the before/after. each prescriptive line (CAPS, «ALWAYS», a case list) gets the delete-test: the real ask in a fresh session with and without it, kept only if without is worse; the lines that failed print to dima as «where you restrict me too much», each beside what it blocked
    - **the trigger tag**: each section tagged `file-touch` (matters only when a kind of file is touched), `intention`, or `always`; a `file-touch` one is step 7's deferral candidate (a `paths:` rule loads on a read, `cat` or edit of a matching file, measured cc 2.1.296)

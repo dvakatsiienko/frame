@@ -14,7 +14,7 @@ craft (wording, triggers, pruning, leading words) is `mattpocock-skills:writing-
 
 ## where a line goes — audience decides, never topic
 
-the failure this prevents: a line landing where it was convenient instead of where it belongs (dima's word, 2026-10-16) — the widest bucket whose whole audience benefits:
+the failure this prevents: a line landing where it was convenient instead of where it belongs (cclio's phrase, dima's pick, 2026-10-16) — the widest bucket whose whole audience benefits:
 - root `CLAUDE.md` / `rules/` without `paths:` → every session pays for it, forever
 - `rules/` with `paths:` → a convention tied to a glob; an intention has no glob
 - a project `AGENTS.md` → wrong or meaningless in another repo
@@ -49,7 +49,7 @@ before the write: who needs it · what it costs resident · does it already exis
 - a gotcha stays in `SKILL.md`: the agent cannot know to open a reference for a trap it does not see coming
 - `disable-model-invocation: true` takes it out of the listing; never on a skill that must self-trigger
 - a quality step runs a validator loop
-- a description edit is proven by `claude plugin eval`, never by reading it
+- a description edit is proven by `claude plugin eval`, run only on dima's word (`rules/fleet-tooling.md`); until then it is labelled an inference, never proven by reading it
 
 ## a project AGENTS.md
 
