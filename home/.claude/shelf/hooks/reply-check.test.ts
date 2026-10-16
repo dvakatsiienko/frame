@@ -223,3 +223,51 @@ describe('the grill-drift rule', () => {
         expect(nextPrompt()).not.toContain('grill drifted');
     });
 });
+
+// a turn as transcript lines: the prompt, then one assistant message per call list, each with its result
+const turnWith = (...messages: { id: string; calls: { name: string; card?: string }[] }[]) => {
+    const path = join(mkdtempSync(join(tmpdir(), 'rc-')), 't.jsonl');
+    const lines: unknown[] = [{ message: { content: 'proceed', role: 'user' }, type: 'user' }];
+    for (const { id, calls } of messages) {
+        lines.push({
+            message: {
+                content: calls.map(({ name, card }) => ({
+                    input: card ? { subagent_type: card } : {},
+                    name,
+                    type: 'tool_use',
+                })),
+                id,
+            },
+            type: 'assistant',
+        });
+        lines.push({ message: { content: [{ type: 'tool_result' }] }, type: 'user' });
+    }
+    writeFileSync(path, `${lines.map((l) => JSON.stringify(l)).join('\n')}\n`);
+    return path;
+};
+const wishkeeper = { card: 'wishkeeper', name: 'Agent' };
+
+describe('the siesta freebie', () => {
+    it('reminds when the wishkeeper spawn is followed only by orbit and wrap-up', () => {
+        const t = turnWith({ calls: [wishkeeper], id: 'm1' }, { calls: [{ name: 'mcp__x-mod-stash__orbit' }, { name: 'mcp__ccd_turn__wrap_up' }], id: 'm2' });
+        stopAfter('siesta running.', t);
+        expect(nextPrompt()).toContain('start the siesta freebie');
+    });
+
+    it('passes a freebie started in the same message as the spawn', () => {
+        const t = turnWith({ calls: [{ name: 'Bash' }, wishkeeper], id: 'm1' }, { calls: [{ name: 'mcp__ccd_turn__wrap_up' }], id: 'm2' });
+        stopAfter('siesta running.', t);
+        expect(nextPrompt()).not.toContain('siesta freebie');
+    });
+
+    it('passes a freebie started after the spawn', () => {
+        const t = turnWith({ calls: [wishkeeper], id: 'm1' }, { calls: [{ name: 'Edit' }], id: 'm2' });
+        stopAfter('siesta running.', t);
+        expect(nextPrompt()).not.toContain('siesta freebie');
+    });
+
+    it('passes a turn with no wishkeeper, and a helper spawn alone', () => {
+        stopAfter('done.', turnWith({ calls: [{ card: 'helper-lite', name: 'Agent' }], id: 'm1' }));
+        expect(nextPrompt()).not.toContain('siesta freebie');
+    });
+});

@@ -216,6 +216,45 @@ def last_reply(path: str) -> str:
     return "\n".join(reversed(texts))
 
 
+BOOKKEEPING = ("mcp__x-mod-stash__", "mcp__ccd_turn__")
+
+
+def lone_wishkeeper(path: str) -> bool:
+    # a siesta's freebie starts beside the wishkeeper spawn: a turn whose last real tool call is the spawn skipped it
+    with open(path) as transcript:
+        lines = transcript.readlines()
+    calls: list[tuple[str, str, str]] = []  # (message id, tool name, subagent card)
+    for raw in reversed(lines):
+        try:
+            entry = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        message = entry.get("message") or {}
+        content = message.get("content")
+        if entry.get("type") == "user":
+            if not (isinstance(content, list) and any(isinstance(b, dict) and b.get("type") == "tool_result" for b in content)):
+                break
+            continue
+        if entry.get("type") == "assistant" and isinstance(content, list):
+            for block in reversed(content):
+                if isinstance(block, dict) and block.get("type") == "tool_use":
+                    card = (block.get("input") or {}).get("subagent_type", "")
+                    calls.append((message.get("id", ""), block.get("name", ""), card))
+    calls.reverse()
+    spawns = [i for i, (_, name, card) in enumerate(calls) if name == "Agent" and card == "wishkeeper"]
+    if not spawns:
+        return False
+    spawn_message = calls[spawns[-1]][0]
+    work = [
+        name
+        for i, (message_id, name, card) in enumerate(calls)
+        if (i > spawns[-1] or (message_id and message_id == spawn_message))
+        and not name.startswith(BOOKKEEPING)
+        and not (name == "Agent" and card == "wishkeeper")
+    ]
+    return not work
+
+
 def findings(reply: str) -> list[tuple[str, str]]:
     prose = FENCE.sub("", reply)
     found: list[tuple[str, str]] = []
@@ -261,6 +300,8 @@ def main() -> None:
     if prompted is not None and not is_rewind(path):
         prose = FENCE.sub("", reply)
         hits += [("stale-stamp", s) for s in stale_stamps(prose, prompted)]
+    if path and os.path.exists(path) and lone_wishkeeper(path):
+        hits.append(("lone-wishkeeper", "siesta"))
     if not hits:
         return
     os.makedirs(os.path.dirname(LOG), exist_ok=True)
@@ -273,6 +314,8 @@ def main() -> None:
             log.write(f"{stamp}\t{session}\t{where}\t{rule}\t{clean}\n")
     by_rule = lambda name: [snippet for rule, snippet in hits if rule == name]
     reminds: list[str] = []
+    if by_rule("lone-wishkeeper"):
+        reminds.append("wishkeeper ran alone — start the siesta freebie now (cclio:siesta step 2.2)")
     if by_rule("empty-reply"):
         reminds.append("the answer sat in a mid-turn block dima never sees — open this reply with it in full")
     if by_rule("wait-on-ccrow"):
