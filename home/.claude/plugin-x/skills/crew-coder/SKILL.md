@@ -86,18 +86,17 @@ brief says which, and when it does not, ask once, up front.
 «final» is a handshake: nothing merges before it, and it comes after your own review, once
 `x lane review <pr>` exits 0. when the last step is done, work this list in order:
 
-1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. on BYT-83,
-   running it found 3 of 8 real defects that five reviewers and 61 tests missed. a live proof that writes
+1. **run the thing** (the dna's «run the thing first»), and land one screenshot in the pr. running it once found 3 of 8 real defects that five reviewers and 61 tests missed. a live proof that writes
    shared pr state (the body, labels) is the verifier's; you prove locally.
 2. **`mattpocock-skills:code-review`** over the branch: matt's standards and spec review, the second angle
    beside the built-in review ci already runs. fix what it finds.
 3. **`coderabbit review --agent --base main`** (a main lane: `--committed --base-commit <base>^`), one run,
    while its free quota lasts (`coderabbit review --usage`); with none left, skip it
-   and say so — step 2 already gave the review. push.
+   and say so. push.
    steps 1–3 run on every assignment, main-lane ones included, before a verifier's first round.
 4. **with a verifier** named in the brief (`☕️ 🔎 <ticket> verify: #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a main lane: `main:<base sha>` and your local head sha, no pr url). it reads the ci reviewer for you; every reviewer thread is still yours to
-   answer on github, as `x-coder-cc`. fix what each round lists, push, run `x lane review <pr>` on the new head (exit 0: requested, running
+   answer on github. fix what each round lists, push, run `x lane review <pr>` on the new head (exit 0: requested, running
    or current; a refusal is the ci reviewer's 2-round cap, and dima's approval goes through cclio), then
    message «round N on <sha>»; the loop
    runs as the dna's pr pair says. your report on `clean` quotes the verdict object, the round count and
@@ -126,7 +125,7 @@ on diff lines.
 
 ## 5. talking
 
-- **ping on three events only**: blocked, a proposal for dima, done (`rules/fleet-flow.md`); acks and
+- **ping on three events only** (`rules/fleet-flow.md`); acks and
   «resumed» stay in your chat; the tags are `x:crew-dna`'s. a find dima would want rides the done ping, alone only when it changes the
   plan now; a push request rides the next ping. after a web ui change, the ping says `essentials: <n> pass, <m> fail` from the `x:browser-headless` run.
 - **to the coordinator**: ≤3 lines plus a pointer (the linear comment, the pr, a file).

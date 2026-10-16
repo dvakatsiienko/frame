@@ -37,7 +37,8 @@ line is in front of cclio every boot.
 
 - **reminders** (`memory/_reminders.md`) — a date or a condition: «in 2 days», «before we halt»,
   «when cc ships X, test it with me».
-- **pocket** (`~/frame/cclio/pocket/`) — the main carry-over across sessions, checked before linear. «after X, do Z» becomes a pocket item ordered right after X- **Linear** — the folding place for work with a shape.
+- **pocket** (`~/frame/cclio/pocket/`) — the main carry-over across sessions, checked before linear. «after X, do Z» becomes a pocket item ordered right after X
+- **Linear** — the folding place for work with a shape.
 - **watches** — every upstream thing we follow (a github issue or pr, a release feed, a page) is a watch in x-changedetector, `http://127.0.0.1:7390`, never a link kept in prose to re-fetch; cclio owns every watch (dima, 2026-10-16: «I lean towards yourself, but you have to properly shape your habit»):
   - the trigger is an upstream link met anywhere: a member's report or retro, a ticket body, a hazard or reminder line, his inbox — the watch goes in the same turn, after a `GET` shows it is not there yet
   - members never add one; a coder names the link in its done report (`x:crew-coder` § the report)
@@ -56,6 +57,8 @@ reminders, the monitor is the trigger.
 
 Working artifacts die the turn their job is done: resolved pocket items, scratchpad files,
 `/tmp` dumps from CLI heredocs.
+
+- **a background task dies the turn its answer is read** — a shell or an agent whose result folded gets `TaskStop` with its id that turn, and a check of the running list rides every siesta; only the standing pr and ci watches outlive their turn (10-16: a fork's research lane and a count shell sat «running» for hours after their answers landed)
 
 - 🚫 never destroy pending or ambiguous content (root `CLAUDE.md`, the invariant #8) — in doubt, mark done and
   ask at the halt.

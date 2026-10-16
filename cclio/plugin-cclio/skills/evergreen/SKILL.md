@@ -98,7 +98,8 @@ between. a release post on the project's blog beats the github release body when
 - **every borrow carries a tag**: `apply` — a revertible change on the fleet's side (a cc setting, a hook
   flag, an agent's frontmatter, a doc fact); `ask` — his tools, his money, or a workflow change
 - **every number on a card links its source**; a model price or limit is checked against
-  `x:crew-lead`'s `references/model-cards.md`, and a disagreement prints as ⚠️ on the card- **the rest is one count line per section** — `+ 14 more read, nothing to borrow`. an entry that did not update is never printed (dima
+  `x:crew-lead`'s `references/model-cards.md`, and a disagreement prints as ⚠️ on the card
+- **the rest is one count line per section** — `+ 14 more read, nothing to borrow`. an entry that did not update is never printed (dima
   2026-09-21: «if formulas didn't update, do not print them»). the apps lane obeys the same rule:
   a feature change is a 🟠 line with its facts, a rewrite or a capability we would use is a 🌟
   card with the borrow line.

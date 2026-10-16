@@ -2,7 +2,7 @@
 
 - **keep raycast in dev mode while you code**: run `pnpm dev` (`ray develop`) in the extension dir
   and leave it running for the whole job — every save rebuilds and reloads the command in raycast,
-  so dima sees each change live. stop it only at the end. a `ray build` alone registers nothing new.
+  so dima sees each change live. stop it only at the end.
   📌 first check whether one already runs — dima may have started it on his side: `ps -eo pid,command | grep 'ray develop' | grep -v -E 'grep|eval|zsh -c'` (your own shell's argv carries the pattern; the bracket trick alone matches yourself); a live one means you start nothing and stop nothing.
 - **the type gate is `pnpm typecheck`**, never `ray build` — ray bundles with esbuild and prints
   success over type errors.
@@ -14,7 +14,7 @@
   string is a valid raycast image source — flags and glyphs need no png.
 - a hotkey command that acts and vanishes closes with `popToRootType: PopToRootType.Immediate`, or the next press re-enters the warm view
 - everything a user reads is lowercase: the extension title, command titles, action titles, section headers, placeholders, toasts. identifiers, urls, currency codes and acronyms inside names («US dollar») keep their case.
-- a command `name` never starts with a digit: `ray develop` writes it into `raycast-env.d.ts` as a type name (`type 5hKick`), and `pnpm typecheck` dies on the generated file (`5h-kick` → `kick-5h`, 2026-10-08)
+- a command `name` never starts with a digit: `ray develop` writes it into `raycast-env.d.ts` as a type name (`type 5hKick`), and `pnpm typecheck` dies on the generated file (`5h-kick` → `kick-5h`)
 - a new extension registers only through one `ray develop`; raycast caches extension titles and icons until a relaunch
 - a `pnpm install` inside a non-workspace-member subdir climbs to the root and rewrites the root
   lockfile — a member joins `pnpm-workspace.yaml` or carries its own

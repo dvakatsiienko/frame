@@ -11,12 +11,8 @@ refinements. Binding when printing TypeScript — follow exactly, no freestyle.
 ## Core
 
 - Latest ECMAScript features, accepted-step members only — no proposals.
-
-## Every use site — the LSP tool
-
-A rename or «who uses X» starts with the `LSP` tool's `findReferences` (`ToolSearch select:LSP`
-first): the exact sites, re-exports and same-named strings told apart. grep follows for strings,
-docs and non-TS files.
+- **A rename or «who uses X» starts with the `LSP` tool's `findReferences`** (`ToolSearch select:LSP`
+  first): the exact sites, re-exports and same-named strings told apart.
 
 ## Naming
 

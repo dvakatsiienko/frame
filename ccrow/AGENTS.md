@@ -1,7 +1,6 @@
 # ccrow — cclio's parked adviser
 
-a long-lived session «🐦‍⬛ ccrow», a `--bg --remote-control` session cclio starts at boot (`pnpm ccrow:start`) and stops at the halt (dima o150, 2026-10-12: mods' hooks load under `--bg`, mods/engine.md; only a `--bg` board goes undrawn, and ccrow's 👀 line draws on cclio's card); a desktop tab is the fallback, that reads cclio's thread on a wake and returns one note
-or `none`. built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
+a long-lived session «🐦‍⬛ ccrow» that reads cclio's thread on a wake and returns one note or `none`: a `--bg --remote-control` session cclio starts at boot and stops at the halt, a desktop tab as the fallback (mods' hooks load under `--bg`, `mods/engine.md`; only a `--bg` board goes undrawn, and ccrow's 👀 line draws on cclio's card). built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
 silence bar, note shape, timing, holdout, the consult) is the `x:crew-adviser` skill, which
 `readCharter` sends as the boot prompt with its frontmatter cut — ccrow loads no plugins, so the
 skill reaches it as text. a contract change goes there, never here.
@@ -14,19 +13,18 @@ skill reaches it as text. a contract change goes there, never here.
   - `pnpm ccrow:keep-cache-hot` — the desktop-tab fallback: finds the tab by name and writes its 🔥 key.
   - `pnpm ccrow:stop` — `claude stop <jobId>`, switches 🔥 off, waits until the process is gone.
     it harvests nothing; the halt reads `notes.jsonl` and `verdicts.jsonl` itself.
-- a start is `--bg --remote-control` from `~/.local/state/ccrow/`, effort medium. that home is
+- a start is `--bg --remote-control` from `~/.local/state/ccrow/`. that home is
   outside frame, so the global `CLAUDE.md` loads and frame `AGENTS.md` does not; the global
   `rules/` are copied into the home's `.claude/rules/` at each start (see facts that bite).
 - 🔥 keep-hot is stash's own: once the registry lists ccrow, the start writes `hot:<sessionId>`
   into stash's store file. stash reads it again after `session.start` too (`register.tsx`, the `hot:` reads), so 🔥 turns on
-  once the key lands (FRM-335, Done).
+  once the key lands.
 - `pnpm ccrow:wake --transcript <cclio jsonl> [--mode day|systematic] [--precompact]` — gates
   (no `~/.local/state/ccrow/paused` file — cclio's checkpoint holds it; 30 min since the last wake, ≥10 cclio steps; `--precompact` waives the steps), copies the
   leaves named in `~/.local/state/ccrow/leaves.txt` plus the transcript delta into
   `packets/<id>/`, writes one line to ccrow's inbox socket, and leaves a detached `harvest.ts`
   to log the note. live from day 1 (dima, 2026-10-06; the 3 silent days were cut after day 1 proved the notes worth reading live); a silent phase would have the other arm answer the same
-  packet as a `claude -p` one-shot. ccrow runs opus 5.5 medium only (dima, 2026-10-13, the day alternation cut);
-  `wake` prints the restart line when it runs another arm, it never restarts ccrow.
+  packet as a `claude -p` one-shot.
 - `pnpm ccrow:decision` — cclio's `PreToolUse` hook on Bash, filtered by `if` to `gh pr merge*` and `claude *`
   (FRM-380). a merge or a `claude --bg` spawn gets a `mode decision` wake outside the gates (no 30-min gap, no step
   count, `lastWakeAt` untouched); a push to main gets none. the merge line carries `merge <repo>#<n> · verified · head ·
@@ -39,7 +37,7 @@ skill reaches it as text. a contract change goes there, never here.
   `mode decision` wake ending `proposal <path>`, the file whole under a `## proposal ·` block in the packet; it never
   waits, like a spawn, and any other file wakes nothing. one wake per proposal file per turn (o178): `decisions/proposal-<hash>.json` keys the
   turn by cclio's last prompt line, so a draft's later Edits stay quiet until her next prompt.
-- every packet opens with ccrow's ledger line (born in FRM-397, kept when its board strip was dropped): notes sent today, the holdout's next send in k (until the trial's `until:` in `docs/test-drive/ccrow.md`), the
+- every packet opens with ccrow's ledger line: notes sent today, the holdout's next send in k (until the trial's `until:` in `docs/test-drive/ccrow.md`), the
   last send's time, today's ok verdicts — `ledgerLine` in `lib.ts`
 - every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
   transcript; ccrow reads its tail only then.
@@ -54,7 +52,7 @@ skill reaches it as text. a contract change goes there, never here.
   the model, the run's cost, and `located` — whether its quote is really in the plan. accepted is a
   `ccrow:note-vet` on that id; the full review sits in `plans/<run>/review.json`.
 - `pnpm ccrow:note-vet ok|miss <note-id> <why>` — appends the verdict to `verdicts.jsonl`, keyed by
-  note id, waiting ≤60 s for a note harvest.ts has not logged yet (PK-113); `pnpm ccrow:unvetted`, cclio's Stop hook,
+  note id, waiting ≤60 s for a note harvest.ts has not logged yet; `pnpm ccrow:unvetted`, cclio's Stop hook,
   blocks her turn end once per «🔴 sent» note still without a verdict, naming the command; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
 - `pnpm ccrow:reconcile <note-id> <evidence>` — cclio's answer when her evidence contradicts a note (FRM-396): sends
   `reconcile <note-id>: <evidence>` to a `--bg` ccrow, or prints it for cclio to send with SendMessage by her registry name (a tab or a terminal resume), and leaves a
@@ -68,8 +66,7 @@ skill reaches it as text. a contract change goes there, never here.
 ## facts that bite
 
 - **a fixture run sets `CCROW_STATE_DIR`** to a temp dir: `lib.ts` reads every path from it, so no note, verdict or
-  run reaches the real `~/.local/state/ccrow/` (FRM-339; FRM-336's coder left 10 fixture notes there). a script that
-  spends runs with a stub `claude` on `PATH` (`state-dir.test.ts`)
+  run reaches the real `~/.local/state/ccrow/`. a script that spends runs gets a stub `claude` on `PATH` (`state-dir.test.ts`)
 - **the inbox socket takes newline-delimited json.** a frame with no `from_mode` is «no mode
   asserted», and a bypass session holds it unless `crossSessionInbound` is `accept` (probed
   2.1.291: the control logged «Held peer message … not delivered»).
@@ -92,7 +89,7 @@ skill reaches it as text. a contract change goes there, never here.
   one file shared by every session running stash; the hash is cc's own, so the newest matching file wins.
 - **the registry stores the name with its zero-width joiner as a space** («🐦 ⬛ ccrow»), so
   `findSession` matches the bare name, never a job id: a desktop tab has none, and a stored one outlived its session and sent the 10-09 16:18 wake to a stopped `--bg` ccrow.
-- **a desktop tab takes no socket line** (probed 10-09: a live tab with `crossSessionInbound: accept` let a line sit 60 s unseen); only the desktop's own `send_message` reaches it. so `wake.ts` sends to the socket only for a `--bg` ccrow (it has a job id); for a tab it parks the wake in `relay.json`; x-mod-stash in cclio's thread sends the line to ccrow's session id within a poll (`$.session.send`, no model) and marks it `isSent`, and cclio's `UserPromptSubmit` hook (`ccrow:relay`) then starts the harvester; an unsent wake stays parked and the next poll sends it — the old «forward this line» ask in her context is retired, the mod-sent wake proven live (ccrow, 2026-10-12 19:21)
+- **a desktop tab takes no socket line** (probed 10-09: a live tab with `crossSessionInbound: accept` let a line sit 60 s unseen); only the desktop's own `send_message` reaches it. so `wake.ts` sends to the socket only for a `--bg` ccrow (it has a job id); for a tab it parks the wake in `relay.json`; x-mod-stash in cclio's thread sends the line to ccrow's session id within a poll (`$.session.send`, no model) and marks it `isSent`, and cclio's `UserPromptSubmit` hook (`ccrow:relay`) then starts the harvester; an unsent wake stays parked and the next poll sends it
 - **the harvester polls the newest transcript in ccrow's project dir** (a `/clear` starts a new one) for the turn end after the wake line: `turn_duration` in a terminal, `stop_hook_summary` in a desktop tab, which writes no `turn_duration` (5 s,
   15 min deadline, a `timeout` note past it); `harvest.log` in the home records each run.
 - **a `claude -p` transcript has no `turn_duration`**: the one-shot's model id is read from its
@@ -102,3 +99,5 @@ skill reaches it as text. a contract change goes there, never here.
   (haiku probe, 2026-10-06); `total_cost_usd` is there too.
 - dates (`{today}`, the wake id) are local time; `wake.lock` keeps two hooks firing in one second
   from both passing the 30-min gate.
+
+<!-- CCROW_STATE_DIR: FRM-336's coder left 10 fixture notes in the real state dir; FRM-339 made it overridable, state-dir.test.ts holds it. -->

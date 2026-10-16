@@ -13,7 +13,7 @@ description: >
 The front door to humanize (dima, 2026-09-27: «writing-for-humans is an alias for humanize»): every run loads `humanize:ai-check` AND `humanize:humanize`, no condition, any length.
 
 The output is a message a real person reads without smelling a robot. Dima is the validator of
-record; detectors are directional signals only.
+record; detectors are directional signals only ([references/sources.md](references/sources.md)).
 
 ## The process
 
@@ -33,8 +33,8 @@ record; detectors are directional signals only.
 5. **Verify when the message matters** — job mail and anything with an audience. two lanes: `humanize:ai-check`'s forensic score first, then the manual
    gold gate — [pangram.com](https://www.pangram.com) (2,000 words/day free, the accuracy leader),
    run by Dima's hand, never automated. print lane 1, hand the draft to Dima; disagreement between
-   the two is itself signal. detector scores are directional, never pass/fail: light editing swings
-   every tool 15–30 points. Dima is the validator of record. This step alone may be
+   the two is itself signal; light editing swings
+   every detector 15–30 points. This step alone may be
    skipped for a two-line chat reply; step 4 never is.
 6. **Hand over fenced.** The final draft ships in a copy fence with a destination ribbon.
    Done when the reply's skills line names both `humanize:ai-check` and `humanize:humanize` — a
@@ -52,6 +52,5 @@ record; detectors are directional signals only.
 
 - Health updates and the gazette's outward texts may be proxied through this skill — Dima's
   standing word, given because the first health updates read «machinic».
-- The techniques and the detector landscape behind this skill: [references/sources.md](references/sources.md).
 - The voice corpus is Dima-owned: he refreshes [references/dima-voice.md](references/dima-voice.md)
   samples; agents fix only mechanical rot (dead links, renames) there.

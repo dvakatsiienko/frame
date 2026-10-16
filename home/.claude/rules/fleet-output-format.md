@@ -39,7 +39,7 @@ for colour, which the terminal cannot render.
 - `backticks` — system entities: files, paths, skills, commands, stores, code identifiers. also
   brand and product names (`linear`, `github`, `notion`), which stay lowercase; the backticks do the
   standing-out a capital used to do.
-- **bold** — key assertions, outcomes, decisions, numbers that matter, and peer and agent names.
+- **bold** — key assertions, outcomes, decisions, numbers that matter, and fleet names (§ emoji).
 - **a model always carries its version** — **Opus 5.5**, **Sonnet 5.5**, **Haiku 5.5**, **Fable 5.1**, read from the run (a transcript's `model` field), never a bare «opus» (dima, 2026-10-10: «especially when it is about a fleet»).
 - no italics.
 
@@ -60,10 +60,12 @@ an emoji is a **line prefix**, never inline decoration.
 - ⚠️ is reserved for a **live hazard**: something broken now, or an action that destroys work.
   spending it on ordinary caveats is what made it invisible.
 - mid-sentence emoji only when the emoji **is** the content.
-- **every fleet word prints bold, with its badge glued to it when it has one** — **✨ wisp**,
-  **🌤️ siesta**, **🌠 wish**, **🍀 freebie**, **lane** (dima's verdict after a thread trial, 2026-10-08: «bold
-  reads much better than non-bold for vibe keywords»). the badge never travels alone: a bare ✨ reads as
-  llm slop sparkles, «✨ wisp» reads as the bug list. the words and badges live in `rules/fleet-vibe.md`.
+- **every fleet name prints bold, its badge glued on when it has one, on every surface** — a fleet member, a
+  subagent card, a fleet word: **🐬 wishkeeper**, **🐝 researcher**, **🔧 coder**, **🍀 freebie**, **lane**
+  (dima's verdict after a thread trial, 2026-10-08: «bold reads much better than non-bold for vibe keywords»).
+  the scope is the two tables, never a list here: members and cards in `rules/fleet-identity.md`, words in
+  `rules/fleet-vibe.md` — a name born there is covered the day it lands. a member's name is never its launch
+  text. the badge never travels alone: a bare ✨ reads as llm slop sparkles, «✨ wisp» reads as the bug list.
 - **picking an emoji for anything** — `x:top-seven`; his favourites below lead every emoji pick. his set (handpicked, 2026-10-08): 🐋 🐬 🐠 🫍 🦈 🐆 🪶 🐉 🐦‍🔥 🪸 🌼 🌻 🌞 🌘 🌗 🌔 🪐 💫 💨
   🛼 🫟 🎑 🌠 🌌 🧞‍♂️ 🦅
 
@@ -177,9 +179,7 @@ file he names.
 - **shape**: `🔭 waiting on <who>`, nothing more — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70)`; the band shows this line, so how the answer arrives stays out.
   - a thing with a page is a link labelled with an emoji and a short word
   - several holders share one line and one «waiting on», split by commas — `🔭 waiting on **🐬 wishkeeper**, **🐝 researcher**, **🙋‍♂️ dima**` · until: PK-160, the band merges them itself
-  - a member is bold with its role emoji, no link: **🦉 cclio**, **🔧 coder**, **🔎 verifier**,
-    **🎨 designer**, **🐝 researcher**, **🧪 probe**, **☁️ cloud**, **🤝 cw**, **🎼 composer**
-  - a subagent is bold with its badge and name from `fleet-identity`, never its launch text: **🐬 wishkeeper**
+  - a member or a subagent prints as § emoji says, no link
 
 ### 🪐 open asks — orbit
 - asks go to orbit, never into a reply: `rules/fleet-mods.md` holds orbit, phases and the other mods.

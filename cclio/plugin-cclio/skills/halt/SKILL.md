@@ -22,7 +22,8 @@ one short message, then straight into phase 1:
   has outlived a halt before; `claude agents --json` is the check, never memory. **a coder the CST
   calls «warm» is verified alive at write time** (a registry entry in `~/.claude/sessions/` +
   `kill -0 <pid>`) and written as dead when dead. **ccrow is on the roster too** — its stop is phase 5's last line, named in this
-  plan so it is not lost- sort each into **can land now** (small, finishable here) · **must park** (needs a resume
+  plan so it is not lost
+- sort each into **can land now** (small, finishable here) · **must park** (needs a resume
   note) · **already done**
 - state the order you are taking, as a fact rather than a proposal
 

@@ -14,16 +14,7 @@ source file is newer.
   global flags, the exit codes and the usage line are derived (`go/registry.go`).
 - its run binds by name in `impls` (`go/main.go`); a verb in one and not the other fails a test.
 - `needsApply: true` for a verb that publishes or destroys: it splits into `Plan` and `Apply`; dispatch
-  exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal; why, and the
-  shape a new exception needs: `docs/adr/X-0003`.
-  three verbs skip it, each because its own check guards it:
-  - the `handoff` verbs delete without it — the store is disposable by contract (ADR-0002), every
-    removal goes to the macos trash, and the envelope names each file it took
-  - the `linear` writes (`body --set`, `set`, `link`, `comment`, `update`) go out in one call — the
-    stale check, the printed actor and linear's own history guard them; `linear archive` destroys
-    from the board's view and keeps `--apply` (FRM-344, dima 2026-10-07)
-  - `lane review` re-adds the review label without it — it acts only on a stale verdict under the
-    cap, which are its own checks, and the coder's «final» runs it as one call (FRM-355)
+  exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal. three skip it, each guarded by its own check: the `handoff` verbs, the `linear` writes (`linear archive` keeps `--apply`), `lane review`; the reasons, and the shape a new exception needs: `docs/adr/X-0003`.
 - a verb that took over a script names it in `replaces:`; `replaces_test.go` stays red while that
   file exists or any tracked file outside history names it. `touches:` names what the verb reads or
   writes outside the repo; `x schema` prints both.
@@ -44,12 +35,12 @@ source file is newer.
 
 ## keys
 
-- `go/keys.go` is the one place a token comes from; each secret is read where it lives: dima's linear key in 1password (`op read`, the `x-fleet` service account — never `op run`, it masks stdout), the cclio/coder oauth pairs and the github app keys in the macos keychain. minted app tokens cache in the keychain, written through `security -i` on stdin so no value reaches argv; dima's key is never cached (his word, 2026-10-07).
+- `go/keys.go` is the one place a token comes from; each secret is read where it lives: dima's linear key in 1password (`op read`, the `x-fleet` service account — never `op run`, it masks stdout), the cclio/coder oauth pairs and the github app keys in the macos keychain. minted app tokens cache in the keychain, written through `security -i` on stdin so no value reaches argv; dima's key is never cached.
 - tests: `X_KEYS` names a json fixture standing in for both stores (`keychain:<service>:<account>` or `op://…` → value); `X_LINEAR_URL` / `X_GITHUB_URL` point the mints, and the `linear` and `gh` reads, at a fake server. under `X_TEST` a missing `X_KEYS` is an error, so no test reads the real keychain.
 
 ## verify
 
-the checks the FRM-340 verifier built by hand; a verifier or coder on `x` starts from these.
+the checks a verifier or coder on `x` starts from.
 - **a red test whose cause is not in the diff** is stepped through with delve before a print goes in: the headless recipe is `x:guide-go` § delve (no x verb: a one-line recipe fails the admission rule).
 - **a «no free text» exit line** is proven against hostile argv, never one example: an unknown `-word`, a bare `-`, words after `--`, free text in an id-named arg, a quoted multi-word arg as zsh `${(z)}` splits it, a flag value equal to a verb name.
 - **the zsh hook** is proven in a real `zsh -i` on a pty (python `pty` + a temp `ZDOTDIR`) with another `precmd` registered first, so `$?` reaching the hook is checked — calling `_x_trace_preexec` by hand proves nothing about firing.
@@ -81,12 +72,11 @@ the checks the FRM-340 verifier built by hand; a verifier or coder on `x` starts
   sees the files as unchanged). so the locked set is read again after it, and each file still locked
   is removed and checked out, only while its raw bytes equal its index blob.
 - `lane commit` formats the named paths with the repo's biome before staging — the commit hook only reports, so this is the one place a format writes
-- `lane commit` waits out a peer's `index.lock` before its `add` and its `commit`, up to `lockWait` (30 s), and once more on a lock race right after; a lock past the wait fails naming its path and age and stays where it is — the verb never deletes one. `X_LOCK_WAIT` shortens the wait under `X_TEST` only
+- `lane commit` waits out a peer's `index.lock` before its `add` and its `commit`, up to `lockWait` (30 s), and once more on a lock race right after; a lock past the wait fails and stays — the verb never deletes one (`FTR.md`). `X_LOCK_WAIT` shortens the wait under `X_TEST` only
 - `lane commit` on main runs the ci jobs for the touched paths after the hold, before the hooks: `go test ./...` per go module a path sits in, the repo's `pnpm typecheck` + `pnpm test` for a `.ts`/`.tsx`. a pr branch skips them — ci sees it before main does
 - `lane push` tries again on a 5xx — curl's `returned error: 5xx` over https, github's `Internal Server Error` over ssh — up to 3 tries; a 4xx or a hook refusal fails on the first
 
 <!-- moved from frame AGENTS.md in the 2026-10-11 sweep -->
-- **the by-hand worktree unlock**: a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`, and `x lane seed <path>` runs that same hook on a hand-made tree (unlock, mod types and tsconfigs, install); doing it by hand, a `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, `x lane unlock` — the unlock with both filters off (it runs `git status`, which dies on the clean filter; the chords-run probe, 2026-09-27), plus the remove + checkout per still-locked file from the `lane commit` line above (FRM-285). a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe ONLY after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob — same ciphertext, nothing plaintext can be staged
+- **the by-hand worktree unlock**: a git-crypt repo keeps its key in the main `.git`, never under `.git/worktrees/<n>/`, so a fresh worktree holds ciphertext and **even a pathspec `git add` dies on the clean filter** (the index refresh runs it over every locked file). `EnterWorktree` trees are unlocked by `shelf/hooks/worktree-seed.sh`, and `x lane seed <path>` runs that same hook on a hand-made tree (unlock, mod types and tsconfigs, install); doing it by hand, a `git worktree add` takes `-c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`, then, inside the tree, `x lane unlock` — the unlock with both filters off (it runs `git status`, which dies on the clean filter), plus the remove + checkout per still-locked file from the `lane commit` line above. a tree still locked: `git -c filter.git-crypt.clean=cat -c filter.git-crypt.required=false add|commit` is safe only after `git hash-object --no-filters <locked file>` equals its `git ls-files -s` blob — same ciphertext, nothing plaintext can be staged
 
 `PRODUCT.md` (the want, what x is not) · `FTR.md` + `GLOSSARY.md` — read your section before changing what x does.
-- the shim (`home/.local/bin/x`) rebuilds from the working tree when a source file is newer, so an uncommitted go edit is live for every session at once: land an `x/go` change fast, or build it in a worktree (arm A, 2026-10-12)

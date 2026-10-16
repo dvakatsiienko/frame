@@ -89,7 +89,8 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
   the worst outcome. a foreground call holds the turn open, so ccrow's note drains in at the next tool round.
   its brief also asks three checks: every CST first-act sits in the board's plan; every question of his is
   answered on the board, never only routed to a pocket item; the board carries the stuck reminders and the
-  roadmap + bytes line- ccrow's note not in when wishkeeper returns → wait on her notes file, deadline 5 min:
+  roadmap + bytes line
+- ccrow's note not in when wishkeeper returns → wait on her notes file, deadline 5 min:
   `until [ "$(wc -l < ~/.local/state/ccrow/notes.jsonl)" -gt <count before the write> ]; do sleep 5; done`;
   past the deadline the board says «ccrow silent»
 - fix every finding of both, then print the board (dima, 2026-10-13: «gather everything, fix their findings, only then print the report») — the boot's first and only reply. nothing prints
@@ -99,11 +100,13 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
 the board, one message, short lines, **no queries here — pure assembly**:
 - «hey <model> here» (the root claude.md rule)
 - healthcheck verdict (one line if green)
-- 📝 `flawlog: <path>` — the day's file from step 8, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 8 shows as a missing line- ⏰📌 stuck and due ⏰ reminders, own line each (omit if none)
+- 📝 `flawlog: <path>` — the day's file from step 8, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 8 shows as a missing line
+- ⏰📌 stuck and due ⏰ reminders, own line each (omit if none)
 - inbox status · handoffs pending · pocket depth + top item
 - 🎼 `inbox prep: <score>/100 (raw <n>)` — its own line while `docs/test-drive/composer-inbox-prep.md` is live
 - 🧭 `roadmap step <n> <name> | bytes: last touched <date>, next touch <when or none>` — `dima-strategy`'s two
-  report rules, on every board- 📋 the proposed processing order — a numbered session plan, one line per item, with a
+  report rules, on every board
+- 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
   2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), lanes marked, sub-batches labeled;
   **the board ends here and waits for dima's word.** he corrects the parse before any work runs

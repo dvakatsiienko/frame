@@ -97,8 +97,7 @@ losing variant's line is deleted.
 
 ## update — every change to what the app does
 
-- lines and `GLOSSARY.md` words change in the same pr as the code (on main: the same commit); `x lane commit`
-  stamps «ftr: none» on a commit that skips it, so the stamp is a question, never a pass: a new
+- lines and `GLOSSARY.md` words change in the same pr as the code (on main: the same commit): a new
   feature adds its 🧭 line, a changed behaviour edits its given/when/then, a removed feature
   deletes its line, a new or shifted domain word updates its `GLOSSARY.md` entry.
 - status flips once, in the pr's last commit: each line whose check now passes in the verify
@@ -115,7 +114,7 @@ losing variant's line is deleted.
   the ask may add steering lines on top; product behaviour never lives only in ticket prose.
 - the verifier checks each line, its status, that its `makes:` output exists as written, and
   that every domain word the line uses is defined.
-- at close, cclio greps the pr's commits for `ftr: none`: each hit gets one question — «no feature
+- at close, cclio greps the pr's commits for `ftr: none` (`x lane commit` stamps it on a skip; a question, never a pass): each hit gets one question — «no feature
   changed?» — before the merge.
 - no map → hand-written exit lines, and the app's `AGENTS.md` carries `map: none — <reason>`
   (not drafted yet, or none by choice).

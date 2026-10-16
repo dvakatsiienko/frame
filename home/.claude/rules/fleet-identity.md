@@ -28,7 +28,7 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
   exchange.
 - ☁️ **`cc cloud`** — Claude Code on Anthropic's machines, on a test drive (`docs/test-drive/cc-cloud.md`, `x:crew-cloud`).
 
-## the subagents — in-process cards, spawned by name (`Agent` tool); no prefix, the badge + bold is the differentiator in text
+## the subagents — in-process cards, spawned by name (`Agent` tool); no prefix; they print per `fleet-output-format` § emoji
 - any member spawns one; any `Agent` call loads `x:crew-subagent` first (which card, what effort, how wide to fan out). every card runs without fleet memory (`omitClaudeMd`) and lives in `home/.claude/agents/` (wishkeeper: `cclio/.claude/agents/`)
 - 🐝 **`researcher`** — opus 5.5: a bounded research question answered from sources into one file.
 - 🐜 **`helper`** — sonnet 5.5 medium, `x:guide-code` preloaded: mechanical, fully specified jobs; several may run at once; loads the code guides its job's files need.

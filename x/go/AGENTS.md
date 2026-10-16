@@ -13,7 +13,7 @@ fleet sees whether the page earns its place.
 
 - `pnpm x-go:build` → `bin/x` (gitignored); the shim `../bin/x` runs the same build itself when a
   source file is newer. It pins `srcDir` to this dir: the binary finds the frame tree from there
-  (the token wrap for `pr-open`, the knowledge shelf), so a moved copy without the pin cannot.
+  (the token wrap for `pr-open`, the knowledge shelf), so a moved copy without the pin cannot. an uncommitted go edit is live for every session at once through the shim: land an `x/go` change fast, or build it in a worktree.
 - the shim also pins `devBuild=1` when `x/go` differs from its merge base with `origin/main` (an edit, an untracked file,
   an unpushed commit), so the trace marks the build a **dev build**; `pnpm x-go:build` never pins it,
   and the pin lasts until the next rebuild — a push alone does not clear it.
@@ -39,8 +39,6 @@ fleet sees whether the page earns its place.
   picker) is measured before it runs and wiped after (`runForm`); a form whose height moves
   (inputs, validation errors) takes the alt screen (`runFullScreen`).
 - `go-runewidth` below v0.0.30 spends ~13 ms at init on two 1.1 MB tables; keep it ≥ v0.0.30.
-- anything taller than the terminal is a `bubbles/viewport` pager on the alt screen, only when
-  stdin and stdout are both a terminal; q leaves.
 - a wait gets a `bubbles/spinner` in the family colour, with the elapsed time after 1 s; the
   spinner's view goes empty on done and the still line takes its place.
 - `lipgloss.HasDarkBackground` is a terminal round trip — compute the theme in the human view only.
