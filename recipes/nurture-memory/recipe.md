@@ -21,120 +21,96 @@ grooms the fleet's memory and skills: root `CLAUDE.md`, `rules/`, `~/projects/AG
 
 ## the want
 
-dima, 2026-08-27:
+dima, 2026-08-27, the purpose:
 
-> «i want the fleet memory system to be pristine. every bit of memory should live in its place
-> vertically. the memory must not be a poem, nor bytecode. as slim as possible to do its
-> job, natural for me to sometimes peek, trim, tweak. primarily maintained by the fleet. no
-> useless, stale memories. i am the owner overall, the carrier of the ideas. skill-wise: same.»
+> «i want the fleet memory system to be pristine. every bit of memory should live in its place vertically. the memory must not be a poem, nor bytecode. as slim as possible to do its job, natural for me to sometimes peek, trim, tweak. primarily maintained by the fleet. no useless, stale memories. i am the owner overall, the carrier of the ideas. skill-wise: same.»
 
-the checkup, his idea in run #1's plan (2026-08), so he never prints a checkup plan again:
+**why the sweep is worth its cost** (2026-10-16):
 
-> «what do you think about creating a major cc system checkup based on this run? enable tracing at
-> the start (fresh sess), and in parallel to all other activities, write / evergreenify the checkup
-> plan — and fix-improve it in place as we go and make new discoveries?»
+> «memory sweep by itself is a very important operation because it is about creating a high-quality driver for you, which is your memory and skills, but it's also expensive to run. that's why it has to be in pristine shape.»
 
-dima, 2026-10-11, after printing the whole sweep script a second time:
+- it wants a lot of his attention, so it runs as efficiently as it can: the trace and the retro exist to catch its mistakes and sharpen this recipe
+- memory may grow, but only with useful lines; a guard that stops growth asks for a regroom first, never forbids the add (10-16)
 
-> «i printed the whole script again, which i shouldn't — we already did such a big sweep once. make sure the memory sweep script is clearly defined in a recipe so it is not buried. it serves as the global plan outline for each memory sweep and evolves with the live sweep: we refresh this recipe live as we gain new findings. that's why i asked you to log our memory sweep process as we go and trace it. after the sweep we do a retro on the actions we performed, refresh the script one more time at the very end, and seal it until the next memory sweep.»
+**this recipe is the sweep's script** (2026-10-11, after he printed the whole sweep plan a second time):
 
-dima, 2026-10-07, his brief for run #2 (`_hq/memory-sweep.md` in the vault):
+> «make sure the memory sweep script is clearly defined in a recipe so it is not buried. it serves as the global plan outline for each memory sweep and evolves with the live sweep … after the sweep we do a retro on the actions we performed, refresh the script one more time at the very end, and seal it until the next memory sweep.»
 
-> «i don't expect the data to only grow. think critically and suggest deleting data that produces no value and doesn't make the fleet faster and better — no dead weight. it applies to everything we process: memories, skills and recipes.»
+- his outline (10-12): trace the sweep → the full sweep → review, hunt drifts, fix → a retro on the trace: findings, mistakes, how this recipe improves → done; the trace-and-evergreen idea is his from run #1 (2026-08)
+- step 10 regrooms everything: a sweep moves a lot, so skipped files and the vertical rebalance are hunted at the end (10-16)
 
-> «overall tactic: let's aim for delete-first. i started maintaining cc memory 1.5–2 years ago, and a lot has changed since. this sweep i'd rather try it: intend to delete first, see how it affects you, then add back gradually. it relates to the note where the recent anthropic 5.5 models were marketed as "not compatible with old memory setups". let's unload the memory as much as possible and keep only the overall, what relates to what i want. if some details drop and you start behaving differently from what i want, that's fine, we'll tweak the memories. tldr: prefer zipping/deleting. not too aggressively though.»
+> «a final retro step of a memory sweep is not less important than the memory sweep itself because it settles the next memory sweep.» (10-16)
 
-> «how to optimize your init so you weigh less. is everything you preload truly useful?» — measured 2026-10-07: cclio on boot 117k of 1m tokens, memory files 81.2k, skills 8.2k
 
-dima, 2026-10-12, on what delete-first means, since it sounds dangerous:
+**delete-first** (his brief for run #2, 2026-10-07 in `_hq/memory-sweep.md`; what it means, 2026-10-12):
 
-> «i don't ask you to delete everything. the system should work, and our habits should stay. what i don't want in a memory is fluff or unnecessary info: it holds only the instructions i asked for, or instructions that help the fleet operate. nothing else — no duplicates, no unnecessary explanations. delete first is only about this.»
+> «i don't ask you to delete everything. the system should work, and our habits should stay. what i don't want in a memory is fluff or unnecessary info: it holds only the instructions i asked for, or instructions that help the fleet operate. nothing else — no duplicates, no unnecessary explanations.»
 
-> his two reasons: «our memory was bloated because you mostly only add into memories and skills — folding the lanes' retros and the flawlog — and no mechanism reduces it; that's why the halt now also grooms and trims the places you fold into.» and «the anthropic 5.5 release: its memory and skill docs suggest dropping much old memory — the restrictions, the capitals, the yelling; a study cut the cc system prompt by a large share, and performance did not drop, maybe even grew.»
+- the tactic: delete first, see how it affects you, add back gradually, never aggressively; it covers memories, skills and recipes alike (10-07)
+- why memory bloats: the fleet mostly adds (retro and flawlog folds) and nothing reduces it, so the halt trims what it folds into (10-12)
+- a memory file is written for the agent, in the agent's format; dima operates it, so he owns it, peeks into it and edits it — it stays readable to him (run #1, 10-16)
 
-dima, 2026-10-12, the run's outline:
+**the weight**, re-asked every run (answered in `author-memory/references/memory.md`):
 
-> «1. the nurture-memory script tells you to trace the memory sweep process, for the retro at the end. 2. the full sweep. 3. once the full sweep is done: review, hunt drifts, fix them. 4. then a retro on the sweep's trace file: what were the interesting findings, what were the mistakes, and how to improve the nurture-memory recipe so future runs go better. 5. then done.»
+> «… a 120k target is not realistic. **what do we do wrong?**» (run #1)
 
-dima, 2026-10-11, on anthropic's «older skills are often too prescriptive … consider removing older instructions if default performance is better»:
+- is everything preloaded truly useful? (10-07: boot 117k, memory files 81.2k; run #2 ended near 60k)
+- how to teach agents to write and keep skills and memory, and who writes them better; `writing-for-agents` covers both
 
-> «it is true — i indeed restrict you too much. some restrictions are also true, but i am myself interested in where i restrict you too much. by removing some constraints from view, you can operate more fluently. … i would be interested to explore loosening your permissions via this recommendation.»
+**his standing calls**
+- between sweeps: the halt's redundancy hunt (`cclio:halt` 3a, 10-07), the size budget and `memory-lint` at commit, and a weekly memory pass on Wednesdays after evergreen (10-16) — so the sweep stays an audit, never a rescue
+- what the cuts never touch (10-11): output format, emoji, the main flow frameworks
+- `writing-for-agents` fires first rather than proxying the research; no skillsmith ([DOT-132](https://linear.app/x-com/issue/DOT-132)); the enforceable ruleset is [DOT-127](https://linear.app/x-com/issue/DOT-127)
+- no hook forces skill loads (08-25)
+- cw: cc is the source of truth, cw a derived view, kept by hand, short and pretty (10-02)
+- a check that fires often is a root to fix, never a turn to repeat (10-02)
 
-his spec for what a memory file holds, run #1 (2026-08), after «i don't need 90% of it, it only overwhelms me. i'll tell you when i want it expanded.»:
-
-> info that is useful to **you**, in a format appropriate to **you**
-
-his questions, run #1, answered in `author-memory/references/memory.md` and re-asked every run:
-
-> «what's the current best-practice target for the ctx size an llm needs to perform well? previously it was ~120k tok — the number after which performance starts to drop. what's the number now? which number to hunt? your current boot ctx is 115k, and after the first boot it becomes ~200k. a 120k target is not realistic. **what do we do wrong?**»
-
-> «how do you teach agents to properly write and maintain skills and memory?» · «who is better at writing skills and mems — a human or an agent?» · «writing-for-agents most likely is only good for skills» (answered by his own verdict below: it covers both)
-
-dima, 2026-10-16, on why the run must be efficient and why step 10 and its retro matter as much as the sweep:
-
-> «memory sweep by itself is a very important operation because it is about creating a high-quality driver for you, which is your memory and skills, but it's also expensive to run. that's why it has to be in pristine shape.» · «memory sweep is a big and expensive recipe that wants a lot of my attention and effort. because of this, it has to be as efficient as possible. that's why I've asked you to trace how we do memory sweep during the entire process. that's why we have a retro over it to catch mistakes and inefficiencies, think, and maybe even grill how to make the nurture memory recipe better and sharpen and smoothen it for the next run.»
-
-> «step 10 is important because it will allow us to catch drifts and mistakes we might make during the memory sweep.» · «while doing a drift check, we should also review if we maybe forgot to groom some items (e.g. skipped ones), and see if we vertically rebalanced memory across skills and memories. when we do a memory sweep, we change a lot, and the memory system and skill system state at the start of the memory sweep might be different from what it will be at the end. a final vertical rebucketing check is also important.» · «a final retro step of a memory sweep is not less important than the memory sweep itself because it settles the next memory sweep.»
-
-> on run #2 (traced 10-11 → 10-16): «it is actually hard to measure how much time we spent on memory sweep because we did a lot of additional chores in parallel and switched our context to different stuff, like lane modes. our distractions were actually useful — we created a lot of mods and solved a lot of other operational stuff, so it's fine and natural.» and «our current memory sweep was pretty chaotic and destructive, and we switched a lot to different stuff while pausing memory sweep for even a few days, like with mods lanes.»
-
-his standing calls:
-- between sweeps: `cclio:halt` phase 3a, «the redundancy hunt» (dima, 2026-10-07)
-- what the cuts never touch (2026-10-11): «i'm interested in memory cuts, but i want to keep things like output format, emojis, and other stuff, and our main flow frameworks. let's see what we can remove without breaking our flow or making your output ugly.»
-- `writing-for-agents` covers memory files and skills, and fires first rather than proxying the research («no, make it fire first»); no skillsmith ([DOT-132](https://linear.app/x-com/issue/DOT-132)); the enforceable ruleset is [DOT-127](https://linear.app/x-com/issue/DOT-127)
-- no hook forcing skill loads: «what if i want you to surely run x10 skills? bloat settings.json with hardcode? meh» (2026-08-25)
-- cw: «it is manual now and no longer automated» (the bridge recipe retired, 2026-10-02) · «cc is the source of truth, generally. cw memory is a derived view, never the origin.» · «i don't want a mess there» · «memory must be pretty» · «no poems!»
-- a check firing often is a root to fix (2026-10-02): «if it triggers too much on a repeating answer, it forces you to do additional turns … if a certain assert repeats a lot, then it needs to be fixed instead»
-
-skills, dima, 2026-10-11 (the want of the old `nurture-skills`, merged here on his word, 2026-10-13):
-
-> «then do the same with skills: review each skill and groom, trim, cut, and rebalance the info load across the other parts where it makes most sense.»
+**skills** (2026-10-11, the old `nurture-skills`, merged here 10-13): every skill reviewed, groomed, trimmed, its load rebalanced, shaped by our skills knowledge:
 
 > «i want all skills to be lean and clear, while not conflicting with resident memory.»
 
-> «skills should be shaped via the best practices defined in our skills knowledge.»
-
-his standing calls on skills:
-- a skill nobody fires that costs context is a prune candidate before any hillclimb (2026-10-06)
-- `x:author-memory` stays one skill, with references `memory.md`, `memory-project.md` and `skill.md` (2026-10-13)
-- `claude plugin eval` is wanted, but no eval runs at all until his $200 plan: «evals blow ctx too quickly» (2026-10-13, 20:03; it replaced his same-day call to run evals on a free quota window)
-- «when the skills groom phase is reached, one of the first actions is to find and delete obviously unneeded skills: stray test-drive leftovers, dated ones, ones i don't like, ones that never proved themselves. scan the marketplace the same way: keep only skills, plugins and mods proven useful. include project-scoped skills, they are easy to miss.» (2026-10-14)
-- «have only what proved to be useful» — skills, memories, tools (2026-10-14)
+- the groom opens with the prune: stray test-drive leftovers, dated ones, ones he doesn't like, ones never proven; the marketplace and project-scoped skills too — only what proved useful stays (10-14)
+- a skill nobody fires that costs context is a prune candidate before any hillclimb (10-06)
+- `x:author-memory` stays one skill with references `memory.md`, `memory-project.md`, `skill.md` (10-13)
 
 ## the run
 
-- **trace as you go**, two kinds, the same turn (dima, 2026-10-12): every action lands as one line at the end of the sweep's run file (`docs/test-drive/memory-sweep.md`) through `scripts/memory-trace-append.sh "<what>"`, which stamps the clock and refuses a hand-written stamp or a repeated line (run #2: 4 composed clocks, a doubled line) — a step with no line did not run, and run state never lives in chat; and a round that shows a flaw class, a mistake or a tip adds one line to that file's `## findings` — the patterns of bad memory to hunt next time, what went wrong, what made the sweep faster. step 10's retro reads `## findings` first. `last/groom-list.md` (born at step 4) holds one line per memory file with its state, flipped the turn its step lands.
-- **re-entry, at every start and every resume** (a boot, a checkpoint, a compaction), before any groom (dima, 2026-10-11, after a run groomed 27 files «read whole, unchanged» with the guides out of context: «16k tokens is cheap next to redoing 50 files» — cclio's line, his verdict):
+- **research first, every run** (dima, 2026-10-16: runs are months apart and the docs move daily, so a run opens on fresh research and never skips it): step 2 lands before any write
+- **scope**: the groom list holds every memory file; a file unchanged since the last seal (`git tag memory-sweep-<n>`, set at step 10's end) gets the lenses the research changed, a file churned since then gets all of them — churn is where the rot is
+- **trace as you go**, the same turn: every action is one line in the run file (`docs/test-drive/memory-sweep.md`) through `scripts/memory-trace-append.sh "<what>"`, which stamps the clock and refuses a typed stamp or a repeat; a step with no line did not run, and run state never lives in chat. a flaw class, a mistake or a tip adds one line to that file's `## findings`, which step 10's retro reads first. `last/groom-list.md` (born at step 4) holds one line per file, flipped the turn its step lands
+<!-- run #2: 4 composed clocks and a doubled line before the script -->
+- **re-entry, at every start and resume** (a boot, a checkpoint, a compaction), before any groom:
   1. the standard boot: `cclio:boot`, every member woken, «checkpointed» said
-  2. read WHOLE, never skimmed: this recipe · `mattpocock-skills:writing-for-agents` · `x:author-memory` (its SKILL.md and all three references) — they are this recipe's research distilled, the lens every file is groomed through
-     **why whole, every time — the trap is the reflex that skips them.** the guides look long and the next edit looks small, so reading them feels like overhead. it is the work: they hold 5–10 research rounds and dima's video folds from months, and without them in context a groom checks pointers and cuts nothing. measured 2026-10-11: 27 files passed «read whole, unchanged», the resident drop came only from one lucky cut, and 50 files had to be reopened. ~16k tokens of reading is cheap next to redoing 50 files — cclio's own line, dima's verdict: «it very precisely describes the reason to read these guides before a memory sweep»
-  3. the state: `last/groom-list.md` and the last lines of `docs/test-drive/memory-sweep.md`; then the sweep, with all of it in context
-- **the goal is the smallest form that does its job** (the want: «as slim as possible … no useless, stale memories»): a groom that checks for staleness and pointers but cuts nothing has not run; size is measured on every file
-- **delete-first** (the want, 2026-10-07 and 2026-10-12): a line stays when it is an instruction dima asked for or one that helps the fleet operate; fluff, a duplicate or an explanation goes, and a behaviour that drifts afterwards earns its line back. it never cuts a working habit or the system's flow. boot memory in `/context` (dima types it) is read at the start and the end as a direction, smaller, never a target to hunt: the 10-07 81.2k was one reading, «I just want a memory to be as slim as possible» (dima, 2026-10-11)
-- **the cadence, end to end** (dima, 2026-10-11: a whole sweep in ~45 rounds over 3–4 sessions, never one file a turn):
-  - a session start: 1 turn, the re-entry reads · step 1: 1 round · step 2: 1 turn launching the lanes in the background, 1 reading them · step 3: 1–2 rounds, one per guide · step 4: 1 scripted turn
-  - steps 5–8, every file by size: **≥5 KB alone** in its round (two drafts only for a rethink) · **2–5 KB in pairs** · **<2 KB in batches of ~6** — ~30 rounds for ~84 files. one proposal file per round, each file in it with bytes before → after and its lens verdicts; dima ticks the round once in orbit, a note on one file holds back only that file
-  - step 9: ~6 rounds, the same size batching · step 10: a scope pass, one draft wave, then review chunk by chunk, ~1 h (run #2's four waves took 126 min, ~46 of them waiting)
-  - **🌤️ siesta with `wishkeeper` 🐬** after 2 big rounds or 5 smaller ones, whichever comes first; it reads what was applied (ccrow's decision wake reads each proposal as it is written)
-  - a fix is never its own report turn: `habit-dima-comms-pacing`
-  - **a checkpoint comes on context** (cclio:checkpoint's 600–700k trigger) or dima's word, never on a seam alone (dima, 2026-10-11, o267); when one is due it lands at a clean seam, never mid-round: after step 4 · after `rules/` · after the cclio leaves · before step 9; each CST carries only the state, its META first-act 1 is this recipe's re-entry
-- **the order is dima's**: an agent improves it, never replaces it. a wrong step is fixed here the same session; at the end, a retro over the traced actions, one last refresh of this section, then sealed until the next sweep.
-- **the coordinator executes**, booted in `~/frame/cclio`: it holds every leaf resident. spawns only for judgment-free bulk reads, research and drafts: a helper drafts strict rows (file · a find that matches once · its replace), cclio reads the file whole and says yes or no per row, and a script applies each row by exact match or refuses it — a drafter's own Edit merged 12 bullets in run #2 (dima's yes, 2026-10-16). a sweep spans as many sessions as it needs; the trace carries it.
-- **his working rules**: a «chunk» is one groomed file, an `oN` is an orbit ask's id (his tick on it in the board is his answer); no auto-commit; his per-item ticks plus the list of removed lines count as his read, and an untouched item waits for his read of its diff (dima, 2026-10-11, o95) · step by step · objections welcome · a per-item report, expanded only on his ask: `file: what it is · issue · fix`.
-- **in every step** (dima, 2026-10-11): the re-entry reads above held in context · conflicts and duplicates hunted first, then fluff and over-explanation · deletion candidates go to him with evidence, never an essential fact or a live habit · reword shorter and natural · each file reads top to bottom · best practices applied (a TOC on a big skill) · a rethought file gets two drafts, he picks.
-- **each round's apply runs the touched repos' commit gates, no commit** (ccrow, 2026-10-12: five over-wide claims in a day, each caught hours later by a siesta, because the sweep commits only at the halt): the working-tree forms, never the staged ones (lefthook and `index-run.sh` read the index, so unstaged groom edits pass unseen, and staging them reaches every peer's commit gate): frame `pnpm typecheck && pnpm test`, bytes `pnpm apps:essentials` + `pnpm typecheck`, in every repo the round touched; a red means the round is not applied, and the reply names the gates it ran with their exit codes. every round and every siesta also runs `groom-list-check.sh` and `quote-diff.py <the sweep's start commit>` over every groomed file (run #2: the HEAD-only diff let 12 of his quotes go across rounds; dima, 2026-10-16: «let's try»). «applied» is said only after `recipes/nurture-memory/scripts/applied-check.sh <round>.tsv` exits 0: one row per ticked line, its file, the text that must be gone and the text that must be present (rounds A and B both reported a line that never landed)
-- **the quote gate, before every commit of a groomed file**: `python3 cclio/script/quote-diff.py HEAD <files>` lists every «…» quote that left; each one of dima's is restored or shown to him beside its new form before the commit, never judged away in silence (10-11: a groom dropped five of his, «all kept» was said unchecked).
-- **dima's `cclio:` comments** (2026-10-11): during a sweep he leaves `<!-- cclio: … -->` notes in the files; each step greps for them first and resolves each in place or answers it in the thread, then removes the note.
-- **a fold keeps what was said**: a future-dated block is written in full and marked deferred, never summarised away — run #1's plan lost a block marked «to be done after setting you up as coordinator» to a summary that read finished.
-- 🚫 **no llm-judge audit**: what code can verify is code (step 4), pruning is human (step 10); the numbers are in `author-memory/references/memory.md` § upkeep.
+  2. read WHOLE, never skimmed: this recipe · `mattpocock-skills:writing-for-agents` · `x:author-memory` and its three references — they are the lens every file is groomed through, and skipping them is the reflex to beat: without them a groom checks pointers and cuts nothing
+  3. the state: `last/groom-list.md` and the last lines of the run file
+<!-- 10-11: 27 files passed «read whole, unchanged» with the guides out of context and 50 had to be reopened; ~16k tokens of reading is cheap next to that — dima's verdict: «it very precisely describes the reason to read these guides before a memory sweep» -->
+- **the goal is the smallest form that does its job**, by § the want's delete-first: a groom that checks staleness and pointers but cuts nothing has not run; size is measured on every file; boot memory in `/context` (he types it) is read at the start and the end as a direction, never a target
+- **the cadence**:
+  - steps 5–8 batch by size: ≥5 KB alone · 2–5 KB in pairs · <2 KB about six to a round; one proposal per round, each file with bytes before → after and its lens verdicts; he ticks the round once in orbit, a note on one file holds back only that file
+  - step 9 batches the same way; step 10 is a scope pass, one draft wave, then the review chunk by chunk
+  - **🌤️ siesta with `wishkeeper` 🐬** after 2 big rounds or 5 smaller ones; it reads what was applied
+  - a fix is never its own report turn (`habit-dima-comms-pacing`)
+  - **a checkpoint comes on context** (`cclio:checkpoint`'s 600–700k trigger) or his word, at a clean seam, never mid-round: after step 4 · after `rules/` · after the cclio leaves · before step 9; each CST's META first-act 1 is this recipe's re-entry
+<!-- run #2: «pretty chaotic and destructive» (dima), useful detours; ~45 rounds over ~10 days; 84 files in steps 5–8 took ~30 rounds; step 10's four waves took 126 min, ~46 of them waiting -->
+- **the order is his**: an agent improves it, never replaces it; a wrong step is fixed here the same session
+- **the coordinator executes**, booted in `~/frame/cclio`, every leaf resident; it spawns only for bulk reads, research and drafts: a helper drafts strict rows (file · a find that matches once · its replace), cclio reads the file whole and says yes or no per row, a script applies each row by exact match or refuses it. a sweep spans as many sessions as it needs; the trace carries it
+<!-- run #2: a drafter's own Edit merged 12 bullets (dima's yes on strict rows, 2026-10-16) -->
+- **his working rules**: a «chunk» is one groomed file, an `oN` is an orbit ask (his tick is his answer); no auto-commit; his per-item ticks plus the removed-lines list count as his read, an untouched item waits for his read of its diff (o95) · objections welcome · a per-item report, expanded on his ask: `file: what it is · issue · fix`. what cclio edits alone and what goes to him per line is `habit-memory-edits` § the line
+- **in every step**: conflicts and duplicates hunted first, then fluff and over-explanation · deletion candidates go to him with evidence, never an essential fact or a live habit · reword shorter and natural · each file reads top to bottom · a rethought file gets two drafts, he picks
+- **each round's gates, no commit**, on the working tree of every repo the round touched: frame `pnpm typecheck && pnpm test`, bytes `pnpm apps:essentials` + `pnpm typecheck`; `groom-list-check.sh`; `quote-diff.py <the sweep's start commit>` over every groomed file. a red means the round is not applied, and the reply names each gate with its exit code. «applied» is said only after `scripts/applied-check.sh <round>.tsv` exits 0 (one row per ticked line: the text that must be gone, the text that must be present)
+<!-- ccrow 2026-10-12: five over-wide claims in a day, each caught hours later; lefthook and index-run.sh read the index, so unstaged groom edits pass unseen; run #2: a HEAD-only quote diff let 12 of his quotes go across rounds; rounds A and B reported a line that never landed -->
+- **the quote gate before every commit of a groomed file**: `python3 cclio/script/quote-diff.py HEAD <files>`; each «…» quote of his that left is restored or shown to him beside its new form, never judged away in silence
+- **his `<!-- cclio: … -->` notes**: each step greps for them first, resolves each in place or answers it in the thread, then removes the note
+- **a fold keeps what was said**: a future-dated block is written in full and marked deferred, never summarised away
+- 🚫 **no llm-judge audit**: what code can verify is code (step 4), pruning is human (step 10); the numbers are in `author-memory/references/memory.md` § upkeep
 
 1. **groom this recipe** — `cclio:shape-recipe` step 0: every want line true, every vector serving one, skills included. done: dima's word, `groomed:` stamped. (open)
 2. **research** — no write before it lands. first the snapshot diff, the cheapest: re-download anthropic's two pages as `.md`, `diff` against `docs/research/skill-authoring-best-practices/`, read only the delta, replace the snapshots. then the vectors, all lanes at once (`cclio:shape-recipe`). done: every lane landed or failed out loud. (template)
 3. **the knowledge distill** — into `x:author-memory` and every knowledge doc that steers memory and skill edits (`author-memory/references/skill.md` takes the skill mechanics and the evals prior art), concise without dropping a useful line. one layer per file: craft is `writing-for-agents`, these hold cc mechanics and our rules. every claim tagged [measured] / [read] / [inferred] with a version; one behind the running cc is re-probed or cut. stories go to a research doc with `dies-when`. a size budget in each file's frontmatter. done: every doc touched or «unchanged», bytes before and after logged. (open)
 4. **the vertical audit — which memories bleed the most**: the rank is `resident × never-used`, tokens at 2.89 chars/token, measured on disk (`/context` shows the boot snapshot). (template)
    - **the mechanical pass**, code only: a closed `FRM-N` / `BYT-N` within 2 lines of open-state words (`tracks it`, `trial`, `awaiting`, `pending`; run #1: 12 flagged, 11 real) · a dead `@import` · barrel omissions both ways · a named rule, skill or doc that is gone · a named flag missing from `--help` · research past `dies-when`. it runs on commit: drift lands within a day. a naive path regex flagged 94 with ~2 real, so it stays out
-   - **inventory and map** — dima's order, binding (run #1): gather ALL memfiles across repos → eval cc's default «go upd memory», asked twice, diff-based: right places? poems? → map `rules/` pointers, dead ones included → map the voice / format / style wiring → **the connection graph first**, a real one (he asks for a drawing; regenerate it from the numbers) → the groom list (the plan is that list, never a new plan file), no edit before it → flush → touch every piece. the connector pass (pointers, precedence, placement) stays apart from pruning content — dima: no cleaning is needed when no trash is produced. then one script over the list (sizes, pointers, inbound links), only its flags read; the connection graph drawn from the numbers; the voice and format wiring. an isolated leaf is where dima looks first
-   - **the cruft pass**: the newest prompt audit is reused when it predates no big memory change (run #2 reused 10-07's `.scratch/memory-sweep/prompt-audit.md`, dima: «redundant to rerun»); else `/doctor prompt-audit` (terminal only, dima types it) or the `claude-api` skill's `prompt-audit` per file. the audit reruns at step 10, so the sweep ends with a before/after diff. each prescriptive line (CAPS, «ALWAYS», a case list) gets the delete-test: the real ask in a fresh session with and without it, kept only if without is worse. the run prints dima a list «where you restrict me too much»: each line that failed the delete-test, beside what it blocked. a line with a written incident may go too; its incident moves into a column-0 comment
+   - **inventory and map** (his order, run #1): every memory file across repos → cc's default «go upd memory» asked twice, diff-based (right places? poems?) → the connection graph drawn from one script's numbers (sizes, pointers, inbound links, dead `rules/` pointers, the voice and format wiring) → the groom list, no edit before it. the connector pass (pointers, precedence, placement) stays apart from content pruning; an isolated leaf is where dima looks first
+   - **the cruft pass**: a prompt audit (`/doctor prompt-audit`, terminal, dima types it; or the `claude-api` skill's per file), reused when it predates no big memory change, rerun at step 10 for the before/after. each prescriptive line (CAPS, «ALWAYS», a case list) gets the delete-test: the real ask in a fresh session with and without it, kept only if without is worse; the lines that failed print to dima as «where you restrict me too much», each beside what it blocked
    - **the trigger tag**: each section tagged `file-touch` (matters only when a kind of file is touched), `intention`, or `always`; a `file-touch` one is step 7's deferral candidate (a `paths:` rule loads on a read, `cat` or edit of a matching file, measured cc 2.1.296)
    - **the groom list** (dima, 2026-10-11: «create it before the sweep starts, after the research preps, and follow it as the progress tracker»): `recipes/nurture-memory/scripts/groom-list.sh` writes `last/groom-list.md`, every memory file by layer with its bytes; steps 5–10 flip its lines, and no file groom starts before it exists (steps 1 and 3 groom the recipes and the knowledge docs before it, by design). a new sweep regenerates it here; re-entry reads it only to resume. coverage is proven by diffing its paths against `find ~/.claude ~/frame ~/projects` for `AGENTS.md`, `CLAUDE.md`, `memory/*.md`, `rules/*.md` (worktrees and node_modules out): any extra path joins the list. it is born with its skills section, and a rename or move flips its line the same turn (run #2: 147 skill rows escaped because the skills section came on day 10)
    - done: the ranking in the run file and the groom list born
@@ -159,7 +135,7 @@ his standing calls on skills:
    - **placement** — the bucket test in `author-memory/references/memory.md`: «who pays for this, and do they need it». a line that asks for an action names the exact call, or moves to `settings.json`, a hook, `permissions.deny`. a memory that is really a skill is named. cclio is the pm lead, everyone else a senior contributor: lean slightly global
    - **deferral** — `paths:` is the only lever that keeps a file out of context: frontmatter alone excludes nothing, Bash `cat`, `Read` and `Edit` fire it, a `Write` of a new matching file does not (measured, cc 2.1.296)
    - **a rename is a graph operation**: grep the whole repo before and after (barrel, wikilinks, docs, code, symlinks), re-probe the barrel; done is the root naming rule's `grep -rn '<old name>'` printing nothing outside dated history
-   - open, dima's: the `guide-*` split — «the info in those files is what ccli code does when codifying. that was my intention when i asked ccli opus to create these at a skill lvl. but i was looking far ahead, with the idea of modularization — pick the right tool at the right time. the reality is, when you code, it's 90% typescript and/or react, and both are code. 🤔» his call: skills cost nothing at rest, observe, move as we go. and a generated barrel vs a hand-written one
+   - open, his call (10-06): the `guide-*` split — most code is typescript or react, yet skills cost nothing at rest, so observe and move as we go; and a generated barrel vs a hand-written one
    - done: every file's groom-list line reads `- ✅ <path> — <before> → <after> B · lenses: dupe · superseded · enforced · unused · no-op · altitude · trim · merge · placement · deferral · protected — <what moved>`, each lens with its verdict; «unchanged» is a verdict only with the evidence for every lens; `recipes/nurture-memory/scripts/groom-list-check.sh` exits 0
 8. **the order across layers**: root `CLAUDE.md` → `rules/` → all resident memory (cclio leaves; the pm surfaces are reviewed here, `.scratch/memory-sweep/issues/085-pm-review.md`) → project leaves (frame, `bytes`, `dvakatsiienko`, `inner-marker`, `reinforcement-learning`; cclio leaves read all first, keep / trim / move, judge filenames, then a filename sweep). a project leaf: `find ~/projects -name AGENTS.md -o -name CLAUDE.md`, the project examined before the file, a restated environment becomes a pointer, a tutorial goes; what a leaf owes is `author-memory/references/memory-project.md`. `~/projects/AGENTS.md` is a deliberate stub ([DOT-195](https://linear.app/x-com/issue/DOT-195)). done: every layer through step 7. (template)
 9. **skills** (effort ≈ 60 % mems / 40 % skills: mems are the mess, skills «+- ok»): each skill reviewed, groomed, trimmed and its load rebalanced, against resident memory. the rulebook is `author-memory/references/skill.md` and `writing-for-agents` (its `SKILL-MECHANICS.md` for frontmatter and invocation); a skill line that restates or contradicts resident memory or a sibling keeps one home. (open)
@@ -179,10 +155,10 @@ his standing calls on skills:
       - the info load rebalanced: what every branch needs stays inline, the rest behind a pointer
       - **the cold test**: a fresh session runs one real ask per changed skill; an unopened file or a skipped step sends it back
       - done: every skill verdicted, each changed one past the cold test
-   5. **the fire loop** — only for a skill with a miss (a flawlog «skill not loaded» line, a router near-miss 0.30–0.70), and only once the $200 plan is live (parked in the pocket until then): his real prompts as `plugin-x/evals/<skill>-*` cases, split train and held-out test (`cmt`, `notes`, `pm` are the pattern); a baseline `claude plugin eval` on both; change one thing, keep it only if train rises and test does not drop; a round cap set first; each round logged in `docs/test-drive/`. a description edit is proven this way, never by reading. done: every missed skill looped, capped or parked for the $200 plan
+   5. **the fire loop** — only for a skill with a miss (a flawlog «skill not loaded» line, a router near-miss 0.30–0.70), and only on dima's word (`rules/fleet-tooling.md`: evals spend the weekly usage): his real prompts as `plugin-x/evals/<skill>-*` cases, train and held-out test; a baseline `claude plugin eval`; change one thing, keep it only if train rises and test holds; a round cap first; each round logged in `docs/test-drive/`. done: every missed skill looped, capped or parked
    - done: steps 1–5 done, each traced in the run file
 10. **the review, the gates, the retro** — after the full sweep, one pass (dima, 2026-10-12; reshaped 2026-10-16). (open)
-    - **why it regrooms everything** (dima, 2026-10-16): «memory sweep is a long process, and during this process we shuffle and rebucket memory pieces. that's why already groomed memory leaves may grow … that's why we need this final step 10 that is intended to regroom everything (e.g., smoothen the moves).» regrowth is expected, never a failure: step 10 finds it and grooms it
+    - **it regrooms everything**: regrowth after a groom is expected, never a failure (§ the want); step 10 finds it and grooms it
     - **every finding is also a retro row**: it is fixed, and tagged `escaped from <step>` — the step that should have caught it (re-entry, 3, 4, 5–8, 9.x, a siesta, «none could»). rows land in `last/step10-findings.tsv`: `lens · file · what · fix · escaped-from · cost (dima turns)`; the retro reads escapes per step, never impressions
     - **10.0 scope**, before any card (run #2: the scope for waves 2–4 surfaced only mid-step): `groom-list-check.sh --final`, the size drift and `quote-diff.py <the start commit>` print the whole scope; then one draft wave covers it — a `Workflow` on dima's word, one `agent()` per ~10k of real work with `agentType: 'helper'` so the prefix cache is shared (run #2's ~12 cards fit one wave) — and the review runs chunk by chunk as drafts land; one fix wave only for what the review or wishkeeper finds
     - **10.1–10.3 run at once**, three `helper` cards writing rows, cclio judging; wishkeeper reads the folded batch as the step's siesta:
@@ -210,12 +186,12 @@ his standing calls on skills:
       - what were the mistakes
       - **how well was the run locked** — did the trace, the groom list and each CST carry the state through every pause, side lane and compaction, and if anything slipped, the mechanism (a check, a gate, a recipe line) that locks it next time
       - how does this recipe change so the next run goes better
-      - **how does the fan-out get cheaper** (dima, 2026-10-16: «how to optimize this process of spawning a lot of helpers over all the places?»): step 10 ran ~12 `helper` cards in 4 rounds, each draft then judged and applied by its drafter; the retro weighs one `Workflow` (shared prefix cache) or fewer, wider cards against the count, the cost (`x fleet ops`) and the slips (swallowed newlines, a brief composer could not run). his shape to weigh (2026-10-16): «instead of doing it sequentially, you build a full scope of everything the helpers have to check, then write their proposals; we just go over it area by area or chunk by chunk» — one scope pass and one parallel draft wave up front, then the review runs chunk by chunk with no waits between; open, decided at the retro, never mid-run: **who does the final edit** — cclio, the drafter, or a yes/no executor — and how much quality the speed may cost («do not trade it for quality too much»); and the other side, his too: «sequential spawning is also useful because you can ask a new wave to fix some stuff after a previous wave — it's slow because each wave lasts 6 to 10 or even 11 minutes; four waves spend like 45 minutes of just waiting»: the retro measures the waits (wave starts and ends from the transcript) and keeps the wave-after-wave fix where it caught what one wave would miss
-      - **how did we talk during the run** (dima, 2026-10-16: «scan our communication patterns during the memory sweep»): his prompts and cclio's replies over the sweep's days — what he had to re-ask, what never reached him (text between tool calls), unglossed ids, bare member names, asks he answered twice, replies he skimmed past — each pattern with its count and the fix that removes it
-        - **the approval balance** (dima, 2026-10-16: «I was often just allowing you to do edits without any notes; many seemed obvious, ones you could do yourself. memory editing is tricky and guarding edits behind my approvals was my call, because you could accidentally break fragile memories and skills — we had a number of situations when I caught you editing something the wrong way»): count his approvals over the sweep — passed with no note vs steered or caught; sort the edit kinds by which side they fell on, and propose the line between what cclio edits alone (non-breaking: a dead pointer, a bare tag, a size, a typo) and what she truly consults on (his words, a rule's meaning, a cut that loses a reader); the proposal lands in the recipe and `habit-memory-edits`, «do not trade quality over speed too much»
-      - **how does upkeep between sweeps get smoother** (dima, 2026-10-16: «there are a lot of stray stuff everywhere … hopefully we sharpen the recipe and habits so the memory maintenance will be smoother in future»): each stray class in the trace's `## findings` gets a home — a step-10 check, a halt-time lens, a guard — so the next sweep finds less sediment
+      - **how does the fan-out get cheaper** — measure the waits (wave starts and ends from the transcript) and the slips against run #2's shape (10.0 scope, one draft wave, strict rows a script applies); a fix wave stays where it caught what one wave missed, and speed never buys quality
+      - **how did we talk during the run** (dima, 2026-10-16): his prompts and cclio's replies over the run — re-asks, text that never reached him, unglossed ids, asks answered twice, replies skimmed past — each pattern with its count and the fix that removes it (`recipes/refresh-fleet-operator-comms/scripts/` extracts both)
+        - **the approval balance**: his approvals passed bare vs steered or caught, by edit kind; the line between alone and asked moves in `habit-memory-edits` § the line, never trading quality for speed
+      - **how does upkeep between sweeps get smoother** (dima, 2026-10-16: «there are a lot of stray stuff everywhere»): each stray class in the trace's `## findings` gets a home — `memory-lint`, the Wednesday pass, a guard — so the next sweep finds less sediment
     - then a grill round with dima on the recipe changes (the whole frontier at once), the recipe refreshed, sealed until the next sweep
-    - done: the gates passed (typecheck, test, `groom-list-check.sh --final` 0, `quote-diff` vs the start commit, `pnpm test-drive:check`), today's line in `log.md`, the refresh committed
+    - done: the gates passed (typecheck, test, `groom-list-check.sh --final` 0, `quote-diff` vs the start commit, `pnpm test-drive:check`), today's line in `log.md`, the refresh committed, the seal tagged `git tag memory-sweep-<n>` on that commit
 
 ## vectors
 
@@ -241,10 +217,6 @@ his standing calls on skills:
 - skills: resident cost and size per skill; the ones that cost context and never fire
 - skills: conflicts with resident memory, where a skill restates or contradicts it
 - skills: `x:crew-coder` and the other crew skills against the 5k-token re-inject cap
-
-### cut
-
-- youtube channel parses (theo, matt) — dima, 2026-10-11: «it's 99% outdated»; a video he links is still transcribed on his ask
 
 ## artifacts
 

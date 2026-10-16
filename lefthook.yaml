@@ -35,6 +35,11 @@ pre-commit:
       # a stumble becomes a guard, never a note (FRM-314): a hazard line added or reworded names its guard
       glob: "home/.claude/rules/fleet-hazards*.md"
       run: node script/fleet-hazards-check.ts
+    memory-lint:
+      # memory rots at write time and a sweep cleans it months later: a size budget per memory file (a useful add
+      # raises its row in recipes/nurture-memory/scripts/memory-budgets.tsv with a reason, in the same commit),
+      # merged bullets, a new memory file with no row, a row whose file is gone. no glob: the memory set lives in the script
+      run: node recipes/nurture-memory/scripts/memory-lint.ts {staged_files}
     git-crypt-rename:
       # a git-crypt file moved to a path no filter line covers ships plaintext — d1bddfb5 put one on
       # public main (2026-10-07). no glob: the moved file can live anywhere

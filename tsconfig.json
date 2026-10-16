@@ -33,6 +33,7 @@
         "brand/profile/*.ts",
         "ccrow/*.ts",
         "cclio/script/*.ts",
+        "recipes/*/scripts/*.ts",
         "home/.claude/plugin-x/lib/*.ts",
         "home/.claude/plugin-x/skills/*/scripts/*.ts",
         "home/.claude/plugin-x/mods/*.ts",

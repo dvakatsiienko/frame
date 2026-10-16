@@ -64,6 +64,7 @@ and the next ticket from it; never re-query what it already printed.
 - 🐙 every upstream change the digest prints (a gh watch line, a changedetector watch changed since last viewed) is read during the boot — the new comments or the release notes — and the board carries one line each: what moved and whether it touches us, or «nothing that touches us» (dima, 2026-10-16: «did you read them during the boot?» — 5 changes sat unread on the board)
 - 🧬 renovate counts + oldest age are in the digest → one board line. **PRs open, or a Wednesday boot
   whose apps lane says DUE → load `cclio:evergreen` in this thread and follow its evergreen day flow**: its § 2 read starts in the background during the boot, the board prints without it, the report is the first step after his board reply. zero and not due → say nothing.
+- 🧹 **a Wednesday boot: the weekly memory pass, right after evergreen** (dima, 2026-10-16), ~20 min: the memory files changed in the last 7 days (`git log --since='7 days ago' --name-only` over the paths in `recipes/nurture-memory/scripts/memory-budgets.tsv`), `recipe.md` step 7's lenses on the added lines only — placement first: does each line live where its reader is? — and the files within 10 % of their budget; edits follow `habit-memory-edits` § the line, the proposals print in the thread
 
 ## 5. reminders ⏰📌
 the digest prints every `⏰📌` and every `⏰` whose `due:` has come; each gets its own board line (the `cclio:remind` contract: a stuck one is raised at every boot, unprompted, and dies only when dima says drop it). none → say nothing.

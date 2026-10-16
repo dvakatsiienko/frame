@@ -14,7 +14,7 @@ craft (wording, triggers, pruning, leading words) is `mattpocock-skills:writing-
 
 ## where a line goes — audience decides, never topic
 
-the widest bucket whose whole audience benefits:
+the failure this prevents: a line landing where it was convenient instead of where it belongs (dima's word, 2026-10-16) — the widest bucket whose whole audience benefits:
 - root `CLAUDE.md` / `rules/` without `paths:` → every session pays for it, forever
 - `rules/` with `paths:` → a convention tied to a glob; an intention has no glob
 - a project `AGENTS.md` → wrong or meaningless in another repo
