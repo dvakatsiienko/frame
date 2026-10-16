@@ -6,8 +6,8 @@ title: >-
 status: claimed
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-16 12:57'
-due_date: '2026-10-16'
+updated_date: '2026-10-16 15:48'
+due_date: '2026-10-17'
 labels:
   - s
 dependencies: []
@@ -36,4 +36,6 @@ inbox 10-16, Q (relates to the monitors wisp, PK-152): he wants to fork cclio to
 2026-10-16 15:44: no cclio skill (dima: «/cclio:fork … if it only leaves a note, rename … pick a better pattern»): he types cc's own /fork. the hook is fork-guard.sh (o46). his correction: «Yesterday, I tested /btw, and it actually produced a live-bg fork thread for you» — so the guard keys on the main session id, never on /fork's job field, and catches every copy. plan + done test: .scratch/fork-prior-art/plan.md; plan critic running. he tests it once cclio says the fork topic is fully solved.
 
 2026-10-16 15:58: the plan critic said «revise» (5 findings, 3 high) — all folded into .scratch/fork-prior-art/plan.md, but folded without a check at the source, so each gets checked again at build time; ccrow's /clear catch (a /clear keeps the pid) folded as a pid match — still a premise until the /clear probe runs; the start line now prints the topic («🍴 fork <topic> started», dima's Q5); a /btw done line added (9 lines now). dima: «shaped» (o48). next: the build, then the probes, then his /btw test.
+
+dima 10-16 18:47: «fork-guard: next boot, not today»
 <!-- SECTION:NOTES:END -->

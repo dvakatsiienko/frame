@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-19
 ---
 
@@ -456,3 +456,8 @@ born place: a **terminal** `claude` in `~/frame/cclio` (not the Code tab), monit
 - 18:31 · retro + comms read landed (cclio/.scratch/boot-2026-10-16/retro.md, comms.md): escapes 5-8 213, 9.3/9.4 147, 9.x 87, 9.5 25, none-could 49 (labels normalised); waits ~46 min helpers + 20 wishkeeper in a 126-min step; comms: 26 re-asks, 33 jargon asks (30 → 3 after 10-12), 79 % of memory-edit asks passed bare (48/61), all 11 of dima's catches were his words / a rule's meaning / a line's home → the grill
 - 18:39–18:45 · the grill (o74–o80), all his picks: the alone/asked line → habit-memory-edits + recipe human gate (proposals print in the thread, files hold the rest); recipe: step 10.0 scope + one draft wave (a Workflow on his word, ~12 cards one wave) + strict rows a script applies; groom-list-check + quote-diff vs the start commit every round and siesta; groom list born with skills · re-ask catcher → PK-168 + a ⏰ to shape it before the next mods lane · reply-check `unreached` rule (a ≥300-char block before a tool call, no line of it in the last message), 55 tests, red-proven · render probe PK-166: whole on every client · the trace script: seven names to dima
 - 18:42–18:47 · #dima-caught: the Context7 plugin (MCP-only) sat installed beside the `ctx7` cli that rules/fleet-tooling.md names as the docs door; 0 `mcp__plugin_context7` calls since 10-01 → uninstalled on his word (`claude plugin uninstall`, settings.json symlink kept, permissions byte-identical) + its cache folder trashed · why missed: step 9.2's census counted Skill calls per scope, and an MCP-only plugin fires none · fix: recipe step 9 § 2.5 the install hunt (plugins, marketplaces, MCP servers, cache folders, each against a declared door) · first run, candidates to dima: vercel plugin (disabled, 0 calls), cache folders frontend-design + vercel, 5 marketplaces with no installed plugin; kept: typescript-lsp (ts-lsp trial to 11-01), fast-jev-compaction (jev trial frozen), neuroarxiv + cclio (enabled per project)
+- 2026-10-16 18:53 · the trace script lands (dima's o77 name pick); recipe L106 points at it; the Vercel plugin uninstalled on his o82 (37 skills, a remote MCP and telemetry hooks, 0 calls since 10-01)
+
+## verdict
+
+- 2026-10-16 · adopted: the sweep stays a recipe (`recipes/nurture-memory/`), run #2 closed in FRM-267 — boot memory 81k → ~60k tokens, the swept files −12 %, step 10 found 521 rows, the cold test 12/12; dima's tick o83

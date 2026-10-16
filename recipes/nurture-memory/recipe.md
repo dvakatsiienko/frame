@@ -3,7 +3,7 @@ kind: nurture
 owner: coordinator
 artifacts: [home/.claude/plugin-x/skills/author-memory/references/memory.md, home/.claude/plugin-x/skills/author-memory/references/memory-project.md, home/.claude/plugin-x/skills/author-memory/references/skill.md]
 script: none
-groomed: 2026-10-13 (dima)
+groomed: 2026-10-16 (dima)
 was: [nurture-skills]
 ---
 
@@ -103,7 +103,7 @@ his standing calls on skills:
 
 ## the run
 
-- **trace as you go**, two kinds, the same turn (dima, 2026-10-12): every action lands as one line at the end of the sweep's run file (`docs/test-drive/memory-sweep.md`) — a step with no line did not run, and run state never lives in chat; and a round that shows a flaw class, a mistake or a tip adds one line to that file's `## findings` — the patterns of bad memory to hunt next time, what went wrong, what made the sweep faster. step 10's retro reads `## findings` first. `last/groom-list.md` (born at step 4) holds one line per memory file with its state, flipped the turn its step lands.
+- **trace as you go**, two kinds, the same turn (dima, 2026-10-12): every action lands as one line at the end of the sweep's run file (`docs/test-drive/memory-sweep.md`) through `scripts/memory-trace-append.sh "<what>"`, which stamps the clock and refuses a hand-written stamp or a repeated line (run #2: 4 composed clocks, a doubled line) — a step with no line did not run, and run state never lives in chat; and a round that shows a flaw class, a mistake or a tip adds one line to that file's `## findings` — the patterns of bad memory to hunt next time, what went wrong, what made the sweep faster. step 10's retro reads `## findings` first. `last/groom-list.md` (born at step 4) holds one line per memory file with its state, flipped the turn its step lands.
 - **re-entry, at every start and every resume** (a boot, a checkpoint, a compaction), before any groom (dima, 2026-10-11, after a run groomed 27 files «read whole, unchanged» with the guides out of context: «16k tokens is cheap next to redoing 50 files» — cclio's line, his verdict):
   1. the standard boot: `cclio:boot`, every member woken, «checkpointed» said
   2. read WHOLE, never skimmed: this recipe · `mattpocock-skills:writing-for-agents` · `x:author-memory` (its SKILL.md and all three references) — they are this recipe's research distilled, the lens every file is groomed through

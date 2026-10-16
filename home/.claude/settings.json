@@ -216,13 +216,6 @@
     "mattpocock-skills@mattpocock": true
   },
   "extraKnownMarketplaces": {
-    "claude-code-warp": {
-      "source": {
-        "source": "github",
-        "repo": "warpdotdev/claude-code-warp"
-      },
-      "autoUpdate": true
-    },
     "x": {
       "source": {
         "source": "directory",
@@ -230,22 +223,10 @@
       },
       "autoUpdate": true
     },
-    "linear-cli": {
-      "source": {
-        "source": "github",
-        "repo": "schpet/linear-cli"
-      }
-    },
     "impeccable": {
       "source": {
         "source": "github",
         "repo": "pbakaus/impeccable"
-      }
-    },
-    "xiaolai": {
-      "source": {
-        "source": "github",
-        "repo": "xiaolai/claude-plugin-marketplace"
       }
     },
     "typesafe-ai": {
@@ -265,12 +246,6 @@
       "source": {
         "source": "github",
         "repo": "tamaratran/fast-jev-compaction"
-      }
-    },
-    "mindful-claude": {
-      "source": {
-        "source": "github",
-        "repo": "halluton/Mindful-Claude"
       }
     },
     "skills": {
