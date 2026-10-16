@@ -31,7 +31,7 @@ import {
 // cclio's settings give the merge hook 120 s, so this wait stays under it
 const WAIT_MS = Number(process.env.CCROW_DECISION_WAIT_MS ?? 90_000);
 const MARKER_TTL_MS = 10 * 60_000;
-// the boot's draft board (cclio:boot step 7): dima wants ccrow's note on it before it prints
+// the boot's draft board (cclio:boot step 8): dima wants ccrow's note on it before it prints
 const BOOT_BOARD = /(^|\/)\.scratch\/boot-[^/]+\/[^/]+-proposal\.md$/;
 // a ccrow without a job id is a desktop tab or a terminal resume; SendMessage by her registry name reaches both
 const sendVia = (name = SESSION_NAME) =>

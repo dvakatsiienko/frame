@@ -1,7 +1,7 @@
 #!/bin/zsh
 # refuses a ✅ line that carries no bytes before → after or misses a lens verdict (the 10-11 run passed 27 files «unchanged»).
 # a skill line (## 8 · skills) needs a whole-groom round: a 9.5 round «— rN» or «— step 10 groom»; a partial pass alone («9.4 B» dupes, a «9.3» prune verdict, «side work») is not a groom (10-16: 14 skills sat ✅ on a partial pass).
-# --final (step 10's gate) adds: no ⬜ or 🟡 line, a ⏭️ only with a named home, and every ✅ file's size on disk within 2 % of its recorded after — an edit after the groom re-opens the line.
+# --final (step 10's gate) adds: no ⬜ or 🟡 line, a ⏭️ only with a named home, every ✅ file's size on disk within 2 % of its recorded after — an edit after the groom re-opens the line — and no two bullets merged on one line in any ✅ file.
 # usage: groom-list-check.sh [--final] [groom-list.md] — exit 1 names every bad line
 set -u
 final=0
@@ -37,6 +37,8 @@ home = os.path.expanduser('~')
 base = {'1': f'{home}/frame/home/.claude', '2': f'{home}/frame/home/.claude/rules', '3': f'{home}/frame/cclio',
         '4': f'{home}/frame', '5': f'{home}/projects', '6': f'{home}/frame', '7': f'{home}/frame'}
 sec, bad = None, 0
+merged = re.compile(r'[\w.)»*]- [^\s-]|[^\s\d-]\d+\. \*\*')
+code = re.compile(r'`[^`]*`')  # a swallowed newline: «word- next bullet» (10-16, 12 sightings)
 for line in open(sys.argv[1]):
     m = re.match(r'## (\d) ·', line)
     if m: sec = m.group(1); continue
@@ -60,6 +62,11 @@ for line in open(sys.argv[1]):
     after = int(m.group(2).replace(',', ''))
     if not os.path.exists(path):
         print(f'✗ {line[:90].rstrip()} — file gone: {path}'); bad = 1; continue
+    fence = False
+    for n, text in enumerate(open(path, encoding='utf-8'), 1):
+        if text.lstrip().startswith('```'): fence = not fence
+        if not fence and merged.search(code.sub('``', text)):
+            print(f'✗ {path}:{n} — two bullets merged on one line: {text.strip()[:70]}'); bad = 1
     disk = os.path.getsize(path)
     if after and abs(disk - after) > max(40, after * 0.02):
         print(f'✗ {line[:90].rstrip()} — changed after its groom: {after} B recorded, {disk} B on disk'); bad = 1

@@ -225,6 +225,18 @@ if [ "$gh_ok" -gt 0 ]; then
   if [ "$gh_changed" -eq 0 ]; then echo "$gh_ok watched, no change"; fi
 fi
 
+echo "-- x-changedetector (changed since last viewed; the key is the app's own, read from its datastore) --"
+CD_STORE="$HOME/.local/share/x-changedetector/data/changedetection.json"
+cd_key=$(jq -r '.settings.application.api_access_token // empty' "$CD_STORE" 2>/dev/null)
+if cd_json=$(timeout 10 curl -sf -H "x-api-key: $cd_key" http://127.0.0.1:7390/api/v1/watch); then
+  printf '%s' "$cd_json" | jq -r '[to_entries[].value] as $w
+    | ($w | map(select((.last_changed // 0) > (.last_viewed // 0)))) as $c
+    | ($c[] | "🔭 \(.title // .url) — \(.url | sub("api.github.com/repos/"; "github.com/"))"),
+      "\($w | length) watched, \($c | length) changed since last viewed"'
+else
+  fail "x-changedetector: GET /api/v1/watch failed (app down, or the key in $CD_STORE moved)"
+fi
+
 echo "-- parallel monitors (pull-only: unseen events print once, ids land in parallel-monitor-seen.txt) --"
 SEEN="$HOME/.claude/shelf/parallel-monitor-seen.txt"
 touch "$SEEN"

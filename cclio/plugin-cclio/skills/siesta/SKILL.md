@@ -4,7 +4,7 @@ description: load at every siesta — a member's done report lands, a batch of c
 
 # /cclio:siesta — the pause between batches
 
-a siesta should be useful with the least noise — once we kick off from it, the next thing is already picked. this skill is the whole flow and its «when» is the one trigger list; `fleet-vibe` holds the word.
+dima, 2026-10-10: a siesta should be useful with the least noise — once we kick off from it, the next thing is already picked. this skill is the whole flow and its «when» is the one trigger list; `fleet-vibe` holds the word.
 
 ## when
 
@@ -31,5 +31,5 @@ a siesta should be useful with the least noise — once we kick off from it, the
 
 ## boot
 
-the same agent runs once at boot, in boot mode, beside ccrow's board review (`cclio:boot` step 7): dima's boot prompt, his raw inbox text and where each item landed. its findings fold before the opening board prints.
+the same agent runs once at boot, in boot mode, beside ccrow's board review (`cclio:boot` step 8): dima's boot prompt, his raw inbox text and where each item landed. its findings fold before the opening board prints.
 

@@ -45,7 +45,7 @@ Every decision is one of three:
 - a coder's premise doubt is built and flagged the same minute, never found at review
 - events go to the plan file's `## log` (time · who · what · evidence), never to chat. when `near`,
   dima's lane messages still get normal replies; shift events stay out of them
-- **orbit asks are suspended** while a shift runs
+- **orbit asks are suspended** while a shift runs: decide, log and park instead of asking; the report carries the decisions
 - watch per `x:crew-lead`
 
 ## 3 · end — the report

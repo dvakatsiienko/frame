@@ -42,7 +42,7 @@ line is in front of cclio every boot.
 - **watches** — every upstream thing we follow (a github issue or pr, a release feed, a page) is a watch in x-changedetector, `http://127.0.0.1:7390`, never a link kept in prose to re-fetch; cclio owns every watch (dima, 2026-10-16: «I lean towards yourself, but you have to properly shape your habit»):
   - the trigger is an upstream link met anywhere: a member's report or retro, a ticket body, a hazard or reminder line, his inbox — the watch goes in the same turn, after a `GET` shows it is not there yet
   - members never add one; a coder names the link in its done report (`x:crew-coder` § the report)
-  - add: `POST /api/v1/watch`, an issue as `api.github.com` json with a `jq:` filter and `link_to_open` set to its github page; read: `GET /api/v1/watch`, `last_changed` > `last_viewed`; the boot reads what changed (`cclio:boot` step 4)
+  - add: `POST /api/v1/watch`, an issue as `api.github.com` json with a `jq:` filter and `link_to_open` set to its github page; every call carries `-H "x-api-key: $(jq -r .settings.application.api_access_token ~/.local/share/x-changedetector/data/changedetection.json)"` (403 without it); the boot digest's x-changedetector section prints what changed since last viewed, and the boot reads each (`cclio:boot` step 4)
   - on trial, `docs/test-drive/x-changedetector.md`; a watch that closed upstream is removed at the halt
 
 ❗ no data loss, the pocket above all: a line he wrote or asked for moves or dies only on his word.

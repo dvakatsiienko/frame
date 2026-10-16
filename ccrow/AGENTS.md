@@ -1,9 +1,10 @@
 # ccrow — cclio's parked adviser
 
-a long-lived session «🐦‍⬛ ccrow» that reads cclio's thread on a wake and returns one note or `none`: a `--bg --remote-control` session cclio starts at boot and stops at the halt, a desktop tab as the fallback (mods' hooks load under `--bg`, `mods/engine.md`; only a `--bg` board goes undrawn, and ccrow's 👀 line draws on cclio's card). built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
+a long-lived session «🐦‍⬛ ccrow» that reads cclio's thread on a wake and returns one note or `none`: a `--bg --remote-control` session cclio starts at boot and stops at the halt, a desktop tab as the fallback. built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
 silence bar, note shape, timing, holdout, the consult) is the `x:crew-adviser` skill, which
 `readCharter` sends as the boot prompt with its frontmatter cut — ccrow loads no plugins, so the
 skill reaches it as text. a contract change goes there, never here.
+<!-- why --bg works (o150): mods' hooks load under --bg (mods/engine.md); only a --bg board goes undrawn, and ccrow's 👀 line draws on cclio's card -->
 
 ## how it runs
 

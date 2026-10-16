@@ -8,12 +8,14 @@ argument-hint: "[mini | board | <handoff slug>]"
 light boot by default. an argument that loosely means the full picture — «board», «full», or
 similar — adds tracker orientation; any other argument is a handoff topic, ingested at step 4
 (`/cclio:boot <slug>` is the whole opener — one skill per message is all the desktop box sends).
-run silently, report as ONE opening message, after the two reviews (step 7).
+run silently, report as ONE opening message, after the two reviews (step 8).
 
 🎯 **the boot ORIENTS, it never resolves.** steps 1–8 are pure parse-and-assemble: no answers
 written, no tickets touched, no inbox item worked. the opening board ends with a proposed
 processing order and STOPS for dima's word. resolution then runs as labeled sub-batches with a
 siesta after each (`habit-dima-comms-pacing`); heavy queries fire at the step that needs them.
+
+📱 dima on mobile (his boot prompt says so) → read `x:mobile-mode` and run the session in it; it is user-only, so this line is its one automatic trigger.
 
 ## 1. healthcheck — the digest, not a ritual
 the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context: handoffs,
@@ -37,7 +39,7 @@ and the next ticket from it; never re-query what it already printed.
   command: `docs/test-drive/composer.md` § the start; a sidecar needs no `x:crew-lead`), send it an
   `inbox-prep` brief (blocking), and do steps 4–5 while it runs; its receipt lands → read `inbox-composer.md`
   first, then `inbox.md` for the parse. while `docs/test-drive/composer-inbox-prep.md` is live, score the prep
-  by that file's rubric and log the round, and step 7's wishkeeper brief adds the prep: every ask and idea of
+  by that file's rubric and log the round, and step 8's wishkeeper brief adds the prep: every ask and idea of
   the raw inbox kept in meaning, not only present (the check proves presence alone)
 - the digest says clean or «N content lines». non-empty → read `inbox.md` (`habit-dima-comms-pacing` holds the creed): EVERY item —
   smallest aside included — gets an item in the pocket (Backlog.md, `backlog task create`; `habit-shared-files` holds the contract)
@@ -78,7 +80,11 @@ settled lines). no CST, or no pair in it → skip the step. **two lines, last li
 
 no evidence paragraph, no options, no quotes. **grounded or silent — never invent one.**
 
-## 7. two reviews, then the opening board
+## 7. flaw capture 📝
+open the per-session log at `~/.claude/shelf/flawlog/<YYYY-MM-DD>-<topic-slug>.md` — naming rule
+and habits live in `/cclio:flawlog`, which loads alongside this boot.
+
+## 8. two reviews, then the opening board
 **the board prints once, after both reviews are folded** (dima, 2026-10-12: «first gather all
 reviews from wishkeeper and ccrow, only then print a plan»; the boot is the session's planning step):
 - write the draft board to `~/frame/cclio/.scratch/boot-<YYYY-MM-DD>/board-proposal.md` — the write
@@ -100,7 +106,7 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
 the board, one message, short lines, **no queries here — pure assembly**:
 - «hey <model> here» (the root claude.md rule)
 - healthcheck verdict (one line if green)
-- 📝 `flawlog: <path>` — the day's file from step 8, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 8 shows as a missing line
+- 📝 `flawlog: <path>` — the day's file from step 7, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 8 shows as a missing line
 - ⏰📌 stuck and due ⏰ reminders, own line each (omit if none)
 - inbox status · handoffs pending · pocket depth + top item
 - 🎼 `inbox prep: <score>/100 (raw <n>)` — its own line while `docs/test-drive/composer-inbox-prep.md` is live
@@ -111,11 +117,6 @@ the board, one message, short lines, **no queries here — pure assembly**:
   2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), lanes marked, sub-batches labeled;
   **the board ends here and waits for dima's word.** he corrects the parse before any work runs
 - 🥊 self-grill, last line (omit if nothing real)
-
-## 8. flaw capture 📝
-open the per-session log at `~/.claude/shelf/flawlog/<YYYY-MM-DD>-<topic-slug>.md` — naming rule
-and habits live in `/cclio:flawlog`, which loads alongside this boot.
-
 ---
 
 ## mini mode — `/cclio:boot mini`
@@ -130,7 +131,7 @@ message, **no cst ingest, no pocket parse** — the inbox stays his file.
 4. open renovate count (step 4's last line; the digest waits for his word)
 5. stuck reminders (step 5)
 6. self-grill (step 6)
-7. flawlog file for the day (step 8; `/cclio:flawlog` loads alongside, as in a full boot)
+7. flawlog file for the day (step 7; `/cclio:flawlog` loads alongside, as in a full boot)
 
 skipped on purpose: the roadmap block, handoff ingest, the run-id continuity (a pending cst stays
 pending and is named in the board, never pulled). the board ends with his asks in his order and

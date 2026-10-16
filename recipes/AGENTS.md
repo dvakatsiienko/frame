@@ -77,6 +77,7 @@ body, in this order. each section holds only its own kind of line:
 `script/lib/recipe-shape.test.ts` runs in the pre-commit `pnpm test` and proves this file's shape on every recipe. it also catches drift in content: a line restating the shared vectors below or `cclio:shape-recipe`'s run steps, and a backticked repo path or `x:<skill>` that does not exist. a change to the shape here lands with its check in the same commit.
 
 ## the shared vectors — every refresh run asks these on top of its own
+<!-- moved from cclio:shape-recipe (dima o73, 2026-10-12): a list in a skill was read and still missed -->
 skip one only by naming why it does not fit (a job-market run has no «agent use» of a tool).
 
 every vector's finding, shared or the recipe's own, is read against our flows: name the step, file or habit of ours it shows wrong, or «nothing» — the want's «use what comes back to find mistakes in our own and the fleet's flows» above.
