@@ -205,7 +205,6 @@
     "refreshInterval": 60
   },
   "enabledPlugins": {
-    "context7@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": false,
     "x@x": true,
     "impeccable@impeccable": true,
