@@ -80,7 +80,7 @@ skills are **half-lazy**: `name` + `description` are resident from boot (~80–1
 
 ## anthropic's structure rules — what we adopt
 
-**[read]** [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) and the [Fable 5 guide](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5), the full check against us: `docs/research/skill-authoring-best-practices.md`.
+**[read]** [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) and the [Fable 5 guide](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5), its check against us folded into this file (run #2).
 
 - **freedom matches fragility** — many valid paths: prose; a preferred shape: a template with knobs; fragile or destructive: an exact script. the test per step: «what happens if Claude does it differently?»
 - **every reference file is linked straight from `SKILL.md`** — a file reached through another may be previewed with `head -100` only

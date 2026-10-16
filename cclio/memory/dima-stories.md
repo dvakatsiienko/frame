@@ -10,9 +10,6 @@ name why. The stories are how the felt sense gets recovered later as a reason. S
 imprecise call and catches it himself, that is worth an entry — the catch is the signal, not the
 mistake. Do not write these as corrections; write them as what happened.
 
-## «your cache will most likely be cold» · 2026-10-04
-mid-session he pictured the end of a shift: he comes back to the keyboard, asks a few simple questions, and the first one re-reads a 600k thread at the 1h cache-write price. nobody had priced the return. the numbers agreed with him — a cold first ask costs about forty warm reads — and the answer split in two: a shift now ends with a report artifact and a CST so his questions go to a fresh cclio, and a keep-hot switch pings an idle session when a window runs dry before its reset. his sense of the cost arrived before any measurement of it. → `cclio:shift` 0.3.94, stash keep-hot (FRM-302)
-
 ## «then it looks useful! why park it?» · 2026-10-05
 `mods:live` sat parked behind the third-need rule: a pty harness for reload and hover checks, two needs counted, build on the third. he read my one-line description and answered with his own frame: «from my understanding, this `mods:live` command is similar to a dev server for web applications». the rule had counted it as a rare check, needed when a hover bug hit; his analogy showed a dev loop every mods coder runs all day, the way vite runs for a web app. it was built that night and worked on the first probe. his felt sense saw the category before my counter did. → FRM-322, `pnpm mods:live`
 
@@ -47,3 +44,6 @@ he dropped six Sill screenshots for a settings review and I read every one in my
 
 ## «why keep stuck?» · 2026-10-14
 two ⏰📌 reminders (the BYT-127 lottie/rive pick, the design-drift coder trial) sat stuck at every boot only because a ticket never fires at brief time. he asked one question, before either of us had the mechanism; the shape-lane read of the app's open wish children at brief time replaced both reminders. → `cclio:shape-lane` § 0
+
+## «Yesterday, I tested /btw, and it actually produced a live-bg fork thread for you» · 2026-10-16
+planning the fork-guard, my opus lane read one docs line and I told him /btw is read-only and saves nothing. he had used it the day before and watched it spawn a live background fork of me. his hands-on test beat my read of the docs before either of us had a reason. → a doc line about a cc command is checked against a probe or his use before it reaches a plan (PK-158)

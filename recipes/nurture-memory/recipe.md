@@ -208,7 +208,7 @@ dima, 2026-08-27, the purpose:
 ### analysis
 
 - run #1's finding, re-checked: opus writes long by default; ~70 % of written text was not needed
-- `docs/research/skill-authoring-best-practices.md`'s checklist against our files: an unchecked item is a finding
+- `author-memory/references/skill.md`'s best practices against our files: a practice we miss is a finding
 - which memories misfired or sat unused: `refresh-fleet-ops`' skill-load measure; a leaf never load-bearing since the last sweep is a retirement candidate
 - did a silent-failure class fire, and does `method-silent-failures` name its shape?
 - placement drift: a leaf past one decision, a fact at the wrong altitude

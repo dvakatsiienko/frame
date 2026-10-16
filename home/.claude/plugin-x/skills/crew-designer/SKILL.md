@@ -18,8 +18,8 @@ the pick truly good. Report to whoever started you: dima in this chat, and cclio
 
 ## 0. new direction, or a view in an app that has one
 
-**the shipped app is the source of truth; a comp retires once built** (dima's drift policy,
-`docs/research/design-drift.md` in frame). a designer runs for a **new app's
+**the shipped app is the source of truth; a comp retires once built** (dima's drift policy, adopted
+2026-10-14, `docs/test-drive/design-drift.md` in frame). a designer runs for a **new app's
 direction** (steps 1–7) or a **new view or flow** in an app that already has one. a small ask —
 copy, spacing, a state, a variant — is a coder's job with `DESIGN.md` and a screenshot, never yours.
 an app with a direction: read, in order, and draw inside it — never invent a new language:

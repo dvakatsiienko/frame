@@ -4,7 +4,6 @@ owner: coordinator
 artifacts:
   - cclio/memory/sys-jev.md
   - script/lib/jev-questions.ts
-  - docs/research/skill-router.md
 script: jev:report
 was: [refresh-branch-classification, refresh-jev, refresh-classification]
 ---
@@ -44,7 +43,7 @@ keeps the classifier seat true: the engine (jev today, unless a better one wins)
 
 1. jev itself — docs.typesafe.ai, the cookbooks, the changelog, new models since `jev-1.13.0`: what changed, what a cookbook now does that our flows don't
 2. **how to build solid jev flows** — jev's own best-practice docs first (question design, Choice vs Noul, criteria, thresholds, multi-stage flows, evals), then what builders report: the rules that separate a working flow from a half-working one, each with its source
-3. **hunt already built to borrow** — published jev flows and skill/tool routers (github, the awesome-jev index, grep-mcp for `typesafe` / `jev` imports): read their SOURCE, name what to copy; last run's finds are in `docs/research/skill-router.md` § prior art the lanes found
+3. **hunt already built to borrow** — published jev flows and skill/tool routers (github, the awesome-jev index, grep-mcp for `typesafe` / `jev` imports): read their SOURCE, name what to copy; last run's finds live in git history, in the skill-router research doc retired 2026-10-16
 4. **hunt already built for inspo** — unusual or high-value classification uses by others that our fleet could adopt (inbox lanes, review triage, flawlog lanes, spawn gating …)
 5. **jev alternatives** — other classifiers for the same jobs: embedding routers, semantic-router, a small model (haiku) with a schema, BM25 + thresholds; cost, latency and accuracy against jev on our fixtures
 6. classification craft — the literature on what makes a typed judgment reliable: context windows (the last turn, never all history), hard negatives, per-route thresholds on held-out data, abstention, multi-label coverage metrics
@@ -66,7 +65,6 @@ keeps the classifier seat true: the engine (jev today, unless a better one wins)
 
 - `cclio/memory/sys-jev.md`: the rules a coder loads when touching jev, the lanes, the vet policy, the sharpening loop; the rules move to a `guide-classification` skill once it exists
 - `script/lib/jev-questions.ts` — every rubric, model pinned
-- `docs/research/skill-router.md` — written by FRM-305 from the 2026-10-05 lanes; dies into the guide
 
 ## findings
 

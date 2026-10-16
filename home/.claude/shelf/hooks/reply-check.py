@@ -103,6 +103,14 @@ def unproven_cants(prose: str) -> list[str]:
     return [m.group(0) for para in re.split(r"\n\s*\n", prose) if "`" not in para for m in [CANT.search(para)] if m]
 
 
+# a claim of «every / all / whole» wider than its check (10-16: «7 quotes stay whole», «every skill», «all the scripts exist»)
+WIDE_CLAIM = re.compile(r"\b(?:nothing (?:lost|dropped|missing)|all (?:kept|landed|caught|green|exist)|every (?:one|line|file|skill|quote|check)\b[^.\n]{0,30}\b(?:caught|kept|landed|whole|pass(?:es|ed)?)|stays? whole)\b", re.I)
+
+
+def wide_claims(prose: str) -> list[str]:
+    return [m.group(0) for para in re.split(r"\n\s*\n", prose) if "`" not in para for m in [WIDE_CLAIM.search(para)] if m]
+
+
 def grill_drift(prose: str, session: str) -> str:
     # the reply's grill and its orbit asks are one list: the numbers must match (dima, 2026-10-14: the reply held 5, orbit Q1–Q6)
     head = GRILL_HEAD.search(prose)
@@ -311,6 +319,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("grill-fence", f.group(0)[3:43]) for f in FENCE.finditer(reply) if GRILL_ANSWER.search(f.group(0))]
     found += [("unglossed-id", token) for token in unglossed(prose)]
     found += [("unproven-cant", word) for word in unproven_cants(prose)]
+    found += [("wide-claim", claim) for claim in wide_claims(prose)]
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (ccrow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):

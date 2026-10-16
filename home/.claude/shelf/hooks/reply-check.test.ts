@@ -190,6 +190,16 @@ describe('the unproven can’t, log-only', () => {
     });
 });
 
+describe('the wide claim, log-only', () => {
+    it('logs an «every … kept» with no command in its paragraph', () => {
+        expect(logged('every quote is kept whole.', mkdtempSync(join(tmpdir(), 'rc-')))).toContain('wide-claim');
+    });
+
+    it('passes a claim that names its command', () => {
+        expect(logged('every quote is kept: `quote-diff.py HEAD` printed 0 gone.', mkdtempSync(join(tmpdir(), 'rc-')))).toBe('');
+    });
+});
+
 describe('the grill-drift rule', () => {
     const withAsks = (texts: string[]) => {
         const home = mkdtempSync(join(tmpdir(), 'rc-home-'));

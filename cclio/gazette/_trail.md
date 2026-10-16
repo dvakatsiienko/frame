@@ -4,6 +4,10 @@
 - shipped: sweep run #2 closed + sealed (tag memory-sweep-2) · memory-lint + budgets at commit · recipe 44.7 → 34.1 KB · context7/vercel pruned
 - open: re-ask catcher shape (PK-168) · fork-guard next boot · the Wednesday memory pass starts 10-21
 - state: frame pushed at the halt · composer + ccrow stopped · weekly ~85 %
+⸻ upd 19:55
+- wishkeeper's seal siesta, 16 findings applied: dima's three cut quotes restored whole, FRM-267's orphaned asks homed (PK-170, the 5-h-window hunt), memory-lint widened to agent cards and skill references, the rest of its checks pocketed (PK-169)
+- the flush: reply-check `wide-claim` logs an «every / all / whole» claim with no command beside it; three stale research docs retired; the /btw story appended to dima-stories
+- next session's first pocket item: FRM-238, FRM-239, FRM-243, FRM-362 and the linear strays hunt (PK-171)
 
 ## 2026-10-15-the-sidecar-and-the-sweep
 - shipped: spawn refresh #5 · composer boot 75k → 53.6k · cclio:catch-up · sweep 9.5 rounds 5–18 · coderabbit adopted
