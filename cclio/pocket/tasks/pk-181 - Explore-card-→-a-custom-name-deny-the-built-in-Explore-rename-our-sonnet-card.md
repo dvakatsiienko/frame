@@ -3,10 +3,10 @@ id: PK-181
 title: >-
   Explore card → a custom name: deny the built-in Explore, rename our sonnet
   card
-status: open
+status: done
 assignee: []
 created_date: '2026-10-18 13:59'
-updated_date: '2026-10-18 13:59'
+updated_date: '2026-10-18 16:21'
 due_date: '2026-10-19'
 labels:
   - xs
@@ -26,4 +26,8 @@ dima, 2026-10-18 (inbox Q2, his 🛎️ on o4): is there a way to disable explor
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: an xs after the reset
+
+19:16, dima's tick (o41): «disable Explore, a built-in subagent, and remind what other redundant built-ins we can disable». finding: our card home/.claude/agents/explore.md is itself named Explore (it overrides the built-in), so a deny on Agent(Explore) likely blocks ours too — the card gets a new name first (x:top-seven, asked), then CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1 or deny Agent(Explore), in one change; fleet-identity.md + crew-subagent name it. other built-ins: general-purpose (already denied), claude (generic catch-all, deny candidate), Plan (plan mode's own researcher; the env var drops it with Explore), statusline-setup (sline replaced it), claude-code-guide (keep: used today).
+
+19:20 done: card renamed scout (agents/scout.md), CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1, deny Agent(claude) + Agent(statusline-setup) — live in this session (the two left the agent list); surfaces renamed: fleet-identity, crew-subagent, crew-coder, model-cards, budgets, refresh-crew-coordinator; the x-mod-stash badge map + FTR ride the mods coder's P1 push; scout's emoji is dima's pick (orbit).
 <!-- SECTION:NOTES:END -->
