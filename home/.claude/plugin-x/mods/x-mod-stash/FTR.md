@@ -7,6 +7,11 @@
 
 ## the row
 
+- ⬜ a band, board or settings pane that cannot draw shows why instead of going blank (claude-code#91870)
+  - given a reply or a store row carries a control character (a bell, a tab), then the band draws the text without it, never refused whole
+  - given the band, the board or the settings pane throws while drawing, then one red line reads «⚠️ x-mod-stash: the <part> failed to draw, the debug log names why» and the error goes to the debug log
+  - 📌 the throw path is unchecked: the test harness would not route a forced throw into the render
+
 - ✅ one row of `🪐 <open asks>` `🌔 <phases>` chips, packed left with the pace and the time left, then the 🔭 mark; `🔥`, `⏰`, `💨`, `🎛️` and `🚦` hold the right edge, 🎛️ right before 🚦 (dima's o1, 15:38); the two meters run full width under it
   - decision: the readings pack left after the chips, the switches stay right (dima's o6, 22:03)
   - given the band draws

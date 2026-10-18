@@ -67,6 +67,7 @@ import {
     parseWait,
     ticketOf,
 } from './parse.ts';
+import { cleanTree } from './tree.ts';
 
 // x-mod-stash: dima's command center above the prompt, one row; FTR.md lists every feature.
 // orbit: the session's asks to dima and its plan, written through its own tool, ticked in the board; its open asks are
@@ -3959,1754 +3960,2113 @@ export const register: Register = (on) => {
         'ui.render',
         { component: 'Pane', requestId: SETTINGS_PANE },
         async ($, e) => {
-            const ui = $.ui.resolve(e);
-            const { Box, Text, Button } = ui;
-            const meter = (await $.state.get(METER)).value;
-            // mobile draws no Input
-            const Input = 'Input' in ui ? ui.Input : undefined;
-            // the knobs: a switch saves on its press, a number on each keystroke that makes a valid value
-            const knobs = {
-                always: await readSwitch($, 'always'),
-                breathe: await readSwitch($, 'breathe'),
-                colour: await readSwitch($, 'colour'),
-                guard: !(await readSwitch($, 'silent')),
-                lines: await readNumber($, 'lines'),
-                quiet: await readSwitch($, 'quiet'),
-                quietWait: await readNumber($, 'quietWait'),
-                ring: await readSwitch($, 'ring'),
-                speak: await readSwitch($, 'speak'),
-                speed: await readNumber($, 'speed'),
-                undo: await readSwitch($, 'undo'),
-                undoDelay: await readNumber($, 'undoDelay'),
-            };
-            const switchJSX = (
-                name: SwitchName,
-                label: string,
-                isOn: boolean,
-            ) => (
-                <Box flexDirection='row' key={`knob:${SWITCHES[name].key}`}>
-                    <Button
-                        key={`knob:${SWITCHES[name].key}`}
-                        onPress={() => void flipKnob($, name)}
-                        {...(isOn
-                            ? { variant: 'primary' as const }
-                            : { dimColor: true })}>
-                        {label}
-                    </Button>
-                </Box>
-            );
-            const numberJSX = (
-                name: NumberName,
-                label: string,
-                value: number,
-                unit: string,
-            ) => {
-                const { key, range } = NUMBERS[name];
-                return Input ? (
-                    <Box
-                        alignItems='center'
-                        flexDirection='row'
-                        gap={1}
-                        key={`knob:${key}`}>
-                        {label ? <Text>{label}</Text> : null}
-                        <Box flexShrink={0} width={8}>
-                            <Input
-                                key={field($, `knob:${key}`, String(value)).key}
-                                onInput={(text) => {
-                                    field($, `knob:${key}`, String(value)).type(
-                                        text,
-                                        () => {
-                                            return setKnobNumber($, name, text);
-                                        },
-                                    );
-                                }}
-                                onSubmit={(text) =>
-                                    void setKnobNumber($, name, text)
-                                }
-                                value={
-                                    field($, `knob:${key}`, String(value)).value
-                                }
-                            />
-                        </Box>
-                        <Text
-                            dimColor>{`${unit} (${range.min}–${range.max})`}</Text>
-                    </Box>
-                ) : null;
-            };
-            const air = e.surface === 'desktop';
-            const knobsJSX = (
-                <Box
-                    borderColor={cardBorder(e.surface)}
-                    borderStyle='round'
-                    flexDirection='column'
-                    key='settings:knobs'
-                    paddingX={1}
-                    paddingY={air ? 0.5 : 0}
-                    rowGap={air ? 0.3 : 0}>
-                    <Text bold>stash · knobs</Text>
-                    {switchJSX('colour', '🎨 board colour', knobs.colour)}
-                    {/* one of two shapes, so two buttons, the one in use lit (dima, 10-13 17:45) */}
-                    <Box
-                        alignItems='center'
-                        flexDirection='row'
-                        gap={1}
-                        key='knob:ctx-shape'>
-                        <Text>🧠 sessions: ctx meter type</Text>
-                        {(
-                            [
-                                ['ring', '◯ ring', true],
-                                ['bar', '▬ bar', false],
-                            ] as const
-                        ).map(([shape, label, isRing]) => {
-                            return (
+            try {
+                return cleanTree(
+                    await (async () => {
+                        const ui = $.ui.resolve(e);
+                        const { Box, Text, Button } = ui;
+                        const meter = (await $.state.get(METER)).value;
+                        // mobile draws no Input
+                        const Input = 'Input' in ui ? ui.Input : undefined;
+                        // the knobs: a switch saves on its press, a number on each keystroke that makes a valid value
+                        const knobs = {
+                            always: await readSwitch($, 'always'),
+                            breathe: await readSwitch($, 'breathe'),
+                            colour: await readSwitch($, 'colour'),
+                            guard: !(await readSwitch($, 'silent')),
+                            lines: await readNumber($, 'lines'),
+                            quiet: await readSwitch($, 'quiet'),
+                            quietWait: await readNumber($, 'quietWait'),
+                            ring: await readSwitch($, 'ring'),
+                            speak: await readSwitch($, 'speak'),
+                            speed: await readNumber($, 'speed'),
+                            undo: await readSwitch($, 'undo'),
+                            undoDelay: await readNumber($, 'undoDelay'),
+                        };
+                        const switchJSX = (
+                            name: SwitchName,
+                            label: string,
+                            isOn: boolean,
+                        ) => (
+                            <Box
+                                flexDirection='row'
+                                key={`knob:${SWITCHES[name].key}`}>
                                 <Button
-                                    key={`knob:ctx-${shape}`}
-                                    onPress={() =>
-                                        void (knobs.ring === isRing
-                                            ? undefined
-                                            : flipKnob($, 'ring'))
-                                    }
-                                    {...(knobs.ring === isRing
+                                    key={`knob:${SWITCHES[name].key}`}
+                                    onPress={() => void flipKnob($, name)}
+                                    {...(isOn
                                         ? { variant: 'primary' as const }
                                         : { dimColor: true })}>
                                     {label}
                                 </Button>
-                            );
-                        })}
-                    </Box>
-                    {numberJSX('lines', '🌔 phase lines', knobs.lines, 'lines')}
-                    {/* the toggle and its seconds on one line, as phase lines reads (dima, 10-13 18:14) */}
-                    <Box
-                        alignItems='center'
-                        flexDirection='row'
-                        gap={1}
-                        key='knob:undo-row'>
-                        {switchJSX('undo', '📨 undo tick', knobs.undo)}
-                        {knobs.undo
-                            ? numberJSX('undoDelay', '', knobs.undoDelay, 's')
-                            : null}
-                    </Box>
-                    {switchJSX(
-                        'speak',
-                        '🔊 read-aloud on assumptions',
-                        knobs.speak,
-                    )}
-                    {/* the switch reads «shown» while lit, so it flips the stored «silent» the other way */}
-                    <Box flexDirection='row' key='knob:guard-silent'>
-                        <Button
-                            key='knob:guard-silent'
-                            onPress={() => void flipKnob($, 'silent')}
-                            {...(knobs.guard
-                                ? { variant: 'primary' as const }
-                                : { dimColor: true })}>
-                            🛡️ guard notes to the model
-                        </Button>
-                    </Box>
-                </Box>
-            );
-            // the bars' animation, its own card at the pane's bottom beside the context (dima, 18:06)
-            const barsJSX = (
-                <Box
-                    borderColor={cardBorder(e.surface)}
-                    borderStyle='round'
-                    flexDirection='column'
-                    flexGrow={1}
-                    key='settings:bars'
-                    paddingX={1}
-                    paddingY={air ? 0.5 : 0}
-                    rowGap={air ? 0.3 : 0}
-                    width={0}>
-                    <Text bold>🔥 bars</Text>
-                    {switchJSX(
-                        'breathe',
-                        '🔥 bars breathe while a turn runs',
-                        knobs.breathe,
-                    )}
-                    {switchJSX(
-                        'always',
-                        '🔥 bars breathe all the time',
-                        knobs.always,
-                    )}
-                    {numberJSX('speed', '🔥 breath speed', knobs.speed, '×')}
-                </Box>
-            );
-            // quiet comms' own card: the wait before an idle append (dima's brief 5, 16:53)
-            const quietJSX = (
-                <Box
-                    borderColor={cardBorder(e.surface)}
-                    borderStyle='round'
-                    flexDirection='column'
-                    flexGrow={1}
-                    key='settings:quiet'
-                    paddingX={1}
-                    paddingY={air ? 0.5 : 0}
-                    rowGap={air ? 0.3 : 0}
-                    width={0}>
-                    <Text bold>🤫 quiet comms</Text>
-                    {switchJSX(
-                        'quiet',
-                        "🤫 hold members' [progress] pings",
-                        knobs.quiet,
-                    )}
-                    {numberJSX(
-                        'quietWait',
-                        '🤫 held pings wait',
-                        knobs.quietWait,
-                        'min',
-                    )}
-                </Box>
-            );
-            // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
-            const compactJSX = Input ? (
-                <Box
-                    borderColor={cardBorder(e.surface)}
-                    borderStyle='round'
-                    flexDirection='column'
-                    flexGrow={1}
-                    key='settings:compact'
-                    paddingX={1}
-                    paddingY={e.surface === 'desktop' ? 0.5 : 0}
-                    width={0}>
-                    <Text bold>context</Text>
-                    <Box alignItems='center' flexDirection='row' gap={1}>
-                        <Text>📦 auto-compact at</Text>
-                        <Box flexShrink={0} width={8}>
-                            <Input
-                                key={
-                                    field(
-                                        $,
-                                        'compact-at',
-                                        meter?.compactAt === undefined
-                                            ? ''
-                                            : String(meter.compactAt),
-                                    ).key
-                                }
-                                onInput={(value) => {
-                                    field(
-                                        $,
-                                        'compact-at',
-                                        meter?.compactAt === undefined
-                                            ? ''
-                                            : String(meter.compactAt),
-                                    ).type(value, () => {
-                                        return setCompactAt($, value, true);
-                                    });
-                                }}
-                                onSubmit={(value) =>
-                                    void setCompactAt($, value)
-                                }
-                                placeholder='70'
-                                value={
-                                    field(
-                                        $,
-                                        'compact-at',
-                                        meter?.compactAt === undefined
-                                            ? ''
-                                            : String(meter.compactAt),
-                                    ).value
-                                }
-                            />
-                        </Box>
-                        <Text dimColor>% of the context window</Text>
-                    </Box>
-                </Box>
-            ) : null;
-            return (
-                // two columns of cards, the switches left and the knobs right (dima, 17:42); the bars and the context sit at the
-                // pane's bottom, side by side, a gap growing above them as the phases do on the board (dima, 18:06)
-                <Box
-                    flexDirection='column'
-                    gap={1}
-                    key='settings:view'
-                    minHeight={
-                        e.props.placement === 'dock'
-                            ? e.props.scroll.bodyRows
-                            : undefined
-                    }>
-                    <Box flexDirection='row' gap={1} key='settings:columns'>
-                        <Box
-                            flexDirection='column'
-                            flexGrow={1}
-                            gap={1}
-                            width={0}>
-                            {settingsListJSX(
-                                $,
-                                ui,
-                                (await $.state.get(VIEW)).value?.shown ?? {},
-                                e.surface === 'desktop',
-                            )}
-                        </Box>
-                        <Box
-                            flexDirection='column'
-                            flexGrow={1}
-                            gap={1}
-                            width={0}>
-                            {knobsJSX}
-                        </Box>
-                    </Box>
-                    <Box flexGrow={1} key='settings:gap' />
-                    <Box flexDirection='row' gap={1} key='settings:bottom'>
-                        {barsJSX}
-                        {quietJSX}
-                        {compactJSX}
-                    </Box>
-                </Box>
-            );
-        },
-    );
-
-    on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
-        const ui = $.ui.resolve(e);
-        const { Box, Text, Button, Link } = ui;
-        const Svg = e.surface === 'desktop' && 'Svg' in ui ? ui.Svg : undefined;
-        // the poll read the registry into the view; the pane only draws it, so a draw costs no file or process read
-        const board = (await $.state.get(BOARD_VIEW)).value;
-        const now = board?.at ?? 0;
-        const me = (await $.state.get(VIEW)).value?.selfId;
-        // the board's lower half: this session's orbit and its plan, read here so a mark or a tool call redraws it
-        const o = (await $.state.get(ORBIT)).value ?? orbit;
-        // mobile draws no Input: its steers wait for another surface
-        const Input = 'Input' in ui ? ui.Input : undefined;
-        const open = o.asks.filter((a) => !a.isResolved);
-        const age = planAge(o);
-        // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
-        // an ask card's door: this session's own orbit by default; a glide card passes the member's, through the store
-        const drawnAt = await $.clock.now();
-        // a press starts the 5 s «sending» window (PK-88); a second press inside it unsends, and one redraw shows it sent
-        const ownDoor: AskDoor = {
-            mark: (a, mark) =>
-                void (async () => {
-                    const now = await $.clock.now();
-                    const win = await sendWindow($);
-                    await markAsks(
-                        $,
-                        (x) => {
-                            if (x.id !== a.id) return x;
-                            const isOff = x.mark === mark;
-                            return {
-                                ...x,
-                                isChanged: false,
-                                mark: isOff ? undefined : mark,
-                                sendAt: isOff || !win ? undefined : now + win,
-                            };
-                        },
-                        true,
-                    );
-                    if (win)
-                        $.clock.after(win, () => $.ui.invalidate('ui.render'));
-                })(),
-            prefix: 'orbit',
-            steer: (a, value) => handleSteer(a.id, value),
-        };
-        const markJSX = (
-            a: OrbitAsk,
-            mark: 'accepted' | 'rejected',
-            door: AskDoor = ownDoor,
-        ) => (
-            <Button
-                key={`${door.prefix}:${mark}:${a.id}`}
-                onPress={() => door.mark(a, mark)}
-                // take is always the filled button (dima, 17:08); a held mark swaps its emoji for ✅, so the size never
-                // changes (dima's o7, 17:16) — one mark per ask, so only one of the two ever shows ✅
-                {...(mark === 'accepted'
-                    ? { variant: 'primary' as const }
-                    : {})}>
-                {`${a.mark === mark ? (a.isLocked ? '🔓' : isSending(a, drawnAt) ? '📨' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'tick' : 'replay'}`}
-            </Button>
-        );
-        const handleAssumedSteer = (id: string, value: string) =>
-            void changeAssumed($, (y) =>
-                y.id === id ? { ...y, steer: steerOf(value) } : y,
-            );
-        // 🐠 a 🤔 press toggles until a turn takes it; a locked piece is the running turn's and stays as it is
-        const handleThink = async (id: string) => {
-            const piece = (await currentOrbit($)).caught?.find(
-                (x) => x.id === id,
-            );
-            if (!piece || piece.isLocked) return;
-            if (!piece.isAsked) await countCatch($, 'thinks');
-            await changeCaught($, (x) =>
-                x.id === id ? { ...x, isAsked: !x.isAsked } : x,
-            );
-        };
-        const handleClear = async (id: string) => {
-            await countCatch($, 'clears');
-            await changeCaught($, (x) => (x.id === id ? undefined : x));
-        };
-        const handleCatchSteer = (id: string, value: string) =>
-            void changeCaught($, (x) =>
-                x.id === id && !x.isLocked
-                    ? { ...x, steer: steerOf(value) }
-                    : x,
-            );
-        // the steer keeps every keystroke, no Enter needed
-        const handleSteer = (id: string, value: string) =>
-            void markAsks($, (x) =>
-                x.id === id ? { ...x, steer: steerOf(value) } : x,
-            );
-        // a locked ask is the running turn's: no control at all, its mark and steer as dim text (the api has no disabled)
-        // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
-        // (claude-code#101090) — a workaround, see mods/workarounds.md
-        const boardShown = (await $.state.get(VIEW)).value?.shown ?? {};
-        const isPartOn = (key: string) => boardShown[key] !== false;
-        const speakAssumed = await readSwitch($, 'speak');
-        const folds = (await $.state.get(FOLDS)).value ?? {};
-        // one fold rule for every card: open until folded, but a glide card's member subcard starts folded to its count, and a
-        // catch piece's hidden note and the shelf past its 5th row start folded
-        const foldedOf = (kept: Record<string, boolean>, card: string) =>
-            kept[card] ??
-            /^(lane:[^:]+:(coder|verifier)|quiet:.+|catch:.+)$/.test(card);
-        const flipFold = async (card: string) => {
-            const was = (await $.state.get(FOLDS)).value ?? {};
-            await $.state.set(FOLDS, { ...was, [card]: !foldedOf(was, card) });
-        };
-        const isFolded = (card: string) => foldedOf(folds, card);
-        // 📂 sits at the far right of each card's head line and folds the card to that line, then reads 📁 (dima's o5, 17:21)
-        const foldJSX = (card: string) => (
-            <Button
-                key={`fold:${card}`}
-                onPress={async () => {
-                    const was = (await $.state.get(FOLDS)).value ?? {};
-                    await $.state.set(FOLDS, {
-                        ...was,
-                        [card]: !foldedOf(was, card),
-                    });
-                }}
-                plain>
-                {isFolded(card) ? '📁' : '📂'}
-            </Button>
-        );
-        // every card's frame; a card adds its key, its margin and its row gap
-        const cardProps = {
-            borderColor: cardBorder(e.surface),
-            borderStyle: 'round',
-            flexDirection: 'column',
-            paddingX: 1,
-            paddingY: 0.5,
-        } as const;
-        // ⏸️ while speak reads, ▶️ when it is paused or quiet: a press pauses, resumes, or reads this row (dima, 15:51)
-        const isSpeaking = (await $.state.get(SPEAKING)).value === true;
-        // an ask's one link: a url opens as a link, a file path through `open` (a mod Link takes https only)
-        const askLinkJSX = (id: string, target: string) => {
-            return target.startsWith('https://') ? (
-                <Link href={target} key={`ask:link:${id}`}>
-                    {`🔗 ${target.slice('https://'.length).split('/')[0]}`}
-                </Link>
-            ) : (
-                <Button
-                    key={`ask:link:${id}`}
-                    onPress={() => void openPath($, target)}
-                    plain>
-                    {`🔗 ${basename(target)}`}
-                </Button>
-            );
-        };
-        const speakJSX = (id: string, text: string) =>
-            !isPartOn('stash.speak')
-                ? []
-                : [
-                      <Button
-                          key={`orbit:read:${id}`}
-                          onPress={() =>
-                              void speak($, { op: 'read', text }).then(() =>
-                                  refreshSpeaking($),
-                              )
-                          }
-                          plain>
-                          🔊
-                      </Button>,
-                      <Button
-                          key={`orbit:pause:${id}`}
-                          onPress={() => void playPress($, text)}
-                          plain>
-                          {isSpeaking ? '⏸️' : '▶️'}
-                      </Button>,
-                      <Button
-                          key={`orbit:stop:${id}`}
-                          onPress={() =>
-                              void speak($, { op: 'stop' }).then(() =>
-                                  refreshSpeaking($),
-                              )
-                          }
-                          plain>
-                          ⏹️
-                      </Button>,
-                  ];
-        // a ticket id in an ask or a phase opens its linear page, as a session row's does (dima's o62, 22:13)
-        const linkedJSX = (text: string, key: string) =>
-            text.split(TICKET_IDS).map((part, i) => {
-                if (i % 2 === 0) return part;
-                return (
-                    <Link
-                        href={`https://linear.app/x-com/issue/${part}`}
-                        key={`${key}:${i}`}>
-                        {part}
-                    </Link>
-                );
-            });
-        // the ask on its own line, the bold id leading it; under it one row: the steer, 🛎️ ↩️, then speak's 🔊 ⏯ ⏹
-        // (dima, 20:08); a full row of air between asks (dima, 19:52)
-        // an ask resolved with a closing word draws dim, the word after its text and no controls, for its turn and one more
-        // no card: its emoji from the word and the ask on one line, the word under it, dim and whole (dima's shots,
-        // 20:37 and 10-13 18:20: on one line the word got cut)
-        const closedJSX = (a: OrbitAsk, i: number, door: AskDoor) => (
-            <Box
-                flexDirection='column'
-                key={`${door.prefix}:ask:${a.id}`}
-                marginTop={i > 0 ? 0.5 : 0}
-                paddingX={1}>
-                <Text dimColor wrap='truncate-end'>
-                    {`${closedMark(a.word ?? '')} ${a.id}: ${a.text}`}
-                </Text>
-                <Text bold dimColor>
-                    {`➡️ ${a.word}`}
-                </Text>
-            </Box>
-        );
-        // an ask with an expiry says what it is beside its controls (dima, 20:37: «⌛ halt» did not read)
-        const expiryText = (a: OrbitAsk) => {
-            if (a.dies === 'halt') return '⌛ dies at halt';
-            const left = (a.dies ?? 0) - (o.prompts ?? 0);
-            return left < 1
-                ? '⌛ dies this turn'
-                : `⌛ dies in ${left} prompt${left === 1 ? '' : 's'}`;
-        };
-        const askJSX = (a: OrbitAsk, i: number, door: AskDoor = ownDoor) =>
-            a.word ? (
-                closedJSX(a, i, door)
-            ) : (
-                <Box
-                    borderDimColor
-                    borderStyle='round'
-                    flexDirection='column'
-                    key={`${door.prefix}:ask:${a.id}`}
-                    marginTop={i > 0 ? 0.5 : 0}
-                    paddingX={1}
-                    rowGap={LINE_GAP}>
-                    <Box flexDirection='row' gap={1}>
-                        <Box
-                            flexDirection='column'
-                            flexGrow={1}
-                            flexShrink={1}
-                            minWidth={0}
-                            rowGap={LINE_GAP}>
-                            {/* the id and the pick bold, so the proposal stands out (dima, 20:30) */}
-                            {/* an ask answered this turn leads its line with 👀 until the turn ends — inline, so the row keeps its left
-                            edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
-                            <Text>
-                                {a.isResolved ? '👀 ' : ''}
-                                {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the steer (dima, 11:57) */}
-                                {a.isChanged ? `${CHANGED_MARK} ` : ''}
-                                <Text bold>{a.id}</Text>
-                                {': '}
-                                {linkedJSX(a.text, `ask:${a.id}`)}
-                            </Text>
-                            {/* the pick on a line of its own, the mock's card shape (dima, 17:00) */}
-                            <Text>
-                                {'➡️ '}
-                                <Text bold>
-                                    {linkedJSX(a.pick, `pick:${a.id}`)}
-                                </Text>
-                            </Text>
-                        </Box>
-                    </Box>
-                    {/* the buttons lead, the steer follows them, on the line under the pick — never beside it (dima, 20:19; 20:23) */}
-                    <Box
-                        alignItems='center'
-                        flexDirection='row'
-                        gap={1}
-                        key={`${door.prefix}:row:${a.id}`}>
-                        {/* a joined ask keeps both buttons; the held one reads 🔓 while the turn holds it (dima, 17:42) */}
-                        {[
-                            markJSX(a, 'accepted', door),
-                            markJSX(a, 'rejected', door),
-                        ]}
-                        {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
-                        {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
-                        {speakJSX(a.id, `${a.text}. ${a.pick}`)}
-                        {door === ownDoor && a.dies !== undefined && !a.mark ? (
-                            <Text dimColor>{expiryText(a)}</Text>
-                        ) : null}
-                        {a.isLocked ? (
-                            a.steer ? (
-                                <Box flexShrink={1} minWidth={0}>
-                                    <Text dimColor wrap='truncate-end'>
-                                        {/* a sent steer leads with 💬, drawn for dima only: the model gets «his steer: …» (dima, 18:14) */}
-                                        {`💬 «${a.steer}»`}
-                                    </Text>
-                                </Box>
-                            ) : null
-                        ) : Input ? (
-                            <Box flexShrink={1} minWidth={0}>
-                                <Input
-                                    key={
-                                        field(
-                                            $,
-                                            `${door.prefix}:steer:${a.id}`,
-                                            a.steer ?? '',
-                                        ).key
-                                    }
-                                    onInput={(value: string) => {
-                                        field(
-                                            $,
-                                            `${door.prefix}:steer:${a.id}`,
-                                            a.steer ?? '',
-                                        ).type(value, () => {
-                                            return door.steer(a, value);
-                                        });
-                                    }}
-                                    onSubmit={(value: string) =>
-                                        door.steer(a, value)
-                                    }
-                                    placeholder='steer'
-                                    value={
-                                        field(
-                                            $,
-                                            `${door.prefix}:steer:${a.id}`,
-                                            a.steer ?? '',
-                                        ).value
-                                    }
-                                />
                             </Box>
-                        ) : null}
-                        {/* the steer comes first, the file link after it, at the row's end (dima's shot, 20:57) */}
-                        {a.link ? askLinkJSX(a.id, a.link) : null}
-                    </Box>
-                </Box>
-            );
-        const orbitJSX = (
-            <Box key='orbit' {...cardProps} marginTop={1} rowGap={0.5}>
-                <Box flexDirection='row' justifyContent='space-between'>
-                    <Text bold>🪐 orbit</Text>
-                    <Box alignItems='center' flexDirection='row' gap={1}>
-                        {open.some((a) => !a.mark && !a.isLocked) ? (
-                            <Button
-                                key='orbit:all'
-                                onPress={() =>
-                                    void markAsks(
-                                        $,
-                                        (x) =>
-                                            x.mark
-                                                ? x
-                                                : {
-                                                      ...x,
-                                                      isChanged: false,
-                                                      mark: 'accepted',
-                                                  },
-                                        true,
-                                    )
-                                }
-                                plain>
-                                ✅
-                            </Button>
-                        ) : null}
-                        {foldJSX('orbit')}
-                    </Box>
-                </Box>
-                {/* an answered ask stays until its turn ends, so dima sees it go */}
-                {isFolded('orbit') ? null : o.asks.map((a, i) => askJSX(a, i))}
-                {!isFolded('orbit') &&
-                o.assumed?.length &&
-                isPartOn('stash.assumed') ? (
-                    <Box
-                        flexDirection='column'
-                        key='orbit:assumed'
-                        marginTop={1}
-                        rowGap={LINE_GAP}>
-                        <Text bold>assumed</Text>
-                        {o.assumed.map((x) => {
-                            return (
-                                <Box
-                                    flexDirection='column'
-                                    key={`orbit:assumption:${x.id}`}
-                                    rowGap={LINE_GAP}>
-                                    <Text>
-                                        <Text bold>{x.id}</Text>
-                                        {`: ${x.text}`}
-                                    </Text>
-                                    <Box
-                                        alignItems='center'
-                                        flexDirection='row'
-                                        gap={1}>
-                                        <Button
-                                            key={`orbit:right:${x.id}`}
-                                            onPress={() =>
-                                                void changeAssumed(
-                                                    $,
-                                                    (y) =>
-                                                        y.id === x.id
-                                                            ? undefined
-                                                            : y,
-                                                    true,
-                                                )
-                                            }
-                                            plain>
-                                            🛎️
-                                        </Button>
-                                        <Button
-                                            key={`orbit:wrong:${x.id}`}
-                                            onPress={() =>
-                                                void changeAssumed(
-                                                    $,
-                                                    (y) =>
-                                                        y.id === x.id
-                                                            ? {
-                                                                  ...y,
-                                                                  isWrong:
-                                                                      !y.isWrong,
-                                                              }
-                                                            : y,
-                                                    true,
-                                                )
-                                            }
-                                            {...(x.isWrong
-                                                ? {
-                                                      variant:
-                                                          'secondary' as const,
-                                                  }
-                                                : { plain: true as const })}>
-                                            ↩️
-                                        </Button>
-                                        {speakAssumed
-                                            ? speakJSX(x.id, x.text)
-                                            : null}
-                                        {Input ? (
-                                            <Box flexShrink={1} minWidth={0}>
-                                                <Input
-                                                    key={
-                                                        field(
-                                                            $,
-                                                            `orbit:asteer:${x.id}`,
-                                                            x.steer ?? '',
-                                                        ).key
-                                                    }
-                                                    onInput={(
-                                                        value: string,
-                                                    ) => {
-                                                        field(
-                                                            $,
-                                                            `orbit:asteer:${x.id}`,
-                                                            x.steer ?? '',
-                                                        ).type(value, () => {
-                                                            return handleAssumedSteer(
-                                                                x.id,
-                                                                value,
-                                                            );
-                                                        });
-                                                    }}
-                                                    onSubmit={(value: string) =>
-                                                        handleAssumedSteer(
-                                                            x.id,
-                                                            value,
-                                                        )
-                                                    }
-                                                    placeholder='steer'
-                                                    value={
-                                                        field(
-                                                            $,
-                                                            `orbit:asteer:${x.id}`,
-                                                            x.steer ?? '',
-                                                        ).value
-                                                    }
-                                                />
-                                            </Box>
-                                        ) : null}
-                                    </Box>
-                                </Box>
-                            );
-                        })}
-                    </Box>
-                ) : null}
-                {!isFolded('orbit') &&
-                isPartOn('stash.catch') &&
-                o.caught?.length ? (
-                    <Box
-                        flexDirection='column'
-                        key='orbit:caught'
-                        marginTop={1}
-                        rowGap={LINE_GAP}>
-                        <Text bold>🐠 catch</Text>
-                        {(isFolded('catch:more')
-                            ? o.caught.slice(0, CATCH_SHOWN)
-                            : o.caught
-                        ).map((x) => {
-                            // one row: kind, line, dim age, 🤔, ✖️; a press on the line opens its hidden note, copy and steer in place
-                            const isOpen = !isFolded(`catch:${x.id}`);
-                            return (
-                                <Box
-                                    flexDirection='column'
-                                    key={`orbit:catch:${x.id}`}
-                                    rowGap={LINE_GAP}>
-                                    <Box
-                                        alignItems='center'
-                                        flexDirection='row'
-                                        gap={1}>
-                                        <Box flexShrink={1} minWidth={0}>
-                                            <Button
-                                                key={`orbit:open:${x.id}`}
-                                                onPress={() =>
-                                                    void flipFold(
-                                                        `catch:${x.id}`,
-                                                    )
-                                                }
-                                                plain>
-                                                {`${x.kind ?? '💡'} ${x.text}`}
-                                            </Button>
-                                        </Box>
-                                        <Text dimColor>{span(now - x.at)}</Text>
-                                        <Button
-                                            key={`orbit:think:${x.id}`}
-                                            onPress={() =>
-                                                void handleThink(x.id)
-                                            }
-                                            {...(x.isAsked || x.isLocked
-                                                ? {
-                                                      variant:
-                                                          'secondary' as const,
-                                                  }
-                                                : { plain: true as const })}>
-                                            {x.isLocked
-                                                ? '🔓 🤔'
-                                                : x.isAsked
-                                                  ? '✅ 🤔'
-                                                  : '🤔'}
-                                        </Button>
-                                        <Button
-                                            key={`orbit:clear:${x.id}`}
-                                            onPress={() =>
-                                                void handleClear(x.id)
-                                            }
-                                            plain>
-                                            ✖️
-                                        </Button>
-                                    </Box>
-                                    {isOpen ? (
-                                        <Box
-                                            flexDirection='column'
-                                            key={`orbit:catch:${x.id}:open`}
-                                            paddingLeft={3}
-                                            rowGap={LINE_GAP}>
-                                            {x.hiddenNote ? (
-                                                <Text dimColor>
-                                                    {x.hiddenNote}
-                                                </Text>
-                                            ) : null}
-                                            <Box
-                                                alignItems='center'
-                                                flexDirection='row'
-                                                gap={1}>
-                                                <Button
-                                                    key={`orbit:copy:${x.id}`}
-                                                    onPress={(press) =>
-                                                        void $.ui.copy({
-                                                            surface:
-                                                                press.surface,
-                                                            text: x.text,
-                                                        })
-                                                    }
-                                                    plain>
-                                                    📋 copy
-                                                </Button>
-                                                {x.isLocked ? (
-                                                    x.steer ? (
-                                                        <Text
-                                                            dimColor>{`💬 «${x.steer}»`}</Text>
-                                                    ) : null
-                                                ) : Input ? (
-                                                    <Box
-                                                        flexShrink={1}
-                                                        minWidth={0}>
-                                                        <Input
-                                                            key={
-                                                                field(
-                                                                    $,
-                                                                    `orbit:csteer:${x.id}`,
-                                                                    x.steer ??
-                                                                        '',
-                                                                ).key
-                                                            }
-                                                            onInput={(
-                                                                value: string,
-                                                            ) => {
-                                                                field(
-                                                                    $,
-                                                                    `orbit:csteer:${x.id}`,
-                                                                    x.steer ??
-                                                                        '',
-                                                                ).type(
-                                                                    value,
-                                                                    () => {
-                                                                        return handleCatchSteer(
-                                                                            x.id,
-                                                                            value,
-                                                                        );
-                                                                    },
-                                                                );
-                                                            }}
-                                                            onSubmit={(
-                                                                value: string,
-                                                            ) =>
-                                                                handleCatchSteer(
-                                                                    x.id,
-                                                                    value,
-                                                                )
-                                                            }
-                                                            placeholder='steer'
-                                                            value={
-                                                                field(
-                                                                    $,
-                                                                    `orbit:csteer:${x.id}`,
-                                                                    x.steer ??
-                                                                        '',
-                                                                ).value
-                                                            }
-                                                        />
-                                                    </Box>
-                                                ) : null}
-                                            </Box>
-                                        </Box>
-                                    ) : null}
-                                </Box>
-                            );
-                        })}
-                        {o.caught.length > CATCH_SHOWN ? (
-                            <Box flexDirection='row' key='orbit:catch:more'>
-                                <Button
-                                    key='fold:catch:more'
-                                    onPress={() => void flipFold('catch:more')}
-                                    plain>
-                                    {isFolded('catch:more')
-                                        ? `+${o.caught.length - CATCH_SHOWN}`
-                                        : 'fold'}
-                                </Button>
-                            </Box>
-                        ) : null}
-                    </Box>
-                ) : null}
-            </Box>
-        );
-        // 🛼 glide (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
-        // current one «← we are here»; a steer on it reaches cclio's next prompt, whichever board took it
-        const lanes = (await $.state.get(LANES)).value ?? [];
-        const laneAsks = (await $.state.get(LANE_ASKS)).value ?? {};
-        // a member's asks on the glide card: folded to their count by default, its rows marked as on the member's own board
-        const memberJSX = (
-            lane: StashLane,
-            role: (typeof LANE_ROLES)[number],
-        ) => {
-            const sid = lane.members[role];
-            if (!sid) return null;
-            const asks = laneAsks[sid] ?? [];
-            // a mark goes to the session the member runs under now, which its own stash absorbs
-            const markSid = lane.memberSids?.[role] ?? sid;
-            const card = `lane:${lane.id}:${role}`;
-            const isOpen = !isFolded(card);
-            const badge = role === 'coder' ? '🔧' : '🔎';
-            return (
-                <Box flexDirection='column' key={card} rowGap={LINE_GAP}>
-                    <Box alignItems='center' flexDirection='row' gap={1}>
-                        {/* asks waiting read amber with a 🙋, the one colour dima reads as «waits on you» (dima, 19:45) */}
-                        <Text
-                            bold
-                            color={asks.length ? PALETTE.warn : undefined}>
-                            {`${asks.length ? '🙋 ' : ''}${badge} ${role} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}
-                        </Text>
-                        {foldJSX(card)}
-                    </Box>
-                    {isOpen
-                        ? asks.map((a, i) =>
-                              askJSX(a as OrbitAsk, i, {
-                                  mark: (x, mark) =>
-                                      void markRemote($, markSid, x, {
-                                          mark:
-                                              x.mark === mark
-                                                  ? undefined
-                                                  : mark,
-                                          steer: x.steer,
-                                      }),
-                                  prefix: card,
-                                  steer: (x, value) =>
-                                      void markRemote($, markSid, x, {
-                                          mark: x.mark,
-                                          steer: steerOf(value),
-                                      }),
-                              }),
-                          )
-                        : null}
-                </Box>
-            );
-        };
-        // 🙋 the board's top while a lane member's asks wait on dima: their count, then each member, a press scrolls to its asks
-        const waitingOn = isPartOn('stash.glide')
-            ? lanes.flatMap((lane) =>
-                  LANE_ROLES.flatMap((role) => {
-                      const sid = lane.members[role];
-                      const n = sid
-                          ? ((laneAsks[sid] ?? []) as OrbitAsk[]).filter(
-                                (a) => !a.mark,
-                            ).length
-                          : 0;
-                      return n ? [{ lane, n, role }] : [];
-                  }),
-              )
-            : [];
-        const waitingCount = waitingOn.reduce((sum, w) => sum + w.n, 0);
-        const stripJSX = waitingCount ? (
-            <Box
-                key='asks-strip'
-                {...cardProps}
-                alignItems='center'
-                borderColor={PALETTE.warn}
-                columnGap={1}
-                flexDirection='row'
-                flexWrap='wrap'
-                marginBottom={1}>
-                <Text bold color={PALETTE.warn}>
-                    {`🙋 ${waitingCount} ask${waitingCount === 1 ? ' waits' : 's wait'} for you`}
-                </Text>
-                {waitingOn.map((w) => (
-                    <Button
-                        key={`asks-strip:${w.lane.id}:${w.role}`}
-                        onPress={() =>
-                            void $.ui
-                                .scroll({
-                                    block: 'start',
-                                    to: { key: `lane:${w.lane.id}:${w.role}` },
-                                })
-                                .catch(() => undefined)
-                        }
-                        plain>
-                        {`· ${w.role === 'coder' ? '🔧' : '🔎'} ${w.role} ${w.n}`}
-                    </Button>
-                ))}
-            </Box>
-        ) : null;
-        // o84: dima's hand on this session's phases — a move, a tick, a steer — waits SEND_MS like an orbit tick
-        const changePlan = async (
-            change: (p: StashPlan) => StashPlan,
-            isSend = true,
-        ) => {
-            const was = await currentOrbit($);
-            if (!was.plan) return;
-            const win = await sendWindow($);
-            const sendAt = isSend
-                ? (await $.clock.now()) + win
-                : was.plan.sendAt;
-            await saveOrbit($, {
-                ...was,
-                plan: { ...change(was.plan), sendAt },
-            });
-            if (isSend && win)
-                $.clock.after(win, () => $.ui.invalidate('ui.render'));
-        };
-        const handlePlanMove = (i: number, by: -1 | 1) =>
-            void changePlan((p) => ({
-                ...p,
-                isMoved: true,
-                lines: moved(p.lines, i, by),
-            }));
-        const handlePlanTick = () =>
-            void changePlan((p) => ({
-                ...p,
-                mark: p.mark ? undefined : 'accepted',
-            }));
-        const handlePlanSteer = (value: string) =>
-            changePlan((p) => ({ ...p, steer: steerOf(value) }), false);
-        const arrowsJSX = (
-            key: string,
-            canUp: boolean,
-            canDown: boolean,
-            onMove: (by: -1 | 1) => void,
-        ) => (
-            <Box
-                flexDirection='row'
-                flexShrink={0}
-                gap={1}
-                key={`${key}:arrows`}>
-                {/* every row keeps the same two buttons, so the column never drifts and no size changes (dima, 21:23–21:24);
-                    an end's dead arrow is the same button, a press on it does nothing — the api has no disabled */}
-                {(['up', 'down'] as const).map((dir) => {
-                    const isLive = dir === 'up' ? canUp : canDown;
-                    const glyph = dir === 'up' ? '↑' : '↓';
-                    return (
-                        <Button
-                            key={`${key}:${dir}`}
-                            onPress={() => {
-                                if (isLive) onMove(dir === 'up' ? -1 : 1);
-                            }}
-                            plain>
-                            {glyph}
-                        </Button>
-                    );
-                })}
-            </Box>
-        );
-        const handleLaneSteer = (id: string, value: string) =>
-            changeLaneSteer($, id, (n) => ({
-                ...n,
-                steer: steerOf(value),
-            }));
-        const handleLaneTake = (id: string) =>
-            changeLaneSteer($, id, (n) => ({
-                ...n,
-                isTaken: !n.isTaken || undefined,
-            }));
-        const laneJSX = isPartOn('stash.glide')
-            ? lanes.map((lane) => (
-                  <Box
-                      key={`lane:${lane.id}`}
-                      {...cardProps}
-                      marginTop={1}
-                      rowGap={LINE_GAP}>
-                      <Box flexDirection='row' justifyContent='space-between'>
-                          <Text bold>{`🛼 glide: ${lane.title}`}</Text>
-                          {foldJSX(`lane:${lane.id}`)}
-                      </Box>
-                      {isFolded(`lane:${lane.id}`)
-                          ? null
-                          : lane.items.map((item, i) => (
+                        );
+                        const numberJSX = (
+                            name: NumberName,
+                            label: string,
+                            value: number,
+                            unit: string,
+                        ) => {
+                            const { key, range } = NUMBERS[name];
+                            return Input ? (
                                 <Box
                                     alignItems='center'
                                     flexDirection='row'
                                     gap={1}
-                                    // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
-                                    key={`lane:${lane.id}:${i}`}>
-                                    {/* the step's text gives way first: the link, tick and steer keep their room (dima's shots, 17:41, 17:46) */}
-                                    <Box flexShrink={1} minWidth={0}>
-                                        <Text
-                                            bold={i === lane.current}
-                                            dimColor={item.isDone}
-                                            wrap='truncate-end'>
-                                            {item.isDone
-                                                ? '✅'
-                                                : i === lane.current
-                                                  ? '➡️'
-                                                  : '⬜'}{' '}
-                                            {item.text}
+                                    key={`knob:${key}`}>
+                                    {label ? <Text>{label}</Text> : null}
+                                    <Box flexShrink={0} width={8}>
+                                        <Input
+                                            key={
+                                                field(
+                                                    $,
+                                                    `knob:${key}`,
+                                                    String(value),
+                                                ).key
+                                            }
+                                            onInput={(text) => {
+                                                field(
+                                                    $,
+                                                    `knob:${key}`,
+                                                    String(value),
+                                                ).type(text, () => {
+                                                    return setKnobNumber(
+                                                        $,
+                                                        name,
+                                                        text,
+                                                    );
+                                                });
+                                            }}
+                                            onSubmit={(text) =>
+                                                void setKnobNumber(
+                                                    $,
+                                                    name,
+                                                    text,
+                                                )
+                                            }
+                                            value={
+                                                field(
+                                                    $,
+                                                    `knob:${key}`,
+                                                    String(value),
+                                                ).value
+                                            }
+                                        />
+                                    </Box>
+                                    <Text
+                                        dimColor>{`${unit} (${range.min}–${range.max})`}</Text>
+                                </Box>
+                            ) : null;
+                        };
+                        const air = e.surface === 'desktop';
+                        const knobsJSX = (
+                            <Box
+                                borderColor={cardBorder(e.surface)}
+                                borderStyle='round'
+                                flexDirection='column'
+                                key='settings:knobs'
+                                paddingX={1}
+                                paddingY={air ? 0.5 : 0}
+                                rowGap={air ? 0.3 : 0}>
+                                <Text bold>stash · knobs</Text>
+                                {switchJSX(
+                                    'colour',
+                                    '🎨 board colour',
+                                    knobs.colour,
+                                )}
+                                {/* one of two shapes, so two buttons, the one in use lit (dima, 10-13 17:45) */}
+                                <Box
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    gap={1}
+                                    key='knob:ctx-shape'>
+                                    <Text>🧠 sessions: ctx meter type</Text>
+                                    {(
+                                        [
+                                            ['ring', '◯ ring', true],
+                                            ['bar', '▬ bar', false],
+                                        ] as const
+                                    ).map(([shape, label, isRing]) => {
+                                        return (
+                                            <Button
+                                                key={`knob:ctx-${shape}`}
+                                                onPress={() =>
+                                                    void (knobs.ring === isRing
+                                                        ? undefined
+                                                        : flipKnob($, 'ring'))
+                                                }
+                                                {...(knobs.ring === isRing
+                                                    ? {
+                                                          variant:
+                                                              'primary' as const,
+                                                      }
+                                                    : { dimColor: true })}>
+                                                {label}
+                                            </Button>
+                                        );
+                                    })}
+                                </Box>
+                                {numberJSX(
+                                    'lines',
+                                    '🌔 phase lines',
+                                    knobs.lines,
+                                    'lines',
+                                )}
+                                {/* the toggle and its seconds on one line, as phase lines reads (dima, 10-13 18:14) */}
+                                <Box
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    gap={1}
+                                    key='knob:undo-row'>
+                                    {switchJSX(
+                                        'undo',
+                                        '📨 undo tick',
+                                        knobs.undo,
+                                    )}
+                                    {knobs.undo
+                                        ? numberJSX(
+                                              'undoDelay',
+                                              '',
+                                              knobs.undoDelay,
+                                              's',
+                                          )
+                                        : null}
+                                </Box>
+                                {switchJSX(
+                                    'speak',
+                                    '🔊 read-aloud on assumptions',
+                                    knobs.speak,
+                                )}
+                                {/* the switch reads «shown» while lit, so it flips the stored «silent» the other way */}
+                                <Box
+                                    flexDirection='row'
+                                    key='knob:guard-silent'>
+                                    <Button
+                                        key='knob:guard-silent'
+                                        onPress={() =>
+                                            void flipKnob($, 'silent')
+                                        }
+                                        {...(knobs.guard
+                                            ? { variant: 'primary' as const }
+                                            : { dimColor: true })}>
+                                        🛡️ guard notes to the model
+                                    </Button>
+                                </Box>
+                            </Box>
+                        );
+                        // the bars' animation, its own card at the pane's bottom beside the context (dima, 18:06)
+                        const barsJSX = (
+                            <Box
+                                borderColor={cardBorder(e.surface)}
+                                borderStyle='round'
+                                flexDirection='column'
+                                flexGrow={1}
+                                key='settings:bars'
+                                paddingX={1}
+                                paddingY={air ? 0.5 : 0}
+                                rowGap={air ? 0.3 : 0}
+                                width={0}>
+                                <Text bold>🔥 bars</Text>
+                                {switchJSX(
+                                    'breathe',
+                                    '🔥 bars breathe while a turn runs',
+                                    knobs.breathe,
+                                )}
+                                {switchJSX(
+                                    'always',
+                                    '🔥 bars breathe all the time',
+                                    knobs.always,
+                                )}
+                                {numberJSX(
+                                    'speed',
+                                    '🔥 breath speed',
+                                    knobs.speed,
+                                    '×',
+                                )}
+                            </Box>
+                        );
+                        // quiet comms' own card: the wait before an idle append (dima's brief 5, 16:53)
+                        const quietJSX = (
+                            <Box
+                                borderColor={cardBorder(e.surface)}
+                                borderStyle='round'
+                                flexDirection='column'
+                                flexGrow={1}
+                                key='settings:quiet'
+                                paddingX={1}
+                                paddingY={air ? 0.5 : 0}
+                                rowGap={air ? 0.3 : 0}
+                                width={0}>
+                                <Text bold>🤫 quiet comms</Text>
+                                {switchJSX(
+                                    'quiet',
+                                    "🤫 hold members' [progress] pings",
+                                    knobs.quiet,
+                                )}
+                                {numberJSX(
+                                    'quietWait',
+                                    '🤫 held pings wait',
+                                    knobs.quietWait,
+                                    'min',
+                                )}
+                            </Box>
+                        );
+                        // the auto-compact point lives only in 🎛️, its last section (dima, 15:35: «move full autocompact part to settings»)
+                        const compactJSX = Input ? (
+                            <Box
+                                borderColor={cardBorder(e.surface)}
+                                borderStyle='round'
+                                flexDirection='column'
+                                flexGrow={1}
+                                key='settings:compact'
+                                paddingX={1}
+                                paddingY={e.surface === 'desktop' ? 0.5 : 0}
+                                width={0}>
+                                <Text bold>context</Text>
+                                <Box
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    gap={1}>
+                                    <Text>📦 auto-compact at</Text>
+                                    <Box flexShrink={0} width={8}>
+                                        <Input
+                                            key={
+                                                field(
+                                                    $,
+                                                    'compact-at',
+                                                    meter?.compactAt ===
+                                                        undefined
+                                                        ? ''
+                                                        : String(
+                                                              meter.compactAt,
+                                                          ),
+                                                ).key
+                                            }
+                                            onInput={(value) => {
+                                                field(
+                                                    $,
+                                                    'compact-at',
+                                                    meter?.compactAt ===
+                                                        undefined
+                                                        ? ''
+                                                        : String(
+                                                              meter.compactAt,
+                                                          ),
+                                                ).type(value, () => {
+                                                    return setCompactAt(
+                                                        $,
+                                                        value,
+                                                        true,
+                                                    );
+                                                });
+                                            }}
+                                            onSubmit={(value) =>
+                                                void setCompactAt($, value)
+                                            }
+                                            placeholder='70'
+                                            value={
+                                                field(
+                                                    $,
+                                                    'compact-at',
+                                                    meter?.compactAt ===
+                                                        undefined
+                                                        ? ''
+                                                        : String(
+                                                              meter.compactAt,
+                                                          ),
+                                                ).value
+                                            }
+                                        />
+                                    </Box>
+                                    <Text dimColor>
+                                        % of the context window
+                                    </Text>
+                                </Box>
+                            </Box>
+                        ) : null;
+                        return (
+                            // two columns of cards, the switches left and the knobs right (dima, 17:42); the bars and the context sit at the
+                            // pane's bottom, side by side, a gap growing above them as the phases do on the board (dima, 18:06)
+                            <Box
+                                flexDirection='column'
+                                gap={1}
+                                key='settings:view'
+                                minHeight={
+                                    e.props.placement === 'dock'
+                                        ? e.props.scroll.bodyRows
+                                        : undefined
+                                }>
+                                <Box
+                                    flexDirection='row'
+                                    gap={1}
+                                    key='settings:columns'>
+                                    <Box
+                                        flexDirection='column'
+                                        flexGrow={1}
+                                        gap={1}
+                                        width={0}>
+                                        {settingsListJSX(
+                                            $,
+                                            ui,
+                                            (await $.state.get(VIEW)).value
+                                                ?.shown ?? {},
+                                            e.surface === 'desktop',
+                                        )}
+                                    </Box>
+                                    <Box
+                                        flexDirection='column'
+                                        flexGrow={1}
+                                        gap={1}
+                                        width={0}>
+                                        {knobsJSX}
+                                    </Box>
+                                </Box>
+                                <Box flexGrow={1} key='settings:gap' />
+                                <Box
+                                    flexDirection='row'
+                                    gap={1}
+                                    key='settings:bottom'>
+                                    {barsJSX}
+                                    {quietJSX}
+                                    {compactJSX}
+                                </Box>
+                            </Box>
+                        );
+                    })(),
+                );
+            } catch (err) {
+                $.ui.log(
+                    `x-mod-stash: the settings failed to draw: ${String(err)}`,
+                );
+                const { Box, Text } = $.ui.resolve(e);
+                return cleanTree(
+                    <Box>
+                        <Text color='error'>
+                            ⚠️ x-mod-stash: the settings failed to draw, the
+                            debug log names why
+                        </Text>
+                    </Box>,
+                );
+            }
+        },
+    );
+
+    on('ui.render', { component: 'Pane', requestId: BOARD }, async ($, e) => {
+        try {
+            return cleanTree(
+                await (async () => {
+                    const ui = $.ui.resolve(e);
+                    const { Box, Text, Button, Link } = ui;
+                    const Svg =
+                        e.surface === 'desktop' && 'Svg' in ui
+                            ? ui.Svg
+                            : undefined;
+                    // the poll read the registry into the view; the pane only draws it, so a draw costs no file or process read
+                    const board = (await $.state.get(BOARD_VIEW)).value;
+                    const now = board?.at ?? 0;
+                    const me = (await $.state.get(VIEW)).value?.selfId;
+                    // the board's lower half: this session's orbit and its plan, read here so a mark or a tool call redraws it
+                    const o = (await $.state.get(ORBIT)).value ?? orbit;
+                    // mobile draws no Input: its steers wait for another surface
+                    const Input = 'Input' in ui ? ui.Input : undefined;
+                    const open = o.asks.filter((a) => !a.isResolved);
+                    const age = planAge(o);
+                    // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
+                    // an ask card's door: this session's own orbit by default; a glide card passes the member's, through the store
+                    const drawnAt = await $.clock.now();
+                    // a press starts the 5 s «sending» window (PK-88); a second press inside it unsends, and one redraw shows it sent
+                    const ownDoor: AskDoor = {
+                        mark: (a, mark) =>
+                            void (async () => {
+                                const now = await $.clock.now();
+                                const win = await sendWindow($);
+                                await markAsks(
+                                    $,
+                                    (x) => {
+                                        if (x.id !== a.id) return x;
+                                        const isOff = x.mark === mark;
+                                        return {
+                                            ...x,
+                                            isChanged: false,
+                                            mark: isOff ? undefined : mark,
+                                            sendAt:
+                                                isOff || !win
+                                                    ? undefined
+                                                    : now + win,
+                                        };
+                                    },
+                                    true,
+                                );
+                                if (win)
+                                    $.clock.after(win, () =>
+                                        $.ui.invalidate('ui.render'),
+                                    );
+                            })(),
+                        prefix: 'orbit',
+                        steer: (a, value) => handleSteer(a.id, value),
+                    };
+                    const markJSX = (
+                        a: OrbitAsk,
+                        mark: 'accepted' | 'rejected',
+                        door: AskDoor = ownDoor,
+                    ) => (
+                        <Button
+                            key={`${door.prefix}:${mark}:${a.id}`}
+                            onPress={() => door.mark(a, mark)}
+                            // take is always the filled button (dima, 17:08); a held mark swaps its emoji for ✅, so the size never
+                            // changes (dima's o7, 17:16) — one mark per ask, so only one of the two ever shows ✅
+                            {...(mark === 'accepted'
+                                ? { variant: 'primary' as const }
+                                : {})}>
+                            {`${a.mark === mark ? (a.isLocked ? '🔓' : isSending(a, drawnAt) ? '📨' : '✅') : mark === 'accepted' ? '🛎️' : '🔁'} ${mark === 'accepted' ? 'tick' : 'replay'}`}
+                        </Button>
+                    );
+                    const handleAssumedSteer = (id: string, value: string) =>
+                        void changeAssumed($, (y) =>
+                            y.id === id ? { ...y, steer: steerOf(value) } : y,
+                        );
+                    // 🐠 a 🤔 press toggles until a turn takes it; a locked piece is the running turn's and stays as it is
+                    const handleThink = async (id: string) => {
+                        const piece = (await currentOrbit($)).caught?.find(
+                            (x) => x.id === id,
+                        );
+                        if (!piece || piece.isLocked) return;
+                        if (!piece.isAsked) await countCatch($, 'thinks');
+                        await changeCaught($, (x) =>
+                            x.id === id ? { ...x, isAsked: !x.isAsked } : x,
+                        );
+                    };
+                    const handleClear = async (id: string) => {
+                        await countCatch($, 'clears');
+                        await changeCaught($, (x) =>
+                            x.id === id ? undefined : x,
+                        );
+                    };
+                    const handleCatchSteer = (id: string, value: string) =>
+                        void changeCaught($, (x) =>
+                            x.id === id && !x.isLocked
+                                ? { ...x, steer: steerOf(value) }
+                                : x,
+                        );
+                    // the steer keeps every keystroke, no Enter needed
+                    const handleSteer = (id: string, value: string) =>
+                        void markAsks($, (x) =>
+                            x.id === id ? { ...x, steer: steerOf(value) } : x,
+                        );
+                    // a locked ask is the running turn's: no control at all, its mark and steer as dim text (the api has no disabled)
+                    // speak reads, pauses or stops through its control socket: a mod's text can't be selected for F4 on the desktop
+                    // (claude-code#101090) — a workaround, see mods/workarounds.md
+                    const boardShown =
+                        (await $.state.get(VIEW)).value?.shown ?? {};
+                    const isPartOn = (key: string) => boardShown[key] !== false;
+                    const speakAssumed = await readSwitch($, 'speak');
+                    const folds = (await $.state.get(FOLDS)).value ?? {};
+                    // one fold rule for every card: open until folded, but a glide card's member subcard starts folded to its count, and a
+                    // catch piece's hidden note and the shelf past its 5th row start folded
+                    const foldedOf = (
+                        kept: Record<string, boolean>,
+                        card: string,
+                    ) =>
+                        kept[card] ??
+                        /^(lane:[^:]+:(coder|verifier)|quiet:.+|catch:.+)$/.test(
+                            card,
+                        );
+                    const flipFold = async (card: string) => {
+                        const was = (await $.state.get(FOLDS)).value ?? {};
+                        await $.state.set(FOLDS, {
+                            ...was,
+                            [card]: !foldedOf(was, card),
+                        });
+                    };
+                    const isFolded = (card: string) => foldedOf(folds, card);
+                    // 📂 sits at the far right of each card's head line and folds the card to that line, then reads 📁 (dima's o5, 17:21)
+                    const foldJSX = (card: string) => (
+                        <Button
+                            key={`fold:${card}`}
+                            onPress={async () => {
+                                const was =
+                                    (await $.state.get(FOLDS)).value ?? {};
+                                await $.state.set(FOLDS, {
+                                    ...was,
+                                    [card]: !foldedOf(was, card),
+                                });
+                            }}
+                            plain>
+                            {isFolded(card) ? '📁' : '📂'}
+                        </Button>
+                    );
+                    // every card's frame; a card adds its key, its margin and its row gap
+                    const cardProps = {
+                        borderColor: cardBorder(e.surface),
+                        borderStyle: 'round',
+                        flexDirection: 'column',
+                        paddingX: 1,
+                        paddingY: 0.5,
+                    } as const;
+                    // ⏸️ while speak reads, ▶️ when it is paused or quiet: a press pauses, resumes, or reads this row (dima, 15:51)
+                    const isSpeaking =
+                        (await $.state.get(SPEAKING)).value === true;
+                    // an ask's one link: a url opens as a link, a file path through `open` (a mod Link takes https only)
+                    const askLinkJSX = (id: string, target: string) => {
+                        return target.startsWith('https://') ? (
+                            <Link href={target} key={`ask:link:${id}`}>
+                                {`🔗 ${target.slice('https://'.length).split('/')[0]}`}
+                            </Link>
+                        ) : (
+                            <Button
+                                key={`ask:link:${id}`}
+                                onPress={() => void openPath($, target)}
+                                plain>
+                                {`🔗 ${basename(target)}`}
+                            </Button>
+                        );
+                    };
+                    const speakJSX = (id: string, text: string) =>
+                        !isPartOn('stash.speak')
+                            ? []
+                            : [
+                                  <Button
+                                      key={`orbit:read:${id}`}
+                                      onPress={() =>
+                                          void speak($, {
+                                              op: 'read',
+                                              text,
+                                          }).then(() => refreshSpeaking($))
+                                      }
+                                      plain>
+                                      🔊
+                                  </Button>,
+                                  <Button
+                                      key={`orbit:pause:${id}`}
+                                      onPress={() => void playPress($, text)}
+                                      plain>
+                                      {isSpeaking ? '⏸️' : '▶️'}
+                                  </Button>,
+                                  <Button
+                                      key={`orbit:stop:${id}`}
+                                      onPress={() =>
+                                          void speak($, { op: 'stop' }).then(
+                                              () => refreshSpeaking($),
+                                          )
+                                      }
+                                      plain>
+                                      ⏹️
+                                  </Button>,
+                              ];
+                    // a ticket id in an ask or a phase opens its linear page, as a session row's does (dima's o62, 22:13)
+                    const linkedJSX = (text: string, key: string) =>
+                        text.split(TICKET_IDS).map((part, i) => {
+                            if (i % 2 === 0) return part;
+                            return (
+                                <Link
+                                    href={`https://linear.app/x-com/issue/${part}`}
+                                    key={`${key}:${i}`}>
+                                    {part}
+                                </Link>
+                            );
+                        });
+                    // the ask on its own line, the bold id leading it; under it one row: the steer, 🛎️ ↩️, then speak's 🔊 ⏯ ⏹
+                    // (dima, 20:08); a full row of air between asks (dima, 19:52)
+                    // an ask resolved with a closing word draws dim, the word after its text and no controls, for its turn and one more
+                    // no card: its emoji from the word and the ask on one line, the word under it, dim and whole (dima's shots,
+                    // 20:37 and 10-13 18:20: on one line the word got cut)
+                    const closedJSX = (
+                        a: OrbitAsk,
+                        i: number,
+                        door: AskDoor,
+                    ) => (
+                        <Box
+                            flexDirection='column'
+                            key={`${door.prefix}:ask:${a.id}`}
+                            marginTop={i > 0 ? 0.5 : 0}
+                            paddingX={1}>
+                            <Text dimColor wrap='truncate-end'>
+                                {`${closedMark(a.word ?? '')} ${a.id}: ${a.text}`}
+                            </Text>
+                            <Text bold dimColor>
+                                {`➡️ ${a.word}`}
+                            </Text>
+                        </Box>
+                    );
+                    // an ask with an expiry says what it is beside its controls (dima, 20:37: «⌛ halt» did not read)
+                    const expiryText = (a: OrbitAsk) => {
+                        if (a.dies === 'halt') return '⌛ dies at halt';
+                        const left = (a.dies ?? 0) - (o.prompts ?? 0);
+                        return left < 1
+                            ? '⌛ dies this turn'
+                            : `⌛ dies in ${left} prompt${left === 1 ? '' : 's'}`;
+                    };
+                    const askJSX = (
+                        a: OrbitAsk,
+                        i: number,
+                        door: AskDoor = ownDoor,
+                    ) =>
+                        a.word ? (
+                            closedJSX(a, i, door)
+                        ) : (
+                            <Box
+                                borderDimColor
+                                borderStyle='round'
+                                flexDirection='column'
+                                key={`${door.prefix}:ask:${a.id}`}
+                                marginTop={i > 0 ? 0.5 : 0}
+                                paddingX={1}
+                                rowGap={LINE_GAP}>
+                                <Box flexDirection='row' gap={1}>
+                                    <Box
+                                        flexDirection='column'
+                                        flexGrow={1}
+                                        flexShrink={1}
+                                        minWidth={0}
+                                        rowGap={LINE_GAP}>
+                                        {/* the id and the pick bold, so the proposal stands out (dima, 20:30) */}
+                                        {/* an ask answered this turn leads its line with 👀 until the turn ends — inline, so the row keeps its left
+                                edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
+                                        <Text>
+                                            {a.isResolved ? '👀 ' : ''}
+                                            {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the steer (dima, 11:57) */}
+                                            {a.isChanged
+                                                ? `${CHANGED_MARK} `
+                                                : ''}
+                                            <Text bold>{a.id}</Text>
+                                            {': '}
+                                            {linkedJSX(a.text, `ask:${a.id}`)}
+                                        </Text>
+                                        {/* the pick on a line of its own, the mock's card shape (dima, 17:00) */}
+                                        <Text>
+                                            {'➡️ '}
+                                            <Text bold>
+                                                {linkedJSX(
+                                                    a.pick,
+                                                    `pick:${a.id}`,
+                                                )}
+                                            </Text>
                                         </Text>
                                     </Box>
-                                    {item.ticket ? (
-                                        <Box flexShrink={0}>
-                                            <Link
-                                                href={`https://linear.app/x-com/issue/${item.ticket}`}
-                                                key={`lane:${lane.id}:t:${i}`}>
-                                                {item.ticket}
-                                            </Link>
+                                </Box>
+                                {/* the buttons lead, the steer follows them, on the line under the pick — never beside it (dima, 20:19; 20:23) */}
+                                <Box
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    gap={1}
+                                    key={`${door.prefix}:row:${a.id}`}>
+                                    {/* a joined ask keeps both buttons; the held one reads 🔓 while the turn holds it (dima, 17:42) */}
+                                    {[
+                                        markJSX(a, 'accepted', door),
+                                        markJSX(a, 'rejected', door),
+                                    ]}
+                                    {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
+                                    {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
+                                    {speakJSX(a.id, `${a.text}. ${a.pick}`)}
+                                    {door === ownDoor &&
+                                    a.dies !== undefined &&
+                                    !a.mark ? (
+                                        <Text dimColor>{expiryText(a)}</Text>
+                                    ) : null}
+                                    {a.isLocked ? (
+                                        a.steer ? (
+                                            <Box flexShrink={1} minWidth={0}>
+                                                <Text
+                                                    dimColor
+                                                    wrap='truncate-end'>
+                                                    {/* a sent steer leads with 💬, drawn for dima only: the model gets «his steer: …» (dima, 18:14) */}
+                                                    {`💬 «${a.steer}»`}
+                                                </Text>
+                                            </Box>
+                                        ) : null
+                                    ) : Input ? (
+                                        <Box flexShrink={1} minWidth={0}>
+                                            <Input
+                                                key={
+                                                    field(
+                                                        $,
+                                                        `${door.prefix}:steer:${a.id}`,
+                                                        a.steer ?? '',
+                                                    ).key
+                                                }
+                                                onInput={(value: string) => {
+                                                    field(
+                                                        $,
+                                                        `${door.prefix}:steer:${a.id}`,
+                                                        a.steer ?? '',
+                                                    ).type(value, () => {
+                                                        return door.steer(
+                                                            a,
+                                                            value,
+                                                        );
+                                                    });
+                                                }}
+                                                onSubmit={(value: string) =>
+                                                    door.steer(a, value)
+                                                }
+                                                placeholder='steer'
+                                                value={
+                                                    field(
+                                                        $,
+                                                        `${door.prefix}:steer:${a.id}`,
+                                                        a.steer ?? '',
+                                                    ).value
+                                                }
+                                            />
                                         </Box>
                                     ) : null}
-                                    {/* tick leads, the steer follows, on the step's own line after its link (dima's shot, 17:46) */}
-                                    {i === lane.current ? (
-                                        <Box
-                                            alignItems='center'
-                                            flexDirection='row'
-                                            flexGrow={1}
-                                            flexShrink={0}
-                                            gap={1}
-                                            key={`lane:${lane.id}:act`}
-                                            minWidth={24}>
-                                            {/* the steer waits as a draft until 🛎️ tick sends it; no replay, a steer has nothing to redo (dima, 20:51) */}
-                                            <Button
-                                                key={`lane:${lane.id}:take`}
-                                                onPress={() =>
-                                                    void handleLaneTake(lane.id)
-                                                }
-                                                variant='primary'>
-                                                {`${lane.isSteerTaken ? '✅' : '🛎️'} tick`}
-                                            </Button>
-                                            {Input ? (
-                                                <Box flexGrow={1} minWidth={0}>
-                                                    <Input
-                                                        key={
-                                                            field(
+                                    {/* the steer comes first, the file link after it, at the row's end (dima's shot, 20:57) */}
+                                    {a.link ? askLinkJSX(a.id, a.link) : null}
+                                </Box>
+                            </Box>
+                        );
+                    const orbitJSX = (
+                        <Box
+                            key='orbit'
+                            {...cardProps}
+                            marginTop={1}
+                            rowGap={0.5}>
+                            <Box
+                                flexDirection='row'
+                                justifyContent='space-between'>
+                                <Text bold>🪐 orbit</Text>
+                                <Box
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    gap={1}>
+                                    {open.some(
+                                        (a) => !a.mark && !a.isLocked,
+                                    ) ? (
+                                        <Button
+                                            key='orbit:all'
+                                            onPress={() =>
+                                                void markAsks(
+                                                    $,
+                                                    (x) =>
+                                                        x.mark
+                                                            ? x
+                                                            : {
+                                                                  ...x,
+                                                                  isChanged: false,
+                                                                  mark: 'accepted',
+                                                              },
+                                                    true,
+                                                )
+                                            }
+                                            plain>
+                                            ✅
+                                        </Button>
+                                    ) : null}
+                                    {foldJSX('orbit')}
+                                </Box>
+                            </Box>
+                            {/* an answered ask stays until its turn ends, so dima sees it go */}
+                            {isFolded('orbit')
+                                ? null
+                                : o.asks.map((a, i) => askJSX(a, i))}
+                            {!isFolded('orbit') &&
+                            o.assumed?.length &&
+                            isPartOn('stash.assumed') ? (
+                                <Box
+                                    flexDirection='column'
+                                    key='orbit:assumed'
+                                    marginTop={1}
+                                    rowGap={LINE_GAP}>
+                                    <Text bold>assumed</Text>
+                                    {o.assumed.map((x) => {
+                                        return (
+                                            <Box
+                                                flexDirection='column'
+                                                key={`orbit:assumption:${x.id}`}
+                                                rowGap={LINE_GAP}>
+                                                <Text>
+                                                    <Text bold>{x.id}</Text>
+                                                    {`: ${x.text}`}
+                                                </Text>
+                                                <Box
+                                                    alignItems='center'
+                                                    flexDirection='row'
+                                                    gap={1}>
+                                                    <Button
+                                                        key={`orbit:right:${x.id}`}
+                                                        onPress={() =>
+                                                            void changeAssumed(
                                                                 $,
-                                                                `lane:${lane.id}:steer`,
-                                                                lane.steer ??
-                                                                    '',
-                                                            ).key
-                                                        }
-                                                        onInput={(
-                                                            value: string,
-                                                        ) => {
-                                                            field(
-                                                                $,
-                                                                `lane:${lane.id}:steer`,
-                                                                lane.steer ??
-                                                                    '',
-                                                            ).type(
-                                                                value,
-                                                                () => {
-                                                                    return handleLaneSteer(
-                                                                        lane.id,
-                                                                        value,
-                                                                    );
-                                                                },
-                                                            );
-                                                        }}
-                                                        onSubmit={(
-                                                            value: string,
-                                                        ) =>
-                                                            void handleLaneSteer(
-                                                                lane.id,
-                                                                value,
+                                                                (y) =>
+                                                                    y.id ===
+                                                                    x.id
+                                                                        ? undefined
+                                                                        : y,
+                                                                true,
                                                             )
                                                         }
-                                                        placeholder='steer'
-                                                        value={
-                                                            field(
+                                                        plain>
+                                                        🛎️
+                                                    </Button>
+                                                    <Button
+                                                        key={`orbit:wrong:${x.id}`}
+                                                        onPress={() =>
+                                                            void changeAssumed(
                                                                 $,
-                                                                `lane:${lane.id}:steer`,
-                                                                lane.steer ??
-                                                                    '',
-                                                            ).value
+                                                                (y) =>
+                                                                    y.id ===
+                                                                    x.id
+                                                                        ? {
+                                                                              ...y,
+                                                                              isWrong:
+                                                                                  !y.isWrong,
+                                                                          }
+                                                                        : y,
+                                                                true,
+                                                            )
                                                         }
-                                                    />
+                                                        {...(x.isWrong
+                                                            ? {
+                                                                  variant:
+                                                                      'secondary' as const,
+                                                              }
+                                                            : {
+                                                                  plain: true as const,
+                                                              })}>
+                                                        ↩️
+                                                    </Button>
+                                                    {speakAssumed
+                                                        ? speakJSX(x.id, x.text)
+                                                        : null}
+                                                    {Input ? (
+                                                        <Box
+                                                            flexShrink={1}
+                                                            minWidth={0}>
+                                                            <Input
+                                                                key={
+                                                                    field(
+                                                                        $,
+                                                                        `orbit:asteer:${x.id}`,
+                                                                        x.steer ??
+                                                                            '',
+                                                                    ).key
+                                                                }
+                                                                onInput={(
+                                                                    value: string,
+                                                                ) => {
+                                                                    field(
+                                                                        $,
+                                                                        `orbit:asteer:${x.id}`,
+                                                                        x.steer ??
+                                                                            '',
+                                                                    ).type(
+                                                                        value,
+                                                                        () => {
+                                                                            return handleAssumedSteer(
+                                                                                x.id,
+                                                                                value,
+                                                                            );
+                                                                        },
+                                                                    );
+                                                                }}
+                                                                onSubmit={(
+                                                                    value: string,
+                                                                ) =>
+                                                                    handleAssumedSteer(
+                                                                        x.id,
+                                                                        value,
+                                                                    )
+                                                                }
+                                                                placeholder='steer'
+                                                                value={
+                                                                    field(
+                                                                        $,
+                                                                        `orbit:asteer:${x.id}`,
+                                                                        x.steer ??
+                                                                            '',
+                                                                    ).value
+                                                                }
+                                                            />
+                                                        </Box>
+                                                    ) : null}
                                                 </Box>
-                                            ) : null}
+                                            </Box>
+                                        );
+                                    })}
+                                </Box>
+                            ) : null}
+                            {!isFolded('orbit') &&
+                            isPartOn('stash.catch') &&
+                            o.caught?.length ? (
+                                <Box
+                                    flexDirection='column'
+                                    key='orbit:caught'
+                                    marginTop={1}
+                                    rowGap={LINE_GAP}>
+                                    <Text bold>🐠 catch</Text>
+                                    {(isFolded('catch:more')
+                                        ? o.caught.slice(0, CATCH_SHOWN)
+                                        : o.caught
+                                    ).map((x) => {
+                                        // one row: kind, line, dim age, 🤔, ✖️; a press on the line opens its hidden note, copy and steer in place
+                                        const isOpen = !isFolded(
+                                            `catch:${x.id}`,
+                                        );
+                                        return (
+                                            <Box
+                                                flexDirection='column'
+                                                key={`orbit:catch:${x.id}`}
+                                                rowGap={LINE_GAP}>
+                                                <Box
+                                                    alignItems='center'
+                                                    flexDirection='row'
+                                                    gap={1}>
+                                                    <Box
+                                                        flexShrink={1}
+                                                        minWidth={0}>
+                                                        <Button
+                                                            key={`orbit:open:${x.id}`}
+                                                            onPress={() =>
+                                                                void flipFold(
+                                                                    `catch:${x.id}`,
+                                                                )
+                                                            }
+                                                            plain>
+                                                            {`${x.kind ?? '💡'} ${x.text}`}
+                                                        </Button>
+                                                    </Box>
+                                                    <Text dimColor>
+                                                        {span(now - x.at)}
+                                                    </Text>
+                                                    <Button
+                                                        key={`orbit:think:${x.id}`}
+                                                        onPress={() =>
+                                                            void handleThink(
+                                                                x.id,
+                                                            )
+                                                        }
+                                                        {...(x.isAsked ||
+                                                        x.isLocked
+                                                            ? {
+                                                                  variant:
+                                                                      'secondary' as const,
+                                                              }
+                                                            : {
+                                                                  plain: true as const,
+                                                              })}>
+                                                        {x.isLocked
+                                                            ? '🔓 🤔'
+                                                            : x.isAsked
+                                                              ? '✅ 🤔'
+                                                              : '🤔'}
+                                                    </Button>
+                                                    <Button
+                                                        key={`orbit:clear:${x.id}`}
+                                                        onPress={() =>
+                                                            void handleClear(
+                                                                x.id,
+                                                            )
+                                                        }
+                                                        plain>
+                                                        ✖️
+                                                    </Button>
+                                                </Box>
+                                                {isOpen ? (
+                                                    <Box
+                                                        flexDirection='column'
+                                                        key={`orbit:catch:${x.id}:open`}
+                                                        paddingLeft={3}
+                                                        rowGap={LINE_GAP}>
+                                                        {x.hiddenNote ? (
+                                                            <Text dimColor>
+                                                                {x.hiddenNote}
+                                                            </Text>
+                                                        ) : null}
+                                                        <Box
+                                                            alignItems='center'
+                                                            flexDirection='row'
+                                                            gap={1}>
+                                                            <Button
+                                                                key={`orbit:copy:${x.id}`}
+                                                                onPress={(
+                                                                    press,
+                                                                ) =>
+                                                                    void $.ui.copy(
+                                                                        {
+                                                                            surface:
+                                                                                press.surface,
+                                                                            text: x.text,
+                                                                        },
+                                                                    )
+                                                                }
+                                                                plain>
+                                                                📋 copy
+                                                            </Button>
+                                                            {x.isLocked ? (
+                                                                x.steer ? (
+                                                                    <Text
+                                                                        dimColor>{`💬 «${x.steer}»`}</Text>
+                                                                ) : null
+                                                            ) : Input ? (
+                                                                <Box
+                                                                    flexShrink={
+                                                                        1
+                                                                    }
+                                                                    minWidth={
+                                                                        0
+                                                                    }>
+                                                                    <Input
+                                                                        key={
+                                                                            field(
+                                                                                $,
+                                                                                `orbit:csteer:${x.id}`,
+                                                                                x.steer ??
+                                                                                    '',
+                                                                            )
+                                                                                .key
+                                                                        }
+                                                                        onInput={(
+                                                                            value: string,
+                                                                        ) => {
+                                                                            field(
+                                                                                $,
+                                                                                `orbit:csteer:${x.id}`,
+                                                                                x.steer ??
+                                                                                    '',
+                                                                            ).type(
+                                                                                value,
+                                                                                () => {
+                                                                                    return handleCatchSteer(
+                                                                                        x.id,
+                                                                                        value,
+                                                                                    );
+                                                                                },
+                                                                            );
+                                                                        }}
+                                                                        onSubmit={(
+                                                                            value: string,
+                                                                        ) =>
+                                                                            handleCatchSteer(
+                                                                                x.id,
+                                                                                value,
+                                                                            )
+                                                                        }
+                                                                        placeholder='steer'
+                                                                        value={
+                                                                            field(
+                                                                                $,
+                                                                                `orbit:csteer:${x.id}`,
+                                                                                x.steer ??
+                                                                                    '',
+                                                                            )
+                                                                                .value
+                                                                        }
+                                                                    />
+                                                                </Box>
+                                                            ) : null}
+                                                        </Box>
+                                                    </Box>
+                                                ) : null}
+                                            </Box>
+                                        );
+                                    })}
+                                    {o.caught.length > CATCH_SHOWN ? (
+                                        <Box
+                                            flexDirection='row'
+                                            key='orbit:catch:more'>
+                                            <Button
+                                                key='fold:catch:more'
+                                                onPress={() =>
+                                                    void flipFold('catch:more')
+                                                }
+                                                plain>
+                                                {isFolded('catch:more')
+                                                    ? `+${o.caught.length - CATCH_SHOWN}`
+                                                    : 'fold'}
+                                            </Button>
                                         </Box>
                                     ) : null}
                                 </Box>
+                            ) : null}
+                        </Box>
+                    );
+                    // 🛼 glide (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
+                    // current one «← we are here»; a steer on it reaches cclio's next prompt, whichever board took it
+                    const lanes = (await $.state.get(LANES)).value ?? [];
+                    const laneAsks = (await $.state.get(LANE_ASKS)).value ?? {};
+                    // a member's asks on the glide card: folded to their count by default, its rows marked as on the member's own board
+                    const memberJSX = (
+                        lane: StashLane,
+                        role: (typeof LANE_ROLES)[number],
+                    ) => {
+                        const sid = lane.members[role];
+                        if (!sid) return null;
+                        const asks = laneAsks[sid] ?? [];
+                        // a mark goes to the session the member runs under now, which its own stash absorbs
+                        const markSid = lane.memberSids?.[role] ?? sid;
+                        const card = `lane:${lane.id}:${role}`;
+                        const isOpen = !isFolded(card);
+                        const badge = role === 'coder' ? '🔧' : '🔎';
+                        return (
+                            <Box
+                                flexDirection='column'
+                                key={card}
+                                rowGap={LINE_GAP}>
+                                <Box
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    gap={1}>
+                                    {/* asks waiting read amber with a 🙋, the one colour dima reads as «waits on you» (dima, 19:45) */}
+                                    <Text
+                                        bold
+                                        color={
+                                            asks.length
+                                                ? PALETTE.warn
+                                                : undefined
+                                        }>
+                                        {`${asks.length ? '🙋 ' : ''}${badge} ${role} · ${asks.length} ask${asks.length === 1 ? '' : 's'}`}
+                                    </Text>
+                                    {foldJSX(card)}
+                                </Box>
+                                {isOpen
+                                    ? asks.map((a, i) =>
+                                          askJSX(a as OrbitAsk, i, {
+                                              mark: (x, mark) =>
+                                                  void markRemote(
+                                                      $,
+                                                      markSid,
+                                                      x,
+                                                      {
+                                                          mark:
+                                                              x.mark === mark
+                                                                  ? undefined
+                                                                  : mark,
+                                                          steer: x.steer,
+                                                      },
+                                                  ),
+                                              prefix: card,
+                                              steer: (x, value) =>
+                                                  void markRemote(
+                                                      $,
+                                                      markSid,
+                                                      x,
+                                                      {
+                                                          mark: x.mark,
+                                                          steer: steerOf(value),
+                                                      },
+                                                  ),
+                                          }),
+                                      )
+                                    : null}
+                            </Box>
+                        );
+                    };
+                    // 🙋 the board's top while a lane member's asks wait on dima: their count, then each member, a press scrolls to its asks
+                    const waitingOn = isPartOn('stash.glide')
+                        ? lanes.flatMap((lane) =>
+                              LANE_ROLES.flatMap((role) => {
+                                  const sid = lane.members[role];
+                                  const n = sid
+                                      ? (
+                                            (laneAsks[sid] ?? []) as OrbitAsk[]
+                                        ).filter((a) => !a.mark).length
+                                      : 0;
+                                  return n ? [{ lane, n, role }] : [];
+                              }),
+                          )
+                        : [];
+                    const waitingCount = waitingOn.reduce(
+                        (sum, w) => sum + w.n,
+                        0,
+                    );
+                    const stripJSX = waitingCount ? (
+                        <Box
+                            key='asks-strip'
+                            {...cardProps}
+                            alignItems='center'
+                            borderColor={PALETTE.warn}
+                            columnGap={1}
+                            flexDirection='row'
+                            flexWrap='wrap'
+                            marginBottom={1}>
+                            <Text bold color={PALETTE.warn}>
+                                {`🙋 ${waitingCount} ask${waitingCount === 1 ? ' waits' : 's wait'} for you`}
+                            </Text>
+                            {waitingOn.map((w) => (
+                                <Button
+                                    key={`asks-strip:${w.lane.id}:${w.role}`}
+                                    onPress={() =>
+                                        void $.ui
+                                            .scroll({
+                                                block: 'start',
+                                                to: {
+                                                    key: `lane:${w.lane.id}:${w.role}`,
+                                                },
+                                            })
+                                            .catch(() => undefined)
+                                    }
+                                    plain>
+                                    {`· ${w.role === 'coder' ? '🔧' : '🔎'} ${w.role} ${w.n}`}
+                                </Button>
                             ))}
-                      {isFolded(`lane:${lane.id}`)
-                          ? null
-                          : LANE_ROLES.map((role) => memberJSX(lane, role))}
-                  </Box>
-              ))
-            : null;
-        // the lanes and the phases stick to the board's bottom, the lanes on top of the phases: a docked board fills its rows
-        // and a gap grows above them (dima, 11:07; the lanes, 20:12)
-        const phasesJSX =
-            o.plan && isPartOn('stash.phases')
-                ? [
-                      <Box
-                          key='phases'
-                          {...cardProps}
-                          marginTop={1}
-                          rowGap={LINE_GAP}>
-                          {/* one row: the title, then one tick and one steer for the whole order at the right, then 📂 — every
-                              part centered on the row (dima's o84; moved into the head, 21:26: «looks off and steals vertical space») */}
-                          <Box
-                              alignItems='center'
-                              flexDirection='row'
-                              gap={1}
-                              justifyContent='space-between'
-                              key='phases:head'>
-                              <Box flexShrink={0}>
-                                  <Text bold>
-                                      {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
-                                  </Text>
-                              </Box>
-                              {isFolded('phases') ? null : (
+                        </Box>
+                    ) : null;
+                    // o84: dima's hand on this session's phases — a move, a tick, a steer — waits SEND_MS like an orbit tick
+                    const changePlan = async (
+                        change: (p: StashPlan) => StashPlan,
+                        isSend = true,
+                    ) => {
+                        const was = await currentOrbit($);
+                        if (!was.plan) return;
+                        const win = await sendWindow($);
+                        const sendAt = isSend
+                            ? (await $.clock.now()) + win
+                            : was.plan.sendAt;
+                        await saveOrbit($, {
+                            ...was,
+                            plan: { ...change(was.plan), sendAt },
+                        });
+                        if (isSend && win)
+                            $.clock.after(win, () =>
+                                $.ui.invalidate('ui.render'),
+                            );
+                    };
+                    const handlePlanMove = (i: number, by: -1 | 1) =>
+                        void changePlan((p) => ({
+                            ...p,
+                            isMoved: true,
+                            lines: moved(p.lines, i, by),
+                        }));
+                    const handlePlanTick = () =>
+                        void changePlan((p) => ({
+                            ...p,
+                            mark: p.mark ? undefined : 'accepted',
+                        }));
+                    const handlePlanSteer = (value: string) =>
+                        changePlan(
+                            (p) => ({ ...p, steer: steerOf(value) }),
+                            false,
+                        );
+                    const arrowsJSX = (
+                        key: string,
+                        canUp: boolean,
+                        canDown: boolean,
+                        onMove: (by: -1 | 1) => void,
+                    ) => (
+                        <Box
+                            flexDirection='row'
+                            flexShrink={0}
+                            gap={1}
+                            key={`${key}:arrows`}>
+                            {/* every row keeps the same two buttons, so the column never drifts and no size changes (dima, 21:23–21:24);
+                        an end's dead arrow is the same button, a press on it does nothing — the api has no disabled */}
+                            {(['up', 'down'] as const).map((dir) => {
+                                const isLive = dir === 'up' ? canUp : canDown;
+                                const glyph = dir === 'up' ? '↑' : '↓';
+                                return (
+                                    <Button
+                                        key={`${key}:${dir}`}
+                                        onPress={() => {
+                                            if (isLive)
+                                                onMove(dir === 'up' ? -1 : 1);
+                                        }}
+                                        plain>
+                                        {glyph}
+                                    </Button>
+                                );
+                            })}
+                        </Box>
+                    );
+                    const handleLaneSteer = (id: string, value: string) =>
+                        changeLaneSteer($, id, (n) => ({
+                            ...n,
+                            steer: steerOf(value),
+                        }));
+                    const handleLaneTake = (id: string) =>
+                        changeLaneSteer($, id, (n) => ({
+                            ...n,
+                            isTaken: !n.isTaken || undefined,
+                        }));
+                    const laneJSX = isPartOn('stash.glide')
+                        ? lanes.map((lane) => (
+                              <Box
+                                  key={`lane:${lane.id}`}
+                                  {...cardProps}
+                                  marginTop={1}
+                                  rowGap={LINE_GAP}>
                                   <Box
-                                      alignItems='center'
                                       flexDirection='row'
-                                      flexGrow={1}
-                                      flexShrink={1}
-                                      gap={1}
-                                      justifyContent='flex-end'
-                                      key='plan:act'
-                                      minWidth={0}>
-                                      <Button
-                                          key='plan:tick'
-                                          onPress={handlePlanTick}
-                                          variant='primary'>
-                                          {`${o.plan.mark ? (isSending(o.plan, drawnAt) ? '📨' : '✅') : '🛎️'} tick`}
-                                      </Button>
-                                      {Input ? (
-                                          <Box
-                                              flexShrink={1}
-                                              minWidth={0}
-                                              width={24}>
-                                              <Input
-                                                  key={
-                                                      field(
-                                                          $,
-                                                          'plan:steer',
-                                                          o.plan.steer ?? '',
-                                                      ).key
-                                                  }
-                                                  onInput={(value: string) => {
-                                                      field(
-                                                          $,
-                                                          'plan:steer',
-                                                          o.plan?.steer ?? '',
-                                                      ).type(value, () =>
-                                                          handlePlanSteer(
-                                                              value,
-                                                          ),
-                                                      );
-                                                  }}
-                                                  onSubmit={(value: string) =>
-                                                      void handlePlanSteer(
-                                                          value,
-                                                      )
-                                                  }
-                                                  placeholder='steer'
-                                                  value={
-                                                      field(
-                                                          $,
-                                                          'plan:steer',
-                                                          o.plan.steer ?? '',
-                                                      ).value
-                                                  }
-                                              />
-                                          </Box>
-                                      ) : null}
+                                      justifyContent='space-between'>
+                                      <Text
+                                          bold>{`🛼 glide: ${lane.title}`}</Text>
+                                      {foldJSX(`lane:${lane.id}`)}
                                   </Box>
-                              )}
-                              {foldJSX('phases')}
-                          </Box>
-                          {(isFolded('phases') ? [] : o.plan.lines).map(
-                              (line, i) => {
-                                  // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
-                                  const lead = line.match(PLAN_LEAD);
-                                  return (
-                                      // the moon fills by nearness, the then lines dim (dima, 20:58); only the now lead is green (21:08)
+                                  {isFolded(`lane:${lane.id}`)
+                                      ? null
+                                      : lane.items.map((item, i) => (
+                                            <Box
+                                                alignItems='center'
+                                                flexDirection='row'
+                                                gap={1}
+                                                // biome-ignore lint/suspicious/noArrayIndexKey: a lane step's place is its identity
+                                                key={`lane:${lane.id}:${i}`}>
+                                                {/* the step's text gives way first: the link, tick and steer keep their room (dima's shots, 17:41, 17:46) */}
+                                                <Box
+                                                    flexShrink={1}
+                                                    minWidth={0}>
+                                                    <Text
+                                                        bold={
+                                                            i === lane.current
+                                                        }
+                                                        dimColor={item.isDone}
+                                                        wrap='truncate-end'>
+                                                        {item.isDone
+                                                            ? '✅'
+                                                            : i === lane.current
+                                                              ? '➡️'
+                                                              : '⬜'}{' '}
+                                                        {item.text}
+                                                    </Text>
+                                                </Box>
+                                                {item.ticket ? (
+                                                    <Box flexShrink={0}>
+                                                        <Link
+                                                            href={`https://linear.app/x-com/issue/${item.ticket}`}
+                                                            key={`lane:${lane.id}:t:${i}`}>
+                                                            {item.ticket}
+                                                        </Link>
+                                                    </Box>
+                                                ) : null}
+                                                {/* tick leads, the steer follows, on the step's own line after its link (dima's shot, 17:46) */}
+                                                {i === lane.current ? (
+                                                    <Box
+                                                        alignItems='center'
+                                                        flexDirection='row'
+                                                        flexGrow={1}
+                                                        flexShrink={0}
+                                                        gap={1}
+                                                        key={`lane:${lane.id}:act`}
+                                                        minWidth={24}>
+                                                        {/* the steer waits as a draft until 🛎️ tick sends it; no replay, a steer has nothing to redo (dima, 20:51) */}
+                                                        <Button
+                                                            key={`lane:${lane.id}:take`}
+                                                            onPress={() =>
+                                                                void handleLaneTake(
+                                                                    lane.id,
+                                                                )
+                                                            }
+                                                            variant='primary'>
+                                                            {`${lane.isSteerTaken ? '✅' : '🛎️'} tick`}
+                                                        </Button>
+                                                        {Input ? (
+                                                            <Box
+                                                                flexGrow={1}
+                                                                minWidth={0}>
+                                                                <Input
+                                                                    key={
+                                                                        field(
+                                                                            $,
+                                                                            `lane:${lane.id}:steer`,
+                                                                            lane.steer ??
+                                                                                '',
+                                                                        ).key
+                                                                    }
+                                                                    onInput={(
+                                                                        value: string,
+                                                                    ) => {
+                                                                        field(
+                                                                            $,
+                                                                            `lane:${lane.id}:steer`,
+                                                                            lane.steer ??
+                                                                                '',
+                                                                        ).type(
+                                                                            value,
+                                                                            () => {
+                                                                                return handleLaneSteer(
+                                                                                    lane.id,
+                                                                                    value,
+                                                                                );
+                                                                            },
+                                                                        );
+                                                                    }}
+                                                                    onSubmit={(
+                                                                        value: string,
+                                                                    ) =>
+                                                                        void handleLaneSteer(
+                                                                            lane.id,
+                                                                            value,
+                                                                        )
+                                                                    }
+                                                                    placeholder='steer'
+                                                                    value={
+                                                                        field(
+                                                                            $,
+                                                                            `lane:${lane.id}:steer`,
+                                                                            lane.steer ??
+                                                                                '',
+                                                                        ).value
+                                                                    }
+                                                                />
+                                                            </Box>
+                                                        ) : null}
+                                                    </Box>
+                                                ) : null}
+                                            </Box>
+                                        ))}
+                                  {isFolded(`lane:${lane.id}`)
+                                      ? null
+                                      : LANE_ROLES.map((role) =>
+                                            memberJSX(lane, role),
+                                        )}
+                              </Box>
+                          ))
+                        : null;
+                    // the lanes and the phases stick to the board's bottom, the lanes on top of the phases: a docked board fills its rows
+                    // and a gap grows above them (dima, 11:07; the lanes, 20:12)
+                    const phasesJSX =
+                        o.plan && isPartOn('stash.phases')
+                            ? [
+                                  <Box
+                                      key='phases'
+                                      {...cardProps}
+                                      marginTop={1}
+                                      rowGap={LINE_GAP}>
+                                      {/* one row: the title, then one tick and one steer for the whole order at the right, then 📂 — every
+                                  part centered on the row (dima's o84; moved into the head, 21:26: «looks off and steals vertical space») */}
                                       <Box
                                           alignItems='center'
                                           flexDirection='row'
                                           gap={1}
-                                          // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
-                                          key={`plan:${i}`}>
-                                          <Box
-                                              flexGrow={1}
-                                              flexShrink={1}
-                                              minWidth={0}>
-                                              <Text dimColor={i > 1}>
-                                                  {/* a siesta is a pause, not a step: 🌤️ in place of its moon (dima, 20:37) */}
-                                                  {`${/^siesta:/i.test(line) ? '🌤️' : PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
-                                                  {lead ? (
-                                                      <Text
-                                                          bold
-                                                          color={
-                                                              i === 0
-                                                                  ? METER_TINTS.calm5h
-                                                                  : undefined
-                                                          }>
-                                                          {lead[0]}
-                                                      </Text>
-                                                  ) : null}
-                                                  {linkedJSX(
-                                                      lead
-                                                          ? line.slice(
-                                                                lead[0].length,
-                                                            )
-                                                          : line,
-                                                      `plan:${i}`,
-                                                  )}
+                                          justifyContent='space-between'
+                                          key='phases:head'>
+                                          <Box flexShrink={0}>
+                                              <Text bold>
+                                                  {`🌔 phases${age !== undefined && age >= STALE_TURNS ? ` · stale, untouched ${age} turns` : ''}`}
                                               </Text>
                                           </Box>
-                                          {arrowsJSX(
-                                              `plan:${i}`,
-                                              i > 0,
-                                              i <
-                                                  (o.plan?.lines.length ?? 0) -
-                                                      1,
-                                              (by) => handlePlanMove(i, by),
+                                          {isFolded('phases') ? null : (
+                                              <Box
+                                                  alignItems='center'
+                                                  flexDirection='row'
+                                                  flexGrow={1}
+                                                  flexShrink={1}
+                                                  gap={1}
+                                                  justifyContent='flex-end'
+                                                  key='plan:act'
+                                                  minWidth={0}>
+                                                  <Button
+                                                      key='plan:tick'
+                                                      onPress={handlePlanTick}
+                                                      variant='primary'>
+                                                      {`${o.plan.mark ? (isSending(o.plan, drawnAt) ? '📨' : '✅') : '🛎️'} tick`}
+                                                  </Button>
+                                                  {Input ? (
+                                                      <Box
+                                                          flexShrink={1}
+                                                          minWidth={0}
+                                                          width={24}>
+                                                          <Input
+                                                              key={
+                                                                  field(
+                                                                      $,
+                                                                      'plan:steer',
+                                                                      o.plan
+                                                                          .steer ??
+                                                                          '',
+                                                                  ).key
+                                                              }
+                                                              onInput={(
+                                                                  value: string,
+                                                              ) => {
+                                                                  field(
+                                                                      $,
+                                                                      'plan:steer',
+                                                                      o.plan
+                                                                          ?.steer ??
+                                                                          '',
+                                                                  ).type(
+                                                                      value,
+                                                                      () =>
+                                                                          handlePlanSteer(
+                                                                              value,
+                                                                          ),
+                                                                  );
+                                                              }}
+                                                              onSubmit={(
+                                                                  value: string,
+                                                              ) =>
+                                                                  void handlePlanSteer(
+                                                                      value,
+                                                                  )
+                                                              }
+                                                              placeholder='steer'
+                                                              value={
+                                                                  field(
+                                                                      $,
+                                                                      'plan:steer',
+                                                                      o.plan
+                                                                          .steer ??
+                                                                          '',
+                                                                  ).value
+                                                              }
+                                                          />
+                                                      </Box>
+                                                  ) : null}
+                                              </Box>
                                           )}
+                                          {foldJSX('phases')}
                                       </Box>
-                                  );
-                              },
-                          )}
-                      </Box>,
-                  ]
-                : null;
-        const fill =
-            e.props.placement === 'dock' ? e.props.scroll.bodyRows : undefined;
-        // the board top to bottom: what the sessions part shows, orbit, then a gap that docks the glide and phase cards at
-        // the bottom (dima's shot, 20:12)
-        const probes = board?.staleProbes ?? [];
-        const probesJSX = probes.length ? (
-            <Text color={PALETTE.warn} key='probes' wrap='truncate-end'>
-                {`🧪 stale probe mods in ~/.claude/dev-mods, unload them: ${probes.join(', ')}`}
-            </Text>
-        ) : null;
-        const gapsJSX = (board?.quietGaps ?? []).map((g) => {
-            return (
-                <Text
-                    color={PALETTE.hot}
-                    key={`gap:${g.from}`}
-                    wrap='truncate-end'>
-                    {`🚨 quiet ledger: ${g.from} sent cclio ${g.sent}, her quiet log holds ${g.logged}`}
-                </Text>
-            );
-        });
-        const arranged = (top: RenderElement) => (
-            <Box flexDirection='column' minHeight={fill}>
-                {stripJSX}
-                {gapsJSX}
-                {probesJSX}
-                {top}
-                {isPartOn('stash.orbit') ? orbitJSX : null}
-                <Box flexGrow={1} key='phases:gap' />
-                {laneJSX}
-                {phasesJSX}
-            </Box>
-        );
-        const list = board?.members;
-        if (!list)
-            return arranged(
-                <Text dimColor>the session registry is unreadable</Text>,
-            );
-        if (!list.length)
-            return arranged(<Text dimColor>no live sessions</Text>);
-        const isColour = board.isColour;
-        // the band's ctx ramp needs this session's compaction point, which the rows share; unknown, it falls back to 80, the
-        // old red line, so a full session never reads calm
-        const compactAt =
-            (await $.state.get(METER)).value?.compactAt ?? CTX_FALLBACK_AT;
-        const PillSvg =
-            e.surface === 'desktop' && 'Svg' in ui ? ui.Svg : undefined;
-        // the desktop's ctx meter as dima switched it: the ring takes 7 cells, the bar 5, the terminal's text bar 10
-        const isRing = board.isRing;
-        const ctxTake = isRing ? CTX_RING : CTX_BAR;
-        const contextColumns = PillSvg ? (isRing ? 7 : 5) : COLUMNS.context;
-        const hues = huesOf(list.map((m) => m.name));
-        // the ticket column is drawn only when some row names a ticket: empty on every row, it was 9 cells of nothing (dima, 15:41)
-        const hasTickets = list.some((m) => ticketOf(m.name));
-        // the state column as wide as the board's longest time, its emoji and gap included: a fixed 9 left «1m» rows a
-        // gap before their 🪐 n (dima, 10-13 17:45)
-        const stateColumns = Math.max(
-            ...list.map(
-                (m) =>
-                    4 +
-                    (m.statusSince === undefined
-                        ? 0
-                        : span(now - m.statusSince).length),
-            ),
-        );
-        const row = (m: Member, i: number) => {
-            const status = statusOf(m.status);
-            const sinceMs =
-                m.statusSince === undefined ? undefined : now - m.statusSince;
-            // the time's tint: idle by its thresholds alone, a working row always green, the rest with colour on
-            const timeTint = status.isIdle
-                ? idleTint(sinceMs ?? 0)
-                : status.isWorking || isColour
-                  ? status.tint
-                  : undefined;
-            const ticket = ticketOf(m.name);
-            const name = m.sid === me ? `${m.name} (here)` : m.name;
-            const line = m.tip ? `👀 ${m.tip}` : m.wait && `🔭 ${m.wait}`;
-            // «opus 5.5 · medium» as kept: the model in words, its effort as cells beside it on the name's line
-            const [model, effort] = (m.model ?? '').split(' · ');
-            const level = effortLevel(effort);
-            const effortJSX =
-                level === undefined ? (
-                    effort ? (
-                        <Text dimColor>{effort}</Text>
-                    ) : null
-                ) : Svg ? (
-                    <Svg
-                        alt={`effort ${effort}`}
-                        height={EFFORT_CELL}
-                        key={`m:${m.sid}:effort`}
-                        source={effortSvg(level)}
-                    />
-                ) : (
-                    <Text>
-                        {effortCells(level).map((c, k) => {
-                            return (
-                                // biome-ignore lint/suspicious/noArrayIndexKey: a cell's place is its identity
-                                <Text
-                                    color={c.color}
-                                    dimColor={!c.color}
-                                    key={`c:${k}`}>
-                                    {c.kind === 'fill' ? '▮' : '▯'}
+                                      {(isFolded('phases')
+                                          ? []
+                                          : o.plan.lines
+                                      ).map((line, i) => {
+                                          // a line's lead word — `now:`, `next:`, `then:` — prints bold (dima, 20:40)
+                                          const lead = line.match(PLAN_LEAD);
+                                          return (
+                                              // the moon fills by nearness, the then lines dim (dima, 20:58); only the now lead is green (21:08)
+                                              <Box
+                                                  alignItems='center'
+                                                  flexDirection='row'
+                                                  gap={1}
+                                                  // biome-ignore lint/suspicious/noArrayIndexKey: a plan line's place is its identity
+                                                  key={`plan:${i}`}>
+                                                  <Box
+                                                      flexGrow={1}
+                                                      flexShrink={1}
+                                                      minWidth={0}>
+                                                      <Text dimColor={i > 1}>
+                                                          {/* a siesta is a pause, not a step: 🌤️ in place of its moon (dima, 20:37) */}
+                                                          {`${/^siesta:/i.test(line) ? '🌤️' : PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)]} `}
+                                                          {lead ? (
+                                                              <Text
+                                                                  bold
+                                                                  color={
+                                                                      i === 0
+                                                                          ? METER_TINTS.calm5h
+                                                                          : undefined
+                                                                  }>
+                                                                  {lead[0]}
+                                                              </Text>
+                                                          ) : null}
+                                                          {linkedJSX(
+                                                              lead
+                                                                  ? line.slice(
+                                                                        lead[0]
+                                                                            .length,
+                                                                    )
+                                                                  : line,
+                                                              `plan:${i}`,
+                                                          )}
+                                                      </Text>
+                                                  </Box>
+                                                  {arrowsJSX(
+                                                      `plan:${i}`,
+                                                      i > 0,
+                                                      i <
+                                                          (o.plan?.lines
+                                                              .length ?? 0) -
+                                                              1,
+                                                      (by) =>
+                                                          handlePlanMove(i, by),
+                                                  )}
+                                              </Box>
+                                          );
+                                      })}
+                                  </Box>,
+                              ]
+                            : null;
+                    const fill =
+                        e.props.placement === 'dock'
+                            ? e.props.scroll.bodyRows
+                            : undefined;
+                    // the board top to bottom: what the sessions part shows, orbit, then a gap that docks the glide and phase cards at
+                    // the bottom (dima's shot, 20:12)
+                    const probes = board?.staleProbes ?? [];
+                    const probesJSX = probes.length ? (
+                        <Text
+                            color={PALETTE.warn}
+                            key='probes'
+                            wrap='truncate-end'>
+                            {`🧪 stale probe mods in ~/.claude/dev-mods, unload them: ${probes.join(', ')}`}
+                        </Text>
+                    ) : null;
+                    const gapsJSX = (board?.quietGaps ?? []).map((g) => {
+                        return (
+                            <Text
+                                color={PALETTE.hot}
+                                key={`gap:${g.from}`}
+                                wrap='truncate-end'>
+                                {`🚨 quiet ledger: ${g.from} sent cclio ${g.sent}, her quiet log holds ${g.logged}`}
+                            </Text>
+                        );
+                    });
+                    const arranged = (top: RenderElement) => (
+                        <Box flexDirection='column' minHeight={fill}>
+                            {stripJSX}
+                            {gapsJSX}
+                            {probesJSX}
+                            {top}
+                            {isPartOn('stash.orbit') ? orbitJSX : null}
+                            <Box flexGrow={1} key='phases:gap' />
+                            {laneJSX}
+                            {phasesJSX}
+                        </Box>
+                    );
+                    const list = board?.members;
+                    if (!list)
+                        return arranged(
+                            <Text dimColor>
+                                the session registry is unreadable
+                            </Text>,
+                        );
+                    if (!list.length)
+                        return arranged(<Text dimColor>no live sessions</Text>);
+                    const isColour = board.isColour;
+                    // the band's ctx ramp needs this session's compaction point, which the rows share; unknown, it falls back to 80, the
+                    // old red line, so a full session never reads calm
+                    const compactAt =
+                        (await $.state.get(METER)).value?.compactAt ??
+                        CTX_FALLBACK_AT;
+                    const PillSvg =
+                        e.surface === 'desktop' && 'Svg' in ui
+                            ? ui.Svg
+                            : undefined;
+                    // the desktop's ctx meter as dima switched it: the ring takes 7 cells, the bar 5, the terminal's text bar 10
+                    const isRing = board.isRing;
+                    const ctxTake = isRing ? CTX_RING : CTX_BAR;
+                    const contextColumns = PillSvg
+                        ? isRing
+                            ? 7
+                            : 5
+                        : COLUMNS.context;
+                    const hues = huesOf(list.map((m) => m.name));
+                    // the ticket column is drawn only when some row names a ticket: empty on every row, it was 9 cells of nothing (dima, 15:41)
+                    const hasTickets = list.some((m) => ticketOf(m.name));
+                    // the state column as wide as the board's longest time, its emoji and gap included: a fixed 9 left «1m» rows a
+                    // gap before their 🪐 n (dima, 10-13 17:45)
+                    const stateColumns = Math.max(
+                        ...list.map(
+                            (m) =>
+                                4 +
+                                (m.statusSince === undefined
+                                    ? 0
+                                    : span(now - m.statusSince).length),
+                        ),
+                    );
+                    const row = (m: Member, i: number) => {
+                        const status = statusOf(m.status);
+                        const sinceMs =
+                            m.statusSince === undefined
+                                ? undefined
+                                : now - m.statusSince;
+                        // the time's tint: idle by its thresholds alone, a working row always green, the rest with colour on
+                        const timeTint = status.isIdle
+                            ? idleTint(sinceMs ?? 0)
+                            : status.isWorking || isColour
+                              ? status.tint
+                              : undefined;
+                        const ticket = ticketOf(m.name);
+                        const name = m.sid === me ? `${m.name} (here)` : m.name;
+                        const line = m.tip
+                            ? `👀 ${m.tip}`
+                            : m.wait && `🔭 ${m.wait}`;
+                        // «opus 5.5 · medium» as kept: the model in words, its effort as cells beside it on the name's line
+                        const [model, effort] = (m.model ?? '').split(' · ');
+                        const level = effortLevel(effort);
+                        const effortJSX =
+                            level === undefined ? (
+                                effort ? (
+                                    <Text dimColor>{effort}</Text>
+                                ) : null
+                            ) : Svg ? (
+                                <Svg
+                                    alt={`effort ${effort}`}
+                                    height={EFFORT_CELL}
+                                    key={`m:${m.sid}:effort`}
+                                    source={effortSvg(level)}
+                                />
+                            ) : (
+                                <Text>
+                                    {effortCells(level).map((c, k) => {
+                                        return (
+                                            // biome-ignore lint/suspicious/noArrayIndexKey: a cell's place is its identity
+                                            <Text
+                                                color={c.color}
+                                                dimColor={!c.color}
+                                                key={`c:${k}`}>
+                                                {c.kind === 'fill' ? '▮' : '▯'}
+                                            </Text>
+                                        );
+                                    })}
                                 </Text>
                             );
-                        })}
-                    </Text>
-                );
-            return (
-                <Box
-                    flexDirection='column'
-                    key={`m:${m.sid}`}
-                    // the desktop's rows sit closer, the cards mock's spacing (dima, 17:27); a terminal row cannot be split
-                    marginTop={i > 0 ? (e.surface === 'desktop' ? 0.6 : 1) : 0}
-                    rowGap={LINE_GAP}>
-                    <Box
-                        flexDirection='row'
-                        gap={1}
-                        justifyContent='space-between'>
-                        {/* the name side gives way, clipped, so a long name never pushes the fact columns out of line */}
-                        <Box
-                            flexDirection='row'
-                            flexGrow={1}
-                            flexShrink={1}
-                            gap={1}
-                            minWidth={0}
-                            overflow='hidden'>
-                            {/* the dot leads the row, the reference's cue: with colour on, the member's own hue, dimmed while idle */}
-                            <Box flexShrink={0}>
-                                <Text
-                                    color={isColour ? hues[i] : undefined}
-                                    dimColor={!isColour || status.isIdle}>
-                                    ●
-                                </Text>
-                            </Box>
-                            {/* every name bold text, no control: the board opens no session (dima, 17:42) */}
-                            <Text bold wrap='truncate-end'>
-                                {name}
-                            </Text>
-                            {m.offPattern ? (
-                                <Text color={ACCENT}>⚠</Text>
-                            ) : null}
-                            {/* quiet comms: the member pings held for cclio's next turn, nothing at 0 */}
-                            {m.held ? (
-                                <Box flexShrink={0}>
-                                    <Button
-                                        key={`fold:quiet:${m.sid}`}
-                                        onPress={async () => {
-                                            const was =
-                                                (await $.state.get(FOLDS))
-                                                    .value ?? {};
-                                            await $.state.set(FOLDS, {
-                                                ...was,
-                                                [`quiet:${m.sid}`]: !foldedOf(
-                                                    was,
-                                                    `quiet:${m.sid}`,
-                                                ),
-                                            });
-                                        }}
-                                        plain>
-                                        {m.isHeldStuck ? (
-                                            <Text color='error'>
-                                                {`🤫 ${m.held.length}`}
+                        return (
+                            <Box
+                                flexDirection='column'
+                                key={`m:${m.sid}`}
+                                // the desktop's rows sit closer, the cards mock's spacing (dima, 17:27); a terminal row cannot be split
+                                marginTop={
+                                    i > 0
+                                        ? e.surface === 'desktop'
+                                            ? 0.6
+                                            : 1
+                                        : 0
+                                }
+                                rowGap={LINE_GAP}>
+                                <Box
+                                    flexDirection='row'
+                                    gap={1}
+                                    justifyContent='space-between'>
+                                    {/* the name side gives way, clipped, so a long name never pushes the fact columns out of line */}
+                                    <Box
+                                        flexDirection='row'
+                                        flexGrow={1}
+                                        flexShrink={1}
+                                        gap={1}
+                                        minWidth={0}
+                                        overflow='hidden'>
+                                        {/* the dot leads the row, the reference's cue: with colour on, the member's own hue, dimmed while idle */}
+                                        <Box flexShrink={0}>
+                                            <Text
+                                                color={
+                                                    isColour
+                                                        ? hues[i]
+                                                        : undefined
+                                                }
+                                                dimColor={
+                                                    !isColour || status.isIdle
+                                                }>
+                                                ●
                                             </Text>
-                                        ) : (
-                                            `🤫 ${m.held.length}`
-                                        )}
-                                    </Button>
+                                        </Box>
+                                        {/* every name bold text, no control: the board opens no session (dima, 17:42) */}
+                                        <Text bold wrap='truncate-end'>
+                                            {name}
+                                        </Text>
+                                        {m.offPattern ? (
+                                            <Text color={ACCENT}>⚠</Text>
+                                        ) : null}
+                                        {/* quiet comms: the member pings held for cclio's next turn, nothing at 0 */}
+                                        {m.held ? (
+                                            <Box flexShrink={0}>
+                                                <Button
+                                                    key={`fold:quiet:${m.sid}`}
+                                                    onPress={async () => {
+                                                        const was =
+                                                            (
+                                                                await $.state.get(
+                                                                    FOLDS,
+                                                                )
+                                                            ).value ?? {};
+                                                        await $.state.set(
+                                                            FOLDS,
+                                                            {
+                                                                ...was,
+                                                                [`quiet:${m.sid}`]:
+                                                                    !foldedOf(
+                                                                        was,
+                                                                        `quiet:${m.sid}`,
+                                                                    ),
+                                                            },
+                                                        );
+                                                    }}
+                                                    plain>
+                                                    {m.isHeldStuck ? (
+                                                        <Text color='error'>
+                                                            {`🤫 ${m.held.length}`}
+                                                        </Text>
+                                                    ) : (
+                                                        `🤫 ${m.held.length}`
+                                                    )}
+                                                </Button>
+                                            </Box>
+                                        ) : null}
+                                        {/* the name's line: the model and its effort cells right of the name (dima, 15:27; o6, 15:49) */}
+                                        {model && isPartOn('stash.rowmeta') ? (
+                                            <Box
+                                                alignItems='center'
+                                                flexDirection='row'
+                                                flexShrink={0}
+                                                gap={
+                                                    e.surface === 'desktop'
+                                                        ? 0.5
+                                                        : 1
+                                                }>
+                                                <Text dimColor>{model}</Text>
+                                                {effortJSX}
+                                            </Box>
+                                        ) : null}
+                                    </Box>
+                                    {/* one fixed-width, right-aligned cell per fact, drawn empty when it has no reading, so the columns line up across rows (dima, 2026-10-05) */}
+                                    <Box
+                                        flexDirection='row'
+                                        flexShrink={0}
+                                        gap={e.surface === 'desktop' ? 0.5 : 1}>
+                                        {/* no hover card in the pane: an absolute card in a narrow row wraps and clips (dima, 2026-10-05) */}
+                                        {hasTickets ? (
+                                            <Box
+                                                justifyContent='flex-end'
+                                                width={COLUMNS.ticket}>
+                                                {ticket ? (
+                                                    // never wraps: `FRM-306` broke at its hyphen in the desktop font
+                                                    <Text
+                                                        dimColor
+                                                        wrap='truncate-end'>
+                                                        <Link
+                                                            href={`https://linear.app/x-com/issue/${ticket}`}>
+                                                            {ticket}
+                                                        </Link>
+                                                    </Text>
+                                                ) : null}
+                                            </Box>
+                                        ) : null}
+                                        {/* 🐦‍🔥 second wind beside the meter it answers: the emoji alone, its state under the row */}
+                                        {isPartOn('stash.second-wind') ? (
+                                            <Box flexShrink={0}>
+                                                <Button
+                                                    dimColor={!m.wind}
+                                                    key={`wind:${m.sid}`}
+                                                    onPress={() =>
+                                                        pressWind($, m.sid)
+                                                    }
+                                                    plain>
+                                                    {
+                                                        WIND_EMOJI[
+                                                            m.wind?.state ??
+                                                                'idle'
+                                                        ]
+                                                    }
+                                                </Button>
+                                            </Box>
+                                        ) : null}
+                                        <Box
+                                            justifyContent='flex-end'
+                                            width={contextColumns}>
+                                            {/* every row's meter one width, its % merged in, stepping to red at the compaction point */}
+                                            {m.context ===
+                                            undefined ? null : PillSvg ? (
+                                                <PillSvg
+                                                    alt={`ctx ${m.context}%`}
+                                                    height={ctxTake.height}
+                                                    key={`ctx:${m.sid}`}
+                                                    source={(isRing
+                                                        ? ctxRingSvg
+                                                        : ctxBarSvg)(
+                                                        m.context,
+                                                        compactAt,
+                                                    )}
+                                                />
+                                            ) : (
+                                                <Text
+                                                    color={contextFill(
+                                                        m.context,
+                                                        compactAt,
+                                                    )}>
+                                                    {ctxBar(m.context)}
+                                                </Text>
+                                            )}
+                                        </Box>
+                                        {/* the state: its emoji in a column of its own, the time right-aligned beside it, so every row lines up
+                                    (dima's o106, 21:17) */}
+                                        {/* the emoji sits against its time, both packed left: they say one thing, the state and how long
+                                    (dima, 22:11: «join pace emojis with time»), and every row's emoji lines up (dima, 10-13 16:59:
+                                    right-aligned, they read as a ladder) */}
+                                        {/* a little air after the ctx meter (dima's shot, 18:14: «slightly more breathing room») */}
+                                        <Box
+                                            flexDirection='row'
+                                            gap={1}
+                                            justifyContent='flex-start'
+                                            key={`state:${m.sid}`}
+                                            marginLeft={
+                                                e.surface === 'desktop' ? 1 : 0
+                                            }
+                                            width={stateColumns}>
+                                            <Text>{status.emoji}</Text>
+                                            {sinceMs === undefined ? null : (
+                                                <Text
+                                                    bold
+                                                    color={timeTint}
+                                                    dimColor={!timeTint}
+                                                    wrap='truncate-end'>
+                                                    {span(sinceMs)}
+                                                </Text>
+                                            )}
+                                        </Box>
+                                        {/* the asks close the row, always drawn: `🪐 0` dimmed when none (dima, 2026-10-05) */}
+                                        <Box
+                                            justifyContent='flex-end'
+                                            width={COLUMNS.asks}>
+                                            <Text
+                                                bold={!!m.asks}
+                                                color={
+                                                    m.asks
+                                                        ? PALETTE.warn
+                                                        : undefined
+                                                }
+                                                dimColor={!m.asks}>
+                                                🪐 {m.asks}
+                                            </Text>
+                                        </Box>
+                                    </Box>
                                 </Box>
-                            ) : null}
-                            {/* the name's line: the model and its effort cells right of the name (dima, 15:27; o6, 15:49) */}
-                            {model && isPartOn('stash.rowmeta') ? (
+                                {/* the second line, under the name: ccrow's 👀 tip with speak's buttons, or the 🔭 wait — one clipped row,
+                            so a session waiting on many things never pushes the name's line (dima's o6, 15:49) */}
+                                {(m.tip || line) &&
+                                isPartOn('stash.rowmeta') ? (
+                                    <Box
+                                        alignItems='center'
+                                        flexDirection='row'
+                                        gap={1}
+                                        paddingLeft={2}>
+                                        {/* read, pause and stop all lead the tip (dima's shots, 18:29, 19:40) */}
+                                        {m.tip
+                                            ? speakJSX(`crow:${m.sid}`, m.tip)
+                                            : null}
+                                        {m.tip ? (
+                                            <Box
+                                                flexShrink={1}
+                                                height={1}
+                                                minWidth={0}
+                                                overflow='hidden'>
+                                                <Text
+                                                    dimColor
+                                                    wrap='truncate-end'>
+                                                    {line}
+                                                </Text>
+                                            </Box>
+                                        ) : line &&
+                                          (m.wait ?? '').includes('; ') ? (
+                                            // several waits are one plain run: styled pieces wrap on the desktop, and the clip then showed the
+                                            // middle of two lines (dima's shot, 19:36: «what is this? looks off»)
+                                            <Box
+                                                flexShrink={1}
+                                                height={1}
+                                                minWidth={0}
+                                                overflow='hidden'>
+                                                <Text
+                                                    dimColor
+                                                    wrap='truncate-end'>
+                                                    {line}
+                                                </Text>
+                                            </Box>
+                                        ) : line ? (
+                                            // one row, clipped: the desktop wraps a run of styled pieces instead of cutting it (dima, 15:41)
+                                            <Box
+                                                flexShrink={1}
+                                                height={1}
+                                                minWidth={0}
+                                                overflow='hidden'>
+                                                <Text
+                                                    dimColor
+                                                    wrap='truncate-end'>
+                                                    {/* each «waiting on <who>» part prints <who> bold, as the band does (dima, 17:20) */}
+                                                    {'🔭 '}
+                                                    {(m.wait ?? '')
+                                                        .split('; ')
+                                                        .map((part, k) => {
+                                                            const w =
+                                                                part.match(
+                                                                    /^(waiting on )(.+?)( — .*)?$/u,
+                                                                );
+                                                            return (
+                                                                // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
+                                                                <Text
+                                                                    key={`w:${k}`}>
+                                                                    {k > 0
+                                                                        ? '; '
+                                                                        : ''}
+                                                                    {w
+                                                                        ? w[1]
+                                                                        : part}
+                                                                    {w ? (
+                                                                        <Text
+                                                                            bold>
+                                                                            {
+                                                                                w[2]
+                                                                            }
+                                                                        </Text>
+                                                                    ) : null}
+                                                                    {w?.[3] ??
+                                                                        ''}
+                                                                </Text>
+                                                            );
+                                                        })}
+                                                </Text>
+                                            </Box>
+                                        ) : null}
+                                    </Box>
+                                ) : null}
+                                {/* a pane draws no hover card (engine.md), so second wind names its state and wait here */}
+                                {m.wind && isPartOn('stash.second-wind') ? (
+                                    <Box
+                                        key={`wind:say:${m.sid}`}
+                                        paddingLeft={2}>
+                                        <Text dimColor wrap='truncate-end'>
+                                            {`🐦‍🔥 second wind: ${WIND_SAY[m.wind.state]} (${span(Math.max(0, now - m.wind.at))})`}
+                                        </Text>
+                                    </Box>
+                                ) : null}
+                                {/* the held member pings, opened from 🤫 n: sender, age, first line (dima's o34) */}
+                                {m.held && !isFolded(`quiet:${m.sid}`) ? (
+                                    <Box
+                                        flexDirection='column'
+                                        key={`quiet:${m.sid}`}
+                                        paddingLeft={2}>
+                                        {m.held.map((p, k) => {
+                                            return (
+                                                // biome-ignore lint/suspicious/noArrayIndexKey: a held ping's place is its identity
+                                                <Text
+                                                    dimColor
+                                                    key={`quiet:${m.sid}:${k}`}
+                                                    wrap='truncate-end'>
+                                                    {`🤫 ${p.from} · ${span(now - p.at)} ago: ${p.text}`}
+                                                </Text>
+                                            );
+                                        })}
+                                    </Box>
+                                ) : null}
+                            </Box>
+                        );
+                    };
+                    const busyCount = list.filter(
+                        (m) => statusOf(m.status).isWorking,
+                    ).length;
+                    return arranged(
+                        <Box key='sessions' {...cardProps}>
+                            {/* the head: what the pane holds on the left, how many work right now on the right */}
+                            <Box
+                                flexDirection='row'
+                                justifyContent='space-between'
+                                marginBottom={isFolded('sessions') ? 0 : 1}>
+                                <Text bold>🌌 sessions</Text>
                                 <Box
                                     alignItems='center'
                                     flexDirection='row'
-                                    flexShrink={0}
-                                    gap={e.surface === 'desktop' ? 0.5 : 1}>
-                                    <Text dimColor>{model}</Text>
-                                    {effortJSX}
-                                </Box>
-                            ) : null}
-                        </Box>
-                        {/* one fixed-width, right-aligned cell per fact, drawn empty when it has no reading, so the columns line up across rows (dima, 2026-10-05) */}
-                        <Box
-                            flexDirection='row'
-                            flexShrink={0}
-                            gap={e.surface === 'desktop' ? 0.5 : 1}>
-                            {/* no hover card in the pane: an absolute card in a narrow row wraps and clips (dima, 2026-10-05) */}
-                            {hasTickets ? (
-                                <Box
-                                    justifyContent='flex-end'
-                                    width={COLUMNS.ticket}>
-                                    {ticket ? (
-                                        // never wraps: `FRM-306` broke at its hyphen in the desktop font
-                                        <Text dimColor wrap='truncate-end'>
-                                            <Link
-                                                href={`https://linear.app/x-com/issue/${ticket}`}>
-                                                {ticket}
-                                            </Link>
+                                    gap={1}>
+                                    {/* the mock's head: the count and the busy on the right, the busy bold (dima, 17:00) */}
+                                    <Text>
+                                        <Text
+                                            dimColor>{`${list.length} on this mac · `}</Text>
+                                        <Text
+                                            bold
+                                            color={
+                                                busyCount
+                                                    ? PALETTE.ok
+                                                    : undefined
+                                            }>
+                                            {`${busyCount} busy`}
                                         </Text>
-                                    ) : null}
-                                </Box>
-                            ) : null}
-                            {/* 🐦‍🔥 second wind beside the meter it answers: the emoji alone, its state under the row */}
-                            {isPartOn('stash.second-wind') ? (
-                                <Box flexShrink={0}>
-                                    <Button
-                                        dimColor={!m.wind}
-                                        key={`wind:${m.sid}`}
-                                        onPress={() => pressWind($, m.sid)}
-                                        plain>
-                                        {WIND_EMOJI[m.wind?.state ?? 'idle']}
-                                    </Button>
-                                </Box>
-                            ) : null}
-                            <Box
-                                justifyContent='flex-end'
-                                width={contextColumns}>
-                                {/* every row's meter one width, its % merged in, stepping to red at the compaction point */}
-                                {m.context === undefined ? null : PillSvg ? (
-                                    <PillSvg
-                                        alt={`ctx ${m.context}%`}
-                                        height={ctxTake.height}
-                                        key={`ctx:${m.sid}`}
-                                        source={(isRing
-                                            ? ctxRingSvg
-                                            : ctxBarSvg)(m.context, compactAt)}
-                                    />
-                                ) : (
-                                    <Text
-                                        color={contextFill(
-                                            m.context,
-                                            compactAt,
-                                        )}>
-                                        {ctxBar(m.context)}
                                     </Text>
-                                )}
+                                    {foldJSX('sessions')}
+                                </Box>
                             </Box>
-                            {/* the state: its emoji in a column of its own, the time right-aligned beside it, so every row lines up
-                                (dima's o106, 21:17) */}
-                            {/* the emoji sits against its time, both packed left: they say one thing, the state and how long
-                                (dima, 22:11: «join pace emojis with time»), and every row's emoji lines up (dima, 10-13 16:59:
-                                right-aligned, they read as a ladder) */}
-                            {/* a little air after the ctx meter (dima's shot, 18:14: «slightly more breathing room») */}
-                            <Box
-                                flexDirection='row'
-                                gap={1}
-                                justifyContent='flex-start'
-                                key={`state:${m.sid}`}
-                                marginLeft={e.surface === 'desktop' ? 1 : 0}
-                                width={stateColumns}>
-                                <Text>{status.emoji}</Text>
-                                {sinceMs === undefined ? null : (
-                                    <Text
-                                        bold
-                                        color={timeTint}
-                                        dimColor={!timeTint}
-                                        wrap='truncate-end'>
-                                        {span(sinceMs)}
-                                    </Text>
-                                )}
-                            </Box>
-                            {/* the asks close the row, always drawn: `🪐 0` dimmed when none (dima, 2026-10-05) */}
-                            <Box justifyContent='flex-end' width={COLUMNS.asks}>
-                                <Text
-                                    bold={!!m.asks}
-                                    color={m.asks ? PALETTE.warn : undefined}
-                                    dimColor={!m.asks}>
-                                    🪐 {m.asks}
-                                </Text>
-                            </Box>
-                        </Box>
-                    </Box>
-                    {/* the second line, under the name: ccrow's 👀 tip with speak's buttons, or the 🔭 wait — one clipped row,
-                        so a session waiting on many things never pushes the name's line (dima's o6, 15:49) */}
-                    {(m.tip || line) && isPartOn('stash.rowmeta') ? (
-                        <Box
-                            alignItems='center'
-                            flexDirection='row'
-                            gap={1}
-                            paddingLeft={2}>
-                            {/* read, pause and stop all lead the tip (dima's shots, 18:29, 19:40) */}
-                            {m.tip ? speakJSX(`crow:${m.sid}`, m.tip) : null}
-                            {m.tip ? (
-                                <Box
-                                    flexShrink={1}
-                                    height={1}
-                                    minWidth={0}
-                                    overflow='hidden'>
-                                    <Text dimColor wrap='truncate-end'>
-                                        {line}
-                                    </Text>
-                                </Box>
-                            ) : line && (m.wait ?? '').includes('; ') ? (
-                                // several waits are one plain run: styled pieces wrap on the desktop, and the clip then showed the
-                                // middle of two lines (dima's shot, 19:36: «what is this? looks off»)
-                                <Box
-                                    flexShrink={1}
-                                    height={1}
-                                    minWidth={0}
-                                    overflow='hidden'>
-                                    <Text dimColor wrap='truncate-end'>
-                                        {line}
-                                    </Text>
-                                </Box>
-                            ) : line ? (
-                                // one row, clipped: the desktop wraps a run of styled pieces instead of cutting it (dima, 15:41)
-                                <Box
-                                    flexShrink={1}
-                                    height={1}
-                                    minWidth={0}
-                                    overflow='hidden'>
-                                    <Text dimColor wrap='truncate-end'>
-                                        {/* each «waiting on <who>» part prints <who> bold, as the band does (dima, 17:20) */}
-                                        {'🔭 '}
-                                        {(m.wait ?? '')
-                                            .split('; ')
-                                            .map((part, k) => {
-                                                const w = part.match(
-                                                    /^(waiting on )(.+?)( — .*)?$/u,
-                                                );
-                                                return (
-                                                    // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
-                                                    <Text key={`w:${k}`}>
-                                                        {k > 0 ? '; ' : ''}
-                                                        {w ? w[1] : part}
-                                                        {w ? (
-                                                            <Text bold>
-                                                                {w[2]}
-                                                            </Text>
-                                                        ) : null}
-                                                        {w?.[3] ?? ''}
-                                                    </Text>
-                                                );
-                                            })}
-                                    </Text>
-                                </Box>
-                            ) : null}
-                        </Box>
-                    ) : null}
-                    {/* a pane draws no hover card (engine.md), so second wind names its state and wait here */}
-                    {m.wind && isPartOn('stash.second-wind') ? (
-                        <Box key={`wind:say:${m.sid}`} paddingLeft={2}>
-                            <Text dimColor wrap='truncate-end'>
-                                {`🐦‍🔥 second wind: ${WIND_SAY[m.wind.state]} (${span(Math.max(0, now - m.wind.at))})`}
-                            </Text>
-                        </Box>
-                    ) : null}
-                    {/* the held member pings, opened from 🤫 n: sender, age, first line (dima's o34) */}
-                    {m.held && !isFolded(`quiet:${m.sid}`) ? (
-                        <Box
-                            flexDirection='column'
-                            key={`quiet:${m.sid}`}
-                            paddingLeft={2}>
-                            {m.held.map((p, k) => {
-                                return (
-                                    // biome-ignore lint/suspicious/noArrayIndexKey: a held ping's place is its identity
-                                    <Text
-                                        dimColor
-                                        key={`quiet:${m.sid}:${k}`}
-                                        wrap='truncate-end'>
-                                        {`🤫 ${p.from} · ${span(now - p.at)} ago: ${p.text}`}
-                                    </Text>
-                                );
-                            })}
-                        </Box>
-                    ) : null}
-                </Box>
+                            {isFolded('sessions') ? null : list.map(row)}
+                        </Box>,
+                    );
+                })(),
             );
-        };
-        const busyCount = list.filter(
-            (m) => statusOf(m.status).isWorking,
-        ).length;
-        return arranged(
-            <Box key='sessions' {...cardProps}>
-                {/* the head: what the pane holds on the left, how many work right now on the right */}
-                <Box
-                    flexDirection='row'
-                    justifyContent='space-between'
-                    marginBottom={isFolded('sessions') ? 0 : 1}>
-                    <Text bold>🌌 sessions</Text>
-                    <Box alignItems='center' flexDirection='row' gap={1}>
-                        {/* the mock's head: the count and the busy on the right, the busy bold (dima, 17:00) */}
-                        <Text>
-                            <Text
-                                dimColor>{`${list.length} on this mac · `}</Text>
-                            <Text
-                                bold
-                                color={busyCount ? PALETTE.ok : undefined}>
-                                {`${busyCount} busy`}
-                            </Text>
-                        </Text>
-                        {foldJSX('sessions')}
-                    </Box>
-                </Box>
-                {isFolded('sessions') ? null : list.map(row)}
-            </Box>,
-        );
+        } catch (err) {
+            $.ui.log(`x-mod-stash: the board failed to draw: ${String(err)}`);
+            const { Box, Text } = $.ui.resolve(e);
+            return cleanTree(
+                <Box>
+                    <Text color='error'>
+                        ⚠️ x-mod-stash: the board failed to draw, the debug log
+                        names why
+                    </Text>
+                </Box>,
+            );
+        }
     });
 
     // a /clear or a resume leaves the conversation behind; an exit leaves its last reply for the away digest
@@ -5921,496 +6281,598 @@ export const register: Register = (on) => {
     // the band: one row — orbit's and the plan's counts, the meters' readings, the 🔭 mark, the switches — then the bars,
     // the away digest and a refused threshold's one line
     on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-        if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e);
-        // the published view and orbit, never the module's values: reading them subscribes this band, and a write redraws it
-        const view = (await $.state.get(VIEW)).value ?? viewOf(false);
-        const enhancer = (await $.state.get(ENHANCER)).value ?? {
-            status: 'idle' as const,
-        };
-        const o = (await $.state.get(ORBIT)).value ?? orbit;
-        const ui = $.ui.resolve(e);
-        const { Box, Text, Button } = ui;
-        const handleAfkFlip = async () => {
-            const was = (await $.store.get(AFK_KEY)) as
-                | { at?: number; on?: boolean }
-                | undefined;
-            // the store's value, never the module copy: another session may have flipped it since the last poll
-            afk = !was?.on;
-            digest =
-                !afk && was?.on && was.at !== undefined
-                    ? await awayDigest($, was.at)
-                    : undefined;
-            await $.store.set(AFK_KEY, { at: await $.clock.now(), on: afk });
-            await publish($);
-        };
-        // one switch for every session, kept in the store so a restart keeps it
-        const handleWakerFlip = async () => {
-            isWaker = !view.isWaker;
-            await $.store.set(WAKER_KEY, { on: isWaker });
-            await publish($);
-        };
-        const handleHotFlip = async () => {
-            const now = await $.clock.now();
-            hot = hot ? undefined : { since: isBusy ? now : (endedAt ?? now) };
-            await saveHot($);
-            await armHot($);
-            await publish($);
-        };
-        const tip = (
-            key: string,
-            words: string,
-            control: RenderElement,
-            place: { left: number } | { right: number },
-            press?: { hotkey: string; onPress: () => void },
-        ) => hoverTip(ui, key, words, control, place, press);
-        const boardOpen = view.isBoardOpen;
-        const isShown = (key: string) => view.shown?.[key] !== false;
-        const handleSettingsFlip = async () => {
-            isSettingsOpen = !view.isSettingsOpen;
-            if (isSettingsOpen)
-                await $.ui.open({ id: SETTINGS_PANE, title: '🎛️ settings' });
-            else await $.ui.close({ id: SETTINGS_PANE });
-            await publish($);
-        };
-        const handleBoardFlip = async () => {
-            if (await isOpen($)) await $.ui.close({ id: BOARD });
-            else await openBoard($);
-            await publish($);
-        };
-        // a terminal draws a chromed Button as `[ label ]`
-        const leftOf = (label: string, chrome: boolean) => ({
-            right: [...label].length + (chrome ? 4 : 0) + 1,
-        });
+        try {
+            return cleanTree(
+                await (async () => {
+                    if (e.surface !== 'terminal' && e.surface !== 'desktop')
+                        return next(e);
+                    // the published view and orbit, never the module's values: reading them subscribes this band, and a write redraws it
+                    const view =
+                        (await $.state.get(VIEW)).value ?? viewOf(false);
+                    const enhancer = (await $.state.get(ENHANCER)).value ?? {
+                        status: 'idle' as const,
+                    };
+                    const o = (await $.state.get(ORBIT)).value ?? orbit;
+                    const ui = $.ui.resolve(e);
+                    const { Box, Text, Button } = ui;
+                    const handleAfkFlip = async () => {
+                        const was = (await $.store.get(AFK_KEY)) as
+                            | { at?: number; on?: boolean }
+                            | undefined;
+                        // the store's value, never the module copy: another session may have flipped it since the last poll
+                        afk = !was?.on;
+                        digest =
+                            !afk && was?.on && was.at !== undefined
+                                ? await awayDigest($, was.at)
+                                : undefined;
+                        await $.store.set(AFK_KEY, {
+                            at: await $.clock.now(),
+                            on: afk,
+                        });
+                        await publish($);
+                    };
+                    // one switch for every session, kept in the store so a restart keeps it
+                    const handleWakerFlip = async () => {
+                        isWaker = !view.isWaker;
+                        await $.store.set(WAKER_KEY, { on: isWaker });
+                        await publish($);
+                    };
+                    const handleHotFlip = async () => {
+                        const now = await $.clock.now();
+                        hot = hot
+                            ? undefined
+                            : { since: isBusy ? now : (endedAt ?? now) };
+                        await saveHot($);
+                        await armHot($);
+                        await publish($);
+                    };
+                    const tip = (
+                        key: string,
+                        words: string,
+                        control: RenderElement,
+                        place: { left: number } | { right: number },
+                        press?: { hotkey: string; onPress: () => void },
+                    ) => hoverTip(ui, key, words, control, place, press);
+                    const boardOpen = view.isBoardOpen;
+                    const isShown = (key: string) =>
+                        view.shown?.[key] !== false;
+                    const handleSettingsFlip = async () => {
+                        isSettingsOpen = !view.isSettingsOpen;
+                        if (isSettingsOpen)
+                            await $.ui.open({
+                                id: SETTINGS_PANE,
+                                title: '🎛️ settings',
+                            });
+                        else await $.ui.close({ id: SETTINGS_PANE });
+                        await publish($);
+                    };
+                    const handleBoardFlip = async () => {
+                        if (await isOpen($)) await $.ui.close({ id: BOARD });
+                        else await openBoard($);
+                        await publish($);
+                    };
+                    // a terminal draws a chromed Button as `[ label ]`
+                    const leftOf = (label: string, chrome: boolean) => ({
+                        right: [...label].length + (chrome ? 4 : 0) + 1,
+                    });
 
-        // the chips: text, never a control — 🚦 already opens the board, where orbit and the plan live (dima, 2026-10-10)
-        const openAsks = o.asks.filter((a) => !a.isResolved).length;
-        // every chip names itself on hover in five words or fewer (dima, 20:13)
-        const planned = o.plan?.lines.length ?? 0;
-        const asksChip = `🪐 ${openAsks}`;
-        const planChip = `🌔 ${planned}`;
-        const chips = (
-            <Box flexDirection='row' flexShrink={0} gap={1} key='chips'>
-                {tip(
-                    'chip:asks',
-                    `${openAsks} open ask${openAsks === 1 ? '' : 's'} for you`,
-                    <Text
-                        bold={openAsks > 0}
-                        color={openAsks ? ACCENT : undefined}
-                        dimColor={!openAsks}>
-                        {asksChip}
-                    </Text>,
-                    { left: [...asksChip].length + 1 },
-                )}
-                {tip(
-                    'chip:plan',
-                    `${planned} phase${planned === 1 ? '' : 's'}`,
-                    <Text dimColor={!planned}>{planChip}</Text>,
-                    { left: [...planChip].length + 1 },
-                )}
-            </Box>
-        );
+                    // the chips: text, never a control — 🚦 already opens the board, where orbit and the plan live (dima, 2026-10-10)
+                    const openAsks = o.asks.filter((a) => !a.isResolved).length;
+                    // every chip names itself on hover in five words or fewer (dima, 20:13)
+                    const planned = o.plan?.lines.length ?? 0;
+                    const asksChip = `🪐 ${openAsks}`;
+                    const planChip = `🌔 ${planned}`;
+                    const chips = (
+                        <Box
+                            flexDirection='row'
+                            flexShrink={0}
+                            gap={1}
+                            key='chips'>
+                            {tip(
+                                'chip:asks',
+                                `${openAsks} open ask${openAsks === 1 ? '' : 's'} for you`,
+                                <Text
+                                    bold={openAsks > 0}
+                                    color={openAsks ? ACCENT : undefined}
+                                    dimColor={!openAsks}>
+                                    {asksChip}
+                                </Text>,
+                                { left: [...asksChip].length + 1 },
+                            )}
+                            {tip(
+                                'chip:plan',
+                                `${planned} phase${planned === 1 ? '' : 's'}`,
+                                <Text dimColor={!planned}>{planChip}</Text>,
+                                { left: [...planChip].length + 1 },
+                            )}
+                        </Box>
+                    );
 
-        // the meters: two short bars in the row, each ending in its %; the readings sit beside them
-        const meter = (await $.state.get(METER)).value;
-        const now = await $.clock.now();
-        const Svg = e.surface === 'desktop' ? $.ui.resolve(e).Svg : undefined;
-        const isBreathing =
-            (Boolean(e.props.isWorking) && (await readSwitch($, 'breathe'))) ||
-            (await readSwitch($, 'always'));
-        // the 🎛️ speed: 1× sparks a cell every 1.6–4.4 s, 0.5× (the default, dima 12:58) twice as slow
-        const breathMs =
-            (BREATH_MS * SPEED.of) / (await readNumber($, 'speed'));
-        const five = meter?.fiveHour;
-        const pace =
-            five?.resetsAt === undefined
-                ? undefined
-                : paceOf(five.resetsAt, now);
-        const gap =
-            five && pace !== undefined
-                ? Math.round(five.used - pace)
-                : undefined;
-        const fiveTint = gapTint(gap ?? 0);
-        const ctx = meter?.context;
-        const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
-        // the meters run the band's full width, one bar a row under the row (dima, 20:45: «bring back old wide meters»);
-        // the desktop band runs ~7.8px a column (measured off dima's 20:22 shot): the label, the % and gaps take ~90px
-        const svgCells = Math.max(
-            8,
-            Math.floor((e.props.bodyColumns * 7.8 - 90) / CELL_STEP),
-        );
-        const barJSX = (
-            key: string,
-            label: string,
-            words: string,
-            tint: string,
-            bar?: { percent: number; mark?: number; scale?: number },
-            marginTop = 0,
-        ) => (
-            <Box
-                alignItems='center'
-                flexDirection='row'
-                gap={Svg ? 0.5 : 1}
-                key={key}
-                marginTop={marginTop}>
-                <Box flexShrink={0} width={Svg ? 5 : 6}>
-                    {tip(key, words, <Text wrap='truncate-end'>{label}</Text>, {
-                        left: [...label].length + 1,
-                    })}
-                </Box>
-                {bar === undefined ? (
-                    <Text dimColor>no reading yet</Text>
-                ) : (
-                    // the % ends on the band's right edge, under the row's last button
-                    <Box
-                        alignItems='center'
-                        flexDirection='row'
-                        flexGrow={1}
-                        gap={1}
-                        justifyContent='space-between'>
-                        {Svg ? (
-                            <Svg
-                                alt={`${label} ${Math.round(bar.percent)}%`}
-                                height={BAR_HEIGHT}
-                                key={`${key}:svg`}
-                                source={meterSvg(
-                                    bar.percent,
-                                    svgCells,
-                                    bar.mark,
-                                    bar.scale,
-                                    isBreathing ? now : undefined,
-                                    breathMs,
+                    // the meters: two short bars in the row, each ending in its %; the readings sit beside them
+                    const meter = (await $.state.get(METER)).value;
+                    const now = await $.clock.now();
+                    const Svg =
+                        e.surface === 'desktop'
+                            ? $.ui.resolve(e).Svg
+                            : undefined;
+                    const isBreathing =
+                        (Boolean(e.props.isWorking) &&
+                            (await readSwitch($, 'breathe'))) ||
+                        (await readSwitch($, 'always'));
+                    // the 🎛️ speed: 1× sparks a cell every 1.6–4.4 s, 0.5× (the default, dima 12:58) twice as slow
+                    const breathMs =
+                        (BREATH_MS * SPEED.of) / (await readNumber($, 'speed'));
+                    const five = meter?.fiveHour;
+                    const pace =
+                        five?.resetsAt === undefined
+                            ? undefined
+                            : paceOf(five.resetsAt, now);
+                    const gap =
+                        five && pace !== undefined
+                            ? Math.round(five.used - pace)
+                            : undefined;
+                    const fiveTint = gapTint(gap ?? 0);
+                    const ctx = meter?.context;
+                    const ctxTint = contextFill(ctx ?? 0, meter?.compactAt);
+                    // the meters run the band's full width, one bar a row under the row (dima, 20:45: «bring back old wide meters»);
+                    // the desktop band runs ~7.8px a column (measured off dima's 20:22 shot): the label, the % and gaps take ~90px
+                    const svgCells = Math.max(
+                        8,
+                        Math.floor(
+                            (e.props.bodyColumns * 7.8 - 90) / CELL_STEP,
+                        ),
+                    );
+                    const barJSX = (
+                        key: string,
+                        label: string,
+                        words: string,
+                        tint: string,
+                        bar?: {
+                            percent: number;
+                            mark?: number;
+                            scale?: number;
+                        },
+                        marginTop = 0,
+                    ) => (
+                        <Box
+                            alignItems='center'
+                            flexDirection='row'
+                            gap={Svg ? 0.5 : 1}
+                            key={key}
+                            marginTop={marginTop}>
+                            <Box flexShrink={0} width={Svg ? 5 : 6}>
+                                {tip(
+                                    key,
+                                    words,
+                                    <Text wrap='truncate-end'>{label}</Text>,
+                                    {
+                                        left: [...label].length + 1,
+                                    },
                                 )}
-                            />
-                        ) : null}
-                        <Box flexShrink={0} justifyContent='flex-end' width={4}>
-                            <Text bold color={tint}>
-                                {`${Math.round(bar.percent)}%`}
-                            </Text>
+                            </Box>
+                            {bar === undefined ? (
+                                <Text dimColor>no reading yet</Text>
+                            ) : (
+                                // the % ends on the band's right edge, under the row's last button
+                                <Box
+                                    alignItems='center'
+                                    flexDirection='row'
+                                    flexGrow={1}
+                                    gap={1}
+                                    justifyContent='space-between'>
+                                    {Svg ? (
+                                        <Svg
+                                            alt={`${label} ${Math.round(bar.percent)}%`}
+                                            height={BAR_HEIGHT}
+                                            key={`${key}:svg`}
+                                            source={meterSvg(
+                                                bar.percent,
+                                                svgCells,
+                                                bar.mark,
+                                                bar.scale,
+                                                isBreathing ? now : undefined,
+                                                breathMs,
+                                            )}
+                                        />
+                                    ) : null}
+                                    <Box
+                                        flexShrink={0}
+                                        justifyContent='flex-end'
+                                        width={4}>
+                                        <Text bold color={tint}>
+                                            {`${Math.round(bar.percent)}%`}
+                                        </Text>
+                                    </Box>
+                                </Box>
+                            )}
                         </Box>
-                    </Box>
-                )}
-            </Box>
-        );
-        const meterInfoJSX = (
-            <Box
-                flexDirection='row'
-                flexShrink={1}
-                gap={1}
-                key='meter:info'
-                minWidth={0}>
-                {!isShown('stash.pace') || gap === undefined
-                    ? null
-                    : tip(
-                          'pace',
-                          gap > 0
-                              ? 'behind the 5h pace'
-                              : 'ahead of the 5h pace',
-                          // room reads 🔋 green, over the pace 🪫 red at any size (dima's o46, 21:37)
-                          <Text
-                              bold
-                              color={gap > 0 ? RAMP[2] : METER_TINTS.calm5h}>
-                              {gap > 0 ? `🪫 -${gap}%` : `🔋 +${-gap}%`}
-                          </Text>,
-                          { left: 10 },
-                      )}
-                {!isShown('stash.reset') ||
-                five?.resetsAt === undefined ||
-                five.resetsAt <= now
-                    ? null
-                    : tip(
-                          'reset',
-                          'until the 5h window resets',
-                          // rounded up like cc's own «resets in 1 min», so it never reads 0m (o103)
-                          <Text>
-                              ⏳{' '}
-                              {span(
-                                  Math.ceil((five.resetsAt - now) / 60_000) *
-                                      60_000,
-                              )}
-                          </Text>,
-                          { left: 9 },
-                      )}
-            </Box>
-        );
-        const switches = (
-            <Box flexDirection='row' flexShrink={0} gap={1} key='switches'>
-                {!isShown('stash.second-wind') || !view.selfId
-                    ? null
-                    : tip(
-                          'wind',
-                          view.wind
-                              ? `second wind: ${WIND_SAY[view.wind]}`
-                              : 'second wind: refresh this session at a good stop',
-                          <Button
-                              key='wind'
-                              onPress={() =>
-                                  void pressWind($, view.selfId ?? '')
-                              }
-                              {...(view.wind
-                                  ? { variant: 'secondary' as const }
-                                  : { plain: true as const })}>
-                              {WIND_EMOJI[view.wind ?? 'idle']}
-                          </Button>,
-                          leftOf(WIND_EMOJI[view.wind ?? 'idle'], !!view.wind),
-                      )}
-                {!isShown('stash.hot')
-                    ? null
-                    : tip(
-                          'hot',
-                          view.isHot
-                              ? "stop keeping this session's cache hot"
-                              : "keep this session's cache hot: ping every 50 min",
-                          <Button
-                              key='hot'
-                              onPress={() => void handleHotFlip()}
-                              {...(view.isHot
-                                  ? { variant: 'secondary' as const }
-                                  : { plain: true as const })}>
-                              🔥
-                          </Button>,
-                          leftOf('🔥', !!view.isHot),
-                      )}
-                {!isShown('stash.waker')
-                    ? null
-                    : tip(
-                          'waker',
-                          view.isWaker
-                              ? 'stop waking capped sessions at the 5h reset'
-                              : 'wake every session stopped on the 5h cap',
-                          <Button
-                              key='waker'
-                              onPress={() => void handleWakerFlip()}
-                              {...(view.isWaker
-                                  ? { variant: 'secondary' as const }
-                                  : { plain: true as const })}>
-                              ⏰
-                          </Button>,
-                          leftOf('⏰', view.isWaker),
-                      )}
-                {!isShown('stash.afk')
-                    ? null
-                    : tip(
-                          'afk',
-                          view.afk
-                              ? 'back: tell fleet that dima is here'
-                              : 'afk: tell fleet that dima is away',
-                          <Button
-                              key='afk'
-                              onPress={() => void handleAfkFlip()}
-                              {...(view.afk
-                                  ? { variant: 'secondary' as const }
-                                  : { plain: true as const })}>
-                              💨
-                          </Button>,
-                          leftOf('💨', view.afk),
-                      )}
-                {tip(
-                    'settings',
-                    view.isSettingsOpen
-                        ? 'fold the settings'
-                        : 'settings: show or hide each part',
-                    <Button
-                        key='settings'
-                        onPress={() => void handleSettingsFlip()}
-                        {...(view.isSettingsOpen
-                            ? { variant: 'secondary' as const }
-                            : { plain: true as const })}>
-                        🎛️
-                    </Button>,
-                    leftOf('🎛️', view.isSettingsOpen),
-                )}
-                {!isShown('stash.board')
-                    ? null
-                    : tip(
-                          'board',
-                          boardOpen ? 'fold fleet board' : 'unfold fleet board',
-                          <Button
-                              key='board'
-                              onPress={() => void handleBoardFlip()}
-                              {...(boardOpen
-                                  ? { variant: 'secondary' as const }
-                                  : { plain: true as const })}>
-                              🚦
-                          </Button>,
-                          leftOf('🚦', boardOpen),
-                          {
-                              hotkey: 'b',
-                              onPress: () => void handleBoardFlip(),
-                          },
-                      )}
-            </Box>
-        );
-        // the readings pack left after the chips, then this session's 🔭 mark, always drawn; the switches hold the right
-        // edge (dima's o6 and o7, 22:03)
-        // 🪄 ⏪ ⏩, beside the switches, each named on hover in a few words (dima, 23:13); while the call runs 🪄 rests
-        // dimmed as if disabled, the api has no `disabled` and a press then is a no-op (dima, 2026-10-11 11:56); each emoji
-        // draws two cells, so its card sits two past it
-        const isEnhancing = enhancer.status === 'running';
-        const enhancerJSX = (
-            <Box flexDirection='row' flexShrink={0} gap={1} key='enhancer'>
-                {tip(
-                    'enh:enhance',
-                    isEnhancing
-                        ? 'enhancing; type to cancel'
-                        : 'enhance prompt',
-                    <Button
-                        dimColor={isEnhancing}
-                        key='enh:enhance'
-                        onPress={() => void enhance($)}
-                        plain>
-                        🪄
-                    </Button>,
-                    { right: 3 },
-                )}
-                {enhancer.original !== undefined
-                    ? tip(
-                          'enh:prev',
-                          'your text',
-                          <Button
-                              key='enh:prev'
-                              onPress={() => void enhancePrev($)}
-                              plain>
-                              ⏪
-                          </Button>,
-                          { right: 3 },
-                      )
-                    : null}
-                {enhancer.latest !== undefined
-                    ? tip(
-                          'enh:new',
-                          'enhanced text',
-                          <Button
-                              key='enh:new'
-                              onPress={() => void enhanceNew($)}
-                              plain>
-                              ⏩
-                          </Button>,
-                          { right: 3 },
-                      )
-                    : null}
-            </Box>
-        );
-        // each «waiting on <who>» part of a 🔭 wait prints <who> bold, its «— how» tail plain (dima, 2026-10-10 23:54)
-        const waitJSX = (wait: string) =>
-            wait.split('; ').map((part, i) => {
-                const m = part.match(/^(waiting on )(.+?)( — .*)?$/u);
-                return (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
-                    <Text key={`wait:${i}`}>
-                        {i > 0 ? '; ' : ''}
-                        {m ? m[1] : part}
-                        {m ? <Text bold>{m[2]}</Text> : null}
-                        {m?.[3] ?? ''}
-                    </Text>
-                );
-            });
-        const row = (
-            <Box
-                alignItems='center'
-                flexDirection='row'
-                gap={1}
-                justifyContent='space-between'
-                key='row'>
-                <Box
-                    alignItems='center'
-                    flexDirection='row'
-                    flexGrow={1}
-                    flexShrink={1}
-                    gap={1}
-                    key='row:readings'
-                    minWidth={0}>
-                    {isShown('stash.chips') ? chips : null}
-                    {meterInfoJSX}
-                    {isShown('stash.wait') ? (
-                        <Box flexShrink={1} key='wait' minWidth={0}>
-                            <Text color='inactive' wrap='truncate-end'>
-                                {'🔭 '}
-                                {view.wait ? waitJSX(view.wait) : 'not waiting'}
-                            </Text>
+                    );
+                    const meterInfoJSX = (
+                        <Box
+                            flexDirection='row'
+                            flexShrink={1}
+                            gap={1}
+                            key='meter:info'
+                            minWidth={0}>
+                            {!isShown('stash.pace') || gap === undefined
+                                ? null
+                                : tip(
+                                      'pace',
+                                      gap > 0
+                                          ? 'behind the 5h pace'
+                                          : 'ahead of the 5h pace',
+                                      // room reads 🔋 green, over the pace 🪫 red at any size (dima's o46, 21:37)
+                                      <Text
+                                          bold
+                                          color={
+                                              gap > 0
+                                                  ? RAMP[2]
+                                                  : METER_TINTS.calm5h
+                                          }>
+                                          {gap > 0
+                                              ? `🪫 -${gap}%`
+                                              : `🔋 +${-gap}%`}
+                                      </Text>,
+                                      { left: 10 },
+                                  )}
+                            {!isShown('stash.reset') ||
+                            five?.resetsAt === undefined ||
+                            five.resetsAt <= now
+                                ? null
+                                : tip(
+                                      'reset',
+                                      'until the 5h window resets',
+                                      // rounded up like cc's own «resets in 1 min», so it never reads 0m (o103)
+                                      <Text>
+                                          ⏳{' '}
+                                          {span(
+                                              Math.ceil(
+                                                  (five.resetsAt - now) /
+                                                      60_000,
+                                              ) * 60_000,
+                                          )}
+                                      </Text>,
+                                      { left: 9 },
+                                  )}
                         </Box>
-                    ) : null}
-                </Box>
-                {isShown('stash.enhancer') ? enhancerJSX : null}
-                {switches}
-            </Box>
-        );
-        // desktop air above and between the bars; a terminal row cannot be split, so none there
-        const air = e.surface === 'desktop';
-        const meters = (
-            <Box
-                flexDirection='column'
-                flexShrink={0}
-                key='meters'
-                marginTop={air ? 0.5 : 0}
-                paddingRight={air ? 1 : 0}>
-                {!isShown('stash.5h')
-                    ? null
-                    : barJSX(
-                          'meter:5h',
-                          '🔥 5h',
-                          '5h window used',
-                          fiveTint,
-                          five ? { mark: pace, percent: five.used } : undefined,
-                      )}
-                {!isShown('stash.ctx')
-                    ? null
-                    : barJSX(
-                          'meter:ctx',
-                          '🧠 ctx',
-                          'context window used',
-                          ctxTint,
-                          ctx === undefined
-                              ? undefined
-                              : {
-                                    mark: meter?.compactAt,
-                                    percent: ctx,
-                                    scale: meter?.compactAt ?? 100,
-                                },
-                          air ? 0.4 : 0,
-                      )}
-            </Box>
-        );
-        const away =
-            isShown('stash.digest') &&
-            view.digest &&
-            (view.digest.needs.length || view.digest.done.length)
-                ? [
-                      <Text dimColor key='away'>
-                          while you were away
-                      </Text>,
-                      ...view.digest.needs.map((n) => (
-                          <Text key={`away:n:${n.sid}`} wrap='truncate-end'>
-                              {`needs you · ${n.name} · 🪐 ${n.asks}`}
-                          </Text>
-                      )),
-                      ...view.digest.done.map((d) => (
-                          <Text
-                              dimColor
-                              key={`away:d:${d.sid}`}
-                              wrap='truncate-end'>
-                              {`done · ${d.name}`}
-                          </Text>
-                      )),
-                  ]
-                : [];
-        return (
-            <Box flexDirection='column'>
-                {row}
-                {/* the terminal reads the 5h and ctx on sline's line; the desktop keeps the bars (dima, 15:06) */}
-                {Svg ? meters : null}
-                {enhancer.error ? (
-                    <Text color='error' key='enh:error' wrap='truncate-end'>
-                        {enhancer.error}
+                    );
+                    const switches = (
+                        <Box
+                            flexDirection='row'
+                            flexShrink={0}
+                            gap={1}
+                            key='switches'>
+                            {!isShown('stash.second-wind') || !view.selfId
+                                ? null
+                                : tip(
+                                      'wind',
+                                      view.wind
+                                          ? `second wind: ${WIND_SAY[view.wind]}`
+                                          : 'second wind: refresh this session at a good stop',
+                                      <Button
+                                          key='wind'
+                                          onPress={() =>
+                                              void pressWind(
+                                                  $,
+                                                  view.selfId ?? '',
+                                              )
+                                          }
+                                          {...(view.wind
+                                              ? {
+                                                    variant:
+                                                        'secondary' as const,
+                                                }
+                                              : { plain: true as const })}>
+                                          {WIND_EMOJI[view.wind ?? 'idle']}
+                                      </Button>,
+                                      leftOf(
+                                          WIND_EMOJI[view.wind ?? 'idle'],
+                                          !!view.wind,
+                                      ),
+                                  )}
+                            {!isShown('stash.hot')
+                                ? null
+                                : tip(
+                                      'hot',
+                                      view.isHot
+                                          ? "stop keeping this session's cache hot"
+                                          : "keep this session's cache hot: ping every 50 min",
+                                      <Button
+                                          key='hot'
+                                          onPress={() => void handleHotFlip()}
+                                          {...(view.isHot
+                                              ? {
+                                                    variant:
+                                                        'secondary' as const,
+                                                }
+                                              : { plain: true as const })}>
+                                          🔥
+                                      </Button>,
+                                      leftOf('🔥', !!view.isHot),
+                                  )}
+                            {!isShown('stash.waker')
+                                ? null
+                                : tip(
+                                      'waker',
+                                      view.isWaker
+                                          ? 'stop waking capped sessions at the 5h reset'
+                                          : 'wake every session stopped on the 5h cap',
+                                      <Button
+                                          key='waker'
+                                          onPress={() => void handleWakerFlip()}
+                                          {...(view.isWaker
+                                              ? {
+                                                    variant:
+                                                        'secondary' as const,
+                                                }
+                                              : { plain: true as const })}>
+                                          ⏰
+                                      </Button>,
+                                      leftOf('⏰', view.isWaker),
+                                  )}
+                            {!isShown('stash.afk')
+                                ? null
+                                : tip(
+                                      'afk',
+                                      view.afk
+                                          ? 'back: tell fleet that dima is here'
+                                          : 'afk: tell fleet that dima is away',
+                                      <Button
+                                          key='afk'
+                                          onPress={() => void handleAfkFlip()}
+                                          {...(view.afk
+                                              ? {
+                                                    variant:
+                                                        'secondary' as const,
+                                                }
+                                              : { plain: true as const })}>
+                                          💨
+                                      </Button>,
+                                      leftOf('💨', view.afk),
+                                  )}
+                            {tip(
+                                'settings',
+                                view.isSettingsOpen
+                                    ? 'fold the settings'
+                                    : 'settings: show or hide each part',
+                                <Button
+                                    key='settings'
+                                    onPress={() => void handleSettingsFlip()}
+                                    {...(view.isSettingsOpen
+                                        ? { variant: 'secondary' as const }
+                                        : { plain: true as const })}>
+                                    🎛️
+                                </Button>,
+                                leftOf('🎛️', view.isSettingsOpen),
+                            )}
+                            {!isShown('stash.board')
+                                ? null
+                                : tip(
+                                      'board',
+                                      boardOpen
+                                          ? 'fold fleet board'
+                                          : 'unfold fleet board',
+                                      <Button
+                                          key='board'
+                                          onPress={() => void handleBoardFlip()}
+                                          {...(boardOpen
+                                              ? {
+                                                    variant:
+                                                        'secondary' as const,
+                                                }
+                                              : { plain: true as const })}>
+                                          🚦
+                                      </Button>,
+                                      leftOf('🚦', boardOpen),
+                                      {
+                                          hotkey: 'b',
+                                          onPress: () => void handleBoardFlip(),
+                                      },
+                                  )}
+                        </Box>
+                    );
+                    // the readings pack left after the chips, then this session's 🔭 mark, always drawn; the switches hold the right
+                    // edge (dima's o6 and o7, 22:03)
+                    // 🪄 ⏪ ⏩, beside the switches, each named on hover in a few words (dima, 23:13); while the call runs 🪄 rests
+                    // dimmed as if disabled, the api has no `disabled` and a press then is a no-op (dima, 2026-10-11 11:56); each emoji
+                    // draws two cells, so its card sits two past it
+                    const isEnhancing = enhancer.status === 'running';
+                    const enhancerJSX = (
+                        <Box
+                            flexDirection='row'
+                            flexShrink={0}
+                            gap={1}
+                            key='enhancer'>
+                            {tip(
+                                'enh:enhance',
+                                isEnhancing
+                                    ? 'enhancing; type to cancel'
+                                    : 'enhance prompt',
+                                <Button
+                                    dimColor={isEnhancing}
+                                    key='enh:enhance'
+                                    onPress={() => void enhance($)}
+                                    plain>
+                                    🪄
+                                </Button>,
+                                { right: 3 },
+                            )}
+                            {enhancer.original !== undefined
+                                ? tip(
+                                      'enh:prev',
+                                      'your text',
+                                      <Button
+                                          key='enh:prev'
+                                          onPress={() => void enhancePrev($)}
+                                          plain>
+                                          ⏪
+                                      </Button>,
+                                      { right: 3 },
+                                  )
+                                : null}
+                            {enhancer.latest !== undefined
+                                ? tip(
+                                      'enh:new',
+                                      'enhanced text',
+                                      <Button
+                                          key='enh:new'
+                                          onPress={() => void enhanceNew($)}
+                                          plain>
+                                          ⏩
+                                      </Button>,
+                                      { right: 3 },
+                                  )
+                                : null}
+                        </Box>
+                    );
+                    // each «waiting on <who>» part of a 🔭 wait prints <who> bold, its «— how» tail plain (dima, 2026-10-10 23:54)
+                    const waitJSX = (wait: string) =>
+                        wait.split('; ').map((part, i) => {
+                            const m = part.match(
+                                /^(waiting on )(.+?)( — .*)?$/u,
+                            );
+                            return (
+                                // biome-ignore lint/suspicious/noArrayIndexKey: a wait's place in the line is its identity
+                                <Text key={`wait:${i}`}>
+                                    {i > 0 ? '; ' : ''}
+                                    {m ? m[1] : part}
+                                    {m ? <Text bold>{m[2]}</Text> : null}
+                                    {m?.[3] ?? ''}
+                                </Text>
+                            );
+                        });
+                    const row = (
+                        <Box
+                            alignItems='center'
+                            flexDirection='row'
+                            gap={1}
+                            justifyContent='space-between'
+                            key='row'>
+                            <Box
+                                alignItems='center'
+                                flexDirection='row'
+                                flexGrow={1}
+                                flexShrink={1}
+                                gap={1}
+                                key='row:readings'
+                                minWidth={0}>
+                                {isShown('stash.chips') ? chips : null}
+                                {meterInfoJSX}
+                                {isShown('stash.wait') ? (
+                                    <Box flexShrink={1} key='wait' minWidth={0}>
+                                        <Text
+                                            color='inactive'
+                                            wrap='truncate-end'>
+                                            {'🔭 '}
+                                            {view.wait
+                                                ? waitJSX(view.wait)
+                                                : 'not waiting'}
+                                        </Text>
+                                    </Box>
+                                ) : null}
+                            </Box>
+                            {isShown('stash.enhancer') ? enhancerJSX : null}
+                            {switches}
+                        </Box>
+                    );
+                    // desktop air above and between the bars; a terminal row cannot be split, so none there
+                    const air = e.surface === 'desktop';
+                    const meters = (
+                        <Box
+                            flexDirection='column'
+                            flexShrink={0}
+                            key='meters'
+                            marginTop={air ? 0.5 : 0}
+                            paddingRight={air ? 1 : 0}>
+                            {!isShown('stash.5h')
+                                ? null
+                                : barJSX(
+                                      'meter:5h',
+                                      '🔥 5h',
+                                      '5h window used',
+                                      fiveTint,
+                                      five
+                                          ? { mark: pace, percent: five.used }
+                                          : undefined,
+                                  )}
+                            {!isShown('stash.ctx')
+                                ? null
+                                : barJSX(
+                                      'meter:ctx',
+                                      '🧠 ctx',
+                                      'context window used',
+                                      ctxTint,
+                                      ctx === undefined
+                                          ? undefined
+                                          : {
+                                                mark: meter?.compactAt,
+                                                percent: ctx,
+                                                scale: meter?.compactAt ?? 100,
+                                            },
+                                      air ? 0.4 : 0,
+                                  )}
+                        </Box>
+                    );
+                    const away =
+                        isShown('stash.digest') &&
+                        view.digest &&
+                        (view.digest.needs.length || view.digest.done.length)
+                            ? [
+                                  <Text dimColor key='away'>
+                                      while you were away
+                                  </Text>,
+                                  ...view.digest.needs.map((n) => (
+                                      <Text
+                                          key={`away:n:${n.sid}`}
+                                          wrap='truncate-end'>
+                                          {`needs you · ${n.name} · 🪐 ${n.asks}`}
+                                      </Text>
+                                  )),
+                                  ...view.digest.done.map((d) => (
+                                      <Text
+                                          dimColor
+                                          key={`away:d:${d.sid}`}
+                                          wrap='truncate-end'>
+                                          {`done · ${d.name}`}
+                                      </Text>
+                                  )),
+                              ]
+                            : [];
+                    return (
+                        <Box flexDirection='column'>
+                            {row}
+                            {/* the terminal reads the 5h and ctx on sline's line; the desktop keeps the bars (dima, 15:06) */}
+                            {Svg ? meters : null}
+                            {enhancer.error ? (
+                                <Text
+                                    color='error'
+                                    key='enh:error'
+                                    wrap='truncate-end'>
+                                    {enhancer.error}
+                                </Text>
+                            ) : null}
+                            {meter?.note ? (
+                                <Text color='error' wrap='truncate-end'>
+                                    {meter.note}
+                                </Text>
+                            ) : null}
+                            {away}
+                            {await next(e)}
+                        </Box>
+                    );
+                })(),
+            );
+        } catch (err) {
+            $.ui.log(`x-mod-stash: the band failed to draw: ${String(err)}`);
+            const { Box, Text } = $.ui.resolve(e);
+            return cleanTree(
+                <Box>
+                    <Text color='error'>
+                        ⚠️ x-mod-stash: the band failed to draw, the debug log
+                        names why
                     </Text>
-                ) : null}
-                {meter?.note ? (
-                    <Text color='error' wrap='truncate-end'>
-                        {meter.note}
-                    </Text>
-                ) : null}
-                {away}
-                {await next(e)}
-            </Box>
-        );
+                </Box>,
+            );
+        }
     });
 };

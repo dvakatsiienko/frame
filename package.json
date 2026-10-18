@@ -64,6 +64,7 @@
         "mods:probe-x-mod-redact": "node ./home/.claude/plugin-x/mods/probe-x-mod-redact.ts",
         "mods:quiet-canary": "node ./home/.claude/plugin-x/mods/quiet-canary.ts",
         "mods:replay": "node ./home/.claude/plugin-x/mods/replay.ts",
+        "mods:skew": "node ./home/.claude/plugin-x/mods/skew.ts",
         "mods:test": "node ./home/.claude/plugin-x/mods/test.ts",
         "mods:typecheck": "node ./home/.claude/plugin-x/mods/typecheck.ts",
         "mods:writes": "node ./home/.claude/plugin-x/mods/writes.ts",

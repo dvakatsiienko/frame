@@ -105,6 +105,15 @@ test('the 🔭 line prints who it waits on in bold', async ($, on) => {
     ).toEqual(['ci', '🔎 verifier']);
 });
 
+test('a control character in a reply never reaches the drawn band', async ($, on) => {
+    world(on);
+    const ui = await band($);
+    await reply($, 'pushed.\n\n🔭 waiting on ci\u0007 — the\twatcher');
+    expect((await ui.find({ text: /^🔭/, type: 'Text' }))?.text).toBe(
+        '🔭 waiting on ci — the watcher',
+    );
+});
+
 test('the 🔭 line reads in the theme grey, not dimmed', async ($, on) => {
     world(on);
     const ui = await band($);
