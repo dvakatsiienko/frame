@@ -447,8 +447,14 @@ export function orbitOp(
             return {
                 orbit: {
                     ...o,
+                    // dima's steer outlives the session's new lines: dropping it cleared the box he was typing in, so the
+                    // field remounted and threw his text away (PK-149)
                     plan: lines.length
-                        ? { at: isTurn ? o.turns + 1 : o.turns, lines }
+                        ? {
+                              at: isTurn ? o.turns + 1 : o.turns,
+                              lines,
+                              ...(o.plan?.steer ? { steer: o.plan.steer } : {}),
+                          }
                         : undefined,
                 },
                 // the board shows the 🎛️ phase lines (7 by default); a shorter plan leaves dima guessing past it (dima's o74)

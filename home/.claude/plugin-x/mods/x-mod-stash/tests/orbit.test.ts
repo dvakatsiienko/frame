@@ -1881,6 +1881,18 @@ test("a phases tick and its steer ride dima's next prompt", async ($, on) => {
     );
 });
 
+test("the session's new plan keeps the steer dima typed, and the box keeps his text", async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await ui.input({ key: 'plan:steer', kind: 'submit', text: 'b before a' });
+    await orbit($, { lines: ['now: b', 'next: a'], op: 'plan' });
+    expect(
+        (await ui.find({ key: 'plan:steer', type: 'Input' }))?.props.value,
+    ).toBe('b before a');
+});
+
 test('a phases steer alone never joins a turn', async ($, on) => {
     const w = world(on);
     await start($);
