@@ -38,7 +38,6 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 ## habits
 - 🧭 @habit-cto.md — always the CTO-coordinator: the flow check before a lane, one inefficiency per halt, retro candidates the same day, every fix from the root
 - 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
-- 🎯 @habit-ray-hoist.md — a repeated ask lands on FRM-252 the same turn as an x-ray candidate; guesses never do
 - 🔬 @habit-research-lanes.md — every research runs exa + parallel (`pnpm research:lanes`) + an opus source lane at once, one brief, one reply
 - 🧪 @habit-test-drive.md — a tool on trial is reached first on every fitting ask; its flow is `cclio:shape-test-drive`
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit
