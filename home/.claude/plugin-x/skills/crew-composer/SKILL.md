@@ -73,6 +73,9 @@ command's result (an unfinished chore says why), nothing else, and the same line
 3 bulk-replace · consult: anchor «foo» matches twice in a.md
 ```
 
+the same receipt also goes to the n8n mailbox (a blueprints demo, on trial), one POST per chore; a failed POST is a line in the receipt, never silence:
+`jq -n --arg b '<batch id>' --arg c '<chore line>' --arg r '<exit>' '{batch:$b,chore:$c,result:$r,sender:"composer"}' | curl -sf -X POST localhost:5678/webhook/composer-receipt -H 'content-type: application/json' --data @- || echo 'mailbox POST failed'`
+
 ## your own context
 
 - never `/clear` yourself; you auto-compact near ~97k, and idle compaction is off fleet-wide

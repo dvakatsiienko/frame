@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-18 13:44'
+updated_date: '2026-10-18 15:36'
 due_date: '2026-10-21'
 labels:
   - s
@@ -28,4 +28,8 @@ dima, 2026-10-18: «composer can't reach you out». composer's [done] receipt fo
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
 
 16:44 update: composer's ack reply DID land here (uds:/tmp/cc-socks/66909.sock → this session), so the channel works; the first [done] bounced on the address (the brief gave a session id and a desktop title). likely fix: the brief names the sender's ListAgents name exactly («🦉 cclio») — prove it on the next composer chore
+
+2026-10-18 18:35, dima «now»: an n8n mailbox is live — workflow «composer receipts» (wKzQdHFvCe4lNanM, active) takes POST localhost:5678/webhook/composer-receipt into data table composer_receipts (voy4TaHqBxTY6RWJ); a test row read back. x:crew-composer now posts every receipt line there; composer told live. left: the boot reads the table (GET /api/v1/data-tables/voy4TaHqBxTY6RWJ/rows via op-run) beside the SendMessage, and the first real composer receipt proves it.
+
+18:38 correction (ccrow 18:35): the n8n mailbox is dima's automation DEMO, not this item's fix. the bounce was the address — the fix is composer's brief naming the sender exactly as ListAgents shows it («🦉 cclio»), proven on the next composer chore. the mailbox line now runs jq -n --arg + curl -sf || 'mailbox POST failed' (a quoted chore and a dead endpoint both proven).
 <!-- SECTION:NOTES:END -->

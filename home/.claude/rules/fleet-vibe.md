@@ -19,6 +19,9 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **✨ wisp** — a bug: a small glow to tend before it burns, a will-o'-the-wisp that leads the app
   astray (dima, 2026-10-08, replacing «gremlins»). each app keeps a «<app> wisps» stash ticket; the
   inbox's ✨ section is the drop point.
+- **blueprint** — a picture of one part of our system (a flow, a structure, a map) that cclio draws
+  and dima edits to show an idea; cclio reads the edit back and builds from it (dima, 2026-10-18).
+  home: `cclio/blueprints/`.
 - **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (`rules/fleet-mods.md`).
 - **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held `[progress]` ping, a 🐠 catch; «slipstreamed» = delivered that way; its opposite is **push**.
 - **🌠 wish** — what dima wants, in his words (dima, 2026-10-08: the word replaces «todo»). he prints
