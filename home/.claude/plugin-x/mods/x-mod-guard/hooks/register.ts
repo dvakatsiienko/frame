@@ -170,10 +170,8 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 
 // a new refusing rule ships warn-only: the call runs and the model reads what would have been refused, until the rule's
 // verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
-// raw-linear (FRM-398) warns until 2026-10-18, then leaves this set and refuses (dima's o234, 21:41)
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
-    'raw-linear',
     'raw-plugin-update',
     'spec',
 ]);

@@ -55,19 +55,8 @@ for (const [typed, door] of [
     ],
     ['cd /tmp && linear issue view FRM-1 | jq .', 'x linear read'],
 ] as const) {
-    test(`a member's raw linear runs, warned with the door named, until 2026-10-18: ${typed}`, async ($, on) => {
+    test(`a member's raw linear is refused with the door named: ${typed}`, async ($, on) => {
         const w = world(on);
-        const r = await bash($, typed);
-        expect([
-            w.ran.length,
-            r.deny,
-            r.context?.some((c) => c.includes(door)),
-        ]).toEqual([1, undefined, true]);
-    });
-
-    test(`with the rule enforced, a member's raw linear is refused: ${typed}`, async ($, on) => {
-        const w = world(on);
-        w.store.set('rule-mode:raw-linear', 'enforce');
         const r = await bash($, typed);
         expect([w.ran, r.deny?.includes(door)]).toEqual([[], true]);
     });
