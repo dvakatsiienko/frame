@@ -1,9 +1,11 @@
+import { parse } from '../shell.ts';
 import {
     ASK,
     type Command,
     type Context,
     type Refusal,
     VAULT,
+    commands,
     hasFlag,
     operands,
     or,
@@ -30,6 +32,16 @@ function isTopDir(path: string, ctx: Context) {
     const parts = path.split('/');
     const at = parts.indexOf(VAULT);
     return at >= 0 && parts.length - at <= 3;
+}
+// what a `trash` would take, so lookUp can stat each: a regular file is never a top dir
+export function trashedPaths(command: string, cwd: string, ctx: Context = {}) {
+    return commands(parse(command), cwd).flatMap((c) =>
+        c.name === 'trash'
+            ? operands(c.args)
+                  .filter((o) => !o.includes('$'))
+                  .map((o) => resolve(o, resolve(c.dir, '/', ctx), ctx))
+            : [],
+    );
 }
 // past the floor: system state, prunes, remote deletes, a top dir or a whole defaults domain, and sudo
 export function hazard(c: Command, ctx: Context): Refusal | undefined {
@@ -125,10 +137,11 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
 
     const top =
         c.name === 'trash'
-            ? ops.filter(
-                  (o) =>
-                      !o.includes('$') && isTopDir(resolve(o, dir, ctx), ctx),
-              )
+            ? ops.filter((o) => {
+                  if (o.includes('$')) return false;
+                  const path = resolve(o, dir, ctx);
+                  return ctx.kinds?.get(path) !== 'file' && isTopDir(path, ctx);
+              })
             : [];
     if (top.length)
         return {

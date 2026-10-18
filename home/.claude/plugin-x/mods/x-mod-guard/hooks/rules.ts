@@ -17,6 +17,7 @@ import { floor } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
 import { background, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
+import { notes } from './rules/notes.ts';
 import { landings, overwrite } from './rules/overwrite.ts';
 import { parse } from './shell.ts';
 
@@ -120,7 +121,8 @@ export function refusals(
             overwrite(c, ctx) ??
             lint(c, list[i + 1]) ??
             missingAdd(c, ctx) ??
-            brief(c, ctx);
+            brief(c, ctx) ??
+            notes(c, ctx);
         if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
             out.push(found);
         // a nested shell's script is a command too

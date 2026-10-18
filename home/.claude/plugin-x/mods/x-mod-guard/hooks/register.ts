@@ -2,7 +2,9 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
 import type { Brief, Context, Refusal } from './rules/command.ts';
+import { trashedPaths } from './rules/hazard.ts';
 import { hints, slowHint, slowShapes } from './rules/hint.ts';
+import { hasNotes, notedKey, notesEdits } from './rules/notes.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
 import { SPEC_DOOR, SPEC_WHY, isSpecMissing } from './rules/spec.ts';
@@ -104,6 +106,29 @@ async function readBrief(
     };
 }
 
+// backlog finds its project from the root up; a task file is `<id> - <title>.md` under `.backlog/tasks` or `backlog/tasks`
+async function isTaskNoted(
+    $: EngineInterface,
+    root: string,
+    id: string,
+    home: string | undefined,
+) {
+    const prefix = `${id.toLowerCase()} - `;
+    for (let dir = root; dir && dir !== '/' && dir !== home; ) {
+        for (const tasks of [`${dir}/.backlog/tasks`, `${dir}/backlog/tasks`]) {
+            const names = await $.fs.list(tasks).catch(() => undefined);
+            if (!names) continue;
+            const file = names.find((n) =>
+                n.name.toLowerCase().startsWith(prefix),
+            );
+            if (!file) return false;
+            return hasNotes(await $.fs.read(`${tasks}/${file.name}`));
+        }
+        dir = dir.slice(0, dir.lastIndexOf('/'));
+    }
+    return false;
+}
+
 // a session's entry in cc's registry: the name ListAgents shows, and `bg` for a background session
 async function registryEntry($: EngineInterface, sid: string) {
     const dir = `${await $.env.get('HOME')}/.claude/sessions`;
@@ -172,6 +197,7 @@ const tally = (was: Tally | undefined, kind: GuardEvent['kind']): Tally => ({
 // verifier says clean and it leaves this set (dima's o70, after FRM-392's guard refused plain reports live)
 const WARN_ONLY: ReadonlySet<string> = new Set([
     'frozen-lockfile',
+    'notes-replace',
     'raw-plugin-update',
     'spec',
 ]);
@@ -500,7 +526,10 @@ async function lookUp(
     for (const path of addedPaths(command, cwd, ctx))
         if (!(await $.fs.exists(path))) missing.add(path);
     const kinds: NonNullable<Context['kinds']> = new Map();
-    for (const path of overwrittenPaths(command, cwd, ctx))
+    for (const path of [
+        ...overwrittenPaths(command, cwd, ctx),
+        ...trashedPaths(command, cwd, ctx),
+    ])
         if (await $.fs.exists(path))
             kinds.set(path, (await $.fs.stat(path)).kind);
     const cleanTrees = new Set<string>();
@@ -513,7 +542,11 @@ async function lookUp(
     const manifestDirs = new Set<string>();
     for (const dir of installDirs(command, cwd, ctx))
         if (await isManifestChanged($, dir)) manifestDirs.add(dir);
-    return { briefs, cleanTrees, kinds, manifestDirs, missing };
+    const notedTasks = new Set<string>();
+    for (const edit of notesEdits(command, cwd, ctx))
+        if (await isTaskNoted($, edit.root, edit.id, ctx.home))
+            notedTasks.add(notedKey(edit));
+    return { briefs, cleanTrees, kinds, manifestDirs, missing, notedTasks };
 }
 
 // a foreground Bash that held the session over a minute is remembered by its shapes; the next foreground run of one

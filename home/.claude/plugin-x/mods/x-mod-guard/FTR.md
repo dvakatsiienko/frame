@@ -115,9 +115,9 @@
     - history: `git filter-repo`, `git filter-branch`, `git gc --prune=now`
     - prune: `brew cleanup`, `pnpm store prune`, `docker system prune`, `crontab -r`
     - remote delete: `gh repo|release delete*`, `vercel rm|remove` and `vercel env rm`, `op <item|…> delete|rm|remove`, `security delete-*`, `linear issue delete`, an `issueDelete` mutation sent by `curl` or `linear`
-    - top dir: `trash` of `/`, `~`, a dir above it, a dir right under it (`~/Documents`) or the obsidian vault root; `defaults delete <domain>` with no key, or `-g` with none
+    - top dir: `trash` of `/`, `~`, a dir above it, a dir right under it (`~/Documents`, `~/.config`) or the obsidian vault root; `defaults delete <domain>` with no key, or `-g` with none
   - then it is refused, and the reason opens with the door: «ask cclio» for a disk, a device, history or a remote delete; «hand dima the step» for `csrutil`, `spctl` and `tccutil`; «hand dima the command» for `sudo`; «leave the prune to dima — name it in your report»; `>>`, a new path or the Write tool for a redirect; `mv -n` / `cp -n` or trash the old file first; «cancel it» for a linear issue; trash the files inside, by name; one `defaults` key
-  - then the nearest harmless form runs: `diskutil list`, `dd` onto a file, `chmod -R` inside `~`, `csrutil status`, a `>` onto a new file, `>>`, `> /dev/null 2>&1`, `mv` onto a new name or into a dir without that file, `git gc`, `crontab -l`, `gh release view`, `vercel env ls`, `linear issue view`, `trash` of a file in `~/Documents` or a note in the vault, `defaults delete <domain> <key>`
+  - then the nearest harmless form runs: `diskutil list`, `dd` onto a file, `chmod -R` inside `~`, `csrutil status`, a `>` onto a new file, `>>`, `> /dev/null 2>&1`, `mv` onto a new name or into a dir without that file, `git gc`, `crontab -l`, `gh release view`, `vercel env ls`, `linear issue view`, `trash` of a file in `~/Documents`, of one regular file right under `~` (a dotfile like `~/.zcompdump`; a symlink stays refused) or a note in the vault, `defaults delete <domain> <key>` (PK-167)
   - then `sudo` ahead of a floor command keeps the floor's door (`sudo rm` → trash)
   - then a history rewrite inside a job's own scratch clone runs, like the other local rewrites
   - decision: an overwrite is refused only when the file is on disk — x-mod-guard looks each target up before the call; a plain `cp` onto a file is left alone, only `cp -f` and `cp /dev/null` are read (FRM-324's list); a file under a claude session's own scratchpad is never an overwrite (PK-138)
@@ -185,8 +185,14 @@
   - decision: every session, cclio's included — the bump is everyone's door, and it reads the cache back where a raw update does not (36 raw update calls in 14 days, dima's o33)
   - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70)
 
-- ⬜ a member's raw `linear` read or comment is warned until 2026-10-18, then refused, the `x linear` door named (FRM-398)
-  - decision: warn-only for a week, then refuse (dima's o234); the flip is `raw-linear` leaving `WARN_ONLY` in `hooks/register.ts`, `rule-mode:raw-linear` = «enforce» turns it on early
+- ⬜ a backlog notes edit that would wipe notes names `--append-notes`, warn-only (PK-150)
+  - given `backlog task edit <id> --notes …` (or `--notes=…`), and the task's file under `.backlog/tasks` or `backlog/tasks` — in `BACKLOG_CWD` when the command sets it, else its dir or the nearest one above — holds text between its `SECTION:NOTES` markers
+  - then it runs, and the model reads «would refuse» with `backlog task edit <id> --append-notes <text>` named; with `rule-mode:notes-replace` = «enforce» nothing runs
+  - given an empty notes block, no notes section, `--append-notes`, or an id no task file matches, then it runs unwarned
+  - decision: warn-only (`WARN_ONLY`) until a verifier says clean (o70); the spec's «refused» waits for that clean
+
+- ✅ a member's raw `linear` read or comment is refused, the `x linear` door named (FRM-398)
+  - decision: warned for a week, refused from 2026-10-18 (dima's o234): 0 raw-linear warnings in the week's otel tap
   - given a session the registry names anything but 🦉 cclio, when it runs `linear issue view`, `linear api` or `linear issue comment add`, then nothing runs and the refusal names `x linear read <id> --comments --relations` or `x linear comment <id> --body-file <file>`
   - and cclio's session runs them (her `linear api` still takes the `x linear` rewrite); `x linear …`, a quoted mention and `linear issue list` run; a session the registry does not list runs them, fail open
   - decision: read as typed, before the `linear api` rewrite — the rewrite acts as cclio, a member's door is `x linear read`

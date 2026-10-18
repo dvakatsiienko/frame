@@ -8,7 +8,7 @@ export type Refusal = {
     targets: string[];
 };
 // what the rules read off the machine: the job's own dir, home, and the added paths found missing
-// kinds: what each written-over path found on disk is
+// kinds: what each written-over or trashed path found on disk is
 export type Context = {
     jobDir?: string;
     home?: string;
@@ -21,6 +21,8 @@ export type Context = {
     cleanTrees?: Set<string>;
     // the dirs whose working tree changed a package.json or pnpm-workspace.yaml since HEAD (FRM-393)
     manifestDirs?: Set<string>;
+    // the backlog tasks a `--notes` edit names whose file already holds notes, keyed by notes.ts's notedKey
+    notedTasks?: Set<string>;
 };
 // a spawn's brief file as found on disk: whether it names the coder skill, and whether x brief check stamped its bytes
 export type Brief = { isCoder: boolean; isStamped: boolean };

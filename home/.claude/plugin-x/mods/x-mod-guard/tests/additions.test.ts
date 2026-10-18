@@ -190,6 +190,13 @@ const REFUSED = [
         [],
     ],
     ['top dir', 'defaults delete -g', 'defaults delete -g', 'one key', []],
+    [
+        'top dir',
+        'trash of a dot dir in ~',
+        'trash ~/.config',
+        'the files inside it',
+        [],
+    ],
 ] as const;
 
 for (const [group, shape, command, door, files] of REFUSED)
@@ -228,6 +235,12 @@ const RUNS = [
         'trash of a note in the vault',
         `trash "/home/Library/Mobile Documents/iCloud~md~obsidian/Documents/Vault/a.md"`,
         [],
+    ],
+    [
+        'top dir',
+        'trash of one regular dotfile in ~',
+        'trash ~/.zcompdump',
+        ['/home/.zcompdump'],
     ],
     [
         'top dir',
