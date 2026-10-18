@@ -177,6 +177,19 @@ cw_err=$(mktemp)
 "$(dirname "$0")/ci-watch.sh" --boot 2>"$cw_err" || fail "ci-watch --boot exited $?: $(grep . "$cw_err" | tail -1 || echo 'no stderr')"
 rm -f "$cw_err"
 
+echo "-- n8n tables (blueprints trial: 🔴 ci watch rows unseen, 🎼📬 composer receipts of the last day) --"
+# the ci watch polls frame + bytes main every 5 min under pm2 (x-n8n); its rows replace a watch the boot has to re-arm
+if n8n_out=$(timeout 30 ~/frame/script/op-run.sh bash -c '
+  set -eo pipefail
+  get() { curl -sf -H "X-N8N-API-KEY: $N8N_API_KEY" "http://${N8N_HOST:-localhost:5678}/api/v1/data-tables/$1/rows"; }
+  get vZqYjgJqtQTWc9s9 | jq -r ".data[] | select(.seen != true) | \"🔴 \(.repo) · \(.workflow) · \(.failed_at) · \(.url)\""
+  get voy4TaHqBxTY6RWJ | jq -r --arg since "$(date -u -v-1d +%Y-%m-%dT%H:%M)" ".data[] | select(.createdAt > \$since) | \"📬 \(.batch) · \(.chore) · \(.result) · \(.sender)\""
+' 2>&1); then
+  printf '%s\n' "${n8n_out:-no unseen ci reds, no receipts in a day}"
+else
+  fail "n8n tables unreadable (x-n8n down? pm2 ls): $(printf '%s' "$n8n_out" | tail -1)"
+fi
+
 # a project-scope plugin starts no monitors (code.claude.com/docs/en/plugins/loading, «Background monitors do not load»), so the boot arms both every time; a hook cannot, since only her own background job wakes her
 watches=$(ps -ax -o command | grep -c '[p]r-watch.sh --watch\|[c]i-watch.sh --watch' || true)
 echo "watches: $watches of 2 running — the boot arms the missing ones (watch-once.sh), as every boot does"
