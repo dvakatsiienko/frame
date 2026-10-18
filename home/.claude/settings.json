@@ -10,6 +10,7 @@
     "CLAUDE_CODE_PLUGIN_DIRS": "~/frame/home/.claude/plugin-x/mods/x-mod-stash:~/frame/home/.claude/plugin-x/mods/x-mod-holds:~/frame/home/.claude/plugin-x/mods/x-mod-guard:~/frame/home/.claude/plugin-x/mods/x-mod-redact",
     "CLAUDE_CODE_PLUGIN_DIR_WATCH": "1",
     "CLAUDE_CODE_FORK_SUBAGENT": "1",
+    "CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS": "1",
     "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
     "OTEL_METRICS_EXPORTER": "otlp",
     "OTEL_LOGS_EXPORTER": "otlp",
@@ -34,7 +35,9 @@
       "AskUserQuestion",
       "EnterPlanMode",
       "ExitPlanMode",
-      "Agent(general-purpose)"
+      "Agent(general-purpose)",
+      "Agent(claude)",
+      "Agent(statusline-setup)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

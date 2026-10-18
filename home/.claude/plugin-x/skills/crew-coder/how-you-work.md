@@ -31,7 +31,7 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
 
 ## while you build
 
-- edit the lines that change, never a whole file; a lookup goes to `Explore`.
+- edit the lines that change, never a whole file; a lookup goes to `scout`.
 - **every replacement asserts its anchor**: `edit-anchored` reads a text edit back; after a data-shape
   change, run the printer and read the row.
 - **the brief names what dima sees, you find what is wrong**: check the observable, never the line you

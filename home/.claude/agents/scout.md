@@ -1,5 +1,5 @@
 ---
-name: Explore
+name: scout
 description: Fast read-only search agent for locating code. Use it to find files by pattern, grep for symbols or keywords, or answer «where is X defined / which files reference Y». Not for code review, design-doc audits or open-ended analysis. When calling, name the breadth — «quick», «medium» or «very thorough».
 model: sonnet
 effort: medium
