@@ -190,9 +190,9 @@ else
   fail "n8n tables unreadable (x-n8n down? pm2 ls): $(printf '%s' "$n8n_out" | tail -1)"
 fi
 
-# a project-scope plugin starts no monitors (code.claude.com/docs/en/plugins/loading, «Background monitors do not load»), so the boot arms the pr watch every time; ci reds on main come from n8n's 🔴 ci watch above
-watches=$(ps -ax -o command | grep -c '[p]r-watch.sh --watch' || true)
-echo "watches: $watches of 1 running — the boot arms the pr watch when missing (watch-once.sh), as every boot does"
+# a project-scope plugin starts no monitors (code.claude.com/docs/en/plugins/loading, «Background monitors do not load»), so the boot arms both every time; n8n's ci rows above are the record, ci-watch is the wake, until an n8n → mod bridge lands
+watches=$(ps -ax -o command | grep -c '[p]r-watch.sh --watch\|[c]i-watch.sh --watch' || true)
+echo "watches: $watches of 2 running — the boot arms the missing ones (watch-once.sh), as every boot does"
 
 if [ -z "${COMPACT:-}" ]; then
 echo "-- app essentials (bytes/script/apps-essentials.ts, BYT-111; 🔴 = a gap to fold into today) --"

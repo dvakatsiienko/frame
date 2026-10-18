@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-18 15:36'
+updated_date: '2026-10-18 16:13'
 due_date: '2026-10-21'
 labels:
   - s
@@ -32,4 +32,6 @@ parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the p
 2026-10-18 18:35, dima «now»: an n8n mailbox is live — workflow «composer receipts» (wKzQdHFvCe4lNanM, active) takes POST localhost:5678/webhook/composer-receipt into data table composer_receipts (voy4TaHqBxTY6RWJ); a test row read back. x:crew-composer now posts every receipt line there; composer told live. left: the boot reads the table (GET /api/v1/data-tables/voy4TaHqBxTY6RWJ/rows via op-run) beside the SendMessage, and the first real composer receipt proves it.
 
 18:38 correction (ccrow 18:35): the n8n mailbox is dima's automation DEMO, not this item's fix. the bounce was the address — the fix is composer's brief naming the sender exactly as ListAgents shows it («🦉 cclio»), proven on the next composer chore. the mailbox line now runs jq -n --arg + curl -sf || 'mailbox POST failed' (a quoted chore and a dead endpoint both proven).
+
+19:15, dima's tick (o42): boot step 3 now has the composer brief name the coordinator as «🦉 cclio», exactly as ListAgents prints it. left: proven on the next composer chore (its [done] lands by SendMessage, no bounce).
 <!-- SECTION:NOTES:END -->
