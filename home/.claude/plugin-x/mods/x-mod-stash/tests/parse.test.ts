@@ -54,6 +54,14 @@ test('a fleet subagent reads as its badge and type, never its description', () =
     ).toBe('waiting on 🐬 wishkeeper');
 });
 
+test('a scout reads as 🦅 scout', () => {
+    expect(
+        backgroundWait([
+            { agent_type: 'scout', description: 'find the band code' },
+        ]),
+    ).toBe('waiting on 🦅 scout');
+});
+
 test('a subagent type with no badge keeps the three-word description', () => {
     expect(
         backgroundWait([

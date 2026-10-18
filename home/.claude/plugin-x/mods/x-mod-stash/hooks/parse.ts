@@ -215,11 +215,11 @@ export function backgroundWaits(
 
 // a fleet subagent is named by its badge and type, the way replies print a member (rules/fleet-identity.md)
 const AGENT_BADGE: Record<string, string> = {
-    Explore: '🦊',
     helper: '🐜',
     'helper-lite': '🪶',
     researcher: '🐝',
     retro: '🦡',
+    scout: '🦅',
     wishkeeper: '🐬',
 };
 
