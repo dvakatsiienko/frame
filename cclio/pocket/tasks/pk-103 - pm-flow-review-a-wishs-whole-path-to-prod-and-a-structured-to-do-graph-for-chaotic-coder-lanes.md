@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-13 10:47'
+updated_date: '2026-10-18 13:47'
 due_date: '2026-10-20'
 labels:
   - m
@@ -58,4 +58,10 @@ You can provide a better idea of what the coder's execution order can look like.
 
 TL;DR: define "harden and set in stone" to spec/to tickets flow. 
 To be done after memory sweep is fully resolved.
+
+dima, 2026-10-18 (inbox W3 + steering): connect FRM-266 to your pm module revamp and solve it all at once. ~the day after tomorrow: the pm module revamp — review your full pm flows plus the coord flows, since they sit close together; the visualization tool helps here. bring the ticket close so it is at hand.
+
+parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
+
+dima, 2026-10-18 (inbox W4): to fix, sharpen and smoothen your pm, i should first review all your pm flows from a to b, including the lane-closing parts; then evaluate how good the current flow is, find weak parts and gaps, find and apply shortcuts, cut redundancies. tl;dr: your pm and coord/lead flows need sharpening and smoothing (🎙️ «colors/lead» → coord/lead). the intervention skill PK-173 is tried on this first.
 <!-- SECTION:NOTES:END -->

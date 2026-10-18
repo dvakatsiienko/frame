@@ -6,14 +6,14 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-12 11:23'
-updated_date: '2026-10-15 17:26'
+updated_date: '2026-10-18 13:47'
 due_date: '2026-10-22'
 labels:
   - m
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 1000
+ordinal: 10700
 ---
 
 ## Description
@@ -49,4 +49,6 @@ unparked 2026-10-15 by dima's inbox steering: this run goes FIRST, inside the me
 2026-10-15 18:40: run #5 shipped (recipe log line, spawn-mechanics on 2.1.299, model-cards reshaped, 6 cards sharpened, generic agents denied fleet-wide, helper-lite renamed and editing). left: dima's sill settings screenshots — the first real case for the 5+ screenshot rule, read through helper-lite when he drops them.
 
 2026-10-15 20:17: run #5's last leftover came — dima's Sill screenshots — but cclio read all 6 by hand against the 5+ rule (#dima-caught); the rule was rewritten (fleet-tooling.md) and a helper-lite nudge pocketed (PK-148); the helper-lite path still waits for its first real batch (wishkeeper, 20:2x)
+
+2026-10-18: priority now → next — it is waiting, and the now cap holds today's three items (viz tool, shape-idea top-7, firecrawl).
 <!-- SECTION:NOTES:END -->

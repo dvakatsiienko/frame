@@ -4,14 +4,14 @@ title: watch the github issues we care about in one place
 status: waiting
 assignee: []
 created_date: '2026-10-14 17:35'
-updated_date: '2026-10-16 10:52'
+updated_date: '2026-10-18 13:47'
 due_date: '2026-10-22'
 labels:
   - m
 dependencies: []
-priority: now
+priority: next
 type: idea
-ordinal: 1500
+ordinal: 10800
 ---
 
 ## Description
@@ -31,4 +31,6 @@ parked: dima's word, «not now» (2026-10-14)
 2026-10-15 research landed (3 lanes, cclio/.scratch/research-watcher/): pick changedetection.io self-hosted under launchd, issues watched as github api json + jq (state, labels, comments, updated_at), releases via releases.atom, one GET /api/v1/watch for the agent's read (last_changed vs last_viewed). runner-up urlwatch (brew, no query api); exa's n8n rejected: webhooks need admin on repos we don't own. next: a 7-day test drive on dima's word.
 
 2026-10-15 15:55: x-changedetector live — schedule/jobs/x-changedetector, 54 watches seeded and checked, 0 errors; trial docs/test-drive/x-changedetector.md to 10-22. next: the positive control on a test issue, the boot's read, a push channel.
+
+2026-10-18: priority now → next — it is waiting on the x-changedetector verdict, and the now cap holds today's three items.
 <!-- SECTION:NOTES:END -->

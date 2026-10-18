@@ -4,8 +4,8 @@ title: 'ccrow, composer, designer: git-tracked and colocated with cclio'
 status: claimed
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-16 12:23'
-due_date: '2026-10-16'
+updated_date: '2026-10-18 13:42'
+due_date: '2026-10-20'
 labels:
   - s
 dependencies: []
@@ -28,4 +28,8 @@ inbox 10-16, Q: are they git-tracked? their fs location makes sense (external st
 2026-10-16 14:51 correction (wishkeeper, siesta 4): the 14:41 «ccrow restores fully» was wrong. ~/.local/state/ccrow/steers.md (9 KB, dima's dated steers to ccrow, read on every wake) is in no git repo, and notes.jsonl + verdicts.jsonl are the ccrow trial's data (verdict 10-20). composer's state dir holds 3 files (+ .claude.json.bak 167 KB), not 2. the studio leftovers ARE committed (6be2d54 main, 001f1a8 worktree-speak-opus). the colocation wish is still open: the escape hatch (a memory exclude for a subfolder) was never probed — «would start acting as cclio» was an inference.
 
 2026-10-16 15:23: steers.md moved into frame (ccrow/steers.md, symlink back; crew-adviser points at the frame path, o26). still open: the colocation escape hatch — probe a memory exclude for a subfolder (claudeMdExcludes or a nested settings) before the halt, one line of objection with a pick.
+
+2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); runs right after PK-158
+
+parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
 <!-- SECTION:NOTES:END -->

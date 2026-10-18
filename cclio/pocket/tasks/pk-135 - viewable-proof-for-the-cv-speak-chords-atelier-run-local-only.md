@@ -4,7 +4,7 @@ title: 'viewable proof for the cv: speak, chords, atelier run local only'
 status: open
 assignee: []
 created_date: '2026-10-14 16:43'
-updated_date: '2026-10-14 16:43'
+updated_date: '2026-10-18 13:42'
 labels:
   - m
 dependencies: []
@@ -23,4 +23,6 @@ dima 2026-10-14 19:42: «I want us to build some good projects and think about h
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: dima «all to solve later», the cv round picks it up
+
+parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
 <!-- SECTION:NOTES:END -->

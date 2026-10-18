@@ -6,7 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-16 16:53'
-due_date: '2026-10-17'
+updated_date: '2026-10-18 13:47'
+due_date: '2026-10-19'
 labels:
   - m
 dependencies: []
@@ -25,3 +26,11 @@ ticket: FRM-243 (skill loading: measure the three triggers, keep what fires)
 ticket: FRM-362 (crew-coder: a disclosure pass before the skill budget)
 first: `x linear list --search skill`, `--search memory` over open tickets; each stray joins this list or gets its verdict
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); first in line tomorrow, now also carries W2 (frm-267 tails) and the linear strays hunt
+
+dima, 2026-10-18 (inbox): exhaust your pocket as much as possible — we were postponing lots during the long memory sweep: hunt all skill/memory related ticket tails everywhere, solve them fully (W2 «frm-267 tails»: let's hunt and finish them). when the pocket is empty, hunt small and stray stuff in linear — i want no strays before we move on.
+<!-- SECTION:NOTES:END -->

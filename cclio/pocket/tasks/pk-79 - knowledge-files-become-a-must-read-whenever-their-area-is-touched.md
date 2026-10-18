@@ -4,7 +4,7 @@ title: knowledge files become a must-read whenever their area is touched
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-15 11:42'
+updated_date: '2026-10-18 13:42'
 due_date: '2026-10-22'
 labels:
   - m
@@ -72,4 +72,6 @@ ccrow 17:46 holdout, unvetted at the halt: «step 1 of PK-79 was reported done w
 parked: rides the mods lane resume beside PK-120 — sequence steps 5-7 (the x-mod-primer trace, the coder build, the 7-day test drive); steps 1-4 done (dima o18, 16:02)
 
 2026-10-15: due pushed in the tail sweep — the delivery rides the knowledge-shelf revamp inside the memory sweep, not a tail.
+
+parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
 <!-- SECTION:NOTES:END -->

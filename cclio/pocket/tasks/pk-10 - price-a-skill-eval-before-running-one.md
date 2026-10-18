@@ -4,8 +4,8 @@ title: price a skill eval before running one
 status: waiting
 assignee: []
 created_date: '2026-10-09 10:38'
-updated_date: '2026-10-10 10:53'
-due_date: '2026-10-17'
+updated_date: '2026-10-18 13:40'
+due_date: '2026-10-24'
 labels:
   - s
 dependencies: []
@@ -23,3 +23,9 @@ pocket 31 · status line was: `open · test-drive` · parked until the budget al
 
 `claude plugin eval` runs each case as a full session; 10 cases × 3 runs × 2 arms = 60 sessions. first step: one `x:cmt` case («commit this» in a temp repo), one run, `--max-cost-usd 1`, read the printed cost. tiers to decide then: the plugin alone (cheap, does the skill fire on its own phrasing) vs the full fleet context (the truth, the real competition between skills). source: `docs/knowledge/fleet-ops.md`.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); evals only on his word
+<!-- SECTION:NOTES:END -->

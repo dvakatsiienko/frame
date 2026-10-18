@@ -91,15 +91,15 @@ reviews from wishkeeper and ccrow, only then print a plan»; the boot is the ses
 - write the draft board to `~/frame/cclio/.scratch/boot-<YYYY-MM-DD>/board-proposal.md` — the write
   fires ccrow's `proposal` decision wake (`ccrow/decision.ts`), the whole thread in her packet: she
   checks the parse, the plan, and how cclio read his prompt
-- in the same step, `wishkeeper` 🐬 in boot mode at `effort: high`, in the **foreground**, with the raw inbox text, his
+- in the same step, `wishkeeper` 🐬 in boot mode at `effort: high`, with the raw inbox text, his
   boot prompt and each item's landing spot (pocket id, ticket, or answer): data loss of his drops is
-  the worst outcome. a foreground call holds the turn open, so ccrow's note drains in at the next tool round.
-  its brief also asks three checks: every CST first-act sits in the board's plan; every question of his is
+  the worst outcome. its brief also asks three checks: every CST first-act sits in the board's plan; every question of his is
   answered on the board, never only routed to a pocket item; the board carries the stuck reminders and the
   roadmap + bytes line
-- ccrow's note not in when wishkeeper returns → wait on her notes file, deadline 5 min:
-  `until [ "$(wc -l < ~/.local/state/ccrow/notes.jsonl)" -gt <count before the write> ]; do sleep 5; done`;
-  past the deadline the board says «ccrow silent»
+- both reviews run in the background (cc 2.1.302: a desktop main-thread subagent always does), so neither holds the turn:
+  beside the wishkeeper call, a Bash `run_in_background` wait on ccrow's notes file —
+  `for i in $(seq 1 60); do [ "$(wc -l < ~/.local/state/ccrow/notes.jsonl)" -gt <count before the write> ] && exit 0; sleep 5; done; echo silent # deadline: 300 s`
+  — then end the turn with no text; the two completion notices wake it, ccrow's note drains in as a peer message, and «silent» puts «ccrow silent» on the board
 - fix every finding of both, then print the board (dima, 2026-10-13: «gather everything, fix their findings, only then print the report») — the boot's first and only reply. nothing prints
   before it: no «waiting on» line, no partial board
 - completion: one reply holds the whole board, both reviews folded in

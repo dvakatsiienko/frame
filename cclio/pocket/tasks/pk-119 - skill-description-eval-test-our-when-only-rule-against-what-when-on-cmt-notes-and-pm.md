@@ -6,6 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 17:00'
+updated_date: '2026-10-18 13:42'
 labels:
   - m
 dependencies: []
@@ -19,3 +20,9 @@ ordinal: 105000
 <!-- SECTION:DESCRIPTION:BEGIN -->
 parked: plugin eval runs ~6 agent sessions per case; it waits for the $200 plan (renews 11-05, the 10-27 planning session decides), dima 19:59. o173 (dima ticked 19:33): ~20 queries per skill, half near-misses, 3 runs each, a fixed 60/40 split by hand. the method: author-memory/references/skill.md § evals
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
+<!-- SECTION:NOTES:END -->

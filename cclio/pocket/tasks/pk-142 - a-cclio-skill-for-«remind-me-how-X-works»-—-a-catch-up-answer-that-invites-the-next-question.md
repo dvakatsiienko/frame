@@ -4,7 +4,7 @@ title: 'cclio:catch-up — «catch me up on X»: an answer that invites the next
 status: waiting
 assignee: []
 created_date: '2026-10-15 11:01'
-updated_date: '2026-10-15 16:56'
+updated_date: '2026-10-18 13:47'
 due_date: '2026-10-18'
 labels:
   - s
@@ -25,4 +25,6 @@ dima, 2026-10-15 (inbox): I often ask you to remind me how this or that works; t
 
 <!-- SECTION:NOTES:BEGIN -->
 reopened at the 19:56 siesta (wishkeeper): built, but its done test is unrun. **waiting for:** dima's first catch-up ask — he judges the size (≤1,500 chars or more compact, his o76) — and the trigger eval (remind-me-how vs remind-me-to), parked with the evals until the $200 plan
+
+2026-10-18: dima proposes renaming catch-up to «sup» (wuzuuuuup 😀), and a sibling intervention skill that pairs with it — PK-173, which may merge into this one.
 <!-- SECTION:NOTES:END -->

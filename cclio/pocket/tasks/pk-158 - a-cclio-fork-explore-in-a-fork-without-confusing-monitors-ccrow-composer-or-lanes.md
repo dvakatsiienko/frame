@@ -6,8 +6,8 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-16 16:47'
-due_date: '2026-10-17'
+updated_date: '2026-10-18 13:40'
+due_date: '2026-10-20'
 labels:
   - s
 dependencies: []
@@ -41,4 +41,6 @@ inbox 10-16, Q (relates to the monitors wisp, PK-152): he wants to fork cclio to
 dima 10-16 18:47: «fork-guard: next boot, not today»
 
 **waiting for:** the next boot (dima, 10-16 18:47: «fork-guard: next boot, not today»)
+
+2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); fork-guard rides the first post-reset day
 <!-- SECTION:NOTES:END -->

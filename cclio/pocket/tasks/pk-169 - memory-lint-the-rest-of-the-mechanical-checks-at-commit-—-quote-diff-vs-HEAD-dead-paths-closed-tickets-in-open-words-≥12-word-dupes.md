@@ -6,6 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-16 16:46'
+updated_date: '2026-10-18 13:42'
 due_date: '2026-10-23'
 labels:
   - s
@@ -24,3 +25,11 @@ dima's o87 (10-16) ticked five checks for memory-lint; two run today (the budget
 - a closed FRM-N/BYT-N within 2 lines of open-state words (needs linear; cache the states)
 - a ≥12-word sentence living in two resident files
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00)
+
+parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
+<!-- SECTION:NOTES:END -->

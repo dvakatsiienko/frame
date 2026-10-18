@@ -23,10 +23,11 @@ word. skipping a step happens only on his word, named out loud.
    settled or parked by name. always; skipped only on his word. a re-shape grills what exists: why,
    for whom, what is missing, what should go. in the grill shape (`habit-dima-comms-pacing`).
 3. **prior art** — does it exist already, and can we use it instead of building?
-   `advise-project-approach` for a plan or a stack; the research lanes (`habit-research-lanes`) for
+   `advise-project-approach` for a plan or a stack; the research lanes (`cclio:research`) for
    the market. then the lib search: per part of the build (a waveform, a hotkey, a pan/zoom surface),
    the solid, maintained libraries that already solve it — dima thinks in frontend, so the under-the-hood
-   parts are the ones to hunt. done when the build-or-reuse call and the lib per part are
+   parts are the ones to hunt. candidates to test drive print as a ranked top 7 in the `x:top-seven` shape, a ⭐ rating
+   per line (⭐ to ⭐⭐⭐⭐⭐), one `⬅️ my pick` (dima, 2026-10-18). done when the build-or-reuse call and the lib per part are
    written with their reasons.
 4. **sharpen** — `neuroarxiv` when the question is an architecture or a method; `adhd` for a name
    or a fork with no clear answer. only where one applies; say which ran and what it changed.
