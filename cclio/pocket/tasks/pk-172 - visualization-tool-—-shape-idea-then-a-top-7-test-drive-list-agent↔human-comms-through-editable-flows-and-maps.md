@@ -3,10 +3,10 @@ id: PK-172
 title: >-
   visualization tool — shape-idea, then a top-7 test-drive list: agent↔human
   comms through editable flows and maps
-status: open
+status: done
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-18 13:47'
+updated_date: '2026-10-18 15:46'
 due_date: '2026-10-18'
 labels:
   - m
@@ -26,4 +26,6 @@ dima, 2026-10-18 (inbox W4, part 2; today's prio): i have wanted a tool like thi
 
 <!-- SECTION:NOTES:BEGIN -->
 dima, 2026-10-18: optionally shape a recipe too, especially if an idea lands; tl;dr: find and set up a good visualization tool. he asked, on alternative views: when he sees ideas visualized, it gives another point of view, simplifies understanding, brings aha moments — broader, deeper, or both; do you yourself have such moments? (answered on the 10-18 board). weekly plan (ccrow + dima's steer): the grill and the exa + parallel lanes 10-18, the opus source lane after the 10-19 reset.
+
+2026-10-18: shaped and set up — n8n primary, Obsidian Canvas + draw.io A/B, 2-week trial docs/test-drive/blueprints.md, home cclio/blueprints/, recipe refresh-blueprint-comms; LikeC4 dropped. the rest lives in the trial.
 <!-- SECTION:NOTES:END -->
