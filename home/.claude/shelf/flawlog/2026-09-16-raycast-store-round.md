@@ -1,4 +1,0 @@
-# 2026-09-16 · raycast store round · run cc·20260907·raycast
-
-- deeplink probe without a positive control: `raycast://confetti` was a DISABLED command (dima's cull) and `engineering-mode-321` is not a 2.4 action — both «failed», i read it as a dead url scheme and sent dima down `lsregister` + `brew reinstall` · cost ~20 min, a reinstall, a finder icon scare · raycast's own log (`~/Library/Logs/com.raycast.macos/raycast-x-*.log`) had the answer in one grep («No enabled command»); second sighting of «a probe without a positive control is a coin flip» (method-report-verify) — the fix is a rule line: a probe of a door names a target KNOWN to work through that door first
-- a probe of an external call went to the background with no `timeout` on its first attempt (`ghgrab agent tree` on next.js, 23 min hung until dima noticed) · cost: a stuck job in his process list · lesson: every probe of an external call carries `timeout` from the first attempt, chains included

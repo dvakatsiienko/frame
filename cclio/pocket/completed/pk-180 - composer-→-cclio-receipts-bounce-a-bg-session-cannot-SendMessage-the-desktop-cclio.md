@@ -3,10 +3,10 @@ id: PK-180
 title: >-
   composer → cclio receipts bounce: a --bg session cannot SendMessage the
   desktop cclio
-status: open
+status: done
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-18 16:13'
+updated_date: '2026-10-18 16:27'
 due_date: '2026-10-21'
 labels:
   - s
@@ -34,4 +34,6 @@ parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the p
 18:38 correction (ccrow 18:35): the n8n mailbox is dima's automation DEMO, not this item's fix. the bounce was the address — the fix is composer's brief naming the sender exactly as ListAgents shows it («🦉 cclio»), proven on the next composer chore. the mailbox line now runs jq -n --arg + curl -sf || 'mailbox POST failed' (a quoted chore and a dead endpoint both proven).
 
 19:15, dima's tick (o42): boot step 3 now has the composer brief name the coordinator as «🦉 cclio», exactly as ListAgents prints it. left: proven on the next composer chore (its [done] lands by SendMessage, no bounce).
+
+19:24 proven: composer's held [done] for b-1018-1 landed in 🦉 cclio by SendMessage, no bounce — the brief naming the coordinator «🦉 cclio» is the fix. done.
 <!-- SECTION:NOTES:END -->

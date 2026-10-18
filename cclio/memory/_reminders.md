@@ -50,8 +50,6 @@ Store contract: the `cclio:remind` skill. Both tiers die only when Dima drops th
 ⏰ 🦉🧠 when the jev router comes back on (credit ~10-18): the two «skills (jev router)» lines parked at the end of `sys-jev.md` go back into root `CLAUDE.md` § skills — set 2026-10-11 · due: 2026-10-18
 
 
-⏰ 🦉🛡️ 2026-10-18: flip FRM-398 from warn to refuse — remove `raw-linear` from `WARN_ONLY` in `home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts` (one line, through `x mods edit`); a warning that shows a wrong hit reopens FRM-398 instead. dima o234: «warn-only for a week, then refuse» — set 2026-10-11 · due: 2026-10-18
-
 ⏰ 🦉🐞 the next cli lane: it runs the round of `docs/test-drive/delve.md` § what counts: the brief says nothing of delve, the question comes at his retro (dima, 2026-10-13: «a used tool is not a proven one; let him pick it up naturally»). dies when that round is written; no cli lane capacity for now (dima, 2026-10-18: «push 1week+») — set 2026-10-13 · due: 2026-10-25
 
 ⏰ 🦉💸 2026-10-27: remind dima of the $200 month planning session — one dedicated grill that fills the 11-05 month with sealed chunks (cli, apps, sweeps, evals, designs) and smooths the flows first; cclio drafts the candidate list from the roadmap, the pocket and PK-108's spend notes before it, dima cuts (dima o154, 2026-10-13) — set 2026-10-13

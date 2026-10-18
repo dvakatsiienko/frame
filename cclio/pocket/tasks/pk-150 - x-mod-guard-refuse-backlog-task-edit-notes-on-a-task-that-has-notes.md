@@ -4,7 +4,7 @@ title: 'x-mod-guard: refuse backlog task edit --notes on a task that has notes'
 status: waiting
 assignee: []
 created_date: '2026-10-15 17:39'
-updated_date: '2026-10-15 17:42'
+updated_date: '2026-10-18 16:31'
 due_date: '2026-10-18'
 labels:
   - s
@@ -27,4 +27,6 @@ ordinal: 131000
 waiting for the mods lane, due 2026-10-24
 
 2026-10-15 halt flush: also fix the frozen-lockfile hint — it names --no-frozen-lockfile, which pnpm 12's add refuses; the door in a main checkout is a plain pnpm add
+
+19:31 landed warn-only on main (cafb2855, unpushed), not refuse yet — the flip to refuse is open.
 <!-- SECTION:NOTES:END -->

@@ -47,3 +47,6 @@ two ⏰📌 reminders (the BYT-127 lottie/rive pick, the design-drift coder tria
 
 ## «Yesterday, I tested /btw, and it actually produced a live-bg fork thread for you» · 2026-10-16
 planning the fork-guard, my opus lane read one docs line and I told him /btw is read-only and saves nothing. he had used it the day before and watched it spawn a live background fork of me. his hands-on test beat my read of the docs before either of us had a reason. → a doc line about a cc command is checked against a probe or his use before it reaches a plan (PK-158)
+
+## «LikeC4: delete it» · 2026-10-18
+shaping the blueprints tool, I leaned LikeC4 on my own edit cost: the model is text, so I could write it fastest. he explored it himself and asked for its delete before I had scored it against his grill — and grill 4 was the miss: no tiles or arrows he can move from the UI. his hands on the tool beat my ranking by convenience. → every lean is scored against his settled want first, cost only breaks ties (the 10-18 self-grill)

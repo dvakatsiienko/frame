@@ -1,10 +1,10 @@
 ---
 id: PK-149
 title: ✨ phases steer box loses typed text on a redraw
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-15 17:16'
-updated_date: '2026-10-16 11:02'
+updated_date: '2026-10-18 16:39'
 due_date: '2026-10-24'
 labels:
   - s
@@ -25,4 +25,6 @@ dima, 2026-10-15: when I type into the steer text box in the phases mod, it lose
 
 <!-- SECTION:NOTES:BEGIN -->
 dima, 2026-10-16: cc 2.1.301 added `rows` to a mod's Input (a multi-line text field; Enter submits, Shift+Enter or a backslash before Enter starts a new line). the coder tests rows on the steer box — it may fix the lost text, and the mods' text inputs that are too small today.
+
+19:39 landed on main (mods coder, unpushed): the orbit plan op dropped plan.steer, so a phases refresh cleared the typed steer and remounted the field; the op keeps it now, test red on HEAD, stash 701/0. not checked: dima typing in the desktop box. open edge: absorbMarks (register.tsx:1013) may do the same to the ask steer box — a P4 line in the mods scope.
 <!-- SECTION:NOTES:END -->
