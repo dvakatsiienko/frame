@@ -97,22 +97,23 @@ describe('memory-load-rule-lazy', () => {
     it.each([
         'linear issue view FRM-12',
         'timeout 30 linear issue view FRM-12',
-        'cd ~/frame && git commit -F msg.txt -- a.ts',
-        'git -C ~/frame commit -F msg.txt',
         'gh -R a/b pr create --title x',
-        'x lane commit "msg" -- a.ts',
+        'x lane pr-open --title x',
     ])('refuses the first `%s` with the rule attached', (command) => {
         const out = session().bash(command);
         expect(out.permissionDecision).toBe('deny');
         expect(out.permissionDecisionReason).toContain(ruleHead);
     });
 
-    it.each(['grep -rn linear docs', 'git help commit', 'git commit-tree abc'])(
-        'passes `%s`, which only names a trigger word',
-        (command) => {
-            expect(session().bash(command)).toEqual({});
-        },
-    );
+    it.each([
+        'grep -rn linear docs',
+        'git help commit',
+        'git commit-tree abc',
+        'cd ~/frame && git commit -F msg.txt -- a.ts',
+        'x lane commit "msg" -- a.ts',
+    ])('passes `%s`, which only names a trigger word', (command) => {
+        expect(session().bash(command)).toEqual({});
+    });
 
     it('passes an edit that removes a ticket line', () => {
         const out = session().run({

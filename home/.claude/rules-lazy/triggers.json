@@ -3,9 +3,8 @@
         "command": [
             "(?:^|[;&|(\\n'\"]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+|\\S*op-run\\.sh|op\\s+run\\b[^;&|\\n]*?\\s--)\\s+)*(?:\\S*/)?linear(?:-as)?\\s",
             "(?:^|[;&|(\\n'\"]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+|\\S*op-run\\.sh|op\\s+run\\b[^;&|\\n]*?\\s--)\\s+)*(?:\\S*/)?pnpm\\s+(?:-C\\s+\\S+\\s+)?linear:",
-            "(?:^|[;&|(\\n'\"]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+|\\S*op-run\\.sh|op\\s+run\\b[^;&|\\n]*?\\s--)\\s+)*(?:\\S*/)?git(?:\\s+-\\S+(?:\\s+[^-\\s]\\S*)?)*\\s+commit(?=[\\s'\\\")]|$)",
             "(?:^|[;&|(\\n'\"]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+|\\S*op-run\\.sh|op\\s+run\\b[^;&|\\n]*?\\s--)\\s+)*(?:\\S*/)?(?:gh|github-token-wrap)(?:\\s+-\\S+(?:\\s+[^-\\s]\\S*)?)*\\s+pr\\s+create\\b",
-            "(?:^|[;&|(\\n'\"]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+|\\S*op-run\\.sh|op\\s+run\\b[^;&|\\n]*?\\s--)\\s+)*(?:\\S*/)?x\\s+lane\\s+(?:commit|pr-open)\\b"
+            "(?:^|[;&|(\\n'\"]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+|\\S*op-run\\.sh|op\\s+run\\b[^;&|\\n]*?\\s--)\\s+)*(?:\\S*/)?x\\s+lane\\s+pr-open\\b"
         ],
         "input": ["(?m)^\\s*- ticket:"],
         "project": ["/cclio$"],
