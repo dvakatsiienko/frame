@@ -20,6 +20,7 @@ read only when the job names it:
 - impeccable named in a brief → [impeccable-refine.md](impeccable-refine.md)
 - the exit lines a brief carries → `cclio:shape-lane`
 - a price, a model card, a probed spawn fact → [references/model-cards.md](references/model-cards.md), [references/spawn-mechanics.md](references/spawn-mechanics.md)
+- writing or sharpening a subagent card → [references/card-craft.md](references/card-craft.md)
 
 **one coder by default, two with a stated reason, never three.** parallelism goes across repos, not into headcount.
 

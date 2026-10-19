@@ -52,11 +52,11 @@ ccrow/AGENTS.md	11900	seed 2026-10-16, today's size + 15 %
 docs/knowledge/AGENTS.md	1900	seed 2026-10-16, today's size + 15 %
 gifs/AGENTS.md	1200	seed 2026-10-16, today's size + 15 %
 gmail/AGENTS.md	2100	seed 2026-10-16, today's size + 15 %
-home/.claude/agents/scout.md	1300	seed 2026-10-16, its size + 15 %
 home/.claude/agents/helper-lite.md	2400	seed 2026-10-16, its size + 15 %
 home/.claude/agents/helper.md	1900	seed 2026-10-16, its size + 15 %
 home/.claude/agents/researcher.md	2100	seed 2026-10-16, its size + 15 %
 home/.claude/agents/retro.md	1800	seed 2026-10-16, its size + 15 %
+home/.claude/agents/scout.md	2300	2026-10-19: the scout shaping (dima's ticks o25–o29) — a proactive trigger and a map answer contract; its size + 15 %
 home/.claude/CLAUDE.md	16100	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/mods/AGENTS.md	10600	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/app-author-ftr/SKILL.md	8500	seed 2026-10-16, today's size + 15 %
@@ -77,6 +77,7 @@ home/.claude/plugin-x/skills/crew-composer/SKILL.md	6100	seed 2026-10-16, today'
 home/.claude/plugin-x/skills/crew-designer-interview/SKILL.md	7000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-designer/SKILL.md	11700	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/crew-dna/SKILL.md	6300	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/crew-lead/references/card-craft.md	3200	seed 2026-10-19, its size + 15 %
 home/.claude/plugin-x/skills/crew-lead/references/model-cards.md	8200	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md	37100	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/crew-lead/SKILL.md	11100	seed 2026-10-16, today's size + 15 %

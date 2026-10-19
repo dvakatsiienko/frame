@@ -86,6 +86,7 @@ on partly done, flatten an exact string into prose casing.
 
 - **prefer parallel, non-blocking work whenever it is a good idea** (dima, 2026-10-11: «my want is for everyone to prefer parallelization when it is a good idea»): a wait, a build, a watch or a wide read goes to a background job or a subagent, and the talk with me goes on.
 - **a subagent is open to every member** — any `Agent` call loads `x:crew-subagent` first: which card, what effort, how wide to fan out.
+- **a lookup across code you have not opened goes to `scout`** — it hands back the line ranges to read, so the search output stays out of your context; a file and symbol you know, you grep yourself.
 - **a spawned routine is yours until it resolves.** never fire and forget the supervision.
 - every wait gets a deadline. when it passes, stop and report. never extend silently.
 - a check that needs a timeout to pass is wrong.

@@ -56,6 +56,8 @@ nobody reminds you:
 - anything a human looks at → `x:guide-ui-ux`; a route, url or layout → `x:guide-conventions`
 - every commit → `x:cmt`
 
+**finding before reading**: to find something in code you have not opened — every caller of a symbol, where a flow is handled, the siblings of the bug you just fixed — send `scout` the question and read only the ranges it returns; a file and symbol you already know you grep yourself.
+
 ## 2. the lane — where your code lives
 
 a ticket job lands as a **pr** in `bytes` by default. freebies and tiny changes go to **`main`**; the
