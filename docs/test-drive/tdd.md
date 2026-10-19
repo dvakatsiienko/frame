@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-10-22
+until: 2026-11-16
 ---
 
 # test drive — mattpocock tdd
@@ -19,6 +19,15 @@ why (dima, 2026-10-06): «it changes a coder's approach a lot» — a test drive
 - a new verb in the go `x` (v1.1)
 - a ui change in a bytes app (does tdd fit a component test in browser mode?)
 - a refactor where the tests must stay green unchanged
+
+## next lanes — tdd rides each one (dima o96, 2026-10-19: «don't simply postpone … link it to the nearest ongoing lanes, so it won't get buried and forgotten»)
+
+each lane's coder brief loads `mattpocock-skills:tdd` and names the stress item it covers; the lane's done report adds one log line here. one arm-b ticket (no tdd) in the same lane gives the comparison.
+- mods lane (PK-120) — a refactor where the tests stay green, or a bug fix with a repro test
+- cli lane (PK-74) — a new verb in the go `x`
+- speak v2 — a ui change in a bytes app, component test in browser mode
+- chords redesign — a ui change in a bytes app
+- trophy-sys — a bug fix with a repro test from its wisps
 
 ## log
 

@@ -1,5 +1,5 @@
 ---
-status: live
+status: closed
 until: 2026-10-22
 ---
 
@@ -22,3 +22,7 @@ one line per run: date · sessions read · retro findings · self-retro findings
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 retro test drive, two weeks to 2026-10-20 — `mattpocock-skills:retro` (user-only): self-retros only (dima 10-07: «spawning a session only for retro is a bad idea»): coders and verifiers read matt's retro SKILL.md at their last act, cclio's retro is dima typing `/mattpocock-skills:retro` in its thread before a checkpoint or halt; one line per run in `docs/test-drive/retro.md`. when a session went wrong, say «🎓 a /retro moment» to dima. on 10-20: does it replace the self-retro? dima 2026-10-06: «very-very useful» — set 2026-10-06
+
+## verdict
+
+- 2026-10-19 · **closed** (dima o92): the self-retro shape won on 10-07 — «spawning a session only for retro is a bad idea»; coders and verifiers read the retro skill at their last act, the `retro` card stays for finished transcripts. 2 logged runs (9 proposals, then 6 findings at ~0 extra tokens); the outside-vs-self overlap was never counted.

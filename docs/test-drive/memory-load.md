@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-22
 ---
 
@@ -19,3 +19,7 @@ until: 2026-10-22
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 memory-load test drive, two weeks to 2026-10-20 — lazy rules (linear-flow out of the resident set, FRM-300). every halt reads the hook's `miss` lines, one log line in `docs/test-drive/memory-load.md`. on 10-20: rerun `pnpm memory-load:replay --days 14`; keep (then `fleet-hazards` goes lazy next) or discard (the file goes back to `rules/`). dima 2026-10-04: «let's see if it works, make it work, or discard it» — set 2026-10-04
+
+## verdict
+
+- 2026-10-19 · **adopted** (dima o90): replay 14 d over 1,327 sessions — cclio 3,987/3,987, coder 1,105/1,111; the 6 coder misses (FRM-386 probe, FRM-400, FRM-357) are ticket ids in prompt text with no linear call before the load, so no linear work ran without the rule. subagents 108/268 is the known replay blind spot (FRM-303 riders). trigger fix landed: `git commit` and `x lane commit` no longer load linear-flow (frame's commit-msg lint now holds the closing-keyword rule); `gh pr create` and `x lane pr-open` still do. next lazy rule: `fleet-hazards`, after the subagent blind spot.

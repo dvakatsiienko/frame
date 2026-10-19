@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-20
 ---
 
@@ -27,6 +27,7 @@ added only if the regex log shows the gap.
 ## verdict
 
 _(2026-10-16)_
+- 2026-10-19 · **adopted, warn-only** (dima o93): 2,317 hits all-time, a 1-in-60 sample all real. the three unread rules each showed hits (`~/.local/state/reply-check.tsv`): table 1, middot 156 (all 10-04 → 10-08, then none: the habit took), circled digits 5 (already gone from the hook source), so none is dropped. the kill rule stays: a rule with zero hits in two weeks leaves the hook.
 - 2026-10-04 · live probe · the hook fires live (one bare-ticket line logged this session), but a deliberate «alpha · beta» in the final reply of a turn was never logged · guess, unproven: at Stop the final text block is not yet in the transcript, so the hook reads an earlier block of the turn · fix candidate: read the Stop input's last-message field if cc passes one, else re-read the transcript after a short settle
 - 2026-10-04 evening · 8 live hits today, so the hook fires · false positives: commit-hash fires on job ids (d848735b) and on the barrel-probe hash d03f3da at session resumes (the resume turn, not a reply of mine) · fix candidate: skip hex in a `job`/`probe` context, skip resume turns
 - 2026-10-11 16:52 · new log-only rule `dead-link` (o125): a markdown link with no scheme that does not resolve from the session's cwd (a :line suffix stripped); red-proven test then 16/16, the live hook replay of the 16:47 groom-list link logs it, the absolute twin passes · promote to blocking if it fires again (dima's warn-first pick)

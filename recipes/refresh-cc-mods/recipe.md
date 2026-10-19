@@ -89,7 +89,7 @@ his standing calls: session.measure «not yet, i don't need another ctx meter»;
 - `home/.claude/plugin-x/mods/AGENTS.md` — the doors and the rules every mod round needs (the one home, dima's call)
 - `home/.claude/plugin-x/mods/engine.md` — the probed engine facts and the test-harness traps, read by name
 - `home/.claude/plugin-x/mods/api-map.md` — every event with its line in the types file, and the fleet ideas
-- `docs/test-drive/mods.md` — the running measurement, verdict 2026-10-19
+- `docs/test-drive/mods.md` — the trial record, adopted 2026-10-19; a run reads its log, appends nothing
 - `home/.claude/plugin-x/mods/workarounds.md` — dima's mods wants the engine can't do yet; an entry the cc changelog shows landed is printed with its undo, and leaves once the undo ships
 - [FRM-304](https://linear.app/x-com/issue/FRM-304) — the open list; every round of work is a child ticket
 

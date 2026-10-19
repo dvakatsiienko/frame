@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-10-21
 ---
 
@@ -21,3 +21,7 @@ at `until`: count wins against misses. one miss he noticed → drop the feature 
 ## rounds
 
 - 2026-10-12 21:52 · a miss by misuse: cclio set `dies: 3` on a real decision (o137, «checkpoint now?»); it left orbit unpicked while dima was busy with the coder refresh. the rule says decisions never expire — the slip is cclio's, the feature did what it was told. re-added sticky
+
+## verdict
+
+- 2026-10-19 · **dropped** (dima o91): 0 wins, 1 miss in 1 round (cclio set `dies: 3` on a real decision, o137); sticky by default stays. the code still carries the `dies` field: its removal rides the next mods lane (PK-207).

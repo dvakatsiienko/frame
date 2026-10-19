@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-21
 dies-when: the verdict line below is written (2026-10-19) — mods become a fleet-aware layer (rules line + contracts), stay dima's own toy, or get pruned
 ---
@@ -72,3 +72,7 @@ the coder cannot see a surface; dima walks each, ticks what holds, notes what do
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 mods test drive, two weeks to 2026-10-19 — the cc mods (stash, breather) and whether the fleet needs to know them; walk the stress list in `docs/test-drive/mods.md`, one log line per halt (which mod fired for real, what it saved or broke). on 10-19: a fleet-awareness line + per-mod contracts, keep as dima's own layer, or prune. dima 2026-10-05: «let's keep exploring and registering mods on a test drive, so you keep an eye on it and grow fleet awareness of whether mods are even needed» — set 2026-10-05
+
+## verdict
+
+- 2026-10-19 · **adopted** (dima, o96): «mods have proven themselves … very good but have some flaws and a lot of issues, but still, they are useful … we adopt them and use them.» the fleet-awareness question settled as `rules/fleet-mods.md` (one section per mod) plus each mod's own contract; the flaws ride the mods lane (PK-120). numbers: 8 log lines 10-05 → 10-12, every surface ticked, the Bash blind spot measured at ~37 % of writes taking no hold.

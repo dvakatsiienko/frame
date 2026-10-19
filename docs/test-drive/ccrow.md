@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-22
 ---
 
@@ -114,3 +114,7 @@ verdict question: borrow its timing (consult before an approach / before done) i
 
 ⏰ 🔬 ccrow test drive, two weeks to 2026-10-20 — the parked adviser (FRM-327, `docs/test-drive/ccrow.md`); every halt reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl`, one log line per day; days 1–3 silent and paired, then live and alternating. on 10-20: keep (and pick the arm), reshape, or stop — and the mod (FRM-327 «later») only if it proved useful. dima 2026-10-06: «test drive for 2 weeks + measures» — set 2026-10-06
 - 10-11 17:42 · ccrow wake 202610111736 (fable) · checkpoint 2's CST lost or staled 3 items (pm review's dedicated session, o74/o75, FRM-385's reseal); a firmer first-act is remember-harder; check the CST draft with wishkeeper before /compact · vetted ok · useful: becomes a cclio:checkpoint step (o143)
+
+## verdict
+
+- 2026-10-19 · **adopted** (dima o94: «one of the most used and useful parts of our fleet we ever invented»): since 10-05, 271 wakes, 214 surfaced notes; 129 of 137 graded ok (94 %, bar 70 %); validated catches 69 in W41, 56 in W42 (bar ≥1/week); 1.73 surfaced notes per clock-hour to cclio, slipstreamed, so the interruption bar reads as met for dima; cost: ~1.15M tokens in and ~2.9k out per wake, plan runs $0.86 each (25 runs, $21.61).
