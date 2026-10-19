@@ -22,7 +22,7 @@ export const defaultThresholds: Thresholds = {
     need: 0.5,
 };
 
-// a pick of these never auto-trusts, green router or not (memory/sys-jev.md)
+// a pick of these never auto-trusts, green router or not (docs/knowledge/jev.md)
 export const sideEffectSkills: ReadonlySet<string> = new Set([
     'cclio:evergreen',
     'cclio:halt',

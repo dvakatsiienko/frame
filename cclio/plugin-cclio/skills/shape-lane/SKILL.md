@@ -26,7 +26,7 @@ a card is an h2 heading and two plain lines: no fence (a fence means «copy me»
 
 ## 2 · the grill
 
-load `mattpocock-skills:grilling` for the method; the round prints in the grill shape of `habit-dima-comms-pacing` (🔥 header, numbered bold questions, a) b) with consequences, ➡️ pick), whole in the reply and as orbit asks (dima, 2026-10-10: «grills print as usual in a response, orbit only sends my reply»). orbit is the only answer door: no pre-filled answer fence in the reply (reply-check blocks one). his answers fold into `decided` the same turn.
+load `mattpocock-skills:grilling` for the method; the round prints in the grill shape of `habit-dima-comms` (🔥 header, numbered bold questions, a) b) with consequences, ➡️ pick), whole in the reply and as orbit asks (dima, 2026-10-10: «grills print as usual in a response, orbit only sends my reply»). orbit is the only answer door: no pre-filled answer fence in the reply (reply-check blocks one). his answers fold into `decided` the same turn.
 
 ## 2.5 · the spec — feature and app lanes, and any coder job of 3+ items
 

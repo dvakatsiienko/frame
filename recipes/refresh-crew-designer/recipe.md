@@ -58,7 +58,7 @@ dima, 2026-10-02, on the design comms loop:
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. spawn the lanes on one brief (per habit-test-drive: reach for the live test drives first): exa agent (effort set explicitly) · parallel core · an opus lane that reads sources (skills,
    prompts, npm) · neuroarxiv for the papers · `advise-project-approach` when the flow itself is in
-   question. one shared brief file; the reply waits for all lanes (habit-dima-comms-pacing: a fan-out answers once). done: every lane returned or marked failed. (template)
+   question. one shared brief file; the reply waits for all lanes (habit-dima-comms: a fan-out answers once). done: every lane returned or marked failed. (template)
 3. distill: clever-merge into the artifacts; raw lane output stays in `last/` until the next run's distill. done: the artifacts carry the merge, or are named «unchanged». (open)
 4. eval + findings print. done: the proposal is printed. (template)
 5. resolve with dima. done: his word on each change. (open)

@@ -89,7 +89,7 @@ dima, 2026-08-27, the purpose:
   - steps 5–8 batch by size: ≥5 KB alone · 2–5 KB in pairs · <2 KB about six to a round; one proposal per round, each file with bytes before → after and its lens verdicts; he ticks the round once in orbit, a note on one file holds back only that file
   - step 9 batches the same way; step 10 is a scope pass, one draft wave, then the review chunk by chunk
   - **🌤️ siesta with `wishkeeper` 🐬** after 2 big rounds or 5 smaller ones; it reads what was applied
-  - a fix is never its own report turn (`habit-dima-comms-pacing`)
+  - a fix is never its own report turn (`habit-dima-comms`)
   - **a checkpoint comes on context** (`cclio:checkpoint`'s 600–700k trigger) or his word, at a clean seam, never mid-round: after step 4 · after `rules/` · after the cclio leaves · before step 9; each CST's META first-act 1 is this recipe's re-entry
 <!-- run #2: «pretty chaotic and destructive» (dima), useful detours; ~45 rounds over ~10 days; 84 files in steps 5–8 took ~30 rounds; step 10's four waves took 126 min, ~46 of them waiting -->
 - **the order is his**: an agent improves it, never replaces it; a wrong step is fixed here the same session

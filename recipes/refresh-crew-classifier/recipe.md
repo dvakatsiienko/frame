@@ -2,7 +2,7 @@
 kind: refresh
 owner: coordinator
 artifacts:
-  - cclio/memory/sys-jev.md
+  - docs/knowledge/jev.md
   - script/lib/jev-questions.ts
 script: jev:report
 was: [refresh-branch-classification, refresh-jev, refresh-classification]
@@ -63,11 +63,11 @@ keeps the classifier seat true: the engine (jev today, unless a better one wins)
 
 ## artifacts
 
-- `cclio/memory/sys-jev.md`: the rules a coder loads when touching jev, the lanes, the vet policy, the sharpening loop; the rules move to a `guide-classification` skill once it exists
+- `docs/knowledge/jev.md`: the rules a coder loads when touching jev, the router, the vet policy, the sharpening loop; the rules move to a `guide-classification` skill once it exists
 - `script/lib/jev-questions.ts` — every rubric, model pinned
 
 ## findings
 
 - print dima the delta: what to copy, what to drop, which flow to rebuild
 - the checklist, re-checked every run: the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named
-- the verify list for a jev change's verifier lives in `cclio/memory/sys-jev.md` (verify — what a jev change's verifier runs)
+- the verify list for a jev change's verifier lives in `docs/knowledge/jev.md` (verify — what a jev change's verifier runs)

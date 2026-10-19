@@ -3,7 +3,7 @@ fed-by: recipe refresh-fleet-operator-comms
 when:
   - { kind: basename, value: fleet-output-format.md }
   - { kind: basename, value: fleet-voice.md }
-  - { kind: basename, value: habit-dima-comms-pacing.md }
+  - { kind: basename, value: habit-dima-comms.md }
   - { kind: basename, value: output-fun.md }
 ---
 

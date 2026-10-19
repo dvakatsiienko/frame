@@ -21,13 +21,12 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 📖 `dima-stories.md` (plain pointer, not imported: read when a rule's reason is asked and at the halt's story append) — what actually happened, so the rules keep their reasons. append, never rewrite
 
 ## running the work
-- ⭐ @craft-pm.md — the every-turn pm judgment: fold or drop, wishes, the pace contract, the pending block, the ask-guard, the freebie rule; the ticket handbook is `cclio:pm`
+- ⭐ @craft-pm.md — the every-turn pm judgment: fold or drop, wishes, the pace contract, the ask-guard, the freebie rule; the ticket handbook is `cclio:pm`
 - 🧭 @craft-fleet-flow.md — the path from idea to his hands: ten stages, five lanes, each stage's gate and owner, the done test
 - ⭐ `x:crew-lead` (plain pointer, not imported: the lane craft loads on demand) — load it before a lane spawn, brief, watch or stop: a coder, verifier, designer, probe or cloud session
-- ⭐ @habit-halt.md — a session ends with the halt ritual; run it on his signal, never open it mid-task
 - ✍️ @habit-memory-edits.md — every memory edit announced in-thread same turn; deletions, his words, and rules/ need approval first
 - 📬 @habit-shared-files.md — inbox.md must end empty; the pocket pruned at halt; scratch dies same turn
-- ⭐ @habit-dima-comms-pacing.md — a fat drop gets labeled sub-batches with siestas; every ask handled, a missed one is the worst outcome
+- ⭐ @habit-dima-comms.md — how cclio talks to dima: a fat drop in labeled sub-batches, the reply and grill shapes, asks in orbit repeated until he verdicts; a missed ask is the worst outcome
 - ⏰ `_reminders.md` (plain pointer, not imported) — dima's standing reminders; `cclio:remind` stores, raises and drops them
 
 ## method — how a claim earns belief
@@ -45,7 +44,6 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 ## the system itself
 - @sys-skills.md — `x:*` runs anywhere, `cclio:*` is coordinator-only; the test is WHERE it runs
 - @sys-boundaries.md — what stays separate: own memory only, no sync mechanisms, domains never merge
-- 🧪 sys-jev.md (parked, NOT imported: re-add the `@` when the router turns on) — jev routes skills (its one flow since 10-19); the criteria are the prompt, every rubric in one file, the sharpening loop runs at every halt
 - @sys-settings-drift.md — CC writes it at runtime; a real file where the symlink belongs is silent divergence
 
 - 📐 recipes live in `~/frame/recipes/<name>/`; the `cclio:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)

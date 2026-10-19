@@ -1,4 +1,15 @@
+---
+fed-by: recipe refresh-crew-classifier
+when:
+  - { kind: skill, value: quicksilver }
+  - { kind: skill, value: typesafe:typesafe-ai }
+  - { kind: command, value: pnpm jev: }
+  - { kind: import, value: ./lib/jev.ts }
+---
+
 # jev — the fleet's classifier, and how it stays sharp
+
+## core
 
 `jev` (typesafe.ai) answers typed questions about a `state`: no tools, no memory, no generation.
 we pull, it judges, we write back. one flow left: the inbox and flawlog lanes retired 2026-10-19 (dima: inbox prep needs intelligence, composer does it; the flawlog lanes missed 23 of 32).
@@ -19,6 +30,12 @@ we pull, it judges, we write back. one flow left: the inbox and flawlog lanes re
   to decide. the 0.30–0.70 band on `needsVerdict` is what goes to dima as an ask.
 - prove a wording with `RUNS=3`: ±3 points across repeats is the measured wobble; a threshold
   tuned on one run is a guess.
+
+keys and the call path: `x-fleet` service account → vault `dev` → `script/op-run.sh`, no touch id.
+
+💸 **jev runs on the free tier only** (dima, 2026-10-05: «i use jev only via the free tier»). the router v2 replays spent $4.43 / 106M input tokens / ~19.5k requests in one day (read off the coder's raws; the console showed less, its stats lag) and took the balance to −$0.25 (402 on every call). **one full 4-arm router replay = ~5,060 requests, 27M tokens, $1.13.** the free allowance is a **$5 monthly credit** (billing page: granted Sep 18, expires Oct 18 — so the cycle likely turns on the 18th, an inference until the next grant shows); refilled 2026-10-19 (the health probe answered). a replay or bulk run states its cost (requests, tokens, $) before it starts and fits the month's free allowance; a coder brief that may run jev says so. graceful today: the router hook is fail-soft, jev compaction falls back to the built-in summary.
+
+## the rest — read when changing a jev flow
 
 **the docs' shape for our router** (read 2026-09-28, docs.typesafe.ai + the day's research):
 - one condition per noul, combined in code — the gates `_ack` / `_later` in `skill-route.ts` came
@@ -54,10 +71,6 @@ re-check this list first**; the hook already tags these picks «⚠ read first»
    low pick carries — the rewrite candidates. then read the router latency off `jev:report`'s health
    line: a rising avg or a p95 over 2 s is a finding, not noise — it is dima's typing that waits.
 2. any change → `RUNS=3` on the live input, then commit with the numbers in the body.
-
-keys and the call path: `x-fleet` service account → vault `dev` → `script/op-run.sh`, no touch id.
-
-💸 **jev runs on the free tier only** (dima, 2026-10-05: «i use jev only via the free tier»). the router v2 replays spent $4.43 / 106M input tokens / ~19.5k requests in one day (read off the coder's raws; the console showed less, its stats lag) and took the balance to −$0.25 (402 on every call). **one full 4-arm router replay = ~5,060 requests, 27M tokens, $1.13.** the free allowance is a **$5 monthly credit** (billing page: granted Sep 18, expires Oct 18 — so the cycle likely turns on the 18th, an inference until the next grant shows); refilled 2026-10-19 (the health probe answered). a replay or bulk run states its cost (requests, tokens, $) before it starts and fits the month's free allowance; a coder brief that may run jev says so. graceful today: the router hook is fail-soft, jev compaction falls back to the built-in summary.
 
 **verify — what a jev change's verifier runs (the 10-05 retros)**
 - unit test + `red-proof` + one live `suggest()` for every ⚠ line; an exit line names the hook timeout the flow must fit (the router hook: 8 s, two sequential calls ~1.5 s)

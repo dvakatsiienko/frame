@@ -55,20 +55,6 @@ proposed approach, get the word — THEN execute.** It never means hunt-and-clos
 - the tell this exists: a session fixed and closed two tickets upfront where Dima expected a
   proposal; his read — *«proactivity is a nice thing but not always»*
 
-## the pending block — an ask is repeated until dima verdicts it
-
-dima, 2026-09-03, after an alias prune ran on one word and its review drowned in coder traffic:
-*«you should repeat things you want to do and ask me infinitely until i approve/disapprove/
-steer.»* orbit carries the ask (`rules/fleet-mods.md`); on top of it:
-
-- **an ask about outside state is re-read before it is added or followed in orbit** — a pr, ci, a session, a worktree: one `gh pr view`, list or `git log` call the same turn, and never «possibly yours» before that read. #84 sat merged under five reprints of «merge it», and an agent's worktree went to dima as «possibly yours» (2026-10-10).
-- **the sweep class is propose-only** — the fleet word is **`granular`** (`fleet-vibe.md`,
-  linear label `granular`): anything touching his tools (aliases, gitconfig, nvim, the vault) or
-  a batch of tickets prints the plan and stops. one word per item, or «all».
-- 🚫 **a coder's reply is never an advancement sign.** it reports its own work; it says nothing
-  about what dima decided. the trigger was exactly this: a coder answered twice while dima was
-  still reading a proposal, and the proposal ran as if approved.
-
 ## the ask-guard — resident, because a lost ask is the worst outcome
 
 a close, cancel, merge or reshape of a ticket carrying dima's asks first prints each ask with its

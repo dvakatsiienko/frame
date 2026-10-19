@@ -13,7 +13,7 @@ run silently, report as ONE opening message, after the two reviews (step 8).
 🎯 **the boot ORIENTS, it never resolves.** steps 1–8 are pure parse-and-assemble: no answers
 written, no tickets touched, no inbox item worked. the opening board ends with a proposed
 processing order and STOPS for dima's word. resolution then runs as labeled sub-batches with a
-siesta after each (`habit-dima-comms-pacing`); heavy queries fire at the step that needs them.
+siesta after each (`habit-dima-comms`); heavy queries fire at the step that needs them.
 
 📱 dima on mobile (his boot prompt says so) → read `x:mobile-mode` and run the session in it; it is user-only, so this line is its one automatic trigger.
 
@@ -41,7 +41,7 @@ and the next ticket from it; never re-query what it already printed.
   first, then `inbox.md` for the parse. while `docs/test-drive/composer-inbox-prep.md` is live, score the prep
   by that file's rubric and log the round, and step 8's wishkeeper brief adds the prep: every ask and idea of
   the raw inbox kept in meaning, not only present (the check proves presence alone)
-- the digest says clean or «N content lines». non-empty → read `inbox.md` (`habit-dima-comms-pacing` holds the creed): EVERY item —
+- the digest says clean or «N content lines». non-empty → read `inbox.md` (`habit-dima-comms` holds the creed): EVERY item —
   smallest aside included — gets an item in the pocket (Backlog.md, `backlog task create`; `habit-shared-files` holds the contract)
   and its place in the order (its `ordinal`); resolution is paced later. **deletion happens at the halt, never here.**
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.

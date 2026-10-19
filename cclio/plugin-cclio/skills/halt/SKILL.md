@@ -1,6 +1,8 @@
 ---
-description: load when dima types /cclio:halt or means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop»; «that's it for now from my side» mid-flow closes a list or a batch, not the session. Not for a question or a doubt about ending.
+description: load when dima types /cclio:halt or means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop» — and run it then, unprompted. Not for «that's it for now from my side» mid-flow (it closes a list or a batch), a bare «stop» (a hold: hold and ask in one line), a question or a doubt about ending, and never opened unprompted mid-task.
 ---
+<!-- dima: «you tend to init the wrap immediately, it looked to me like you were interrupting the flow. what I mean is «let's plan finishing», not «finish immediately».» a halt that arrives early strands the work it protects; one that grows into a work session failed its one job. «stop» as a plain hold: dima, 2026-10-04. -->
+
 
 # /cclio:halt
 
@@ -150,6 +152,6 @@ to `/cclio:checkpoint`.
 done when: the CST slug is in the store, ccrow is stopped and her card archived, orbit holds the `tomorrow:` lines, the joke closed the reply.
 
 ## standing rules
-- unpushed commits are pushed at the halt by default; dima's «stop» holds them (`habit-dima-comms-pacing`)
+- unpushed commits are pushed at the halt by default; dima's «stop» holds them (`habit-dima-comms`)
 - reminders queued for the halt fire before the CST
 - a new lane never starts inside a halt.

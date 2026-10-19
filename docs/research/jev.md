@@ -1,5 +1,5 @@
 ---
-dies-when: the router moves to the skill-suggestion shape and `sys-jev` carries the rules
+dies-when: the router moves to the skill-suggestion shape and `docs/knowledge/jev.md` carries the rules
 ---
 
 Ticket: none
