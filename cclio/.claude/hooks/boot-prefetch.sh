@@ -17,6 +17,10 @@ echo "=== cclio boot digest · $(date '+%Y-%m-%d %H:%M') ==="
 # after a compaction (stdin source=compact) or `--compact` by hand: the day-opener checks stay out
 in=$([ -t 0 ] || timeout 1 cat)
 { [ "$(printf %s "$in" | jq -r '.source // empty' 2>/dev/null)" = compact ] || [ "${1:-}" = --compact ]; } && COMPACT=1 && echo "(compact mode — the full digest: boot-prefetch.sh)"
+# PK-152's done test needs a real /clear: until it closes, a cleared session says so on its first line
+if [ "$(printf %s "$in" | jq -r '.source // empty' 2>/dev/null)" = clear ] && grep -qs '^status: waiting' "$HOME"/frame/cclio/pocket/tasks/pk-152\ *; then
+  echo "🧪 PK-152 test is live: this session began with a /clear — a pr-watch or ci-watch notice that wakes this context in the next 6 h is the bug; silence until then closes PK-152. tell dima, and log the outcome in PK-152."
+fi
 
 echo "-- pending handoffs (list-only; ingest via /x:handoff-ingest) --"
 found=0
