@@ -119,6 +119,15 @@
             ],
             "icon": "gmail-block-sender.png",
             "mode": "view"
+        },
+        {
+            "name": "nms-wiki",
+            "title": "nms wiki",
+            "subtitle": "x-ray",
+            "description": "open a no man's sky wiki page — the selected text at once on the hotkey, or a typed name.",
+            "keywords": ["nms", "no mans sky", "wiki", "miraheze"],
+            "icon": "🪐",
+            "mode": "view"
         }
     ],
     "preferences": [
