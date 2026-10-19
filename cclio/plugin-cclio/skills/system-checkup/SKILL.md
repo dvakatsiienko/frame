@@ -34,6 +34,8 @@ own — the checks this plate runs itself (scripts sit in `scripts/` beside this
   `docs/research/skill-split-scriptify-scan.md`; strength-3 items only, the rest stay in that doc
 - **hook-health** — hook latency and errors per hook over the last days of the local OTel tap ·
   script, `scripts/hook-health.sh [days]` (🔴 p95 over 1 s or any error, 🟡 over 300 ms)
+- **naming-entity-first** — verb-first names, FRM-219 · script, `node scripts/naming-entity-first.ts`
+  (🔴 a breach; a rename is an ask)
 - **agnix** — agent-config lint: frontmatter that strict YAML rejects, settings keys cc ignores, hook
   schemas · script, `npx -y agnix@<version> --target claude-code --format json .` from `~/frame`,
   read-only; on a test drive, `docs/test-drive/agnix.md` (its round goes there, and its known noise)
@@ -51,8 +53,8 @@ colocated — checks that live elsewhere, run or read from here:
   judged through `cli-drift-check`; plus dima's side (FRM-41): his zsh aliases and functions, raycast
   scripts and pnpm scripts, each absorb / leave / delete with its invoker, use read from `~/.zsh_history`
   — his tools are `granular`, so a verdict here is always an ask
-- **memory-lint** — budgets, dead pointers, cut quotes in memory files; warns on a quote changed vs `HEAD`,
-  a dead path, a closed ticket beside a pending word, a repeated sentence of 12+ words · runs at every commit
+- **memory-lint** — budgets, dead pointers, cut quotes in memory files; warns on quote drift vs `HEAD`, dead
+  paths, closed tickets beside pending words, 12-word repeats · runs at every commit
   (`recipes/nurture-memory/scripts/memory-lint.ts`); here its full run, `node <that path>`
 - **pocket** — pocket drift · `node ~/frame/cclio/script/pocket-check.ts`
 - **test-drives** — overdue or undated trials · `pnpm test-drive:check`
