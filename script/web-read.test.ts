@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isPlainText, wikiTitle } from './web-read.ts';
+import { infobox, isPlainText, plainWiki, wikiTitle } from './web-read.ts';
 
 describe('wikiTitle', () => {
     it('reads a MediaWiki article title from its url', () => {
@@ -46,5 +46,51 @@ describe('isPlainText', () => {
                 ),
             ),
         ).toBe(false);
+    });
+});
+
+describe('infobox', () => {
+    const pugneum = `{{Version|update = Interceptor}}
+{{Resource infobox
+| image = SUBSTANCE.ROBOT.1.png
+| category = Special
+| rarity = Rare
+| used = [[Building]], [[Crafting|crafting]]
+| value = 138.0
+| release =
+}}
+'''Pugneum''' is a resource.`;
+
+    it('reads the infobox-named template, not the first one', () => {
+        expect(infobox(pugneum)).toEqual([
+            ['image', 'SUBSTANCE.ROBOT.1.png'],
+            ['category', 'Special'],
+            ['rarity', 'Rare'],
+            ['used', 'Building, crafting'],
+            ['value', '138.0'],
+        ]);
+    });
+
+    it('falls back to the first template with named params', () => {
+        expect(infobox('{{Stub}}\n{{Ship card|class = S|slots = 48}}')).toEqual(
+            [
+                ['class', 'S'],
+                ['slots', '48'],
+            ],
+        );
+    });
+
+    it('returns nothing for a page without templates', () => {
+        expect(infobox("'''Corvette''' is a starship.")).toEqual([]);
+    });
+});
+
+describe('plainWiki', () => {
+    it('strips links, quotes, refs, comments and line breaks', () => {
+        expect(
+            plainWiki(
+                "'''[[Hello Games]]'''<br />[[Sony|SIE]]<ref>x</ref><!-- note -->",
+            ),
+        ).toBe('Hello Games, SIE');
     });
 });
