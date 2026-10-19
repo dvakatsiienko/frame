@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-16 16:53'
-updated_date: '2026-10-18 13:47'
+updated_date: '2026-10-19 13:56'
 due_date: '2026-10-19'
 labels:
   - m
@@ -33,4 +33,6 @@ first: `x linear list --search skill`, `--search memory` over open tickets; each
 2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); first in line tomorrow, now also carries W2 (frm-267 tails) and the linear strays hunt
 
 dima, 2026-10-18 (inbox): exhaust your pocket as much as possible — we were postponing lots during the long memory sweep: hunt all skill/memory related ticket tails everywhere, solve them fully (W2 «frm-267 tails»: let's hunt and finish them). when the pocket is empty, hunt small and stray stuff in linear — i want no strays before we move on.
+
+10-19, FRM-243's open half measured (cclio/.scratch/frm-243/miss-rate.md, 738 sessions / 14 days): x:guide-typescript loaded before the first .ts/.tsx edit in 49 % of sessions (coders 55 %, others 44 %), x:guide-code before the first source edit in 51 %; of 56 TS misses, 40 never loaded the skill at all. the path-rule text preceded 21 of the misses. the re-cut starts from this number.
 <!-- SECTION:NOTES:END -->
