@@ -11,141 +11,18 @@ prefix (renovate writes it), 🧬 her voice here. cadence: **daily, at boot, whe
 2026-09-09: «try daily first, refine, then loosen»).
 
 **the evergreen day flow:**
-1. the boot loads this skill and starts the § 2 read in the background — the `helper` card (Sonnet 5.5, no fleet memory; the generic agent is denied),
-   its brief this file's path; the board prints without waiting for it
+1. the boot loads this skill and starts the read (`references/read.md`) in the background — the `helper` card (Sonnet 5.5, no fleet memory; the generic agent is denied),
+   its brief the path of [references/read.md](references/read.md) (gather, read, judge, the report shape); the board prints without waiting for it
 2. the report is the first step after dima answers the board: printed whole in the chat, the `apply` list and one combined `ask`
 3. the `apply` borrows ran before the report; batches start only after his evergreen reply, the `ask` borrows he ticks first
-4. after the § 2 read and before the report prints, cclio runs `timeout 2400 brew upgrade` in the background
+4. after the read and before the report prints, cclio runs `timeout 2400 brew upgrade` in the background
    (pinned never), no ask, and its line goes in the report — brew never upgrades itself, keeping it fresh
    is this skill's job
+5. after the report prints, cclio runs `pnpm skill:evergreen-apps --mark` itself (the helper card never marks)
 
-## 1. gather
+## the report — what cclio does with the card's reply
 
-```
-gh pr list -R dvakatsiienko/<repo> --search 'author:app/renovate' --json number,title,headRefName,createdAt,statusCheckRollup,body
-brew outdated --json=v2 --greedy   # the brew lane, same digest
-brew list --pinned
-brew --version                     # brew ITSELF — a major is a digest line; auto-update once jumped 4 → 7 unseen
-pnpm skill:evergreen-apps          # the apps lane — due when the boot digest says a wednesday passed since the last mark
-```
-
-**the apps lane** — the self-updating apps neither renovate nor brew reads. `cclio/evergreen/sources.json` is the index and the app list
-(one entry per app: changelog url, read shape, the `marker` = newest entry the last run saw); the
-reader prints every entry newer than its marker, the skill judges, then `pnpm skill:evergreen-apps
---mark` advances the markers — **after the digest went out, never before.** the markers make the lane
-skip-proof: a run on any day prints everything since the last mark, and the boot digest's `apps
-lane` line says when it is due — **a wednesday has passed since the last mark** — the run fires by itself on a wednesday boot only; any other day it waits for the next wednesday, no ask. a dead url or a
-changed page shape is fixed in the index by hand, the run never searches. a new app = one hunted
-entry; a `⚠️ marker not found` line means the page changed shape — re-seed that marker.
-
-tier from the branch (`renovate/<pkg>-<major>.x` = major; grouped titles say `patch` / `minor`),
-age from `createdAt`, ci from `statusCheckRollup`.
-
-## 2. read the release — every lane, every updated entry
-
-the judge reads notes, never titles. **every updated renovate and apps entry gets its notes read over
-the whole range** before step 3 decides anything. **brew is read by use**: a formula or cask whose binary
-shows in the last 14 days of our Bash calls or dima's zsh history (one `duckdb` query over the
-transcripts plus `~/.zsh_history`) gets the full read; every other updated one still gets a skim of its newest release headline,
-promoted to a full read when the headline names a new capability, a rewrite or a perf number — the
-cut saves tokens, never the news (dima, 2026-10-14: «don't cut everything, or evergreens get too bare»;
-ccrow: the 96-entry brew read was most of the 350k). the apps lane and renovate keep the full read; a line that
-says «notes unread» is a step skipped (dima 2026-09-28: «how this line is useful for me without
-knowing whats interesting new in a major?»). the read is heavy (31 entries = ~215k tokens,
-~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs in the `helper` card (Sonnet 5.5), never a fork or a generic agent,
-returning the report as its reply (capped at the printed items, never a file write), with
-`parallel-cli extract --full-content` as the first door. no notes anywhere → name the urls
-tried; for a major, diff the old and new npm tarballs (commands, flags) and label that inference.
-
-the PR body embeds release notes but github truncates it. for every renovate major (and any minor
-that gets a card):
-
-```
-gh api repos/<owner>/<repo>/releases --jq '.[] | select(.tag_name | test("^v?<from>|^v?<to>")) | "\(.tag_name)\n\(.body)"'
-```
-
-read the whole range, not the head tag — a `4.1 → 5.0` jump carries every breaking change in
-between. a release post on the project's blog beats the github release body when both exist.
-
-## 3. judge — the answers per card
-
-- **brings** — the 1–2 facts he would use, numbers where the release gives them
-- **breaks** — two halves, both mandatory: (a) **peer ranges of every dependant** —
-  `pnpm why <pkg>` in the repo, then `npm view <dependant> peerDependencies` for each; a range
-  that excludes the new major is a hold, whatever the src says; (b) grep the repo for the apis the notes
-  name as removed or changed
-- **since last major** — on every major card, one clause: `<prev major> shipped <yyyy-mm-dd>, <n> months ago` (dima 2026-09-09, «for curiosity»). npm: `npm view <pkg> time --json`; others: the project's release page
-- **machine** — on a pnpm / node / biome major, also grep our own repos for the cli flags we pass (`grep -rn 'pnpm -' home/.claude cclio script` and the bytes scripts): pnpm 12 reads `-s` as `--sequential`. then `packageManager`, `engines.node`, a cli he runs by hand, a brew formula. the
-  repo can be green and his shell still broken
-- **🌟 or 🟠** — his taste: a **rewrite** (zig → rust, a new bundler
-  core), a **perf claim with numbers**, a **new capability** he could use → 🌟 with a `🔬 deep`
-  block: 2–4 lines of researched facts with the numbers, one source link. a perf claim
-  **without** numbers → one line, flagged unmeasured, he asks to detail if he wants. **ci-only
-  majors are interesting too** (postgres container, actions) — a card, never silent.
-- **💡 borrow** — the last answer, on every card that is not silent: what we could take from
-  this — a flow of ours it changes, a feature that replaces something we built, a setting that
-  shipped with a new default. one line; a card with nothing to borrow prints no borrow line.
-  **claude code and linear get the thought on every notable entry**, not only majors — they are
-  the tools we run all day.
-- **a feature he or we can use** — the bar for a printed line is a new capability for dima or for
-  the fleet, with the borrow it opens; «nothing to act on» never makes an entry silent, and «under
-  the hood» never makes it loud. every entry is still read in full — the borrow hunt runs over
-  everything — but a library (gnupg, ggml, libuv) prints only when it hands us a feature. fixes,
-  minors and patches without a feature stay out, their details too (dima 2026-09-28: «fixes are
-  not interesting 95 % of cases»); a fix prints only when it ends a bug we hit. every printed
-  entry carries its 1–4 facts as nested bullets — a name with a version and no facts is an empty
-  line.
-- **every borrow carries a tag**: `apply` — a revertible change on the fleet's side (a cc setting, a hook
-  flag, an agent's frontmatter, a doc fact); `ask` — his tools, his money, or a workflow change
-- **every number on a card links its source**; a model price or limit is checked against
-  `x:crew-lead`'s `references/model-cards.md`, and a disagreement prints as ⚠️ on the card
-- **the rest is one count line per section** — `+ 14 more read, nothing to borrow`. an entry that did not update is never printed (dima
-  2026-09-21: «if formulas didn't update, do not print them»). the apps lane obeys the same rule:
-  a feature change is a 🟠 line with its facts, a rewrite or a capability we would use is a 🌟
-  card with the borrow line.
-
-## 4. the report — cards, plain reply, never a fence
-
-```
-🧬 evergreen — <weekday dd-mm>, <n> majors open, <n> minors, <n> patches merged since <last>
-
-🌟 <pkg> <from> → <to> — [repo #N](url) (+ [repo #M](url) when one release hits both), ci ✅
-- **brings** — …
-- **breaks** — nothing we use | <what>, <where>
-- **since** — <prev> shipped <date>, <n> months ago
-- 🔬 **deep** — 2–4 sentences with numbers. [source](url)
-- ➡️ merge | coder | hold
-
-🟠 <pkg> <from> → <to> — [repo #N](url), ci ✅
-- **brings** — …
-- **breaks** — …
-- ➡️ merge
-
-🍺 brew — <n> formulae + <m> casks outdated, <pinned or none pinned>, <k> with news
-- 🟠 <formula> a → b — [notes](url)
-  - 1–4 facts: what is new, numbers, what broke
-  - 💡 **borrow** — …
-- + <k> more read, nothing to borrow
-
-📲 apps — <n> apps read, <k> with something to say
-- 🌟 <app> <entry> — [notes](url)
-  - 1–4 facts
-  - 💡 **borrow** — …
-- 🟠 <app> <entry> — [notes](url)
-  - 1–4 facts
-
-🍺 brew upgrade ran: <n> upgraded, <failures or none>
-
-✅ applied: <borrow> — undo: <one line>   ← every `apply` borrow, run before the report
-
-(one orbit ask) the `ask` borrows: all except … ➡️ yes; merge round: <pkgs> ➡️ yes
-```
-
-- the labels are fixed words in a fixed order so his eye lands on the same spot per card.
-- a red ci on any tier → ⚠️ on the card and ➡️ coder. age ≥ 7 days unmerged → `⏳ 9d` before
-  the name; the number is the reminder.
-- **pick, never paste.** the facts are the few a reader would want from the whole range; the
-  release page is one click for the rest.
+- 📖 the report's shape and every judge rule live in [references/read.md](references/read.md) §§ 3–4; cclio reads it before printing or reworking a report, never prints from memory
 - **every digest is also the artifact** (dima 2026-09-28: «let's have it as a habit part») —
   one standing page, [Evergreen](https://claude.ai/artifact/PAtTzAYyYCXCsXd9qWsCdy), republished
   by `url` each run with that run's date in its header: 🌟 cards with a borrow line and a status
@@ -153,9 +30,9 @@ between. a release post on the project's blog beats the github release body when
   and a chart where a perf claim has numbers. its source lives at
   `cclio/evergreen/page.html` — read it, swap the content, keep the design. the page mirrors the
   report; the `ask` borrows and the merge round go to orbit.
-- his knob: «too much» / «missed X» → tighten or widen the rule in this skill.
+- his knob: «too much» / «missed X» → tighten or widen the rule in `references/read.md`.
 
-## 5. act on his word
+## act on his word
 
 «approve evergreen» (or a 🛎️ on its orbit ask) runs every ➡️ merge in the report now, by cclio, no second ask: read [references/merge-round.md](references/merge-round.md) first — the merge, the rebase, the hold and the after-round steps.
 

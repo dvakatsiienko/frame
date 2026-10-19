@@ -33,7 +33,7 @@ comparison brief).
 - **one home at a time**: inbox → pocket item → linear ticket. the moment a ticket exists, the pocket
   item becomes a pointer to it, and the ticket body opens with a `wish` block in his cleaned words —
   linear is the human-readable record of his wants (reference, history, housekeeping).
-- **the ticket ↔ spec rule** lives in `cclio:pm` § the body: the want in the ticket, the how in the spec, which points with `wish: FRM-N`.
+- **the ticket ↔ spec rule** lives in `cclio:pm`'s `references/body.md`: the want in the ticket, the how in the spec, which points with `wish: FRM-N`.
 - a ticket stays readable and meaningful in size; the machine detail lives in the spec.
 - **a wish is checked at fold time, not at spec time** (dima, 2026-10-08: «always make sure my
   wishes are valid user stories, and cover all the essential questions to formulate the spec and the
@@ -59,7 +59,7 @@ proposed approach, get the word — THEN execute.** It never means hunt-and-clos
 
 a close, cancel, merge or reshape of a ticket carrying dima's asks first prints each ask with its
 destination, and waits for his verdict on every one; «closable, because …» is a list, never an act
-(the whole close mode: `cclio:pm` § closing).
+(the whole close mode: `cclio:pm`'s `references/closing.md`).
 
 ## the freebie rule — verdict before plan
 

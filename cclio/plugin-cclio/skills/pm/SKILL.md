@@ -65,64 +65,11 @@ traps:
 - labels are steering, dima writes instructions into their descriptions; a canceled ticket counts
   as resolved in milestone math; a completed milestone never cleans itself up
 
-## the body — a spec seed
+## write and close — read the reference first, every time
 
-`to-spec` runs on the body alone (dima, 2026-10-07). in order, a small ticket filling only the lines it has:
-
-- `lane: <name>` — the first line
-- **wish** — dima's words, folded (`cclio/memory/dima-wishes.md`)
-- **dima notes** — his later asks, notes and verdicts on the ticket, folded and dated; the ask-guard reads them before any close
-- **why** — what hurts today
-- **stories** — 3–8 lines, «as dima, i …»
-- **proposed** — his vision of the solve, open until a grill moves a line to decided
-- **decided** — each call with its source (dima, a grill, an adr)
-- **open** — `?` lines; a ticket goes to `to-spec` only with this empty
-- **exit** — given/when/then (`cclio:shape-lane`)
-- **out** — out of scope and «decided against», so nobody re-proposes it
-- **refs** — research, designs, prior art
-- **closing word** — at close
-
-**the ticket ↔ spec rule, its one home** (dima, 2026-10-10: «i still worry that it is somewhat scattered across places»): the want lives in the ticket's wish block, always — a moved want is edited there, before and after dispatch. the how is the body's `proposed` / `decided` until dispatch; `to-spec` then moves it into `.scratch/<feature>/spec.md`, which opens with `wish: FRM-N` in place of a problem statement and never restates the want; steers on the how land in the spec, and its outcome folds into the closing word when the run lands. the run check, logged in `docs/test-drive/spec-pipeline.md`: «did `to-spec` need anything outside the body?» the slices `to-tickets` cuts live in `.scratch/<feature>/issues/`, never in linear.
-
-- 🚨 **dima's words never go into a comment**: the body is read by everyone, a comment by a
-  graphql fetch. comments carry trail only — run stamps, «done, see commit», a member's done report
-- a `standing` ticket carries no comments: a round on it is a child ticket, which takes the state,
-  the pr and the done report; a coder brief names the child, never the
-  standing ticket (dima, 2026-09-30, BYT-105)
-
-## writing — pretty, short, true
-
-- lowercase register, emoji and ascii art welcome
-- a title is subject-first and assertive, like a commit subject: «prune brew of unused formulae»;
-  a blurry ask gets a sharp title proposed, never filed as mush
-- the body holds key data, a list by default; prose stays where it carries what a list would drop
-  (a decision's reasoning, a grill summary). one recommendation, the runner-up a clause
-- no dates or lineage: linear stores dates, a relation replaces «split out of …»; a date that IS
-  the fact (an expiry, a deadline) stays
-- 🚨 **a rewrite starts with a full-body fetch the same turn** (`x linear body`) — linear keeps no
-  description history (DOT-228). merge new into old, drop only the stale
-- 🚨 **dima's text survives every edit** — his notes, asks, takes: restructure around them; one
-  that looks stale goes to him first, the original beside the change. an approved fold is not an
-  approve to drop his words
-- a suspected wall of prose is flagged to him, never stripped on a heuristic
-- tracked means every surface: project descriptions and overviews, health updates (their ids do
-  not auto-link — write full links), label names and colours, team descriptions; a new project gets dima as lead, its
-  real status, an emoji-led lowercase description and a short overview
-- drafts go out as one batch for one approval, never edit ping-pong
-- 🚨 every id is a link (`rules/fleet-output-format.md`) — the most-repeated slip on this surface: scan before sending
-
-## run markers
-
-mint one per session at the first write, reuse it all session: `<surface>·<YYYYMMDD>·<slug>`
-(`cc·20260819·batch1`); a pulled session continues the run from the CST META. it is the last line
-of a body cclio creates and of every comment cclio writes:
-
-```
-⸻ 🪪 cc·20260819·batch1 · <model name> · agent run stamp — please keep 🙏
-```
-
-- before a create, search the marker plus the title stem: a hit is updated, never filed twice
-- a ticket dima wrote never gets a stamp; an existing ticket gets it on the comment only
+- 📖 **a create, a body rewrite or a comment → read [references/body.md](references/body.md) first**: the body order (lane, wish, dima notes … closing word), writing, run markers. no body is written from memory of this section
+- 📖 **a close, cancel, merge or reshape → read [references/closing.md](references/closing.md) first**: the three auto-close cases, the close test, the ask-guard
+- what holds even without the read: a rewrite starts with a full-body fetch (`x linear body`); dima's words survive every edit and never go into a comment; every id is a link; a body cclio creates and every comment cclio writes end with the run marker `⸻ 🪪 <run> · <model> · agent run stamp — please keep 🙏`
 
 ## reading — how deep
 
@@ -133,20 +80,6 @@ of a body cclio creates and of every comment cclio writes:
 - relations are hunted on every touch — parent, sub-issue, related, blocks, blocked by, duplicate —
   and set in the same batch; the test: «would this change how i do the other one?»
 - a research doc that answers a ticket's open line writes «→ research says …» under it the same session
-
-## closing — proposed, never performed
-
-auto-close is for three named cases, each said out loud: **stale** (the body proves it), **dupe**
-(the surviving id named), **freebie done in place** (shipped this turn). everything else goes to a
-printed «closable, because …» list and waits for his word.
-
-- each entry passes the close test: what became better (the closing word), what strays (findings,
-  sub-items, dima notes the close would orphan)
-- 🙋‍♂️ **the ask-guard, above every skill template**: a close, cancel, merge or reshape of a ticket
-  carrying dima's asks prints them first, one line each with its destination (answered here, moves
-  to X, dies); the ticket cannot close until he verdicts each — «yes let's do», «not important anymore», or a steer; no answer, not resolved
-- his «close all listed» closes the batch; silence closes nothing; an approved close still gets
-  its closing word in the body
 
 ## the sorting phase
 

@@ -114,7 +114,7 @@ done
 jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
   | ($today | strptime("%Y-%m-%d") | mktime) as $t
   | ((10 - ($t | strftime("%u") | tonumber)) % 7) as $days
-  | "apps lane: \(length) apps · last marked \($m) · " + (if $days == 0 and $m < $today then "DUE today, wednesday — load cclio:evergreen first, then its § 2 read (pnpm skill:evergreen-apps is its raw input)" else "next run wednesday \($t + (if $days == 0 then 7 else $days end) * 86400 | strftime("%Y-%m-%d"))" end)' \
+  | "apps lane: \(length) apps · last marked \($m) · " + (if $days == 0 and $m < $today then "DUE today, wednesday — load cclio:evergreen first, then its read, references/read.md (pnpm skill:evergreen-apps is its raw input)" else "next run wednesday \($t + (if $days == 0 then 7 else $days end) * 86400 | strftime("%Y-%m-%d"))" end)' \
   "$HOME/frame/cclio/evergreen/sources.json" || fail "apps lane index unreadable"
 
 fi

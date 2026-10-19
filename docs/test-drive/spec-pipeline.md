@@ -40,4 +40,4 @@ one line per run: date · ticket · tickets in the graph · subagents · minutes
 
 ## verdict
 
-adopted, 2026-10-14 (dima's tick) — three runs (10-06, 10-07, 10-10): to-spec → to-tickets is the lane flow in `cclio:pm` § the body; this file stays its run log.
+adopted, 2026-10-14 (dima's tick) — three runs (10-06, 10-07, 10-10): to-spec → to-tickets is the lane flow in `cclio:pm`'s `references/body.md`; this file stays its run log.

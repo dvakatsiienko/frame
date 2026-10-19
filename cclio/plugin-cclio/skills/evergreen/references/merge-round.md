@@ -1,6 +1,6 @@
 # evergreen — the merge round
 
-read by `cclio:evergreen` § 5 when dima says «approve evergreen» (or ticks its orbit ask).
+read by `cclio:evergreen` § act on his word when dima says «approve evergreen» (or ticks its orbit ask).
 
 a plain «approve evergreen» (or a 🛎️ on its orbit ask) means: **every ➡️ merge in the report runs
 now, by cclio, no second ask.** steers inside the
