@@ -155,7 +155,7 @@ run the full pass, print every intended write as a diff, write nothing.
 is the account instructions field current? read-only.
 
 - render fresh on the mac (desktop-commander `start_process`: `cd ~/frame && node script/skill-memory-sync-mirror.ts`)
-  and compare the manifest's `source-sha256` with the one in this session's account instructions.
+  and compare the manifest's `sha256` with the one in this session's account instructions.
 - print `account instructions: current` or `account instructions: stale — run pnpm memory-sync:copy, then paste`.
   never touch his clipboard; never print the block.
 - the text above the `═══` line differs from `instructions-head.md` → he typed in the field: say so,

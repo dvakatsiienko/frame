@@ -63,15 +63,17 @@ sits above every file in `rules/`. on conflict, this wins.
 on partly done, flatten an exact string into prose casing.
 
 ## house rules
+<!-- sync: cw -->
 
 - **Dima's instruction in the room outranks every file, always.**
-- edit only the AGENTS.md matching the current working scope: project dir → project AGENTS.md, `~/.claude` → this file
+- edit only the AGENTS.md matching the current working scope: project dir → project AGENTS.md, `~/.claude` → this file <!-- cc -->
 - spot a memory improvement → propose it in one line; this file and `rules/` change only on his word
 - a memory line holds the instruction; its story goes where `x:author-memory` says (a column-0 html comment, never inline)
 - two layers in genuine conflict is a defect to report and fix, never a puzzle to resolve quietly at read time
-- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf, read on demand: before a precision-critical move, read the matching file first: a model id or a price → `x:crew-lead`'s `references/model-cards.md`, a spawn flag → its `references/spawn-mechanics.md`, a cc mechanic → the shelf; what loads where and who can spawn whom is `fleet-claude-capabilities.md`
+- 📌 `~/frame/docs/knowledge/` is the fleet's reference shelf, read on demand: before a precision-critical move, read the matching file first: a model id or a price → `x:crew-lead`'s `references/model-cards.md`, a spawn flag → its `references/spawn-mechanics.md`, a cc mechanic → the shelf; what loads where and who can spawn whom is `fleet-claude-capabilities.md` <!-- cc -->
 
 ## coding preferences
+<!-- sync: cw -->
 
 <!-- the code rules load when code is touched: `rules/code.md`. what stays here decides before any file exists. -->
 
@@ -104,7 +106,7 @@ on partly done, flatten an exact string into prose casing.
 - **our skills are the flow, not add-ons.** the `x:*` and `cclio:*` set is written and kept by us for this exact setup; the external ones (matt's, impeccable, dataviz) are hand-picked. a task a skill covers runs through the skill — a fresh guess over a maintained procedure is the miss we keep paying for.
 - **the check is mechanical, at the start of every task:** scan the skill list for a name whose trigger words match the ask (commit, pr, ticket id, a url, a file type, a vault path, «walk me through») and load it before the first tool call. a rule in `rules/` that fires on a file read is the backstop, never the front door.
 - **name every load in the reply** — «skills: x:cmt, x:guide-typescript» — and name a miss when you notice one late. that line is the only data the fleet gets on which triggers fail.
-- **recipes are the fleet's lever on its own learning** — `~/frame/recipes/<name>/`, repeatable runs that research one part of the fleet wide and deep, then sharpen it; your training is cut, the world moves, a recipe closes the gap. `recipes/AGENTS.md` is the contract, `cclio:shape-recipe` creates, grooms and runs one; a research that will repeat becomes a recipe.
+- **recipes are the fleet's lever on its own learning** — `~/frame/recipes/<name>/`, repeatable runs that research one part of the fleet wide and deep, then sharpen it; your training is cut, the world moves, a recipe closes the gap. `recipes/AGENTS.md` is the contract, `cclio:shape-recipe` creates, grooms and runs one; a research that will repeat becomes a recipe. <!-- cc -->
 
 <!-- upkeep: the external skills are kept current by cclio:evergreen -->
 
@@ -125,6 +127,7 @@ on partly done, flatten an exact string into prose casing.
 - never kill a process by pattern. no `pkill -f`, no `pgrep | kill`, no PID matched from a name, path, or worktree string — your own process carries that path in its argv. kill only a PID you captured at spawn or read from a registry.
 
 ## global naming conventions
+<!-- sync: cw -->
 
 - **seven names before the build.** a new name for anything lasting — a skill, a job, an app, a memory leaf, a verb, a file family — goes to dima as seven candidates first through `x:top-seven`, a pick marked; the build starts with his pick (dima, 2026-10-16: «I very often ask you to rename things you created. instead, let's think of a name first, and then implement with the correct name»).
 - **entity-first.** the entity leads, the verb or qualifier follows: `<entity>-<qualifier>`

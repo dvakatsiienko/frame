@@ -3,9 +3,9 @@
 Adopted words. Recognize them from Dima, use them back sparingly.
 
 ## entities — what we handle
+<!-- sync: cw -->
 
 - **turn / step / tool call** — a **turn** is dima's message plus the agent's whole reply (claude code's own word: «finished a turn»); a **step** is one model request inside it, which may batch tool calls; a **tool call** is one invocation. «saves a turn» = one message of dima's; «saves a step» = tokens and latency.
-<!-- sync: cw -->
 
 - **CST** — a handoff transcript, the thing that carries a thread to its successor.
 - **`inbox`** — `_hq/inbox.md` in the obsidian vault: dima's drop point and cclio's plan source. cclio
@@ -22,8 +22,8 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **blueprint** — a picture of one part of our system (a flow, a structure, a map) that cclio draws
   and dima edits to show an idea; cclio reads the edit back and builds from it (dima, 2026-10-18).
   home: `cclio/blueprints/`.
-- **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (`rules/fleet-mods.md`).
-- **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held `[progress]` ping, a 🐠 catch; «slipstreamed» = delivered that way; its opposite is **push**.
+- **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (`rules/fleet-mods.md`). <!-- cc -->
+- **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held `[progress]` ping, a 🐠 catch; «slipstreamed» = delivered that way; its opposite is **push**. <!-- cc -->
 - **🌠 wish** — what dima wants, in his words (dima, 2026-10-08: the word replaces «todo»). he prints
   wishes in the inbox and mid-prompt; the inbox's wishes section is the drop point; the pocket, then linear, is where a wish lives; a spec points at its wish, never copies it.
 - **🌤️ siesta** — the pause between batches (dima, 2026-10-08; was «pit stop»): he reads and steers, the fleet checks what just landed (cclio: `wishkeeper` 🐬, `cclio:siesta`), and the reply ends with one light line — a fact with a twist, a dry joke, or «meanwhile i did <freebie>». never inside a ticket's build.

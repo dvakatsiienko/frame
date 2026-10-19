@@ -16,5 +16,5 @@ door live in `rules/fleet-tooling.md` (cc) and the cw leaf named on the line.
 - api keys → 1password vault `dev`, never a literal value · cw leaf `/areas/tooling.md`
 - deletes → `trash`, never `rm` · cw leaf `/areas/tooling.md`
 - obsidian vault → raw files, `obsidian` cli for rename/move · cw leaf `/topics/obsidian.md`
-- more screenshots or files than a prompt holds → dima drops them on the vorssaint utils shelf and says «check my shelf»; `pnpm vorssaint:shelf` (`--json`) lists their paths, read in order · items stay until he drags them off, so a read names what it already read · cc only
+- more screenshots or files than a prompt holds → dima drops them on the vorssaint utils shelf and says «check my shelf»; `pnpm vorssaint:shelf` (`--json`) lists their paths, read in order · items stay until he drags them off, so a read names what it already read · cc only <!-- cc -->
 - art (any picture, icon, avatar, gif, terminal clip) → the `x:art-kit` skill; illustration is made in atelier (`bytes/apps/atelier`) · cc only, cw hands art asks to the mac
