@@ -50,7 +50,7 @@ inbox clears — before the CST is written.
 **size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
 ## phase 1.7 — github notifications, cleared unasked
-`halt-sweep.ts` marks read every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr (its dry run lists them; `--apply` in phase 3a). what stays is an open pr's review ask.
+n8n's «📭 gh notifications sweep» (`cclio/blueprints/gh-notifications-sweep.n8n.json`) sends them to Done every night at 03:00 — every thread already read, plus an unread merged or closed pr and a ci run of a branch with no open pr; what stays is an unread open pr or issue. the halt only reads its newest execution: failed or older than two days → `halt-sweep.ts --only notifications` (dry run, then `--apply`) does it by hand and the failure is one line in the board.
 
 ## phase 1.8 — glides, cleared unasked 🛼
 every 🛼 glide card on the board gets orbit op `glide` act `end`, finished or parked alike; a parked lane gets a new card when it resumes.
@@ -71,7 +71,7 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 ## phase 3a — flawlog flush, the one stop
 read the log, cluster, ONE batched proposal, ONE approval, execute and commit. see `/cclio:flawlog`.
 **the retros, in the flush:** `ls ~/.claude/shelf/retros/` — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file.
-**the sweep, after the flush:** `node ~/frame/cclio/script/halt-sweep.ts --apply --only notifications,retention` — one call for phase 1.7 plus retention (flawlog files older than 30 days, look-card shots older than 14 — evidence for nobody), each part printing its count; it defaults to a dry run.
+**the sweep, after the flush:** `node ~/frame/cclio/script/halt-sweep.ts --apply --only retention` — retention (flawlog files older than 30 days, look-card shots older than 14 — evidence for nobody), each part printing its count; it defaults to a dry run.
 🚨 **the flush stops the halt**: print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before
 the reason — those go to `memory/dima-stories.md` as appends (the leaf's own rule), not to the
@@ -97,6 +97,10 @@ two sources, each read, never recalled: `shelf/jev/vet.json` (the flows, after t
 red runs `cclio:shape-test-drive` § 4; an item with no evidence today still gets its line — a trial nobody
 names is being dropped by default.
 **then the spawn base:** the first-request `cache_read_input_tokens` / `cache_creation_input_tokens` of the day's fresh agents (their transcripts' first assistant `usage`) — a base that moved re-sizes the grid in `x:crew-lead`.
+
+## phase 3.3 — one checkup slice 🩺
+
+run the one check of `cclio:system-checkup` whose newest line in `cclio/checkup/log.md` is the oldest (a check never logged goes first), the skill's way: fix in place first, its log line written, a 🔴 that needs dima as an orbit ask. one check, never the plate; the whole wheel turns in ~2 weeks of halts (dima's o59 tick, on trial in `docs/test-drive/system-checkup-cadence.md`, whose round line this step also writes).
 
 ## phase 3.5 — milestones, before the board
 

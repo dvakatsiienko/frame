@@ -47,7 +47,9 @@ own — the checks this plate runs itself (scripts sit in `scripts/` beside this
 
 colocated — checks that live elsewhere, run or read from here:
 - **cli-purpose** — are the `x` verbs used, is a hand-typed command worth a verb · `pnpm x:cli-census`,
-  judged through `cli-drift-check`
+  judged through `cli-drift-check`; plus dima's side (FRM-41): his zsh aliases and functions, raycast
+  scripts and pnpm scripts, each absorb / leave / delete with its invoker, use read from `~/.zsh_history`
+  — his tools are `granular`, so a verdict here is always an ask
 - **memory-lint** — budgets, dead pointers, cut quotes in memory files · runs at every commit
   (`recipes/nurture-memory/scripts/memory-lint.ts`); here its full run, `node <that path>`
 - **pocket** — pocket drift · `node ~/frame/cclio/script/pocket-check.ts`
@@ -62,8 +64,9 @@ not here, on purpose: the memory content groom, `doctor prompt-audit` and the sk
 ## cadence — on trial
 
 dima, 2026-10-19: «try a cadence and see if scheduled runs work. works → keep it; doesn't → manual».
-the boot digest prints `checkup: last run <date>` and `DUE` once 7 days have passed since the log's
-newest line; a due checkup is offered on the board, never run unasked. the trial:
+every halt runs one check, the one longest since its last log line (`cclio:halt` phase 3.3), so the
+whole plate turns in ~2 weeks (dima's o59 tick). the fallback: the boot digest prints `DUE` once 7 days
+pass with no log line at all, and a whole run is offered on the board, never run unasked. the trial:
 `docs/test-drive/system-checkup-cadence.md`.
 
 ## completion criterion

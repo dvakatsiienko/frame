@@ -4,15 +4,16 @@ until: 2026-11-16
 dies-when: the verdict line below is written
 ---
 
-# system-checkup cadence — a weekly «due» line on the boot board, or back to manual
+# system-checkup cadence — one check per halt, rotating, or back to manual
 
 Ticket: none (pocket PK-203)
 
-**test card:** we believe a weekly due line on the boot board gets `cclio:system-checkup` run often enough to catch drift, without becoming a chore dima skips · we test it by the boot digest printing `checkup: … DUE` 7 days after the last run (`cclio/checkup/log.md`), cclio offering it on the board · we measure per due: offered, run or skipped, minutes, 🔴 found, fixed in place · we're right if at least 3 of 4 dues get run and each run fixes or asks at least one real finding
-**kill rule:** dima skips two dues in a row, or two runs in a row find nothing — the cadence goes, the checkup stays manual (dima, 2026-10-19: «if it's not, I'll just switch it to a manual system checkup invocation»)
+**test card:** we believe one check per halt, rotating (dima's o59 tick: «a rotating slice at each halt, the whole wheel every ~2 weeks»), keeps the plate turning without a dedicated session · we test it by `cclio:halt` phase 3.3 running the check longest since its log line, every halt; the boot's weekly `DUE` line is only the fallback · we measure per halt: the check run, minutes, 🔴 found, fixed in place or asked, and whether a halt skipped it · we're right if 4 of 5 halts run their slice and the wheel completes within 3 weeks
+**kill rule:** two halts in a row skip the slice, or a full wheel finds nothing — the cadence goes, the checkup stays manual (dima, 2026-10-19: «if it's not, I'll just switch it to a manual system checkup invocation»)
 
 ## stress list
-- the due line — the boot digest — prints on day 7, never before
+- the halt slice — phase 3.3 — picks the oldest check, minutes per slice
+- the due line — the boot digest — prints on day 7, never before (the fallback)
 - a targeted run — `checkup <id>` on one check — minutes vs a whole run
 - a whole run — every check — minutes, 🔴 count, fixed vs asked
 

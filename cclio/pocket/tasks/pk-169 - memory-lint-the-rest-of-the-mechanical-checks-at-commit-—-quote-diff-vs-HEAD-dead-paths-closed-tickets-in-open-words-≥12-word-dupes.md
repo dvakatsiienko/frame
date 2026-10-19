@@ -3,10 +3,10 @@ id: PK-169
 title: >-
   memory-lint: the rest of the mechanical checks at commit — quote-diff vs HEAD,
   dead paths, closed tickets in open words, ≥12-word dupes
-status: open
+status: done
 assignee: []
 created_date: '2026-10-16 16:46'
-updated_date: '2026-10-18 13:42'
+updated_date: '2026-10-19 15:24'
 due_date: '2026-10-23'
 labels:
   - s
@@ -32,4 +32,6 @@ dima's o87 (10-16) ticked five checks for memory-lint; two run today (the budget
 2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00)
 
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
+
+10-19 18:30: three of four landed in memory-lint.ts, each red-proven (15 tests): quote-diff vs HEAD (warning), dead backticked paths (a warning: 4 of today's 5 hits were planned paths, dated history and a folder-relative path — it resolves file-relative now), a 12+ word sentence in two resident files (warning). the fourth (a closed ticket id near open-state words) needs linear — left out; the checkup's memory-lint line covers the rest. one dup today: guide-react/guide-typescript line 8, a deliberate twin.
 <!-- SECTION:NOTES:END -->

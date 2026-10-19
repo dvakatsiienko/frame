@@ -1,0 +1,437 @@
+{
+  "id": "HZP6ukVlhqSRrHDy",
+  "name": "📭 gh notifications sweep — nightly, sends read and settled threads to Done",
+  "description": null,
+  "active": true,
+  "activeVersionId": "e0352bb2-7c76-4ef4-bb70-1a56b0851691",
+  "isArchived": false,
+  "versionCounter": 7,
+  "sourceWorkflowId": null,
+  "triggerCount": 2,
+  "nodes": [
+    {
+      "name": "🌙 every night 03:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 3
+            }
+          ]
+        }
+      },
+      "id": "ac0888e1-6418-44e7-b0b0-00f4d7f82566"
+    },
+    {
+      "name": "📥 all notifications, read too",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/notifications?all=true&per_page=100",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "x-n8n-gh-sweep"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "szslOPQzbi70GFyW",
+          "name": "github notifications sweep (token)"
+        }
+      },
+      "id": "3baffd07-68f9-4205-8aae-900394054617"
+    },
+    {
+      "name": "🔀 the threads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const out = [];\nconst now = new Date().toISOString();\nfor (const { json: n } of $input.all()) {\n  const repo = n.repository.full_name;\n  const base = { thread: n.id, repo, title: n.subject.title, updated_at: n.updated_at, swept_at: now };\n  if (!n.unread) { out.push({ json: { ...base, kind: 'read' } }); continue; }\n  if (n.subject.type === 'PullRequest') {\n    out.push({ json: { ...base, kind: 'pr', check: n.subject.url } });\n  } else if (n.subject.type === 'CheckSuite') {\n    const branch = n.subject.title.match(/for (.+) branch$/)?.[1];\n    if (!branch) continue;\n    out.push({ json: { ...base, kind: 'ci', check: `https://api.github.com/repos/${repo}/pulls?state=open&head=${repo.split('/')[0]}:${encodeURIComponent(branch)}` } });\n  }\n}\nreturn out;"
+      },
+      "id": "5671288a-775b-499d-8276-02c1b9122b85"
+    },
+    {
+      "name": "📖 already read?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "read",
+              "leftValue": "={{ $json.kind }}",
+              "rightValue": "read",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e517ddf7-0460-45ac-8513-f6b1ba2d1910"
+    },
+    {
+      "name": "🔎 its pr, or the branch's open prs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        160
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.check }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "x-n8n-gh-sweep"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "szslOPQzbi70GFyW",
+          "name": "github notifications sweep (token)"
+        }
+      },
+      "id": "ca0182ad-37f1-41ca-979f-921a18cc8cf2"
+    },
+    {
+      "name": "✅ settled only",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "return $input.all()\n  .map((item, i) => ({ t: $('📖 already read?').itemMatching(i).json, body: item.json.body, status: item.json.statusCode }))\n  .filter(({ t, body, status }) => status === 200 && (t.kind === 'pr' ? body.state === 'closed' : Array.isArray(body) && body.length === 0))\n  .map(({ t }) => ({ json: { thread: t.thread, repo: t.repo, kind: t.kind, title: t.title, updated_at: t.updated_at, swept_at: t.swept_at } }));"
+      },
+      "id": "341daf94-f4e4-4bd4-8761-2b6f086cb955"
+    },
+    {
+      "name": "🗂️ log it in gh_notif_swept",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "mglcjPmgZRSBZTai"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "thread": "={{ $json.thread }}",
+            "repo": "={{ $json.repo }}",
+            "kind": "={{ $json.kind }}",
+            "title": "={{ $json.title }}",
+            "swept_at": "={{ $json.swept_at }}",
+            "updated_at": "={{ $json.updated_at }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "fcce6047-93d7-4d1b-a838-f26a4b02bd80"
+    },
+    {
+      "name": "✔️ mark done",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        0
+      ],
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.github.com/notifications/threads/{{ $json.thread }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "x-n8n-gh-sweep"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "szslOPQzbi70GFyW",
+          "name": "github notifications sweep (token)"
+        }
+      },
+      "id": "fe3e33d9-abd0-4ad1-bf7c-976353aab365"
+    },
+    {
+      "name": "📝 notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "content": "## why\nthe halt cleared these by hand. this runs nightly and presses GitHub's «Done» for you.\n\n## what goes to Done\n- every notification you already read, whatever it is\n- an unread pr thread whose pr merged or closed\n- an unread ci-run thread whose branch has no open pr\nan unread open pr or issue stays in the inbox.\n\n## doors\n- run by hand: «Execute workflow»\n- token: 1Password `github-n8n-notifications-sweep` → credential «github notifications sweep (token)»\n- log: data table `gh_notif_swept`; a thread is sent to Done once per update (GitHub's list still returns Done threads)\n- open: one page of 100; no shared error workflow yet",
+        "height": 400,
+        "width": 560
+      },
+      "id": "9ca600be-bbf2-4391-a850-8c2f021b7c1a"
+    },
+    {
+      "name": "🧪 run now",
+      "webhookId": "gh-notif-sweep-test",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -200
+      ],
+      "parameters": {
+        "path": "gh-notif-sweep-test",
+        "httpMethod": "POST",
+        "options": {}
+      },
+      "id": "9c4b935d-7a37-4fa4-a479-4af2eb2ed768"
+    },
+    {
+      "name": "🆕 not swept at this update yet",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "mglcjPmgZRSBZTai"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "thread",
+              "condition": "eq",
+              "keyValue": "={{ $json.thread }}"
+            },
+            {
+              "keyName": "updated_at",
+              "condition": "eq",
+              "keyValue": "={{ $json.updated_at }}"
+            }
+          ]
+        },
+        "matchType": "allConditions"
+      },
+      "id": "919d6ed8-11a7-4909-8270-1613e12b7caa"
+    }
+  ],
+  "connections": {
+    "🌙 every night 03:00": {
+      "main": [
+        [
+          {
+            "node": "📥 all notifications, read too",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 all notifications, read too": {
+      "main": [
+        [
+          {
+            "node": "🔀 the threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 the threads": {
+      "main": [
+        [
+          {
+            "node": "🆕 not swept at this update yet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📖 already read?": {
+      "main": [
+        [
+          {
+            "node": "🗂️ log it in gh_notif_swept",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🔎 its pr, or the branch's open prs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 its pr, or the branch's open prs": {
+      "main": [
+        [
+          {
+            "node": "✅ settled only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ settled only": {
+      "main": [
+        [
+          {
+            "node": "🗂️ log it in gh_notif_swept",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🗂️ log it in gh_notif_swept": {
+      "main": [
+        [
+          {
+            "node": "✔️ mark done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧪 run now": {
+      "main": [
+        [
+          {
+            "node": "📥 all notifications, read too",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🆕 not swept at this update yet": {
+      "main": [
+        [
+          {
+            "node": "📖 already read?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:🌙 every night 03:00": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": null,
+  "tags": []
+}
