@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-19 12:17'
-updated_date: '2026-10-19 12:20'
+updated_date: '2026-10-19 15:40'
 due_date: '2026-10-21'
 labels:
   - m
@@ -26,4 +26,6 @@ inbox 10-19 (wish + his ask), folded: before orbit we talked through a «waiting
 
 <!-- SECTION:NOTES:BEGIN -->
 restored from the raw: stop using mods like orbit and phases — he does not see them and does not rely on them — and fall back to previews.
+
+18:40, dima o67 (17:17): «let's do both after big tickets are done» — this grill waits for the big tickets (FRM-219, FRM-270).
 <!-- SECTION:NOTES:END -->

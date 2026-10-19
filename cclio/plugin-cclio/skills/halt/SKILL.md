@@ -50,7 +50,7 @@ inbox clears — before the CST is written.
 **size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
 ## phase 1.7 — github notifications, cleared unasked
-n8n's «📭 gh notifications sweep» (`cclio/blueprints/gh-notifications-sweep.n8n.json`) sends them to Done every night at 03:00 — every thread already read, plus an unread merged or closed pr and a ci run of a branch with no open pr; what stays is an unread open pr or issue. the halt only reads its newest execution: failed or older than two days → `halt-sweep.ts --only notifications` (dry run, then `--apply`) does it by hand and the failure is one line in the board.
+n8n's «📭 gh notifications sweep» (`cclio/blueprints/gh-notifications-sweep.n8n.json`) sends them to Done every night at 03:00 — every thread already read, plus an unread merged or closed pr and a ci run of a branch with no open pr; what stays is an unread open pr or issue. the halt only reads its newest execution: failed or older than two days → `halt-sweep.ts --only notifications` (narrower than the sweep: it marks only merged or closed pr and ci threads read, never Done) (dry run, then `--apply`) does it by hand and the failure is one line in the board.
 
 ## phase 1.8 — glides, cleared unasked 🛼
 every 🛼 glide card on the board gets orbit op `glide` act `end`, finished or parked alike; a parked lane gets a new card when it resumes.

@@ -1,174 +1,216 @@
 {
-    "name": "🔴 ci watch — new red runs on frame + bytes main",
-    "nodes": [
-        {
-            "id": "tick",
-            "name": "every 5 min",
-            "type": "n8n-nodes-base.scheduleTrigger",
-            "typeVersion": 1.2,
-            "position": [0, 0],
-            "parameters": {
-                "rule": {
-                    "interval": [
-                        {
-                            "field": "minutes",
-                            "minutesInterval": 5
-                        }
-                    ]
-                }
+  "id": "7RX1k5SibxFz9EAg",
+  "name": "🔴 ci watch — new red runs on frame + bytes main",
+  "description": null,
+  "active": true,
+  "activeVersionId": "e8ee0cf3-b98e-442c-9314-ebb9519132fe",
+  "isArchived": false,
+  "versionCounter": 4,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "tick",
+      "name": "every 5 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
             }
-        },
-        {
-            "id": "repos",
-            "name": "the repos",
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [220, 0],
-            "parameters": {
-                "jsCode": "return ['frame','bytes'].map(repo => ({ json: { repo } }));"
-            }
-        },
-        {
-            "id": "gh",
-            "name": "red runs on main (github, no token)",
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [440, 0],
-            "parameters": {
-                "url": "=https://api.github.com/repos/dvakatsiienko/{{ $json.repo }}/actions/runs?branch=main&status=failure&per_page=5",
-                "sendHeaders": true,
-                "headerParameters": {
-                    "parameters": [
-                        {
-                            "name": "User-Agent",
-                            "value": "x-n8n-ci-watch"
-                        },
-                        {
-                            "name": "Accept",
-                            "value": "application/vnd.github+json"
-                        }
-                    ]
-                },
-                "options": {}
-            }
-        },
-        {
-            "id": "flat",
-            "name": "one item per run, last 2 days",
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [660, 0],
-            "parameters": {
-                "jsCode": "const cutoff = Date.now() - 2*24*3600*1000;\nreturn $input.all().flatMap(i => (i.json.workflow_runs || [])\n  .filter(r => Date.parse(r.updated_at) > cutoff)\n  .map(r => ({ json: { run_id: String(r.id), repo: r.repository.name, workflow: r.name, title: r.display_title, url: r.html_url, failed_at: r.updated_at, seen: false } })));"
-            }
-        },
-        {
-            "id": "new",
-            "name": "only runs not kept yet",
-            "type": "n8n-nodes-base.dataTable",
-            "typeVersion": 1.1,
-            "position": [880, 0],
-            "parameters": {
-                "resource": "row",
-                "operation": "rowNotExists",
-                "dataTableId": {
-                    "__rl": true,
-                    "mode": "id",
-                    "value": "vZqYjgJqtQTWc9s9"
-                },
-                "filters": {
-                    "conditions": [
-                        {
-                            "keyName": "run_id",
-                            "condition": "eq",
-                            "keyValue": "={{ $json.run_id }}"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "id": "keep",
-            "name": "keep it in ci_reds",
-            "type": "n8n-nodes-base.dataTable",
-            "typeVersion": 1.1,
-            "position": [1100, 0],
-            "parameters": {
-                "resource": "row",
-                "operation": "insert",
-                "dataTableId": {
-                    "__rl": true,
-                    "mode": "id",
-                    "value": "vZqYjgJqtQTWc9s9"
-                },
-                "columns": {
-                    "mappingMode": "autoMapInputData",
-                    "value": {},
-                    "matchingColumns": [],
-                    "schema": []
-                },
-                "options": {}
-            }
+          ]
         }
-    ],
-    "connections": {
-        "every 5 min": {
-            "main": [
-                [
-                    {
-                        "node": "the repos",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "the repos": {
-            "main": [
-                [
-                    {
-                        "node": "red runs on main (github, no token)",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "red runs on main (github, no token)": {
-            "main": [
-                [
-                    {
-                        "node": "one item per run, last 2 days",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "one item per run, last 2 days": {
-            "main": [
-                [
-                    {
-                        "node": "only runs not kept yet",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "only runs not kept yet": {
-            "main": [
-                [
-                    {
-                        "node": "keep it in ci_reds",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        }
+      }
     },
-    "settings": {
-        "executionOrder": "v1"
+    {
+      "id": "repos",
+      "name": "the repos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return ['frame','bytes'].map(repo => ({ json: { repo } }));"
+      }
+    },
+    {
+      "id": "gh",
+      "name": "red runs on main (github, no token)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "url": "=https://api.github.com/repos/dvakatsiienko/{{ $json.repo }}/actions/runs?branch=main&status=failure&per_page=5",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "x-n8n-ci-watch"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "flat",
+      "name": "one item per run, last 2 days",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const cutoff = Date.now() - 2*24*3600*1000;\nreturn $input.all().flatMap(i => (i.json.workflow_runs || [])\n  .filter(r => Date.parse(r.updated_at) > cutoff)\n  .map(r => ({ json: { run_id: String(r.id), repo: r.repository.name, workflow: r.name, title: r.display_title, url: r.html_url, failed_at: r.updated_at, seen: false } })));"
+      }
+    },
+    {
+      "id": "new",
+      "name": "only runs not kept yet",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "vZqYjgJqtQTWc9s9"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "run_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.run_id }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "keep",
+      "name": "keep it in ci_reds",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "vZqYjgJqtQTWc9s9"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
     }
+  ],
+  "connections": {
+    "every 5 min": {
+      "main": [
+        [
+          {
+            "node": "the repos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "the repos": {
+      "main": [
+        [
+          {
+            "node": "red runs on main (github, no token)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "red runs on main (github, no token)": {
+      "main": [
+        [
+          {
+            "node": "one item per run, last 2 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "one item per run, last 2 days": {
+      "main": [
+        [
+          {
+            "node": "only runs not kept yet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "only runs not kept yet": {
+      "main": [
+        [
+          {
+            "node": "keep it in ci_reds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "iDk8tNNn9jqfzVYa",
+    "timeSavedPerExecution": 2
+  },
+  "staticData": {
+    "node:every 5 min": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": null,
+  "tags": []
 }

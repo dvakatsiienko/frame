@@ -8,6 +8,8 @@ module.exports = {
             autorestart: true,
             env: {
                 N8N_DIAGNOSTICS_ENABLED: 'false',
+                // mcp stays off by choice (author-blueprint references/n8n.md); off, its production-checklist item goes too
+                N8N_DISABLED_MODULES: 'mcp',
                 N8N_PERSONALIZATION_ENABLED: 'false',
                 N8N_PORT: '5678',
                 N8N_USER_FOLDER: `${home}/.local/share/x-n8n`,

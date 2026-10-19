@@ -4,7 +4,7 @@ title: 'n8n: one more workflow that unloads cclio — pick the chore, draw it, b
 status: done
 assignee: []
 created_date: '2026-10-19 12:20'
-updated_date: '2026-10-19 15:24'
+updated_date: '2026-10-19 15:40'
 due_date: '2026-10-21'
 labels:
   - s
@@ -30,4 +30,6 @@ CST 10-18 first-act 2: dima asks for one more n8n workflow that unloads cclio (a
 18:22: blueprint drawn — n8n workflow HZP6ukVlhqSRrHDy «📭 gh notifications sweep», export cclio/blueprints/gh-notifications-sweep.n8n.json. **waiting for:** dima mints a classic GitHub token with the notifications scope (fine-grained tokens can't read notifications) → 1Password github-notifications → an n8n credential; then the build replaces the tiles and halt phase 1.7 goes.
 
 18:27: built and live — workflow HZP6ukVlhqSRrHDy published, nightly 03:00; credential from 1Password github-n8n-notifications-sweep (dima renamed it), log table gh_notif_swept. one real run through a temporary webhook: success, 1 notification (an issue) → 0 threads to check, as it should; the mark-read and log nodes have not met a real pr or ci thread yet. halt phase 1.7 now reads the sweep's last execution instead.
+
+18:40: dima 18:29, folded: «I also want this flow to clear out all already read notifications, regardless of notification nature» and «after you change n8n, leave a test run for me». shipped: every read thread, plus an unread merged/closed pr or a ci run of a branch with no open pr, goes to Done (DELETE), not just read; once per thread update (thread + updated_at in gh_notif_swept); Done first, logged only on GitHub's 204, any other answer fails the run. the temporary test webhook made the editor's Execute spin waiting for a call — removed at 18:39; his test run is the editor's Execute workflow. a planted test row (thread 25819296700, updated_at 2000-01-01) sits in gh_notif_swept — delete on his word.
 <!-- SECTION:NOTES:END -->

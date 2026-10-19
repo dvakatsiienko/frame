@@ -1,0 +1,92 @@
+{
+  "id": "iDk8tNNn9jqfzVYa",
+  "name": "🚨 n8n errors — every failed run of a workflow lands in n8n_errors",
+  "description": null,
+  "active": true,
+  "activeVersionId": "ccaba7a1-e580-4dfb-91e8-f4c8db0f20c9",
+  "isArchived": false,
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "name": "🚨 a workflow failed",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {},
+      "id": "d2a77d90-b999-47a1-997a-df2589efac8e"
+    },
+    {
+      "name": "🗂️ keep it in n8n_errors",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "q2PHs23Yhemn5xoy"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow": "={{ $json.workflow.name }}",
+            "node": "={{ $json.execution.lastNodeExecuted }}",
+            "message": "={{ $json.execution.error.message }}",
+            "execution": "={{ $json.execution.url }}",
+            "at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "b3cd2094-c883-4309-953a-8f31dfb1046f"
+    },
+    {
+      "name": "📝 notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        160
+      ],
+      "parameters": {
+        "content": "## why\nthe shared error workflow every published workflow names (`settings.errorWorkflow`), so a failed run is a row, never silence; the boot digest can read n8n_errors.",
+        "height": 180,
+        "width": 420
+      },
+      "id": "caa09ec9-737d-4040-a8b3-b97298fc21f5"
+    }
+  ],
+  "connections": {
+    "🚨 a workflow failed": {
+      "main": [
+        [
+          {
+            "node": "🗂️ keep it in n8n_errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": null,
+  "tags": []
+}

@@ -43,7 +43,8 @@ own — the checks this plate runs itself (scripts sit in `scripts/` beside this
   months); judgment over counts, a `helper-lite` runs the counts (`duckdb` / `jq`):
   - **the census**: per skill, every scope (plugin, user `~/.agents/skills/`, project `.claude/skills/`, the marketplace plugins and the mods): fire count, last use, token cost, size, from the transcripts in two columns: real Skill calls (model and typed `<command-name>` loads) and reads by hand (a `Read` of a `SKILL.md`, or `cat`/`sed`/`head` on one in Bash; globs and greps excluded), so a skill run read-by-hand (matt's user-only ones, `advise-project-approach`) never shows as unused (dima, 2026-10-14); `/skill-doctor` is never the source, it overcounts ~10× (#92327)
   - **the install hunt**: everything installed, not only what fires as a skill (run #2 of the memory sweep missed the Context7 plugin: an MCP-only plugin fires no Skill call, so the census never saw it, while `rules/fleet-tooling.md` names `ctx7` as the docs door; dima, 2026-10-16: «next memory edit, we don't skip a hunt to delete not-used, stale, or stray marketplace-installed items»): `claude plugin list`, `claude plugin marketplace list`, `claude mcp list` and the folders under `~/.claude/plugins/cache/`, each with its `mcp__…` tool calls and Skill calls from the transcripts; a plugin or server whose job a door in `rules/fleet-tooling.md` or `rules/fleet-doors.md` already does, a disabled one, a marketplace with no installed plugin, and a cache folder with no install are 🔴
-  - a 🔴 here is a removal, so it is always an orbit ask, one per item, never fixed in place; the memory sweep's prune step reads the same result
+  - its ranked list goes to `~/frame/cclio/checkup/install-census.md`, rewritten each run, its log line pointing there
+  - a 🔴 here is a removal, so it is always an orbit ask, one per item, never fixed in place; the memory sweep's prune step reads that list
 
 colocated — checks that live elsewhere, run or read from here:
 - **cli-purpose** — are the `x` verbs used, is a hand-typed command worth a verb · `pnpm x:cli-census`,
@@ -57,13 +58,16 @@ colocated — checks that live elsewhere, run or read from here:
 - **boot-digest** — settings symlink, repos vs origin, ci reds, sessions and worktrees, usage ·
   `BOOT_STRICT=1 ~/frame/cclio/.claude/hooks/boot-prefetch.sh`, its `🚨 FAIL` lines only
 - **go-vulns** — `pnpm x-go:vuln`
+- **evergreen** — renovate prs, brew and the apps lane · `cclio:evergreen`, its newest report read; a whole
+  checkup runs its gather (`references/read.md` § 1) without the full read
 
-not here, on purpose: the memory content groom, `doctor prompt-audit` and the skill census stay in
-`recipes/nurture-memory` (dima, 2026-10-19: never duplicated); the dependency news stays in `cclio:evergreen`.
+not here, on purpose: the memory content groom, `doctor prompt-audit` and `/skill-doctor` stay in
+`recipes/nurture-memory` (dima, 2026-10-19: never duplicated).
 
 ## cadence — on trial
 
-dima, 2026-10-19: «try a cadence and see if scheduled runs work. works → keep it; doesn't → manual».
+dima, 2026-10-19: «let's try a cadence and see if scheduled runs work with it. if it works, let's keep a
+cadence; if not, I'll just switch it to a manual system checkup invocation».
 every halt runs one check, the one longest since its last log line (`cclio:halt` phase 3.3), so the
 whole plate turns in ~2 weeks (dima's o59 tick). the fallback: the boot digest prints `DUE` once 7 days
 pass with no log line at all, and a whole run is offered on the board, never run unasked. the trial:
