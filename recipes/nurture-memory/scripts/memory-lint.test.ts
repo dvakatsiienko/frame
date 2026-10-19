@@ -31,11 +31,16 @@ function repo(leaf: string, budget: number) {
         writeFileSync(join(dir, path), text);
         git('add', path);
     };
+    // the ticket lookup is a fixture file, never `x linear read`
+    const runEnv = { ...env, MEMORY_LINT_STATES: join(dir, 'states.json') };
+    const states = (table: Record<string, string>) =>
+        writeFileSync(runEnv.MEMORY_LINT_STATES, JSON.stringify(table));
+    states({});
     const lint = (...files: string[]) =>
         spawnSync('node', [LINT, ...(files.length ? files : [LEAF])], {
             cwd: dir,
             encoding: 'utf8',
-            env,
+            env: runEnv,
         });
     const seed = () =>
         spawnSync('node', [LINT, '--seed'], {
@@ -45,7 +50,7 @@ function repo(leaf: string, budget: number) {
         });
     const read = (path: string) => readFileSync(join(dir, path), 'utf8');
     const drop = (path: string) => git('rm', '-q', path);
-    return { drop, lint, read, seed, stage };
+    return { drop, lint, read, seed, stage, states };
 }
 
 describe('memory-lint', () => {
@@ -141,6 +146,29 @@ describe('memory-lint', () => {
         const r = repo('- a short repeated line here.\n', 500);
         r.stage('cclio/memory/other.md', '- a short repeated line here.\n');
         expect(r.lint('cclio/memory/other.md').stderr).not.toContain('⚠');
+    });
+
+    it('warns, never fails, on a closed ticket beside «waiting on»', () => {
+        const r = repo('- one line\n', 500);
+        r.states({ 'FRM-219': 'completed' });
+        r.stage(LEAF, '- one line\n- waiting on FRM-219\n');
+        const out = r.lint();
+        expect(out.status).toBe(0);
+        expect(out.stderr).toContain(`⚠ ${LEAF}:2: FRM-219 is closed`);
+    });
+
+    it('stays silent on an open ticket beside «waiting on»', () => {
+        const r = repo('- one line\n', 500);
+        r.states({ 'FRM-219': 'unstarted' });
+        r.stage(LEAF, '- one line\n- waiting on FRM-219\n');
+        expect(r.lint().stderr).toBe('');
+    });
+
+    it('stays silent on a closed ticket with no open-state word within 2 lines', () => {
+        const r = repo('- one line\n', 500);
+        r.states({ 'FRM-219': 'completed' });
+        r.stage(LEAF, '- waiting on it\n- b\n- c\n- shipped in FRM-219\n');
+        expect(r.lint().stderr).toBe('');
     });
 
     it('stops a new memory file that has no budget row', () => {

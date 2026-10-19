@@ -3,15 +3,18 @@
  * - a size budget per memory file (`memory-budgets.tsv` beside this script): over it, the commit asks for a regroom first;
  *   a useful add raises the file's row in the same commit, with its reason — the raise is the official way past
  * - two bullets merged on one line (a swallowed newline)
- * - a backticked repo path that is not on disk (a failure)
+ * - a backticked repo path that is not on disk (a warning, resolved from the root and the file folder)
  * - warnings, never a failure: a «…» quote present at HEAD and gone from the staged file (as quote-diff.py reads it);
- *   a sentence of 12+ words living in two memory files
+ *   a sentence of 12+ words living in two memory files;
+ *   a closed ticket (FRM-N, BYT-N, old DOT-N = FRM-N) within 2 lines of an open-state word («waiting on», «todo», «next»…) —
+ *   states come from `x linear read`, cached 24 h in ~/.cache/memory-lint/ticket-states.json (one batched call, 10 s cap,
+ *   offline or slow → the stale cache and one note); MEMORY_LINT_STATES=<fixture.json> ({"FRM-1":"completed"}) replaces the lookup
  * usage: memory-lint.ts <staged files…> (lefthook) · memory-lint.ts --seed (adds a row at size + 15 % for each new memory file, drops a gone file's row, keeps every raise)
  */
 
 /* Core */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -38,9 +41,17 @@ const CODE = /`[^`]*`/g;
 const QUOTE = /«[^»]{3,}»/g;
 const PATH_TOKEN = /`([^`\s<*{$]+)`/g;
 const SENTENCE_WORDS = 12;
+const TICKET = /\b(FRM|BYT|DOT)-(\d+)\b/g;
+const OPEN_WORDS =
+    /waiting on|waits on|until:|open:|blocked by|\b(todo|pending|next)\b/i;
+const NEAR_LINES = 2;
+const CACHE = join(homedir(), '.cache/memory-lint/ticket-states.json');
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const LOOKUP_TIMEOUT_MS = 10_000;
 const squash = (text: string) => text.replace(/\s+/g, ' ');
 
 type Row = { budget: number; reason: string };
+type Cached = Record<string, { at: number; stateType: string }>;
 
 // the staged form when the file is staged, the disk form otherwise (a hand run before `git add`)
 function indexed(path: string) {
@@ -125,6 +136,59 @@ function deadPaths(text: string, dirs: Set<string>, file = '') {
                 hits.push({ n, token });
         }
     return hits;
+}
+
+// every ticket id sitting within 2 lines of an open-state word; DOT-N is the old name of FRM-N
+function ticketsNearOpenWords(text: string) {
+    const lines = proseLines(text);
+    const hits: { n: number; id: string }[] = [];
+    for (const { n, line } of lines) {
+        const near = lines.filter(
+            (other) => Math.abs(other.n - n) <= NEAR_LINES,
+        );
+        if (!near.some((other) => OPEN_WORDS.test(other.line))) continue;
+        for (const [, family = '', num = ''] of line.matchAll(TICKET))
+            hits.push({
+                id: `${family === 'DOT' ? 'FRM' : family}-${num}`,
+                n,
+            });
+    }
+    return hits;
+}
+
+// id → stateType: the fixture under test, else the 24 h cache topped up by one `x linear read`; a failed call keeps the stale cache
+function ticketStates(ids: string[]) {
+    const fixture = process.env.MEMORY_LINT_STATES;
+    if (fixture)
+        return new Map<string, string>(
+            Object.entries(JSON.parse(readFileSync(fixture, 'utf8'))),
+        );
+    let cache: Cached = {};
+    try {
+        cache = JSON.parse(readFileSync(CACHE, 'utf8'));
+    } catch {}
+    const now = Date.now();
+    const stale = ids.filter((id) => now - (cache[id]?.at ?? 0) > CACHE_TTL_MS);
+    if (stale.length)
+        try {
+            const out = execFileSync('x', ['linear', 'read', ...stale], {
+                encoding: 'utf8',
+                maxBuffer: 1 << 26,
+                stdio: ['ignore', 'pipe', 'ignore'],
+                timeout: LOOKUP_TIMEOUT_MS,
+            });
+            const tickets: { id: string; stateType: string }[] =
+                JSON.parse(out).data.tickets;
+            for (const { id, stateType } of tickets)
+                cache[id] = { at: now, stateType };
+            mkdirSync(dirname(CACHE), { recursive: true });
+            writeFileSync(CACHE, JSON.stringify(cache));
+        } catch {
+            console.error(
+                'memory-lint: note: `x linear read` failed or timed out, closed-ticket check uses the stale cache',
+            );
+        }
+    return new Map(ids.map((id) => [id, cache[id]?.stateType ?? '']));
 }
 
 function goneQuotes(file: string, text: string) {
@@ -214,9 +278,23 @@ function lint(stagedFiles: string[]) {
             );
     const warnings: string[] = [];
     const dirs = topDirs();
+    const near = new Map<string, { n: number; id: string }[]>();
+    for (const file of files) {
+        const text = indexed(file);
+        if (text !== undefined) near.set(file, ticketsNearOpenWords(text));
+    }
+    const ids = [
+        ...new Set([...near.values()].flatMap((hits) => hits.map((h) => h.id))),
+    ];
+    const states = ids.length ? ticketStates(ids) : new Map<string, string>();
     for (const file of files) {
         const text = indexed(file);
         if (text === undefined) continue;
+        for (const { n, id } of near.get(file) ?? [])
+            if (['completed', 'canceled'].includes(states.get(id) ?? ''))
+                warnings.push(
+                    `${file}:${n}: ${id} is closed but sits beside an open-state word`,
+                );
         const row = budgets.get(file);
         const size = Buffer.byteLength(text);
         if (row && size > row.budget)
