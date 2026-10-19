@@ -133,6 +133,7 @@ auto-save via the handoff store (`/x:handoff` writes, `/x:handoff-ingest` reads)
 before writing, whether the work continues here or in a fresh thread — a CST followed by more
 work in the same thread is wasted tokens and a stale file. slug `<runid-topic>-halt`. a previous
 CST marked FROZEN is never superseded — save alongside and say which is which.
+the CST lists dima's chat lines since the last report, each with its answer or «open», read from the transcript the way `cclio:checkpoint` § 3 does — orbit and the pocket hold only what reached a tool, so a chat-only ask falls through without this.
 🐦‍⬛ **after the CST, `pnpm -C ~/frame ccrow:stop` then archive her desktop card** (`mcp__ccd_session_mgmt__list_sessions` → `archive_session`; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «archive yourself each time») — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`). before the stop, every note id with no verdict is printed and vetted (`pnpm --silent ccrow:note-vet ok|miss <id> "<why>"`) — an unvetted note is a lost data point for the trial.
 a first-act that is a memory line is applied now, by this halt — never left for a boot.
 🌔 **the last act: phases reset to the next session's moves** (orbit op `plan`), the CST's first-acts as `tomorrow:` lines, so dima sees the plan on the board, never today's finished steps.
