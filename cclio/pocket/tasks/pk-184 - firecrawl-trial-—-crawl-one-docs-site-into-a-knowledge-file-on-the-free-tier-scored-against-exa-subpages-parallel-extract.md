@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 16:35'
-updated_date: '2026-10-19 13:56'
-due_date: '2026-10-19'
+updated_date: '2026-10-19 14:05'
+due_date: '2026-11-02'
 labels:
   - s
 dependencies: []
@@ -26,4 +26,6 @@ dima's tick o48, 2026-10-18: a narrow test drive, never a third fan-out lane (PK
 
 <!-- SECTION:NOTES:BEGIN -->
 10-19: four rounds (docs/test-drive/firecrawl.md, commit 3e49d66b): r1 cc docs 227/227 pages, answers tie with a WebFetch researcher at +52 % tokens, site serves llms-full.txt; r2 n8n serves llms.txt; r3 NMS wiki — the free MediaWiki api beats firecrawl's map (91 of 3,535); r4 PSNProfiles 403 for curl and WebFetch, 200 for firecrawl (the NMS guide: 117k chars, 4 s, 1 credit). verdict ticked: adopt narrow, bot-blocked sites only, live to 11-02 for the cw games thread. 731 credits left.
+
+10-19: verdict ticked — adopt narrow (bot-blocked sites, via pnpm web:read); the trial stays live to 11-02 for the cw games thread.
 <!-- SECTION:NOTES:END -->

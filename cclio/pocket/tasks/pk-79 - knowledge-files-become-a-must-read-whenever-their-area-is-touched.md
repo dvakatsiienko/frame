@@ -4,7 +4,7 @@ title: knowledge files become a must-read whenever their area is touched
 status: open
 assignee: []
 created_date: '2026-10-12 11:08'
-updated_date: '2026-10-18 13:42'
+updated_date: '2026-10-19 14:17'
 due_date: '2026-10-22'
 labels:
   - m
@@ -74,4 +74,6 @@ parked: rides the mods lane resume beside PK-120 — sequence steps 5-7 (the x-m
 2026-10-15: due pushed in the tail sweep — the delivery rides the knowledge-shelf revamp inside the memory sweep, not a tail.
 
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
+
+10-19 17:18, dima o45 ✓: the primer gains the guide-* skill cores as a source — x:guide-typescript on a .ts/.tsx touch, x:guide-code on a source touch, before the first edit (FRM-243's measure: 49 % load-before-edit, closed). the spec at ~/frame/.scratch/primer/spec.md takes this line at dispatch.
 <!-- SECTION:NOTES:END -->

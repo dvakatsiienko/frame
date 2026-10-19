@@ -105,7 +105,7 @@ since.
   names, no `remote-devices` prefix — the name trap). cloud egress is an allowlist (github, npm, pypi;
   example.com 403).
 - ⚠️ **the mac's Desktop Commander is a shell for every cloud thread.** `allowedDirectories` was narrowed
-  to `~/frame`, `~/projects`, `~/.claude` and the vault (2026-10-05), but DC's own README says it
+  to `~/frame`, `~/projects`, `~/.claude`, the vault, `~/Downloads` and `~/Desktop` (`get_config`, 2026-10-19), but DC's own README says it
   restricts file tools only — `start_process` still runs anything not in `blockedCommands`.
 - a session you start yourself (terminal, `--bg`, desktop local) cannot be added to a project; a cloud
   session can be moved in. Remote Control sessions do not show in the Code-tab sidebar.

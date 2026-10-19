@@ -4,8 +4,8 @@ title: standing watches stay silent after a /clear
 status: waiting
 assignee: []
 created_date: '2026-10-15 23:08'
-updated_date: '2026-10-16 10:47'
-due_date: '2026-10-19'
+updated_date: '2026-10-19 14:25'
+due_date: '2026-10-26'
 labels:
   - s
 dependencies: []
@@ -27,4 +27,6 @@ dima, 2026-10-16: «why are they firing? make them not fire after i clear you.»
 inbox 10-16, wisp in his words: cleared cclio ~20:00, chatted with cw ~02:00, then her thread suddenly woke about monitors — fix it so a cleared cclio never wakes suddenly. relates the fork question (inbox Q6).
 
 fixed 10-16: watch-once.sh records the arming session id; a /clear mints a new id (proven: the 10-15 transcripts split at the clear), so the wrapper then ends silently with its session. fixture-proven: same session prints, cleared session silent, an event prints. inference: the ~/.claude/sessions registry file updates its sessionId on a live /clear — first real clear confirms. also fixed: the «6 h, no event» branch never fired (the pid was killed before the check).
+
+10-19 17:27: re-dated — no real /clear of cclio yet; today's compact ran the second-wind path, not a /clear.
 <!-- SECTION:NOTES:END -->
