@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-19 14:32'
-updated_date: '2026-10-19 14:52'
+updated_date: '2026-10-19 15:05'
 due_date: '2026-10-21'
 labels:
   - m
@@ -42,4 +42,6 @@ parked: the grill is in dima's thread and orbit, the prior-art research runs; un
 - 17:46: test drive agnix; /doctor prompt-audit and /skill-doctor already run in the nurture-memory recipe — never duplicate them here.
 
 17:58: seeded — cclio:system-checkup (3 own + 6 colocated checks), recipes/refresh-system-checkup, docs/test-drive/{agnix,system-checkup-cadence}.md, the boot digest's checkup due line. first run: 4 🔴, 3 fixed in place (agnix frontmatter, x stats dev stamp, today's skill splits), 1 asked (session-start hooks 48–58 s).
+
+18:10, dima o62 ✓ — the 48–58 s session start is cclio-only (6 of 13 cclio SessionStart runs over 5 s, 0 of 9 elsewhere, OTel 10-17→19); his boot stays as is (one boot message with wishkeeper is his ask), quick wins only: the boot digest's gh watch fetches 8 at a time, 17.3 → 5.2 s (digest 44.5 → ~36 s), proven unchanged + a planted change still prints. the barrel probe (claude -p haiku, 7 s) stays. o63 ✓ — nurture-memory's census + install hunt (step 9.2, 2.5) moved into the checkup as install-census; the recipe points at it («the system checkup runs more often than nurture-memory, which runs every 1–3 months»).
 <!-- SECTION:NOTES:END -->

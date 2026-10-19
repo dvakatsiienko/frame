@@ -38,6 +38,13 @@ own — the checks this plate runs itself (scripts sit in `scripts/` beside this
   schemas · script, `npx -y agnix@<version> --target claude-code --format json .` from `~/frame`,
   read-only; on a test drive, `docs/test-drive/agnix.md` (its round goes there, and its known noise)
 
+- **install-census** — what is installed and what is used, more often than a memory sweep (dima,
+  2026-10-19: the system checkup runs more often than `recipes/nurture-memory`, which runs every 1–3
+  months); judgment over counts, a `helper-lite` runs the counts (`duckdb` / `jq`):
+  - **the census**: per skill, every scope (plugin, user `~/.agents/skills/`, project `.claude/skills/`, the marketplace plugins and the mods): fire count, last use, token cost, size, from the transcripts in two columns: real Skill calls (model and typed `<command-name>` loads) and reads by hand (a `Read` of a `SKILL.md`, or `cat`/`sed`/`head` on one in Bash; globs and greps excluded), so a skill run read-by-hand (matt's user-only ones, `advise-project-approach`) never shows as unused (dima, 2026-10-14); `/skill-doctor` is never the source, it overcounts ~10× (#92327)
+  - **the install hunt**: everything installed, not only what fires as a skill (run #2 of the memory sweep missed the Context7 plugin: an MCP-only plugin fires no Skill call, so the census never saw it, while `rules/fleet-tooling.md` names `ctx7` as the docs door; dima, 2026-10-16: «next memory edit, we don't skip a hunt to delete not-used, stale, or stray marketplace-installed items»): `claude plugin list`, `claude plugin marketplace list`, `claude mcp list` and the folders under `~/.claude/plugins/cache/`, each with its `mcp__…` tool calls and Skill calls from the transcripts; a plugin or server whose job a door in `rules/fleet-tooling.md` or `rules/fleet-doors.md` already does, a disabled one, a marketplace with no installed plugin, and a cache folder with no install are 🔴
+  - a 🔴 here is a removal, so it is always an orbit ask, one per item, never fixed in place; the memory sweep's prune step reads the same result
+
 colocated — checks that live elsewhere, run or read from here:
 - **cli-purpose** — are the `x` verbs used, is a hand-typed command worth a verb · `pnpm x:cli-census`,
   judged through `cli-drift-check`

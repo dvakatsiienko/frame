@@ -221,9 +221,13 @@ authored=$(timeout 15 gh search issues --author dvakatsiienko --limit 100 --json
   done)
 gh_urls=$( { grep -ho 'https://github.com/[^/)]*/[^/)]*/\(issues\|pull\)/[0-9]*' "$HOME/frame/cclio/memory/_reminders.md" "$HOME/frame/home/.claude/plugin-x/mods/workarounds.md"; printf '%s\n' "$authored"; } | grep . | sort -u)
 gh_ok=0 gh_changed=0 gh_state=""
-for url in $gh_urls; do
-  api=$(printf '%s' "$url" | sed -E 's#https://github.com/([^/]+)/([^/]+)/(issues|pull)/([0-9]+)#repos/\1/\2/issues/\4#')
-  now=$(timeout 10 gh api "$api" --jq '[.state, (.state_reason // ""), (.pull_request.merged_at // ""), ([.labels[].name] | join(",")), (.comments | tostring)] | join(" · ")' 2>/dev/null) || continue
+# the fetches run 8 at a time (27 links one by one took 17 s of a 44 s boot, first system checkup 10-19)
+gh_now=$(printf '%s\n' "$gh_urls" | grep . | xargs -P 8 -I{} sh -c '
+  api=$(printf "%s" "$1" | sed -E "s#https://github.com/([^/]+)/([^/]+)/(issues|pull)/([0-9]+)#repos/\1/\2/issues/\4#")
+  now=$(timeout 10 gh api "$api" --jq "[.state, (.state_reason // \"\"), (.pull_request.merged_at // \"\"), ([.labels[].name] | join(\",\")), (.comments | tostring)] | join(\" · \")" 2>/dev/null) && printf "%s\t%s\n" "$1" "$now"
+' _ {})
+while IFS=$'\t' read -r url now; do
+  [ -z "$url" ] && continue
   gh_ok=$((gh_ok + 1))
   gh_state="$gh_state$url	$now
 "
@@ -232,7 +236,7 @@ for url in $gh_urls; do
     gh_changed=$((gh_changed + 1))
     echo "🐙 $url — ${before:-new} → $now"
   fi
-done
+done <<< "$gh_now"
 gh_total=$(printf '%s\n' "$gh_urls" | grep -c .)
 if [ "$gh_ok" -lt "$gh_total" ]; then
   fail "gh watch: $gh_ok of $gh_total links answered"
