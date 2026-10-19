@@ -3,13 +3,17 @@
  * - a size budget per memory file (`memory-budgets.tsv` beside this script): over it, the commit asks for a regroom first;
  *   a useful add raises the file's row in the same commit, with its reason — the raise is the official way past
  * - two bullets merged on one line (a swallowed newline)
+ * - a backticked repo path that is not on disk (a failure)
+ * - warnings, never a failure: a «…» quote present at HEAD and gone from the staged file (as quote-diff.py reads it);
+ *   a sentence of 12+ words living in two memory files
  * usage: memory-lint.ts <staged files…> (lefthook) · memory-lint.ts --seed (adds a row at size + 15 % for each new memory file, drops a gone file's row, keeps every raise)
  */
 
 /* Core */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
 
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], {
     encoding: 'utf8',
@@ -31,6 +35,10 @@ const MEMORY = [
 const GROWTH = 1.15;
 const MERGED = /[\w.)»*]- [^\s-]|[^\s\d-]\d+\. \*\*/;
 const CODE = /`[^`]*`/g;
+const QUOTE = /«[^»]{3,}»/g;
+const PATH_TOKEN = /`([^`\s<*{$]+)`/g;
+const SENTENCE_WORDS = 12;
+const squash = (text: string) => text.replace(/\s+/g, ' ');
 
 type Row = { budget: number; reason: string };
 
@@ -73,6 +81,80 @@ function mergedLines(text: string) {
         if (line.trimStart().startsWith('```')) fence = !fence;
         if (!fence && MERGED.test(line.replace(CODE, '``'))) hits.push(i + 1);
     });
+    return hits;
+}
+
+// lines outside code fences, numbered from 1
+function proseLines(text: string) {
+    const out: { n: number; line: string }[] = [];
+    let fence = false;
+    text.split('\n').forEach((line, i) => {
+        if (line.trimStart().startsWith('```')) fence = !fence;
+        else if (!fence) out.push({ line, n: i + 1 });
+    });
+    return out;
+}
+
+// the repo's top-level directory names, derived from the tracked files
+function topDirs() {
+    return new Set(
+        (git('ls-files') ?? '')
+            .split('\n')
+            .filter((path) => path.includes('/') && !path.startsWith('.'))
+            .map((path) => path.split('/')[0] ?? ''),
+    );
+}
+
+function deadPaths(text: string, dirs: Set<string>, file = '') {
+    const hits: { n: number; token: string }[] = [];
+    for (const { n, line } of proseLines(text))
+        for (const [, raw = ''] of line.matchAll(PATH_TOKEN)) {
+            const token = raw
+                .replace(/:\d+(-\d+)?$/, '')
+                .replace(/[.,;)]+$/, '');
+            const home = token.startsWith('~/.claude/');
+            const frame = token.startsWith('~/frame/');
+            if (!token.includes('/')) continue;
+            if (!home && !frame && !dirs.has(token.split('/')[0] ?? ''))
+                continue;
+            const disk = home
+                ? join(homedir(), token.slice(2))
+                : join(ROOT, frame ? token.slice(8) : token);
+            const local = join(ROOT, dirname(file), token);
+            if (!existsSync(disk) && !existsSync(local))
+                hits.push({ n, token });
+        }
+    return hits;
+}
+
+function goneQuotes(file: string, text: string) {
+    const was = git('show', `HEAD:${file}`) ?? '';
+    const now = squash(text);
+    return [...new Set(was.match(QUOTE) ?? [])].filter(
+        (quote) => !now.includes(squash(quote)),
+    );
+}
+
+// every sentence of 12+ words → the first `file:line` it lives at; the second file to say it is the hit
+function repeatedSentences(texts: Map<string, string>) {
+    const seen = new Map<string, string>();
+    const hits: string[] = [];
+    for (const [file, text] of texts)
+        for (const { n, line } of proseLines(text))
+            for (const part of line.split(/(?<=[.!?])\s+/)) {
+                const sentence = squash(
+                    part.replace(/^[\s>*\-\d.]+|[*_`]/g, ''),
+                )
+                    .trim()
+                    .toLowerCase();
+                if (sentence.split(' ').length < SENTENCE_WORDS) continue;
+                const first = seen.get(sentence);
+                if (!first) seen.set(sentence, `${file}:${n}`);
+                else if (!first.startsWith(`${file}:`))
+                    hits.push(
+                        `${first} and ${file}:${n}: "${sentence.slice(0, 80)}…"`,
+                    );
+            }
     return hits;
 }
 
@@ -130,6 +212,8 @@ function lint(stagedFiles: string[]) {
             problems.push(
                 `${path}: a budget row for a file that is gone or renamed — run memory-lint.ts --seed`,
             );
+    const warnings: string[] = [];
+    const dirs = topDirs();
     for (const file of files) {
         const text = indexed(file);
         if (text === undefined) continue;
@@ -145,7 +229,30 @@ function lint(stagedFiles: string[]) {
             );
         for (const n of mergedLines(text))
             problems.push(`${file}:${n}: two bullets merged on one line`);
+        // a warning: planned paths and dated history lines name files that are gone on purpose
+        for (const { n, token } of deadPaths(text, dirs, file))
+            warnings.push(`${file}:${n}: \`${token}\` is not on disk`);
+        for (const quote of goneQuotes(file, text))
+            warnings.push(
+                `${file}: his quote is gone from HEAD's version: ${quote.slice(0, 160)}`,
+            );
     }
+    // a repeat only matters when a staged file is one of its two homes
+    const staged = new Set(files);
+    const texts = new Map<string, string>();
+    for (const file of [...memory].sort())
+        texts.set(
+            file,
+            staged.has(file)
+                ? (indexed(file) ?? '')
+                : existsSync(join(ROOT, file))
+                  ? readFileSync(join(ROOT, file), 'utf8')
+                  : '',
+        );
+    for (const hit of repeatedSentences(texts))
+        if (files.some((file) => hit.includes(`${file}:`)))
+            warnings.push(`the same sentence in two files: ${hit}`);
+    for (const w of warnings) console.error(`⚠ ${w}`);
     for (const p of problems) console.error(`✗ ${p}`);
     if (problems.length) process.exit(1);
 }
