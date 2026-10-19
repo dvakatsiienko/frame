@@ -91,7 +91,9 @@ def body(path):
 
 fresh = []
 for d in reversed(dirs):
-    found = next((os.path.realpath(os.path.join(d, n)) for n in MEMORY if os.path.isfile(os.path.join(d, n))), None)
+    # exact case only: macOS case-folds, so a scraped `agents.md` would pass isfile as AGENTS.md
+    names = set(os.listdir(d)) if os.path.isdir(d) else set()
+    found = next((os.path.realpath(os.path.join(d, n)) for n in MEMORY if n in names and os.path.isfile(os.path.join(d, n))), None)
     if found and found not in seen:
         fresh.append(found)
 

@@ -1,5 +1,5 @@
 ---
-dies-when: every strength-3 item is landed or dropped and the strength-2 rest is folded into the system checkup (PK-203)
+dies-when: cclio:system-checkup's skill-shape check stops reading it (it holds that check's method and last run)
 ---
 
 Ticket: FRM-238, FRM-239

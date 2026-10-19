@@ -50,3 +50,6 @@ planning the fork-guard, my opus lane read one docs line and I told him /btw is 
 
 ## «LikeC4: delete it» · 2026-10-18
 shaping the blueprints tool, I leaned LikeC4 on my own edit cost: the model is text, so I could write it fastest. he explored it himself and asked for its delete before I had scored it against his grill — and grill 4 was the miss: no tiles or arrows he can move from the UI. his hands on the tool beat my ranking by convenience. → every lean is scored against his settled want first, cost only breaks ties (the 10-18 self-grill)
+
+## «I can't believe that» · 2026-10-19
+asked for mechanical work with no grilling, I scanned the pocket, found only grills and shapes, and reported that nothing was left. he did not believe it before any list arrived. linear held six — two scans, a sidebar move, a recipe hunt — and I had never opened it. his doubt arrived ahead of the reason: a «nothing left» from one store is a claim about that store only.

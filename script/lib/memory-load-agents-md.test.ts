@@ -48,7 +48,7 @@ function session() {
             hook_event_name: 'SessionStart',
             source: 'compact',
         });
-    return { bash, compact, read };
+    return { bash, compact, home, read };
 }
 
 it("a cat of a file outside the project attaches that folder's AGENTS.md", () => {
@@ -74,6 +74,15 @@ it('a cat after a compaction attaches the AGENTS.md again', () => {
 
 it('a command naming no path attaches nothing', () => {
     expect(session().bash('git status && echo done')).toBe('');
+});
+
+it('a lowercase agents.md is never loaded as AGENTS.md', () => {
+    const s = session();
+    const scraped = join(s.home, 'frame/scraped');
+    mkdirSync(scraped);
+    writeFileSync(join(scraped, 'agents.md'), '# scraped web text\n');
+    writeFileSync(join(scraped, 'page.md'), 'a page\n');
+    expect(s.bash(`cat ${join(scraped, 'page.md')}`)).toBe('');
 });
 
 it('an ls of a dir outside the project attaches its AGENTS.md', () => {

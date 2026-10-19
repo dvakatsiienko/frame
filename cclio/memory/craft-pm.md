@@ -20,6 +20,7 @@ and the heat never comes down.
   the findings loose is the actual failure.
 - **one flush per session**, not per finding. Batch drafts, one approval, execute.
 - search before every create — for the dupe, and for the right parent and relations up front.
+- **a «nothing left» claim names every store it searched** — pocket, linear, inbox (dima, 2026-10-19: «I can't believe that» after a pocket-only hunt; linear held six).
 - act proactively but sit chill, even in the most stressful scenario.
 
 ## wishes — one wish, one home at a time, specs point

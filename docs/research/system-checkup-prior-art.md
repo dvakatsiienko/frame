@@ -1,5 +1,5 @@
 ---
-dies-when: cclio:system-checkup and its refresh recipe are seeded and carry these findings
+dies-when: recipes/refresh-system-checkup is retired — until then it is that recipe's artifact, rewritten whole each run
 ---
 
 Ticket: none (pocket PK-203)
