@@ -57,7 +57,7 @@ member goes into the CST. ccrow pauses by file, not by message: `touch ~/.local/
   dropped topic is reachable, never remembered
 - the coder roster with ids and status
 - the orbit asks as they last stood (orbit itself survives the compact in the mod's state)
-- **his chat lines since the last report**, each with its answer or «open»: a `helper-lite` reads this session's transcript (the newest `~/.claude/projects/-Users-dima-frame-cclio/*.jsonl`) for his own typed lines — never hook, peer or tool text — since the last `📄 last report` stamp; an «open» line becomes a first-act, and the pickup answers each
+- **his chat lines since the last report**, each with its answer or «open»: `node ~/frame/cclio/script/chat-lines.ts --since-stamp` prints his typed lines and orbit steers since the last `📄 last report` stamp; an «open» line becomes a first-act, and the pickup answers each
 - **a running recipe** (a memory sweep above all): META first-act 1 is its re-entry rule, «read `recipes/<name>/recipe.md` whole and follow its re-entry»; it also names the brief the recipe was born from, and a step that needs its own session names that session
 
 ## 3.5 the CST check — before the two lines

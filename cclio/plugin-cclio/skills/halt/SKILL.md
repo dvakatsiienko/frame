@@ -41,9 +41,7 @@ not in the report. a park that only exists in a chat message is a strand.
 
 ## phase 1.5 — the inbox, cleared unasked 📬
 every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item has a home
-(a pocket item, a ticket, an answer given, a fold), then reset it by copying his template over
-it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear — and
-`trash _hq/inbox-composer.md`, composer's prepped sibling, rebuilt at the next boot. the template
+(a pocket item, a ticket, an answer given, a fold), then the reset is `halt-sweep.ts`'s inbox part (his template copied over `inbox.md`, never a hand clear; composer's prepped `inbox-composer.md` trashed, rebuilt at the next boot): read its dry run now (`node ~/frame/cclio/script/halt-sweep.ts`), and right after the home check run `node ~/frame/cclio/script/halt-sweep.ts --apply --only inbox` (it refuses and exits 1, printing the lines, when `inbox.md` holds a line without a ✅: a drop that came in after the read). the template
 is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
 the same pass prunes the pocket first: every `done` item is filed with `backlog task archive <id>` (pocket-check lets a done item stay listed through its day, then reds it); the gazette post (phase 4.5) carries the day's done items and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
@@ -51,7 +49,7 @@ inbox clears — before the CST is written.
 **size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
 ## phase 1.7 — github notifications, cleared unasked
-mark done every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr: `gh api notifications`, then `PATCH /notifications/threads/<id>`. what stays is an open pr's review ask.
+`halt-sweep.ts` marks read every github notification whose pr is merged or closed, and every ci-run (`CheckSuite`) notification of a branch that has no open pr (its dry run lists them; `--apply` in phase 3a). what stays is an open pr's review ask.
 
 ## phase 1.8 — glides, cleared unasked 🛼
 every 🛼 glide card on the board gets orbit op `glide` act `end`, finished or parked alike; a parked lane gets a new card when it resumes.
@@ -72,7 +70,7 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 ## phase 3a — flawlog flush, the one stop
 read the log, cluster, ONE batched proposal, ONE approval, execute and commit. see `/cclio:flawlog`.
 **the retros, in the flush:** `ls ~/.claude/shelf/retros/` — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file.
-**retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody. the same for look-card shots: `find ~/.local/state/looks -type f -mtime +14 -exec trash {} +`.
+**the sweep, after the flush:** `node ~/frame/cclio/script/halt-sweep.ts --apply --only notifications,retention` — one call for phase 1.7 plus retention (flawlog files older than 30 days, look-card shots older than 14 — evidence for nobody), each part printing its count; it defaults to a dry run.
 🚨 **the flush stops the halt**: print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before
 the reason — those go to `memory/dima-stories.md` as appends (the leaf's own rule), not to the
@@ -81,7 +79,7 @@ placed by cclio into that app's `.claude/skills/verify/SKILL.md` in the flush �
 verifiers only suggest; the recipe stays short (commands that worked, flows worth driving, gotchas).
 **second sighting = teeth:** before a lesson enters the proposal, `rg -i '<its key words>' ~/.claude/shelf/flawlog/` over the last 30 days; a hit makes it a repeat, and a repeat leaves the flush per `craft-fleet-flow` stage 10, never as a memory line. a stopgap memory line is written with `until: <ticket>`. **a fix that is a freebie (our own tooling, minutes) is solved in the flush, never filed** — the proposal marks it «solve now», his yes runs it before the gazette; only a fix bigger than a freebie gets a pocket item (filing one costs a file, a read and a close).
 **the redundancy hunt** (dima, 2026-10-07: «hunt redundant memories each time, and also propose grooms, trims to keep it tidy»): every memory file and skill the flush or the day touched gets `recipes/nurture-memory/recipe.md` step 7's lenses; each finding joins the proposal. dima, 2026-10-11: «During the halt, you process retros gathered across the lanes and flush them into the corresponding skills and memory files. This causes the memory bloat we have right now, so this step in your halt is meant to stop endless memory growth.»
-**notes expire:** `rg -n 'until: (FRM|BYT)-[0-9]+' ~/frame/cclio/memory ~/.claude/rules` and check each id's state; a line whose ticket closed goes into the proposal for deletion.
+**notes expire:** the sweep's `until-notes` part lists them (`halt-sweep.ts`, dry run); check each id's state; a line whose ticket closed goes into the proposal for deletion.
 **the flow numbers, before the proposal:** `x fleet flow --days 14` in `~/frame` — the
 `habit-cto` halt read; name one inefficiency from it, fixed in place or ticketed in the flush.
 **the self-grill, with the log still open:** with the day's log still open, name the ONE weakest part of cclio
@@ -133,7 +131,7 @@ auto-save via the handoff store (`/x:handoff` writes, `/x:handoff-ingest` reads)
 before writing, whether the work continues here or in a fresh thread — a CST followed by more
 work in the same thread is wasted tokens and a stale file. slug `<runid-topic>-halt`. a previous
 CST marked FROZEN is never superseded — save alongside and say which is which.
-the CST lists dima's chat lines since the last report, each with its answer or «open», read from the transcript the way `cclio:checkpoint` § 3 does — orbit and the pocket hold only what reached a tool, so a chat-only ask falls through without this.
+the CST lists dima's chat lines since the last report, each with its answer or «open», read with `node ~/frame/cclio/script/chat-lines.ts --since-stamp` — orbit and the pocket hold only what reached a tool, so a chat-only ask falls through without this.
 🐦‍⬛ **after the CST, `pnpm -C ~/frame ccrow:stop` then archive her desktop card** (`mcp__ccd_session_mgmt__list_sessions` → `archive_session`; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «archive yourself each time») — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`). before the stop, every note id with no verdict is printed and vetted (`pnpm --silent ccrow:note-vet ok|miss <id> "<why>"`) — an unvetted note is a lost data point for the trial.
 a first-act that is a memory line is applied now, by this halt — never left for a boot.
 🌔 **the last act: phases reset to the next session's moves** (orbit op `plan`), the CST's first-acts as `tomorrow:` lines, so dima sees the plan on the board, never today's finished steps.
