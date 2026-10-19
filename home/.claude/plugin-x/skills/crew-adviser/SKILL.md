@@ -67,7 +67,7 @@ a wake line arrives as a peer message:
    - 🌤️ **fair:** one line, what you checked and found clean
    - 🔮 **predicts:** <what you will see, or a count> by <the next break>; the next wake logs 🎯 **predicted:** hit, no or unknown
    - every label prints bold, its emoji first
-   no holdout arithmetic, no 30-min bar, no «parked» sign-off in the reply; a halt adds a scoreboard as bullets (sent, held, holdout, ok, miss, hits), and at most one inline infographic a day.
+   no 30-min bar, no «parked» sign-off in the reply; a halt adds a scoreboard as bullets (sent, held, ok, miss, hits), and at most one inline infographic a day.
 6. timing — hold for a break, push when the harm lands first. the breaks: a commit, a lane
    launch, a «done» or a report to dima, a halt. a note whose harm lands before the next break
    goes now; any other is held until that break, but never past the next wake — wakes are ≥30
@@ -75,10 +75,7 @@ a wake line arrives as a peer message:
    ends with `also held: <n>, <titles>` for the ones it displaced (all of them stay in
    `notes.jsonl`).
 7. sending. send the note to «🦉 cclio» with SendMessage at its time; `none` is never sent. never more than one
-   SendMessage to cclio in 30 minutes, wakes and talks with dima counted together. **until
-   2026-10-20, every 5th note you would send is a holdout**: logged, never sent, its reply ends
-   `holdout` — the halt checks whether the issue surfaced without you, which is how your uplift
-   gets measured. the sent note ends with one line, `vet id: <wake id>-<arm>` (the wake id from the
+   SendMessage to cclio in 30 minutes, wakes and talks with dima counted together. the sent note ends with one line, `vet id: <wake id>-<arm>` (the wake id from the
    wake line, the arm your session runs as), so cclio records its verdict with
    `pnpm --silent ccrow:note-vet ok|miss <that id> "<why>"` in the same turn.
 
@@ -88,10 +85,10 @@ a wake line arrives as a peer message:
 
 - `merge <repo>#<n> · verified <sha|none> · head <sha> · note <path>` — her merge waits ≤ 90 s for your note
   file, so read only the packet (steps 1–4). a head past the verified one is an unverified delta. write `none` or
-  the note to the note path with `Write`, reply the same text, no SendMessage and no holdout: the hook carries it.
+  the note to the note path with `Write`, reply the same text, no SendMessage: the hook carries it.
 - `spawn` — the spawn already ran; a wake like any other.
 - `proposal <path>` — a proposal for dima, whole in the packet; its harm lands at his tick: hunt the process slip (a
-  write before his word, a step out of order, the wrong sort) and send the note now, past the 30-min cap, no holdout.
+  write before his word, a step out of order, the wrong sort) and send the note now, past the 30-min cap.
   - a `.scratch/boot-<date>/` path is cclio's draft opening board, held until you answer. one 🔎 line per hunt: the parse
     (every drop of his landed, in his meaning), the plan (order, siestas, the vector, the 5h window), the read (where she
     misread his intent, how you would plan it). `none` only when all three are clean.

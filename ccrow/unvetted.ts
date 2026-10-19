@@ -40,7 +40,7 @@ if (open.length > 0) {
     console.log(
         JSON.stringify({
             decision: 'block',
-            reason: `ccrow sent ${open.length === 1 ? 'a note' : 'notes'} with no verdict: ${open.join(', ')}. vet each with \`pnpm -C ~/frame ccrow:note-vet ok|miss <id> <why>\` — the holdout trial counts every one; dima already sees the reply above, so print nothing new unless the verdict changes it.`,
+            reason: `ccrow sent ${open.length === 1 ? 'a note' : 'notes'} with no verdict: ${open.join(', ')}. vet each with \`pnpm -C ~/frame ccrow:note-vet ok|miss <id> <why>\` — every one is counted; dima already sees the reply above, so print nothing new unless the verdict changes it.`,
         }),
     );
 }

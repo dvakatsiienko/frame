@@ -606,7 +606,7 @@ describe('ledgerLine', () => {
             session('🐦‍⬛ **d** | sent | w', at(20, 56)),
         ]);
         expect(ledgerLine(NOW, n, v)).toBe(
-            '📒 2 sent today | holdout in 1 | last 20:56 | 🎯 0 ok today',
+            '📒 2 sent today | last 20:56 | 🎯 0 ok today',
         );
     });
 
@@ -620,14 +620,7 @@ describe('ledgerLine', () => {
             ],
         );
         expect(ledgerLine(NOW, n, v)).toBe(
-            '📒 0 sent today | holdout in 5 | last none | 🎯 1 ok today',
-        );
-    });
-
-    test('drops the holdout after its last day', () => {
-        const [n, v] = files([]);
-        expect(ledgerLine(new Date(2026, 9, 21, 9, 0), n, v)).toBe(
-            '📒 0 sent today | last none | 🎯 0 ok today',
+            '📒 0 sent today | last none | 🎯 1 ok today',
         );
     });
 });

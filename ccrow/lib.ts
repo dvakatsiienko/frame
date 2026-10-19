@@ -23,8 +23,6 @@ const HOT = 'hot:';
 export const NOTES_PATH = join(STATE_DIR, 'notes.jsonl');
 export const VERDICTS_PATH = join(STATE_DIR, 'verdicts.jsonl');
 export const USAGE_PATH = join(homedir(), '.claude/shelf/cc-usage-window.json');
-// every 5th note ccrow would send is a holdout until this day (x:crew-adviser, the holdout)
-const HOLDOUT_UNTIL = '2026-10-20';
 export const WAKE_GAP_MS = 30 * 60_000;
 export const MIN_STEPS = 10;
 export const SILENT_DAYS = 0; // dima 2026-10-06: live from day 1 — the silent notes were worth reading live
@@ -829,7 +827,7 @@ export function appendJsonl(
     writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
 }
 
-// ccrow's day in one line: notes sent today, the holdout's next send in k, the last send's time, today's ok verdicts
+// ccrow's day in one line: notes sent today, the last send's time, today's ok verdicts
 // the budget hunt quotes this line; x-mod-stash writes the file on every session.measure
 export function meterLine(now: Date, usagePath = USAGE_PATH) {
     try {
@@ -869,9 +867,6 @@ export function ledgerLine(
     ).length;
     return [
         `📒 ${sentToday} sent today`,
-        ...(today <= HOLDOUT_UNTIL
-            ? [`holdout in ${5 - (wouldSend.length % 5)}`]
-            : []),
         `last ${last ? `${pad(last.getHours())}:${pad(last.getMinutes())}` : 'none'}`,
         `🎯 ${hits} ok today`,
     ].join(' | ');
