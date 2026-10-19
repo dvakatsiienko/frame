@@ -2,7 +2,7 @@
 
 # Required parameters:
 # @raycast.schemaVersion 1
-# @raycast.title NMS Wiki
+# @raycast.title nms wiki
 # @raycast.mode silent
 # @raycast.packageName No Man's Sky
 # @raycast.icon 🪐
