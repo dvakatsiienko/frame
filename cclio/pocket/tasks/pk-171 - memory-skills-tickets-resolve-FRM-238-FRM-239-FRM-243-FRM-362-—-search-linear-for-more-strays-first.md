@@ -3,10 +3,10 @@ id: PK-171
 title: >-
   memory + skills tickets: resolve FRM-238, FRM-239, FRM-243, FRM-362 — search
   linear for more strays first
-status: open
+status: done
 assignee: []
 created_date: '2026-10-16 16:53'
-updated_date: '2026-10-19 16:47'
+updated_date: '2026-10-19 17:06'
 due_date: '2026-10-24'
 labels:
   - m
@@ -42,4 +42,6 @@ dima, 2026-10-18 (inbox): exhaust your pocket as much as possible — we were po
 10-19 17:15: dima o48 ✓ — FRM-219 (entity-first rename of skill names, dirs and script entrypoints) joins this list; a scan lists violations first, renames on his word. o46+o47: FRM-238 and FRM-239 run as one helper scan → ~/frame/.scratch/frm-238-239/candidates.md; dima: «I don't want to do splitting for the sake of splitting … a quick overview of all skills and find good candidates to split them if it helps».
 
 2026-10-19 19:50: left here — the linear strays hunt (a helper read, closes proposed for dima's word) and FRM-219 in its own turn; re-dated.
+
+2026-10-19 20:08 done (dima o106): FRM-238, FRM-239, FRM-243, FRM-362 closed earlier today; the linear strays hunt ran (2 orphaned children unparented, 5 sizes set, 11 stale bytes ideas left on purpose); FRM-219 closed with no renames, its pattern held by the checkup check naming-entity-first.
 <!-- SECTION:NOTES:END -->

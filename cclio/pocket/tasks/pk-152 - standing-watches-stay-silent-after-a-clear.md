@@ -4,7 +4,7 @@ title: standing watches stay silent after a /clear
 status: waiting
 assignee: []
 created_date: '2026-10-15 23:08'
-updated_date: '2026-10-19 16:09'
+updated_date: '2026-10-19 17:06'
 due_date: '2026-10-26'
 labels:
   - s
@@ -31,4 +31,6 @@ fixed 10-16: watch-once.sh records the arming session id; a /clear mints a new i
 10-19 17:27: re-dated — no real /clear of cclio yet; today's compact ran the second-wind path, not a /clear.
 
 19:10 dima (o80 steer «ccrow before halt?»): the proof runs on ccrow at the halt, right before she stops — read her registry sessionId, clear her, read it again; a cleared ccrow costs nothing then. open: the door that clears a --bg session (a SendMessage is literal text, never a slash command); none found → his next real /clear of cclio.
+
+2026-10-19 20:08 plan (dima: «ccrow /clear probe if still needed»): ccrow is a cli --bg session, no door sends it a /clear, so the probe runs on cclio itself: at the halt cclio re-arms one watch, then dima types /clear here after the CST; session-probe.log shows the clear's SessionStart (source, new id, same pid) and the next boot reads the cleared session's transcript for any watch notice. dima's only action: the /clear.
 <!-- SECTION:NOTES:END -->
