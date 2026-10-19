@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-18 13:47'
+updated_date: '2026-10-19 12:17'
 due_date: '2026-10-20'
 labels:
   - m
@@ -64,4 +64,6 @@ dima, 2026-10-18 (inbox W3 + steering): connect FRM-266 to your pm module revamp
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
 
 dima, 2026-10-18 (inbox W4): to fix, sharpen and smoothen your pm, i should first review all your pm flows from a to b, including the lane-closing parts; then evaluate how good the current flow is, find weak parts and gaps, find and apply shortcuts, cut redundancies. tl;dr: your pm and coord/lead flows need sharpening and smoothing (🎙️ «colors/lead» → coord/lead). the intervention skill PK-173 is tried on this first.
+
+inbox 10-19 (idea, his ask: fold into the pm module revamp): split summoning and spawning — crew members are «summons», subagents are «spawns», for a clearer boundary: a summon is a longer-lasting thread entity, a spawn is smaller, it does something and dies. summons: cclio, coder, verifier, designer, ccrow, composer. spawns: researcher, wishkeeper and the rest of the subagents. a naming change → x:top-seven candidates when the revamp reaches it.
 <!-- SECTION:NOTES:END -->

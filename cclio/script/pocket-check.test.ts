@@ -155,7 +155,7 @@ describe('checkPocket', () => {
                 today,
             ),
         ).toEqual([
-            "PK-1: done since 2026-10-08 and still listed: `backlog task complete` it (the halt completes the day's done items)",
+            "PK-1: done since 2026-10-08 and still listed: `backlog task archive` it (the halt archives the day's done items)",
         ]);
     });
 

@@ -50,7 +50,7 @@ export function checkPocket(
         if (status === 'done') {
             if (touched < today)
                 report(
-                    `done since ${touched || '?'} and still listed: \`backlog task complete\` it (the halt completes the day's done items)`,
+                    `done since ${touched || '?'} and still listed: \`backlog task archive\` it (the halt archives the day's done items)`,
                 );
             continue;
         }

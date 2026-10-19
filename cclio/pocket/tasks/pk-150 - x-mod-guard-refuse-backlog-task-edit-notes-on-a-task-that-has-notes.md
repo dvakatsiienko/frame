@@ -4,8 +4,8 @@ title: 'x-mod-guard: refuse backlog task edit --notes on a task that has notes'
 status: waiting
 assignee: []
 created_date: '2026-10-15 17:39'
-updated_date: '2026-10-18 16:31'
-due_date: '2026-10-18'
+updated_date: '2026-10-19 12:17'
+due_date: '2026-10-24'
 labels:
   - s
 dependencies: []

@@ -4,7 +4,8 @@ title: 'x lane commit runs quote-diff on memory, skill and rules files'
 status: waiting
 assignee: []
 created_date: '2026-10-15 17:53'
-due_date: '2026-10-18'
+updated_date: '2026-10-19 12:17'
+due_date: '2026-10-25'
 labels:
   - s
 dependencies: []
