@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-16 16:53'
-updated_date: '2026-10-19 14:13'
-due_date: '2026-10-19'
+updated_date: '2026-10-19 16:47'
+due_date: '2026-10-24'
 labels:
   - m
 dependencies: []
@@ -40,4 +40,6 @@ dima, 2026-10-18 (inbox): exhaust your pocket as much as possible — we were po
 10-19 17:10: FRM-362 closed as stale on dima's tick (SKILL.md 10.2k < 14k exit). FRM-243/238/239 and the FRM-219 stray wait on his ticks in orbit.
 
 10-19 17:15: dima o48 ✓ — FRM-219 (entity-first rename of skill names, dirs and script entrypoints) joins this list; a scan lists violations first, renames on his word. o46+o47: FRM-238 and FRM-239 run as one helper scan → ~/frame/.scratch/frm-238-239/candidates.md; dima: «I don't want to do splitting for the sake of splitting … a quick overview of all skills and find good candidates to split them if it helps».
+
+2026-10-19 19:50: left here — the linear strays hunt (a helper read, closes proposed for dima's word) and FRM-219 in its own turn; re-dated.
 <!-- SECTION:NOTES:END -->

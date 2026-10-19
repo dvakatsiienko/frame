@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-18 13:40'
+updated_date: '2026-10-19 16:47'
 due_date: '2026-10-20'
 labels:
   - s
@@ -19,7 +19,7 @@ ordinal: 10106
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**waiting for:** the next boot (dima, 10-16 18:47: «fork-guard: next boot, not today»).
+**waiting for:** the next mods coder lane (PK-120) — a rider there (dima o88 + 19:32: «attach it as a rider ticket for next mods coder lane»; lanes spawn only when the weekly window has room).
 inbox 10-16, Q (relates to the monitors wisp, PK-152): he wants to fork cclio to explore a few things, then stop the fork, so her context stays clean. how well does the setup allow it — duplicated monitors, confusion with ccrow, composer and live lanes, will they mix up the real cclio and a fork? how to fork so the fork knows it is a fork and doesn't rush to do everything, and cclio isn't surprised — without him re-explaining «this is a cclio fork» to everyone each time.
 <!-- SECTION:DESCRIPTION:END -->
 
@@ -43,4 +43,12 @@ dima 10-16 18:47: «fork-guard: next boot, not today»
 **waiting for:** the next boot (dima, 10-16 18:47: «fork-guard: next boot, not today»)
 
 2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); fork-guard rides the first post-reset day
+
+2026-10-19 19:18: build started (o85). the plan's open probes first: a passive hook, .claude/hooks/session-probe.sh, logs SessionStart + Stop (event, source, session id, cwd, the pid chain with each registry sessionId) to ~/.local/state/cclio/session-probe.log; one /fork by dima answers all four, and a /clear answers PK-152 too
+
+2026-10-19 19:33 probe answered (session-probe.log, dima's desktop /fork at 19:26): (1) the fork fires SessionStart with source «resume», never «fork», and a new session id (7a7e6f11); (2) it runs in cclio's own folder (cwd ~/frame/cclio), so the plan's camp-into-a-worktree step is needed; (3) $PPID is the fork's own cc process (pid 34400, registry name «🦉 cclio (fork)»), separate from cclio's (19578), so the pid match in plan step 1 holds; (4) ccrow wrote no note from the fork's turn (last note 19:16). also seen: a «cclio-fb» claude started from bash+timeout in the cclio cwd at 19:26:45, origin not yet traced. the build rides the next mods lane; exit lines = plan.md's done test.
+
+2026-10-19 19:47 dima: «composer should also not interact with a fork (only with you, main)» — the want grows: composer, like ccrow, hears from and answers only the main cclio; a fork's SendMessage to composer is refused or ignored, and composer's receipts go to the main session only. a done-test line: given a fork sends composer a chore, then composer does not run it and the fork learns why.
+
+2026-10-19 19:50: the «cclio-fb» session traced — it is boot-prefetch.sh's barrel probe (a haiku claude -p, ~75k ctx, the d03f3da question), run because the fork's SessionStart (source resume) fires the full boot-prefetch hook. done-test line: given a fork starts, then boot-prefetch skips (no barrel probe, no watch arming, no ccrow start).
 <!-- SECTION:NOTES:END -->

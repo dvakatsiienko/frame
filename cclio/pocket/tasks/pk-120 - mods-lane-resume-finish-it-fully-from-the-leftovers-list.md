@@ -4,7 +4,7 @@ title: 'mods lane resume: finish it fully from the leftovers list'
 status: waiting
 assignee: []
 created_date: '2026-10-13 17:06'
-updated_date: '2026-10-19 13:56'
+updated_date: '2026-10-19 16:34'
 due_date: '2026-10-24'
 labels:
   - m
@@ -37,4 +37,6 @@ rider (dima o31, 16:31): the second-wind op takes a required pending: field, onl
 2026-10-18, dima: refresh and reorganize the scope so the lane is in good shape whenever it resumes (a lane is not decided). the whole scope, re-sorted P0–P6, now lives in ~/frame/.scratch/mods-lane/scope-2026-10-18.md and replaces reading the mods-l13 leftovers + todo (all todos closed there).
 
 10-19, from the scout shaping (dima o24: «I'd spawn a coder for a lane and do this measure before the lane»): the next mods or cli coder lane carries the scout race — Haiku 5.5 vs Sonnet 5.5 on 5 real coder lookups at a frozen commit, recall within the 40-line cap, tokens per call — and the pass line (net tokens of scout plus caller, verifier rounds, Read chars per edited line vs the baseline in cclio/.scratch/shape-scout/coder-lookups.md + read-ceiling.md), measured right before the lane starts. no coder is spawned just for it.
+
+2026-10-19 rider: the tdd trial rides this lane (dima o96) — the coder brief loads mattpocock-skills:tdd and the done report logs a line in docs/test-drive/tdd.md § next lanes
 <!-- SECTION:NOTES:END -->

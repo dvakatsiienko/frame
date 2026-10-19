@@ -1,10 +1,10 @@
 ---
 id: PK-157
 title: 'ccrow, composer, designer: git-tracked and colocated with cclio'
-status: claimed
+status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-18 13:42'
+updated_date: '2026-10-19 16:18'
 due_date: '2026-10-20'
 labels:
   - s
@@ -17,6 +17,7 @@ ordinal: 10105
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+**waiting for:** PK-158's build (fork-guard) — it runs right after.
 inbox 10-16, Q: are they git-tracked? their fs location makes sense (external stays out of frame), but he wants them tracked, ideally colocated with cclio — maybe in cclio's folder, since ccrow and composer are her parts. the designer: pull it into frame? how, without loading redundant memories into them — any escape hatch that keeps it clean?
 <!-- SECTION:DESCRIPTION:END -->
 
@@ -32,4 +33,6 @@ inbox 10-16, Q: are they git-tracked? their fs location makes sense (external st
 2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); runs right after PK-158
 
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
+
+2026-10-19 19:19: unparked (the reset passed); claimed → open — the claim from 10-16 was never released when it parked (dima caught it). next: the claudeMdExcludes probe, right after PK-158
 <!-- SECTION:NOTES:END -->
