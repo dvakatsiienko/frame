@@ -19,4 +19,6 @@ Ticket: none (pocket PK-203)
 
 ## rounds
 
+- 2026-10-19 · halt slice 1 · naming-entity-first (never logged, first in order) · ~5 s, 🟢 282 names, 0 breaches · ran unprompted at the halt, no dima turn spent
+
 ## verdict

@@ -11,3 +11,4 @@ one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: 
 - 2026-10-19 · test-drives · 🟡 9 due within 3 days, 21 without a test card · —
 - 2026-10-19 · boot-digest · 🟢 · —
 - 2026-10-19 · go-vulns · 🟢 · —
+- 2026-10-19 · naming-entity-first · 🟢 282 names, 0 lead with a verb · —
