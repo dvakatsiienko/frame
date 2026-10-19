@@ -1,10 +1,8 @@
 # jev — the fleet's classifier, and how it stays sharp
 
 `jev` (typesafe.ai) answers typed questions about a `state`: no tools, no memory, no generation.
-we pull, it judges, we write back. two lanes, both from 2026-09-19, frozen with the credit (below):
+we pull, it judges, we write back. one flow left: the inbox and flawlog lanes retired 2026-10-19 (dima: inbox prep needs intelligence, composer does it; the flawlog lanes missed 23 of 32).
 
-- **inbox lanes** — the boot digest prints every inbox item with a lane (ticket · fold · pocket ·
-  answer · drop) and a `needsVerdict` band. it pre-sorts; the pocket parse is still mine.
 - **skill router** — a `UserPromptSubmit` hook at user scope (`home/.claude/settings.json`), so it runs in every fleet session, coders included; it prints `skills (jev router):
   cclio:pm 0.81, …` for every skill ≥ 0.6, score included. the built-in router runs alone; jev's catch of
   its misses is off since v2 merged (FRM-305): 75 % precision on real prompts against a 90 % bar, re-measured 10-19 (`_reminders.md`). 📌 the hook is synchronous — every prompt in cclio waits for it (~0.8–1.8 s measured
@@ -37,8 +35,7 @@ we pull, it judges, we write back. two lanes, both from 2026-09-19, frozen with 
 - every flow sits in `shelf/jev/vet.json`: `vetting` until 14 clean days, then `green`; a miss
   restarts the window from that day, and a green flow that misses drops back. verdicts are
   `pnpm jev:vet ok|miss <flow> [lane=<x>] [spot] <note>` (a lane tag credits that lane's precision; `spot` stamps a weekly spot-check on a green flow, the boot says when one is due), logged per flow in `shelf/jev/<flow>.log`; the boot
-  digest prints every streak. three flows today: `inbox-lanes`, `skill-router`, `flawlog-lanes`
-  (`pnpm jev:flawlog`, lanes a flawlog before the flush).
+  digest prints every streak. one flow today: `skill-router`.
 - **dima's policy (2026-09-20): a vetting flow is observed, never trusted — every answer gets my
   read. a green flow is trusted: acted on without a second read, and I stop observing it; the
   fixture suite (`pnpm jev:test`) and a weekly spot-check are what keep it honest.** a miss is
@@ -51,19 +48,16 @@ tweak batch mid-session — trusted, it would have opened the halt early. **at t
 re-check this list first**; the hook already tags these picks «⚠ read first».
 
 **the sharpening loop, run at every halt**
-1. inbox: compare the boot's jev lanes with the lanes i actually gave at the parse. a
-   disagreement is either my miss (say so) or a criterion to reword; reword in the same halt.
-2. router: `grep -c` the flawlog's «skill not loaded» lines vs `route.log`'s picks for the day.
+1. router: `grep -c` the flawlog's «skill not loaded» lines vs `route.log`'s picks for the day.
    a skill that never routes gets its description sharpened («magic keywords»), not the threshold.
    `pnpm jev:route --from-log` replays the day's near-misses (0.30–0.70) with the description each
    low pick carries — the rewrite candidates. then read the router latency off `jev:report`'s health
    line: a rising avg or a p95 over 2 s is a finding, not noise — it is dima's typing that waits.
-3. flawlog: `pnpm jev:flawlog` on the day's flawlog vs where the flush actually placed each line.
-4. any change → `RUNS=3` on the live input, then commit with the numbers in the body.
+2. any change → `RUNS=3` on the live input, then commit with the numbers in the body.
 
 keys and the call path: `x-fleet` service account → vault `dev` → `script/op-run.sh`, no touch id.
 
-💸 **jev runs on the free tier only** (dima, 2026-10-05: «i use jev only via the free tier»). the router v2 replays spent $4.43 / 106M input tokens / ~19.5k requests in one day (read off the coder's raws; the console showed less, its stats lag) and took the balance to −$0.25 (402 on every call). **one full 4-arm router replay = ~5,060 requests, 27M tokens, $1.13.** the free allowance is a **$5 monthly credit** (billing page: granted Sep 18, expires Oct 18 — so the cycle likely turns on the 18th, an inference until the next grant shows); jev is frozen until it refills. a replay or bulk run states its cost (requests, tokens, $) before it starts and fits the month's free allowance; a coder brief that may run jev says so. graceful today: the router hook is fail-soft, jev compaction falls back to the built-in summary; the inbox and flawlog lanes are not proven to — a budget gate is the open fix.
+💸 **jev runs on the free tier only** (dima, 2026-10-05: «i use jev only via the free tier»). the router v2 replays spent $4.43 / 106M input tokens / ~19.5k requests in one day (read off the coder's raws; the console showed less, its stats lag) and took the balance to −$0.25 (402 on every call). **one full 4-arm router replay = ~5,060 requests, 27M tokens, $1.13.** the free allowance is a **$5 monthly credit** (billing page: granted Sep 18, expires Oct 18 — so the cycle likely turns on the 18th, an inference until the next grant shows); refilled 2026-10-19 (the health probe answered). a replay or bulk run states its cost (requests, tokens, $) before it starts and fits the month's free allowance; a coder brief that may run jev says so. graceful today: the router hook is fail-soft, jev compaction falls back to the built-in summary.
 
 **verify — what a jev change's verifier runs (the 10-05 retros)**
 - unit test + `red-proof` + one live `suggest()` for every ⚠ line; an exit line names the hook timeout the flow must fit (the router hook: 8 s, two sequential calls ~1.5 s)

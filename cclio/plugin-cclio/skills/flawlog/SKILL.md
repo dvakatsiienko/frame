@@ -26,7 +26,7 @@ now and a rewind at wrap.
 that re-litigates a settled thing hours later.
 
 **a line that still earns its place after a fix opens with `fixed:`** — the fix landed, the lesson
-stays; a reader of the log (jev's flawlog lanes, parked) takes an unmarked line as open.
+stays; a reader of the log takes an unmarked line as open.
 
 ## 2. what actually reaches the log
 only what could NOT be closed on the spot:

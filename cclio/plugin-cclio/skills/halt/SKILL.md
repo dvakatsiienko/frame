@@ -44,7 +44,7 @@ it — `cp _hq/inbox-template.md _hq/inbox.md`, never a hand clear — and
 `trash _hq/inbox-composer.md`, composer's prepped sibling, rebuilt at the next boot. the template
 is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
-the same pass prunes the pocket first: every `done` item is filed with `backlog task complete <id>` (pocket-check lets a done item stay listed through its day, then reds it); the gazette post (phase 4.5) carries the day's done items and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
+the same pass prunes the pocket first: every `done` item is filed with `backlog task archive <id>` (pocket-check lets a done item stay listed through its day, then reds it); the gazette post (phase 4.5) carries the day's done items and the `x fleet ops --days 1` numbers (cost per ticket, cclio code edits, boot cost); then the
 inbox clears — before the CST is written.
 **size misses**: the same `x fleet ops` call ends with a «size misses» section when a closed ticket's coder turns crossed its size line (XS 80, S 400) — each line goes into the halt report as is; a ticket that misses twice reshapes the reference ticket its body names. no section, no line.
 
@@ -68,10 +68,7 @@ halt report — he misses a few every session, and this is where they get caught
 proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict is dima's.
 
 ## phase 3a — flawlog flush, the one stop
-📌 **jev is frozen until its credit refills (~10-18, `sys-jev` parked): skip `pnpm jev:flawlog` here and phase 3b's jev vet + report; the flush starts from a plain read.** this line dies the day `sys-jev` is re-imported.
-`pnpm jev:flawlog` first: jev lanes every line (memory / rule / story / ticket / drop) and the
-proposal starts from its lanes, not from a blank read. then cluster, ONE batched proposal, ONE
-approval, execute and commit. see `/cclio:flawlog`.
+read the log, cluster, ONE batched proposal, ONE approval, execute and commit. see `/cclio:flawlog`.
 **the retros, in the flush:** `ls ~/.claude/shelf/retros/` — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file.
 **retention, after the flush:** `find ~/.claude/shelf/flawlog -name '*.md' -mtime +30 -exec trash {} +` — a flushed log older than 30 days is evidence for nobody. the same for look-card shots: `find ~/.local/state/looks -type f -mtime +14 -exec trash {} +`.
 🚨 **the flush stops the halt**: print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
@@ -91,13 +88,7 @@ pair into the CST META. the next boot prints it and reads no flawlog. grounded i
 absent, never invented.
 
 ## phase 3b — vet verdicts + the trial board
-**the test-drive verdicts, every halt:** each jev lane the flush disagreed with is
-`pnpm jev:vet miss flawlog-lanes <why>`; a clean run is one `ok`. the same for the day's inbox
-lanes (`inbox-lanes`) and the router's loads (`skill-router`, from `shelf/jev/route.log` vs the
-flawlog's «skill not loaded» lines). a miss is also a criterion to reword in
-`script/lib/jev-questions.ts` in the same halt — the flow passes its window because it was
-sharpened, not because it was watched. the boot prints every flow's streak.
-**then `pnpm jev:report`**, printed right after the flush verdicts — one block per flow; a flow with a miss today gets its criterion sharpened in place, `RUNS=3`, same halt. its health line carries the router latency (`avg · p95`): a p95 over 2 s or a rising avg is a finding for the flush, since every prompt waits on it.
+**the jev router, only while it is on** (`pnpm jev:router status`): its day's loads (`shelf/jev/route.log` vs the flawlog's «skill not loaded» lines) get one `pnpm jev:vet ok|miss skill-router <why>`; a miss rewords its criterion in `script/lib/jev-questions.ts` the same halt, `RUNS=3`; then `pnpm jev:report` — a p95 over 2 s or a rising avg is a finding, since every prompt waits on it.
 **then the trial board — everything on trial, not only jev** (dima, 2026-09-25, «let's try»): one
 line per item — name · state (vetting n/14, open, due) · days left · today's evidence — built from
 two sources, each read, never recalled: `shelf/jev/vet.json` (the flows, after today's verdicts) and

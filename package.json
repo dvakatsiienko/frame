@@ -50,8 +50,6 @@
         "hotkeys:scan": "node ./hotkeys/scan.ts",
         "hotkeys:stamp": "node ./hotkeys/stamp.ts",
         "hotkeys:top": "node ./hotkeys/top.ts",
-        "jev:inbox": "./script/op-run.sh node ./script/inbox-triage.ts",
-        "jev:flawlog": "./script/op-run.sh node ./script/flawlog-triage.ts",
         "jev:route": "./script/op-run.sh node ./script/skill-route.ts",
         "jev:router": "node ./script/jev-router.ts",
         "jev:report": "./script/op-run.sh node ./script/jev-report.ts",

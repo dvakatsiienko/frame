@@ -18,7 +18,7 @@ import { haikuRoute } from './lib/haiku-router.ts';
 import { JevBudgetError, judge, usdPerToken } from './lib/jev.ts';
 import { laneCells, printTable } from './lib/jev-print.ts';
 import type { RouterSkill } from './lib/jev-questions.ts';
-import { flawlogQuestions, inboxQuestions } from './lib/jev-questions.ts';
+import { inboxQuestions } from './lib/jev-questions.ts';
 import { bold, dim, gb, rb } from './lib/print.ts';
 import type { Metrics, RouterFixture } from './lib/router-score.ts';
 import { isHeld, isVerdict, metrics, sweep } from './lib/router-score.ts';
@@ -46,7 +46,6 @@ const armNames = [
 ] as const;
 
 const flows = {
-    'flawlog-lanes': { answer: 'lane', questions: flawlogQuestions },
     'inbox-lanes': { answer: 'lane', questions: inboxQuestions },
 } as const;
 

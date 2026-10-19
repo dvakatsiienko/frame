@@ -23,7 +23,7 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
 - 🎼 **`composer`** (copyist) — cclio's editing sidecar: a parked `--bg` Haiku 5.5 session for her mechanical chores. `x:crew-composer` owns its contract; on a test drive (`docs/test-drive/composer.md`). <!-- cc -->
 - ⚡ **`classifier`** — jev (typesafe.ai): typed judgments over a state, no tools, no memory. <!-- cc -->
   ~20–200× faster and 40–550× cheaper than a model call — any classification runs through a jev
-  flow, docs first — frozen until the credit refills: no session routes to jev or the `quicksilver` skill (cclio's `_MEMORY.md` § the system itself).
+  flow, docs first.
 - 🤝 **`cw`** — Cowork, reaching the mac over the device bridge. A peer: either side may open the
   exchange.
 - ☁️ **`cc cloud`** — Claude Code on Anthropic's machines, on a test drive (`docs/test-drive/cc-cloud.md`, `x:crew-cloud`).
