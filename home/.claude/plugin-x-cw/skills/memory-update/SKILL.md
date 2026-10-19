@@ -1,7 +1,8 @@
 ---
 name: memory-update
 argument-hint: "check | prettify <entry|all> | dedupe [entry|all] | dry"
-description: Load BEFORE any memory_write, memory_str_replace, memory_append or memory_delete to cw global memory, and before creating any new memory entry — no exceptions, including a one-line edit and including a write dima did not ask for in those words. Also on «upd memory», «remember this», «save to memory», «prettify memory», «forget that». Owns the description grammar every entry is born with. Args: check · prettify <entry|all> · dedupe [entry|all] · dry; dima typing it bare gets the menu. cw-only; a cc session stops here (cc memory has its own procedure).
+description: >-
+  Load BEFORE any memory_write, memory_str_replace, memory_append or memory_delete to cw global memory, and before creating any new memory entry — no exceptions, including a one-line edit and including a write dima did not ask for in those words. Also on «upd memory», «remember this», «save to memory», «prettify memory», «forget that». Owns the description grammar every entry is born with. Args: check · prettify <entry|all> · dedupe [entry|all] · dry; dima typing it bare gets the menu. cw-only; a cc session stops here (cc memory has its own procedure).
 ---
 
 # memory-update — the shape of every cw memory edit

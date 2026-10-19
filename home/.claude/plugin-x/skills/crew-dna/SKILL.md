@@ -1,6 +1,7 @@
 ---
 name: crew-dna
-description: Load as step 0 of a crew member's contract — crew-coder, crew-verifier, crew-designer, crew-adviser — the rules every member shares: talking, fences, evidence, the retro, the pr pair. Read through the role skill, never alone.
+description: >-
+  Load as step 0 of a crew member's contract — crew-coder, crew-verifier, crew-designer, crew-adviser — the rules every member shares: talking, fences, evidence, the retro, the pr pair. Read through the role skill, never alone.
 ---
 
 # crew-dna — how every crew member works

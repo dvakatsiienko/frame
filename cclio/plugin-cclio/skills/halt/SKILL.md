@@ -1,5 +1,6 @@
 ---
-description: load when dima types /cclio:halt or means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop» — and run it then, unprompted. Not for «that's it for now from my side» mid-flow (it closes a list or a batch), a bare «stop» (a hold: hold and ask in one line), a question or a doubt about ending, and never opened unprompted mid-task.
+description: >-
+  load when dima types /cclio:halt or means the SESSION is done — «let's wrap», «that's it for today», «i'm done», «good point to stop» — and run it then, unprompted. Not for «that's it for now from my side» mid-flow (it closes a list or a batch), a bare «stop» (a hold: hold and ask in one line), a question or a doubt about ending, and never opened unprompted mid-task.
 ---
 <!-- dima: «you tend to init the wrap immediately, it looked to me like you were interrupting the flow. what I mean is «let's plan finishing», not «finish immediately».» a halt that arrives early strands the work it protects; one that grows into a work session failed its one job. «stop» as a plain hold: dima, 2026-10-04. -->
 

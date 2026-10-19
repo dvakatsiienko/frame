@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-19 14:32'
-updated_date: '2026-10-19 14:32'
+updated_date: '2026-10-19 14:52'
 due_date: '2026-10-21'
 labels:
   - m
@@ -29,4 +29,17 @@ first check to fold in: the skill split + scriptify scan (docs/research/skill-sp
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: the grill is in dima's thread and orbit, the prior-art research runs; unparked when his answers land.
+
+17:38, dima o56 ✓: a cclio skill the model may load, plus a sharpen recipe (refresh-<stem>); the name goes through top-seven (printed 17:39, cclio's pick system-checkup — his own words, no clash).
+
+17:46, dima's grill answers (folded):
+- o56 ✓ name cclio:system-checkup, model-invocable; its recipe refresh-system-checkup, made through shape-recipe. once both exist, an initial run of the checkup to see what it finds.
+- o57 ✓ the skill split/scriptify scan is a system checkup check — the checkup is about the healthy shape of the whole system and what could move to the cli or scripts. not a monolith: a granular set of checks. the x cli purpose check (are verbs used, is the automation worth it) stays a script and becomes one list option. run all checks in sequence as one big checkup, or one as a targeted operation; the checkup colocates every health check we have, and may also hold its own dedicated flows.
+- o58 ✓ memory-lint stays where it is parked; the checkup is the colocator for checks like it: «whenever we want to know if our system is in good health, we go to the system checkup flow, and it should have everything. it's a unification plate.»
+- o59 ✓ no strict cadence — our flows are chaotic and the checkup is big; but try a cadence and see if scheduled runs work. works → keep it; doesn't → switch to manual invocation.
+- o60 ✓ findings: prefer fix in place.
+- o61 ✓ seed: the skill scan, hook latency + errors from OTel, an agnix lint trial. look into the nurture-memory recipe — the fattest and heaviest of all — for anything worth pulling into the checkup; propose pulls only when they are good ones.
+- 17:46: test drive agnix; /doctor prompt-audit and /skill-doctor already run in the nurture-memory recipe — never duplicate them here.
+
+17:58: seeded — cclio:system-checkup (3 own + 6 colocated checks), recipes/refresh-system-checkup, docs/test-drive/{agnix,system-checkup-cadence}.md, the boot digest's checkup due line. first run: 4 🔴, 3 fixed in place (agnix frontmatter, x stats dev stamp, today's skill splits), 1 asked (session-start hooks 48–58 s).
 <!-- SECTION:NOTES:END -->

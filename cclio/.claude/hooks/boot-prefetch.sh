@@ -116,6 +116,14 @@ jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
   | ((10 - ($t | strftime("%u") | tonumber)) % 7) as $days
   | "apps lane: \(length) apps · last marked \($m) · " + (if $days == 0 and $m < $today then "DUE today, wednesday — load cclio:evergreen first, then its read, references/read.md (pnpm skill:evergreen-apps is its raw input)" else "next run wednesday \($t + (if $days == 0 then 7 else $days end) * 86400 | strftime("%Y-%m-%d"))" end)' \
   "$HOME/frame/cclio/evergreen/sources.json" || fail "apps lane index unreadable"
+last_checkup=$(grep -oE '^[0-9]{4}-[0-9]{2}-[0-9]{2}' "$HOME/frame/cclio/checkup/log.md" 2>/dev/null | sort | tail -1)
+if [ -z "$last_checkup" ]; then
+  echo "checkup: never run · DUE — offer cclio:system-checkup on the board"
+elif [ $(( ( $(date +%s) - $(date -j -f %Y-%m-%d "$last_checkup" +%s) ) / 86400 )) -ge 7 ]; then
+  echo "checkup: last run $last_checkup · DUE — offer cclio:system-checkup on the board"
+else
+  echo "checkup: last run $last_checkup"
+fi
 
 fi
 
