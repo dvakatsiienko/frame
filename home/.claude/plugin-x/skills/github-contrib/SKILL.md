@@ -72,6 +72,8 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
 
 - **before filing**: read the repo's issue templates and `CONTRIBUTING.md`, run
   `gh label list`, search open issues for a dupe. dupe found → comment there instead.
+- **a claude-code bug reproduces in a bare cc first** (`rules/fleet-tooling.md` § a bare cc): it
+  still breaks there → file it with that repro; it doesn't → it is ours, fix it here.
 - **labels are mandatory** — pick from the repo's actual set, or say in the issue why none
   fits. never file bare.
 - on a repo we do not own, labels are the maintainers' to set: `gh issue edit --add-label`

@@ -22,6 +22,10 @@ then **fix it in place if it is fixable in place.** most process flaws are: a me
 a habit adopted, a wrong assumption named, a command pattern learned. those cost one tool call
 now and a rewind at wrap.
 
+**a flaw that looks like cc's own** (a tool, a hook event, a setting behaving off its docs) gets the
+«is it us or cc?» probe before any fix: the same step in a bare cc (`rules/fleet-tooling.md`). it
+breaks there too → upstream (`x:github-contrib`); it doesn't → one of our hooks, mods or rules did it.
+
 **fixed in place → do NOT write it to the log.** it is resolved. logging it manufactures work
 that re-litigates a settled thing hours later.
 

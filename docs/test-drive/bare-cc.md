@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-22
 ---
 
@@ -36,3 +36,7 @@ one line per use: date · session · case · hit · seconds · note
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 bare-cc test drive, two weeks to 2026-10-20 — the `fleet-tooling` line plus the `x fleet flow` count (FRM-328); walk the stress list in `docs/test-drive/bare-cc.md`. on 10-20: kept as a habit, or a guard hint when it stays unused. dima 2026-10-06: «if bare cc isn't used, then a memory word isn't enough» — set 2026-10-06
+
+## verdict
+
+- 2026-10-19 · **adopted as a habit with triggers** (dima o96): 1 logged use in 12 days, so a memory line alone did not make it a habit (the verdict rule above). the trigger moved to where the moment happens: `x:github-contrib` (a claude-code bug reproduces in a bare cc before filing) and `cclio:flawlog` (a flaw that looks like cc's gets the «is it us or cc?» probe). proven on dima's subscription login 2026-10-19: `claude -p --model haiku --safe-mode --strict-mcp-config` answered, exit 0; only `--bare` needs an API key.
