@@ -101,6 +101,16 @@ describe('checkPocket', () => {
         );
     });
 
+    test('a claimed item with a park line goes red, a parked open one passes', () => {
+        const body = 'ticket: FRM-1\nparked: until the weekly reset';
+        expect(
+            checkPocket(config, [task({ status: 'claimed' }, body)], today),
+        ).toEqual([
+            'PK-1: claimed and parked at once: a parked item releases its claim, set it open or waiting',
+        ]);
+        expect(checkPocket(config, [task({}, body)], today)).toEqual([]);
+    });
+
     test('a waiting task needs a check first line', () => {
         expect(
             checkPocket(config, [task({ status: 'waiting' })], today).join(

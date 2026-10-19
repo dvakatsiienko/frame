@@ -56,6 +56,10 @@ export function checkPocket(
         }
         const parked = PARKED_LINE.test(text);
         if (status !== 'waiting' && !parked) openCount += 1;
+        if (status === 'claimed' && parked)
+            report(
+                'claimed and parked at once: a parked item releases its claim, set it open or waiting',
+            );
 
         for (const ticket of ticketsOf(text))
             if (closedTickets.has(ticket))
