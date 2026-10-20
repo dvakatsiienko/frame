@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-18 16:59'
-updated_date: '2026-10-18 16:59'
+updated_date: '2026-10-20 14:38'
 due_date: '2026-10-25'
 labels:
   - xs
@@ -23,3 +23,9 @@ ordinal: 100800
 
 halt flush 2026-10-18: 17:09 a zsh `$P` path list reached `x lane commit` as one word, «nothing staged»; method-silent-failures names the trap, nothing guards it.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+ticket: FRM-405 (cli lane 1, sealed 2026-10-20)
+<!-- SECTION:NOTES:END -->

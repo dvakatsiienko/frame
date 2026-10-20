@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-18 13:47'
+updated_date: '2026-10-20 15:07'
 due_date: '2026-10-20'
 labels:
   - m
@@ -28,4 +28,8 @@ dima, 2026-10-18 (inbox W4, part 1): it pairs with catch-up — and i propose re
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
 
 dima, 2026-10-18 (inbox W4): it pairs with catch-up. i want to improve your system, but it is hard for me to process large volumes of information fast; my brain has to chill. relates PK-142 (catch-up) — the «sup» rename is his proposal for catch-up itself.
+
+dima o34 ✓ 2026-10-20 16:5x: not built yet — shape-idea session today after the two recipe grills, then try it on PK-103 (the pm module review).
+
+dima o34, 2026-10-20, folded: «why re-date? why isn't it done at all? from what i recall it should already be implemented — or didn't we implement it yet?» → not built: parked 10-18 until the weekly reset, never picked back up. its shape-idea session sits right after the refresh-browser-headless grill (moved up in the plan 18:08).
 <!-- SECTION:NOTES:END -->

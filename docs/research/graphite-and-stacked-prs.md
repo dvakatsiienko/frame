@@ -149,14 +149,14 @@ all links read on 2026-10-20 unless a different date is given. «?» means not v
 
 ## 6. tooling an agent would want: a concrete proposal
 
-a thin wrapper, `x stack` (name open), over `gh stack`, picked for its json output, exit codes, rest api and official skill. each verb is non-interactive and prints json.
+superseded by [FRM-404](https://linear.app/x-com/issue/FRM-404): `x lane stack link|view` and `x lane pr-open --base`. the original sketch: a thin wrapper, `x stack` (name open), over `gh stack`, picked for its json output, exit codes, rest api and official skill. each verb is non-interactive and prints json.
 
 **verbs**
 - `x stack plan <topic> <layer>...`: write the layer plan (names and owned paths) before any code. runs `gh stack init <topic>/<layer1>` and sets `rerere.enabled` and `remote.pushDefault`.
 - `x stack add <layer>`: `gh stack add <topic>/<layer>`, but refuses if there are uncommitted changes outside the layer's planned paths.
 - `x stack where`: `gh stack view --json` plus the ci state and `review:clean` for each layer, in one json document.
 - `x stack fix <layer>`: check out the owner layer (`gh stack checkout <b> --print-path`, then cd), let the agent edit, then commit, `gh stack rebase --upstack`, `gh stack push`, and return to the top.
-- `x stack restack`: `gh stack sync`. it treats stdout "sync aborted" as a failure even when the exit code is 0, and maps exit 3 to "conflict, run fix", exit 8 to "locked, back off". (corrected 2026-10-20: the gh-stack readme lists exit codes 0–8 only, and docs.github.com says stacks need no setup or enablement — there is no «stacks not enabled» code.)
+- `x stack restack`: `gh stack sync`. it treats stdout "sync aborted" as a failure even when the exit code is 0, and maps exit 3 to "conflict, run fix", exit 8 to "locked, back off"; gh-stack's codes run 0–8, and stacks need no enablement.
 - `x stack submit`: `gh stack submit --auto` (drafts), then checks that every layer has a pr and a `stack` object via the rest api.
 - `x stack gate`: green only when every layer has required checks passing on its current head, a linear history (`needsRebase` false everywhere) and size under the cap.
 - `x stack land <pr>`: dima only. `gh stack merge <pr> --yes`, never `gh pr merge` on a stacked pr, then `gh stack sync --prune`.

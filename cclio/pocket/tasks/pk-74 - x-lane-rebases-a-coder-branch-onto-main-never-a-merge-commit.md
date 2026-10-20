@@ -4,7 +4,7 @@ title: 'x lane rebases a coder branch onto main, never a merge commit'
 status: waiting
 assignee: []
 created_date: '2026-10-12 01:13'
-updated_date: '2026-10-19 16:34'
+updated_date: '2026-10-20 14:38'
 due_date: '2026-10-26'
 labels:
   - s
@@ -37,4 +37,6 @@ parked: behind the 2026-10-12 drops — dima: «don't rush the memory sweep — 
 dima o87 ✓ 20:37: **waiting for:** the cli lane opening — its first chunk. the lease force-push is approved for this verb only (x lane rebase-main, coder/* branches, --force-with-lease on the read-back sha).
 
 2026-10-19 rider: the tdd trial rides this lane (dima o96) — the coder brief loads mattpocock-skills:tdd and the done report logs a line in docs/test-drive/tdd.md § next lanes
+
+ticket: FRM-403 (cli lane 1, sealed 2026-10-20)
 <!-- SECTION:NOTES:END -->

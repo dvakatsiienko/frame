@@ -20,6 +20,7 @@ the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane 
 ## before round 1 — the blockers
 - `x lane pr-open` sets no base other than main · `x lane merge-main` merges where a stack wants a rebase · `x:crew-coder` forbids rebasing a pushed branch · `x lane push` does not force-push — the lane uses `gh stack link` over branches `x lane` made, and the coder's brief lifts the rebase rule for this lane only
 - bytes' `review:clean` re-arms on every restack — FRM-401 decides first, or each restack costs a review round per layer
+- the setup chores, when FRM-404 lands (dima, 2026-10-20: «when we get closer to gh stacks, after the cli lane or along with it»): `gh extension install github/gh-stack`, its agent skill (`gh skill install github/gh-stack`), linear's «enable code reviews» setting checked; no repo setting exists (docs.github.com: «no setup or enablement»)
 
 ## stress list
 - `gh stack link` over `x lane` branches — the next multi-part coder lane, cut into 2–3 layers — open → merge time, review rounds per layer, stack-only hand steps
