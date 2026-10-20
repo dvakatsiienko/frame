@@ -29,9 +29,13 @@ function defaultTranscript(): string {
 }
 
 function textOf(entry: Entry): string {
-    const content = entry.message?.content;
+    return blocksText(entry.message?.content ?? '');
+}
+
+// a prompt carrying an image arrives as content blocks, not a string
+function blocksText(content: string | Block[]): string {
     if (typeof content === 'string') return content;
-    return (content ?? []).map((block) => block.text ?? '').join('\n');
+    return content.map((block) => block.text ?? '').join('\n');
 }
 
 // the human's own words: a typed turn, or a line typed while a turn ran (a queued command)
@@ -42,7 +46,7 @@ function typedOf(entry: Entry): string {
             ? textOf(entry)
             : queued?.type === 'queued_command' &&
                 queued.origin?.kind === 'human'
-              ? (queued.prompt ?? '')
+              ? blocksText(queued.prompt ?? '')
               : '';
     const args = raw.match(/<command-args>([\s\S]*?)<\/command-args>/);
     if (args) return (args[1] ?? '').trim();
@@ -112,14 +116,19 @@ if (import.meta.main) {
 
 /* Types */
 
+interface Block {
+    text?: string;
+    type: string;
+}
+
 interface Entry {
     attachment?: {
         content?: string | string[];
         origin?: { kind?: string };
-        prompt?: string;
+        prompt?: string | Block[];
         type?: string;
     };
-    message?: { content?: string | { text?: string; type: string }[] };
+    message?: { content?: string | Block[] };
     origin?: { kind?: string };
     timestamp?: string;
     type: string;
