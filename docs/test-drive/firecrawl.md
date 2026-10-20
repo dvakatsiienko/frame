@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-02
 dies-when: the verdict line below is written
 ---
@@ -35,3 +35,5 @@ Ticket: none
 - credits after round 4: 732 of 1,000
 
 ## verdict
+
+- 2026-10-20 · **adopted, narrowed** (dima o54): firecrawl is the fetcher for bot-blocked pages only — 1 real gain in 4 rounds (PSNProfiles: curl and WebFetch 403, firecrawl 200), 3 rounds where llms.txt or a site api answered better; 732 of 1,000 free credits left. the door stays `pnpm web-bot-blocked:fetch`; discovery stays with exa, parallel and linkup
