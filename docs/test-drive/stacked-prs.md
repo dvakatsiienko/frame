@@ -13,6 +13,10 @@ dima, 2026-10-20: «i want a proper way to measure if stacked prs actually help 
 **test card:** we believe a coder job with 2+ dependent parts lands faster and reviews cleaner as a stack of small prs than as one big pr · we test it by running real multi-part coder lanes as a stack — github stacks (`gh stack`) first, then graphite (`gt`) on the next one for the A/B — tried by hand, never in an automated sweep (his 09-26 call) · we measure per lane, against a plain-pr lane of similar size: open → merge wall time, verifier rounds per layer and in total, restacks and the ci reruns they cost, cclio's and the coder's hand-steps that exist only because of the stack (rebase, retarget, re-review), and dima's look time · we're right if the stacked lanes merge at least as fast with fewer review rounds, and the stack-only steps cost under ~10 % of the lane's turns
 **kill rule:** a restack breaks a guard or `x lane` verb so badly that a coder needs cclio's hands mid-lane twice in one stack, or the stack-only steps pass a third of the lane
 
+## day 0
+
+the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane over the docs, the users' reports and our own ci) stands in for the day-0 pass; the stress list below is rebuilt from its findings when it lands.
+
 ## stress list
 - `gh stack` — the next mods coder lane, cut into 2–3 layers — the measures above
 - `gt` (graphite) — the lane after it — the same measures, the A/B

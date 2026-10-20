@@ -1,5 +1,5 @@
 ---
-status: live
+status: closed
 until: 2026-10-24
 dies-when: the verdict line below is written
 ---
@@ -56,3 +56,5 @@ in place and there is one file less to track.
 - 2026-10-18 · round 3, 11 items, 102 lines · **85/100 (raw 45)** — fidelity 24, sort 23, links 16, groom 13, read 9 · coverage 102/102 · ~80 s wall, run beside the boot · 20 asks vs cclio's ~20 · misses: W4's groomed bullets dropped «i propose rename catch-up to sup» (the quote kept it) and the tornado/strategist video link; «colors/lead» correctly kept and marked (?) (cclio reads 🎙️ coord/lead) · S1's at-a-glance line is a good orient · the [done] receipt bounced (PK-180), so the boot polled the file · not checked: composer's context fill · not blind: prep read first, raw skeleton second
 - 2026-10-19 · round 4, 4 items, 16 lines · **69/100 (raw 45)** — fidelity 18, sort 15, links 15, groom 13, read 8 · coverage 16/16 · ~1 min wall, run beside the boot · 1 ask vs cclio's ~5 · misses: S1 flipped his todo into a done fact («report sent» where he wrote a mid-day todo to send it), and the at-a-glance line led with that misreading; W1, W2's review-and-commit, the cowork mode line and I1's «fold this into the pm revamp ticket» are wants or asks too, not only the one «how» question · good: flagged that the pm revamp has no clean pocket home (PK-103 is the closest) · the [done] receipt arrived (PK-180 fix holds) · not checked: composer's context fill · not blind: prep read first, raw second
 - 2026-10-20 · round 5, 9 items, 38 lines · **86/100 (raw 45)** — fidelity 28, sort 22, links 15, groom 12, read 9 · coverage 38/38 · ~2 min wall, run beside the boot · 23 asks vs cclio's ~24 · misses: W4 and I1 carry no ❓ asks block (the top-7 names and «react to it» are asks); Q2 kept «datawiz» unmarked where 🎙️ reads dataviz; Q4 not linked to the blueprints trial (cclio:author-blueprint) · good: W2's 11 asks pulled clean out of a long caveat list, W2↔W3 relate is real, Q1 not forced onto PK-196 (fair flag) · [done] receipt arrived · not checked: composer's context fill · not blind: prep read first, raw second
+
+- 2026-10-20 · **closed** (dima's tick, o19): five rounds, 79 → 86 against a raw 44–45, every line present every round; meaning drift in 2 of 5 rounds, each caught by wishkeeper's boot read. cclio's per-boot rubric score stops — three checks on one prep was one too many; wishkeeper stays the one meaning check, and the prep itself goes on.
