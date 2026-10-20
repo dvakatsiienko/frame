@@ -20,7 +20,7 @@ fleet and shell words) in `fleet-vibe.md`. product names here stay as written: "
   owns its contract, `x:crew-designer-interview` the brief cclio writes with dima.
 - 🐦‍⬛ **`ccrow`** (adviser) — cclio's parked adviser: a pinned `--bg` session that reads her thread on a wake <!-- cc -->
   (her Stop and PreCompact hooks) and sends one note or `none`. `ccrow/AGENTS.md` owns it.
-- 🎼 **`composer`** (copyist) — cclio's editing sidecar: a parked `--bg` Haiku 5.5 session for her mechanical chores. `x:crew-composer` owns its contract; on a test drive (`docs/test-drive/composer.md`). <!-- cc -->
+- 🎼 **`composer`** (copyist) — cclio's editing sidecar: a parked `--bg` Haiku 5.5 session for her mechanical chores. `x:crew-composer` owns its contract. <!-- cc -->
 - ⚡ **`classifier`** — jev (typesafe.ai): typed judgments over a state, no tools, no memory. <!-- cc -->
   ~20–200× faster and 40–550× cheaper than a model call — any classification runs through a jev
   flow, docs first.

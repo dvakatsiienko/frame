@@ -4,8 +4,8 @@ title: composer on Sonnet 5.5 — shape-idea over its contract after the trial v
 status: waiting
 assignee: []
 created_date: '2026-10-14 18:27'
-updated_date: '2026-10-16 10:24'
-due_date: '2026-10-23'
+updated_date: '2026-10-20 12:58'
+due_date: '2026-10-27'
 labels:
   - m
 dependencies: []
@@ -17,7 +17,7 @@ ordinal: 125000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**waiting for:** composer's trial verdict (its date: `docs/test-drive/composer.md`); then shape, review and test-drive this.
+**waiting for:** a cclio:shape-idea session (composer adopted 2026-10-20, so the trial verdict it waited on is in)
 
 the want (dima, 2026-10-16): promote composer itself from Haiku 5.5 to Sonnet 5.5 — the base composer contract stays, cclio:shape-idea extends it with Sonnet 5.5's strengths in mind; medium as baseline, cclio proposes the effort. the gain: more chores off cclio, maybe minimal-intelligence work; less overlap with helper-lite. the cost: pricier than haiku, and sonnet may stop at a dead end where Opus 5.5 keeps trying.
 

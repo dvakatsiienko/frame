@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-23
 ---
 
@@ -38,3 +38,7 @@ one line per round: date · ask · seconds · chars in context · hit · grade a
 
 - 2026-10-07 · the doors classification of 30 days of `linear api` calls (stress 1) · **0.26 s** (2.0 s cpu, multithreaded) · ~0.6k chars · hit: 611 single reads, 81 lists, 59 searches, 52 delegate updates, 28 body writes — the same picture as the sonnet helper's script · 5/5 against the helper: 115 s and 166k tokens for the same table
 - 2026-10-07 · what runs within a minute after a linear read (stress 2) · **0.38 s** · ~0.9k chars · hit, with one gap: `cd ~/frame && …` heads hide the real command, so the next round strips a leading `cd` · 4/5 — no usual door existed (the researcher wrote the query, never ran it)
+
+## verdict
+
+- 2026-10-20 · **adopted** (dima's tick, o21): 2 of 2 stress rounds hit, 0.26 s and 0.38 s, where no usual door existed; it is rules/fleet-tooling.md's measuring engine.

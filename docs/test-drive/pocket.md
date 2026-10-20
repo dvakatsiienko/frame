@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-23
 dies-when: the pocket is kept or dropped at the verdict (2026-10-21)
 ---
@@ -33,3 +33,7 @@ one line per halt: date · items resolved · tickets opened · «what's next?» 
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 pocket test drive, two weeks to 2026-10-21 — one log line per halt in `docs/test-drive/pocket.md` (items resolved, tickets opened, «what's next?» asks, items lost; day-0 baseline in the file). on 10-21: keep the pocket or go back to a vault journal. dima 2026-10-07: «test drive» (pocket item 11) — set 2026-10-07
+
+## verdict
+
+- 2026-10-20 · **adopted** (dima's tick, o22): the trial file holds one round (10-07) and no test card, while the pocket became the daily store from 10-11 — 63 items, pocket-check on every status move. the file is the record, not a measurement.

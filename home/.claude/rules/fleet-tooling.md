@@ -35,7 +35,7 @@ the cw leaf `/areas/tooling.md`; the `cc only` section never leaves the mac cli.
 
 - **`claude plugin eval` only on dima's word** — an eval run spends the weekly usage fast (dima, 2026-10-16)
 - **a bare cc for clean runs** — `claude -p --model haiku --safe-mode --strict-mcp-config '<prompt>'` from a temp dir, run in the background (a foreground `claude -p` is refused, FRM-395): no `CLAUDE.md`, rules, plugins, hooks, mods or MCP, only cc's built-ins. reach for it when our setup must not touch the answer: «is it us or cc?» probes, a model A/B, an upstream bug repro, a blind lane, the token weight of our memory (bare `/context` vs ours). `--bare` needs an API key, so it fails on our login (2026-10-06)
-- **duckdb** — SQL over jsonl, md and git where they lie, no import, no server: `duckdb -json -c "…"`; the measuring engine for transcripts and x traces (🧪 `docs/test-drive/duckdb.md`)
+- **duckdb** — SQL over jsonl, md and git where they lie, no import, no server: `duckdb -json -c "…"`; the measuring engine for transcripts and x traces
 - **fnm** — node version manager, use if needed
 - **ctx7** — library docs: `ctx7 library <name>` → id, `ctx7 docs <id> "<query>" --language typescript` (examples in that language first); a library it lacks → `WebSearch`
 - **archives → keka's bundled binaries**, `/Applications/Keka.app/Contents/MacOS/Keka --cli <bin>` — `7z` `7zz` `unar` `unrar` `tar` `xz` `zstd` `brotli` `lz4` `lzip` `pigz` and friends. macos ships no `unrar` and no 7z at all, so this is the only door to those; plain `zip`/`tar`/`ditto` still handle the ordinary cases

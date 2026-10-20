@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-23
 dies-when: the verdict line below is written (2026-10-21, at the refresh-crew-coordinator-composer run)
 ---
@@ -96,6 +96,9 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-15 · pocket-write · 0 · 0 · b-guard 2: PK-150 set waiting; pocket-check red: waiting without **waiting for:** first line; not fixed, consult
 - 2026-10-16 · inbox-prep · 0 · 1 · 9 items, 23 asks; check 42/42 exit 0; rework: 2 quoted lines mistyped, fixed
 - 2026-10-16 · anchor-edit · consult · n/a · s10r1 withdrawn by cclio: brief miss (cclio's), sent into cclio/ against floor; drafts not strict pairs; dry run caught parser gaps; nothing written
+- 2026-10-18 · inbox-prep · 1 · 0 · 102/102 verbatim, check exit 0; 11 items, 20 asks; homes PK-103, PK-142 on subject/body match
+- 2026-10-19 · inbox-prep · 1 · 0 · inbox-composer.md written, check 16/16, no commit
+- 2026-10-20 · inbox-prep · 1 · 0 · inbox-composer.md written, 38/38 content lines verbatim, 9 items, 23 asks; PK-90 homed for W1, cw memory not homed (PK-196 body differs)
 
 ## rounds
 
@@ -107,3 +110,5 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-15 · the boot probe (dima's tick): `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` drops every CLAUDE.md and rules file, hooks and mods stay (x-mod-guard still refused an `rm`); composer restarted as job 435b4046 without fleet memory, the charter's floor section standing in — boot **~75k → 53.6k**. watch: a chore that breaks a fleet rule the floor dropped, and the next memory-less `inbox-prep` (it handles dima's raw words, so «no prose, low risk» is an inference)
 
 ## verdict
+
+- 2026-10-20 · **adopted** (dima's tick, o19): 49 rounds, 61 of 65 chores green first pass, 1 rework (1.5 % against the 1-in-5 kill rule), inbox prep 79 → 86 over five rounds. the separate inbox-composer.md stays (dima, 2026-10-20: «let's keep both inbox files for now»). the start command and the receipt log stay in this file as the record.
