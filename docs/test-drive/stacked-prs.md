@@ -15,14 +15,19 @@ dima, 2026-10-20: «i want a proper way to measure if stacked prs actually help 
 
 ## day 0
 
-the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane over the docs, the users' reports and our own ci) stands in for the day-0 pass; the stress list below is rebuilt from its findings when it lands.
+the refresh-pr-flow first run (2026-10-20, exa + parallel + an opus source lane over the docs, the users' reports and our own ci) is the day-0 pass; its distill is `docs/knowledge/pr-flow.md`. what it changes here: our medians are short (frame 22 min, bytes 87 min), so the gain to look for is smaller reviewable diffs, not speed; and four of our tools break on a stack before the first round can run.
+
+## before round 1 — the blockers
+- `x lane pr-open` sets no base other than main · `x lane merge-main` merges where a stack wants a rebase · `x:crew-coder` forbids rebasing a pushed branch · `x lane push` does not force-push — the lane uses `gh stack link` over branches `x lane` made, and the coder's brief lifts the rebase rule for this lane only
+- bytes' `review:clean` re-arms on every restack — FRM-401 decides first, or each restack costs a review round per layer
 
 ## stress list
-- `gh stack` — the next mods coder lane, cut into 2–3 layers — the measures above
-- `gt` (graphite) — the lane after it — the same measures, the A/B
+- `gh stack link` over `x lane` branches — the next multi-part coder lane, cut into 2–3 layers — open → merge time, review rounds per layer, stack-only hand steps
+- the clone-wide lock (#568) — a second coder in another worktree during the lane — blocked or not, minutes lost
 - verifier on one layer vs the whole stack — `x:crew-verifier` on layer 1, then the top — rounds, findings per layer
-- renovate moving main under an open stack — whichever night it happens — restack time, ci reruns
-- linear on a stack — the lane's ticket with the id in every layer's branch name — does it link each layer, does it close at the last merge
+- renovate moving main under an open stack — whichever 2–3-day merge lands — restack time, ci reruns
+- `gt` (graphite) — the lane after, for the A/B, only while graphite is a target — the same measures, plus the delete-on-merge closing the layers above
+- linear on a stack — the ticket id in every layer's branch — each layer linked, closed at the last merge; the settings checked first
 
 ## rounds
 

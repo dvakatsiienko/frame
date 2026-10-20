@@ -2,6 +2,7 @@
 fed-by: recipe refresh-pr-flow
 when:
   - { kind: command, value: gh pr }
+  - { kind: command, value: gh stack }
   - { kind: command, value: x lane pr-open }
   - { kind: skill, value: x:crew-coder }
 ---
@@ -10,8 +11,30 @@ when:
 
 ## core
 
-📌 seeded 2026-10-20, before the recipe's first run; its distill fills this from the two research docs below and the run's lanes.
+**the gate** — a pr on no risky path merges once the verifier is clean on its head, checks ran green for that head and no thread is open; a risky path (workflows, settings, guards, memory files, secrets, release) waits for dima's look. [FRM-401](https://linear.app/x-com/issue/FRM-401) holds the rule and the verb that will check it.
 
-- the merge gate: a pr on no risky path merges once the verifier is clean on its head, checks ran green for that head and no thread is open; a risky path waits for dima's look — [FRM-401](https://linear.app/x-com/issue/FRM-401) holds the rule and the path list
-- stacked prs: not in use; github native stacks (`gh stack`) and graphite are the two candidates — [BYT-98](https://linear.app/x-com/issue/BYT-98)
-- the sources the first run starts from: `docs/research/graphite-and-stacked-prs.md`, `docs/research/code-review-human-gate.md`
+**plain prs are the default.** our waits are short (coder pr open → merge median, 2026-10-06..20: frame 22 min over 23 prs, bytes 87 min over 5), so a stack has little wait to hide. a stack earns its place only for one coder building 2–4 dependent parts of one feature, held under a day, in bytes. the measurement lives in `docs/test-drive/stacked-prs.md`.
+
+**our tools assume one pr per branch** — a stack breaks each of these until it is taught otherwise:
+- `x lane pr-open` opens onto main (`x/go/lane.go`); a stack layer needs its base set to the layer below
+- `x lane merge-main` makes a merge commit; github stacks want a straight history (rebase)
+- `x:crew-coder` forbids rebasing a pushed branch — exactly how a stack is kept current
+- `x lane push` does not force-push (inference: a restacked layer is refused)
+- bytes' `review:clean` is tied to one commit: every restack hands the upper layers a new head, so a new review round each, or past the cap a click of dima's
+- bytes' path-filtered ci jobs see only one layer's diff, since a layer's base is the layer below; a restack reruns full ci on every layer
+- renovate merges move main every 2–3 days (frame 6, bytes 3 in 14 days), each one a restack of any open stack
+
+**github stacks (`gh stack`, ga 2026-10-06)** — the best agent tool today, and fragile:
+- install: `gh extension install github/gh-stack`, its agent skill with `gh skill install github/gh-stack`; `gh stack view --json` reads state
+- its lock covers the whole clone: a coder in another worktree is blocked, even on an unrelated stack (gh-stack #568, #570) — one agent changing stacks per clone
+- some commands report success on failure (#472, #566); one submit wiped a branch (#557); auto-merge on a stack is not supported (#504)
+- the cheap path: `gh stack link` turns branches made by any tool into a stack in one api call, so `x lane` can keep making the branches; it refuses a pr with auto-merge on
+- merge from the bottom, or a contiguous range upward
+
+**graphite (`gt`)** — alive (cursor's acquisition note: same team, same product), no `gt` release since 2026-05-04. merging a layer deletes its branch in our repos (delete-on-merge), which closes the prs stacked on it — github's stacks retarget them instead. its test drive is frozen to 11-07.
+
+**linear** shows stack order and status in diffs (2026-10-08); it reads, never manages. it needs «enable code reviews» on, code access per repo and each user's personal github connection (not checked in x-com yet). put the ticket id in every layer's branch name; a ticket linked to several prs closes at the last merge.
+
+## sources
+
+- the 2026-10-20 run: `recipes/refresh-pr-flow/last/` (exa, parallel, an opus source lane); the day's research docs `docs/research/graphite-and-stacked-prs.md`, `docs/research/code-review-human-gate.md` — this file corrects two of their lines: `gh stack` is not shipping weekly (last release 10-09), and renovate moves main every 2–3 days, not nightly
