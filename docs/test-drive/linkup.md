@@ -18,7 +18,7 @@ dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everyt
 - cli: `linkup-search-cli` 1.4.1 (`pnpm add -g`, binary `linkup`, official, LinkupPlatform/linkup-cli); `--json` for raw output
 - key: 1password `dev/linkup-golden`, read as `LINKUP_API_KEY` through `script/op-run.sh` (op.env line); account imagnum.satellite@gmail.com
 - prices (pricing page, 2026-10-20): search $0.005 (flash/fast/standard) · $0.05 (deep) · fetch $0.001–$0.01 · research S $0.25, M $0.50 · free: $20 on signup, topped back up to $20 each month, «for a professional email address» (open: does gmail count)
-- gemini cli (joined 2026-10-20, dima: «install it, i sign in, and it joins the linkup test drive and gets measured too»): `brew install gemini-cli` 0.64.0, free with a google sign-in (1,000 requests a day), searches google's own index through `google_web_search`; a fifth lane in `research:lanes`, skipped until `~/.gemini/oauth_creds.json` exists; measured the same way as linkup
+- gemini cli (joined 2026-10-20, dima: «install it, i sign in, and it joins the linkup test drive and gets measured too»): `brew install gemini-cli` 0.64.0, searches google's own index through `google_web_search`; the google sign-in is refused («this client is no longer supported for Gemini Code Assist for individuals … migrate to Antigravity», 2026-10-20), so it runs on the api key `dev/gemini-golden` (`selectedType: gemini-api-key` in `~/.gemini/settings.json`); a fifth lane in `research:lanes`, skipped without the key; blocked until dima's 5 dead vibemon hooks leave `~/.gemini/settings.json` (gemini refuses to run when a hook fails); measured the same way as linkup
 - not tried: x402 pay-per-request (needs USDC), the mcp (cli first, his rule)
 
 ## day 0

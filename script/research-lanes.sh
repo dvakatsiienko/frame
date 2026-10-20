@@ -36,11 +36,11 @@ if [ "${1:-}" = "--lane" ]; then
       exit $code
       ;;
     gemini)
-      # on trial beside linkup: docs/test-drive/linkup.md — skips until dima signs in once with google
-      [ -s "$HOME/.gemini/oauth_creds.json" ] || { echo "gemini: skipped · not signed in (run gemini once)"; exit 0; }
+      # on trial beside linkup: docs/test-drive/linkup.md — the api key (dev/gemini-golden); google sign-in is refused for individuals since 2026-10
+      [ -n "${GEMINI_API_KEY:-}" ] || { echo "gemini: skipped · no key in dev/gemini-golden"; exit 0; }
       gemini -p "Research this brief with google_web_search. Cite a url for every claim. $(cat "$brief")" > "$out/gemini.md" 2> "$out/gemini.log" < /dev/null
       code=$?
-      echo "gemini: exit $code · $(( $(date +%s) - s )) s · $(wc -c < "$out/gemini.md" | tr -d ' ') chars · free (google sign-in)"
+      echo "gemini: exit $code · $(( $(date +%s) - s )) s · $(wc -c < "$out/gemini.md" | tr -d ' ') chars · free (api key tier)"
       exit $code
       ;;
   esac
