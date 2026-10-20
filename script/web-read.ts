@@ -20,15 +20,17 @@ async function getJson(url: string): Promise<unknown> {
     return res.json();
 }
 
-async function isMediaWiki(origin: string): Promise<boolean> {
-    try {
-        const info = (await getJson(
-            `${origin}/w/api.php?action=query&meta=siteinfo&format=json`,
-        )) as { query?: { general?: unknown } };
-        return Boolean(info.query?.general);
-    } catch {
-        return false;
+// wikipedia and miraheze serve the api at /w/api.php, fandom at /api.php
+async function wikiApi(origin: string): Promise<string | undefined> {
+    for (const path of ['/w/api.php', '/api.php']) {
+        try {
+            const info = (await getJson(
+                `${origin}${path}?action=query&meta=siteinfo&format=json`,
+            )) as { query?: { general?: unknown } };
+            if (info.query?.general) return `${origin}${path}`;
+        } catch {}
     }
+    return undefined;
 }
 
 function topLevelTemplates(wikitext: string): string[] {
@@ -101,12 +103,12 @@ export function infobox(wikitext: string): [string, string][] {
 }
 
 async function wikiInfobox(
-    origin: string,
+    api: string,
     title: string,
 ): Promise<[string, string][]> {
     try {
         const data = (await getJson(
-            `${origin}/w/api.php?action=parse&prop=wikitext&redirects=1&format=json&formatversion=2&page=${encodeURIComponent(title)}`,
+            `${api}?action=parse&prop=wikitext&redirects=1&format=json&formatversion=2&page=${encodeURIComponent(title)}`,
         )) as { parse?: { wikitext?: string } };
         return infobox(data.parse?.wikitext ?? '');
     } catch {
@@ -114,9 +116,9 @@ async function wikiInfobox(
     }
 }
 
-async function wikiPage(origin: string, title: string): Promise<string> {
+async function wikiPage(api: string, title: string): Promise<string> {
     const data = (await getJson(
-        `${origin}/w/api.php?action=query&prop=extracts&explaintext=1&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(title)}`,
+        `${api}?action=query&prop=extracts&explaintext=1&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(title)}`,
     )) as {
         query: {
             pages: { title: string; extract?: string; missing?: boolean }[];
@@ -125,7 +127,7 @@ async function wikiPage(origin: string, title: string): Promise<string> {
     const page = data.query.pages[0];
     if (!page || page.missing || !page.extract)
         throw new Error(`no wiki page «${title}»`);
-    const box = await wikiInfobox(origin, page.title);
+    const box = await wikiInfobox(api, page.title);
     const block = box.length
         ? `== Infobox ==\n${box.map(([key, value]) => `- ${key}: ${value}`).join('\n')}\n\n`
         : '';
@@ -134,11 +136,13 @@ async function wikiPage(origin: string, title: string): Promise<string> {
 
 async function wikiIndex(host: string): Promise<string> {
     const origin = `https://${host}`;
+    const api = await wikiApi(origin);
+    if (!api) throw new Error(`${host} answers no MediaWiki api`);
     const titles: string[] = [];
     let from = '';
     do {
         const data = (await getJson(
-            `${origin}/w/api.php?action=query&list=allpages&apnamespace=0&apfilterredir=nonredirects&aplimit=max&format=json${from ? `&apcontinue=${encodeURIComponent(from)}` : ''}`,
+            `${api}?action=query&list=allpages&apnamespace=0&apfilterredir=nonredirects&aplimit=max&format=json${from ? `&apcontinue=${encodeURIComponent(from)}` : ''}`,
         )) as {
             query: { allpages: { title: string }[] };
             continue?: { apcontinue: string };
@@ -184,8 +188,8 @@ async function firecrawl(url: string): Promise<string> {
 async function read(input: string): Promise<string> {
     const url = new URL(input);
     const title = wikiTitle(url);
-    if (title && (await isMediaWiki(url.origin)))
-        return wikiPage(url.origin, title);
+    const api = title ? await wikiApi(url.origin) : undefined;
+    if (title && api) return wikiPage(api, title);
     if (isPlainText(url)) {
         const res = await fetch(url, { headers: { 'user-agent': userAgent } });
         if (res.ok) return res.text();
