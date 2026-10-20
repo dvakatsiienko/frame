@@ -8,7 +8,7 @@ Ticket: none
 
 ## sources
 
-- post: «how the claude code team does code review», addy osmani, morgan westlee lunt, qing wang, claude.dev, published 2026-10-15. https://claude.dev/blog/solving-code-review-at-anthropic/ (read in full via `web:read` on 2026-10-20; webfetch only returned a summary). section names below point into the post.
+- post: «how the claude code team does code review», addy osmani, morgan westlee lunt, qing wang, claude.dev, published 2026-10-15. https://claude.dev/blog/solving-code-review-at-anthropic/ (read in full via `web-bot-blocked:fetch` on 2026-10-20; webfetch only returned a summary). section names below point into the post.
 - video: «anthropic barely reads claude's code anymore», better stack, uploaded 2026-10-19, 7:56. https://www.youtube.com/watch?v=d8QpDbBKbAU (auto-subs read via yt-dlp on 2026-10-20). it's a third-party walkthrough of the same post, so it's a secondary source. it adds a little: one critique, one cost figure, one hn mention.
 - «our flow» means the setup as described in the brief (2026-10-20). i didn't read our repo config to check it.
 

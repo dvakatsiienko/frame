@@ -1,9 +1,9 @@
 // reads a web page as text for agents whose own fetch is blocked (cw through Desktop Commander):
 // a MediaWiki page through its free api (infobox values first), a .md/.txt url as is, anything else through firecrawl (1 credit).
-// usage: pnpm web:read <url> [--out <file>] · pnpm web:read --index <wiki host> [--out <file>]
+// usage: pnpm web-bot-blocked:fetch <url> [--out <file>] · pnpm web-bot-blocked:fetch --index <wiki host> [--out <file>]
 import { writeFileSync } from 'node:fs';
 
-const userAgent = 'Mozilla/5.0 (frame web:read)';
+const userAgent = 'Mozilla/5.0 (frame web-bot-blocked:fetch)';
 
 export function wikiTitle(url: URL): string | undefined {
     const slug = url.pathname.match(/^\/wiki\/(.+)$/)?.[1];
@@ -161,7 +161,7 @@ async function firecrawl(url: string): Promise<string> {
     const key = process.env.FIRECRAWL_API_KEY;
     if (!key)
         throw new Error(
-            'FIRECRAWL_API_KEY missing — run through pnpm web:read (op-run)',
+            'FIRECRAWL_API_KEY missing — run through pnpm web-bot-blocked:fetch (op-run)',
         );
     const res = await fetch('https://api.firecrawl.dev/v2/scrape', {
         body: JSON.stringify({
@@ -207,7 +207,7 @@ async function main(args: string[]) {
     const target = args.find((arg) => /^https?:\/\//.test(arg));
     if (!index && !target) {
         console.error(
-            'usage: pnpm web:read <url> [--out <file>] · pnpm web:read --index <wiki host> [--out <file>]',
+            'usage: pnpm web-bot-blocked:fetch <url> [--out <file>] · pnpm web-bot-blocked:fetch --index <wiki host> [--out <file>]',
         );
         process.exit(2);
     }

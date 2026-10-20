@@ -14,7 +14,7 @@
         "vorssaint:export": "defaults export com.vorssaint.utils - | plutil -convert xml1 -o import/vorssaint/com.vorssaint.utils.plist -",
         "vorssaint:import": "osascript -e 'quit app \"Vorssaint\"' && defaults import com.vorssaint.utils import/vorssaint/com.vorssaint.utils.plist && open -a Vorssaint",
         "vorssaint:shelf": "node ./script/vorssaint-shelf.ts",
-        "web:read": "./script/op-run.sh node ./script/web-read.ts",
+        "web-bot-blocked:fetch": "./script/op-run.sh node ./script/web-bot-blocked-fetch.ts",
         "wispr:add": "node --disable-warning=ExperimentalWarning ./script/wispr-add.ts",
         "x-changedetector:watch-add": "node ./schedule/jobs/x-changedetector/watch-add.ts",
         "x-changedetector:watch-remove": "node ./schedule/jobs/x-changedetector/watch-remove.ts",

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { infobox, isPlainText, plainWiki, wikiTitle } from './web-read.ts';
+import {
+    infobox,
+    isPlainText,
+    plainWiki,
+    wikiTitle,
+} from './web-bot-blocked-fetch.ts';
 
 describe('wikiTitle', () => {
     it('reads a MediaWiki article title from its url', () => {
