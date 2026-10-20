@@ -1,0 +1,39 @@
+---
+status: live
+until: 2026-11-03
+dies-when: the verdict line below is written
+---
+
+# linkup — a free backup research lane beside exa, parallel and the researcher
+
+Ticket: none
+
+dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everything needed to make it work. shape a test drive and set up measurement properly, to compare it against the other complementary research tools and against the main researcher as well.»
+
+**test card:** we believe linkup's free $20 a month buys a research lane that finds what exa and parallel miss, at no cost · we test it by running it as a fourth lane on every research of the 2 weeks (recipe runs and his plain asks), same brief, and by sending single-fact lookups through `linkup search` instead of WebSearch · we measure per run its seconds, dollars of credit, sources cited, and the finds no other lane made (the lane-agreement score of `recipes/refresh-research-lanes`), against exa, parallel and the researcher on the same brief · we're right if it makes at least one unique, correct find in half its runs and its monthly spend stays inside the free $20
+**kill rule:** the free credit does not land on a gmail signup, or two runs in a row come back with no unique find and a wrong claim
+
+## setup
+
+- cli: `linkup-search-cli` 1.4.1 (`pnpm add -g`, binary `linkup`, official, LinkupPlatform/linkup-cli); `--json` for raw output
+- key: 1password `dev/linkup-golden`, read as `LINKUP_API_KEY` through `script/op-run.sh` (op.env line); account imagnum.satellite@gmail.com
+- prices (pricing page, 2026-10-20): search $0.005 (flash/fast/standard) · $0.05 (deep) · fetch $0.001–$0.01 · research S $0.25, M $0.50 · free: $20 on signup, topped back up to $20 each month, «for a professional email address» (open: does gmail count)
+- not tried: x402 pay-per-request (needs USDC), the mcp (cli first, his rule)
+
+## day 0
+
+- docs walked whole through `docs.linkup.so/llms.txt`: search (4 depths, 3 output types), fetch (js render, pdf, schema), research (async, reasoning depth S/M), tasks (async batch), extract (closed beta), migrating-from-exa and from-tavily guides, an «for AI agents» knowledge pack per endpoint
+- users and cookbooks: not read yet — the first round reads the «for AI agents» pages and the exa migration guide before the first run
+
+## stress list
+
+- `linkup research` (depth S) — the next recipe research, as a fourth lane on the same brief — seconds, $, sources, unique finds vs exa / parallel / researcher
+- `linkup search --depth deep` — the next prior-art or «is X alive» question — seconds, $, hit or miss vs exa's agent run
+- `linkup search` (standard, sourcedAnswer) — a one-fact lookup — seconds, $, right or wrong vs WebSearch
+- `linkup fetch --render-js` — a page our fetch could not read — content or not vs `web-bot-blocked:fetch` (firecrawl)
+- `linkup tasks` — a batch of 5 lookups at once — seconds, $ vs 5 serial calls
+- the free top-up — the 2026-11-01 reset — credit back at $20 or not
+
+## rounds
+
+## verdict

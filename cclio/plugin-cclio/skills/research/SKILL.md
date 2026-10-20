@@ -13,7 +13,7 @@ ai are essentially free research tools).»
 
 - **one brief file, every lane, in parallel.** write the question once (context, numbered
   vectors, the output shape), then:
-  - `pnpm research:lanes <brief.md> [out]` — the exa agent run + the parallel core run, side by
+  - `pnpm research:lanes <brief.md> [out]` — the exa agent run + the parallel core run + a linkup research run (on trial, `docs/test-drive/linkup.md`; skipped while its key is empty), side by
     side under `op-run`; one line per lane: status, seconds, chars, cost (~$0.10 exa, cents parallel)
   - **an opus lane** (a fresh agent, never a fork) on the same brief, pointed at what needs SOURCE
     reading — code, skills, prompts, npm, real api probes. the door is the `researcher` agent
