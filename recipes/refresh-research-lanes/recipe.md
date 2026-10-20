@@ -2,7 +2,7 @@
 kind: refresh
 owner: coordinator
 artifacts:
-  - cclio:research
+  - x:research
   - script/research-lanes.sh
   - home/.claude/agents/researcher.md
   - docs/test-drive/exa.md
@@ -63,7 +63,7 @@ his standing calls:
 
 ## artifacts
 
-- `cclio:research` — the skill every research runs through: its lane list and its brief rules; the distill edits only the lines a finding proves wrong
+- `x:research` — the skill every research runs through: its lane list and its brief rules; the distill edits only the lines a finding proves wrong
 - `script/research-lanes.sh` — the lanes runner: a lane added, dropped or re-pointed lands here
 - `home/.claude/agents/researcher.md` — the researcher card: its frontmatter and its instructions
 - `docs/test-drive/exa.md` — exa's verdict line, rewritten when a run proves it stale

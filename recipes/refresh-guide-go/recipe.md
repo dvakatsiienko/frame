@@ -29,7 +29,7 @@ dima's, 2026-10-06:
 - suggest a run when: a go minor ships, a charm major lands, a go change in `x` hits something the guide does not cover
 
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
-2. one research round per `cclio:research` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)
+2. one research round per `x:research` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)
 3. distill into `x:guide-go` and `charm.md` (`cclio:shape-recipe` step 2). done: each touched or named «unchanged». (open)
 4. findings print. done: the proposal is printed. (template)
 5. dima's word → a coder lane, or the guide edit. done: the lane spawned or the guide edited. (open)

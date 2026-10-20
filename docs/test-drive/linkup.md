@@ -4,7 +4,7 @@ until: 2026-11-03
 dies-when: the verdict line below is written
 ---
 
-# linkup — a free backup research lane beside exa, parallel and the researcher (gemini cli rides along)
+# linkup — a free backup research lane beside exa, parallel and the researcher
 
 Ticket: none
 
@@ -18,7 +18,7 @@ dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everyt
 - cli: `linkup-search-cli` 1.4.1 (`pnpm add -g`, binary `linkup`, official, LinkupPlatform/linkup-cli); `--json` for raw output
 - key: 1password `dev/linkup-golden`, read as `LINKUP_API_KEY` through `script/op-run.sh` (op.env line); account imagnum.satellite@gmail.com
 - prices (pricing page, 2026-10-20): search $0.005 (flash/fast/standard) · $0.05 (deep) · fetch $0.001–$0.01 · research S $0.25, M $0.50 · free: $20 on signup, topped back up to $20 each month, «for a professional email address» (open: does gmail count)
-- gemini cli (joined 2026-10-20, dima: «install it, i sign in, and it joins the linkup test drive and gets measured too»): `brew install gemini-cli` 0.64.0, searches google's own index through `google_web_search`; the google sign-in is refused («this client is no longer supported for Gemini Code Assist for individuals … migrate to Antigravity», 2026-10-20), so it runs on the api key `dev/gemini-golden` (`selectedType: gemini-api-key` in `~/.gemini/settings.json`); a fifth lane in `research:lanes`, skipped without the key; blocked until dima's 5 dead vibemon hooks leave `~/.gemini/settings.json` (gemini refuses to run when a hook fails); measured the same way as linkup
+- gemini cli joined 2026-10-20 and left the same day: google serves the cli only to paid api keys since 2026-06-18 (rounds below); uninstalled, its lane and Brewfile line removed
 - not tried: x402 pay-per-request (needs USDC), the mcp (cli first, his rule)
 
 ## day 0
@@ -34,12 +34,12 @@ dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everyt
 - `linkup fetch --render-js` — a page our fetch could not read — content or not vs `web-bot-blocked:fetch` (firecrawl)
 - `linkup tasks` — a batch of 5 lookups at once — seconds, $ vs 5 serial calls
 - the free top-up — the 2026-11-01 reset — credit back at $20 or not
-- `gemini -p` (headless, google index) — the same recipe briefs as a fifth lane — seconds, sources, unique finds vs the other four; whether free-tier prompts are used for training (google terms, open)
 
 ## rounds
 - 2026-10-20 · probe 1, `linkup search` standard + sourced answer, «when did github stacked prs go ga» · 5 s, $0.006, right (10-06), 3 sources (all secondary news sites) · vs WebSearch: same answer, linkup cited no primary source
 - 2026-10-20 · probe 2, `linkup research` depth S, «does gh-stack define an exit code for stacks not enabled» · 153 s, $0.25, right (9), cited gh-stack's `skills/gh-stack/SKILL.md` and said it could not surface the go file · vs the researcher today: same verdict, the researcher read `cmd/utils.go`; linkup beat my own readme-based «correction» · the gmail signup got the free $20 (balance 19.994 before the probes, 19.744 after) — the kill rule's gmail clause is off
 
 - 2026-10-20 · gemini probe, api key (`dev/gemini-golden`), after dima's ok removed 5 dead vibemon hooks from `~/.gemini/settings.json` · the default model and `gemini-flash-latest`: 503 «high demand» until the 120–180 s cutoff; `gemini-2.5-flash`: «no longer available to new users» · 0 answers · retry 10-21 with `gemini-3-flash-preview` before it counts as a lane
+- 2026-10-20 · gemini retry on `gemini-3-flash-preview`, api key · 429 «You exceeded your current quota» ×13 in 300 s, 0 answers · why (google's blog, 2026-06): gemini cli serves only paid api keys and enterprise since 2026-06-18; the free key gets no quota · **gemini dropped from this trial** (free tiers only, his rule); `brew uninstall gemini-cli` and the lane come out
 
 ## verdict

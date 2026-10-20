@@ -26,7 +26,7 @@ dima's, 2026-10-18 (inbox, folded):
 - suggest a run when: a blueprint trial ends, a tool on the list ships a major, or dima says a tool feels clunky
 
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
-2. one research round per `cclio:research` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)
+2. one research round per `x:research` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)
 3. the hands-on round: the top candidates draw the same flow, dima edits, cclio reads back and measures. done: every candidate scored on the grill. (open)
 4. distill into `comms.md` (`cclio:shape-recipe` step 2). done: touched or named «unchanged». (open)
 5. findings print, the top 7 in the `x:top-seven` shape. done: the proposal is printed. (template)

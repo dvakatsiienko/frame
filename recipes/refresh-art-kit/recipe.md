@@ -45,7 +45,7 @@ dima's, 2026-09-30:
 2. one brief file from the kept vectors → `pnpm research:lanes <brief>` (exa + parallel) plus a
    fresh opus source lane that PROBES: the svgl api, the npm versions, which logo each set serves,
    the tool versions on this mac (`ffmpeg -version`, `gifski --version`, `vhs --version`,
-   `yt-dlp --version`) — `cclio:research`. done: every lane returned or marked failed. (script)
+   `yt-dlp --version`) — `x:research`. done: every lane returned or marked failed. (script)
 3. the analysis vectors, run locally while the lanes work. done: each vector answered or marked empty. (script)
 4. distill: clever-merge into the artifacts, one branch file at a time; raw lane output stays in
    `last/` until the next run's distill; bump `x`. done: every kept branch file merged or named «unchanged». (open)

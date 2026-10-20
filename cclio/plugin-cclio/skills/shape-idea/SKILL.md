@@ -23,7 +23,7 @@ word. skipping a step happens only on his word, named out loud.
    settled or parked by name. always; skipped only on his word. a re-shape grills what exists: why,
    for whom, what is missing, what should go. in the grill shape (`habit-dima-comms`).
 3. **prior art** — does it exist already, and can we use it instead of building?
-   `advise-project-approach` for a plan or a stack; the research lanes (`cclio:research`) for
+   `advise-project-approach` for a plan or a stack; the research lanes (`x:research`) for
    the market. then the lib search: per part of the build (a waveform, a hotkey, a pan/zoom surface),
    the solid, maintained libraries that already solve it — dima thinks in frontend, so the under-the-hood
    parts are the ones to hunt. candidates to test drive print as a ranked top 7 in the `x:top-seven` shape, a ⭐ rating

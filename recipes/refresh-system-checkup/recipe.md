@@ -31,9 +31,9 @@ dima's, 2026-10-19 (folded):
 - suggest a run when: a check has gone 90 days green, a checkup run misses something dima then catches, or a cc release adds a doctor-style built-in
 
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
-2. one research round per `cclio:research` (exa + parallel + an opus source lane), built by `pnpm recipe:brief refresh-system-checkup`. done: every lane returned or marked failed. (script)
+2. one research round per `x:research` (exa + parallel + an opus source lane), built by `pnpm recipe:brief refresh-system-checkup`. done: every lane returned or marked failed. (script)
 3. distill into the plate: each check kept, added (with its home and its run line) or proposed for removal; the prior-art doc rewritten to today's picture. done: both artifacts touched or named «unchanged». (open)
-4. findings print per `cclio:research` § the print. done: printed. (template)
+4. findings print per `x:research` § the print. done: printed. (template)
 5. log today's line in `log.md`. done: the line is there. (open)
 
 ## vectors

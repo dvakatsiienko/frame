@@ -43,7 +43,7 @@ throwaways? dima's asks, near-verbatim:
 - «thoroughly researched and verified, along with neuroarxiv»
 - input from the first run: the ledger's cost per spread is the number the live mode multiplies
 
-lanes when it runs: `pnpm research:lanes` (exa + parallel) + an opus source lane + neuroarxiv (`cclio:research`).
+lanes when it runs: `pnpm research:lanes` (exa + parallel) + an opus source lane + neuroarxiv (`x:research`).
 
 → researched 2026-09-29 (four lanes): `docs/research/design-drift.md` — the structured layer lives, comps retire as
 dated references; live mode costs 75–225 % of a 5-hour window a week, selective ~7–22 %.
