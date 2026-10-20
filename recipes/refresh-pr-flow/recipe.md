@@ -31,17 +31,18 @@ keeps the fleet's pr flow sharp against a fast-moving world: stacked prs, ai rev
 his standing calls:
 - low-risk prs merge without his click, risky paths wait for his look (FRM-401, 2026-10-20)
 - one recipe for now — stacks, ai review and the gate; trimmed, groomed or split once the stacks question settles (2026-10-20)
-- graphite stays a vector only while it is a target; dropped from use → its vector goes. github stacks stays until tested and adopted — he expects to adopt it at some point (2026-10-20)
+- graphite is dropped everywhere, never tried (2026-10-20): cursor owns it and builds something else, no `gt` release since may, its reviewer trailed greptile and coderabbit; github's native stacks are closer to the platform. github stacks stays until tested and adopted — he expects to adopt it at some point
+- stacks support in `x` is an extension: the plain pr flow keeps working untouched, and the stacks part is easy to remove — kept in the cli even if stacks are set aside, for a later revisit (2026-10-20)
 - the measurement lives in the stacked-prs test drive, `docs/test-drive/stacked-prs.md` (2026-10-20)
 
 ## the run
 
 - stacked prs are tried by hand on a real coder job, never inside an automated sweep (his 09-26 call)
 - each coder lane that opened a pr proposes this recipe's vector changes in its retro (the coder seat)
-- suggest a run when: `gh stack` or graphite ships a release, or a coder lane's pr took more than 3 review rounds
+- suggest a run when: `gh stack` ships a release, or a coder lane's pr took more than 3 review rounds
 
 1. **shape**: `cclio:shape-recipe` step 0, the grill. done: his word on the round. (open)
-2. **research** — the brief from `pnpm recipe:brief refresh-pr-flow`; `pnpm research:lanes <brief> <out>` + an opus source lane (gh, graphite and linear docs, our ci workflows). done: every lane returned or marked failed. (script)
+2. **research** — the brief from `pnpm recipe:brief refresh-pr-flow`; `pnpm research:lanes <brief> <out>` + an opus source lane (gh and linear docs, our ci workflows). done: every lane returned or marked failed. (script)
 3. **distill** — into `docs/knowledge/pr-flow.md` (the flow's core and its traps) and the pr part of `x:crew-coder`. done: both read and touched, or named «unchanged». (open)
 4. **log** — the line in `log.md`. done: the line is there. (template)
 
@@ -50,7 +51,6 @@ his standing calls:
 ### research
 - stacked prs with agents, any tool: the best tools and practices that make stack operations simple for an agent — a hunt, never a fixed pair
 - github stacks (`gh stack`): how an agent drives it with no prompt, how a verifier reviews one layer against the whole stack — until tested and adopted
-- graphite (`gt`, its ai reviewer): alive, folding into cursor, or dying — only while graphite is a target
 - the worth of stacks: the gain and the maintenance burden against plain prs, as others measured it
 - ai code review in practice: what the best teams automate and what still needs a human, by risk tier
 - ci on stacks: required checks per layer, a restack re-running ci, renovate moving main under an open stack

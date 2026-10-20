@@ -1,5 +1,5 @@
 ---
-status: frozen
+status: dropped
 until: 2026-11-07
 dies-when: the verdict line below is written
 ---
@@ -26,3 +26,5 @@ dima, 2026-10-14: «I feel that Graphite will not prove itself either as an adve
 ## rounds
 
 ## verdict
+
+- 2026-10-20 · **dropped, never run** (dima): cursor acquired graphite and builds something else; no `gt` release since 2026-05-04, ~6 months; its ai reviewer trailed greptile and coderabbit in our earlier review runs, and greptile was itself dropped for low value. github's native stacks are closer to the platform and more reliable; the measurement moves to `docs/test-drive/stacked-prs.md`, github stacks only.

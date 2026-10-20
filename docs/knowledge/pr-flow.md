@@ -31,7 +31,7 @@ when:
 - the cheap path: `gh stack link` turns branches made by any tool into a stack in one api call, so `x lane` can keep making the branches; it refuses a pr with auto-merge on
 - merge from the bottom, or a contiguous range upward
 
-**graphite (`gt`)** — alive (cursor's acquisition note: same team, same product), no `gt` release since 2026-05-04. merging a layer deletes its branch in our repos (delete-on-merge), which closes the prs stacked on it — github's stacks retarget them instead. its test drive is frozen to 11-07.
+**graphite (`gt`) — dropped 2026-10-20, never tried** (dima): cursor owns it, no `gt` release since 2026-05-04, its reviewer trailed greptile and coderabbit. not re-proposed without a new reason.
 
 **linear** shows stack order and status in diffs (2026-10-08); it reads, never manages. it needs «enable code reviews» on, code access per repo and each user's personal github connection (not checked in x-com yet). put the ticket id in every layer's branch name; a ticket linked to several prs closes at the last merge.
 

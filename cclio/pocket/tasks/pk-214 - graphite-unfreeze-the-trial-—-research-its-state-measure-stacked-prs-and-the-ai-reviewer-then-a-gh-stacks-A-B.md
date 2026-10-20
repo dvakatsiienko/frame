@@ -3,10 +3,10 @@ id: PK-214
 title: >-
   graphite: unfreeze the trial — research its state, measure stacked prs and the
   ai reviewer, then a gh stacks A/B
-status: open
+status: done
 assignee: []
 created_date: '2026-10-20 11:02'
-updated_date: '2026-10-20 12:28'
+updated_date: '2026-10-20 13:42'
 due_date: '2026-10-27'
 labels:
   - m
@@ -30,4 +30,6 @@ inbox 2026-10-20, dima: the test drive stays parked too long. let's install grap
 2026-10-20 14:18 dima: add to the stacked prs scope — when we research and make the recipe, check how linear works with stacked prs: right away, or some knobs need tweaking. sources: https://linear.app/docs/diffs#stacked-prs · https://linear.app/changelog/2026-10-08-stacked-pull-requests
 
 ticket: BYT-98 — the same question (stacked prs, graphite vs github native); research folded under its vectors 2026-10-20
+
+2026-10-20 16:41 dima: graphite dropped everywhere, never tried (reasons in BYT-98 § dima notes); the stacks want lives in docs/test-drive/stacked-prs.md (github stacks only) and BYT-98
 <!-- SECTION:NOTES:END -->

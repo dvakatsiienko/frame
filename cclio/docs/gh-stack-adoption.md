@@ -263,6 +263,8 @@ greptile's ci pass added nothing; pr 2 decides.
 
 ## step 4 — graphite, timeboxed probe
 
+📌 **dropped 2026-10-20, never run** (dima): cursor owns graphite, no `gt` release since may, its reviewer trailed greptile and coderabbit. step 5 (`gh stack`) runs alone; its measurement is `docs/test-drive/stacked-prs.md`.
+
 - [ ] **goal:** learn the stacking mental model on the tool with the nicer ui, and see its reviews.
 
 **hard stop: one multi-layer assignment, or 5 days, whichever comes first.** this is a probe, not
