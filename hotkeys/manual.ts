@@ -8,6 +8,7 @@ export const manualHotkeys = [
             ['a', 'Claude'],
             ['b', 'Bartender toggle'],
             ['2', 'Cursor'],
+            ['3', 'Figma'],
             ['f', 'Finder'],
             ['1', 'Google Chrome'],
             ['e', 'Linear'],
