@@ -15,7 +15,7 @@ Shared files are Dima's living space; leftovers cost him attention and blur what
 
 ## the pocket — cclio's local work pool (Backlog.md in `~/frame/cclio/pocket/`, dima 2026-10-07, Backlog.md adopted 2026-10-11)
 
-one `pk-N` task per item (`backlog task create|edit|list --plain --sort ordinal`, from a script `BACKLOG_CWD=~/frame/cclio`): status open · claimed · waiting · done, the `ordinal` is the order, a size label xs · s · m · l; a spec-sized item gets its spec in the target repo's `.scratch/`.
+one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved between priorities by `node script/pocket-move.ts <PK-N> now|next|later`, both picking the band's ordinal; else `backlog task edit|list --plain --sort ordinal`, from a script `BACKLOG_CWD=~/frame/cclio`): status open · claimed · waiting · done, the `ordinal` is the order, a size label xs · s · m · l; a spec-sized item gets its spec in the target repo's `.scratch/`.
 **a note is appended, never replaced**: `backlog task edit <id> --append-notes "…"`; `pocket-check` reds a note line lost since HEAD.
 <!-- failure: a `--notes` close replaced PK-90's and PK-141's notes, dima's quoted steers (memory-sweep log, wishkeeper siesta rounds 7–13); `--notes` replaces every note -->
 

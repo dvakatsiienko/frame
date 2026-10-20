@@ -24,10 +24,11 @@ export function dueFor(size: string, today: string) {
     return day.toISOString().slice(0, 10);
 }
 
-function ordinals() {
+export function ordinals(skip?: string) {
     const dir = path.join(pocket, 'pocket/tasks');
     return readdirSync(dir)
         .filter((f) => f.endsWith('.md'))
+        .filter((f) => !skip || !f.startsWith(`${skip.toLowerCase()} - `))
         .map(
             (f) =>
                 readFileSync(path.join(dir, f), 'utf8').match(
