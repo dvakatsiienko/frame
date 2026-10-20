@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 17:00'
-updated_date: '2026-10-20 11:06'
+updated_date: '2026-10-20 11:53'
 labels:
   - m
 dependencies: []
@@ -27,4 +27,6 @@ parked: plugin eval runs ~6 agent sessions per case; it waits for the $200 plan 
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
 
 2026-10-20 parked: outside today's sweep (no window before refresh-coord-mechanics and the pm revamp plan)
+
+2026-10-20 14:52 blocker named: a skill eval spends the weekly usage, so it runs only on dima's word (rules/fleet-tooling.md).
 <!-- SECTION:NOTES:END -->

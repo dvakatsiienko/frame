@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-19 12:17'
-updated_date: '2026-10-19 15:40'
+updated_date: '2026-10-20 11:53'
 due_date: '2026-10-21'
 labels:
   - m
@@ -28,4 +28,8 @@ inbox 10-19 (wish + his ask), folded: before orbit we talked through a «waiting
 restored from the raw: stop using mods like orbit and phases — he does not see them and does not rely on them — and fall back to previews.
 
 18:40, dima o67 (17:17): «let's do both after big tickets are done» — this grill waits for the big tickets (FRM-219, FRM-270).
+
+2026-10-20 inbox (PK-209, folded here), dima: «yesterday you fixed the waiting-for-your-word block, so it should ride the cw memory sync; does it already work? can i run the sync → pbcopy → paste into claude.ai → account → profile, and cw receives it?» answer 14:55: not yet — no rule line holds the block (grep over rules/ and CLAUDE.md: none); the pipe itself exists (pnpm memory-sync:copy → clipboard → claude.ai profile). lands with this item's build.
+
+2026-10-20 14:52 correction: the note above is stamped 14:55 but was written 14:51; and its fold dropped his want — cw threads have no orbit, so they should print that block in their replies.
 <!-- SECTION:NOTES:END -->

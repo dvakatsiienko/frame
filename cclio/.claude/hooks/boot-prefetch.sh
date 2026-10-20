@@ -294,9 +294,12 @@ echo "-- runtime (a parked session keeps its binary, plugins and feature gates u
 pid=$$; born=""
 for _ in 1 2 3 4 5 6; do
   pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' '); [ -z "$pid" ] || [ "$pid" = 1 ] && break
-  case "$(ps -o args= -p "$pid" 2>/dev/null)" in claude\ *|*/bin/claude\ *|*/bin/claude|*/versions/[0-9]*) born=$(ps -o lstart= -p "$pid"); age=$(ps -o etime= -p "$pid" | tr -d ' '); break;; esac
+  args=$(ps -o args= -p "$pid" 2>/dev/null)
+  case "$args" in claude\ *|*/bin/claude\ *|*/bin/claude|*/versions/[0-9]*|*/claude-code/[0-9]*) born=$(ps -o lstart= -p "$pid"); age=$(ps -o etime= -p "$pid" | tr -d ' '); break;; esac
 done
-[ -n "$born" ] && echo "process $pid up ${age} (since ${born}) · $(claude --version 2>/dev/null)" || echo "process: not found in the parent chain"
+# the running build, read from its own path: the desktop app bundles its own cc, so `claude --version` names the cli's, not this one
+ver=$(printf '%s' "$args" | grep -oE '(claude-code|versions)/[0-9]+\.[0-9]+\.[0-9]+' | head -1 | cut -d/ -f2)
+[ -n "$born" ] && echo "process $pid up ${age} (since ${born}) · cc ${ver:-unknown}" || echo "process: not found in the parent chain"
 # a `--bg` coder claims the daemon's pre-warmed spare; a day-old spare booted one without the repo AGENTS.md (2026-09-22)
 live_pids=$(jq -r '.pid // empty' "$HOME"/.claude/sessions/*.json 2>/dev/null)
 spares=0

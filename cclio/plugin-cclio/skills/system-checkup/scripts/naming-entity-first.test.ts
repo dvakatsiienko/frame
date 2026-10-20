@@ -20,7 +20,7 @@ describe('isVerbFirst', () => {
         ['deploy-watch', '-'],
         ['dev:cv', ':'],
         ['build:trophy-sys', ':'],
-        ['watch:add', ':'],
+        ['x-changedetector:watch-add', ':'],
     ] as const)('passes %s', (name, separator) => {
         expect(isVerbFirst(name, separator)).toBe(false);
     });

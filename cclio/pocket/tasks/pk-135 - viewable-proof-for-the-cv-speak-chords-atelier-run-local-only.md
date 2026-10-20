@@ -4,7 +4,7 @@ title: 'viewable proof for the cv: speak, chords, atelier run local only'
 status: open
 assignee: []
 created_date: '2026-10-14 16:43'
-updated_date: '2026-10-20 11:06'
+updated_date: '2026-10-20 11:53'
 labels:
   - m
 dependencies: []
@@ -27,4 +27,6 @@ parked: dima «all to solve later», the cv round picks it up
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
 
 2026-10-20 parked: outside today's sweep (no window before refresh-coord-mechanics and the pm revamp plan)
+
+2026-10-20 14:52 blocker named: it belongs to the portfolio step (roadmap step 7), not today's sweep.
 <!-- SECTION:NOTES:END -->
