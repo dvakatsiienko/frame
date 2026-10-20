@@ -219,6 +219,9 @@
     "mattpocock-skills@mattpocock": true,
     "x-cw@dotfiles": false
   },
+  "skillOverrides": {
+    "anthropic-skills:web-artifacts-builder": "off"
+  },
   "extraKnownMarketplaces": {
     "x": {
       "source": {
