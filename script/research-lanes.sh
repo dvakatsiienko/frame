@@ -1,7 +1,7 @@
 #!/bin/sh
-# runs the free research lanes on one brief, in parallel: an exa agent run, a parallel.ai core run and a linkup research run (on trial).
+# runs the free research lanes on one brief, in parallel: an exa agent run, a parallel.ai core run a linkup research run and a gemini cli run (both on trial).
 # usage: pnpm research:lanes <brief.md> [out-dir] — the opus lane is an Agent the caller spawns beside it.
-# writes <out>/exa.md, <out>/parallel.md and <out>/linkup.md, then prints one line per lane: status, seconds, chars, cost.
+# writes <out>/exa.md, <out>/parallel.md, <out>/linkup.md and <out>/gemini.md, then prints one line per lane: status, seconds, chars, cost.
 set -u
 self=$(cd "$(dirname "$0")" && pwd)/$(basename "$0")
 
@@ -33,6 +33,14 @@ if [ "${1:-}" = "--lane" ]; then
       code=$?
       jq -r '.output.answer // .answer // .output // empty | if type == "string" then . else tojson end' "$out/linkup.json" > "$out/linkup.md" 2>> "$out/linkup.log"
       echo "linkup: exit $code · $(( $(date +%s) - s )) s · $(wc -c < "$out/linkup.md" | tr -d ' ') chars · \$0.25 (research S)"
+      exit $code
+      ;;
+    gemini)
+      # on trial beside linkup: docs/test-drive/linkup.md — skips until dima signs in once with google
+      [ -s "$HOME/.gemini/oauth_creds.json" ] || { echo "gemini: skipped · not signed in (run gemini once)"; exit 0; }
+      gemini -p "Research this brief with google_web_search. Cite a url for every claim. $(cat "$brief")" > "$out/gemini.md" 2> "$out/gemini.log" < /dev/null
+      code=$?
+      echo "gemini: exit $code · $(( $(date +%s) - s )) s · $(wc -c < "$out/gemini.md" | tr -d ' ') chars · free (google sign-in)"
       exit $code
       ;;
   esac
@@ -68,11 +76,14 @@ timeout 900 "$op" "$self" --lane parallel "$brief" "$out" > "$out/parallel.statu
 par=$!
 timeout 1200 "$op" "$self" --lane linkup "$brief" "$out" > "$out/linkup.status" 2>&1 &
 lnk=$!
+timeout 900 "$op" "$self" --lane gemini "$brief" "$out" > "$out/gemini.status" 2>&1 &
+gem=$!
 failed=0
 wait $exa || failed=1
 wait $par || failed=1
 wait $lnk || failed=1
-cat "$out/exa.status" "$out/parallel.status" "$out/linkup.status"
+wait $gem || failed=1
+cat "$out/exa.status" "$out/parallel.status" "$out/linkup.status" "$out/gemini.status"
 echo "out: $out"
 # a fan-out that ran nothing must not read green: any failed lane fails the run
 exit $failed

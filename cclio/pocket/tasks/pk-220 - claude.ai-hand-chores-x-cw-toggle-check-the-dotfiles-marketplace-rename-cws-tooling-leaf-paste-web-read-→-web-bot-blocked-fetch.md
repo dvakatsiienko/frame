@@ -6,6 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-20 15:07'
+updated_date: '2026-10-20 15:42'
 due_date: '2026-10-22'
 labels:
   - xs
@@ -20,3 +21,9 @@ ordinal: 99999
 <!-- SECTION:DESCRIPTION:BEGIN -->
 dima's hands on claude.ai (o13, o32, 2026-10-20): the x-cw connector toggle checked, the «dotfiles» marketplace renamed, cw's /areas/tooling.md re-pasted so it stops saying web:read. the memory block itself was on his clipboard at 17:30.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+18:44 dima: x-cw reinstalled; marketplace is x-com (settings read x-cw@x-com). left: cw's /areas/tooling.md re-paste — the shared section of rules/fleet-tooling.md was put on his clipboard at 18:44.
+<!-- SECTION:NOTES:END -->

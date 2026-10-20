@@ -90,6 +90,7 @@ brew "leaf-markdown-viewer"      # tui markdown reader — mermaid, latex, watch
 brew "glow"                      # charm's markdown reader — the charm stack we plan the cli on
 brew "duckdb"                    # SQL over jsonl in place — transcripts, x traces; docs/test-drive/duckdb.md
 brew "ctx7"                      # context7 docs cli — test drive vs the context7 mcp to 2026-10-07
+brew "gemini-cli"                # google's gemini cli — a free research lane on the linkup test drive
 
 # ── Odds and ends ───────────────────────────────────────────────────────────
 brew "lutzifer/tap/keyboardswitcher"    # drives the Raycast layout switcher

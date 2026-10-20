@@ -4,7 +4,7 @@ until: 2026-11-03
 dies-when: the verdict line below is written
 ---
 
-# linkup — a free backup research lane beside exa, parallel and the researcher
+# linkup — a free backup research lane beside exa, parallel and the researcher (gemini cli rides along)
 
 Ticket: none
 
@@ -18,6 +18,7 @@ dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everyt
 - cli: `linkup-search-cli` 1.4.1 (`pnpm add -g`, binary `linkup`, official, LinkupPlatform/linkup-cli); `--json` for raw output
 - key: 1password `dev/linkup-golden`, read as `LINKUP_API_KEY` through `script/op-run.sh` (op.env line); account imagnum.satellite@gmail.com
 - prices (pricing page, 2026-10-20): search $0.005 (flash/fast/standard) · $0.05 (deep) · fetch $0.001–$0.01 · research S $0.25, M $0.50 · free: $20 on signup, topped back up to $20 each month, «for a professional email address» (open: does gmail count)
+- gemini cli (joined 2026-10-20, dima: «install it, i sign in, and it joins the linkup test drive and gets measured too»): `brew install gemini-cli` 0.64.0, free with a google sign-in (1,000 requests a day), searches google's own index through `google_web_search`; a fifth lane in `research:lanes`, skipped until `~/.gemini/oauth_creds.json` exists; measured the same way as linkup
 - not tried: x402 pay-per-request (needs USDC), the mcp (cli first, his rule)
 
 ## day 0
@@ -33,6 +34,7 @@ dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everyt
 - `linkup fetch --render-js` — a page our fetch could not read — content or not vs `web-bot-blocked:fetch` (firecrawl)
 - `linkup tasks` — a batch of 5 lookups at once — seconds, $ vs 5 serial calls
 - the free top-up — the 2026-11-01 reset — credit back at $20 or not
+- `gemini -p` (headless, google index) — the same recipe briefs as a fifth lane — seconds, sources, unique finds vs the other four; whether free-tier prompts are used for training (google terms, open)
 
 ## rounds
 - 2026-10-20 · probe 1, `linkup search` standard + sourced answer, «when did github stacked prs go ga» · 5 s, $0.006, right (10-06), 3 sources (all secondary news sites) · vs WebSearch: same answer, linkup cited no primary source

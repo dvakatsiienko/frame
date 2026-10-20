@@ -48,6 +48,8 @@ own — the checks this plate runs itself (scripts sit in `scripts/` beside this
   - its ranked list goes to `~/frame/cclio/checkup/install-census.md`, rewritten each run, its log line pointing there
   - a 🔴 here is a removal, so it is always an orbit ask, one per item, never fixed in place; the memory sweep's prune step reads that list
 
+- **recipe-candidates** — subjects that want a recipe, and stale recipes (dima, 2026-10-20, FRM-270) · a `helper`: research docs and trials that will be refreshed again, areas with a moving outside world, each recipe's last log date · list in `~/frame/.scratch/recipe-candidates.md`, each pick an orbit ask
+
 colocated — checks that live elsewhere, run or read from here:
 - **cli-purpose** — are the `x` verbs used, is a hand-typed command worth a verb · `pnpm x:cli-census`,
   judged through `cli-drift-check`; plus dima's side (FRM-41): his zsh aliases and functions, raycast

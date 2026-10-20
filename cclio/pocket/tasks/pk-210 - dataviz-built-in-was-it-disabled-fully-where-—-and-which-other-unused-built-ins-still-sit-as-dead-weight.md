@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-20 11:02'
-updated_date: '2026-10-20 15:32'
+updated_date: '2026-10-20 15:42'
 due_date: '2026-10-23'
 labels:
   - s
@@ -29,4 +29,6 @@ inbox 2026-10-20, dima: yesterday i asked you to disable it fully, because we no
 2026-10-20 15:20: dima's yes on the dedup. found: x-cw, desktop-commander and humanize are claude.ai account plugins the desktop app syncs into every Code tab session (Claude/local-agent-mode-sessions/.../rpm/manifest.json); anthropic-skills (theme-factory, web-artifacts-builder, docx…) is the desktop's own plugin, not cc's. cc's own bundled set is dataviz plus the core cc skills. applied: enabledPlugins «x-cw@dotfiles»: false in home/.claude/settings.json — whole plugin, so a skill added to the cw mirror later stays out too. UNPROVEN: whether the desktop honors enabledPlugins for a synced plugin; proof = the next fresh Code tab session lists no x-cw:* skill (check at the next boot). dataviz verdict waits on dima's look at the samples artifact.
 
 18:32 ccrow probe (cli --bg, cc 2.1.304): no x-cw:*, no anthropic-skills:* in her list — inconclusive, a cli session never gets the desktop's synced plugins. this desktop session (started 13:58, before the 15:20 change) still lists anthropic-skills:web-artifacts-builder. the proof stays a fresh desktop Code tab session.
+
+18:44 dima: test tomorrow (10-21) — he spawns a fresh ccrow from the desktop app before booting cclio, then cclio sends her the check (prompt printed in the 18:4x reply). fallback: the next mods coder's first reply lists its skills. kept by hand here so it is not forgotten.
 <!-- SECTION:NOTES:END -->
