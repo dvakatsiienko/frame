@@ -1,7 +1,7 @@
 ---
 name: handoff
 argument-hint: "[focus on] | spawn [focus on] | <session-id|name> [focus on] | list | peek <slug> | delete"
-description: Load on /handoff with any argument shape — focus, spawn, <session-id|name> push, list, peek <slug>, delete — and on an incoming HANDOFF REQUEST message.
+description: Load on /handoff with any argument shape — focus, spawn, «session-id or name» push, list, peek «slug», delete — and on an incoming HANDOFF REQUEST message.
 ---
 
 # Handoff (sender)
