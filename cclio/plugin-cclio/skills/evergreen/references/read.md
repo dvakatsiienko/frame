@@ -9,6 +9,7 @@ gh pr list -R dvakatsiienko/<repo> --search 'author:app/renovate' --json number,
 brew outdated --json=v2 --greedy   # the brew lane, same digest
 brew list --pinned
 brew --version                     # brew ITSELF — a major is a digest line; auto-update once jumped 4 → 7 unseen
+gh issue list -R dvakatsiienko/<repo> --author app/renovate --search 'Dependency Dashboard' --json number,body   # its vulnerability and abandoned sections are digest lines
 pnpm skill:evergreen-apps          # the apps lane — due when the boot digest says a wednesday passed since the last mark
 ```
 
@@ -56,7 +57,10 @@ between. a release post on the project's blog beats the github release body when
 - **breaks** — two halves, both mandatory: (a) **peer ranges of every dependant** —
   `pnpm why <pkg>` in the repo, then `npm view <dependant> peerDependencies` for each; a range
   that excludes the new major is a hold, whatever the src says; (b) grep the repo for the apis the notes
-  name as removed or changed
+  name as removed or changed; (c) **deprecated or yanked**: `npm view <pkg>@<locked version> deprecated` and deps.dev
+  (`curl -s api.deps.dev/v3/systems/npm/packages/<pkg>/versions/<ver>` → `isDeprecated`, `advisoryKeys`) for the version
+  we run — a deprecated or advised one is a card line, «a yank is not a cve, and a cve needs no yank»
+  (borrowed from dependency-doctor, 2026-10-20)
 - **since last major** — on every major card, one clause: `<prev major> shipped <yyyy-mm-dd>, <n> months ago` (dima 2026-09-09, «for curiosity»). npm: `npm view <pkg> time --json`; others: the project's release page
 - **machine** — on a pnpm / node / biome major, also grep our own repos for the cli flags we pass (`grep -rn 'pnpm -' home/.claude cclio script` and the bytes scripts): pnpm 12 reads `-s` as `--sequential`. then `packageManager`, `engines.node`, a cli he runs by hand, a brew formula. the
   repo can be green and his shell still broken
@@ -75,7 +79,9 @@ between. a release post on the project's blog beats the github release body when
   the hood» never makes it loud. every entry is still read in full — the borrow hunt runs over
   everything — but a library (gnupg, ggml, libuv) prints only when it hands us a feature. fixes,
   minors and patches without a feature stay out, their details too (dima 2026-09-28: «fixes are
-  not interesting 95 % of cases»); a fix prints only when it ends a bug we hit. every printed
+  not interesting 95 % of cases»); a fix prints only when it ends a bug we hit, **or when its notes say
+  `cve-`, «security», «vulnerability», «deprecated», «will be removed» or «yanked»** — that one prints even on an
+  automerged patch, since nothing else shows it (the signal terms of release-radar's ranker, 2026-10-20). every printed
   entry carries its 1–4 facts as nested bullets — a name with a version and no facts is an empty
   line.
 - **every borrow carries a tag**: `apply` — a revertible change on the fleet's side (a cc setting, a hook

@@ -1,5 +1,6 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "abandonmentThreshold": "1 year",
     "commitMessagePrefix": "🌲 evergreen:",
     "extends": ["config:recommended"],
     "gomod": {
@@ -7,6 +8,7 @@
     },
     "internalChecksFilter": "strict",
     "minimumReleaseAge": "3 days",
+    "osvVulnerabilityAlerts": true,
     "packageRules": [
         {
             "description": "toolchain pins are owned by `pnpm toolchain:sync` (installed node + pnpm are the truth): .node-version, packageManager and engines never move here — #41 re-pinned node to a patch fnm did not have",

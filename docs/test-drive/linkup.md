@@ -41,5 +41,6 @@ dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everyt
 
 - 2026-10-20 · gemini probe, api key (`dev/gemini-golden`), after dima's ok removed 5 dead vibemon hooks from `~/.gemini/settings.json` · the default model and `gemini-flash-latest`: 503 «high demand» until the 120–180 s cutoff; `gemini-2.5-flash`: «no longer available to new users» · 0 answers · retry 10-21 with `gemini-3-flash-preview` before it counts as a lane
 - 2026-10-20 · gemini retry on `gemini-3-flash-preview`, api key · 429 «You exceeded your current quota» ×13 in 300 s, 0 answers · why (google's blog, 2026-06): gemini cli serves only paid api keys and enterprise since 2026-06-18; the free key gets no quota · **gemini dropped from this trial** (free tiers only, his rule); `brew uninstall gemini-cli` and the lane come out
+- 2026-10-20 · first real lane run, the evergreen vet (release-radar + dependency-doctor), same brief as exa, parallel and the researcher · 147 s, $0.25, 13.3k chars · same verdict as all (install neither); unique finds: dependabot alerts assignable to ai agents (2026-04), socket's `optimize` cli; one miss: called release-radar gemini-dependent, while the researcher read that its scheduled path calls no model · grade: useful fourth voice, below the researcher
 
 ## verdict
