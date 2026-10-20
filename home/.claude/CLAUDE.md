@@ -167,3 +167,4 @@ on partly done, flatten an exact string into prose casing.
 - 📌 announce your model in the first line of every session — «hey <model> here», read from the env,
   never inherited from a handoff or a memfile. a session cannot detect a mid-thread switch, so this
   is the only honest label on which model did which work.
+- **two cc builds run side by side, by design**: the main crew threads (cclio, sometimes a coder) run in the desktop app on its bundled cc, which trails the cli by a few versions; every `--bg` session runs the cli's cc. a version is read from the running process (`ps -o command= -p $PPID`), never `claude --version`; the lag is normal, never a flaw <!-- cc -->
