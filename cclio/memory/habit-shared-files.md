@@ -42,8 +42,9 @@ line is in front of cclio every boot.
 - **watches** — every upstream thing we follow (a github issue or pr, a release feed, a page) is a watch in x-changedetector, `http://127.0.0.1:7390`, never a link kept in prose to re-fetch; cclio owns every watch (dima, 2026-10-16: «I lean towards yourself, but you have to properly shape your habit»):
   - the trigger is an upstream link met anywhere: a member's report or retro, a ticket body, a hazard or reminder line, his inbox — the watch goes in the same turn
   - members never add one; a coder names the link in its done report (`x:crew-coder` § the report)
-  - add: `pnpm -C ~/frame watch:add <url>` — it skips a url already watched, and a github issue or pr becomes an api watch that opens its page; the boot digest's x-changedetector section prints what changed since last viewed, and the boot reads each (`cclio:boot` step 4)
-  - on trial, `docs/test-drive/x-changedetector.md`; a watch that closed upstream is removed at the halt
+  - add: `pnpm -C ~/frame x-changedetector:watch-add <url>` — it skips a url already watched, and a github issue or pr becomes an api watch that opens its page; the boot digest's x-changedetector section prints what changed since last viewed, and the boot reads each (`cclio:boot` step 4)
+  - remove: `pnpm -C ~/frame x-changedetector:watch-remove <url>` — at the boot's upstream read, the same turn, a watch dies once it is closed upstream or its fix ships in every cc we run (the desktop app's bundled one included); the board line names each removal (dima, 2026-10-20: the old «at the halt» rule never fired)
+  - on trial, `docs/test-drive/x-changedetector.md`
 
 ❗ no data loss, the pocket above all: a line he wrote or asked for moves or dies only on his word.
 

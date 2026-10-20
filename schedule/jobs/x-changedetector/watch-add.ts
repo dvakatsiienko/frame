@@ -1,9 +1,18 @@
-// usage: pnpm watch:add <url>   — a github issue or pr becomes an api watch with a jq filter, any other url a page watch
+// usage: pnpm x-changedetector:watch-add <url>   — a github issue or pr becomes an api watch with a jq filter, any other url a page watch
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-const api = 'http://127.0.0.1:7390/api/v1/watch';
+export const watchApi = 'http://127.0.0.1:7390/api/v1/watch';
+
+export function apiKey(): string {
+    const store = join(
+        homedir(),
+        '.local/share/x-changedetector/data/changedetection.json',
+    );
+    return JSON.parse(readFileSync(store, 'utf8')).settings.application
+        .api_access_token as string;
+}
 const issueFilter =
     'jq:{state, state_reason, labels: [.labels[].name], comments, closed_at}';
 
@@ -23,19 +32,16 @@ export function watchFor(url: string): WatchBody {
 
 async function main(input: string | undefined) {
     if (!input) {
-        console.error('usage: pnpm watch:add <url>');
+        console.error('usage: pnpm x-changedetector:watch-add <url>');
         process.exit(2);
     }
-    const store = join(
-        homedir(),
-        '.local/share/x-changedetector/data/changedetection.json',
-    );
-    const key = JSON.parse(readFileSync(store, 'utf8')).settings.application
-        .api_access_token as string;
-    const headers = { 'content-type': 'application/json', 'x-api-key': key };
+    const headers = {
+        'content-type': 'application/json',
+        'x-api-key': apiKey(),
+    };
     const body = watchFor(input);
 
-    const list = (await (await fetch(api, { headers })).json()) as Record<
+    const list = (await (await fetch(watchApi, { headers })).json()) as Record<
         string,
         { url: string }
     >;
@@ -53,7 +59,7 @@ async function main(input: string | undefined) {
         }
     }
 
-    const res = await fetch(api, {
+    const res = await fetch(watchApi, {
         body: JSON.stringify(body),
         headers,
         method: 'POST',
