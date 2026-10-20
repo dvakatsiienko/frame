@@ -34,8 +34,8 @@ WAIT_LINE = re.compile(r"^\s*🔭.*$", re.M)
 # an internal id dima cannot read cold: an orbit ask, a pocket item, a letter-digit label (o54: o56, PK-50, I7); a grill's
 # `Q1` is its own label, printed with its question in the same reply
 INTERNAL_ID = re.compile(r"(?<![\w/.#-])(o\d{1,4}|[Pp][Kk]-\d{1,4}|[A-PR-Z]\d{1,2})(?![\w/-])")
-# glossed: words right after it in brackets, or after a colon or a dash, at least two of them
-GLOSS_AFTER = re.compile(r"^\s*(?:\(|:\s|[—–-]\s|=\s)\s*[^\s)]+\s+[^\s)]+")
+# glossed: words right after it in brackets, after a colon or a dash, or a comma appositive («PK-219, the cli wish»), at least two of them
+GLOSS_AFTER = re.compile(r"^\s*(?:\(|:\s|[—–-]\s|=\s|,\s+(?:the|your|my|our|a|an)\s)\s*[^\s)]+\s+[^\s)]+")
 MD_LINK_LABEL = re.compile(r"\[[^\]]*\]\([^)]*\)")
 # a can't with no command beside it is an inference dressed as a fact (two unproven can'ts on 10-13: PK-98, the hook claim)
 CANT = re.compile(r"\b(?:can't|cannot|can not|impossible)\b", re.I)
