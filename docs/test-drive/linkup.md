@@ -35,5 +35,7 @@ dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everyt
 - the free top-up — the 2026-11-01 reset — credit back at $20 or not
 
 ## rounds
+- 2026-10-20 · probe 1, `linkup search` standard + sourced answer, «when did github stacked prs go ga» · 5 s, $0.006, right (10-06), 3 sources (all secondary news sites) · vs WebSearch: same answer, linkup cited no primary source
+- 2026-10-20 · probe 2, `linkup research` depth S, «does gh-stack define an exit code for stacks not enabled» · 153 s, $0.25, right (9), cited gh-stack's `skills/gh-stack/SKILL.md` and said it could not surface the go file · vs the researcher today: same verdict, the researcher read `cmd/utils.go`; linkup beat my own readme-based «correction» · the gmail signup got the free $20 (balance 19.994 before the probes, 19.744 after) — the kill rule's gmail clause is off
 
 ## verdict

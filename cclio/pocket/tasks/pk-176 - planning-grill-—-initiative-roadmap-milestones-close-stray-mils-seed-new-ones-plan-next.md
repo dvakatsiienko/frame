@@ -3,7 +3,7 @@ id: PK-176
 title: >-
   planning grill — initiative, roadmap, milestones: close stray mils, seed new
   ones, plan next
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-18 13:41'
 updated_date: '2026-10-20 12:04'
@@ -19,6 +19,7 @@ ordinal: 10500
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+**waiting for:** the big tickets landing (dima o67, 10-20: «let's do both after big tickets are done»)
 dima, 2026-10-18 (inbox steering + W1 «lin mils»): after the pocket and the strays — a planning grill. revisit the initiative, roadmap and mils: are they in good shape after the memory sweep, do they need an update? hunt and close stray milestones, seed new ones, plan next. my vision: resume speak app v2 if the weekly window has space; otherwise continue meta optimisations — for a long time i wanted two big things: oxc/vp (and delete biome fully) and/or pnpm→bun (FRM-148, BYT-38).
 <!-- SECTION:DESCRIPTION:END -->
 

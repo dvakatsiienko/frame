@@ -6,12 +6,12 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-20 13:42'
-updated_date: '2026-10-20 15:07'
+updated_date: '2026-10-20 15:10'
+due_date: '2026-10-24'
 labels:
   - m
 dependencies: []
 priority: later
-due_date: '2026-10-24'
 type: wish
 ordinal: 144000
 ---
@@ -43,4 +43,6 @@ dima 2026-10-20 16:41, folded: since gh stacks and stacked prs need cli changes,
 18:08 note: wishkeeper flagged two slips here — the «17:45 sealed» stamp ran ~17:38, and o39/o41 were ticked on trust: dima, o41, folded: «honestly, i still didn't get how it works — it's tricky for me to follow the tech details, but i decided to believe your proposition. let's try.» re-explain the stack mechanics at the first stack lane.
 
 **waiting for:** the refresh-crew-coordinator run (dima o44: spawn any lane after it) — then spawn cli lane 1
+
+18:10 correction of the 17:25 note: gh-stack DOES have exit 9 (ErrStacksUnavailable, cmd/utils.go:36, on a stacks-api 404 — «not enabled for this repository»); the readme's table stops at 8. FRM-404 refuses at once on it. the researcher lane caught my wrong fix.
 <!-- SECTION:NOTES:END -->
