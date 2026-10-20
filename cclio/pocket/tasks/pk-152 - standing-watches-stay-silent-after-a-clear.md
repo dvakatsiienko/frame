@@ -4,7 +4,7 @@ title: standing watches stay silent after a /clear
 status: waiting
 assignee: []
 created_date: '2026-10-15 23:08'
-updated_date: '2026-10-19 17:06'
+updated_date: '2026-10-20 11:22'
 due_date: '2026-10-26'
 labels:
   - s
@@ -33,4 +33,6 @@ fixed 10-16: watch-once.sh records the arming session id; a /clear mints a new i
 19:10 dima (o80 steer «ccrow before halt?»): the proof runs on ccrow at the halt, right before she stops — read her registry sessionId, clear her, read it again; a cleared ccrow costs nothing then. open: the door that clears a --bg session (a SendMessage is literal text, never a slash command); none found → his next real /clear of cclio.
 
 2026-10-19 20:08 plan (dima: «ccrow /clear probe if still needed»): ccrow is a cli --bg session, no door sends it a /clear, so the probe runs on cclio itself: at the halt cclio re-arms one watch, then dima types /clear here after the CST; session-probe.log shows the clear's SessionStart (source, new id, same pid) and the next boot reads the cleared session's transcript for any watch notice. dima's only action: the /clear.
+
+2026-10-20 14:22 dima's steer: invent a proper test. method: expect drives a real interactive cc (haiku), a fake watch fires 60 s after arming, /clear at ~45 s, a control run without the clear (script: session scratchpad clear-probe/run.exp). harness runs (cc boots, arms the watch) but 3 runs gave no verdict: sessions under /private/tmp saved no transcript, and the control showed no notice in the TUI text — no positive control. next: run from a ~/.claude/jobs/<id>/tmp dir (earlier probes saved transcripts there), wait 180 s. evidence so far (10-19 20:18): at the clear cc itself killed both watches. if the probe confirms, watch-once's session-id branch is dead weight and goes.
 <!-- SECTION:NOTES:END -->

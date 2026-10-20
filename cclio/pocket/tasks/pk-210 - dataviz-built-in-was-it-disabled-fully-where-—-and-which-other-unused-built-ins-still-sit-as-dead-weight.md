@@ -1,0 +1,23 @@
+---
+id: PK-210
+title: >-
+  dataviz built-in: was it disabled fully, where — and which other unused
+  built-ins still sit as dead weight
+status: open
+assignee: []
+created_date: '2026-10-20 11:02'
+updated_date: '2026-10-20 11:02'
+due_date: '2026-10-23'
+labels:
+  - s
+dependencies: []
+priority: next
+type: question
+ordinal: 99100
+---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+inbox 2026-10-20, dima: yesterday i asked you to disable it fully, because we now use n8n or obsidian for diagramming. did you disable it? i missed your report. if yes, where is it disabled? also go see and tell what other similar built-in stuff you still have enabled that i don't use and that sits as dead weight. note: the dataviz skill is still listed in this 10-20 session's skill list.
+<!-- SECTION:DESCRIPTION:END -->
