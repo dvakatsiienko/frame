@@ -165,8 +165,9 @@ file he names.
 - nothing to ask → one ➡️ line; a quick answer carries neither.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
-- **with orbit switched off, a questionnaire dima fills in holds one item per line**, numbered `1.` `2.`: the item, the ➡️
-  recommendation, and the line's end free for his `←`.
+- **no board in reach (cw always; cc with orbit off or in mobile mode), the reply ends with the asks fence**: «⏳ waiting on
+  your word:», then a fence holding one ask per line, numbered `1.` `2.`: the item, the ➡️ recommendation, and the line's end
+  free for his `←` (dima, 2026-10-20: cw has no orbit).
 - give the context needed to choose fast, and no more.
 - **a choice prints as `a) … b) …`**, each option with its consequence in his words, ≤15 words; never
   an abstract axis («keep the linear scale or change the truth of the scale» cost an «eli5» turn).

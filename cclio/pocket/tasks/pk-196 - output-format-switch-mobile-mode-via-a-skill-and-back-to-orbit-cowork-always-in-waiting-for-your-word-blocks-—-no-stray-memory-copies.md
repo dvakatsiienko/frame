@@ -3,10 +3,10 @@ id: PK-196
 title: >-
   output format switch: mobile mode via a skill and back to orbit; cowork always
   in waiting-for-your-word blocks — no stray memory copies
-status: open
+status: done
 assignee: []
 created_date: '2026-10-19 12:17'
-updated_date: '2026-10-20 12:04'
+updated_date: '2026-10-20 12:41'
 due_date: '2026-10-21'
 labels:
   - m
@@ -34,4 +34,6 @@ restored from the raw: stop using mods like orbit and phases — he does not see
 2026-10-20 14:52 correction: the note above is stamped 14:55 but was written 14:51; and its fold dropped his want — cw threads have no orbit, so they should print that block in their replies.
 
 2026-10-20 15:03 dima: undo the «after the big tickets» park — pull it close and solve it now, it is freebie-sized. moved to now, top.
+
+2026-10-20 15:45 checked first (dima o15): nothing landed 10-18..19 (git log over the format, mods, mobile-mode and cw plugin files). cc side was solved 10-13 by x-mod-stash 52408b84 — one no-board reminder for mobile mode and orbit off prints the ⏳ fence. the gap was cw only: rules/fleet-output-format.md's orbit-off questionnaire line reworded in place to «no board in reach (cw always; cc with orbit off or mobile mode) → the asks fence» — no new line, no copy. cw receives it at the next memory-sync:copy paste.
 <!-- SECTION:NOTES:END -->
