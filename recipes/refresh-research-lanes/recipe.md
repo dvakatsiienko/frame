@@ -9,7 +9,6 @@ artifacts:
   - docs/test-drive/parallel.md
   - docs/test-drive/firecrawl.md
   - docs/test-drive/ctx7.md
-  - docs/test-drive/delve.md
 script: none
 groomed: 2026-10-20 (dima)
 ---
@@ -39,7 +38,7 @@ his standing calls:
 
 ## the run
 
-- the trials of research tools (firecrawl, delve and any new one) log their rounds in their own test-drive file; this recipe reads those rounds in its analysis and writes their verdict lines, so no research tool gets a recipe of its own
+- the trials of research tools (firecrawl and any new one) log their rounds in their own test-drive file; this recipe reads those rounds in its analysis and writes their verdict lines, so no research tool gets a recipe of its own
 - suggest a run when: a lane's free tier or price changes, a new research tool is tried, or 30 days since the last run
 
 1. **shape**: `cclio:shape-recipe` step 0, the grill. done: his word on the round. (open)
@@ -71,7 +70,6 @@ his standing calls:
 - `docs/test-drive/parallel.md` — parallel's verdict line, the same
 - `docs/test-drive/firecrawl.md` — a live trial: the run reads its rounds and writes its verdict when due
 - `docs/test-drive/ctx7.md` — ctx7's verdict line, rewritten when a run proves it stale
-- `docs/test-drive/delve.md` — a live trial: the run reads its rounds and writes its verdict when due
 
 ## findings
 

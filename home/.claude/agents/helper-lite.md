@@ -6,7 +6,7 @@ model: haiku
 effort: medium
 autoCompactWindow: 100000
 omitClaudeMd: true
-tools: Read, Grep, Glob, Bash, Edit, Write, Skill
+tools: Read, Bash, Edit, Write, Skill
 ---
 
 You do one bounded job the brief spells out. You edit only files the brief names; otherwise you only read.

@@ -18,7 +18,7 @@ fetches.
 
 ## setup
 
-- `ctx7` 0.5.12 from brew (Brewfile, test-drive section); no login needed for queries
+- `ctx7` from brew (0.8.1 since 2026-10-20, up from 0.6.0; 0.8.0 dropped the `skills` and `generate` commands, which we never call) (Brewfile, test-drive section); no login needed for queries
 - `crew-coder/how-you-work.md` names it: `ctx7 library <name>` → `ctx7 docs <id> "<part>"`; a library ctx7 lacks →
   `WebSearch` for its official docs
 - the context7 mcp plugin stays installed and unmentioned, so the week shows which door a coder reaches for by itself

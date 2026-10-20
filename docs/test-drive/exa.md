@@ -20,6 +20,8 @@ Ticket: none
 
 ### search family — `POST /search`
 
+- 📌 2026-10-19 (exa changelog): `instant`, `fast` and `deep-reasoning` are legacy; `lite` ($4/1k, cache only) is new; a `warnings` array names request fields that had no effect — the rows below predate it
+
 - search `instant` · `type:"instant"` · real-time paths, autocomplete, voice, ~250 ms · $4/1k requests (≤10 results) · the cheapest door; openbenchmarks measured it ~4 points below `fast` on dev questions
 - search `fast` · `type:"fast"` · latency-sensitive search, ~450 ms · $7/1k · artificial analysis: faster per call than `auto` but costs MORE per agent task (more searches, ~392k vs ~299k model tokens)
 - search `auto` (default) · `type:"auto"` · best default quality/speed, ~1 s · $7/1k · the one to benchmark head-to-head with parallel search

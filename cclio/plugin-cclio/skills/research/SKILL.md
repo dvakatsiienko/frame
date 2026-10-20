@@ -21,6 +21,8 @@ ai are essentially free research tools).»
     agent, 2026-10-07), so the brief carries the whole question and the output shape
   - **neuroarxiv** when the question is an architecture or method one; **`advise-project-approach`**
     when a plan or a process is about to be chosen (adopted)
+- **the web lanes cannot read our files**: a vector over local files (logs, `last/` outputs, our docs) goes to the opus lane alone, never to exa or parallel — both spent part of their output saying so (refresh-research-lanes, 2026-10-20)
+- **docs reach**: one library question → `ctx7 docs`; a site's whole corpus → curl its `llms.txt` / `llms-full.txt`; firecrawl only for a bot-blocked site
 - **the lanes disagree on purpose**: exa is broad and dated, parallel the most sceptical, the opus
   lane the only one that reads source. the synthesis names where they split.
 - **one reply** when all lanes land (`habit-dima-comms`), and **recipe-first** when the subject will be

@@ -4,7 +4,7 @@ description: Sonnet, the careful tier above `helper-lite` — mechanical, fully 
 model: sonnet
 effort: medium
 omitClaudeMd: true
-tools: Read, Edit, Write, Bash, Grep, Glob, Skill
+tools: Read, Edit, Write, Bash, Skill
 skills:
   - x:guide-code
 ---

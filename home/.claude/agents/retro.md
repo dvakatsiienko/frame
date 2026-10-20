@@ -4,7 +4,7 @@ description: Opus reader that runs matt's retro over one or more finished sessio
 model: opus
 effort: medium
 omitClaudeMd: true
-tools: Read, Grep, Glob, Bash, Skill
+tools: Read, Bash, Skill
 skills:
   - mattpocock-skills:writing-for-agents
 ---
