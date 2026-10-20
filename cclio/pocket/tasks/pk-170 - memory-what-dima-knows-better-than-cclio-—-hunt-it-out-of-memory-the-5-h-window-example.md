@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-16 16:46'
-updated_date: '2026-10-18 13:42'
-due_date: '2026-10-23'
+updated_date: '2026-10-20 16:06'
+due_date: '2026-10-21'
 labels:
   - s
 dependencies: []
@@ -29,4 +29,6 @@ answer to his question: yes — cclio reads the 5-h window from ~/.claude/shelf/
 2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); joins the memory-structure rethink item born today
 
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
+
+2026-10-20 19:08 low tide: postponed to 10-21 on dima's word («resolve everything that does not want a grill, postpone everything else to tomorrow») — a grill: what dima knows better than cclio — needs his answers
 <!-- SECTION:NOTES:END -->

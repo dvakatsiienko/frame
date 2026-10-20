@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-18 13:42'
-due_date: '2026-10-22'
+updated_date: '2026-10-20 16:06'
+due_date: '2026-10-21'
 labels:
   - m
 dependencies: []
@@ -26,4 +26,6 @@ dima, 2026-10-18 (inbox steering): during the memory sweep we only groomed, trim
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
+
+2026-10-20 19:08 low tide: postponed to 10-21 on dima's word («resolve everything that does not want a grill, postpone everything else to tomorrow») — a grill: the memory structure rethink
 <!-- SECTION:NOTES:END -->

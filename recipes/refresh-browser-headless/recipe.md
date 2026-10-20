@@ -4,7 +4,6 @@ owner: [coder, coordinator]
 artifacts:
   - x:browser-headless
 script: none
-draft: true
 ---
 
 # refresh-browser-headless
@@ -20,6 +19,7 @@ dima, 2026-10-20 (the grill, Q1):
 his standing calls:
 - the checks stay sharp, and which browser door fits which job is refreshed each run (2026-10-20, Q1)
 - free and cli-first: no paid cloud browser, a cli over an mcp (2026-10-20, Q2)
+- the gains land in `x:browser-headless` and its essentials only (2026-10-20, Q4)
 
 ## the run
 
@@ -33,10 +33,14 @@ his standing calls:
 ## vectors
 
 ### research
-- (round 2 of the grill)
+- new ways for agents to see web pages: anything that could replace or beat `agent-browser`, searched widely (his «search widely»)
+- the delta: `agent-browser`, the Code tab browser pane, Claude in Chrome, computer use, playwright since the last run
+- which door fits which job: a headless check, a page dima also sees, his signed-in Chrome, a native app — and what each blocks
+- speed and tokens per check, so «more performant» carries a number
 
 ### analysis
-- (round 2 of the grill)
+- what broke for us: flawlog lines naming a browser door, coder and verifier retros on ui checks
+- the essentials against best practice: each check in `essentials/` still catching what it was written for
 
 ## artifacts
 
@@ -44,4 +48,4 @@ his standing calls:
 
 ## findings
 
-- (round 2 of the grill)
+- the checklist each print carries: one new approach worth a try, or «none found» · the door map re-checked · `agent-browser` alive and current · one essentials check borrowed or cut, or «none»

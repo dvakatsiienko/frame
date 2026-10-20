@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-20 15:07'
-due_date: '2026-10-20'
+updated_date: '2026-10-20 16:06'
+due_date: '2026-10-21'
 labels:
   - m
 dependencies: []
@@ -32,4 +32,6 @@ dima, 2026-10-18 (inbox W4): it pairs with catch-up. i want to improve your syst
 dima o34 ✓ 2026-10-20 16:5x: not built yet — shape-idea session today after the two recipe grills, then try it on PK-103 (the pm module review).
 
 dima o34, 2026-10-20, folded: «why re-date? why isn't it done at all? from what i recall it should already be implemented — or didn't we implement it yet?» → not built: parked 10-18 until the weekly reset, never picked back up. its shape-idea session sits right after the refresh-browser-headless grill (moved up in the plan 18:08).
+
+2026-10-20 19:08 low tide: postponed to 10-21 on dima's word («resolve everything that does not want a grill, postpone everything else to tomorrow») — a cclio:shape-idea session (a grill)
 <!-- SECTION:NOTES:END -->

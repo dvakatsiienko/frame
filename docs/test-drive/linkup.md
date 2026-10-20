@@ -40,4 +40,6 @@ dima, 2026-10-20 (o53): «let's try how to set it up. install the cli and everyt
 - 2026-10-20 · probe 1, `linkup search` standard + sourced answer, «when did github stacked prs go ga» · 5 s, $0.006, right (10-06), 3 sources (all secondary news sites) · vs WebSearch: same answer, linkup cited no primary source
 - 2026-10-20 · probe 2, `linkup research` depth S, «does gh-stack define an exit code for stacks not enabled» · 153 s, $0.25, right (9), cited gh-stack's `skills/gh-stack/SKILL.md` and said it could not surface the go file · vs the researcher today: same verdict, the researcher read `cmd/utils.go`; linkup beat my own readme-based «correction» · the gmail signup got the free $20 (balance 19.994 before the probes, 19.744 after) — the kill rule's gmail clause is off
 
+- 2026-10-20 · gemini probe, api key (`dev/gemini-golden`), after dima's ok removed 5 dead vibemon hooks from `~/.gemini/settings.json` · the default model and `gemini-flash-latest`: 503 «high demand» until the 120–180 s cutoff; `gemini-2.5-flash`: «no longer available to new users» · 0 answers · retry 10-21 with `gemini-3-flash-preview` before it counts as a lane
+
 ## verdict
