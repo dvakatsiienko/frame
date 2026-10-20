@@ -1,10 +1,10 @@
 ---
 id: PK-135
 title: 'viewable proof for the cv: speak, chords, atelier run local only'
-status: open
+status: done
 assignee: []
 created_date: '2026-10-14 16:43'
-updated_date: '2026-10-20 11:53'
+updated_date: '2026-10-20 12:04'
 labels:
   - m
 dependencies: []
@@ -29,4 +29,6 @@ parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the p
 2026-10-20 parked: outside today's sweep (no window before refresh-coord-mechanics and the pm revamp plan)
 
 2026-10-20 14:52 blocker named: it belongs to the portfolio step (roadmap step 7), not today's sweep.
+
+2026-10-20 folded into linear BYT-36 (cv v2) § dima notes, linked to the showcase tickets BYT-121..123, on dima's word
 <!-- SECTION:NOTES:END -->

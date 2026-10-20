@@ -60,7 +60,9 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **A fact too important for him that won't fit an ask** is printed in the reply while the ask steers.
 
-**Routine asks stay out of orbit** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged): push and commit ride one line per siesta — «at the halt unless you say stop: push frame». a close and a trash stay asked per target, as an orbit ask that leads with ⚠️ and names the target (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
+**Commit and push never ask** (dima, 2026-10-20): commit at every verified boundary, `x:cmt` running as `y+ push+`; hold only when he says so upfront (he wants to read a diff first). push whenever it fits, the halt at the latest, never as an ask or an orbit line: the remote is a backup for his pet projects, nothing waits on it.
+
+**Routine asks stay out of orbit** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged). a close and a trash stay asked per target, as an orbit ask that leads with ⚠️ and names the target (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
 
 **A spotted fix becomes an orbit ask** (dima, 2026-10-10, after a ⚠️ biome cpu line went out as info: «whenever you spot things worth fixing, leave them as options in waiting for your word»): a hazard, a slip or a stray found in passing gets an ask with its fix and a pick, never a bare report line.
 

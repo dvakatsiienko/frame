@@ -7,4 +7,5 @@ dima, 2026-10-08 (boot line): «for the 5h window — keep an eye on it and pace
 - 🌤️ **a siesta fires `cclio:siesta`** — its triggers live in that skill's «when»
 - **ahead of pace → no new lane starts; running lanes are never stopped mid-work.** a running lane finishes, gets resolved, then stops or takes a useful next job; new starts resume once the window cools back to pace (dima, 2026-10-10).
 - **the shape to avoid**: stuck at 95 % of the 5h window with the reset 3h away. the plan spreads over the window left at boot, never over a fresh 5h.
+- **«what could we spend spare quota on?»** (dima, 2026-10-20) → the pocket items `**waiting for:** a spare-quota window`, PK-119 (the skill eval) first
 - **weekly: ~15 % a day (100/7 ≈ 14.3 %, printed as 15 %) is a recommendation only.** over it → one line to dima, never a self-stop (dima, 2026-10-10: «never stop yourself, just ping me if we go overboard»). he leans to spending the week fully; idling is the waste, not going overboard. after his weekly reset (2026-10-11): «now we continue at a regular pace, so do not rush anyone anymore.»

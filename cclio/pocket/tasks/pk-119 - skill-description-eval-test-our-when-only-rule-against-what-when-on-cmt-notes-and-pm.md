@@ -3,10 +3,11 @@ id: PK-119
 title: >-
   skill description eval: test our when-only rule against what + when on cmt,
   notes and pm
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-13 17:00'
-updated_date: '2026-10-20 11:53'
+updated_date: '2026-10-20 12:04'
+due_date: '2026-11-15'
 labels:
   - m
 dependencies: []
@@ -18,6 +19,7 @@ ordinal: 105000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+**waiting for:** a spare-quota window — dima asks what to spend spare quota on; this is the first item proposed then (a skill eval spends the weekly usage)
 parked: plugin eval runs ~6 agent sessions per case; it waits for the $200 plan (renews 11-05, the 10-27 planning session decides), dima 19:59. o173 (dima ticked 19:33): ~20 queries per skill, half near-misses, 3 runs each, a fixed 60/40 split by hand. the method: author-memory/references/skill.md § evals
 <!-- SECTION:DESCRIPTION:END -->
 

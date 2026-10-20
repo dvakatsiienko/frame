@@ -6,14 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-19 15:40'
+updated_date: '2026-10-20 12:04'
 due_date: '2026-10-24'
 labels:
   - s
 dependencies: []
 priority: next
 type: wish
-ordinal: 10400
+ordinal: 10500
 ---
 
 ## Description
@@ -30,4 +30,6 @@ parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the p
 ids for the two meta wants: oxc/vp = BYT-38 (and FRM-148), pnpm→bun = FRM-148 / BYT-38 — check which is which at the grill. the 10-18 boot read: the initiative body still names step 2 fleet as running (FRM-267 is done) and «now: merge m1» while m1 sits 0/1 untouched — the body fix is a freebie done 10-18, the re-plan waits for this grill.
 
 18:40, dima o67: «let's do both after big tickets are done» — the planning grill waits for the big tickets (FRM-219, FRM-270); re-dated 10-21 → 10-24. the 10-18 parked line (until the weekly reset) is past.
+
+2026-10-20 15:03 dima: the «after the big tickets» park is undone (it was this one and PK-196) — pull it close.
 <!-- SECTION:NOTES:END -->

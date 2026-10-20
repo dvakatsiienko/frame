@@ -6,14 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-19 12:17'
-updated_date: '2026-10-20 11:53'
+updated_date: '2026-10-20 12:04'
 due_date: '2026-10-21'
 labels:
   - m
 dependencies: []
-priority: next
+priority: now
 type: wish
-ordinal: 10040
+ordinal: 1100
 ---
 
 ## Description
@@ -32,4 +32,6 @@ restored from the raw: stop using mods like orbit and phases — he does not see
 2026-10-20 inbox (PK-209, folded here), dima: «yesterday you fixed the waiting-for-your-word block, so it should ride the cw memory sync; does it already work? can i run the sync → pbcopy → paste into claude.ai → account → profile, and cw receives it?» answer 14:55: not yet — no rule line holds the block (grep over rules/ and CLAUDE.md: none); the pipe itself exists (pnpm memory-sync:copy → clipboard → claude.ai profile). lands with this item's build.
 
 2026-10-20 14:52 correction: the note above is stamped 14:55 but was written 14:51; and its fold dropped his want — cw threads have no orbit, so they should print that block in their replies.
+
+2026-10-20 15:03 dima: undo the «after the big tickets» park — pull it close and solve it now, it is freebie-sized. moved to now, top.
 <!-- SECTION:NOTES:END -->
