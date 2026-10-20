@@ -1,5 +1,5 @@
 ---
-status: adopted
+status: live
 until: 2026-10-23
 dies-when: the verdict line below is written (2026-10-21, at the refresh-crew-coordinator-composer run)
 ---
@@ -111,4 +111,4 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 
 ## verdict
 
-- 2026-10-20 · **adopted** (dima's tick, o19): 49 rounds, 61 of 65 chores green first pass, 1 rework (1.5 % against the 1-in-5 kill rule), inbox prep 79 → 86 over five rounds. the separate inbox-composer.md stays (dima, 2026-10-20: «let's keep both inbox files for now»). the start command and the receipt log stay in this file as the record.
+- 2026-10-20 · **adopted, then reopened the same hour** (dima, 15:59: «how much effort did composer save for yourself?» — never measured: the 10-14 attempt had no fixed ruler, and on 10-20 cclio routed only the inbox prep to composer and wrote every pocket item herself). the quality numbers stand: 49 rounds, 61 of 65 chores green first pass, 1 rework (1.5 % against the 1-in-5 kill rule), inbox prep 79 → 86 over five rounds. the separate inbox-composer.md stays (dima, 2026-10-20: «let's keep both inbox files for now»). the start command and the receipt log stay in this file as the record.
