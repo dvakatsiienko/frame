@@ -177,6 +177,18 @@ func TestBriefCheckReadsAFileNamedWithALineOrAnAnchor(t *testing.T) {
 	}
 }
 
+func TestBriefCheckReadsASlashCommandAsNoPath(t *testing.T) {
+	dir := repo(t)
+	for _, token := range []string{"/clear", "/mcp", "/cclio:boot", "/x:handoff-ingest"} {
+		if kind, why := missing(token, dir, nil); kind != "" {
+			t.Errorf("%q: %s %s", token, kind, why)
+		}
+	}
+	if kind, _ := missing("/no/such/dir", dir, nil); kind != "path" {
+		t.Errorf("a missing absolute path must still red, got %q", kind)
+	}
+}
+
 func TestHoldUnstagedHoldsANestedRepo(t *testing.T) {
 	dir, _ := gatedRepo(t, "test -e sub && exit 1; exit 0")
 	write(t, filepath.Join(dir, "sub/inner.txt"), "nested\n")
