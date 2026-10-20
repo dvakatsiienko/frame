@@ -5,7 +5,7 @@ artifacts:
   - docs/knowledge/pr-flow.md
   - x:crew-coder
 script: none
-draft: true
+groomed: 2026-10-20 (dima)
 ---
 
 # refresh-pr-flow
@@ -26,7 +26,13 @@ keeps the fleet's pr flow sharp against a fast-moving world: stacked prs, ai rev
 
 > stacked prs are a feature to be tested granularly; probably not a candidate for an automated sweep. (2026-09-26)
 
-his standing calls: low-risk prs merge without his click, risky paths wait for his look (FRM-401, 2026-10-20).
+> what i want from this recipe: help us understand how to use stacked prs properly via agents — search for best practices and tools that would simplify stacked pr operations. github stacks and graphite are only tools that let us use stacked prs; the recipe hunts for the best tools for stacked prs with agents, any tool. and a proper way to measure whether stacked prs actually help: the pluses and minuses, is it worth it, or are plain prs better — a gain or an additional maintenance burden? (2026-10-20, the grill)
+
+his standing calls:
+- low-risk prs merge without his click, risky paths wait for his look (FRM-401, 2026-10-20)
+- one recipe for now — stacks, ai review and the gate; trimmed, groomed or split once the stacks question settles (2026-10-20)
+- graphite stays a vector only while it is a target; dropped from use → its vector goes. github stacks stays until tested and adopted — he expects to adopt it at some point (2026-10-20)
+- the measurement lives in the stacked-prs test drive, `docs/test-drive/stacked-prs.md` (2026-10-20)
 
 ## the run
 
@@ -42,13 +48,16 @@ his standing calls: low-risk prs merge without his click, risky paths wait for h
 ## vectors
 
 ### research
-- stacked prs with agents: `gh stack` against graphite's `gt` — which an agent drives with no prompt, how a verifier reviews one layer against the whole stack
-- graphite's state: alive, folding into cursor, or dying; its ai reviewer against coderabbit
+- stacked prs with agents, any tool: the best tools and practices that make stack operations simple for an agent — a hunt, never a fixed pair
+- github stacks (`gh stack`): how an agent drives it with no prompt, how a verifier reviews one layer against the whole stack — until tested and adopted
+- graphite (`gt`, its ai reviewer): alive, folding into cursor, or dying — only while graphite is a target
+- the worth of stacks: the gain and the maintenance burden against plain prs, as others measured it
 - ai code review in practice: what the best teams automate and what still needs a human, by risk tier
-- linear and stacks: what links, what closes, what needs a setting
-- ci on stacks: required checks per layer, a restack re-running ci, renovate moving main under a stack
+- ci on stacks: required checks per layer, a restack re-running ci, renovate moving main under an open stack
+- linear and stacks: what links, what closes, what needs a setting — a one-time check, cut after the first run
 
 ### analysis
+- the stacked-prs test drive's rounds since the last run: gain against burden, read against its card
 - our pr medians per repo (`x fleet flow --days 14`) and the review rounds per coder pr since the last run
 - every hazard, guard and `x lane` verb that assumes one pr per branch — would a stack break it?
 
