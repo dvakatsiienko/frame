@@ -72,7 +72,7 @@ proposal as one line: delete, distill, or a rewritten `dies-when`. its verdict i
 read the log, cluster, ONE batched proposal, ONE approval, execute and commit. see `/cclio:flawlog`.
 **the retros, in the flush:** `ls ~/.claude/shelf/retros/` — one gatherer subagent reads them (issue type, count, paths, one quoted line per type) and its digest enters the proposal beside the flawlog's (automation candidates, verify-recipe gaps, brief lessons); the fold is the record. once the flush is applied, `trash` each folded file.
 **the sweep, after the flush:** `node ~/frame/cclio/script/halt-sweep.ts --apply --only retention` — retention (flawlog files older than 30 days, look-card shots older than 14 — evidence for nobody), each part printing its count; it defaults to a dry run.
-🚨 **the flush stops the halt**: print the proposal, wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
+🚨 **the flush stops the halt**: print the proposal in a reply before any next-step box (the box ends the turn), wait for dima's literal yes, apply it, THEN go on to the gazette and the CST. a flush decision never parks into the CST's first-acts — the next session applies it cold, far from the traces (dima, 2026-09-23: «process flawlog during traces are hot»).
 **the stories, before the proposal:** ask which catches were HIS felt sense arriving before
 the reason — those go to `memory/dima-stories.md` as appends (the leaf's own rule), not to the
 flawlog's drop pile.**verify recipes, in the flush:** a retro line naming a verify-recipe gap or a check worth adding is

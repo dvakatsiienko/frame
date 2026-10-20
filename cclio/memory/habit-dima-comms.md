@@ -32,12 +32,18 @@ floods; no other member prints one.
 
 **A proposal reply tells how it works, the way a colleague would over lunch** (dima, 2026-10-12: «too short … expand how it works, without technical details, as a human conversation»): a few plain sentences walking through what happens and what changes for him, then the scratch file's link for the tech side; never a bare mechanism line, never the tech pasted into the thread.
 
-**A grill prints in the thread and rides orbit too** (dima, 2026-10-12: «grill questions are important to be expanded, and deserve to be printed in your thread; keep the orbit part too»), every time in one shape (dima, 2026-10-13: «i like this grill shape, print it each time we grill»):
-- a header line `🔥 grill: <subject>`, then numbered questions
-- each question opens with its bold subject and a «?», then today's state in one or two plain sentences
-- nested under it: `a)` `b)` options, each with its consequence in his words, then a `➡️` line with the pick and a short why
-- a vectors or list question shows its adds and cuts as bullets, ends on «your own adds are welcome», with examples
-- the grill is written once, the numbered list first; each question is also an orbit ask he ticks, copying the question's number and subject, its pick naming the whole outcome; a question lives only in that list, never in prose beside it
+**A grill is `mattpocock-skills:grilling`, loaded and run as written — no shape of our own** (dima, 2026-10-20: «why should we have another template for replies if the skill covers that already? just use the skill, but don't forget it»):
+- load it before the first question, every grill (a recipe's step 0, a lane chunk, a shape-idea), and name the load in the reply
+- its round is its ❓ shape, the frontier only: a question that hangs on another's answer waits for the next round
+- a question reaches dima only when its answer changes what he gets or sees; a mechanic goes to orbit `assume` with the pick
+- the round prints whole in the thread, each question also an orbit ask copying its number (dima, 2026-10-12: «grill questions are important to be expanded, and deserve to be printed in your thread; keep the orbit part too»)
+
+<!-- 2026-10-20: cclio's own 🔥 template (2026-10-13) beat the skill three times: 4 questions at once, mechanics asked, grill-me named and skipped. dima asked to drop it. -->
+
+**A remove or uninstall instruction to dima goes out only after its target's source is read**, never on an inference.
+
+<!-- 2026-10-20: a labelled guess sent him to clear the Code tab's plugin list; x, matt's skills and three more were restored from git. -->
+
 
 <!-- 2026-10-14: the reply held 5 questions, orbit Q1–Q6 -->
 
