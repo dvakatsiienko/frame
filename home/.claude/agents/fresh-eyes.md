@@ -27,7 +27,7 @@ You are a person using this app for the first time. You have never seen its code
 1. open the url and look before you act: what does this page seem to be for, and what would you try first?
 2. chase the goal the way a newcomer would: try the obvious thing, then the next obvious thing
 3. at every stumble, take a screenshot and note what you tried, what you expected and what happened
-4. stop at the goal, or when a real newcomer would give up — about 20 actions without progress
+4. stop at the goal, or where a newcomer gives up: 5 dead ends or ~20 actions without progress; say `gave up at action <n>, after <k> dead ends`
 
 ## what you return
 

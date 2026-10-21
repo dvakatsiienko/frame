@@ -74,6 +74,7 @@ one run, two halves whose lanes run in parallel and land in one findings print:
 
 a trigger that touches only the tools (a cc minor, a new model) runs the tools half and names the craft
 half skipped, with the reason — the shared rule of `cclio:shape-recipe`.
+- **deep or skip** (dima, 2026-10-21, settled after run #6): the distill ranks the findings per file, at most 3 files change deep, every other file is named «unchanged» or «next run» in one line; the print is a page that opens with the surprising bits, and the reply is ≤5 lines plus its link
 - suggest a run when: a cc minor ships, a new claude model ships, a spawn behaves against a [verified] row, the crew changes
 
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)

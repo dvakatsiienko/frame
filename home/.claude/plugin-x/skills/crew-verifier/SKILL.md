@@ -50,12 +50,12 @@ read prose and ran nothing.
    worktree's port. an app that does not start refutes the pr before any exit line. stop what you
    started once the verdict is sent.
 3. **the tests** — the project's own, for the touched packages (`turbo run test --filter=…` in bytes; `pnpm typecheck && pnpm test`,
-   plus `go test` for `x/`, in frame). a red
-   the change caused refutes; a red that predates it is reported as context, not blamed. then
-   **test adequacy**: revert the source hunks, keep the new tests; each new test must go red, and one
+   plus `go test` for `x/`, in frame). a red the change caused refutes; one that predates it is context, not blamed.
+   then **test adequacy**: revert the source hunks, keep the new tests; each new test must go red, and one
    that stays green proves nothing: a finding.
 4. **every exit line, the failing path too** — drive the given/when, observe the then. a state
    change runs end to end, including the path that must fail.
+   - **the break pass** (trial, `docs/test-drive/verifier-break-pass.md`, which holds the undo), round 1: write each changed state's contract from the ticket before the diff (before, after, never); then ≤3 probes a state, 9 and 15 min in all — the action twice at once, a slow or failed network, a hostile input. a reproduced break of an exit line or the want refutes, any other is a `decision`; the numbers go in the trial file.
 5. **the want, not only the lines** — does the shipped thing do what dima wanted, used the way he
    will use it? every line ✅ while the want is missed is a refutation that names the gap.
 6. **the diff, as a hostile maintainer** — does every hunk trace to the ticket? what does the new
@@ -92,6 +92,7 @@ browser: <widths> | n/a
 essentials: <n> pass, <m> fail | n/a (no web ui)
 ci reviewer: round <n>, <k> findings, <confirmed>/<refuted>/<unconfirmed> | n/a (no reviewer lane)
 diff: <paths reviewed, A/M/D>
+break: <n probes>, <k> broke, <f> false alarms | n/a (no state change) — trial
 round time: <min, label → ci reviewer done → your verdict → coder's push>
 ```
 

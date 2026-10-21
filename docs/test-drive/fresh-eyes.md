@@ -21,6 +21,7 @@ Ticket: FRM-407
 - the control run on a clean screen — every round — false spots
 - the production build — every round — any dev-only leak met
 - a planted confusion (a button whose label says nothing) — the first round — found in 2 of 3, yes or no
+- the patience budget (5 dead ends, borrowed from `ux-testers`, run #6 of `refresh-crew-coordinator`) — every goal — the action and dead-end count where it gave up, compared across the 3 runs
 
 ## day 0
 - the users and the docs: `docs/research/blind-usability-agents.md` (UXAgent, AgentA/B, AMUSER, PerceptUI, Loop11; agent-browser's `dogfood` skill, `--action-policy`, `--allowed-domains`; the cc hook input's `agent_type`) — read 2026-10-21
