@@ -18,6 +18,7 @@ a mapped area (`blueprints/AGENTS.md`) is planned on its board first, built afte
 
 ## read his edit back
 
+- his FigJam comments, before every board edit: `~/frame/script/op-run.sh node ~/frame/cclio/script/blueprint-comments.ts`; each open one answered in the reply by its own words (the plugin api and `get_figjam` never show comments)
 - GET the workflow, diff it against the last export semantically: tiles added, removed, renamed, moved, arrows in and out, sticky text — never the raw json diff
 - `/workflows/{id}/history` keeps every version forever: the diff base when no export exists
 - every sticky or tile of his that asks something is answered in the reply, by its own words

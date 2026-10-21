@@ -4,13 +4,15 @@ owner: coordinator
 artifacts:
   - cclio/blueprints/comms.md
   - cclio/blueprints/AGENTS.md
+  - cclio/plugin-cclio/skills/author-blueprint/SKILL.md
+  - cclio/plugin-cclio/skills/author-blueprint/references/readable.md
 script: research:lanes
-draft: true
+groomed: 2026-10-21 (dima)
 ---
 
 # refresh-blueprint-comms
 
-keeps our blueprint tools the best free, local way for dima and cclio to talk through pictures.
+keeps our blueprint tools the best free, local way for dima and cclio to talk through pictures, and keeps cclio's drawing cheap for her and readable and pretty for him.
 
 ## the want
 
@@ -20,16 +22,25 @@ dima's, 2026-10-18 (inbox, folded):
 
 > «flows visualized n8n-style and editable could become a core comms point between us, since human ↔ agent comms are flawed»
 
+dima's, 2026-10-21 (chat, folded, PK-243):
+
+> «we don't have the optimization part: how to use visualization tools efficiently, as cheap as possible for you to edit while keeping the highest quality bar. I'm leaning towards FigJam, so search FigJam optimization first — tips, tricks or skills to draw better there, because sometimes you cram the arrows; maybe there is a better door, maybe even a cli. and the screenshot: don't capture it in 4K, use a lower quality to cut its size»
+
+> «how to teach agents to draw blueprints, canvases and diagrams that are readable and pretty for human reading»
+
+> «I left a comment on the board and you didn't answer it — can you see comments when you edit FigJam? what does it take to read them, and is it expensive to read them each time?»
+
 ## the run
 
 - the tool must stay local, free, fast for cclio to read and edit, and editable by dima's drag — the grill in `cclio/blueprints/PRODUCT.md` is the bar every candidate is scored against; cost breaks ties
+- FigJam leads every vector while it is the blueprint tool dima leans to; n8n, Obsidian Canvas and draw.io wait for the bench (PK-243 W8)
 - suggest a run when: a blueprint trial ends, a tool on the list ships a major, or dima says a tool feels clunky
 
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. one research round per `x:research` (exa + parallel + an opus source lane). done: every lane returned or marked failed. (script)
-3. the hands-on round: the top candidates draw the same flow, dima edits, cclio reads back and measures. done: every candidate scored on the grill. (open)
-4. distill into `comms.md` (`cclio:shape-recipe` step 2). done: touched or named «unchanged». (open)
-5. findings print, the top 7 in the `x:top-seven` shape. done: the proposal is printed. (template)
+3. the hands-on round: every adopted find tried on the mapped boards (`cclio/blueprints/AGENTS.md`), the cost of one board edit measured before and after. done: each find kept with its numbers or dropped. (open)
+4. distill into every artifact (`cclio:shape-recipe` step 2). done: each touched or named «unchanged». (open)
+5. findings print; a tool ranking, when one is asked, in the `x:top-seven` shape. done: the print reached dima. (template)
 6. log today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
@@ -38,17 +49,27 @@ dima's, 2026-10-18 (inbox, folded):
 
 - new tools for agent-drawn, human-editable diagrams, flows, maps and mindmaps
 - automation features worth borrowing from flow tools, never adopted for their own sake
+- the cheapest way for an agent to draw and edit a FigJam board at the top quality bar: tokens per edit, calls per board, batching, what to read back and how small
+- a better door to FigJam than the figma mcp's plugin calls: a cli, the REST api, a plugin or a skill others use
+- layout that never crams: arrow routing, spacing, auto-layout, sections, how others keep agent-drawn boards clean
+- screenshots for an agent's read-back: the smallest size and region that still shows a clipped label or a crossing arrow
+- how to teach an agent to draw boards a human reads with pleasure: visual hierarchy, density, colour, type, emoji, the skills and prompts that already do it well
+- dima's FigJam comments read by cclio cheaply, every time, without his ask: the api, its scope and its cost
 
 ### analysis
 
 - dima's edits read back per tool: what got lost, what churned
 - cclio's edit cost per tool on the same edit set
+- the two mapped boards: where an arrow crammed or a label clipped, and what the draw cost today
 
 ## artifacts
 
 - `cclio/blueprints/comms.md` — the scored shortlist and its numbers; the distill rewrites it whole
 - `cclio/blueprints/AGENTS.md` — the tool doors; the distill touches only a door that changed
+- `cclio/plugin-cclio/skills/author-blueprint/SKILL.md` — the draw and read-back steps; the distill adds a step only when a find changes what cclio does every board
+- `cclio/plugin-cclio/skills/author-blueprint/references/readable.md` — the readability and efficiency craft; the distill merges the finds that held on the boards
 
 ## findings
 
 - a candidate that fails a grill line never leads, whatever it costs
+- every craft find names the board where it was tried, with its before and after numbers
