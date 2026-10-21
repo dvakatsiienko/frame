@@ -24,7 +24,7 @@ one short message, then straight into phase 1:
 - **the coder roster, two questions per coder: retro filed in `~/.claude/shelf/retros/`? `claude stop <id>` done?** a coder
   has outlived a halt before; `claude agents --json` is the check, never memory. **a coder the CST
   calls «warm» is verified alive at write time** (a registry entry in `~/.claude/sessions/` +
-  `kill -0 <pid>`) and written as dead when dead. **ccrow is on the roster too** — its stop is phase 5's last line, named in this
+  `kill -0 <pid>`) and written as dead when dead. **🎼 composer is on the roster too**: `claude stop <its id from claude agents --json>` beside ccrow's, the boot starts it fresh. **ccrow is on the roster too** — its stop is phase 5's last line, named in this
   plan so it is not lost
 - sort each into **can land now** (small, finishable here) · **must park** (needs a resume
   note) · **already done**
@@ -140,7 +140,7 @@ before writing, whether the work continues here or in a fresh thread — a CST f
 work in the same thread is wasted tokens and a stale file. slug `<runid-topic>-halt`. a previous
 CST marked FROZEN is never superseded — save alongside and say which is which.
 the CST lists dima's chat lines since the last report, each with its answer or «open», read with `node ~/frame/cclio/script/chat-lines.ts --since-stamp` — orbit and the pocket hold only what reached a tool, so a chat-only ask falls through without this.
-🐦‍⬛ **after the CST, `pnpm -C ~/frame ccrow:stop` then archive her desktop card** (`mcp__ccd_session_mgmt__list_sessions` → `archive_session`; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «archive yourself each time») — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`). before the stop, every note id with no verdict is printed and vetted (`pnpm --silent ccrow:note-vet ok|miss <id> "<why>"`) — an unvetted note is a lost data point for the trial.
+🐦‍⬛ **before the CST is written, `pnpm -C ~/frame ccrow:stop` (a tab: 🔥 off, the tab stays) and composer's stop; the CST roster copies their output, never a guess; then archive her desktop card** (`mcp__ccd_session_mgmt__list_sessions` → `archive_session`; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «archive yourself each time») — ccrow lives one cclio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/ccrow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/ccrow.md`). before the stop, every note id with no verdict is printed and vetted (`pnpm --silent ccrow:note-vet ok|miss <id> "<why>"`) — an unvetted note is a lost data point for the trial.
 a first-act that is a memory line is applied now, by this halt — never left for a boot.
 🌔 **the last act: phases reset to the next session's moves** (orbit op `plan`), the CST's first-acts as `tomorrow:` lines, so dima sees the plan on the board, never today's finished steps.
 
