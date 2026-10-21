@@ -1,6 +1,6 @@
 # ccrow — cclio's parked adviser
 
-a long-lived session «🐦‍⬛ ccrow» that reads cclio's thread on a wake and returns one note or `none`: a `--bg --remote-control` session cclio starts at boot and stops at the halt, a desktop tab as the fallback. built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
+a long-lived session «🐦‍⬛ ccrow» that reads cclio's thread on a wake and returns one note or `none`, in either of two modes: a `--bg --remote-control` session cclio starts, or a desktop tab dima opens. built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
 silence bar, note shape, timing, the consult) is the `x:crew-adviser` skill, which
 `readCharter` sends as the boot prompt with its frontmatter cut — ccrow loads no plugins, so the
 skill reaches it as text. a contract change goes there, never here.
@@ -8,10 +8,10 @@ skill reaches it as text. a contract change goes there, never here.
 
 ## how it runs
 
-- ccrow lives one cclio session: cclio's boot runs `pnpm ccrow:start opus`, its halt runs
-  `pnpm ccrow:stop` (FRM-335).
-  - `pnpm ccrow:start opus` — the `--bg` start on opus 5.5 medium; refuses while one is live.
-  - `pnpm ccrow:keep-cache-hot` — the desktop-tab fallback: finds the tab by name and writes its 🔥 key.
+- ccrow lives one cclio session, in one of two modes, both first-class (dima, 2026-10-21):
+  - **`--bg`** — cclio's boot runs `pnpm ccrow:start opus` (opus 5.5 medium; refuses while one is live): settings `project,local`, the stash mod only, so x-mod-guard is absent; wakes go over her socket
+  - **desktop tab** — dima opens a Code tab in `~/.local/state/ccrow/` named «🐦‍⬛ ccrow» and sends the opener; cclio's boot runs `pnpm ccrow:keep-cache-hot` (finds the tab, writes its 🔥 key): settings `user,project,local`, so every user hook, mod and rule loads, x-mod-guard included; wakes go through `relay.json` (facts that bite)
+  - the halt runs `pnpm ccrow:stop` for `--bg` (FRM-335); a tab is closed by dima
   - `pnpm ccrow:stop` — `claude stop <jobId>`, switches 🔥 off, waits until the process is gone.
     it harvests nothing; the halt reads `notes.jsonl` and `verdicts.jsonl` itself.
 - a start is `--bg --remote-control` from `~/.local/state/ccrow/`. that home is
@@ -75,7 +75,7 @@ skill reaches it as text. a contract change goes there, never here.
   `--setting-sources project,local`: no user hooks, plugins or mods. the global `CLAUDE.md`
   still loads, the global `rules/` do not. `--settings` adds back what ccrow needs: the bypass mode and `~` as an
   extra dir (without them Bash is denied), `crossSessionInbound`, and `CLAUDE_CODE_PLUGIN_DIRS`
-  holding the stash mod only. `true &` still runs, because `x-mod-guard` is not loaded.
+  holding the stash mod only. under `--bg`, `true &` still runs, because `x-mod-guard` is not loaded; a tab loads it and refuses `true &`.
 - **`--settings` hooks merge with the user hooks** — `{"hooks":{}}` blanks nothing, so the user
   source must go to shed them (probed 2026-10-06).
 - **a project `.claude/rules/` loads only real files** — a symlinked dir, symlinked files and
@@ -92,6 +92,7 @@ skill reaches it as text. a contract change goes there, never here.
 - **a desktop tab takes no socket line** (probed 10-09: a live tab with `crossSessionInbound: accept` let a line sit 60 s unseen); only the desktop's own `send_message` reaches it. so `wake.ts` sends to the socket only for a `--bg` ccrow (it has a job id); for a tab it parks the wake in `relay.json`; x-mod-stash in cclio's thread sends the line to ccrow's session id within a poll (`$.session.send`, no model) and marks it `isSent`, and cclio's `UserPromptSubmit` hook (`ccrow:relay`) then starts the harvester; an unsent wake stays parked and the next poll sends it
 - **the harvester polls the newest transcript in ccrow's project dir** (a `/clear` starts a new one) for the turn end after the wake line: `turn_duration` in a terminal, `stop_hook_summary` in a desktop tab, which writes no `turn_duration` (5 s,
   15 min deadline, a `timeout` note past it); `harvest.log` in the home records each run.
+  any other session opened in the home (a misplaced cclio boot, 2026-10-21) becomes the newest transcript and the harvester reads it — such a session is closed, and ccrow's transcript is the newest again
 - **a `claude -p` transcript has no `turn_duration`**: the one-shot's model id is read from its
   assistant entries, found by the run's `session_id`. `runOneShot` and `oneShotModel` in
   `lib.ts` are the one path for both the silent arm and `ccrow:plan-critique`.
