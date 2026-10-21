@@ -3,4 +3,4 @@
 - order: pm ✅ → fleet ✅ → monorepo → speak → chords → trophy-sys → portfolio → monorepo
 - now: fleet tails, then a planning grill
 - next: speak v2 or oxc/vp + bun
-- started mils: monorepo · m2 · ci boring 2/4, fleet · fleet package 7/10
+- started mils: monorepo · m2 · ci boring 2/5, fleet · fleet package 7/10
