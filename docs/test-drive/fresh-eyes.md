@@ -27,5 +27,6 @@ Ticket: FRM-407
 
 ## rounds
 - 2026-10-21 · the blind door, first run: the card as a one-shot `claude -p --agent fresh-eyes` (haiku) tried `cat`, the Read tool, view-source, file://, `eval` · 5 of 5 refused by its frontmatter hook, the reason printed each time · the usual door had no fence at all · built here, no lane: card + `shelf/hooks/fresh-eyes-blind.ts` (11 tests) + `fresh-eyes-goal-check.ts` (3 tests, caught 2 real atelier labels; strict — a one-word label like «motion» counts). agent-browser has no `--allowed-domains` / `--action-policy` in our version, so the hook is the whole fence
+- 2026-10-21 · the cli surface added on dima's word (o94: try it on the next cli lane): the hook lets through bare `x`, `x <family>`, `x schema`, `x … --help` and nothing that acts; 12 tests, red-proven · first cli run: the next cli lane
 
 ## verdict

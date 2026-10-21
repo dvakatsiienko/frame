@@ -12,7 +12,7 @@ describe('fresh-eyes-blind', () => {
     });
 
     test.each([
-        ['cat src/App.tsx', 'only agent-browser'],
+        ['cat src/App.tsx', 'only agent-browser or the x cli'],
         ['agent-browser open file:///Users/dima/x.html', 'source'],
         ['agent-browser open view-source:http://localhost:7373/', 'source'],
         ['agent-browser open http://localhost:7373/src/main.tsx', 'source'],
@@ -22,6 +22,15 @@ describe('fresh-eyes-blind', () => {
         ['agent-browser snapshot; cat src/a.ts', 'chaining'],
     ])('refuses %s', (command, why) => {
         expect(bash(command)).toContain(why);
+    });
+
+    test('reads the x cli through its help only', () => {
+        expect(bash('x')).toBeUndefined();
+        expect(bash('x lane')).toBeUndefined();
+        expect(bash('x schema linear')).toBeUndefined();
+        expect(bash('x lane push --help')).toBeUndefined();
+        expect(bash('x lane push')).toContain('--help');
+        expect(bash('x linear set FRM-1 --state Done')).toContain('--help');
     });
 
     test('reads only its own shots', () => {

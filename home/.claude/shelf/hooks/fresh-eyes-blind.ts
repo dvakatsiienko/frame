@@ -29,10 +29,19 @@ export function verdict(
     }
     if (tool !== 'Bash') return `fresh-eyes has no ${tool}: it only runs the app`;
     const command = (input.command ?? '').trim();
-    if (!/^agent-browser\s/.test(command))
-        return 'fresh-eyes runs only agent-browser';
     if (/[;&|`$<>\n]/.test(command))
-        return 'fresh-eyes runs one agent-browser call, no chaining or redirection';
+        return 'fresh-eyes runs one call at a time, no chaining or redirection';
+    if (/^x(\s|$)/.test(command)) {
+        const isHelpRead =
+            /^x(\s+[a-z-]+)?$/.test(command) ||
+            /^x\s+schema(\s+[a-z-]+)?$/.test(command) ||
+            /^x(\s+[a-z-]+){1,3}\s+--help$/.test(command);
+        return isHelpRead
+            ? undefined
+            : 'fresh-eyes reads the x cli only through bare x, x <family>, x schema or --help';
+    }
+    if (!/^agent-browser\s/.test(command))
+        return 'fresh-eyes runs only agent-browser or the x cli help';
     if (/\seval\s/.test(` ${command} `))
         return 'fresh-eyes never runs page javascript (eval)';
     const hint = sourceHints.find((h) => command.includes(h));
