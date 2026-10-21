@@ -40,6 +40,11 @@
             "groupName": "minors",
             "matchCurrentVersion": "/^0\\./",
             "schedule": ["* 9-12 * * 3"]
+        },
+        {
+            "allowedVersions": "<0.6.0",
+            "description": "vgpu held on 0.5 until the chords lane ports Aurora.tsx to v2's prepared shaders (0.6 broke its typecheck, 2026-10-21); the rider ticket lifts this rule",
+            "matchPackageNames": ["vgpu"]
         }
     ],
     "postUpdateOptions": ["gomodTidy"],
