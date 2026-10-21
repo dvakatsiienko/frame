@@ -1,18 +1,18 @@
 ---
 name: author-blueprint
-description: load BEFORE drawing, reading back or automating in a blueprint — «blueprint», «draw it», «show me visually», «n8n», «workflow», «canvas», «draw.io», an n8n automation to build or fix, dima's edit to read back.
+description: load BEFORE drawing, reading back or automating in a blueprint — «blueprint», «draw it», «show me visually», «diagram», «figjam», «n8n», «workflow», «canvas», «draw.io», an n8n automation to build or fix, dima's edit to read back.
 ---
 
 # author-blueprint — draw it, read his edit, build from it
 
-a **blueprint** (`rules/fleet-vibe.md`) lives in `~/frame/cclio/blueprints/`; its `AGENTS.md` holds the doors, names and files, `PRODUCT.md` the want. the n8n facts, verified 2026-10-18 on 2.43.7: [references/n8n.md](references/n8n.md).
+a **blueprint** (`rules/fleet-vibe.md`) lives in `~/frame/cclio/blueprints/`; its `AGENTS.md` holds the doors, names and files, `PRODUCT.md` the want. the n8n facts, verified 2026-10-18 on 2.43.7: [references/n8n.md](references/n8n.md). it holds on every tool on trial: FigJam, n8n, Canvas, draw.io.
 
 ## draw
 
-1. read the real files of the part first; a blueprint drawn from memory shows my model, never the system — say which it is
-2. n8n by default: `noOp` tiles, sticky notes for legends and questions, one emoji-led clear workflow name; left to right, then dima's Tidy up
-3. Canvas or draw.io only on his ask (the A/B sides); draw.io lays out itself with `--layout '[{"layout":"elkLayered"}]'`
-4. done: the export saved as `blueprints/<subject>-<kind>.n8n.json`, the link in the reply
+1. read the real files first and map them one to one: a tile names its file, my own reading (a weak spot) is labelled so
+2. readable for dima, before the first tile: [references/readable.md](references/readable.md) — big tiles, one idea each, an emoji from its set opening every title and the board's name
+3. the tool: FigJam through the figma mcp (`create_new_file`, `use_figma`); n8n through its api (`noOp` tiles, sticky notes, dima's Tidy up); Canvas or draw.io on his ask, draw.io laid out by `--layout '[{"layout":"elkLayered"}]'`
+4. done: one screenshot read back for clipped text and crossing arrows, fixed, then the link in the reply; an n8n board also saves its export as `blueprints/<subject>-<kind>.n8n.json`
 
 ## read his edit back
 

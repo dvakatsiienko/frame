@@ -11,7 +11,7 @@ a **blueprint** is a picture of one part of our system — a flow, a structure, 
 
 ## the names
 
-- every n8n workflow leads with an emoji, then a clear name dima reads cold, then a dash and what it does: `🗺️ pm module flow — a wish from the inbox to dima` (dima, 2026-10-18: «I like emojis»)
+- every board leads with an emoji from the skill's set, a name dima reads cold, a dash, what it does: `🗺️ pm module flow — a wish from the inbox to dima` (dima, 2026-10-18: «I like emojis»)
 
 ## the files
 
