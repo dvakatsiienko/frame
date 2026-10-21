@@ -13,7 +13,9 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
+    type Note,
     type PlanReview,
+    appendNoteOnce,
     blindPrompt,
     blindSections,
     buildPacket,
@@ -159,6 +161,21 @@ describe('transcriptDelta', () => {
 
     test('counts one step per assistant message id', () => {
         expect(transcriptDelta(lines, 2).steps).toBe(2);
+    });
+});
+
+describe('appendNoteOnce', () => {
+    test('a second note with the same id is not appended', () => {
+        const path = join(mkdtempSync(join(tmpdir(), 'ccrow-')), 'notes.jsonl');
+        const note = {
+            at: '2026-10-21T10:53:45Z',
+            channel: 'session',
+            id: 'w1-opus',
+            note: 'x',
+        } as Note;
+        appendNoteOnce(path, note);
+        appendNoteOnce(path, note);
+        expect(readLines(path)).toHaveLength(1);
     });
 });
 
@@ -601,6 +618,7 @@ describe('ledgerLine', () => {
             session('🐦‍⬛ **a** | sent | x', at(9, 0)),
             session('none', at(10, 0)),
             session('🐦‍⬛ **b** | held | y\nholdout', at(11, 0)),
+            session('🐦‍⬛ 21:10 wake 1\n🟡 held: one finding', at(21, 10)),
             session('🐦‍⬛ **c** | sent | z', at(9, 0, 10)),
             { at: at(12, 0), channel: 'plan', note: 'p' },
             session('🐦‍⬛ **d** | sent | w', at(20, 56)),

@@ -827,6 +827,13 @@ export function appendJsonl(
     writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
 }
 
+// two harvesters on one wake (a spawn decision) logged the same note twice on 10-21
+export function appendNoteOnce(path: string, value: Note | ReconcileNote) {
+    if (jsonlOf<{ id?: string }>(path).some((row) => row.id === value.id))
+        return;
+    appendJsonl(path, value);
+}
+
 // ccrow's day in one line: notes sent today, the last send's time, today's ok verdicts
 // the budget hunt quotes this line; x-mod-stash writes the file on every session.measure
 export function meterLine(now: Date, usagePath = USAGE_PATH) {
@@ -858,7 +865,9 @@ export function ledgerLine(
         .filter((n) => n.channel === 'session' && typeof n.note === 'string')
         .map((n) => ({ at: new Date(n.at ?? 0), note: (n.note ?? '').trim() }));
     const wouldSend = notes.filter((n) => n.note !== 'none' && n.note !== '');
-    const isHeld = (n: { note: string }) => /holdout\s*$/.test(n.note);
+    // a held note opens with «🟡 held:» since 10-12; older ones end on «holdout»
+    const isHeld = (n: { note: string }) =>
+        /^🟡 held:/m.test(n.note) || /holdout\s*$/.test(n.note);
     const sent = wouldSend.filter((n) => !isHeld(n));
     const sentToday = sent.filter((n) => localDay(n.at) === today).length;
     const last = sent.at(-1)?.at;

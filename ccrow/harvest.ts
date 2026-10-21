@@ -11,6 +11,7 @@ import {
     STATE_DIR,
     type Wake,
     appendJsonl,
+    appendNoteOnce,
     armList,
     claudeArgs,
     isMode,
@@ -79,12 +80,15 @@ async function waitTurn(marker: string) {
 async function harvestSession(wake: Wake, arm: Arm) {
     const turn = await waitTurn(`ccrow wake ${wake.id}`);
     if (!turn)
-        return appendJsonl(NOTES_PATH, noteOf(wake, arm, 'session', TIMEOUT));
+        return appendNoteOnce(
+            NOTES_PATH,
+            noteOf(wake, arm, 'session', TIMEOUT),
+        );
     // a relayed wake lands after a /clear in a transcript born after the wake keyed its leaves
     const state = readState();
     if (state.leavesFor !== turn.path)
         writeState({ ...state, leavesFor: turn.path });
-    appendJsonl(NOTES_PATH, noteOf(wake, arm, 'session', turn.run));
+    appendNoteOnce(NOTES_PATH, noteOf(wake, arm, 'session', turn.run));
     log(`session: note logged (${turn.run.seconds} s)`);
 }
 
@@ -92,7 +96,7 @@ async function harvestReconcile(noteId: string, evidence: string, arm: Arm) {
     // a timeout logs no row, so the line can be sent again; harvest.log has the miss
     const turn = await waitTurn(reconcileMarker(noteId));
     if (!turn) return;
-    appendJsonl(NOTES_PATH, {
+    appendNoteOnce(NOTES_PATH, {
         arm,
         at: new Date().toISOString(),
         channel: 'reconcile',
