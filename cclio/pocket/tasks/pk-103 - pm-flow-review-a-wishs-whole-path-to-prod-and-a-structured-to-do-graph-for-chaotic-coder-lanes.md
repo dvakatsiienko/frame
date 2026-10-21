@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-21T17:12:00Z'
+updated_date: '2026-10-21T17:33:00Z'
 due_date: '2026-10-22'
 labels:
   - m
@@ -19,7 +19,20 @@ ordinal: 9999
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-ticket: FRM-72. inbox 10-13 (the Pm wish, his desktop edit recovered from obsidian snapshots + the mobile dictation): after the memory sweep, review the pm flow A→B — how a wish goes to prod; shape-idea / shape-lane. the biggest failure point: chaotic lanes like the 10-12 mods lane, where steers, asks, cclio's wants and wisps reached the coder as cross-session messages, easy to lose and leaving glide showing wrong data. his fix: wish (or a found wisp) → to-spec → the coder runs to-tickets → cclio reviews and builds an ordered task graph, the coder's plan source of truth for everyone, which glide can follow. the open conflict: who orders the coder's tickets (his take: cclio) — wants a grill. also: name such lanes, and revisit the lane vocabulary (main lane, second/parallel lane, quick lane — he mixes them up). TL;DR: harden and set in stone the to-spec → to-tickets flow. after the memory sweep is fully resolved. full text: cclio/.scratch/boot-2026-10-13/inbox-recovered.md
+ticket: FRM-72 · the pm module revamp, turn 2 of 2026-10-22 · his raw drops sit in the notes below
+W1 review the pm flow from A to B: how a wish of mine reaches prod — the shape-idea and shape-lane steps, a wish shaped into a spec that prepares the flow for coders, the lane-closing parts included
+W2 evaluate how good it is now: find the weak parts and gaps, find and apply shortcuts, cut redundancies — sharpen and smooth the pm and the coordinator/lead flows together, since they sit close
+W3 the biggest failure point: chaotic lanes like the 10-12 mods lane — my steers, my asks, cclio's wants and the wisps forwarded to the coder as cross-session messages, unstructured and easy to lose (they live only in two contexts), so glide shows invalid data
+W4 harden and set in stone: my wish (or a found wisp) → to-spec → the coder runs to-tickets → cclio reviews and builds an ordered task graph, the coder's plan and the source of truth for everyone, which glide follows
+W5 ❓ who orders the coder's tickets: the coder knows the efficient order of its own scope, cclio sees what is planned after it — grill it
+W6 such chaotic lanes are natural and will happen often: they deserve their own name
+W7 revisit the lane vocabulary — main lane, second or parallel lane, quick lane — I keep mixing them up
+W8 FRM-266 joins the revamp, solved all at once
+W9 split summoning and spawning: crew members (cclio, coder, verifier, designer, ccrow, composer) are summons, longer-lasting threads; subagents (researcher, wishkeeper and the rest) are spawns that do something and die — names through x:top-seven
+W10 every fleet member's name renamed and reshaped here, one name per thing across fleet-identity, fleet-doors and the skills; first case: «cc cloud» is a claude.ai project thread in x:research but a claude --cloud session in fleet-identity
+W11 the PK-240 wish loss is partly a pm-module issue: the full review sees the whole path — wish intake → pocket fold → grill → build — with the audit's numbers (docs/research/wish-data-loss-audit-2026-10-21.md)
+W12 the open half of PK-240: wish-loss monitoring, built inside the revamp
+W13 the board first: the pm flow drawn in the PM column of «🛼 crew and pm, end to end», one to one from craft-pm, cclio:pm and craft-fleet-flow, then the revamp runs as dima-intervenes' first full-area fix
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes
@@ -80,4 +93,6 @@ inbox 10-19 (idea, his ask: fold into the pm module revamp): split summoning and
 2026-10-21 17:58 the wish-loss monitor, dima's picks, built inside this revamp: M1 a pocket close runs wish-cover on the close note (each W-line cited done, moved or dropped on his word); M2 pocket-check reds an item born after 10-21 with no W-lines; M3 a weekly wish-loss audit as a cclio skill, not a recipe (dima: «let's keep it as your skill for now»), in the Wednesday pass, the per-hop numbers trended.
 
 2026-10-21 18:49 dima: «tomorrow, we open with the PM revamp, right, as a second turn after the boot» — the pm research of run #6 feeds it: https://claude.ai/artifact/UQDHgn3qcntgD2UCShxpfv
+
+2026-10-21 20:35 halt: folded into W1–W13 (the 17:51 ask); raw drops above unchanged
 <!-- SECTION:NOTES:END -->

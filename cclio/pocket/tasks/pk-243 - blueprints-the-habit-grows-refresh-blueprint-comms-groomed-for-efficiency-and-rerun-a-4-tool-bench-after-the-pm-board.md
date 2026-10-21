@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T17:05:00Z'
-updated_date: '2026-10-21T17:12:00Z'
+updated_date: '2026-10-21T17:32:00Z'
 labels:
   - m
 dependencies: []
@@ -38,4 +38,14 @@ dima's raw drop, 2026-10-21 20:02 (chat-lines, ⏎ = a line break): Create a pla
 2026-10-21 20:12 done: W1 (the mapped areas, 5feb5f65), W2 (both boards listed), W3 (the name «🛼 crew and pm, end to end», dima's pick at 20:07, applied f5d69917; he renamed the file)
 
 W12 dima, 20:12, one more vector for the blueprint recipe: how to teach agents to draw blueprints, canvases and diagrams that are readable and pretty for a human (if the recipe does not hold it yet)
+
+W13 dima, 20:14: cclio cannot see FigJam comments while editing (proven 20:14: the plugin api has no comments, get_figjam returns nodes only) — how to read his comments cheaply, every time, without him asking; a vector for the recipe
+
+W14 dima, 20:19: maybe the Figma api with the token can edit blueprints more efficiently than the mcp — the run's «better door» vector answers it (o120 token pasted 20:18, comments read proven http 200)
+
+W15 dima, 20:21: other ways to edit Figma cheaper — prebuilt scripts for the common moves; sent to the source lane as vector 7 (prebuilt moves)
+
+W16 dima, 20:23: bench the prebuilt-moves kit (by hand vs kit: tokens, calls, errors, how it reads), not today — combined with the W8 4-tool bench after the pm flow is on its board
+
+W17 dima, 20:31 (o121): the recipe board 📐 refresh-crew-coordinator is NOT redrawn tonight — tomorrow we draw the pm board, sharpen the pretty-drawing craft from it, then refresh the crew-coordinator board with everything learned. o122: n8n kept as the workflow automation tool, its blueprint role revisited after the bench
 <!-- SECTION:NOTES:END -->

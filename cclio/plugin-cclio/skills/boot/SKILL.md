@@ -21,6 +21,7 @@ siesta after each (`habit-dima-comms`); heavy queries fire at the step that need
 the SessionStart hook printed `=== cclio boot digest · <time> ===` at the top of this context: handoffs,
 inbox, the roadmap block, stuck reminders, live sessions · worktrees · coder prs, renovate
 counts, repos vs origin, the settings symlink, the flawlog tail. **one shell round at most:**
+- no `cclio boot digest` and no cclio memory in context → the tab's cwd is not `~/frame/cclio`: stop and tell dima to reopen it there, before any write (a boot from ccrow's dir fed her harvester, 2026-10-21)
 - digest older than 30 min (its header time vs now) or absent → re-run it: `BOOT_STRICT=1 ~/frame/cclio/.claude/hooks/boot-prefetch.sh`.
   fresh → zero shell rounds before the board.
 - a `🚨 FAIL ·` line → report it FIRST, before any work. a check that could not run prints FAIL, never
