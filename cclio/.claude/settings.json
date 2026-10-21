@@ -133,6 +133,7 @@
     ]
   },
   "bashOutputMaxChars": 8000,
+  "outputStyle": "output-glados",
   "enabledPlugins": {
     "cclio@cclio": true,
     "neuroarxiv@neuroarxiv": true,

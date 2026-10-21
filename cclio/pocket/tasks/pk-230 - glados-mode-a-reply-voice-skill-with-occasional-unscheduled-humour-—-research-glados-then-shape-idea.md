@@ -3,10 +3,10 @@ id: PK-230
 title: >-
   glados mode: a reply-voice skill with occasional, unscheduled humour —
   research glados, then shape-idea
-status: open
+status: done
 assignee: []
 created_date: '2026-10-21 10:55'
-updated_date: '2026-10-21T14:48:00Z'
+updated_date: '2026-10-21T14:51:00Z'
 labels:
   - m
 dependencies: []
@@ -43,4 +43,6 @@ slot (board 14:00): a researcher on glados runs in the background during the low
 - W6 ❓ quick research on glados's character, descriptions and patterns, jokes included, to seed it (done: docs/research/glados-voice.md)
 - W7 a quick shape-idea over it
 - W8 let's try it: a way to make our flows brighter; if it doesn't land, easy to delete
+
+2026-10-21 17:52 shaped + built on dima's word: output-fun forked into home/.claude/output-styles/output-glados.md (dima: «fork our current output fun and build voice glados on top of it»), cclio's outputStyle; trial docs/test-drive/glados.md to 10-28; delete = trash the style file + the settings line.
 <!-- SECTION:NOTES:END -->
