@@ -11,6 +11,14 @@ describe('ordinalFor', () => {
         expect(ordinalFor([120000], 'next')).toBe(11000);
     });
 
+    test('--top places an item before the first one in its band', () => {
+        expect(ordinalFor([1500, 8000, 12000], 'now', true)).toBe(1499);
+    });
+
+    test('--top opens an empty band at its floor', () => {
+        expect(ordinalFor([12000], 'now', true)).toBe(1000);
+    });
+
     test('never leaves the band when it is full', () => {
         expect(ordinalFor([9900], 'now')).toBe(9999);
     });

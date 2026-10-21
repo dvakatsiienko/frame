@@ -109,17 +109,31 @@ for repo in bytes frame; do
 done
 
 if [ -z "${COMPACT:-}" ]; then
-echo "-- renovate (digest is /cclio:evergreen, on his word) --"
+echo "-- renovate + the apps lane (cclio:evergreen) --"
 for repo in bytes frame; do
   gh pr list -R "dvakatsiienko/$repo" --search 'author:app/renovate' --json number,createdAt 2>/dev/null \
     | jq -r --arg r "$repo" 'if length == 0 then "\($r): 0" else "\($r): \(length) open · oldest \(min_by(.createdAt).createdAt[:10])" end' \
     || fail "gh unreachable for renovate/$repo"
 done
-jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
+apps_line=$(jq -r --arg today "$(date +%Y-%m-%d)" '(map(.markedAt) | max) as $m
   | ($today | strptime("%Y-%m-%d") | mktime) as $t
   | ((10 - ($t | strftime("%u") | tonumber)) % 7) as $days
-  | "apps lane: \(length) apps · last marked \($m) · " + (if $days == 0 and $m < $today then "DUE today, wednesday — load cclio:evergreen first, then its read, references/read.md (pnpm skill:evergreen-apps is its raw input)" else "next run wednesday \($t + (if $days == 0 then 7 else $days end) * 86400 | strftime("%Y-%m-%d"))" end)' \
-  "$HOME/frame/cclio/evergreen/sources.json" || fail "apps lane index unreadable"
+  | "apps lane: \(length) apps · last marked \($m) · " + (if $days == 0 and $m < $today then "DUE today" else "next run wednesday \($t + (if $days == 0 then 7 else $days end) * 86400 | strftime("%Y-%m-%d"))" end)' \
+  "$HOME/frame/cclio/evergreen/sources.json") || fail "apps lane index unreadable"
+echo "$apps_line"
+security=$(gh pr list -R dvakatsiienko/frame --search 'author:app/renovate SECURITY in:title' --json number --jq length 2>/dev/null)
+security=$((security + $(gh pr list -R dvakatsiienko/bytes --search 'author:app/renovate SECURITY in:title' --json number --jq length 2>/dev/null || echo 0)))
+# the board's order is the pocket's, so an evergreen day is a pocket item on top or it gets dropped (10-07, 10-14, 10-21)
+if [[ "$apps_line" == *"DUE today"* || "$security" -gt 0 ]]; then
+  seeded() { BACKLOG_CWD="$HOME/frame/cclio" backlog task list --plain -s open 2>/dev/null | grep -q '🧬 evergreen turn'; }
+  if seeded; then
+    echo "🧬 evergreen turn: on top of the pocket — turn 2 is evergreen (cclio:evergreen)"
+  else
+    # pocket-add exits 1 when its trailing pocket-check is red for any item, so the seed is judged by the pocket
+    node "$HOME/frame/cclio/script/pocket-add.ts" "🧬 evergreen turn — $(date +%Y-%m-%d)" --priority now --top --size xs --due "$(date +%Y-%m-%d)" -d "seeded by the boot digest: apps lane due or $security security PR(s). run cclio:evergreen; done when its § the day completes." >/dev/null 2>&1
+    seeded && echo "🧬 evergreen turn: seeded on top of the pocket — turn 2 is evergreen (cclio:evergreen)" || fail "evergreen turn: pocket-add wrote nothing"
+  fi
+fi
 last_checkup=$(grep -oE '^[0-9]{4}-[0-9]{2}-[0-9]{2}' "$HOME/frame/cclio/checkup/log.md" 2>/dev/null | sort | tail -1)
 if [ -z "$last_checkup" ]; then
   echo "checkup: never run · DUE — offer cclio:system-checkup on the board"

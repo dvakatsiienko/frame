@@ -1,30 +1,29 @@
 ---
 name: evergreen
-description: load when dima types /cclio:evergreen, asks «updates?», «what's new in deps», «anything to merge?», says «approve evergreen», or when the boot finds open renovate PRs or a due apps lane.
+description: load when dima types /cclio:evergreen, asks «updates?», «what's new in deps», «anything to merge?», says «approve evergreen», or when the boot digest prints a «🧬 evergreen turn» line.
 ---
 
 # /cclio:evergreen 🧬 — the news layer over renovate and brew
 
 renovate opens the PRs (`renovate.json` in `bytes` and `frame` holds the schedule and the automerge tiers). this skill is the half a bot cannot do: **read, judge,
 tell dima only what he would want to know, keep brew fresh, act on his word.** 🌲 is her commit
-prefix (renovate writes it), 🧬 her voice here. cadence: **daily, at boot, whenever PRs exist** (dima
-2026-09-09: «try daily first, refine, then loosen»).
+prefix (renovate writes it), 🧬 her voice here. cadence: **wednesday, plus any renovate security PR** (dima
+2026-09-09: «try daily first, refine, then loosen» — loosened to his wednesday, 2026-10-21).
 
-**the evergreen day flow:**
-1. the boot loads this skill and starts the read (`references/read.md`) in the background — the `helper` card (Sonnet 5.5, no fleet memory; the generic agent is denied),
-   its brief the path of [references/read.md](references/read.md) (gather, read, judge, the report shape); the board prints without waiting for it
-2. the report is the first step after dima answers the board: printed whole in the chat, the `apply` list and one combined `ask`
-3. the `apply` borrows ran before the report; batches start only after his evergreen reply, the `ask` borrows he ticks first
-4. after the read and before the report prints, cclio runs `timeout 2400 brew upgrade` in the background
-   (pinned never), no ask, and its line goes in the report — brew never upgrades itself, keeping it fresh
-   is this skill's job
-5. after the report prints, cclio runs `pnpm skill:evergreen-apps --mark` itself (the helper card never marks)
+## the day — four turns
+
+the boot digest seeds «🧬 evergreen turn» on top of the pocket (`boot-prefetch.sh`), so the board's order carries it as item 1.
+
+1. **boot turn** — beside the boot, the read starts in the background on the `helper` card (Sonnet 5.5, no fleet memory), its brief the path of [references/read.md](references/read.md); when it lands, `timeout 2400 brew upgrade` (pinned never) runs in the background and `wishkeeper` reads the report for its own picks — fixes it would make, borrows it would take
+2. **evergreen turn** — the turn after the board, before anything else: the report whole in the chat with wishkeeper's picks folded in, the standing page republished, every borrow a line he can steer
+3. **his feedback** — he steers line by line
+4. **resolve** — each borrow done in place, or a ticket, or a lane rider; `pnpm skill:evergreen-apps --mark` (the helper card never marks); the 🧬 pocket item set done
 
 ## the report — what cclio does with the card's reply
 
 - 📖 the report's shape and every judge rule live in [references/read.md](references/read.md) §§ 3–4; cclio reads it before printing or reworking a report, never prints from memory
 - **every digest is also the artifact** (dima 2026-09-28: «let's have it as a habit part») —
-  one standing page, [Evergreen](https://claude.ai/artifact/PAtTzAYyYCXCsXd9qWsCdy), republished
+  one standing page, [Evergreen](https://claude.ai/artifact/Vgx13BgNQyieSfcTNvsi4p), republished
   by `url` each run with that run's date in its header: 🌟 cards with a borrow line and a status
   chip per borrow (shipped · waiting · queued), the brew lines worth reading, the count line,
   and a chart where a perf claim has numbers. its source lives at

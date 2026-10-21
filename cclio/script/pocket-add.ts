@@ -8,11 +8,20 @@ import { parseArgs } from 'node:util';
 const PRIORITIES = ['now', 'next', 'later'] as const;
 const pocket = path.resolve(import.meta.dirname, '..');
 
-export function ordinalFor(ordinals: number[], priority: Priority) {
+export function ordinalFor(
+    ordinals: number[],
+    priority: Priority,
+    top = false,
+) {
     const band = PRIORITIES.indexOf(priority);
     const floor = 1000 * 10 ** band;
     const ceiling = floor * 10;
     const inBand = ordinals.filter((n) => n >= floor && n < ceiling);
+    if (top)
+        return Math.max(
+            floor,
+            (inBand.length ? Math.min(...inBand) : floor + 1) - 1,
+        );
     const next = (inBand.length ? Math.max(...inBand) : floor) + 1000;
     return next < ceiling ? next : ceiling - 1;
 }
@@ -47,6 +56,7 @@ if (import.meta.main) {
             due: { type: 'string' },
             priority: { default: 'later', type: 'string' },
             size: { default: 's', type: 'string' },
+            top: { type: 'boolean' },
             type: { default: 'task', type: 'string' },
         },
     });
@@ -54,7 +64,7 @@ if (import.meta.main) {
     const priority = values.priority as Priority;
     if (!title || !PRIORITIES.includes(priority)) {
         console.error(
-            'usage: node pocket-add.ts "<title>" [-d <desc>] [--size xs|s|m|l] [--priority now|next|later] [--type task] [--due YYYY-MM-DD]',
+            'usage: node pocket-add.ts "<title>" [-d <desc>] [--size xs|s|m|l] [--priority now|next|later] [--top] [--type task] [--due YYYY-MM-DD]',
         );
         process.exit(2);
     }
@@ -73,7 +83,7 @@ if (import.meta.main) {
         '--type',
         values.type,
         '--ordinal',
-        String(ordinalFor(ordinals(), priority)),
+        String(ordinalFor(ordinals(), priority, values.top)),
         '--plain',
         ...(values.desc ? ['-d', values.desc] : []),
         ...(due ? ['--due-date', due] : []),
