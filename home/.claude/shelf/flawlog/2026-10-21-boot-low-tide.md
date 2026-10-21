@@ -8,3 +8,4 @@
 - 14:55 `x linear set --add-label a --add-label b` kept only the last label (BYT-128 lost agent until a second call). #automation
 - 15:09 relayed wishkeeper's «Claude Design closes» claim to dima as a 📌 without opening the changelog line; it named only standalone claude.ai/design (ccrow). same shape as the 🥊 line. #unchecked-source
 - 15:52 #dima-caught shape-idea spent a whole turn on step 1 (the want) before the grill; dima: «step 1 was tiny … combine it with step 2». fixed in the skill: the want and grill round 1 print in one reply. #flow
+- 16:47 #dima-caught PK-173 grill round 1 ran on my own cut of the want (4 of his ~14 points dropped) instead of the pocket item's full fold; he caught it by asking whether i had all his words. root: shape-idea step 1 lets me re-summarize the wish. fix candidate: step 1 prints the pocket fold whole and every grill question cites the wish line it settles. #data-loss

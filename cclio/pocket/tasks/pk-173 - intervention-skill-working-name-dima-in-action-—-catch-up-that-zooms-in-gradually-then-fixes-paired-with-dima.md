@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-20 16:06'
+updated_date: '2026-10-21T13:42:00Z'
 due_date: '2026-10-21'
 labels:
   - m
@@ -34,4 +34,7 @@ dima o34 ✓ 2026-10-20 16:5x: not built yet — shape-idea session today after 
 dima o34, 2026-10-20, folded: «why re-date? why isn't it done at all? from what i recall it should already be implemented — or didn't we implement it yet?» → not built: parked 10-18 until the weekly reset, never picked back up. its shape-idea session sits right after the refresh-browser-headless grill (moved up in the plan 18:08).
 
 2026-10-20 19:08 low tide: postponed to 10-21 on dima's word («resolve everything that does not want a grill, postpone everything else to tomorrow») — a cclio:shape-idea session (a grill)
+
+2026-10-21 16:41 dima, folded: our system grows too fast and i don't catch up, so i keep losing understanding of it — not good for an operator, who has to understand the flows firsthand; that's why this skill exists. the fix part is an advanced mode: when i lost track of a part, or a part truly goes off the rails and has issues that need interference and fixing. there you act as my pair programmer: i review, think how things should work and suggest fixes; you take over the technical part and help me figure things out, without overloading me with tech details, explaining how things work in human-approachable language.
+2026-10-21 16:41 grill: one skill (catch-up gains the fix mode); name stays catch-up (sup = git sup); his concern words start it; one layer a turn, issue list by turn 4; prefer fixing in place — a ticket only when it is too big for now's time or capacity (dima: «when I want to interfere, it means something is really off»); first run = the pm module (PK-103): inspect, find weak points, then a grill to plan fixes. the pm a-to-b review list lives in PK-103's notes; the 10-18 viz-tool half became the blueprints trial.
 <!-- SECTION:NOTES:END -->

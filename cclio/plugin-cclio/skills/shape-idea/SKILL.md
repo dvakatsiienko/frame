@@ -16,6 +16,8 @@ word. skipping a step happens only on his word, named out loud.
 ## the steps
 
 1. **the want + the grill, one turn** (dima, 2026-10-21: the want alone was a turn too small) — the reply opens with his idea in his words, folded (`dima-wishes`), bound for `PRODUCT.md`'s opening, and the grill's round 1 follows in the same reply; his answer to the round also says whether the quote means what he means.
+   - **the want is the source fold, whole**: the pocket or ticket wish plus its raw drop if still held, one point per numbered line (W1 …), never my shorter cut (10-21: a re-cut lost ~35 % of a wish)
+   - **every ❓ cites the W-lines it settles**; an uncited line prints as «settled by the wish» or waits for the next round
 2. **grill** — `mattpocock-skills:grilling` + `mattpocock-skills:domain-modeling` together (what
    matt's user-only `grill-with-docs` does), so every term the grill settles lands in `GLOSSARY.md`
    and every hard decision in an ADR as it happens; in rounds, each round the whole frontier of open questions at once, until the open decisions are

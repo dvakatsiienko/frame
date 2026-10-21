@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-20 16:06'
+updated_date: '2026-10-21T13:31:00Z'
 due_date: '2026-10-21'
 labels:
   - m
@@ -28,4 +28,6 @@ dima, 2026-10-18 (inbox steering): during the memory sweep we only groomed, trim
 parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the parse, the answers, the small stuff and the viz-tool shape; the pocket is solved after the reset
 
 2026-10-20 19:08 low tide: postponed to 10-21 on dima's word («resolve everything that does not want a grill, postpone everything else to tomorrow») — a grill: the memory structure rethink
+
+2026-10-21 16:31 grilled: balance by moment (each line where it fires, every turn vs on trigger); scope = fleet layer (root CLAUDE.md + rules, ~67 KB) + cclio leaves (~74 KB); maps drawn twice for dima to compare — a dataviz artifact and a FigJam board (calls counted in docs/test-drive/figjam.md); home = a nurture-memory sweep step after the fleet memory groom, before the skills groom; runs today after the PK-173 and PK-103 grills. tools: dima explores all viz tools actively, the narrowing comes later.
 <!-- SECTION:NOTES:END -->
