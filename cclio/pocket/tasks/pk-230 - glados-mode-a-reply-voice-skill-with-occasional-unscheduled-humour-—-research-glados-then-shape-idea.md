@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21 10:55'
-updated_date: '2026-10-21T12:26:00Z'
+updated_date: '2026-10-21T13:10:00Z'
 labels:
   - m
 dependencies: []
@@ -31,4 +31,6 @@ parked: behind PK-223, dima's plan for 10-21 (low tide, then the coordinator and
 slot (board 14:00): a researcher on glados runs in the background during the low tide; shape-idea after the grills. cclio's answer to his question: yes.
 
 2026-10-21 15:26 research in: .scratch/glados/research.md — jokes tied to events, never a turn count; ~3 a day, one line, after the real content, aimed at the code, the bug or the agent itself, never at dima; 8 joke shapes + 5 guardrails seeded. sources lean plain in coding work (MS 2024 survey: humour the least-wanted trait, coding < 2/5). next: shape-idea at the mac.
+
+2026-10-21 16:11 the research moved: docs/research/glados-voice.md (the .scratch path above dies at the halt).
 <!-- SECTION:NOTES:END -->

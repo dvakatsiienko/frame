@@ -4,7 +4,7 @@ title: 'mods lane resume: finish it fully from the leftovers list'
 status: waiting
 assignee: []
 created_date: '2026-10-13 17:06'
-updated_date: '2026-10-21T12:33:00Z'
+updated_date: '2026-10-21T13:10:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -43,4 +43,6 @@ rider (dima o31, 16:31): the second-wind op takes a required pending: field, onl
 2026-10-21 evergreen riders (dima: «if something else worth adopting — add to the mods lane rider»), from .scratch/evergreen-borrows/source-lane.md: (1) orbit note/steer fields take Input rows={2} (cc 2.1.301; x-mod-stash register.tsx ~4835, 5008, 4679, 5355, 5458) + a desktop probe — undoes the multi-line half of workarounds «orbit's note»; (2) $.ui.view({ agentId }) — a 👁 button on board lane rows opens that agent's transcript; (3) virtualText — ghost «🪐 n asks» into the prompt box; (4) the OTel cache_creation_5m/1h split — prove the 🔥 keep-hot ping keeps the cache warm; (5) decider: "person" as a replacement for guard's # dima-ok proof — dima's call, it means a dialog. skipped: e.isReadOnly (guard computes written paths on tool.call, nothing to delete).
 
 2026-10-21 15:35 rider (6), dima's word 11:35: «I saw you proposed e.isReadOnly. let's try borrow». try it: a tool.check hook in x-mod-guard reading e.isReadOnly (cc 2.1.304). cclio's one-line objection: guard decides on the paths a command writes (writtenPaths, rules/overwrite.ts:45), the flag gives no paths, so it may delete nothing — the try settles it.
+
+2026-10-21 16:11 the evergreen source lane moved: docs/research/evergreen-borrows-2026-10-21.md.
 <!-- SECTION:NOTES:END -->
