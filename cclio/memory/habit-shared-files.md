@@ -2,16 +2,9 @@
 
 Shared files are Dima's living space; leftovers cost him attention and blur what is pending.
 
-## the obsidian channel — ideas he drops from mobile, iCloud sync, no mount needed
+## the obsidian channel — his drops from mobile, in the vault's `_hq/`
 
-`/Users/dima/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq/`
-
-- `inbox.md` — his raw drops. **Check first thing every boot; it must always end empty of
-  CONTENT — his section headers stay**, they are his reprint-saving skeleton. Every item becomes a
-  pocket item; **reset at every halt by copying `inbox-template.md` over
-  it** (`/cclio:halt` phase 1.5) — the template is his, read-only.
-- `inbox-composer.md` — composer's groomed, sorted sibling of `inbox.md`; the flow is in `cclio:boot` and `cclio:halt` (`x:crew-composer` § inbox-prep).
-- `pocket.md` — a read-only mirror of the pocket for his phone, rewritten after every cclio turn (`.claude/hooks/pocket-mirror.sh`); a phone edit there is lost, his asks go in the inbox.
+- `inbox.md` ends every session empty of content, his section headers kept (his reprint-saving skeleton); the paths, the read and the reset live where they run: `cclio:boot` step 3 and `cclio:halt` phase 1.5. `pocket.md` there is a read-only phone mirror (`.claude/hooks/pocket-mirror.sh`): a phone edit is lost, his asks go in the inbox.
 
 ## the pocket — cclio's local work pool (Backlog.md in `~/frame/cclio/pocket/`, dima 2026-10-07, Backlog.md adopted 2026-10-11)
 

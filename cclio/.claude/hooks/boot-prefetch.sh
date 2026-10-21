@@ -71,7 +71,9 @@ echo "-- jev vet (pnpm jev:vet ok|miss <flow> <note> records a verdict; a miss r
 node "$HOME/frame/script/jev-vet.ts" 2>/dev/null || fail "jev vet registry unreadable"
 health=$(timeout 15 "$HOME/frame/script/op-run.sh" node "$HOME/frame/script/jev-report.ts" --health 2>&1) && echo "jev health: $health" || fail "jev: ${health:-probe did not run}"
 
-"$HOME/frame/cclio/.claude/hooks/gazette-trail.sh"   # gazette rides the memory import, not stdout
+"$HOME/frame/cclio/.claude/hooks/gazette-trail.sh"
+echo "-- gazette trail (the 5 freshest posts; no longer a memory import) --"
+sed '1d' "$HOME/frame/cclio/gazette/_trail.md"
 
 roadmap=$("$HOME/frame/cclio/.claude/hooks/roadmap-prefetch.sh")
 if echo "$roadmap" | grep -q '^-- scope'; then

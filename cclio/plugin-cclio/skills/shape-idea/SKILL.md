@@ -15,7 +15,7 @@ word. skipping a step happens only on his word, named out loud.
 
 ## the steps
 
-1. **the want + the grill, one turn** (dima, 2026-10-21: the want alone was a turn too small) — the reply opens with his idea in his words, folded (`dima-wishes`), bound for `PRODUCT.md`'s opening, and the grill's round 1 follows in the same reply; his answer to the round also says whether the quote means what he means.
+1. **the want + the grill, one turn** (dima, 2026-10-21: the want alone was a turn too small) — the reply opens with his idea in his words, folded (`craft-pm` § wishes), bound for `PRODUCT.md`'s opening, and the grill's round 1 follows in the same reply; his answer to the round also says whether the quote means what he means.
    - **the want is the source fold, whole**: the pocket or ticket wish plus its raw drop if still held, one point per numbered line (W1 …), never my shorter cut (10-21: a re-cut lost ~35 % of a wish)
    - **every ❓ cites the W-lines it settles**; an uncited line prints as «settled by the wish» or waits for the next round; `node script/wish-cover.ts <PK-N> <round>` exits 0 first
 2. **grill** — `mattpocock-skills:grilling` + `mattpocock-skills:domain-modeling` together (what

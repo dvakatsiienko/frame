@@ -10,7 +10,7 @@ a reminder lives in `cclio/memory/_reminders.md` (git-backed), one line each, ne
 
 ## the line
 
-`⏰ <the thing, his words folded (dima-wishes)> — set <YYYY-MM-DD>`, plus ` · due: <YYYY-MM-DD>` when it has a date. the legend at the file's head: `⏰📌` stuck, `🦉` set by cclio for herself (then 👁️ a watch, 📜 a doc kept alive, 🔬 a probe). a trial's date lives in its test-drive file, never here.
+`⏰ <the thing, his words folded (craft-pm § wishes)> — set <YYYY-MM-DD>`, plus ` · due: <YYYY-MM-DD>` when it has a date. the legend at the file's head: `⏰📌` stuck, `🦉` set by cclio for herself (then 👁️ a watch, 📜 a doc kept alive, 🔬 a probe). a trial's date lives in its test-drive file, never here.
 
 ## verbs — confirm each in one line
 
