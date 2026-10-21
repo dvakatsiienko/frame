@@ -6,14 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-21T15:49:00Z'
-due_date: '2026-10-21'
+updated_date: '2026-10-21T17:12:00Z'
+due_date: '2026-10-22'
 labels:
   - m
 dependencies: []
-priority: later
+priority: now
 type: wish
-ordinal: 100104
+ordinal: 9999
 ---
 
 ## Description
