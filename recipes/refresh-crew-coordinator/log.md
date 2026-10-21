@@ -7,4 +7,4 @@
 - 2026-09-28 · models: opus 5.5 + fable 5.1 cards, spawn defaults re-synced at dima's ask (the want holds his words) · ? · claude-api skill + 1 parallel lane · `models.md`, `craft-spawning`
 - 2026-10-07 · run #4 (renamed from refresh-craft-spawning): tools lanes only — research-opus, exa, parallel, probes on cc 2.1.292; craft half left open (the brief was tools-only) · ? · 1 researcher, exa + parallel, probes · ?
 - 2026-10-15 · run #5, cc 2.1.299: 4 rows flipped, generic deny proven, x10 fan-out = 4× tokens for 5× speed, stale prices + effort precedence fixed · 70 min · 2 researchers, exa + parallel ($0.10), 1 bg probe, 13 sifters · spawn-mechanics, model-cards, crew-lead
-- 2026-10-21 · run #6, cc 2.1.304: 0 rows flipped; forks default-on; deep-or-skip on trial — 1 file landed, 2 asked · 75 min · 2 researchers, exa+parallel+linkup ×2 (~$0.70), 1 bg probe, 1 helper · spawn-mechanics, crew-subagent
+- 2026-10-21 · run #6, cc 2.1.304: 0 rows flipped; forks default-on; deep-or-skip on trial — 1 file landed, 2 asked · 85 min · 2 researchers, exa+parallel+linkup ×2 (~$0.70), neuroarxiv 19 reads, 1 bg probe, 1 helper · spawn-mechanics, crew-subagent
