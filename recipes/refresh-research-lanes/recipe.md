@@ -42,7 +42,7 @@ his standing calls:
 - suggest a run when: a lane's free tier or price changes, a new research tool is tried, or 30 days since the last run
 
 1. **shape**: `cclio:shape-recipe` step 0, the grill. done: his word on the round. (open)
-2. **research** — the brief from `pnpm recipe:brief refresh-research-lanes`; `pnpm research:lanes <brief> <out>` + the `researcher` agent on the same brief. done: every lane returned or marked failed. (script)
+2. **research** — the brief from `pnpm recipe:brief refresh-research-lanes`; `pnpm research:lanes <brief> <out>` + the `researcher` agent on the same brief + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper. done: every lane returned or marked failed. (script)
 3. **score** — per lane, from this run and the `last/` outputs of the recipe runs since the last one: what each lane found that no other did, its seconds and cost. done: one score line per lane in the print. (open)
 4. **distill** — into the artifacts below. done: each read and touched, or named «unchanged». (open)
 5. **log** — the line in `log.md`. done: the line is there. (template)

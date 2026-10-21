@@ -22,7 +22,7 @@ keeps the fleet's upkeep measured: which recurring checks pay, and what our tool
 - suggest a run when: a model changes, a memory sweep lands
 
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
-2. research: the brief goes through `pnpm research:lanes <brief>` (exa + parallel) and one opus source lane on the papers, the cc docs and `claude plugin eval`, a fresh agent never a fork. done: every lane returned or marked failed. (script)
+2. research: the brief goes through `pnpm research:lanes <brief>` (exa + parallel) and one opus source lane on the papers, the cc docs and `claude plugin eval`, a fresh agent never a fork, + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper. done: every lane returned or marked failed. (script)
 3. analysis: `x fleet ops` plus each saved duckdb measure over the last 7 days, set beside the artifact's numbers. done: the numbers side by side. (script)
 4. distill into `docs/knowledge/fleet-ops.md`: clever-merge, keep the verdict, update the numbers and the five; raw lane output stays in `last/` until the next run's distill. done: the artifact carries the new numbers. (open)
 5. findings print, never silent edits; resolve with dima. done: his word on the proposal. (template)
