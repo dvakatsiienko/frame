@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-12 11:23'
-updated_date: '2026-10-18 13:47'
+updated_date: '2026-10-21 10:55'
 due_date: '2026-10-22'
 labels:
   - m
@@ -51,4 +51,6 @@ unparked 2026-10-15 by dima's inbox steering: this run goes FIRST, inside the me
 2026-10-15 20:17: run #5's last leftover came — dima's Sill screenshots — but cclio read all 6 by hand against the 5+ rule (#dima-caught); the rule was rewritten (fleet-tooling.md) and a helper-lite nudge pocketed (PK-148); the helper-lite path still waits for its first real batch (wishkeeper, 20:2x)
 
 2026-10-18: priority now → next — it is waiting, and the now cap holds today's three items (viz tool, shape-idea top-7, firecrawl).
+
+2026-10-21 inbox, dima, folded — a research vector for this run, not fixed in the recipe: the «breaker» agent role. is it our verifier, or a different angle? its own role beside crew-verifier, or an alias for what the verifier does? does our verifier actually try to break an app on purpose? worth extending its instructions to also try breaking the app while verifying? the research lanes search this too; if it holds, also the degree: how much effort a verifier spends on breaking, and where it stops so it doesn't overextend. if we adopt a verifier/breaker shared role, the recipe carries it, and each rerun sharpens the verifier as a verifier/breaker.
 <!-- SECTION:NOTES:END -->

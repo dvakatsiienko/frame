@@ -6,8 +6,8 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-16 10:24'
-updated_date: '2026-10-19 16:47'
-due_date: '2026-10-20'
+updated_date: '2026-10-21 10:54'
+due_date: '2026-10-24'
 labels:
   - s
 dependencies: []
@@ -51,4 +51,6 @@ dima 10-16 18:47: «fork-guard: next boot, not today»
 2026-10-19 19:47 dima: «composer should also not interact with a fork (only with you, main)» — the want grows: composer, like ccrow, hears from and answers only the main cclio; a fork's SendMessage to composer is refused or ignored, and composer's receipts go to the main session only. a done-test line: given a fork sends composer a chore, then composer does not run it and the fork learns why.
 
 2026-10-19 19:50: the «cclio-fb» session traced — it is boot-prefetch.sh's barrel probe (a haiku claude -p, ~75k ctx, the d03f3da question), run because the fork's SessionStart (source resume) fires the full boot-prefetch hook. done-test line: given a fork starts, then boot-prefetch skips (no barrel probe, no watch arming, no ccrow start).
+
+2026-10-21 13:56: due moved 10-20 → 10-24, the mods lane's date (PK-120), which it rides.
 <!-- SECTION:NOTES:END -->
