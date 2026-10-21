@@ -3,9 +3,11 @@ id: PK-242
 title: >-
   cli lane: a spawn verb that runs preflight steps 2–5 and 7–12, plus the
   brief's «before sending» checks as a gate
-status: open
+status: waiting
 assignee: []
 created_date: '2026-10-21T16:27:00Z'
+updated_date: '2026-10-21T17:06:00Z'
+due_date: '2026-10-28'
 labels:
   - m
 dependencies: []

@@ -9,6 +9,13 @@ a **blueprint** is a picture of one part of our system — a flow, a structure, 
   - a tile is a `n8n-nodes-base.noOp` node; a free comment is a sticky note; a rename rewrites the connections keyed by that name
 - **Obsidian Canvas** and **draw.io** are the A/B sides, drawn on dima's ask: a `.canvas` in the vault's `_hq/`, a `.drawio` here (`drawio -x --layout '[{"layout":"elkLayered"}]'` places the tiles)
 
+## the mapped areas — the board is the design truth
+
+a mapped area changes on its board first: dima and cclio agree on the picture, then the files follow; the skills stay what agents run. an area joins only once a board proved useful. `node ~/frame/cclio/script/blueprint-drift.ts` lists the boards whose sources changed today.
+
+- 🦉 cclio — crew and pm, end to end · https://www.figma.com/board/hVVKYtLdMTKASUS3mwG3Uz · sources: home/.claude/plugin-x/skills/crew-lead/, home/.claude/plugin-x/skills/crew-subagent/SKILL.md, home/.claude/plugin-x/skills/crew-dna/SKILL.md, cclio/memory/craft-pm.md, cclio/memory/craft-fleet-flow.md, cclio/plugin-cclio/skills/pm/
+- 📐 refresh-crew-coordinator, a run · https://www.figma.com/board/RAJ5NlCcJVqfWNjR0KiS35 · sources: recipes/refresh-crew-coordinator/recipe.md, cclio/plugin-cclio/skills/shape-recipe/SKILL.md
+
 ## the names
 
 - every board leads with an emoji from the skill's set, a name dima reads cold, a dash, what it does: `🗺️ pm module flow — a wish from the inbox to dima` (dima, 2026-10-18: «I like emojis»)

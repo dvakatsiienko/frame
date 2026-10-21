@@ -55,6 +55,9 @@ n8n's «📭 gh notifications sweep» (`cclio/blueprints/gh-notifications-sweep.
 ## phase 1.8 — glides, cleared unasked 🛼
 every 🛼 glide card on the board gets orbit op `glide` act `end`, finished or parked alike; a parked lane gets a new card when it resumes.
 
+## phase 1.9 — the mapped boards 🗺️
+`node ~/frame/cclio/script/blueprint-drift.ts`: each board it names gets its changed tiles redrawn, or one board line «stale: <tile>» (`cclio/blueprints/AGENTS.md` § the mapped areas).
+
 ## phase 2 — missed sweep
 re-read the pocket and this thread for dropped asks and unanswered
 questions. a pocket item marked «before the halt» FIRES now. mid-turn messages from dima are the usual casualty — check

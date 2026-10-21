@@ -7,6 +7,8 @@ description: load BEFORE drawing, reading back or automating in a blueprint — 
 
 a **blueprint** (`rules/fleet-vibe.md`) lives in `~/frame/cclio/blueprints/`; its `AGENTS.md` holds the doors, names and files, `PRODUCT.md` the want. the n8n facts, verified 2026-10-18 on 2.43.7: [references/n8n.md](references/n8n.md). it holds on every tool on trial: FigJam, n8n, Canvas, draw.io.
 
+a mapped area (`blueprints/AGENTS.md`) is planned on its board first, built after dima agrees.
+
 ## draw
 
 1. read the real files first and map them one to one: a tile names its file, my own reading (a weak spot) is labelled so
