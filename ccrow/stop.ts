@@ -23,7 +23,17 @@ if (!running) {
     console.log('no ccrow live');
     process.exit(0);
 }
-const handle = running.jobId ?? String(running.pid);
+const stash = stashModOf(userPluginDirs());
+const store = stash && storeOf(stash.name);
+// a desktop tab has no job id: claude stop cannot reach it, and the tab is dima's to close
+if (!running.jobId) {
+    if (store) clearHot(store, running.sessionId);
+    console.log(
+        `ccrow is a desktop tab (pid ${running.pid}): 🔥 off, the tab stays for dima`,
+    );
+    process.exit(0);
+}
+const handle = running.jobId;
 const result = spawnSync('claude', ['stop', handle], { encoding: 'utf8' });
 if (result.error) fail(`cannot run claude: ${result.error.message}`);
 if (result.status !== 0) {
@@ -32,8 +42,6 @@ if (result.status !== 0) {
     );
 }
 
-const stash = stashModOf(userPluginDirs());
-const store = stash && storeOf(stash.name);
 if (store) clearHot(store, running.sessionId);
 writeState({ ...readState(), jobId: undefined });
 
