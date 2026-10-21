@@ -72,6 +72,7 @@
         "memory-load:replay": "python3 ./script/memory-load-replay.py",
         "memory-sync:map": "node ./script/memory-sync-map.ts",
         "memory-sync:copy": "node ./script/memory-sync-copy.ts",
+        "notes-obsidian-recover": "node ./script/notes-obsidian-recover.ts",
         "rayconfig:decrypt": "./script/op-run.sh node ./script/rayconfig-decrypt.ts",
         "repo:defaults": "node ./script/repo-defaults.ts",
         "reply-check:report": "node ./script/reply-check-report.ts",

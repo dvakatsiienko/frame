@@ -17,7 +17,7 @@ copied there by hand):
 - 🚫 **icloud sync is whole-file, last-writer-wins, no conflict copy**: never edit before the synced
   version has arrived (sync lags minutes after obsidian opens; a relaunch often forces the pull), keep
   obsidian closed on the ipad during a session, and re-read right before every write
-- a lost edit is recoverable from obsidian's file-recovery store (IndexedDB, snappy `.ldb`); its text is UTF-16, so search with `strings -e l`, which a plain `strings` or `rg` misses
+- a lost edit → `pnpm -C ~/frame --silent notes-obsidian-recover '<text>' --note <vault path>`: every desktop snapshot holding the text, and the lines today's file lacks. it reads the file-recovery store (IndexedDB, snappy `.ldb`, UTF-16), which `strings` and `rg` miss; the tablet keeps its own store, opened in its File recovery settings
 
 - **read · append · property edit → raw files.** `cat`, `>>`, a frontmatter edit in place. 2–5 ms
   per note, payload only, nothing to time out. the vault lives at
