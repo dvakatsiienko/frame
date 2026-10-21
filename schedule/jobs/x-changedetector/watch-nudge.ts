@@ -1,16 +1,38 @@
-// cclio's UserPromptSubmit hook: an upstream github issue or pr in the prompt with no watch → one nudge line
+// cclio's UserPromptSubmit hook: an upstream page in the prompt with no watch → one nudge line
 import { readFileSync } from 'node:fs';
 
 import { apiKey, watchApi, watchFor } from './watch-add.ts';
 
 const ownOwners = ['dvakatsiienko'];
+// our own surfaces and pages that are read, never followed
+const skipHosts = [
+    'claude.ai',
+    'linear.app',
+    'figma.com',
+    'www.figma.com',
+    'localhost',
+    '127.0.0.1',
+    'youtube.com',
+    'www.youtube.com',
+    'youtu.be',
+    'discord.gg',
+    'docs.google.com',
+    'notion.so',
+    'www.notion.so',
+];
 
 export function upstreamLinks(text: string) {
     const links = new Set<string>();
-    for (const [link, owner] of text.matchAll(
-        /https:\/\/github\.com\/([^/\s]+)\/[^/\s]+\/(?:issues|pull)\/\d+/g,
-    )) {
-        if (owner && !ownOwners.includes(owner)) links.add(link);
+    for (const [raw] of text.matchAll(/https?:\/\/[^\s<>«»"'`)\]]+/g)) {
+        const link = raw.replace(/[.,;:!?]+$/, '');
+        const url = URL.parse(link);
+        if (!url || skipHosts.includes(url.hostname)) continue;
+        if (url.hostname === 'github.com') {
+            const [owner, , kind] = url.pathname.split('/').slice(1);
+            const isIssue = kind === 'issues' || kind === 'pull';
+            if (!isIssue || !owner || ownOwners.includes(owner)) continue;
+        }
+        links.add(link);
     }
     return [...links];
 }

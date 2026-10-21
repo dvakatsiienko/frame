@@ -14,6 +14,14 @@ describe('watch-nudge', () => {
         ]);
     });
 
+    test('finds any other web page, skips our own surfaces and trailing punctuation', () => {
+        expect(
+            upstreamLinks(
+                'down: https://nomanssky.miraheze.org/wiki/Curiosities, see https://claude.ai/artifact/x and https://github.com/a/b/blob/main/x.ts',
+            ),
+        ).toEqual(['https://nomanssky.miraheze.org/wiki/Curiosities']);
+    });
+
     test('drops a link whose api url is already watched', () => {
         expect(
             unwatched(
