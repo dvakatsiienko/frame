@@ -223,6 +223,23 @@ describe('checkPocket', () => {
         expect(checkPocket(config, six, today)).toEqual([]);
     });
 
+    test('the seeded evergreen turn stays out of both caps', () => {
+        const items = Array.from({ length: 5 }, (_, n) =>
+            task(
+                n < 3
+                    ? { id: `PK-${n}`, ordinal: `${2000 + n}`, priority: 'now' }
+                    : { id: `PK-${n}` },
+            ),
+        );
+        const seed = task({
+            id: 'PK-9',
+            ordinal: '1000',
+            priority: 'now',
+            title: '🧬 evergreen turn — 2026-10-09',
+        });
+        expect(checkPocket(config, [...items, seed], today)).toEqual([]);
+    });
+
     test('more than five open items goes red', () => {
         const six = Array.from({ length: 6 }, (_, n) =>
             task({ id: `PK-${n}` }),

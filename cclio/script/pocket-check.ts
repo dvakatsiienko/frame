@@ -8,6 +8,8 @@ const OPEN_CAP = 5;
 const PARKED_LINE = /^parked:\s*\S/m;
 const EXPIRING = ['xs', 's'];
 const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
+// the boot seeds it every evergreen day; counting it would trip the caps weekly by design
+const CAP_FREE_TITLE = /^🧬 evergreen turn/;
 const TICKET_LINE = /\b(?:ticket|moved to linear):\s*((?:FRM|BYT)-\d+)/gi;
 
 export function checkPocket(
@@ -55,7 +57,8 @@ export function checkPocket(
             continue;
         }
         const parked = PARKED_LINE.test(text);
-        if (status !== 'waiting' && !parked) openCount += 1;
+        const capFree = CAP_FREE_TITLE.test(front.scalars.title ?? '');
+        if (status !== 'waiting' && !parked && !capFree) openCount += 1;
         if (status === 'claimed' && parked)
             report(
                 'claimed and parked at once: a parked item releases its claim, set it open or waiting',
@@ -116,7 +119,7 @@ export function checkPocket(
                 `untouched since ${touched || '?'}: work it, wait it or park it`,
             );
         if (due && due < today) report(`expired on ${due}`);
-        if (priority === 'now') nowCount += 1;
+        if (priority === 'now' && !capFree) nowCount += 1;
     }
     if (nowCount > NOW_CAP)
         problems.push(`now holds ${nowCount} items, the cap is ${NOW_CAP}`);
