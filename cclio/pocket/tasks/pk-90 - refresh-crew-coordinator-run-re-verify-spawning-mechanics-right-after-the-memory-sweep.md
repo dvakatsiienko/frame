@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-12 11:23'
-updated_date: '2026-10-21 10:55'
+updated_date: '2026-10-21T12:27:00Z'
 due_date: '2026-10-22'
 labels:
   - m
@@ -53,4 +53,6 @@ unparked 2026-10-15 by dima's inbox steering: this run goes FIRST, inside the me
 2026-10-18: priority now → next — it is waiting, and the now cap holds today's three items (viz tool, shape-idea top-7, firecrawl).
 
 2026-10-21 inbox, dima, folded — a research vector for this run, not fixed in the recipe: the «breaker» agent role. is it our verifier, or a different angle? its own role beside crew-verifier, or an alias for what the verifier does? does our verifier actually try to break an app on purpose? worth extending its instructions to also try breaking the app while verifying? the research lanes search this too; if it holds, also the degree: how much effort a verifier spends on breaking, and where it stops so it doesn't overextend. if we adopt a verifier/breaker shared role, the recipe carries it, and each rerun sharpens the verifier as a verifier/breaker.
+
+2026-10-21 15:32 the breaker idea's source, read: Rauch's tip 5 (the PK-232 video) — a breaker agent stress-tests on purpose (concurrent conflicting actions, slowness, comparison with rivals), works on copies of real data, and loops with the fixer. tip 6 adds a «first-time user» agent: it may only RUN the app in a browser, a hook blocks every other Bash use, so it can't read the code — a vector for the verifier and x:browser-headless. tip 2: a «direction» command checks built work against the plan folder for drift.
 <!-- SECTION:NOTES:END -->

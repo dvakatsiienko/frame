@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-10-20 11:02'
-updated_date: '2026-10-21T11:36:00Z'
+updated_date: '2026-10-21T12:33:00Z'
 due_date: '2026-10-23'
 labels:
   - s
@@ -39,4 +39,6 @@ inbox 2026-10-20, dima: yesterday i asked you to disable it fully, because we no
 2026-10-21 14:14: dima toggled x-cw@x-com off in the desktop app again (it was off 10-20, back on 10-21, cause unknown); the toggle is shared by the Chats and Code tabs, so x-cw (needed in chats, evenings) can't stay off. no local file holds that toggle (claude_desktop_config.json has only the x-cw mcp server) — inference: account-level. a running session's skill list is fixed at its start, so the proof is the next fresh tab.
 
 2026-10-21 14:35 dima's verdict (o5): x-cw stays on most of the time; he disables it himself before spawning the fleet when he wants clean lists. closed done.
+
+2026-10-21 15:35 correction: the 14:14 line «a running session's skill list is fixed at its start» was wrong — this session got mid-session skill-list updates (PK-239).
 <!-- SECTION:NOTES:END -->
