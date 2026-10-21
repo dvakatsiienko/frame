@@ -1,6 +1,6 @@
 ---
-status: parked
-until: 2026-11-07
+status: live
+until: 2026-11-04
 dies-when: the verdict line below is written
 ---
 
@@ -8,7 +8,7 @@ dies-when: the verdict line below is written
 
 Ticket: FRM-407
 
-**parked on:** the card's build, [FRM-407](https://linear.app/x-com/issue/FRM-407) (shaped 2026-10-21; the shape lives in the ticket); `until:` counts 14 days from a build expected by 10-24.
+**built:** 2026-10-21, [FRM-407](https://linear.app/x-com/issue/FRM-407) (the shape lives in the ticket); `until:` is 14 days from the build. open: the planted-confusion run and a first real app run.
 
 **test card:** we believe fresh-eyes finds where a first-time user gets lost that the verifier and dima's own look miss · we test it by on-demand runs on apps without a login (chords, speak, atelier) whenever a screen changes · we measure per goal: stuck spots, true or false by dima's call, the 2-of-3 agreement rate, the control run's false spots, tokens and dollars for the 3 parallel runs, wall time · we're right if at least 1 true stumble the verifier missed turns up per 3 goals, at most 1 in 3 reported spots is false, and one goal costs under 10 minutes of wall time
 **kill rule:** 3 goals in a row with no true spot, or the control run flags a false spot twice
@@ -26,5 +26,6 @@ Ticket: FRM-407
 - the users and the docs: `docs/research/blind-usability-agents.md` (UXAgent, AgentA/B, AMUSER, PerceptUI, Loop11; agent-browser's `dogfood` skill, `--action-policy`, `--allowed-domains`; the cc hook input's `agent_type`) — read 2026-10-21
 
 ## rounds
+- 2026-10-21 · the blind door, first run: the card as a one-shot `claude -p --agent fresh-eyes` (haiku) tried `cat`, the Read tool, view-source, file://, `eval` · 5 of 5 refused by its frontmatter hook, the reason printed each time · the usual door had no fence at all · built here, no lane: card + `shelf/hooks/fresh-eyes-blind.ts` (11 tests) + `fresh-eyes-goal-check.ts` (3 tests, caught 2 real atelier labels; strict — a one-word label like «motion» counts). agent-browser has no `--allowed-domains` / `--action-policy` in our version, so the hook is the whole fence
 
 ## verdict

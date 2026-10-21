@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-21T14:48:00Z'
+updated_date: '2026-10-21T14:54:00Z'
 due_date: '2026-10-21'
 labels:
   - m
@@ -74,4 +74,6 @@ inbox 10-19 (idea, his ask: fold into the pm module revamp): split summoning and
 2026-10-21 17:02 dima, folded: the PK-240 data-loss issue is partly a pm-module issue — that's why i said something is wrong with your pm module; now we found a part of it. solve PK-240 now, and fold this incident into the pm revamp, so its full-mode review (dima-intervenes' first run) sees the fuller picture of the pm flow: wish intake → pocket fold → grill → build, where PK-173 lost ~35 %.
 
 2026-10-21 17:51 correction (wishkeeper): the 17:02 note's «dima, folded» part is his words only up to «review a fuller picture of your pm flow in full mode»; «dima-intervenes' first run» and «where PK-173 lost ~35 %» were cclio's adds — PK-240 was the skill's first fix run, PK-103 is its first full-area run. before that run, PK-103 is folded into W-lines.
+
+2026-10-21 17:55 the data-loss incident, folded for the revamp (dima: «it's important, we should somehow remember that»): the dima-intervenes fix run on PK-240 audited 8 wishes, 139 points (docs/research/wish-data-loss-audit-2026-10-21.md): composer 1.4 % lost, pocket 0.7 %, an old ticket absorbing a wish as a note 38.7 %, first use (grill, brief, spec) 9.4 % lost + 10.1 % blurred — the inbox was covered, the loss sat in the middle, after every guard. shapes: dropped questions 18, re-summaries 13, dropped why 9; long prose wishes lose most. fixes landed: W-lines at the parse, wish-cover.ts at five doors, the ticket wish block = the fold, wishkeeper + ccrow nets. the revamp reviews the whole path with these numbers; the open half is monitoring (dima 17:54).
 <!-- SECTION:NOTES:END -->

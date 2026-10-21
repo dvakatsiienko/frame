@@ -30,8 +30,8 @@ cclio/plugin-cclio/skills/author-blueprint/references/n8n.md	2700	seed 2026-10-1
 cclio/plugin-cclio/skills/author-blueprint/SKILL.md	2600	seed 2026-10-18, born with the blueprints trial, its size + 15 %
 cclio/plugin-cclio/skills/boot/references/board.md	2200	seed 2026-10-16, its size + 15 %
 cclio/plugin-cclio/skills/boot/SKILL.md	13400	seed 2026-10-16, today's size + 15 %
-cclio/plugin-cclio/skills/dima-intervenes/SKILL.md	5200	2026-10-21: the fix mode joined (PK-173, dima's wish), 4.5 KB + 15 %
 cclio/plugin-cclio/skills/checkpoint/SKILL.md	8400	seed 2026-10-16, today's size + 15 %
+cclio/plugin-cclio/skills/dima-intervenes/SKILL.md	5200	2026-10-21: the fix mode joined (PK-173, dima's wish), 4.5 KB + 15 %
 cclio/plugin-cclio/skills/evergreen/references/merge-round.md	3200	seed 2026-10-16, its size + 15 %
 cclio/plugin-cclio/skills/evergreen/references/read.md	9900	seed 2026-10-19, its size + 15 %
 cclio/plugin-cclio/skills/evergreen/references/weekly-lanes.md	1800	seed 2026-10-16, its size + 15 %
@@ -45,7 +45,6 @@ cclio/plugin-cclio/skills/pm/references/closing.md	1200	seed 2026-10-19, its siz
 cclio/plugin-cclio/skills/pm/references/workspace.md	2700	seed 2026-10-16, its size + 15 %
 cclio/plugin-cclio/skills/pm/SKILL.md	13800	seed 2026-10-16, today's size + 15 %
 cclio/plugin-cclio/skills/remind/SKILL.md	2500	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/research/SKILL.md	5200	2026-10-21: the wish-cover line (PK-240, a pocket-born brief cites its W-lines); before: 5000, dima's cw-test adds
 cclio/plugin-cclio/skills/shape-idea/SKILL.md	4800	2026-10-21: the W-lines + wish-cover check in step 1 (PK-240); before: 4600
 cclio/plugin-cclio/skills/shape-lane/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
 cclio/plugin-cclio/skills/shape-recipe/SKILL.md	6800	seed 2026-10-16, today's size + 15 %
@@ -57,6 +56,7 @@ ccrow/AGENTS.md	11900	seed 2026-10-16, today's size + 15 %
 docs/knowledge/AGENTS.md	1900	seed 2026-10-16, today's size + 15 %
 gifs/AGENTS.md	1200	seed 2026-10-16, today's size + 15 %
 gmail/AGENTS.md	2100	seed 2026-10-16, today's size + 15 %
+home/.claude/agents/fresh-eyes.md	2600	seed 2026-10-21, its size + 15 %
 home/.claude/agents/helper-lite.md	2400	seed 2026-10-16, its size + 15 %
 home/.claude/agents/helper.md	1900	seed 2026-10-16, its size + 15 %
 home/.claude/agents/researcher.md	2100	seed 2026-10-16, its size + 15 %
@@ -99,6 +99,7 @@ home/.claude/plugin-x/skills/handoff-ingest/SKILL.md	8000	seed 2026-10-16, today
 home/.claude/plugin-x/skills/handoff/SKILL.md	9800	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/mobile-mode/SKILL.md	2100	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/notes/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/research/SKILL.md	5200	2026-10-21: the wish-cover line (PK-240, a pocket-born brief cites its W-lines); before: 5000, dima's cw-test adds
 home/.claude/plugin-x/skills/step-by-step/SKILL.md	2400	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/top-seven/SKILL.md	2900	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/walkthrough/SKILL.md	3500	seed 2026-10-16, today's size + 15 %
