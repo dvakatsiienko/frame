@@ -35,4 +35,6 @@ dima, 2026-10-20: «i recalled there is figjam too. i like it, it's the pretties
 - 2026-10-20 · desktop figma connector (dima installed it, the cli mcp stays needs_auth in a desktop session) · whoami + get_screenshot of page 0:1 at 2000 px, read inline · 2 calls (the month: 14), 0 errors · v2 sits RIGHT of v1, not below; readable at 2000 px; mermaid subgraph titles dropped in both · cclio draws and reads FigJam directly now, no claude -p hop
 - 2026-10-20 · the day's count for the cap (dima asked): 14 figma mcp calls across 4 rounds (4 probe, 5 draw, 3 redraw, 2 desktop read), all answered, no rate-limit or quota error · the starter cap is not hit at 14; tomorrow's coordinator and pm blueprints push it further — the first 429 or «limit» message is the number
 
+- 2026-10-21 · PK-213 the refresh-crew-coordinator run flow via use_figma (5 sections, 33 shapes, 29 connectors, 3 side sections) · 7 calls (whoami, create_new_file, create_session, 2 use_figma, 2 get_screenshot), 0 errors, no cap message · [the board](https://www.figma.com/board/RAJ5NlCcJVqfWNjR0KiS35) · first draw: elbowed connectors across sections cut through tiles, fixed by section-to-section straight arrows; an ENG_DATABASE tile clipped its text until widened
+
 ## verdict
