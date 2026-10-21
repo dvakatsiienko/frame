@@ -48,10 +48,10 @@ skips nothing.
    plain words and one proposed fix; his guess sits beside my findings.
 5. **the decision round**: one `mattpocock-skills:grilling` round on the fixes; tech choices that
    matter are asked too, the rest i make myself and name in one line he can steer.
-6. **fix in place**: only the fixes he picked, the same session; no fix outside the round. the owner
-   decides the door: cclio's own files and our tooling land here (`craft-pm` § the freebie rule); an
-   app, a flow contract or anything bigger than a tweak goes its `craft-fleet-flow` lane, shaped
-   first; one too big for now becomes a ticket on his word.
+6. **fix in place first** (dima, o55: «when I want to interfere, it means something is really off. we
+   should go and fix it instead of folding into a ticket and postponing»): only the fixes he picked,
+   the same session; no fix outside the round. a lane or a ticket only when a fix is too big for now's
+   time or capacity, on his word.
 
 done: every picked fix landed or ticketed, and one line names what changed for him.
 

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T11:40:00Z'
-updated_date: '2026-10-21T11:40:00Z'
+updated_date: '2026-10-21T14:45:00Z'
 due_date: '2026-10-24'
 labels:
   - s
@@ -29,4 +29,6 @@ dima, 2026-10-21 14:40, folded: in a native terminal (no desktop app) mods work 
 
 <!-- SECTION:NOTES:BEGIN -->
 parked: rides the low tide beside ccrow's dual-mode (o2)
+
+**waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
 <!-- SECTION:NOTES:END -->

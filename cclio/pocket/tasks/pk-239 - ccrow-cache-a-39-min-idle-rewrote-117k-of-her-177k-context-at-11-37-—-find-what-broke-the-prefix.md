@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T12:06:00Z'
-updated_date: '2026-10-21T12:12:00Z'
+updated_date: '2026-10-21T14:45:00Z'
 due_date: '2026-10-24'
 labels:
   - s
@@ -28,4 +28,6 @@ OTel 2026-10-21 (~/.local/share/x-cc-otel/2026-10-21.jsonl, session 3e3e598e): 1
 parked: rides the low tide beside PK-233 (ccrow ledger)
 
 2026-10-21 15:12 correction: my 14:15 «a running session's skill list is fixed when it starts» was wrong — this session got mid-session skill-list reminders (neuroarxiv appeared at 14:46), so a list change can reach a running session. second candidate (ccrow, inference): her cd calls at 13:58 and 15:10 landed as «Environment update» lines in her transcript. probe both.
+
+**waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
 <!-- SECTION:NOTES:END -->

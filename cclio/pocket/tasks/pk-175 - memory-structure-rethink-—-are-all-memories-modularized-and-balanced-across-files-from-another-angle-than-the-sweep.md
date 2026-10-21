@@ -3,10 +3,10 @@ id: PK-175
 title: >-
   memory structure rethink — are all memories modularized and balanced across
   files, from another angle than the sweep
-status: done
+status: open
 assignee: []
 created_date: '2026-10-18 13:41'
-updated_date: '2026-10-21T14:40:00Z'
+updated_date: '2026-10-21T14:48:00Z'
 due_date: '2026-10-21'
 labels:
   - m
@@ -32,4 +32,6 @@ parked: until the weekly reset (2026-10-19 07:00) — dima 10-18: today is the p
 2026-10-21 16:31 grilled: balance by moment (each line where it fires, every turn vs on trigger); scope = fleet layer (root CLAUDE.md + rules, ~67 KB) + cclio leaves (~74 KB); maps drawn twice for dima to compare — a dataviz artifact and a FigJam board (calls counted in docs/test-drive/figjam.md); home = a nurture-memory sweep step after the fleet memory groom, before the skills groom; runs today after the PK-173 and PK-103 grills. tools: dima explores all viz tools actively, the narrowing comes later.
 
 2026-10-21 17:45 resolved: maps compared (dataviz for weight, FigJam for the overall picture); the fleet layer stays resident — the lens: a line leaves only when a hook can see its trigger; first move: the watch nudge hook (watch-nudge.ts) + habit-shared-files shrunk; the rethink step landed in recipes/nurture-memory step 8, it runs whole at the next sweep.
+
+2026-10-21 17:50 reopened (wishkeeper): only the fleet layer was judged — all five moves declined; left: cclio's own leaves by moment, plus one split-or-merge call per leaf (o65); dima's o46 asked for it today.
 <!-- SECTION:NOTES:END -->

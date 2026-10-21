@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T11:46:00Z'
-updated_date: '2026-10-21T13:10:00Z'
+updated_date: '2026-10-21T14:45:00Z'
 labels:
   - m
 dependencies: []
@@ -34,4 +34,6 @@ slot (dima o7, 14:52): shape-idea after today's 4 grills, before the coordinator
 2026-10-21 15:05 wishkeeper: ? a 1Password community bug says a service account gets «Environment was not found» even with read access (lanes/linkup.md:334) — op-run.sh runs on the x-fleet service account, so probe before shaping: OP_SERVICE_ACCOUNT_TOKEN=<x-fleet> op run --environment <throwaway id> -- env. also weigh 1Password's agent hook for Claude Code (linkup.md:340).
 
 2026-10-21 16:11 the research moved: docs/research/evergreen-borrows-2026-10-21.md (1Password wiring) + the lanes summary in it.
+
+**waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
 <!-- SECTION:NOTES:END -->

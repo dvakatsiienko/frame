@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-18 14:39'
-updated_date: '2026-10-20 11:53'
+updated_date: '2026-10-21T14:45:00Z'
 due_date: '2026-11-01'
 labels:
   - s
@@ -28,4 +28,6 @@ dima, 2026-10-18: OpenUI — where could we apply it? don't forget or discard it
 2026-10-20 parked: no window before today's sweep, refresh-coord-mechanics and the pm revamp plan; revisit at its 11-01 due
 
 2026-10-20 14:52 not blocked — a new trial (install, card, day 0); queued after the sweep's xs/s items, ahead of refresh-coord-mechanics.
+
+**waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
 <!-- SECTION:NOTES:END -->

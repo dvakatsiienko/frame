@@ -32,9 +32,9 @@ comparison brief).
 - **the fold**: a wish lands in his language with the spelling fixed, the fluff out, the manner kept
   ([dima-wishes](dima-wishes.md)); wordier than machine text, and that is justified — his word.
 - **numbered at the parse, cited at every use** (dima, 2026-10-21, PK-240: an audit of 8 wishes kept 94 % of his points in the pocket and lost them at first use, his questions most): the pocket item holds the fold one point per line, `W1 …`, his questions marked ❓; every first use — a grill round, a research or coder brief, a spec, my own in-place work — cites the W-lines it covers, and `node script/wish-cover.ts <PK-N> <draft…>` exits 0 before it ships.
-- **the fold, never the wall**: a ticket's `wish` block is those W-lines; his raw drop stays in the pocket item's notes, linked. a wish joining an old ticket adds its W-lines to the block, never a note.
+- **the fold, never the wall**: a ticket's `wish` block is those W-lines; his raw drop stays in the pocket item's notes, linked by PK id (an archived item keeps it). a wish joining an old ticket adds its W-lines to the block, never a note.
 - **one home at a time**: inbox → pocket item → linear ticket. the moment a ticket exists, the pocket
-  item becomes a pointer to it, and the ticket body opens with a `wish` block in his cleaned words —
+  item becomes a pointer to it (his raw drop stays in its notes), and the ticket body opens with a `wish` block in his cleaned words —
   linear is the human-readable record of his wants (reference, history, housekeeping).
 - **the ticket ↔ spec rule** lives in `cclio:pm`'s `references/body.md`: the want in the ticket, the how in the spec, which points with `wish: FRM-N`.
 - a ticket stays readable and meaningful in size; the machine detail lives in the spec.

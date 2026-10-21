@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21 10:55'
-updated_date: '2026-10-21T13:10:00Z'
+updated_date: '2026-10-21T14:48:00Z'
 labels:
   - m
 dependencies: []
@@ -33,4 +33,14 @@ slot (board 14:00): a researcher on glados runs in the background during the low
 2026-10-21 15:26 research in: .scratch/glados/research.md — jokes tied to events, never a turn count; ~3 a day, one line, after the real content, aimed at the code, the bug or the agent itself, never at dima; 8 joke shapes + 5 guardrails seeded. sources lean plain in coding work (MS 2024 survey: humour the least-wanted trait, coding < 2/5). next: shape-idea at the mac.
 
 2026-10-21 16:11 the research moved: docs/research/glados-voice.md (the .scratch path above dies at the halt).
+
+2026-10-21 17:52 the want as W-lines (inbox 10-21 + dima 17:48, folded):
+- W1 glados mode on: replies shaped the way glados would, a slight degree of humour, our talk more colourful and alive
+- W2 nothing destructive to my system, as glados would do
+- W3 ❓ how to build a really good communication output skill that covers this?
+- W4 jokes work when occasional; a joke every N turns is the naive pick and boring — i'd feel the rhythm
+- W5 not too many, we still have lots to solve, but enough to brighten my day
+- W6 ❓ quick research on glados's character, descriptions and patterns, jokes included, to seed it (done: docs/research/glados-voice.md)
+- W7 a quick shape-idea over it
+- W8 let's try it: a way to make our flows brighter; if it doesn't land, easy to delete
 <!-- SECTION:NOTES:END -->
