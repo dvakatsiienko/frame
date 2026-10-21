@@ -99,6 +99,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-18 · inbox-prep · 1 · 0 · 102/102 verbatim, check exit 0; 11 items, 20 asks; homes PK-103, PK-142 on subject/body match
 - 2026-10-19 · inbox-prep · 1 · 0 · inbox-composer.md written, check 16/16, no commit
 - 2026-10-20 · inbox-prep · 1 · 0 · inbox-composer.md written, 38/38 content lines verbatim, 9 items, 23 asks; PK-90 homed for W1, cw memory not homed (PK-196 body differs)
+- 2026-10-21 · inbox-prep · 1 · 0 · inbox-prep: 5 items, 9 asks, inbox-prep-check 12/12 exit 0, inbox-composer.md written, inbox.md untouched, no commit
 
 ## rounds
 
@@ -108,6 +109,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 
 - 2026-10-15 · the composer recipe run (helper-lite hunts, exa + parallel, an opus + arXiv lane): 65 chores since 10-14, 61 green first pass, 1 rework (1.5 % against the 1-in-5 kill rule), 2 consult, 2 blocked; cclio briefed it in 4 messages, 2,971 chars, on 10-15; composer spent 18.35M tokens, peaking at 187k on 10-14 (past the 100k price line, ×5). per chore in haiku dollars a warm sidecar costs ~1.7–2.5× a fresh `helper-lite`, ~3–6× under one chore an hour. Devin Fusion is the same design; its lesson: a weaker sidekick needs more prescriptive briefs, so the lead's brief tokens decide it. the split (stateless → `helper-lite`, stateful → composer) leaves composer with pocket writes, commits, inbox prep and commit-batch sweeps. the critical review: **keep to the 10-21 verdict** — no kill rule tripped; what 10-21 decides is whether that narrower load pays for a parked session
 - 2026-10-15 · the boot probe (dima's tick): `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` drops every CLAUDE.md and rules file, hooks and mods stay (x-mod-guard still refused an `rm`); composer restarted as job 435b4046 without fleet memory, the charter's floor section standing in — boot **~75k → 53.6k**. watch: a chore that breaks a fleet rule the floor dropped, and the next memory-less `inbox-prep` (it handles dima's raw words, so «no prose, low risk» is an inference)
+- 2026-10-21 · the boot's inbox prep, read by wishkeeper (boot mode, effort high): 5 items, 9 asks, check 12/12; two meaning slips — «printed» kept literal where dima meant typed (wispr), and the A2 opener «Glados mode on» dropped; the wispr guess «rest» → «test» flagged (?) and confirmed by dima. effort saved, the 10-20 open question: cclio wrote all 5 pocket items herself again, so still unmeasured
 
 ## verdict
 
