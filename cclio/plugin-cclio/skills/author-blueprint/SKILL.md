@@ -5,7 +5,7 @@ description: load BEFORE drawing, reading back or automating in a blueprint — 
 
 # author-blueprint — draw it, read his edit, build from it
 
-a **blueprint** (`rules/fleet-vibe.md`) lives in `~/frame/cclio/blueprints/`; its `AGENTS.md` holds the doors, names and files, `PRODUCT.md` the want. the n8n facts, verified 2026-10-18 on 2.43.7: [references/n8n.md](references/n8n.md). it holds on every tool on trial: FigJam, n8n, Canvas, draw.io.
+a **blueprint** (`rules/fleet-vibe.md`) lives in `~/frame/cclio/blueprints/`; its `AGENTS.md` holds the doors, names and files, `PRODUCT.md` the want. the n8n facts, verified 2026-10-18 on 2.43.7: [references/n8n.md](references/n8n.md). it holds on every tool on trial.
 
 a mapped area (`blueprints/AGENTS.md`) is planned on its board first, built after dima agrees.
 
@@ -13,15 +13,13 @@ a mapped area (`blueprints/AGENTS.md`) is planned on its board first, built afte
 
 1. read the real files first and map them one to one: a tile names its file, my own reading (a weak spot) is labelled so
 2. readable for dima, before the first tile: [references/readable.md](references/readable.md) — big tiles, one idea each, an emoji from its set opening every title and the board's name
-3. the tool: FigJam through the figma mcp (`create_new_file`, `use_figma`); n8n through its api (`noOp` tiles, sticky notes, dima's Tidy up); Canvas or draw.io on his ask, draw.io laid out by `--layout '[{"layout":"elkLayered"}]'`
-4. done: one screenshot read back for clipped text and crossing arrows, fixed, then the link in the reply; an n8n board also saves its export as `blueprints/<subject>-<kind>.n8n.json`
+3. the tool: FigJam through the figma mcp, one band per `use_figma` call returning every id (the Figma token writes comments only); n8n through its api (`noOp` tiles, stickies, his Tidy up); Canvas or draw.io on his ask, draw.io laid out by `--layout '[{"layout":"elkLayered"}]'`
+4. done: the band checked by numbers (overlaps, text taller than its tile), then one `await section.screenshot()` inside the last `use_figma` (`get_figjam` and `get_screenshot` may spend the View seat's 20 MCP reads a month), fixed, then the link; an n8n board also saves `blueprints/<subject>-<kind>.n8n.json`
 
 ## read his edit back
 
-- his FigJam comments, before every board edit: `~/frame/script/op-run.sh node ~/frame/cclio/script/blueprint-comments.ts`; each open one answered in the reply by its own words (the plugin api and `get_figjam` never show comments)
-- GET the workflow, diff it against the last export semantically: tiles added, removed, renamed, moved, arrows in and out, sticky text — never the raw json diff
-- `/workflows/{id}/history` keeps every version forever: the diff base when no export exists
-- every sticky or tile of his that asks something is answered in the reply, by its own words
+- his FigJam comments before every board edit, `~/frame/script/op-run.sh node ~/frame/cclio/script/blueprint-comments.ts` (no mcp tool shows them); each comment, sticky or tile of his that asks something is answered in the reply by its own words
+- n8n: GET the workflow and diff it against the last export semantically (tiles, renames, moves, arrows, sticky text), never the raw json; `/workflows/{id}/history` is the base when no export exists
 - done: the new export committed beside the old one
 
 ## write without breaking him
