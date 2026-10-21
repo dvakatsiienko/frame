@@ -26,6 +26,8 @@ state lives on disk, never only in context: after **every** step, the plan file'
 the current step, the decisions and the open asks. the `SessionStart:compact` hook (`.claude/hooks/shift-recompact.sh`)
 re-reads a plan whose header says `status: running` after a compaction, and `pnpm shift:checkup` proves the hook.
 
+- **the checkpoint is mine while he is away**: at 600–700k context I run `cclio:checkpoint` myself, at the end of a step, never mid-chunk (dima, 2026-10-07: «you reach 400k extremely fast … a good number for you to checkpoint is about 600k to 700k»; 2026-10-21: «during the shift, when I am AFK, it is fully up to you, so be careful with this»). `get_usage` reads it after every step.
+
 ## 1 · start — the last chat message
 
 - `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 pr-watch`, each with its why; any 🔴 = no shift

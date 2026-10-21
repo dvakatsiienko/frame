@@ -5,7 +5,7 @@ argument-hint: "[what to drop, comma-separated]"
 
 # /cclio:checkpoint [drop …]
 
-**the trigger beside his word: context at 600–700k** (dima, 2026-10-07: «you reach 400k extremely fast … a good number for you to checkpoint is about 600k to 700k») — `get_usage` shows it at every siesta; past 600k the ➡️ offers a checkpoint; a 🐦‍🔥 second wind press on my sessions row is the same trigger, its note slipstreamed into my next turn. **a half-halt, no exit.** frees the thread of a finished topic while everything else survives —
+**the trigger is his: his word, or a 🐦‍🔥 second wind press on my sessions row**, its note slipstreamed into my next turn — he watches the context himself (dima, 2026-10-21); during a shift the trigger is mine, `cclio:shift` § surviving a compaction. **a half-halt, no exit.** frees the thread of a finished topic while everything else survives —
 the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as possible; memory as precise as possible after the resume; only the unwanted absent. the drop list is mine to decide, no approval round: «when you run checkpoint, just print me a compact prompt upfront, saving a turn».
 
 📌 who runs the compact: on his word, `/compact` is his to type and the ritual ends by handing him the line; on a 🐦‍🔥 press, it ends with the stash tool's `second-wind` op naming the CST slug, and the mod runs the compact + ingest at that turn's end.
