@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-21T12:15:00Z'
+updated_date: '2026-10-21T14:02:00Z'
 due_date: '2026-10-21'
 labels:
   - m
@@ -70,4 +70,6 @@ inbox 10-19 (idea, his ask: fold into the pm module revamp): split summoning and
 2026-10-20 19:08 low tide: postponed to 10-21 on dima's word («resolve everything that does not want a grill, postpone everything else to tomorrow») — a grill: the pm flow review
 
 2026-10-21 15:15 dima (o11): the rename and reshape of every fleet member's name rides this pm revamp. first case: x:research's per-surface bullet calls a claude.ai project thread «cc cloud», while fleet-identity's cc cloud is a claude --cloud session (which clones frame) — one name per thing across fleet-identity, fleet-doors and the skills.
+
+2026-10-21 17:02 dima, folded: the PK-240 data-loss issue is partly a pm-module issue — that's why i said something is wrong with your pm module; now we found a part of it. solve PK-240 now, and fold this incident into the pm revamp, so its full-mode review (dima-intervenes' first run) sees the fuller picture of the pm flow: wish intake → pocket fold → grill → build, where PK-173 lost ~35 %.
 <!-- SECTION:NOTES:END -->

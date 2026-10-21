@@ -63,7 +63,6 @@ const scriptFamilyAllow = new Set([
 // singles that never grow siblings (FRM-219 pass 1, the SINGLE-OK list)
 const singleAllow = new Set([
     'bulk-replace',
-    'catch-up',
     'remind',
     'seed',
     'step-by-step',
