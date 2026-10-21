@@ -47,6 +47,14 @@ dima, 2026-10-21: «the text is small, and line breaks cause the most harm to re
 - 🏷️ a name
 - 🪪 an identity
 
+## the set: the bands of a crew flow
+- 🚪 a door, a way in
+- 🍴 a fork
+- 🏃 a lane running
+- 🏁 an ending
+- ☁️ a cloud session
+- 🧭 a legend
+
 ## the set: board names
 - 🛼 a crew or lane flow
 - 📐 a recipe flow
