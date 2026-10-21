@@ -1,8 +1,8 @@
 # workarounds — what dima wanted, what the api gave, what to undo
 
 read on demand when cc's mods api moves; nothing points here from a resident file. each entry: the want, the issue,
-the workaround in place, the undo. checked against the changelog through 2.1.296 (refresh-cc-mods run #4,
-2026-10-12): no entry is fixed yet.
+the workaround in place, the undo. checked against the changelog through 2.1.306 (the evergreen read,
+2026-10-21): no entry is fixed yet; 2.1.301's `Input rows` may undo the multi-line half of «orbit's note».
 
 ## orbit's note: a wide, roomy text field
 
