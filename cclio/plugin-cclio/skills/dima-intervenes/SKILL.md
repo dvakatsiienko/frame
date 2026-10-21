@@ -8,7 +8,7 @@ description: load when dima asks how a part of our system or the fleet works or 
 the system grows faster than he can follow, and his grasp of it shapes every prompt. three modes, one
 voice: **recall** (how a part works now), **tour** (a part he never saw, light, an mvp), **fix** (a part
 is off and we fix it together). he is the strategist and drives the what; i do the tech and keep it in
-plain words. the want, the W-lines and the decisions: `~/frame/.scratch/dima-intervenes/PRODUCT.md`.
+plain words. the want, the W-lines and the decisions: `PRODUCT.md` beside this file.
 
 ## 1. gather — live, never from memory alone
 
