@@ -1,0 +1,30 @@
+---
+status: parked
+until: 2026-11-07
+dies-when: the verdict line below is written
+---
+
+# fresh-eyes — the blind first-time-user subagent card 🐠
+
+Ticket: FRM-407
+
+**parked on:** the card's build, [FRM-407](https://linear.app/x-com/issue/FRM-407) (shaped 2026-10-21; the shape lives in the ticket); `until:` counts 14 days from a build expected by 10-24.
+
+**test card:** we believe fresh-eyes finds where a first-time user gets lost that the verifier and dima's own look miss · we test it by on-demand runs on apps without a login (chords, speak, atelier) whenever a screen changes · we measure per goal: stuck spots, true or false by dima's call, the 2-of-3 agreement rate, the control run's false spots, tokens and dollars for the 3 parallel runs, wall time · we're right if at least 1 true stumble the verifier missed turns up per 3 goals, at most 1 in 3 reported spots is false, and one goal costs under 10 minutes of wall time
+**kill rule:** 3 goals in a row with no true spot, or the control run flags a false spot twice
+
+## stress list
+- the blind door (a PreToolUse hook on `agent_type`) — its first run — `cat`, the Read tool off its shots dir, `view-source:`, `/src/…`, a source map, `file://`: each refused, yes or no
+- 3 parallel runs + the 2-of-3 rule — every goal — agreement rate, wall time against one run
+- reading its own screenshots — a contrast or hidden-button case — does a spot cite what only the image shows
+- outcome goals + the label check — the spawner's goals for 3 apps — labels caught, goals rewritten
+- the control run on a clean screen — every round — false spots
+- the production build — every round — any dev-only leak met
+- a planted confusion (a button whose label says nothing) — the first round — found in 2 of 3, yes or no
+
+## day 0
+- the users and the docs: the prior-art read in FRM-407's refs (UXAgent, AgentA/B, AMUSER, PerceptUI, Loop11; agent-browser's `dogfood` skill, `--action-policy`, `--allowed-domains`; the cc hook input's `agent_type`) — read 2026-10-21
+
+## rounds
+
+## verdict

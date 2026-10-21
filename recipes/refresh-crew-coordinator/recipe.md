@@ -156,6 +156,7 @@ on top of the shared vectors of `cclio:shape-recipe` (the delta covers the cc ch
 on top of the shared three:
 - the flow numbers (`x fleet flow --days 14`): `#dima-caught`, `#brief`, the pr open → merge median — which stage and which member keep failing
 - each member's retros since the last run: what a role keeps missing, and whether a new role would have caught it
+- each card on a test drive (`docs/test-drive/<card>.md`, fresh-eyes from 2026-10-21): its rounds since the last run, read against its test card
 - which bundled skills does this cc build ship, gated ones included? name any new one to dima
 - do the spawn choices made since the last run agree with `crew-lead/models.md` (the contract) and `references/model-cards.md` — and where a card was overridden, was the card wrong or the moment special?
 
