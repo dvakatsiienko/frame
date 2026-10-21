@@ -37,4 +37,6 @@ dima, 2026-10-20: «i recalled there is figjam too. i like it, it's the pretties
 
 - 2026-10-21 · PK-213 the refresh-crew-coordinator run flow via use_figma (5 sections, 33 shapes, 29 connectors, 3 side sections) · 7 calls (whoami, create_new_file, create_session, 2 use_figma, 2 get_screenshot), 0 errors, no cap message · [the board](https://www.figma.com/board/RAJ5NlCcJVqfWNjR0KiS35) · first draw: elbowed connectors across sections cut through tiles, fixed by section-to-section straight arrows; an ENG_DATABASE tile clipped its text until widened
 
+- 2026-10-21 · PK-241 crew-lead flow via use_figma (6 sections, 49 shapes, 39 connectors, legend + weak-spot stickies) · 4 calls (create_new_file, 2 use_figma, get_screenshot), 0 errors · [the board](https://www.figma.com/board/hVVKYtLdMTKASUS3mwG3Uz) · 2 tiles clipped on the first draw, widened
+
 ## verdict
