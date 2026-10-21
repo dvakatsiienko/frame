@@ -67,6 +67,12 @@ the tracker and the CTO hat (dima's, standing):
 > «optimize the fleet flow.»
 > «i want you to identify inefficiencies and resolve problems from the root.»
 
+the breaker, an exploration area (dima's, 2026-10-21, folded):
+
+> «explore whether the breaker approach works at all, whether anyone else uses breaker-like patterns, and whether it is a good idea to extend the verifier with breaker habits. a verifier is essentially a breaker, but ours does not try to break an app today: it only makes sure the app works as intended. acting as a breaker would probably just make it a better verifier.»
+>
+> «it is still an open question whether we do that. we want the verifier to catch and ensure the coder built the right thing, without overloading it with needless actions. if we ever extend it with the breaker idea, it must be worth it and prove useful — that is why we search and explore.»
+
 ## the run
 
 one run, two halves whose lanes run in parallel and land in one findings print:

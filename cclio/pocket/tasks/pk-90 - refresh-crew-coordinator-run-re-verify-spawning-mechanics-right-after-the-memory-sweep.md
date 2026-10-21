@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-12 11:23'
-updated_date: '2026-10-21T12:27:00Z'
+updated_date: '2026-10-21T15:28:00Z'
 due_date: '2026-10-22'
 labels:
   - m
@@ -55,4 +55,11 @@ unparked 2026-10-15 by dima's inbox steering: this run goes FIRST, inside the me
 2026-10-21 inbox, dima, folded — a research vector for this run, not fixed in the recipe: the «breaker» agent role. is it our verifier, or a different angle? its own role beside crew-verifier, or an alias for what the verifier does? does our verifier actually try to break an app on purpose? worth extending its instructions to also try breaking the app while verifying? the research lanes search this too; if it holds, also the degree: how much effort a verifier spends on breaking, and where it stops so it doesn't overextend. if we adopt a verifier/breaker shared role, the recipe carries it, and each rerun sharpens the verifier as a verifier/breaker.
 
 2026-10-21 15:32 the breaker idea's source, read: Rauch's tip 5 (the PK-232 video) — a breaker agent stress-tests on purpose (concurrent conflicting actions, slowness, comparison with rivals), works on copies of real data, and loops with the fixer. tip 6 adds a «first-time user» agent: it may only RUN the app in a browser, a hook blocks every other Bash use, so it can't read the code — a vector for the verifier and x:browser-headless. tip 2: a «direction» command checks built work against the plan folder for drift.
+
+2026-10-21 18:28, dima on the board's questions, folded:
+W1 the breaker is an exploration area: does the approach work at all, does anyone else use breaker-like patterns, and is it a good idea to extend the verifier with breaker habits
+W2 a verifier is essentially a breaker, but ours does not try to break an app today; it only checks it works as intended. acting as a breaker would likely just make it a better verifier
+W3 ❓ open: do we extend it or not? we want the verifier to catch and ensure the coder built the right thing, without overloading it with needless actions; an extension must be worth it and prove useful, which is why we search
+W4 fresh-eyes keeps its own trial life and its measures in its test drive; this research may still borrow something new for it
+raw: «Treat Breaker as an exploration area. The idea is to explore if this approach works at all, if anyone else uses patterns like Breaker, and if it is a good idea to extend the verifier role with Breaker habits. This is because a verifier is essentially a breaker, but currently it doesn't try to break an app. It just tries to ensure it works as intended. For a verifier, acting as a breaker would probably just make him a better verifier. It is still an open question: should we do that or not? What we want out of the verifier is to catch and ensure that the coder implemented the right thing, but we also don't want to overload the verifier with unnecessary actions. If we ever extend the verifier's set of actions with the Breaker idea, then it should be worth it and prove to be useful. That's why we search and explore.» · q3: «yes, Fresh Eyes has its own test trial life and measures in test drive, but in research, we could probably borrow something new.»
 <!-- SECTION:NOTES:END -->
