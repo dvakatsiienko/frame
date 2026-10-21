@@ -3,7 +3,7 @@ kind: refresh
 owner: coordinator
 artifacts: [home/.claude/plugin-x/skills/crew-lead/, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md, home/.claude/plugin-x/skills/crew-lead/references/model-cards.md, home/.claude/plugin-x/skills/crew-lead/references/card-craft.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md, home/.claude/agents/, cclio/.claude/agents/, x:crew-verifier]
 script: none
-groomed: 2026-10-15 (dima)
+groomed: 2026-10-21 (dima)
 was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning, refresh-coordinator]
 ---
 
@@ -79,7 +79,7 @@ half skipped, with the reason — the shared rule of `cclio:shape-recipe`.
 1. **groom**: `cclio:shape-recipe` step 0, the grill. done: his word on the list. (open)
 2. **the roster**: `ls home/.claude/agents/ cclio/.claude/agents/` plus the built-in types and the parked sidecars (`jq -r .name ~/.claude/sessions/*.json`) — every card and seat found is in this run, the old ones too; one new since the last run is named in the print. done: the roster list in `last/`, each card with its file. (script)
 3. **probe the mechanics** (tools): execute `crew-lead/references/spawn-mechanics.md`'s «the test suite» section against the current build, plus every `probe:` line in the vectors. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
-4. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `cclio:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
+4. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half, the run's focus section leading it ahead of `pnpm recipe:brief`'s output (run #6: a lane answered the shared part and skipped a focus placed last), through the `researcher` agent + `pnpm research:lanes`; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `cclio:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
 5. **distill** into the artifacts:
    - `crew-lead/references/spawn-mechanics.md` — the pristine evidence base, claim-tagged; a falsified row is corrected, never deleted silently
    - `crew-lead/references/model-cards.md` — the cards: per model only price · effort · pick for · never · ≤3 deciding numbers, each tagged; a stale number is replaced, a benchmark list or anecdote stays in `last/`; dima's [dima] calls never overwritten; under 8 KB (its cap test)

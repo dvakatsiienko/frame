@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-21T14:58:00Z'
+updated_date: '2026-10-21T15:49:00Z'
 due_date: '2026-10-21'
 labels:
   - m
@@ -78,4 +78,6 @@ inbox 10-19 (idea, his ask: fold into the pm module revamp): split summoning and
 2026-10-21 17:55 the data-loss incident, folded for the revamp (dima: «it's important, we should somehow remember that»): the dima-intervenes fix run on PK-240 audited 8 wishes, 139 points (docs/research/wish-data-loss-audit-2026-10-21.md): composer 1.4 % lost, pocket 0.7 %, an old ticket absorbing a wish as a note 38.7 %, first use (grill, brief, spec) 9.4 % lost + 10.1 % blurred — the inbox was covered, the loss sat in the middle, after every guard. shapes: dropped questions 18, re-summaries 13, dropped why 9; long prose wishes lose most. fixes landed: W-lines at the parse, wish-cover.ts at five doors, the ticket wish block = the fold, wishkeeper + ccrow nets. the revamp reviews the whole path with these numbers; the open half is monitoring (dima 17:54).
 
 2026-10-21 17:58 the wish-loss monitor, dima's picks, built inside this revamp: M1 a pocket close runs wish-cover on the close note (each W-line cited done, moved or dropped on his word); M2 pocket-check reds an item born after 10-21 with no W-lines; M3 a weekly wish-loss audit as a cclio skill, not a recipe (dima: «let's keep it as your skill for now»), in the Wednesday pass, the per-hop numbers trended.
+
+2026-10-21 18:49 dima: «tomorrow, we open with the PM revamp, right, as a second turn after the boot» — the pm research of run #6 feeds it: https://claude.ai/artifact/UQDHgn3qcntgD2UCShxpfv
 <!-- SECTION:NOTES:END -->

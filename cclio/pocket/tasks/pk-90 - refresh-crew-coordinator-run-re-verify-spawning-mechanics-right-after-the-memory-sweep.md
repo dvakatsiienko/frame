@@ -3,10 +3,10 @@ id: PK-90
 title: >-
   refresh-crew-coordinator run: re-verify spawning-mechanics, right after the
   memory sweep
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-12 11:23'
-updated_date: '2026-10-21T15:28:00Z'
+updated_date: '2026-10-21T15:49:00Z'
 due_date: '2026-10-22'
 labels:
   - m
@@ -62,4 +62,8 @@ W2 a verifier is essentially a breaker, but ours does not try to break an app to
 W3 ❓ open: do we extend it or not? we want the verifier to catch and ensure the coder built the right thing, without overloading it with needless actions; an extension must be worth it and prove useful, which is why we search
 W4 fresh-eyes keeps its own trial life and its measures in its test drive; this research may still borrow something new for it
 raw: «Treat Breaker as an exploration area. The idea is to explore if this approach works at all, if anyone else uses patterns like Breaker, and if it is a good idea to extend the verifier role with Breaker habits. This is because a verifier is essentially a breaker, but currently it doesn't try to break an app. It just tries to ensure it works as intended. For a verifier, acting as a breaker would probably just make him a better verifier. It is still an open question: should we do that or not? What we want out of the verifier is to catch and ensure that the coder implemented the right thing, but we also don't want to overload the verifier with unnecessary actions. If we ever extend the verifier's set of actions with the Breaker idea, then it should be worth it and prove to be useful. That's why we search and explore.» · q3: «yes, Fresh Eyes has its own test trial life and measures in test drive, but in research, we could probably borrow something new.»
+
+2026-10-21 18:35 groomed (round 1: want kept, breaker stays a run vector not a want; both halves; x:crew-verifier listed; pm research kept). dima's «go» = run it. Q5 on trial this run: deep-or-skip, at most 3 files changed deep, the findings on a page and a ≤5-line reply; dima: «let's try this approach, and if it is good, settle it as a correction to the recipe body for the next run»
+
+2026-10-21 18:50 run #6 done: https://claude.ai/artifact/UQDHgn3qcntgD2UCShxpfv — spawn-mechanics + crew-subagent landed; the break-pass trial, the fresh-eyes patience budget and the scout identity line wait in orbit; the deep-or-skip trial is judged by dima on this run
 <!-- SECTION:NOTES:END -->

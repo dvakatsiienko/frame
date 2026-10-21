@@ -1,5 +1,5 @@
 ---
-verified-against: claude code 2.1.299, on this mac, 2026-10-15 (34 rows held, 4 flipped, 11 not re-run)
+verified-against: claude code 2.1.304, on this mac, 2026-10-21 (run #6: 4 rows re-run and held, 0 flipped, the rest keep their 2.1.299 tags; changelog 2.1.300–2.1.306 read)
 method: real spawns — bg sessions, subagents, a fork, worktree isolation, cross-session sends, forced tool calls, transcript + registry inspection. docs/schema only where execution was ruled out, and labelled so.
 refresh-when: the claude code minor version changes
 procedure: recipes/refresh-crew-coordinator/recipe.md
@@ -32,6 +32,11 @@ runs on anthropic machines and nobody in the fleet can start one.
     (`~/frame/cclio` → `~/frame`). absolute paths in briefs are correct under both.
 - **async** [verified] — the parent keeps its turn; completion arrives as a `<task-notification>`
   user-role message with the agent's final text plus a token/duration block.
+  - the desktop app and VS Code always run the main thread's subagents in the background, and a
+    subagent's own `Agent` calls run in the foreground there and in `-p` and the SDK
+    [docs, [v2.1.302](https://github.com/anthropics/claude-code/releases/tag/v2.1.302)]
+- **messaged or resumed right after it finishes, it keeps its latest work** — fixed in 2.1.304; before,
+  it sometimes forgot it [docs, [v2.1.304](https://github.com/anthropics/claude-code/releases/tag/v2.1.304)]
 - **model is settable and honoured** [verified] — `model: "haiku"` from an opus parent produced
   `claude-haiku-4-5-20251001` in the child's transcript.
 - **effort: a per-call param since 2.1.292, else inherited by an effort-capable child**, §6.
@@ -52,6 +57,9 @@ runs on anthropic machines and nobody in the fleet can start one.
   fork answered five facts with zero tool calls, three of them known only from `Bash` and
   `TaskCreate` results
 - **`model` is ignored — a fork is always the parent's model** [schema]
+- **on by default everywhere since 2.1.302** — the terminal, `-p`, the SDK, the desktop app and VS Code;
+  `CLAUDE_CODE_FORK_SUBAGENT=0` turns it off, `claude mcp serve` never offers it
+  [docs, [v2.1.302](https://github.com/anthropics/claude-code/releases/tag/v2.1.302)]
 - everything else matches §1
 
 ## 3. worktree isolation — `Agent` with `isolation: "worktree"`
@@ -188,7 +196,7 @@ directory in the brief, every path absolute.**
 - `~/.claude/sessions/<pid>.json` — one per live session, self-removing on exit. carries
   `sessionId`, `cwd`, `kind`, `name`, `nameSource`, `jobId`, `status`, `version`,
   `bridgeSessionId`, `messagingSocketPath`, `peerProtocol`, `peerFeatures`.
-  - `peerFeatures` on 2.1.251 and 2.1.283: `["notify_idle", "reply_across_default_dirs", "artifact_yield"]`;
+  - `peerFeatures` on 2.1.251, 2.1.283 and 2.1.304: `["notify_idle", "reply_across_default_dirs", "artifact_yield"]`;
     `["notify_idle"]` alone on 2.1.239.
 - `~/.claude/jobs/<jobId>/state.json` — richer, and the **only place the launch flags survive**
   [verified 2.1.251]: `respawnFlags` (the literal argv: model, effort, `-n`, `--remote-control`),
@@ -258,26 +266,13 @@ visible at claude.ai/code, model and effort settable, non-blocking, stopped by t
 
 moved out of `home/.claude/plugin-x/skills/crew-lead/`: true, measured, but none of them changes a spawn decision on its own. re-probe with the suite in §13.
 
-- ⚠️ **a subagent starts in the parent's bash cwd and inherits cclio's whole stack regardless
-  of it** (2.1.258 and 2.1.283; flipped on each of the three builds before — re-probe every build). keep every
-  path in a brief absolute.
-- ⚠️ **effort is inherited only by an effort-capable child** — opus, sonnet and haiku 5.5 inherit;
-  a haiku 4.5 child recorded `effort=null` (§6).
-- ⚠️ **a worktree agent branches from `origin/<default-branch>`, not local HEAD** — it cannot see
-  unpushed commits.
-- 📌 `~/.claude/jobs/<jobId>/state.json` carries `respawnFlags` — the only place a session's
-  launch argv survives.
 - ⭐ **background sessions are ADOPTABLE** — anything reading `~/.claude/sessions/` can brief a
   coder it never spawned. Never respawn to escape a lost parent; delivery is proven, correctness is
   a separate check.
 - ✅ **cclio spawns `--bg` coders from either birth, terminal or Code tab** — measured 2026-09-07: a Code-tab-born session's child booted on `Claude Max`, wrote a file, bridged rc. the desktop env markers (`CLAUDE_CODE_ENTRYPOINT=claude-desktop`, `ANTHROPIC_BASE_URL`) are harmless. an auth error on spawn means cc is signed out, not a broken door — probe: `claude -p --model haiku 'reply: alive'`.
 - **cloud is receive-only** and cli → cloud delivery is unverified — a one-way pipe plus a shared
   store, never a handshake.
-- ✅ peer messaging is non-intrusive — Dima: *«does not look like spamming»*. No hedging about
-  waking peers.
-- `ListAgents` and `Workflow` are absent from subagent toolsets — only the coordinator surveys the
-  fleet.
-- **`Agent(<type>)` in `permissions.deny` refuses that subagent type** [verified 2.1.299 from flag, project and user settings]:
+- **`Agent(<type>)` in `permissions.deny` refuses that subagent type** [verified 2.1.299 from flag, project and user settings; 2.1.304 from user settings]:
   «Agent type 'general-purpose' has been denied by permission rule 'Agent(general-purpose)' from
   flagSettings»; the control without it called fine; the user `settings.json` holds it fleet-wide since 2026-10-15.
 - **who costs what on the first request** [verified 2026-10-07 → 10-15, 256 subagent first requests, duckdb]:
@@ -338,12 +333,16 @@ asked for the canary with no tools.
 - the `compact_boundary` record carries `compactMetadata` with `trigger`, `preTokens`,
   `postTokens`, `durationMs`, `cumulativeDroppedTokens` [verified 2.1.299: 34.4k → 1.9k]. 🔁 flipped:
   2.1.283 carried `preservedMessages` in its place.
-- **auto-compact knobs** [docs, read 2026-10-15]: precedence `CLAUDE_CODE_AUTO_COMPACT_WINDOW` (integer,
-  100000–1000000) > `--autocompact` > `/autocompact` (saved per model in `modelSettings`) > top-level
+- **auto-compact knobs** [docs, read 2026-10-15, re-read 2026-10-21]: precedence `CLAUDE_CODE_AUTO_COMPACT_WINDOW`
+  > `--autocompact` > `/autocompact` (saved per model in `modelSettings`) > top-level
   `autoCompactWindow`; agent frontmatter `autoCompactWindow` (2.1.296+) only lowers it and is ignored
-  under the env var; `200k` there reads as 200 and is dropped. `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` only
-  lowers the trigger, default unstated. where inside the window it fires and where quality drops:
-  undocumented — the 600–700k manual checkpoint has no vendor basis either way.
+  under the env var. 🔁 since 2.1.304 the env var takes `k`/`M` suffixes and warns on a bad value; before,
+  `200k` silently set a 100K window ([v2.1.304](https://github.com/anthropics/claude-code/releases/tag/v2.1.304)).
+  `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` only lowers the trigger, default unstated. where quality drops:
+  no vendor number for Opus 5.5. the one public measurement is on Opus 4.6, a user's blind recall test
+  reading a whole document with no search: 24/25 at 200K, 1/25 at 500K
+  ([claude-code#34279](https://github.com/anthropics/claude-code/issues/34279), 2026-03-14) — a different model and a
+  worst case, so the 600–700k manual checkpoint keeps no vendor basis either way.
 - **idle compaction** (2.1.299) [docs]: an interactive terminal session, 1h cache, ≥200K context, ~54 min
   idle; whether a `--bg` session counts [unknown].
 - 📌 `/compact` via `-p --resume` works, which makes this a cheap re-runnable probe.
@@ -407,7 +406,9 @@ claude -p … --resume <uuid> 'no tools: what canary word do you see?'   # must 
 # bundled skills — the names, gated ones included (a gated skill never shows in a session list)
 strings -n 6 ~/.local/share/claude/versions/<v> | …  # python: the registrar was the most common caller of
 #   re.findall(r'\b(\w{1,3})\(\{name:', s) — the minifier renames it per build (ds on 2.1.283, Ms on 2.1.292,
-#   Xs on 2.1.299, where it ranks third: pick the caller whose literal names are known skills);
+#   Xs on 2.1.299, where it ranks third; bi on 2.1.304, 32 names: pick the caller whose literal names are known skills);
+#   2.1.304: dataviz, verify, whiteboard, pr resolve through variables longer than 4 chars — widen the
+#   variable regex, or the probe reads them as removed (they are still in the binary)
 #   a name that is a variable resolves through its X="…" assignment. 0 hits = a broken probe, never «no skills»
 
 # stopping — both work; verify by the registry file vanishing
@@ -433,12 +434,3 @@ reference (model-only), a claude-code guide skill behind a feature flag, and the
 skills. model invocation off: `batch` `debug` `design-sync` `doctor` `run-skill-generator`.
 gated by env or flag: `commit`/`pr`, `schedule`, `claude-in-chrome`, `cowork-plugin`/`setup-claude`
 (cowork only). no baseline exists for 2.1.258, so «new» is not decidable this run.
-
-**agents spawned by the 2026-09-02 run (2.1.258):** 3 subagents (1 opus, 2 haiku — one
-worktree-isolated), 2 one-agent workflows (opus, effort low / high), 2 `claude --bg` opus
-sessions — one stopped by `claude stop`, one by `kill <pid>`, both registry files gone. worktree
-auto-cleaned. no repo files touched by any probe.
-
-**agents spawned by the 2026-08-30 run:** 4 subagents (2 haiku, 1 opus, 1 worktree-isolated),
-1 fork, 1 rejected `name` validation, 2 `claude --bg` sessions — both stopped and verified gone.
-no repo files touched by any probe.
