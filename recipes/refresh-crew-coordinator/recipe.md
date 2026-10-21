@@ -1,7 +1,7 @@
 ---
 kind: refresh
 owner: coordinator
-artifacts: [home/.claude/plugin-x/skills/crew-lead/, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md, home/.claude/plugin-x/skills/crew-lead/references/model-cards.md, home/.claude/plugin-x/skills/crew-lead/references/card-craft.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md, home/.claude/agents/, cclio/.claude/agents/]
+artifacts: [home/.claude/plugin-x/skills/crew-lead/, cclio/memory/craft-fleet-flow.md, cclio/memory/craft-pm.md, cclio/memory/habit-cto.md, home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md, home/.claude/plugin-x/skills/crew-lead/references/model-cards.md, home/.claude/plugin-x/skills/crew-lead/references/card-craft.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md, home/.claude/agents/, cclio/.claude/agents/, x:crew-verifier]
 script: none
 groomed: 2026-10-15 (dima)
 was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning, refresh-coordinator]
@@ -66,13 +66,6 @@ haiku 5.5 (dima's, 2026-10-15, folded):
 the tracker and the CTO hat (dima's, standing):
 > «optimize the fleet flow.»
 > «i want you to identify inefficiencies and resolve problems from the root.»
-
-the breaker, an exploration area (dima's, 2026-10-21, folded):
-
-> «explore whether the breaker approach works at all, whether anyone else uses breaker-like patterns, and whether it is a good idea to extend the verifier with breaker habits. a verifier is essentially a breaker, but ours does not try to break an app today: it only makes sure the app works as intended. acting as a breaker would probably just make it a better verifier.»
->
-> «it is still an open question whether we do that. we want the verifier to catch and ensure the coder built the right thing, without overloading it with needless actions. if we ever extend it with the breaker idea, it must be worth it and prove useful — that is why we search and explore.»
-
 ## the run
 
 one run, two halves whose lanes run in parallel and land in one findings print:
@@ -179,6 +172,7 @@ on top of the shared three:
 - `home/.claude/rules/fleet-identity.md` — the crew list; a role added or retired is his word first
 - `home/.claude/agents/` — the global cards; a card's frontmatter or body changes through the memory-edit habit, a new or retired card is his word first
 - `cclio/.claude/agents/` — cclio's own cards (wishkeeper); same rule
+- `x:crew-verifier` — the verifier contract; changed only when a run proves a change worth its cost (dima, 2026-10-21), through the memory-edit habit
 
 ## findings
 
