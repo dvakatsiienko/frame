@@ -7,7 +7,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-20 16:49'
-updated_date: '2026-10-20 17:26'
+updated_date: '2026-10-21T16:07:00Z'
 due_date: '2026-10-21'
 labels:
   - m
@@ -27,4 +27,6 @@ dima, 2026-10-20, folded: «1. /low-tide over everything, including the grills p
 
 <!-- SECTION:NOTES:BEGIN -->
 20:26 dima: «refresh-browser-headless — run tmrw» — its run goes into 10-21's list after the coordinator and pm reviews (groomed: today's date lands on that word).
+
+2026-10-21 19:12 done today: the grills, the coordinator review (refresh-crew-coordinator run #6, PK-90 done) with both FigJam boards. moves to 10-22 on dima's word (18:49): the pm revamp opens as turn 2 after the boot (PK-103), then the refresh-browser-headless run
 <!-- SECTION:NOTES:END -->
