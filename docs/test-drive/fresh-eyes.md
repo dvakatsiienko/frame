@@ -23,7 +23,7 @@ Ticket: FRM-407
 - a planted confusion (a button whose label says nothing) — the first round — found in 2 of 3, yes or no
 
 ## day 0
-- the users and the docs: the prior-art read in FRM-407's refs (UXAgent, AgentA/B, AMUSER, PerceptUI, Loop11; agent-browser's `dogfood` skill, `--action-policy`, `--allowed-domains`; the cc hook input's `agent_type`) — read 2026-10-21
+- the users and the docs: `docs/research/blind-usability-agents.md` (UXAgent, AgentA/B, AMUSER, PerceptUI, Loop11; agent-browser's `dogfood` skill, `--action-policy`, `--allowed-domains`; the cc hook input's `agent_type`) — read 2026-10-21
 
 ## rounds
 
