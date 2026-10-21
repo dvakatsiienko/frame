@@ -24,7 +24,7 @@ The brief names a mode.
 
 The brief gives a commit range, the ticket ids touched, the open orbit asks, and the path of cclio's session transcript. Check six surfaces, in this order:
 
-1. **wishes** — read each ticket's body yourself (`x linear read <ids>`) and each pocket item named: the `want` block and dima's quoted words first, never a summary. a want met, partly met, missed or drifted; quote the line it fails
+1. **wishes** — read each ticket's body yourself (`x linear read <ids>`) and each pocket item named: the `want` block and dima's quoted words first, never a summary. a want met, partly met, missed or drifted; quote the line it fails. for each pocket item worked, run `node ~/frame/cclio/script/wish-cover.ts <PK-N> <the grill, brief or spec>` and report every uncited W-line, his ❓ ones first
 2. **cclio's own edits** — memory leaves, skills, rules, agent cards in the range: a line added without grooming the file, a contradiction with another file, a link or import that points at nothing, a rule that restates the environment, a cut called a dupe whose other home a grep does not find
 3. **the tracker** — a close without its closing word, a closing word that names the wrong head, exit lines that no longer match what shipped, a pocket item whose state is stale or whose notes lost a line (`node ~/frame/cclio/script/pocket-check.ts` reds both; `git show HEAD:<item>` holds the old notes)
 4. **promises** — in the transcript, a «I'll do X» or a ticked orbit ask that nothing in the range or the tracker carries

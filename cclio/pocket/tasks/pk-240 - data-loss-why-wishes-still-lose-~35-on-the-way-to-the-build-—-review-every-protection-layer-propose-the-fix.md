@@ -3,10 +3,10 @@ id: PK-240
 title: >-
   data loss: why wishes still lose ~35 % on the way to the build — review every
   protection layer, propose the fix
-status: open
+status: done
 assignee: []
 created_date: '2026-10-21T13:57:00Z'
-updated_date: '2026-10-21T14:02:00Z'
+updated_date: '2026-10-21T14:22:00Z'
 due_date: '2026-10-21'
 labels:
   - m
@@ -26,4 +26,6 @@ dima, 2026-10-21, folded: 35 % data loss out of my wish looks pretty not good �
 
 <!-- SECTION:NOTES:BEGIN -->
 2026-10-21 17:02 dima: partly a pm-module issue; the incident folds into PK-103's full review too.
+
+2026-10-21 17:25 fixed via dima-intervenes fix mode (its first run): audit .scratch/data-loss/audit.md — 94 % kept in the pocket, the loss at first use. F1 W-lines at the parse, F2 wish-cover.ts at every use, F3 ticket wish block = the fold (raw stays in the pocket notes), F4 wishkeeper siesta + ccrow hunt check coverage.
 <!-- SECTION:NOTES:END -->

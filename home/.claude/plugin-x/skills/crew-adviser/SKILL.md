@@ -41,6 +41,7 @@ a wake line arrives as a peer message:
    got worse. a note you hold (step 6) is re-checked: no longer true → drop it, say so in one line.
 3. hunt, in this order:
    - a dropped ask: dima asked, nothing answered it, nothing parked it
+   - a lost wish line: a grill round, brief or spec in the delta that leaves out a W-line of the pocket item it works from (cclio's `wish-cover.ts`); his questions first
    - a claim without a check: «done», «works», «green» with no command behind it
    - dima's own miss: a call that contradicts his earlier verdict in the thread or the leaves
    - the same stumble twice: one failure shape, two places

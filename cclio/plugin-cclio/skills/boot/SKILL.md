@@ -41,7 +41,7 @@ and the next ticket from it; never re-query what it already printed.
   first, then `inbox.md` for the parse. step 8's wishkeeper brief adds the prep: every ask and idea of
   the raw inbox kept in meaning, not only present (the check proves presence alone); wishkeeper is the one meaning check, cclio scores nothing
 - the digest says clean or «N content lines». non-empty → read `inbox.md` (`habit-dima-comms` holds the creed): EVERY item —
-  smallest aside included — gets an item in the pocket (Backlog.md, `backlog task create`; `habit-shared-files` holds the contract)
+  smallest aside included — gets an item in the pocket (Backlog.md, `backlog task create`; `habit-shared-files` holds the contract), its fold one point per numbered W-line (`craft-pm` § wishes)
   and its place in the order (its `ordinal`); resolution is paced later. **deletion happens at the halt, never here.**
 - empty → «inbox clean». marked FROZEN → do not touch, report frozen, move on.
 

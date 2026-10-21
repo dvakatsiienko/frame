@@ -10,7 +10,7 @@ where the prep's state lives: the ticket body (`decided`, `exit`) once a ticket 
 
 ## 0 · read what is settled
 
-read the ticket's wish block and its `decided` section (or the pocket item's notes) before the first question.
+read the ticket's wish block and its `decided` section (or the pocket item's notes) before the first question. every question cites the W-lines it settles; `node script/wish-cover.ts <PK-N> <round>` exits 0 before the round prints.
 
 then the open children of the app's `🌠 <app> wishes` parent ticket: one that rides along — a trial, a test drive, a «carry into the next touch» — joins the brief or is named in the grill. a small UI ask goes the `craft-fleet-flow` freebie way (dima, 2026-10-11: «keep this trial reminding me to run a coder on applicable apps»).
 
