@@ -78,7 +78,7 @@ on a 🐦‍🔥 press: no fence; the `second-wind` op with the CST slug, and th
 ✂️ **end** ✂️
 
 the first thins the thread with the hint as the steer; the second restores the precise state on
-top of what the compact kept. **then resume every paused member** — one «resume» each, named from the CST roster, and
+top of what the compact kept. **then resume every paused member** — one «resume» each with `notify_when_idle: true` (a compact drops every idle subscription, silently), named from the CST roster, and
 `trash ~/.local/state/ccrow/paused` for ccrow — and read whatever they held. **after the ingest, before anything else: re-read `inbox.md` and
 diff it against the pocket** — every inbox item must carry the `✅` mark AND a pocket item with
 its details; an unmarked or detail-less one is restored from the inbox on the spot, out loud. the prefetch hook re-runs on compact by itself (queue, roadmap,

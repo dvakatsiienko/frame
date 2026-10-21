@@ -1,6 +1,6 @@
 #!/bin/bash
 # pr-watch — every open non-renovate pr in frame + bytes, and every cloud/* report branch, as lines.
-# a pr prints when its head moves (a new commit), once per head when github calls it mergeable
+# a pr prints when it first appears (so the verifier spawns off this watch, no per-spawn Monitor), when its head moves (a new commit), once per head when github calls it mergeable
 # (mergeStateStatus CLEAN — «ready to merge»), and once per head when its checks are green but a
 # required one never ran (BLOCKED; #120 sat green 2026-10-02 while review:clean had no run), and once per head when
 # it conflicts with its base (DIRTY or CONFLICTING; bytes#126 sat conflicted over an hour, FRM-363). a cloud/* branch prints when it gains a commit: a cloud session sends no idle
@@ -34,7 +34,8 @@ pass() {
       while IFS=$'\t' read -r n sha url title state conflict; do
         key="$r#$n"
         if [ "$(seen "$key:head")" != "$sha" ]; then
-          [ -n "$(seen "$key:head")" ] && echo "🟡 ${r#*/}#$n new commit $sha · $title · $url"
+          if [ -n "$(seen "$key:head")" ]; then echo "🟡 ${r#*/}#$n new commit $sha · $title · $url"
+          else echo "🔵 ${r#*/}#$n opened on $sha — spawn its verifier · $title · $url"; fi
           mark "$key:head" "$sha"
         fi
         # keyed on head and verified sha both: a clean that lands after a delta line still prints «ready»
