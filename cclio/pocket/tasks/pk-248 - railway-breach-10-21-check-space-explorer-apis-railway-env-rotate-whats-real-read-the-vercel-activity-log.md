@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-10-22T11:46:00Z'
-updated_date: '2026-10-22T14:39:00Z'
+updated_date: '2026-10-22T14:54:00Z'
 due_date: '2026-10-23'
 labels:
   - xs
@@ -46,4 +46,6 @@ rotate: dima mints a new graph key in Studio → pastes it into the 1password it
 2026-10-22 15:36 close: railway now holds PORT + RAILWAY_* only (APOLLO_KEY, _GRAPH_ID, _GRAPH_VARIANT, _SCHEMA_REPORTING deleted on dima's word, no deploy fired); vercel space-explorer-ui holds no APOLLO_*/PORT; the personal key returns API_KEY_MISSING_OR_INVALID (dima deleted it). the old graph key: Studio's own api (signed-in pane) shows dima's account = 1 org «dvakatsiienko», 0 graphs, graph(space-explorer-api-k8tzo) = null — not reachable from his account, so no revoke door exists for him; «Restricted area» shows for a made-up graph id too (the page proves nothing). inference: the graph sits in a deleted or foreign account; a leaked graph key reaches only that graph. W2 answered (what's wrong), W3 answered (fixes). left on his word: archive op://dev/space-explorer-apollo-api (holds a dead key).
 
 close: W1 done (both mails read via himalaya, on the board 10-22) · W2 done (what's wrong: railway's env breach, vercel's integration pulled) · W3 done (fixes: railway now PORT only, vercel's 5 vars removed, the personal key deleted, the old graph unreachable from his account) · W4 done (space-explorer-api was the only railway service)
+
+2026-10-22 18:00: the 1password item was archived 16:31 (op item get → not found); the vercel activity log is dima's eye — not reported back yet, nothing in the env lists pointed at a write
 <!-- SECTION:NOTES:END -->

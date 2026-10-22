@@ -8,13 +8,15 @@ export function wishLines(item: string) {
     const lines = new Map<string, string>();
     for (const match of item.matchAll(/^\s*-?\s*(W\d+)\b\s*(.*)$/gm)) {
         const [, id, text] = match;
-        if (id && !lines.has(id)) lines.set(id, text?.trim() ?? '');
+        // a leading «(Q1)» or «(band 4)» is cclio's source tag, never his words
+        if (id && !lines.has(id))
+            lines.set(id, (text ?? '').replace(/^\(.*?\)\s*/, '').trim());
     }
     return lines;
 }
 
 // a single id; the ends of a range like «W1–W3» cite nothing
-const WISH_ID = /(?<![–-]\s*)\bW\d+\b(?!\s*[–-]\s*W?\d)/g;
+const WISH_ID = /(?<!W?\d+\s*[–-]\s*)\bW\d+\b(?!\s*[–-]\s*W?\d)/g;
 
 export function citedIds(draft: string) {
     return new Set(draft.match(WISH_ID));

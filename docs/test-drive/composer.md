@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-23
 dies-when: the verdict line below is written (2026-10-21, at the refresh-crew-coordinator-composer run)
 ---
@@ -100,6 +100,7 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-19 · inbox-prep · 1 · 0 · inbox-composer.md written, check 16/16, no commit
 - 2026-10-20 · inbox-prep · 1 · 0 · inbox-composer.md written, 38/38 content lines verbatim, 9 items, 23 asks; PK-90 homed for W1, cw memory not homed (PK-196 body differs)
 - 2026-10-21 · inbox-prep · 1 · 0 · inbox-prep: 5 items, 9 asks, inbox-prep-check 12/12 exit 0, inbox-composer.md written, inbox.md untouched, no commit
+- 2026-10-22 · inbox-prep · 1 · 0 · inbox-composer.md 4 items 5 asks check 8/8
 
 ## rounds
 
@@ -111,6 +112,9 @@ the shape in `.scratch/composer-shape/`); the recipe that keeps it true: `recipe
 - 2026-10-15 · the boot probe (dima's tick): `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` drops every CLAUDE.md and rules file, hooks and mods stay (x-mod-guard still refused an `rm`); composer restarted as job 435b4046 without fleet memory, the charter's floor section standing in — boot **~75k → 53.6k**. watch: a chore that breaks a fleet rule the floor dropped, and the next memory-less `inbox-prep` (it handles dima's raw words, so «no prose, low risk» is an inference)
 - 2026-10-21 · the boot's inbox prep, read by wishkeeper (boot mode, effort high): 5 items, 9 asks, check 12/12; two meaning slips — «printed» kept literal where dima meant typed (wispr), and the A2 opener «Glados mode on» dropped; the wispr guess «rest» → «test» flagged (?) and confirmed by dima. effort saved, the 10-20 open question: cclio wrote all 5 pocket items herself again, so still unmeasured
 
+- 2026-10-22 · the boot's inbox prep · 4 items, 5 asks, coverage 8/8, ~1 min to the receipt · wishkeeper (boot mode, effort high) found the prep kept every ask in meaning, 0 slips · from today composer is the one grooming runner for every wish-bearing prompt (PK-103 round 2: its grooming lost 1.4 % at the 10-21 audit against cclio's 9.4 %)
+
 ## verdict
 
 - 2026-10-20 · **adopted, then reopened the same hour** (dima, 15:59: «how much effort did composer save for yourself?» — never measured: the 10-14 attempt had no fixed ruler, and on 10-20 cclio routed only the inbox prep to composer and wrote every pocket item herself). the quality numbers stand: 49 rounds, 61 of 65 chores green first pass, 1 rework (1.5 % against the 1-in-5 kill rule), inbox prep 79 → 86 over five rounds. the separate inbox-composer.md stays (dima, 2026-10-20: «let's keep both inbox files for now»). the start command and the receipt log stay in this file as the record.
+- 2026-10-22 · **adopted** (dima's o33): 61 of 65 chores green first pass, 1 rework (1.5 %); its grooming lost 1.4 % of his points against cclio's 9.4 % at first use (10-21 audit), so it becomes the one grooming runner; the effort it saves cclio was never measured on a fixed ruler — today's volume: 1 chore (the inbox prep)

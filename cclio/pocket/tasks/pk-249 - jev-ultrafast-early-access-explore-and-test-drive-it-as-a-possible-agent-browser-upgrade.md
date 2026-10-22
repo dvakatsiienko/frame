@@ -23,7 +23,7 @@ dima, 2026-10-22 inbox, folded:
 W1 got the invite, now has an account: jev ultrafast early access — https://github.com/browser-use/jev-ultrafast
 W2 plan a ticket to explore it and test drive it
 W3 it could possibly be an upgrade to our agent-browser (x:browser-headless)
-W4 keep the ticket by hand in the pocket, not linear
+W4 keep the ticket at hand, in the pocket
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Implementation Notes

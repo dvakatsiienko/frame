@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T11:46:00Z'
-updated_date: '2026-10-22T11:50:00Z'
+updated_date: '2026-10-22T14:54:00Z'
 labels:
   - m
 dependencies: []
@@ -47,4 +47,6 @@ boot answer 10-22: yes in shape — Environments serve a local .env as a named p
 > you told 1p now supports plain .env files, and that workaround via alternative op.env or something like this can be removed? when you planned to do that?
 correction 10-22 (wishkeeper): PK-90 is done (archived 10-21 15:49), so the gate is the pm revamp alone.
 **waiting for:** the pm revamp (PK-103), then a shape-idea slot — dima's o81, 2026-10-21; PK-90 done
+
+2026-10-22 18:00: the PK-90 half of the 10-21 17:45 waiting line above is stale (PK-90 done 10-21); the current gate is the description's first line
 <!-- SECTION:NOTES:END -->

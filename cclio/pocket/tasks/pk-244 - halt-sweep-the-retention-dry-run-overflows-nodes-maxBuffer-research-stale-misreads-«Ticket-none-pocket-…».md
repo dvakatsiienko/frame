@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T17:36:00Z'
-updated_date: '2026-10-22T11:46:00Z'
+updated_date: '2026-10-22T14:54:00Z'
 due_date: '2026-10-22'
 labels:
   - xs
@@ -26,4 +26,6 @@ flawlog 2026-10-21 20:32: halt-sweep.ts dry run buffers a whole ~/.local/state/l
 
 <!-- SECTION:NOTES:BEGIN -->
 retro 2026-10-21 #3 + #5 (o126): fix at the 10-22 low tide; riders #6: pocket-add.ts --help crashes (parseArgs), backlog task edit has no --due (use the frontmatter or pocket-move)
+
+2026-10-22: moved now → next to fit the now cap of 3 when the railway breach took a now slot; still due today, rides the low tide
 <!-- SECTION:NOTES:END -->

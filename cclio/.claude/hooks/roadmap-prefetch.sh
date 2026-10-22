@@ -42,6 +42,6 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
       | (if .issues.pageInfo.hasNextPage then "🟡 \($p): unassigned issues capped at 50, health incomplete" else empty end),
         ($ms[] | select(.issues.nodes | length == 0) | "🟡 \($p) · \(.name): empty — fill it, or ask dima to delete it"),
         (if ($ms | length) > 0 and (.issues.nodes | length) > 0 then "🟡 \($p): \(.issues.nodes | length) open ticket(s) with no milestone — \([.issues.nodes[].identifier] | join(", "))" else empty end),
-        ([$ms[] | select(.status != "done")] | length | select(. > 4) | "🟡 \($p): \(.) open milestones (soft limit 4)"))
+        ([$ms[] | select(.status != "done")] | length | select(. > 5) | "🟡 \($p): \(.) open milestones (aim for 4, 5 is fine)"))
   ] | if length == 0 then "🟢 milestones healthy" else .[] end)
 ' || echo "roadmap prefetch: linear unreachable"

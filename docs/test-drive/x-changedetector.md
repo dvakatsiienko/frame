@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-10-24
 dies-when: the verdict line below is written
 ---
@@ -41,3 +41,4 @@ error, over 7 days
 - 2026-10-21 · a page watch for an outage (the no man's sky wiki on miraheze, down for a php patch, eta 15:00 utc) · 1 call, 1 s, the wiki answered 503 at add time · the usual door was dima re-opening the page by hand · and the first hook on top of the trial: `watch-nudge.ts` reads cclio's prompt for an unwatched github issue or pr, proven by piping a prompt into the script (a watched issue skipped, a probe link nudged); widened the same day to any web page, our own surfaces skipped; the harness firing it on a real prompt is not yet seen
 
 ## verdict
+- 2026-10-22 · **adopted** (dima's o33): 45 watches read at every boot, 0 real events missed against the gh watch, 0 rate-limit days; today 11 changes read, 1 watch retired, 1 added

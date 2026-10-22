@@ -6,8 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T14:37:00Z'
-due_date: '2026-10-22'
+updated_date: '2026-10-22T14:54:00Z'
+due_date: '2026-10-24'
 labels:
   - m
 dependencies: []
@@ -195,4 +195,20 @@ W83 (Q1) good milestone names: short, clear for me to read, maybe with an emoji,
 W84 (Q2) an empty milestone is most likely closed: it is empty because (1) it was just created and waits to be filled, (2) its last ticket completed — close it in place, or (3) it was solved and the close was forgotten — close it too
 W85 (Q3) the milestone emoji: 🎑 (moon viewing)
 W86 after the pm revamp is fully resolved: prep the few nearest milestones, the cli lane's first; spawn the cli lane today on the refreshed pm module to test it all; find the issues and weak spots and fix them in place, while the trace is hot
+
+2026-10-22 18:02 state after the build (commits c473cbc2..971e1fde + the 18:0x fix batch):
+shipped: wish-cover reads words (bullets + source tags fixed 18:00 after wishkeeper's siesta), the wish-cover hook on .scratch spec/proposal writes, pocket-check M1 + M2, the boot's milestone-health block (>5 soft), memory + skills for rounds 1–4, lane-plan.md in shape-lane + crew-coder, prompt-groom in crew-composer, 🎑 mil.
+left, in order (wishkeeper siesta 1, 27 findings, 18:53):
+1. fold FRM-72's own dima notes into W87+ (PK-85 review policy, PK-86 init-ctx alarm, the sidecrow/clio rename weigh, the 10-13 todo.md trial) and ask which still stand — the audit's «old ticket absorbs a wish» hop
+2. paste his raw prompts + steers 16:15→ into these notes under their W ranges (helper-lite extract: ~/frame/.scratch/dima-intervenes/runs/raw-prompts-2026-10-22.md)
+3. the waiting-items cap (~10, o24) — rides the 52-item sweep; M3 the weekly wish-loss audit as a cclio skill, from the 10-28 Wednesday pass (o17)
+4. the hook reads only «wish: PK-N»; a spec carries «wish: FRM-N» — resolve FRM → PK or put both on the spec line
+5. the halt step that counts low-tide solves born parked (craft-pm says it, halt/SKILL.md lacks it); the initiative health line in roadmap-prefetch (o26)
+6. FRM-72's wish block gets the W-lines or a pointer to PK-103 (next linear batch)
+7. I6 cuts (the verifier ask in 3 homes → crew-lead), pocket item closes with its ticket, the band 5 walk (W1), board band 0 + lane-plan tile (I9)
+8. PK-250 + PK-251 waiting on a lane → linear riders under PK-120 (the new contract), with W41, W53, W73 copied into PK-251
+9. a UserPromptSubmit hook that saves a long wish-bearing prompt raw and queues prompt-groom (W59: a mechanism, not a memory line)
+10. answer W16 and W40 here; a linear → pocket pull rule in habit-shared-files (W19)
+11. small: the 10-07 «solve now?» cut shown to dima; a kind → emoji list in pm/SKILL.md (W83); W74 «milestones are inside initiatives» + W75 «not fully automated» back into craft-pm; wish-cover reds an unknown id; _reminders.md:53 «no cli capacity» reworded at the spawn; lane-plan contract in one home (shape-lane), crew-coder points
+then: the rename part (W6–W10, W24), the milestone review + milestone-first test drive (W72, W76), W86 the cli lane.
 <!-- SECTION:NOTES:END -->

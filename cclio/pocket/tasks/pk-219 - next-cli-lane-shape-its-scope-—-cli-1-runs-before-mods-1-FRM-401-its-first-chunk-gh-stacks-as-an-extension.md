@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-20 13:42'
-updated_date: '2026-10-22T12:05:00Z'
+updated_date: '2026-10-22T14:54:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -47,4 +47,6 @@ dima 2026-10-20 16:41, folded: since gh stacks and stacked prs need cli changes,
 18:10 correction of the 17:25 note: gh-stack DOES have exit 9 (ErrStacksUnavailable, cmd/utils.go:36, on a stacks-api 404 — «not enabled for this repository»); the readme's table stops at 8. FRM-404 refuses at once on it. the researcher lane caught my wrong fix.
 
 2026-10-22 15:05 dima: «let's try cli lane today after pm is revamped fully» — the gate moves from the refresh-crew-coordinator run to the pm revamp (PK-103)
+
+2026-10-22 18:00: the 10-20 waiting line above (the refresh-crew-coordinator run) is superseded; gate now: the pm mechanisms build (done 10-22) + the cli milestones proposed — dima W86: spawn the cli lane today
 <!-- SECTION:NOTES:END -->

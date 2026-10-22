@@ -32,6 +32,17 @@ describe('wish-cover', () => {
         ).toEqual([]);
     });
 
+    test('a bulleted line cites its id', () => {
+        expect([...citedIds('- W3 plain words, no tech overload')]).toEqual([
+            'W3',
+        ]);
+    });
+
+    test('a source tag is not part of the wish text', () => {
+        const tagged = '- W5 (Q1) keep my voice';
+        expect(missingText(tagged, ['- W5 keep my voice'])).toEqual([]);
+    });
+
     test('a range cites nothing', () => {
         expect([...citedIds('settles W1–W3, W2-W4')]).toEqual([]);
     });

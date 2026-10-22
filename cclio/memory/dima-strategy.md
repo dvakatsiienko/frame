@@ -35,7 +35,8 @@ boot prefetch prints it; **that block answers «what's next».**
 - a step closes → same session: project status + start date set, the body's order lines
   rewritten, one initiative update (three sentences), the attached scope untouched; then one orbit
   ask, «step N closed: open N+1 (<project>) or something else?», with my pick — the next step opens
-  only on his tick (dima, 2026-10-22, PK-103 round 3)
+  only on his tick: the project goes In Progress, its start date and first milestone set (dima,
+  2026-10-22, PK-103 round 3)
 
 ## the branches — notes in `dima-strategy-branches.md`, read on demand
 
