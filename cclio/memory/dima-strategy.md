@@ -37,8 +37,12 @@ boot prefetch prints it; **that block answers «what's next».**
   untouched; the project stays open — our projects are standing, linear's project complete is
   never used, only milestones complete (dima, 2026-10-22, PK-103 W97); then one orbit
   ask, «step N closed: open N+1 (<project>) or something else?», with my pick — the next step opens
-  only on his tick: the project goes In Progress, its start date and first milestone set (dima,
-  2026-10-22, PK-103 round 3)
+  only on his tick: its start date and first milestone set, its milestone queued (dima,
+  2026-10-22, PK-103 round 3); a project's status follows the milestone queue, never the tick (grill 7 Q3)
+- **one initiative, its steps are the phases** (grill 7): the cross-project milestone order lives in the
+  initiative body's `## the milestone queue`, reordered the turn he picks; the boot prints the phase,
+  the next 3 steps, the next 7 milestones and the health line (two queue checks, no clock; bytes
+  untouched 7+ days is information, never an issue)
 
 ## the branches — notes in `dima-strategy-branches.md`, read on demand
 

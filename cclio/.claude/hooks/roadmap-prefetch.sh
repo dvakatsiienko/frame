@@ -22,6 +22,32 @@ fi
 linear api "query { initiative(id: \"$INIT\") { name status description content projects(first: 20) { pageInfo { hasNextPage } nodes { name status { name } startDate issues(first: 50, filter: {state: {type: {nin: [\"completed\", \"canceled\"]}}, projectMilestone: {null: true}}) { pageInfo { hasNextPage } nodes { identifier } } } } } projectRelations(first: 30) { nodes { type project { name } relatedProject { name } anchorType relatedAnchorType } } projectMilestones(first: 50) { pageInfo { hasNextPage } nodes { name status project { name } issues(first: 50) { nodes { identifier sortOrder state { type } } } } } }" 2>/dev/null \
 | jq -r '
   .data as $d |
+  "-- the roadmap board: print it pretty in the opening reply (grill 7, 2026-10-22) --",
+  ([$d.initiative.content | split("\n")[] | select(test("^[0-9]+\\. "))
+    | {n: capture("^(?<n>[0-9]+)\\. ").n, p: (sub("^[0-9]+\\. "; "") | split(" — ")[0]), done: test("\\(done [0-9]")}
+    | select(.done | not)]) as $steps |
+  ([($d.initiative.content | split("## the milestone queue")[1] // "" | split("\n## ")[0] // "" | split("\n")[])
+    | select(startswith("* ") and contains(" · ")) | sub("^\\* "; "") | split(" · ")
+    | {name: (.[:-1] | join(" · ")), project: .[-1]}]) as $queue |
+  [$queue[] as $q | $d.projectMilestones.nodes[] | select(.name == $q.name and .project.name == $q.project)] as $matched |
+  ($matched | map(select(.status != "done"))) as $live |
+  "🧭 phase now: step \($steps[0].n // "?") · \($steps[0].p // "?") — now: \(($d.initiative.description // "") | capture("now: (?<n>[^.]*)").n // "?")",
+  "   next phases: \($steps[1:4] | map("\(.n) · \(.p)") | join(" → "))",
+  "🎑 next 7 milestones (the queue):",
+  ($live[:7] | to_entries[] | .value as $m
+    | "   \(.key + 1). \($m.name) · \($m.project.name) · \([$m.issues.nodes[] | select(.state.type == "completed" or .state.type == "canceled")] | length)/\($m.issues.nodes | length)"),
+  ([$queue[] | . as $q | select([$d.projectMilestones.nodes[] | select(.name == $q.name and .project.name == $q.project)] | length == 0) | "\(.name) · \(.project)"]) as $ghosts |
+  ([$d.projectMilestones.nodes[] | select(.status != "done") | . as $m | select([$queue[] | select(.name == $m.name and .project == $m.project.name)] | length == 0) | "\(.name) · \(.project.name)"]) as $unqueued |
+  ([(if ($live[0].project.name // "") as $top | ([$steps[0].p, "cli"] | index($top)) == null then "the queue top (\($live[0].name // "none")) is off the now step and the cli track" else empty end),
+    (if ($unqueued | length) > 0 then "open milestones missing from the queue: \($unqueued | join(", "))" else empty end),
+    (if ($ghosts | length) > 0 then "queue lines matching no milestone: \($ghosts | join(", "))" else empty end)]) as $issues |
+  (if ($issues | length) == 0 then "🩺 health: on track" else "🩺 health: at risk — \($issues | join("; "))" end),
+  ([$live[:7][].project.name] | unique) as $hot |
+  ([$live[].project.name] | unique) as $queued |
+  ([$d.initiative.projects.nodes[] | .name as $p
+    | (if ($hot | index($p)) != null then "In Progress" elif ($queued | index($p)) != null then "Planned" else "Backlog" end) as $want
+    | select(.status.name != $want) | "\($p) \(.status.name) → \($want)"]) as $drift |
+  (if ($drift | length) > 0 then "🧾 status drift, fix it this turn: \($drift | join(" · "))" else empty end),
   "-- roadmap initiative (\($d.initiative.status)) --",
   $d.initiative.description,
   ($d.initiative.content // "" | split("\n") | map(select(test("^[0-9]\\."))) | join("\n")),
@@ -45,3 +71,6 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
         ([$ms[] | select(.status != "done")] | length | select(. > 5) | "🟡 \($p): \(.) open milestones (aim for 4, 5 is fine)"))
   ] | if length == 0 then "🟢 milestones healthy" else .[] end)
 ' || echo "roadmap prefetch: linear unreachable"
+# bytes untouched a week is information, never a health issue: operational work comes first (dima, grill 7 Q5)
+age=$(( ( $(date +%s) - $(git -C "$HOME/projects/bytes" log -1 --format=%ct origin/main 2>/dev/null || date +%s) ) / 86400 ))
+[ "$age" -ge 7 ] && echo "📦 bytes untouched $age days — information only"

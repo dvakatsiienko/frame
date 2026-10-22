@@ -53,7 +53,7 @@ dima, 2026-10-22 (PK-103): «keep milestones as a first resident of your flows.�
 
 - every ticket create, move or close asks «which milestone?»; a ticket in a project that has milestones sits in one, and its close reads the milestone's count the same turn
 - a milestone is born when a project gets 2+ tickets serving one outcome he can test, proposed to him first, named by the pattern in `cclio:pm`, opened with the sorting phase
-- each project's milestone order stays current: a switch to another milestone moves it to the top of its project
+- the cross-project order is the initiative's milestone queue: a switch moves one to its top, a born one joins it that turn
 - about 4 open per project, soft; linear marks one done when its tickets close and has no close, so an empty one, unless just born, goes to him as a ⚠️ delete ask; the boot flags the rest
 
 ## the pace contract — propose before resolving
