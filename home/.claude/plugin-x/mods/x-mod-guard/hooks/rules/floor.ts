@@ -202,7 +202,10 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
         ) ||
             subOps.slice(1).some((o) => /^[+:]/.test(o)))
     )
-        return rewrite(or(subOps, 'push'), 'a force-push');
+        return {
+            ...rewrite(or(subOps, 'push'), 'a force-push'),
+            door: 'x lane rebase-main — it rebases a coder/* branch and pushes it with a lease; any other force-push, ask cclio',
+        };
     if (
         sub === 'branch' &&
         (hasFlag(subArgs, [], 'D') ||

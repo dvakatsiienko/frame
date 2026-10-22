@@ -41,7 +41,18 @@ const FAMILIES = [
     ['git checkout --', 'git checkout -- src/a.ts', 'git stash -u', 'src/a.ts'],
     ['git clean -f', 'git clean -fd', 'git stash -u', '.'],
     ['git stash drop', 'git stash drop', 'ask cclio', 'stash@{0}'],
-    ['force-push', 'git push --force origin main', 'ask cclio', 'origin main'],
+    [
+        'force-push',
+        'git push --force origin main',
+        'x lane rebase-main',
+        'origin main',
+    ],
+    [
+        'force-with-lease',
+        'git push --force-with-lease origin coder/x',
+        'x lane rebase-main',
+        'origin coder/x',
+    ],
     ['git branch -D', 'git branch -D old', 'ask cclio', 'old'],
     [
         'git worktree remove',
