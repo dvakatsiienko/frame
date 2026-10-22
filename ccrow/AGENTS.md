@@ -98,7 +98,9 @@ skill reaches it as text. a contract change goes there, never here.
   `lib.ts` are the one path for both the silent arm and `ccrow:plan-critique`.
 - **`claude -p --json-schema` answers in `structured_output`** beside `result` in the json output
   (haiku probe, 2026-10-06); `total_cost_usd` is there too.
+- **a compaction can re-append the old chain** under its own `uuid`s and old stamps, past the wake's line offset; `transcriptDelta` skips a `uuid` already read before or inside the delta (`lib.test.ts`, «replays the old chain»)
 - dates (`{today}`, the wake id) are local time; `wake.lock` keeps two hooks firing in one second
   from both passing the 30-min gate.
 
 <!-- CCROW_STATE_DIR: FRM-336's coder left 10 fixture notes in the real state dir; FRM-339 made it overridable, state-dir.test.ts holds it. -->
+<!-- compaction replay: cclio's 10-22 19:48 compact wrote 2,047 copies of lines 3+ before its boundary; the head-cut kept them and dropped the real 19:21–19:47 blocks from the 19:50 packet (PK-254). -->

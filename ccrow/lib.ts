@@ -473,11 +473,19 @@ function headOf(who: string, timestamp?: string) {
         : `## ${who}`;
 }
 
+// a compaction can re-append the old chain under its own uuids and stamps, so a line offset alone lets it back in
 export function transcriptDelta(lines: string[], fromLine: number) {
     const stepIds = new Set<string>();
     const parts: string[] = [];
     let outputs = 0;
+    const seen = new Set(
+        lines.slice(0, fromLine).map((line) => parseEntry(line)?.uuid),
+    );
     for (const entry of lines.slice(fromLine).map(parseEntry)) {
+        if (entry?.uuid) {
+            if (seen.has(entry.uuid)) continue;
+            seen.add(entry.uuid);
+        }
         if (entry?.type === 'assistant') {
             if (entry.message?.id) stepIds.add(entry.message.id);
             const text = textOf(entry.message?.content).trim();
@@ -1151,6 +1159,7 @@ export interface TranscriptEntry {
     subtype?: string;
     durationMs?: number;
     timestamp?: string;
+    uuid?: string;
     isMeta?: boolean;
     origin?: { kind?: string };
     attachment?: {

@@ -162,6 +162,40 @@ describe('transcriptDelta', () => {
     test('counts one step per assistant message id', () => {
         expect(transcriptDelta(lines, 2).steps).toBe(2);
     });
+
+    test('a compaction that replays the old chain keeps every block since the last wake', () => {
+        const entry = (uuid: string, timestamp: string, text: string) =>
+            JSON.stringify({
+                message: { content: text },
+                timestamp,
+                type: 'user',
+                uuid,
+            });
+        const oldChain = ['a', 'b', 'c'].map((uuid, i) =>
+            entry(
+                uuid,
+                `2026-10-22T14:0${i}:00Z`,
+                `old-${uuid} ${'x'.repeat(25_000)}`,
+            ),
+        );
+        const compacted = [
+            ...oldChain,
+            entry('d', '2026-10-22T16:23:00Z', 'new-d'),
+            entry('e', '2026-10-22T16:39:00Z', 'new-e'),
+            ...oldChain,
+            JSON.stringify({
+                subtype: 'compact_boundary',
+                timestamp: '2026-10-22T16:48:19Z',
+                type: 'system',
+                uuid: 'f',
+            }),
+            entry('g', '2026-10-22T16:49:00Z', 'new-g'),
+        ];
+        const bodies = transcriptDelta(compacted, oldChain.length)
+            .text.split(/\n\n(?=## )/)
+            .map((block) => block.split('\n')[1]);
+        expect(bodies).toEqual(['new-d', 'new-e', 'new-g']);
+    });
 });
 
 describe('appendNoteOnce', () => {
