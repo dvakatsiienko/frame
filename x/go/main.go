@@ -48,6 +48,7 @@ var impls = map[string]Impl{
 	"lane seed":        {Run: seed, Undone: "the tree is as the hook left it"},
 	"lane review":      {Run: laneReview, Undone: "no review was requested"},
 	"lane pr-body":     {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
+	"lane merge-auto":  {Plan: mergeAutoPlan, Apply: mergeAuto, Undone: "nothing was merged", Ask: askMergeAuto},
 	"plugin bump":      {Plan: pluginBumpPlan, Apply: pluginBump, Undone: "the cache holds the old version", Ask: askPluginBump},
 	"mods edit pull":   {Run: modsEditPull, Undone: "the copies sit in scratch, the mod untouched"},
 	"mods edit status": {Run: modsEditStatus, Undone: "a read"},

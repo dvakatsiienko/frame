@@ -1,0 +1,27 @@
+{
+    "risky": [
+        ".github/workflows/**",
+        "**/.claude/settings*.json",
+        "**/CLAUDE.md",
+        "**/AGENTS.md",
+        "home/.claude/rules/**",
+        "home/.claude/plugin-x/skills/crew-verifier/**",
+        ".gitattributes",
+        "**/.env",
+        "**/.env.*",
+        "**/op.env",
+        "**/vercel.json",
+        "**/deploy.yml"
+    ],
+    "self": [
+        "home/.claude/plugin-x/mods/x-mod-guard/**",
+        "**/.claude/hooks/**",
+        "home/.claude/shelf/hooks/**",
+        "lefthook.yaml",
+        "lefthook.yml",
+        ".github/workflows/review.yml",
+        ".github/workflows/review-approved.yml",
+        "x/go/risky.json",
+        "x/go/merge_auto.go"
+    ]
+}
