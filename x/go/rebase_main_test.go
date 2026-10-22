@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-// a coder branch with one pushed commit, a bare origin, and a clone sitting on the branch;
 // side is a second clone that moves main and pushes to the branch behind the coder's back
 type rebaseWorld struct {
 	origin, clone, side string
@@ -32,7 +31,6 @@ func newRebaseWorld(t *testing.T, branch string) *rebaseWorld {
 	return &rebaseWorld{origin, clone, side}
 }
 
-// mainMoves lands one commit on origin's main from the side clone
 func (w *rebaseWorld) mainMoves(t *testing.T, name, body string) {
 	t.Helper()
 	gitT(t, w.side, "switch", "-q", "main")
@@ -95,11 +93,33 @@ func TestRebaseMainKeepsAPushThatLandedAfterItsRead(t *testing.T) {
 	}
 }
 
+// the teammate pushed before the run: the lease matches the remote, so only an ancestry check keeps the push
+func TestRebaseMainRefusesWhenTheRemoteHoldsACommitHeadLacks(t *testing.T) {
+	w := newRebaseWorld(t, "coder/x")
+	w.mainMoves(t, "one.txt", "one\n")
+	gitT(t, w.side, "fetch", "-q", "origin")
+	gitT(t, w.side, "switch", "-q", "-C", "rival", "origin/coder/x")
+	write(t, filepath.Join(w.side, "theirs.txt"), "a teammate's commit\n")
+	gitT(t, w.side, "add", "theirs.txt")
+	gitT(t, w.side, "commit", "-q", "-m", "a teammate's commit")
+	gitT(t, w.side, "push", "-q", "origin", "rival:refs/heads/coder/x")
+	theirs := gitT(t, w.side, "rev-parse", "HEAD")
+	before := gitT(t, w.clone, "rev-parse", "HEAD")
+
+	got := w.run(t, "--apply")
+
+	after := gitT(t, w.clone, "rev-parse", "HEAD")
+	if got.code == 0 || remoteHead(t, w, "coder/x") != theirs || after != before || !strings.Contains(envelopeOf(got).Error, short(theirs)) {
+		t.Fatalf("exit %d, remote %s, HEAD %s → %s, want the teammate's %s kept, HEAD untouched and named:\n%s",
+			got.code, short(remoteHead(t, w, "coder/x")), short(before), short(after), short(theirs), got.stdout)
+	}
+}
+
 func TestRebaseMainStopsInTheRebaseOnAConflict(t *testing.T) {
 	w := newRebaseWorld(t, "coder/x")
 	w.mainMoves(t, "mine.txt", "main's version\n")
 
-	got := xIn(t, w.clone, nil, "lane", "rebase-main", "--apply")
+	got := w.run(t, "--apply")
 
 	inRebase := exists(filepath.Join(w.clone, ".git/rebase-merge")) || exists(filepath.Join(w.clone, ".git/rebase-apply"))
 	out := got.stdout

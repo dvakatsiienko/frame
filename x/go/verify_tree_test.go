@@ -9,8 +9,7 @@ import (
 	"testing"
 )
 
-// a git-crypt repo standing in for frame, its origin a bare repo answering for github.com/o/r, and a pr
-// head on refs/pull/7/head that only origin holds
+// a git-crypt repo standing in for frame; its pr head lives only on origin's refs/pull/7/head
 func verifyWorld(t *testing.T) (main, prHead string) {
 	t.Helper()
 	if _, err := exec.LookPath("git-crypt"); err != nil {
@@ -80,8 +79,8 @@ func TestVerifyTreeSeedsAWorktreeOfTheHead(t *testing.T) {
 }
 
 func TestVerifyTreeRefusesAnythingButAPrUrlOrMainSha(t *testing.T) {
-	main, _ := verifyWorld(t)
-	for _, arg := range []string{"7", "#7", "main", "main:zz", "https://github.com/o/r/issues/7", "https://github.com/other/r/pull/7"} {
+	main, prHead := verifyWorld(t)
+	for _, arg := range []string{"7", "#7", "main", "main:zz", "https://github.com/o/r/issues/7", "https://github.com/other/r/pull/7", "main:" + prHead} {
 		t.Run(arg, func(t *testing.T) {
 			got := xIn(t, main, nil, "lane", "verify-tree", arg)
 

@@ -187,25 +187,33 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
             ),
             why: `git stash ${subOps[0]} throws away set-aside work`,
         };
-    const rewrite = (targets: string[], what: string): Refusal => ({
-        door: ASK,
+    const rewrite = (
+        targets: string[],
+        what: string,
+        door: string = ASK,
+    ): Refusal => ({
+        door,
         rule: 'git-rewrite',
         targets,
         why: `${what} cannot be undone`,
     });
+    const refspecs = subOps.slice(1);
     if (
         sub === 'push' &&
-        (hasFlag(
-            subArgs,
-            ['--force', '--force-with-lease', '--delete'],
-            'fd',
-        ) ||
-            subOps.slice(1).some((o) => /^[+:]/.test(o)))
+        (hasFlag(subArgs, ['--delete'], 'd') ||
+            refspecs.some((o) => o.startsWith(':')))
     )
-        return {
-            ...rewrite(or(subOps, 'push'), 'a force-push'),
-            door: 'x lane rebase-main — it rebases a coder/* branch and pushes it with a lease; any other force-push, ask cclio',
-        };
+        return rewrite(or(subOps, 'push'), 'a remote branch delete');
+    if (
+        sub === 'push' &&
+        (hasFlag(subArgs, ['--force', '--force-with-lease'], 'f') ||
+            refspecs.some((o) => o.startsWith('+')))
+    )
+        return rewrite(
+            or(subOps, 'push'),
+            'a force-push',
+            'x lane rebase-main — it rebases a coder/* branch and pushes it with a lease; any other force-push, ask cclio',
+        );
     if (
         sub === 'branch' &&
         (hasFlag(subArgs, [], 'D') ||

@@ -1,13 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
-
-// the one force-push door in the fleet: coder/* branches only, leased on the sha read before the rebase
-// (dima, 2026-10-12, o87)
-const rebasePrefix = "coder/"
 
 type rebaseTarget struct {
 	Branch string `json:"branch"`
@@ -16,13 +13,14 @@ type rebaseTarget struct {
 	From   string `json:"from"`
 }
 
+// the fleet's one force-push door: coder/* only, leased on the sha read before the rebase (dima, o87)
 func rebasePlan(r *Run, _ []string, _ Flags) (any, error) {
 	name, err := branch()
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasPrefix(name, rebasePrefix) {
-		return nil, usageFail(name+" is not a coder/* branch: rebase-main force-pushes only those", "x lane merge-main")
+	if !strings.HasPrefix(name, "coder/") {
+		return nil, usageFail(name+" is not a coder/* branch: rebase-main force-pushes only those", "git switch -c coder/<ticket>-<slug>")
 	}
 	r.Open(name)
 	t := &rebaseTarget{Branch: name}
@@ -30,6 +28,16 @@ func rebasePlan(r *Run, _ []string, _ Flags) (any, error) {
 		var err error
 		if t.Lease, err = remoteSha(name); err != nil {
 			return "", err
+		}
+		if t.Lease != "" {
+			if _, err := mustGit("fetch", "fetch", "-q", "origin", name); err != nil {
+				return "", err
+			}
+			// a matching lease alone would still overwrite a teammate's push from before this run
+			if !ok(git("merge-base", "--is-ancestor", t.Lease, "HEAD")) {
+				return "", &Fail{Refused: true, Msg: "origin/" + name + " holds " + short(t.Lease) + ", a commit HEAD lacks: a push this branch has not taken in",
+					Next: "git log HEAD.." + t.Lease}
+			}
 		}
 		if _, err := mustGit("fetch", "fetch", "-q", "origin", "main"); err != nil {
 			return "", err
@@ -73,10 +81,13 @@ func rebaseMain(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		if pushed.ok {
 			return "origin/" + t.Branch, nil
 		}
-		remote, _ := remoteSha(t.Branch)
+		remote, err := remoteSha(t.Branch)
+		if err != nil {
+			return "", err
+		}
 		if remote != t.Lease {
-			return "", &Fail{Msg: fmt.Sprintf("origin/%s moved to %s since the read at %s: someone pushed, and the lease kept their push",
-				t.Branch, short(remote), or(short(t.Lease), "nothing")), Next: "git log " + remote + " — fold that push in, then x lane rebase-main --apply", Log: nonBlank(pushed.log)}
+			return "", &Fail{Msg: fmt.Sprintf("origin/%s moved to %s since the read at %s, and the lease kept that push",
+				t.Branch, short(remote), or(short(t.Lease), "nothing")), Next: "git log HEAD.." + remote, Log: nonBlank(pushed.log)}
 		}
 		return "", &Fail{Msg: "push failed — the git and hook output is above", Next: "x lane rebase-main --apply", Log: nonBlank(pushed.log)}
 	}); err != nil {
@@ -88,7 +99,7 @@ func rebaseMain(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			return "", err
 		}
 		if remote != sha {
-			return "", &Fail{Msg: fmt.Sprintf("remote is %s, HEAD is %s", or(remote, "empty"), sha), Next: "x lane push --apply"}
+			return "", &Fail{Msg: fmt.Sprintf("remote is %s, HEAD is %s", or(remote, "empty"), sha), Next: "x lane rebase-main --apply"}
 		}
 		return "the remote holds " + short(remote), nil
 	}); err != nil {
@@ -98,14 +109,17 @@ func rebaseMain(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	return ordered{{"branch", t.Branch}, {"main", t.Main}, {"sha", sha}}, nil
 }
 
-// the tree stays mid-rebase on a conflict: the coder resolves in place
-func rebaseFail(rebased result) *Fail {
+// a conflict leaves the tree mid-rebase, for the coder to resolve in place
+func rebaseFail(rebased result) error {
 	conflicts, _ := git("diff", "--name-only", "--diff-filter=U")
 	if conflicts.out == "" {
-		_, _ = git("rebase", "--abort")
-		return &Fail{Msg: "rebase failed without conflicts, aborted: " + gitReason(rebased.log), Next: "git status", Log: nonBlank(rebased.log)}
+		fail := &Fail{Msg: "rebase failed without conflicts, aborted: " + gitReason(rebased.log), Next: "git status", Log: nonBlank(rebased.log)}
+		if aborted, _ := git("rebase", "--abort"); !aborted.ok {
+			return errors.Join(fail, fmt.Errorf("git rebase --abort failed too: %s", logLine(aborted.log)))
+		}
+		return fail
 	}
 	files := strings.Split(conflicts.out, "\n")
-	return &Fail{Msg: "conflicts: " + strings.Join(files, ", ") + "\nresolve them, then git rebase --continue — or git rebase --abort",
-		Next: "git rebase --continue", Log: append(files, "git rebase --continue", "git rebase --abort")}
+	return &Fail{Msg: "conflicts in " + strings.Join(files, ", ") + " — resolve them and git rebase --continue, or git rebase --abort",
+		Next: "git rebase --continue", Log: files}
 }

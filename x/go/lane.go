@@ -373,7 +373,6 @@ func push(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	return ordered{{"branch", name}, {"from", from}, {"remote", remote}, {"sha", sha}}, nil
 }
 
-// a 5xx is tried again, up to pushTries; a 4xx, a hook refusal or a lost lease fails on the first
 func pushRetrying(from string, args ...string) (result, int) {
 	var pushed result
 	tries := 1
