@@ -26,6 +26,7 @@ dima, 2026-10-21: «the text is small, and line breaks cause the most harm to re
 - 📄 a file, a rule or a reference
 - 📋 a brief
 - 🎫 a ticket
+- 🎑 a milestone
 - 🪐 an orbit ask
 - 🛼 a lane or its glide card
 - 📡 a watch
@@ -35,7 +36,7 @@ dima, 2026-10-21: «the text is small, and line breaks cause the most harm to re
 - ✅ done, clean
 - 🛑 a stop
 - 📝 a retro or a log line
-- ⚠️ a weak spot (my reading, not in the files)
+- ⚠️ a weak spot (my reading)
 
 ## the set: the steps of a spawn
 - ✈️ preflight

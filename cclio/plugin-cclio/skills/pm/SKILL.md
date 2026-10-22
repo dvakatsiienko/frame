@@ -58,12 +58,13 @@ traps:
   dima never said makes the ticket `needs human`, the fact a `?` line in the body. it blocks the
   size, never the capture: the ticket is still born, fully fielded
 - a new milestone is appended last: set its `sortOrder` the same turn and read the order back
+- a milestone's name: `<emoji> <the done state, ≤4 words>`, lowercase, the emoji naming its kind — `🛠️ cli lane 1 sealed`, `🎨 speak v2 shipped`; the same kind keeps the same emoji across projects; its description opens with its done test (≤255 chars)
 - a project, a term or a label group that changes lands with its glossary or TRK line in the same batch
 - 250 non-archived tickets is the free plan's cap: resolve faster than create, one fuller ticket
   over strands, archive closed work; near 200 → propose a restructure pass
 - the approval is one batch, diff-shaped: `field: old → new` per line; silence on a line accepts it
 - labels are steering, dima writes instructions into their descriptions; a canceled ticket counts
-  as resolved in milestone math; a completed milestone never cleans itself up
+  as resolved in milestone math; a milestone has no close: linear computes `status` done from its tickets, and the only removal is `projectMilestoneDelete` — a delete, asked per milestone (root invariant 8)
 
 ## write and close — read the reference first, every time
 

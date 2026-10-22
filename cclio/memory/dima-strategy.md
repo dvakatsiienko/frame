@@ -33,7 +33,9 @@ boot prefetch prints it; **that block answers «what's next».**
 - 🚨 **pacing check:** steps 1–4 are meta-work, and meta-work never finishes on its own — bytes
   once went untouched for over a week. Each step closing is the moment to ask what starts next.
 - a step closes → same session: project status + start date set, the body's order lines
-  rewritten, one initiative update (three sentences), the attached scope untouched.
+  rewritten, one initiative update (three sentences), the attached scope untouched; then one orbit
+  ask, «step N closed: open N+1 (<project>) or something else?», with my pick — the next step opens
+  only on his tick (dima, 2026-10-22, PK-103 round 3)
 
 ## the branches — notes in `dima-strategy-branches.md`, read on demand
 

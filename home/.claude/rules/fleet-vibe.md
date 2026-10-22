@@ -13,7 +13,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **granular** — an area or ticket where every agent change needs Dima's weighted approve, step
   by step, with adoption notes for anything his own fingers will use (aliases, gitconfig, nvim,
   the vault). A Linear label and a chat word. Day-to-day areas (deps, docs, freebies) stay free.
-- **mil** — a Linear milestone: the unit we plan and retire in, always opened with a sorting phase so it starts ordered.
+- **🎑 mil** — a Linear milestone: the unit we plan and retire in, always opened with a sorting phase so it starts ordered (badge: dima, 2026-10-22).
 - **run id** — the thread of one continuous piece of work, continued across sessions, never minted
   mid-story.
 - **✨ wisp** — a bug: a small glow to tend before it burns, a will-o'-the-wisp that leads the app

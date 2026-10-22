@@ -11,6 +11,10 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
   plan's `server: skip` drops only the server dima watches.
 - **a brief that hands you a spec** (`.scratch/<feature>/`) → cut it with matt's `to-tickets` first, even
   when it fits one pr; each spec exit line lands verbatim in exactly one ticket's checklist (FRM-344).
+- **the lane plan**, for 2+ tickets: write `.scratch/<feature>/lane-plan.md`, one line per step in your proposed
+  order (`- [ ] 03 · <ticket title>`), ping cclio `[ask] lane-plan ready to seal`, and start on her sealed order. tick `[x]` at
+  each ticket's commit. when dima steers you in this thread and the steer adds or moves work, append it under
+  `## unsealed` and send cclio one `[progress]` line; a steer that changes no order (a typo, a style) needs neither.
   build each ticket test-first with `tdd`, through `implement` for granular work dima watches or
   `implement-spec` for bulk work. they are user-only: read each `SKILL.md`
   (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/`) and follow it.

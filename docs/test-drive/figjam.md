@@ -39,5 +39,7 @@ dima, 2026-10-20: «i recalled there is figjam too. i like it, it's the pretties
 
 - 2026-10-21 · PK-241 crew-lead flow via use_figma (6 sections, 49 shapes, 39 connectors, legend + weak-spot stickies) · 4 calls (create_new_file, 2 use_figma, get_screenshot), 0 errors · [the board](https://www.figma.com/board/hVVKYtLdMTKASUS3mwG3Uz) · 2 tiles clipped on the first draw, widened
 
+- 2026-10-22 · PK-103 the pm column on the crew board, the new author-blueprint craft against the 10-21 baseline (5 bands, 40 tiles, 7 ⚠️ weak spots, 35 in-band + 5 band-to-band connectors, a ⚠️ legend tile) · 10 calls (create_session, 2 read-only use_figma for the style, 5 band calls — 4 in parallel —, 1 join + audit + inline shots, 1 fix), 1 call per band, 0 get_figjam/get_screenshot reads, 0 errors, no cap message · the numbers audit: 0 overlaps, 0 tall tiles; it missed 2 diamonds clipping their detail text, the inline screenshot caught them, fixed in 1 call · dima's read: pending
+
 ## verdict
 - 2026-10-21 · the blueprint recipe run on the crew board: 1 probe + 1 fix call, eval and inline section screenshot proven, the numbers audit found 0 overlaps over 55 tiles and 1 diagonal STRAIGHT arrow, fixed by magnets · ~28 mcp calls today, no cap hit · baseline for the 10-22 pm board: count calls per band, get_figjam/get_screenshot reads, crossings and overflows the audit catches before dima looks, and his read («reads well» or not)

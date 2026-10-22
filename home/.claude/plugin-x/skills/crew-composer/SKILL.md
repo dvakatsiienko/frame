@@ -21,6 +21,9 @@ classes, each named in a brief by its word:
   formatter fixes format reds; a red that needs an edit is a consult, never your own fix
 - `inbox-prep` — dima's obsidian inbox, groomed and sorted into its sibling `inbox-composer.md`; the
   shape and the done command are [inbox-prep.md](inbox-prep.md), read whole before each run
+- `prompt-groom` — one mainline prompt of dima's, its raw text in a file the brief names: groomed by
+  [inbox-prep.md](inbox-prep.md) § grooming into numbered `W<n> …` lines (the brief gives the first number) in the
+  output file the brief names; done = every sentence of the raw file maps to a W-line or an ❓ ask, and the receipt lists that map
 
 a one-command job (a bump, a test run, a brew upgrade) is not yours: cclio runs it, output to a file.
 

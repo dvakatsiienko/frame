@@ -30,8 +30,9 @@ not content: leave it out. each item becomes one block:
 
 - a loss is an ask or idea of his forgotten or dropped, or a line groomed so far its context is gone; a
   reworded sentence that keeps his intention is the goal
-- so every sentence of his lands in a bullet or an ask, with spelling and grammar fixed; only filler words go
-  (openers, hedges); his meaning, manner, jargon, vibe words and lowercase stay
+- so every sentence of his lands in a bullet or an ask, spelling and grammar fixed; filler (openers, hedges) goes
+  and a long sentence may be tightened, never in a machine way: his meaning, manner, jargon, vibe words and
+  lowercase stay. the same rules groom a mainline prompt in a `prompt-groom` chore
 - his voice, first person: «i want…», «my idea…», as he wrote it; never «he» or «dima»
 - a question stays a question, in the asks and in the bullets: a suggestive one («map them yourself, rather than
   via composer?») lands as an ask, never as a decided bullet; «they are not git tracked yes?» is never the

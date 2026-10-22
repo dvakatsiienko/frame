@@ -37,6 +37,7 @@ floods; no other member prints one.
 - its round is its ❓ shape, the frontier only: a question that hangs on another's answer waits for the next round
 - a question reaches dima only when its answer changes what he gets or sees; a mechanic goes to orbit `assume` with the pick
 - the round prints whole in the thread, each question also an orbit ask copying its number (dima, 2026-10-12: «grill questions are important to be expanded, and deserve to be printed in your thread; keep the orbit part too»)
+- a round is written first to `.scratch/<area>/grill-<n>-proposal.md`, opening with the W-lines it settles copied verbatim; the write wakes ccrow (`ccrow/AGENTS.md`, the proposal wake), her note is folded, and only the refined round prints, once — never a printed round amended after (dima, 2026-10-22: a reprint after her catch made him read the round twice)
 
 <!-- 2026-10-20: cclio's own 🔥 template (2026-10-13) beat the skill three times: 4 questions at once, mechanics asked, grill-me named and skipped. dima asked to drop it. -->
 
