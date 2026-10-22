@@ -37,7 +37,7 @@ file the brief points at committed and pushed. A brief that names an unpushed fi
 `--cloud` refuses a non-tty (measured). From a Bash tool call, wrap it in `script`:
 
 ```bash
-cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '<🌗|🎯> ☁️ <ticket> cloud: <what>' --effort medium --cloud "<the brief>" </dev/null >/dev/null
+cd <repo> && script -q <scratch>/cloud-<ticket>.log claude -n '<🌗|🌘> ☁️ <ticket> cloud: <what>' --effort medium --cloud "<the brief>" </dev/null >/dev/null
 ```
 
 - **effort is medium by default**, like every coder and verifier (dima 2026-09-28); high only for
