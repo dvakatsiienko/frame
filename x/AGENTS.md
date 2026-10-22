@@ -74,6 +74,7 @@ the checks a verifier or coder on `x` starts from.
 - `lane commit` formats the named paths with the repo's biome before staging — the commit hook only reports, so this is the one place a format writes
 - `lane commit` waits out a peer's `index.lock` before its `add` and its `commit`, up to `lockWait` (30 s), and once more on a lock race right after; a lock past the wait fails and stays — the verb never deletes one (`FTR.md`). `X_LOCK_WAIT` shortens the wait under `X_TEST` only
 - `lane commit` on main runs the ci jobs for the touched paths after the hold, before the hooks: `go test ./...` per go module a path sits in, the repo's `pnpm typecheck` + `pnpm test` for a `.ts`/`.tsx`. a pr branch skips them — ci sees it before main does
+- `lane merge-auto` calls github as dima's `gh` login (`asDima` in `gh.go`), since the coder app has no `contents: write` and branch protection needs admin; it reads the brake and the patch-ids from the clone it runs in, after a fetch
 - `lane push` tries again on a 5xx — curl's `returned error: 5xx` over https, github's `Internal Server Error` over ssh — up to 3 tries; a 4xx or a hook refusal fails on the first
 
 <!-- moved from frame AGENTS.md in the 2026-10-11 sweep -->

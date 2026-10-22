@@ -230,6 +230,31 @@
             "touches": ["github — the pr's body, as the x-coder-cc app"]
         },
         {
+            "args": [
+                {
+                    "description": "the pr number, never inferred",
+                    "name": "pr"
+                }
+            ],
+            "name": "lane merge-auto",
+            "needsApply": true,
+            "purpose": "merge a pr once its head is verifier-clean, required checks green and threads closed; else wait and name why",
+            "steps": [
+                "pr",
+                "verifier",
+                "ci",
+                "threads",
+                "risky",
+                "brake",
+                "approve",
+                "merge"
+            ],
+            "touches": [
+                "github — the pr's merge and a bytes approve, as dima's gh login",
+                "~/.claude/shelf/pr-verified.json — the verifier's clean per pr, read"
+            ]
+        },
+        {
             "flags": {
                 "for": {
                     "description": "the reading agent, one of any, ccli, cclio, ccrow, coder, cw, designer, verifier; files addressed to another agent are left alone",

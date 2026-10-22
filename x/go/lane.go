@@ -243,18 +243,23 @@ func lockedGit(args ...string) (result, time.Duration, error) {
 	return got, took + again, nil
 }
 
+// a wait or a poll an env var shortens, under X_TEST only
+func durationEnv(name string, fallback time.Duration) time.Duration {
+	if os.Getenv("X_TEST") != "" {
+		if d, err := time.ParseDuration(os.Getenv(name)); err == nil {
+			return d
+		}
+	}
+	return fallback
+}
+
 // waitIndexLock waits while the repo's index lock exists, up to lockWait; it never removes a lock itself
 func waitIndexLock() (time.Duration, error) {
 	lock, err := mustGit("rev-parse", "rev-parse", "--path-format=absolute", "--git-path", "index.lock")
 	if err != nil {
 		return 0, err
 	}
-	deadline := lockWait
-	if os.Getenv("X_TEST") != "" {
-		if d, err := time.ParseDuration(os.Getenv("X_LOCK_WAIT")); err == nil {
-			deadline = d
-		}
-	}
+	deadline := durationEnv("X_LOCK_WAIT", lockWait)
 	started := time.Now()
 	for {
 		info, err := os.Stat(lock)

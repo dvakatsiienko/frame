@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"cmp"
 	"encoding/json"
 	"fmt"
@@ -115,7 +116,7 @@ func ghPr(r *Run, args []string, flags Flags) (any, error) {
 			} `json:"head"`
 		}
 		var header http.Header
-		if header, err = ghFetch(base+"/pulls/"+n, &pr); err != nil {
+		if header, err = ghFetch(asCoder, base+"/pulls/"+n, &pr); err != nil {
 			return
 		}
 		// github's clock, read before the feeds: the next --since misses nothing posted while they ran
@@ -128,12 +129,12 @@ func ghPr(r *Run, args []string, flags Flags) (any, error) {
 		if pr.Merged {
 			read.state = "merged"
 		}
-		if read.checks, err = checksOf(base, pr.Head.Sha); err != nil {
+		if read.checks, err = checksOf(asCoder, base, pr.Head.Sha); err != nil {
 			return
 		}
 		for i, feed := range prFeeds {
 			var comments []ghComment
-			if comments, err = ghPages[ghComment](base+fmt.Sprintf(feed.path, n), ""); err != nil {
+			if comments, err = ghPages[ghComment](asCoder, base+fmt.Sprintf(feed.path, n), ""); err != nil {
 				return
 			}
 			read.feeds[i] = commentsOf(comments, since)
@@ -175,7 +176,7 @@ func commentsOf(comments []ghComment, since time.Time) []prComment {
 }
 
 // github keeps two kinds: check runs (actions, apps) and commit statuses (vercel); the pr page shows both
-func checksOf(base, sha string) ([]prCheck, error) {
+func checksOf(as, base, sha string) ([]prCheck, error) {
 	type run struct {
 		Name       string `json:"name"`
 		Status     string `json:"status"`
@@ -187,11 +188,11 @@ func checksOf(base, sha string) ([]prCheck, error) {
 		State   string `json:"state"`
 		URL     string `json:"target_url"`
 	}
-	runs, err := ghPages[run](base+"/commits/"+sha+"/check-runs", "check_runs")
+	runs, err := ghPages[run](as, base+"/commits/"+sha+"/check-runs", "check_runs")
 	if err != nil {
 		return nil, err
 	}
-	statuses, err := ghPages[status](base+"/commits/"+sha+"/statuses", "")
+	statuses, err := ghPages[status](as, base+"/commits/"+sha+"/statuses", "")
 	if err != nil {
 		return nil, err
 	}
@@ -222,22 +223,31 @@ func repoOf(flags Flags) (string, error) {
 		}
 		return repo, nil
 	}
-	got, _ := gitIn("", "remote", "get-url", "origin")
-	if match := remoteSlug.FindStringSubmatch(strings.TrimSpace(got.out)); got.ok && match != nil {
-		return match[1], nil
+	// an insteadOf rewrite can carry the github slug either way: the configured url or the rewritten one
+	for _, read := range [][]string{{"config", "--get", "remote.origin.url"}, {"remote", "get-url", "origin"}} {
+		got, _ := gitIn("", read...)
+		if match := remoteSlug.FindStringSubmatch(strings.TrimSpace(got.out)); got.ok && match != nil {
+			return match[1], nil
+		}
 	}
 	return "", usageFail("no github origin here to read the repo from", "x gh pr <pr number> --repo <owner/name>")
 }
 
 /* Github */
 
+// dima's own login does what the coder app may not: branch protection (admin), an approve, a merge
+const (
+	asCoder = "coder"
+	asDima  = "dima"
+)
+
 // ghPages follows the Link header to the last page; key names the list inside an object page
-func ghPages[T any](target, key string) ([]T, error) {
+func ghPages[T any](as, target, key string) ([]T, error) {
 	var all []T
 	target += "?per_page=100"
 	for target != "" {
 		var raw json.RawMessage
-		header, err := ghFetch(target, &raw)
+		header, err := ghFetch(as, target, &raw)
 		if err != nil {
 			return nil, err
 		}
@@ -249,7 +259,7 @@ func ghPages[T any](target, key string) ([]T, error) {
 		var items []T
 		if err := json.Unmarshal(raw, &items); err != nil {
 			path := strings.TrimPrefix(target, githubBase()+"/")
-			return nil, &Fail{Msg: "github answered a page x cannot read at " + path, Next: "x as coder -- gh api " + path}
+			return nil, &Fail{Msg: "github answered a page x cannot read at " + path, Next: ghAPINext(as, path)}
 		}
 		all = append(all, items...)
 		target = ""
@@ -260,38 +270,80 @@ func ghPages[T any](target, key string) ([]T, error) {
 	return all, nil
 }
 
-// ghFetch reads one github api url as the x-coder-cc app, the identity every lane call on github wears
-func ghFetch(target string, into any) (http.Header, error) {
-	token, err := tokenFor("coder", "gh")
+func ghFetch(as, target string, into any) (http.Header, error) {
+	_, header, err := ghSend(as, http.MethodGet, target, nil, into)
+	return header, err
+}
+
+// ghSend sends one github api request and answers its status too; a body goes as json, a nil into skips the answer
+func ghSend(as, method, target string, body, into any) (int, http.Header, error) {
+	token, err := githubToken(as)
 	if err != nil {
-		return nil, &Fail{Msg: "no gh token for the coder app: " + err.Error(), Next: "x schema as"}
+		return 0, nil, err
 	}
-	req, err := http.NewRequest(http.MethodGet, target, nil)
+	var payload io.Reader
+	if body != nil {
+		encoded, _ := json.Marshal(body)
+		payload = bytes.NewReader(encoded)
+	}
+	req, err := http.NewRequest(method, target, payload)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	path := strings.TrimPrefix(req.URL.Path, "/")
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return nil, &Fail{Msg: "github is unreachable: " + err.Error(), Next: "x gh pr again once the network is back"}
+		return 0, nil, &Fail{Msg: "github is unreachable: " + err.Error(), Next: ghAPINext(as, path)}
 	}
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(resp.Body)
-	path := strings.TrimPrefix(req.URL.Path, "/")
 	switch {
-	case resp.StatusCode == http.StatusNotFound:
-		return nil, &Fail{Msg: "github answered 404 for " + path + " — no such pr, or the coder app is not installed on the repo",
-			Next: "x as coder -- gh api " + path}
+	case resp.StatusCode == http.StatusNotFound && as == asCoder:
+		return resp.StatusCode, nil, &Fail{Msg: "github answered 404 for " + path + " — no such pr, or the coder app is not installed on the repo",
+			Next: ghAPINext(as, path)}
 	case resp.StatusCode >= 300:
-		return nil, &Fail{Msg: fmt.Sprintf("github answered %d for %s", resp.StatusCode, path), Next: "x as coder -- gh api " + path,
-			Log: nonBlank(string(raw))}
+		var said struct {
+			Message string `json:"message"`
+		}
+		_ = json.Unmarshal(raw, &said)
+		msg := fmt.Sprintf("github answered %d for %s", resp.StatusCode, path)
+		if said.Message != "" {
+			msg += ": " + said.Message
+		}
+		return resp.StatusCode, nil, &Fail{Msg: msg, Next: ghAPINext(as, path), Log: nonBlank(string(raw))}
 	}
-	if err := json.Unmarshal(raw, into); err != nil {
-		return nil, &Fail{Msg: "github answered json x cannot read at " + path, Next: "x as coder -- gh api " + path}
+	if into != nil {
+		if err := json.Unmarshal(raw, into); err != nil {
+			return resp.StatusCode, nil, &Fail{Msg: "github answered json x cannot read at " + path, Next: ghAPINext(as, path)}
+		}
 	}
-	return resp.Header, nil
+	return resp.StatusCode, resp.Header, nil
+}
+
+// dima's token is gh's own login, read per call and never cached (keys.go)
+func githubToken(as string) (string, error) {
+	token, err := tokenFor(as, "gh")
+	if err != nil {
+		return "", &Fail{Msg: "no gh token for the " + as + " app: " + err.Error(), Next: "x schema as"}
+	}
+	if token != "" {
+		return token, nil
+	}
+	got, _ := run("", nil, "", "gh", "auth", "token")
+	if !got.ok || got.out == "" {
+		return "", &Fail{Msg: "gh holds no login to act as dima", Next: "gh auth login", Log: nonBlank(got.log)}
+	}
+	return got.out, nil
+}
+
+func ghAPINext(as, path string) string {
+	if as == asCoder {
+		return "x as coder -- gh api " + path
+	}
+	return "gh api " + path
 }
 
 /* Board */

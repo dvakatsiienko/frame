@@ -48,6 +48,7 @@ var impls = map[string]Impl{
 	"lane seed":        {Run: seed, Undone: "the tree is as the hook left it"},
 	"lane review":      {Run: laneReview, Undone: "no review was requested"},
 	"lane pr-body":     {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
+	"lane merge-auto":  {Plan: mergeAutoPlan, Apply: mergeAuto, Undone: "nothing was merged", Ask: askMergeAuto},
 	"plugin bump":      {Plan: pluginBumpPlan, Apply: pluginBump, Undone: "the cache holds the old version", Ask: askPluginBump},
 	"mods edit pull":   {Run: modsEditPull, Undone: "the copies sit in scratch, the mod untouched"},
 	"mods edit status": {Run: modsEditStatus, Undone: "a read"},
@@ -373,7 +374,11 @@ func finishFail(m mode, name string, r *Run, err error) int {
 		for _, line := range fail.Log {
 			fmt.Fprintln(os.Stderr, line)
 		}
-		emit(name, kv{"error", fail.Msg}, kv{"next", fail.Next}, kv{"ok", false}, kv{"status", status})
+		fields := []kv{{"error", fail.Msg}, {"next", fail.Next}, {"ok", false}, {"status", status}}
+		if fail.Data != nil {
+			fields = append([]kv{{"data", fail.Data}}, fields...)
+		}
+		emit(name, fields...)
 		return exits[status]
 	}
 	code := fmt.Sprintf("exit %d", exits[status])
