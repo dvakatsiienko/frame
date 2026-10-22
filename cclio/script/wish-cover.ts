@@ -1,4 +1,4 @@
-// usage: node script/wish-cover.ts <PK-N> <draft…> — reds every W-line of the pocket item no draft cites
+// usage: node script/wish-cover.ts <PK-N> [--all] <draft…> — reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
@@ -13,16 +13,33 @@ export function wishLines(item: string) {
     return lines;
 }
 
+// a single id; the ends of a range like «W1–W3» cite nothing
+const WISH_ID = /(?<![–-]\s*)\bW\d+\b(?!\s*[–-]\s*W?\d)/g;
+
 export function citedIds(draft: string) {
-    const cited = new Set<string>();
-    for (const [, from, to] of draft.matchAll(
-        /\bW(\d+)(?:\s*[–-]\s*W?(\d+))?\b/g,
-    )) {
-        const start = Number(from);
-        const end = to === undefined ? start : Number(to);
-        for (let n = start; n <= end; n++) cited.add(`W${n}`);
-    }
-    return cited;
+    return new Set(draft.match(WISH_ID));
+}
+
+function normalize(text: string) {
+    return text
+        .toLowerCase()
+        .replace(/[«»“”]/g, '"')
+        .replace(/[‘’]/g, "'")
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+// cited W-lines whose own text no draft carries
+export function missingText(item: string, drafts: string[]) {
+    const joined = drafts.join('\n');
+    const body = normalize(joined);
+    const lines = wishLines(item);
+    return [...citedIds(joined)].flatMap((id): [string, string][] => {
+        const text = lines.get(id);
+        return text === undefined || body.includes(normalize(text))
+            ? []
+            : [[id, text]];
+    });
 }
 
 export function uncovered(item: string, drafts: string[]) {
@@ -43,9 +60,13 @@ function readItem(root: string, id: string) {
 }
 
 if (import.meta.main) {
-    const [id, ...draftPaths] = process.argv.slice(2);
+    const args = process.argv.slice(2);
+    const all = args.includes('--all');
+    const [id, ...draftPaths] = args.filter((arg) => arg !== '--all');
     if (!id || draftPaths.length === 0) {
-        console.error('usage: node script/wish-cover.ts <PK-N> <draft…>');
+        console.error(
+            'usage: node script/wish-cover.ts <PK-N> [--all] <draft…>',
+        );
         process.exit(2);
     }
     const root = path.resolve(import.meta.dirname, '..');
@@ -61,14 +82,22 @@ if (import.meta.main) {
         process.exit(2);
     }
     const drafts = draftPaths.map((p) => readFileSync(p, 'utf8'));
-    const missing = uncovered(item, drafts);
-    if (missing.length === 0) {
-        console.log(`${id}: every W-line cited`);
+    if (citedIds(drafts.join('\n')).size === 0) {
+        console.log(`✗ ${id}: cites no W-line`);
+        process.exit(1);
+    }
+    const missing = missingText(item, drafts);
+    for (const [lineId, text] of missing)
+        console.log(`✗ ${lineId} text missing: ${text.slice(0, 60)}`);
+    const uncited = all ? uncovered(item, drafts) : [];
+    for (const [lineId, text] of uncited)
+        console.log(`✗ ${lineId} uncited: ${text.slice(0, 60)}`);
+    if (missing.length + uncited.length === 0) {
+        console.log(`${id}: every cited W-line's text is in the drafts`);
         process.exit(0);
     }
-    for (const [lineId, text] of missing) console.log(`✗ ${lineId} ${text}`);
     console.log(
-        `${id}: ${missing.length} W-line(s) no draft cites — ask them, or mark «settled by the wish»`,
+        `${id}: ${missing.length} W-line(s) reworded or dropped, ${uncited.length} uncited — copy the wish's words verbatim`,
     );
     process.exit(1);
 }

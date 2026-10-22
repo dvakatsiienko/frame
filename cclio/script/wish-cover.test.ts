@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { citedIds, uncovered } from './wish-cover.ts';
+import { citedIds, missingText, uncovered } from './wish-cover.ts';
 
 const item = [
     '## Description',
@@ -11,23 +11,38 @@ const item = [
 ].join('\n');
 
 describe('wish-cover', () => {
-    test('passes when every W-line is cited', () => {
+    test('passes a cited line copied verbatim', () => {
+        expect(missingText(item, ['Q1 W1 hunt what feels off — why?'])).toEqual(
+            [],
+        );
+    });
+
+    test('reds a cited line that is paraphrased', () => {
         expect(
-            uncovered(item, ['Q1 (W1, W2)', 'settled by the wish: W3 W4']),
+            missingText(item, ['W1 look for things that seem wrong']).map(
+                ([id]) => id,
+            ),
+        ).toEqual(['W1']);
+    });
+
+    test('normalizes quotes, whitespace and case', () => {
+        const quoted = '- W1 she said «Go   Now» and “stop”';
+        expect(
+            missingText(quoted, ['W1 SHE said "go\nnow" and "stop"']),
         ).toEqual([]);
     });
 
-    test('reds a W-line no draft cites', () => {
-        expect(uncovered(item, ['Q1 (W1, W2, W4)']).map(([id]) => id)).toEqual([
+    test('a range cites nothing', () => {
+        expect([...citedIds('settles W1–W3, W2-W4')]).toEqual([]);
+    });
+
+    test('single ids across a draft are all cited', () => {
+        expect([...citedIds('(W1, W2) and W4')]).toEqual(['W1', 'W2', 'W4']);
+    });
+
+    test('--all reds a line no draft cites', () => {
+        expect(uncovered(item, ['W1 W2', 'W4']).map(([id]) => id)).toEqual([
             'W3',
         ]);
-    });
-
-    test('reads a range as every line inside it', () => {
-        expect([...citedIds('settles W2–W4')]).toEqual(['W2', 'W3', 'W4']);
-    });
-
-    test('reads citations across several drafts', () => {
-        expect(uncovered(item, ['W1 W2', 'W3', 'W4'])).toEqual([]);
     });
 });

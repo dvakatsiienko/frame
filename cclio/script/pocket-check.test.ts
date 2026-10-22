@@ -10,6 +10,7 @@ const config = [
 ].join('\n');
 
 const today = '2026-10-09';
+const wishConfig = config.replace('"idea"', '"idea", "wish"');
 
 function task(
     fields: Record<string, string | string[]>,
@@ -265,6 +266,87 @@ describe('checkPocket', () => {
                     ),
                 ],
                 today,
+            ),
+        ).toEqual([]);
+    });
+});
+
+describe('wish accounting', () => {
+    const wishToday = '2026-10-22';
+    const withNotes = (lines: string) =>
+        `- W1 keep the words\n- W2 second\n<!-- SECTION:NOTES:BEGIN -->\n${lines}\n<!-- SECTION:NOTES:END -->`;
+    const closed = (notes: string) =>
+        task(
+            {
+                created_date: '2026-10-13 10:00',
+                status: 'done',
+                updated_date: '2026-10-22 10:00',
+            },
+            withNotes(notes),
+        );
+
+    test('a wish born today without W-lines goes red', () => {
+        expect(
+            checkPocket(
+                wishConfig,
+                [
+                    task(
+                        {
+                            created_date: '2026-10-22 09:00',
+                            type: 'wish',
+                            updated_date: '2026-10-22 09:00',
+                        },
+                        'just prose',
+                    ),
+                ],
+                wishToday,
+            ),
+        ).toEqual(['PK-1: wish born without W-lines: fold it into W1… lines']);
+    });
+
+    test('a wish born today with W-lines passes, and an older wish is spared', () => {
+        const fresh = {
+            created_date: '2026-10-22 09:00',
+            type: 'wish',
+            updated_date: '2026-10-22 09:00',
+        };
+        expect(
+            checkPocket(wishConfig, [task(fresh, '- W1 his words')], wishToday),
+        ).toEqual([]);
+        expect(
+            checkPocket(
+                wishConfig,
+                [
+                    task(
+                        {
+                            ...fresh,
+                            created_date: '2026-10-21 09:00',
+                        },
+                        'just prose',
+                    ),
+                ],
+                wishToday,
+            ),
+        ).toEqual([]);
+    });
+
+    test('a close without a close: line citing every W-id goes red', () => {
+        const red =
+            'PK-1: closed without accounting for W-lines: add a `close:` line citing each as done, moved or dropped';
+        expect(
+            checkPocket(wishConfig, [closed('close: W1 done')], wishToday),
+        ).toEqual([red]);
+        expect(
+            checkPocket(wishConfig, [closed('W1 W2 done')], wishToday),
+        ).toEqual([red]);
+    });
+
+    test('a close: line citing every W-id passes', () => {
+        expect(
+            checkPocket(
+                wishConfig,
+                [closed('close: W1 done, W2 dropped')],
+                wishToday,
             ),
         ).toEqual([]);
     });

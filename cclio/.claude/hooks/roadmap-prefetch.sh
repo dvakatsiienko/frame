@@ -19,7 +19,7 @@ if [ "${1:-}" = --outline ]; then
   [ -n "$body" ] && printf '%s\n' "$body" > "$out" && sed -n '3,$p' "$out"
   exit 0
 fi
-linear api "query { initiative(id: \"$INIT\") { name status description content projects(first: 20) { nodes { name status { name } startDate } } } projectRelations(first: 30) { nodes { type project { name } relatedProject { name } anchorType relatedAnchorType } } projectMilestones(first: 50) { nodes { name project { name } issues(first: 50) { nodes { identifier sortOrder state { type } } } } } }" 2>/dev/null \
+linear api "query { initiative(id: \"$INIT\") { name status description content projects(first: 20) { pageInfo { hasNextPage } nodes { name status { name } startDate issues(first: 50, filter: {state: {type: {nin: [\"completed\", \"canceled\"]}}, projectMilestone: {null: true}}) { pageInfo { hasNextPage } nodes { identifier } } } } } projectRelations(first: 30) { nodes { type project { name } relatedProject { name } anchorType relatedAnchorType } } projectMilestones(first: 50) { pageInfo { hasNextPage } nodes { name status project { name } issues(first: 50) { nodes { identifier sortOrder state { type } } } } } }" 2>/dev/null \
 | jq -r '
   .data as $d |
   "-- roadmap initiative (\($d.initiative.status)) --",
@@ -33,5 +33,15 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
   ($d.projectMilestones.nodes
     | map(select([.issues.nodes[] | select(.state.type != "completed" and .state.type != "canceled")] | length > 0))
     | map("\(.project.name) · \(.name) · \([.issues.nodes[] | select(.state.type == "completed" or .state.type == "canceled")] | length)/\(.issues.nodes | length) · " + ([.issues.nodes[] | select(.state.type != "completed" and .state.type != "canceled")] | sort_by(.sortOrder) | map(.identifier) | join(" → ")))
-    | join("\n"))
+    | join("\n")),
+  "-- milestone health --",
+  ([(if $d.initiative.projects.pageInfo.hasNextPage then "🟡 initiative: projects capped at 20, health incomplete" else empty end),
+    (if $d.projectMilestones.pageInfo.hasNextPage then "🟡 milestones capped at 50, health incomplete" else empty end),
+    ($d.initiative.projects.nodes[] | .name as $p
+      | [$d.projectMilestones.nodes[] | select(.project.name == $p)] as $ms
+      | (if .issues.pageInfo.hasNextPage then "🟡 \($p): unassigned issues capped at 50, health incomplete" else empty end),
+        ($ms[] | select(.issues.nodes | length == 0) | "🟡 \($p) · \(.name): empty — fill it, or ask dima to delete it"),
+        (if ($ms | length) > 0 and (.issues.nodes | length) > 0 then "🟡 \($p): \(.issues.nodes | length) open ticket(s) with no milestone — \([.issues.nodes[].identifier] | join(", "))" else empty end),
+        ([$ms[] | select(.status != "done")] | length | select(. > 4) | "🟡 \($p): \(.) open milestones (soft limit 4)"))
+  ] | if length == 0 then "🟢 milestones healthy" else .[] end)
 ' || echo "roadmap prefetch: linear unreachable"

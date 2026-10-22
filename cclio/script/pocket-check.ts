@@ -2,6 +2,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { citedIds, wishLines } from './wish-cover.ts';
+
 // the pocket's contract on top of Backlog.md (grill 2026-10-09); allowed values come from its own config
 const NOW_CAP = 3;
 const OPEN_CAP = 5;
@@ -10,6 +12,9 @@ const EXPIRING = ['xs', 's'];
 const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
 // the boot seeds it every evergreen day; counting it would trip the caps weekly by design
 const CAP_FREE_TITLE = /^🧬 evergreen turn/;
+// the wish-accounting reds apply to items born or touched from this day on
+const WISH_RULES_FROM = '2026-10-22';
+const CLOSE_LINE = /^close:/;
 const TICKET_LINE = /\b(?:ticket|moved to linear):\s*((?:FRM|BYT)-\d+)/gi;
 
 export function checkPocket(
@@ -49,6 +54,28 @@ export function checkPocket(
             front.scalars.created_date ||
             ''
         ).slice(0, 10);
+        const born = (front.scalars.created_date ?? '').slice(0, 10);
+        const wishIds = [...wishLines(text).keys()];
+        if (
+            front.scalars.type === 'wish' &&
+            born >= WISH_RULES_FROM &&
+            wishIds.length === 0
+        )
+            report('wish born without W-lines: fold it into W1… lines');
+        if (
+            status === 'done' &&
+            (born >= WISH_RULES_FROM || touched >= WISH_RULES_FROM)
+        ) {
+            const accounted = citedIds(
+                noteLines(text)
+                    .filter((line) => CLOSE_LINE.test(line))
+                    .join('\n'),
+            );
+            if (wishIds.some((wishId) => !accounted.has(wishId)))
+                report(
+                    'closed without accounting for W-lines: add a `close:` line citing each as done, moved or dropped',
+                );
+        }
         if (status === 'done') {
             if (touched < today)
                 report(
