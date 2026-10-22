@@ -44,6 +44,7 @@ this file says how every member does it. A section headed with roles binds only 
 - at most 12 lines, most important first, walked through matt's retro categories; a brief's `focus:` line
   replaces your standing focus for that run
 - it names one automation candidate: a script, a verb or a guard
+- a trial you rode gets a «trials» line each, outside the 12: your impression in plain words (helped, got in the way), keep or drop, one suggestion — dima reads these to judge the trial
 
 ## coder · verifier · designer
 
