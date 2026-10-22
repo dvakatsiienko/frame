@@ -128,6 +128,22 @@
             "keywords": ["nms", "no mans sky", "wiki", "miraheze"],
             "icon": "🪐",
             "mode": "view"
+        },
+        {
+            "name": "nms-recipes",
+            "title": "nms recipes",
+            "subtitle": "x-ray",
+            "description": "open a no man's sky recipes page — refining, cooking and crafting for the selected text at once on the hotkey, or a typed name.",
+            "keywords": [
+                "nms",
+                "no mans sky",
+                "recipes",
+                "refiner",
+                "cooking",
+                "crafting"
+            ],
+            "icon": "🍳",
+            "mode": "view"
         }
     ],
     "preferences": [

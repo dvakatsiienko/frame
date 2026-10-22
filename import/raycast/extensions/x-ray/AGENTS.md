@@ -12,6 +12,8 @@ shelf, the schedulers, monobank rates, the gmail block list. source lives here; 
 - `currency` — monobank buy/sell for the hryvnia, with an amount argument to convert
 - `nms-wiki` — the no man's sky wiki: a hotkey over selected text opens the page at once, else a
   typed name; the wiki's search-go door jumps to an exact page or lists results
+- `nms-recipes` — nomansskyrecipes.com the same way: its `/search.json` index (~5k items, name → page)
+  matches the selection or a typed name; an exact name opens at once, every row also opens the wiki
 - `gmail-block-sender` — appends a sender, domain or display name to `gmail/blocklist.json` and runs
   `gmailctl apply`; the filter deletes on arrival, old mail is his one search by hand
 ## schedulers
