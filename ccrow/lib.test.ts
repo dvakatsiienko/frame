@@ -196,6 +196,21 @@ describe('transcriptDelta', () => {
             .map((block) => block.split('\n')[1]);
         expect(bodies).toEqual(['new-d', 'new-e', 'new-g']);
     });
+
+    test("leaves out a compaction's summary, which is cc's text, not dima's", () => {
+        const summary = [
+            JSON.stringify({
+                isCompactSummary: true,
+                message: {
+                    content:
+                        'This session is being continued from a previous conversation',
+                },
+                type: 'user',
+                uuid: 'h',
+            }),
+        ];
+        expect(transcriptDelta(summary, 0).text).toBe('');
+    });
 });
 
 describe('appendNoteOnce', () => {

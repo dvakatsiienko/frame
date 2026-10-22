@@ -520,7 +520,8 @@ export function transcriptDelta(lines: string[], fromLine: number) {
             const text = textOf(entry.message?.content).trim();
             if (!text) continue;
             const who = entry.origin?.kind === 'peer' ? 'peer' : 'dima';
-            if (who === 'dima' && entry.isMeta) continue;
+            if (who === 'dima' && (entry.isMeta || entry.isCompactSummary))
+                continue;
             const notified = capNotifications(text);
             outputs += notified.capped;
             parts.push(`${headOf(who, entry.timestamp)}\n${notified.text}`);
@@ -1161,6 +1162,7 @@ export interface TranscriptEntry {
     timestamp?: string;
     uuid?: string;
     isMeta?: boolean;
+    isCompactSummary?: boolean;
     origin?: { kind?: string };
     attachment?: {
         type?: string;
