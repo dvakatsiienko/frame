@@ -1,10 +1,10 @@
 ---
 id: PK-74
 title: 'x lane rebases a coder branch onto main, never a merge commit'
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-12 01:13'
-updated_date: '2026-10-20 14:38'
+updated_date: '2026-10-22T16:51:00Z'
 due_date: '2026-10-26'
 labels:
   - s
@@ -39,4 +39,6 @@ dima o87 ✓ 20:37: **waiting for:** the cli lane opening — its first chunk. t
 2026-10-19 rider: the tdd trial rides this lane (dima o96) — the coder brief loads mattpocock-skills:tdd and the done report logs a line in docs/test-drive/tdd.md § next lanes
 
 ticket: FRM-403 (cli lane 1, sealed 2026-10-20)
+
+2026-10-22 19:55: closed into FRM-403 at the cli lane 1 spawn (its scope is sealed in that ticket's exit lines; chunk 1 FRM-401 running)
 <!-- SECTION:NOTES:END -->
