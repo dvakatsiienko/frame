@@ -35,7 +35,7 @@ a coder job carrying three or more asks — a lane, or a pile of today's drops a
 the grill's `open` section is empty → read matt's `to-spec` and follow it (`sys-skills`: a user-only skill is plain text):
 - the spec sits in `.scratch/<feature>/spec.md` and carries `wish: <ticket>`
 - **the coder writes the tickets**: its brief's first step runs `to-tickets` on the spec after reading the code, so the slices follow real seams (cclio-written tickets anchor the coder to guessed seams); the brief skips `to-tickets` step 4 «quiz the user», since the grill already settled the want, and the slices go into `.scratch/<feature>/issues/`, never linear
-- **the lane's order lives in one file, `.scratch/<feature>/lane-plan.md`** (dima, 2026-10-22, PK-103 round 1): the coder writes its first draft after `to-tickets`, one line per step (`- [ ] 03 · <ticket title>`, a step may group tickets: `01–02`), and pings `[ask] lane-plan ready to seal`; cclio reorders it against what comes after and seals it — her word is final; the coder ticks `[x]` at each ticket's commit and appends dima's in-thread steers under `## unsealed` with a `[progress]` ping; cclio re-seals on her next read. the glide card copies the sealed steps (by hand at each seal, until the mod reads the file — PK-251). a lane of one ticket skips the file
+- **the lane's order lives in one file, `.scratch/<feature>/lane-plan.md`** (dima, 2026-10-22, PK-103 round 1): the coder's side (the draft, the ticks, `## unsealed`) is `x:crew-coder`'s `how-you-work.md` § the lane plan; mine: at its `[ask] lane-plan ready to seal` i reorder it against what comes after and seal it — my word is final — and re-seal on my next read after a `[progress]` ping; a step may group tickets (`01–02`). the glide card copies the sealed steps (by hand at each seal, until the mod reads the file — PK-251). a lane of one ticket skips the file
 - the spec and the sealed exit lines bind, the tickets are the coder's own route; the exit lines below are sealed from the spec
 - a quick lane and a freebie skip it, said in one line
 
@@ -51,6 +51,6 @@ then the **blind critic**, on every lane, quick ones too (`docs/research/exit-li
 
 ## 5 · the spawn ask
 
-its own orbit ask — `spawn <ticket> now? verifier: yes/no` — never folded into a grill answer or a plan. this skill ends here; the spawn is `x:crew-lead`'s.
+the verifier ask, its own orbit ask in the shape `x:crew-lead` § the verifier ask holds, never folded into a grill answer or a plan. this skill ends here; the spawn is `x:crew-lead`'s.
 
 **done** = the ticket carries `decided` and the sealed `exit`, and the spawn ask sits in orbit. «grilled» without sealed exit lines is reported as not ready.

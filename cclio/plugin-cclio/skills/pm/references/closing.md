@@ -15,3 +15,4 @@ printed «closable, because …» list and waits for his word.
   to X, dies); the ticket cannot close until he verdicts each — «yes let's do», «not important anymore», or a steer; no answer, not resolved
 - his «close all listed» closes the batch; silence closes nothing; an approved close still gets
   its closing word in the body
+- a close sets its pocket item (`ticket: FRM-N`) done the same turn, with a `close:` line; the halt files it

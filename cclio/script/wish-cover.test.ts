@@ -70,4 +70,10 @@ describe('wish-cover', () => {
         ];
         expect(itemsForTicket(items, 'FRM-40')).toEqual(['PK-7']);
     });
+
+    test('reds a cited id the item does not hold', () => {
+        expect(missingText(item, ['W9 made up']).map(([id]) => id)).toEqual([
+            'W9',
+        ]);
+    });
 });

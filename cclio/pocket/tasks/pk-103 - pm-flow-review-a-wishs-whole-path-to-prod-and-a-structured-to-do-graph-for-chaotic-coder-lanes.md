@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T15:17:00Z'
+updated_date: '2026-10-22T15:26:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -326,4 +326,6 @@ W96 the hook is a good idea; we have 2 settled official blueprints: 🛼 crew an
 2026-10-22 18:2x progress on the state list: item 4 done (ac20f2f5: wish-cover resolves «wish: FRM-N»); the blueprint habit fix done (f4d0873f, W94–W96: the nudge hook, siesta step 2.6); item 5a done (593998c8: the halt's 🌊 born-parked count). item 5b open → the fixes round: the roadmap body marks steps 1–2 done while pm and fleet still read Planned in linear, and «now: fleet tails» names no step — what a closed step means for its project is dima's call (W81 cut time-based checks).
 
 18:18 ccrow's catch on item 5b (vet 202610221816-opus): dima-strategy's step-close rule exists. checked: applying it as Completed would bury live work: pm holds FRM-72 (this revamp), fleet holds 11 open + the «fleet package» milestone (next). so the fixes round asks: does a closed step complete its project (moving its open tickets), or do pm and fleet stay standing homes with the step marked done in the body only; and which step is «now». ccrow also: W87's re-look tests one job on both runners (Haiku 5.5 vs Opus 5.5) before craft-pm's «composer 1.4 %» line stays.
+
+18:3x items 7 + 11 (commit 7b9e5a74): verifier ask → crew-lead one home; ticket close closes its pocket item (closing.md); lane-plan: shape-lane keeps cclio's half, crew-coder keeps the coder's (a coder can't load cclio:shape-lane — the state note's «crew-coder points» was backwards); wish-cover reds an unknown W id. W74/W75 verified already in craft-pm § milestones first. the 10-07 «solve now?» line shown to dima in the 18:3x reply. left to their homes: board band 0 + lane-plan tile → the redraw; the band 5 walk → the weak-spot round; the kind → emoji list → the fixes-round grill (an emoji pick is his); _reminders.md:53 → at the cli spawn.
 <!-- SECTION:NOTES:END -->

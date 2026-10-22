@@ -38,9 +38,8 @@ export function missingText(item: string, drafts: string[]) {
     const lines = wishLines(item);
     return [...citedIds(joined)].flatMap((id): [string, string][] => {
         const text = lines.get(id);
-        return text === undefined || body.includes(normalize(text))
-            ? []
-            : [[id, text]];
+        if (text === undefined) return [[id, '(no such W-line in the item)']];
+        return body.includes(normalize(text)) ? [] : [[id, text]];
     });
 }
 
