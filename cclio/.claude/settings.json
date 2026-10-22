@@ -116,6 +116,11 @@
             "type": "command",
             "command": "node /Users/dima/frame/schedule/jobs/x-changedetector/watch-nudge.ts",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node /Users/dima/frame/cclio/script/prompt-raw-save.ts",
+            "timeout": 5
           }
         ]
       }
