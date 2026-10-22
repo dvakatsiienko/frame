@@ -32,8 +32,10 @@ boot prefetch prints it; **that block answers «what's next».**
 - the order is his, not a ranking — a later step is blocked, not lesser.
 - 🚨 **pacing check:** steps 1–4 are meta-work, and meta-work never finishes on its own — bytes
   once went untouched for over a week. Each step closing is the moment to ask what starts next.
-- a step closes → same session: project status + start date set, the body's order lines
-  rewritten, one initiative update (three sentences), the attached scope untouched; then one orbit
+- a step closes → same session: the body's order line marked `(done <date>)`, the description's
+  «now:» line names where we stand, one initiative update (three sentences), the attached scope
+  untouched; the project stays open — our projects are standing, linear's project complete is
+  never used, only milestones complete (dima, 2026-10-22, PK-103 W97); then one orbit
   ask, «step N closed: open N+1 (<project>) or something else?», with my pick — the next step opens
   only on his tick: the project goes In Progress, its start date and first milestone set (dima,
   2026-10-22, PK-103 round 3)

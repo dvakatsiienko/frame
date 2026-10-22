@@ -4,7 +4,7 @@ title: composer on Sonnet 5.5 — shape-idea over its contract after the trial v
 status: waiting
 assignee: []
 created_date: '2026-10-14 18:27'
-updated_date: '2026-10-22T15:01:00Z'
+updated_date: '2026-10-22T15:36:00Z'
 due_date: '2026-10-22'
 labels:
   - m
@@ -34,4 +34,6 @@ inbox 10-16, idea in his words: composer on Haiku 5.5 overlaps helper-lite; prom
 2026-10-20 dima: «not for today — maybe explore the promotion in the nearest days»; due moved to 10-22
 
 2026-10-22 18:00 dima: keep it by hand in the pocket — not today, not tomorrow, maybe not the day after, but soon (his exception to the week-out → linear rule)
+
+2026-10-22 18:3x grill 5 Q3 (PK-103, o41 ✓): the model test rides this item — one job (grooming one inbox, and one first-use transform) run on Haiku 5.5 and on Sonnet 5.5, scored by wish-cover against the same W-lines; the 1.4 % vs 9.4 % pair compared two jobs, never two models
 <!-- SECTION:NOTES:END -->

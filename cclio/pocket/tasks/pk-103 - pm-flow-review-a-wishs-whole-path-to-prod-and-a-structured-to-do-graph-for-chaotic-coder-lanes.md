@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T15:26:00Z'
+updated_date: '2026-10-22T15:36:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -328,4 +328,14 @@ W96 the hook is a good idea; we have 2 settled official blueprints: 🛼 crew an
 18:18 ccrow's catch on item 5b (vet 202610221816-opus): dima-strategy's step-close rule exists. checked: applying it as Completed would bury live work: pm holds FRM-72 (this revamp), fleet holds 11 open + the «fleet package» milestone (next). so the fixes round asks: does a closed step complete its project (moving its open tickets), or do pm and fleet stay standing homes with the step marked done in the body only; and which step is «now». ccrow also: W87's re-look tests one job on both runners (Haiku 5.5 vs Opus 5.5) before craft-pm's «composer 1.4 %» line stays.
 
 18:3x items 7 + 11 (commit 7b9e5a74): verifier ask → crew-lead one home; ticket close closes its pocket item (closing.md); lane-plan: shape-lane keeps cclio's half, crew-coder keeps the coder's (a coder can't load cclio:shape-lane — the state note's «crew-coder points» was backwards); wish-cover reds an unknown W id. W74/W75 verified already in craft-pm § milestones first. the 10-07 «solve now?» line shown to dima in the 18:3x reply. left to their homes: board band 0 + lane-plan tile → the redraw; the band 5 walk → the weak-spot round; the kind → emoji list → the fixes-round grill (an emoji pick is his); _reminders.md:53 → at the cli spawn.
+
+correction: items 7 + 11 landed in 55c50577, not 7b9e5a74 (the first try failed on closing.md's budget)
+
+2026-10-22 18:35 grill 5 answers (o39–o43, all ticked): Q1 a) b) → fleet tickets, c) → rename part, d) done; Q2 the pocket pull rule; Q3 keep composer, the test rides PK-140; Q4 + Q5 with his steers, raw:
+o42: «Yes, with one caveat: we usually don't use a complete project feature because our projects in Linear are standing, so to say. Linear has an option to complete a project, but we don't use it. The only thing that gets completed in our flow is mils.»
+o43: «You picked alternatives to not overlap with already existing emojis. If yes, okay, let's try.»
+W97 our linear projects are standing: linear can complete a project, but we don't use it; the only thing that gets completed in our flow is milestones
+W98 ❓ you picked the alternatives so they don't overlap with the emojis we already use? if yes, okay, let's try
+
+18:4x grill 5 applied: Q2 habit-shared-files (the way back into the pocket); Q3 craft-pm names two jobs + PK-140 carries the test; Q4 dima-strategy (projects standing, only milestones complete) + the initiative «now:» line rewritten in linear (also «dima applies again» → «job hunt» to fit 255 chars); Q5 pm/SKILL.md's kind → emoji list, on trial; Q1 c) joins the rename part (W6–W10, W24), d) done (lane-plan.md), a) b) drafted as two fleet tickets, waiting on his tick (o44).
 <!-- SECTION:NOTES:END -->
