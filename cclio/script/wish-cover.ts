@@ -1,4 +1,4 @@
-// usage: node script/wish-cover.ts <PK-N> [--all] <draft…> — reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
+// usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…> — an FRM id resolves to the one pocket item whose «ticket:» line names it; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
@@ -49,30 +49,52 @@ export function uncovered(item: string, drafts: string[]) {
     return [...wishLines(item)].filter(([id]) => !cited.has(id));
 }
 
-function readItem(root: string, id: string) {
-    for (const dir of pocketDirs) {
+function pocketItems(root: string) {
+    return pocketDirs.flatMap((dir) => {
         const abs = path.join(root, dir);
-        for (const file of readdirSync(abs)) {
-            if (!file.toLowerCase().startsWith(`${id.toLowerCase()} - `))
-                continue;
-            return readFileSync(path.join(abs, file), 'utf8');
-        }
-    }
-    return undefined;
+        return readdirSync(abs).map((file): [string, string] => [
+            file,
+            readFileSync(path.join(abs, file), 'utf8'),
+        ]);
+    });
+}
+
+// the PK ids of the pocket items whose «ticket:» line names this FRM id
+export function itemsForTicket(items: [string, string][], ticket: string) {
+    const line = new RegExp(`^ticket: *${ticket}\\b`, 'im');
+    return items
+        .filter(([, text]) => line.test(text))
+        .map(([file]) => file.split(' - ')[0]?.toUpperCase() ?? file);
+}
+
+function readItem(items: [string, string][], id: string) {
+    return items.find(([file]) =>
+        file.toLowerCase().startsWith(`${id.toLowerCase()} - `),
+    )?.[1];
 }
 
 if (import.meta.main) {
     const args = process.argv.slice(2);
     const all = args.includes('--all');
-    const [id, ...draftPaths] = args.filter((arg) => arg !== '--all');
+    let [id, ...draftPaths] = args.filter((arg) => arg !== '--all');
     if (!id || draftPaths.length === 0) {
         console.error(
-            'usage: node script/wish-cover.ts <PK-N> [--all] <draft…>',
+            'usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…>',
         );
         process.exit(2);
     }
-    const root = path.resolve(import.meta.dirname, '..');
-    const item = readItem(root, id);
+    const items = pocketItems(path.resolve(import.meta.dirname, '..'));
+    if (/^FRM-\d+$/i.test(id)) {
+        const owners = itemsForTicket(items, id);
+        if (owners.length !== 1) {
+            console.error(
+                `${id}: ${owners.length === 0 ? 'no pocket item carries it' : `several pocket items carry it (${owners.join(', ')})`} — name the PK id on the wish line`,
+            );
+            process.exit(2);
+        }
+        id = owners[0] as string;
+    }
+    const item = readItem(items, id);
     if (item === undefined) {
         console.error(`${id}: no pocket item`);
         process.exit(2);

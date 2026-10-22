@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest';
 
-import { citedIds, missingText, uncovered } from './wish-cover.ts';
+import {
+    citedIds,
+    itemsForTicket,
+    missingText,
+    uncovered,
+} from './wish-cover.ts';
 
 const item = [
     '## Description',
@@ -55,5 +60,14 @@ describe('wish-cover', () => {
         expect(uncovered(item, ['W1 W2', 'W4']).map(([id]) => id)).toEqual([
             'W3',
         ]);
+    });
+
+    test('an FRM id finds the pocket items whose ticket line names it', () => {
+        const items: [string, string][] = [
+            ['pk-7 - a.md', 'ticket: FRM-40 (lane 1)'],
+            ['pk-8 - b.md', 'ticket: FRM-403'],
+            ['pk-9 - c.md', 'see FRM-40 in passing'],
+        ];
+        expect(itemsForTicket(items, 'FRM-40')).toEqual(['PK-7']);
     });
 });
