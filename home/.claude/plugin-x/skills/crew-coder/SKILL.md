@@ -96,8 +96,9 @@ brief says which, and when it does not, ask once, up front.
    both find, push.
 3. **one local review per verifier round** (dima, 2026-10-22): before each verifier round after the first, the pair
    reruns on the fix diff only (`--base-commit <last reviewed sha>`), 3 local reviews in all, matching the verifier's
-   3 rounds; each review adds one graded line to `~/frame/docs/test-drive/review-rounds.md` (reviewer, findings, useful
-   or noise), and the done report names `local reviews: <n>`.
+   3 rounds; each review gets one graded line (reviewer, findings, useful or noise) in your done report,
+   which names `local reviews: <n>`; your worktree cannot write the shared log, so cclio copies the lines into
+   `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
    steps 1–3 run on every assignment, quick-lane ones included.
 4. **with a verifier** named in the brief (`🌗 🔎 <ticket> verify: #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a quick lane: `main:<base sha>` and your local head sha, no pr url). it reads the ci reviewer for you; every reviewer thread is still yours to

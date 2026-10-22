@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-22T17:12:00Z'
-updated_date: '2026-10-22T17:12:00Z'
+updated_date: '2026-10-22T17:24:00Z'
 due_date: '2026-10-25'
 labels:
   - s
@@ -23,3 +23,10 @@ ordinal: 156000
 
 the PK-254 coder retro's automation candidates (invariant 5): one jq back-jump scan cracked the compaction replay; a packet that names its fromLine makes a later replay reconstructable (the 19:50 offset had to be rebuilt from a packet's mtime).
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-10-22 20:23 dima, raw: «Then it looks very useful, and if it is implemented, it should then be used as a primary verb for cases when it needs to be used.»
+W1 the jumps command looks very useful; once it lands, it is the primary verb for every case it fits (a compaction mystery, «ccrow missed something», a retro's timeline)
+<!-- SECTION:NOTES:END -->

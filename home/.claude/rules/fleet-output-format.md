@@ -217,14 +217,17 @@ file he names.
 
 ## the output kit
 
-- 📊 mini scoreboard for session wrap-ups (created / done / touched / routed) — bullet lines, not a table
-- 🚦 fleet reports as one line per session, in fixed order — 🟢 done-idle, then 🟡 working, then 🔴 blocked;
-  each named by its registry name («🌗 🔧 FRM-399 code: …»)
-- 🧾 diff-shaped state changes: `field: old → new`
-- 🏷️ incremental art or product work (a diorama set, an mvp growing round by round) → every
-  report ends with its version label — `mvp`, `mvp v1`, `mvp v2`, `prod`, or a number like
-  `0.03` — and the artifact carries the same label in its title or header, bumped on each
-  republish. one-off work carries no label. **the artifact's title is the source of the label**: a
-  message quotes the version the title shows, never its own count
+📊 mini scoreboard for session wrap-ups (created / done / touched / routed) — bullet lines, not a table
+
+🚦 fleet reports as one line per session, in fixed order — 🟢 done-idle, then 🟡 working, then 🔴 blocked;
+each named by its registry name («🌗 🔧 FRM-399 code: …»)
+
+🧾 diff-shaped state changes: `field: old → new`
+
+🏷️ incremental art or product work (a diorama set, an mvp growing round by round) → every
+report ends with its version label — `mvp`, `mvp v1`, `mvp v2`, `prod`, or a number like
+`0.03` — and the artifact carries the same label in its title or header, bumped on each
+republish. one-off work carries no label. **the artifact's title is the source of the label**: a
+message quotes the version the title shows, never its own count
 
 <!-- failure: 2026-09-30, «canvas v10» in a reply while the title read «spread v1» sent dima hunting for a page that was right there -->

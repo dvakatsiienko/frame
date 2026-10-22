@@ -25,4 +25,12 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 
 ## rounds
 
+- 2026-10-22 · frame#95 · side lane (cli lane 1, FRM-401) · 2 verifier rounds · 1 local review (matt's code-review ×2 cards ‖ coderabbit) · 0 ci rounds (frame has none, FRM-411) · round 1 ~11 min, round 2 ~19 min with its fixes · clean 20:37 → merge 20:44 (7 min, his tick on a self-edit) · verifier 3 real / local 15 useful of 20 / ci — · the coder's red-proof run caught 18 of 19 mutations itself; the graded lines sit in its retro (`shelf/retros/2026-10-22-FRM-401-coder.md`)
+
+## graded lines — one per local review, from the coder's done report, copied by cclio at land
+
+- 2026-10-22 · frame#95 · matt's code-review, spec card (Opus 5.5) · 4 useful, 3 noise · useful
+- 2026-10-22 · frame#95 · matt's code-review, standards card (Opus 5.5) · 9 useful, 2 kept by choice · useful
+- 2026-10-22 · frame#95 · coderabbit · 2 of 2 useful (a graphql error read as 0 open threads, fail-open) · useful
+
 ## verdict
