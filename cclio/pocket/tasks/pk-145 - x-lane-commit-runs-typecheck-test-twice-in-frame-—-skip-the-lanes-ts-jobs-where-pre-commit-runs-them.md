@@ -3,10 +3,10 @@ id: PK-145
 title: >-
   x lane commit runs typecheck + test twice in frame — skip the lane's ts jobs
   where pre-commit runs them
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-15 13:32'
-updated_date: '2026-10-20 14:38'
+updated_date: '2026-10-22T16:51:00Z'
 due_date: '2026-10-22'
 labels:
   - s
@@ -27,4 +27,6 @@ dima, 2026-10-15 (matt's «stop running checks in harness hooks» short): checks
 
 <!-- SECTION:NOTES:BEGIN -->
 ticket: FRM-405 (cli lane 1, sealed 2026-10-20)
+
+2026-10-22 19:55: closed into FRM-405 at the cli lane 1 spawn (its scope is sealed in that ticket's exit lines; chunk 1 FRM-401 running)
 <!-- SECTION:NOTES:END -->

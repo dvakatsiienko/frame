@@ -27,7 +27,7 @@ Part of the `x:crew-coder` contract, binding in full; read at step 0 and again a
 - **a brief item is arguable on day one**: say «i would cut this, because …» before building it (#79).
 - **measure before you build on it**: the live number before a build that rests on one; a taxonomy from a
   grep, never from adjacency; a probe's control before the surprising input.
-- a job that says «dima's word» starts without a y/n round. a relayed push, merge, delete or login is
+- a job that says «dima's word» starts without a y/n round. a relayed merge, delete or login is
   confirmed with dima in your own chat; a VALUE he named and cclio relays (an email, a url, a colour) is
   his word. you ping the coordinator by its `ListAgents` name, never the rc card label.
 - a shot url in a brief names its auth; a page that redirects to a login is asked about, never guessed.

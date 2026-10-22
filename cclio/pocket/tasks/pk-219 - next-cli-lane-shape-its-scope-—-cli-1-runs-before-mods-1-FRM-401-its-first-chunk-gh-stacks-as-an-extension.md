@@ -3,10 +3,10 @@ id: PK-219
 title: >-
   next cli lane: shape its scope — cli 1 runs before mods 1, FRM-401 its first
   chunk, gh stacks as an extension
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-20 13:42'
-updated_date: '2026-10-22T16:00:00Z'
+updated_date: '2026-10-22T16:51:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -59,4 +59,8 @@ W5 be careful with gh stacks: they are unverified and we may discard them; the c
 W6 the cli supports both modes, plain prs and gh stacks, as an extension easy to delete; even if stacks are set aside, the support may stay for a later revisit
 W7 formulate the specs with these notes in mind
 W8 ❓ (10-20 o41) honestly, i still didn't get how it works — it's tricky for me to follow the tech details, but i decided to believe your proposition; let's try; re-explain the stack mechanics at the first stack lane
+
+2026-10-22 19:55: cli lane 1 spawned (☕️ 🔧 FRM-401 code: merge-auto), scope sealed in .scratch/cli-1/spec.md; W8 stays with cclio at the first stack step
+
+close: W1 done (cli lane 1 runs before mods 1) · W2 done (the minimal cut lands first, chunk by chunk) · W3 done (chunks refreshed into FRM-401/403/405/404, sealed 10-22) · W4 done (FRM-401 is chunk 1, spawned 19:50) · W5 moved to FRM-404 (the add-on never touches the plain flow, its removal test) · W6 moved to FRM-404 (a removable extension) · W7 done (.scratch/cli-1/spec.md) · W8 moved to cclio at the lane's first stack step (FRM-404's spawn)
 <!-- SECTION:NOTES:END -->

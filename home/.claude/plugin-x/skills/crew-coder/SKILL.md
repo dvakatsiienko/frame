@@ -78,7 +78,7 @@ brief says which, and when it does not, ask once, up front.
   the `x:cmt` shape, because the squash commit takes the title and body verbatim. its body follows
   `mattpocock-skills:pr` in ≤ ~25 lines, with `- ticket: <id>` and never a closing keyword (cclio closes after the merge, `x:cmt`).
   paste the url in your chat and your ping.
-- **on `main`**: commit only on dima's word, push only when he says slay. `x lane commit <msg-file> <paths…>`
+- **on `main`**: commit only on dima's word. a push never asks (dima, 2026-10-22): frame any time; bytes `main` only when needed — the brief says so, or a live check needs it — since each push redeploys vercel; a bytes pr branch any time. `x lane commit <msg-file> <paths…>`
   takes only your paths in a dirty shared checkout; when your change sits on someone's uncommitted hunks
   you cannot separate, carry them and name them in the body.
 - **the merge is cclio's**, on the verifier's clean (dima, 2026-10-22): one merge to main costs 6 prod deploys.
@@ -99,7 +99,7 @@ brief says which, and when it does not, ask once, up front.
    3 rounds; each review adds one graded line to `~/frame/docs/test-drive/review-rounds.md` (reviewer, findings, useful
    or noise), and the done report names `local reviews: <n>`.
    steps 1–3 run on every assignment, quick-lane ones included.
-4. **with a verifier** named in the brief (`☕️ 🔎 <ticket> verify: #<pr>`): «final» is a `SendMessage` to it,
+4. **with a verifier** named in the brief (`🌗 🔎 <ticket> verify: #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a quick lane: `main:<base sha>` and your local head sha, no pr url). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push, run step 3's local pair on the fix diff (the ci reviewer's one round
    was spent at «final»; past it cclio approves the head on the verifier's clean), then message «round N on <sha>»; the loop

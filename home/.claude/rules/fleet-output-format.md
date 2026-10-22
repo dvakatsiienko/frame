@@ -219,7 +219,7 @@ file he names.
 
 - 📊 mini scoreboard for session wrap-ups (created / done / touched / routed) — bullet lines, not a table
 - 🚦 fleet reports as one line per session, in fixed order — 🟢 done-idle, then 🟡 working, then 🔴 blocked;
-  each named by its registry name («☕️ 🔧 FRM-399 code: …»)
+  each named by its registry name («🌗 🔧 FRM-399 code: …»)
 - 🧾 diff-shaped state changes: `field: old → new`
 - 🏷️ incremental art or product work (a diorama set, an mvp growing round by round) → every
   report ends with its version label — `mvp`, `mvp v1`, `mvp v2`, `prod`, or a number like
