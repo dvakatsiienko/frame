@@ -35,7 +35,9 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
   "   next phases: \($steps[1:4] | map("\(.n) · \(.p)") | join(" → "))",
   "🎑 next 7 milestones (the queue):",
   ($live[:7] | to_entries[] | .value as $m
-    | "   \(.key + 1). \($m.name) · \($m.project.name) · \([$m.issues.nodes[] | select(.state.type == "completed" or .state.type == "canceled")] | length)/\($m.issues.nodes | length)"),
+    | "\([$m.issues.nodes[] | select(.state.type == "completed" or .state.type == "canceled")] | length)/\($m.issues.nodes | length)" as $count
+    | (if ($m.name | test("^[a-z0-9]")) then "\($count) · \($m.name)" else ($m.name | capture("^(?<e>\\S+) (?<r>.*)$") | "\(.e) \($count) · \(.r)") end) as $head
+    | "   \(.key + 1). \($head) · \($m.project.name)"),
   ([$queue[] | . as $q | select([$d.projectMilestones.nodes[] | select(.name == $q.name and .project.name == $q.project)] | length == 0) | "\(.name) · \(.project)"]) as $ghosts |
   ([$d.projectMilestones.nodes[] | select(.status != "done") | . as $m | select([$queue[] | select(.name == $m.name and .project == $m.project.name)] | length == 0) | "\(.name) · \(.project.name)"]) as $unqueued |
   ([(if ($live[0].project.name // "") as $top | ([$steps[0].p, "cli"] | index($top)) == null then "the queue top (\($live[0].name // "none")) is off the now step and the cli track" else empty end),
