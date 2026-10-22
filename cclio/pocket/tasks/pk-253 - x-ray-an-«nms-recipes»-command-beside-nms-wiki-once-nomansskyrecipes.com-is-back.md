@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-22T16:27:00Z'
-updated_date: '2026-10-22T16:27:00Z'
+updated_date: '2026-10-22T16:28:00Z'
 due_date: '2026-10-25'
 labels:
   - s
@@ -24,3 +24,11 @@ W1 a raycast command that works like «nms wiki» but points at https://nomanssk
 W2 ❓ can one command cover both targets, the wiki and the recipes site? if not, a sibling command: nms recipes
 cclio's note: the item pages use internal ids (YELLOW2 = copper); the site has a search box — its url shape decides one command vs two
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+19:3x found: the source is https://github.com/bradhave94/nms (Astro). today 15:01–16:21 UTC the owner merged «Move to Cloudflare Workers» (#123) and removed Vercel analytics (#122); the domain's DNS still answers Vercel's IPs (216.150.1.65, .16.65), whose project is gone → NOT_FOUND. a mid-migration gap, theirs to close; the changedetector watch flags the switch. item urls are /<category>/<id>/ (raw/YELLOW2 = copper); the search is client-side (no search page in src/pages) — the command likely needs the name → id map from the repo's data
+
+correction: the site serves /search.json (src/pages/search.json.ts), the index its search modal reads — the command can fetch it, match the name, and open the item page; one command for both sites becomes possible (two actions: wiki, recipes)
+<!-- SECTION:NOTES:END -->
