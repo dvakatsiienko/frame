@@ -13,8 +13,16 @@ func seed(r *Run, args []string, _ Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	hook := filepath.Join(sourceDir(), "../../home/.claude/shelf/hooks/worktree-seed.sh")
 	r.Open(tree)
+	if err := seedTree(r, tree, main); err != nil {
+		return nil, err
+	}
+	r.Done("seeded "+tree, "")
+	return ordered{{"tree", tree}}, nil
+}
+
+func seedTree(r *Run, tree, main string) error {
+	hook := filepath.Join(sourceDir(), "../../home/.claude/shelf/hooks/worktree-seed.sh")
 	if err := r.Step("seed", "the EnterWorktree seed hook", func() (string, error) {
 		payload, _ := json.Marshal(map[string]any{"tool_response": map[string]string{"worktreePath": tree}})
 		got, err := run(tree, nil, string(payload), "sh", hook)
@@ -24,7 +32,7 @@ func seed(r *Run, args []string, _ Flags) (any, error) {
 		}
 		return "unlocked, types copied, installed", nil
 	}); err != nil {
-		return nil, err
+		return err
 	}
 	if err := r.Step("verify", "reading the git-crypt set", func() (string, error) {
 		left, err := lockedPaths(tree)
@@ -33,14 +41,11 @@ func seed(r *Run, args []string, _ Flags) (any, error) {
 		}
 		return "no ciphertext left", err
 	}); err != nil {
-		return nil, err
+		return err
 	}
 	// the hook's install points the shared shims at this tree; a repo without lefthook has none to move
 	if exists(filepath.Join(main, "lefthook.yml")) || exists(filepath.Join(main, "lefthook.yaml")) {
-		if err := r.Step("hooks", "pnpm exec lefthook install in the main checkout", func() (string, error) { return hooksHome(main, tree) }); err != nil {
-			return nil, err
-		}
+		return r.Step("hooks", "pnpm exec lefthook install in the main checkout", func() (string, error) { return hooksHome(main, tree) })
 	}
-	r.Done("seeded "+tree, "")
-	return ordered{{"tree", tree}}, nil
+	return nil
 }

@@ -145,6 +145,24 @@
             "steps": ["plan", "open"]
         },
         {
+            "name": "lane rebase-main",
+            "needsApply": true,
+            "purpose": "rebase a coder/* branch onto origin/main and push it with a lease on the sha read back; no merge commit",
+            "steps": ["plan", "rebase", "push", "verify"]
+        },
+        {
+            "args": [
+                {
+                    "description": "the pr's url, or main:<sha>",
+                    "name": "head"
+                }
+            ],
+            "name": "lane verify-tree",
+            "needsApply": false,
+            "purpose": "add a seeded worktree of a pr's head or a main sha for the verifier, git-crypt unlocked; prints its path",
+            "steps": ["fetch", "worktree", "seed", "verify", "hooks"]
+        },
+        {
             "name": "lane merge-main",
             "needsApply": false,
             "purpose": "fetch and merge origin/main into this branch; a conflict prints the files and stops",

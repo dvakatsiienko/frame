@@ -138,14 +138,31 @@
   - when `x lane pr-body` runs
   - then it refuses with exit 2 and calls nothing
   - given a number and a file, when it runs with `--apply`, then the body is written as the coder app and the read-back matches the file, or it fails naming the difference
-- ⬜ `x lane merge-auto <pr>` merges a pr once its head is verifier-clean, its required checks green and its threads closed
-  - given the verifier clean on the head (or carried to it when the branch's whole change keeps its patch-id: a rebase, a plain merge of main), every required check run green for the head and no open review thread
+- ✅ `x lane merge-auto <pr>` merges a pr once its head is verifier-clean, its required checks green and its threads closed
+  - given the verifier clean on the head (or carried to it when the branch's whole change keeps its patch-id, whitespace included: a rebase, a plain merge of main), every required check run green for the head and no open review thread
   - when `x lane merge-auto <pr> --apply` runs
   - then it squash-merges the pr pinned to the head it read, marked `Merged-by: x lane merge-auto`, and prints the three checks and a `risky:` line naming each risky path
   - given no run, a skipped or red required check, 0 required checks, an open thread, no verifier clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
   - given bytes' `review:clean` is the one required check missing and the ci review round ran on the branch, then it approves the head on dima's account, waits for `review:clean` to go green on it, then merges; before that round it waits and names `x lane review`
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
+- ✅ `x lane rebase-main --apply` puts a coder branch on origin/main with no merge commit
+  - given a `coder/*` branch behind origin/main with no conflict
+  - when `x lane rebase-main --apply` runs
+  - then the branch sits on origin/main's head with 0 merge commits, and the remote holds the rebased sha, pushed with a lease on the sha read before the rebase
+  - given a branch outside `coder/*`, then it exits 2 before any rebase
+  - given origin's branch holds a commit HEAD lacks, then it refuses before any rebase, naming that sha
+  - given a push to the branch landed after the read, then the remote keeps it, and the verb exits 1 naming the remote sha
+  - given a conflict, then the tree stays mid-rebase, and the verb names each conflicted path, `git rebase --continue` and `git rebase --abort`
+  - given a rebase already stopped in the tree, when it runs again, then it refuses and touches nothing, naming the branch, `git rebase --continue` and `git rebase --abort`
+  - decision: the verb never continues or aborts a rebase it finds paused — an abort there wiped a hand resolution in the verifier's round 2
+  - decision: the one force-push door, `coder/*` only, `--force-with-lease` on the read sha (dima, 2026-10-12, o87); `x-mod-guard` names it when it refuses a hand force-push
+- ✅ `x lane verify-tree <pr url | main:<sha>>` gives the verifier a seeded worktree of a head
+  - given a pr url of this repo, or `main:<sha>` of a commit on origin/main
+  - when `x lane verify-tree` runs in frame
+  - then a detached worktree of that head sits at `.claude/worktrees/verify-pr-<n>` or `verify-<sha7>`, seeded the way `x lane seed` seeds, its git-crypt files plain text, and the verb prints the path
+  - given its tree exists from an earlier round, then it moves that tree to the new head; a tree holding a probe's changes refuses and stays as it is
+  - given anything else (a bare number, an issue url, another repo's pr, a sha off main), then it exits 2 and adds no worktree
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ a merge-main that git refuses without conflicts names git's reason
   - given an untracked file where origin/main adds one

@@ -254,6 +254,10 @@ func TestMergeAutoWaitsWhenTheBranchChangeIsNotTheVerifiedOne(t *testing.T) {
 			gitT(t, w.seed, "add", "script/foo.ts")
 			gitT(t, w.seed, "commit", "-q", "--no-edit")
 		}},
+		{"a whitespace-only edit", func(t *testing.T, w *mergeWorld) {
+			write(t, filepath.Join(w.seed, "script/foo.ts"), "change  in script/foo.ts\n")
+			gitT(t, w.seed, "commit", "-q", "--amend", "-a", "--no-edit")
+		}},
 		{"a verified commit dropped", func(t *testing.T, w *mergeWorld) {
 			write(t, filepath.Join(w.seed, "script/bar.ts"), "a second verified change\n")
 			gitT(t, w.seed, "add", "script/bar.ts")

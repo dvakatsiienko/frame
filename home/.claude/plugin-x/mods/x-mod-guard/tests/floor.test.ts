@@ -41,7 +41,18 @@ const FAMILIES = [
     ['git checkout --', 'git checkout -- src/a.ts', 'git stash -u', 'src/a.ts'],
     ['git clean -f', 'git clean -fd', 'git stash -u', '.'],
     ['git stash drop', 'git stash drop', 'ask cclio', 'stash@{0}'],
-    ['force-push', 'git push --force origin main', 'ask cclio', 'origin main'],
+    [
+        'force-push',
+        'git push --force origin main',
+        'x lane rebase-main',
+        'origin main',
+    ],
+    [
+        'force-with-lease',
+        'git push --force-with-lease origin coder/x',
+        'x lane rebase-main',
+        'origin coder/x',
+    ],
     ['git branch -D', 'git branch -D old', 'ask cclio', 'old'],
     [
         'git worktree remove',
@@ -135,9 +146,10 @@ const SLIPS = [
     ['sudo with a user', 'sudo -u root rm x', 'trash'],
     ['timeout as a wrapper', 'timeout 5 rm x', 'trash'],
     ['find -exec sudo rm', 'find . -exec sudo rm {} +', 'trash'],
-    ['a +refspec push', 'git push origin +main', 'ask cclio'],
-    ['a :refspec push', 'git push origin :main', 'ask cclio'],
-    ['a push --delete', 'git push --delete origin old', 'ask cclio'],
+    ['a +refspec push', 'git push origin +main', 'x lane rebase-main'],
+    ['a :refspec push', 'git push origin :main', 'no safe door'],
+    ['a push --delete', 'git push --delete origin old', 'no safe door'],
+    ['a push -d', 'git push -d origin old', 'no safe door'],
     ['git branch -d -f', 'git branch -d -f old', 'ask cclio'],
     ['bash -lc', "bash -lc 'rm x'", 'trash'],
     [

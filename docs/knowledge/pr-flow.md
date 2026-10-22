@@ -17,9 +17,9 @@ when:
 
 **our tools assume one pr per branch** — a stack breaks each of these until it is taught otherwise:
 - `x lane pr-open` opens onto main (`x/go/lane.go`); a stack layer needs its base set to the layer below
-- `x lane merge-main` makes a merge commit; github stacks want a straight history (rebase)
+- `x lane merge-main` makes a merge commit; github stacks want a straight history — `x lane rebase-main` gives one ([FRM-403](https://linear.app/x-com/issue/FRM-403))
 - `x:crew-coder` forbids rebasing a pushed branch — exactly how a stack is kept current
-- `x lane push` does not force-push (inference: a restacked layer is refused)
+- `x lane push` does not force-push; `x lane rebase-main` is the one force-push door, `coder/*` only, leased on the sha it read
 - bytes' `review:clean` is tied to one commit: every restack hands the upper layers a new head, so a new review round each, or past the one-round cap cclio's approve on the verifier's clean
 - bytes' path-filtered ci jobs see only one layer's diff, since a layer's base is the layer below; a restack reruns full ci on every layer
 - renovate merges move main every 2–3 days (frame 6, bytes 3 in 14 days), each one a restack of any open stack

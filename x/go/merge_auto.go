@@ -422,7 +422,8 @@ func branchPatch(tip, base string) (string, error) {
 }
 
 func patchID(patch string) (string, error) {
-	got, _ := run("", nil, patch+"\n", "git", "patch-id", "--stable")
+	// --verbatim: --stable drops whitespace, and yaml, python and makefiles read it (dima, 2026-10-22)
+	got, _ := run("", nil, patch+"\n", "git", "patch-id", "--verbatim")
 	if !got.ok {
 		return "", fmt.Errorf("git patch-id failed: %s", logLine(got.log))
 	}
