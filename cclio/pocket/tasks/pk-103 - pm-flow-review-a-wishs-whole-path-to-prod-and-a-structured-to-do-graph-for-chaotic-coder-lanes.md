@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T16:46:00Z'
+updated_date: '2026-10-22T18:09:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -386,4 +386,16 @@ W115 keep what we started with today, what we found and what we changed, until t
 W116 once the pm module is fully resolved, every question closed: one more review of the whole module, applying all my worries and asks about the revamp as if no fix had been made — check the fixes are valid and hunt other weak spots; the pm module counts as resolved only after it
 W117 only then the 48 waiting items, which may take long
 W118 at the waiting-items sweep, the first hunt is the resolvable-in-place ones: solve them, never shuffle them between the pocket and linear
+
+2026-10-22 19:48–21:10 his steers, folded (raw in cclio's transcript 33478b2d; prompt-raw-save keeps them from 21:06):
+W119 initiatives: we grilled milestones a lot, but not initiatives — now grill 7: one initiative, its steps are the phases
+W120 milestone order across projects is tracked in the initiative body, not target dates: we move slower than planned, and faster would mean more errors
+W121 the boot opens with the roadmap board: the phase we are in, the next 3 phases, the next 7 milestones, pretty; a milestone line opens with its done count after the emoji
+W122 bytes untouched for long is not an issue: a natural effect of a lot of operational work
+W123 trials are kept to be trialled, not parked: every fitting trial applies to a lane; ❓ how do you not forget — answered: a spawn gate
+W124 every prompt of mine is saved raw, at any length; only wish-bearing ones are groomed
+W125 push has no constraints: frame always; bytes main only when needed (vercel redeploys); bytes pr branches and merges any time; the main lane at the halt, on my ask or to check something
+W126 lane emojis: ⚡ quick lane, 🌗 side lane, 🌘 shift; 🦈 the classifier
+W127 the quiet-ledger alarm reads ugly: make it a card (FRM-412); print tickets first on glide lines (FRM-410)
+W128 chunk 1 merged on my approve after the ✅ result; the side lane goes chunk by chunk, each parked until my word
 <!-- SECTION:NOTES:END -->
