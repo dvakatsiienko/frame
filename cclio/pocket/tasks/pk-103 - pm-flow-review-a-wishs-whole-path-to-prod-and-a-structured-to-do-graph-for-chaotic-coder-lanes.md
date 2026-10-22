@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T16:32:00Z'
+updated_date: '2026-10-22T16:40:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -370,4 +370,9 @@ W110 the set: «lane» the base, a flow of things; the main lane is ours; the ot
 19:15–19:32 his ticks and steers, raw: o50 v2 «side lane» (19:15); o55 ✓ no set word (19:15); o56 ✓ 🐉 + 🪸; o57 ✓ the self-edit waits for his tick (19:19); o59 steer (19:32): «Okay, let's allow you to merge, but ask me around each time unless I explicitly allow you to merge yourself if I am AFK, for example.»; o60 ✓ the board redraw before the spawn, as W92 says.
 W111 during the revert brake cclio may merge, but asks me each time, unless I explicitly allowed her to merge alone, for example while I am AFK
 note: W103 is the o49 b pick text he ticked, not his own words
+
+2026-10-22 19:4x what's left in pm scope (dima asked the full list, tomorrow's included):
+before the spawn: the board redraw (fork running), the second wind.
+main lane beside cli lane 1: (a) milestones: FRM-408/409/410/411 into one, then the review across projects nearest first + the milestone-first test drive (W72, W76); (b) item 9: a UserPromptSubmit hook saving a long wish-bearing prompt raw + queuing prompt-groom (W59); (c) FRM-408 the init-context trace; (d) item 3: the waiting cap (~10) rides the 52-item sweep; (e) item 5b: the initiative health line in roadmap-prefetch (o26) — what it checks now that projects are standing; (f) wishkeeper leftovers: fleet-output-format + halt groomed to the emoji-led-no-bullet rule (M10), FRM-72 note «settled in place» → name crew-coder § 3, bytes cap 1, review-rounds.md (L15), FRM-411 «active lane» (L18), 🪸 also in sline/model.go:18, PK-251's copied correction, PK-252 W3 line, the risky-list attribution on FRM-401, review.yml + review-approved.yml on the self-edit list (ask), FRM-72 + FRM-411 «lane: feature» → side lane, review-rounds.md section for graded lines + who commits from bytes, github-contrib:40 «re-requests», spec:86 done; (g) the remote-delete guard gap (railway variable delete unguarded) → a ticket under FRM-304; (h) the M3 weekly wish-loss audit ⏰ due 10-28 at the halt.
+tomorrow: the member names + summon vs spawn (W9, W10); W6, a name for chaotic lanes, if he still wants one; the 52 waiting pocket items' sweep.
 <!-- SECTION:NOTES:END -->
