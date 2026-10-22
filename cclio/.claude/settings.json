@@ -72,6 +72,16 @@
         "hooks": [
           {
             "type": "command",
+            "command": "/Users/dima/frame/cclio/.claude/hooks/wish-cover-on-write.sh",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
             "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
             "timeout": 30
           }
