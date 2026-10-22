@@ -81,7 +81,7 @@ brief says which, and when it does not, ask once, up front.
 - **on `main`**: commit only on dima's word, push only when he says slay. `x lane commit <msg-file> <paths…>`
   takes only your paths in a dirty shared checkout; when your change sits on someone's uncommitted hunks
   you cannot separate, carry them and name them in the body.
-- **the merge is dima's click**: one merge to main costs 6 prod deploys.
+- **the merge is cclio's**, on the verifier's clean (dima, 2026-10-22): one merge to main costs 6 prod deploys.
 
 ## 3. «final» — the review chain
 

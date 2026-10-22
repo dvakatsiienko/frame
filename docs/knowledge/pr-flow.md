@@ -11,7 +11,7 @@ when:
 
 ## core
 
-**the gate** — a pr on no risky path merges once the verifier is clean on its head, checks ran green for that head and no thread is open; a risky path (workflows, settings, guards, memory files, secrets, release) waits for dima's look. [FRM-401](https://linear.app/x-com/issue/FRM-401) holds the rule and the verb that will check it.
+**the gate** — a pr merges once the verifier is clean on its head, checks ran green for that head and no thread is open, a bytes head getting cclio's approve on dima's account; a risky path (workflows, settings, guards, memory files, secrets, release) merges too, named in the look card; a pr editing the guards or merge-auto's own code waits for dima's word (2026-10-22). [FRM-401](https://linear.app/x-com/issue/FRM-401) holds the rule and the verb that will check it.
 
 **plain prs are the default.** our waits are short (coder pr open → merge median, 2026-10-06..20: frame 22 min over 23 prs, bytes 87 min over 5), so a stack has little wait to hide. a stack earns its place only for one coder building 2–4 dependent parts of one feature, held under a day, in bytes. the measurement lives in `docs/test-drive/stacked-prs.md`.
 

@@ -77,7 +77,7 @@ destination, and waits for his verdict on every one; «closable, because …» i
 ## the freebie rule — verdict before plan
 
 - **a small fix inside our own tooling is a freebie, done without asking** (dima, 2026-10-14: «you can do stuff like this as a freebie without asking me») — still reported, every time
-- **the freebie test counts tool calls, never minutes** (dima, 2026-10-22: models overestimate time): 1–5 tool calls i can name, no word of his, no lane → done that turn by whoever holds it, cclio (the main lane) or a parallel lane; else born with `parked: <reason>`; the halt counts what low tide solved that was born parked
+- **the freebie test counts tool calls, never minutes** (dima, 2026-10-22: models overestimate time): 1–5 tool calls i can name, no word of his, no lane → done that turn by whoever holds it, cclio (the main lane) or a side lane; else born with `parked: <reason>`; the halt counts what low tide solved that was born parked
 
 Dima: *«if i ask for a freebie but it turns out not to be one — better tell me than try to solve it, because
 i often ask for "small things" without knowing the details. and if it turns out not to be a freebie, then

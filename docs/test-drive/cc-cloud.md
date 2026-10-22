@@ -27,7 +27,7 @@ Ticket: none
 ## candidate uses — one real job each
 
 1. **a pr-lane coder** — [BYT-97](https://linear.app/x-com/issue/BYT-97) knip report, the first job
-2. **the night shift** — a planned bytes night runs in the cloud instead of on the mac (after FRM-266's armor)
+2. **a shift** — a planned bytes night runs in the cloud instead of on the mac (after FRM-266's armor)
 3. **parallel prs** — two independent tickets at once, one VM each
 4. **the opus research lane** — the second half of a `parallel` or `adhd` round, run in the cloud
 5. **the verifier** — `x:crew-verifier` on a pr, with browserbase for the exit lines (needs the key in the environment's api credentials)

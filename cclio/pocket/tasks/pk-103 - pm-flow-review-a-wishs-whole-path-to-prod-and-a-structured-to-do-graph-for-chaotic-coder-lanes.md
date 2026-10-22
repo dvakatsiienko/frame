@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T16:14:00Z'
+updated_date: '2026-10-22T16:32:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -366,4 +366,8 @@ W108 a shift lane usually comes with the AFK tick on; a shift asked without it i
 19:13 o53 steer (grill 6 Q4), raw: «So, this Q6 is something like quick lane?, right? It is a lane or a second lane, but without APR, because usually a lane assumes APR. We need a thing to distinguish a full-scale second lane with PR aside by naming it quick lane, right? For example, a mod coder usually runs as a quick lane. In that case, I think we can keep quick lane. In the result, we will have - A plain lane that is a base, a thing that names a flow of things. - We have a main lane, which is ours. - We have a second lane, or parallel lane, that wants a better name. It is any kind of lane that is not the main lane. - Quick lane, because parallel lanes have PRs, and quick lane is usually without an APR and maybe even without a verifier. Although a verifier is optional for quick lane, it can be active too.» and 19:13: «Are you sure you scraped all lane types? In my memory, we also had a quick lane. what is quick lane?»
 W109 keep «quick lane»: a lane with no pr, a verifier optional; a lane otherwise assumes a pr (a mods coder usually runs as a quick lane)
 W110 the set: «lane» the base, a flow of things; the main lane is ours; the other lane (a better name than second or parallel) is any lane not the main one, with a pr; the quick lane has no pr
+
+19:15–19:32 his ticks and steers, raw: o50 v2 «side lane» (19:15); o55 ✓ no set word (19:15); o56 ✓ 🐉 + 🪸; o57 ✓ the self-edit waits for his tick (19:19); o59 steer (19:32): «Okay, let's allow you to merge, but ask me around each time unless I explicitly allow you to merge yourself if I am AFK, for example.»; o60 ✓ the board redraw before the spawn, as W92 says.
+W111 during the revert brake cclio may merge, but asks me each time, unless I explicitly allowed her to merge alone, for example while I am AFK
+note: W103 is the o49 b pick text he ticked, not his own words
 <!-- SECTION:NOTES:END -->

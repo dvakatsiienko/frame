@@ -14,7 +14,7 @@
 - the taxonomy, by cost: cclio (one long session, its context is the job) · `--bg` coder (watchable) · implement-spec subagents (bulk) · fork (pays the parent's whole context) · `helper` (sonnet, mechanical) · bare probe (`claude -p --safe-mode`, almost no base) · ccrow (resident, 🔥 keeps it warm).
 
 **the spec-run balance** (dima, 2026-10-06: «plain --bg coder is better for granular work, where i'd like to see the results in place. and implement-spec looks very good of under the hood work»):
-- a `--bg` coder for granular work dima watches: UI, pr lanes, anything he steers in place
+- a `--bg` coder for granular work dima watches: UI, side lanes, anything he steers in place
 - `implement-spec` subagents for bulk work under the hood; each ticket picks its model — sonnet 5.5 for a mechanical ticket, opus for judgment; cclio runs a run of ≤10 tickets, a `--bg` runner takes it when dima wants to watch
 - a `--bg` coder hands its big reads and mechanical edits to subagents, so its own context stays lean (`x:crew-coder`)
 
