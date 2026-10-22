@@ -19,7 +19,7 @@ for f in "$DIR"/*.md; do
   total=$((total + 1)); name=$(basename "$f"); dies=$(field "$f" dies-when)
   list=$(ids "$f")
   # `Ticket: none` is the repo rule for a doc no ticket owns: its dies-when alone retires it
-  if [ -z "$list" ] && [ "$(field "$f" ticket)" = none ]; then continue; fi
+  case "$(field "$f" ticket)" in none*) [ -z "$list" ] && continue ;; esac
   if [ -z "$list" ]; then echo "⚠️ $name — no Ticket line · dies-when: ${dies:-none}"; hits=$((hits + 1)); continue; fi
   open=0 line=""
   for id in $list; do

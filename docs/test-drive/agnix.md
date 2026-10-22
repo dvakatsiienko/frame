@@ -25,4 +25,6 @@ the run: `npx -y agnix@<version> --target claude-code --format json .` from `~/f
 ## rounds
 - 2026-10-19 · round 1, frame, v0.59.0 · 603 files in ~1 s; 7 errors, 28 warnings, 43 info · **7 real**: 7 frontmatter descriptions (4 skills, 3 agent cards) held a bare «: » that strict YAML (go-yaml, yq) rejects — cc loads them anyway, a strict reader would not; fixed in place (folded into `>-` block scalars), re-run 0 errors. noise: 14 CC-SET-034 (our `home/.claude/settings.json` is the user settings through the mirror, agnix reads it as project settings), 9 CC-SK-021 (repo path `home/.claude` read as a user dir). worth a look: `fleet-output-format.md` 224 lines (cc recommends < 200), quicksilver's `$0` inside code becomes `$ARGUMENTS[0]` · grade: **a real catch no check of ours made**, noise ~70 % of warnings until suppressed
 
+- 2026-10-22 · round 2, frame, v0.59.0, the halt's checkup slice · 0 errors (round 1: 7, fixed), 31 warnings, 45 info · warnings +3 vs round 1, unread · the usual door (none) would have caught nothing
+
 ## verdict

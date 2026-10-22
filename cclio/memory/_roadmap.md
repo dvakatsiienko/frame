@@ -3,4 +3,4 @@
 - order: pm ✅ → fleet ✅ → monorepo → speak → chords → trophy-sys → portfolio → monorepo
 - now: between steps 2 and 3, the pm revamp, then cli lane 1
 - next: speak v2 or oxc/vp + bun
-- started mils: monorepo · m2 · ci boring 2/5, fleet · fleet package 7/10
+- started mils: cli · 🐉 cli lane 1 landed 1/4, monorepo · 🐉 m2 · ci made boring 2/5

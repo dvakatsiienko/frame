@@ -66,3 +66,4 @@ Store contract: the `cclio:remind` skill. Both tiers die only when Dima drops th
 
 ⏰ 🐦‍⬛ at the next halt: park ccrow, never stop it — dima runs his own keep-hot test and watches it himself (the stash pings fired every 50 min overnight, cache held warm, `docs/test-drive/ccrow.md` 10-09). dies when dima says his test is done. dima 2026-10-09: «keep ccrow for my own keep-hot test … keep it parked, so I will keep an eye on it» — set 2026-10-09
 ⏰ before the next mods lane starts (or beside it): shape the re-ask catcher (PK-168) through cclio:shape-idea first — set 2026-10-16
+⏰ 🦉👁️ due: 2026-10-28 — M3, the weekly wish-loss audit (dima's pick, PK-103 o17): from the Wednesday pass, a cclio skill that reads the week's first uses (grills, briefs, specs) against their pocket W-lines with `wish-cover.ts` and names every dropped or blurred point; the first run decides the skill's shape — set 2026-10-22

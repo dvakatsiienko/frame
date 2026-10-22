@@ -7,3 +7,7 @@
 - 15:12 the rotation set a key without checking its kind: dima minted a personal key (`user:`), the server wanted a graph key (`service:`); a prefix check before the set would have caught it. #automation
 - 16:20 the guard-word slip repeated on o9 (no fenced line, no targets) an hour after it was logged — a repeat, so a mechanism, not a firmer intention. #ask-shape #repeat
 - 16:54 relayed wishkeeper's «no such channel exists» into the issue list and grill Q6 without opening the source; quiet comms (PK-93, stash.d.ts:174) already carries a [progress] ping. ccrow caught it. method-report-verify: a relayed claim needs its source opened. #relay
+- 21:34 the pm review's issue list went out in text before an orbit call, never in the turn's last message; dima saw only the counts and asked «why didn't you print them». habit-dima-comms already says «what he must read sits in the last message». #dima-caught #repeat
+- 21:28 told dima «delve and tdd have no line today» from a grep of main only; the coder's lines sat on #96's branch. corrected in a minute. the 🥊 pair (a «no X» claim runs its check first) — the check ran, on the wrong tree. #claim
+- 21:19 the first prompt-groom brief to composer asked it to write into PK-103 directly; the class writes to an output file the brief names. composer's own contract was also stale (booted 14:44, before the class). #brief
+- 21:31 the pr watch exits on every event; re-arming it woke cclio ~14 times since 20:07, half the replies «no change» on a night dima said he's tired. ccrow caught it; PK-256 parked. #noise

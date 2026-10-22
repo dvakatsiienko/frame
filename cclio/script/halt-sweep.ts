@@ -14,7 +14,10 @@ const PARTS = ['inbox', 'notifications', 'retention', 'until-notes'] as const;
 export const UNTIL_NOTE = /until: (FRM|BYT|PK)-[0-9]+/;
 
 function run(command: string, args: string[]): string {
-    return execFileSync(command, args, { encoding: 'utf8' });
+    return execFileSync(command, args, {
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024,
+    });
 }
 
 function gh(args: string[]): unknown {
@@ -113,7 +116,10 @@ function retentionParts(apply: boolean) {
                   .filter(Boolean)
             : [];
         console.log(`retention ${dir}: ${old.length} file(s) to trash`);
-        if (apply && old.length > 0) run('trash', old);
+        // one trash call per 500 paths: a single argv past the os limit dies with E2BIG
+        if (apply)
+            for (let i = 0; i < old.length; i += 500)
+                run('trash', old.slice(i, i + 500));
     }
 }
 

@@ -7,8 +7,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-20 16:49'
-updated_date: '2026-10-21T17:33:00Z'
-due_date: '2026-10-22'
+updated_date: '2026-10-22T18:52:00Z'
+due_date: '2026-10-23'
 labels:
   - m
 dependencies: []
@@ -31,4 +31,6 @@ dima, 2026-10-20, folded: «1. /low-tide over everything, including the grills p
 2026-10-21 19:12 done today: the grills, the coordinator review (refresh-crew-coordinator run #6, PK-90 done) with both FigJam boards. moves to 10-22 on dima's word (18:49): the pm revamp opens as turn 2 after the boot (PK-103), then the refresh-browser-headless run
 
 2026-10-21 20:35 halt: steps 1–2 done; 3 (pm revamp, PK-103 W1–W13) and 4 run 10-22, then the 4-tool + kit bench (PK-243 W8, W16), then the crew-coordinator board refresh (W17)
+
+2026-10-22 halt: due moved to 10-23 on dima's word («fold everything that wants me for tomorrow»).
 <!-- SECTION:NOTES:END -->

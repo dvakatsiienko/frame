@@ -4,8 +4,8 @@ title: watch the github issues we care about in one place
 status: waiting
 assignee: []
 created_date: '2026-10-14 17:35'
-updated_date: '2026-10-18 13:47'
-due_date: '2026-10-22'
+updated_date: '2026-10-22T18:52:00Z'
+due_date: '2026-10-23'
 labels:
   - m
 dependencies: []
@@ -33,4 +33,6 @@ parked: dima's word, «not now» (2026-10-14)
 2026-10-15 15:55: x-changedetector live — schedule/jobs/x-changedetector, 54 watches seeded and checked, 0 errors; trial docs/test-drive/x-changedetector.md to 10-22. next: the positive control on a test issue, the boot's read, a push channel.
 
 2026-10-18: priority now → next — it is waiting on the x-changedetector verdict, and the now cap holds today's three items.
+
+2026-10-22 halt: due moved to 10-23 on dima's word («fold everything that wants me for tomorrow»).
 <!-- SECTION:NOTES:END -->

@@ -110,7 +110,7 @@ run the one check of `cclio:system-checkup` whose newest line in `cclio/checkup/
 the boot prints every open milestone with the roadmap block, so a stale one misinforms the next session directly. before writing the CST:
 
 - attach anything finished this session to its milestone, and anything newly started
-- if a milestone is complete, say so to dima — completing it is his call, not an agent's
+- a milestone linear marked done gets one informative line to dima, never an approval ask (dima, 2026-10-22, PK-103 W146)
 - if the work drifted away from every milestone, that is the signal the **roadmap** moved. update
   the linear initiative «roadmap» in the same pass (`memory/dima-strategy.md`, the roadmap section)
   rather than bending the milestones to fit
