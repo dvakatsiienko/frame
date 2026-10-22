@@ -138,8 +138,8 @@
   - when `x lane pr-body` runs
   - then it refuses with exit 2 and calls nothing
   - given a number and a file, when it runs with `--apply`, then the body is written as the coder app and the read-back matches the file, or it fails naming the difference
-- ⬜ `x lane merge-auto <pr>` merges a pr once its head is verifier-clean, its required checks green and its threads closed
-  - given the verifier clean on the head (or carried to it when the branch's whole change keeps its patch-id: a rebase, a plain merge of main), every required check run green for the head and no open review thread
+- ✅ `x lane merge-auto <pr>` merges a pr once its head is verifier-clean, its required checks green and its threads closed
+  - given the verifier clean on the head (or carried to it when the branch's whole change keeps its patch-id, whitespace included: a rebase, a plain merge of main), every required check run green for the head and no open review thread
   - when `x lane merge-auto <pr> --apply` runs
   - then it squash-merges the pr pinned to the head it read, marked `Merged-by: x lane merge-auto`, and prints the three checks and a `risky:` line naming each risky path
   - given no run, a skipped or red required check, 0 required checks, an open thread, no verifier clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
