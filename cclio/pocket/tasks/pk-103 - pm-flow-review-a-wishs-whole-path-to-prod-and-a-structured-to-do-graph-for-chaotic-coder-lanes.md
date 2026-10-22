@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T15:01:00Z'
+updated_date: '2026-10-22T15:11:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -317,4 +317,9 @@ W91 the plan: 1. fully resolve the issues we grilled on; 2. another review of wh
 W92 resolve everything in the pm module that affects the coming cli lane, finalize it, review it; only after a green review with no weak points, update the FigJam blueprint; only then think about spawning the cli lane
 W93 the renaming parts (grooming the lane names) and other things come before the cli lane too: solve more first
 raw: in the session transcript at 18:00 (the next checkpoint's raw extract carries it)
+
+2026-10-22 18:06 dima, raw (Wispr; «PEM revamp» → pm revamp): «Blueprints: Updating the blueprint in the first place all the time, 100%, is not mandatory. For example, in the recent PEM revamp, we just grilled 4 rounds and planned a lot of updates everywhere. It's fine if you flash updates first and update a blueprint afterwards, not vice versa, because during updates we can grill on and change something else. You can just update a blueprint after all the steers and tweaks are implemented, but the important thing is to not forget the blueprint overall, because it's our main reference for our flows. hook is good idea. reminder: we have 2 settled official blueprints: 🛼 crew and pm, end to end · 📐 refresh-crew-coordinator — how a run flows»
+W94 updating the blueprint first, 100 % of the time, is not mandatory: in the pm revamp we grilled 4 rounds and planned updates everywhere; it's fine to ship the updates first and update the blueprint afterwards, because during the updates we can grill on and change something else
+W95 update a blueprint after all the steers and tweaks are implemented, but never forget the blueprint: it's our main reference for our flows
+W96 the hook is a good idea; we have 2 settled official blueprints: 🛼 crew and pm, end to end · 📐 refresh-crew-coordinator — how a run flows
 <!-- SECTION:NOTES:END -->

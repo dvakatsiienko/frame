@@ -12,7 +12,7 @@ a **blueprint** is a picture of one part of our system — a flow, a structure, 
 
 ## the mapped areas — the board is the design truth
 
-a mapped area changes on its board first: dima and cclio agree on the picture, then the files follow; the skills stay what agents run. an area joins only once a board proved useful. `node ~/frame/cclio/script/blueprint-drift.ts` lists the boards whose sources changed today.
+a mapped area's board is our main reference for its flow: a change may land in the files first, and the board is redrawn once all its steers and tweaks land, never forgotten (dima, 2026-10-22, PK-103 W94–W95); the skills stay what agents run. an area joins only once a board proved useful. guards: `cclio/script/blueprint-nudge.ts` (an edit of a mapped source names its board) and `blueprint-drift.ts` at every siesta and halt.
 
 - 🛼 crew and pm, end to end · https://www.figma.com/board/hVVKYtLdMTKASUS3mwG3Uz · sources: home/.claude/plugin-x/skills/crew-lead/, home/.claude/plugin-x/skills/crew-subagent/SKILL.md, home/.claude/plugin-x/skills/crew-dna/SKILL.md, cclio/memory/craft-pm.md, cclio/memory/craft-fleet-flow.md, cclio/plugin-cclio/skills/pm/
 - 📐 refresh-crew-coordinator, a run · https://www.figma.com/board/RAJ5NlCcJVqfWNjR0KiS35 · sources: recipes/refresh-crew-coordinator/recipe.md, cclio/plugin-cclio/skills/shape-recipe/SKILL.md

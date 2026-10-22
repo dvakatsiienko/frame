@@ -17,7 +17,7 @@ each stage names its gate, its owner, its door and its wait budget.
 7. **verify** — gate: the verifier says clean, or its round-3 stop goes to cclio; owner: the verifier; door: `x:crew-verifier`; wait: 3 rounds
 8. **land** — gate: merge state clean and the deploy Ready, where «no run» is never green; owner: cclio merges a pr that touched no risky path once the verifier is clean on its head, checks ran green and no thread is open; a risky path waits for dima's look (dima, 2026-10-20: his «approved» click carried no review; the rule and the path list are [FRM-401](https://linear.app/x-com/issue/FRM-401), until the verb lands cclio checks the four by hand); cclio pushes; door: `x lane ci-wait`; the lane's spec dir moves to `.scratch/_archive/<feature>/` the turn it lands; wait: the pr median
 9. **look** — gate: one look card (what, where, try, proven, not checked — never empty), with a shot for anything rendered; owner: dima; door: `SendUserFile`; wait: his next time at the keyboard
-10. **fold** — gate: a repeat lesson leaves as a guard, a verb, a check or a ticket, and a stopgap line carries `until: <ticket>`; owner: cclio; door: `cclio:halt`, `x fleet flow`; wait: the same day
+10. **fold** — gate: a repeat lesson leaves as a guard, a verb, a check or a ticket, and a stopgap line carries `until: <ticket>`, and a changed mapped area gets its blueprint redrawn once the steers land (`cclio/blueprints/AGENTS.md`); owner: cclio; door: `cclio:halt`, `x fleet flow`; wait: the same day
 
 the lane is the ticket's first body line, `lane: <name>`. cclio proposes it and silence accepts; a coder pings at a named trigger and cclio promotes. a lane's 🛼 glide title reads `<topic> — <what>`, one colon only, the card head's (dima, 2026-10-12).
 
