@@ -99,7 +99,7 @@ brief says which, and when it does not, ask once, up front.
    3 rounds; each review adds one graded line to `~/frame/docs/test-drive/review-rounds.md` (reviewer, findings, useful
    or noise), and the done report names `local reviews: <n>`.
    steps 1–3 run on every assignment, quick-lane ones included.
-4. **with a verifier** named in the brief (`☕️ 🔎 <ticket> verify: #<pr>`): «final» is a `SendMessage` to it,
+4. **with a verifier** named in the brief (`🌗 🔎 <ticket> verify: #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a quick lane: `main:<base sha>` and your local head sha, no pr url). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push, run step 3's local pair on the fix diff (the ci reviewer's one round
    was spent at «final»; past it cclio approves the head on the verifier's clean), then message «round N on <sha>»; the loop
