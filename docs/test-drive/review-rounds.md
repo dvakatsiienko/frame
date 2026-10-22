@@ -2,6 +2,7 @@
 status: live
 until: 2026-11-05
 dies-when: the verdict line below is written
+fits: coder verifier
 ---
 
 # review rounds — 3 verifier rounds, a local review per round, one ci round

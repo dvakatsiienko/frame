@@ -1,6 +1,7 @@
 ---
 status: live
 until: 2026-10-30
+fits: coder verifier
 ---
 
 # skill-named-load — does a skill named in plain words load in a spawned session

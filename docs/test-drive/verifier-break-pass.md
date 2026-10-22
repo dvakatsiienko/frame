@@ -2,6 +2,7 @@
 status: live
 until: 2026-11-04
 dies-when: the verdict line below is written
+fits: verifier
 ---
 
 # verifier-break-pass — the verifier also tries to break what it checks

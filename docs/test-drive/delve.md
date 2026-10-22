@@ -1,6 +1,7 @@
 ---
 status: live
 until: 2026-10-30
+fits: coder:go
 ---
 
 # delve — the go debugger (`dlv`), for a red test whose cause is not in the diff

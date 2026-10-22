@@ -2,6 +2,7 @@
 status: live
 until: 2026-11-04
 dies-when: the verdict line below is written
+fits: verifier
 ---
 
 # fresh-eyes — the blind first-time-user subagent card 🐠

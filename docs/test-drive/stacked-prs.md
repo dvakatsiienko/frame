@@ -2,6 +2,7 @@
 status: live
 until: 2026-11-03
 dies-when: the verdict line below is written
+fits: coder
 ---
 
 # stacked-prs — do stacked prs pay for a solo dev with an agent fleet, or add a burden

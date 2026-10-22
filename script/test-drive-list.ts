@@ -29,6 +29,7 @@ const drives = readdirSync(dir)
             head.match(new RegExp(`^${k}: (.*)$`, 'm'))?.[1]?.trim() ?? '';
         return {
             card: /right if/i.test(text),
+            fits: field('fits').split(/\s+/).filter(Boolean),
             name: f.slice(0, -3),
             status: field('status') || 'missing',
             until: field('until'),
@@ -49,6 +50,57 @@ const markdownUnder = (p: string): string[] => {
         .map((e) => path.relative(root, path.join(e.parentPath, e.name)))
         .filter((f) => !/\/last\/|\/log[^/]*\.md$/.test(f));
 };
+
+// --spawn-hook (cclio PreToolUse on Bash): a `claude --bg` member spawn is refused until its brief names every live trial
+// whose `fits:` matches the member, so applying a trial never rests on cclio's memory (dima, 2026-10-22, o89)
+if (process.argv.includes('--spawn-hook')) {
+    const command: string =
+        JSON.parse(readFileSync(0, 'utf8') || '{}').tool_input?.command ?? '';
+    const file = command.match(/\$\(cat ([^)\s]+)\)/)?.[1];
+    const text = /\bclaude --bg\b/.test(command)
+        ? briefText(command, file)
+        : '';
+    const role = /\/x:crew-verifier\b/.test(text)
+        ? 'verifier'
+        : /\/x:crew-coder\b/.test(text)
+          ? 'coder'
+          : '';
+    const kinds = [
+        role,
+        ...(/guide-go|x\/go\b/.test(text) ? [`${role}:go`] : []),
+        ...(/guide-typescript|\.tsx?\b/.test(text) ? [`${role}:ts`] : []),
+    ];
+    const missing = role
+        ? drives
+              .filter(
+                  (d) =>
+                      d.status === 'live' &&
+                      d.fits.some((k) => kinds.includes(k)) &&
+                      !text.includes(d.name),
+              )
+              .map((d) => d.name)
+        : [];
+    if (missing.length)
+        console.log(
+            JSON.stringify({
+                hookSpecificOutput: {
+                    hookEventName: 'PreToolUse',
+                    permissionDecision: 'deny',
+                    permissionDecisionReason: `the brief misses live trials that fit a ${kinds.join(' ')} lane: ${missing.join(', ')} — name each (docs/test-drive/<name>.md) with how the lane uses it, or write «trial skipped: <name> — <why>»`,
+                },
+            }),
+        );
+    process.exit(0);
+}
+
+function briefText(command: string, file: string | undefined) {
+    if (!file) return command;
+    try {
+        return readFileSync(file.replace(/^~/, process.env.HOME ?? ''), 'utf8');
+    } catch {
+        return command;
+    }
+}
 
 if (!process.argv.includes('--check')) {
     for (const status of [...ORDER, 'missing']) {

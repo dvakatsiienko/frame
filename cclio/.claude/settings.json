@@ -52,6 +52,12 @@
             "command": "pnpm -C /Users/dima/frame --silent ccrow:decision",
             "if": "Bash(claude *)",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node /Users/dima/frame/script/test-drive-list.ts --spawn-hook",
+            "if": "Bash(claude *)",
+            "timeout": 10
           }
         ]
       }
