@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T16:40:00Z'
+updated_date: '2026-10-22T16:42:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -375,4 +375,8 @@ note: W103 is the o49 b pick text he ticked, not his own words
 before the spawn: the board redraw (fork running), the second wind.
 main lane beside cli lane 1: (a) milestones: FRM-408/409/410/411 into one, then the review across projects nearest first + the milestone-first test drive (W72, W76); (b) item 9: a UserPromptSubmit hook saving a long wish-bearing prompt raw + queuing prompt-groom (W59); (c) FRM-408 the init-context trace; (d) item 3: the waiting cap (~10) rides the 52-item sweep; (e) item 5b: the initiative health line in roadmap-prefetch (o26) — what it checks now that projects are standing; (f) wishkeeper leftovers: fleet-output-format + halt groomed to the emoji-led-no-bullet rule (M10), FRM-72 note «settled in place» → name crew-coder § 3, bytes cap 1, review-rounds.md (L15), FRM-411 «active lane» (L18), 🪸 also in sline/model.go:18, PK-251's copied correction, PK-252 W3 line, the risky-list attribution on FRM-401, review.yml + review-approved.yml on the self-edit list (ask), FRM-72 + FRM-411 «lane: feature» → side lane, review-rounds.md section for graded lines + who commits from bytes, github-contrib:40 «re-requests», spec:86 done; (g) the remote-delete guard gap (railway variable delete unguarded) → a ticket under FRM-304; (h) the M3 weekly wish-loss audit ⏰ due 10-28 at the halt.
 tomorrow: the member names + summon vs spawn (W9, W10); W6, a name for chaotic lanes, if he still wants one; the 52 waiting pocket items' sweep.
+
+19:42 dima, raw: «I see a large amount of tickets in your pocket waiting state 48. That's quite a lot. It is not critical and not urgent priority, but we have to solve them somehow by either resolving out of pocket or starting to rebalance them with Linear, as agreed, and alternatively, formulating milestones. I'm not sure what is better to start right now. It's quite a lot of stuff everywhere. After the second lane is started, let's continue on resolving the PM module.» o61 ✓ spawn right after the pickup, with a verifier.
+W112 48 waiting pocket items is a lot: solve them, resolve them out of the pocket, or rebalance them into linear as agreed, and formulate milestones; not critical, not urgent
+W113 after the side lane starts, continue resolving the pm module
 <!-- SECTION:NOTES:END -->
