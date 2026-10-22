@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T14:54:00Z'
+updated_date: '2026-10-22T14:56:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -211,4 +211,100 @@ left, in order (wishkeeper siesta 1, 27 findings, 18:53):
 10. answer W16 and W40 here; a linear → pocket pull rule in habit-shared-files (W19)
 11. small: the 10-07 «solve now?» cut shown to dima; a kind → emoji list in pm/SKILL.md (W83); W74 «milestones are inside initiatives» + W75 «not fully automated» back into craft-pm; wish-cover reds an unknown id; _reminders.md:53 «no cli capacity» reworded at the spawn; lane-plan contract in one home (shape-lane), crew-coder points
 then: the rename part (W6–W10, W24), the milestone review + milestone-first test drive (W72, W76), W86 the cli lane.
+
+2026-10-22 his raw words, 16:15 → 17:52, verbatim (helper-lite extract from the session transcript; the W-lines W22–W86 above are their folds):
+### 16:18 · prompt
+> zoom band 4, the hand-off
+
+### 16:18 · steer o6
+> i print thoughts in the main prompt box
+
+### 16:31 · prompt
+> zoom the data loss next, bands 1–2
+
+### 16:38 · prompt
+> go: the issue list, wishkeeper audits it
+
+### 16:53 · prompt
+> go: grill round 1 on I1 and I5
+
+### 17:05 · prompt
+> There is an issue with grills. I often spot that when we grill, you first print a full grill set of questions, and then Cicrol catches an issue in grilling and you reprint some grill point. It is not convenient because I first pass through all grilling questions, and then Cicrol occasionally suggests fixes, and you reprint already printed grill questions, which causes me to do double reading.
+>
+> Can you instead, when you grill, when you prepare grill questions, first ask ccrow to review, then apply edits of ccrow's suggestions if they are useful, and then print the final refined grilling set of questions so you don't print me duplicated questions? If yes, resolve in place the habit.
+
+### 17:05 · prompt
+> [Image: source: /private/tmp/claude-501/-Users-dima-frame-cclio/33478b2d-7696-47d5-808b-b48cd1eaa61b/images/4.jpg]
+
+### 17:05 · steer o14
+> Correct, but make sure that my verbatims are always groomed, no matter how you receive them. The thing is that my prompts are groomed, as I previously told you, only via composer during the inbox parsing phase. When I send you my wishes via a prompt during mainline execution, like right now, for example, I print them via wishkeeper Flow. They are bloated with fluff and often have grammar mistakes and incorrectly constructed sentences, which reduces the clarity of understanding. How to make a mechanism that would groom all my prompts no matter the source? So you would not fold my copy-pasted verbatims from mainline execution when I send you my random wishes? But my prompt grooming mechanisms should always work in the same mode. Rule number one is to preserve my intent always and only clear out the fluff, fix grammar mistakes, and make sentences grammatically correct so they read well even for myself. But the intention should be always preserved, I say, first and foremost. The duplications also should be removed. Overall, the prompt can be optimized, but not in a machinic way. It still should be my voice, and my wish and my intent should be preserved.
+
+### 17:05 · steer o22
+> Agree, but if main lane is active and does something, nothing prevents a lane from doing a freebie. A freebie can be done by everyone, yourself, or a paralel lane.
+
+### 17:14 · prompt
+> g
+
+### 17:14 · steer o24
+> Okay, but I'd name pocket as a little bit wider than today's working set. Maybe something like today-tomorrow working set, because there are types of things that we could solve during today and tomorrow. There are things that we can solve, right? Today: the smaller ones and slightly bigger ones, not huge ones that could be done with the long times.  There are also some exceptions. For example, in memory sweep, we completed the memory sweep in roughly 5 to 7 days total. How, then, to store the memory sweep progress inside of a linear ticket or inside of a pocket, since we do just a long ticket by design in a main lane during multiple days?  I think this type of ticket also can be kept in a pocket, but with one requirement: it should always be only one such kind of ticket, never multiple ones. If, for example, we do some long-term ticket, it can stay in a pocket as an active item,.
+
+### 17:14 · steer o25
+> me, the main lane or a parallel one ←  Let's try, but a reminder: you and mainline are the same thing. What we do in this thread with you is a mainline.
+
+### 17:14 · steer o26
+> How to agree, but how then to keep milestones healthy? When milestones are born, and how? Same for initiative phases?
+
+### 17:30 · prompt
+> q1
+> And as for milestones, when they are born — I think this question should be asked all the time, simply like this: if you could do a milestone check during each ticket creation, or maybe even some other ticket operations, milestones could be healthy that way automatically. TL;DR: keep milestones as a first resident of your flows. Treat them as a lift-off point for your planning. (but initiatives comes even before milestones. milestones are inside intiatives. initiatives → milestones → our flow)
+>
+> Q2
+>
+> * no open ticket, or nothing moved in 7 days → one line: close, refill or park it ← i think: park it, refill, close (closing goes last, try to keep mils healthy at a first hand)
+>
+> and by the way: we have «mils» vibe word. do we have an emoji for milestones? let's have it. propose top 7.
+>
+> We could try to create and manage milestones together, possibly not fully automated by you. Each time you tend to create a milestone, propose it to me. For example, the PM revamp could be a milestone (what we currently do). Speak app V2 revamp is a milestone as well. The CLI scope and the chunks that we preplanned for CLI lanes up front are a milestone too, Or even multiple milestones. Trophy-sys redesign and chords app redesign are milestones as well. The Frame merge into bytes is a milestone as well. The migration to Bun from PNPM and from Bium to Oxilient is a milestone as well. Something like this. 
+>
+> Let's also try upfront to not create too many milestones. Let's keep the milestones balanced.
+
+### 17:30 · steer o27
+> Let's think about milestones, starting from what milestones are. The milestones are a tool for creating a scope of chunks to do, and the contents of a milestone are tickets. They are related to a planning mechanism, and also milestones are multiple, so it is possible to have a number of milestones. Linear projects can have multiple milestones per project, each with its scope, and milestones are ordered within a project, which allows constructing a sequence.  There is a catch. This shape allows for smooth execution order construction within a Linear project, but I don't know how to precisely order a sequence between different projects. For example, if project A has three milestones and project B has four milestones, how to properly order them? For example, if we would do project A and then project B, it is simple, but in IRL we often can switch and do the first milestone in project A, then the first milestone in project B, or milestone 3 from project B. It's kind of tricky.  I propose this: always keep milestone order in every Linear project precise and up to date. If, for example, we do a switch to project B and, for some reason, decide to do milestone 3 from project B, then you simply update the order of milestones in project B by moving milestone 3 from project B to first place (e.g., change the order of milestones in project B).  There is a note also: these milestones are only for you as APM. For example, recently we groomed a glide execution order via lane plan.md. This is an execution order for a coder for a lane. You are aware of it. The coder is aware of it as well, but milestones are another type of execution order. It is a higher-level execution order that coders generally don't care about at all. It is only for me and for you to correctly set a sequence of stuff we plan to do.  I think if it settles, we can review our milestones right after we resolve everything about PM modular bump and start test-driving the milestone-first approach. I think if we figure out an efficient way of using milestones to scope our stuff that we do, it would help solve a lot of things that go after, including the cluttering your pocket issue.
+
+### 17:30 · steer o29
+> Agree. Milestone checks should also be present somehow, maybe even protected with some scripts. Propose good ones, not too restrictive.  As for 7-day checks, I'm not sure here because we can prep some work upfront via milestones. For example, CLI pre-plans CLI chunks, but CLI lanes can stay parked for a while, longer than a week. For example, we prepped Speak app v2 more than 2 weeks ago, and it's still parked, but it's valid and fully ready to be executed. The only things that hold us off are a little bit of meta work and my weekly window, so 7 days of staleness is not valid most of the time, in my mind.
+
+### 17:36 · prompt
+> After we fully resolve PM revamp, let's prep a few nearest milestones and focus on CLI lane milestones, and try spawning CLI lane today based on the refreshed PM module to test everything. And find issues and weak spots and fix them in place. While the trace is hot.
+
+### 17:36 · steer o30
+> let's try 4. But this is not a strict restriction. We can have 5, for example, and it's fine. Just try to keep the milestone shape pretty and well scoped, and also create good names for milestones. Names for milestones should be short, clear to read for me, and maybe even have an emoji. Keep the naming of milestones consistent so they are not random each time. Maybe set a naming pattern for milestones somewhere in your resident memory or in a skill.
+
+### 17:36 · steer o31
+> an empty milestone ← No, an empty milestone is most likely to be closed if it had tickets and doesn't have any more. In my mind, an empty milestone can be empty for a few reasons: 1. You just created it and have up to fill it with tickets. 2. The milestone had its last ticket completed and is now empty. It should be closed in place then. 3. You solved a milestone and forgot to close it. In that case, you close it too.
+
+### 17:36 · steer o32
+> 🎑 — moon viewing
+
+### 17:52 · prompt
+> You are at 56% of CTX, so let's plan a good time for second wind, but first, resolve a meaningful part of the current activity. You have a budget of up to maybe 60% or 65% more. Roughly. I activate second wind now, but don't rush. Pick a good place for second wind.
+
+### 17:52 · steer o33
+> Let's adopt Composer and print some numbers about him. I'd like to know how much he helps you, because initially I invented Composer to offload manual chores from you. How much has he helped you? Is it worth the effort we put into the creation of Composer? Also, I somewhere had an idea to promote Composer to Sonnet 5.5. Is that idea unblocked with the adoption of Composer? Change detector: yes, useful. Adopt agent effort. What is it? Why do you propose to extend a helper light?
+
+2026-10-22 his raw mid-turn messages, 16:15 → 17:52, verbatim (sent while cclio worked; the prompt extract above missed them):
+### 16:18 · mid-turn
+> From my memory, I was setting everything in the local Apollo dashboard that is spawned once I spin up the Apollo dev server via the Apollo Space Explorer API.\n\nworst parts.\ninbox — My main concern is the data loss. Yesterday, we uncovered roughly 35% of my wishes' data loss, and this is what I want to be fixed in the first place. If you keep forgetting what I ask for initially, then it causes us to build wrong stuff. Not good.\n\npocket vs linear - I described it via lots of comments in figjam. \n\nanother issues — a lot if different «lane» types. (ranaming part).  We have a lot of lane definitions, and they are confusing to me. Let's rethink the lane types we have during the renaming part. When we get there, let's open the renaming part with rethinking our lane names, including shift lanes and night shift lanes. We have a lot of them. Let's try to reduce the quantity of lane types. \n\neither way - fixing/resolving in place should be preferred whenever possible, to kill pocket cluttering with chores before the actual cluttering happened. This is a big one because I often spot that, instead of fixing easy-to-solve things in place, you fold them, which creates this set of actions. \nyou fold an «almost freebie» (thing that could be just solved) → it stay parked (can be forgotten and be parked for a week) → then i ask you low-tide → you fold it out and solve.\ninstead you could just resolve in place.\nIt doesn't apply to everything, of course, but your evaluation of things that could be done now instead of postponing is not precise enough. I don't know why, but I often find myself catching your intent to hold some things that could be resolved in place, and I often ask you to do that. \n\nI left a number of comments in FigJam. Go read them all. \nand let's prceed with your proposal to zoom on band 4.
+
+### 16:31 · mid-turn
+> Your band 4 questions ← I read your reply, and I think a drift can be solved by your proposition. I agree with it: the coder does two tickets, but the final word is yours. He does two tickets, then tells you to review and steer it against the overall flow. \n\n<pasted_content id="a371">\nFor steers, you should always be aware of all steers, no matter how they happened, to steer coders' order yourself too. For example, if I go into a coder's thread and ask him to do something that affects a lane order (e.g., glide), the coder should let you know about those tiers. Tiers can be very small or even tiny and don't change the order at all, like if I ask to update to fix a typo or change bold to not bold, something like this. I could also ask for something that actually creates a mini to-do in his flow. The coder should always update you on how his execution order changes if I steer him from inside.\n\nAs for steers by yourself, it's easier because you do the steers and you're aware right away. Also, if I ask you to send a coder a steer, you are aware as well because I use you as a proxy for my steers. The gap here is when I go inside of a thread of a coder and ask him directly in that mode. You are not aware, but if the coder would let you know about my asks inside a coder thread, it could be solved that way. I think those messages should be silent (e.g., not push notifications to you). The attached types via silent mod\n</pasted_content id="a371">\n\n.\n\n--\nwhy lost? The 10-21 audit found the loss at first use: a grill, brief or spec re-summarises your 🌠 wish and drops your questions and your why ← But why does summarization happen? The problem with my prompts is that they are often big, even the current message, because I use wishkeeper Flow to dictate a lot of text, which is important but, of course, also contains a lot of fluff and unnecessary words. I agree with this. That's why I proposed Composer to groom my inbox prompt by keeping 100% of my intention, but fixing grammar and wishkeeper Flow mistakes, and removing fluff and unnecessary words that blot my wishes. (blaoting is also not good.) Composer grooming should have been resolved, bloating of my prompts in place because it is a birthplace of my wishes. \nSo why summarize my wishes if they are already groomed and shaped into compact forms that don't contain any bloating and don't contain fluff? Why summarize them again if they are already groomed and are not huge after Composer grooming? \n--\narchive space-explorer-apollo-api dev\n--\nSide question: Do you want to spawn a wishkeeper to help us formulate the problem area error of your PM module? Maybe he could also spot some weak spots or even suggest some fixes right away. Or do you think we should better explore and zoom into the PM module before spawning a wishkeeper?
+
+### 16:38 · mid-turn
+> Side question: can wishkeeper Keeper read figgem map? I think it would be useful for wishkeeper Keeper to take a look. \n\n--\n✅ band 4, your decisions folded ← Are these decisions enough to automate Glide order? Or is something else left uncovered? If you will be aware of everything that could steer coders' execution order, would it then be possible for you to shape final coder execution order? That way, it would allow Glide to be automated via that key file? If so, what will that key file be?\n\nIn my mind, you first do to spec, then hand spec to coder. He does two tickets and then hands over final shape to you, but what is the final shape? A lot of tickets that are produced from two tickets, or one file with all tickets that are the result of two tickets, or another final file with the execution order that is separate from what two tickets produce? Which file does Glide read from? Which file contains final coder execution order?
+
+### 16:53 · mid-turn
+> plan.md ← Maybe create a clearer name for this file, e.g., Lane Plan, Glide Plan, Lane Glide Plan?, or something like this?\n\n* when you steer a 🔧 coder inside its thread, it adds the new line, and I re-seal the order ← And it should also let you know, I think, or no? Is editing a file enough? What if the coder will edit a file and you will not be aware of it, or Glide will be automated and will catch the update automatically? If that is the case, then you are being aware. I think that is optional. Nonetheless, such kinds of messages from the coder to you should be silent (e.g., via silent mode, e.g., slipstreamed, not pushed). \n\n* the 🛼 glide card is drawn from that file by a small verb, never by hand ← Why is a small verb needed? Can Glide be more automated in auto mode? Or is a verb still needed? \n\n\nI3 pocket ↔ linear: your contract becomes the rule: the pocket is my to-do list for today and tomorrow, and anything a week out goes to linear, into its milestone. ← Well, the things I printed today and before today were my thoughts. It's not really a contract yet. It was my thoughts and ideas to grill on. Generally, yes, my thoughts are true, and I think that the Linear/pocket contract should be sold as something like this, but I expect you to say your own review and proposals on this one.\n\nHow to properly define a role for pocket and Linear in a way where they are useful? Because we could simply throw away pocket entirely, fully delete it, and use only Linear. Would that be simpler? Maybe pocket is a dead weight and another place of confusion?\n\nMy idea about pocket was to create you a quick place that would allow you to read tickets more efficiently and quickly, but it shouldn't be a place of cluttering as well. It's kind of an unfinished contract. \n\n1. I2 resolve in place: the question at an item’s birth changes from «how big?» to «does it need your word, a lane, or an outside wait?». No to all three → solved that turn. ← \n\n<pasted_content id="a371">\nThere is a slight gotcha here. It is related to how, nowadays, models evaluate and estimate time. The thing is that currently all models, including yourself, estimate time to do things in a slightly over-tuned way. You, Opus 5.5, and all models always overestimate. I don't know why, but this is a well-known issue. I don't know if you are aware of this. If you are not aware of this, then this is surprising info for you.\n\nYou can easily estimate a thing that can be solved in 5 minutes as 1 hour, or a freebie that you can solve in 1 minute as a thing with a 20-minute estimation. Maybe this is a cause. If it is the cause, then it's kind of tricky, and I wouldn't push on it too much because it can cause trouble. Your built-in estimation, thinking, and habits are tuned to overestimate, and my asks could break you.\n\nStill, let's figure out how to tune your habits to encourage you to resolve things in place more proactively. Do freebies more proactively, and maybe alternatively create another entity, like "almost freebie", because we have freebies and you solve them. The tickets that get folded away often and could be resolved in place are often almost freebies, which you don't mark as a freebie, although they are actually almost freebies. That's why they get folded out. It's kind of tricky to solve. Propose how to solve it.\n</pasted_content id="a371">\n
+
+### 17:42 · mid-turn
+> Don't forget to spawn a wishkeeper to review what we do. Maybe we miss something. Find a good time to spawn a wishkeeper.
 <!-- SECTION:NOTES:END -->
