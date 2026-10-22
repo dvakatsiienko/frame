@@ -12,6 +12,7 @@ while [ $SECONDS -lt $end ] && [ ! -s "$out" ] && kill -0 "$pid" 2>/dev/null && 
 sleep 1
 alive=0; kill -0 "$pid" 2>/dev/null && alive=1
 kill "$pid" 2>/dev/null
+wait "$pid" 2>/dev/null
 if cleared; then
   while [ -f "$reg" ]; do sleep 60; done
   exit 0
