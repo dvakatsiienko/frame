@@ -13,10 +13,11 @@ import (
 )
 
 // the bytes review lane: the label starts a round, a successful review.yml run on the branch is one round,
-// two rounds per pr, and past them dima's approval publishes review:clean (bytes .github/workflows)
+// one round per pr at «final», and past it an approval on dima's account (dima, or cclio on the verifier's clean)
+// publishes review:clean (bytes .github/workflows; dima, 2026-10-22, PK-103 W100, W101)
 const (
 	reviewLabel = "🤖 review:requested"
-	reviewCap   = 2
+	reviewCap   = 1
 )
 
 var prNumber = regexp.MustCompile(`^\d+$`)
@@ -107,18 +108,18 @@ func laneReview(r *Run, args []string, _ Flags) (any, error) {
 		r.Done("ok: the verdict judged the head "+short(head), "")
 		return data("current"), nil
 	}
-	// past the cap the way through is dima's approval, which review-approved.yml turns into a green
-	// review:clean on the head he approved; either one clears the head without a round
+	// past the cap the way through is an approval on dima's account, which review-approved.yml turns
+	// into a green review:clean on the approved head; either one clears the head without a round
 	if pr.ReviewDecision == "APPROVED" || cleanOnHead(head) {
 		r.skip("request")
-		r.Done("ok: "+short(head)+" is cleared — dima approved it or review:clean is green on it", "")
+		r.Done("ok: "+short(head)+" is cleared — approved on dima's account or review:clean is green on it", "")
 		return data("cleared"), nil
 	}
 	if len(rounds) >= reviewCap {
 		return nil, &Fail{Refused: true,
-			Msg: fmt.Sprintf("%d review rounds ran on %s, the last judged %s, the head is %s — a third round is dima's: he approves #%s on github, and review-approved.yml publishes review:clean on the head he approved",
+			Msg: fmt.Sprintf("%d review round ran on %s, the last judged %s, the head is %s — past the cap cclio approves #%s on dima's account once the verifier is clean on the head, and review-approved.yml publishes review:clean on it",
 				len(rounds), pr.HeadRefName, short(judged), short(head), n),
-			Next: "ask cclio to relay: dima approves #" + n}
+			Next: "ask cclio to approve #" + n + " on the verifier's clean"}
 	}
 
 	if err := r.Step("request", "re-labelling "+reviewLabel, func() (string, error) {

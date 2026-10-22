@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-10-22T14:40:00Z'
-updated_date: '2026-10-22T15:42:00Z'
+updated_date: '2026-10-22T16:12:00Z'
 due_date: '2026-10-25'
 labels:
   - s
@@ -28,4 +28,6 @@ dima 2026-10-22 (PK-103 round 1 Q7, round 4 Q1): no verb — x-mod-stash reads t
 <!-- SECTION:NOTES:BEGIN -->
 ticket: FRM-410
 close: moved to linear as FRM-410 (a rider under FRM-304, the mods story), every W-line carried in its wish block — the new contract: a lane wait lives in linear
+
+correction 19:2x: the close line above overstates it — this item held no W-lines, so its words were copied as written (FRM-409 W1 is cclio's fold of the note above; FRM-410 carries PK-103's W41, W53, W73)
 <!-- SECTION:NOTES:END -->

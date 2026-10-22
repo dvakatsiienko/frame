@@ -92,24 +92,25 @@ brief says which, and when it does not, ask once, up front.
    shared pr state (the body, labels) is the verifier's; you prove locally.
 2. **the local review pair, in parallel**: `mattpocock-skills:code-review` over the branch (matt's standards and
    spec review) beside `coderabbit review --agent --base main` (a main lane: `--committed --base-commit <base>^`)
-   while its free quota lasts (`coderabbit review --usage`; none left → skip it, one word in the report). fix what
+   while its free quota lasts (`coderabbit review --usage`; none left → skip it silently). fix what
    both find, push.
 3. **one local review per verifier round** (dima, 2026-10-22): before each verifier round after the first, the pair
-   reruns on the fix diff only (`--base-commit <last reviewed sha>`), up to 3, matching the verifier's cap; each
-   review adds one graded line to `docs/test-drive/review-stack.md` (reviewer, findings, useful or noise).
+   reruns on the fix diff only (`--base-commit <last reviewed sha>`), 3 local reviews in all, matching the verifier's
+   3 rounds; each review adds one graded line to `~/frame/docs/test-drive/review-rounds.md` (reviewer, findings, useful
+   or noise), and the done report names `local reviews: <n>`.
    steps 1–3 run on every assignment, main-lane ones included.
 4. **with a verifier** named in the brief (`☕️ 🔎 <ticket> verify: #<pr>`): «final» is a `SendMessage` to it,
    with the pr url and head sha (a main lane: `main:<base sha>` and your local head sha, no pr url). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push, run step 3's local pair on the fix diff (the ci reviewer's one round
-   was spent at «final»; another goes through cclio to dima), then message «round N on <sha>»; the loop
+   was spent at «final»; past it cclio approves the head on the verifier's clean), then message «round N on <sha>»; the loop
    runs as the dna's pr pair says. your report on `clean` quotes the verdict object, the round count and
    the head sha. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
    skipped.
-5. **the ci reviewer** in `bytes`: `x lane review <pr>` is its door. it re-requests a stale verdict, and at
-   the ci reviewer's 1-round cap names dima's approval. run it once, at «final», never per push (a round is ~13 min of opus).
+5. **the ci reviewer** in `bytes`: `x lane review <pr>` is its door. it requests the one round, and at
+   the 1-round cap names cclio's approval as the way past. run it once, at «final», never per push (a round is ~13 min of opus).
    fix what is real; answer «declined: <why>» on the thread.
-6. **hand over**, once both reviews are handled: `gh pr edit <n> --add-reviewer dvakatsiienko`, then the
-   «final» line to the coordinator: pr url + head sha + «final». leave no untracked file in the worktree,
+6. **hand over**, once both reviews are handled: the «final» line to the coordinator (dima is never added as a
+   reviewer; cclio approves and merges): pr url + head sha + «final». leave no untracked file in the worktree,
    since one blocks the merge cleanup.
 
 the done report names every pass and what it returned; the retro says which layer found what nobody

@@ -38,8 +38,8 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
 - **the bytes review lane**: `gh pr edit <n> --add-label '🤖 review:requested'` starts the ci
   reviewer on this head; the guard publishes `review:clean`, the required check on main —
   never created = blocked. a later push leaves it stale — `x lane review <pr>` re-requests it: it
-  names the judged commit, counts the rounds (two per pr), and at the cap names dima's approval,
-  the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
+  names the judged commit, counts the rounds (one per pr, at «final»), and at the cap names cclio's
+  approval on dima's account after the verifier's clean, the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
   own verdict marker gates it, the findings live in its comment — read that.
 - a claude-code-action pr that edits a workflow already on the default branch IS reviewed (#79, two rounds
   with verdict lines); only a pr that edits `claude.yml` itself is unproven.

@@ -48,6 +48,6 @@
 - **a pr cclio opens for a coder is opened as the coder app** — a coder opens its own with `x lane pr-open`; when cclio opens one: `GH_TOKEN=$(node script/github-agent-token.ts) gh pr create …` renders as `x-coder[bot]`, a plain `gh` makes it dima's.
 - **a watch lives until its pr merges or closes, never until its coder stops** — `📡 pr-watch` (`~/frame/cclio/.claude/hooks/pr-watch.sh`, armed by `cclio:boot`) wakes cclio when a pr first appears («opened — spawn its verifier»), on a new commit, and once per head when green, so the verifier spawns off it within a minute and a spawn arms no watch of its own. a cloud report lands on a `cloud/<slug>` branch the same hook sees.
 - **one coder with two prs in sequence gets one verifier that takes them in turn**.
-- **before a merge, `x lane review <pr>` exits 0** — a stale `review:clean` is re-requested by it, never by a hand relabel.
-- **a verifier's cap stop ends like `clean` for the handoff** — cclio adds dima as reviewer the same turn.
+- **before a merge, `review:clean` is green on the head**: the one ci round at «final», or past it cclio's `gh pr review --approve` on the verifier's clean; never a hand relabel.
+- **a verifier's cap stop goes to cclio**, who decides the merge and names it in the look card; dima is never added as reviewer (2026-10-22: he does not read prs).
 - **a ci reviewer's «clean» in under a minute on a big diff is a shallow pass**; the verifier's verdict decides, the ci reviewer is a second pair of eyes.

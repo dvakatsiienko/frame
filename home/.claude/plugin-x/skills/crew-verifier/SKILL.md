@@ -134,9 +134,8 @@ are the dna's pr pair.
   not re-run keeps its last mark.
 - a round that closes one scoped line is free; the first `not-checkable` or a dispute stops the
   loop and goes to cclio, the ⬜ lines or both sides in one message.
-- **the wall clock** — the ci reviewer per round may make the loop bulletproof and still too slow.
-  two rounds past ~30 min → say so in the verdict, and the coordinator moves the ci reviewer out
-  of the round (after the verdict, or to the coder's side).
+- **the wall clock** — the ci reviewer runs once, at «final» (dima, 2026-10-22); every later round is read off the coder's
+  local review pair. two rounds past ~30 min → say so in the verdict; the numbers feed `docs/test-drive/review-rounds.md`.
 
 ## exit
 

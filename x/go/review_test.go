@@ -48,8 +48,8 @@ func calls(t *testing.T, dir string) string {
 	return string(body)
 }
 
-func TestReviewReRequestsAStaleVerdictUnderTheCap(t *testing.T) {
-	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success"), `{"run_number":2,"head_branch":"other","head_sha":"` + headSha + `","status":"completed","conclusion":"success"}`})
+func TestReviewRequestsTheFirstRoundUnderTheCap(t *testing.T) {
+	env, dir := fakeGh(t, []string{`{"run_number":2,"head_branch":"other","head_sha":"` + headSha + `","status":"completed","conclusion":"success"}`})
 
 	got := xIn(t, t.TempDir(), env, "lane", "review", "7")
 
@@ -59,21 +59,21 @@ func TestReviewReRequestsAStaleVerdictUnderTheCap(t *testing.T) {
 	if got.code != 0 || removed < 0 || added < removed {
 		t.Fatalf("exit %d, want the label removed then added as the coder app:\n%s%s", got.code, log, got.stdout)
 	}
-	if got.data["judged"] != oldSha || got.data["review"] != "requested" {
-		t.Errorf("the envelope does not name the judged commit: %s", got.stdout)
+	if got.data["judged"] != "" || got.data["review"] != "requested" {
+		t.Errorf("the envelope does not show a first request: %s", got.stdout)
 	}
 }
 
 func TestReviewLeavesTheLabelAloneWhenNothingIsStale(t *testing.T) {
-	capped := []string{runOf(1, oldSha, "completed", "success"), runOf(2, oldSha, "completed", "success")}
+	capped := []string{runOf(1, oldSha, "completed", "success")}
 	cases := []struct {
 		name   string
 		runs   []string
 		env    string
 		review string
 	}{
-		{"the verdict judged the head", []string{runOf(1, oldSha, "completed", "success"), runOf(2, headSha, "completed", "success")}, "", "current"},
-		{"a round is running on the head", []string{runOf(1, oldSha, "completed", "success"), runOf(2, headSha, "in_progress", "")}, "", "running"},
+		{"the verdict judged the head", []string{runOf(1, headSha, "completed", "success")}, "", "current"},
+		{"a round is running on the head", []string{runOf(1, headSha, "in_progress", "")}, "", "running"},
 		{"a round is running on an older commit", []string{runOf(1, oldSha, "queued", "")}, "", "running"},
 		{"the repo has no review lane", nil, "", "no lane"},
 		{"dima approved the head past the cap", capped, "FAKE_GH_DECISION=APPROVED", "cleared"},
@@ -93,7 +93,7 @@ func TestReviewLeavesTheLabelAloneWhenNothingIsStale(t *testing.T) {
 }
 
 func TestReviewNamesTheRemovedLabelWhenTheAddFails(t *testing.T) {
-	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success")})
+	env, dir := fakeGh(t, []string{`{"run_number":2,"head_branch":"other","head_sha":"` + headSha + `","status":"completed","conclusion":"success"}`})
 
 	got := xIn(t, t.TempDir(), append(env, "FAKE_GH_ADD_FAIL=1"), "lane", "review", "7")
 
@@ -105,16 +105,16 @@ func TestReviewNamesTheRemovedLabelWhenTheAddFails(t *testing.T) {
 	}
 }
 
-func TestReviewAtTheCapNamesDimasApprovalAndRequestsNothing(t *testing.T) {
-	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success"), runOf(2, oldSha, "completed", "success"), runOf(3, oldSha, "completed", "failure")})
+func TestReviewAtTheCapNamesCcliosApprovalAndRequestsNothing(t *testing.T) {
+	env, dir := fakeGh(t, []string{runOf(1, oldSha, "completed", "success"), runOf(2, oldSha, "completed", "failure")})
 
 	got := xIn(t, t.TempDir(), env, "lane", "review", "7")
 
 	if got.code != 1 || strings.Contains(calls(t, dir), "pr edit") {
 		t.Fatalf("exit %d, calls:\n%s", got.code, calls(t, dir))
 	}
-	if !strings.Contains(got.stdout, "dima approves #7") {
-		t.Errorf("the refusal does not name dima's approval: %s", got.stdout)
+	if !strings.Contains(got.stdout, "cclio approves #7") {
+		t.Errorf("the refusal does not name cclio's approval: %s", got.stdout)
 	}
 }
 

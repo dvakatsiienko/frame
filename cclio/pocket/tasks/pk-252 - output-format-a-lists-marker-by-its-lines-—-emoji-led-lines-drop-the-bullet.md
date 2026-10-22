@@ -4,7 +4,7 @@ title: 'output format: a list''s marker by its lines — emoji-led lines drop th
 status: done
 assignee: []
 created_date: '2026-10-22T15:23:00Z'
-updated_date: '2026-10-22T15:24:00Z'
+updated_date: '2026-10-22T16:12:00Z'
 due_date: '2026-10-23'
 labels:
   - xs
@@ -30,4 +30,6 @@ W4 update the output formatting for everyone with this leading-emoji rule
 done 18:25: rules/fleet-output-format.md § shapes «a list's marker by its lines» + § emoji example, resident for every member
 
 close: W1 done, W2 done, W3 done, W4 done — rules/fleet-output-format.md § shapes and § emoji
+
+correction: W3's «the emoji already marks the line» is cclio's gloss, not his words
 <!-- SECTION:NOTES:END -->
