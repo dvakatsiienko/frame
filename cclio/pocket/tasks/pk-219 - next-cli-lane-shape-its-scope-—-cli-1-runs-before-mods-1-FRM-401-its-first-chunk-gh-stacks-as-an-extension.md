@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-20 13:42'
-updated_date: '2026-10-22T14:54:00Z'
+updated_date: '2026-10-22T16:00:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -49,4 +49,14 @@ dima 2026-10-20 16:41, folded: since gh stacks and stacked prs need cli changes,
 2026-10-22 15:05 dima: «let's try cli lane today after pm is revamped fully» — the gate moves from the refresh-crew-coordinator run to the pm revamp (PK-103)
 
 2026-10-22 18:00: the 10-20 waiting line above (the refresh-crew-coordinator run) is superseded; gate now: the pm mechanisms build (done 10-22) + the cli milestones proposed — dima W86: spawn the cli lane today
+
+2026-10-22 19:0x the wish, one point per line (folded from the 10-20 16:41 drop above, his words kept), so the spec can cite them:
+W1 since gh stacks and stacked prs need cli changes, plan the next closest lane as cli 1, not mods 1
+W2 i don't plan to spend too much effort on the cli lane, but i want it to do a meaningful chunk of useful stuff
+W3 there are preplanned chunks already: refresh them, review, adjust if in good shape and ready to dispatch
+W4 FRM-401 is the lane's first to-do
+W5 be careful with gh stacks: they are unverified and we may discard them; the changes must not break the existing flow
+W6 the cli supports both modes, plain prs and gh stacks, as an extension easy to delete; even if stacks are set aside, the support may stay for a later revisit
+W7 formulate the specs with these notes in mind
+W8 ❓ (10-20 o41) honestly, i still didn't get how it works — it's tricky for me to follow the tech details, but i decided to believe your proposition; let's try; re-explain the stack mechanics at the first stack lane
 <!-- SECTION:NOTES:END -->
