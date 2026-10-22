@@ -223,18 +223,19 @@ func repoOf(flags Flags) (string, error) {
 		}
 		return repo, nil
 	}
-	// the url as configured, before any insteadOf rewrite: the github slug lives there
-	got, _ := gitIn("", "config", "--get", "remote.origin.url")
-	if match := remoteSlug.FindStringSubmatch(strings.TrimSpace(got.out)); got.ok && match != nil {
-		return match[1], nil
+	// an insteadOf rewrite can carry the github slug either way: the configured url or the rewritten one
+	for _, read := range [][]string{{"config", "--get", "remote.origin.url"}, {"remote", "get-url", "origin"}} {
+		got, _ := gitIn("", read...)
+		if match := remoteSlug.FindStringSubmatch(strings.TrimSpace(got.out)); got.ok && match != nil {
+			return match[1], nil
+		}
 	}
 	return "", usageFail("no github origin here to read the repo from", "x gh pr <pr number> --repo <owner/name>")
 }
 
 /* Github */
 
-// the two identities x calls github as: the x-coder-cc app for every lane read and write, and dima's own gh
-// login for what the app may not do — branch protection (admin), an approve and a merge (contents: write)
+// dima's own login does what the coder app may not: branch protection (admin), an approve, a merge
 const (
 	asCoder = "coder"
 	asDima  = "dima"
@@ -270,11 +271,7 @@ func ghPages[T any](as, target, key string) ([]T, error) {
 }
 
 func ghFetch(as, target string, into any) (http.Header, error) {
-	return ghCall(as, http.MethodGet, target, nil, into)
-}
-
-func ghCall(as, method, target string, body, into any) (http.Header, error) {
-	_, header, err := ghSend(as, method, target, body, into)
+	_, header, err := ghSend(as, http.MethodGet, target, nil, into)
 	return header, err
 }
 
@@ -296,13 +293,13 @@ func ghSend(as, method, target string, body, into any) (int, http.Header, error)
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	path := strings.TrimPrefix(req.URL.Path, "/")
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return 0, nil, &Fail{Msg: "github is unreachable: " + err.Error(), Next: "the same command once the network is back"}
+		return 0, nil, &Fail{Msg: "github is unreachable: " + err.Error(), Next: ghAPINext(as, path)}
 	}
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(resp.Body)
-	path := strings.TrimPrefix(req.URL.Path, "/")
 	switch {
 	case resp.StatusCode == http.StatusNotFound && as == asCoder:
 		return resp.StatusCode, nil, &Fail{Msg: "github answered 404 for " + path + " — no such pr, or the coder app is not installed on the repo",

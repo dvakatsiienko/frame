@@ -14,10 +14,7 @@ import (
 	"time"
 )
 
-// the merge gate as one verb (FRM-401): a pr merges when the verifier is clean on its head, every required
-// check ran green for that head and no review thread is open. github's own auto-merge is never turned on:
-// a stack cannot take it (gh-stack#504)
-
+// github's own auto-merge is never turned on: a stack cannot take it (gh-stack#504)
 const mergeTrailer = "Merged-by: x lane merge-auto"
 
 type mergeCheck struct {
@@ -71,9 +68,12 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
 			return "", err
 		}
-		if pr.Merged || pr.State != "open" {
-			return "", &Fail{Refused: true, Msg: "#" + n + " is " + cmp.Or(map[bool]string{true: "merged"}[pr.Merged], pr.State) + ", nothing to merge",
-				Next: "x gh pr " + n}
+		state := pr.State
+		if pr.Merged {
+			state = "merged"
+		}
+		if state != "open" {
+			return "", &Fail{Refused: true, Msg: "#" + n + " is " + state + ", nothing to merge", Next: "x gh pr " + n}
 		}
 		return pr.Head.Ref + " at " + short(pr.Head.Sha), nil
 	}); err != nil {
@@ -81,18 +81,17 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}
 	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body}
 
-	verifier := mergeCheck{Name: "verifier"}
+	var verifier, ci, threads mergeCheck
 	if err := r.Step("verifier", "reading the verifier's clean", func() (string, error) {
 		verifier = verifierCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
 		return verifier.shown()
 	}); err != nil {
 		return nil, err
 	}
-	ci := mergeCheck{Name: "ci"}
 	needsApprove := false
 	if err := r.Step("ci", "reading the required checks on the head", func() (string, error) {
 		var err error
-		ci, needsApprove, err = ciCheck(api, pr.Base.Ref, pr.Head.Sha)
+		ci, needsApprove, err = ciCheck(api, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha)
 		if err != nil || needsApprove {
 			return ci.Detail, err
 		}
@@ -100,11 +99,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	threads := mergeCheck{Name: "threads"}
 	if err := r.Step("threads", "counting the open review threads", func() (string, error) {
 		var err error
-		threads, err = threadsCheck(repo, n)
-		if err != nil {
+		if threads, err = threadsCheck(repo, n); err != nil {
 			return "", err
 		}
 		return threads.shown()
@@ -143,18 +140,16 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	d.Decision, d.Wait = decide(brake, self, needsApprove, d.Checks)
+	d.Decision, d.Wait = decide(brake, self, needsApprove, verifier, ci, threads)
 	if d.Decision == "wait" {
-		// a wait is never a plan to confirm: --apply could only refuse it, so it exits 1 with or without it
-		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n + " once it holds"}
+		// --apply could only refuse a wait, so it never prints as a plan to confirm
+		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
 	}
 	return d, nil
 }
 
-// the brake and a self-edit wait for dima first; then a bytes head missing only review:clean is approved;
-// else the first check that does not hold names the wait
-func decide(brake string, self []string, needsApprove bool, checks []mergeCheck) (decision, wait string) {
-	verifier, threads := checks[0], checks[2]
+// the brake and a self-edit outrank every check; a bytes head missing only review:clean gets the approve
+func decide(brake string, self []string, needsApprove bool, verifier, ci, threads mergeCheck) (decision, wait string) {
 	switch {
 	case brake != "":
 		return "wait", "brake on, needs dima's word — " + brake
@@ -163,7 +158,7 @@ func decide(brake string, self []string, needsApprove bool, checks []mergeCheck)
 	case verifier.OK && threads.OK && needsApprove:
 		return "approve", ""
 	}
-	for _, c := range checks {
+	for _, c := range []mergeCheck{verifier, ci, threads} {
 		if !c.OK {
 			return "wait", c.Detail
 		}
@@ -190,8 +185,8 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		var merged struct {
 			Sha string `json:"sha"`
 		}
-		// the sha pins the merge to the head the checks were read on: a push since makes github refuse it
-		_, err := ghCall(asDima, http.MethodPut, api+"/pulls/"+d.PR+"/merge", map[string]string{
+		// the sha pins the merge to the head the checks read: a push since makes github refuse it
+		_, _, err := ghSend(asDima, http.MethodPut, api+"/pulls/"+d.PR+"/merge", map[string]string{
 			"sha": d.Head, "merge_method": "squash", "commit_title": d.title + " (#" + d.PR + ")",
 			"commit_message": strings.TrimSpace(d.body) + "\n\n" + mergeTrailer,
 		}, &merged)
@@ -204,7 +199,6 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	return d, nil
 }
 
-// a check's step line: ✓ with its detail when it holds, ✗ when it does not, and the run goes on
 func (c mergeCheck) shown() (string, error) {
 	if c.OK {
 		return c.Detail, nil
@@ -212,7 +206,6 @@ func (c mergeCheck) shown() (string, error) {
 	return "", notHeld(c.Detail)
 }
 
-// the three checks and the risky line, the look card's lines on both outcomes
 func (d *mergeDecision) summary() string {
 	var lines []string
 	for _, c := range d.Checks {
@@ -230,9 +223,6 @@ func (d *mergeDecision) summary() string {
 
 /* Risky paths */
 
-// a path that can turn the checks themselves green; a self path is one merge-auto must not merge alone —
-// the guards, the review workflows, this list and this file (dima, 2026-10-22, o57)
-//
 //go:embed risky.json
 var riskyJSON []byte
 
@@ -241,16 +231,17 @@ var riskyList = func() (list struct{ Risky, Self []*regexp.Regexp }) {
 	if err := json.Unmarshal(riskyJSON, &raw); err != nil {
 		panic("risky.json: " + err.Error())
 	}
-	for _, g := range raw.Risky {
-		list.Risky = append(list.Risky, globRegexp(g))
+	compile := func(globs []string) (out []*regexp.Regexp) {
+		for _, g := range globs {
+			out = append(out, globRegexp(g))
+		}
+		return out
 	}
-	for _, g := range raw.Self {
-		list.Self = append(list.Self, globRegexp(g))
-	}
+	list.Risky, list.Self = compile(raw.Risky), compile(raw.Self)
 	return list
 }()
 
-// a glob over repo paths: `**/` is any number of dirs, `**` anything, `*` and `?` stay inside one segment
+// `**/` is any number of dirs, `**` anything, `*` and `?` stay inside one segment
 func globRegexp(glob string) *regexp.Regexp {
 	var b strings.Builder
 	b.WriteString("^")
@@ -277,8 +268,7 @@ func matchesAny(path string, globs []*regexp.Regexp) bool {
 	return slices.ContainsFunc(globs, func(g *regexp.Regexp) bool { return g.MatchString(path) })
 }
 
-// every path the pr touches, a rename's old name included: a file moved out of a risky dir is still a
-// change to it
+// a rename's old name counts: a file moved out of a risky dir is still a change to it
 func riskyPaths(api, n string) (risky, self []string, err error) {
 	type file struct {
 		Filename         string `json:"filename"`
@@ -315,16 +305,17 @@ var (
 	revertsSubject = regexp.MustCompile(`^Revert "(.+)"`)
 )
 
-// the brake keeps no state: a revert on base of a merge merge-auto made, in the last 7 days, holds every pr
-// until dima's word, and lifts itself once it ages out (grill, 2026-10-20). git's own revert names the sha;
-// github's revert button names only the subject
+// no stored state (grill, 2026-10-20); git's revert names the sha, github's revert button only the subject
 func brakeOn(base string) (string, error) {
-	if got, _ := gitIn("", "fetch", "-q", "origin", base); !got.ok {
-		return "", &Fail{Msg: "git could not fetch origin/" + base + " to read the brake: " + logLine(got.log), Next: "git fetch origin " + base}
+	if _, err := mustGit("brake", "fetch", "-q", "origin", base); err != nil {
+		return "", err
 	}
-	ours, _ := gitIn("", "log", "origin/"+base, "--fixed-strings", "--grep="+mergeTrailer, "--format=%H%x00%s")
+	ours, err := mustGit("brake", "log", "origin/"+base, "--fixed-strings", "--grep="+mergeTrailer, "--format=%H%x00%s")
+	if err != nil {
+		return "", err
+	}
 	merged := map[string]bool{}
-	for line := range strings.Lines(ours.out) {
+	for line := range strings.Lines(ours) {
 		sha, subject, _ := strings.Cut(strings.TrimSpace(line), "\x00")
 		merged[sha], merged[subject] = true, true
 	}
@@ -332,8 +323,11 @@ func brakeOn(base string) (string, error) {
 		return "", nil
 	}
 	since := clock().Add(-brakeFor).Format(time.RFC3339)
-	recent, _ := gitIn("", "log", "origin/"+base, "--since="+since, "--format=%H%x00%B%x1e")
-	for record := range strings.SplitSeq(recent.out, "\x1e") {
+	recent, err := mustGit("brake", "log", "origin/"+base, "--since="+since, "--format=%H%x00%B%x1e")
+	if err != nil {
+		return "", err
+	}
+	for record := range strings.SplitSeq(recent, "\x1e") {
 		sha, message, _ := strings.Cut(strings.TrimSpace(record), "\x00")
 		if match := revertsSha.FindStringSubmatch(message); match != nil && merged[match[1]] {
 			return short(sha) + " reverts " + short(match[1]), nil
@@ -345,7 +339,6 @@ func brakeOn(base string) (string, error) {
 	return "", nil
 }
 
-// X_NOW fixes the clock under X_TEST only
 func clock() time.Time {
 	if os.Getenv("X_TEST") != "" {
 		if at, err := time.Parse(time.RFC3339, os.Getenv("X_NOW")); err == nil {
@@ -357,8 +350,7 @@ func clock() time.Time {
 
 /* Checks */
 
-// the verifier records its clean in one shared json, "<owner/repo>#<pr>" → the head sha it said clean on;
-// a «clean» anywhere else (a pr comment, a body) is never read
+// a «clean» in a pr comment or body is never read: only the verifier writes this store
 func verifierCheck(repo, n, head, base, ref string) mergeCheck {
 	c := mergeCheck{Name: "verifier"}
 	home, _ := os.UserHomeDir()
@@ -366,7 +358,7 @@ func verifierCheck(repo, n, head, base, ref string) mergeCheck {
 	raw, err := os.ReadFile(path)
 	var store map[string]string
 	if err != nil || json.Unmarshal(raw, &store) != nil {
-		c.Detail = "no verifier store at " + home + "/.claude/shelf/pr-verified.json"
+		c.Detail = "no verifier store at " + path
 		return c
 	}
 	verified := store[repo+"#"+n]
@@ -381,10 +373,8 @@ func verifierCheck(repo, n, head, base, ref string) mergeCheck {
 	return c
 }
 
-// a clean carries to a new head when the branch's whole change is the verified one: the diff from its merge
-// base with origin's base to its tip, hashed by `git patch-id --stable`. a rebase or a plain merge of main
-// keeps it; an edit inside a merge, a dropped or an added commit changes it. the per-commit patch-ids only
-// name the commit to blame
+// the whole branch change is compared, merges included: per-commit patch-ids let an edit inside a merge slip
+// (verifier round 1); they only name the commit to blame
 func carried(verified, head, base, ref string) (bool, string) {
 	moved := "the verifier's clean is on " + short(verified) + ", the head is " + short(head)
 	if got, _ := gitIn("", "fetch", "-q", "origin", base, ref); !got.ok {
@@ -406,43 +396,60 @@ func carried(verified, head, base, ref string) (bool, string) {
 	if wasChange == nowChange {
 		return true, "clean on " + short(verified) + ", carried to " + short(head) + ": the branch's patch-id is unchanged"
 	}
-	was, _ := patchIDs(verified, base)
-	now, _ := patchIDs(head, base)
-	for _, c := range now {
-		if !slices.ContainsFunc(was, func(v patchCommit) bool { return v.id == c.id }) {
-			return false, short(c.sha) + " " + c.subject + " is past the verifier's clean on " + short(verified)
+	was, errWas := patchIDs(verified, base)
+	now, errNow := patchIDs(head, base)
+	if errWas == nil && errNow == nil {
+		for _, c := range now {
+			if !slices.ContainsFunc(was, func(v patchCommit) bool { return v.id == c.id }) {
+				return false, short(c.sha) + " " + c.subject + " is past the verifier's clean on " + short(verified)
+			}
 		}
 	}
 	return false, moved + "; the branch's change differs from the verified one (a merge that edits, or a dropped commit)"
 }
 
-// the patch-id of everything a branch changes over origin's base, its merges included
+// the patch-id of everything a branch changes over origin's base, from their merge base
 func branchPatch(tip, base string) (string, error) {
-	from, _ := gitIn("", "merge-base", "origin/"+base, tip)
-	if !from.ok {
-		return "", fmt.Errorf("git found no merge base of %s and origin/%s: %s", short(tip), base, logLine(from.log))
+	from, err := mustGit("compare", "merge-base", "origin/"+base, tip)
+	if err != nil {
+		return "", err
 	}
-	diff, _ := gitIn("", "diff", "--no-ext-diff", from.out, tip)
-	id, _ := run("", nil, diff.out+"\n", "git", "patch-id", "--stable")
-	patch, _, _ := strings.Cut(id.out, " ")
-	return patch, nil
+	diff, err := mustGit("compare", "diff", "--no-ext-diff", from, tip)
+	if err != nil {
+		return "", err
+	}
+	return patchID(diff)
+}
+
+func patchID(patch string) (string, error) {
+	got, _ := run("", nil, patch+"\n", "git", "patch-id", "--stable")
+	if !got.ok {
+		return "", fmt.Errorf("git patch-id failed: %s", logLine(got.log))
+	}
+	id, _, _ := strings.Cut(got.out, " ")
+	return id, nil
 }
 
 type patchCommit struct{ sha, subject, id string }
 
-// the commits a branch adds over origin's base, merges skipped (merge-main's own commits carry no patch)
+// merges skipped: a plain merge of main carries no patch of its own
 func patchIDs(tip, base string) ([]patchCommit, error) {
-	listed, _ := gitIn("", "log", "--reverse", "--no-merges", "--format=%H %s", "origin/"+base+".."+tip)
-	if !listed.ok {
-		return nil, fmt.Errorf("git could not list %s's commits: %s", short(tip), logLine(listed.log))
+	listed, err := mustGit("compare", "log", "--reverse", "--no-merges", "--format=%H %s", "origin/"+base+".."+tip)
+	if err != nil {
+		return nil, err
 	}
 	var out []patchCommit
-	for line := range strings.Lines(listed.out) {
+	for line := range strings.Lines(listed) {
 		sha, subject, _ := strings.Cut(strings.TrimSpace(line), " ")
-		shown, _ := gitIn("", "show", "--format=", sha)
-		id, _ := run("", nil, shown.out+"\n", "git", "patch-id", "--stable")
-		patch, _, _ := strings.Cut(id.out, " ")
-		out = append(out, patchCommit{sha, subject, patch})
+		shown, err := mustGit("compare", "show", "--format=", sha)
+		if err != nil {
+			return nil, err
+		}
+		id, err := patchID(shown)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, patchCommit{sha, subject, id})
 	}
 	return out, nil
 }
@@ -452,12 +459,11 @@ func logLine(text string) string {
 	return line
 }
 
-// bytes' review:clean: one ci round, then an approve on dima's account makes review-approved.yml publish it
-// (PK-103 W101); merge-auto gives that approve only on the verifier's clean
+// bytes: one ci review round, then an approve on dima's account makes review-approved.yml publish it
 const reviewClean = "review:clean"
 
 func approveAndAwait(api string, d *mergeDecision) (string, error) {
-	if _, err := ghCall(asDima, http.MethodPost, api+"/pulls/"+d.PR+"/reviews", map[string]string{
+	if _, _, err := ghSend(asDima, http.MethodPost, api+"/pulls/"+d.PR+"/reviews", map[string]string{
 		"commit_id": d.Head, "event": "APPROVE", "body": "verifier clean on " + short(d.Head) + " — x lane merge-auto",
 	}, nil); err != nil {
 		return "", err
@@ -473,24 +479,13 @@ func approveAndAwait(api string, d *mergeDecision) (string, error) {
 		}
 		if time.Now().After(deadline) {
 			return "", &Fail{Msg: fmt.Sprintf("approved %s, and %s was not green on it after %s", short(d.Head), reviewClean, wait),
-				Next: "gh run list --workflow review-approved.yml, then x lane merge-auto " + d.PR}
+				Next: "x lane merge-auto " + d.PR}
 		}
 	}
 }
 
-// a wait or a poll shortened by env, under X_TEST only
-func durationEnv(name string, fallback time.Duration) time.Duration {
-	if os.Getenv("X_TEST") != "" {
-		if d, err := time.ParseDuration(os.Getenv(name)); err == nil {
-			return d
-		}
-	}
-	return fallback
-}
-
-// every required check ran for this head and concluded success; «no run» and «skipped» are never green.
-// needsApprove: review:clean is the only one missing, and an approve publishes it
-func ciCheck(api, base, head string) (mergeCheck, bool, error) {
+// «no run» and «skipped» are never green; needsApprove when review:clean alone is missing after the ci round
+func ciCheck(api, base, ref, head string) (mergeCheck, bool, error) {
 	c := mergeCheck{Name: "ci"}
 	var protection struct {
 		Contexts []string `json:"contexts"`
@@ -533,22 +528,63 @@ func ciCheck(api, base, head string) (mergeCheck, bool, error) {
 			return c, false, nil
 		}
 	}
-	if reviewState != "" {
-		c.Detail = fmt.Sprintf("%s is %s on %s, the rest of %d required green", reviewClean, reviewState, short(head), len(required))
-		return c, true, nil
+	if reviewState == "" {
+		c.OK, c.Detail = true, fmt.Sprintf("%d of %d required green on %s", len(required), len(required), short(head))
+		return c, false, nil
 	}
-	c.OK, c.Detail = true, fmt.Sprintf("%d of %d required green on %s", len(required), len(required), short(head))
-	return c, false, nil
+	c.Detail = fmt.Sprintf("%s is %s on %s, the rest of %d required green", reviewClean, reviewState, short(head), len(required))
+	rounds, err := reviewRounds(api, ref)
+	if err != nil {
+		return c, false, err
+	}
+	if rounds == 0 {
+		c.Detail += "; no ci review round ran on " + ref + " yet — x lane review first"
+		return c, false, nil
+	}
+	return c, true, nil
+}
+
+// the server's ?branch= filter once answered 0 over a success (review.go, #116): filtered here instead
+func reviewRounds(api, ref string) (int, error) {
+	type run struct {
+		HeadBranch string `json:"head_branch"`
+		Status     string `json:"status"`
+		Conclusion string `json:"conclusion"`
+	}
+	status, _, err := ghSend(asDima, http.MethodGet, api+"/actions/workflows/review.yml", nil, nil)
+	if status == http.StatusNotFound {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	runs, err := ghPages[run](asDima, api+"/actions/workflows/review.yml/runs", "workflow_runs")
+	if err != nil {
+		return 0, err
+	}
+	rounds := 0
+	for _, r := range runs {
+		if r.HeadBranch == ref && r.Status == "completed" && r.Conclusion == "success" {
+			rounds++
+		}
+	}
+	return rounds, nil
 }
 
 func threadsCheck(repo, n string) (mergeCheck, error) {
 	c := mergeCheck{Name: "threads"}
 	owner, name, _ := strings.Cut(repo, "/")
 	var answer struct {
+		Errors []struct {
+			Message string `json:"message"`
+		} `json:"errors"`
 		Data struct {
 			Repository struct {
-				PullRequest struct {
+				PullRequest *struct {
 					ReviewThreads struct {
+						PageInfo struct {
+							HasNextPage bool `json:"hasNextPage"`
+						} `json:"pageInfo"`
 						Nodes []struct {
 							IsResolved bool   `json:"isResolved"`
 							Path       string `json:"path"`
@@ -565,16 +601,29 @@ func threadsCheck(repo, n string) (mergeCheck, error) {
 		} `json:"data"`
 	}
 	query := `query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){
-reviewThreads(first:100){nodes{isResolved path line comments(first:1){nodes{url}}}}}}}`
+reviewThreads(first:100){pageInfo{hasNextPage} nodes{isResolved path line comments(first:1){nodes{url}}}}}}}`
 	var number int
 	_, _ = fmt.Sscan(n, &number)
-	if _, err := ghCall(asDima, http.MethodPost, githubBase()+"/graphql", map[string]any{
+	if _, _, err := ghSend(asDima, http.MethodPost, githubBase()+"/graphql", map[string]any{
 		"query": query, "variables": map[string]any{"owner": owner, "name": name, "number": number},
 	}, &answer); err != nil {
 		return c, err
 	}
+	// github answers a graphql failure with a 200: an error or a missing pr must never read as 0 open threads
+	pr := answer.Data.Repository.PullRequest
+	if len(answer.Errors) > 0 || pr == nil {
+		said := "no pull request in the answer"
+		if len(answer.Errors) > 0 {
+			said = answer.Errors[0].Message
+		}
+		return c, &Fail{Msg: "github could not list the review threads of #" + n + ": " + said, Next: "x gh pr " + n}
+	}
+	if pr.ReviewThreads.PageInfo.HasNextPage {
+		c.Detail = "over 100 review threads, more than one read holds"
+		return c, nil
+	}
 	var open []string
-	for _, t := range answer.Data.Repository.PullRequest.ReviewThreads.Nodes {
+	for _, t := range pr.ReviewThreads.Nodes {
 		if t.IsResolved {
 			continue
 		}

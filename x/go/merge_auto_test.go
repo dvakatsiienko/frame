@@ -178,24 +178,18 @@ func (w *mergeWorld) run(t *testing.T, args ...string) ran {
 	return xIn(t, w.clone, w.env, append([]string{"lane", "merge-auto"}, args...)...)
 }
 
-type mergeCheckRow struct {
-	Name   string `json:"name"`
-	OK     bool   `json:"ok"`
-	Detail string `json:"detail"`
+type mergeEnvelope struct {
+	Data  mergeDecision `json:"data"`
+	Error string        `json:"error"`
 }
 
-func checkRows(t *testing.T, got ran) []mergeCheckRow {
-	t.Helper()
-	var envelope struct {
-		Data struct {
-			Checks []mergeCheckRow `json:"checks"`
-		} `json:"data"`
-	}
+func envelopeOf(got ran) mergeEnvelope {
+	var envelope mergeEnvelope
 	_ = json.Unmarshal([]byte(got.stdout), &envelope)
-	return envelope.Data.Checks
+	return envelope
 }
 
-func TestMergeAutoMergesACleanGreenPrAndPrintsTheThreeChecks(t *testing.T) {
+func TestMergeAutoMergesACleanGreenPrNamingTheThreeChecks(t *testing.T) {
 	w := newMergeWorld(t, "script/foo.ts")
 
 	got := w.run(t, "7", "--apply")
@@ -205,7 +199,7 @@ func TestMergeAutoMergesACleanGreenPrAndPrintsTheThreeChecks(t *testing.T) {
 		t.Fatalf("exit %d, merge calls %q, want one pinned to %s:\n%s", got.code, merges, w.head, got.stdout)
 	}
 	var names []string
-	for _, c := range checkRows(t, got) {
+	for _, c := range envelopeOf(got).Data.Checks {
 		if !c.OK {
 			t.Errorf("check %s reads not ok: %s", c.Name, c.Detail)
 		}
@@ -227,7 +221,7 @@ func TestMergeAutoCarriesACleanAcrossARebaseWithUnchangedPatchIds(t *testing.T) 
 	if merges := w.hub.sent("PUT "); got.code != 0 || len(merges) != 1 {
 		t.Fatalf("exit %d, %d merge calls, want the carried clean to merge:\n%s", got.code, len(merges), got.stdout)
 	}
-	if rows := checkRows(t, got); len(rows) == 0 || !strings.Contains(rows[0].Detail, "patch-id") {
+	if rows := envelopeOf(got).Data.Checks; len(rows) == 0 || !strings.Contains(rows[0].Detail, "patch-id") {
 		t.Errorf("the verifier row %+v does not say the clean carried by patch-id", rows)
 	}
 }
@@ -248,34 +242,37 @@ func TestMergeAutoCarriesACleanAcrossAPlainMergeOfMain(t *testing.T) {
 }
 
 func TestMergeAutoWaitsWhenTheBranchChangeIsNotTheVerifiedOne(t *testing.T) {
-	cases := map[string]func(t *testing.T, w *mergeWorld){
-		"a merge of main that also edits a file": func(t *testing.T, w *mergeWorld) {
+	cases := []struct {
+		name   string
+		change func(t *testing.T, w *mergeWorld)
+	}{
+		{"a merge of main that also edits a file", func(t *testing.T, w *mergeWorld) {
 			w.mainMoves(t, "one.txt")
 			gitT(t, w.seed, "reset", "-q", "--hard", "origin/coder/x")
 			gitT(t, w.seed, "merge", "-q", "--no-commit", "main")
 			write(t, filepath.Join(w.seed, "script/foo.ts"), "slipped into the merge\n")
 			gitT(t, w.seed, "add", "script/foo.ts")
 			gitT(t, w.seed, "commit", "-q", "--no-edit")
-		},
-		"a verified commit dropped": func(t *testing.T, w *mergeWorld) {
+		}},
+		{"a verified commit dropped", func(t *testing.T, w *mergeWorld) {
 			write(t, filepath.Join(w.seed, "script/bar.ts"), "a second verified change\n")
 			gitT(t, w.seed, "add", "script/bar.ts")
 			gitT(t, w.seed, "commit", "-q", "-m", "second change")
 			w.moveHead(t)
 			write(t, w.store, `{"o/r#7":"`+w.head+`"}`)
 			gitT(t, w.seed, "reset", "-q", "--hard", "HEAD~1")
-		},
+		}},
 	}
-	for name, change := range cases {
-		t.Run(name, func(t *testing.T) {
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
 			w := newMergeWorld(t, "script/foo.ts")
-			change(t, w)
+			c.change(t, w)
 			w.moveHead(t)
 
 			got := w.run(t, "7", "--apply")
 
-			if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeError(got), "wait: ") {
-				t.Fatalf("exit %d, %d merge calls, error %q, want a wait", got.code, len(merges), envelopeError(got))
+			if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "wait: ") {
+				t.Fatalf("exit %d, %d merge calls, error %q, want a wait", got.code, len(merges), envelopeOf(got).Error)
 			}
 		})
 	}
@@ -290,8 +287,8 @@ func TestMergeAutoWaitsWhenAPushChangedThePatchAfterTheClean(t *testing.T) {
 	got := w.run(t, "7", "--apply")
 
 	want := "wait: " + short(w.head) + " unreviewed fix is past the verifier's clean"
-	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeError(got), want) {
-		t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeError(got), want)
+	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
+		t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeOf(got).Error, want)
 	}
 }
 
@@ -304,23 +301,12 @@ func TestMergeAutoPinsTheMergeToTheHeadItRead(t *testing.T) {
 	got := w.run(t, "7", "--apply")
 
 	merges := w.hub.sent("PUT ")
-	if got.code != 1 || len(merges) != 1 || !strings.Contains(merges[0], `"sha":"`+w.head+`"`) || !strings.Contains(envelopeError(got), "Head branch was modified") {
-		t.Fatalf("exit %d, merges %q, error %q, want one merge pinned to %s that github refused", got.code, merges, envelopeError(got), w.head)
+	if got.code != 1 || len(merges) != 1 || !strings.Contains(merges[0], `"sha":"`+w.head+`"`) || !strings.Contains(envelopeOf(got).Error, "Head branch was modified") {
+		t.Fatalf("exit %d, merges %q, error %q, want one merge pinned to %s that github refused", got.code, merges, envelopeOf(got).Error, w.head)
 	}
 }
 
-func riskyOf(t *testing.T, got ran) []string {
-	t.Helper()
-	var envelope struct {
-		Data struct {
-			Risky []string `json:"risky"`
-		} `json:"data"`
-	}
-	_ = json.Unmarshal([]byte(got.stdout), &envelope)
-	return envelope.Data.Risky
-}
-
-func TestMergeAutoMergesARiskyPrAndNamesEachRiskyPath(t *testing.T) {
+func TestMergeAutoMergesARiskyPrNamingEachRiskyPath(t *testing.T) {
 	cases := []struct {
 		name   string
 		paths  []string
@@ -348,8 +334,8 @@ func TestMergeAutoMergesARiskyPrAndNamesEachRiskyPath(t *testing.T) {
 
 			got := w.run(t, "7", "--apply")
 
-			if merges := w.hub.sent("PUT "); got.code != 0 || len(merges) != 1 || !slices.Equal(riskyOf(t, got), c.risky) {
-				t.Fatalf("exit %d, %d merge calls, risky %v, want a merge naming %v:\n%s", got.code, len(merges), riskyOf(t, got), c.risky, got.stdout)
+			if merges := w.hub.sent("PUT "); got.code != 0 || len(merges) != 1 || !slices.Equal(envelopeOf(got).Data.Risky, c.risky) {
+				t.Fatalf("exit %d, %d merge calls, risky %v, want a merge naming %v:\n%s", got.code, len(merges), envelopeOf(got).Data.Risky, c.risky, got.stdout)
 			}
 		})
 	}
@@ -395,8 +381,8 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 			got := w.run(t, "7", "--apply")
 
 			want := "wait: self-edit, needs dima's word — " + path
-			if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeError(got), want) {
-				t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeError(got), want)
+			if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
+				t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeOf(got).Error, want)
 			}
 		})
 	}
@@ -449,8 +435,8 @@ func TestMergeAutoBrakesForSevenDaysAfterARevertOfItsMerge(t *testing.T) {
 				return
 			}
 			want := "wait: brake on, needs dima's word — " + short(revert)
-			if got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeError(got), want) {
-				t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeError(got), want)
+			if got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
+				t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeOf(got).Error, want)
 			}
 		})
 	}
@@ -486,6 +472,9 @@ func githubRevert(t *testing.T, w *mergeWorld, _, at string) string {
 func bytesWorld(t *testing.T, publishes bool) *mergeWorld {
 	w := newMergeWorld(t, "apps/speak/src/a.ts")
 	w.hub.pages[repoPath+"/branches/main/protection/required_status_checks"] = `{"contexts":["test","build","review:clean"]}`
+	w.hub.pages[repoPath+"/actions/workflows/review.yml"] = `{"name":"review"}`
+	w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
+		{"head_branch":"coder/x","status":"completed","conclusion":"success"}]}`
 	if publishes {
 		w.hub.onApprove = func(h *hub) {
 			h.pages[repoPath+"/commits/"+h.head+"/check-runs"] = `{"check_runs":[
@@ -497,7 +486,7 @@ func bytesWorld(t *testing.T, publishes bool) *mergeWorld {
 	return w
 }
 
-func TestMergeAutoApprovesABytesHeadThenMergesOnReviewClean(t *testing.T) {
+func TestMergeAutoMergesABytesHeadAfterItsApprove(t *testing.T) {
 	w := bytesWorld(t, true)
 
 	got := xIn(t, w.clone, append(w.env, "X_POLL=10ms"), "lane", "merge-auto", "7", "--apply")
@@ -521,17 +510,25 @@ func TestMergeAutoApprovesABytesHeadThenMergesOnReviewClean(t *testing.T) {
 }
 
 func TestMergeAutoApprovesNothingUnlessTheRestHolds(t *testing.T) {
-	cases := map[string]func(w *mergeWorld){
-		"the verifier is not clean": func(w *mergeWorld) { write(t, w.store, `{}`) },
-		"a thread is open": func(w *mergeWorld) {
+	cases := []struct {
+		name   string
+		change func(t *testing.T, w *mergeWorld)
+	}{
+		{"the verifier is not clean", func(t *testing.T, w *mergeWorld) { write(t, w.store, `{}`) }},
+		{"a thread is open", func(_ *testing.T, w *mergeWorld) {
 			w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[
 				{"isResolved":false,"path":"a.ts","line":1,"comments":{"nodes":[{"url":"https://t/1"}]}}]}}}}}`
-		},
+		}},
+		{"no ci review round ran yet", func(_ *testing.T, w *mergeWorld) {
+			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
+				{"head_branch":"other","status":"completed","conclusion":"success"},
+				{"head_branch":"coder/x","status":"in_progress","conclusion":null}]}`
+		}},
 	}
-	for name, change := range cases {
-		t.Run(name, func(t *testing.T) {
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
 			w := bytesWorld(t, true)
-			change(w)
+			c.change(t, w)
 
 			got := xIn(t, w.clone, append(w.env, "X_POLL=10ms"), "lane", "merge-auto", "7", "--apply")
 
@@ -547,14 +544,14 @@ func TestMergeAutoStopsWhenReviewCleanNeverLands(t *testing.T) {
 
 	got := xIn(t, w.clone, append(w.env, "X_POLL=10ms", "X_REVIEW_WAIT=200ms"), "lane", "merge-auto", "7", "--apply")
 
-	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeError(got), "review:clean") {
-		t.Fatalf("exit %d, %d merges, error %q, want a stop naming review:clean", got.code, len(merges), envelopeError(got))
+	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "review:clean") {
+		t.Fatalf("exit %d, %d merges, error %q, want a stop naming review:clean", got.code, len(merges), envelopeOf(got).Error)
 	}
 }
 
 // the want line: dima never presses approve — a low-risk pr and a risky one both merge in frame, with no
 // approve and no github auto-merge, and the risky one names its path
-func TestMergeAutoMergesBothPrsWithoutDimasHandOrGithubsAutoMerge(t *testing.T) {
+func TestMergeAutoMergesWithoutDimasHand(t *testing.T) {
 	plain, risky := newMergeWorld(t, "script/foo.ts"), newMergeWorld(t, ".github/workflows/ci.yml")
 
 	gotPlain, gotRisky := plain.run(t, "7", "--apply"), risky.run(t, "7", "--apply")
@@ -565,18 +562,18 @@ func TestMergeAutoMergesBothPrsWithoutDimasHandOrGithubsAutoMerge(t *testing.T) 
 			t.Fatalf("want one merge, no approve, no auto-merge:\n%s", calls)
 		}
 	}
-	if gotPlain.code != 0 || gotRisky.code != 0 || len(riskyOf(t, gotPlain)) != 0 || !slices.Equal(riskyOf(t, gotRisky), []string{".github/workflows/ci.yml"}) {
-		t.Fatalf("exits %d %d, risky %v %v", gotPlain.code, gotRisky.code, riskyOf(t, gotPlain), riskyOf(t, gotRisky))
+	if gotPlain.code != 0 || gotRisky.code != 0 || len(envelopeOf(gotPlain).Data.Risky) != 0 || !slices.Equal(envelopeOf(gotRisky).Data.Risky, []string{".github/workflows/ci.yml"}) {
+		t.Fatalf("exits %d %d, risky %v %v", gotPlain.code, gotRisky.code, envelopeOf(gotPlain).Data.Risky, envelopeOf(gotRisky).Data.Risky)
 	}
 }
 
-func TestMergeAutoDryRunPlansAMergeAndRefusesAWait(t *testing.T) {
+func TestMergeAutoDryRunRefusesAWait(t *testing.T) {
 	clean, waiting := newMergeWorld(t, "script/foo.ts"), newMergeWorld(t, "script/foo.ts")
 	write(t, waiting.store, `{}`)
 
 	planned, refused := clean.run(t, "7"), waiting.run(t, "7")
 
-	if planned.code != 4 || refused.code != 1 || !strings.Contains(envelopeError(refused), "wait: ") {
+	if planned.code != 4 || refused.code != 1 || !strings.Contains(envelopeOf(refused).Error, "wait: ") {
 		t.Fatalf("exits %d and %d, want 4 for a merge to confirm and 1 for a wait:\n%s\n%s", planned.code, refused.code, planned.stdout, refused.stdout)
 	}
 	if len(clean.hub.sent("PUT "))+len(waiting.hub.sent("PUT ")) != 0 {
@@ -584,15 +581,30 @@ func TestMergeAutoDryRunPlansAMergeAndRefusesAWait(t *testing.T) {
 	}
 }
 
-func envelopeError(got ran) string {
-	var envelope struct {
-		Error string `json:"error"`
+func TestMergeAutoStopsWhenGithubCannotListTheThreads(t *testing.T) {
+	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":null}},"errors":[{"message":"Resource not accessible by integration"}]}`
+
+	got := w.run(t, "7", "--apply")
+
+	if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "Resource not accessible") {
+		t.Fatalf("exit %d, %d merge calls, error %q, want a stop naming github's error", got.code, len(merges), envelopeOf(got).Error)
 	}
-	_ = json.Unmarshal([]byte(got.stdout), &envelope)
-	return envelope.Error
 }
 
-func TestMergeAutoWaitsAndNamesWhy(t *testing.T) {
+func TestMergeAutoWaitCarriesTheChecksItRead(t *testing.T) {
+	w := newMergeWorld(t, ".github/workflows/ci.yml")
+	write(t, w.store, `{}`)
+
+	got := w.run(t, "7", "--apply")
+
+	data := envelopeOf(got).Data
+	if got.code != 1 || data.Decision != "wait" || len(data.Checks) != 3 || !slices.Equal(data.Risky, []string{".github/workflows/ci.yml"}) {
+		t.Fatalf("exit %d, data %+v, want the wait's checks and risky line in the envelope", got.code, data)
+	}
+}
+
+func TestMergeAutoWaitNamesWhy(t *testing.T) {
 	runs := func(w *mergeWorld, body string) { w.hub.pages[repoPath+"/commits/"+w.head+"/check-runs"] = body }
 	cases := []struct {
 		name   string
@@ -613,6 +625,9 @@ func TestMergeAutoWaitsAndNamesWhy(t *testing.T) {
 		{"a repo with 0 required checks", func(w *mergeWorld) {
 			delete(w.hub.pages, repoPath+"/branches/main/protection/required_status_checks")
 		}, "0 required checks on main"},
+		{"over 100 review threads", func(w *mergeWorld) {
+			w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":{"reviewThreads":{"pageInfo":{"hasNextPage":true},"nodes":[]}}}}}`
+		}, "over 100 review threads"},
 		{"one open review thread", func(w *mergeWorld) {
 			w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[
 				{"isResolved":true,"path":"a.go","line":1,"comments":{"nodes":[{"url":"https://t/1"}]}},
@@ -634,8 +649,8 @@ func TestMergeAutoWaitsAndNamesWhy(t *testing.T) {
 			got := w.run(t, "7", "--apply")
 
 			merges := w.hub.sent("PUT ")
-			if got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeError(got), "wait: "+c.want) {
-				t.Fatalf("exit %d, %d merge calls, error %q, want exit 1, 0 merges and %q", got.code, len(merges), envelopeError(got), c.want)
+			if got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "wait: "+c.want) {
+				t.Fatalf("exit %d, %d merge calls, error %q, want exit 1, 0 merges and %q", got.code, len(merges), envelopeOf(got).Error, c.want)
 			}
 		})
 	}

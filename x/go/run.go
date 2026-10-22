@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"slices"
@@ -20,6 +21,8 @@ type Fail struct {
 	IsUsage bool
 	Refused bool
 	Log     []string
+	// what the verb read before it refused, for an agent to act on
+	Data any
 }
 
 func (f *Fail) Error() string { return f.Msg }
@@ -77,7 +80,7 @@ func (r *Run) Step(name, doing string, work func() (string, error)) error {
 	started := time.Now()
 	err := r.step(name, doing, work)
 	traced.Steps = append(traced.Steps, step{name, time.Since(started).Milliseconds()})
-	if _, missed := err.(notHeld); missed {
+	if _, missed := errors.AsType[notHeld](err); missed {
 		return nil
 	}
 	if err != nil && r.failed == "" {
@@ -86,8 +89,7 @@ func (r *Run) Step(name, doing string, work func() (string, error)) error {
 	return err
 }
 
-// notHeld is a check that ran and does not hold: its step draws ✗ with the reason, and the run goes on to
-// the next check
+// a check that ran and does not hold: its step draws ✗, and the run goes on
 type notHeld string
 
 func (n notHeld) Error() string { return string(n) }

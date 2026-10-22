@@ -253,10 +253,21 @@ func TestGhPrRefusesBadInputWithAUsageExit(t *testing.T) {
 }
 
 func TestGhPrReadsTheRepoFromTheOriginRemote(t *testing.T) {
-	for _, remote := range []string{"git@github.com:o/r.git", "https://github.com/o/r"} {
-		t.Run(remote, func(t *testing.T) {
+	cases := []struct{ remote, insteadOf string }{
+		{"git@github.com:o/r.git", ""},
+		{"https://github.com/o/r", ""},
+		{"gh:o/r", "https://github.com/"},
+		{"https://github.com/o/r.git", "/srv/mirror/o/r.git"},
+	}
+	for _, c := range cases {
+		t.Run(c.remote+" via "+c.insteadOf, func(t *testing.T) {
 			dir := repo(t)
-			gitT(t, dir, "remote", "add", "origin", remote)
+			gitT(t, dir, "remote", "add", "origin", c.remote)
+			if c.insteadOf == "https://github.com/" {
+				gitT(t, dir, "config", "url.https://github.com/.insteadOf", "gh:")
+			} else if c.insteadOf != "" {
+				gitT(t, dir, "config", "url."+c.insteadOf+".insteadOf", c.remote)
+			}
 			server, _ := fakeGithub(t, prPages())
 			keys := keysFixture(t, map[string]string{"keychain:x-token-gh-x-coder:x": farFuture + ":ghs_coder"})
 

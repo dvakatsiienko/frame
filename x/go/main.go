@@ -374,7 +374,11 @@ func finishFail(m mode, name string, r *Run, err error) int {
 		for _, line := range fail.Log {
 			fmt.Fprintln(os.Stderr, line)
 		}
-		emit(name, kv{"error", fail.Msg}, kv{"next", fail.Next}, kv{"ok", false}, kv{"status", status})
+		fields := []kv{{"error", fail.Msg}, {"next", fail.Next}, {"ok", false}, {"status", status}}
+		if fail.Data != nil {
+			fields = append([]kv{{"data", fail.Data}}, fields...)
+		}
+		emit(name, fields...)
 		return exits[status]
 	}
 	code := fmt.Sprintf("exit %d", exits[status])
