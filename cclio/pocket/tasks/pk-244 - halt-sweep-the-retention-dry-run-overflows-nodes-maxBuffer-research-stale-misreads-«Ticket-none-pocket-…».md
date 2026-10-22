@@ -6,14 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T17:36:00Z'
-updated_date: '2026-10-21T17:50:00Z'
+updated_date: '2026-10-22T11:46:00Z'
 due_date: '2026-10-22'
 labels:
   - xs
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 99999
 ---
 
 ## Description

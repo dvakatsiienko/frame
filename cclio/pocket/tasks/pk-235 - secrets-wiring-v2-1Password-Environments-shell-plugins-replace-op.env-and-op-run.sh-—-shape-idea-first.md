@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T11:46:00Z'
-updated_date: '2026-10-21T15:10:00Z'
+updated_date: '2026-10-22T11:50:00Z'
 labels:
   - m
 dependencies: []
@@ -36,4 +36,15 @@ slot (dima o7, 14:52): shape-idea after today's 4 grills, before the coordinator
 2026-10-21 16:11 the research moved: docs/research/evergreen-borrows-2026-10-21.md (1Password wiring) + the lanes summary in it.
 
 **waiting for:** the coordinator review (PK-90) and the pm revamp (PK-103) — dima's o81, 2026-10-21 17:45
+
+2026-10-22 inbox (question), folded:
+W5 ❓ you told me 1password now supports plain .env files — can the op.env workaround be removed?
+W6 ❓ when did you plan to do that?
+boot answer 10-22: yes in shape — Environments serve a local .env as a named pipe (beta, desktop app running), so op.env + op-run.sh can go; not before two probes (the x-fleet service account vs «Environment was not found», Vite's watcher on the pipe). the slot was dima's o81: after the coordinator review (PK-90) and the pm revamp (PK-103), as a shape-idea.
+
+2026-10-22 raw drop (inbox, questions):
+> **1p recent update**
+> you told 1p now supports plain .env files, and that workaround via alternative op.env or something like this can be removed? when you planned to do that?
+correction 10-22 (wishkeeper): PK-90 is done (archived 10-21 15:49), so the gate is the pm revamp alone.
+**waiting for:** the pm revamp (PK-103), then a shape-idea slot — dima's o81, 2026-10-21; PK-90 done
 <!-- SECTION:NOTES:END -->

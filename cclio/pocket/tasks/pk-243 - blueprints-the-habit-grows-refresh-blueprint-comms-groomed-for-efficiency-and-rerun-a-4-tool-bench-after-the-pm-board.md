@@ -6,7 +6,8 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-21T17:05:00Z'
-updated_date: '2026-10-21T17:32:00Z'
+updated_date: '2026-10-22T12:05:00Z'
+due_date: '2026-10-23'
 labels:
   - m
 dependencies: []
@@ -48,4 +49,6 @@ W15 dima, 20:21: other ways to edit Figma cheaper — prebuilt scripts for the c
 W16 dima, 20:23: bench the prebuilt-moves kit (by hand vs kit: tokens, calls, errors, how it reads), not today — combined with the W8 4-tool bench after the pm flow is on its board
 
 W17 dima, 20:31 (o121): the recipe board 📐 refresh-crew-coordinator is NOT redrawn tonight — tomorrow we draw the pm board, sharpen the pretty-drawing craft from it, then refresh the crew-coordinator board with everything learned. o122: n8n kept as the workflow automation tool, its blueprint role revisited after the bench
+
+2026-10-22 15:05 dima: W8+W16 (the 4-tool drawing bench + moves-kit A/B) and W17 (refresh-crew-coordinator board v2) move to tomorrow at least — «move these 2 at least for tomorrow»
 <!-- SECTION:NOTES:END -->

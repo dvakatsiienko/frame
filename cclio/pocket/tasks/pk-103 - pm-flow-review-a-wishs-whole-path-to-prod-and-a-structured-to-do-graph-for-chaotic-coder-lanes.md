@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-21T17:33:00Z'
+updated_date: '2026-10-22T14:37:00Z'
 due_date: '2026-10-22'
 labels:
   - m
@@ -95,4 +95,104 @@ inbox 10-19 (idea, his ask: fold into the pm module revamp): split summoning and
 2026-10-21 18:49 dima: «tomorrow, we open with the PM revamp, right, as a second turn after the boot» — the pm research of run #6 feeds it: https://claude.ai/artifact/UQDHgn3qcntgD2UCShxpfv
 
 2026-10-21 20:35 halt: folded into W1–W13 (the 17:51 ask); raw drops above unchanged
+
+2026-10-22 inbox (first action), folded — add to the pm revamp scope:
+W14 topic to review: the pocket ↔ linear ticket balance
+W15 after the pocket moved from a plain file to Backlog.md tickets, PK items flood it; cclio keeps tickets in the pocket and uses linear less often now
+W16 ❓ why?
+W17 not necessarily bad
+W18 the contract of how, when and where tickets are created and placed needs a revisit: is ticket routing set up right in the flows?
+W19 tickets land on the right surface, and leave each surface at the right time too
+
+2026-10-22 raw drop (inbox, first actions):
+> **add this to pm revamp scope**
+> topic to review: pocket/linear ticket balance. after we changed your pocket from plain file to more granularized ticket system via backlog, PK-tickets started to flood your pocket. e.g. you tend to keep tickets in a pocket, and use linear less often now. why? this is not necessarily bad. although the contract of how/when/where you create and place tickets needs a revisit to see if ticket routing is correctly setup in your flows. so tickets lands in a correct surface and leave each surface in a right time too.
+
+2026-10-22 15:25 dima, folded (on the pm board):
+W20 a blueprint shows the flow at highlight level only; renames and granular items (FRM-266, summons vs spawns, member renames) stay off the board
+W21 the rename revamp (W9, W10) runs after the pm mechanisms are fixed: renames are cosmetic
+
+2026-10-22 16:18 dima's guess at the worst parts (fix mode step 3), folded:
+W22 inbox: the main concern is data loss — 10-21 uncovered roughly 35 % of my wishes' data lost; fix this first. if you keep forgetting what I asked for initially, we build the wrong stuff
+W23 pocket vs linear: described in my FigJam comments
+W24 a lot of lane types confuse me: open the renaming part by rethinking the lane names, shift and night-shift lanes included, and reduce how many lane types we have
+W25 fix or resolve in place whenever possible, to stop pocket clutter with chores before it happens — a big one
+W26 the loop I keep catching: an «almost freebie» (a thing that could just be solved) gets folded → stays parked, forgotten for a week → I ask for low tide → it gets unfolded and solved; instead, resolve it in place
+W27 not for everything, but your call on what can be done now instead of postponed is not precise enough; I often catch your intent to hold things that could be resolved in place, and ask you to do them
+raw drop: in this session's transcript, 16:18
+
+2026-10-22 FigJam comments on the pm column (11, read 16:20), folded:
+W28 (intake band) the most crucial part: it creates the scope of what we do, and data loss here drifts everything else (the ~35 % wish-loss incident)
+W29 (first-use tile) ❓ why lost? how do we not lose data? it is important
+W30 (linear rarely reached) true, and understandable: I asked for a fast by-hand tool because linear is farther away (network hops); you have it and it is good, but the balance is off — grill the linear ↔ pocket contract for a turn or two
+W31 (two homes) agree on the purpose of each: why both, which kind of ticket at which stage lives on which surface; history: the flowlog file came first, cluttered and parked too long; Backlog.md replaced it, the root issue stayed
+W32 (two homes) ❓ why two places at all, why not linear only? linear: the long shelf (bytes, trophy-sys, cv, things for next week or month) + initiatives and milestones; the pocket: the closest stuff in sequential order, because main lanes get steered constantly (today: the railway mails before the pm revamp)
+W33 (two homes) the pocket is cclio's mini to-do for the observable future, as empty as possible: by-hand tickets, to-dos born in place, things solvable today or tomorrow; a week out → linear in a good spot; always resolve pocket items (preferred) or move them to linear
+W34 (two homes) alternative: the pocket as a lane's plan — store a spawned lane's plan there, handy in shift lanes while I'm afk
+W35 (board header) ❓ why are initiatives and milestones not drawn? not drawn = buried, so they get forgotten; low attention to them makes scope steer through the pocket, which is why it grows
+W36 (board header) a flow to grill: roadmap/initiatives → milestones → linear tickets → pocket items; or pocket items first (tickets born in the pocket, how/when to refine) → initiatives → milestones → tickets → pocket; initiatives and milestones become two always-watched monitoring points, kept in good shape
+W37 (hand-off) ❓ are you still sure to-tickets is better run by the coder, not by you?
+W38 (hand-off) without a clear contract the glide is always outdated
+W39 (hand-off) steers are unavoidable: I steer the coder on early mistakes or ask you to; you send your own catches; both of us add wishes and corrections
+W40 (hand-off) ideally the lane shape is automated; ❓ remind me how you do it now; today you manage it, partly through steers; my steer to the coder drifts the glide, or you forget to update it
+W41 (hand-off) ❓ could the glide read its scope from a file — how, is it possible, would it interfere with the flow?
+
+2026-10-22 16:31 dima, folded (band 4 answers + data loss):
+W42 agreed: the coder runs to-tickets, then tells cclio to review and steer the order against the overall flow; cclio has the final word
+W43 cclio is aware of every steer, however it happened, to steer the coder's order herself
+W44 the gap: dima steering a coder inside its own thread; the coder reports to cclio how its execution order changed — a tiny steer (a typo, bold → plain) changes nothing, a steer that adds a mini to-do does
+W45 those reports are silent: no push to cclio, delivered through a silent mod (slipstream)
+W46 ❓ why summarize my wishes at all, if composer already groomed them into a compact form with no fluff? composer's grooming at the birthplace was meant to solve the bloat (wispr dictation is long and fluffy); bloat is bad too
+W47 side ❓ spawn wishkeeper now to formulate the pm module's problem area, spot weak spots, maybe suggest fixes — or zoom further first?
+
+2026-10-22 16:38 dima, folded:
+W48 side ❓ can wishkeeper read the FigJam map? it would be useful for it to look
+W49 ❓ are the band 4 decisions enough to automate the glide order, or is something left uncovered? if cclio knows everything that steers a coder's order, can cclio shape the final execution order, so the glide is automated from that key file — and what is that file?
+W50 ❓ the flow in my mind: cclio runs to-spec → hands the spec to the coder → the coder runs to-tickets → hands the final shape back to cclio; what is the final shape — the many ticket files to-tickets writes, one file holding all of them, or a separate file with the execution order? which file does the glide read? which file holds the coder's final execution order?
+
+2026-10-22 16:53 dima, folded (on the issue list):
+W51 plan.md wants a clearer name — lane plan, glide plan, lane glide plan, or similar
+W52 ❓ the coder appending a steer line: should it also tell cclio, or is editing the file enough? if the glide is automated and catches the edit itself, cclio is aware anyway, so the message is optional; either way a coder → cclio message is silent (slipstreamed, never pushed)
+W53 ❓ why is a verb needed to draw the glide? can the glide run more automated, on its own?
+W54 my pocket/linear lines so far are thoughts and ideas to grill on, not a contract yet; generally true, but I expect cclio's own review and proposals
+W55 ❓ how do we define a role for pocket and linear so both are useful? we could throw the pocket away and use only linear — simpler? is the pocket dead weight and one more place of confusion?
+W56 the pocket's idea: a quick place for cclio to read tickets fast, without becoming clutter; an unfinished contract
+W57 a gotcha in I2: today's models, Opus 5.5 included, overestimate time — a 5-minute fix estimated at an hour, a 1-minute freebie at 20 minutes; maybe that is the cause; don't push too hard on it, the built-in habit is tuned that way and my asks could break it
+W58 still: tune the habits so cclio resolves in place and does freebies more proactively; maybe a new entity, the «almost freebie» — the folded items are often almost freebies cclio never marked as freebies; propose how to solve it
+
+2026-10-22 17:05 grill round 1 answered — all nine picks taken (Q1–Q9: copy never rewrite; wish-cover reads words; a grill round goes to a file first; monitor M1+M2 now, M3 from 10-28; lane-plan.md; a [progress] ping after an in-thread steer; the mod draws the glide from lane-plan.md; the coder ticks + appends, cclio seals; lanes of 2+ tickets). his steers, folded:
+W59 (Q1) my verbatims are always groomed, whatever the source: composer grooms only at the inbox parse; my mainline prompts (wispr dictation, like now) arrive bloated, with grammar mistakes and broken sentences, which hurts clarity; ❓ how do we build a mechanism that grooms every prompt of mine, so a copied verbatim from the mainline is never folded raw?
+W60 (Q1) one grooming mode for every source; rule one: always preserve my intent, only clear the fluff, fix the grammar, make the sentences read well even for me
+W61 (Q1) remove duplications too; the prompt may be optimized, but never in a machine way: it stays my voice, my wish and my intent come first
+W62 (Q9) a freebie can be done by anyone — cclio, the main lane, a parallel lane — even while the main lane is busy
+W63 the grill habit: write the round, ccrow reviews it, fold her useful edits, then print the refined round once — no reprinted questions, no double reading (resolved in place 17:06: habit-dima-comms § grill)
+
+2026-10-22 17:14 grill round 2 answered — all four picks taken (composer the one grooming runner + W61 in its rules; the pocket kept with a smaller job; the freebie step-count test, no new entity; form 2 at birth, form 1 for placement, a boot health line). his steers, folded:
+W64 (Q2) the pocket is a today-and-tomorrow working set, a little wider than today: the smaller things and the slightly bigger ones, never the huge long ones
+W65 (Q2) one exception: a long main-lane ticket that runs for days by design (the memory sweep took roughly 5–7 days) may stay in the pocket as the active item — only ever one such ticket, never several
+W66 (Q3) let's try it; a reminder: cclio and the main lane are the same thing — what we do in this thread is the main lane
+W67 (Q4) ❓ agreed, but how do we keep milestones healthy? when and how is a milestone born? the same for initiative phases?
+
+2026-10-22 17:30 grill round 3 answered — Q1 and Q2 taken with steers, Q3 taken minus the 7-day line. his steers, folded:
+W68 (Q1) what a milestone is: a tool that scopes chunks of work; its contents are tickets; a linear project holds several milestones, ordered, so a project's sequence is built from them
+W69 (Q1) the catch: ordering across projects (project A has 3 milestones, project B has 4; in real life we switch, A's first, then B's first or B's third)
+W70 (Q1) my proposal: keep the milestone order inside every project precise and current; when we switch to B's milestone 3, move it to the top of B's order
+W71 (Q1) milestones are for dima and cclio as the pm only — a higher-level order coders never care about; a lane's order lives in lane-plan.md
+W72 (Q1) once the pm revamp settles, review our milestones and start test-driving a milestone-first approach; a good way to scope through milestones may solve much of what follows, the pocket clutter included
+W73 (Q1) ask the milestone question all the time: a milestone check at every ticket create, maybe at other ticket operations too, keeps milestones healthy by itself
+W74 (Q1) milestones are a first resident of cclio's flows, the lift-off point of planning; initiatives come even before: initiatives → milestones → our flow
+W75 (Q1) create and manage milestones together: every milestone cclio means to create is proposed to dima first
+W76 (Q1) candidate milestones: the pm revamp (now), speak v2, the cli's preplanned chunks (one or several), the trophy-sys redesign, the chords redesign, the frame → bytes merge, the bun (from pnpm) and oxc (from biome) migration
+W77 (Q1) keep milestones balanced, not too many, from the start
+W78 (Q2) an idle milestone: park it, refill, close — closing last; keep milestones healthy first-hand
+W79 ❓ we have the «mils» vibe word: do we have a milestone emoji? propose a top 7
+W80 (Q3) milestone checks, maybe guarded by scripts: propose good ones, not too restrictive
+W81 (Q3) the 7-day staleness check is wrong most of the time: work is prepped ahead through milestones and parks for weeks while valid (the cli chunks; speak v2, ready for 2+ weeks, held only by meta work and the weekly window)
+
+2026-10-22 17:36 grill round 4 answered — Q1 taken, Q2 reshaped, Q3 his own pick. his words, folded:
+W82 (Q1) try 4 open milestones per project, not a strict limit — 5 is fine; keep each milestone pretty and well scoped
+W83 (Q1) good milestone names: short, clear for me to read, maybe with an emoji, consistent, never random; set a naming pattern in resident memory or a skill
+W84 (Q2) an empty milestone is most likely closed: it is empty because (1) it was just created and waits to be filled, (2) its last ticket completed — close it in place, or (3) it was solved and the close was forgotten — close it too
+W85 (Q3) the milestone emoji: 🎑 (moon viewing)
+W86 after the pm revamp is fully resolved: prep the few nearest milestones, the cli lane's first; spawn the cli lane today on the refreshed pm module to test it all; find the issues and weak spots and fix them in place, while the trace is hot
 <!-- SECTION:NOTES:END -->

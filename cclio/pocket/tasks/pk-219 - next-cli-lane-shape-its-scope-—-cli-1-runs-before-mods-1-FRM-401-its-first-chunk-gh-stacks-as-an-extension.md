@@ -6,7 +6,7 @@ title: >-
 status: waiting
 assignee: []
 created_date: '2026-10-20 13:42'
-updated_date: '2026-10-20 15:10'
+updated_date: '2026-10-22T12:05:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -19,7 +19,7 @@ ordinal: 144000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**waiting for:** the refresh-crew-coordinator run (dima o44: spawn any lane after it) — then spawn cli lane 1 (FRM-401 → 403 → 405 → 404, sealed)
+**waiting for:** the pm revamp (PK-103) done in full — dima 2026-10-22: «let's try cli lane today after pm is revamped fully» (was: the refresh-crew-coordinator run, o44) — then spawn cli lane 1 (FRM-401 → 403 → 405 → 404, sealed)
 dima 2026-10-20 16:41, folded: since gh stacks and stacked prs need cli changes, plan the next closest lane as cli 1, not mods 1. shape a scope for it — i don't plan to spend too much effort on the cli lane, but i want it to do a meaningful chunk of useful stuff. there are preplanned chunks already (PK-74 rebase-not-merge, PK-134, PK-145, PK-151, PK-185, PK-189, PK-190, PK-199, PK-200, PK-201, FRM-383, FRM-384, FRM-387): refresh them, review, adjust if in good shape and ready to dispatch. FRM-401 is the lane's first to-do. on FRM-401 and stacks: be careful, gh stacks are unverified and we may discard them — the changes must not break the existing flow; the cli supports both modes, plain prs and gh stacks, as an extension easy to delete; even if stacks are set aside, the support may stay for a later revisit. formulate the specs with these notes in mind. stacks blockers to fold: docs/knowledge/pr-flow.md (pr-open base, merge-main merge commit, push no force, crew-coder no-rebase). doors: cclio:shape-lane, cli-drift-check.
 <!-- SECTION:DESCRIPTION:END -->
 
@@ -45,4 +45,6 @@ dima 2026-10-20 16:41, folded: since gh stacks and stacked prs need cli changes,
 **waiting for:** the refresh-crew-coordinator run (dima o44: spawn any lane after it) — then spawn cli lane 1
 
 18:10 correction of the 17:25 note: gh-stack DOES have exit 9 (ErrStacksUnavailable, cmd/utils.go:36, on a stacks-api 404 — «not enabled for this repository»); the readme's table stops at 8. FRM-404 refuses at once on it. the researcher lane caught my wrong fix.
+
+2026-10-22 15:05 dima: «let's try cli lane today after pm is revamped fully» — the gate moves from the refresh-crew-coordinator run to the pm revamp (PK-103)
 <!-- SECTION:NOTES:END -->
