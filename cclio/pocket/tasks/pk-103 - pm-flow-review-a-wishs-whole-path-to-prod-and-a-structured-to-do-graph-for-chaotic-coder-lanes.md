@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T16:42:00Z'
+updated_date: '2026-10-22T16:46:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -379,4 +379,11 @@ tomorrow: the member names + summon vs spawn (W9, W10); W6, a name for chaotic l
 19:42 dima, raw: «I see a large amount of tickets in your pocket waiting state 48. That's quite a lot. It is not critical and not urgent priority, but we have to solve them somehow by either resolving out of pocket or starting to rebalance them with Linear, as agreed, and alternatively, formulating milestones. I'm not sure what is better to start right now. It's quite a lot of stuff everywhere. After the second lane is started, let's continue on resolving the PM module.» o61 ✓ spawn right after the pickup, with a verifier.
 W112 48 waiting pocket items is a lot: solve them, resolve them out of the pocket, or rebalance them into linear as agreed, and formulate milestones; not critical, not urgent
 W113 after the side lane starts, continue resolving the pm module
+
+19:46 dima, raw: «After you revive after Second Wind, let's focus on PM modular first, and sell 48 waiting items a little bit after the PM module fixes are prioritized. Also, I ask you for another thing. Today, we unfolded a PM module and uncovered a lot of issues. I want you to remember what we started with today, what we found, and what we changed until tomorrow. Somehow, I don't know why. Maybe keep it in a Flow handoff or something. Why do I want this? The thing is, this part is quite big, and I think that additional weak spots can be found via another round of reviews. Once we fully resolve a PM module with all questions closed, let's do another review of the entire PM module by applying all my worries and asks about the PM modular revamp (as if we would not do the fixes). For example, review what I asked about the PM modular revamp against its current state to ensure that our fixes are valid and to hunt for other places that are weak spots. Treat PM modular as resolved only after that, and only after that part can we start resolving 48 waiting items, because that will take quite a lot of time, possibly.» and: «And also, a small steer: about 48 waiting items. Instead of simply folding them away to Linear, along with scanning them, set a pry for yourself to hunt resolvable-in-place ones. Instead of just shuffling between pocket and Linear, you could simply resolve things that can be resolved instead of putting them into Linear. It would save unnecessary round trips.»
+W114 after the second wind: the pm module first; the 48 waiting items after the pm fixes
+W115 keep what we started with today, what we found and what we changed, until tomorrow at least: the part is big, more weak spots will surface in another review
+W116 once the pm module is fully resolved, every question closed: one more review of the whole module, applying all my worries and asks about the revamp as if no fix had been made — check the fixes are valid and hunt other weak spots; the pm module counts as resolved only after it
+W117 only then the 48 waiting items, which may take long
+W118 at the waiting-items sweep, the first hunt is the resolvable-in-place ones: solve them, never shuffle them between the pocket and linear
 <!-- SECTION:NOTES:END -->
