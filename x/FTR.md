@@ -154,11 +154,13 @@
   - given origin's branch holds a commit HEAD lacks, then it refuses before any rebase, naming that sha
   - given a push to the branch landed after the read, then the remote keeps it, and the verb exits 1 naming the remote sha
   - given a conflict, then the tree stays mid-rebase, and the verb names each conflicted path, `git rebase --continue` and `git rebase --abort`
+  - given the conflict resolved in the files, when it runs again, then it stages those paths, continues the rebase and pushes; a conflict marker left in one refuses, naming it
   - decision: the one force-push door, `coder/*` only, `--force-with-lease` on the read sha (dima, 2026-10-12, o87); `x-mod-guard` names it when it refuses a hand force-push
 - ✅ `x lane verify-tree <pr url | main:<sha>>` gives the verifier a seeded worktree of a head
   - given a pr url of this repo, or `main:<sha>` of a commit on origin/main
   - when `x lane verify-tree` runs in frame
   - then a detached worktree of that head sits at `.claude/worktrees/verify-pr-<n>` or `verify-<sha7>`, seeded the way `x lane seed` seeds, its git-crypt files plain text, and the verb prints the path
+  - given its tree exists from an earlier round, then it moves that tree to the new head; a tree holding a probe's changes refuses and stays as it is
   - given anything else (a bare number, an issue url, another repo's pr, a sha off main), then it exits 2 and adds no worktree
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
 - ✅ a merge-main that git refuses without conflicts names git's reason

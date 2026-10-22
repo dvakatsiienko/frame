@@ -10,6 +10,12 @@ var (
 	mainSha = regexp.MustCompile(`^main:([0-9a-f]{7,40})$`)
 )
 
+func samePath(a, b string) bool {
+	ra, _ := filepath.EvalSymlinks(a)
+	rb, _ := filepath.EvalSymlinks(b)
+	return a == b || (ra != "" && ra == rb)
+}
+
 func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	target, help := args[0], "x lane verify-tree --help"
 	tree, err := top()
@@ -69,10 +75,19 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	if exists(path) {
-		return nil, &Fail{Refused: true, Msg: path + " exists already", Next: "x lane decamp --apply " + path}
-	}
 	if err := r.Step("worktree", "git worktree add --detach", func() (string, error) {
+		if exists(path) {
+			// a plain dir at the path is no worktree: git there would walk up to the main checkout
+			if root, _ := gitIn(path, "rev-parse", "--show-toplevel"); !root.ok || !samePath(root.out, path) {
+				return "", &Fail{Refused: true, Msg: path + " is a plain dir, not a worktree", Next: "trash " + path}
+			}
+			// the next round on the same pr: the tree moves, unless a probe changed a tracked file (the seed's copies are untracked)
+			if dirty, _ := gitIn(path, "status", "--porcelain", "--untracked-files=no"); dirty.out != "" || !dirty.ok {
+				return "", &Fail{Refused: true, Msg: path + " holds changes a probe left; it stays as it is", Next: "git -C " + path + " status"}
+			}
+			_, err := mustGitIn(path, "checkout", "checkout", "-q", "--detach", sha)
+			return home(path) + " moved to " + short(sha), err
+		}
 		// the key lives in the main .git: the tree holds ciphertext until the seed unlocks it
 		_, err := mustGitIn(main, "worktree", "-c", "filter.git-crypt.smudge=cat", "-c", "filter.git-crypt.required=false",
 			"worktree", "add", "-q", "--detach", path, sha)

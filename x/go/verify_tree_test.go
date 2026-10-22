@@ -78,6 +78,56 @@ func TestVerifyTreeSeedsAWorktreeOfTheHead(t *testing.T) {
 	}
 }
 
+// the next round on the same pr moves the verifier's own tree to the new head
+func TestVerifyTreeMovesItsTreeToANewHead(t *testing.T) {
+	main, _ := verifyWorld(t)
+	if got := xIn(t, main, nil, "lane", "verify-tree", "https://github.com/o/r/pull/7"); got.code != 0 {
+		t.Fatalf("control: the first run failed:\n%s", got.stdout)
+	}
+	gitT(t, main, "fetch", "-q", "origin", "refs/pull/7/head")
+	gitT(t, main, "switch", "-q", "-c", "next", "FETCH_HEAD")
+	write(t, filepath.Join(main, "fix.txt"), "a round 1 fix\n")
+	gitT(t, main, "add", "fix.txt")
+	gitT(t, main, "commit", "-q", "-m", "a round 1 fix")
+	newHead := gitT(t, main, "rev-parse", "HEAD")
+	gitT(t, main, "push", "-q", "-f", "origin", "HEAD:refs/pull/7/head")
+	gitT(t, main, "switch", "-q", "main")
+
+	got := xIn(t, main, nil, "lane", "verify-tree", "https://github.com/o/r/pull/7")
+
+	tree := filepath.Join(main, ".claude/worktrees/verify-pr-7")
+	if got.code != 0 || gitT(t, tree, "rev-parse", "HEAD") != newHead {
+		t.Fatalf("exit %d, the tree sits on %s, want %s:\n%s", got.code, short(gitT(t, tree, "rev-parse", "HEAD")), short(newHead), got.stdout)
+	}
+}
+
+func TestVerifyTreeRefusesToMoveATreeWithChanges(t *testing.T) {
+	main, prHead := verifyWorld(t)
+	xIn(t, main, nil, "lane", "verify-tree", "https://github.com/o/r/pull/7")
+	tree := filepath.Join(main, ".claude/worktrees/verify-pr-7")
+	write(t, filepath.Join(tree, "change.txt"), "a probe's edit\n")
+
+	got := xIn(t, main, nil, "lane", "verify-tree", "https://github.com/o/r/pull/7")
+
+	body, _ := os.ReadFile(filepath.Join(tree, "change.txt"))
+	if got.code == 0 || string(body) != "a probe's edit\n" || gitT(t, tree, "rev-parse", "HEAD") != prHead {
+		t.Fatalf("exit %d, change.txt %q, want a refusal and the edit kept:\n%s", got.code, body, got.stdout)
+	}
+}
+
+// a plain dir at the tree's path is no worktree: git would walk up to the main checkout
+func TestVerifyTreeRefusesAPlainDirAtItsPath(t *testing.T) {
+	main, _ := verifyWorld(t)
+	write(t, filepath.Join(main, ".claude/worktrees/verify-pr-7/left.txt"), "an aborted add's leftovers\n")
+	before := gitT(t, main, "rev-parse", "--abbrev-ref", "HEAD")
+
+	got := xIn(t, main, nil, "lane", "verify-tree", "https://github.com/o/r/pull/7")
+
+	if after := gitT(t, main, "rev-parse", "--abbrev-ref", "HEAD"); got.code == 0 || after != before {
+		t.Fatalf("exit %d, the main checkout went %s → %s, want a refusal and main untouched:\n%s", got.code, before, after, got.stdout)
+	}
+}
+
 func TestVerifyTreeRefusesAnythingButAPrUrlOrMainSha(t *testing.T) {
 	main, prHead := verifyWorld(t)
 	for _, arg := range []string{"7", "#7", "main", "main:zz", "https://github.com/o/r/issues/7", "https://github.com/other/r/pull/7", "main:" + prHead} {
