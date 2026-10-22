@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T14:56:00Z'
+updated_date: '2026-10-22T15:01:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -307,4 +307,14 @@ then: the rename part (W6–W10, W24), the milestone review + milestone-first te
 
 ### 17:42 · mid-turn
 > Don't forget to spawn a wishkeeper to review what we do. Maybe we miss something. Find a good time to spawn a wishkeeper.
+
+2026-10-22 18:00 dima, folded (W87–W94; FRM-72's own notes, state item 1, now fold from W95):
+W87 ❓ are you sure the 1.4 % vs 9.4 % numbers were measured right — how can Haiku 5.5 lose 1.4 % of my points and Opus 5.5 lose 9.4 %?
+W88 ❓ agent-effort: is it only for wishkeeper — medium by default, high on demand for important reviews like this one? if yes, approved
+W89 print the most interesting wishkeeper findings, a top 10
+W90 don't rush the cli lane, I'm confused; first print what we achieved and the current state of the pm module; review the fixes and print what's left; ❓ did we fully resolve the whole scope of the pm revamp? ❓ do the blueprints need updates after the flows changed?
+W91 the plan: 1. fully resolve the issues we grilled on; 2. another review of what we have after the fixes; 3. another round hunting weak spots, checking the fixes are correct and good; 4. look at what else is left in the pm module
+W92 resolve everything in the pm module that affects the coming cli lane, finalize it, review it; only after a green review with no weak points, update the FigJam blueprint; only then think about spawning the cli lane
+W93 the renaming parts (grooming the lane names) and other things come before the cli lane too: solve more first
+raw: in the session transcript at 18:00 (the next checkpoint's raw extract carries it)
 <!-- SECTION:NOTES:END -->

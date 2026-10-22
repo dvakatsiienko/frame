@@ -1,7 +1,7 @@
 ---
 status: live
-until: 2026-10-24
-dies-when: the verdict line below is written (2026-10-22, beside the second haiku 5.5 research round)
+until: 2026-11-05
+dies-when: the verdict line below is written (2026-11-05)
 ---
 
 Ticket: none
@@ -39,3 +39,4 @@ Bash). born 2026-10-08 on dima's word: «test drive it, when you or anyone else 
   - dima's number test (a 2146×1276 screenshot of the Code tab): plain read 38 of 39 numbers, 0 misreads, 43 s, 22.8k tokens; crop-tiled 38 of 39, 0 misreads, 63 s, 31.4k tokens, 6 tiles — both missed one small «3» in an orbit card's pick text; crops bought nothing on large UI text · grade 5/5 against cclio's own read
   - 16 video screenshots in 2 batches of 8 (theo, posthog): 150 values, 9 marked unreadable (all truly hidden or cut), 38 read off crops; cclio's spot-check of 2 shots (a 32-cell benchmark table, an 8-value results table): 0 mismatches · ~80 s and ~50k tokens a batch · grade 5/5
   - `sips -c … --cropOffset 0 0` returned the full image; offset 1 cropped (the arm-B helper-lite found it)
+- 2026-10-22 · extended once to 2026-11-05 on dima's tick (o33): 3 rounds, 5 of 7 stress uses untried (log windows, an idle coder's last words, bash census, flow numbers, a coder's big reads, failure probes); its first use today: dima's raw prompts out of a 2 MB transcript, 10 prompts + 12 steers in 68 s, but it missed every mid-turn message (they sit inside tool results) — a miss caught by a word check

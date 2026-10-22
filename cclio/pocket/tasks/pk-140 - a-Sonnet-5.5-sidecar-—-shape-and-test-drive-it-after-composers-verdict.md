@@ -4,7 +4,7 @@ title: composer on Sonnet 5.5 — shape-idea over its contract after the trial v
 status: waiting
 assignee: []
 created_date: '2026-10-14 18:27'
-updated_date: '2026-10-20 13:00'
+updated_date: '2026-10-22T15:01:00Z'
 due_date: '2026-10-22'
 labels:
   - m
@@ -32,4 +32,6 @@ a real case, dima 2026-10-14 21:34: the four retro fixes (a rule line, x lane co
 inbox 10-16, idea in his words: composer on Haiku 5.5 overlaps helper-lite; promote composer to Sonnet 5.5 (medium as baseline, cclio proposes the effort) so it takes more chores off cclio, maybe minimal-intelligence work too. sonnet does well when properly instructed, though it may stop at a dead end where Opus 5.5 keeps trying, and it costs more than haiku. keep the base composer contract, shape-idea over it with sonnet's capabilities in mind. not now: cclio's opinion only, no grill; resume right after the composer trial ends.
 
 2026-10-20 dima: «not for today — maybe explore the promotion in the nearest days»; due moved to 10-22
+
+2026-10-22 18:00 dima: keep it by hand in the pocket — not today, not tomorrow, maybe not the day after, but soon (his exception to the week-out → linear rule)
 <!-- SECTION:NOTES:END -->
