@@ -43,6 +43,8 @@ var impls = map[string]Impl{
 	"lane push":        {Plan: pushPlan, Apply: push, Undone: "nothing was pushed", Ask: askPush},
 	"lane pr-open":     {Plan: prPlan, Apply: prOpen, Undone: "no pr was opened", Ask: askPR},
 	"lane merge-main":  {Run: mergeMain, Undone: "nothing was merged"},
+	"lane rebase-main": {Plan: rebasePlan, Apply: rebaseMain, Undone: "the branch is as it was", Ask: askRebase},
+	"lane verify-tree": {Run: verifyTree, Undone: "no worktree was added"},
 	"lane unlock":      {Run: unlock, Undone: "nothing was decrypted"},
 	"lane decamp":      {Plan: decampPlan, Apply: decamp, Undone: "the worktree is still there", Ask: askDecamp},
 	"lane seed":        {Run: seed, Undone: "the tree is as the hook left it"},

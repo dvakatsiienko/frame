@@ -55,6 +55,8 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **verifier clean** — the pr head the verifier said clean on, one per pr in `~/.claude/shelf/pr-verified.json`; it carries to a new head whose whole branch change keeps its patch-id (a rebase, a plain merge of main). a «clean» in a comment is never one
 - **risky path** — a changed path that can turn the checks themselves green (workflows, settings, memory files, secrets, deploy), listed in `x/go/risky.json`; `lane merge-auto` merges it and names it on its `risky:` line
 - **self-edit** — a pr changing the guards, the review workflows, the risky list or merge-auto itself; `lane merge-auto` waits on it for dima's word
+- **lease** — the remote sha `lane rebase-main` read before its rebase; its force-push lands only while the branch still sits there, so a teammate's push since is kept. avoid: force
+- **verify tree** — a detached worktree of a pr's head or a main sha under `.claude/worktrees/`, seeded like `EnterWorktree`'s; the verifier's bench, made by `lane verify-tree`
 - **brake** — every pr waiting for dima's word for 7 days after a merge-auto merge is reverted; read from git each run, never stored
 - **judged commit** — the pr head the last review round read; a verdict is **stale** when the pr head moved past it
 - **comment feed** — one of the three places a pr's comments land: the conversation, reviews, and lines in the diff; the ci reviewer posts to a different one per round

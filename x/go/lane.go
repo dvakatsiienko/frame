@@ -344,15 +344,7 @@ func push(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	fields := plan.(ordered)
 	name, sha, from := fields[0].value.(string), fields[1].value.(string), fields[2].value.(string)
 	if err := r.Step("push", "git push", func() (string, error) {
-		var pushed result
-		tries := 1
-		for ; ; tries++ {
-			pushed, _ = gitIn(from, "push", "-q", "origin", sha+":refs/heads/"+name)
-			if pushed.ok || tries == pushTries || !serverError.MatchString(pushed.log) {
-				break
-			}
-			time.Sleep(time.Duration(tries) * pushPause)
-		}
+		pushed, tries := pushRetrying(from, sha+":refs/heads/"+name)
 		if !pushed.ok {
 			return "", &Fail{Msg: fmt.Sprintf("push failed after %s — the git and hook output is above", plural(tries, "try")),
 				Next: "fix what the pre-push hooks name, then x lane push --apply", Log: nonBlank(pushed.log)}
@@ -379,6 +371,19 @@ func push(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}
 	r.Done(fmt.Sprintf("%s on origin/%s", short(sha), name), "x lane pr-open <title> <body-file>")
 	return ordered{{"branch", name}, {"from", from}, {"remote", remote}, {"sha", sha}}, nil
+}
+
+// a 5xx is tried again, up to pushTries; a 4xx, a hook refusal or a lost lease fails on the first
+func pushRetrying(from string, args ...string) (result, int) {
+	var pushed result
+	tries := 1
+	for ; ; tries++ {
+		pushed, _ = gitIn(from, append([]string{"push", "-q", "origin"}, args...)...)
+		if pushed.ok || tries == pushTries || !serverError.MatchString(pushed.log) {
+			return pushed, tries
+		}
+		time.Sleep(time.Duration(tries) * pushPause)
+	}
 }
 
 func prPlan(r *Run, args []string, _ Flags) (any, error) {
