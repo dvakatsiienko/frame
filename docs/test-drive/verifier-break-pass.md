@@ -24,5 +24,6 @@ Ticket: none
 - a cli PR (no browser) — the cli lane — does the menu fit a cli at all
 
 ## rounds
+- 2026-10-22 · FRM-403 #96 round 1 (bb7019ff), a cli pr · contract written from the ticket before the diff, not contradicted · 8 probes: rebase-main on a dirty tree, a detached head, an up-to-date branch, a rerun mid-conflict; verify-tree twice on one pr, 5 hostile targets, from inside another tree; plus 7 hostile force-push shapes through the guard · breaks found: 1 (verify-tree refuses a second round on the same pr and points at decamp, which a verifier may not run — the want, not an exit line) · false alarms: 0 · refutes caused: 1 · extra minutes: ~9 · side finds: `git push --mirror` passes the guard (predates the pr); a mid-rebase rerun gives wrong `next` advice · the menu fit a cli: concurrent and network probes had no target here, the state probes (dirty, detached, mid-rebase, rerun) did the work
 
 ## verdict

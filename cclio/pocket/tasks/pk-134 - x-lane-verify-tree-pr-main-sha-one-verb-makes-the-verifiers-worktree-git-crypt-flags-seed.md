@@ -3,10 +3,10 @@ id: PK-134
 title: >-
   x lane verify-tree <pr|main:sha>: one verb makes the verifier's worktree
   (git-crypt flags + seed)
-status: waiting
+status: done
 assignee: []
 created_date: '2026-10-14 15:49'
-updated_date: '2026-10-20 14:38'
+updated_date: '2026-10-22T18:47:00Z'
 due_date: '2026-10-26'
 labels:
   - s
@@ -31,4 +31,6 @@ verifier idea #3 (PK-84, dima o73 18:49: build). today crew-verifier step 1.1 ha
 2026-10-18 boot: dima steers today to parse + answers + the viz-tool shape; the pocket gets solved after the weekly reset (10-19 07:00); cli lanes come after mods (dima 10-18)
 
 ticket: FRM-403 (cli lane 1, sealed 2026-10-20)
+
+done 2026-10-22: landed as x lane verify-tree in frame#96 (FRM-403).
 <!-- SECTION:NOTES:END -->
