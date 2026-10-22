@@ -121,12 +121,18 @@ the boot prints every open milestone with the roadmap block, so a stale one misi
 
 
 ## phase 4 — the board
-one message, folding in whatever the sweep and the park list surfaced:
-- 📊 **run** `<run id>` — **elapsed** `<time>`
-- 🟢 **done** `N / ~M` — the 2–4 biggest, one line each, artifacts backticked
-- 🚧 **in flight** · ⏸️ **left** (next 2–3, in order) · ❓ **on dima** («nothing blocked» if none)
-- 🌊 **born parked, solved today** `N` — the freebie test's miss count (`craft-pm` § the freebie rule), from `cd ~/frame/cclio && grep -l "^updated_date: '$(date +%F)" pocket/tasks/*.md pocket/archive/tasks/*.md | while read -r f; do grep -qi '^status: done' "$f" && grep -q '^parked:' "$f" && basename "$f" | cut -d' ' -f1; done`; each id it prints is one the birth gate should have solved that day
-- 🃏 one-liner mood
+one message, folding in whatever the sweep and the park list surfaced, every line led by its emoji, no bullet:
+
+📊 **run** `<run id>` — **elapsed** `<time>`
+
+🟢 **done** `N / ~M` — the 2–4 biggest, one line each, artifacts backticked
+
+🚧 **in flight** · ⏸️ **left** (next 2–3, in order) · ❓ **on dima** («nothing blocked» if none)
+
+🌊 **born parked, solved today** `N` — the freebie test's miss count (`craft-pm` § the freebie rule), from `cd ~/frame/cclio && grep -l "^updated_date: '$(date +%F)" pocket/tasks/*.md pocket/archive/tasks/*.md | while read -r f; do grep -qi '^status: done' "$f" && grep -q '^parked:' "$f" && basename "$f" | cut -d' ' -f1; done`; each id it prints is one the birth gate should have solved that day
+
+🃏 one-liner mood
+
 ticket ids as links in the `rules/fleet-output-format.md` form.
 
 ## phase 4.5 — the gazette 🗞️ (before the CST, always)

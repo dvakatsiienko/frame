@@ -37,9 +37,9 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   top-level comment does not count as a reply.
 - **the bytes review lane**: `gh pr edit <n> --add-label '🤖 review:requested'` starts the ci
   reviewer on this head; the guard publishes `review:clean`, the required check on main —
-  never created = blocked. a later push leaves it stale — `x lane review <pr>` re-requests it: it
-  names the judged commit, counts the rounds (one per pr, at «final»), and at the cap names cclio's
-  approval on dima's account after the verifier's clean, the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
+  never created = blocked. a later push leaves it stale — `x lane review <pr>` names the judged commit and
+  counts the rounds (one per pr, at «final»); past that round it names cclio's approval on dima's
+  account after the verifier's clean, the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
   own verdict marker gates it, the findings live in its comment — read that.
 - a claude-code-action pr that edits a workflow already on the default branch IS reviewed (#79, two rounds
   with verdict lines); only a pr that edits `claude.yml` itself is unproven.
