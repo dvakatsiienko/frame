@@ -1,6 +1,6 @@
 module vtreplay
 
-go 1.27.2
+go 1.27.3
 
 require github.com/charmbracelet/x/vt v0.0.0-20261004011457-ad85c59fdf4e
 
