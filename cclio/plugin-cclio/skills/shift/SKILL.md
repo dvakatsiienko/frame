@@ -34,7 +34,7 @@ re-reads a plan whose header says `status: running` after a compaction, and `pnp
 
 - `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 pr-watch`, each with its why; any 🔴 = no shift
 - the app passes `apps:essentials`
-- write `status: running`, `presence:` (near/away), the budget line (a % of the week) and the members into the plan file
+- write `status: running`, `afk:` (on/off at the start), the budget line (a % of the week) and the members into the plan file
 - one message to dima: mode, members, budget, when the report lands. **from here the shift is on.**
 
 ## 2 · run — no asks
@@ -47,8 +47,8 @@ Every decision is one of three:
 - **taste** → build one default, flag it for the report
 
 - a coder's premise doubt is built and flagged the same minute, never found at review
-- events go to the plan file's `## log` (time · who · what · evidence), never to chat. when `near`,
-  dima's lane messages still get normal replies; shift events stay out of them
+- events go to the plan file's `## log` (time · who · what · evidence), never to chat. while afk is off,
+  dima's messages still get normal replies; shift events stay out of them
 - **orbit asks are suspended** while a shift runs: decide, log and park instead of asking; the report carries the decisions
 - watch per `x:crew-lead`
 
