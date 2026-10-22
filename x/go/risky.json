@@ -22,6 +22,8 @@
         ".github/workflows/review.yml",
         ".github/workflows/review-approved.yml",
         "x/go/risky.json",
-        "x/go/merge_auto.go"
+        "x/go/merge_auto.go",
+        "x/go/gh.go",
+        "x/go/keys.go"
     ]
 }

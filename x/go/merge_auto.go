@@ -84,7 +84,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	verifier := mergeCheck{Name: "verifier"}
 	if err := r.Step("verifier", "reading the verifier's clean", func() (string, error) {
 		verifier = verifierCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
-		return verifier.Detail, nil
+		return verifier.shown()
 	}); err != nil {
 		return nil, err
 	}
@@ -93,7 +93,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	if err := r.Step("ci", "reading the required checks on the head", func() (string, error) {
 		var err error
 		ci, needsApprove, err = ciCheck(api, pr.Base.Ref, pr.Head.Sha)
-		return ci.Detail, err
+		if err != nil || needsApprove {
+			return ci.Detail, err
+		}
+		return ci.shown()
 	}); err != nil {
 		return nil, err
 	}
@@ -101,7 +104,10 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	if err := r.Step("threads", "counting the open review threads", func() (string, error) {
 		var err error
 		threads, err = threadsCheck(repo, n)
-		return threads.Detail, err
+		if err != nil {
+			return "", err
+		}
+		return threads.shown()
 	}); err != nil {
 		return nil, err
 	}
@@ -110,10 +116,15 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
 		var err error
 		d.Risky, self, err = riskyPaths(api, n)
-		if len(d.Risky) == 0 {
-			return "none touched", err
+		switch {
+		case err != nil:
+			return "", err
+		case len(self) > 0:
+			return "", notHeld("self-edit: " + strings.Join(self, ", "))
+		case len(d.Risky) == 0:
+			return "none touched", nil
 		}
-		return strings.Join(d.Risky, ", "), err
+		return strings.Join(d.Risky, ", "), nil
 	}); err != nil {
 		return nil, err
 	}
@@ -121,49 +132,52 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	if err := r.Step("brake", "looking for a revert of a merge-auto merge in 7 days", func() (string, error) {
 		var err error
 		brake, err = brakeOn(pr.Base.Ref)
-		if brake == "" {
-			return "off", err
+		switch {
+		case err != nil:
+			return "", err
+		case brake != "":
+			return "", notHeld("on: " + brake)
 		}
-		return "on: " + brake, err
+		return "off", nil
 	}); err != nil {
 		return nil, err
 	}
 
-	d.Decision = "merge"
-	if brake != "" {
-		d.Decision, d.Wait = "wait", "brake on, needs dima's word — "+brake
-		return d, nil
-	}
-	if len(self) > 0 {
-		d.Decision, d.Wait = "wait", "self-edit, needs dima's word — "+strings.Join(self, ", ")
-		return d, nil
-	}
-	for _, c := range d.Checks {
-		if !c.OK {
-			d.Decision, d.Wait = "wait", c.Detail
-			break
-		}
-	}
-	if d.Wait == ci.Detail && needsApprove && verifier.OK && threads.OK {
-		d.Decision, d.Wait = "approve", ""
+	d.Decision, d.Wait = decide(brake, self, needsApprove, d.Checks)
+	if d.Decision == "wait" {
+		// a wait is never a plan to confirm: --apply could only refuse it, so it exits 1 with or without it
+		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n + " once it holds"}
 	}
 	return d, nil
 }
 
+// the brake and a self-edit wait for dima first; then a bytes head missing only review:clean is approved;
+// else the first check that does not hold names the wait
+func decide(brake string, self []string, needsApprove bool, checks []mergeCheck) (decision, wait string) {
+	verifier, threads := checks[0], checks[2]
+	switch {
+	case brake != "":
+		return "wait", "brake on, needs dima's word — " + brake
+	case len(self) > 0:
+		return "wait", "self-edit, needs dima's word — " + strings.Join(self, ", ")
+	case verifier.OK && threads.OK && needsApprove:
+		return "approve", ""
+	}
+	for _, c := range checks {
+		if !c.OK {
+			return "wait", c.Detail
+		}
+	}
+	return "merge", ""
+}
+
 func askMergeAuto(plan any) string {
 	d := plan.(*mergeDecision)
-	if d.Decision == "wait" {
-		return "#" + d.PR + " waits: " + d.Wait + " — stop here?"
-	}
 	return "merge #" + d.PR + " at " + short(d.Head) + "?"
 }
 
 func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	d := plan.(*mergeDecision)
-	if d.Decision == "wait" {
-		r.skip("approve", "merge")
-		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + d.PR + " once it holds"}
-	}
 	api := githubBase() + "/repos/" + d.Repo
 	if d.Decision != "approve" {
 		r.skip("approve")
@@ -188,6 +202,14 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}
 	r.Done("merged #"+d.PR+" at "+short(d.Merged)+"\n"+d.summary(), "")
 	return d, nil
+}
+
+// a check's step line: ✓ with its detail when it holds, ✗ when it does not, and the run goes on
+func (c mergeCheck) shown() (string, error) {
+	if c.OK {
+		return c.Detail, nil
+	}
+	return "", notHeld(c.Detail)
 }
 
 // the three checks and the risky line, the look card's lines on both outcomes
@@ -359,8 +381,10 @@ func verifierCheck(repo, n, head, base, ref string) mergeCheck {
 	return c
 }
 
-// a clean carries to a new head when the head's own commits are the verified head's, patch for patch: a
-// rebase onto a moved main changes every sha and no patch-id (git patch-id --stable)
+// a clean carries to a new head when the branch's whole change is the verified one: the diff from its merge
+// base with origin's base to its tip, hashed by `git patch-id --stable`. a rebase or a plain merge of main
+// keeps it; an edit inside a merge, a dropped or an added commit changes it. the per-commit patch-ids only
+// name the commit to blame
 func carried(verified, head, base, ref string) (bool, string) {
 	moved := "the verifier's clean is on " + short(verified) + ", the head is " + short(head)
 	if got, _ := gitIn("", "fetch", "-q", "origin", base, ref); !got.ok {
@@ -371,23 +395,37 @@ func carried(verified, head, base, ref string) (bool, string) {
 			return false, moved + "; " + short(verified) + " is gone from origin, nothing to compare"
 		}
 	}
-	was, err := patchIDs(verified, base)
+	wasChange, err := branchPatch(verified, base)
 	if err != nil {
 		return false, moved + "; " + err.Error()
 	}
-	now, err := patchIDs(head, base)
+	nowChange, err := branchPatch(head, base)
 	if err != nil {
 		return false, moved + "; " + err.Error()
 	}
+	if wasChange == nowChange {
+		return true, "clean on " + short(verified) + ", carried to " + short(head) + ": the branch's patch-id is unchanged"
+	}
+	was, _ := patchIDs(verified, base)
+	now, _ := patchIDs(head, base)
 	for _, c := range now {
 		if !slices.ContainsFunc(was, func(v patchCommit) bool { return v.id == c.id }) {
 			return false, short(c.sha) + " " + c.subject + " is past the verifier's clean on " + short(verified)
 		}
 	}
-	if len(now) != len(was) {
-		return false, moved + fmt.Sprintf("; %s against %s", plural(len(now), "commit"), plural(len(was), "verified commit"))
+	return false, moved + "; the branch's change differs from the verified one (a merge that edits, or a dropped commit)"
+}
+
+// the patch-id of everything a branch changes over origin's base, its merges included
+func branchPatch(tip, base string) (string, error) {
+	from, _ := gitIn("", "merge-base", "origin/"+base, tip)
+	if !from.ok {
+		return "", fmt.Errorf("git found no merge base of %s and origin/%s: %s", short(tip), base, logLine(from.log))
 	}
-	return true, "clean on " + short(verified) + ", carried to " + short(head) + ": " + plural(len(now), "patch-id") + " unchanged"
+	diff, _ := gitIn("", "diff", "--no-ext-diff", from.out, tip)
+	id, _ := run("", nil, diff.out+"\n", "git", "patch-id", "--stable")
+	patch, _, _ := strings.Cut(id.out, " ")
+	return patch, nil
 }
 
 type patchCommit struct{ sha, subject, id string }

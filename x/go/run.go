@@ -77,11 +77,20 @@ func (r *Run) Step(name, doing string, work func() (string, error)) error {
 	started := time.Now()
 	err := r.step(name, doing, work)
 	traced.Steps = append(traced.Steps, step{name, time.Since(started).Milliseconds()})
+	if _, missed := err.(notHeld); missed {
+		return nil
+	}
 	if err != nil && r.failed == "" {
 		r.failed = name
 	}
 	return err
 }
+
+// notHeld is a check that ran and does not hold: its step draws ✗ with the reason, and the run goes on to
+// the next check
+type notHeld string
+
+func (n notHeld) Error() string { return string(n) }
 
 func (r *Run) step(name, doing string, work func() (string, error)) error {
 	if !r.human {
