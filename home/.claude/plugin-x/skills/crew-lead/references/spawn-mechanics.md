@@ -105,7 +105,7 @@ the door for all coding work: real, watchable, outlives the session that started
 - 🚨 **`--bg` now checks workspace trust** [docs, changelog 2.1.281] — in a directory that has not
   passed the trust prompt it asks first, or **exits when not run interactively**. a subdirectory of
   a trusted repo counts: `~/frame/docs` (no trust entry of its own, `~/frame` trusted) launched
-  from a non-tty shell [verified 2.1.283]. a night shift spawning into a new repo trusts it first.
+  from a non-tty shell [verified 2.1.283]. a shift spawning into a new repo trusts it first.
 - **a bg session can be retired by the daemon** [inferred — binary strings only]: the build names
   retire reasons `stale-spare`, `empty-idle`, `empty-idle-grace`, `abandoned-stale`, `max session
   age`. which of them hits a live idle coder is unmeasured.

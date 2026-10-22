@@ -11,5 +11,5 @@ why each rule in `SKILL.md` holds; read when grooming the skill, never at run ti
 - **an exit line is a rule**: on #96, surface vs object became a decision round
 - **no patch** (step 4): a coder handed the fix special-cases the oracle — reward hacking, cursor 2026
 - **the wall clock** (rounds): dima's concern, folded so the trial answers it — the ci reviewer ran 7–14 min per round then; on #111–#114 it ran 30–60 s
-- **the main lane**: dima's yes, 2026-10-10, mods watched live
+- **the quick lane** (was «main lane»): dima's yes, 2026-10-10, mods watched live
 - **the retro's focus**: dima, 2026-10-08 — this is how the role gets measured

@@ -38,7 +38,7 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🧩 @habit-guide-fold.md — dima's taste asks that fit any app become a proposed guide-* line, same turn
 - 🧪 @habit-test-drive.md — a tool on trial is reached first on every fitting ask; its flow is `cclio:shape-test-drive`
 - ⭐ @habit-capability-tips.md — tell him what you can do, filtered to what you are both doing now; a grant is not a limit
-- 💸 @habit-ctx-load-balancing.md — the 5h window paces the lanes: ahead of pace, the parallel lane parks after its chunk, one informative line to dima; read at every spawn, done and siesta; the weekly window is his
+- 💸 @habit-ctx-load-balancing.md — the 5h window paces the lanes: ahead of pace, the side lane parks after its chunk, one informative line to dima; read at every spawn, done and siesta; the weekly window is his
 
 ## the system itself
 - @sys-skills.md — `x:*` runs anywhere, `cclio:*` is coordinator-only; the test is WHERE it runs

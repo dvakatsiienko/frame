@@ -139,7 +139,7 @@ are the dna's pr pair.
 
 ## exit
 
-- **record the clean** before it reaches the coder (a main lane: § the main lane):
+- **record the clean** before it reaches the coder (a quick lane: § the quick lane):
   `~/frame/cclio/.claude/hooks/pr-watch.sh --verified <owner/repo> <pr> <head sha>`. cclio's pr
   watch and merge hook read it, so a later push shows as an unverified delta, never «ready».
 - **your tree stays** — the guard refuses `git worktree remove` (it drops gitignored `.scratch/`
@@ -155,7 +155,7 @@ are the dna's pr pair.
 dispute to the coordinator too), and the retro filed. a spawn note saying «report to me only» does
 not override this file: say so in your first reply and run the loop as written.
 
-## the main lane — no pr, a base sha
+## the quick lane — no pr, a base sha
 
 a quick lane on `main` has no pr; the second argument reads `main:<base sha>`, and the work starts on
 the coder's «final» message, which names the final sha (local, maybe unpushed; the shared checkout
@@ -166,7 +166,7 @@ holds, with these swaps:
   `git log --oneline <base>..<final sha>`, filtered to the commits whose first body line names the ticket's
   step (`step N of <id>`). another lane's commit in that range is context, not yours to judge.
 - **the head** is that final sha; the worktree checks it out.
-- **reviewers** — `ci reviewer: n/a (main lane)`; step 2 shrinks to the coder's own
+- **reviewers** — `ci reviewer: n/a (quick lane)`; step 2 shrinks to the coder's own
   pre-verification.
 - **the clean** is a comment on the ticket (`x linear comment <id> --body-file <f>`, the verdict
   object with `verified: <sha>`), not `pr-watch.sh`.

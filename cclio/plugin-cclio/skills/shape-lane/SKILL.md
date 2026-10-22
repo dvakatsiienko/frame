@@ -28,7 +28,7 @@ a card is an h2 heading and two plain lines: no fence (a fence means «copy me»
 
 load `mattpocock-skills:grilling` and run its ❓ round as written — the frontier only, no shape of our own (`habit-dima-comms` § grill) — whole in the reply and as orbit asks (dima, 2026-10-10: «grills print as usual in a response, orbit only sends my reply»). orbit is the only answer door: no pre-filled answer fence in the reply (reply-check blocks one). his answers fold into `decided` the same turn.
 
-## 2.5 · the spec — feature and app lanes, and any coder job of 3+ items
+## 2.5 · the spec — side lanes, and any coder job of 3+ items
 
 a coder job carrying three or more asks — a lane, or a pile of today's drops and finds — goes through a spec, never a run of messages: the spec holds every item with its exit line, so nothing is lost to a refresh and «done» is checkable (dima, 2026-10-12, o140: «via specs, nothing is lost and is structured»). a one-line fix stays a message.
 
