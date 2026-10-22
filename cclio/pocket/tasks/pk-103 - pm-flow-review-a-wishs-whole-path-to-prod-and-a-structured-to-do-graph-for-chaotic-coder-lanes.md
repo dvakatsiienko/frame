@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T15:36:00Z'
+updated_date: '2026-10-22T15:47:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -338,4 +338,6 @@ W97 our linear projects are standing: linear can complete a project, but we don'
 W98 ❓ you picked the alternatives so they don't overlap with the emojis we already use? if yes, okay, let's try
 
 18:4x grill 5 applied: Q2 habit-shared-files (the way back into the pocket); Q3 craft-pm names two jobs + PK-140 carries the test; Q4 dima-strategy (projects standing, only milestones complete) + the initiative «now:» line rewritten in linear (also «dima applies again» → «job hunt» to fit 255 chars); Q5 pm/SKILL.md's kind → emoji list, on trial; Q1 c) joins the rename part (W6–W10, W24), d) done (lane-plan.md), a) b) drafted as two fleet tickets, waiting on his tick (o44).
+
+2026-10-22 18:47 dima on the review policy (raw, Wispr): «Do you think my proposal is good? In my mind, I thought that two CI reviews are a bit overkill because each CI review is quite long. It can take up to 10 minutes, so cutting from two to one saves 50% of time, which is good. I was thinking: remind me, what is the current code review policy for a coder? How many code reviews can a coder do locally? Primarily, I was thinking of doing this change by not simply cutting the CI review quota, but by moving one review quota from CI to local review. Local reviews for a coder are generally not worse than CI reviews, but they are much faster. How many reviews does a coder have at each step? Think for yourself and propose how to optimize this part. Also, what about rare reviews? Also, why doesn't Frame actually have ACI review? … It probably would be good to have a CI reviewer on Frame as well, but it is not critical. If you think it would be a good idea, fold a ticket. Don't spend time grilling on it or thinking too much right now.» FRM-408: «a good idea, not critical — later, after spawning the cli lane, in the main lane while the parallel lane is active» (written on FRM-408). frame ci reviewer → FRM-411 (p4). the proposal → o45 v2.
 <!-- SECTION:NOTES:END -->
