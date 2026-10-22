@@ -9,11 +9,13 @@ A **shift** is a lane built to run without dima (FRM-266). A lane asks and waits
 **decides, logs and continues**. The plan file is the authority; the last shift file in
 `cclio/shifts/` is the template.
 
-## presence — near or away
+## presence — his afk switch drives it (dima, 2026-10-22, PK-103 W107, W108)
 
-- `near` — dima is around but busy: a y/n ping only for a real decision, batched at a siesta.
-- `away` — nothing waits on him. at most one y/n that fits a phone, and only for an irreversible
+one shift, day or night; how it drives follows the band's afk switch (💨, x-mod-stash), which puts an away note on every prompt while on:
+- **afk on** — nothing waits on him. at most one y/n that fits a phone, and only for an irreversible
   step that blocks everything else.
+- **afk off** — he is near for now: a y/n ping only for a real decision, batched at a siesta.
+- a shift started with afk off gets one line: «afk is off — near for now, or a slip?»
 
 ## comms while he is away
 
