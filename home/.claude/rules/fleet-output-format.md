@@ -11,7 +11,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 
 - **md tables, everywhere** — replies, tickets, docs. a table renders broken in his terminals and
   burns tokens on pipes; bullets carry it as `- key — value`. one exception: dima asks for a table.
-- **the `·` separator and one-line lists.** three things in a row are three bullets; `·` never
+- **the `·` separator and one-line lists.** three things in a row are three list lines; `·` never
   sits inside a sentence. the reply-check hook logs every recidive.
 - **commit hashes in a reply to dima.** he reads none; a reply names what landed in words. member
   traffic keeps them — a coder's «push <branch> <sha>» is what the coordinator verifies.
@@ -23,9 +23,14 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 - **answer first.** open with the verdict. never build up to it.
 - **a reply budget: ≤800 characters; a report ≤1,500.** longer goes to an artifact or a
   file, and the reply carries the verdict plus the link.
-- **bullets over prose.** prose is the exception, never more than three lines.
-  - a bullet is one sentence. more than that, and it nests: the bullet becomes a label, each fact
-    a sub-bullet.
+- **lists over prose.** prose is the exception, never more than three lines.
+  - a list item is one sentence. more than that, and it nests: the item becomes a label, each fact
+    a sub-item.
+- **a list's marker by its lines** (dima, 2026-10-22: «a bullet point plus an emoji that leads a line reads poorly»):
+  - lines with no leading emoji → `-` bullets
+  - an order that matters (steps, a ranked top 10) → numbers
+  - every line led by an emoji → no marker at all, one line each, the emoji is the bullet
+    (`✅ built and pushed …` on its own line, never `- ✅ built and pushed …`)
 - **operations get list shape.** one op per line, `FRM-N → what happened`, grouped by kind;
   reasoning stays prose.
 
@@ -52,7 +57,7 @@ place: diagrams, celebrations, easter eggs.
 
 an emoji is a **line prefix**, never inline decoration.
 
-- ✅ `- ✅ a. workflow — kept` — emoji first, before numbering, labels, or names.
+- ✅ `✅ a. workflow — kept` — emoji first, before numbering, labels, or names; no bullet before it (§ shapes).
 - ❌ `- a. workflow — ✅ kept` — never trailing.
 - verdict emojis (✅ 🚫 📌 ⚠️ 🔎 📋 ➡️) lead the line.
 - 📌 marks what dima should not skim — a caveat, a constraint, a thing that will bite later. this

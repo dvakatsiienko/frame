@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-10-13 10:40'
-updated_date: '2026-10-22T15:11:00Z'
+updated_date: '2026-10-22T15:17:00Z'
 due_date: '2026-10-24'
 labels:
   - m
@@ -322,4 +322,8 @@ raw: in the session transcript at 18:00 (the next checkpoint's raw extract carri
 W94 updating the blueprint first, 100 % of the time, is not mandatory: in the pm revamp we grilled 4 rounds and planned updates everywhere; it's fine to ship the updates first and update the blueprint afterwards, because during the updates we can grill on and change something else
 W95 update a blueprint after all the steers and tweaks are implemented, but never forget the blueprint: it's our main reference for our flows
 W96 the hook is a good idea; we have 2 settled official blueprints: 🛼 crew and pm, end to end · 📐 refresh-crew-coordinator — how a run flows
+
+2026-10-22 18:2x progress on the state list: item 4 done (ac20f2f5: wish-cover resolves «wish: FRM-N»); the blueprint habit fix done (f4d0873f, W94–W96: the nudge hook, siesta step 2.6); item 5a done (593998c8: the halt's 🌊 born-parked count). item 5b open → the fixes round: the roadmap body marks steps 1–2 done while pm and fleet still read Planned in linear, and «now: fleet tails» names no step — what a closed step means for its project is dima's call (W81 cut time-based checks).
+
+18:18 ccrow's catch on item 5b (vet 202610221816-opus): dima-strategy's step-close rule exists. checked: applying it as Completed would bury live work: pm holds FRM-72 (this revamp), fleet holds 11 open + the «fleet package» milestone (next). so the fixes round asks: does a closed step complete its project (moving its open tickets), or do pm and fleet stay standing homes with the step marked done in the body only; and which step is «now». ccrow also: W87's re-look tests one job on both runners (Haiku 5.5 vs Opus 5.5) before craft-pm's «composer 1.4 %» line stays.
 <!-- SECTION:NOTES:END -->
