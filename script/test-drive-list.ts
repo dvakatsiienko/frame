@@ -28,6 +28,7 @@ const drives = readdirSync(dir)
         const field = (k: string) =>
             head.match(new RegExp(`^${k}: (.*)$`, 'm'))?.[1]?.trim() ?? '';
         return {
+            blind: field('blind') === 'true',
             card: /right if/i.test(text),
             fits: field('fits').split(/\s+/).filter(Boolean),
             name: f.slice(0, -3),
@@ -56,10 +57,15 @@ const markdownUnder = (p: string): string[] => {
 if (process.argv.includes('--spawn-hook')) {
     const command: string =
         JSON.parse(readFileSync(0, 'utf8') || '{}').tool_input?.command ?? '';
-    const file = command.match(/\$\(cat ([^)\s]+)\)/)?.[1];
-    const text = /\bclaude --bg\b/.test(command)
-        ? briefText(command, file)
-        : '';
+    const file = command.match(
+        /\$\((?:cat\s+|<\s*)['"]?([^)'"\s]+)['"]?\s*\)/,
+    )?.[1];
+    const spawn = /\bclaude --bg\b/.test(command);
+    if (spawn && /\$\((?:cat\b|<)/.test(command) && !readable(file))
+        deny(
+            `the gate cannot read the brief file this spawn names (${file ?? 'unparsed'}) — pass it as "$(cat <path>)"`,
+        );
+    const text = spawn ? briefText(command, file) : '';
     const role = /\/x:crew-verifier\b/.test(text)
         ? 'verifier'
         : /\/x:crew-coder\b/.test(text)
@@ -70,27 +76,51 @@ if (process.argv.includes('--spawn-hook')) {
         ...(/guide-go|x\/go\b/.test(text) ? [`${role}:go`] : []),
         ...(/guide-typescript|\.tsx?\b/.test(text) ? [`${role}:ts`] : []),
     ];
-    const missing = role
-        ? drives
-              .filter(
-                  (d) =>
-                      d.status === 'live' &&
-                      d.fits.some((k) => kinds.includes(k)) &&
-                      !text.includes(d.name),
-              )
-              .map((d) => d.name)
+    const fitting = role
+        ? drives.filter(
+              (d) =>
+                  d.status === 'live' && d.fits.some((k) => kinds.includes(k)),
+          )
         : [];
+    // a blind trial measures whether a member reaches for the tool unprompted, so its name stays out of the brief
+    const named = fitting
+        .filter((d) => d.blind && text.includes(d.name))
+        .map((d) => d.name);
+    if (named.length)
+        deny(
+            `the brief names blind trials: ${named.join(', ')} — a blind trial stays unnamed, so the lane shows whether the member reaches for it alone`,
+        );
+    const missing = fitting
+        .filter((d) => !d.blind && !text.includes(d.name))
+        .map((d) => d.name);
     if (missing.length)
-        console.log(
-            JSON.stringify({
-                hookSpecificOutput: {
-                    hookEventName: 'PreToolUse',
-                    permissionDecision: 'deny',
-                    permissionDecisionReason: `the brief misses live trials that fit a ${kinds.join(' ')} lane: ${missing.join(', ')} — name each (docs/test-drive/<name>.md) with how the lane uses it, or write «trial skipped: <name> — <why>»`,
-                },
-            }),
+        deny(
+            `the brief misses live trials that fit a ${kinds.join(' ')} lane: ${missing.join(', ')} — name each (docs/test-drive/<name>.md) with how the lane uses it, or write «trial skipped: <name> — <why>»`,
         );
     process.exit(0);
+}
+
+function deny(reason: string): never {
+    console.log(
+        JSON.stringify({
+            hookSpecificOutput: {
+                hookEventName: 'PreToolUse',
+                permissionDecision: 'deny',
+                permissionDecisionReason: reason,
+            },
+        }),
+    );
+    process.exit(0);
+}
+
+function readable(file: string | undefined) {
+    if (!file) return false;
+    try {
+        readFileSync(file.replace(/^~/, process.env.HOME ?? ''));
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 function briefText(command: string, file: string | undefined) {
