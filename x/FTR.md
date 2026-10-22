@@ -154,7 +154,8 @@
   - given origin's branch holds a commit HEAD lacks, then it refuses before any rebase, naming that sha
   - given a push to the branch landed after the read, then the remote keeps it, and the verb exits 1 naming the remote sha
   - given a conflict, then the tree stays mid-rebase, and the verb names each conflicted path, `git rebase --continue` and `git rebase --abort`
-  - given the conflict resolved in the files, when it runs again, then it stages those paths, continues the rebase and pushes; a conflict marker left in one refuses, naming it
+  - given a rebase already stopped in the tree, when it runs again, then it refuses and touches nothing, naming the branch, `git rebase --continue` and `git rebase --abort`
+  - decision: the verb never continues or aborts a rebase it finds paused — an abort there wiped a hand resolution in the verifier's round 2
   - decision: the one force-push door, `coder/*` only, `--force-with-lease` on the read sha (dima, 2026-10-12, o87); `x-mod-guard` names it when it refuses a hand force-push
 - ✅ `x lane verify-tree <pr url | main:<sha>>` gives the verifier a seeded worktree of a head
   - given a pr url of this repo, or `main:<sha>` of a commit on origin/main

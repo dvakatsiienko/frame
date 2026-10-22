@@ -129,82 +129,41 @@ func TestRebaseMainStopsInTheRebaseOnAConflict(t *testing.T) {
 	}
 }
 
-func TestRebaseMainContinuesAResolvedRebase(t *testing.T) {
-	w := newRebaseWorld(t, "coder/x")
-	w.mainMoves(t, "mine.txt", "main's version\n")
-	if got := w.run(t, "--apply"); got.code == 0 {
-		t.Fatalf("control: the first run did not stop on the conflict:\n%s", got.stdout)
-	}
-	write(t, filepath.Join(w.clone, "mine.txt"), "both, resolved\n")
-
-	got := w.run(t, "--apply")
-
-	gitT(t, w.clone, "fetch", "-q", "origin")
-	inRebase := exists(filepath.Join(w.clone, ".git/rebase-merge"))
-	body := gitT(t, w.clone, "show", "origin/coder/x:mine.txt")
-	if got.code != 0 || inRebase || body != "both, resolved" || gitT(t, w.clone, "log", "--merges", "--oneline", "origin/main..origin/coder/x") != "" {
-		t.Fatalf("exit %d, in rebase %v, mine.txt on the remote %q, want the resolution pushed:\n%s", got.code, inRebase, body, got.stdout)
-	}
-}
-
-// run from a subdir, with a markdown heading of seven = in the resolution
-func TestRebaseMainContinuesFromASubdirOverASetextHeading(t *testing.T) {
-	w := newRebaseWorld(t, "coder/x")
-	gitT(t, w.clone, "switch", "-q", "main")
-	write(t, filepath.Join(w.clone, "sub/keep.txt"), "a dir to run from\n")
-	gitT(t, w.clone, "add", "sub/keep.txt")
-	gitT(t, w.clone, "commit", "-q", "-m", "sub")
-	gitT(t, w.clone, "push", "-q", "origin", "main")
-	gitT(t, w.clone, "switch", "-q", "coder/x")
-	w.mainMoves(t, "mine.txt", "main's version\n")
-	w.run(t, "--apply")
-	write(t, filepath.Join(w.clone, "mine.txt"), "Title\n=======\nresolved\n")
-
-	got := xIn(t, filepath.Join(w.clone, "sub"), nil, "lane", "rebase-main", "--apply")
-
-	gitT(t, w.clone, "fetch", "-q", "origin")
-	if body := gitT(t, w.clone, "show", "origin/coder/x:mine.txt"); got.code != 0 || body != "Title\n=======\nresolved" {
-		t.Fatalf("exit %d, mine.txt on the remote %q:\n%s", got.code, body, got.stdout)
-	}
-}
-
-// a modify/delete conflict leaves no marker to read: the verb hands it back rather than guess
-func TestRebaseMainRefusesToContinueAConflictWithoutMarkers(t *testing.T) {
-	w := newRebaseWorld(t, "coder/x")
-	gitT(t, w.side, "switch", "-q", "main")
-	gitT(t, w.side, "pull", "-q", "--ff-only", "origin", "main")
-	gitT(t, w.side, "fetch", "-q", "origin")
-	gitT(t, w.side, "merge", "-q", "--ff-only", "origin/coder/x")
-	gitT(t, w.side, "rm", "-q", "mine.txt")
-	gitT(t, w.side, "commit", "-q", "-m", "main drops mine.txt")
-	gitT(t, w.side, "push", "-q", "origin", "main")
-	write(t, filepath.Join(w.clone, "mine.txt"), "the coder edits it\n")
-	gitT(t, w.clone, "commit", "-q", "-am", "edit mine.txt")
-	gitT(t, w.clone, "push", "-q", "origin", "coder/x")
-	w.run(t, "--apply")
-
-	got := w.run(t, "--apply")
-
-	inRebase := exists(filepath.Join(w.clone, ".git/rebase-merge"))
-	if got.code == 0 || !inRebase || !strings.Contains(envelopeOf(got).Error, "mine.txt") {
-		t.Fatalf("exit %d, in rebase %v, want a refusal naming mine.txt:\n%s", got.code, inRebase, got.stdout)
-	}
-}
-
-func TestRebaseMainRefusesToContinueOverConflictMarkers(t *testing.T) {
+// the verifier's round 2 repro: a hand resolution and an unstaged edit sit in a paused rebase
+func TestRebaseMainLeavesAPausedRebaseUntouched(t *testing.T) {
 	w := newRebaseWorld(t, "coder/x")
 	w.mainMoves(t, "mine.txt", "main's version\n")
 	w.run(t, "--apply")
+	write(t, filepath.Join(w.clone, "mine.txt"), "resolved by hand\n")
+	write(t, filepath.Join(w.clone, "readme.txt"), "an unstaged edit\n")
 	before := remoteHead(t, w, "coder/x")
-	if err := os.MkdirAll(filepath.Join(w.clone, "deep/er"), 0o755); err != nil {
-		t.Fatal(err)
-	}
 
-	got := xIn(t, filepath.Join(w.clone, "deep/er"), nil, "lane", "rebase-main", "--apply")
+	got := w.run(t, "--apply")
 
+	mine, _ := os.ReadFile(filepath.Join(w.clone, "mine.txt"))
+	readme, _ := os.ReadFile(filepath.Join(w.clone, "readme.txt"))
 	inRebase := exists(filepath.Join(w.clone, ".git/rebase-merge"))
-	if got.code == 0 || !inRebase || remoteHead(t, w, "coder/x") != before || !strings.Contains(envelopeOf(got).Error, "mine.txt") {
-		t.Fatalf("exit %d, in rebase %v, want a refusal naming mine.txt and the rebase kept:\n%s", got.code, inRebase, got.stdout)
+	msg := envelopeOf(got).Error
+	if got.code == 0 || !inRebase || string(mine) != "resolved by hand\n" || string(readme) != "an unstaged edit\n" || remoteHead(t, w, "coder/x") != before {
+		t.Fatalf("exit %d, in rebase %v, mine.txt %q, readme.txt %q, want all of it kept:\n%s", got.code, inRebase, mine, readme, got.stdout)
+	}
+	if !strings.Contains(msg, "coder/x") || !strings.Contains(msg, "git rebase --continue") || !strings.Contains(msg, "git rebase --abort") {
+		t.Errorf("error %q, want the branch and both git lines", msg)
+	}
+}
+
+// a rebase git refuses to start leaves nothing to abort, and the message says so
+func TestRebaseMainSaysARefusedRebaseDidNotStart(t *testing.T) {
+	w := newRebaseWorld(t, "coder/x")
+	w.mainMoves(t, "one.txt", "one\n")
+	write(t, filepath.Join(w.clone, "mine.txt"), "an unstaged edit\n")
+
+	got := w.run(t, "--apply")
+
+	body, _ := os.ReadFile(filepath.Join(w.clone, "mine.txt"))
+	msg := envelopeOf(got).Error
+	if got.code == 0 || strings.Contains(msg, "aborted") || !strings.Contains(msg, "did not start") || string(body) != "an unstaged edit\n" {
+		t.Fatalf("exit %d, error %q, mine.txt %q, want «did not start» and the edit kept", got.code, msg, body)
 	}
 }
 
